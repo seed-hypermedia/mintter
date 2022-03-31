@@ -4,6 +4,7 @@
 import Long from "long";
 import { grpc } from "@improbable-eng/grpc-web";
 import _m0 from "protobufjs/minimal";
+import { Empty } from "../../google/protobuf/empty";
 import { BrowserHeaders } from "browser-headers";
 import { Timestamp } from "../../google/protobuf/timestamp";
 
@@ -31,6 +32,8 @@ export interface RegisterResponse {
 
 export interface GetInfoRequest {}
 
+export interface ForceSyncRequest {}
+
 /** Info is a generic information about the running node. */
 export interface Info {
   /** Account ID this node belongs to. */
@@ -41,7 +44,9 @@ export interface Info {
   startTime: Date | undefined;
 }
 
-const baseGenSeedRequest: object = { aezeedPassphrase: "" };
+function createBaseGenSeedRequest(): GenSeedRequest {
+  return { aezeedPassphrase: "" };
+}
 
 export const GenSeedRequest = {
   encode(
@@ -57,7 +62,7 @@ export const GenSeedRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GenSeedRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseGenSeedRequest } as GenSeedRequest;
+    const message = createBaseGenSeedRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -73,12 +78,11 @@ export const GenSeedRequest = {
   },
 
   fromJSON(object: any): GenSeedRequest {
-    const message = { ...baseGenSeedRequest } as GenSeedRequest;
-    message.aezeedPassphrase =
-      object.aezeedPassphrase !== undefined && object.aezeedPassphrase !== null
+    return {
+      aezeedPassphrase: isSet(object.aezeedPassphrase)
         ? String(object.aezeedPassphrase)
-        : "";
-    return message;
+        : "",
+    };
   },
 
   toJSON(message: GenSeedRequest): unknown {
@@ -91,13 +95,15 @@ export const GenSeedRequest = {
   fromPartial<I extends Exact<DeepPartial<GenSeedRequest>, I>>(
     object: I
   ): GenSeedRequest {
-    const message = { ...baseGenSeedRequest } as GenSeedRequest;
+    const message = createBaseGenSeedRequest();
     message.aezeedPassphrase = object.aezeedPassphrase ?? "";
     return message;
   },
 };
 
-const baseGenSeedResponse: object = { mnemonic: "" };
+function createBaseGenSeedResponse(): GenSeedResponse {
+  return { mnemonic: [] };
+}
 
 export const GenSeedResponse = {
   encode(
@@ -113,8 +119,7 @@ export const GenSeedResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GenSeedResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseGenSeedResponse } as GenSeedResponse;
-    message.mnemonic = [];
+    const message = createBaseGenSeedResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -130,9 +135,11 @@ export const GenSeedResponse = {
   },
 
   fromJSON(object: any): GenSeedResponse {
-    const message = { ...baseGenSeedResponse } as GenSeedResponse;
-    message.mnemonic = (object.mnemonic ?? []).map((e: any) => String(e));
-    return message;
+    return {
+      mnemonic: Array.isArray(object?.mnemonic)
+        ? object.mnemonic.map((e: any) => String(e))
+        : [],
+    };
   },
 
   toJSON(message: GenSeedResponse): unknown {
@@ -148,13 +155,15 @@ export const GenSeedResponse = {
   fromPartial<I extends Exact<DeepPartial<GenSeedResponse>, I>>(
     object: I
   ): GenSeedResponse {
-    const message = { ...baseGenSeedResponse } as GenSeedResponse;
+    const message = createBaseGenSeedResponse();
     message.mnemonic = object.mnemonic?.map((e) => e) || [];
     return message;
   },
 };
 
-const baseRegisterRequest: object = { mnemonic: "", aezeedPassphrase: "" };
+function createBaseRegisterRequest(): RegisterRequest {
+  return { mnemonic: [], aezeedPassphrase: "" };
+}
 
 export const RegisterRequest = {
   encode(
@@ -173,8 +182,7 @@ export const RegisterRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): RegisterRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseRegisterRequest } as RegisterRequest;
-    message.mnemonic = [];
+    const message = createBaseRegisterRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -193,13 +201,14 @@ export const RegisterRequest = {
   },
 
   fromJSON(object: any): RegisterRequest {
-    const message = { ...baseRegisterRequest } as RegisterRequest;
-    message.mnemonic = (object.mnemonic ?? []).map((e: any) => String(e));
-    message.aezeedPassphrase =
-      object.aezeedPassphrase !== undefined && object.aezeedPassphrase !== null
+    return {
+      mnemonic: Array.isArray(object?.mnemonic)
+        ? object.mnemonic.map((e: any) => String(e))
+        : [],
+      aezeedPassphrase: isSet(object.aezeedPassphrase)
         ? String(object.aezeedPassphrase)
-        : "";
-    return message;
+        : "",
+    };
   },
 
   toJSON(message: RegisterRequest): unknown {
@@ -217,14 +226,16 @@ export const RegisterRequest = {
   fromPartial<I extends Exact<DeepPartial<RegisterRequest>, I>>(
     object: I
   ): RegisterRequest {
-    const message = { ...baseRegisterRequest } as RegisterRequest;
+    const message = createBaseRegisterRequest();
     message.mnemonic = object.mnemonic?.map((e) => e) || [];
     message.aezeedPassphrase = object.aezeedPassphrase ?? "";
     return message;
   },
 };
 
-const baseRegisterResponse: object = { accountId: "" };
+function createBaseRegisterResponse(): RegisterResponse {
+  return { accountId: "" };
+}
 
 export const RegisterResponse = {
   encode(
@@ -240,7 +251,7 @@ export const RegisterResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): RegisterResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseRegisterResponse } as RegisterResponse;
+    const message = createBaseRegisterResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -256,12 +267,9 @@ export const RegisterResponse = {
   },
 
   fromJSON(object: any): RegisterResponse {
-    const message = { ...baseRegisterResponse } as RegisterResponse;
-    message.accountId =
-      object.accountId !== undefined && object.accountId !== null
-        ? String(object.accountId)
-        : "";
-    return message;
+    return {
+      accountId: isSet(object.accountId) ? String(object.accountId) : "",
+    };
   },
 
   toJSON(message: RegisterResponse): unknown {
@@ -273,13 +281,15 @@ export const RegisterResponse = {
   fromPartial<I extends Exact<DeepPartial<RegisterResponse>, I>>(
     object: I
   ): RegisterResponse {
-    const message = { ...baseRegisterResponse } as RegisterResponse;
+    const message = createBaseRegisterResponse();
     message.accountId = object.accountId ?? "";
     return message;
   },
 };
 
-const baseGetInfoRequest: object = {};
+function createBaseGetInfoRequest(): GetInfoRequest {
+  return {};
+}
 
 export const GetInfoRequest = {
   encode(
@@ -292,7 +302,7 @@ export const GetInfoRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GetInfoRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseGetInfoRequest } as GetInfoRequest;
+    const message = createBaseGetInfoRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -305,8 +315,7 @@ export const GetInfoRequest = {
   },
 
   fromJSON(_: any): GetInfoRequest {
-    const message = { ...baseGetInfoRequest } as GetInfoRequest;
-    return message;
+    return {};
   },
 
   toJSON(_: GetInfoRequest): unknown {
@@ -317,12 +326,58 @@ export const GetInfoRequest = {
   fromPartial<I extends Exact<DeepPartial<GetInfoRequest>, I>>(
     _: I
   ): GetInfoRequest {
-    const message = { ...baseGetInfoRequest } as GetInfoRequest;
+    const message = createBaseGetInfoRequest();
     return message;
   },
 };
 
-const baseInfo: object = { accountId: "", peerId: "" };
+function createBaseForceSyncRequest(): ForceSyncRequest {
+  return {};
+}
+
+export const ForceSyncRequest = {
+  encode(
+    _: ForceSyncRequest,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ForceSyncRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseForceSyncRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): ForceSyncRequest {
+    return {};
+  },
+
+  toJSON(_: ForceSyncRequest): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ForceSyncRequest>, I>>(
+    _: I
+  ): ForceSyncRequest {
+    const message = createBaseForceSyncRequest();
+    return message;
+  },
+};
+
+function createBaseInfo(): Info {
+  return { accountId: "", peerId: "", startTime: undefined };
+}
 
 export const Info = {
   encode(message: Info, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
@@ -344,7 +399,7 @@ export const Info = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Info {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseInfo } as Info;
+    const message = createBaseInfo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -368,20 +423,13 @@ export const Info = {
   },
 
   fromJSON(object: any): Info {
-    const message = { ...baseInfo } as Info;
-    message.accountId =
-      object.accountId !== undefined && object.accountId !== null
-        ? String(object.accountId)
-        : "";
-    message.peerId =
-      object.peerId !== undefined && object.peerId !== null
-        ? String(object.peerId)
-        : "";
-    message.startTime =
-      object.startTime !== undefined && object.startTime !== null
+    return {
+      accountId: isSet(object.accountId) ? String(object.accountId) : "",
+      peerId: isSet(object.peerId) ? String(object.peerId) : "",
+      startTime: isSet(object.startTime)
         ? fromJsonTimestamp(object.startTime)
-        : undefined;
-    return message;
+        : undefined,
+    };
   },
 
   toJSON(message: Info): unknown {
@@ -394,7 +442,7 @@ export const Info = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Info>, I>>(object: I): Info {
-    const message = { ...baseInfo } as Info;
+    const message = createBaseInfo();
     message.accountId = object.accountId ?? "";
     message.peerId = object.peerId ?? "";
     message.startTime = object.startTime ?? undefined;
@@ -429,6 +477,11 @@ export interface Daemon {
     request: DeepPartial<GetInfoRequest>,
     metadata?: grpc.Metadata
   ): Promise<Info>;
+  /** Force-trigger periodic background sync of Mintter objects. */
+  forceSync(
+    request: DeepPartial<ForceSyncRequest>,
+    metadata?: grpc.Metadata
+  ): Promise<Empty>;
 }
 
 export class DaemonClientImpl implements Daemon {
@@ -439,6 +492,7 @@ export class DaemonClientImpl implements Daemon {
     this.genSeed = this.genSeed.bind(this);
     this.register = this.register.bind(this);
     this.getInfo = this.getInfo.bind(this);
+    this.forceSync = this.forceSync.bind(this);
   }
 
   genSeed(
@@ -470,6 +524,17 @@ export class DaemonClientImpl implements Daemon {
     return this.rpc.unary(
       DaemonGetInfoDesc,
       GetInfoRequest.fromPartial(request),
+      metadata
+    );
+  }
+
+  forceSync(
+    request: DeepPartial<ForceSyncRequest>,
+    metadata?: grpc.Metadata
+  ): Promise<Empty> {
+    return this.rpc.unary(
+      DaemonForceSyncDesc,
+      ForceSyncRequest.fromPartial(request),
       metadata
     );
   }
@@ -537,6 +602,28 @@ export const DaemonGetInfoDesc: UnaryMethodDefinitionish = {
     deserializeBinary(data: Uint8Array) {
       return {
         ...Info.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
+
+export const DaemonForceSyncDesc: UnaryMethodDefinitionish = {
+  methodName: "ForceSync",
+  service: DaemonDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return ForceSyncRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...Empty.decode(data),
         toObject() {
           return this;
         },
@@ -674,4 +761,8 @@ function fromJsonTimestamp(o: any): Date {
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any;
   _m0.configure();
+}
+
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined;
 }

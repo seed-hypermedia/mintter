@@ -1,3 +1,4 @@
+import {forceSync} from '@app/client/daemon'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useLibrary} from '@app/main-page-context'
 import {css, styled} from '@app/stitches.config'
@@ -8,7 +9,6 @@ import {useLocation} from 'wouter'
 import {Box} from '../box'
 import {Button} from '../button'
 import {Icon} from '../icon'
-import {Settings} from '../settings'
 import {useSidepanel} from '../sidepanel'
 import {TextField} from '../text-field'
 import {Tooltip} from '../tooltip'
@@ -124,6 +124,9 @@ function TopbarNavigation() {
       <Button size="0" variant="ghost" color="warning" onClick={() => window.location.reload()}>
         reload
       </Button>
+      <Button size="0" variant="ghost" color="warning" onClick={async () => await forceSync()}>
+        sync
+      </Button>
     </Box>
   )
 }
@@ -163,7 +166,6 @@ function TopbarActions() {
       <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
         <Icon name="PencilAdd" color="muted" />
       </Button>
-      <Settings />
     </Box>
   )
 }

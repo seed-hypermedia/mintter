@@ -3,6 +3,7 @@ syntax = "proto3";
 package com.mintter.daemon.v1alpha;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "mintter/backend/api/daemon/v1alpha;daemon";
 
@@ -22,6 +23,9 @@ service Daemon {
 
   // Get generic information about the running node.
   rpc GetInfo(GetInfoRequest) returns (Info);
+
+  // Force-trigger periodic background sync of Mintter objects.
+  rpc ForceSync(ForceSyncRequest) returns (google.protobuf.Empty);
 }
 
 message GenSeedRequest {
@@ -46,6 +50,8 @@ message RegisterResponse {
 }
 
 message GetInfoRequest {}
+
+message ForceSyncRequest {}
 
 // Info is a generic information about the running node.
 message Info {

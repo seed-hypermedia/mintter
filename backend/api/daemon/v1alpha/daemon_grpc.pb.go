@@ -7,6 +7,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -30,6 +31,8 @@ type DaemonClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	// Get generic information about the running node.
 	GetInfo(ctx context.Context, in *GetInfoRequest, opts ...grpc.CallOption) (*Info, error)
+	// Force-trigger periodic background sync of Mintter objects.
+	ForceSync(ctx context.Context, in *ForceSyncRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type daemonClient struct {
@@ -67,6 +70,15 @@ func (c *daemonClient) GetInfo(ctx context.Context, in *GetInfoRequest, opts ...
 	return out, nil
 }
 
+func (c *daemonClient) ForceSync(ctx context.Context, in *ForceSyncRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/com.mintter.daemon.v1alpha.Daemon/ForceSync", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DaemonServer is the server API for Daemon service.
 // All implementations should embed UnimplementedDaemonServer
 // for forward compatibility
@@ -83,6 +95,8 @@ type DaemonServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	// Get generic information about the running node.
 	GetInfo(context.Context, *GetInfoRequest) (*Info, error)
+	// Force-trigger periodic background sync of Mintter objects.
+	ForceSync(context.Context, *ForceSyncRequest) (*emptypb.Empty, error)
 }
 
 // UnimplementedDaemonServer should be embedded to have forward compatible implementations.
@@ -97,6 +111,9 @@ func (UnimplementedDaemonServer) Register(context.Context, *RegisterRequest) (*R
 }
 func (UnimplementedDaemonServer) GetInfo(context.Context, *GetInfoRequest) (*Info, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInfo not implemented")
+}
+func (UnimplementedDaemonServer) ForceSync(context.Context, *ForceSyncRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ForceSync not implemented")
 }
 
 // UnsafeDaemonServer may be embedded to opt out of forward compatibility for this service.
@@ -164,6 +181,24 @@ func _Daemon_GetInfo_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Daemon_ForceSync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ForceSyncRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaemonServer).ForceSync(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.daemon.v1alpha.Daemon/ForceSync",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaemonServer).ForceSync(ctx, req.(*ForceSyncRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Daemon_ServiceDesc is the grpc.ServiceDesc for Daemon service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -182,6 +217,10 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInfo",
 			Handler:    _Daemon_GetInfo_Handler,
+		},
+		{
+			MethodName: "ForceSync",
+			Handler:    _Daemon_ForceSync_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
