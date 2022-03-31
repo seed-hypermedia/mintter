@@ -1,0 +1,20 @@
+{
+  "RelayV2": {
+    "Enabled": true
+  },
+  "RelayV1": {
+    "Enabled": true
+  },
+  "Network": {
+    "ListenAddrs": [
+        "/ip4/0.0.0.0/tcp/4002",
+        "/ip4/0.0.0.0/udp/4002/quic",
+        "/ip6/::/udp/4002/quic",
+        "/ip6/::/tcp/4002"
+    ],
+    "AnnounceAddrs": [
+        "/ip4/0.0.0.0/udp/4002/quic",
+        "/ip4/0.0.0.0/tcp/4002"
+    ]
+  }
+}
