@@ -79,6 +79,7 @@ def main():
     @cmd(cmds, "run-frontend", "Run frontend web app for development.")
     def run_frontend(args):
         run("plz build //:yarn")
+        run("rm -rf target/debug/mintterd*")
         return run("cd frontend/app && exec yarn dev", args=args)
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
