@@ -122,9 +122,6 @@ function TopbarNavigation() {
       <Button size="0" variant="ghost" color="muted" onClick={() => window.history.forward()}>
         <Icon name="ArrowChevronRight" color="muted" />
       </Button>
-      <Button size="0" variant="ghost" color="warning" onClick={() => window.location.reload()}>
-        reload
-      </Button>
       <Button size="0" variant="ghost" color="warning" onClick={async () => await forceSync()}>
         sync
       </Button>
@@ -144,7 +141,6 @@ function TopbarActions() {
   function onCreateDraft() {
     createDraft()
   }
-
   return (
     <Box
       className={topbarSection()}
