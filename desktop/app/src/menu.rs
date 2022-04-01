@@ -1,12 +1,12 @@
 use crate::window_management::{close_all_windows, new_window};
 use log::error;
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowMenuEvent};
+use tauri::{api::shell::open, CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowMenuEvent};
 
 pub fn get_menu() -> Menu {
   let app_menu = Menu::new()
     .add_item(CustomMenuItem::new("about", "About Mintter"))
     .add_native_item(MenuItem::Separator)
-    .add_item(CustomMenuItem::new("preferences", "Preferences...").accelerator("CmdOrControl+P"))
+    .add_item(CustomMenuItem::new("preferences", "Preferences...").accelerator("CmdOrControl+,"))
     .add_native_item(MenuItem::Separator)
     .add_native_item(MenuItem::Hide)
     .add_native_item(MenuItem::HideOthers)
@@ -58,6 +58,12 @@ pub fn event_handler(event: WindowMenuEvent) {
       if let Err(err) = close_all_windows(event.window()) {
         error!("Failed to close all windows {}", err);
       }
+    }
+    "reload" => {
+      event.window().eval("location.reload()").unwrap();
+    }
+    "documentation" => {
+      open(&event.window().shell_scope(), "https://mintter.com", None).unwrap();
     }
     id => {
       error!("Unhandled menu item \"{}\"", id);
