@@ -59,6 +59,8 @@ pub fn event_handler(event: WindowMenuEvent) {
         error!("Failed to close all windows {}", err);
       }
     }
-    _ => panic!("unknown menu item ID! This is bug."),
+    id => {
+      error!("Unhandled menu item \"{}\"", id);
+    }
   }
 }
