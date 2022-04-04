@@ -7,8 +7,7 @@
 use cocoa::appkit::{NSWindow, NSWindowStyleMask};
 use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
-use objc_id::Id;
-use tauri::{window::WindowBuilder, Manager, Runtime};
+use tauri::Manager;
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
 use tauri_plugin_store::Builder as StorePluginBuilder;
 
