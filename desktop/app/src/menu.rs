@@ -65,6 +65,9 @@ pub fn event_handler(event: WindowMenuEvent) {
     "documentation" => {
       open(&event.window().shell_scope(), "https://mintter.com", None).unwrap();
     }
+    "preferences" => {
+      event.window().emit("open-preferences", ()).unwrap();
+    }
     id => {
       error!("Unhandled menu item \"{}\"", id);
     }

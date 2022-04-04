@@ -2098,6 +2098,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "cap-std",
+ "cocoa",
  "common",
  "env_logger",
  "extension-host",
