@@ -14,6 +14,10 @@ import { useSidepanel } from '../sidepanel'
 import { TextField } from '../text-field'
 import { Tooltip } from '../tooltip'
 
+const draggableProps = {
+  'data-tauri-drag-region': true
+}
+
 export const TopbarStyled = styled(Box, {
   gridArea: 'topbar',
   width: '$full',
@@ -45,7 +49,7 @@ function SidenavBar() {
   const toggle = useCallback(() => libraryService.send('LIBRARY.TOGGLE'), [libraryService])
   return (
     <Box
-      data-tauri-drag-region
+      {...draggableProps}
       className={topbarSection()}
       css={{
         width: 232,
@@ -97,7 +101,7 @@ function MainBar() {
 
   return (
     <Box
-      data-tauri-drag-region
+      {...draggableProps}
       className={topbarSection()}
       css={{
         paddingLeft: '$5',
@@ -117,7 +121,7 @@ function MainBar() {
 
 function TopbarNavigation() {
   return (
-    <Box css={{ display: 'flex' }} data-tauri-drag-region>
+    <Box css={{ display: 'flex' }} {...draggableProps}>
       <Button size="0" variant="ghost" color="muted" onClick={() => window.history.back()}>
         <Icon name="ArrowChevronLeft" color="muted" />
       </Button>
@@ -145,7 +149,7 @@ function TopbarActions() {
   }
   return (
     <Box
-      data-tauri-drag-region
+      {...draggableProps}
       className={topbarSection()}
       css={{
         flex: 'none',
