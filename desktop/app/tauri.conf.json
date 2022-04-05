@@ -55,7 +55,10 @@
         "open": true
       },
       "window": {
-        "all": false
+        "all": false,
+        "startDragging": true,
+        "maximize": true,
+        "unmaximize": true
       }
     },
     "windows": [
