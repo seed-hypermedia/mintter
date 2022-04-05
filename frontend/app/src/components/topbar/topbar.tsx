@@ -1,18 +1,18 @@
-import {forceSync} from '@app/client/daemon'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {useLibrary} from '@app/main-page-context'
-import {css, styled} from '@app/stitches.config'
-import {useRoute} from '@app/utils/use-route'
-import {useCreateDraft} from '@components/library/use-create-draft'
-import {FormEvent, useCallback, useEffect, useRef, useState} from 'react'
-import {useLocation} from 'wouter'
-import {Box} from '../box'
-import {Button} from '../button'
-import {Icon} from '../icon'
-import {Settings} from '../settings'
-import {useSidepanel} from '../sidepanel'
-import {TextField} from '../text-field'
-import {Tooltip} from '../tooltip'
+import { forceSync } from '@app/client/daemon'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { useLibrary } from '@app/main-page-context'
+import { css, styled } from '@app/stitches.config'
+import { useRoute } from '@app/utils/use-route'
+import { useCreateDraft } from '@components/library/use-create-draft'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation } from 'wouter'
+import { Box } from '../box'
+import { Button } from '../button'
+import { Icon } from '../icon'
+import { Settings } from '../settings'
+import { useSidepanel } from '../sidepanel'
+import { TextField } from '../text-field'
+import { Tooltip } from '../tooltip'
 
 export const TopbarStyled = styled(Box, {
   gridArea: 'topbar',
@@ -45,6 +45,7 @@ function SidenavBar() {
   const toggle = useCallback(() => libraryService.send('LIBRARY.TOGGLE'), [libraryService])
   return (
     <Box
+      data-tauri-drag-region
       className={topbarSection()}
       css={{
         width: 232,
@@ -55,8 +56,8 @@ function SidenavBar() {
         paddingRight: '$3',
       }}
     >
-      <span style={{flex: 1}} />
-      <Box css={{display: 'flex', alignItems: 'center', gap: '$4'}}>
+      <span style={{ flex: 1 }} data-tauri-drag-region />
+      <Box css={{ display: 'flex', alignItems: 'center', gap: '$4' }}>
         <Button variant="ghost" size="0" color="muted" onClick={toggle}>
           <Icon name="Sidenav" size="2" />
         </Button>
@@ -81,8 +82,8 @@ function MainBar() {
       let url = search.startsWith('/p/')
         ? search
         : search.startsWith(MINTTER_LINK_PREFIX)
-        ? `/p/${search.replace(MINTTER_LINK_PREFIX, '')}`
-        : `/p/${search}`
+          ? `/p/${search.replace(MINTTER_LINK_PREFIX, '')}`
+          : `/p/${search}`
       setLocation(url)
       setRouteLocation(url)
     } else {
@@ -96,6 +97,7 @@ function MainBar() {
 
   return (
     <Box
+      data-tauri-drag-region
       className={topbarSection()}
       css={{
         paddingLeft: '$5',
@@ -106,7 +108,7 @@ function MainBar() {
         gap: '$5',
       }}
     >
-      <Box ref={form} css={{width: '100%', maxWidth: '800px'}} as="form" onSubmit={handleSubmit}>
+      <Box ref={form} css={{ width: '100%', maxWidth: '800px' }} as="form" onSubmit={handleSubmit}>
         <TextField size={1} name="search" value={location} onChange={(e) => setLocation(e.target.value)} />
       </Box>
     </Box>
@@ -115,7 +117,7 @@ function MainBar() {
 
 function TopbarNavigation() {
   return (
-    <Box css={{display: 'flex'}}>
+    <Box css={{ display: 'flex' }} data-tauri-drag-region>
       <Button size="0" variant="ghost" color="muted" onClick={() => window.history.back()}>
         <Icon name="ArrowChevronLeft" color="muted" />
       </Button>
@@ -131,8 +133,8 @@ function TopbarNavigation() {
 
 function TopbarActions() {
   const service = useSidepanel()
-  const {match: isDocumentOpen} = useRoute<{docId: string; version: string}>(['/p/:docId/:version', '/editor/:docId'])
-  const {createDraft} = useCreateDraft()
+  const { match: isDocumentOpen } = useRoute<{ docId: string; version: string }>(['/p/:docId/:version', '/editor/:docId'])
+  const { createDraft } = useCreateDraft()
 
   function toggleSidepanel() {
     service.send('SIDEPANEL.TOGGLE')
@@ -143,6 +145,7 @@ function TopbarActions() {
   }
   return (
     <Box
+      data-tauri-drag-region
       className={topbarSection()}
       css={{
         flex: 'none',
