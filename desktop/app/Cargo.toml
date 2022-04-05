@@ -27,7 +27,10 @@ anyhow = "1.0.56"
 env_logger = "0.9.0"
 extension-host = { path = "../extension-host" }
 common = { path = "../common" }
+
+[target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.24.0"
+objc = "0.2"
 
 [features]
 default = [ "custom-protocol" ]
