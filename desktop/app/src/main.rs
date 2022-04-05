@@ -4,12 +4,12 @@
   windows_subsystem = "windows"
 )]
 
-use cocoa::appkit::{NSWindow, NSWindowStyleMask};
 use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
 use tauri::Manager;
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
 use tauri_plugin_store::Builder as StorePluginBuilder;
+use window_management::WindowExt;
 
 mod daemon;
 mod extensions;
@@ -60,19 +60,10 @@ async fn main() {
       );
 
       let win = app.get_window("main").unwrap();
-
-      let mut style_mask = NSWindowStyleMask::NSTitledWindowMask;
-      style_mask.insert(NSWindowStyleMask::NSFullSizeContentViewWindowMask);
-      style_mask.insert(NSWindowStyleMask::NSClosableWindowMask);
-      style_mask.insert(NSWindowStyleMask::NSResizableWindowMask);
-      style_mask.insert(NSWindowStyleMask::NSMiniaturizableWindowMask);
-
-      unsafe {
-        let id = win.ns_window().unwrap() as cocoa::base::id;
-        id.setStyleMask_(style_mask);
-        id.setTitleVisibility_(cocoa::appkit::NSWindowTitleVisibility::NSWindowTitleHidden);
-        id.setTitlebarAppearsTransparent_(cocoa::base::YES);
-      }
+      win.set_transparent_titlebar(true);
+      // win.set_closable(true);
+      // win.set_minimizable(true);
+      // win.set_resizable(true)?;
 
       Ok(())
     })

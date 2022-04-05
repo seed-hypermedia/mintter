@@ -2103,6 +2103,7 @@ dependencies = [
  "env_logger",
  "extension-host",
  "log",
+ "objc",
  "serde",
  "serde_json",
  "tauri",
