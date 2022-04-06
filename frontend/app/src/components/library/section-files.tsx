@@ -1,8 +1,8 @@
-import {useFiles} from '@app/main-page-context'
-import {LibraryItem} from '@components/library/library-item'
-import {ErrorBoundary} from 'react-error-boundary'
-import {Section} from './section'
-import {SectionError} from './section-error'
+import { useFiles } from '@app/main-page-context'
+import { LibraryItem } from '@components/library/library-item'
+import { ErrorBoundary } from 'react-error-boundary'
+import { Section } from './section'
+import { SectionError } from './section-error'
 
 export function FilesSection() {
   const files = useFiles()
@@ -17,7 +17,7 @@ export function FilesSection() {
           }}
         >
           {files.map((publication) => {
-            let {document, version} = publication
+            let { document, version } = publication
             return <LibraryItem key={document?.id} href={`/p/${document?.id}/${version}`} publication={publication} />
           })}
         </ErrorBoundary>
