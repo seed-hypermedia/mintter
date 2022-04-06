@@ -18,6 +18,7 @@ let
         extensions = ["rust-src"];
       })
       tauri-cli
+      black
     ];
     libs = [
       # libiconv
