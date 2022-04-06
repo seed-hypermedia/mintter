@@ -60,5 +60,6 @@
     "*.plz": "starlark",
     "*.build_defs": "starlark"
   },
-  "xstate.showVisualEditorWarnings": false
+  "xstate.showVisualEditorWarnings": false,
+  "python.formatting.provider": "black"
 }

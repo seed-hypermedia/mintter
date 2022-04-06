@@ -10,9 +10,11 @@ import sys
 
 def cmd(cmds: argparse._SubParsersAction, name: str, help: str):
     """Decorator that registers subcommands as functions to be executed."""
+
     def wrapper(func):
         p = cmds.add_parser(name, help=help)
         p.set_defaults(func=func)
+
     return wrapper
 
 
@@ -42,17 +44,23 @@ def main():
         metavar="                                                     ",
     )
 
-    @cmd(cmds, "gen", "Check all the generated code is up to date. Otherwise run the code generation process to fix it.")
+    @cmd(
+        cmds,
+        "gen",
+        "Check all the generated code is up to date. Otherwise run the code generation process to fix it.",
+    )
     def gen(args):
         out = run(
-            "plz run parallel $(plz query filter -i 'generated:check')", capture_output=True)
+            "plz run parallel $(plz query filter -i 'generated:check')",
+            capture_output=True,
+        )
 
         targets_to_gen = []
-        for line in out.stdout.decode("utf-8").split('\n'):
+        for line in out.stdout.decode("utf-8").split("\n"):
             idx = line.find("plz run")
             if idx == -1:
                 continue
-            targets_to_gen.append(line[idx+7:-1])  # 7 is length of 'plz run'
+            targets_to_gen.append(line[idx + 7 : -1])  # 7 is length of 'plz run'
 
         if len(targets_to_gen) == 0:
             return
@@ -66,7 +74,9 @@ def main():
     def build_frontend(args):
         return run("plz build //frontend:app")
 
-    @cmd(cmds, "build-desktop", "Builds the Tauri desktop app for the current platform.")
+    @cmd(
+        cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
+    )
     def build_desktop(args):
         run("plz build //frontend:app //backend:mintterd")
         run("rm -rf target/debug/mintterd*")
@@ -87,6 +97,73 @@ def main():
         run("plz build //backend:mintterd //:yarn")
         return run("cd desktop/app && cargo tauri dev", args=args)
 
+    @cmd(cmds, "release", "Cut a new release.")
+    def release(args):
+        allowed_components = ["desktop"]
+        want_branch = "master"
+
+        if len(args) != 1:
+            raise ValueError(
+                "Must specify a component name to release. One of %s."
+                % allowed_components
+            )
+
+        component = args[0]
+
+        if component not in allowed_components:
+            raise ValueError(
+                "Unknown component name to release. Must be one of %s."
+                % allowed_components
+            )
+
+        branch = (
+            run("git branch --show-current", capture_output=True)
+            .stdout.decode()
+            .strip()
+        )
+        if branch != want_branch:
+            raise ValueError("Must only release on the '%s' branch!" % want_branch)
+
+        print("Checking if we're up to date with remote...")
+
+        run("git fetch origin %s" % want_branch)
+        diff = (
+            run("git diff-index origin/%s" % want_branch, capture_output=True)
+            .stdout.decode()
+            .strip()
+        )
+        if diff:
+            raise ValueError("Local repository is not up to date with remote!")
+
+        prev_tag = (
+            run(
+                "git describe --tags --abbrev=0 --match '%s/*'" % component,
+                capture_output=True,
+            )
+            .stdout.decode()
+            .strip()
+        )
+
+        prev_version = prev_tag.removeprefix(component + "/")
+
+        new_version = input(
+            "Last version was %s. Specify the new version: " % prev_version
+        )
+
+        if not new_version:
+            raise ValueError("Must specify version.")
+
+        parts = new_version.split(".")
+        if len(parts) != 3:
+            raise ValueError(
+                "Invalid version number %s. Version must be 3 numbers separated by dots."
+                % new_version
+            )
+
+        print("Tagging release...")
+        run("git tag -a %s" % component + "/" + new_version)
+        run("git push --follow-tags")
+
     if len(sys.argv) == 1:
         cli.print_help()
         return
@@ -95,6 +172,9 @@ def main():
 
     try:
         namespace.func(args)
+    except ValueError as err:
+        print(str(err))
+        sys.exit(1)
     except (subprocess.CalledProcessError, KeyboardInterrupt):
         return
 
