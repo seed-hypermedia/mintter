@@ -1,7 +1,7 @@
-import {CSS, styled} from '@app/stitches.config'
+import { CSS, styled } from '@app/stitches.config'
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
 import type * as Stitches from '@stitches/react'
-import React, {useMemo} from 'react'
+import React, { useMemo } from 'react'
 
 export const Svg = styled('svg', {
   fill: 'none',
@@ -120,6 +120,7 @@ export const icons = {
   PencilAdd,
   Sidepanel,
   Sidenav,
+  Reload
 }
 
 export type IconProps = Stitches.VariantProps<typeof Svg> & {
@@ -127,7 +128,7 @@ export type IconProps = Stitches.VariantProps<typeof Svg> & {
   css?: CSS
 }
 
-export function Icon({name, ...props}: IconProps) {
+export function Icon({ name, ...props }: IconProps) {
   const Component: React.ComponentType<any> = useMemo(() => icons[name], [name])
   const label = useMemo(
     () => `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'} Icon`,
@@ -787,6 +788,19 @@ function Sidepanel(props: Stitches.VariantProps<typeof Svg>) {
     <Svg width={24} height={24} viewBox="0 0 15 15" {...props}>
       <path
         d="M8 2H13.5C13.7761 2 14 2.22386 14 2.5V12.5C14 12.7761 13.7761 13 13.5 13H8V2ZM7 2H1.5C1.22386 2 1 2.22386 1 2.5V12.5C1 12.7761 1.22386 13 1.5 13H7V2ZM0 2.5C0 1.67157 0.671573 1 1.5 1H13.5C14.3284 1 15 1.67157 15 2.5V12.5C15 13.3284 14.3284 14 13.5 14H1.5C0.671573 14 0 13.3284 0 12.5V2.5Z"
+        fill="currentColor"
+        fillRule="evenodd"
+        clipRule="evenodd"
+      />
+    </Svg>
+  )
+}
+
+function Reload(props: Stitches.VariantProps<typeof Svg>) {
+  return (
+    <Svg width={24} height={24} viewBox="0 0 15 15" {...props}>
+      <path
+        d="M1.903 7.297c0 3.044 2.207 5.118 4.686 5.547a.521.521 0 1 1-.178 1.027C3.5 13.367.861 10.913.861 7.297c0-1.537.699-2.745 1.515-3.663.585-.658 1.254-1.193 1.792-1.602H2.532a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V2.686l-.001.002c-.572.43-1.27.957-1.875 1.638-.715.804-1.253 1.776-1.253 2.97Zm11.108.406c0-3.012-2.16-5.073-4.607-5.533a.521.521 0 1 1 .192-1.024c2.874.54 5.457 2.98 5.457 6.557 0 1.537-.699 2.744-1.515 3.663-.585.658-1.254 1.193-1.792 1.602h1.636a.5.5 0 1 1 0 1h-3a.5.5 0 0 1-.5-.5v-3a.5.5 0 1 1 1 0v1.845h.002c.571-.432 1.27-.958 1.874-1.64.715-.803 1.253-1.775 1.253-2.97Z"
         fill="currentColor"
         fillRule="evenodd"
         clipRule="evenodd"
