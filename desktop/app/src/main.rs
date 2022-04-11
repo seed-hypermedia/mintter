@@ -6,7 +6,7 @@
 
 use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
-use tauri::Manager;
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
 use tauri_plugin_store::Builder as StorePluginBuilder;
 use window_management::WindowExt;
@@ -61,11 +61,20 @@ async fn main() {
 
       let win = app.get_window("main").unwrap();
       win.set_transparent_titlebar(true);
-      // win.set_closable(true);
-      // win.set_minimizable(true);
-      // win.set_resizable(true)?;
 
       Ok(())
+    })
+    .on_window_event(|event| {
+      if let WindowEvent::Focused(_) = event.event() {
+        if !event.window().is_transparent_titlebar() {
+          event.window().set_transparent_titlebar(true);
+        }
+
+        if event.window().label() == "preferences" {
+          event.window().set_minimizable(false);
+          event.window().set_resizable(false).unwrap();
+        }
+      }
     })
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

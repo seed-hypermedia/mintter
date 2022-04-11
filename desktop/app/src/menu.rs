@@ -1,6 +1,10 @@
 use crate::window_management::{close_all_windows, new_window};
+use anyhow::anyhow;
 use log::error;
-use tauri::{api::shell::open, CustomMenuItem, Manager, Menu, MenuItem, Submenu, WindowMenuEvent};
+use tauri::{
+  api::shell::open, window::WindowBuilder, CustomMenuItem, Manager, Menu, MenuItem, Submenu,
+  WindowMenuEvent, WindowUrl,
+};
 
 pub fn get_menu() -> Menu {
   let app_menu = Menu::new()
@@ -48,28 +52,31 @@ pub fn get_menu() -> Menu {
 }
 
 pub fn event_handler(event: WindowMenuEvent) {
+  if let Err(err) = event_handler_inner(event) {
+    error!("Failed to handle menu event {}", err);
+  }
+}
+
+pub fn event_handler_inner(event: WindowMenuEvent) -> Result<(), Box<dyn std::error::Error>> {
   match event.menu_item_id() {
-    "new_window" => {
-      if let Err(err) = new_window(event.window()) {
-        error!("Failed to create window {}", err);
-      }
-    }
-    "close_all_windows" => {
-      if let Err(err) = close_all_windows(event.window()) {
-        error!("Failed to close all windows {}", err);
-      }
-    }
-    "reload" => {
-      event.window().eval("location.reload()").unwrap();
-    }
-    "documentation" => {
-      open(&event.window().shell_scope(), "https://mintter.com", None).unwrap();
-    }
+    "new_window" => new_window(event.window()),
+    "close_all_windows" => close_all_windows(event.window()),
+    "reload" => event.window().eval("location.reload()"),
+    "documentation" => open(&event.window().shell_scope(), "https://mintter.com", None),
     "preferences" => {
-      event.window().emit("open-preferences", ()).unwrap();
+      if let Some(window) = event.window().get_window("preferences") {
+        window.set_focus()
+      } else {
+        WindowBuilder::new(
+          event.window(),
+          "preferences",
+          WindowUrl::App("/settings".into()),
+        )
+        .build()
+      }
     }
     id => {
-      error!("Unhandled menu item \"{}\"", id);
+      anyhow!("Unhandled menu item \"{}\"", id)
     }
   }
 }
