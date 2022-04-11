@@ -8,6 +8,7 @@ import { BookmarksProvider, createBookmarksMachine } from '@components/bookmarks
 import { Box } from '@components/box'
 import { Library } from '@components/library'
 import { ScrollArea } from '@components/scroll-area'
+import { Settings } from '@components/settings'
 import { createSidepanelMachine, Sidepanel, SidepanelProvider } from '@components/sidepanel'
 import { Text } from '@components/text'
 import { Topbar } from '@components/topbar'
@@ -15,11 +16,13 @@ import { useInterpret } from '@xstate/react'
 import { ReactNode } from 'react'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { QueryClient, useQueryClient } from 'react-query'
-import { Route } from 'wouter'
+import { Route, useLocation } from 'wouter'
 import EditorPage from './editor'
 import Publication from './publication'
+
 export function MainPage({ client: propClient }: { client?: QueryClient }) {
   // eslint-disable-line
+  const [location] = useLocation()
   const localClient = useQueryClient()
   const client = propClient ?? localClient
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
@@ -41,23 +44,25 @@ export function MainPage({ client: propClient }: { client?: QueryClient }) {
         <HoverProvider value={hoverService}>
           <BookmarksProvider value={bookmarksService}>
             <SidepanelProvider value={sidepanelService}>
-              <Box className={rootPageStyle()}>
-                <Topbar />
-                <Library />
-                <MainWindow>
-                  <ErrorBoundary
-                    FallbackComponent={PageError}
-                    onReset={() => {
-                      window.location.reload()
-                    }}
-                  >
-                    <Route path="/p/:docId/:version/:blockId?" component={Publication} />
-                    <Route path="/editor/:docId" component={EditorPage} />
-                    {/* <Route path="/" component={Placeholder} /> */}
-                  </ErrorBoundary>
-                </MainWindow>
-                <Sidepanel />
-              </Box>
+              {location.includes('settings') ? <Settings /> : (
+                <Box className={rootPageStyle()}>
+                  <Topbar />
+                  <Library />
+                  <MainWindow>
+                    <ErrorBoundary
+                      FallbackComponent={PageError}
+                      onReset={() => {
+                        window.location.reload()
+                      }}
+                    >
+                      <Route path="/p/:docId/:version/:blockId?" component={Publication} />
+                      <Route path="/editor/:docId" component={EditorPage} />
+                      <Route component={Placeholder} />
+                    </ErrorBoundary>
+                  </MainWindow>
+                  <Sidepanel />
+                </Box>
+              )}
             </SidepanelProvider>
           </BookmarksProvider>
         </HoverProvider>
@@ -65,6 +70,7 @@ export function MainPage({ client: propClient }: { client?: QueryClient }) {
     </MainPageProvider>
   )
 }
+
 
 export var rootPageStyle = css({
   position: 'absolute',
@@ -78,7 +84,7 @@ export var rootPageStyle = css({
   overflow: 'hidden',
   gridAutoFlow: 'column',
   gridAutoColumns: '1fr',
-  gridTemplateRows: '48px 1fr',
+  gridTemplateRows: '40px 1fr',
   gridTemplateColumns: 'auto 1fr auto',
   gap: 0,
   gridTemplateAreas: `"topbar topbar topbar"

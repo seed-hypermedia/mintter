@@ -1,5 +1,4 @@
 extern crate objc;
-
 use cocoa::appkit::{NSWindow, NSWindowStyleMask, NSWindowTitleVisibility};
 use objc::{class, msg_send, sel, sel_impl};
 use std::{
@@ -8,9 +7,12 @@ use std::{
 };
 use tauri::{window::WindowBuilder, Manager, Runtime, Window, WindowUrl};
 
+
 pub trait WindowExt {
   #[cfg(target_os = "macos")]
   fn set_transparent_titlebar(&self, transparent: bool);
+  #[cfg(target_os = "macos")]
+  fn is_transparent_titlebar(&self) -> bool;
   #[cfg(target_os = "macos")]
   fn set_closable(&self, closable: bool);
   #[cfg(target_os = "macos")]
@@ -18,6 +20,17 @@ pub trait WindowExt {
 }
 
 impl<R: Runtime> WindowExt for Window<R> {
+  #[cfg(target_os = "macos")]
+  fn is_transparent_titlebar(&self) -> bool {
+    let id = self.ns_window().unwrap() as cocoa::base::id;
+
+    unsafe {
+      let style_mask = id.styleMask();
+
+      style_mask.contains(NSWindowStyleMask::NSFullSizeContentViewWindowMask)
+    }
+  }
+
   #[cfg(target_os = "macos")]
   fn set_transparent_titlebar(&self, transparent: bool) {
     unsafe {
@@ -78,9 +91,7 @@ pub fn new_window<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
     .as_millis()
     .to_string();
 
-  WindowBuilder::new(manager, id, WindowUrl::App("index.html".into()))
-    .build()?
-    .set_transparent_titlebar(true);
+  WindowBuilder::new(manager, id, WindowUrl::App("index.html".into())).build()?;
 
   Ok(())
 }
@@ -106,8 +117,7 @@ pub async fn open_in_new_window<R: Runtime>(
 
   WindowBuilder::new(&app, id, WindowUrl::App(url))
     .build()
-    .map_err(|err| err.to_string())?
-    .set_transparent_titlebar(true);
+    .map_err(|err| err.to_string())?;
 
   Ok(())
 }

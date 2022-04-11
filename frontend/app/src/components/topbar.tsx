@@ -9,7 +9,6 @@ import { useLocation } from 'wouter'
 import { Box } from './box'
 import { Button } from './button'
 import { Icon } from './icon'
-import { Settings } from './settings'
 import { useSidepanel } from './sidepanel'
 import { TextField } from './text-field'
 import { Tooltip } from './tooltip'
@@ -21,7 +20,7 @@ const draggableProps = {
 export const TopbarStyled = styled(Box, {
   gridArea: 'topbar',
   width: '$full',
-  height: 48,
+  height: 40,
   display: 'flex',
   borderBottom: '1px solid rgba(0,0,0,0.1)',
   background: '$background-alt',
@@ -88,6 +87,8 @@ function MainBar() {
       const data = new FormData(form.current)
 
       let search: string = data.get('search') as string
+
+      if (search.includes("settings")) return
 
       let url = search.startsWith('/p/')
         ? search
@@ -175,7 +176,6 @@ function TopbarActions() {
       <Button size="0" variant="ghost" color="muted" onClick={onCreateDraft}>
         <Icon name="PencilAdd" color="muted" />
       </Button>
-      <Settings />
     </Box>
   )
 }
