@@ -1,5 +1,5 @@
 use crate::window_management::{close_all_windows, new_window};
-use anyhow::anyhow;
+use anyhow::bail;
 use log::error;
 use tauri::{
   api::shell::open, window::WindowBuilder, CustomMenuItem, Manager, Menu, MenuItem, Submenu,
@@ -57,26 +57,34 @@ pub fn event_handler(event: WindowMenuEvent) {
   }
 }
 
-pub fn event_handler_inner(event: WindowMenuEvent) -> Result<(), Box<dyn std::error::Error>> {
+pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
   match event.menu_item_id() {
-    "new_window" => new_window(event.window()),
-    "close_all_windows" => close_all_windows(event.window()),
-    "reload" => event.window().eval("location.reload()"),
-    "documentation" => open(&event.window().shell_scope(), "https://mintter.com", None),
+    "new_window" => {
+      new_window(event.window())?;
+    }
+    "reload" => {
+      event.window().eval("location.reload()")?;
+    }
+    "close_all_windows" => {
+      close_all_windows(event.window())?;
+    }
+    "documentation" => {
+      open(&event.window().shell_scope(), "https://mintter.com", None)?;
+    }
     "preferences" => {
       if let Some(window) = event.window().get_window("preferences") {
-        window.set_focus()
+        window.set_focus()?;
       } else {
         WindowBuilder::new(
           event.window(),
           "preferences",
           WindowUrl::App("/settings".into()),
         )
-        .build()
+        .build()?;
       }
     }
-    id => {
-      anyhow!("Unhandled menu item \"{}\"", id)
-    }
+    id => bail!("Unhandled menu item \"{}\"", id),
   }
+
+  Ok(())
 }
