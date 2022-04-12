@@ -1,18 +1,18 @@
-import { css, keyframes } from '@app/stitches.config'
+import {css, keyframes} from '@app/stitches.config'
 
 export const overlayShow = keyframes({
-  '0%': { opacity: 0 },
-  '100%': { opacity: 0.75 },
+  '0%': {opacity: 0},
+  '100%': {opacity: 0.75},
 })
 
 export const contentShow = keyframes({
-  '0%': { opacity: 0, transform: 'translate(-50%, -48%) scale(.96)' },
-  '100%': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
+  '0%': {opacity: 0, transform: 'translate(-50%, -48%) scale(.96)'},
+  '100%': {opacity: 1, transform: 'translate(-50%, -50%) scale(1)'},
 })
 
 export const overlayStyles = css({
   backgroundColor: '$background-neutral-strong',
-  opacity: 0.75,
+  opacity: 0.7,
   position: 'fixed',
   inset: 0,
   zIndex: '$max',
@@ -41,7 +41,7 @@ export const dialogContentStyles = css({
     animation: `${contentShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
     willChange: 'transform',
   },
-  '&:focus': { outline: 'none' },
+  '&:focus': {outline: 'none'},
 })
 
 export const dialogFooterStyles = css({
