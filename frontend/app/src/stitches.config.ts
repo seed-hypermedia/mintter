@@ -11,7 +11,7 @@ import loraMedium from '@app/static/fonts/lora/medium.ttf'
 import loraRegularItalic from '@app/static/fonts/lora/regular-italic.ttf'
 import loraRegular from '@app/static/fonts/lora/regular.ttf'
 import type * as Stitches from '@stitches/react'
-import {createStitches, defaultThemeMap} from '@stitches/react'
+import { createStitches, defaultThemeMap } from '@stitches/react'
 
 const stitches = createStitches({
   prefix: 'mtt-',
@@ -156,10 +156,10 @@ const stitches = createStitches({
     bp3: '(min-width: 1400px)',
   },
   utils: {
-    marginHorizontal: (val: Stitches.ScaleValue<'space'> | string) => ({marginLeft: val, marginRight: val}),
-    marginVertical: (val: Stitches.ScaleValue<'space'> | string) => ({marginTop: val, marginBottom: val}),
-    paddingHorizontal: (val: Stitches.ScaleValue<'space'>) => ({paddingLeft: val, paddingRight: val}),
-    paddingVertical: (val: Stitches.ScaleValue<'space'>) => ({paddingTop: val, paddingBottom: val}),
+    marginHorizontal: (val: Stitches.ScaleValue<'space'> | string) => ({ marginLeft: val, marginRight: val }),
+    marginVertical: (val: Stitches.ScaleValue<'space'> | string) => ({ marginTop: val, marginBottom: val }),
+    paddingHorizontal: (val: Stitches.ScaleValue<'space'>) => ({ paddingLeft: val, paddingRight: val }),
+    paddingVertical: (val: Stitches.ScaleValue<'space'>) => ({ paddingTop: val, paddingBottom: val }),
   },
   themeMap: {
     ...defaultThemeMap,
@@ -170,7 +170,7 @@ const stitches = createStitches({
   },
 })
 
-export const {styled, css, globalCss, keyframes, config, createTheme} = stitches
+export const { styled, css, globalCss, keyframes, config, createTheme } = stitches
 export type CSS = Stitches.CSS<typeof config> & typeof lightTheme
 
 export const lightTheme = createTheme('light-theme', {
@@ -306,7 +306,7 @@ export const darkTheme = createTheme('dark-theme', {
     'danger-softer': '#DD8888',
     'danger-muted': '#F4D7D7',
     'danger-contrast': '#FFFFFF',
-    'block-hover': 'rgba(255,255,255,0.04)',
+    'block-hover': 'rgba(255,255,255,0.04)'
   },
 })
 
