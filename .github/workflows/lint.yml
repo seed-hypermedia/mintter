@@ -22,10 +22,10 @@ jobs:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v1
       - name: Mock Daemon
-        if: matrix.os != 'ubuntu-latest'
+        if: matrix.os != 'windows-latest'
         run: touch plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
       - name: Mock Daemon
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'windows-latest'
         run: |
           copy NUL plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
           copy \b plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
