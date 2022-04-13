@@ -6,17 +6,13 @@
   "author": "Mintter Team",
   "private": true,
   "scripts": {
-    "prebuild": "yarn validate",
     "build": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run build",
     "lint": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run lint",
     "format": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run format",
-    "validate": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run validate",
     "test": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run test",
     "app": "yarn workspace @mintter/app",
     "mttast": "yarn workspace @mintter/mttast",
-    "codegen": "graphql-codegen",
-    "start": "./dev run-desktop",
-    "start:s2": "./dev run-desktop -- --daemon-flags=\"--repo-path=~/.mtt2 --http-port='56001' --grpc-port='56002' --p2p.addr='/ip4/0.0.0.0/tcp/56000'\""
+    "codegen": "graphql-codegen"
   },
   "workspaces": [
     "frontend/*"
