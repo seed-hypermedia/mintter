@@ -23,10 +23,13 @@ jobs:
       - uses: Swatinem/rust-cache@v1
       - name: Mock Daemon
         if: matrix.os != 'windows-latest'
-        run: touch plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
+        run: |
+          mkdir -p plz-out/bin/backend
+          touch plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
       - name: Mock Daemon
         if: matrix.os == 'windows-latest'
         run: |
+          mkdir plz-out/bin/backend
           copy NUL plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
           copy \b plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
       - uses: actions-rs/clippy-check@v1
