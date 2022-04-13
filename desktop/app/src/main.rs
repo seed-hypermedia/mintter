@@ -8,7 +8,7 @@ use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
-use tauri_plugin_store::Builder as StorePluginBuilder;
+use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 use window_management::WindowExt;
 
 mod daemon;
@@ -59,12 +59,16 @@ async fn main() {
         app.state::<daemon::Flags>(),
       );
 
-      let win = app.get_window("main").unwrap();
-      win.set_transparent_titlebar(true);
+      #[cfg(target_os = "macos")]
+      {
+        let win = app.get_window("main").unwrap();
+        win.set_transparent_titlebar(true);
+      }
 
       Ok(())
     })
     .on_window_event(|event| {
+      #[cfg(target_os = "macos")]
       if let WindowEvent::Focused(_) = event.event() {
         if !event.window().is_transparent_titlebar() {
           event.window().set_transparent_titlebar(true);

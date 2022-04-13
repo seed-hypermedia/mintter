@@ -1,5 +1,6 @@
-extern crate objc;
+#[cfg(target_os = "macos")]
 use cocoa::appkit::{NSWindow, NSWindowStyleMask, NSWindowTitleVisibility};
+#[cfg(target_os = "macos")]
 use objc::{class, msg_send, sel, sel_impl};
 use std::{
   path::PathBuf,
@@ -8,13 +9,9 @@ use std::{
 use tauri::{window::WindowBuilder, Manager, Runtime, Window, WindowUrl};
 
 pub trait WindowExt {
-  #[cfg(target_os = "macos")]
   fn set_transparent_titlebar(&self, transparent: bool);
-  #[cfg(target_os = "macos")]
   fn is_transparent_titlebar(&self) -> bool;
-  #[cfg(target_os = "macos")]
   fn set_closable(&self, closable: bool);
-  #[cfg(target_os = "macos")]
   fn set_minimizable(&self, minimizable: bool);
 }
 
@@ -28,6 +25,11 @@ impl<R: Runtime> WindowExt for Window<R> {
 
       style_mask.contains(NSWindowStyleMask::NSFullSizeContentViewWindowMask)
     }
+  }
+
+  #[cfg(not(target_os = "macos"))]
+  fn is_transparent_titlebar(&self) -> bool {
+    false
   }
 
   #[cfg(target_os = "macos")]
@@ -60,6 +62,9 @@ impl<R: Runtime> WindowExt for Window<R> {
     }
   }
 
+  #[cfg(not(target_os = "macos"))]
+  fn set_transparent_titlebar(&self, transparent: bool) {}
+
   #[cfg(target_os = "macos")]
   fn set_closable(&self, closable: bool) {
     unsafe {
@@ -71,6 +76,9 @@ impl<R: Runtime> WindowExt for Window<R> {
     }
   }
 
+  #[cfg(not(target_os = "macos"))]
+  fn set_closable(&self, closable: bool) {}
+
   #[cfg(target_os = "macos")]
   fn set_minimizable(&self, minimizable: bool) {
     unsafe {
@@ -81,6 +89,9 @@ impl<R: Runtime> WindowExt for Window<R> {
       id.setStyleMask_(style_mask);
     }
   }
+
+  #[cfg(not(target_os = "macos"))]
+  fn set_minimizable(&self, minimizable: bool) {}
 }
 
 pub fn new_window<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
