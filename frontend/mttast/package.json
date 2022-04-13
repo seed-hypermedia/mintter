@@ -11,10 +11,10 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
-    "format": "nr prettier --write .",
-    "validate": "nr lint && nr format",
+    "format": "prettier --write .",
+    "validate": "lint && nr format",
     "test": "vitest --run",
-    "test:watch": "nr test --watch"
+    "test:watch": "test --watch"
   },
   "devDependencies": {
     "@mintter/mttast": "^0.1.0",
