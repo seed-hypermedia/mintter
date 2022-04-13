@@ -3539,9 +3539,9 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-store"
 version = "0.0.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-store?branch=refactor/builder-pattern#be4a31d3d452f73767a5fef387548112bb09df5c"
+source = "git+https://github.com/tauri-apps/tauri-plugin-store?branch=dev#7ac980a81683b49672d18b7f0d01cd04dc3a7ca0"
 dependencies = [
- "bincode",
+ "log",
  "serde",
  "serde_json",
  "tauri",
