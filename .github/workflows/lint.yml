@@ -19,9 +19,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-          components:
-            - clippy
-            - rustfmt
+          components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v1
       - uses: actions-rs/clippy-check@v1
         with:
