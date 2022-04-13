@@ -21,6 +21,12 @@ jobs:
           override: true
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v1
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+      - name: Build daemon
+        run: ./dev build-backend
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
