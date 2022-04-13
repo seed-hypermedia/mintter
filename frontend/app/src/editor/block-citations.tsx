@@ -117,6 +117,7 @@ type BlockCitationItemProps = {
 
 function BlockCitationItem({citation}: BlockCitationItemProps) {
   const sidepanelService = useSidepanel()
+
   const [state, send] = useMachine(
     //@ts-ignore
     () => blockCitationMachine,
@@ -124,17 +125,22 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
       services: {
         fetchCitation: () => (sendBack) => {
           ;(async () => {
-            let data = await getBlock(citation.source)
-            let author = await getAccount(data?.publication.document?.author || '')
-            if (data) {
-              sendBack({
-                type: 'CITATION.FETCH.SUCCESS',
-                data: {
-                  ...data,
+            try {
+              let data = await getBlock(citation.source)
+              let author = await getAccount(data?.publication.document?.author || '')
+              console.log('async result: ', {data, author})
+
+              if (data) {
+                sendBack({
+                  type: 'CITATION.FETCH.SUCCESS',
+                  publication: data.publication,
+                  block: data.block,
                   author,
-                },
-              })
-            } else {
+                })
+              } else {
+                sendBack({type: 'CITATION.FETCH.ERROR'})
+              }
+            } catch {
               sendBack({type: 'CITATION.FETCH.ERROR'})
             }
           })()
@@ -169,6 +175,8 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
 
   let title = state.context?.publication?.document?.title || 'Untitled Document'
   let authorAlias = state.context?.author?.profile?.alias || 'anonymous'
+
+  console.log({state, title, authorAlias})
 
   return (
     <Box
