@@ -30,7 +30,7 @@ export default {
     // }),
     react({
       fastRefresh: process.env.NODE_ENV != 'test',
-      jsxRuntime: 'classic'
+      jsxRuntime: process.env.NODE_ENV != 'test' ? 'automatic' : 'classic'
     }),
   ],
   test: {
