@@ -1,17 +1,39 @@
 import type {
   Blockquote,
-  Callout, Code, Embed, Group, Heading, Image,
-  Link, OrderedList, Paragraph,
-  Statement, StaticParagraph, Text, UnorderedList, Video
+  Callout,
+  Code,
+  Embed,
+  Group,
+  Heading,
+  Image,
+  Link,
+  OrderedList,
+  Paragraph,
+  Statement,
+  StaticParagraph,
+  Text,
+  UnorderedList,
+  Video,
 } from '@mintter/mttast'
 import {
   blockquote,
-  callout, code, embed, group, heading, image,
-  link, ol, paragraph,
-  statement, staticParagraph, text, ul, video
+  callout,
+  code,
+  embed,
+  group,
+  heading,
+  image,
+  link,
+  ol,
+  paragraph,
+  statement,
+  staticParagraph,
+  text,
+  ul,
+  video,
 } from '@mintter/mttast'
-import { createHyperscript } from 'slate-hyperscript'
-import type { Parent } from 'unist'
+import {createHyperscript} from 'slate-hyperscript'
+import type {Parent} from 'unist'
 
 type JSXCompliant<T extends Parent> = Omit<T, 'type' | 'children'> & {
   children?: T['children']
@@ -43,7 +65,7 @@ declare global {
       mttimage: Omit<Image, 'type'>
       mttembed: JSXCompliant<Embed>
       mttlink: JSXCompliant<Link>
-      mtttext: Omit<Text, 'type' | 'text'> & { children: string }
+      mtttext: Omit<Text, 'type' | 'text'> & {children: string}
     }
   }
 }
@@ -60,8 +82,8 @@ export const jsx = createHyperscript({
     blockquote: blockquote([]),
     code: code([]),
     callout: callout([]),
-    embed: embed({ url: '' }, []),
-    link: link({ url: '' }, []),
+    embed: embed({url: ''}, []),
+    link: link({url: ''}, []),
   },
   creators: {
     text: (_, a, c) => text(c[0], a),

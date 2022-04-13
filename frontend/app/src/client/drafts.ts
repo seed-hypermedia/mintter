@@ -1,16 +1,18 @@
-import type { Document } from './.generated/documents/v1alpha/documents'
+import type {Document} from './.generated/documents/v1alpha/documents'
 import {
   CreateDraftRequest,
-  DeleteDraftRequest, DocumentChange, DraftsClientImpl,
+  DeleteDraftRequest,
+  DocumentChange,
+  DraftsClientImpl,
   GetDraftRequest,
   ListDraftsRequest,
   ListDraftsResponse,
   PublishDraftRequest,
   UpdateDraftRequest,
-  UpdateDraftRequestV2
+  UpdateDraftRequestV2,
 } from './.generated/documents/v1alpha/documents'
-import type { GrpcClient } from './grpc-client'
-import { createGrpcClient } from './grpc-client'
+import type {GrpcClient} from './grpc-client'
+import {createGrpcClient} from './grpc-client'
 
 /**
  *
@@ -20,7 +22,7 @@ import { createGrpcClient } from './grpc-client'
 export async function createDraft(publicationId = '', rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
 
-  const request = CreateDraftRequest.fromPartial({ existingDocumentId: publicationId })
+  const request = CreateDraftRequest.fromPartial({existingDocumentId: publicationId})
   return await new DraftsClientImpl(rpc).createDraft(request)
 }
 
@@ -31,7 +33,7 @@ export async function createDraft(publicationId = '', rpc?: GrpcClient): Promise
  */
 export function deleteDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  const request = DeleteDraftRequest.fromPartial({ documentId })
+  const request = DeleteDraftRequest.fromPartial({documentId})
   return new DraftsClientImpl(rpc).deleteDraft(request)
 }
 
@@ -43,7 +45,7 @@ export function deleteDraft(documentId: string, rpc?: GrpcClient) {
  */
 export function updateDraft(entry: Document, links: any[] = [], rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
-  const request = UpdateDraftRequest.fromPartial({ document: entry, links })
+  const request = UpdateDraftRequest.fromPartial({document: entry, links})
   return new DraftsClientImpl(rpc).updateDraft(request)
 }
 
@@ -78,7 +80,7 @@ export function listDrafts(
  */
 export function publishDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  const request = PublishDraftRequest.fromPartial({ documentId })
+  const request = PublishDraftRequest.fromPartial({documentId})
   return new DraftsClientImpl(rpc).publishDraft(request)
 }
 
@@ -90,7 +92,7 @@ export function publishDraft(documentId: string, rpc?: GrpcClient) {
  */
 export async function getDraft(documentId: string, rpc?: GrpcClient): Promise<Document> {
   rpc ||= createGrpcClient()
-  const request = GetDraftRequest.fromPartial({ documentId })
+  const request = GetDraftRequest.fromPartial({documentId})
   const doc = await new DraftsClientImpl(rpc).getDraft(request)
   return doc
 }

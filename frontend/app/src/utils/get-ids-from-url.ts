@@ -1,4 +1,4 @@
-import { MINTTER_LINK_PREFIX } from '@app/constants'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 
 export function getIdsfromUrl(entry: string): [docId: string, version: string, blockId: string] {
   if (!entry.startsWith(MINTTER_LINK_PREFIX)) {

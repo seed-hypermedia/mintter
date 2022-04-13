@@ -1,8 +1,8 @@
-import { useAccountInfo } from '@app/auth-context'
-import type { FlowContent } from '@mintter/mttast'
-import { useMemo } from 'react'
-import type { UseQueryResult } from 'react-query'
-import { useQuery, useQueryClient } from 'react-query'
+import {useAccountInfo} from '@app/auth-context'
+import type {FlowContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import type {UseQueryResult} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
 import {
   Account,
   Document,
@@ -19,9 +19,9 @@ import {
   listPublications,
   ListPublicationsResponse,
   PeerInfo,
-  Publication
+  Publication,
 } from '../client'
-import type { HookOptions } from './types'
+import type {HookOptions} from './types'
 
 export * from './types'
 
@@ -39,7 +39,7 @@ export const queryKeys = {
   GET_BOOKMARK_LIST: 'GET_BOOKMARK_LIST',
   GET_SIDEPANEL_LIST: 'GET_SIDEPANEL_LIST',
   GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
-  GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION'
+  GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
 }
 
 /**
@@ -88,7 +88,7 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
 
   return useQuery(
     [queryKeys.GET_DRAFT, draftId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [, draftId] = queryKey as [string, string]
       return await getDraft(draftId, options.rpc)
     },
@@ -109,8 +109,8 @@ export function useDraftList() {
     return listDrafts()
   })
 
-  const data: Array<{ document: Document }> = useMemo(
-    () => draftsListQuery.data?.documents?.map((d) => ({ document: d })) || [],
+  const data: Array<{document: Document}> = useMemo(
+    () => draftsListQuery.data?.documents?.map((d) => ({document: d})) || [],
     [draftsListQuery],
   )
 
@@ -163,7 +163,7 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
 export function usePublication(publicationId: string, version?: string, options: HookOptions<Publication> = {}) {
   const publicationQuery = useQuery(
     [queryKeys.GET_PUBLICATION, publicationId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [, publicationId] = queryKey as [string, string]
       return getPublication(publicationId, version, options.rpc)
     },

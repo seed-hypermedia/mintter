@@ -7,7 +7,6 @@ use std::{
 };
 use tauri::{window::WindowBuilder, Manager, Runtime, Window, WindowUrl};
 
-
 pub trait WindowExt {
   #[cfg(target_os = "macos")]
   fn set_transparent_titlebar(&self, transparent: bool);
