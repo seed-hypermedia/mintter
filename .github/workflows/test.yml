@@ -11,12 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        target_triple:
-          [
-            x86_64-unknown-linux-gnu,
-            x86_64-apple-darwin,
-            x86_64-pc-windows-msvc,
-          ]
     steps:
       - uses: actions/checkout@v3
       - name: Install stable toolchain
@@ -31,16 +25,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
       - name: Mock Daemon
-        if: matrix.os != 'windows-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p plz-out/bin/backend
-          touch plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
+          touch plz-out/bin/backend/mintterd-x86_64-unknown-linux-gnu
+      - name: Mock Daemon
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p plz-out/bin/backend
+          touch plz-out/bin/backend/mintterd-x86_64-apple-darwin
       - name: Mock Daemon
         if: matrix.os == 'windows-latest'
         run: |
           mkdir plz-out/bin/backend
-          copy NUL plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
-          copy \b plz-out/bin/backend/mintterd-${{ matrix.target_triple }}
+          copy NUL plz-out/bin/backend/mintterd-x86_64-pc-windows-msvc
+          copy \b plz-out/bin/backend/mintterd-x86_64-pc-windows-msvc
       - name: Run tests
         uses: actions-rs/cargo@v1
         with:
