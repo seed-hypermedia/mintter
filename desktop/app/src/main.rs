@@ -59,16 +59,12 @@ async fn main() {
         app.state::<daemon::Flags>(),
       );
 
-      #[cfg(target_os = "macos")]
-      {
-        let win = app.get_window("main").unwrap();
-        win.set_transparent_titlebar(true);
-      }
+      let win = app.get_window("main").unwrap();
+      win.set_transparent_titlebar(true);
 
       Ok(())
     })
     .on_window_event(|event| {
-      #[cfg(target_os = "macos")]
       if let WindowEvent::Focused(_) = event.event() {
         if !event.window().is_transparent_titlebar() {
           event.window().set_transparent_titlebar(true);

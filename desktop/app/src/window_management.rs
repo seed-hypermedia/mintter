@@ -63,7 +63,7 @@ impl<R: Runtime> WindowExt for Window<R> {
   }
 
   #[cfg(not(target_os = "macos"))]
-  fn set_transparent_titlebar(&self, transparent: bool) {}
+  fn set_transparent_titlebar(&self, _transparent: bool) {}
 
   #[cfg(target_os = "macos")]
   fn set_closable(&self, closable: bool) {
@@ -77,7 +77,7 @@ impl<R: Runtime> WindowExt for Window<R> {
   }
 
   #[cfg(not(target_os = "macos"))]
-  fn set_closable(&self, closable: bool) {}
+  fn set_closable(&self, _closable: bool) {}
 
   #[cfg(target_os = "macos")]
   fn set_minimizable(&self, minimizable: bool) {
@@ -91,7 +91,7 @@ impl<R: Runtime> WindowExt for Window<R> {
   }
 
   #[cfg(not(target_os = "macos"))]
-  fn set_minimizable(&self, minimizable: bool) {}
+  fn set_minimizable(&self, _minimizable: bool) {}
 }
 
 pub fn new_window<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
