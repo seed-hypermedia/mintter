@@ -40,7 +40,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           mkdir plz-out/bin/backend
-          copy \b NUL plz-out/bin/backend/mintterd-x86_64-pc-windows-msvc
+          echo "" > plz-out/bin/backend/mintterd-x86_64-pc-windows-msvc.exe
           mkdir plz-out/gen/frontend/dist/client
       - name: Run tests
         uses: actions-rs/cargo@v1
