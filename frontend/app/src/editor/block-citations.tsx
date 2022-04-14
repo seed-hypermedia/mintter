@@ -128,7 +128,6 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
             try {
               let data = await getBlock(citation.source)
               let author = await getAccount(data?.publication.document?.author || '')
-              console.log('async result: ', {data, author})
 
               if (data) {
                 sendBack({
@@ -175,8 +174,6 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
 
   let title = state.context?.publication?.document?.title || 'Untitled Document'
   let authorAlias = state.context?.author?.profile?.alias || 'anonymous'
-
-  console.log({state, title, authorAlias})
 
   return (
     <Box

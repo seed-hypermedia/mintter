@@ -280,7 +280,6 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
             }
 
             let changes = createUpdate(context.localDraft!)
-            console.log("🚀 ~ file: use-editor-draft.ts ~ line 283 ~ ; ~ changes", changes)
             let links = buildLinks(context.localDraft!)
 
             try {
