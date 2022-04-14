@@ -1,22 +1,12 @@
-import { Document, ListDraftsResponse, ListPublicationsResponse, Publication } from '@app/client'
-import { queryKeys } from '@app/hooks'
-import { MainPageProviders, mountWithAccount } from '@app/test/utils'
-import { LibraryItem } from '@components/library/library-item'
+import {Document, ListDraftsResponse, ListPublicationsResponse, Publication} from '@app/client'
+import {queryKeys} from '@app/hooks'
+import {MainPageProviders, mountWithAccount} from '@app/test/utils'
+import {LibraryItem} from '@components/library/library-item'
 import Sinon from 'cypress/types/sinon'
-import { setLogger } from 'react-query'
-
-setLogger({
-  log: console.log,
-  warn: console.warn,
-  // ✅ no more errors on the console
-  error: () => {
-    // noop
-  },
-})
 
 describe('<LibraryItem />', () => {
   beforeEach(() => {
-    let { client, render } = mountWithAccount()
+    let {client, render} = mountWithAccount()
 
     client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
       publications: [],
@@ -84,7 +74,7 @@ describe('<LibraryItem /> with Draft', () => {
   let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
 
   beforeEach(() => {
-    let { client, render } = mountWithAccount()
+    let {client, render} = mountWithAccount()
 
     client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
       publications: [],
@@ -166,7 +156,7 @@ describe('<LibraryItem /> with Publication', () => {
   let copyTextToClipboard: any
 
   beforeEach(() => {
-    let { client, render } = mountWithAccount()
+    let {client, render} = mountWithAccount()
 
     client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
       publications: [],

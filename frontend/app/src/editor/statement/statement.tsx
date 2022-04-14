@@ -26,7 +26,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     },
   configureEditor(editor) {
     if (editor.readOnly) return
-    const {normalizeNode, deleteBackward, apply} = editor
+    const {normalizeNode} = editor
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
@@ -84,17 +84,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
         }
       }
       normalizeNode(entry)
-    }
-
-    editor.apply = (operation) => {
-      console.log('operation: ', operation)
-      apply(operation)
-    }
-
-    editor.deleteBackward = (unit) => {
-      console.log('deleteBackward', unit)
-
-      deleteBackward(unit)
     }
 
     return editor
