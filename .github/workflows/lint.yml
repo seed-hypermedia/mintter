@@ -6,6 +6,7 @@ on:
 
 jobs:
   lint-rust:
+    runs-on: ubuntu-latest
     container: iterpre/tauri
     steps:
       - uses: actions/checkout@v3

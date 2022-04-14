@@ -6,6 +6,7 @@ on:
 
 jobs:
   udeps:
+    runs-on: ubuntu-latest
     container: iterpre/tauri
     steps:
       - uses: actions/checkout@v2
