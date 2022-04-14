@@ -12,8 +12,8 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest]
         include:
-          os: ubuntu-latest
-          container: iterpre/tauri
+          - os: ubuntu-latest
+            container: iterpre/tauri
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v3
