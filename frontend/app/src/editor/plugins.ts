@@ -1,6 +1,6 @@
 import { createMintterChangesPlugin } from '@app/editor/mintter-changes/plugin'
 import { createBlockquotePlugin } from './blockquote'
-import { createCodePlugin } from './code'
+// import { createCodePlugin } from './code'
 import { createColorPlugin } from './color'
 import { createEmbedPlugin } from './embed'
 import { createEmphasisPlugin } from './emphasis'
@@ -44,7 +44,7 @@ export const plugins: EditorPlugin[] = [
   createStatementPlugin(),
 
   createBlockquotePlugin(),
-  createCodePlugin({ theme: 'github-light' }),
+  // createCodePlugin({ theme: 'github-light' }),
 
   createGroupPlugin(),
   createUnorderedListPlugin(),
