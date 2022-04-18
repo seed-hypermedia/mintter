@@ -1,4 +1,3 @@
-import { createMintterChangesPlugin } from '@app/editor/mintter-changes/plugin'
 import { createBlockquotePlugin } from './blockquote'
 // import { createCodePlugin } from './code'
 import { createColorPlugin } from './color'
@@ -53,7 +52,6 @@ export const plugins: EditorPlugin[] = [
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),
   createPlainTextPastePlugin(),
-  createMintterChangesPlugin()
   // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
 ]
 

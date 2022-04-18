@@ -1,7 +1,5 @@
 import { Document, getDraft, Link, Publication, publishDraft, updateDraft } from '@app/client'
-import { createUpdate } from '@app/client/v2/create-changes'
 import { MINTTER_LINK_PREFIX } from '@app/constants'
-import { changesService } from '@app/editor/mintter-changes/plugin'
 import { queryKeys } from '@app/hooks'
 import { useMainPage } from '@app/main-page-context'
 import { createId, group, isEmbed, isFlowContent, isLink, paragraph, statement, text } from '@mintter/mttast'
@@ -279,15 +277,12 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
               content: JSON.stringify(context.localDraft?.content),
             }
 
-            let changes = createUpdate(context.localDraft!)
             let links = buildLinks(context.localDraft!)
 
             try {
-              // await updateDraftV2(changes)
               await updateDraft(newDraft as Document, links)
 
               sendBack('EDITOR.UPDATE.SUCCESS')
-              changesService.send('reset')
             } catch (err: any) {
               sendBack({ type: 'EDITOR.UPDATE.ERROR', errorMessage: err.message })
             }
