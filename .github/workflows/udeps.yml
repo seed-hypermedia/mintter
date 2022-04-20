@@ -7,7 +7,7 @@ on:
 jobs:
   udeps:
     runs-on: ubuntu-latest
-    container: iterpre/tauri
+    # container: iterpre/tauri
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -16,6 +16,10 @@ jobs:
           toolchain: nightly
           override: true
       - uses: Swatinem/rust-cache@v1
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
       - name: Mock Files
         run: |
           mkdir -p plz-out/bin/backend
