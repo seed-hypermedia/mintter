@@ -5,8 +5,8 @@ on:
     tags:
       - "desktop/*.*.*"
 
-concurrency:
-  group: ${{ github.ref }}
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 concurrency:
