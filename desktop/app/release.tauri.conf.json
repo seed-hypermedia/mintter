@@ -7,7 +7,7 @@
     "distDir": "../frontend/app/dist/client",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "cd ../frontend/app && yarn dev",
-    "beforeBuildCommannd": "cd ../frontend/app && yarn build:client",
+    "beforeBuildCommand": "cd ../frontend/app && yarn build:client",
     "withGlobalTauri": false
   },
   "tauri": {
