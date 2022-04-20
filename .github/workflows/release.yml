@@ -1,6 +1,6 @@
 name: Release
 
-true:
+on:
   push:
     tags:
       - desktop/*.*.*
