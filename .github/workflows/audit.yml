@@ -6,6 +6,10 @@ on:
     - cron: "0 0 * * *"
   pull_request:
 
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   audit-rust:
     runs-on: ubuntu-latest
