@@ -4,7 +4,7 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../frontend/app/dist/client",
+    "distDir": "../../frontend/app/dist/client",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "cd ../frontend/app && yarn dev",
     "beforeBuildCommand": "cd ../frontend/app && yarn build:client",
