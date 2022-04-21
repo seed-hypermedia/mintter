@@ -12,7 +12,8 @@
     "test": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run test",
     "app": "yarn workspace @mintter/app",
     "mttast": "yarn workspace @mintter/mttast",
-    "codegen": "graphql-codegen"
+    "codegen": "graphql-codegen",
+    "tauricon": "tauricon"
   },
   "workspaces": [
     "frontend/*"
