@@ -23,7 +23,7 @@
         "icons/icon.ico"
       ],
       "resources": [],
-      "externalBin": ["../../bazel-bin/mintterd"],
+      "externalBin": ["../../plz-out/bin/backend/mintterd"],
       "copyright": "",
       "category": "DeveloperTool",
       "shortDescription": "",
