@@ -4,7 +4,7 @@
     "version": "0.1.0"
   },
   "build": {
-    "distDir": "../../frontend/app/dist/client",
+    "distDir": "../../plz-out/gen/frontend/dist/client",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "cd ../frontend/app && yarn dev",
     "beforeBuildCommand": "cd ../frontend/app && yarn build:client",
@@ -29,13 +29,11 @@
       "shortDescription": "",
       "longDescription": "",
       "deb": {
-        "depends": [],
-        "useBootstrapper": false
+        "depends": []
       },
       "macOS": {
         "frameworks": [],
         "minimumSystemVersion": "",
-        "useBootstrapper": false,
         "exceptionDomain": "localhost",
         "signingIdentity": null,
         "entitlements": "Info.plist"
@@ -56,24 +54,36 @@
         "open": true
       },
       "window": {
-        "all": false
+        "all": false,
+        "startDragging": true,
+        "maximize": true,
+        "unmaximize": true
       }
     },
     "windows": [
       {
         "title": "Mintter",
         "width": 1000,
-        "height": 600,
+        "height": 800,
         "resizable": true,
         "fullscreen": false
       }
     ],
     "security": {
-      "csp": "default-src blob: data: filesystem: ws: wss: http: https: tauri: 'unsafe-eval' 'unsafe-inline' 'self' img-src: 'self'"
+      "freezePrototype": false,
+      "csp": "default-src 'self' style-src 'self' 'unsafe-inline' connect-src http://localhost:55001"
     },
     "systemTray": {
       "iconPath": "./icons/tray_icon_with_transparency.png",
       "iconAsTemplate": true
+    },
+    "cli": {
+      "args": [
+        {
+          "name": "daemon-flags",
+          "takesValue": true
+        }
+      ]
     }
   }
 }
