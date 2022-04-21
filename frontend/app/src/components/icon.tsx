@@ -1,7 +1,7 @@
-import { CSS, styled } from '@app/stitches.config'
+import {CSS, styled} from '@app/stitches.config'
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
 import type * as Stitches from '@stitches/react'
-import React, { useMemo } from 'react'
+import React, {useMemo} from 'react'
 
 export const Svg = styled('svg', {
   fill: 'none',
@@ -120,7 +120,7 @@ export const icons = {
   PencilAdd,
   Sidepanel,
   Sidenav,
-  Reload
+  Reload,
 }
 
 export type IconProps = Stitches.VariantProps<typeof Svg> & {
@@ -128,7 +128,7 @@ export type IconProps = Stitches.VariantProps<typeof Svg> & {
   css?: CSS
 }
 
-export function Icon({ name, ...props }: IconProps) {
+export function Icon({name, ...props}: IconProps) {
   const Component: React.ComponentType<any> = useMemo(() => icons[name], [name])
   const label = useMemo(
     () => `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'} Icon`,
@@ -556,7 +556,7 @@ function Grid4(props: Stitches.VariantProps<typeof Svg>) {
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
       <path
-        d="M8.5 17a1 1 0 100-2 1 1 0 000 2zM15.5 17a1 1 0 100-2 1 1 0 000 2zM8.5 10a1 1 0 100-2 1 1 0 000 2zM15.5 10a1 1 0 100-2 1 1 0 000 2z"
+        d="M8.5 17a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM15.5 17a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM8.5 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM15.5 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
         fill="currentColor"
         stroke="currentColor"
         strokeLinecap="round"
@@ -718,10 +718,10 @@ function OpenInNewWindow(props: Stitches.VariantProps<typeof Svg>) {
   return (
     <Svg width={24} height={24} viewBox="0 0 15 15" {...props}>
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
         d="M12 13C12.5523 13 13 12.5523 13 12V3C13 2.44771 12.5523 2 12 2H3C2.44771 2 2 2.44771 2 3V6.5C2 6.77614 2.22386 7 2.5 7C2.77614 7 3 6.77614 3 6.5V3H12V12H8.5C8.22386 12 8 12.2239 8 12.5C8 12.7761 8.22386 13 8.5 13H12ZM9 6.5C9 6.5001 9 6.50021 9 6.50031V6.50035V9.5C9 9.77614 8.77614 10 8.5 10C8.22386 10 8 9.77614 8 9.5V7.70711L2.85355 12.8536C2.65829 13.0488 2.34171 13.0488 2.14645 12.8536C1.95118 12.6583 1.95118 12.3417 2.14645 12.1464L7.29289 7H5.5C5.22386 7 5 6.77614 5 6.5C5 6.22386 5.22386 6 5.5 6H8.5C8.56779 6 8.63244 6.01349 8.69139 6.03794C8.74949 6.06198 8.80398 6.09744 8.85143 6.14433C8.94251 6.23434 8.9992 6.35909 8.99999 6.49708L8.99999 6.49738"
         fill="currentColor"
+        fillRule="evenodd"
+        clipRule="evenodd"
       ></path>
     </Svg>
   )

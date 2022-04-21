@@ -1,5 +1,6 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {useHoverBlockId} from '@app/editor/hover-context'
+import {Box} from '@components/box'
 import type {Statement as StatementType} from '@mintter/mttast'
 import {isFlowContent, isGroupContent, isParagraph, isStatement} from '@mintter/mttast'
 import {Editor, Element, Node, NodeEntry, Path, Transforms} from 'slate'
@@ -7,7 +8,6 @@ import type {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {isFirstChild} from '../utils'
-import {StatementUI} from './statement-ui'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -110,27 +110,19 @@ function addParagraphToNestedGroup(editor: Editor, entry: NodeEntry<StatementTyp
 
 function Statement({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
   const hoverId = useHoverBlockId()
+  let blockProps = {
+    'data-element-type': element.type,
+    'data-element-id': (element as StatementType).id,
+    ...attributes,
+  }
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return (
-      <span data-element-type={element.type} data-element-id={element.id} {...attributes}>
-        {children}
-      </span>
-    )
+    return <span {...blockProps}>{children}</span>
   }
 
   return (
-    <StatementUI
-      data-element-type={element.type}
-      data-element-id={(element as StatementType).id}
-      {...attributes}
-      css={{
-        backgroundColor: hoverId == (element as StatementType).id ? '$block-hover' : 'transparent',
-      }}
-    >
-      <BlockWrapper element={element} mode={mode} attributes={attributes}>
-        {children}
-      </BlockWrapper>
-    </StatementUI>
+    <BlockWrapper element={element as StatementType} mode={mode} attributes={attributes}>
+      <Box {...blockProps}>{children}</Box>
+    </BlockWrapper>
   )
 }
 

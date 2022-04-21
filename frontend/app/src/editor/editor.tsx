@@ -1,4 +1,5 @@
 import {useHover} from '@app/editor/hover-context'
+import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
@@ -23,7 +24,12 @@ interface EditorProps {
   editor?: EditorType
   plugins?: Array<EditorPlugin>
   as?: any
+  className?: string
 }
+
+const editorWrapperStyles = css({
+  position: 'relative',
+})
 
 export function Editor({
   value,
@@ -33,6 +39,7 @@ export function Editor({
   editor,
   plugins = defaultPlugins,
   as = 'div',
+  className,
 }: PropsWithChildren<EditorProps>) {
   const _editor = useMemo(() => editor ?? buildEditorHook(plugins, mode), [editor, plugins, mode])
   const renderElement = useMemo(() => buildRenderElementHook(plugins, _editor), [plugins, _editor])
@@ -44,7 +51,7 @@ export function Editor({
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <span onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}>
+        <Box as="span" className={className} onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}>
           <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
             <Editable
               as={as}
@@ -57,7 +64,7 @@ export function Editor({
               {...eventHandlers}
             />
           </Slate>
-        </span>
+        </Box>
       </Suspense>
     )
   }
@@ -65,12 +72,7 @@ export function Editor({
   if (mode == EditorMode.Publication || mode == EditorMode.Discussion) {
     return (
       <Suspense fallback={'loading'}>
-        <Box
-          css={{
-            position: 'relative',
-          }}
-          onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
-        >
+        <Box className={className} css={{position: 'relative'}} onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}>
           <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
             <Editable
               readOnly={true}
@@ -89,12 +91,7 @@ export function Editor({
 
   return (
     <Suspense fallback={'loading'}>
-      <Box
-        css={{
-          position: 'relative',
-        }}
-        onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
-      >
+      <Box className={className} css={{position: 'relative'}} onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}>
         <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
           <HoveringToolbar />
           <Editable

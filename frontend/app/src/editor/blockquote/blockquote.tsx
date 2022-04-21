@@ -1,7 +1,16 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {styled} from '@app/stitches.config'
-import {Blockquote as BlockquoteType, createId, isBlockquote, paragraph, statement, text} from '@mintter/mttast'
+import {css} from '@app/stitches.config'
+import {Box} from '@components/box'
+import {
+  Blockquote as BlockquoteType,
+  createId,
+  FlowContent,
+  isBlockquote,
+  paragraph,
+  statement,
+  text,
+} from '@mintter/mttast'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {statementStyle} from '../statement'
@@ -55,22 +64,27 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
   },
 })
 
-export var BlockQuoteUI = styled('li', statementStyle, {
-  // marginTop: '$6',
-  // marginBottom: '$6',
-  marginVertical: '$4',
+export var blockquoteStyle = css(statementStyle, {
+  paddingLeft: '$3',
+  borderLeft: '2px solid $colors$primary-softer',
 })
 
 function BlockQuote({element, attributes, children, mode}: RenderElementProps & {mode: EditorMode}) {
+  let blockProps = {
+    'data-element-type': element.type,
+    'data-element-id': (element as BlockquoteType).id,
+    ...attributes,
+  }
+
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return <span {...attributes}>{children}</span>
+    return <span {...blockProps}>{children}</span>
   }
 
   return (
-    <BlockQuoteUI data-element-type={element.type} data-element-id={(element as BlockquoteType).id} {...attributes}>
-      <BlockWrapper element={element} attributes={attributes} mode={mode}>
+    <BlockWrapper element={element as FlowContent} attributes={attributes} mode={mode}>
+      <Box className={blockquoteStyle()} {...blockProps}>
         {children}
-      </BlockWrapper>
-    </BlockQuoteUI>
+      </Box>
+    </BlockWrapper>
   )
 }

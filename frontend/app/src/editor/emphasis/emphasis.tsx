@@ -1,7 +1,12 @@
+import {styled} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
 import {toggleMark} from '../utils'
 
 export const MARK_EMPHASIS = 'emphasis'
+
+export const Emphasis = styled('em', {
+  fontStyle: 'italic',
+})
 
 export const createEmphasisPlugin = (): EditorPlugin => ({
   name: MARK_EMPHASIS,
@@ -9,7 +14,7 @@ export const createEmphasisPlugin = (): EditorPlugin => ({
     () =>
     ({attributes, children, leaf}) => {
       if (leaf[MARK_EMPHASIS] && leaf.value) {
-        return <em {...attributes}>{children}</em>
+        return <Emphasis {...attributes}>{children}</Emphasis>
       }
     },
   onDOMBeforeInput: (editor) => (ev) => {

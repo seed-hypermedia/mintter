@@ -1,10 +1,10 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
-import {styled} from '@app/stitches.config'
+import {css, styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import type {Code as CodeType} from '@mintter/mttast'
 import {createId, isCode, isParagraph, paragraph, statement, text} from '@mintter/mttast'
 import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
-import {getHighlighter, setCDN} from 'shiki'
+import {getHighlighter} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useSlateStatic} from 'slate-react'
@@ -30,17 +30,13 @@ const SelectorWrapper = styled('div', {
   transition: 'opacity 0.5s',
 })
 
-export const CodeStyled = styled('pre', statementStyle, {
+export const codeStyle = css(statementStyle, {
   position: 'relative',
-  background: '$background-neutral-soft',
   borderRadius: '$2',
   '&:hover': {
     [`${SelectorWrapper}`]: {
       opacity: 1,
     },
-  },
-  '& p': {
-    color: 'white !important',
   },
 })
 
@@ -51,7 +47,7 @@ interface CodePluginProps {
 export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
   const {theme = 'github-dark'} = props
 
-  setCDN('/shiki/')
+  // setCDN('/shiki/')
 
   return {
     name: ELEMENT_CODE,
@@ -174,41 +170,44 @@ function Code({
 
   let lang = element.lang || ''
 
+  let blockProps = {
+    'data-element-type': element.type,
+    'data-element-id': (element as CodeType).id,
+    ...attributes,
+  }
+
+  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+    return (
+      <Box className={codeStyle()} {...blockProps}>
+        {children}
+      </Box>
+    )
+  }
+
   return (
-    <CodeStyled data-element-type={element.type} data-element-id={element.id} {...attributes}>
-      {mode == EditorMode.Draft ? (
-        <SelectorWrapper
-          contentEditable={false}
-          css={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            transform: 'translate(8px, -8px)',
-            zIndex: 2,
-          }}
-        >
-          <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
-            <option value="">Select a Language</option>
-            <option value="javascript">JavaScript</option>
-            <option value="typescript">TypeScript</option>
-            <option value="go">Golang</option>
-          </select>
-        </SelectorWrapper>
-      ) : null}
-      <BlockWrapper element={element} attributes={attributes} mode={mode}>
-        <Box
-          as="code"
-          css={{
-            display: 'block',
-            paddingVertical: '$4',
-            paddingHorizontal: '$6',
-            borderRadius: '$2',
-            position: 'relative',
-          }}
-        >
-          {children}
-        </Box>
-      </BlockWrapper>
-    </CodeStyled>
+    <BlockWrapper element={element} attributes={attributes} mode={mode}>
+      <Box className={codeStyle()} {...blockProps}>
+        {mode == EditorMode.Draft ? (
+          <SelectorWrapper
+            contentEditable={false}
+            css={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              transform: 'translate(8px, -8px)',
+              zIndex: 2,
+            }}
+          >
+            <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
+              <option value="">Select a Language</option>
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="go">Golang</option>
+            </select>
+          </SelectorWrapper>
+        ) : null}
+        {children}
+      </Box>
+    </BlockWrapper>
   )
 }

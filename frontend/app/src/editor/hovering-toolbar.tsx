@@ -50,9 +50,10 @@ const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(({children, ...
     {...props}
     ref={ref}
     css={{
-      padding: '8px 7px 6px',
+      boxShadow: '$menu',
+      padding: 0,
       position: 'absolute',
-      zIndex: 1,
+      zIndex: '$max',
       top: '-1000000000px',
       left: '-1000000000px',
       marginTop: '-6px',
@@ -64,7 +65,7 @@ const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(({children, ...
         display: 'inline-block',
       },
       '& > * + *': {
-        marginLeft: 15,
+        marginLeft: 4,
       },
     }}
   >
@@ -119,6 +120,9 @@ export function HoveringToolbar() {
       el.removeAttribute('style')
       return
     }
+
+    console.log({storeFocus, lastSelection, editorSelection: editor.selection})
+
     const domRange = ReactEditor.toDOMRange(editor, selection)
     const rect = domRange.getBoundingClientRect()
     el.style.opacity = '1'

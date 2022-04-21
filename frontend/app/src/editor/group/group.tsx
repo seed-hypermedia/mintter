@@ -1,5 +1,6 @@
-import {css, styled} from '@app/stitches.config'
-import {createId, isFlowContent, isGroup, isGroupContent, statement} from '@mintter/mttast'
+import {css} from '@app/stitches.config'
+import {Box} from '@components/box'
+import {createId, GroupingContent, isFlowContent, isGroup, isGroupContent, statement} from '@mintter/mttast'
 import {forwardRef} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
@@ -10,16 +11,12 @@ import {resetGroupingContent} from '../utils'
 export const ELEMENT_GROUP = 'group'
 
 export const groupStyle = css({
-  paddingLeft: 0,
-  [`&[data-element-type="orderedList"], &[data-element-type="unorderedList"]`]: {
-    marginLeft: 0,
-  },
-  '& p': {
-    listStyleType: 'none',
-  },
+  margin: 0,
+  paddingLeft: 30,
+  userSelect: 'none',
 })
 
-export const GroupUI = styled('ul', groupStyle)
+// export const GroupUI = styled('', groupStyle)
 
 export const createGroupPlugin = (): EditorPlugin => ({
   name: ELEMENT_GROUP,
@@ -28,7 +25,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isGroup(element)) {
         return (
-          <Group mode={editor.mode} element={element} attributes={attributes} css={{listStyleType: 'none'}}>
+          <Group mode={editor.mode} element={element} attributes={attributes} css={{}}>
             {children}
           </Group>
         )
@@ -88,8 +85,9 @@ export function removeEmptyGroup(editor: Editor, entry: NodeEntry<Node>): boolea
   }
 }
 
-export type GroupProps = RenderElementProps & {
+export type GroupProps = Omit<RenderElementProps, 'element'> & {
   mode: EditorMode
+  element: GroupingContent
 }
 
 export const Group = forwardRef<GroupProps, any>(({mode, attributes, element, ...props}: GroupProps, ref) => {
@@ -97,19 +95,14 @@ export const Group = forwardRef<GroupProps, any>(({mode, attributes, element, ..
     return null
   }
 
-  return <GroupUI data-element-type={element.type} {...attributes} ref={ref as any} {...props} />
+  return (
+    <Box
+      as={element.type == 'unorderedList' ? 'ul' : element.type == 'orderedList' ? 'ol' : 'div'}
+      className={groupStyle()}
+      data-element-type={element.type}
+      {...attributes}
+      ref={ref as any}
+      {...props}
+    />
+  )
 })
-
-// function addParentData(editor: Editor, entry: NodeEntry<GroupingContent>) {
-//   const [node, path] = entry
-//   if (!node?.data?.parent) {
-//     const parent = Editor.above(editor, {
-//       match: isFlowContent,
-//       at: path,
-//     })
-//     if (parent) {
-//       let [parentNode] = parent
-//       Transforms.setNodes(editor, {data: {parent: parentNode.id}}, {at: path})
-//     }
-//   }
-// }

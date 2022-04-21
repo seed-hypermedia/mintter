@@ -89,7 +89,7 @@ export function LibraryItem({
   }
 
   async function onOpenInNewWindow() {
-    await invoke('open_in_new_window', {url: href})
+    await invoke('open_in_new_window', {url: `/new${href}`})
   }
 
   let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'New Document'

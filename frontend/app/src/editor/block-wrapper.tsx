@@ -1,44 +1,49 @@
-import { MINTTER_LINK_PREFIX } from '@app/constants'
-import { BlockCitations } from '@app/editor/block-citations'
-import { BlockTools } from '@app/editor/block-tools'
-import { Dropdown } from '@app/editor/dropdown'
-import { useHoverBlockId } from '@app/editor/hover-context'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
-import { useRoute } from '@app/utils/use-route'
-import { bookmarksModel, useBookmarksService } from '@components/bookmarks'
-import { Button } from '@components/button'
-import { Icon } from '@components/icon'
-import { useCreateDraft } from '@components/library/use-create-draft'
-import { useSidepanel } from '@components/sidepanel'
-import { Text } from '@components/text'
-import { FlowContent } from '@mintter/mttast'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {BlockCitations} from '@app/editor/block-citations'
+import {BlockTools} from '@app/editor/block-tools'
+import {Dropdown} from '@app/editor/dropdown'
+import {useHover} from '@app/editor/hover-context'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {useRoute} from '@app/utils/use-route'
+import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {useCreateDraft} from '@components/library/use-create-draft'
+import {useSidepanel} from '@components/sidepanel'
+import {Text} from '@components/text'
+import {FlowContent, isCode, isHeading} from '@mintter/mttast'
+import {useActor} from '@xstate/react'
+import {MutableRefObject, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import { RenderElementProps } from 'slate-react'
-import { useLocation } from 'wouter'
+import {RenderElementProps} from 'slate-react'
 
 export function BlockWrapper({
+  attributes,
   element,
   children,
   mode,
-}: RenderElementProps & {
+}: Omit<RenderElementProps, 'element'> & {
   mode: EditorMode
+  element: FlowContent
 }) {
   const bookmarksService = useBookmarksService()
   const sidepanelService = useSidepanel()
-  const { createDraft } = useCreateDraft()
-  const hoverId = useHoverBlockId()
-  const { params } = useRoute<{ docId: string; version: string; blockId?: string }>([
+  const {createDraft} = useCreateDraft()
+  const hoverService = useHover()
+  const [hoverState, hoverSend] = useActor(hoverService)
+  const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
     '/p/:docId/:version/:blockId?',
     '/editor/:docId',
   ])
-  const [, setLocation] = useLocation()
+  // const [, setLocation] = useLocation()
 
   async function onCopy() {
     if (params) {
       //@ts-ignore
       await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${element.id}`)
-      toast.success('Statement Reference copied successfully', { position: 'top-center' })
+      toast.success('Statement Reference copied successfully', {position: 'top-center'})
     } else {
       toast.error('Cannot Copy Block ID')
     }
@@ -65,13 +70,60 @@ export function BlockWrapper({
     sidepanelService.send('SIDEPANEL.OPEN')
   }
 
+  let showHover = useMemo(
+    () => hoverState.context.blockId == element.id && element.children.length > 1,
+    [hoverState.context.blockId, element.id, element.children.length],
+  )
+
   return mode == EditorMode.Draft ? (
-    <>
-      <BlockTools element={element} />
-      {children}
-    </>
+    <Box
+      css={{
+        width: '$full',
+        position: 'relative',
+        maxWidth: '$prose-width',
+        userSelect: 'none',
+        paddingTop: '$4',
+      }}
+      onMouseEnter={() => {
+        hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+      }}
+    >
+      <Box
+        as="span"
+        contentEditable={false}
+        css={{
+          userSelect: 'none',
+          position: 'absolute',
+          height: isHeading(element) ? 'inherit' : '$full',
+          left: -30,
+          top: isCode(element) ? 12 : 16,
+        }}
+      >
+        <BlockTools element={element} />
+      </Box>
+      <Box
+        css={{
+          width: '$full',
+          maxWidth: '$prose-width',
+          userSelect: 'text',
+        }}
+      >
+        {children}
+      </Box>
+    </Box>
   ) : (
-    <>
+    <Box
+      css={{
+        width: '$full',
+        position: 'relative',
+        maxWidth: '$prose-width',
+        userSelect: 'none',
+        paddingTop: '$4',
+      }}
+      onMouseEnter={() => {
+        hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+      }}
+    >
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger asChild>
           <Button
@@ -79,17 +131,18 @@ export function BlockWrapper({
             size="1"
             color="muted"
             css={{
-              opacity: hoverId == (element as FlowContent).id ? 1 : 0,
+              opacity: hoverState.context.blockId == (element as FlowContent).id ? 1 : 0,
               padding: '$1',
-              backgroundColor: '$background-alt',
+              backgroundColor: '$hover',
               position: 'absolute',
               width: '24px',
               height: '24px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              right: 4,
+              right: -20,
               top: 4,
+              // userSelect: 'none',
             }}
           >
             <Icon name="MoreHorizontal" size="1" color="muted" />
@@ -121,6 +174,26 @@ export function BlockWrapper({
       </Dropdown.Root>
       {children}
       <BlockCitations blockId={(element as FlowContent).id} />
-    </>
+    </Box>
   )
+}
+
+export function useOnScreen(ref: MutableRefObject<any>, rootMargin: string = '0px') {
+  const [isVisible, setState] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setState(entry.isIntersecting)
+      },
+      {rootMargin},
+    )
+    if (ref && ref.current) {
+      observer.observe(ref.current)
+    }
+    return () => {
+      observer.unobserve(ref.current)
+    }
+  }, [])
+  return isVisible
 }

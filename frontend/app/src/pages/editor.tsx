@@ -79,12 +79,10 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
             borderBottom: '1px solid rgba(0,0,0,0.1)',
             position: 'sticky',
             top: 0,
-            zIndex: '$max',
-            padding: '$5',
-            '@bp2': {
-              paddingLeft: 80,
-            },
-            $$gap: '16px',
+            zIndex: '$4',
+            padding: '$3',
+            paddingLeft: 40,
+            $$gap: 24,
             display: 'flex',
             gap: '$$gap',
             alignItems: 'center',
@@ -115,52 +113,33 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
             }}
           />
         </Box>
-        <Box
-          data-testid="editor-wrapper"
-          css={{
-            padding: '$5',
-            paddingTop: '$8',
-            marginHorizontal: '$4',
-            paddingBottom: 300,
-            height: '100%',
-            '@bp2': {
-              marginHorizontal: '$9',
-            },
-          }}
-        >
-          <Box css={{width: '$full', maxWidth: '64ch', marginLeft: '-$7'}}>
-            {context.localDraft?.content && (
-              <>
-                <Editor
-                  editor={editor}
-                  value={context.localDraft.content}
-                  //@ts-ignore
-                  onChange={(content: ChildrenOf<Document>) => {
-                    if (!content && typeof content == 'string') return
-                    send({type: 'EDITOR.UPDATE', payload: {content}})
-                  }}
-                />
+        <Box data-testid="editor-wrapper">
+          {context.localDraft?.content && (
+            <Box css={{padding: '$7'}}>
+              <Editor
+                editor={editor}
+                value={context.localDraft.content}
+                //@ts-ignore
+                onChange={(content: ChildrenOf<Document>) => {
+                  console.log('onChange', content)
 
-                <Box css={{marginTop: 40}}>
-                  <button type="button" onClick={() => setVisible((v) => !v)}>
-                    toggle Value
-                  </button>
-                  {visible && (
-                    <Box
-                      as="pre"
-                      css={{
-                        padding: 20,
-                        backgroundColor: '$background-muted',
-                        overflowX: 'scroll',
-                      }}
-                    >
-                      {JSON.stringify(context.localDraft.content, null, 2)}
-                    </Box>
-                  )}
-                </Box>
-              </>
-            )}
-          </Box>
+                  if (!content && typeof content == 'string') return
+                  send({type: 'EDITOR.UPDATE', payload: {content}})
+                }}
+              />
+
+              <Box css={{marginVertical: '64px'}}>
+                <button type="button" onClick={() => setVisible((v) => !v)}>
+                  toggle Value
+                </button>
+                {visible && (
+                  <Box as="pre" css={{}}>
+                    {JSON.stringify(context.localDraft.content, null, 2)}
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          )}
         </Box>
         <Box
           css={{

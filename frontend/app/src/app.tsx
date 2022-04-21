@@ -1,11 +1,12 @@
 import {useAuth} from '@app/auth-context'
 import {startLogger} from '@app/utils/logger'
-import {Text} from '@components/text'
+import {LibraryShell} from '@components/library'
+import {TopbarStyled} from '@components/topbar'
 import {useActor} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {setLogger} from 'react-query'
-import {MainPage} from './pages/main-page'
+import {MainPage, MainPageShell, MainWindowShell} from './pages/main-page'
 import {globalCss} from './stitches.config'
 
 setLogger({
@@ -33,8 +34,10 @@ export function App() {
   const service = useAuth()
   const [state] = useActor(service)
 
+  // return <AppShell />
+
   if (state.matches('checkingAccount')) {
-    return <Text>Checking Account...</Text>
+    return <AppShell />
   }
 
   if (state.matches('loggedOut')) {
@@ -66,5 +69,15 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
       <pre>{error.message}</pre>
       <button onClick={resetErrorBoundary}>Try again</button>
     </div>
+  )
+}
+
+function AppShell() {
+  return (
+    <MainPageShell>
+      <TopbarStyled />
+      <LibraryShell />
+      <MainWindowShell />
+    </MainPageShell>
   )
 }

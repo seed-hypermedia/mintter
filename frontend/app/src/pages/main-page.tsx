@@ -1,26 +1,27 @@
-import { CitationsProvider, createCitationsMachine } from '@app/editor/citations'
-import { HoverProvider } from '@app/editor/hover-context'
-import { hoverMachine } from '@app/editor/hover-machine'
-import { MainPageProvider } from '@app/main-page-context'
-import { createMainPageMachine } from '@app/main-page-machine'
-import { css } from '@app/stitches.config'
-import { BookmarksProvider, createBookmarksMachine } from '@components/bookmarks'
-import { Box } from '@components/box'
-import { Library } from '@components/library'
-import { ScrollArea } from '@components/scroll-area'
-import { Settings } from '@components/settings'
-import { createSidepanelMachine, Sidepanel, SidepanelProvider } from '@components/sidepanel'
-import { Text } from '@components/text'
-import { Topbar } from '@components/topbar'
-import { useInterpret } from '@xstate/react'
-import { ReactNode } from 'react'
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
-import { QueryClient, useQueryClient } from 'react-query'
-import { Route, useLocation } from 'wouter'
+import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
+import {HoverProvider} from '@app/editor/hover-context'
+import {hoverMachine} from '@app/editor/hover-machine'
+import {MainPageProvider, useLibrary} from '@app/main-page-context'
+import {createMainPageMachine} from '@app/main-page-machine'
+import {css} from '@app/stitches.config'
+import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
+import {Box} from '@components/box'
+import {Library} from '@components/library'
+import {useCreateDraft} from '@components/library/use-create-draft'
+import {ScrollArea} from '@components/scroll-area'
+import {Settings} from '@components/settings'
+import {createSidepanelMachine, Sidepanel, SidepanelProvider} from '@components/sidepanel'
+import {Text} from '@components/text'
+import {Topbar} from '@components/topbar'
+import {useActor, useInterpret} from '@xstate/react'
+import {PropsWithChildren, useEffect} from 'react'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {QueryClient, useQueryClient} from 'react-query'
+import {Route, RouteComponentProps, Switch, useLocation} from 'wouter'
 import EditorPage from './editor'
 import Publication from './publication'
 
-export function MainPage({ client: propClient }: { client?: QueryClient }) {
+export function MainPage({client: propClient}: {client?: QueryClient}) {
   // eslint-disable-line
   const [location] = useLocation()
   const localClient = useQueryClient()
@@ -44,7 +45,9 @@ export function MainPage({ client: propClient }: { client?: QueryClient }) {
         <HoverProvider value={hoverService}>
           <BookmarksProvider value={bookmarksService}>
             <SidepanelProvider value={sidepanelService}>
-              {location.includes('settings') ? <Settings /> : (
+              {location.includes('settings') ? (
+                <Settings />
+              ) : (
                 <Box className={rootPageStyle()}>
                   <Topbar />
                   <Library />
@@ -55,9 +58,12 @@ export function MainPage({ client: propClient }: { client?: QueryClient }) {
                         window.location.reload()
                       }}
                     >
-                      <Route path="/p/:docId/:version/:blockId?" component={Publication} />
-                      <Route path="/editor/:docId" component={EditorPage} />
-                      <Route component={Placeholder} />
+                      <Switch>
+                        <Route path="/p/:docId/:version/:blockId?" component={Publication} />
+                        <Route path="/editor/:docId" component={EditorPage} />
+                        <Route path="/new/:type?/:docId?/:version?/:blockId?" component={NewWindow} />
+                        <Route component={Placeholder} />
+                      </Switch>
                     </ErrorBoundary>
                   </MainWindow>
                   <Sidepanel />
@@ -70,7 +76,6 @@ export function MainPage({ client: propClient }: { client?: QueryClient }) {
     </MainPageProvider>
   )
 }
-
 
 export var rootPageStyle = css({
   position: 'absolute',
@@ -92,18 +97,31 @@ export var rootPageStyle = css({
   background: '$background-default',
 })
 
-function MainWindow({ children }: { children: ReactNode }) {
+let mainWindowStyle = css({
+  gridArea: 'main',
+  position: 'relative',
+  overflow: 'auto',
+  backgroundColor: '$background-alt',
+})
+
+function MainWindow({children}: PropsWithChildren<{}>) {
   return (
-    <Box
-      css={{
-        gridArea: 'main',
-        overflow: 'scroll',
-        backgroundColor: '$background-alt',
-      }}
-    >
+    <Box className={mainWindowStyle()}>
       <ScrollArea>{children}</ScrollArea>
+      {/* {children} */}
     </Box>
   )
+}
+
+export function MainWindowShell({children, ...props}: PropsWithChildren<{}>) {
+  return (
+    <Box {...props} className={mainWindowStyle()}>
+      {children}
+    </Box>
+  )
+}
+export function MainPageShell(props: PropsWithChildren<{}>) {
+  return <Box {...props} className={rootPageStyle()} />
 }
 
 function Placeholder() {
@@ -124,7 +142,7 @@ function Placeholder() {
         alt
         fontWeight="bold"
         css={{
-          userSelect: 'none',
+          // userSelect: 'none',
           WebkitUserSelect: 'none',
           fontSize: 100,
           opacity: 0.5,
@@ -140,7 +158,7 @@ function Placeholder() {
   )
 }
 
-function PageError({ error, resetErrorBoundary }: FallbackProps) {
+function PageError({error, resetErrorBoundary}: FallbackProps) {
   return (
     <div role="alert">
       <p>Publication Error</p>
@@ -148,4 +166,36 @@ function PageError({ error, resetErrorBoundary }: FallbackProps) {
       <button onClick={resetErrorBoundary}>reload page</button>
     </div>
   )
+}
+
+type NewWindowProps = RouteComponentProps<{
+  type: 'p' | 'editor'
+  docId?: string
+  version?: string
+  blockId?: string
+}>
+
+function NewWindow({params}: NewWindowProps) {
+  const libService = useLibrary()
+  const [, libSend] = useActor(libService)
+  const [, setLocation] = useLocation()
+  const {createDraft} = useCreateDraft()
+
+  useEffect(() => {
+    setTimeout(() => {
+      libSend('LIBRARY.CLOSE')
+      if (params.type == 'p') {
+        let href = `/${params.type}/${params.docId}${
+          params.version ? `/${params.version}${params.blockId ? `/${params.blockId}` : ''}` : ''
+        }`
+        setLocation(href, {
+          replace: true,
+        })
+      } else {
+        createDraft()
+      }
+    }, 0)
+  }, [])
+
+  return null
 }

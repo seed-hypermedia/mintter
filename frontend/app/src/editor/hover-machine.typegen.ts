@@ -3,7 +3,8 @@
 export interface Typegen0 {
   '@@xstate/typegen': true
   eventsCausingActions: {
-    closing: 'LIBRARY.CLOSE'
+    assignBlockId: 'MOUSE_ENTER'
+    clearData: 'MOUSE_LEAVE'
   }
   internalEvents: {
     'xstate.init': {type: 'xstate.init'}
@@ -18,6 +19,6 @@ export interface Typegen0 {
   eventsCausingServices: {}
   eventsCausingGuards: {}
   eventsCausingDelays: {}
-  matchesStates: 'opened' | 'closed'
+  matchesStates: 'ready'
   tags: never
 }

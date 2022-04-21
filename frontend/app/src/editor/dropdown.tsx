@@ -23,21 +23,8 @@ const slideLeftAndFade = keyframes({
 
 export const dropdownContentStyle = css({
   minWidth: 220,
-  backgroundColor: '$background-muted',
-  borderRadius: 6,
-  padding: 5,
-  boxShadow: '0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)',
-  '@media (prefers-reduced-motion: no-preference)': {
-    animationDuration: '400ms',
-    animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-    willChange: 'transform, opacity',
-    '&[data-state="open"]': {
-      '&[data-side="top"]': {animationName: slideDownAndFade},
-      '&[data-side="right"]': {animationName: slideLeftAndFade},
-      '&[data-side="bottom"]': {animationName: slideUpAndFade},
-      '&[data-side="left"]': {animationName: slideRightAndFade},
-    },
-  },
+  background: '$background-alt',
+  boxShadow: '$menu',
 })
 
 export const dropdownItemStyle = css({
@@ -65,11 +52,7 @@ export const dropdownItemStyle = css({
 const DropdownContent = styled(DropdownMenuPrimitive.Content, dropdownContentStyle)
 const DropdownItem = styled(DropdownMenuPrimitive.Item, dropdownItemStyle)
 
-const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {
-  height: 1,
-  backgroundColor: '$background-neutral',
-  margin: 8,
-})
+const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {})
 
 export const Dropdown = {
   ...DropdownMenuPrimitive,
@@ -79,14 +62,13 @@ export const Dropdown = {
 }
 
 export var ElementDropdown = styled('button', {
-  border: 'none',
+  all: 'unset',
+  padding: 0,
+  width: 24,
+  height: 24,
+  borderRadius: '$2',
+  backgroundColor: '$hover',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  borderRadius: '$2',
-  padding: '$2',
-  transition: 'all ease-in-out 0.1s',
-  '&:hover': {
-    cursor: 'pointer',
-  },
 })
