@@ -63,8 +63,6 @@ jobs:
         env:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 1
-      - name: Debug
-        run: ls plz-out/bin/backend
       - uses: tauri-apps/tauri-action@v0
         env:
           APPLE_CERTIFICATE: "${{ secrets.APPLE_CERTIFICATE }}"
