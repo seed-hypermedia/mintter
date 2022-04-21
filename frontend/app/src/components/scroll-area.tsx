@@ -50,7 +50,7 @@ export const ScrollBarThumb = styled(ScrollAreaPrimitive.Thumb, {
 
 export function ScrollArea({children, orientation = 'vertical'}: any) {
   return (
-    <StyledScrollArea>
+    <StyledScrollArea type="hover">
       <ScrollViewport>{children}</ScrollViewport>
       <ScrollBar orientation={orientation}>
         <ScrollBarThumb />

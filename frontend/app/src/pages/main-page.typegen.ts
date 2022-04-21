@@ -3,21 +3,26 @@
 export interface Typegen0 {
   '@@xstate/typegen': true
   eventsCausingActions: {
-    closing: 'LIBRARY.CLOSE'
+    closeLibrary: 'xstate.init'
+    createNewDraft: ''
+    navigateToPublication: ''
   }
   internalEvents: {
+    '': {type: ''}
     'xstate.init': {type: 'xstate.init'}
   }
   invokeSrcNameMap: {}
   missingImplementations: {
-    actions: never
+    actions: 'closeLibrary' | 'createNewDraft' | 'navigateToPublication'
     services: never
-    guards: never
+    guards: 'hasNoParams'
     delays: never
   }
   eventsCausingServices: {}
-  eventsCausingGuards: {}
+  eventsCausingGuards: {
+    hasNoParams: ''
+  }
   eventsCausingDelays: {}
-  matchesStates: 'opened' | 'closed'
+  matchesStates: 'idle' | 'newDraft' | 'navigate'
   tags: never
 }

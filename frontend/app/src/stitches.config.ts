@@ -82,7 +82,8 @@ const stitches = createStitches({
       'danger-softer': '#DD8888',
       'danger-muted': '#F4D7D7',
       'danger-contrast': '#FFFFFF',
-      'block-hover': 'rgba(0,0,0,0.02)',
+      'hover': 'rgba(0,0,0,0.02)',
+      'menu-shadow': 'rgba(0, 0, 0, 0.1)'
     },
     fonts: {
       // default: '"Basier Circle", apple-system, sans-serif',
@@ -119,7 +120,8 @@ const stitches = createStitches({
     },
     shadows: {
       focus: '0 0 0 2px #808AFF',
-      3: '0px 4px 8px rgba(0, 0, 0, 0.02)',
+      menu: '0px 4px 8px $colors$menu-shadow',
+      3: '0px 4px 8px $colors$hover',
     },
     sizes: {
       none: '0px',
@@ -129,6 +131,7 @@ const stitches = createStitches({
       'two-thirds': '66.6666%',
       'three-quarters': '75%',
       full: '100%',
+      'prose-width': '80ch'
     },
     space: {
       0: 0,
@@ -156,10 +159,10 @@ const stitches = createStitches({
     bp3: '(min-width: 1400px)',
   },
   utils: {
-    marginHorizontal: (val: Stitches.ScaleValue<'space'> | string) => ({ marginLeft: val, marginRight: val }),
-    marginVertical: (val: Stitches.ScaleValue<'space'> | string) => ({ marginTop: val, marginBottom: val }),
-    paddingHorizontal: (val: Stitches.ScaleValue<'space'>) => ({ paddingLeft: val, paddingRight: val }),
-    paddingVertical: (val: Stitches.ScaleValue<'space'>) => ({ paddingTop: val, paddingBottom: val }),
+    marginHorizontal: (val: Stitches.ScaleValue<'space'> | string | number) => ({ marginLeft: val, marginRight: val }),
+    marginVertical: (val: Stitches.ScaleValue<'space'> | string | number) => ({ marginTop: val, marginBottom: val }),
+    paddingHorizontal: (val: Stitches.ScaleValue<'space' | string | number>) => ({ paddingLeft: val, paddingRight: val }),
+    paddingVertical: (val: Stitches.ScaleValue<'space' | string | number>) => ({ paddingTop: val, paddingBottom: val }),
   },
   themeMap: {
     ...defaultThemeMap,
@@ -306,7 +309,8 @@ export const darkTheme = createTheme('dark-theme', {
     'danger-softer': '#DD8888',
     'danger-muted': '#F4D7D7',
     'danger-contrast': '#FFFFFF',
-    'block-hover': 'rgba(255,255,255,0.04)'
+    'hover': 'rgba(255,255,255,0.04)',
+    'menu-shadow': 'rgba(255,255,255, 0.1)'
   },
 })
 

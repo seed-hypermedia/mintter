@@ -14,6 +14,7 @@ import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
+import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {document, FlowContent, group} from '@mintter/mttast'
@@ -63,8 +64,12 @@ export default function Publication({params}: PublicationPageProps) {
     }
   }
 
+  // if (state.matches('fetching')) {
+  //   return null
+  // }
+
   if (state.matches('fetching')) {
-    return <Text>loading...</Text>
+    return <PublicationShell />
   }
 
   // start rendering
@@ -87,20 +92,20 @@ export default function Publication({params}: PublicationPageProps) {
     )
   }
 
+  console.log(state.value, state.context)
+
   return (
     <>
       <Box
         css={{
           background: '$background-alt',
-          borderBottom: '1px solid $colors$block-hover',
+          borderBottom: '1px solid $colors$hover',
           position: 'sticky',
           top: 0,
-          zIndex: '$3',
-          padding: '$5',
-          '@bp2': {
-            paddingLeft: 80,
-          },
-          $$gap: '16px',
+          zIndex: '$4',
+          padding: '$3',
+          paddingLeft: 40,
+          $$gap: 16,
           display: 'flex',
           gap: '$$gap',
           alignItems: 'center',
@@ -151,55 +156,27 @@ export default function Publication({params}: PublicationPageProps) {
         />
       </Box>
       {state.matches('ready') && (
-        <Box
-          data-testid="publication-wrapper"
-          css={{
-            padding: '$5',
-            paddingTop: '$8',
-            marginHorizontal: '$4',
-            paddingBottom: 300,
-            height: '100%',
-            '@bp2': {
-              marginHorizontal: '$9',
-            },
-          }}
-        >
-          <Box css={{width: '$full', maxWidth: '64ch', marginLeft: '-$7'}}>
-            <Editor
-              mode={EditorMode.Publication}
-              value={state.context.publication?.document.content}
-              onChange={() => {
-                // noop
-              }}
-            />
-          </Box>
+        <Box css={{padding: '$7', paddingLeft: 0}} data-testid="publication-wrapper">
+          <Editor
+            mode={EditorMode.Publication}
+            value={state.context.publication?.document.content}
+            onChange={() => {
+              // noop
+            }}
+          />
         </Box>
       )}
       {state.matches('discussion') && (
-        <Box
-          data-testid="publication-wrapper"
-          css={{
-            padding: '$5',
-            paddingTop: '$8',
-            marginHorizontal: '$4',
-            paddingBottom: 300,
-            height: '100%',
-            '@bp2': {
-              marginHorizontal: '$9',
-            },
-          }}
-        >
-          <Box css={{width: '$full', maxWidth: '64ch'}}>
-            {state.matches('discussion.ready') && state.context.links?.length != 0 ? (
-              // <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
-              <Discussion links={state.context.links} />
-            ) : (
-              <>
-                <Text>There is no Discussion yet.</Text>
-                <Button size="1">Start one</Button>
-              </>
-            )}
-          </Box>
+        <Box data-testid="publication-wrapper" css={{padding: '$7'}}>
+          {state.matches('discussion.ready') && state.context.links?.length != 0 ? (
+            // <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
+            <Discussion links={state.context.links} />
+          ) : (
+            <>
+              <Text>There is no Discussion yet.</Text>
+              <Button size="1">Start one</Button>
+            </>
+          )}
         </Box>
       )}
       <Box
@@ -208,12 +185,9 @@ export default function Publication({params}: PublicationPageProps) {
           width: '$full',
           position: 'absolute',
           bottom: 0,
-          zIndex: '$3',
+          zIndex: '$4',
           padding: '$5',
-
-          '@bp2': {
-            paddingLeft: 80,
-          },
+          paddingLeft: 40,
           '&:after': {
             content: '',
             position: 'absolute',
@@ -223,7 +197,7 @@ export default function Publication({params}: PublicationPageProps) {
             top: -20,
             left: 0,
           },
-          $$gap: '24px',
+          $$gap: 24,
           display: 'flex',
           gap: '$$gap',
           alignItems: 'center',
@@ -339,167 +313,167 @@ export type PublicationEvent =
   | {type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any}
   | {type: 'REPORT.DISCUSSION.ERROR'; errorMessage: string}
 
-export const publicationMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6bCTMAYgAUBVAIQAyASQDCAQQAqwgPIA5ZgDEAopNEAJZgBEp4xChKxsxcvpAAPRAEYADAGZmdgBx2A7K6tOnANjsAWK28AGhAAT0QnPxtmG1cAVjsATlinBNdEqwBfTJC0LDwiUkoaekYWADMwQlKyKB4BEQlpeWYAJWVuGVbJZgBlXlFRZV7es2RDYyKzSwQrOL9mVz8EqyWrAJtvOIAmEPCEKLjmLdXtn1tvG0TE7NyMHAITYtoGJmZK6te6viExKVkFO1Ot1mMpWq0umMJk9pohEu5Fr4lps7Ns4ok-MEwhFIo4-B43C4rIltoFbiA8g9CuRqC8yswAE5gfAQUL1X5NAFKVQabS6KFGGFICyIdHMQKJOLpNFOGx+JxWXbYhBxBLMdHwnZLHbbbbkykFJ60mosJkstmSGQAcStgmU2mEvVEvBGAIFk1MwpmEpi3nWNily02cyx+1WrmY2xsNlszlW0dcTn190NRWNrxYEGwsFwqFgRnIrHYXHdQtAM3cVnVkpc3m88ICdjse2sdiOHlJdjrXfsVk8yfyjzTJQzzCzObzBbI7yqNTqQK6PS0judrpa-UGw1GwvGgqmXsQrm8Ee2qP883xfjOVhbCDjzFlq0iXlWbciA6pRpH9PHufzRRnT5GHnDpFwdJ0XV6LkwQhVpS33cscW2Rw7BjK85gDTFXFvOIFWOWUThjbwr3fHIKRTIcaW-N5f0nACzVZThLRtO1wNXKD5Hgz1ENmPsjlPHZJVQpxT0CW8u2QpsRL9RJZXhOUP1TKi6Ro7M-ynRlmUYn5Gn+FoVDUTQdEkPQd2hBCRV4uZIzbbYhJsES7DE5ViSrTZtVJOIHNiXDFMo54TTHNS6PITgIHIFhYEIIgWANfz0x-YL-24ilzJS70vOQuUX0CfwuzmcT4RiJJ3FiJsjz9PzqQC0cwAZBkSCZCB2V05oFAM3ljNMgw93SuFEwfWTOz9Y9PNvesnEcESPD8VDEyWPVyTIEgIDgMYKOqhK3jYDguLIWEDiVfYZuOVw0VwlwMS87wqq-FSKlnL49oOzE3NcNxzpJdZsOVLwsqc-Ekl8P0llu4d7s081noPO8I3xbwXCWZIPqiPxb1caIEauXDvDOexElRMHlMC2jkunHawGhnjfAWWSolkjGrFsm9lTRZDkc2aa7MuEkiZqxKJzJwC5ypyytXFU8AnibmlmbZVVXZ5ZtnQ08m2VvmtszJKNIY-Yeo9faYdsTxxWDD6-sVW80USdVcNVfxtj9dEyTIuLNuorXBY08pGGzOhRe9NwHF8D6djlV6Wf2Nw3N1HxMS2bs7A1j2gq9izdwNg6vIcRV-FWQTjyvH79lxxYoiPfEMlSTwbldja7sCuqGqagPrDSSMnETRUbDs+x4lvTvvEjTYolieJLi2ZP7tb2YHHhxG-GRs7UdvChbBsgN6z9FwFVJbJsiAA */
-  createMachine(
-    {
-      context: {
-        id: '',
-        version: '',
-        publication: null,
-        errorMessage: '',
-        canUpdate: false,
-        links: [],
-        discussion: null,
+export const publicationMachine = createMachine(
+  {
+    context: {
+      id: '',
+      version: '',
+      publication: null,
+      errorMessage: '',
+      canUpdate: false,
+      links: [],
+      discussion: null,
+    },
+    tsTypes: {} as import('./publication.typegen').Typegen0,
+    schema: {context: {} as PublicationContextType, events: {} as PublicationEvent},
+    id: 'publication-machine',
+    initial: 'idle',
+    states: {
+      idle: {
+        on: {
+          'PUBLICATION.FETCH.DATA': {
+            actions: ['assignId', 'assignVersion'],
+            target: '#publication-machine.fetching',
+          },
+        },
       },
-      tsTypes: {} as import('./publication.typegen').Typegen0,
-      schema: {context: {} as PublicationContextType, events: {} as PublicationEvent},
-      id: 'publication-machine',
-      initial: 'idle',
-      states: {
-        idle: {
-          on: {
-            'PUBLICATION.FETCH.DATA': {
-              actions: ['assignId', 'assignVersion'],
-              target: '#publication-machine.fetching',
-            },
+      fetching: {
+        tags: ['pending'],
+        invoke: {
+          src: 'fetchPublicationData',
+        },
+        on: {
+          'PUBLICATION.REPORT.SUCCESS': {
+            actions: ['assignPublication', 'assignCanUpdate'],
+            target: '#publication-machine.ready',
+          },
+          'PUBLICATION.REPORT.ERROR': {
+            actions: 'assignError',
+            target: '#publication-machine.errored',
           },
         },
-        fetching: {
-          invoke: {
-            src: 'fetchPublicationData',
+      },
+      ready: {
+        on: {
+          'PUBLICATION.FETCH.DATA': {
+            actions: ['assignId', 'assignVersion'],
+            target: '#publication-machine.fetching',
           },
-          on: {
-            'PUBLICATION.REPORT.SUCCESS': {
-              actions: ['assignPublication', 'assignCanUpdate'],
-              target: '#publication-machine.ready',
-            },
-            'PUBLICATION.REPORT.ERROR': {
-              actions: 'assignError',
-              target: '#publication-machine.errored',
-            },
+          'TOGGLE.DISCUSSION': {
+            target: '#publication-machine.discussion',
           },
         },
-        ready: {
-          on: {
-            'PUBLICATION.FETCH.DATA': {
-              actions: ['assignId', 'assignVersion'],
-              target: '#publication-machine.fetching',
+      },
+      discussion: {
+        initial: 'idle',
+        states: {
+          idle: {
+            always: [
+              {
+                cond: 'isDiscussionFetched',
+                target: '#publication-machine.discussion.fetching',
+              },
+              {
+                target: '#publication-machine.discussion.ready',
+              },
+            ],
+          },
+          fetching: {
+            tags: ['pending'],
+            invoke: {
+              src: 'fetchDiscussionData',
+              id: 'fetchDiscussionData',
             },
-            'TOGGLE.DISCUSSION': {
-              target: '#publication-machine.discussion',
+            on: {
+              'REPORT.DISCUSSION.SUCCESS': {
+                actions: ['assignLinks', 'assignDiscussion'],
+                target: '#publication-machine.discussion.ready',
+              },
+              'REPORT.DISCUSSION.ERROR': {
+                actions: 'assignError',
+                target: '#publication-machine.discussion.finish',
+              },
             },
           },
-        },
-        discussion: {
-          initial: 'idle',
-          states: {
-            idle: {
-              always: [
-                {
-                  cond: 'isDiscussionFetched',
-                  target: '#publication-machine.discussion.fetching',
-                },
-                {
-                  target: '#publication-machine.discussion.ready',
-                },
-              ],
-            },
-            fetching: {
-              invoke: {
-                src: 'fetchDiscussionData',
-                id: 'fetchDiscussionData',
+          ready: {
+            on: {
+              'TOGGLE.DISCUSSION': {
+                target: '#publication-machine.discussion.finish',
               },
-              on: {
-                'REPORT.DISCUSSION.SUCCESS': {
-                  actions: ['assignLinks', 'assignDiscussion'],
-                  target: '#publication-machine.discussion.ready',
-                },
-                'REPORT.DISCUSSION.ERROR': {
-                  actions: 'assignError',
-                  target: '#publication-machine.discussion.finish',
-                },
+              'PUBLICATION.FETCH.DATA': {
+                actions: ['clearLinks', 'clearDiscussion', 'clearError'],
+                target: '#publication-machine.discussion.finish',
               },
-            },
-            ready: {
-              on: {
-                'TOGGLE.DISCUSSION': {
-                  target: '#publication-machine.discussion.finish',
-                },
-                'PUBLICATION.FETCH.DATA': {
-                  actions: ['clearLinks', 'clearDiscussion', 'clearError'],
-                  target: '#publication-machine.discussion.finish',
-                },
-              },
-            },
-            errored: {
-              on: {
-                'TOGGLE.DISCUSSION': {
-                  actions: ['clearLinks', 'clearDiscussion', 'clearError'],
-                  target: '#publication-machine.discussion.fetching',
-                },
-              },
-            },
-            finish: {
-              type: 'final',
             },
           },
-          onDone: [
-            {
-              target: '#publication-machine.ready',
+          errored: {
+            on: {
+              'TOGGLE.DISCUSSION': {
+                actions: ['clearLinks', 'clearDiscussion', 'clearError'],
+                target: '#publication-machine.discussion.fetching',
+              },
             },
-          ],
+          },
+          finish: {
+            type: 'final',
+          },
         },
-        errored: {
-          on: {
-            'PUBLICATION.FETCH.DATA': {
-              actions: ['assignId', 'assignVersion'],
-              target: '#publication-machine.fetching',
-            },
+        onDone: [
+          {
+            target: '#publication-machine.ready',
+          },
+        ],
+      },
+      errored: {
+        on: {
+          'PUBLICATION.FETCH.DATA': {
+            actions: ['assignId', 'assignVersion'],
+            target: '#publication-machine.fetching',
           },
         },
       },
     },
-    {
-      guards: {
-        isDiscussionFetched: (context) => {
-          return context.links != null
-        },
-      },
-      actions: {
-        assignId: assign({
-          id: (_, event) => event.id,
-        }),
-        assignVersion: assign({
-          version: (_, event) => event.version || '',
-        }),
-        assignPublication: assign({
-          publication: (_, event) => event.publication,
-        }),
-        assignCanUpdate: assign({
-          canUpdate: (_, event) => Boolean(event.canUpdate),
-        }),
-        assignDiscussion: assign({
-          discussion: (_, event) => event.discussion,
-        }),
-        assignLinks: assign({
-          links: (_, event) => event.links,
-        }),
-        assignError: assign({
-          errorMessage: (_, event) => event.errorMessage,
-        }),
-        clearDiscussion: assign({
-          discussion: (context) => null,
-        }),
-        clearError: assign({
-          errorMessage: (context) => '',
-        }),
-        clearLinks: assign({
-          links: (context) => null,
-        }),
+  },
+  {
+    guards: {
+      isDiscussionFetched: (context) => {
+        return context.links != null
       },
     },
-  )
+    actions: {
+      assignId: assign({
+        id: (_, event) => event.id,
+      }),
+      assignVersion: assign({
+        version: (_, event) => event.version || '',
+      }),
+      assignPublication: assign({
+        publication: (_, event) => event.publication,
+      }),
+      assignCanUpdate: assign({
+        canUpdate: (_, event) => Boolean(event.canUpdate),
+      }),
+      assignDiscussion: assign({
+        discussion: (_, event) => event.discussion,
+      }),
+      assignLinks: assign({
+        links: (_, event) => event.links,
+      }),
+      assignError: assign({
+        errorMessage: (_, event) => event.errorMessage,
+      }),
+      clearDiscussion: assign({
+        discussion: (context) => null,
+      }),
+      clearError: assign({
+        errorMessage: (context) => '',
+      }),
+      clearLinks: assign({
+        links: (context) => null,
+      }),
+    },
+  },
+)
 
 function TippingModal({
   visible = false,
@@ -737,7 +711,7 @@ function DiscussionItem({link}: {link: Link}) {
   }, [])
 
   if (state.hasTag('pending')) {
-    return <span>loading...</span>
+    return null
   }
 
   const {block, publication} = state.context
@@ -904,5 +878,53 @@ export function createDiscussionMachine(client: QueryClient) {
         }),
       },
     },
+  )
+}
+
+function PublicationShell() {
+  const [state] = useMachine(
+    createMachine({
+      initial: 'idle',
+      states: {
+        idle: {
+          after: {
+            100: {
+              target: 'delayed',
+            },
+          },
+        },
+        delayed: {
+          type: 'final',
+        },
+      },
+    }),
+  )
+
+  return (
+    <Box
+      css={{
+        width: '$full',
+        padding: '$7',
+        paddingTop: '$9',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$7',
+      }}
+    >
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+    </Box>
+  )
+}
+
+function BlockPlaceholder() {
+  return (
+    <Box css={{width: '$prose-width', display: 'flex', flexDirection: 'column', gap: '$3'}}>
+      <Placeholder css={{height: 24, width: '$full'}} />
+      <Placeholder css={{height: 24, width: '92%'}} />
+      <Placeholder css={{height: 24, width: '84%'}} />
+      <Placeholder css={{height: 24, width: '90%'}} />
+    </Box>
   )
 }

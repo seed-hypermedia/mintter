@@ -217,6 +217,8 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
           const isContentNotEqual = !isEqual(context.localDraft?.content, context.prevDraft?.content)
           const isTitleNotEqual = !isEqual(context.localDraft?.title, context.prevDraft?.title)
           const isSubtitleNotEqual = !isEqual(context.localDraft?.subtitle, context.prevDraft?.subtitle)
+          console.log('isValueDirty', { isContentNotEqual, isTitleNotEqual, isSubtitleNotEqual });
+
           return isContentNotEqual || isTitleNotEqual || isSubtitleNotEqual
         },
         maxRetriesReached: (context) => context.retries == 5

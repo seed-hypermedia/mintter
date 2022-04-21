@@ -1,15 +1,33 @@
-import {FlowContent, isBlockquote, isCode, isEmbed, isParagraph, isPhrasingContent} from '@mintter/mttast'
-import {Element, Node, Path, Transforms} from 'slate'
+import {css} from '@app/stitches.config'
+import {Box} from '@components/box'
+import {FlowContent, isBlockquote, isCode, isGroupContent, isParagraph, isPhrasingContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
-import {visit} from 'unist-util-visit'
 import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {findPath} from '../utils'
-import {ParagraphUI} from './paragraph-ui'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
+export const paragraphStyles = css({
+  fontFamily: '$alt',
+  margin: 0,
+  padding: 0,
+  lineHeight: '$3',
+  '&[data-parent-type=blockquote]': {
+    fontStyle: 'italic',
+    color: '$text-alt',
+  },
+  '&[data-parent-type=code]': {
+    fontFamily: 'monospace',
+    margin: 0,
+    padding: 0,
+    backgroundColor: '$background-neutral-soft',
+    paddingHorizontal: '$4',
+  },
+})
 export const createParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_PARAGRAPH,
   renderElement:
@@ -49,23 +67,39 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
   const path = findPath(element)
   const parentNode = Node.parent(editor, path)
   const hoverService = useHover()
+  const parentGroup = useParentGroup(editor, path)
+  let as =
+    mode == EditorMode.Embed || mode == EditorMode.Mention
+      ? 'span'
+      : isCode(parentNode)
+      ? 'span'
+      : isBlockquote(parentNode)
+      ? 'blockquote'
+      : parentGroup == 'orderedList' || parentGroup == 'unorderedList'
+      ? 'li'
+      : 'p'
 
   return (
-    <ParagraphUI
-      as={
-        mode == EditorMode.Embed || mode == EditorMode.Mention
-          ? 'span'
-          : isCode(parentNode)
-          ? 'span'
-          : isBlockquote(parentNode)
-          ? 'blockquote'
-          : 'p'
-      }
+    <Box
+      className={paragraphStyles()}
+      as={as}
       data-element-type={element.type}
       css={{
-        display: mode == EditorMode.Embed ? 'inline' : 'inherit',
+        userSelect: 'text',
+        display:
+          mode == EditorMode.Embed
+            ? 'inline'
+            : parentGroup == 'orderedList' || parentGroup == 'unorderedList'
+            ? 'list-item'
+            : 'inherit',
+        marginLeft:
+          mode == EditorMode.Embed ? 0 : parentGroup == 'orderedList' || parentGroup == 'unorderedList' ? 16 : 0,
+        lineHeight: '$4',
+        '&::marker': {
+          color: '$text-muted',
+          fontSize: '$2',
+        },
       }}
-      // style={{paddingLeft: isBlockquote(parentNode) ? '24px' : '0'}}
       data-parent-type={(parentNode as FlowContent)?.type}
       onMouseEnter={() =>
         hoverService.send({
@@ -76,15 +110,19 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
       {...attributes}
     >
       {children}
-    </ParagraphUI>
+    </Box>
   )
 }
 
-function hasEmbed(element: Element) {
-  let value = false
-  visit(element, isEmbed, (node) => {
-    value = true
-  })
+function useParentGroup(editor: Editor, path: Path) {
+  return useMemo(() => {
+    const entry = Editor.above(editor, {
+      at: path,
+      match: isGroupContent,
+    })
 
-  return value
+    if (entry) {
+      return entry[0].type || 'group'
+    }
+  }, [path])
 }

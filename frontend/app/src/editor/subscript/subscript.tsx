@@ -3,10 +3,7 @@ import type {EditorPlugin} from '../types'
 
 export const MARK_SUBSCRIPT = 'subscript'
 
-export const Subscript = styled('i', {
-  verticalAlign: 'sub',
-  fontSize: '$1',
-})
+export const Subscript = styled('sub', {})
 
 export function createSubscriptPlugin(): EditorPlugin {
   return {

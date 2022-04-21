@@ -4,7 +4,9 @@ import {toggleMark} from '../utils'
 
 export const MARK_STRONG = 'strong'
 
-const Strong = styled('strong', {})
+const Strong = styled('strong', {
+  fontWeight: '$bold',
+})
 
 export const createStrongPlugin = (): EditorPlugin => ({
   name: MARK_STRONG,

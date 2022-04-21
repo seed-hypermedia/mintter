@@ -1,4 +1,4 @@
-import { createMachine } from "xstate"
+import { createMachine } from "xstate";
 
 type LibraryEvent =
   | { type: 'LIBRARY.OPEN' }
@@ -14,7 +14,10 @@ export const libraryMachine = createMachine({
   states: {
     opened: {
       on: {
-        'LIBRARY.CLOSE': 'closed',
+        'LIBRARY.CLOSE': {
+          target: 'closed',
+          actions: 'closing'
+        },
         'LIBRARY.TOGGLE': 'closed',
       },
     },
@@ -25,4 +28,11 @@ export const libraryMachine = createMachine({
       },
     },
   },
+}, {
+  actions: {
+    closing: (context, event) => {
+      console.log('CLOSING LIBRARY!', context, event);
+
+    }
+  }
 })

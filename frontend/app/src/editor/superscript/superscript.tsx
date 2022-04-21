@@ -3,11 +3,7 @@ import type {EditorPlugin} from '../types'
 
 export const MARK_SUPERSCRIPT = 'superscript'
 
-export const Superscript = styled('i', {
-  verticalAlign: 'super',
-
-  fontSize: '$1',
-})
+export const Superscript = styled('sup', {})
 
 export function createSuperscriptPlugin(): EditorPlugin {
   return {

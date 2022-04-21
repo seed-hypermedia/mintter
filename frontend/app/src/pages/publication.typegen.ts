@@ -54,7 +54,7 @@ export interface Typegen0 {
     | 'discussion.finish'
     | 'errored'
     | {discussion?: 'idle' | 'fetching' | 'ready' | 'errored' | 'finish'}
-  tags: never
+  tags: 'pending'
 }
 export interface Typegen1 {
   '@@xstate/typegen': true

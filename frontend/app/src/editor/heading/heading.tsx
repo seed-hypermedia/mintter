@@ -1,7 +1,11 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {statementStyle} from '@app/editor/statement'
+import {css} from '@app/stitches.config'
+import {Box} from '@components/box'
 import {
   createId,
+  FlowContent,
   Heading as HeadingType,
   isGroupContent,
   isHeading,
@@ -12,9 +16,10 @@ import {Editor, Element, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, resetFlowContent} from '../utils'
-import {HeadingUI} from './heading-ui'
 
 export const ELEMENT_HEADING = 'heading'
+
+const headingStyle = css(statementStyle, {})
 
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
@@ -79,16 +84,22 @@ export const createHeadingPlugin = (): EditorPlugin => ({
 })
 
 function Heading({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
+  let blockProps = {
+    'data-element-type': element.type,
+    'data-element-id': (element as HeadingType).id,
+    ...attributes,
+  }
+
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return <span {...attributes}>{children}</span>
+    return <span {...blockProps}>{children}</span>
   }
 
   return (
-    <HeadingUI {...attributes} data-element-type={element.type}>
-      <BlockWrapper element={element} attributes={attributes} mode={mode}>
+    <BlockWrapper element={element as FlowContent} attributes={attributes} mode={mode}>
+      <Box className={headingStyle()} {...blockProps}>
         {children}
-      </BlockWrapper>
-    </HeadingUI>
+      </Box>
+    </BlockWrapper>
   )
 }
 

@@ -17,6 +17,7 @@ export type BlockCitationsProps = {
 export function BlockCitations({blockId}: BlockCitationsProps) {
   const blockCitations = useBlockCitations(blockId)
   const [state, send] = useMachine(blockCitationsMachine)
+
   return blockCitations.length ? (
     <Box
       contentEditable={false}
@@ -28,7 +29,7 @@ export function BlockCitations({blockId}: BlockCitationsProps) {
         '@bp2': {
           transform: 'translateX(100%)',
           position: 'absolute',
-          right: 0,
+          right: -12,
           top: 4,
           overflow: 'hidden',
         },
@@ -68,7 +69,7 @@ var citationsButton = css({
   alignItems: 'center',
   gap: '$3',
   '&:hover': {
-    background: '$block-hover',
+    background: '$hover',
     '& .citation-index': {},
   },
 })
@@ -80,7 +81,7 @@ var citationCount = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: '$block-hover',
+  background: '$hover',
   // background: 'green',
   fontFamily: '$default',
   fontSize: '$1',
@@ -182,7 +183,7 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
         alignItems: 'center',
         borderRadius: '$3',
         '&:hover': {
-          background: '$block-hover',
+          background: '$hover',
           cursor: 'pointer',
         },
       }}
@@ -199,7 +200,7 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
       <Box
         css={{
           padding: '$3',
-          // background: '$block-hover',
+          // background: '$hover',
           borderRadius: '$2',
           display: 'flex',
           flexDirection: 'column',

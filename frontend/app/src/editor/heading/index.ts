@@ -1,2 +1,2 @@
-export * from './heading'
-export * from './heading-ui'
+export * from './heading';
+

@@ -1,29 +1,35 @@
-import {createModel} from 'xstate/lib/model'
+import {assign, createMachine} from 'xstate'
 
-export const hoverModel = createModel(
-  {
-    blockId: null as string | null,
-  },
-  {
-    events: {
-      MOUSE_ENTER: (blockId: string) => ({blockId}),
-      MOUSE_LEAVE: () => ({}),
-    },
-  },
-)
+type HoverContext = {
+  blockId: string | null
+}
 
-export const hoverMachine = hoverModel.createMachine(
+type HoverEvent =
+  | {
+      type: 'MOUSE_ENTER'
+      blockId: string
+    }
+  | {
+      type: 'MOUSE_LEAVE'
+    }
+
+export const hoverMachine = createMachine(
   {
     id: 'hover-machine',
+    tsTypes: {} as import('./hover-machine.typegen').Typegen0,
+    schema: {
+      context: {} as HoverContext,
+      events: {} as HoverEvent,
+    },
     initial: 'ready',
-    context: hoverModel.initialContext,
+    context: {
+      blockId: null,
+    },
     states: {
       ready: {
         on: {
           MOUSE_ENTER: {
-            actions: hoverModel.assign({
-              blockId: (_, ev) => ev.blockId,
-            }),
+            actions: ['assignBlockId'],
           },
           MOUSE_LEAVE: {
             actions: ['clearData'],
@@ -34,7 +40,12 @@ export const hoverMachine = hoverModel.createMachine(
   },
   {
     actions: {
-      clearData: hoverModel.assign(hoverModel.initialContext),
+      clearData: assign({
+        blockId: (c) => null,
+      }),
+      assignBlockId: assign({
+        blockId: (_, event) => event.blockId,
+      }),
     },
   },
 )

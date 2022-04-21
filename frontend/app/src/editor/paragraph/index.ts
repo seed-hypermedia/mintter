@@ -1,2 +1,1 @@
-export * from './paragraph'
-export * from './paragraph-ui'
+export * from './paragraph';
