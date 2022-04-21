@@ -18,19 +18,24 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        goarch: [amd64, arm64]
+        # don't build for arm64 on linux or windows
+        exclude:
+          - os: ubuntu-latest
+            goarch: arm64
+          - os: windows-latest
+            goarch: arm64
         include:
           - os: ubuntu-latest
             daemon_path: plz-out/bin/backend/mintterd-x86_64-unknown-linux-gnu
-            goarch: amd64
           - os: macos-latest
+            goarch: amd64
             daemon_path: plz-out/bin/backend/mintterd-x86_64-apple-darwin
-            goarch: amd64
           - os: macos-latest
-            daemon_path: plz-out/bin/backend/mintterd-aarch64-apple-darwin
             goarch: arm64
+            daemon_path: plz-out/bin/backend/mintterd-aarch64-apple-darwin
           - os: windows-latest
             daemon_path: plz-out/bin/backend/mintterd-x86_64-pc-windows-msvc.exe
-            goarch: amd64
     steps:
       - uses: actions/checkout@v2
       - name: "Setup Rust"
