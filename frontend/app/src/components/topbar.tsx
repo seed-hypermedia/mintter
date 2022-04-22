@@ -61,12 +61,12 @@ function SidenavBar() {
         width: 232,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        // justifyContent: 'space-between',
         paddingLeft: '$5',
         paddingRight: '$3',
       }}
     >
-      <span style={{flex: 1}} data-tauri-drag-region />
+      <span style={{display: 'block', flex: 'none', width: 60}} />
       <Box css={{display: 'flex', alignItems: 'center', gap: '$4'}}>
         <Button variant="ghost" size="0" color="muted" onClick={toggle}>
           <Icon name="Sidenav" size="2" />
