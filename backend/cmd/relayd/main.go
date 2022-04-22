@@ -18,7 +18,6 @@ func main() {
 		panic(err)
 	}
 	logging.SetAllLoggers(lvl)
-	//defer log.Sync()
 	idPath := flag.String("id", "identity", "identity key file path")
 	cfgPath := flag.String("config", "", "json configuration file; empty uses the default configuration")
 	flag.Parse()
