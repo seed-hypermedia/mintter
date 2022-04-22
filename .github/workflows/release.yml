@@ -96,13 +96,13 @@ jobs:
           CGO_ENABLED: 1
       - uses: tauri-apps/tauri-action@v0
         env:
-          # APPLE_CERTIFICATE: "${{ secrets.APPLE_CERTIFICATE }}"
-          # APPLE_CERTIFICATE_PASSWORD: "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
-          # APPLE_ID: "${{ secrets.APPLE_ID }}"
-          # APPLE_PASSWORD: "${{ secrets.APPLE_PASSWORD }}"
-          # APPLE_SIGNING_IDENTITY: "${{ secrets.APPLE_SIGNING_IDENTITY }}"
-          # ENABLE_CODE_SIGNING: "${{ secrets.APPLE_CERTIFICATE }}"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          ENABLE_CODE_SIGNING: "${{ secrets.APPLE_CERTIFICATE }}"
+          APPLE_CERTIFICATE: "${{ secrets.APPLE_CERTIFICATE }}"
+          APPLE_CERTIFICATE_PASSWORD: "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
+          APPLE_SIGNING_IDENTITY: "${{ secrets.APPLE_SIGNING_IDENTITY }}"
+          APPLE_API_ISSUER: "${{ secrets.APPLE_API_ISSUER }}"
+          APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
         with:
           configPath: release.tauri.conf.json
           includeDebug: false
