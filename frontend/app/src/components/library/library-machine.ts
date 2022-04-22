@@ -6,7 +6,7 @@ type LibraryEvent =
   | { type: 'LIBRARY.TOGGLE' }
 
 export const libraryMachine = createMachine({
-  initial: 'opened',
+  initial: 'closed',
   tsTypes: {} as import("./library-machine.typegen").Typegen0,
   schema: {
     events: {} as LibraryEvent
