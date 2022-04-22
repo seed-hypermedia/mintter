@@ -108,6 +108,7 @@ jobs:
           includeDebug: false
           projectPath: ./desktop/app
           releaseId: "${{ needs.create-release.outputs.releaseId }}"
+          args: --verbose
 
   publish:
     needs: build-binaries
