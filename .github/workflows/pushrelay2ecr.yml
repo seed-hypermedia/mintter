@@ -37,7 +37,7 @@ jobs:
           while IFS= read -r file
           do
             echo $file
-            if [ $file == backend/cmd/relayd/* ] || [ $file == backend/relay/* ]; then
+            if [[ $file == backend/cmd/relayd/* || $file == backend/relay/* ]]; then
               echo "::set-output name=relay_changes::true"
               break
             fi

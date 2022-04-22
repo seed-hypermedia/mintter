@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-	//log, _ := zap.NewProduction(zap.WithCaller(false))
 	var log = logging.Logger("relay")
 	lvl, err := logging.LevelFromString("debug")
 	if err != nil {
