@@ -3,26 +3,30 @@
 export interface Typegen0 {
   '@@xstate/typegen': true
   eventsCausingActions: {
+    assignUrl: 'xstate.after(1)#(machine).idle'
+    assignDraftUrl: 'REDIRECT'
     closeLibrary: 'xstate.init'
-    createNewDraft: ''
-    navigateToPublication: ''
   }
   internalEvents: {
-    '': {type: ''}
+    'xstate.after(1)#(machine).idle': {type: 'xstate.after(1)#(machine).idle'}
     'xstate.init': {type: 'xstate.init'}
   }
-  invokeSrcNameMap: {}
+  invokeSrcNameMap: {
+    createNewDraft: 'done.invoke.(machine).newDraft:invocation[0]'
+  }
   missingImplementations: {
-    actions: 'closeLibrary' | 'createNewDraft' | 'navigateToPublication'
-    services: never
-    guards: 'hasNoParams'
+    actions: 'assignUrl' | 'assignDraftUrl' | 'closeLibrary'
+    services: 'createNewDraft'
+    guards: 'shouldCreateNewDraft'
     delays: never
   }
-  eventsCausingServices: {}
+  eventsCausingServices: {
+    createNewDraft: 'xstate.after(1)#(machine).idle'
+  }
   eventsCausingGuards: {
-    hasNoParams: ''
+    shouldCreateNewDraft: 'xstate.after(1)#(machine).idle'
   }
   eventsCausingDelays: {}
-  matchesStates: 'idle' | 'newDraft' | 'navigate'
+  matchesStates: 'idle' | 'newDraft' | 'redirect'
   tags: never
 }
