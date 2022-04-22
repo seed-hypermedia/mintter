@@ -1,3 +1,4 @@
+import {createDraft, Document} from '@app/client'
 import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
 import {HoverProvider} from '@app/editor/hover-context'
 import {hoverMachine} from '@app/editor/hover-machine'
@@ -7,17 +8,17 @@ import {css} from '@app/stitches.config'
 import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {ScrollArea} from '@components/scroll-area'
 import {Settings} from '@components/settings'
 import {createSidepanelMachine, Sidepanel, SidepanelProvider} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
-import {useActor, useInterpret} from '@xstate/react'
-import {PropsWithChildren, useEffect} from 'react'
+import {useActor, useInterpret, useMachine} from '@xstate/react'
+import {PropsWithChildren} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {QueryClient, useQueryClient} from 'react-query'
-import {Route, RouteComponentProps, Switch, useLocation} from 'wouter'
+import {Redirect, Route, RouteComponentProps, Switch, useLocation} from 'wouter'
+import {assign, createMachine} from 'xstate'
 import EditorPage from './editor'
 import Publication from './publication'
 
@@ -168,8 +169,54 @@ function PageError({error, resetErrorBoundary}: FallbackProps) {
   )
 }
 
+type NewWindowEvent = {
+  type: 'REDIRECT'
+  document: Document
+}
+
+let newWindowMachine = createMachine({
+  tsTypes: {} as import('./main-page.typegen').Typegen0,
+  schema: {
+    context: {} as {url: string},
+    events: {} as NewWindowEvent,
+  },
+  initial: 'idle',
+  context: () => ({
+    url: '',
+  }),
+  entry: ['closeLibrary'],
+  states: {
+    idle: {
+      after: {
+        1: [
+          {
+            cond: 'shouldCreateNewDraft',
+            target: 'newDraft',
+          },
+          {
+            target: 'redirect',
+            actions: ['assignUrl'],
+          },
+        ],
+      },
+    },
+    newDraft: {
+      invoke: {
+        src: 'createNewDraft',
+      },
+      on: {
+        REDIRECT: {
+          target: 'redirect',
+          actions: 'assignDraftUrl',
+        },
+      },
+    },
+    redirect: {},
+  },
+})
+
 type NewWindowProps = RouteComponentProps<{
-  type: 'p' | 'editor'
+  type?: 'p' | 'editor'
   docId?: string
   version?: string
   blockId?: string
@@ -179,23 +226,45 @@ function NewWindow({params}: NewWindowProps) {
   const libService = useLibrary()
   const [, libSend] = useActor(libService)
   const [, setLocation] = useLocation()
-  const {createDraft} = useCreateDraft()
+  const [state] = useMachine(newWindowMachine, {
+    services: {
+      createNewDraft: () => (sendBack) => {
+        try {
+          createDraft().then((document) => {
+            sendBack({type: 'REDIRECT', document})
+          })
+        } catch {
+          throw new Error('error creating new draft in new window')
+        }
+      },
+    },
+    actions: {
+      closeLibrary: () => {
+        setTimeout(() => {
+          libSend('LIBRARY.CLOSE')
+        }, 0)
+      },
+      assignUrl: assign({
+        url: () =>
+          `/${params.type}/${params.docId}${
+            params.version ? `/${params.version}${params.blockId ? `/${params.blockId}` : ''}` : ''
+          }`,
+      }),
+      assignDraftUrl: assign({
+        url: (_, event) => `/editor/${event.document.id}`,
+      }),
+    },
+    guards: {
+      shouldCreateNewDraft: () => {
+        console.log('params', params, typeof params.type == 'undefined')
+        return typeof params.type == 'undefined'
+      },
+    },
+  })
 
-  useEffect(() => {
-    setTimeout(() => {
-      libSend('LIBRARY.CLOSE')
-      if (params.type == 'p') {
-        let href = `/${params.type}/${params.docId}${
-          params.version ? `/${params.version}${params.blockId ? `/${params.blockId}` : ''}` : ''
-        }`
-        setLocation(href, {
-          replace: true,
-        })
-      } else {
-        createDraft()
-      }
-    }, 0)
-  }, [])
+  if (state.matches('redirect')) {
+    return <Redirect to={state.context.url} />
+  }
 
   return null
 }
