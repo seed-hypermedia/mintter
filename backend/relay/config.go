@@ -10,6 +10,7 @@ import (
 )
 
 type Config struct {
+	PrivKey string
 	Network networkConfig
 	ConnMgr connMgrConfig
 	RelayV1 relayV1Config
@@ -45,6 +46,7 @@ type aclConfig struct {
 
 func defaultConfig() Config {
 	return Config{
+		PrivKey: "08011240a32b1c17b1e07e6ea398abe22aaf59ca4963904e851b847e8f5d900e8e2df8e932e08f2ff4a0477b66630e7fc3d1f543a5a5269395aa14e525213216f9e13e8a",
 		Network: networkConfig{
 			ListenAddrs: []string{
 				"/ip4/0.0.0.0/udp/4001/quic",
