@@ -17,7 +17,6 @@ func main() {
 		panic(err)
 	}
 	logging.SetAllLoggers(lvl)
-	idPath := flag.String("id", "identity", "identity key file path")
 	cfgPath := flag.String("config", "", "json configuration file; empty uses the default configuration")
 	flag.Parse()
 
@@ -25,12 +24,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	privK, err := relay.LoadIdentity(*idPath)
-	if err != nil {
-		panic(err)
-	}
 
-	relay, err := relay.NewRelay(log.Desugar(), cfg, privK)
+	relay, err := relay.NewRelay(log.Desugar(), cfg)
 	if err != nil {
 		panic(err)
 	}

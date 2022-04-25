@@ -31,4 +31,4 @@ WORKDIR /relay
 COPY --from=builder /relay/exe/relayd ./
 COPY --from=builder /relay/conf/. ./conf/
 EXPOSE 4002
-CMD [ "/relay/relayd", "-config", "/relay/conf/conf.json", "-id","/relay/conf/relay.key" ]
+CMD [ "/relay/relayd", "-config", "/relay/conf/conf.json"]
