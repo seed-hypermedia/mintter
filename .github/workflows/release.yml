@@ -98,7 +98,9 @@ jobs:
           CGO_ENABLED: 1
       - name: create apple private key file
         if: "matrix.os == 'macos-latest'"
-        run: echo ${{ secrets.APPLE_API_PRIVKEY }} > ./private_keys
+        run: echo $APPLE_API_PRIVKEY > ./private_keys
+        env:
+          APPLE_API_PRIVKEY : ${{secrets.APPLE_API_PRIVKEY}}
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
