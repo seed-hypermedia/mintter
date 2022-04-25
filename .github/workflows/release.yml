@@ -33,13 +33,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        goarch: [amd64]
+        goarch: [amd64, arm64]
         # don't build for arm64 on linux or windows
-        # exclude:
-        #   - os: ubuntu-latest
-        #     goarch: arm64
-        #   - os: windows-latest
-        #     goarch: arm64
+        exclude:
+          - os: ubuntu-latest
+            goarch: arm64
+          - os: windows-latest
+            goarch: arm64
         include:
           - os: ubuntu-latest
             goarch: amd64
@@ -47,9 +47,9 @@ jobs:
           - os: macos-latest
             goarch: amd64
             rust_target: x86_64-apple-darwin
-          # - os: macos-latest
-          #   goarch: arm64
-          #   rust_target: aarch64-apple-darwin
+          - os: macos-latest
+            goarch: arm64
+            rust_target: aarch64-apple-darwin
           - os: windows-latest
             goarch: amd64
             rust_target: x86_64-pc-windows-msvc
@@ -98,9 +98,9 @@ jobs:
           CGO_ENABLED: 1
       - name: create apple private key file
         if: "matrix.os == 'macos-latest'"
-        run: echo $APPLE_API_PRIVKEY > ./private_keys
+        run: echo $APPLE_API_PRIVKEY > ~/.private_keys
         env:
-          APPLE_API_PRIVKEY : ${{secrets.APPLE_API_PRIVKEY}}
+          APPLE_API_PRIVKEY: ${{secrets.APPLE_API_PRIVKEY}}
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -116,7 +116,7 @@ jobs:
           projectPath: ./desktop/app
           releaseId: "${{ needs.create-release.outputs.releaseId }}"
           tauriScript: cargo tauri
-          args: --verbose
+          args: --verbose --target ${{ matrix.rust_target }}
 
   publish:
     needs: build-binaries
