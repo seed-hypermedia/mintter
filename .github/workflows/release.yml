@@ -61,9 +61,9 @@ jobs:
           override: true
           profile: minimal
           toolchain: stable
+      - uses: Swatinem/rust-cache@v1
       - name: Install debug Tauri CLI
         run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch verbose-codesign-output
-      - uses: Swatinem/rust-cache@v1
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
         with:
@@ -96,6 +96,9 @@ jobs:
         env:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 1
+      - name: create apple private key file
+        if: "matrix.os == 'macos-latest'"
+        run: echo ${{ secrets.APPLE_API_PRIVKEY }} > ./private_keys
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

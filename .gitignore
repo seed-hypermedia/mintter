@@ -51,3 +51,4 @@ target
 .plz-cache
 plz-out
 .plzconfig.local
+./private_keys
