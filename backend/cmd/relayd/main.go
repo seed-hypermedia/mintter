@@ -11,28 +11,24 @@ import (
 )
 
 func main() {
-	//log, _ := zap.NewProduction(zap.WithCaller(false))
 	var log = logging.Logger("relay")
-	lvl, err := logging.LevelFromString("debug")
+
+	cfgPath := flag.String("config", "", "json configuration file; empty uses the default configuration")
+	loglevel := flag.String("loglevel", "info", "defines the log level {DEBUG | INFO(default) | WARN | ERROR | DPANIC | PANIC | FATAL}")
+	flag.Parse()
+
+	lvl, err := logging.LevelFromString(*loglevel)
 	if err != nil {
 		panic(err)
 	}
-	logging.SetAllLoggers(lvl)
-	//defer log.Sync()
-	idPath := flag.String("id", "identity", "identity key file path")
-	cfgPath := flag.String("config", "", "json configuration file; empty uses the default configuration")
-	flag.Parse()
 
+	logging.SetAllLoggers(lvl)
 	cfg, err := relay.LoadConfig(*cfgPath)
 	if err != nil {
 		panic(err)
 	}
-	privK, err := relay.LoadIdentity(*idPath)
-	if err != nil {
-		panic(err)
-	}
 
-	relay, err := relay.NewRelay(log.Desugar(), cfg, privK)
+	relay, err := relay.NewRelay(log.Desugar(), cfg)
 	if err != nil {
 		panic(err)
 	}

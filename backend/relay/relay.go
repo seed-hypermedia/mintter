@@ -1,6 +1,7 @@
 package relay
 
 import (
+	"encoding/hex"
 	"strconv"
 
 	"github.com/libp2p/go-libp2p"
@@ -18,20 +19,18 @@ import (
 
 // Relay is the may struct to hold all the relay operations
 type Relay struct {
-	log     *zap.Logger    // The logger to write messages
-	cfg     Config         // The configuration struct. Congifured via file only
-	privKey crypto.PrivKey // Private key of the node
-	host    host.Host      // Libp2p host (ID+Addresses)
+	log  *zap.Logger // The logger to write messages
+	cfg  Config      // The configuration struct. Congifured via file only
+	host host.Host   // Libp2p host (ID+Addresses)
 }
 
 // NewRelay is used to create a new relay based on both
 // configuration cfg and private key priv_k. A logger must be provided
 // as well
-func NewRelay(log *zap.Logger, cfg Config, privK crypto.PrivKey) (*Relay, error) {
+func NewRelay(log *zap.Logger, cfg Config) (*Relay, error) {
 	return &Relay{
-		log:     log,
-		cfg:     cfg,
-		privKey: privK,
+		log: log,
+		cfg: cfg,
 	}, nil
 }
 
@@ -53,12 +52,24 @@ func (r *Relay) Stop() error {
 // Start starts the relay non blocking. Returns nil on success an
 // non empty error on error
 func (r *Relay) Start() error {
+	key_bytes, err := hex.DecodeString(r.cfg.PrivKey)
+
+	if err != nil {
+		return err
+	}
+	key, err := crypto.UnmarshalPrivateKey(key_bytes)
+	if err != nil {
+		return err
+	}
+
 	var opts []libp2p.Option
 
 	// generate the options from the configuration passed at init time
+
 	opts = append(opts,
 		libp2p.UserAgent("MintterRelay/0.1"),
-		libp2p.Identity(r.privKey),
+
+		libp2p.Identity(key),
 		libp2p.DisableRelay(),
 		libp2p.ListenAddrStrings(r.cfg.Network.ListenAddrs...),
 	)
@@ -106,7 +117,6 @@ func (r *Relay) Start() error {
 		libp2p.ConnectionManager(cm),
 	)
 
-	var err error
 	r.host, err = libp2p.New(opts...)
 	if err != nil {
 		return err
