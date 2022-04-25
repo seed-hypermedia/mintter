@@ -4,7 +4,6 @@ FROM golang:1.18-alpine AS builder
 WORKDIR /relay
 RUN go mod init mintter
 COPY ./cmd/relayd/conf.json.example ./conf/conf.json
-COPY ./cmd/relayd/identity.example ./conf/relay.key
 COPY ./cmd/relayd/*.go ./backend/cmd/relayd/
 COPY ./relay/*.go ./backend/relay/
 # This is ugly as hell but I cannot copy go.mod since it is outside
