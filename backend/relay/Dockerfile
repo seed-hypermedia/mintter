@@ -6,6 +6,7 @@ RUN go mod init mintter
 COPY ./cmd/relayd/conf.json.example ./conf/conf.json
 COPY ./cmd/relayd/*.go ./backend/cmd/relayd/
 COPY ./relay/*.go ./backend/relay/
+
 # This is ugly as hell but I cannot copy go.mod since it is outside
 # of the docker scope. I cannnot build outside the scope since it
 # conflicts with the current .dockerignore
