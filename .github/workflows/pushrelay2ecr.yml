@@ -1,0 +1,85 @@
+# This workflow will build and push a new container image to Amazon ECR
+
+name: Push to Amazon ECR
+
+on:
+  push:
+    branches:
+      - master
+      - x/relay
+
+env:
+  AWS_REGION: us-east-1                  
+  ECR_REPOSITORY: libp2p_relay          
+
+permissions:
+  contents: read
+
+jobs:
+  check4changes:
+    name: Check 
+    outputs:
+      relay_changes: ${{ steps.check_files.outputs.relay_changes }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: check modified files
+        id: check_files
+        run: |
+          echo "=============== list modified files ==============="
+          git diff --name-only HEAD^ HEAD
+          echo "========== check paths of modified files =========="
+          git diff --name-only HEAD^ HEAD > files.txt
+          echo "::set-output name=relay_changes::false"
+          while IFS= read -r file
+          do
+            echo $file
+            if [[ $file == backend/cmd/relayd/* || $file == backend/relay/* ]]; then
+              echo "::set-output name=relay_changes::true"
+              break
+            fi
+          done < files.txt
+
+  ECR:
+    name: ECR push
+    runs-on: ubuntu-latest
+    environment: production
+    needs: check4changes
+    timeout-minutes: 5
+    if: needs.check4changes.outputs.relay_changes == 'true'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      working-directory: ./backend
+      run: |
+        # Build a docker container and
+        # push it to ECR
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f relay/Dockerfile .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        # We also want to have a latest image, so we retag
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+
