@@ -56,8 +56,12 @@ func provideSQLiteBlockstore(pool *sqlitex.Pool) (bs blockstore.Blockstore, err 
 func provideBootstrapRelays() ([]peer.AddrInfo, error) {
 	relays := map[string][]string{
 		"12D3KooWDEy9x2MkUtDMLwb38isNhWMap39xeKVqL8Wb9AHYPYM7": {
-			"/ip4/18.158.173.157/tcp/4002",
-			"/ip4/18.158.173.157/udp/4002/quic",
+			"/ip4/18.158.173.157/tcp/4002",      // Julio's personal server
+			"/ip4/18.158.173.157/udp/4002/quic", // Julio's personal server
+			"/ip4/23.20.24.146/tcp/4002",        // Mintter prod server
+			"/ip4/23.20.24.146/udp/4002/quic",   // Mintter prod server
+			"/ip4/52.22.139.174/tcp/4002",       // Mintter test server
+			"/ip4/52.22.139.174/udp/4002/quic",  // Mintter test server
 		},
 	}
 	relaysInfo := []peer.AddrInfo{}
