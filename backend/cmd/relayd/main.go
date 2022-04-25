@@ -12,14 +12,17 @@ import (
 
 func main() {
 	var log = logging.Logger("relay")
-	lvl, err := logging.LevelFromString("debug")
+
+	cfgPath := flag.String("config", "", "json configuration file; empty uses the default configuration")
+	loglevel := flag.String("loglevel", "info", "defines the log level {DEBUG | INFO(default) | WARN | ERROR | DPANIC | PANIC | FATAL}")
+	flag.Parse()
+
+	lvl, err := logging.LevelFromString(*loglevel)
 	if err != nil {
 		panic(err)
 	}
-	logging.SetAllLoggers(lvl)
-	cfgPath := flag.String("config", "", "json configuration file; empty uses the default configuration")
-	flag.Parse()
 
+	logging.SetAllLoggers(lvl)
 	cfg, err := relay.LoadConfig(*cfgPath)
 	if err != nil {
 		panic(err)
