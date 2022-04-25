@@ -34,11 +34,6 @@ func initAndTest(relayVersion uint8) error {
 	log, _ := zap.NewProduction(zap.WithCaller(false))
 	defer log.Sync()
 
-	privK, err := LoadIdentity("/tmp/key.pem")
-	if err != nil {
-		return err
-	}
-
 	cfg := defaultConfig()
 	cfg.Network.AnnounceAddrs = []string{
 		"/ip4/0.0.0.0/tcp/4001",
@@ -54,7 +49,7 @@ func initAndTest(relayVersion uint8) error {
 		return fmt.Errorf("only v1 and v2 relay version supported, requested %d version", relayVersion)
 	}
 
-	h2, _ := NewRelay(log, cfg, privK)
+	h2, _ := NewRelay(log, cfg)
 	if err := h2.Start(); err != nil {
 		return err
 	}
@@ -67,9 +62,9 @@ func initAndTest(relayVersion uint8) error {
 	}
 
 	//realaysInfo, err := provideBootstrapRelays()
-	if err != nil {
-		fmt.Errorf("Couldn't hardcode relays: %v", err)
-	}
+	//if err != nil {
+	//	fmt.Errorf("Couldn't hardcode relays: %v", err)
+	//}
 	h1, err := libp2p.New(libp2p.EnableNATService(), libp2p.EnableHolePunching(),
 		libp2p.EnableRelay(), libp2p.ForceReachabilityPrivate(),
 		libp2p.EnableAutoRelay(autorelay.WithStaticRelays([]peer.AddrInfo{h2info})),
