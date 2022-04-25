@@ -63,8 +63,8 @@ jobs:
           toolchain: stable
           target: ${{ matrix.rust_target }}
       - uses: Swatinem/rust-cache@v1
-      - name: Install debug Tauri CLI
-        run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch verbose-codesign-output
+      # - name: Install debug Tauri CLI
+      #  run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch verbose-codesign-output
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
         with:
@@ -116,7 +116,6 @@ jobs:
           includeDebug: false
           projectPath: ./desktop/app
           releaseId: "${{ needs.create-release.outputs.releaseId }}"
-          tauriScript: cargo tauri
           args: --verbose --target ${{ matrix.rust_target }}
 
   publish:
