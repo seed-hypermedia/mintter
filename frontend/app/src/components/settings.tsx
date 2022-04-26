@@ -1,24 +1,24 @@
 import * as localApi from '@app/client'
-import { queryKeys, useAccount } from '@app/hooks'
-import { styled } from '@app/stitches.config'
-import { useTheme } from '@app/theme'
-import { ObjectKeys } from '@app/utils/object-keys'
-import { dialogContentStyles, overlayStyles } from '@components/dialog-styles'
+import {queryKeys, useAccount} from '@app/hooks'
+import {styled} from '@app/stitches.config'
+import {useTheme} from '@app/theme'
+import {ObjectKeys} from '@app/utils/object-keys'
+import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import { listen } from '@tauri-apps/api/event'
-import { useActor } from '@xstate/react'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import {listen} from '@tauri-apps/api/event'
+import {useActor} from '@xstate/react'
+import {useEffect, useState} from 'react'
+import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { useMutation, useQueryClient } from 'react-query'
-import { Box } from './box'
-import { Button } from './button'
-import { PeerAddrs } from './peer-addrs'
-import { ScrollArea } from './scroll-area'
-import { Text } from './text'
-import { TextField } from './text-field'
-import { WalletList } from './wallet-list'
+import {useMutation, useQueryClient} from 'react-query'
+import {Box} from './box'
+import {Button} from './button'
+import {PeerAddrs} from './peer-addrs'
+import {ScrollArea} from './scroll-area'
+import {Text} from './text'
+import {TextField} from './text-field'
+import {WalletList} from './wallet-list'
 
 type ProfileInformationDataType = {
   alias: string
@@ -28,11 +28,11 @@ type ProfileInformationDataType = {
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
-function SettingsRoot({ children }: any) {
+function SettingsRoot({children}: any) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    let unlisten = () => { }
+    let unlisten = () => {}
     listen('open-preferences', () => setOpen(true)).then((_unlisten) => (unlisten = unlisten))
     return unlisten
   }, [])
@@ -45,22 +45,23 @@ function SettingsRoot({ children }: any) {
   )
 }
 
-type SettingsPageProp = { updateAccount?: typeof localApi.updateAccount }
+type SettingsPageProp = {updateAccount?: typeof localApi.updateAccount}
 
-export function Settings({ updateAccount = localApi.updateAccount }: SettingsPageProp) {
-
+export function Settings({updateAccount = localApi.updateAccount}: SettingsPageProp) {
   return (
-    <Box css={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      width: '100vw',
-      height: '100vh',
-      overflow: 'hidden',
-      background: '$background-muted',
-    }}>
+    <Box
+      css={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+
+        background: '$background-muted',
+      }}
+    >
       <StyledTabs defaultValue="profile" orientation="horizontal">
         <StyledTabsList aria-label="Manage your node">
           <TabTrigger value="profile">Profile</TabTrigger>
@@ -69,14 +70,14 @@ export function Settings({ updateAccount = localApi.updateAccount }: SettingsPag
           <TabTrigger value="settings">Settings</TabTrigger>
         </StyledTabsList>
         <TabsContent value="profile">
-          <ScrollArea>
-            <ProfileForm updateAccount={updateAccount} />
-          </ScrollArea>
+          {/* <ScrollArea> */}
+          <ProfileForm updateAccount={updateAccount} />
+          {/* </ScrollArea> */}
         </TabsContent>
         <TabsContent value="account">
-          <ScrollArea>
-            <AccountInfo />
-          </ScrollArea>
+          {/* <ScrollArea> */}
+          <AccountInfo />
+          {/* </ScrollArea> */}
         </TabsContent>
         <TabsContent value="wallets">
           <ScrollArea>
@@ -110,7 +111,7 @@ var StyledTabsList = styled(TabsPrimitive.List, {
   borderRight: '1px solid rgba(0,0,0,0.1)',
 
   display: 'flex',
-  justifyContent: 'center'
+  justifyContent: 'center',
 })
 
 var TabTrigger = styled(TabsPrimitive.Trigger, {
@@ -134,7 +135,7 @@ var TabTrigger = styled(TabsPrimitive.Trigger, {
     fontWeight: '$bold',
     // boxShadow: 'inset 0 -2px 0 0 currentColor, 0 2px 0 0 currentColor',
   },
-  '&:focus': { position: 'relative', background: '$primary-muted' },
+  '&:focus': {position: 'relative', background: '$primary-muted'},
 })
 
 var TabsContent = styled(TabsPrimitive.Content, {
@@ -143,8 +144,8 @@ var TabsContent = styled(TabsPrimitive.Content, {
   background: '$background-muted',
 })
 
-function ProfileForm({ updateAccount }: { updateAccount: typeof localApi.updateAccount }) {
-  const { data, isSuccess } = useAccount('', {
+function ProfileForm({updateAccount}: {updateAccount: typeof localApi.updateAccount}) {
+  const {data, isSuccess} = useAccount('', {
     useErrorBoundary: true,
   })
 
@@ -162,7 +163,7 @@ function ProfileForm({ updateAccount }: { updateAccount: typeof localApi.updateA
 
   useEffect(() => {
     if (data?.profile && isSuccess) {
-      const { alias = '', email = '', bio = '' } = data?.profile
+      const {alias = '', email = '', bio = ''} = data?.profile
       form.reset({
         alias,
         email,
@@ -239,7 +240,7 @@ function ProfileForm({ updateAccount }: { updateAccount: typeof localApi.updateA
         shape="pill"
         color="success"
         data-testid="submit"
-        css={{ alignSelf: 'flex-start' }}
+        css={{alignSelf: 'flex-start'}}
       >
         Save
       </Button>
@@ -248,7 +249,7 @@ function ProfileForm({ updateAccount }: { updateAccount: typeof localApi.updateA
 }
 
 function AccountInfo() {
-  const { data } = useAccount()
+  const {data} = useAccount()
   return (
     <Box
       css={{
@@ -282,13 +283,13 @@ function AccountInfo() {
       <Box as="ul">
         {data?.devices && ObjectKeys(data?.devices).length
           ? Object.entries(data?.devices).map(([id, device]: [string, localApi.Device], index: number) => (
-            <Text as="li" key={id}>
-              <Text as="span" color="muted" css={{ display: 'inline-block', marginRight: '$4' }}>
-                {index + 1}.
+              <Text as="li" key={id}>
+                <Text as="span" color="muted" css={{display: 'inline-block', marginRight: '$4'}}>
+                  {index + 1}.
+                </Text>
+                {device.peerId}
               </Text>
-              {device.peerId}
-            </Text>
-          ))
+            ))
           : null}
       </Box>
     </Box>
@@ -299,7 +300,7 @@ function AppSettings() {
   const themeService = useTheme()
   const [state, send] = useActor(themeService)
   return (
-    <Box css={{ alignItems: 'center', display: 'flex', gap: '$3', padding: '$5', marginTop: '$8', marginBottom: '$8' }}>
+    <Box css={{alignItems: 'center', display: 'flex', gap: '$3', padding: '$5', marginTop: '$8', marginBottom: '$8'}}>
       <input id="darkMode" type="checkbox" checked={state.context.current == 'dark'} onChange={() => send('TOGGLE')} />
       <Text as="label" htmlFor="darkMode">
         Dark Mode
