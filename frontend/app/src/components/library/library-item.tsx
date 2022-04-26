@@ -6,10 +6,9 @@ import {
 } from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {useMainPage} from '@app/main-page-context'
+import {useMainPage, useParams} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {useRoute} from '@app/utils/use-route'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {useCreateDraft} from '@components/library/use-create-draft'
@@ -19,7 +18,6 @@ import {invoke} from '@tauri-apps/api'
 import {useMachine} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
-import {Link, useLocation} from 'wouter'
 
 export type LibraryItemProps = {
   publication?: Publication
@@ -38,11 +36,10 @@ export function LibraryItem({
   deletePublication = defaultDeletePublication,
   copyTextToClipboard = defaultCopyTextToClipboard,
 }: PropsWithChildren<LibraryItemProps>) {
-  const {match} = useRoute(href)
-  const [, setLocation] = useLocation()
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
   const {createDraft} = useCreateDraft()
+  let match = isDocumentActive(publication ? publication.document!.id : draft!.id, publication?.version)
 
   const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
     services: {
@@ -61,8 +58,12 @@ export function LibraryItem({
     }
   }
 
-  function onMainPanel() {
-    setLocation(href)
+  function goToItem() {
+    if (publication) {
+      mainService.send({type: 'goToPublication', docId: publication.document?.id, version: publication.version})
+    } else {
+      mainService.send({type: 'goToEditor', docId: draft?.id})
+    }
   }
 
   function onSidepanel() {
@@ -79,7 +80,7 @@ export function LibraryItem({
   }
   function afterDelete() {
     if (match) {
-      setLocation('/')
+      mainService.send('routeNotFound')
     }
     mainService.send('RECONCILE')
   }
@@ -96,11 +97,10 @@ export function LibraryItem({
 
   return (
     <StyledItem active={match} data-testid="library-item">
-      <Link href={href}>
-        <Text size="2" className="title" color="primary">
-          {title}
-        </Text>
-      </Link>
+      <Text size="2" className="title" color="primary" onClick={goToItem}>
+        {title}
+      </Text>
+
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger asChild>
           <ElementDropdown
@@ -118,7 +118,7 @@ export function LibraryItem({
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Document ID</Text>
           </Dropdown.Item>
-          <Dropdown.Item data-testid="mainpanel-item" onSelect={onMainPanel}>
+          <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
             <Icon size="1" name="ArrowTopRight" />
             <Text size="2">Open in main panel</Text>
           </Dropdown.Item>
@@ -200,3 +200,9 @@ export var StyledItem = styled(
     },
   },
 )
+
+function isDocumentActive(docId: string, version?: string) {
+  let params = useParams()
+
+  return params.docId == docId && params.version == version
+}

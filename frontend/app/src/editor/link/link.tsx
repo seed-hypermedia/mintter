@@ -1,4 +1,5 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {Box} from '@components/box'
@@ -16,7 +17,6 @@ import {FormEvent, ForwardedRef, forwardRef, MouseEvent, useEffect, useState} fr
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
-import {useLocation} from 'wouter'
 import type {UseLastSelectionResult} from '../hovering-toolbar'
 import type {EditorPlugin} from '../types'
 import {isCollapsed} from '../utils'
@@ -45,14 +45,13 @@ const MintterLink = forwardRef(RenderMintterLink)
 const WebLink = forwardRef(RenderWebLink)
 
 function RenderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
-  const [, setLocation] = useLocation()
+  const mainpageService = useMainPage()
 
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
-
-    setLocation(`/p/${docId}/${version}${blockId ? `/${blockId}` : ''}`)
+    mainpageService.send({type: 'goToPublication', docId, version, blockId})
   }
 
   return <StyledLink ref={ref} {...props} onClick={onClick} />

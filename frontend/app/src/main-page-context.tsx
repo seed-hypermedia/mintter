@@ -27,3 +27,5 @@ export function useIsLibraryOpen() {
   let ref = createMainPageSelector((state) => state.context.library)()
   return useSelector(ref, (state) => state.matches('opened'))
 }
+
+export let useParams = createMainPageSelector((state) => state.context.params)

@@ -216,40 +216,46 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
     {
       services: {
         fetchItemData: (context) => (sendBack) => {
-          ; (async () => {
+          try {
+            ; (async () => {
 
-            let [documentId, version, blockId] = getIdsfromUrl(context.url)
+              let [documentId, version, blockId] = getIdsfromUrl(context.url)
 
-            let publication: ClientPublication = await client.fetchQuery(
-              [queryKeys.GET_PUBLICATION, documentId, version],
-              async () => {
-                let pub = await getPublication(documentId, version)
-                let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
+              let publication: ClientPublication = await client.fetchQuery(
+                [queryKeys.GET_PUBLICATION, documentId, version],
+                async () => {
+                  let pub = await getPublication(documentId, version)
+                  let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
 
-                return {
-                  ...pub,
-                  document: {
-                    ...pub.document,
-                    content,
-                  },
-                }
-              },
-            )
+                  return {
+                    ...pub,
+                    document: {
+                      ...pub.document,
+                      content,
+                    },
+                  }
+                },
+              )
 
-            let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
-              getAccount(publication.document?.author as string),
-            )
+              let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
+                getAccount(publication.document?.author as string),
+              )
 
-            let block: FlowContent | null = null
+              let block: FlowContent | null = null
 
-            if (publication.document.content) {
-              visit(publication.document.content[0], { id: blockId }, (node) => {
-                block = node
-              })
-            }
+              if (publication.document.content) {
+                visit(publication.document.content[0], { id: blockId }, (node) => {
+                  block = node
+                })
+              }
 
-            sendBack(bookmarkModel.events['REPORT.BOOKMARK.ITEM.SUCCESS'](publication, author, block))
-          })()
+              sendBack(bookmarkModel.events['REPORT.BOOKMARK.ITEM.SUCCESS'](publication, author, block))
+            })()
+          } catch (error) {
+            console.log('fetchItemData error: ', error);
+            sendBack(bookmarkModel.events['REPORT.BOOKMARK.ITEM.ERROR'](JSON.stringify(error)))
+          }
+
         },
       },
     },

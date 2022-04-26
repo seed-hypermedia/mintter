@@ -3,8 +3,7 @@ import {css, styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import type {Code as CodeType} from '@mintter/mttast'
 import {createId, isCode, isParagraph, paragraph, statement, text} from '@mintter/mttast'
-import type {Highlighter, IThemeRegistration, Lang} from 'shiki'
-import {getHighlighter} from 'shiki'
+import {getHighlighter, Highlighter, IThemeRegistration, Lang, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useSlateStatic} from 'slate-react'
@@ -47,7 +46,7 @@ interface CodePluginProps {
 export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
   const {theme = 'github-dark'} = props
 
-  // setCDN('/shiki/')
+  setCDN('/shiki/')
 
   return {
     name: ELEMENT_CODE,

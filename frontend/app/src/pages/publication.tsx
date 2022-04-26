@@ -6,6 +6,7 @@ import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {EditorDocument} from '@app/editor/use-editor-draft'
 import {queryKeys, useAccount} from '@app/hooks'
+import {useMainPage, useParams} from '@app/main-page-context'
 import {tippingMachine} from '@app/tipping-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getBlock} from '@app/utils/get-block'
@@ -24,28 +25,26 @@ import {useEffect} from 'react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {QueryClient, useQueryClient} from 'react-query'
-import {useLocation} from 'wouter'
 import {assign, createMachine, StateFrom} from 'xstate'
-import {PublicationPageProps} from './types'
 
-export default function Publication({params}: PublicationPageProps) {
+export default function Publication() {
   const client = useQueryClient()
-  //@ts-ignore
-  const [, setLocation] = useLocation()
   const citations = useCitationService()
+  const mainPageService = useMainPage()
+  let {docId, version} = useParams()
 
-  const [state, send] = usePagePublication(client, params?.docId, params?.version)
+  const [state, send] = usePagePublication(client, docId, version)
 
   const {data: author} = useAccount(state.context.publication?.document?.author, {
     enabled: !!state.context.publication?.document?.author,
   })
 
   useEffect(() => {
-    if (params?.docId) {
-      send({type: 'PUBLICATION.FETCH.DATA', id: params.docId, version: params.version})
-      citations.send({type: 'CITATIONS.FETCH', documentId: params.docId, version: params.version})
+    if (docId) {
+      send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
+      citations.send({type: 'CITATIONS.FETCH', documentId: docId, version})
     }
-  }, [params?.docId])
+  }, [docId])
 
   // useEffect(() => {
   //   if (data.document.title) {
@@ -55,9 +54,9 @@ export default function Publication({params}: PublicationPageProps) {
 
   async function handleUpdate() {
     try {
-      const d = await createDraft(params?.docId)
+      const d = await createDraft(docId)
       if (d?.id) {
-        setLocation(`/editor/${d.id}`)
+        mainPageService.send({type: 'goToEditor', docId: d.id})
       }
     } catch (err) {
       console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
@@ -82,17 +81,12 @@ export default function Publication({params}: PublicationPageProps) {
       >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
-        <Button
-          onClick={() => send({type: 'PUBLICATION.FETCH.DATA', id: state.context.id, version: state.context.version})}
-          color="muted"
-        >
+        <Button onClick={() => send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})} color="muted">
           try again
         </Button>
       </Box>
     )
   }
-
-  console.log(state.value, state.context)
 
   return (
     <>
@@ -156,7 +150,7 @@ export default function Publication({params}: PublicationPageProps) {
         />
       </Box>
       {state.matches('ready') && (
-        <Box css={{padding: '$7', paddingLeft: 0}} data-testid="publication-wrapper">
+        <Box css={{padding: '$7', paddingLeft: 0, marginBottom: 200}} data-testid="publication-wrapper">
           <Editor
             mode={EditorMode.Publication}
             value={state.context.publication?.document.content}
@@ -686,7 +680,7 @@ function DiscussionItem({link}: {link: Link}) {
   const [state, send] = useMachine(() => createDiscussionMachine(client))
   const {data: author} = useAccount(state?.context?.publication?.document?.author)
   const bookmarkService = useBookmarksService()
-  const [, setLocation] = useLocation()
+  const mainPageService = useMainPage()
 
   function addBookmark() {
     bookmarkService.send({
@@ -703,7 +697,7 @@ function DiscussionItem({link}: {link: Link}) {
   }
 
   function onGoToPublication() {
-    setLocation(`/p/${link.source?.documentId}/${link.source?.version}`)
+    mainPageService.send({type: 'goToPublication', docId: link.source?.documentId, version: link.source?.version})
   }
 
   useEffect(() => {

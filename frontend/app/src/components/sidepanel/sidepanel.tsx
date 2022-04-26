@@ -11,6 +11,7 @@ import {Editor} from '@app/editor/editor'
 import {getEmbedIds} from '@app/editor/embed'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {queryKeys} from '@app/hooks'
+import {useMainPage} from '@app/main-page-context'
 import {ClientPublication} from '@app/pages/publication'
 import {css} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -27,7 +28,6 @@ import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {QueryClient} from 'react-query'
 import {visit} from 'unist-util-visit'
-import {useLocation} from 'wouter'
 import {ActorRefFrom, assign, createMachine, spawn, StateFrom} from 'xstate'
 import {Box} from '../box'
 import {Icon} from '../icon'
@@ -278,7 +278,7 @@ export function SidepanelItem({
   copy?: (url: string) => Promise<unknown>
 }) {
   const [state, send] = useActor(itemRef)
-  const [, setLocation] = useLocation()
+  const mainPageService = useMainPage()
   const bookmarkService = useBookmarksService()
   const sidepanelService = useSidepanel()
   const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
@@ -297,7 +297,7 @@ export function SidepanelItem({
 
   function navigate(url: string) {
     const [publicationId, version] = getEmbedIds(url)
-    setLocation(`/p/${publicationId}/${version}`)
+    mainPageService.send({type: 'goToPublication', docId: publicationId, version})
   }
 
   function toggle(e: Event) {
@@ -748,7 +748,7 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
           errorMessage: (_, event) => event.errorMessage,
         }),
         clearError: assign({
-          errorMessage: '',
+          errorMessage: (c) => '',
         }),
       },
     },

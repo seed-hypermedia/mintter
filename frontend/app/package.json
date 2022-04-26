@@ -57,6 +57,7 @@
     "is-url": "^1.2.4",
     "long": "^4.0.0",
     "nanoid": "^3.1.30",
+    "navaid": "^1.2.0",
     "protobufjs": "^6.11.2",
     "react": "^17.0.2",
     "react-copy-to-clipboard": "^5.0.4",
@@ -85,7 +86,6 @@
     "unist-util-visit": "^4.1.0",
     "unist-util-visit-parents": "^5.1.0",
     "vite-plugin-worker": "^1.0.5",
-    "wouter": "^2.8.0-alpha.2",
     "xstate": "^4.30.2"
   },
   "devDependencies": {

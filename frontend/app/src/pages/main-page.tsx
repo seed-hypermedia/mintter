@@ -1,8 +1,7 @@
-import {createDraft, Document} from '@app/client'
 import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
 import {HoverProvider} from '@app/editor/hover-context'
 import {hoverMachine} from '@app/editor/hover-machine'
-import {MainPageProvider, useLibrary} from '@app/main-page-context'
+import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageMachine} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
 import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
@@ -13,18 +12,15 @@ import {Settings} from '@components/settings'
 import {createSidepanelMachine, Sidepanel, SidepanelProvider} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
-import {useActor, useInterpret, useMachine} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {QueryClient, useQueryClient} from 'react-query'
-import {Redirect, Route, RouteComponentProps, Switch, useLocation} from 'wouter'
-import {assign, createMachine} from 'xstate'
 import EditorPage from './editor'
 import Publication from './publication'
 
 export function MainPage({client: propClient}: {client?: QueryClient}) {
   // eslint-disable-line
-  const [location] = useLocation()
   const localClient = useQueryClient()
   const client = propClient ?? localClient
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
@@ -40,36 +36,34 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
     },
   })
 
+  const [state] = useActor(mainPageService)
+
   return (
     <MainPageProvider value={mainPageService}>
       <CitationsProvider value={citationsService}>
         <HoverProvider value={hoverService}>
           <BookmarksProvider value={bookmarksService}>
             <SidepanelProvider value={sidepanelService}>
-              {location.includes('settings') ? (
-                <Settings />
-              ) : (
-                <Box className={rootPageStyle()}>
-                  <Topbar />
-                  <Library />
-                  <MainWindow>
-                    <ErrorBoundary
-                      FallbackComponent={PageError}
-                      onReset={() => {
-                        window.location.reload()
-                      }}
-                    >
-                      <Switch>
-                        <Route path="/p/:docId/:version/:blockId?" component={Publication} />
-                        <Route path="/editor/:docId" component={EditorPage} />
-                        <Route path="/new/:type?/:docId?/:version?/:blockId?" component={NewWindow} />
-                        <Route component={Placeholder} />
-                      </Switch>
-                    </ErrorBoundary>
-                  </MainWindow>
-                  <Sidepanel />
-                </Box>
-              )}
+              {state.matches('routes.settings') ? <Settings /> : null}
+              <Box className={rootPageStyle()}>
+                {state.hasTag('topbar') ? <Topbar /> : null}
+                {state.hasTag('library') ? <Library /> : null}
+                <MainWindow>
+                  <ErrorBoundary
+                    FallbackComponent={PageError}
+                    onReset={() => {
+                      window.location.reload()
+                    }}
+                  >
+                    {state.hasTag('publication') && !!state.context.params.docId ? (
+                      <Publication key={state.context.params.docId} />
+                    ) : null}
+                    {state.hasTag('draft') ? <EditorPage key={state.context.params.docId} /> : null}
+                    {state.matches('routes.idle') ? <Placeholder /> : null}
+                  </ErrorBoundary>
+                </MainWindow>
+                <Sidepanel />
+              </Box>
             </SidepanelProvider>
           </BookmarksProvider>
         </HoverProvider>
@@ -167,104 +161,4 @@ function PageError({error, resetErrorBoundary}: FallbackProps) {
       <button onClick={resetErrorBoundary}>reload page</button>
     </div>
   )
-}
-
-type NewWindowEvent = {
-  type: 'REDIRECT'
-  document: Document
-}
-
-let newWindowMachine = createMachine({
-  tsTypes: {} as import('./main-page.typegen').Typegen0,
-  schema: {
-    context: {} as {url: string},
-    events: {} as NewWindowEvent,
-  },
-  initial: 'idle',
-  context: () => ({
-    url: '',
-  }),
-  entry: ['closeLibrary'],
-  states: {
-    idle: {
-      after: {
-        1: [
-          {
-            cond: 'shouldCreateNewDraft',
-            target: 'newDraft',
-          },
-          {
-            target: 'redirect',
-            actions: ['assignUrl'],
-          },
-        ],
-      },
-    },
-    newDraft: {
-      invoke: {
-        src: 'createNewDraft',
-      },
-      on: {
-        REDIRECT: {
-          target: 'redirect',
-          actions: 'assignDraftUrl',
-        },
-      },
-    },
-    redirect: {},
-  },
-})
-
-type NewWindowProps = RouteComponentProps<{
-  type?: 'p' | 'editor'
-  docId?: string
-  version?: string
-  blockId?: string
-}>
-
-function NewWindow({params}: NewWindowProps) {
-  const libService = useLibrary()
-  const [, libSend] = useActor(libService)
-  const [, setLocation] = useLocation()
-  const [state] = useMachine(newWindowMachine, {
-    services: {
-      createNewDraft: () => (sendBack) => {
-        try {
-          createDraft().then((document) => {
-            sendBack({type: 'REDIRECT', document})
-          })
-        } catch {
-          throw new Error('error creating new draft in new window')
-        }
-      },
-    },
-    actions: {
-      closeLibrary: () => {
-        setTimeout(() => {
-          libSend('LIBRARY.CLOSE')
-        }, 0)
-      },
-      assignUrl: assign({
-        url: () =>
-          `/${params.type}/${params.docId}${
-            params.version ? `/${params.version}${params.blockId ? `/${params.blockId}` : ''}` : ''
-          }`,
-      }),
-      assignDraftUrl: assign({
-        url: (_, event) => `/editor/${event.document.id}`,
-      }),
-    },
-    guards: {
-      shouldCreateNewDraft: () => {
-        console.log('params', params, typeof params.type == 'undefined')
-        return typeof params.type == 'undefined'
-      },
-    },
-  })
-
-  if (state.matches('redirect')) {
-    return <Redirect to={state.context.url} />
-  }
-
-  return null
 }
