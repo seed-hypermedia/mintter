@@ -4,7 +4,7 @@ import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {draftEditorMachine, useEditorDraft} from '@app/editor/use-editor-draft'
-import {useMainPage} from '@app/main-page-context'
+import {useMainPage, useParams} from '@app/main-page-context'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -16,21 +16,20 @@ import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {ReactEditor} from 'slate-react'
-import {useLocation} from 'wouter'
 import {StateFrom} from 'xstate'
 import {EditorPageProps} from './types'
 
-export default function EditorPage({params, editor: propEditor}: EditorPageProps) {
+export default function EditorPage({editor: propEditor}: EditorPageProps) {
   const client = useQueryClient()
-  const [, setLocation] = useLocation()
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
   const localEditor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
   const mainPageService = useMainPage()
+  let {docId} = useParams()
 
   const editor = propEditor ?? localEditor
   const [state, send] = useEditorDraft({
-    documentId: params!.docId,
+    documentId: docId,
     client,
     mainPageService,
     options: {
@@ -41,9 +40,10 @@ export default function EditorPage({params, editor: propEditor}: EditorPageProps
           } else {
             toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
           }
-
-          setLocation(`/p/${context.localDraft?.id}/${context.publication?.version}`, {
-            // we replace the history here because the draft url will not be available after publish.
+          mainPageService.send({
+            type: 'goToPublication',
+            docId: context.publication?.document?.id,
+            version: context.publication?.version,
             replace: true,
           })
         },

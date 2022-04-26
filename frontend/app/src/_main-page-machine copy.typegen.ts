@@ -46,10 +46,11 @@ export interface Typegen2 {
   '@@xstate/typegen': true
   eventsCausingActions: {
     reconcileLibrary: 'RECONCILE'
-    setDraftParams: ''
-    setPublicationParams: ''
-    pushDraftRoute: ''
-    pushPublicationToRoute: ''
+    setEditorParams: 'goToEditor' | 'goToNew'
+    setPublicationParams: 'goToNew' | ''
+    pushHomeRoute: 'goHome'
+    pushDraftRoute: 'goToEditor'
+    pushPublicationRoute: ''
   }
   internalEvents: {
     '': {type: ''}
@@ -63,7 +64,7 @@ export interface Typegen2 {
   }
   invokeSrcNameMap: {
     router: 'done.invoke.router'
-    createNewDraft: 'done.invoke.(machine).routes.createDraft:invocation[0]'
+    createNewDraft: 'done.invoke.main page.routes.createDraft:invocation[0]'
   }
   missingImplementations: {
     actions: 'reconcileLibrary'
@@ -73,13 +74,12 @@ export interface Typegen2 {
   }
   eventsCausingServices: {
     router: 'xstate.init'
-    createNewDraft: 'goToNew' | 'toNewDraft'
+    createNewDraft: 'goToNew' | 'createNewDraft'
   }
   eventsCausingGuards: {
     isPublication: 'goToNew'
     isDraft: 'goToNew'
-    isMetaEventDifferent: ''
-    isEventDifferent: 'goToEditor' | 'goToPublication'
+    isPublicationValid: ''
   }
   eventsCausingDelays: {}
   matchesStates:
@@ -87,9 +87,6 @@ export interface Typegen2 {
     | 'routes.idle'
     | 'routes.home'
     | 'routes.editor'
-    | 'routes.editor.validating'
-    | 'routes.editor.valid'
-    | 'routes.editor.error'
     | 'routes.publication'
     | 'routes.publication.validating'
     | 'routes.publication.valid'
@@ -104,7 +101,7 @@ export interface Typegen2 {
           | 'publication'
           | 'settings'
           | 'createDraft'
-          | {editor?: 'validating' | 'valid' | 'error'; publication?: 'validating' | 'valid' | 'error'}
+          | {publication?: 'validating' | 'valid' | 'error'}
       }
-  tags: 'topbar' | 'library' | 'sidepanel' | 'draft' | 'publication'
+  tags: 'topbar' | 'library' | 'sidepanel' | 'publication'
 }

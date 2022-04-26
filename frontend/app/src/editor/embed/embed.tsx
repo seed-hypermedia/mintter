@@ -1,3 +1,4 @@
+import {useMainPage} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {useBookmarksService} from '@components/bookmarks'
@@ -10,7 +11,6 @@ import {invoke} from '@tauri-apps/api'
 import {ForwardedRef, forwardRef} from 'react'
 import toast from 'react-hot-toast'
 import {RenderElementProps} from 'slate-react'
-import {useLocation} from 'wouter'
 import {ContextMenu} from '../context-menu'
 import type {EditorPlugin} from '../types'
 import {EmbedEditor} from './embed-editor'
@@ -51,7 +51,7 @@ type EmbedProps = Omit<RenderElementProps, 'element'> & {element: EmbedType}
 function RenderEmbed({element, attributes, children}: EmbedProps, ref: ForwardedRef<HTMLQuoteElement>) {
   const sidepanelService = useSidepanel()
   const bookmarksService = useBookmarksService()
-  const [, setLocation] = useLocation()
+  const mainPageService = useMainPage()
   const [pubId, version, blockId] = getIdsfromUrl(element.url)
 
   function addBookmark() {
@@ -67,7 +67,7 @@ function RenderEmbed({element, attributes, children}: EmbedProps, ref: Forwarded
   }
 
   function onGoToPublication() {
-    setLocation(`/p/${pubId}/${version}/${blockId}`)
+    mainPageService.send({type: 'goToPublication', docId: pubId, version, blockId})
   }
 
   function onOpenInSidepanel() {

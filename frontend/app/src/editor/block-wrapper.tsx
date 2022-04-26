@@ -4,8 +4,8 @@ import {BlockTools} from '@app/editor/block-tools'
 import {Dropdown} from '@app/editor/dropdown'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {useParams} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {useRoute} from '@app/utils/use-route'
 import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -33,11 +33,7 @@ export function BlockWrapper({
   const {createDraft} = useCreateDraft()
   const hoverService = useHover()
   const [hoverState, hoverSend] = useActor(hoverService)
-  const {params} = useRoute<{docId: string; version: string; blockId?: string}>([
-    '/p/:docId/:version/:blockId?',
-    '/editor/:docId',
-  ])
-  // const [, setLocation] = useLocation()
+  let params = useParams()
 
   async function onCopy() {
     if (params) {
