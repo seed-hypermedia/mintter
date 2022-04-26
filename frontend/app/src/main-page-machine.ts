@@ -157,6 +157,9 @@ type MainPageEvent =
     type: 'goToSettings'
   }
   | {
+    type: 'goToHome'
+  }
+  | {
     type: 'goToNew'
     docType?: string
     docId?: string
@@ -282,6 +285,7 @@ export function createMainPageMachine(client: QueryClient) {
               actions: 'reconcileLibrary',
             },
             routeNotFound: '.idle',
+            goToHome: '.home',
             goToSettings: '.settings',
             goToEditor: '.editor',
             goToPublication: '.publication',
@@ -341,10 +345,10 @@ export function createMainPageMachine(client: QueryClient) {
       },
       services: {
         router: () => (sendBack, receive) => {
-          let navRouter = Navaid('/', () => sendBack('routeNotFound'))
+          let navRouter = Navaid('/', () => sendBack('goToHome'))
           // Deserialize events from the URL
           navRouter
-            .on('/', () => sendBack('routeNotFound'))
+            .on('/', () => sendBack('goToHome'))
             .on('/settings', () => sendBack('goToSettings'))
             .on<{ docId: string }>('/editor/:docId', (params) =>
               params ? sendBack({ type: 'goToEditor', docId: params.docId }) : sendBack('routeNotFound'),
@@ -373,7 +377,7 @@ export function createMainPageMachine(client: QueryClient) {
             })
 
           receive((event) => {
-            if (event.type == 'goToEditor') {
+            if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
               navRouter.route(

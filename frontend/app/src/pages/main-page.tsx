@@ -37,6 +37,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   })
 
   const [state] = useActor(mainPageService)
+  console.log('🚀 ~ file: main-page.tsx ~ line 40 ~ MainPage ~ state', state.value)
 
   return (
     <MainPageProvider value={mainPageService}>
@@ -44,26 +45,29 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
         <HoverProvider value={hoverService}>
           <BookmarksProvider value={bookmarksService}>
             <SidepanelProvider value={sidepanelService}>
-              {state.matches('routes.settings') ? <Settings /> : null}
-              <Box className={rootPageStyle()}>
-                {state.hasTag('topbar') ? <Topbar /> : null}
-                {state.hasTag('library') ? <Library /> : null}
-                <MainWindow>
-                  <ErrorBoundary
-                    FallbackComponent={PageError}
-                    onReset={() => {
-                      window.location.reload()
-                    }}
-                  >
-                    {state.hasTag('publication') && !!state.context.params.docId ? (
-                      <Publication key={state.context.params.docId} />
-                    ) : null}
-                    {state.hasTag('draft') ? <EditorPage key={state.context.params.docId} /> : null}
-                    {state.matches('routes.idle') ? <Placeholder /> : null}
-                  </ErrorBoundary>
-                </MainWindow>
-                <Sidepanel />
-              </Box>
+              {state.matches('routes.settings') ? (
+                <Settings />
+              ) : (
+                <Box className={rootPageStyle()}>
+                  {state.hasTag('topbar') ? <Topbar /> : null}
+                  {state.hasTag('library') ? <Library /> : null}
+                  <MainWindow>
+                    <ErrorBoundary
+                      FallbackComponent={PageError}
+                      onReset={() => {
+                        window.location.reload()
+                      }}
+                    >
+                      {state.hasTag('publication') && !!state.context.params.docId ? (
+                        <Publication key={state.context.params.docId} />
+                      ) : null}
+                      {state.hasTag('draft') ? <EditorPage key={state.context.params.docId} /> : null}
+                      {state.matches('routes.idle') ? <Placeholder /> : null}
+                    </ErrorBoundary>
+                  </MainWindow>
+                  {state.hasTag('sidepanel') ? <Sidepanel /> : null}
+                </Box>
+              )}
             </SidepanelProvider>
           </BookmarksProvider>
         </HoverProvider>
