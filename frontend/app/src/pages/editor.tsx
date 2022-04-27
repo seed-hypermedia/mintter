@@ -1,36 +1,36 @@
 // import 'show-keys'
-import {AppError} from '@app/app'
+import { AppError } from '@app/app'
 import {
   Document,
   DocumentChange,
   publishDraft as apiPublishDraft,
-  updateDraftV2 as apiUpdateDraft,
+  updateDraftV2 as apiUpdateDraft
 } from '@app/client'
-import {Editor} from '@app/editor/editor'
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
-import {plugins} from '@app/editor/plugins'
-import {draftEditorMachine, useEditorDraft} from '@app/editor/use-editor-draft'
-import {useMainPage, useParams} from '@app/main-page-context'
-import {getTitleFromContent} from '@app/utils/get-document-title'
-import {getDateFormat} from '@app/utils/get-format-date'
-import {debug} from '@app/utils/logger'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
+import { Editor } from '@app/editor/editor'
+import { changesService } from '@app/editor/mintter-changes/plugin'
+import { buildEditorHook, EditorMode } from '@app/editor/plugin-utils'
+import { plugins } from '@app/editor/plugins'
+import { draftEditorMachine, useEditorDraft } from '@app/editor/use-editor-draft'
+import { useMainPage, useParams } from '@app/main-page-context'
+import { getTitleFromContent } from '@app/utils/get-document-title'
+import { getDateFormat } from '@app/utils/get-format-date'
+import { debug } from '@app/utils/logger'
+import { Box } from '@components/box'
+import { Button } from '@components/button'
 import {
   footerButtonsStyles,
   footerMetadataStyles,
   footerStyles,
-  PageFooterSeparator,
+  PageFooterSeparator
 } from '@components/page-footer'
-import {Text} from '@components/text'
-import {ChildrenOf} from '@mintter/mttast'
-import {useMemo, useRef, useState} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
+import { Text } from '@components/text'
+import { ChildrenOf } from '@mintter/mttast'
+import { useMemo, useRef, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
-import {useQueryClient} from 'react-query'
-import {StateFrom} from 'xstate'
-import {EditorPageProps} from './types'
+import { useQueryClient } from 'react-query'
+import { StateFrom } from 'xstate'
+import { EditorPageProps } from './types'
 export default function EditorPage({
   editor: propEditor,
   shouldAutosave = true,
@@ -38,7 +38,7 @@ export default function EditorPage({
   updateDraft = apiUpdateDraft,
 }: EditorPageProps) {
   const client = useQueryClient()
-  const {docId} = useParams()
+  const { docId } = useParams()
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
   const localEditor = useMemo(
@@ -120,19 +120,19 @@ export default function EditorPage({
       services: {
         saveDraft: (context) => (sendBack) => {
           if (shouldAutosave) {
-            ;(async function autosave() {
+            ; (async function autosave() {
               let contentChanges = changesService.transformChanges(editor)
               let newTitle = getTitleFromContent(editor)
               let changes: Array<DocumentChange> = newTitle
                 ? [
-                    ...contentChanges,
-                    {
-                      op: {
-                        $case: 'setTitle',
-                        setTitle: newTitle,
-                      },
+                  ...contentChanges,
+                  {
+                    op: {
+                      $case: 'setTitle',
+                      setTitle: newTitle,
                     },
-                  ]
+                  },
+                ]
                 : contentChanges
 
               debug('=== CHANGES:', JSON.stringify(changes))
@@ -160,7 +160,7 @@ export default function EditorPage({
 
           publishDraft(context.localDraft.id!)
             .then((publication) => {
-              sendBack({type: 'EDITOR.PUBLISH.SUCCESS', publication})
+              sendBack({ type: 'EDITOR.PUBLISH.SUCCESS', publication })
             })
             .catch((err: any) => {
               sendBack({
@@ -173,7 +173,7 @@ export default function EditorPage({
     },
   })
 
-  const {context} = state
+  const { context } = state
 
   // useLayoutEffect(() => {
   //   if (context.localDraft?.title) {
@@ -196,7 +196,7 @@ export default function EditorPage({
       >
         <Box
           data-testid="editor-wrapper"
-          css={{paddingHorizontal: '$5', paddingTop: '$5'}}
+          css={{ paddingHorizontal: '$5', paddingTop: '$5' }}
         >
           {context.localDraft?.content && (
             <>
@@ -206,11 +206,11 @@ export default function EditorPage({
                 //@ts-ignore
                 onChange={(content: ChildrenOf<Document>) => {
                   if (!content && typeof content == 'string') return
-                  send({type: 'EDITOR.UPDATE', payload: {content}})
+                  send({ type: 'EDITOR.UPDATE', payload: { content } })
                 }}
               />
 
-              <Box css={{margin: '$9', marginLeft: '$7'}}>
+              <Box css={{ margin: '$9', marginLeft: '$7' }}>
                 <button type="button" onClick={() => setVisible((v) => !v)}>
                   toggle Value
                 </button>
@@ -278,20 +278,20 @@ function EditorStatus({
           backgroundColor: state.matches('editing.idle')
             ? '$success-component-bg-active'
             : state.matches('editing.debouncing')
-            ? '$base--component-bg-active'
-            : state.matches('editing.saving')
-            ? '$warning-component-bg-active'
-            : '$danger-component-bg-active',
+              ? '$base--component-bg-active'
+              : state.matches('editing.saving')
+                ? '$warning-component-bg-active'
+                : '$danger-component-bg-active',
         }}
       />
       <Text color="muted" size="1">
         {state.matches('editing.idle')
           ? 'saved'
           : state.matches('editing.debouncing')
-          ? 'unsaved'
-          : state.matches('editing.saving')
-          ? 'saving...'
-          : ''}
+            ? 'unsaved'
+            : state.matches('editing.saving')
+              ? 'saving...'
+              : ''}
       </Text>
     </Box>
   )

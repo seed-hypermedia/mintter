@@ -1,9 +1,9 @@
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
-import {Annotation, Block, BlockNode} from '@app/client'
-import {debug} from '@app/utils/logger'
-import {FlowContent, group, isText, PhrasingContent} from '@mintter/mttast'
+import { Annotation, Block, BlockNode } from '@app/client'
+import { debug } from '@app/utils/logger'
+import { FlowContent, group, isText, PhrasingContent } from '@mintter/mttast'
 // import { interpret } from "xstate";
-import {annotationContains} from './classes'
+import { annotationContains } from './classes'
 
 // function main() {
 //   let service = interpret(toSlateMachine).start()
@@ -59,7 +59,7 @@ export function blockToSlate(blk: Block): FlowContent {
   const leafAnnotations = new Set<Annotation>()
 
   if (blk.text == '') {
-    leaves.push({type: 'text', value: blk.text})
+    leaves.push({ type: 'text', value: blk.text })
     return out as FlowContent
   }
 
@@ -95,10 +95,10 @@ export function blockToSlate(blk: Block): FlowContent {
 
       if (linkOrEmbed) {
         if (!isText(leaves[leaves.length - 1])) {
-          leaves.push({type: 'text', value: ''})
+          leaves.push({ type: 'text', value: '' })
         }
         leaves.push(linkOrEmbed)
-        leaves.push({type: 'text', value: ''})
+        leaves.push({ type: 'text', value: '' })
         linkOrEmbed = null
       }
 
@@ -170,10 +170,10 @@ export function blockToSlate(blk: Block): FlowContent {
       if (linkOrEmbed) {
         if (linkChangedIdentity(linkAnnotation)) {
           if (!isText(leaves[leaves.length - 1])) {
-            leaves.push({type: 'text', value: ''})
+            leaves.push({ type: 'text', value: '' })
           }
           leaves.push(linkOrEmbed)
-          leaves.push({type: 'text', value: ''})
+          leaves.push({ type: 'text', value: '' })
           linkOrEmbed = {
             type: (linkAnnotation as Annotation).type,
             ...(linkAnnotation as Annotation).attributes,
@@ -190,10 +190,10 @@ export function blockToSlate(blk: Block): FlowContent {
     } else {
       if (linkOrEmbed) {
         if (!isText(leaves[leaves.length - 1])) {
-          leaves.push({type: 'text', value: ''})
+          leaves.push({ type: 'text', value: '' })
         }
         leaves.push(linkOrEmbed)
-        leaves.push({type: 'text', value: ''})
+        leaves.push({ type: 'text', value: '' })
         linkOrEmbed = null
       }
     }
@@ -213,7 +213,7 @@ export function blockToSlate(blk: Block): FlowContent {
 
     if (linkOrEmbed) {
       if (linkOrEmbed.type == 'embed') {
-        linkOrEmbed.children.push({...leaf, value: ''})
+        linkOrEmbed.children.push({ ...leaf, value: '' })
       } else {
         linkOrEmbed.children.push(leaf)
       }
@@ -265,7 +265,7 @@ function isSurrogate(s: string, i: number): boolean {
 
 export function blockNodeToSlate(entry: Array<BlockNode>) {
   return group(
-    entry.map(({block, children}) => {
+    entry.map(({ block, children }) => {
       let slateBlock = blockToSlate(block!)
       if (children.length) {
         slateBlock.children[1] = blockNodeToSlate(children)

@@ -3,63 +3,63 @@ import {
   getPublication,
   Link,
   listCitations,
-  Publication as PublicationType,
+  Publication as PublicationType
 } from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {useCitationService} from '@app/editor/citations'
-import {ContextMenu} from '@app/editor/context-menu'
-import {Editor} from '@app/editor/editor'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {EditorDocument} from '@app/editor/use-editor-draft'
-import {queryKeys, useAccount} from '@app/hooks'
-import {useMainPage, useParams} from '@app/main-page-context'
-import {tippingMachine} from '@app/tipping-machine'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {getBlock} from '@app/utils/get-block'
-import {getDateFormat} from '@app/utils/get-format-date'
-import {debug, error} from '@app/utils/logger'
-import {useBookmarksService} from '@components/bookmarks'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {useCreateDraft} from '@components/library/use-create-draft'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { useCitationService } from '@app/editor/citations'
+import { ContextMenu } from '@app/editor/context-menu'
+import { Editor } from '@app/editor/editor'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { EditorDocument } from '@app/editor/use-editor-draft'
+import { queryKeys, useAccount } from '@app/hooks'
+import { useMainPage, useParams } from '@app/main-page-context'
+import { tippingMachine } from '@app/tipping-machine'
+import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
+import { getBlock } from '@app/utils/get-block'
+import { getDateFormat } from '@app/utils/get-format-date'
+import { debug, error } from '@app/utils/logger'
+import { useBookmarksService } from '@components/bookmarks'
+import { Box } from '@components/box'
+import { Button } from '@components/button'
+import { Icon } from '@components/icon'
+import { useCreateDraft } from '@components/library/use-create-draft'
 import {
   footerButtonsStyles,
   footerMetadataStyles,
   footerStyles,
-  PageFooterSeparator,
+  PageFooterSeparator
 } from '@components/page-footer'
-import {Placeholder} from '@components/placeholder-box'
-import {Text} from '@components/text'
-import {TextField} from '@components/text-field'
-import {document, FlowContent, group} from '@mintter/mttast'
+import { Placeholder } from '@components/placeholder-box'
+import { Text } from '@components/text'
+import { TextField } from '@components/text-field'
+import { document, FlowContent, group } from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {invoke} from '@tauri-apps/api'
-import {useActor, useInterpret, useMachine} from '@xstate/react'
+import { invoke } from '@tauri-apps/api'
+import { useActor, useInterpret, useMachine } from '@xstate/react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
-import {QueryClient, useQueryClient} from 'react-query'
-import {assign, createMachine, StateFrom} from 'xstate'
+import { QueryClient, useQueryClient } from 'react-query'
+import { assign, createMachine, StateFrom } from 'xstate'
 
 export default function Publication() {
   const client = useQueryClient()
   const citations = useCitationService()
   const mainPageService = useMainPage()
-  let {docId, version} = useParams()
-  let {createDraft} = useCreateDraft()
+  let { docId, version } = useParams()
+  let { createDraft } = useCreateDraft()
 
   const [state, send] = usePagePublication(client, mainPageService)
 
   async function onOpenInNewWindow() {
-    await invoke('plugin:window|open_in_new_window', {url: `/new`})
+    await invoke('plugin:window|open_in_new_window', { url: `/new` })
   }
 
   async function handleEdit() {
     try {
       const d = await createDraft(docId)
       if (d?.id) {
-        mainPageService.send({type: 'goToEditor', docId: d.id})
+        mainPageService.send({ type: 'goToEditor', docId: d.id })
       }
     } catch (err) {
       error(
@@ -77,14 +77,14 @@ export default function Publication() {
   if (state.matches('errored')) {
     return (
       <Box
-        css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}
+        css={{ padding: '$5', paddingBottom: 0, marginBottom: 200 }}
         data-testid="publication-wrapper"
       >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
         <Button
           onClick={() =>
-            send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
+            send({ type: 'PUBLICATION.FETCH.DATA', id: docId, version })
           }
           color="muted"
         >
@@ -99,7 +99,7 @@ export default function Publication() {
       {state.matches('ready') && (
         <>
           <Box
-            css={{padding: '$5', paddingBottom: 0, marginBottom: 50}}
+            css={{ padding: '$5', paddingBottom: 0, marginBottom: 50 }}
             data-testid="publication-wrapper"
           >
             <Editor
@@ -110,7 +110,7 @@ export default function Publication() {
               }}
             />
           </Box>
-          <Box css={{marginBottom: 200, paddingLeft: 32}}>
+          <Box css={{ marginBottom: 200, paddingLeft: 32 }}>
             <Button variant="ghost" color="primary" size="1">
               View Discussion/Citations
             </Button>
@@ -191,7 +191,7 @@ function usePagePublication(
   const service = useInterpret(() => publicationMachine, {
     services: {
       fetchPublicationData: () => (sendBack) => {
-        let {context} = mainPageService.getSnapshot()
+        let { context } = mainPageService.getSnapshot()
         Promise.all([
           client.fetchQuery(
             [
@@ -254,7 +254,7 @@ function usePagePublication(
             () => listCitations(context.id),
           )
           .then((response) => {
-            Promise.all(response.links.map(({source}) => getBlock(source)))
+            Promise.all(response.links.map(({ source }) => getBlock(source)))
               //@ts-ignore
               .then((result: Array<FlowContent>) => {
                 let discussion = document([group(result)])
@@ -294,16 +294,16 @@ export type PublicationContextType = {
 }
 
 export type PublicationEvent =
-  | {type: 'PUBLICATION.FETCH.DATA'; id: string; version?: string}
+  | { type: 'PUBLICATION.FETCH.DATA'; id: string; version?: string }
   | {
-      type: 'PUBLICATION.REPORT.SUCCESS'
-      publication: ClientPublication
-      canUpdate?: boolean
-    }
-  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
-  | {type: 'TOGGLE.DISCUSSION'}
-  | {type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any}
-  | {type: 'REPORT.DISCUSSION.ERROR'; errorMessage: string}
+    type: 'PUBLICATION.REPORT.SUCCESS'
+    publication: ClientPublication
+    canUpdate?: boolean
+  }
+  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
+  | { type: 'TOGGLE.DISCUSSION' }
+  | { type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any }
+  | { type: 'REPORT.DISCUSSION.ERROR'; errorMessage: string }
 
 export const publicationMachine = createMachine(
   {
@@ -557,7 +557,7 @@ function TippingModal({
             <Button
               size="1"
               type="submit"
-              css={{width: '$full'}}
+              css={{ width: '$full' }}
               onClick={() => send('RETRY')}
             >
               Retry
@@ -590,14 +590,14 @@ function TippingModal({
               </Text>
               <Text
                 size="1"
-                css={{wordBreak: 'break-all', wordWrap: 'break-word'}}
+                css={{ wordBreak: 'break-all', wordWrap: 'break-word' }}
               >
                 {state.context.invoice}
               </Text>
             </Box>
             <Button
               size="1"
-              css={{width: '$full'}}
+              css={{ width: '$full' }}
               onClick={() => send('TIPPING.PAY.INVOICE')}
             >
               Pay Directly
@@ -646,7 +646,7 @@ function SetAmount({
     >
       <Text size="4">Tip this Author</Text>
       {
-        <Box css={{display: 'flex', flexDirection: 'column', gap: '$3'}}>
+        <Box css={{ display: 'flex', flexDirection: 'column', gap: '$3' }}>
           <TextField
             type="number"
             id="amount"
@@ -672,7 +672,7 @@ function SetAmount({
               size="1"
               type="submit"
               disabled={state.hasTag('pending')}
-              css={{width: '$full'}}
+              css={{ width: '$full' }}
               onClick={() => send('TIPPING.REQUEST.INVOICE')}
             >
               Request Invoice
@@ -684,7 +684,7 @@ function SetAmount({
   )
 }
 
-function Discussion({links}: {links: Array<Link> | null}) {
+function Discussion({ links }: { links: Array<Link> | null }) {
   if (!links) return null
   return (
     <Box
@@ -704,10 +704,10 @@ function Discussion({links}: {links: Array<Link> | null}) {
   )
 }
 
-function DiscussionItem({link}: {link: Link}) {
+function DiscussionItem({ link }: { link: Link }) {
   const client = useQueryClient()
   const [state, send] = useMachine(() => createDiscussionMachine(client))
-  const {data: author} = useAccount(
+  const { data: author } = useAccount(
     state?.context?.publication?.document?.author,
   )
   const bookmarkService = useBookmarksService()
@@ -742,7 +742,7 @@ function DiscussionItem({link}: {link: Link}) {
     return null
   }
 
-  const {block, publication} = state.context
+  const { block, publication } = state.context
 
   if (state.matches('ready')) {
     return (
@@ -782,9 +782,9 @@ function DiscussionItem({link}: {link: Link}) {
                 {publication?.document?.title}
               </Text>
               {author && (
-                <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+                <Text size="1" color="muted" css={{ paddingRight: '$3' }}>
                   <span>Signed by </span>
-                  <span style={{textDecoration: 'underline'}}>
+                  <span style={{ textDecoration: 'underline' }}>
                     {author.profile?.alias}
                   </span>
                 </Text>
@@ -836,14 +836,14 @@ type DiscussionContextType = {
 }
 
 type DiscussionEvent =
-  | {type: 'FETCH'; link: Link}
+  | { type: 'FETCH'; link: Link }
   | {
-      type: 'REPORT.FETCH.SUCCESS'
-      publication: PublicationType
-      block: FlowContent
-    }
-  | {type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message']}
-  | {type: 'RETRY'}
+    type: 'REPORT.FETCH.SUCCESS'
+    publication: PublicationType
+    block: FlowContent
+  }
+  | { type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message'] }
+  | { type: 'RETRY' }
 
 // TODO: transition always to fetching (I removed the useEffect that transitioned before to it)
 export function createDiscussionMachine(client: QueryClient) {
@@ -960,10 +960,10 @@ function BlockPlaceholder() {
         gap: '$3',
       }}
     >
-      <Placeholder css={{height: 24, width: '$full'}} />
-      <Placeholder css={{height: 24, width: '92%'}} />
-      <Placeholder css={{height: 24, width: '84%'}} />
-      <Placeholder css={{height: 24, width: '90%'}} />
+      <Placeholder css={{ height: 24, width: '$full' }} />
+      <Placeholder css={{ height: 24, width: '92%' }} />
+      <Placeholder css={{ height: 24, width: '84%' }} />
+      <Placeholder css={{ height: 24, width: '90%' }} />
     </Box>
   )
 }

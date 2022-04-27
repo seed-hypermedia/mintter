@@ -1,30 +1,30 @@
-import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
-import {HoverProvider} from '@app/editor/hover-context'
-import {hoverMachine} from '@app/editor/hover-machine'
-import {MainPageProvider} from '@app/main-page-context'
-import {createMainPageMachine} from '@app/main-page-machine'
-import {css} from '@app/stitches.config'
+import { CitationsProvider, createCitationsMachine } from '@app/editor/citations'
+import { HoverProvider } from '@app/editor/hover-context'
+import { hoverMachine } from '@app/editor/hover-machine'
+import { MainPageProvider } from '@app/main-page-context'
+import { createMainPageMachine } from '@app/main-page-machine'
+import { css } from '@app/stitches.config'
 import {
   BookmarksProvider,
-  createBookmarkListMachine,
+  createBookmarkListMachine
 } from '@components/bookmarks'
-import {Box} from '@components/box'
-import {Library} from '@components/library'
-import {ScrollArea} from '@components/scroll-area'
-import {Settings} from '@components/settings'
-import {createSidepanelMachine, SidepanelProvider} from '@components/sidepanel'
-import {Text} from '@components/text'
-import {Topbar} from '@components/topbar'
-import {useActor, useInterpret} from '@xstate/react'
-import {PropsWithChildren} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {QueryClient, useQueryClient} from 'react-query'
-import {DraftList} from './draft-list-page'
+import { Box } from '@components/box'
+import { Library } from '@components/library'
+import { ScrollArea } from '@components/scroll-area'
+import { Settings } from '@components/settings'
+import { createSidepanelMachine, SidepanelProvider } from '@components/sidepanel'
+import { Text } from '@components/text'
+import { Topbar } from '@components/topbar'
+import { useActor, useInterpret } from '@xstate/react'
+import { PropsWithChildren } from 'react'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
+import { QueryClient, useQueryClient } from 'react-query'
+import { DraftList } from './draft-list-page'
 import EditorPage from './editor'
 import Publication from './publication'
-import {PublicationList} from './publication-list-page'
+import { PublicationList } from './publication-list-page'
 
-export function MainPage({client: propClient}: {client?: QueryClient}) {
+export function MainPage({ client: propClient }: { client?: QueryClient }) {
   // eslint-disable-line
   const localClient = useQueryClient()
   const client = propClient ?? localClient
@@ -56,7 +56,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
                       }}
                     >
                       {state.hasTag('publication') &&
-                      !!state.context.params.docId ? (
+                        !!state.context.params.docId ? (
                         <Publication key={state.context.params.docId} />
                       ) : null}
                       {state.hasTag('draft') ? (
@@ -108,7 +108,7 @@ let mainWindowStyle = css({
   paddingBottom: 0,
 })
 
-function MainWindow({children}: PropsWithChildren<any>) {
+function MainWindow({ children }: PropsWithChildren<any>) {
   return (
     <Box className={mainWindowStyle()}>
       <ScrollArea>{children}</ScrollArea>
@@ -117,7 +117,7 @@ function MainWindow({children}: PropsWithChildren<any>) {
   )
 }
 
-export function MainWindowShell({children, ...props}: PropsWithChildren<any>) {
+export function MainWindowShell({ children, ...props }: PropsWithChildren<any>) {
   return (
     <Box {...props} className={mainWindowStyle()}>
       {children}
@@ -162,7 +162,7 @@ function Placeholder() {
   )
 }
 
-function PageError({error, resetErrorBoundary}: FallbackProps) {
+function PageError({ error, resetErrorBoundary }: FallbackProps) {
   return (
     <div role="alert">
       <p>Publication Error</p>

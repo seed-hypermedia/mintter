@@ -1,4 +1,4 @@
-import {MttastNode} from '@mintter/mttast'
+import { MttastNode } from '@mintter/mttast'
 
 export function toString(node: MttastNode, separator = ''): string {
   let index = -1

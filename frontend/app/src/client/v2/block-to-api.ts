@@ -1,6 +1,6 @@
-import {Annotation, Block} from '@app/client'
-import {FlowContent} from '@mintter/mttast'
-import {annotationContains, AnnotationSet} from './classes'
+import { Annotation, Block } from '@app/client'
+import { FlowContent } from '@mintter/mttast'
+import { annotationContains, AnnotationSet } from './classes'
 
 // This example only deals with a single level of leaves.
 // You'd need to think about something for multiple annotations,
@@ -63,9 +63,9 @@ export function blockToApi(slateBlock: FlowContent): Block {
 
     if (leaf.url) {
       if (leaf.value == '\uFFFC') {
-        annotations.addSpan('embed', {url: leaf.url}, start, end)
+        annotations.addSpan('embed', { url: leaf.url }, start, end)
       } else {
-        annotations.addSpan('link', {url: leaf.url}, start, end)
+        annotations.addSpan('link', { url: leaf.url }, start, end)
       }
     }
 
@@ -279,7 +279,7 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
     if (typeof leaf != 'undefined') {
       if (leaves[i].type == 'embed') {
         // we are 100% sure that if the leave is an embed, there's only one child in the children's array. that's why we can create the only child with the url attribute.
-        result.push({...leaf[0], url: leaves[i].url, value: '\uFFFC'})
+        result.push({ ...leaf[0], url: leaves[i].url, value: '\uFFFC' })
       } else {
         // add the url attribute to all link's children
         let nestedResult = flattenLeaves(leaf).map((l) => ({

@@ -1,16 +1,16 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {Dropdown} from '@app/editor/dropdown'
-import {useAccount} from '@app/hooks'
-import {useMainPage, usePageTitle} from '@app/main-page-context'
-import {css, styled} from '@app/stitches.config'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {error} from '@app/utils/logger'
-import {useBookmarksService} from '@components/bookmarks'
-import {Text} from '@components/text'
-import {useActor} from '@xstate/react'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { Dropdown } from '@app/editor/dropdown'
+import { useAccount } from '@app/hooks'
+import { useMainPage, usePageTitle } from '@app/main-page-context'
+import { css, styled } from '@app/stitches.config'
+import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
+import { error } from '@app/utils/logger'
+import { useBookmarksService } from '@components/bookmarks'
+import { Text } from '@components/text'
+import { useActor } from '@xstate/react'
 import toast from 'react-hot-toast'
-import {Box} from './box'
-import {Icon} from './icon'
+import { Box } from './box'
+import { Icon } from './icon'
 
 const draggableProps = {
   'data-tauri-drag-region': true,
@@ -51,12 +51,12 @@ export const topbarSection = css({
   alignItems: 'center',
 })
 
-export function Topbar({copy = copyTextToClipboard}) {
+export function Topbar({ copy = copyTextToClipboard }) {
   let mainPage = useMainPage()
   let bookmarkService = useBookmarksService()
   let [mainState] = useActor(mainPage)
   let title = usePageTitle()
-  let {data, isSuccess, isError} = useAccount(
+  let { data, isSuccess, isError } = useAccount(
     mainState.context.document?.author,
   )
 
@@ -90,8 +90,8 @@ export function Topbar({copy = copyTextToClipboard}) {
 
   return (
     <TopbarStyled data-tauri-drag-region>
-      <span style={{display: 'block', flex: 'none', width: 60}} />
-      <Box css={{display: 'flex'}} {...draggableProps}>
+      <span style={{ display: 'block', flex: 'none', width: 60 }} />
+      <Box css={{ display: 'flex' }} {...draggableProps}>
         <TopbarButton
           color="muted"
           data-testid="history-back"
@@ -131,7 +131,7 @@ export function Topbar({copy = copyTextToClipboard}) {
           aria-label="Document Title"
           data-testid="topbar-title"
           data-tauri-drag-region
-          css={{flex: 'none'}}
+          css={{ flex: 'none' }}
         >
           {title}
         </Text>
@@ -144,13 +144,13 @@ export function Topbar({copy = copyTextToClipboard}) {
               <Text
                 size="1"
                 color="muted"
-                css={{textDecoration: 'underline'}}
+                css={{ textDecoration: 'underline' }}
                 data-testid="topbar-author"
               >
                 {data!.profile?.alias}
               </Text>
             ) : (
-              <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
+              <Text size="1" color="muted" css={{ textDecoration: 'underline' }}>
                 ...
               </Text>
             )}
@@ -179,8 +179,8 @@ export function Topbar({copy = copyTextToClipboard}) {
         </Box>
       ) : null}
 
-      <Box css={{flex: 1}} />
-      <Box css={{flex: 'none'}}>
+      <Box css={{ flex: 1 }} />
+      <Box css={{ flex: 'none' }}>
         <TopbarButton
           css={{
             flex: 'none',

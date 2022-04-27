@@ -1,7 +1,7 @@
-import {CSS, styled} from '@app/stitches.config'
+import { CSS, styled } from '@app/stitches.config'
 import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
 import type * as Stitches from '@stitches/react'
-import React, {useMemo} from 'react'
+import React, { useMemo } from 'react'
 
 export const Svg = styled('svg', {
   fill: 'none',
@@ -129,12 +129,11 @@ export type IconProps = Stitches.VariantProps<typeof Svg> & {
   css?: CSS
 }
 
-export function Icon({name, ...props}: IconProps) {
+export function Icon({ name, ...props }: IconProps) {
   const Component: React.ComponentType<any> = useMemo(() => icons[name], [name])
   const label = useMemo(
     () =>
-      `${
-        Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'
+      `${Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'
       } Icon`,
     [Component.displayName],
   )

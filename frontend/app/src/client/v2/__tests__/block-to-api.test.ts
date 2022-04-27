@@ -1,4 +1,4 @@
-import {Block} from '@app/client'
+import { Block } from '@app/client'
 import {
   embed,
   heading,
@@ -8,14 +8,14 @@ import {
   Statement,
   statement,
   staticParagraph,
-  text,
+  text
 } from '@mintter/mttast'
-import {describe, expect, test} from 'vitest'
-import {blockToApi} from '../block-to-api'
+import { describe, expect, test } from 'vitest'
+import { blockToApi } from '../block-to-api'
 
 describe('Transform: blockToApi', () => {
   test('should return an empty annotations list', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([text('Hello world')]),
     ])
 
@@ -29,7 +29,7 @@ describe('Transform: blockToApi', () => {
   })
 
   test('should return a heading block', () => {
-    let input: Heading = heading({id: 'blockId'}, [
+    let input: Heading = heading({ id: 'blockId' }, [
       staticParagraph([text('Hello world')]),
     ])
 
@@ -43,14 +43,14 @@ describe('Transform: blockToApi', () => {
   })
 
   test('should return all the possible marks', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
-        text('A ', {strong: true}),
-        text('B ', {emphasis: true}),
-        text('C ', {underline: true}),
-        text('D ', {strikethrough: true}),
-        text('E ', {superscript: true}),
-        text('F', {subscript: true}),
+        text('A ', { strong: true }),
+        text('B ', { emphasis: true }),
+        text('C ', { underline: true }),
+        text('D ', { strikethrough: true }),
+        text('E ', { superscript: true }),
+        text('F', { subscript: true }),
       ]),
     ])
 
@@ -59,12 +59,12 @@ describe('Transform: blockToApi', () => {
       type: 'statement',
       text: 'A B C D E F',
       annotations: [
-        {type: 'strong', starts: [0], ends: [2], attributes: {}},
-        {type: 'emphasis', starts: [2], ends: [4], attributes: {}},
-        {type: 'underline', starts: [4], ends: [6], attributes: {}},
-        {type: 'strikethrough', starts: [6], ends: [8], attributes: {}},
-        {type: 'superscript', starts: [8], ends: [10], attributes: {}},
-        {type: 'subscript', starts: [10], ends: [11], attributes: {}},
+        { type: 'strong', starts: [0], ends: [2], attributes: {} },
+        { type: 'emphasis', starts: [2], ends: [4], attributes: {} },
+        { type: 'underline', starts: [4], ends: [6], attributes: {} },
+        { type: 'strikethrough', starts: [6], ends: [8], attributes: {} },
+        { type: 'superscript', starts: [8], ends: [10], attributes: {} },
+        { type: 'subscript', starts: [10], ends: [11], attributes: {} },
       ],
     }
 
@@ -72,11 +72,11 @@ describe('Transform: blockToApi', () => {
   })
 
   test('should generate overlapping marks', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
-        text('Mintter ', {strong: true}),
-        text('is', {strong: true, emphasis: true}),
-        text(' Awesome', {emphasis: true}),
+        text('Mintter ', { strong: true }),
+        text('is', { strong: true, emphasis: true }),
+        text(' Awesome', { emphasis: true }),
       ]),
     ])
 
@@ -85,8 +85,8 @@ describe('Transform: blockToApi', () => {
       type: 'statement',
       text: 'Mintter is Awesome',
       annotations: [
-        {type: 'strong', starts: [0], ends: [10], attributes: {}},
-        {type: 'emphasis', starts: [8], ends: [18], attributes: {}},
+        { type: 'strong', starts: [0], ends: [10], attributes: {} },
+        { type: 'emphasis', starts: [8], ends: [18], attributes: {} },
       ],
     }
 
@@ -94,25 +94,25 @@ describe('Transform: blockToApi', () => {
   })
 
   test('should transform no ASCII characters (emojis)', () => {
-    let input: Statement = statement({id: 'blockId'}, [
-      paragraph([text('hello '), text('from 👨‍👩‍👧‍👦 family', {strong: true})]),
+    let input: Statement = statement({ id: 'blockId' }, [
+      paragraph([text('hello '), text('from 👨‍👩‍👧‍👦 family', { strong: true })]),
     ])
 
     let output = {
       id: 'blockId',
       type: 'statement',
       text: 'hello from 👨‍👩‍👧‍👦 family',
-      annotations: [{type: 'strong', starts: [6], ends: [25], attributes: {}}],
+      annotations: [{ type: 'strong', starts: [6], ends: [25], attributes: {} }],
     }
 
     expect(blockToApi(input)).toEqual(output)
   })
 
   test('Links: simple', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
         text('hello '),
-        link({url: 'https://mintter.com'}, [text('Mintter')]),
+        link({ url: 'https://mintter.com' }, [text('Mintter')]),
       ]),
     ])
 
@@ -123,7 +123,7 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'link',
-          attributes: {url: 'https://mintter.com'},
+          attributes: { url: 'https://mintter.com' },
           starts: [6],
           ends: [13],
         },
@@ -134,10 +134,10 @@ describe('Transform: blockToApi', () => {
   })
 
   test('Links: multiple links together', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
-        link({url: 'https://mintter.com'}, [text('Mintter')]),
-        link({url: 'https://demo.com'}, [text('demo')]),
+        link({ url: 'https://mintter.com' }, [text('Mintter')]),
+        link({ url: 'https://demo.com' }, [text('demo')]),
       ]),
     ])
 
@@ -148,13 +148,13 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'link',
-          attributes: {url: 'https://mintter.com'},
+          attributes: { url: 'https://mintter.com' },
           starts: [0],
           ends: [7],
         },
         {
           type: 'link',
-          attributes: {url: 'https://demo.com'},
+          attributes: { url: 'https://demo.com' },
           starts: [7],
           ends: [11],
         },
@@ -165,12 +165,12 @@ describe('Transform: blockToApi', () => {
   })
 
   test('Links: with marks', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
         text('hello '),
-        link({url: 'https://mintter.com'}, [
+        link({ url: 'https://mintter.com' }, [
           text('Mintter '),
-          text('team!', {strong: true}),
+          text('team!', { strong: true }),
         ]),
       ]),
     ])
@@ -182,11 +182,11 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'link',
-          attributes: {url: 'https://mintter.com'},
+          attributes: { url: 'https://mintter.com' },
           starts: [6],
           ends: [19],
         },
-        {type: 'strong', starts: [14], ends: [19], attributes: {}},
+        { type: 'strong', starts: [14], ends: [19], attributes: {} },
       ],
     }
 
@@ -194,8 +194,8 @@ describe('Transform: blockToApi', () => {
   })
 
   test('Embeds: simple', () => {
-    let input: Statement = statement({id: 'blockId'}, [
-      paragraph([embed({url: 'mtt://doc1/block1'}, [text('')])]),
+    let input: Statement = statement({ id: 'blockId' }, [
+      paragraph([embed({ url: 'mtt://doc1/block1' }, [text('')])]),
     ])
 
     let output = {
@@ -205,7 +205,7 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc1/block1'},
+          attributes: { url: 'mtt://doc1/block1' },
           starts: [0],
           ends: [1],
         },
@@ -216,10 +216,10 @@ describe('Transform: blockToApi', () => {
   })
 
   test('Embeds: multiple embeds together', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
-        embed({url: 'mtt://doc1/block1'}, [text('')]),
-        embed({url: 'mtt://doc2/block2'}, [text('')]),
+        embed({ url: 'mtt://doc1/block1' }, [text('')]),
+        embed({ url: 'mtt://doc2/block2' }, [text('')]),
       ]),
     ])
 
@@ -230,13 +230,13 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc1/block1'},
+          attributes: { url: 'mtt://doc1/block1' },
           starts: [0],
           ends: [1],
         },
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc2/block2'},
+          attributes: { url: 'mtt://doc2/block2' },
           starts: [1],
           ends: [2],
         },
@@ -247,13 +247,13 @@ describe('Transform: blockToApi', () => {
   })
 
   test('Embeds: multiple embeds separated by marks', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
         text('This '),
-        embed({url: 'mtt://doc1/block1'}, [text('')]),
+        embed({ url: 'mtt://doc1/block1' }, [text('')]),
         text(' and also this are very '),
-        text('important: ', {strong: true}),
-        embed({url: 'mtt://doc2/block2'}, [text('')]),
+        text('important: ', { strong: true }),
+        embed({ url: 'mtt://doc2/block2' }, [text('')]),
       ]),
     ])
 
@@ -264,14 +264,14 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc1/block1'},
+          attributes: { url: 'mtt://doc1/block1' },
           starts: [5],
           ends: [6],
         },
-        {starts: [30], ends: [41], type: 'strong', attributes: {}},
+        { starts: [30], ends: [41], type: 'strong', attributes: {} },
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc2/block2'},
+          attributes: { url: 'mtt://doc2/block2' },
           starts: [41],
           ends: [42],
         },
@@ -282,8 +282,8 @@ describe('Transform: blockToApi', () => {
   })
 
   test('emojis', () => {
-    let input: Statement = statement({id: 'blockId'}, [
-      paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', {emphasis: true})]),
+    let input: Statement = statement({ id: 'blockId' }, [
+      paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', { emphasis: true })]),
     ])
 
     let output = {
@@ -304,11 +304,11 @@ describe('Transform: blockToApi', () => {
   })
 
   test('combining layers', () => {
-    let input: Statement = statement({id: 'blockId'}, [
+    let input: Statement = statement({ id: 'blockId' }, [
       paragraph([
-        text('Alice', {strong: true}),
+        text('Alice', { strong: true }),
         text(', Bob and '),
-        text('Carol', {strong: true}),
+        text('Carol', { strong: true }),
       ]),
     ])
 
