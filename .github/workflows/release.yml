@@ -101,18 +101,18 @@ jobs:
         if: "matrix.os == 'macos-latest'"
         run: |
           mkdir ~/private_keys
-          echo $APPLE_API_PRIVKEY > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          echo $APPLE_API_PRIVKEY > ~/private_keys/AuthKey_ZX2487QKQM.p8
         env:
-          APPLE_API_PRIVKEY: ${{secrets.APPLE_API_PRIVKEY}}
+          APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           ENABLE_CODE_SIGNING: "${{ secrets.APPLE_CERTIFICATE }}"
+          APPLE_API_ISSUER: "${{ secrets.APPLE_API_ISSUER }}"
+          APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
           APPLE_CERTIFICATE: "${{ secrets.APPLE_CERTIFICATE }}"
           APPLE_CERTIFICATE_PASSWORD: "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
           APPLE_SIGNING_IDENTITY: "${{ secrets.APPLE_SIGNING_IDENTITY }}"
-          APPLE_API_ISSUER: "${{ secrets.APPLE_API_ISSUER }}"
-          APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
         with:
           configPath: release.tauri.conf.json
           includeDebug: false
