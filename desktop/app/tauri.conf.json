@@ -35,7 +35,7 @@
         "minimumSystemVersion": "",
         "exceptionDomain": "localhost",
         "signingIdentity": null,
-        "entitlements": "Info.plist"
+        "entitlements": "macOS.entitlements"
       },
       "windows": {
         "certificateThumbprint": null,

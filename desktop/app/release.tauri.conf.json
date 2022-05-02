@@ -35,8 +35,8 @@
         "frameworks": [],
         "minimumSystemVersion": "",
         "exceptionDomain": "localhost",
-        "signingIdentity": null,
-        "entitlements": "Info.plist"
+        "signingIdentity": "9903730CF31AB02620CE2478FBC019ECAF50D179",
+        "entitlements": "macOS.entitlements"
       },
       "windows": {
         "certificateThumbprint": null,
