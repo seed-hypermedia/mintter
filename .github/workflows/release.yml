@@ -118,7 +118,6 @@ jobs:
           includeDebug: false
           projectPath: ./desktop/app
           releaseId: "${{ needs.create-release.outputs.releaseId }}"
-          tauriScript: ./cargo-tauri
           args: --target ${{ matrix.rust_target }} --verbose
 
   publish:
