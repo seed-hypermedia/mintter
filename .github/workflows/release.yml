@@ -102,8 +102,9 @@ jobs:
       - name: create apple private key file
         if: "matrix.os == 'macos-latest'"
         run: |
-          mkdir ~/private_keys
-          echo $APPLE_API_PRIVKEY > ~/private_keys/AuthKey_ZX2487QKQM.p8
+          mkdir ./desktop/app/private_keys
+          echo $APPLE_API_PRIVKEY > ./desktop/app/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          ls ./desktop/app/private_keys
         env:
           APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
       - uses: tauri-apps/tauri-action@v0
