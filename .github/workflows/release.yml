@@ -136,4 +136,4 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           draft: false
-          files: ./artifacts/**/*.{app.tar.gz,dmg,msi,AppImage,deb,exe}
+          files: "./artifacts/**/*.{app,dmg,msi,AppImage,deb,exe}"
