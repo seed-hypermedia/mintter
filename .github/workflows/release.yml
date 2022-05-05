@@ -112,7 +112,7 @@ jobs:
           path: |
             ./target/${{ matrix.rust_target }}/release/bundle/deb/*.deb
             ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage
-            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz
+            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app
             ./target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
             ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi
 
