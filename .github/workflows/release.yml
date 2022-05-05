@@ -113,9 +113,14 @@ jobs:
           path: |
             ./target/${{ matrix.rust_target }}/release/bundle/deb/*.deb
             ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage
-            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app
             ./target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
             ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi
+            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz
+            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz.sig
+            ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi.tar.gz
+            ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi.tar.gz.sig
+            ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage.tar.gz
+            ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage.tar.gz.sig
 
   publish:
     needs: build-binaries
@@ -127,9 +132,6 @@ jobs:
         with:
           name: artifacts
           path: artifacts
-      - run: |
-          ls .
-          ls ./artifacts
       - name: "create release"
         uses: softprops/action-gh-release@master
         env:
@@ -140,5 +142,10 @@ jobs:
             ./artifacts/appimage/*.AppImage
             ./artifacts/deb/*.deb
             ./artifacts/dmg/*.dmg
-            ./artifacts/macos/*.app
             ./artifacts/msi/*.msi
+            ./artifacts/macos/*.app.tar.gz
+            ./artifacts/macos/*.app.tar.gz.sig
+            ./artifacts/msi/*.msi.tar.gz
+            ./artifacts/msi/*.msi.tar.gz.sig
+            ./artifacts/appimage/*.AppImage.tar.gz
+            ./artifacts/appimage/*.AppImage.tar.gz.sig
