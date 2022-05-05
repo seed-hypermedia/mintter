@@ -109,10 +109,12 @@ jobs:
           args: --target ${{ matrix.rust_target }}
       - uses: actions/upload-artifact@v3
         with:
-          path: ${{ github.workspace }}/target/${{ matrix.rust_target }}/release/bundle/**/*.{app.tar.gz,dmg,msi,AppImage,deb}
-      - uses: actions/upload-artifact@v3
-        with:
-          path: ${{ github.workspace }}/plz-out/bin/backend/mintterd-${{ matrix.rust_target }}?(.exe)
+          path: |
+            ./target/${{ matrix.rust_target }}/release/bundle/deb/*.deb
+            ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage
+            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz
+            ./target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
+            ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi
 
   publish:
     needs: build-binaries
