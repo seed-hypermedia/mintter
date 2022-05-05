@@ -84,6 +84,8 @@ jobs:
           toolchain: stable
           target: ${{ matrix.rust_target }}
       - uses: Swatinem/rust-cache@v1
+        with:
+          cache-on-failure: true
       # - name: Install debug Tauri CLI
       #  run: cargo install tauri-cli --git https://github.com/tauri-apps/tauri --branch verbose-codesign-output
       - name: "Setup NodeJS"
