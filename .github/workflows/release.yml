@@ -10,20 +10,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    outputs:
-      releaseId: ${{ steps.create_release.outputs.id }}
-    steps:
-      - uses: actions/checkout@v2
-      - env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        id: create_release
-        name: "create release"
-        uses: softprops/action-gh-release@master
-        with:
-          body: ""
-          draft: true
+  # create-release:
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     releaseId: ${{ steps.create_release.outputs.id }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - env:
+  #         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+  #       id: create_release
+  #       name: "create release"
+  #       uses: softprops/action-gh-release@master
+  #       with:
+  #         body: ""
+  #         draft: true
 
   build-binaries:
     needs: create-release
@@ -122,18 +122,27 @@ jobs:
           configPath: release.tauri.conf.json
           includeDebug: false
           projectPath: ./desktop/app
-          releaseId: "${{ needs.create-release.outputs.releaseId }}"
           args: --target ${{ matrix.rust_target }}
+      - uses: actions/upload-artifact@v3
+        with:
+          path: target/${{ matrix.rust_target }}/release/bundle/**/*.{app.tar.gz,dmg,msi,AppImage,deb}
+      - uses: actions/upload-artifact@v3
+        with:
+          path: plz-out/bin/backend/mintterd-${{ matrix.rust_target }}?(.exe)
 
   publish:
     needs: build-binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        id: create_release
-        name: "create release"
+      - uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: artifact
+      - name: "create release"
         uses: softprops/action-gh-release@master
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           draft: false
+          files: ${{steps.download.outputs.download-path}}/**/*.{app.tar.gz,dmg,msi,AppImage,deb,exe}
