@@ -109,6 +109,7 @@ jobs:
           args: --target ${{ matrix.rust_target }}
       - uses: actions/upload-artifact@v3
         with:
+          name: artifacts
           path: |
             ./target/${{ matrix.rust_target }}/release/bundle/deb/*.deb
             ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage
@@ -124,14 +125,15 @@ jobs:
       - uses: actions/download-artifact@v3
         id: download
         with:
-          name: artifact
+          name: artifacts
+          path: artifacts
       - run: |
           ls .
-          ls ./artifact
+          ls ./artifacts
       - name: "create release"
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           draft: false
-          files: ${{steps.download.outputs.download-path}}/artifact/**/*.{app.tar.gz,dmg,msi,AppImage,deb,exe}
+          files: ./artifacts/**/*.{app.tar.gz,dmg,msi,AppImage,deb,exe}
