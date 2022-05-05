@@ -32,28 +32,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        matrix:
-          os: [ubuntu-latest, macos-latest, windows-latest]
-          goarch: [amd64, arm64]
-          # don't build for arm64 on linux or windows
-          exclude:
-            - os: ubuntu-latest
-              goarch: arm64
-            - os: windows-latest
-              goarch: arm64
-          include:
-            - os: ubuntu-latest
-              goarch: amd64
-              rust_target: x86_64-unknown-linux-gnu
-            - os: macos-latest
-              goarch: amd64
-              rust_target: x86_64-apple-darwin
-            - os: macos-latest
-              goarch: arm64
-              rust_target: aarch64-apple-darwin
-            - os: windows-latest
-              goarch: amd64
-              rust_target: x86_64-pc-windows-msvc
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        goarch: [amd64, arm64]
+        # don't build for arm64 on linux or windows
+        exclude:
+          - os: ubuntu-latest
+            goarch: arm64
+          - os: windows-latest
+            goarch: arm64
+        include:
+          - os: ubuntu-latest
+            goarch: amd64
+            rust_target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            goarch: amd64
+            rust_target: x86_64-apple-darwin
+          - os: macos-latest
+            goarch: arm64
+            rust_target: aarch64-apple-darwin
+          - os: windows-latest
+            goarch: amd64
+            rust_target: x86_64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v3
       - name: "Setup Rust"
