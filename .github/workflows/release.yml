@@ -103,10 +103,12 @@ jobs:
         if: "matrix.os == 'macos-latest'"
         run: |
           mkdir ./desktop/app/private_keys
-          echo $APPLE_API_PRIVKEY > ./desktop/app/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          echo "$APPLE_API_PRIVKEY" > ./desktop/app/private_keys/AuthKey_$APPLE_API_KEY.p8
           ls ./desktop/app/private_keys
+          cat ./desktop/app/private_keys/AuthKey_$APPLE_API_KEY.p8
         env:
           APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
+          APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
