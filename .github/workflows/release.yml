@@ -10,23 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # create-release:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     releaseId: ${{ steps.create_release.outputs.id }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - env:
-  #         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-  #       id: create_release
-  #       name: "create release"
-  #       uses: softprops/action-gh-release@master
-  #       with:
-  #         body: ""
-  #         draft: true
-
   build-binaries:
-    needs: create-release
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
