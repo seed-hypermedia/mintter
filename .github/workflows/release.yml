@@ -125,10 +125,13 @@ jobs:
         id: download
         with:
           name: artifact
+      - run: |
+          ls .
+          ls ./artifact
       - name: "create release"
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           draft: false
-          files: ${{steps.download.outputs.download-path}}/**/*.{app.tar.gz,dmg,msi,AppImage,deb,exe}
+          files: ${{steps.download.outputs.download-path}}/artifact/**/*.{app.tar.gz,dmg,msi,AppImage,deb,exe}
