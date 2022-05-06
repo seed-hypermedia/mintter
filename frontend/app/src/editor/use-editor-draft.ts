@@ -1,5 +1,5 @@
 
-import { Document, getDraft, Publication, publishDraft } from '@app/client'
+import { Document, getDraft, Publication } from '@app/client'
 import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
 import { changesService } from '@app/editor/mintter-changes/plugin'
 import { queryKeys } from '@app/hooks'
@@ -175,17 +175,7 @@ export function draftEditorMachine({ client, mainPageService, shouldAutosave = t
             },
             publishing: {
               invoke: {
-                src: (context) => (sendBack) => {
-                  if (!context.localDraft) return
-
-                  publishDraft(context.localDraft.id!)
-                    .then((publication) => {
-                      sendBack({ type: 'EDITOR.PUBLISH.SUCCESS', publication })
-                    })
-                    .catch((err: any) => {
-                      sendBack({ type: 'EDITOR.PUBLISH.ERROR', errorMessage: err.message })
-                    })
-                },
+                src: 'publishDraftService',
               },
               on: {
                 'EDITOR.PUBLISH.SUCCESS': {

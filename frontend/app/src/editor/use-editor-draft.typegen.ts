@@ -39,15 +39,17 @@ export interface Typegen0 {
   invokeSrcNameMap: {
     fetchDocument: 'done.invoke.fetchDocument'
     saveDraft: 'done.invoke.editor.editing.saving:invocation[0]'
+    publishDraftService: 'done.invoke.editor.editing.publishing:invocation[0]'
   }
   missingImplementations: {
     actions: 'displayFailedMessage' | 'updateCurrentDocument' | 'afterPublish'
-    services: 'saveDraft'
+    services: 'publishDraftService' | 'saveDraft'
     guards: never
     delays: never
   }
   eventsCausingServices: {
     fetchDocument: 'FETCH'
+    publishDraftService: 'EDITOR.PUBLISH'
     saveDraft: 'xstate.after(1000)#editor.editing.debouncing'
   }
   eventsCausingGuards: {
