@@ -19,6 +19,12 @@ import {useMainPage, useParams} from '@app/main-page-context'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
+import {
+  footerButtonsStyles,
+  footerMetadataStyles,
+  footerStyles,
+  PageFooterSeparator,
+} from '@components/page-footer'
 import {Text} from '@components/text'
 import {ChildrenOf} from '@mintter/mttast'
 import {useMemo, useRef, useState} from 'react'
@@ -200,7 +206,7 @@ export default function EditorPage({
       >
         <Box data-testid="editor-wrapper">
           {context.localDraft?.content && (
-            <Box css={{}}>
+            <Box>
               <Editor
                 editor={editor}
                 value={context.localDraft.content}
@@ -216,7 +222,7 @@ export default function EditorPage({
                   toggle Value
                 </button>
                 {visible && (
-                  <Box as="pre" css={{}}>
+                  <Box as="pre">
                     {JSON.stringify(context.localDraft.content, null, 2)}
                   </Box>
                 )}
@@ -224,87 +230,19 @@ export default function EditorPage({
             </Box>
           )}
         </Box>
-        <Box
-          css={{
-            background: '$background-alt',
-            width: '$full',
-            position: 'absolute',
-            bottom: 0,
-            zIndex: '$max',
-            display: 'flex',
-            justifyContent: 'space-between',
-            '&:after': {
-              content: '',
-              position: 'absolute',
-              width: '$full',
-              height: 20,
-              background:
-                'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
-              top: -20,
-              left: 0,
-            },
-          }}
-        >
-          <Box
-            css={{
-              flex: 1,
-              background: '$background-alt',
-              padding: '$5',
-              $$gap: '24px',
-              display: 'flex',
-              gap: '$$gap',
-              alignItems: 'center',
-              '& > span': {
-                position: 'relative',
-              },
-              '& > span:before': {
-                content: `"|"`,
-                color: '$text-muted',
-                position: 'absolute',
-                right: -15,
-                top: 0,
-              },
-            }}
-          >
+        <Box className={footerStyles()}>
+          <Box className={footerMetadataStyles()}>
             <Text size="1" color="muted">
               Created on: {getDateFormat(context.localDraft!, 'createTime')}
             </Text>
+            <PageFooterSeparator />
             <Text size="1" color="muted">
               Last modified: {getDateFormat(context.localDraft!, 'updateTime')}
             </Text>
+            <PageFooterSeparator />
             <EditorStatus state={state} />
           </Box>
-          <Box
-            css={{
-              display: 'flex',
-              gap: '$5',
-              padding: '$5',
-              paddingRight: 0,
-              alignItems: 'center',
-            }}
-          >
-            <Button
-              size="1"
-              variant="outlined"
-              disabled={!state.hasTag('canPublish')}
-              data-testid="submit-review"
-              onClick={() => {
-                console.log('Review: IMPLEMENT ME!')
-              }}
-            >
-              Review
-            </Button>
-            <Button
-              variant="outlined"
-              size="1"
-              disabled={!state.hasTag('canPublish')}
-              data-testid="submit-reply"
-              onClick={() => {
-                console.log('Reply: IMPLEMENT ME!')
-              }}
-            >
-              Reply
-            </Button>
+          <Box className={footerButtonsStyles()}>
             <Button
               color="success"
               size="1"

@@ -26,7 +26,7 @@ export const buttonStyles = css({
         '$$outlined-border-size': '1px',
         fontSize: '$2',
         lineHeight: '$1',
-        paddingHorizontal: '$3',
+        paddingHorizontal: '$4',
         paddingVertical: '$2',
       },
       2: {
@@ -58,7 +58,8 @@ export const buttonStyles = css({
       },
       outlined: {
         backgroundColor: 'transparent',
-        boxShadow: 'inset 0px 0px 0px $$outlined-border-size $$outlined-border-color',
+        boxShadow:
+          'inset 0px 0px 0px $$outlined-border-size $$outlined-border-color',
         color: '$$outlined-text-color',
         '&:hover': {
           backgroundColor: '$$outlined-hovered-background-color',
@@ -80,7 +81,7 @@ export const buttonStyles = css({
     },
     shape: {
       rounded: {
-        borderRadius: '$2',
+        borderRadius: '$1',
       },
       pill: {
         borderRadius: '$pill',
@@ -150,11 +151,13 @@ export const buttonStyles = css({
       muted: {
         '$$solid-background-color': '$colors$background-contrast',
         '$$solid-text-color': '$colors$text-opposite',
-        '$$solid-hovered-background-color': '$colors$background-contrast-strong',
+        '$$solid-hovered-background-color':
+          '$colors$background-contrast-strong',
         '$$solid-active-background-color': '$colors$background-opposite',
         '$$outlined-border-color': '$colors$background-contrast',
         '$$outlined-text-color': '$colors$background-contrast',
-        '$$outlined-hovered-background-color': '$colors$background-neutral-soft',
+        '$$outlined-hovered-background-color':
+          '$colors$background-neutral-soft',
         '$$outlined-active-background-color': '$colors$background-neutral',
       },
     },
