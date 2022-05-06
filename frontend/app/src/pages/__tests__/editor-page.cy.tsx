@@ -26,7 +26,7 @@ describe('Editor Page', () => {
       },
     }
 
-    client.setQueryData<Document>([queryKeys.GET_DRAFT, 'foo'], {
+    let draft: Document = {
       id: 'foo',
       title: 'test demo',
       subtitle: 'test subtitle',
@@ -36,7 +36,9 @@ describe('Editor Page', () => {
       createTime: date,
       publishTime: date,
       children: [],
-    })
+    }
+
+    client.setQueryData<Document>([queryKeys.GET_DRAFT, 'foo'], draft)
 
     client.setQueryData<Publication>(
       [queryKeys.GET_PUBLICATION, 'foo', 1],
@@ -63,7 +65,10 @@ describe('Editor Page', () => {
     render(
       <MainPageProviders
         client={client}
-        mainPageContext={{params: {docId: 'foo', blockId: 'block'}}}
+        mainPageContext={{
+          params: {docId: 'foo', blockId: 'block', version: null},
+          document: draft,
+        }}
       >
         <EditorPage
           editor={elEditor}

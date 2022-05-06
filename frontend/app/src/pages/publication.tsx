@@ -63,7 +63,7 @@ export default function Publication() {
     }
   }, [docId])
 
-  async function handleUpdate() {
+  async function handleEdit() {
     try {
       const d = await createDraft(docId)
       if (d?.id) {
@@ -129,27 +129,59 @@ export default function Publication() {
         </Box>
         <Box className={footerButtonsStyles()}>
           <Button
-            size="1"
-            variant="outlined"
-            disabled={state.hasTag('pending')}
-            data-testid="submit-review"
-            onClick={() => {
-              console.log('Review: IMPLEMENT ME!')
-            }}
-          >
-            Review
-          </Button>
-          <Button
             variant="outlined"
             size="1"
             disabled={state.hasTag('pending')}
-            data-testid="submit-reply"
+            data-testid="submit-edit"
             onClick={() => {
-              console.log('Reply: IMPLEMENT ME!')
+              console.log('Send: IMPLEMENT ME!')
             }}
           >
-            Reply
+            Send
           </Button>
+          {state.context.canUpdate ? (
+            <>
+              <Button
+                color="success"
+                size="1"
+                disabled={state.hasTag('pending')}
+                data-testid="submit-edit"
+                onClick={handleEdit}
+              >
+                Edit
+              </Button>
+            </>
+          ) : (
+            <>
+              <TippingModal
+                publicationId={state.context.publication?.document.id}
+                accountId={state.context.publication?.document.author}
+                visible={!state.context.canUpdate}
+              />
+              <Button
+                size="1"
+                variant="outlined"
+                disabled={state.hasTag('pending')}
+                data-testid="submit-review"
+                onClick={() => {
+                  console.log('Review: IMPLEMENT ME!')
+                }}
+              >
+                Review
+              </Button>
+              <Button
+                variant="outlined"
+                size="1"
+                disabled={state.hasTag('pending')}
+                data-testid="submit-reply"
+                onClick={() => {
+                  console.log('Reply: IMPLEMENT ME!')
+                }}
+              >
+                Reply
+              </Button>
+            </>
+          )}
         </Box>
       </Box>
     </>
@@ -497,7 +529,7 @@ function TippingModal({
       <PopoverPrimitive.Trigger asChild>
         <Button
           size="1"
-          variant="ghost"
+          variant="outlined"
           color="success"
           onClick={() => {
             send('OPEN')

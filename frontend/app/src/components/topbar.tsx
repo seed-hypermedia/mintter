@@ -1,5 +1,6 @@
 import {getTitleFromContent} from '@app/editor/use-editor-draft'
-import {useFiles, useMainPage} from '@app/main-page-context'
+import {useAccount} from '@app/hooks'
+import {useMainPage} from '@app/main-page-context'
 import {css, styled} from '@app/stitches.config'
 import {Text} from '@components/text'
 import {invoke} from '@tauri-apps/api'
@@ -46,10 +47,18 @@ export const topbarSection = css({
   alignItems: 'center',
 })
 
-export function Topbar() {
+type TopbarProps = {
+  back?: () => void
+  forward: () => void
+}
+
+export function Topbar({
+  back = window.history.back,
+  forward = window.history.forward,
+}: TopbarProps) {
   let mainPage = useMainPage()
   let [mainState] = useActor(mainPage)
-  let files = useFiles()
+  let {data, isSuccess} = useAccount(mainState.context.document?.author)
 
   async function onCreateDraft() {
     await invoke('open_in_new_window', {url: '/new'})
@@ -59,7 +68,7 @@ export function Topbar() {
     mainState.context.library.send('LIBRARY.TOGGLE')
   }
 
-  let title = getDocumentTitle(mainState.context.currentDocument)
+  let title = getDocumentTitle(mainState.context.document)
   console.log('Current Location: ', window.location.pathname)
 
   return (
@@ -68,27 +77,55 @@ export function Topbar() {
       <Box css={{display: 'flex'}} {...draggableProps}>
         <TopbarButton
           color="muted"
+          data-testid="history-back"
           onClick={(e) => {
             e.preventDefault()
-            window.history.back()
+            back()
           }}
         >
           <Icon name="ArrowChevronLeft" color="muted" size="2" />
         </TopbarButton>
         <TopbarButton
           color="muted"
+          data-testid="history-forward"
           onClick={(e) => {
             e.preventDefault()
-            window.history.forward()
+            forward()
           }}
         >
           <Icon name="ArrowChevronRight" color="muted" size="2" />
         </TopbarButton>
       </Box>
-      <Box css={{flex: 1}} data-tauri-drag-region>
-        <Text size="3" fontWeight="medium" data-tauri-drag-region>
+      <Box
+        css={{flex: 1, display: 'flex', alignItems: 'baseline', gap: '$2'}}
+        data-tauri-drag-region
+      >
+        <Text
+          size="3"
+          fontWeight="medium"
+          aria-label="Document Title"
+          data-testid="topbar-title"
+          data-tauri-drag-region
+        >
           {title}
         </Text>
+        <Text size="1" color="muted">
+          by
+        </Text>
+        {data && isSuccess ? (
+          <Text
+            size="1"
+            color="muted"
+            css={{textDecoration: 'underline'}}
+            data-testid="topbar-author"
+          >
+            {data.profile?.alias}
+          </Text>
+        ) : (
+          <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
+            ...
+          </Text>
+        )}
       </Box>
       {/* <Box>other actions</Box> */}
       <TopbarButton onClick={toggleLibrary} data-tauri-drag-region>
@@ -111,12 +148,12 @@ export function Topbar() {
   )
 }
 
-function getDocumentTitle(currentDocument: any) {
-  let titleText = currentDocument?.content
+function getDocumentTitle(document: any) {
+  let titleText = document?.content
     ? getTitleFromContent({
-        children: currentDocument.content,
+        children: document.content,
       })
-    : currentDocument?.title ?? ''
+    : document?.title ?? ''
 
   return titleText.length < 50 ? titleText : `${titleText.substring(0, 49)}...`
 }
