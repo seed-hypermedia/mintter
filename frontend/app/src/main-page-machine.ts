@@ -134,7 +134,7 @@ export type MainPageContext = {
     version: string | null
     blockId: string | null
   }
-  currentDocument: Document | null
+  document: Document | null
   files: ActorRefFrom<ReturnType<typeof createFilesMachine>>
   drafts: ActorRefFrom<ReturnType<typeof createDraftsMachine>>
   library: ActorRefFrom<typeof libraryMachine>
@@ -212,7 +212,7 @@ export function createMainPageMachine(client: QueryClient) {
           version: null,
           blockId: null,
         },
-        currentDocument: null,
+        document: null,
         files: spawn(createFilesMachine(client), 'files'),
         drafts: spawn(createDraftsMachine(client), 'drafts'),
         library: spawn(libraryMachine, 'library'),
@@ -369,10 +369,10 @@ export function createMainPageMachine(client: QueryClient) {
           context.drafts.send('RECONCILE')
         },
         setCurrentDocument: assign({
-          currentDocument: (_, event) => event.document
+          document: (_, event) => event.document
         }),
         clearCurrentDocument: assign({
-          currentDocument: (c) => null
+          document: (c) => null
         }),
         setDraftParams: assign({
           params: (_, e, meta) => {
