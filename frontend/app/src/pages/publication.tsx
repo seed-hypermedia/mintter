@@ -23,6 +23,12 @@ import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
+import {
+  footerButtonsStyles,
+  footerMetadataStyles,
+  footerStyles,
+  PageFooterSeparator,
+} from '@components/page-footer'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
@@ -57,12 +63,6 @@ export default function Publication() {
     }
   }, [docId])
 
-  // useEffect(() => {
-  //   if (data.document.title) {
-  //     getCurrentWindow().setTitle(data.document.title)
-  //   }
-  // }, [data.document.title])
-
   async function handleUpdate() {
     try {
       const d = await createDraft(docId)
@@ -76,10 +76,6 @@ export default function Publication() {
       )
     }
   }
-
-  // if (state.matches('fetching')) {
-  //   return null
-  // }
 
   if (state.matches('fetching')) {
     return <PublicationShell />
@@ -105,66 +101,6 @@ export default function Publication() {
 
   return (
     <>
-      <Box
-        css={{
-          background: '$background-alt',
-          borderBottom: '1px solid $colors$hover',
-          position: 'sticky',
-          top: 0,
-          zIndex: '$4',
-          $$gap: 16,
-          display: 'flex',
-          gap: '$$gap',
-          alignItems: 'center',
-          '& *': {
-            position: 'relative',
-          },
-          '& > *:not(:first-child):before': {
-            content: `"|"`,
-            color: '$text-muted',
-            opacity: 0.5,
-            position: 'absolute',
-            left: '-10px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-          },
-        }}
-      >
-        <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-          {state.context.publication?.document.title}
-        </Text>
-        {author && (
-          <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-            <span>Signed by </span>
-            <span style={{textDecoration: 'underline'}}>
-              {state.context.canUpdate ? 'you' : author.profile?.alias}
-            </span>
-          </Text>
-        )}
-        {state.context.canUpdate && (
-          <Button
-            size="1"
-            variant="ghost"
-            onClick={handleUpdate}
-            disabled={state.hasTag('pending')}
-          >
-            Update
-          </Button>
-        )}
-        <Button
-          size="1"
-          variant={state.matches('discussion') ? 'solid' : 'ghost'}
-          onClick={() => send('TOGGLE.DISCUSSION')}
-          disabled={state.hasTag('pending')}
-        >
-          Toggle Discussion
-        </Button>
-        <TippingModal
-          publicationId={state.context.publication?.document.id}
-          accountId={state.context.publication?.document.author}
-          visible={!state.context.canUpdate}
-        />
-      </Box>
       {state.matches('ready') && (
         <Box
           css={{padding: '$7', paddingLeft: 0, marginBottom: 200}}
@@ -179,63 +115,42 @@ export default function Publication() {
           />
         </Box>
       )}
-      {state.matches('discussion') && (
-        <Box data-testid="publication-wrapper" css={{padding: '$7'}}>
-          {state.matches('discussion.ready') &&
-          state.context.links?.length != 0 ? (
-            // <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
-            <Discussion links={state.context.links} />
-          ) : (
-            <>
-              <Text>There is no Discussion yet.</Text>
-              <Button size="1">Start one</Button>
-            </>
-          )}
+      <Box className={footerStyles()}>
+        <Box className={footerMetadataStyles()}>
+          <Text size="1" color="muted">
+            Created on:{' '}
+            {getDateFormat(state.context.publication?.document, 'createTime')}
+          </Text>
+          <PageFooterSeparator />
+          <Text size="1" color="muted">
+            Last modified:{' '}
+            {getDateFormat(state.context.publication?.document, 'updateTime')}
+          </Text>
         </Box>
-      )}
-      <Box
-        css={{
-          background: '$background-alt',
-          width: '$full',
-          position: 'absolute',
-          bottom: 0,
-          zIndex: '$4',
-          padding: '$5',
-          paddingLeft: 40,
-          $$gap: 24,
-          display: 'flex',
-          gap: '$$gap',
-          alignItems: 'center',
-          '&:after': {
-            content: '',
-            position: 'absolute',
-            width: '$full',
-            height: 20,
-            background:
-              'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
-            top: -20,
-            left: 0,
-          },
-          '& > span': {
-            position: 'relative',
-          },
-          '& *:not(:first-child):before': {
-            content: `"|"`,
-            color: '$text-muted',
-            position: 'absolute',
-            left: -14,
-            top: 0,
-          },
-        }}
-      >
-        <Text size="1" color="muted">
-          Created on:{' '}
-          {getDateFormat(state.context.publication?.document, 'createTime')}
-        </Text>
-        <Text size="1" color="muted">
-          Last modified:{' '}
-          {getDateFormat(state.context.publication?.document, 'updateTime')}
-        </Text>
+        <Box className={footerButtonsStyles()}>
+          <Button
+            size="1"
+            variant="outlined"
+            disabled={state.hasTag('pending')}
+            data-testid="submit-review"
+            onClick={() => {
+              console.log('Review: IMPLEMENT ME!')
+            }}
+          >
+            Review
+          </Button>
+          <Button
+            variant="outlined"
+            size="1"
+            disabled={state.hasTag('pending')}
+            data-testid="submit-reply"
+            onClick={() => {
+              console.log('Reply: IMPLEMENT ME!')
+            }}
+          >
+            Reply
+          </Button>
+        </Box>
       </Box>
     </>
   )

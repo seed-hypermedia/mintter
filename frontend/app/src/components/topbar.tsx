@@ -60,6 +60,7 @@ export function Topbar() {
   }
 
   let title = getDocumentTitle(mainState.context.currentDocument)
+  console.log('Current Location: ', window.location.pathname)
 
   return (
     <TopbarStyled data-tauri-drag-region>

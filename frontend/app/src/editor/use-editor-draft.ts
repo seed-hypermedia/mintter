@@ -301,6 +301,6 @@ export function useEditorDraft({ documentId, mainPageService, editor, shouldAuto
   return [state, send] as const
 }
 
-export function getTitleFromContent(entry: Editor): string {
+export function getTitleFromContent(entry: { children: Array<EditorDocument['children']> }): string {
   return Node.string(Node.get(entry, [0, 0, 0])) || ''
 }

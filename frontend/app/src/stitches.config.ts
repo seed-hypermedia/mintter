@@ -159,10 +159,10 @@ const stitches = createStitches({
     bp3: '(min-width: 1400px)',
   },
   utils: {
-    marginHorizontal: (val: Stitches.ScaleValue<'space'> | string | number) => ({ marginLeft: val, marginRight: val }),
-    marginVertical: (val: Stitches.ScaleValue<'space'> | string | number) => ({ marginTop: val, marginBottom: val }),
-    paddingHorizontal: (val: Stitches.ScaleValue<'space' | string | number>) => ({ paddingLeft: val, paddingRight: val }),
-    paddingVertical: (val: Stitches.ScaleValue<'space' | string | number>) => ({ paddingTop: val, paddingBottom: val }),
+    marginHorizontal: (val: Stitches.PropertyValue<'margin'>) => ({ marginLeft: val, marginRight: val }),
+    marginVertical: (val: Stitches.PropertyValue<'margin'>) => ({ marginTop: val, marginBottom: val }),
+    paddingHorizontal: (val: Stitches.PropertyValue<'padding'>) => ({ paddingLeft: val, paddingRight: val }),
+    paddingVertical: (val: Stitches.PropertyValue<'padding'>) => ({ paddingTop: val, paddingBottom: val }),
   },
   themeMap: {
     ...defaultThemeMap,
