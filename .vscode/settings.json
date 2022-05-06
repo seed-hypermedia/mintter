@@ -61,5 +61,6 @@
     "*.build_defs": "starlark"
   },
   "xstate.showVisualEditorWarnings": false,
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "black",
+  "editor.tabSize": 2
 }
