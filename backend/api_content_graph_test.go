@@ -1,308 +1,299 @@
 package backend
 
-import (
-	"context"
-	documents "mintter/backend/api/documents/v1alpha"
-	"mintter/backend/testutil"
-	"testing"
+// func TestAPICitations_E2E(t *testing.T) {
+// 	alice := makeTestBackend(t, "alice", true)
+// 	aapi := newDocsAPI(alice)
+// 	ctx := context.Background()
 
-	"github.com/stretchr/testify/require"
-)
+// 	// Publish a document to which other document will link.
+// 	var pub *documents.Publication
+// 	{
+// 		doc, err := aapi.CreateDraft(ctx, &documents.CreateDraftRequest{})
+// 		require.NoError(t, err)
 
-func TestAPICitations_E2E(t *testing.T) {
-	alice := makeTestBackend(t, "alice", true)
-	aapi := newDocsAPI(alice)
-	ctx := context.Background()
+// 		doc.Title = "My new document title"
+// 		doc.Subtitle = "This is my document's abstract"
+// 		doc.Content = `{"content":"Hello World"}`
+// 		updated, err := aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
+// 		require.NoError(t, err)
+// 		p, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: updated.Id})
+// 		require.NoError(t, err)
+// 		pub = p
+// 	}
 
-	// Publish a document to which other document will link.
-	var pub *documents.Publication
-	{
-		doc, err := aapi.CreateDraft(ctx, &documents.CreateDraftRequest{})
-		require.NoError(t, err)
+// 	// Create a draft that will link to the previously published document.
+// 	var draft *documents.Document
+// 	{
+// 		doc, err := aapi.CreateDraft(ctx, &documents.CreateDraftRequest{})
+// 		require.NoError(t, err)
 
-		doc.Title = "My new document title"
-		doc.Subtitle = "This is my document's abstract"
-		doc.Content = `{"content":"Hello World"}`
-		updated, err := aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{Document: doc})
-		require.NoError(t, err)
-		p, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: updated.Id})
-		require.NoError(t, err)
-		pub = p
-	}
+// 		doc.Title = "My new publication"
+// 		doc.Subtitle = "Yep"
+// 		doc.Content = "{}"
+// 		links := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					BlockId: "source-block-1",
+// 				},
+// 				Target: &documents.LinkNode{
+// 					BlockId:    "target-block-1",
+// 					Version:    pub.Version,
+// 					DocumentId: pub.Document.Id,
+// 				},
+// 			},
+// 		}
 
-	// Create a draft that will link to the previously published document.
-	var draft *documents.Document
-	{
-		doc, err := aapi.CreateDraft(ctx, &documents.CreateDraftRequest{})
-		require.NoError(t, err)
+// 		doc, err = aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
+// 			Document: doc,
+// 			Links:    links,
+// 		})
+// 		require.NoError(t, err)
+// 		draft = doc
+// 	}
 
-		doc.Title = "My new publication"
-		doc.Subtitle = "Yep"
-		doc.Content = "{}"
-		links := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					BlockId: "source-block-1",
-				},
-				Target: &documents.LinkNode{
-					BlockId:    "target-block-1",
-					Version:    pub.Version,
-					DocumentId: pub.Document.Id,
-				},
-			},
-		}
+// 	// Check that we have draft as a citation of the publication.
+// 	{
+// 		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
+// 		require.NoError(t, err)
 
-		doc, err = aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
-			Document: doc,
-			Links:    links,
-		})
-		require.NoError(t, err)
-		draft = doc
-	}
+// 		wantLinks := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					DocumentId: draft.Id,
+// 					BlockId:    "source-block-1",
+// 					Version:    "",
+// 				},
+// 				Target: &documents.LinkNode{
+// 					DocumentId: pub.Document.Id,
+// 					BlockId:    "target-block-1",
+// 					Version:    pub.Version,
+// 				},
+// 			},
+// 		}
 
-	// Check that we have draft as a citation of the publication.
-	{
-		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
-		require.NoError(t, err)
+// 		require.Equal(t, len(wantLinks), len(cits.Links), "returned unexpected number of citations")
 
-		wantLinks := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					DocumentId: draft.Id,
-					BlockId:    "source-block-1",
-					Version:    "",
-				},
-				Target: &documents.LinkNode{
-					DocumentId: pub.Document.Id,
-					BlockId:    "target-block-1",
-					Version:    pub.Version,
-				},
-			},
-		}
+// 		for i := range wantLinks {
+// 			testutil.ProtoEqual(t, wantLinks[i], cits.Links[i], "citations don't match input")
+// 		}
+// 	}
 
-		require.Equal(t, len(wantLinks), len(cits.Links), "returned unexpected number of citations")
+// 	// Check that draft updates stores the diff of the links correctly.
+// 	{
+// 		links := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					BlockId: "source-block-3",
+// 				},
+// 				Target: &documents.LinkNode{
+// 					BlockId:    "target-block-10",
+// 					Version:    pub.Version,
+// 					DocumentId: pub.Document.Id,
+// 				},
+// 			},
+// 		}
 
-		for i := range wantLinks {
-			testutil.ProtoEqual(t, wantLinks[i], cits.Links[i], "citations don't match input")
-		}
-	}
+// 		d, err := aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
+// 			Document: draft,
+// 			Links:    links,
+// 		})
+// 		require.NoError(t, err)
+// 		draft = d
 
-	// Check that draft updates stores the diff of the links correctly.
-	{
-		links := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					BlockId: "source-block-3",
-				},
-				Target: &documents.LinkNode{
-					BlockId:    "target-block-10",
-					Version:    pub.Version,
-					DocumentId: pub.Document.Id,
-				},
-			},
-		}
+// 		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
+// 		require.NoError(t, err)
 
-		d, err := aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
-			Document: draft,
-			Links:    links,
-		})
-		require.NoError(t, err)
-		draft = d
+// 		wantLinks := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					DocumentId: draft.Id,
+// 					BlockId:    "source-block-3",
+// 					Version:    "",
+// 				},
+// 				Target: &documents.LinkNode{
+// 					DocumentId: pub.Document.Id,
+// 					BlockId:    "target-block-10",
+// 					Version:    pub.Version,
+// 				},
+// 			},
+// 		}
+// 		require.Equal(t, len(wantLinks), len(cits.Links), "returned unexpected number of citations")
+// 		for i := range wantLinks {
+// 			testutil.ProtoEqual(t, wantLinks[i], cits.Links[i], "citations don't match input")
+// 		}
+// 	}
 
-		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
-		require.NoError(t, err)
+// 	// Delete draft and check that links were removed.
+// 	{
+// 		_, err := aapi.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: draft.Id})
+// 		require.NoError(t, err)
 
-		wantLinks := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					DocumentId: draft.Id,
-					BlockId:    "source-block-3",
-					Version:    "",
-				},
-				Target: &documents.LinkNode{
-					DocumentId: pub.Document.Id,
-					BlockId:    "target-block-10",
-					Version:    pub.Version,
-				},
-			},
-		}
-		require.Equal(t, len(wantLinks), len(cits.Links), "returned unexpected number of citations")
-		for i := range wantLinks {
-			testutil.ProtoEqual(t, wantLinks[i], cits.Links[i], "citations don't match input")
-		}
-	}
+// 		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
+// 		require.NoError(t, err)
+// 		require.Nil(t, cits.Links)
+// 	}
 
-	// Delete draft and check that links were removed.
-	{
-		_, err := aapi.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: draft.Id})
-		require.NoError(t, err)
+// 	// Create another draft and now publish it.
+// 	var pub2 *documents.Publication
+// 	{
+// 		doc, err := aapi.CreateDraft(ctx, &documents.CreateDraftRequest{})
+// 		require.NoError(t, err)
 
-		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
-		require.NoError(t, err)
-		require.Nil(t, cits.Links)
-	}
+// 		doc.Title = "My new publication"
+// 		doc.Subtitle = "Yep"
+// 		doc.Content = "{}"
+// 		links := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					BlockId: "source-block-1",
+// 				},
+// 				Target: &documents.LinkNode{
+// 					BlockId:    "target-block-1",
+// 					Version:    pub.Version,
+// 					DocumentId: pub.Document.Id,
+// 				},
+// 			},
+// 		}
 
-	// Create another draft and now publish it.
-	var pub2 *documents.Publication
-	{
-		doc, err := aapi.CreateDraft(ctx, &documents.CreateDraftRequest{})
-		require.NoError(t, err)
+// 		doc, err = aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
+// 			Document: doc,
+// 			Links:    links,
+// 		})
+// 		require.NoError(t, err)
 
-		doc.Title = "My new publication"
-		doc.Subtitle = "Yep"
-		doc.Content = "{}"
-		links := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					BlockId: "source-block-1",
-				},
-				Target: &documents.LinkNode{
-					BlockId:    "target-block-1",
-					Version:    pub.Version,
-					DocumentId: pub.Document.Id,
-				},
-			},
-		}
+// 		p, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+// 		require.NoError(t, err)
+// 		pub2 = p
+// 	}
 
-		doc, err = aapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
-			Document: doc,
-			Links:    links,
-		})
-		require.NoError(t, err)
+// 	// Check that all the citations from draft were removed and now appear as sourced on the publication.
+// 	{
+// 		wantLinks := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					DocumentId: pub2.Document.Id,
+// 					Version:    pub2.Version,
+// 					BlockId:    "source-block-1",
+// 				},
+// 				Target: &documents.LinkNode{
+// 					DocumentId: pub.Document.Id,
+// 					BlockId:    "target-block-1",
+// 					Version:    pub.Version,
+// 				},
+// 			},
+// 		}
 
-		p, err := aapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
-		require.NoError(t, err)
-		pub2 = p
-	}
+// 		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
+// 		require.NoError(t, err)
 
-	// Check that all the citations from draft were removed and now appear as sourced on the publication.
-	{
-		wantLinks := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					DocumentId: pub2.Document.Id,
-					Version:    pub2.Version,
-					BlockId:    "source-block-1",
-				},
-				Target: &documents.LinkNode{
-					DocumentId: pub.Document.Id,
-					BlockId:    "target-block-1",
-					Version:    pub.Version,
-				},
-			},
-		}
+// 		require.Equal(t, len(wantLinks), len(cits.Links), "unexpected number of links returned")
+// 		require.Equal(t, wantLinks, cits.Links)
+// 	}
 
-		cits, err := aapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
-		require.NoError(t, err)
+// 	// Now create another peer and connect them.
+// 	bob := makeTestBackend(t, "bob", true)
+// 	bapi := newDocsAPI(bob)
+// 	connectPeers(ctx, t, alice, bob, true)
+// 	require.NoError(t, bob.SyncAccounts(ctx))
 
-		require.Equal(t, len(wantLinks), len(cits.Links), "unexpected number of links returned")
-		require.Equal(t, wantLinks, cits.Links)
-	}
+// 	// Check that Bob fetched all the publications from Alice.
+// 	{
+// 		bpub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: pub.Document.Id})
+// 		require.NoError(t, err)
+// 		testutil.ProtoEqual(t, pub, bpub, "bob must fetch exactly the same publication as published by alice")
 
-	// Now create another peer and connect them.
-	bob := makeTestBackend(t, "bob", true)
-	bapi := newDocsAPI(bob)
-	connectPeers(ctx, t, alice, bob, true)
-	require.NoError(t, bob.SyncAccounts(ctx))
+// 		bpub2, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: pub2.Document.Id})
+// 		require.NoError(t, err)
+// 		testutil.ProtoEqual(t, pub2, bpub2, "bob must fetch exactly the same publication 2 as published by alice")
+// 	}
 
-	// Check that Bob fetched all the publications from Alice.
-	{
-		bpub, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: pub.Document.Id})
-		require.NoError(t, err)
-		testutil.ProtoEqual(t, pub, bpub, "bob must fetch exactly the same publication as published by alice")
+// 	// Check that Bob inferred citations for Alice's publication.
+// 	{
+// 		wantLinks := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					DocumentId: pub2.Document.Id,
+// 					Version:    pub2.Version,
+// 					BlockId:    "source-block-1",
+// 				},
+// 				Target: &documents.LinkNode{
+// 					DocumentId: pub.Document.Id,
+// 					BlockId:    "target-block-1",
+// 					Version:    pub.Version,
+// 				},
+// 			},
+// 		}
 
-		bpub2, err := bapi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: pub2.Document.Id})
-		require.NoError(t, err)
-		testutil.ProtoEqual(t, pub2, bpub2, "bob must fetch exactly the same publication 2 as published by alice")
-	}
+// 		cits, err := bapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
+// 		require.NoError(t, err)
+// 		require.Equal(t, len(wantLinks), len(cits.Links), "unexpected number of links returned")
+// 		require.Equal(t, wantLinks, cits.Links)
+// 	}
 
-	// Check that Bob inferred citations for Alice's publication.
-	{
-		wantLinks := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					DocumentId: pub2.Document.Id,
-					Version:    pub2.Version,
-					BlockId:    "source-block-1",
-				},
-				Target: &documents.LinkNode{
-					DocumentId: pub.Document.Id,
-					BlockId:    "target-block-1",
-					Version:    pub.Version,
-				},
-			},
-		}
+// 	// Bob reuses from Alice which also reuses from another Alice's doc.
+// 	var bobpub *documents.Publication
+// 	{
+// 		d, err := bapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
+// 			Document: makeDraft(ctx, t, bapi, "Bob Reuses From Alice", ""),
+// 			Links: []*documents.Link{
+// 				{
+// 					Source: &documents.LinkNode{
+// 						BlockId: "bob-block-1",
+// 					},
+// 					Target: &documents.LinkNode{
+// 						DocumentId: pub2.Document.Id,
+// 						Version:    pub2.Version,
+// 					},
+// 				},
+// 			},
+// 		})
+// 		require.NoError(t, err)
 
-		cits, err := bapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id})
-		require.NoError(t, err)
-		require.Equal(t, len(wantLinks), len(cits.Links), "unexpected number of links returned")
-		require.Equal(t, wantLinks, cits.Links)
-	}
+// 		p, err := bapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: d.Id})
+// 		require.NoError(t, err)
+// 		bobpub = p
 
-	// Bob reuses from Alice which also reuses from another Alice's doc.
-	var bobpub *documents.Publication
-	{
-		d, err := bapi.UpdateDraft(ctx, &documents.UpdateDraftRequest{
-			Document: makeDraft(ctx, t, bapi, "Bob Reuses From Alice", ""),
-			Links: []*documents.Link{
-				{
-					Source: &documents.LinkNode{
-						BlockId: "bob-block-1",
-					},
-					Target: &documents.LinkNode{
-						DocumentId: pub2.Document.Id,
-						Version:    pub2.Version,
-					},
-				},
-			},
-		})
-		require.NoError(t, err)
+// 		wantLinks := []*documents.Link{
+// 			{
+// 				Source: &documents.LinkNode{
+// 					DocumentId: p.Document.Id,
+// 					BlockId:    "bob-block-1",
+// 					Version:    p.LatestVersion,
+// 				},
+// 				Target: &documents.LinkNode{
+// 					DocumentId: pub2.Document.Id,
+// 					Version:    pub2.Version,
+// 				},
+// 			},
+// 		}
 
-		p, err := bapi.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: d.Id})
-		require.NoError(t, err)
-		bobpub = p
+// 		// Check citations for Alice's doc appear in Bob.
+// 		cits, err := bapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub2.Document.Id})
+// 		require.NoError(t, err)
 
-		wantLinks := []*documents.Link{
-			{
-				Source: &documents.LinkNode{
-					DocumentId: p.Document.Id,
-					BlockId:    "bob-block-1",
-					Version:    p.LatestVersion,
-				},
-				Target: &documents.LinkNode{
-					DocumentId: pub2.Document.Id,
-					Version:    pub2.Version,
-				},
-			},
-		}
+// 		require.Equal(t, wantLinks, cits.Links)
+// 	}
 
-		// Check citations for Alice's doc appear in Bob.
-		cits, err := bapi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub2.Document.Id})
-		require.NoError(t, err)
+// 	// Carol connects to bob.
+// 	carol := makeTestBackend(t, "carol", true)
+// 	capi := newDocsAPI(carol)
 
-		require.Equal(t, wantLinks, cits.Links)
-	}
+// 	connectPeers(ctx, t, bob, carol, true)
+// 	require.NoError(t, carol.SyncAccounts(ctx))
 
-	// Carol connects to bob.
-	carol := makeTestBackend(t, "carol", true)
-	capi := newDocsAPI(carol)
+// 	// Carol sees Bob's stuff with reused stuff from Alice.
+// 	{
+// 		p, err := capi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: bobpub.Document.Id})
+// 		require.NoError(t, err)
 
-	connectPeers(ctx, t, bob, carol, true)
-	require.NoError(t, carol.SyncAccounts(ctx))
+// 		testutil.ProtoEqual(t, bobpub, p, "carol must fetch bob's stuff as published")
 
-	// Carol sees Bob's stuff with reused stuff from Alice.
-	{
-		p, err := capi.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: bobpub.Document.Id})
-		require.NoError(t, err)
+// 		list, err := capi.ListPublications(ctx, &documents.ListPublicationsRequest{})
+// 		require.NoError(t, err)
+// 		require.Len(t, list.Publications, 3, "carol must get 3 pubs")
 
-		testutil.ProtoEqual(t, bobpub, p, "carol must fetch bob's stuff as published")
-
-		list, err := capi.ListPublications(ctx, &documents.ListPublicationsRequest{})
-		require.NoError(t, err)
-		require.Len(t, list.Publications, 3, "carol must get 3 pubs")
-
-		cits, err := capi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id, Depth: 2})
-		require.NoError(t, err)
-		require.Len(t, cits.Links, 2, "alice's original document must have 2 citations in carol")
-	}
-}
+// 		cits, err := capi.ListCitations(ctx, &documents.ListCitationsRequest{DocumentId: pub.Document.Id, Depth: 2})
+// 		require.NoError(t, err)
+// 		require.Len(t, cits.Links, 2, "alice's original document must have 2 citations in carol")
+// 	}
+// }

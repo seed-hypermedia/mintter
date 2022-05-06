@@ -4,6 +4,7 @@ package coretest
 import (
 	"mintter/backend/core"
 
+	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
 )
 
@@ -31,8 +32,13 @@ var fakeUsers = map[string]struct {
 
 // Tester is a fake test user with full identity.
 type Tester struct {
-	Device  core.DeviceKey
-	Account core.AccountKey
+	AccountID cid.Cid
+	DeviceID  cid.Cid
+
+	Device  core.KeyPair
+	Account core.KeyPair
+
+	Identity core.Identity
 }
 
 // NewTester creates a new Tester with a given name. Data should exist
@@ -43,28 +49,33 @@ func NewTester(name string) Tester {
 		panic("no test user with name " + name)
 	}
 
-	dpriv, err := crypto.UnmarshalEd25519PrivateKey(fake.Device)
+	dpriv, err := crypto.UnmarshalPrivateKey(fake.Device)
 	if err != nil {
 		panic(err)
 	}
 
-	dev, err := core.NewDeviceKey(dpriv.(*crypto.Ed25519PrivateKey))
+	dev, err := core.NewKeyPair(core.CodecDeviceKey, dpriv.(*crypto.Ed25519PrivateKey))
 	if err != nil {
 		panic(err)
 	}
 
-	apriv, err := crypto.UnmarshalEd25519PrivateKey(fake.Account)
+	apriv, err := crypto.UnmarshalPrivateKey(fake.Account)
 	if err != nil {
 		panic(err)
 	}
 
-	acc, err := core.NewAccountKey(apriv.(*crypto.Ed25519PrivateKey))
+	acc, err := core.NewKeyPair(core.CodecAccountKey, apriv.(*crypto.Ed25519PrivateKey))
 	if err != nil {
 		panic(err)
 	}
 
 	return Tester{
+		AccountID: acc.CID(),
+		DeviceID:  dev.CID(),
+
 		Device:  dev,
 		Account: acc,
+
+		Identity: core.NewIdentity(acc.CID(), dev),
 	}
 }

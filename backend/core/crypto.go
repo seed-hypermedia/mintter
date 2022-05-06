@@ -1,10 +1,35 @@
 package core
 
 import (
+	"crypto/rand"
+	"encoding"
 	"errors"
 	"fmt"
 
+	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/multiformats/go-multihash"
+)
+
+// Multicodecs.
+const (
+	CodecDeviceKey  = cid.Libp2pKey
+	CodecAccountKey = 1091161161
+)
+
+func init() {
+	cid.Codecs["mintter-account"] = CodecAccountKey
+	cid.CodecToStr[CodecAccountKey] = "mintter-account"
+}
+
+// Ensure interface implementations.
+var (
+	_ Verifier                   = PublicKey{}
+	_ encoding.BinaryMarshaler   = PublicKey{}
+	_ encoding.BinaryUnmarshaler = (*PublicKey)(nil)
+
+	_ Signer = KeyPair{}
 )
 
 // Meaningful errors.
@@ -15,6 +40,11 @@ var (
 // Signer signs data and produces cryptographic signature.
 type Signer interface {
 	Sign([]byte) (Signature, error)
+}
+
+// CIDer provides CID of an object.
+type CIDer interface {
+	CID() cid.Cid
 }
 
 // Verifier checks that signature corresponds to the data.
@@ -38,27 +68,61 @@ func (s Signature) verify(k crypto.PubKey, data []byte) error {
 	return nil
 }
 
-type publicKey struct {
-	k *crypto.Ed25519PublicKey
+// KeyID is an ID of a Public Key. It has
+// identical semantics as Libp2p's Peer ID.
+type KeyID = peer.ID
+
+// PublicKey is the public part of a KeyPair.
+type PublicKey struct {
+	k     *crypto.Ed25519PublicKey
+	id    KeyID
+	codec uint64
 }
 
-func newPublicKey(pub *crypto.Ed25519PublicKey) publicKey {
-	return publicKey{
-		k: pub,
+// NewPublicKey creates a new public key from an existing Ed25519 public key.
+func NewPublicKey(codec uint64, pub *crypto.Ed25519PublicKey) (pk PublicKey, err error) {
+	pid, err := peer.IDFromPublicKey(pub)
+	if err != nil {
+		return pk, err
 	}
+
+	return PublicKey{
+		k:     pub,
+		id:    pid,
+		codec: codec,
+	}, nil
+}
+
+// ID of the public key.
+func (pk PublicKey) ID() KeyID { return pk.id }
+
+// CID returns CID representation of the public key.
+func (pk PublicKey) CID() cid.Cid {
+	mh, err := multihash.Cast([]byte(pk.id))
+	if err != nil {
+		panic(err)
+	}
+
+	return cid.NewCidV1(pk.codec, mh)
+}
+
+// Codec returns multicodec of the public key.
+func (pk PublicKey) Codec() uint64 {
+	return pk.codec
 }
 
 // Verify implements Verifier.
-func (pk publicKey) Verify(data []byte, s Signature) error {
+func (pk PublicKey) Verify(data []byte, s Signature) error {
 	return s.verify(pk.k, data)
 }
 
-func (pk publicKey) MarshalBinary() ([]byte, error) {
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (pk PublicKey) MarshalBinary() ([]byte, error) {
 	return crypto.MarshalPublicKey(pk.k)
 }
 
 // UnmarshalBinary implements encoding.BinaryUnmarshaler.
-func (pk *publicKey) UnmarshalBinary(data []byte) error {
+func (pk *PublicKey) UnmarshalBinary(data []byte) error {
 	if pk.k != nil {
 		panic("BUG: unmarshaling already initialized key")
 	}
@@ -72,17 +136,34 @@ func (pk *publicKey) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-type privateKey struct {
+type KeyPair struct {
 	k *crypto.Ed25519PrivateKey
+
+	PublicKey
 }
 
-func newPrivateKey(priv *crypto.Ed25519PrivateKey) privateKey {
-	return privateKey{
-		k: priv,
+func NewKeyPairRandom(codec uint64) (kp KeyPair, err error) {
+	priv, _, err := crypto.GenerateEd25519Key(rand.Reader)
+	if err != nil {
+		return kp, fmt.Errorf("failed to generate device private key: %w", err)
 	}
+
+	return NewKeyPair(codec, priv.(*crypto.Ed25519PrivateKey))
+}
+
+func NewKeyPair(codec uint64, priv *crypto.Ed25519PrivateKey) (kp KeyPair, err error) {
+	pub, err := NewPublicKey(codec, priv.GetPublic().(*crypto.Ed25519PublicKey))
+	if err != nil {
+		return kp, err
+	}
+
+	return KeyPair{
+		k:         priv,
+		PublicKey: pub,
+	}, nil
 }
 
 // Sign implements Signer.
-func (pk privateKey) Sign(data []byte) (Signature, error) {
-	return pk.k.Sign(data)
+func (kp KeyPair) Sign(data []byte) (Signature, error) {
+	return kp.k.Sign(data)
 }
