@@ -1,6 +1,7 @@
 import { EditorDocument } from '@app/editor/use-editor-draft'
 import { queryKeys } from '@app/hooks'
 import { libraryMachine } from '@components/library/library-machine'
+import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
 import { QueryClient } from 'react-query'
 import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
@@ -253,6 +254,9 @@ export function createMainPageMachine(client: QueryClient) {
                       },
                       {},
                     ],
+                    goToPublication: {
+                      target: '#publication'
+                    }
                   },
                 },
                 error: {},
@@ -265,6 +269,7 @@ export function createMainPageMachine(client: QueryClient) {
               }
             },
             publication: {
+              id: 'publication',
               initial: 'validating',
               tags: ['topbar', 'library', 'sidepanel'],
               states: {
@@ -282,7 +287,7 @@ export function createMainPageMachine(client: QueryClient) {
                 },
                 valid: {
                   tags: ['publication'],
-                  entry: ['pushPublicationToRoute'],
+                  entry: ['pushPublicationRoute'],
                   exit: ['clearCurrentDocument'],
                   on: {
                     goToPublication: [
@@ -346,8 +351,17 @@ export function createMainPageMachine(client: QueryClient) {
       guards: {
         isPublication: (_, event) => event.docType == 'p',
         isDraft: (_, event) => event.docType == 'editor',
-        isMetaEventDifferent: (context, _, meta) => context.params.docId != meta.state.event.docId,
-        isEventDifferent: (context, event) => context.params.docId != event.docId,
+        isMetaEventDifferent: (context, _, meta) => {
+
+          let { type, ...eventParams } = meta.state.event
+          return !isEqual(context.params, eventParams)
+
+        },
+        isEventDifferent: (context, event) => {
+          let { type, ...eventParams } = event
+
+          return !isEqual(context.params, eventParams)
+        }
       },
       actions: {
         updateLibrary: (context) => {
@@ -365,21 +379,26 @@ export function createMainPageMachine(client: QueryClient) {
             let { event } = meta.state
             return {
               docId: event.docId,
-              blockId: event.bl
             }
           },
         }),
         setPublicationParams: assign({
           params: (c, e, m) => {
+            console.log('setPublicationParams: ', { c, e, m });
+
             let { replace, type, ...rest } = m.state?.event
+            console.log('setPublicationParams: ', m.state?.event);
             return rest
           },
         }),
-        pushPublicationToRoute: send(
-          (context) => ({
-            type: 'pushPublication',
-            ...context.params,
-          }),
+        pushPublicationRoute: send(
+          (context) => {
+            console.log("🚀 ~ file: main-page-machine.ts ~ line 387 ~ createMainPageMachine ~ context", context)
+            return {
+              type: 'pushPublication',
+              ...context.params,
+            }
+          },
           { to: 'router' },
         ),
         pushDraftRoute: send((context, ev, meta) => ({
@@ -395,9 +414,8 @@ export function createMainPageMachine(client: QueryClient) {
           navRouter
             .on('/', () => sendBack('goToHome'))
             .on('/settings', () => sendBack('goToSettings'))
-            .on<{ docId: string }>('/editor/:docId', (params) =>
-              params ? sendBack({ type: 'goToEditor', docId: params.docId }) : sendBack('routeNotFound'),
-            )
+            .on<{ docId: string }>('/editor/:docId', (params) => params ? sendBack({ type: 'goToEditor', ...params }) : sendBack('routeNotFound'),
+          )
             .on<{
               docId: string
               version?: string

@@ -53,7 +53,6 @@ export function changesServiceCreator() {
   }
 
   function send({ operation, editor }: ChangesEvent) {
-    console.log("🚀 ~ file: plugin.ts ~ line 56 ~ send ~ operation", operation)
     switch (operation.type) {
       case 'insert_node':
         addOperation('moveBlock', operation.node)

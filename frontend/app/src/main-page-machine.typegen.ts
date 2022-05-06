@@ -51,7 +51,7 @@ export interface Typegen2 {
     setPublicationParams: ''
     clearCurrentDocument: 'xstate.init'
     pushDraftRoute: ''
-    pushPublicationToRoute: ''
+    pushPublicationRoute: ''
   }
   internalEvents: {
     '': {type: ''}
@@ -106,7 +106,10 @@ export interface Typegen2 {
           | 'publication'
           | 'settings'
           | 'createDraft'
-          | {editor?: 'validating' | 'valid' | 'error'; publication?: 'validating' | 'valid' | 'error'}
+          | {
+              editor?: 'validating' | 'valid' | 'error'
+              publication?: 'validating' | 'valid' | 'error'
+            }
       }
   tags: 'topbar' | 'library' | 'sidepanel' | 'draft' | 'publication'
 }

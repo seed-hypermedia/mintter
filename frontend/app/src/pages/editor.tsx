@@ -1,6 +1,11 @@
 // import 'show-keys'
 import {AppError} from '@app/app'
-import {Document, DocumentChange, updateDraftV2} from '@app/client'
+import {
+  Document,
+  DocumentChange,
+  publishDraft as apiPublishDraft,
+  updateDraftV2 as apiUpdateDraft,
+} from '@app/client'
 import {Editor} from '@app/editor/editor'
 import {changesService} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
@@ -20,16 +25,16 @@ import {useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
-import {useLocation} from 'wouter'
 import {StateFrom} from 'xstate'
 import {EditorPageProps} from './types'
 export default function EditorPage({
   editor: propEditor,
   shouldAutosave = true,
+  publishDraft = apiPublishDraft,
+  updateDraft = apiUpdateDraft,
 }: EditorPageProps) {
   const client = useQueryClient()
   const {docId} = useParams()
-  const [, setLocation] = useLocation()
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
   const localEditor = useMemo(
@@ -48,26 +53,41 @@ export default function EditorPage({
     options: {
       actions: {
         afterPublish: (context) => {
-          if (!toast.current) {
-            toast.current = toastFactory.success('Draft Published!', {
-              position: 'top-center',
-              duration: 2000,
+          console.log('After Publish: ', context, mainPageService.getSnapshot())
+
+          if (context.publication && context.publication.document) {
+            if (!toast.current) {
+              toast.current = toastFactory.success('Draft Published!', {
+                position: 'top-center',
+                duration: 2000,
+              })
+            } else {
+              toastFactory.success('Draft Published!', {
+                position: 'top-center',
+                duration: 2000,
+                id: toast.current,
+              })
+            }
+            mainPageService.send({
+              type: 'goToPublication',
+              docId: context.publication?.document?.id,
+              version: context.publication?.version,
+              replace: true,
             })
           } else {
-            toastFactory.success('Draft Published!', {
-              position: 'top-center',
-              duration: 2000,
-              id: toast.current,
-            })
+            if (!toast.current) {
+              toast.current = toastFactory.error('Error after publishing', {
+                position: 'top-center',
+                duration: 2000,
+              })
+            } else {
+              toastFactory.error('Error after publishing', {
+                position: 'top-center',
+                duration: 2000,
+                id: toast.current,
+              })
+            }
           }
-
-          setLocation(
-            `/p/${context.publication?.document?.id}/${context.publication?.version}`,
-            {
-              // we replace the history here because the draft url will not be available after.
-              replace: true,
-            },
-          )
         },
         updateCurrentDocument: (context, event) => {
           if (event.type == 'EDITOR.REPORT.FETCH.SUCCESS') {
@@ -103,10 +123,6 @@ export default function EditorPage({
                 editor,
               )
               let newTitle = getTitleFromContent(editor)
-              console.log(
-                '🚀 ~ file: editor.tsx ~ line 105 ~ autosave ~ newTitle',
-                newTitle,
-              )
               let changes: Array<DocumentChange> = newTitle
                 ? [
                     ...contentChanges,
@@ -120,7 +136,7 @@ export default function EditorPage({
                 : contentChanges
 
               try {
-                await updateDraftV2({
+                await updateDraft({
                   documentId: context.localDraft!.id!,
                   changes,
                 })
@@ -138,6 +154,24 @@ export default function EditorPage({
               }
             })()
           }
+        },
+        publishDraftService: (context, event) => (sendBack) => {
+          console.log('publishDraftService: ', context, event)
+
+          if (!context.localDraft) return
+
+          publishDraft(context.localDraft.id!)
+            .then((publication) => {
+              console.log('PUBLISHED!', publication)
+
+              sendBack({type: 'EDITOR.PUBLISH.SUCCESS', publication})
+            })
+            .catch((err: any) => {
+              sendBack({
+                type: 'EDITOR.PUBLISH.ERROR',
+                errorMessage: err.message,
+              })
+            })
         },
       },
     },
@@ -253,6 +287,7 @@ export default function EditorPage({
               size="1"
               variant="outlined"
               disabled={!state.hasTag('canPublish')}
+              data-testid="submit-review"
               onClick={() => {
                 console.log('Review: IMPLEMENT ME!')
               }}
@@ -263,6 +298,7 @@ export default function EditorPage({
               variant="outlined"
               size="1"
               disabled={!state.hasTag('canPublish')}
+              data-testid="submit-reply"
               onClick={() => {
                 console.log('Reply: IMPLEMENT ME!')
               }}
@@ -273,7 +309,9 @@ export default function EditorPage({
               color="success"
               size="1"
               disabled={!state.hasTag('canPublish')}
+              data-testid="submit-publish"
               onClick={() => {
+                console.log('PUBLISH PLEASE!!!')
                 send('EDITOR.PUBLISH')
               }}
             >
