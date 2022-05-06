@@ -99,7 +99,7 @@ var migrations = []string{
 			-- Mostly NULL because Ed25519 keys can be extracted from the CID.
 			public_key BLOB DEFAULT NULL,
 			-- Reference to the Account this Device belongs to.
-			account_id INTEGER REFERENCES accounts NOT NULL,
+			account_id INTEGER REFERENCES accounts,
 			-- Subjective (locally perceived) time when the item was created.
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 		);
@@ -131,6 +131,25 @@ var migrations = []string{
 			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
 			PRIMARY KEY (object_id, device_id)
 		);
+
+		CREATE TABLE named_versions (
+			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
+			device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
+			name TEXT NOT NULL,
+			version TEXT NOT NULL,
+			PRIMARY KEY (object_id, account_id, device_id, name)
+		) WITHOUT ROWID;
+
+		CREATE TABLE working_copy (
+			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			name TEXT NOT NULL,
+			data BLOB,
+			version TEXT DEFAULT ('') NOT NULL,
+			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+			update_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+			PRIMARY KEY (object_id, name)
+		) WITHOUT ROWID;
 
 		-- Stores draft-related attributes of an Object.
 		CREATE TABLE drafts (

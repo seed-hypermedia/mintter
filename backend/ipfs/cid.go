@@ -19,6 +19,15 @@ func NewCID(codec, hashType uint64, data []byte) (cid.Cid, error) {
 	return cid.NewCidV1(codec, mh), nil
 }
 
+// MustNewCID creates a new CID from data and panics if it fails.
+func MustNewCID(codec, hashType uint64, data []byte) cid.Cid {
+	c, err := NewCID(codec, hashType, data)
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
+
 // PubKeyAsCID encodes public key as CID.
 func PubKeyAsCID(key crypto.PubKey) (cid.Cid, error) {
 	_, ok := key.(*crypto.Ed25519PublicKey)

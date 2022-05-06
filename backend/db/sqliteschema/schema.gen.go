@@ -85,6 +85,16 @@ const (
 	LinksTargetVersion     sqlitegen.Column = "links.target_version"
 )
 
+// Table named_versions.
+const (
+	NamedVersions          sqlitegen.Table  = "named_versions"
+	NamedVersionsAccountID sqlitegen.Column = "named_versions.account_id"
+	NamedVersionsDeviceID  sqlitegen.Column = "named_versions.device_id"
+	NamedVersionsName      sqlitegen.Column = "named_versions.name"
+	NamedVersionsObjectID  sqlitegen.Column = "named_versions.object_id"
+	NamedVersionsVersion   sqlitegen.Column = "named_versions.version"
+)
+
 // Table objects.
 const (
 	Objects           sqlitegen.Table  = "objects"
@@ -116,6 +126,17 @@ const (
 	WalletsID      sqlitegen.Column = "wallets.id"
 	WalletsName    sqlitegen.Column = "wallets.name"
 	WalletsType    sqlitegen.Column = "wallets.type"
+)
+
+// Table working_copy.
+const (
+	WorkingCopy           sqlitegen.Table  = "working_copy"
+	WorkingCopyCreateTime sqlitegen.Column = "working_copy.create_time"
+	WorkingCopyData       sqlitegen.Column = "working_copy.data"
+	WorkingCopyName       sqlitegen.Column = "working_copy.name"
+	WorkingCopyObjectID   sqlitegen.Column = "working_copy.object_id"
+	WorkingCopyUpdateTime sqlitegen.Column = "working_copy.update_time"
+	WorkingCopyVersion    sqlitegen.Column = "working_copy.version"
 )
 
 // Schema describes SQLite columns.
@@ -160,6 +181,11 @@ var Schema = sqlitegen.Schema{
 		LinksTargetBlockID:        {Table: Links, SQLType: "TEXT"},
 		LinksTargetObjectID:       {Table: Links, SQLType: "INTEGER"},
 		LinksTargetVersion:        {Table: Links, SQLType: "TEXT"},
+		NamedVersionsAccountID:    {Table: NamedVersions, SQLType: "INTEGER"},
+		NamedVersionsDeviceID:     {Table: NamedVersions, SQLType: "INTEGER"},
+		NamedVersionsName:         {Table: NamedVersions, SQLType: "TEXT"},
+		NamedVersionsObjectID:     {Table: NamedVersions, SQLType: "INTEGER"},
+		NamedVersionsVersion:      {Table: NamedVersions, SQLType: "TEXT"},
 		ObjectsAccountID:          {Table: Objects, SQLType: "INTEGER"},
 		ObjectsCodec:              {Table: Objects, SQLType: "INTEGER"},
 		ObjectsCreateTime:         {Table: Objects, SQLType: "INTEGER"},
@@ -178,5 +204,11 @@ var Schema = sqlitegen.Schema{
 		WalletsID:                 {Table: Wallets, SQLType: "TEXT"},
 		WalletsName:               {Table: Wallets, SQLType: "TEXT"},
 		WalletsType:               {Table: Wallets, SQLType: "TEXT"},
+		WorkingCopyCreateTime:     {Table: WorkingCopy, SQLType: "INTEGER"},
+		WorkingCopyData:           {Table: WorkingCopy, SQLType: "BLOB"},
+		WorkingCopyName:           {Table: WorkingCopy, SQLType: "TEXT"},
+		WorkingCopyObjectID:       {Table: WorkingCopy, SQLType: "INTEGER"},
+		WorkingCopyUpdateTime:     {Table: WorkingCopy, SQLType: "INTEGER"},
+		WorkingCopyVersion:        {Table: WorkingCopy, SQLType: "TEXT"},
 	},
 }

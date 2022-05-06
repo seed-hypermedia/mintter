@@ -7,13 +7,17 @@ import (
 	"time"
 
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p-core/crypto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	documents "mintter/backend/api/documents/v1alpha"
+	"mintter/backend/core"
 	"mintter/backend/crdt"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcstypes"
 )
 
 // DocsServer combines Drafts and Publications servers.
@@ -22,103 +26,112 @@ type DocsServer interface {
 	documents.PublicationsServer
 	documents.ContentGraphServer
 }
-
-type docsService interface {
-	CreateDraft(context.Context) (Draft, error)
-	CreateDraftFromPublication(context.Context, cid.Cid) (Draft, error)
-	GetDraft(context.Context, cid.Cid) (Draft, error)
-	UpdateDraft(ctx context.Context, c cid.Cid, title, subtitle string, content ContentWithLinks) (Draft, error)
-	PublishDraft(ctx context.Context, c cid.Cid) (Publication, error)
-	ListDrafts(context.Context) ([]draftsListResult, error)
-	DeleteDraft(context.Context, cid.Cid) error
-
-	Account() (PublicAccount, error)
-
-	GetPublication(context.Context, cid.Cid) (Publication, error)
-	LoadState(ctx context.Context, obj cid.Cid) (*changeset, error)
-	ListPublications(ctx context.Context) ([]publicationsListResult, error)
-	DeletePublication(ctx context.Context, c cid.Cid) (err error)
-
-	ListBacklinks(context.Context, cid.Cid, int) ([]Backlink, error)
-}
-
 type docsAPI struct {
-	feedMu sync.Mutex
-	back   docsService
-
+	feedMu   sync.Mutex
+	back     *backend
 	draftsMu sync.Mutex
 	drafts   map[string]*draftState
+
+	*vcstypes.DocsAPI
 }
 
 func newDocsAPI(back *backend) DocsServer {
-	return &docsAPI{
+	srv := &docsAPI{
 		back:   back,
 		drafts: map[string]*draftState{},
 	}
-}
 
-func (srv *docsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
-	// This will be changed when we switched to granular draft updates everywhere.
-	{
-		var ds *draftState
-		srv.draftsMu.Lock()
-		ds = srv.drafts[in.DocumentId]
-		srv.draftsMu.Unlock()
-		if ds != nil {
-			return ds.toProto(), nil
-		}
-	}
-
-	c, err := srv.parseDocumentID(in.DocumentId)
-	if err != nil {
-		return nil, err
-	}
-
-	draft, err := srv.back.GetDraft(ctx, c)
-	if err != nil {
-		return nil, err
-	}
-
-	acc, err := srv.back.Account()
-	if err != nil {
-		return nil, err
-	}
-
-	doc := &documents.Document{
-		Id:         in.DocumentId,
-		Title:      draft.Title,
-		Subtitle:   draft.Subtitle,
-		Author:     acc.id.String(),
-		Content:    string(draft.Content),
-		CreateTime: timestamppb.New(draft.CreateTime),
-		UpdateTime: timestamppb.New(draft.UpdateTime),
-	}
-
-	return doc, nil
-}
-
-func (srv *docsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
-	if in.ExistingDocumentId != "" {
-		docid, err := srv.parseDocumentID(in.ExistingDocumentId)
+	// This is ugly as hell, and racy. It's all mess right now while we're refactoring.
+	// The problem here is lazy account initialization. We start up all the things
+	// before actually having an account, so lots of things are messy because of that.
+	go func() {
+		<-back.repo.Ready()
+		acc, err := back.Account()
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 
-		draft, err := srv.back.CreateDraftFromPublication(ctx, docid)
+		aid := cid.Cid(acc.id)
+
+		device, err := core.NewKeyPair(core.CodecDeviceKey, back.repo.Device().priv.(*crypto.Ed25519PrivateKey))
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 
-		return draftToProto(draft), nil
-	}
+		id := core.NewIdentity(aid, device)
 
-	d, err := srv.back.CreateDraft(ctx)
-	if err != nil {
-		return nil, err
-	}
+		vcs := vcs.New(back.pool)
 
-	return draftToProto(d), nil
+		docsapi := vcstypes.NewDocsAPI(id, vcs)
+		srv.DocsAPI = docsapi
+
+	}()
+
+	return srv
 }
+
+// func (srv *docsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
+// 	// This will be changed when we switched to granular draft updates everywhere.
+// 	{
+// 		var ds *draftState
+// 		srv.draftsMu.Lock()
+// 		ds = srv.drafts[in.DocumentId]
+// 		srv.draftsMu.Unlock()
+// 		if ds != nil {
+// 			return ds.toProto(), nil
+// 		}
+// 	}
+
+// 	c, err := srv.parseDocumentID(in.DocumentId)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	draft, err := srv.back.GetDraft(ctx, c)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	acc, err := srv.back.Account()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	doc := &documents.Document{
+// 		Id:         in.DocumentId,
+// 		Title:      draft.Title,
+// 		Subtitle:   draft.Subtitle,
+// 		Author:     acc.id.String(),
+// 		Content:    string(draft.Content),
+// 		CreateTime: timestamppb.New(draft.CreateTime),
+// 		UpdateTime: timestamppb.New(draft.UpdateTime),
+// 	}
+
+// 	return doc, nil
+// }
+
+// func (srv *docsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
+// 	if in.ExistingDocumentId != "" {
+// 		docid, err := srv.parseDocumentID(in.ExistingDocumentId)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		draft, err := srv.back.CreateDraftFromPublication(ctx, docid)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+
+// 		return draftToProto(draft), nil
+// 	}
+
+// 	d, err := srv.back.CreateDraft(ctx)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return draftToProto(d), nil
+// }
 
 func draftToProto(d Draft) *documents.Document {
 	return &documents.Document{
@@ -164,6 +177,8 @@ func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequ
 }
 
 func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
+	return nil, status.Error(codes.Unimplemented, "not implemented")
+
 	c, err := srv.parseDocumentID(in.Document.Id)
 	if err != nil {
 		return nil, err
@@ -210,25 +225,25 @@ func (srv *docsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRe
 	return &emptypb.Empty{}, srv.back.DeleteDraft(ctx, c)
 }
 
-func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
-	c, err := srv.parseDocumentID(in.DocumentId)
-	if err != nil {
-		return nil, err
-	}
+// func (srv *docsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
+// 	c, err := srv.parseDocumentID(in.DocumentId)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	// TODO: rethink so that this lock is not necessary.
-	// For some stupid thing we can't publish drafts concurrently.
-	// Remove this lock and see how the tests will fail. Not a biggie though.
-	srv.feedMu.Lock()
-	defer srv.feedMu.Unlock()
+// 	// TODO: rethink so that this lock is not necessary.
+// 	// For some stupid thing we can't publish drafts concurrently.
+// 	// Remove this lock and see how the tests will fail. Not a biggie though.
+// 	srv.feedMu.Lock()
+// 	defer srv.feedMu.Unlock()
 
-	pub, err := srv.back.PublishDraft(ctx, c)
-	if err != nil {
-		return nil, err
-	}
+// 	pub, err := srv.back.PublishDraft(ctx, c)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return pubToProto(in.DocumentId, pub), nil
-}
+// 	return pubToProto(in.DocumentId, pub), nil
+// }
 
 func pubToProto(id string, pub Publication) *documents.Publication {
 	return &documents.Publication{
@@ -247,21 +262,21 @@ func pubToProto(id string, pub Publication) *documents.Publication {
 	}
 }
 
-func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
-	// TODO: implement getting specific version of the publication.
+// func (srv *docsAPI) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
+// 	// TODO: implement getting specific version of the publication.
 
-	c, err := srv.parseDocumentID(in.DocumentId)
-	if err != nil {
-		return nil, err
-	}
+// 	c, err := srv.parseDocumentID(in.DocumentId)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	pub, err := srv.back.GetPublication(ctx, c)
-	if err != nil {
-		return nil, err
-	}
+// 	pub, err := srv.back.GetPublication(ctx, c)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return pubToProto(in.DocumentId, pub), nil
-}
+// 	return pubToProto(in.DocumentId, pub), nil
+// }
 
 func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	list, err := srv.back.ListPublications(ctx)
@@ -308,78 +323,78 @@ func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeleteP
 	return &emptypb.Empty{}, err
 }
 
-func (srv *docsAPI) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
-	// This is work in progress, and quite a mess.
+// func (srv *docsAPI) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
+// 	// This is work in progress, and quite a mess.
 
-	if in.DocumentId == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "document_id must be specified")
-	}
+// 	if in.DocumentId == "" {
+// 		return nil, status.Errorf(codes.InvalidArgument, "document_id must be specified")
+// 	}
 
-	if len(in.Changes) == 0 {
-		return nil, status.Errorf(codes.InvalidArgument, "must send changes to update a draft")
-	}
+// 	if len(in.Changes) == 0 {
+// 		return nil, status.Errorf(codes.InvalidArgument, "must send changes to update a draft")
+// 	}
 
-	// We should only be able to update one draft at a time anyway. Will keep the lock here,
-	// although it's probably too pessimistic. Locking a single document should be enough.
-	srv.draftsMu.Lock()
-	defer srv.draftsMu.Unlock()
+// 	// We should only be able to update one draft at a time anyway. Will keep the lock here,
+// 	// although it's probably too pessimistic. Locking a single document should be enough.
+// 	srv.draftsMu.Lock()
+// 	defer srv.draftsMu.Unlock()
 
-	acc, err := srv.back.Account()
-	if err != nil {
-		return nil, err
-	}
+// 	acc, err := srv.back.Account()
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	ds, ok := srv.drafts[in.DocumentId]
-	if !ok {
-		c, err := srv.parseDocumentID(in.DocumentId)
-		if err != nil {
-			return nil, err
-		}
+// 	ds, ok := srv.drafts[in.DocumentId]
+// 	if !ok {
+// 		c, err := srv.parseDocumentID(in.DocumentId)
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-		draft, err := srv.back.GetDraft(ctx, c)
-		if err != nil {
-			return nil, err
-		}
+// 		draft, err := srv.back.GetDraft(ctx, c)
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-		ds, err = newDraftState(&documents.Document{
-			Id:         in.DocumentId,
-			Author:     acc.id.String(),
-			CreateTime: timestamppb.New(draft.CreateTime),
-			UpdateTime: timestamppb.New(draft.UpdateTime),
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to create draft state: %w", err)
-		}
+// 		ds, err = newDraftState(&documents.Document{
+// 			Id:         in.DocumentId,
+// 			Author:     acc.id.String(),
+// 			CreateTime: timestamppb.New(draft.CreateTime),
+// 			UpdateTime: timestamppb.New(draft.UpdateTime),
+// 		})
+// 		if err != nil {
+// 			return nil, fmt.Errorf("failed to create draft state: %w", err)
+// 		}
 
-		srv.drafts[in.DocumentId] = ds
-	}
+// 		srv.drafts[in.DocumentId] = ds
+// 	}
 
-	for _, c := range in.Changes {
-		switch op := c.Op.(type) {
-		case *documents.DocumentChange_SetTitle:
-			ds.SetTitle(op.SetTitle)
-		case *documents.DocumentChange_SetSubtitle:
-			ds.SetSubtitle(op.SetSubtitle)
-		case *documents.DocumentChange_MoveBlock_:
-			if err := ds.MoveBlock(op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
-				return nil, err
-			}
-		case *documents.DocumentChange_ReplaceBlock:
-			if err := ds.ReplaceBlock(op.ReplaceBlock); err != nil {
-				return nil, err
-			}
-		case *documents.DocumentChange_DeleteBlock:
-			if err := ds.DeleteBlock(op.DeleteBlock); err != nil {
-				return nil, err
-			}
-		default:
-			return nil, fmt.Errorf("invalid draft update operation %T: %+v", c, c)
-		}
-	}
-	ds.updateTime = nowTruncated()
+// 	for _, c := range in.Changes {
+// 		switch op := c.Op.(type) {
+// 		case *documents.DocumentChange_SetTitle:
+// 			ds.SetTitle(op.SetTitle)
+// 		case *documents.DocumentChange_SetSubtitle:
+// 			ds.SetSubtitle(op.SetSubtitle)
+// 		case *documents.DocumentChange_MoveBlock_:
+// 			if err := ds.MoveBlock(op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
+// 				return nil, err
+// 			}
+// 		case *documents.DocumentChange_ReplaceBlock:
+// 			if err := ds.ReplaceBlock(op.ReplaceBlock); err != nil {
+// 				return nil, err
+// 			}
+// 		case *documents.DocumentChange_DeleteBlock:
+// 			if err := ds.DeleteBlock(op.DeleteBlock); err != nil {
+// 				return nil, err
+// 			}
+// 		default:
+// 			return nil, fmt.Errorf("invalid draft update operation %T: %+v", c, c)
+// 		}
+// 	}
+// 	ds.updateTime = nowTruncated()
 
-	return &emptypb.Empty{}, nil
-}
+// 	return &emptypb.Empty{}, nil
+// }
 
 type draftState struct {
 	id         string

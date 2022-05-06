@@ -72,6 +72,22 @@ $TOOLS_GORUN -tags codegen generateQueries
     ],
 )
 
+generated(
+    name = "vcs_queries",
+    srcs = ["vcs/vcssql/sqlite_queries.go"],
+    outs = ["vcs/vcssql/sqlite_queries.gen.go"],
+    cmd = """
+export GOROOT="$($TOOLS_GO env GOROOT)"
+export PATH="$PATH:${GOROOT%/share/go}/bin"
+cd $PKG/vcs/vcssql
+$TOOLS_GORUN -tags codegen generateQueries
+""",
+    tools = [
+        "//build/nix:go",
+        "//build/tools:gorun",
+    ],
+)
+
 # Generates Go code from changes.proto file.
 generated(
     name = "changes_proto",
