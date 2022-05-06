@@ -1,4 +1,9 @@
-import {Document, ListDraftsResponse, ListPublicationsResponse, Publication} from '@app/client'
+import {
+  Document,
+  ListDraftsResponse,
+  ListPublicationsResponse,
+  Publication,
+} from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {MainPageProviders, mountWithAccount} from '@app/test/utils'
 import {LibraryItem} from '@components/library/library-item'
@@ -8,10 +13,13 @@ describe('<LibraryItem />', () => {
   beforeEach(() => {
     let {client, render} = mountWithAccount()
 
-    client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
-      publications: [],
-      nextPageToken: '',
-    })
+    client.setQueryData<ListPublicationsResponse>(
+      [queryKeys.GET_PUBLICATION_LIST],
+      {
+        publications: [],
+        nextPageToken: '',
+      },
+    )
 
     client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
       documents: [],
@@ -45,16 +53,6 @@ describe('<LibraryItem />', () => {
       .contains('Open in sidepanel')
       .click()
   })
-
-  // it('should Open in Main panel', () => {
-  //   cy.get('[data-testid="library-item"]')
-  //     .get('[data-trigger]')
-  //     .click()
-  //     .get('[data-testid="mainpanel-item"]')
-  //     .should('be.visible')
-  //     .contains('Open in main panel')
-  //     .click()
-  // })
 })
 
 describe('<LibraryItem /> with Draft', () => {
@@ -76,10 +74,13 @@ describe('<LibraryItem /> with Draft', () => {
   beforeEach(() => {
     let {client, render} = mountWithAccount()
 
-    client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
-      publications: [],
-      nextPageToken: '',
-    })
+    client.setQueryData<ListPublicationsResponse>(
+      [queryKeys.GET_PUBLICATION_LIST],
+      {
+        publications: [],
+        nextPageToken: '',
+      },
+    )
 
     client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
       documents: [],
@@ -158,10 +159,13 @@ describe('<LibraryItem /> with Publication', () => {
   beforeEach(() => {
     let {client, render} = mountWithAccount()
 
-    client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
-      publications: [],
-      nextPageToken: '',
-    })
+    client.setQueryData<ListPublicationsResponse>(
+      [queryKeys.GET_PUBLICATION_LIST],
+      {
+        publications: [],
+        nextPageToken: '',
+      },
+    )
 
     client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
       documents: [],
@@ -216,7 +220,9 @@ describe('<LibraryItem /> with Publication', () => {
       .click()
       .then(() => {
         expect(copyTextToClipboard).to.have.been.calledOnce
-        expect(copyTextToClipboard).to.have.been.calledWith(`mtt://${publication.document?.id}/${publication.version}`)
+        expect(copyTextToClipboard).to.have.been.calledWith(
+          `mtt://${publication.document?.id}/${publication.version}`,
+        )
       })
   })
 })

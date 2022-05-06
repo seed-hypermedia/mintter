@@ -121,8 +121,6 @@ export function HoveringToolbar() {
       return
     }
 
-    console.log({storeFocus, lastSelection, editorSelection: editor.selection})
-
     const domRange = ReactEditor.toDOMRange(editor, selection)
     const rect = domRange.getBoundingClientRect()
     el.style.opacity = '1'

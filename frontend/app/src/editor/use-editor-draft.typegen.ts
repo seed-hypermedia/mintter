@@ -6,9 +6,13 @@ export interface Typegen0 {
     displayFailedMessage: 'FETCH'
     incrementRetries: 'FETCH'
     assignDraftsValue: 'EDITOR.REPORT.FETCH.SUCCESS'
-    assignError: 'EDITOR.REPORT.FETCH.ERROR' | 'EDITOR.UPDATE.ERROR' | 'EDITOR.PUBLISH.ERROR'
+    assignError:
+      | 'EDITOR.REPORT.FETCH.ERROR'
+      | 'error.platform.editor.editing.saving:invocation[0]'
+      | 'EDITOR.UPDATE.ERROR'
+      | 'EDITOR.PUBLISH.ERROR'
     updateValueToContext: 'EDITOR.UPDATE'
-    assignErrorToContext: 'error.platform.editor.editing.saving:invocation[0]'
+    updateCurrentDocument: 'EDITOR.UPDATE' | 'EDITOR.REPORT.FETCH.SUCCESS'
     updateLibrary: 'EDITOR.UPDATE.SUCCESS'
     assignPublication: 'EDITOR.PUBLISH.SUCCESS'
     afterPublish: 'done.state.editing'
@@ -18,22 +22,27 @@ export interface Typegen0 {
       type: 'error.platform.editor.editing.saving:invocation[0]'
       data: unknown
     }
-    'xstate.after(1000)#editor.editing.debouncing': {type: 'xstate.after(1000)#editor.editing.debouncing'}
+    'xstate.after(1000)#editor.editing.debouncing': {
+      type: 'xstate.after(1000)#editor.editing.debouncing'
+    }
     'xstate.init': {type: 'xstate.init'}
     'done.invoke.fetchDocument': {
       type: 'done.invoke.fetchDocument'
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.fetchDocument': {type: 'error.platform.fetchDocument'; data: unknown}
+    'error.platform.fetchDocument': {
+      type: 'error.platform.fetchDocument'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchDocument: 'done.invoke.fetchDocument'
     saveDraft: 'done.invoke.editor.editing.saving:invocation[0]'
   }
   missingImplementations: {
-    actions: 'displayFailedMessage' | 'assignErrorToContext' | 'afterPublish'
-    services: never
+    actions: 'displayFailedMessage' | 'updateCurrentDocument' | 'afterPublish'
+    services: 'saveDraft'
     guards: never
     delays: never
   }
@@ -43,7 +52,6 @@ export interface Typegen0 {
   }
   eventsCausingGuards: {
     maxRetriesReached: 'FETCH'
-    isValueDirty: 'xstate.after(1000)#editor.editing.debouncing'
   }
   eventsCausingDelays: {}
   matchesStates:
@@ -59,5 +67,5 @@ export interface Typegen0 {
     | 'finishEditing'
     | 'failed'
     | {editing?: 'idle' | 'debouncing' | 'saving' | 'publishing' | 'published'}
-  tags: never
+  tags: 'canPublish'
 }

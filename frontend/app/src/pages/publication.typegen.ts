@@ -22,7 +22,10 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.fetchDiscussionData': {type: 'error.platform.fetchDiscussionData'; data: unknown}
+    'error.platform.fetchDiscussionData': {
+      type: 'error.platform.fetchDiscussionData'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchPublicationData: 'done.invoke.publication-machine.fetching:invocation[0]'

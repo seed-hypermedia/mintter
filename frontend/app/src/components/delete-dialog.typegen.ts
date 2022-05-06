@@ -12,7 +12,10 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.deleteEntry': {type: 'error.platform.deleteEntry'; data: unknown}
+    'error.platform.deleteEntry': {
+      type: 'error.platform.deleteEntry'
+      data: unknown
+    }
     'xstate.init': {type: 'xstate.init'}
   }
   invokeSrcNameMap: {

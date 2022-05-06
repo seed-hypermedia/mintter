@@ -45,9 +45,11 @@ export interface Typegen1 {
 export interface Typegen2 {
   '@@xstate/typegen': true
   eventsCausingActions: {
-    reconcileLibrary: 'RECONCILE'
+    updateLibrary: 'RECONCILE'
+    setCurrentDocument: 'SET.CURRENT.DOCUMENT'
     setDraftParams: ''
     setPublicationParams: ''
+    clearCurrentDocument: 'xstate.init'
     pushDraftRoute: ''
     pushPublicationToRoute: ''
   }
@@ -66,7 +68,7 @@ export interface Typegen2 {
     createNewDraft: 'done.invoke.(machine).routes.createDraft:invocation[0]'
   }
   missingImplementations: {
-    actions: 'reconcileLibrary'
+    actions: never
     services: never
     guards: never
     delays: never

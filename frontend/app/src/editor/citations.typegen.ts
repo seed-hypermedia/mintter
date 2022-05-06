@@ -16,7 +16,10 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.fetchCitations': {type: 'error.platform.fetchCitations'; data: unknown}
+    'error.platform.fetchCitations': {
+      type: 'error.platform.fetchCitations'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchCitations: 'done.invoke.fetchCitations'

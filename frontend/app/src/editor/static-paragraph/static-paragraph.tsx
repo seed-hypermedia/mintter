@@ -46,7 +46,11 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
     ({element, children, attributes}) => {
       if (isStaticParagraph(element)) {
         return (
-          <StaticParagraph mode={editor.mode} element={element} attributes={attributes}>
+          <StaticParagraph
+            mode={editor.mode}
+            element={element}
+            attributes={attributes}
+          >
             {children}
           </StaticParagraph>
         )
@@ -69,7 +73,12 @@ function useHeading(element: StaticParagraphType) {
   }
 }
 
-function StaticParagraph({children, element, attributes, mode}: RenderElementProps & {mode: EditorMode}) {
+function StaticParagraph({
+  children,
+  element,
+  attributes,
+  mode,
+}: RenderElementProps & {mode: EditorMode}) {
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()

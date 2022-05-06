@@ -4,12 +4,19 @@ import {hoverMachine} from '@app/editor/hover-machine'
 import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageMachine} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
-import {BookmarksProvider, createBookmarksMachine} from '@components/bookmarks'
+import {
+  BookmarksProvider,
+  createBookmarkListMachine,
+} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {ScrollArea} from '@components/scroll-area'
 import {Settings} from '@components/settings'
-import {createSidepanelMachine, Sidepanel, SidepanelProvider} from '@components/sidepanel'
+import {
+  createSidepanelMachine,
+  Sidepanel,
+  SidepanelProvider,
+} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
 import {useActor, useInterpret} from '@xstate/react'
@@ -24,20 +31,12 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   const localClient = useQueryClient()
   const client = propClient ?? localClient
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
-  const bookmarksService = useInterpret(() => createBookmarksMachine(client))
+  const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   const hoverService = useInterpret(() => hoverMachine)
   const citationsService = useInterpret(() => createCitationsMachine(client))
-  const mainPageService = useInterpret(() => createMainPageMachine(client), {
-    actions: {
-      reconcileLibrary: (context) => {
-        context.files.send('RECONCILE')
-        context.drafts.send('RECONCILE')
-      },
-    },
-  })
+  const mainPageService = useInterpret(() => createMainPageMachine(client))
 
   const [state] = useActor(mainPageService)
-  console.log('🚀 ~ file: main-page.tsx ~ line 40 ~ MainPage ~ state', state.value)
 
   return (
     <MainPageProvider value={mainPageService}>
@@ -58,10 +57,13 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
                         window.location.reload()
                       }}
                     >
-                      {state.hasTag('publication') && !!state.context.params.docId ? (
+                      {state.hasTag('publication') &&
+                      !!state.context.params.docId ? (
                         <Publication key={state.context.params.docId} />
                       ) : null}
-                      {state.hasTag('draft') ? <EditorPage key={state.context.params.docId} /> : null}
+                      {state.hasTag('draft') ? (
+                        <EditorPage key={state.context.params.docId} />
+                      ) : null}
                       {state.matches('routes.idle') ? <Placeholder /> : null}
                     </ErrorBoundary>
                   </MainWindow>
@@ -89,10 +91,10 @@ export var rootPageStyle = css({
   gridAutoFlow: 'column',
   gridAutoColumns: '1fr',
   gridTemplateRows: '40px 1fr',
-  gridTemplateColumns: 'auto 1fr auto',
+  gridTemplateColumns: '1fr auto auto',
   gap: 0,
   gridTemplateAreas: `"topbar topbar topbar"
-  "library main sidepanel"`,
+  "main sidepanel library"`,
   background: '$background-default',
 })
 
@@ -101,6 +103,8 @@ let mainWindowStyle = css({
   position: 'relative',
   overflow: 'auto',
   backgroundColor: '$background-alt',
+  padding: '$5',
+  paddingBottom: 0,
 })
 
 function MainWindow({children}: PropsWithChildren<{}>) {

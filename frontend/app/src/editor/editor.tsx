@@ -41,23 +41,46 @@ export function Editor({
   as = 'div',
   className,
 }: PropsWithChildren<EditorProps>) {
-  const _editor = useMemo(() => editor ?? buildEditorHook(plugins, mode), [editor, plugins, mode])
-  const renderElement = useMemo(() => buildRenderElementHook(plugins, _editor), [plugins, _editor])
-  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, _editor), [plugins, _editor])
-  const decorate = useMemo(() => buildDecorateHook(plugins, _editor), [plugins, _editor])
-  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, _editor), [plugins, _editor])
+  const _editor = useMemo(
+    () => editor ?? buildEditorHook(plugins, mode),
+    [editor, plugins, mode],
+  )
+  const renderElement = useMemo(
+    () => buildRenderElementHook(plugins, _editor),
+    [plugins, _editor],
+  )
+  const renderLeaf = useMemo(
+    () => buildRenderLeafHook(plugins, _editor),
+    [plugins, _editor],
+  )
+  const decorate = useMemo(
+    () => buildDecorateHook(plugins, _editor),
+    [plugins, _editor],
+  )
+  const eventHandlers = useMemo(
+    () => buildEventHandlerHooks(plugins, _editor),
+    [plugins, _editor],
+  )
   const hoverService = useHover()
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Suspense fallback={'loading'}>
-        <Box as="span" className={className} onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}>
-          <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
+        <Box
+          as="span"
+          className={className}
+          onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
+        >
+          <Slate
+            editor={_editor}
+            value={value as Array<Descendant>}
+            onChange={onChange as any}
+          >
             <Editable
               as={as}
+              data-testid="editor"
               style={{display: 'inline'}}
               readOnly={_editor.readOnly}
-              data-testid="editor"
               renderElement={renderElement}
               renderLeaf={renderLeaf}
               decorate={decorate}
@@ -72,8 +95,16 @@ export function Editor({
   if (mode == EditorMode.Publication || mode == EditorMode.Discussion) {
     return (
       <Suspense fallback={'loading'}>
-        <Box className={className} css={{position: 'relative'}} onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}>
-          <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
+        <Box
+          className={className}
+          css={{position: 'relative'}}
+          onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
+        >
+          <Slate
+            editor={_editor}
+            value={value as Array<Descendant>}
+            onChange={onChange as any}
+          >
             <Editable
               readOnly={true}
               data-testid="editor"
@@ -91,12 +122,20 @@ export function Editor({
 
   return (
     <Suspense fallback={'loading'}>
-      <Box className={className} css={{position: 'relative'}} onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}>
-        <Slate editor={_editor} value={value as Array<Descendant>} onChange={onChange as any}>
+      <Box
+        className={className}
+        css={{position: 'relative'}}
+        onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
+      >
+        <Slate
+          editor={_editor}
+          value={value as Array<Descendant>}
+          onChange={onChange as any}
+        >
           <HoveringToolbar />
           <Editable
-            readOnly={_editor.readOnly}
             data-testid="editor"
+            readOnly={_editor.readOnly}
             renderElement={renderElement}
             renderLeaf={renderLeaf}
             decorate={decorate}

@@ -1,4 +1,12 @@
-import {createDraft, getInfo, getPublication, Link, listCitations, Publication as PublicationType} from '@app/client'
+import {
+  createDraft,
+  getInfo,
+  getPublication,
+  Link,
+  listCitations,
+  Publication as PublicationType,
+} from '@app/client'
+import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useCitationService} from '@app/editor/citations'
 import {ContextMenu} from '@app/editor/context-menu'
@@ -35,9 +43,12 @@ export default function Publication() {
 
   const [state, send] = usePagePublication(client, docId, version)
 
-  const {data: author} = useAccount(state.context.publication?.document?.author, {
-    enabled: !!state.context.publication?.document?.author,
-  })
+  const {data: author} = useAccount(
+    state.context.publication?.document?.author,
+    {
+      enabled: !!state.context.publication?.document?.author,
+    },
+  )
 
   useEffect(() => {
     if (docId) {
@@ -59,7 +70,10 @@ export default function Publication() {
         mainPageService.send({type: 'goToEditor', docId: d.id})
       }
     } catch (err) {
-      console.warn(`createDraft Error: "createDraft" does not returned a Document`, err)
+      console.warn(
+        `createDraft Error: "createDraft" does not returned a Document`,
+        err,
+      )
     }
   }
 
@@ -74,14 +88,15 @@ export default function Publication() {
   // start rendering
   if (state.matches('errored')) {
     return (
-      <Box
-        css={{
-          padding: '$5',
-        }}
-      >
+      <Box css={{}}>
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
-        <Button onClick={() => send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})} color="muted">
+        <Button
+          onClick={() =>
+            send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
+          }
+          color="muted"
+        >
           try again
         </Button>
       </Box>
@@ -97,8 +112,6 @@ export default function Publication() {
           position: 'sticky',
           top: 0,
           zIndex: '$4',
-          padding: '$3',
-          paddingLeft: 40,
           $$gap: 16,
           display: 'flex',
           gap: '$$gap',
@@ -121,17 +134,20 @@ export default function Publication() {
           {state.context.publication?.document.title}
         </Text>
         {author && (
-          <>
-            <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-              <span>Signed by </span>
-              <span style={{textDecoration: 'underline'}}>
-                {state.context.canUpdate ? 'you' : author.profile?.alias}
-              </span>
-            </Text>
-          </>
+          <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+            <span>Signed by </span>
+            <span style={{textDecoration: 'underline'}}>
+              {state.context.canUpdate ? 'you' : author.profile?.alias}
+            </span>
+          </Text>
         )}
         {state.context.canUpdate && (
-          <Button size="1" variant="ghost" onClick={handleUpdate} disabled={state.hasTag('pending')}>
+          <Button
+            size="1"
+            variant="ghost"
+            onClick={handleUpdate}
+            disabled={state.hasTag('pending')}
+          >
             Update
           </Button>
         )}
@@ -150,7 +166,10 @@ export default function Publication() {
         />
       </Box>
       {state.matches('ready') && (
-        <Box css={{padding: '$7', paddingLeft: 0, marginBottom: 200}} data-testid="publication-wrapper">
+        <Box
+          css={{padding: '$7', paddingLeft: 0, marginBottom: 200}}
+          data-testid="publication-wrapper"
+        >
           <Editor
             mode={EditorMode.Publication}
             value={state.context.publication?.document.content}
@@ -162,7 +181,8 @@ export default function Publication() {
       )}
       {state.matches('discussion') && (
         <Box data-testid="publication-wrapper" css={{padding: '$7'}}>
-          {state.matches('discussion.ready') && state.context.links?.length != 0 ? (
+          {state.matches('discussion.ready') &&
+          state.context.links?.length != 0 ? (
             // <Editor mode={EditorMode.Discussion} value={state.context.discussion.children as Array<MttastContent>} />
             <Discussion links={state.context.links} />
           ) : (
@@ -182,19 +202,20 @@ export default function Publication() {
           zIndex: '$4',
           padding: '$5',
           paddingLeft: 40,
+          $$gap: 24,
+          display: 'flex',
+          gap: '$$gap',
+          alignItems: 'center',
           '&:after': {
             content: '',
             position: 'absolute',
             width: '$full',
             height: 20,
-            background: 'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
+            background:
+              'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
             top: -20,
             left: 0,
           },
-          $$gap: 24,
-          display: 'flex',
-          gap: '$$gap',
-          alignItems: 'center',
           '& > span': {
             position: 'relative',
           },
@@ -208,29 +229,43 @@ export default function Publication() {
         }}
       >
         <Text size="1" color="muted">
-          Created on: {getDateFormat(state.context.publication?.document, 'createTime')}
+          Created on:{' '}
+          {getDateFormat(state.context.publication?.document, 'createTime')}
         </Text>
         <Text size="1" color="muted">
-          Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
+          Last modified:{' '}
+          {getDateFormat(state.context.publication?.document, 'updateTime')}
         </Text>
       </Box>
     </>
   )
 }
 
-function usePagePublication(client: QueryClient, docId?: string, version?: string) {
+function usePagePublication(
+  client: QueryClient,
+  docId?: string,
+  version?: string,
+) {
+  const mainService = useMainPage()
+
   const service = useInterpret(() => publicationMachine, {
     services: {
       fetchPublicationData: (context) => (sendBack) => {
         Promise.all([
-          client.fetchQuery([queryKeys.GET_PUBLICATION, context.id, context.version], () =>
-            getPublication(context.id, context.version),
+          client.fetchQuery(
+            [queryKeys.GET_PUBLICATION, context.id, context.version],
+            () => getPublication(context.id, context.version),
           ),
           client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
         ])
           .then(([publication, info]) => {
-            if (publication.document?.content) {
-              let content = JSON.parse(publication.document?.content)
+            if (publication.document?.children.length) {
+              mainService.send({
+                type: 'SET.CURRENT.DOCUMENT',
+                document: publication.document,
+              })
+              let content = [blockNodeToSlate(publication.document.children)]
+
               sendBack({
                 type: 'PUBLICATION.REPORT.SUCCESS',
                 publication: Object.assign(publication, {
@@ -242,29 +277,54 @@ function usePagePublication(client: QueryClient, docId?: string, version?: strin
                 canUpdate: info.accountId == publication.document.author,
               })
             } else {
-              if (publication.document?.content === '') {
-                sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'Content is Empty'})
+              if (publication.document?.children.length == 0) {
+                sendBack({
+                  type: 'PUBLICATION.REPORT.ERROR',
+                  errorMessage: 'Content is Empty',
+                })
               } else {
-                sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error parsing content'})
+                sendBack({
+                  type: 'PUBLICATION.REPORT.ERROR',
+                  errorMessage: `error, fetching publication ${context.id}`,
+                })
               }
             }
           })
           .catch((err) => {
-            sendBack({type: 'PUBLICATION.REPORT.ERROR', errorMessage: 'error fetching'})
+            console.log(
+              '🚀 ~ file: publication.tsx ~ line 296 ~ service ~ err',
+              err,
+              window.location.pathname,
+            )
+            sendBack({
+              type: 'PUBLICATION.REPORT.ERROR',
+              errorMessage: 'error fetching',
+            })
           })
       },
       fetchDiscussionData: (context) => (sendBack) => {
         client
-          .fetchQuery([queryKeys.GET_PUBLICATION_DISCUSSION, context.id, context.version, ''], () =>
-            listCitations(context.id),
+          .fetchQuery(
+            [
+              queryKeys.GET_PUBLICATION_DISCUSSION,
+              context.id,
+              context.version,
+              '',
+            ],
+            () => listCitations(context.id),
           )
           .then((response) => {
             Promise.all(response.links.map(({source}) => getBlock(source)))
               //@ts-ignore
               .then((result: Array<FlowContent>) => {
                 let discussion = document([group(result)])
+                console.log('discussion result: ', {result, discussion})
 
-                sendBack({type: 'REPORT.DISCUSSION.SUCCESS', links: response.links, discussion})
+                sendBack({
+                  type: 'REPORT.DISCUSSION.SUCCESS',
+                  links: response.links,
+                  discussion,
+                })
               })
           })
           .catch((error: any) => {
@@ -287,7 +347,9 @@ function usePagePublication(client: QueryClient, docId?: string, version?: strin
   return [state, send] as const
 }
 
-export type ClientPublication = Omit<PublicationType, 'document'> & {document: EditorDocument}
+export type ClientPublication = Omit<PublicationType, 'document'> & {
+  document: EditorDocument
+}
 
 export type PublicationContextType = {
   id: string
@@ -301,7 +363,11 @@ export type PublicationContextType = {
 
 export type PublicationEvent =
   | {type: 'PUBLICATION.FETCH.DATA'; id: string; version?: string}
-  | {type: 'PUBLICATION.REPORT.SUCCESS'; publication: ClientPublication; canUpdate?: boolean}
+  | {
+      type: 'PUBLICATION.REPORT.SUCCESS'
+      publication: ClientPublication
+      canUpdate?: boolean
+    }
   | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
   | {type: 'TOGGLE.DISCUSSION'}
   | {type: 'REPORT.DISCUSSION.SUCCESS'; links: Array<Link>; discussion: any}
@@ -319,7 +385,10 @@ export const publicationMachine = createMachine(
       discussion: null,
     },
     tsTypes: {} as import('./publication.typegen').Typegen0,
-    schema: {context: {} as PublicationContextType, events: {} as PublicationEvent},
+    schema: {
+      context: {} as PublicationContextType,
+      events: {} as PublicationEvent,
+    },
     id: 'publication-machine',
     initial: 'idle',
     states: {
@@ -485,7 +554,11 @@ function TippingModal({
 
   useEffect(() => {
     if (publicationId && accountId) {
-      send({type: 'TIPPING.SET.TIP.DATA', publicationID: publicationId, accountID: accountId})
+      send({
+        type: 'TIPPING.SET.TIP.DATA',
+        publicationID: publicationId,
+        accountID: accountId,
+      })
     }
   }, [publicationId, accountId])
 
@@ -519,7 +592,9 @@ function TippingModal({
         </Button>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Content>
-        {state.matches('open.setAmount') && <SetAmount state={state} send={send} />}
+        {state.matches('open.setAmount') && (
+          <SetAmount state={state} send={send} />
+        )}
         {state.matches('open.requestInvoice') ||
           (state.matches('open.paying') && (
             <Box
@@ -552,7 +627,12 @@ function TippingModal({
             <Text size="1" color="danger">
               {JSON.stringify(state.context.errorMessage)}
             </Text>
-            <Button size="1" type="submit" css={{width: '$full'}} onClick={() => send('RETRY')}>
+            <Button
+              size="1"
+              type="submit"
+              css={{width: '$full'}}
+              onClick={() => send('RETRY')}
+            >
               Retry
             </Button>
           </Box>
@@ -572,16 +652,27 @@ function TippingModal({
               },
             }}
           >
-            <QRCode title="demo demo" value={state.context.invoice} size={300 - 32} />
+            <QRCode
+              title="demo demo"
+              value={state.context.invoice}
+              size={300 - 32}
+            />
             <Box>
               <Text size="1" fontWeight="bold">
                 Invoice:
               </Text>
-              <Text size="1" css={{wordBreak: 'break-all', wordWrap: 'break-word'}}>
+              <Text
+                size="1"
+                css={{wordBreak: 'break-all', wordWrap: 'break-word'}}
+              >
                 {state.context.invoice}
               </Text>
             </Box>
-            <Button size="1" css={{width: '$full'}} onClick={() => send('TIPPING.PAY.INVOICE')}>
+            <Button
+              size="1"
+              css={{width: '$full'}}
+              onClick={() => send('TIPPING.PAY.INVOICE')}
+            >
               Pay Directly
             </Button>
           </Box>
@@ -607,7 +698,13 @@ function TippingModal({
   )
 }
 
-function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send: any}) {
+function SetAmount({
+  send,
+  state,
+}: {
+  state: StateFrom<typeof tippingMachine>
+  send: any
+}) {
   return (
     <Box
       css={{
@@ -630,7 +727,12 @@ function SetAmount({send, state}: {state: StateFrom<typeof tippingMachine>; send
             label="Invoice Amount"
             size={1}
             value={state.context.amount}
-            onChange={(e) => send({type: 'TIPPING.UPDATE.AMOUNT', amount: Number(e.target.value)})}
+            onChange={(e) =>
+              send({
+                type: 'TIPPING.UPDATE.AMOUNT',
+                amount: Number(e.target.value),
+              })
+            }
           />
           <Box
             css={{
@@ -678,7 +780,9 @@ function Discussion({links}: {links: Array<Link> | null}) {
 function DiscussionItem({link}: {link: Link}) {
   const client = useQueryClient()
   const [state, send] = useMachine(() => createDiscussionMachine(client))
-  const {data: author} = useAccount(state?.context?.publication?.document?.author)
+  const {data: author} = useAccount(
+    state?.context?.publication?.document?.author,
+  )
   const bookmarkService = useBookmarksService()
   const mainPageService = useMainPage()
 
@@ -693,11 +797,17 @@ function DiscussionItem({link}: {link: Link}) {
     await copyTextToClipboard(
       `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
     )
-    toast.success('Embed Reference copied successfully', {position: 'top-center'})
+    toast.success('Embed Reference copied successfully', {
+      position: 'top-center',
+    })
   }
 
   function onGoToPublication() {
-    mainPageService.send({type: 'goToPublication', docId: link.source?.documentId, version: link.source?.version})
+    mainPageService.send({
+      type: 'goToPublication',
+      docId: link.source?.documentId,
+      version: link.source?.version,
+    })
   }
 
   useEffect(() => {
@@ -750,12 +860,18 @@ function DiscussionItem({link}: {link: Link}) {
               {author && (
                 <Text size="1" color="muted" css={{paddingRight: '$3'}}>
                   <span>Signed by </span>
-                  <span style={{textDecoration: 'underline'}}>{author.profile?.alias}</span>
+                  <span style={{textDecoration: 'underline'}}>
+                    {author.profile?.alias}
+                  </span>
                 </Text>
               )}
 
               <Text size="1" color="muted">
-                Created on: {getDateFormat(state.context.publication?.document, 'createTime')}
+                Created on:{' '}
+                {getDateFormat(
+                  state.context.publication?.document,
+                  'createTime',
+                )}
               </Text>
               {/* <Text size="1" color="muted">
             Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
@@ -793,7 +909,11 @@ type DiscussionContextType = {
 
 type DiscussionEvent =
   | {type: 'FETCH'; link: Link}
-  | {type: 'REPORT.FETCH.SUCCESS'; publication: PublicationType; block: FlowContent}
+  | {
+      type: 'REPORT.FETCH.SUCCESS'
+      publication: PublicationType
+      block: FlowContent
+    }
   | {type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message']}
   | {type: 'RETRY'}
 
@@ -827,11 +947,18 @@ export function createDiscussionMachine(client: QueryClient) {
           invoke: {
             src: (context) => (sendBack) => {
               if (!context.link?.source) {
-                sendBack({type: 'REPORT.FETCH.ERROR', errorMessage: 'Error on Discussion Link'})
+                sendBack({
+                  type: 'REPORT.FETCH.ERROR',
+                  errorMessage: 'Error on Discussion Link',
+                })
               } else {
                 getBlock(context.link!.source!).then((data) => {
                   if (data && data.block) {
-                    sendBack({type: 'REPORT.FETCH.SUCCESS', publication: data.publication, block: data.block})
+                    sendBack({
+                      type: 'REPORT.FETCH.SUCCESS',
+                      publication: data.publication,
+                      block: data.block,
+                    })
                   }
                 })
               }
@@ -914,7 +1041,14 @@ function PublicationShell() {
 
 function BlockPlaceholder() {
   return (
-    <Box css={{width: '$prose-width', display: 'flex', flexDirection: 'column', gap: '$3'}}>
+    <Box
+      css={{
+        width: '$prose-width',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$3',
+      }}
+    >
       <Placeholder css={{height: 24, width: '$full'}} />
       <Placeholder css={{height: 24, width: '92%'}} />
       <Placeholder css={{height: 24, width: '84%'}} />

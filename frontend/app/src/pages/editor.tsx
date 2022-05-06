@@ -1,51 +1,143 @@
 // import 'show-keys'
 import {AppError} from '@app/app'
+import {Document, DocumentChange, updateDraftV2} from '@app/client'
 import {Editor} from '@app/editor/editor'
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {draftEditorMachine, useEditorDraft} from '@app/editor/use-editor-draft'
+import {
+  draftEditorMachine,
+  getTitleFromContent,
+  useEditorDraft,
+} from '@app/editor/use-editor-draft'
 import {useMainPage, useParams} from '@app/main-page-context'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
-import {TextField} from '@components/text-field'
-import {ChildrenOf, Document} from '@mintter/mttast'
-import {KeyboardEvent, useMemo, useRef, useState} from 'react'
+import {ChildrenOf} from '@mintter/mttast'
+import {useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toastFactory from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
-import {ReactEditor} from 'slate-react'
+import {useLocation} from 'wouter'
 import {StateFrom} from 'xstate'
 import {EditorPageProps} from './types'
-
-export default function EditorPage({editor: propEditor}: EditorPageProps) {
+export default function EditorPage({
+  editor: propEditor,
+  shouldAutosave = true,
+}: EditorPageProps) {
   const client = useQueryClient()
+  const {docId} = useParams()
+  const [, setLocation] = useLocation()
   const toast = useRef('')
   const [visible, setVisible] = useState(false)
-  const localEditor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
+  const localEditor = useMemo(
+    () => buildEditorHook(plugins, EditorMode.Draft),
+    [],
+  )
   const mainPageService = useMainPage()
-  let {docId} = useParams()
 
   const editor = propEditor ?? localEditor
   const [state, send] = useEditorDraft({
+    editor,
     documentId: docId,
     client,
     mainPageService,
+    shouldAutosave,
     options: {
       actions: {
         afterPublish: (context) => {
           if (!toast.current) {
-            toast.current = toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000})
+            toast.current = toastFactory.success('Draft Published!', {
+              position: 'top-center',
+              duration: 2000,
+            })
           } else {
-            toastFactory.success('Draft Published!', {position: 'top-center', duration: 2000, id: toast.current})
+            toastFactory.success('Draft Published!', {
+              position: 'top-center',
+              duration: 2000,
+              id: toast.current,
+            })
           }
-          mainPageService.send({
-            type: 'goToPublication',
-            docId: context.publication?.document?.id,
-            version: context.publication?.version,
-            replace: true,
-          })
+
+          setLocation(
+            `/p/${context.publication?.document?.id}/${context.publication?.version}`,
+            {
+              // we replace the history here because the draft url will not be available after.
+              replace: true,
+            },
+          )
+        },
+        updateCurrentDocument: (context, event) => {
+          if (event.type == 'EDITOR.REPORT.FETCH.SUCCESS') {
+            mainPageService.send({
+              type: 'SET.CURRENT.DOCUMENT',
+              document: event.data,
+            })
+          }
+
+          if (event.type == 'EDITOR.UPDATE') {
+            mainPageService.send({
+              type: 'SET.CURRENT.DOCUMENT',
+              document: {
+                ...context.localDraft,
+                ...event.payload,
+                content: event.payload.content || context.localDraft?.content,
+              },
+            })
+          }
+        },
+        updateLibrary: () => {
+          mainPageService.send('RECONCILE')
+        },
+      },
+      services: {
+        saveDraft: (context) => (sendBack) => {
+          if (shouldAutosave) {
+            ;(async function autosave() {
+              let contentChanges = changesService.transformChanges(editor)
+              console.log(
+                '🚀 ~ file: editor.tsx ~ line 99 ~ autosave ~ contentChanges',
+                contentChanges,
+                editor,
+              )
+              let newTitle = getTitleFromContent(editor)
+              console.log(
+                '🚀 ~ file: editor.tsx ~ line 105 ~ autosave ~ newTitle',
+                newTitle,
+              )
+              let changes: Array<DocumentChange> = newTitle
+                ? [
+                    ...contentChanges,
+                    {
+                      op: {
+                        $case: 'setTitle',
+                        setTitle: newTitle,
+                      },
+                    },
+                  ]
+                : contentChanges
+
+              try {
+                await updateDraftV2({
+                  documentId: context.localDraft!.id!,
+                  changes,
+                })
+                mainPageService.send({
+                  type: 'SET.CURRENT.DOCUMENT',
+                  document: context.localDraft!,
+                })
+                changesService.reset()
+                sendBack('EDITOR.UPDATE.SUCCESS')
+              } catch (err: any) {
+                sendBack({
+                  type: 'EDITOR.UPDATE.ERROR',
+                  errorMessage: err.message,
+                })
+              }
+            })()
+          }
         },
       },
     },
@@ -62,73 +154,30 @@ export default function EditorPage({editor: propEditor}: EditorPageProps) {
   //   }
   // }, [context.localDraft?.title])
 
-  if (state.matches('fetching')) {
-    return <Text>fetching...</Text>
-  }
-
-  if (state.matches('idle.errored')) {
+  if (state.matches('errored')) {
     return <Text>ERROR: {context.errorMessage}</Text>
   }
 
-  if (state.matches('editing') && context.localDraft?.content) {
+  if (state.matches('editing')) {
     return (
-      <ErrorBoundary FallbackComponent={AppError} onReset={() => window.location.reload()}>
-        <Box
-          css={{
-            background: '$background-alt',
-            borderBottom: '1px solid rgba(0,0,0,0.1)',
-            position: 'sticky',
-            top: 0,
-            zIndex: '$4',
-            padding: '$3',
-            paddingLeft: 40,
-            $$gap: 24,
-            display: 'flex',
-            gap: '$$gap',
-            alignItems: 'center',
-            '& *': {
-              position: 'relative',
-            },
-          }}
-        >
-          <Button size="1" variant="ghost" onClick={() => send('EDITOR.PUBLISH')}>
-            Publish
-          </Button>
-          <TextField
-            size={1}
-            data-testid="editor_title"
-            name="title"
-            placeholder="Document title"
-            value={context?.localDraft?.title}
-            onKeyPress={(event: KeyboardEvent<HTMLInputElement>) => {
-              if (event.key == 'Enter') {
-                event.preventDefault()
-                ReactEditor.focus(editor)
-              }
-            }}
-            onChange={(event) => {
-              // update window title as the user types
-              // getCurrentWindow().setTitle(event.currentTarget.value)
-              send({type: 'EDITOR.UPDATE', payload: {title: event.currentTarget.value}})
-            }}
-          />
-        </Box>
+      <ErrorBoundary
+        FallbackComponent={AppError}
+        onReset={() => window.location.reload()}
+      >
         <Box data-testid="editor-wrapper">
           {context.localDraft?.content && (
-            <Box css={{padding: '$7'}}>
+            <Box css={{}}>
               <Editor
                 editor={editor}
                 value={context.localDraft.content}
                 //@ts-ignore
                 onChange={(content: ChildrenOf<Document>) => {
-                  console.log('onChange', content)
-
                   if (!content && typeof content == 'string') return
                   send({type: 'EDITOR.UPDATE', payload: {content}})
                 }}
               />
 
-              <Box css={{marginVertical: '64px'}}>
+              <Box css={{margin: '$9', marginLeft: '$7'}}>
                 <button type="button" onClick={() => setVisible((v) => !v)}>
                   toggle Value
                 </button>
@@ -148,42 +197,89 @@ export default function EditorPage({editor: propEditor}: EditorPageProps) {
             position: 'absolute',
             bottom: 0,
             zIndex: '$max',
-            padding: '$5',
-            '@bp2': {
-              paddingLeft: 80,
-            },
+            display: 'flex',
+            justifyContent: 'space-between',
             '&:after': {
               content: '',
               position: 'absolute',
               width: '$full',
               height: 20,
-              background: 'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
+              background:
+                'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
               top: -20,
               left: 0,
             },
-            $$gap: '24px',
-            display: 'flex',
-            gap: '$$gap',
-            alignItems: 'center',
-            '& > span': {
-              position: 'relative',
-            },
-            '& > span:before': {
-              content: `"|"`,
-              color: '$text-muted',
-              position: 'absolute',
-              right: -15,
-              top: 0,
-            },
           }}
         >
-          <Text size="1" color="muted">
-            Created on: {getDateFormat(context.localDraft, 'createTime')}
-          </Text>
-          <Text size="1" color="muted">
-            Last modified: {getDateFormat(context.localDraft, 'updateTime')}
-          </Text>
-          <EditorStatus state={state} />
+          <Box
+            css={{
+              flex: 1,
+              background: '$background-alt',
+              padding: '$5',
+              $$gap: '24px',
+              display: 'flex',
+              gap: '$$gap',
+              alignItems: 'center',
+              '& > span': {
+                position: 'relative',
+              },
+              '& > span:before': {
+                content: `"|"`,
+                color: '$text-muted',
+                position: 'absolute',
+                right: -15,
+                top: 0,
+              },
+            }}
+          >
+            <Text size="1" color="muted">
+              Created on: {getDateFormat(context.localDraft!, 'createTime')}
+            </Text>
+            <Text size="1" color="muted">
+              Last modified: {getDateFormat(context.localDraft!, 'updateTime')}
+            </Text>
+            <EditorStatus state={state} />
+          </Box>
+          <Box
+            css={{
+              display: 'flex',
+              gap: '$5',
+              padding: '$5',
+              paddingRight: 0,
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              size="1"
+              variant="outlined"
+              disabled={!state.hasTag('canPublish')}
+              onClick={() => {
+                console.log('Review: IMPLEMENT ME!')
+              }}
+            >
+              Review
+            </Button>
+            <Button
+              variant="outlined"
+              size="1"
+              disabled={!state.hasTag('canPublish')}
+              onClick={() => {
+                console.log('Reply: IMPLEMENT ME!')
+              }}
+            >
+              Reply
+            </Button>
+            <Button
+              color="success"
+              size="1"
+              disabled={!state.hasTag('canPublish')}
+              onClick={() => {
+                send('EDITOR.PUBLISH')
+              }}
+            >
+              Publish
+            </Button>
+          </Box>
         </Box>
       </ErrorBoundary>
     )
@@ -192,7 +288,11 @@ export default function EditorPage({editor: propEditor}: EditorPageProps) {
   return null
 }
 
-function EditorStatus({state}: {state: StateFrom<ReturnType<typeof draftEditorMachine>>}) {
+function EditorStatus({
+  state,
+}: {
+  state: StateFrom<ReturnType<typeof draftEditorMachine>>
+}) {
   return (
     <Box
       css={{

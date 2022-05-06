@@ -5,6 +5,7 @@ import {forwardRef, MouseEventHandler, PropsWithChildren} from 'react'
 export const staticParagraphStyles = css({
   // fontWeight: '$bold',
   // marginTop: '1.5em',
+  userSelect: 'text',
 })
 
 type StaticParagraphUIProps = PropsWithChildren<

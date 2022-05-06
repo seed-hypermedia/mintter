@@ -39,12 +39,18 @@ export function LibraryItem({
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
   const {createDraft} = useCreateDraft()
-  let match = isDocumentActive(publication ? publication.document!.id : draft!.id, publication?.version)
+  let match = isDocumentActive(
+    //@ts-ignore
+    publication ? publication.document?.id : draft?.id,
+    publication?.version,
+  )
 
   const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
     services: {
       deleteEntry: () =>
-        publication ? deletePublication(publication.document?.id as string) : deleteDraft(draft?.id as string),
+        publication
+          ? deletePublication(publication.document?.id as string)
+          : deleteDraft(draft?.id as string),
     },
     actions: {
       onSuccess: afterDelete,
@@ -53,14 +59,20 @@ export function LibraryItem({
 
   async function onCopy() {
     if (publication) {
-      await copyTextToClipboard(`mtt://${publication.document?.id}/${publication.version}`)
+      await copyTextToClipboard(
+        `mtt://${publication.document?.id}/${publication.version}`,
+      )
       toast.success('Document ID copied successfully', {position: 'top-center'})
     }
   }
 
   function goToItem() {
     if (publication) {
-      mainService.send({type: 'goToPublication', docId: publication.document?.id, version: publication.version})
+      mainService.send({
+        type: 'goToPublication',
+        docId: publication.document?.id,
+        version: publication.version,
+      })
     } else {
       mainService.send({type: 'goToEditor', docId: draft?.id})
     }
@@ -80,7 +92,7 @@ export function LibraryItem({
   }
   function afterDelete() {
     if (match) {
-      mainService.send('routeNotFound')
+      mainService.send('goToHome')
     }
     mainService.send('RECONCILE')
   }
@@ -93,7 +105,11 @@ export function LibraryItem({
     await invoke('open_in_new_window', {url: `/new${href}`})
   }
 
-  let title = publication ? publication.document?.title : draft && draft.title ? draft?.title : 'New Document'
+  let title = publication
+    ? publication.document?.title
+    : draft && draft.title
+    ? draft.title
+    : 'New Document'
 
   return (
     <StyledItem active={match} data-testid="library-item">
@@ -113,8 +129,16 @@ export function LibraryItem({
             <Icon name="MoreHorizontal" size="1" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
-        <Dropdown.Content align="start" data-testid="library-item-dropdown-root" hidden={deleteState.matches('opened')}>
-          <Dropdown.Item data-testid="copy-item" disabled={!!draft} onSelect={onCopy}>
+        <Dropdown.Content
+          align="start"
+          data-testid="library-item-dropdown-root"
+          hidden={deleteState.matches('opened')}
+        >
+          <Dropdown.Item
+            data-testid="copy-item"
+            disabled={!!draft}
+            onSelect={onCopy}
+          >
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Document ID</Text>
           </Dropdown.Item>
@@ -126,7 +150,10 @@ export function LibraryItem({
             <Icon size="1" name="ArrowBottomRight" />
             <Text size="2">Open in sidepanel</Text>
           </Dropdown.Item>
-          <Dropdown.Item data-testid="sidepanel-item" onSelect={onOpenInNewWindow}>
+          <Dropdown.Item
+            data-testid="sidepanel-item"
+            onSelect={onOpenInNewWindow}
+          >
             <Icon size="1" name="OpenInNewWindow" />
             <Text size="2">Open in new Window</Text>
           </Dropdown.Item>
@@ -136,7 +163,10 @@ export function LibraryItem({
             title="Delete document"
             description="Are you sure you want to delete this document? This action is not reversible."
           >
-            <Dropdown.Item data-testid="delete-item" onSelect={(e) => e.preventDefault()}>
+            <Dropdown.Item
+              data-testid="delete-item"
+              onSelect={(e) => e.preventDefault()}
+            >
               <Icon size="1" name="Close" />
               <Text size="2">Delete Document</Text>
             </Dropdown.Item>

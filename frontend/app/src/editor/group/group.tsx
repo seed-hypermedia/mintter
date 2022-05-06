@@ -1,6 +1,13 @@
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {createId, GroupingContent, isFlowContent, isGroup, isGroupContent, statement} from '@mintter/mttast'
+import {
+  createId,
+  GroupingContent,
+  isFlowContent,
+  isGroup,
+  isGroupContent,
+  statement,
+} from '@mintter/mttast'
 import {forwardRef} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
@@ -25,7 +32,12 @@ export const createGroupPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isGroup(element)) {
         return (
-          <Group mode={editor.mode} element={element} attributes={attributes} css={{}}>
+          <Group
+            mode={editor.mode}
+            element={element}
+            attributes={attributes}
+            css={{}}
+          >
             {children}
           </Group>
         )
@@ -49,7 +61,9 @@ export const createGroupPlugin = (): EditorPlugin => ({
           // addParentData(editor, entry)
           if (Element.isElement(child) && !isFlowContent(child)) {
             // inside group and not a flowcontent
-            Transforms.wrapNodes(editor, statement({id: createId()}), {at: childPath})
+            Transforms.wrapNodes(editor, statement({id: createId()}), {
+              at: childPath,
+            })
             return
           }
         }
@@ -70,7 +84,10 @@ export const createGroupPlugin = (): EditorPlugin => ({
  *
  * when deleting statements we sometimes endup with empty groups. this methos removes them.
  */
-export function removeEmptyGroup(editor: Editor, entry: NodeEntry<Node>): boolean | undefined {
+export function removeEmptyGroup(
+  editor: Editor,
+  entry: NodeEntry<Node>,
+): boolean | undefined {
   const [node, path] = entry
   if (isGroupContent(node)) {
     if (node.children.length == 1) {
@@ -90,19 +107,27 @@ export type GroupProps = Omit<RenderElementProps, 'element'> & {
   element: GroupingContent
 }
 
-export const Group = forwardRef<GroupProps, any>(({mode, attributes, element, ...props}: GroupProps, ref) => {
-  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return null
-  }
+export const Group = forwardRef<GroupProps, any>(
+  ({mode, attributes, element, ...props}: GroupProps, ref) => {
+    if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+      return null
+    }
 
-  return (
-    <Box
-      as={element.type == 'unorderedList' ? 'ul' : element.type == 'orderedList' ? 'ol' : 'div'}
-      className={groupStyle()}
-      data-element-type={element.type}
-      {...attributes}
-      ref={ref as any}
-      {...props}
-    />
-  )
-})
+    return (
+      <Box
+        as={
+          element.type == 'unorderedList'
+            ? 'ul'
+            : element.type == 'orderedList'
+            ? 'ol'
+            : 'div'
+        }
+        className={groupStyle()}
+        data-element-type={element.type}
+        {...attributes}
+        ref={ref as any}
+        {...props}
+      />
+    )
+  },
+)

@@ -1,10 +1,10 @@
-import {Button} from '@components/button'
-import {BookmarkItem} from '@components/library/bookmark-item'
-import {useActor} from '@xstate/react'
-import {ErrorBoundary} from 'react-error-boundary'
-import {bookmarksModel, useBookmarksService} from '../bookmarks'
-import {Section} from './section'
-import {SectionError} from './section-error'
+import { Button } from '@components/button'
+import { BookmarkItem } from '@components/library/bookmark-item'
+import { useActor } from '@xstate/react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { useBookmarksService } from '../bookmarks'
+import { Section } from './section'
+import { SectionError } from './section-error'
 
 export function BookmarksSection() {
   const service = useBookmarksService()
@@ -24,12 +24,12 @@ export function BookmarksSection() {
         </ErrorBoundary>
       ) : null}
       <Button
-        onClick={() => send(bookmarksModel.events['BOOKMARK.CLEARALL']())}
+        onClick={() => send('BOOKMARK.CLEARALL')}
         variant="ghost"
         color="primary"
         data-testid="clear-bookmarks"
         size="1"
-        css={{textAlign: 'left'}}
+        css={{ textAlign: 'left' }}
       >
         clear bookmarks
       </Button>

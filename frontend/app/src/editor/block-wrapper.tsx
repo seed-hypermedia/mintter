@@ -6,7 +6,7 @@ import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useParams} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
+import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -38,15 +38,26 @@ export function BlockWrapper({
   async function onCopy() {
     if (params) {
       //@ts-ignore
-      await copyTextToClipboard(`${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${element.id}`)
-      toast.success('Statement Reference copied successfully', {position: 'top-center'})
+      await copyTextToClipboard(
+        `${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${element.id}`,
+      )
+      toast.success('Statement Reference copied successfully', {
+        position: 'top-center',
+      })
     } else {
       toast.error('Cannot Copy Block ID')
     }
   }
 
-  function addBookmark(docId: string, version: string, blockId: FlowContent['id']) {
-    bookmarksService.send(bookmarksModel.events['BOOKMARK.ADD'](`${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`))
+  function addBookmark(
+    docId: string,
+    version: string,
+    blockId: FlowContent['id'],
+  ) {
+    bookmarksService.send({
+      type: 'BOOKMARK.ADD',
+      url: `${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`,
+    })
   }
 
   function onStartDraft() {
@@ -67,7 +78,8 @@ export function BlockWrapper({
   }
 
   let showHover = useMemo(
-    () => hoverState.context.blockId == element.id && element.children.length > 1,
+    () =>
+      hoverState.context.blockId == element.id && element.children.length > 1,
     [hoverState.context.blockId, element.id, element.children.length],
   )
 
@@ -83,6 +95,7 @@ export function BlockWrapper({
       onMouseEnter={() => {
         hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
       }}
+      {...attributes}
     >
       <Box
         as="span"
@@ -127,7 +140,10 @@ export function BlockWrapper({
             size="1"
             color="muted"
             css={{
-              opacity: hoverState.context.blockId == (element as FlowContent).id ? 1 : 0,
+              opacity:
+                hoverState.context.blockId == (element as FlowContent).id
+                  ? 1
+                  : 0,
               padding: '$1',
               backgroundColor: '$hover',
               position: 'absolute',
@@ -174,7 +190,10 @@ export function BlockWrapper({
   )
 }
 
-export function useOnScreen(ref: MutableRefObject<any>, rootMargin: string = '0px') {
+export function useOnScreen(
+  ref: MutableRefObject<any>,
+  rootMargin: string = '0px',
+) {
   const [isVisible, setState] = useState(false)
 
   useEffect(() => {
