@@ -17,13 +17,22 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.fetchCitation': {type: 'error.platform.fetchCitation'; data: unknown}
+    'error.platform.fetchCitation': {
+      type: 'error.platform.fetchCitation'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchCitation: 'done.invoke.fetchCitation'
   }
   missingImplementations: {
-    actions: 'assignPublication' | 'assignBlock' | 'assignAuthor' | 'assignError' | 'openInSidepanel' | 'clearError'
+    actions:
+      | 'assignPublication'
+      | 'assignBlock'
+      | 'assignAuthor'
+      | 'assignError'
+      | 'openInSidepanel'
+      | 'clearError'
     services: 'fetchCitation'
     guards: never
     delays: never

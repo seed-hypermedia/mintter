@@ -1,6 +1,13 @@
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {FlowContent, isBlockquote, isCode, isGroupContent, isParagraph, isPhrasingContent} from '@mintter/mttast'
+import {
+  FlowContent,
+  isBlockquote,
+  isCode,
+  isGroupContent,
+  isParagraph,
+  isPhrasingContent,
+} from '@mintter/mttast'
 import {useMemo} from 'react'
 import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
@@ -35,7 +42,11 @@ export const createParagraphPlugin = (): EditorPlugin => ({
     ({element, children, attributes}) => {
       if (isParagraph(element)) {
         return (
-          <Paragraph mode={editor.mode} element={element} attributes={attributes}>
+          <Paragraph
+            mode={editor.mode}
+            element={element}
+            attributes={attributes}
+          >
             {children}
           </Paragraph>
         )
@@ -62,7 +73,12 @@ export const createParagraphPlugin = (): EditorPlugin => ({
   },
 })
 
-function Paragraph({children, element, attributes, mode}: RenderElementProps & {mode: EditorMode}) {
+function Paragraph({
+  children,
+  element,
+  attributes,
+  mode,
+}: RenderElementProps & {mode: EditorMode}) {
   const editor = useSlateStatic()
   const path = findPath(element)
   const parentNode = Node.parent(editor, path)
@@ -93,7 +109,11 @@ function Paragraph({children, element, attributes, mode}: RenderElementProps & {
             ? 'list-item'
             : 'inherit',
         marginLeft:
-          mode == EditorMode.Embed ? 0 : parentGroup == 'orderedList' || parentGroup == 'unorderedList' ? 16 : 0,
+          mode == EditorMode.Embed
+            ? 0
+            : parentGroup == 'orderedList' || parentGroup == 'unorderedList'
+            ? 16
+            : 0,
         lineHeight: '$4',
         '&::marker': {
           color: '$text-muted',

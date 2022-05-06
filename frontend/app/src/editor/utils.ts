@@ -1,5 +1,5 @@
 import type { GroupingContent } from '@mintter/mttast'
-import { group, isFlowContent, isGroup, isGroupContent, isStatement, Statement, statement } from '@mintter/mttast'
+import { FlowContent, group, isFlowContent, isGroup, isGroupContent, isStatement, Statement, statement } from '@mintter/mttast'
 import type { Ancestor, Descendant, NodeEntry, Point, Span } from 'slate'
 import { Editor, Node, Path, Range, Text, Transforms } from 'slate'
 import { ReactEditor } from 'slate-react'
@@ -204,4 +204,28 @@ export function findPath(node: Node): Path {
   // `ReactEditor.findPath` does nto use the editor param for anything. it's there because of API consistency reasons I guess? 🤷🏼‍♂️
   // @ts-ignore
   return ReactEditor.findPath(null, node)
+}
+
+type GetBlockOptions = Omit<Parameters<typeof Editor.nodes>[1] & {
+  id?: string
+}, 'match'>
+
+export function getBlock(editor: Editor, options: GetBlockOptions): NodeEntry<FlowContent> | undefined {
+  let [match] = Editor.nodes<FlowContent>(editor, {
+    ...options,
+    match: n => matcher(n, options.id),
+    at: options.at ?? []
+  })
+
+  return match
+
+  function matcher(n: Node, id?: FlowContent['id']): boolean {
+
+    if (id) {
+      return isFlowContent(n) && n.id == id
+    } else {
+      return isFlowContent(n)
+    }
+
+  }
 }

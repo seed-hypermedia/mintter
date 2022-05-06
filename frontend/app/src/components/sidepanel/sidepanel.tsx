@@ -17,7 +17,7 @@ import {css} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {bookmarksModel, useBookmarksService} from '@components/bookmarks'
+import {useBookmarksService} from '@components/bookmarks'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {useSidepanel} from '@components/sidepanel'
 import {FlowContent, GroupingContent} from '@mintter/mttast'
@@ -34,7 +34,9 @@ import {Icon} from '../icon'
 import {Text} from '../text'
 import {useIsSidepanelOpen} from './sidepanel-context'
 
-type SidepanelItemRef = ActorRefFrom<ReturnType<typeof createSidepanelItemMachine>>
+type SidepanelItemRef = ActorRefFrom<
+  ReturnType<typeof createSidepanelItemMachine>
+>
 
 export type SidepanelItemWithRef = SidepanelItemType & {
   ref?: ActorRefFrom<ReturnType<typeof createSidepanelItemMachine>>
@@ -81,7 +83,10 @@ export function createSidepanelMachine(client: QueryClient) {
                   sendBack({type: 'REPORT.SIDEPANEL.SUCCESS', items})
                 })
                 .catch((e: Error) => {
-                  sendBack({type: 'REPORT.SIDEPANEL.ERROR', errorMessage: `fetchSidepanel Error: ${e.message}`})
+                  sendBack({
+                    type: 'REPORT.SIDEPANEL.ERROR',
+                    errorMessage: `fetchSidepanel Error: ${e.message}`,
+                  })
                 })
             },
           },
@@ -169,17 +174,26 @@ export function createSidepanelMachine(client: QueryClient) {
         }),
         addItemToSidepanel: assign({
           items: (context, event) => {
-            var isIncluded = context.items.filter((current) => current.url == event.item.url)
+            var isIncluded = context.items.filter(
+              (current) => current.url == event.item.url,
+            )
 
             if (isIncluded.length) {
               return context.items
             }
 
-            return [{...event.item, ref: spawn(createSidepanelItemMachine(client, event.item))}, ...context.items]
+            return [
+              {
+                ...event.item,
+                ref: spawn(createSidepanelItemMachine(client, event.item)),
+              },
+              ...context.items,
+            ]
           },
         }),
         removeItemFromSidepanel: assign({
-          items: (context, event) => context.items.filter((current) => current.url != event.url),
+          items: (context, event) =>
+            context.items.filter((current) => current.url != event.url),
         }),
       },
     },
@@ -200,7 +214,7 @@ export function Sidepanel({copy = copyTextToClipboard}: SidepanelProps) {
       data-testid="sidepanel-wrapper"
       css={{
         gridArea: 'sidepanel',
-        borderLeft: '1px solid rgba(0,0,0,0.1)',
+        borderLeft: '1px solid $colors$menu-shadow',
         width: isOpen ? '30vw' : 0,
         overflow: 'scroll',
         position: 'relative',
@@ -229,9 +243,19 @@ export function Sidepanel({copy = copyTextToClipboard}: SidepanelProps) {
             </ElementDropdown>
           </Dropdown.Trigger>
           <Dropdown.Content>
-            <Dropdown.Item data-testid="clear-sidepanel" onSelect={() => send('SIDEPANEL.CLEAR')}>
+            <Dropdown.Item
+              data-testid="clear-sidepanel"
+              onSelect={() => send('SIDEPANEL.CLEAR')}
+            >
               <Icon size="1" name="Close" />
               <Text size="2">Clear Items</Text>
+            </Dropdown.Item>
+            <Dropdown.Item
+              data-testid="clear-sidepanel"
+              onSelect={() => send('SIDEPANEL.CLOSE')}
+            >
+              <Icon size="1" name="Close" />
+              <Text size="2">Close Sidenapel</Text>
             </Dropdown.Item>
           </Dropdown.Content>
         </Dropdown.Root>
@@ -247,9 +271,16 @@ export function Sidepanel({copy = copyTextToClipboard}: SidepanelProps) {
         >
           {state.context.items.map((item) => {
             return (
-              <ErrorBoundary key={`${item.type}-${item.url}`} fallback={<li>sidepanel item fallback</li>}>
+              <ErrorBoundary
+                key={`${item.type}-${item.url}`}
+                fallback={<li>sidepanel item fallback</li>}
+              >
                 {item.ref ? (
-                  <SidepanelItem key={`${item.type}-${item.url}`} itemRef={item.ref} copy={copy} />
+                  <SidepanelItem
+                    key={`${item.type}-${item.url}`}
+                    itemRef={item.ref}
+                    copy={copy}
+                  />
                 ) : (
                   <Text>ref is not defined on item</Text>
                 )}
@@ -283,7 +314,13 @@ export function SidepanelItem({
   const sidepanelService = useSidepanel()
   const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
     services: {
-      deleteEntry: () => new Promise(() => sidepanelService.send({type: 'SIDEPANEL.REMOVE', url: state.context.url})),
+      deleteEntry: () =>
+        new Promise(() =>
+          sidepanelService.send({
+            type: 'SIDEPANEL.REMOVE',
+            url: state.context.url,
+          }),
+        ),
     },
     actions: {
       onSuccess: () => toast.success('Sidepanel item deleted successfully'),
@@ -292,12 +329,18 @@ export function SidepanelItem({
 
   async function localCopy() {
     await copy(state.context.url)
-    toast.success('Statement Reference copied successfully', {position: 'top-center'})
+    toast.success('Statement Reference copied successfully', {
+      position: 'top-center',
+    })
   }
 
   function navigate(url: string) {
     const [publicationId, version] = getEmbedIds(url)
-    mainPageService.send({type: 'goToPublication', docId: publicationId, version})
+    mainPageService.send({
+      type: 'goToPublication',
+      docId: publicationId,
+      version,
+    })
   }
 
   function toggle(e: Event) {
@@ -306,7 +349,10 @@ export function SidepanelItem({
   }
 
   function bookmark(url: string) {
-    bookmarkService.send(bookmarksModel.events['BOOKMARK.ADD'](url))
+    bookmarkService.send({
+      type: 'BOOKMARK.ADD',
+      url,
+    })
   }
 
   async function onOpenInNewWindow() {
@@ -437,10 +483,15 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
         >
           {state.matches('loading') ? null : (
             <Editor
-              className={sidepanelItemStyle({variant: isExpanded ? 'expanded' : 'collapsed'})}
+              className={sidepanelItemStyle({
+                variant: isExpanded ? 'expanded' : 'collapsed',
+              })}
               value={
-                (state as StateFrom<ReturnType<typeof createSidepanelItemMachine>>).context?.publication?.document
-                  .content
+                (
+                  state as StateFrom<
+                    ReturnType<typeof createSidepanelItemMachine>
+                  >
+                ).context?.publication?.document.content
               }
               mode={isExpanded ? EditorMode.Publication : EditorMode.Mention}
               onChange={() => {
@@ -478,7 +529,9 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
           <>
             <Text size="1" color="muted" css={{paddingRight: '$3'}}>
               <span>Signed by </span>
-              <span style={{textDecoration: 'underline'}}>{state.context.author.profile?.alias}</span>
+              <span style={{textDecoration: 'underline'}}>
+                {state.context.author.profile?.alias}
+              </span>
             </Text>
           </>
         )}
@@ -486,7 +539,8 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
           {state.context.publication?.document.title}
         </Text>
         <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-          Created on: {getDateFormat(state.context.publication?.document, 'publishTime')}
+          Created on:{' '}
+          {getDateFormat(state.context.publication?.document, 'publishTime')}
         </Text>
       </Box>
       {children}
@@ -553,8 +607,14 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
       >
         {state.matches('loading') ? null : (
           <Editor
-            className={sidepanelItemStyle({variant: isExpanded ? 'expanded' : 'collapsed'})}
-            value={isExpanded ? state.context.publication?.document?.content : [state.context.block]}
+            className={sidepanelItemStyle({
+              variant: isExpanded ? 'expanded' : 'collapsed',
+            })}
+            value={
+              isExpanded
+                ? state.context.publication?.document?.content
+                : [state.context.block]
+            }
             mode={isExpanded ? EditorMode.Publication : EditorMode.Mention}
             onChange={() => {
               // noop
@@ -590,7 +650,9 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
           <>
             <Text size="1" color="muted" css={{paddingRight: '$3'}}>
               <span>Signed by </span>
-              <span style={{textDecoration: 'underline'}}>{state.context.author.profile?.alias}</span>
+              <span style={{textDecoration: 'underline'}}>
+                {state.context.author.profile?.alias}
+              </span>
             </Text>
           </>
         )}
@@ -598,7 +660,8 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
           {state.context.publication?.document.title}
         </Text>
         <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-          Created on: {getDateFormat(state.context.publication?.document, 'publishTime')}
+          Created on:{' '}
+          {getDateFormat(state.context.publication?.document, 'publishTime')}
         </Text>
       </Box>
       {children}
@@ -620,11 +683,19 @@ export type SidepanelItemEventType =
   | {type: 'SIDEPANEL.ITEM.COLLAPSE'}
   | {type: 'SIDEPANEL.ITEM.DELETE'}
   | {type: 'SIDEPANEL.ITEM.TOGGLE'}
-  | {type: 'REPORT.SIDEPANEL.ITEM.SUCCESS'; publication: ClientPublication; author: Account; block: FlowContent | null}
+  | {
+      type: 'REPORT.SIDEPANEL.ITEM.SUCCESS'
+      publication: ClientPublication
+      author: Account
+      block: FlowContent | null
+    }
   | {type: 'REPORT.SIDEPANEL.ITEM.ERROR'; errorMessage: string}
   | {type: 'RETRY'}
 
-export function createSidepanelItemMachine(client: QueryClient, item: SidepanelItemType) {
+export function createSidepanelItemMachine(
+  client: QueryClient,
+  item: SidepanelItemType,
+) {
   return createMachine(
     {
       tsTypes: {} as import('./sidepanel.typegen').Typegen1,
@@ -705,7 +776,9 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
             async () => {
               let pub = await getPublication(documentId, version)
 
-              let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
+              let content: [GroupingContent] = pub.document?.content
+                ? JSON.parse(pub.document?.content)
+                : null
 
               return {
                 ...pub,
@@ -717,8 +790,9 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
             },
           )
 
-          let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
-            getAccount(publication.document?.author as string),
+          let author = await client.fetchQuery(
+            [queryKeys.GET_ACCOUNT, publication.document?.author],
+            () => getAccount(publication.document?.author as string),
           )
 
           let block: FlowContent | null = null
@@ -731,7 +805,12 @@ export function createSidepanelItemMachine(client: QueryClient, item: SidepanelI
             }
           }
 
-          sendBack({type: 'REPORT.SIDEPANEL.ITEM.SUCCESS', publication, author, block})
+          sendBack({
+            type: 'REPORT.SIDEPANEL.ITEM.SUCCESS',
+            publication,
+            author,
+            block,
+          })
         },
       },
       actions: {

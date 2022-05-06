@@ -171,8 +171,6 @@ export function isLinkActive(editor: Editor, selection: BaseSelection = editor.s
     at: selection,
   })
 
-  console.log('is link active: ', link)
-
   return !!link
 }
 
@@ -275,8 +273,6 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
     if (link && (isUrl(link) || isMintterLink(link))) {
       ReactEditor.focus(editor)
       setTimeout(() => {
-        console.log({lastSelection})
-
         Transforms.setSelection(editor, lastSelection!)
         insertLink(editor, {url: link, selection: lastSelection, wrap: true})
       }, 0)

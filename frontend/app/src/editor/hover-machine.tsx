@@ -1,26 +1,19 @@
 import {assign, createMachine} from 'xstate'
 
-type HoverContext = {
+export type HoverContext = {
   blockId: string | null
 }
 
-type HoverEvent =
-  | {
-      type: 'MOUSE_ENTER'
-      blockId: string
-    }
-  | {
-      type: 'MOUSE_LEAVE'
-    }
+type HoverEvent = {type: 'MOUSE_ENTER'; blockId: string} | {type: 'MOUSE_LEAVE'}
 
 export const hoverMachine = createMachine(
   {
-    id: 'hover-machine',
     tsTypes: {} as import('./hover-machine.typegen').Typegen0,
     schema: {
       context: {} as HoverContext,
       events: {} as HoverEvent,
     },
+    id: 'hover-machine',
     initial: 'ready',
     context: {
       blockId: null,
@@ -40,9 +33,7 @@ export const hoverMachine = createMachine(
   },
   {
     actions: {
-      clearData: assign({
-        blockId: (c) => null,
-      }),
+      clearData: assign((context) => ({blockId: null})),
       assignBlockId: assign({
         blockId: (_, event) => event.blockId,
       }),

@@ -2,7 +2,7 @@ import {FlowContent} from '@app/../../mttast/dist'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {bookmarksModel, createBookmarkMachine, useBookmarksService} from '@components/bookmarks'
+import {createBookmarkMachine, useBookmarksService} from '@components/bookmarks'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
@@ -15,7 +15,11 @@ import {visit} from 'unist-util-visit'
 import {useLocation} from 'wouter'
 import {ActorRefFrom} from 'xstate'
 
-export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>}) {
+export function BookmarkItem({
+  itemRef,
+}: {
+  itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>
+}) {
   const sidepanelService = useSidepanel()
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
@@ -27,7 +31,10 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
     services: {
       deleteEntry: () =>
         new Promise(() => {
-          bookmarks.send(bookmarksModel.events['BOOKMARK.REMOVE'](state.context.url))
+          bookmarks.send({
+            type: 'BOOKMARK.REMOVE',
+            url: state.context.url,
+          })
         }),
     },
     actions: {
@@ -112,7 +119,10 @@ export function BookmarkItem({itemRef}: {itemRef: ActorRefFrom<ReturnType<typeof
             title="Delete Bookmark"
             description="Are you sure you want to delete this bookmark? This action is not reversible."
           >
-            <Dropdown.Item data-testid="delete-item" onSelect={(e) => e.preventDefault()}>
+            <Dropdown.Item
+              data-testid="delete-item"
+              onSelect={(e) => e.preventDefault()}
+            >
               <Icon size="1" name="Close" />
               <Text size="2">Delete bookmark</Text>
             </Dropdown.Item>

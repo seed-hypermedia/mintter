@@ -1,5 +1,10 @@
-
-import { Account, getAccount, getPublication, listBookmarks, updateListBookmarks } from '@app/client'
+import {
+  Account,
+  getAccount,
+  getPublication,
+  listBookmarks,
+  updateListBookmarks
+} from '@app/client'
 import { queryKeys } from '@app/hooks'
 import { ClientPublication } from '@app/pages/publication'
 import { getIdsfromUrl } from '@app/utils/get-ids-from-url'
@@ -7,41 +12,49 @@ import { createInterpreterContext } from '@app/utils/machine-utils'
 import { FlowContent, GroupingContent } from '@mintter/mttast'
 import { QueryClient } from 'react-query'
 import { visit } from 'unist-util-visit'
-import { ActorRefFrom, InterpreterFrom, sendParent, spawn } from 'xstate'
-import { createModel } from 'xstate/lib/model'
+import {
+  ActorRefFrom,
+  assign,
+  createMachine,
+  InterpreterFrom,
+  sendParent,
+  spawn
+} from 'xstate'
 
-export type Bookmark = { url: string; ref: ActorRefFrom<ReturnType<typeof createBookmarkMachine>> }
+export type Bookmark = {
+  url: string
+  ref: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>
+}
 
-export const bookmarksModel = createModel(
-  {
-    bookmarks: [] as Array<Bookmark>,
-    errorMessage: '',
-  },
-  {
-    events: {
-      'REPORT.BOOKMARKS.SUCCESS': (bookmarks: Array<string>) => ({ bookmarks }),
-      'REPORT.BOOKMARKS.ERROR': (errorMessage: Error['message']) => ({ errorMessage }),
-      'BOOKMARK.ADD': (url: string) => ({ url }),
-      'BOOKMARK.REMOVE': (url: string) => ({ url }),
-      'BOOKMARK.CLEARALL': () => ({}),
-      'BOOKMARK.RESET': () => ({}),
-    },
-  },
-)
+export type BookmarkListContext = {
+  bookmarks: Array<Bookmark>
+  errorMessage: string
+}
 
-export function createBookmarksMachine(client: QueryClient) {
-  return bookmarksModel.createMachine(
+type BookmarkListEvent =
+  | { type: 'REPORT.BOOKMARKS.SUCCESS'; bookmarks: Array<string> }
+  | { type: 'REPORT.BOOKMARKS.ERROR'; errorMessage: Error['message'] }
+  | { type: 'BOOKMARK.ADD'; url: string }
+  | { type: 'BOOKMARK.REMOVE'; url: string }
+  | { type: 'BOOKMARK.CLEARALL' }
+  | { type: 'BOOKMARK.RESET' }
+
+export function createBookmarkListMachine(client: QueryClient) {
+  return createMachine(
     {
       initial: 'loading',
-      context: bookmarksModel.initialContext,
+      tsTypes: {} as import('./bookmarks.typegen').Typegen0,
+      schema: {
+        context: {} as BookmarkListContext,
+        events: {} as BookmarkListEvent,
+      },
+      context: {
+        bookmarks: [],
+        errorMessage: '',
+      },
       on: {
         'BOOKMARK.CLEARALL': {
-          actions: [
-            bookmarksModel.assign({
-              bookmarks: [],
-            }),
-            'persist',
-          ],
+          actions: ['clearBookmarkList', 'persist'],
         },
         'BOOKMARK.RESET': {
           target: 'loading',
@@ -51,66 +64,26 @@ export function createBookmarksMachine(client: QueryClient) {
         loading: {
           invoke: {
             id: 'bookmarks-fetch',
-            src: () => (sendBack) => {
-              client
-                .fetchQuery([queryKeys.GET_BOOKMARK_LIST], listBookmarks)
-                .then((result) => {
-                  sendBack({ type: 'REPORT.BOOKMARKS.SUCCESS', bookmarks: result || [] })
-                })
-                .catch((e: Error) => {
-                  sendBack({ type: 'REPORT.BOOKMARKS.ERROR', errorMessage: e.message })
-                })
-            },
+            src: 'fetchBookmarkList',
           },
           on: {
             'REPORT.BOOKMARKS.SUCCESS': {
               target: 'ready',
-              actions: bookmarksModel.assign({
-                bookmarks: (_, event) => {
-                  return event.bookmarks.map((url) => ({
-                    url,
-                    ref: spawn(createBookmarkMachine(client, url)),
-                  }))
-                },
-              }),
+              actions: ['assignBookmarkList'],
             },
             'REPORT.BOOKMARKS.ERROR': {
               target: 'errored',
-              actions: bookmarksModel.assign({
-                errorMessage: (_, event) => event.errorMessage,
-              }),
+              actions: ['assignError'],
             },
           },
         },
         ready: {
           on: {
             'BOOKMARK.ADD': {
-              actions: [
-                bookmarksModel.assign({
-                  bookmarks: (context, event) => {
-                    let isIncluded = context.bookmarks.filter((bm) => bm.url == event.url)
-
-                    if (isIncluded.length) return context.bookmarks
-
-                    return [
-                      ...context.bookmarks,
-                      {
-                        url: event.url,
-                        ref: spawn(createBookmarkMachine(client, event.url)),
-                      },
-                    ]
-                  },
-                }),
-                'persist',
-              ],
+              actions: ['addBookmark', 'persist'],
             },
             'BOOKMARK.REMOVE': {
-              actions: [
-                bookmarksModel.assign({
-                  bookmarks: (context, event) => context.bookmarks.filter((bookmark) => bookmark.url != event.url),
-                }),
-                'persist',
-              ],
+              actions: ['removeBookmark', 'persist'],
             },
           },
         },
@@ -126,39 +99,100 @@ export function createBookmarksMachine(client: QueryClient) {
             console.error(e)
           }
         },
+        assignBookmarkList: assign({
+          bookmarks: (_, event) => {
+            return event.bookmarks.map((url) => ({
+              url,
+              ref: spawn(createBookmarkMachine(client, url)),
+            }))
+          },
+        }),
+        assignError: assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
+        addBookmark: assign({
+          bookmarks: (context, event) => {
+            let isIncluded = context.bookmarks.filter(
+              (bm) => bm.url == event.url,
+            )
+
+            if (isIncluded.length) return context.bookmarks
+
+            return [
+              ...context.bookmarks,
+              {
+                url: event.url,
+                ref: spawn(createBookmarkMachine(client, event.url)),
+              },
+            ]
+          },
+        }),
+        removeBookmark: assign({
+          bookmarks: (context, event) =>
+            context.bookmarks.filter((bookmark) => bookmark.url != event.url),
+        }),
+        clearBookmarkList: assign((context) => ({
+          bookmarks: [],
+        })),
+      },
+      services: {
+        fetchBookmarkList: () => (sendBack) => {
+          client
+            .fetchQuery([queryKeys.GET_BOOKMARK_LIST], listBookmarks)
+            .then((result) => {
+              sendBack({
+                type: 'REPORT.BOOKMARKS.SUCCESS',
+                bookmarks: result || [],
+              })
+            })
+            .catch((e: Error) => {
+              sendBack({
+                type: 'REPORT.BOOKMARKS.ERROR',
+                errorMessage: e.message,
+              })
+            })
+        },
       },
     },
   )
 }
 
-export const bookmarkModel = createModel(
-  {
-    url: '',
-    publication: null as ClientPublication | null,
-    block: null as FlowContent | null,
-    author: null as Account | null,
-    errorMessage: '',
-  },
-  {
-    events: {
-      RETRY: () => ({}),
-      'BOOKMARK.ITEM.DELETE': (url: string) => ({ url }),
-      'REPORT.BOOKMARK.ITEM.SUCCESS': (publication: ClientPublication, author: Account, block: FlowContent | null) => ({
-        publication,
-        author,
-        block,
-      }),
-      'REPORT.BOOKMARK.ITEM.ERROR': (errorMessage: Error['message']) => ({ errorMessage }),
-    },
-  },
-)
+export type BookmarkContext = {
+  url: string
+  publication: ClientPublication | null
+  block: FlowContent | null
+  author: Account | null
+  errorMessage: string
+}
+
+type BookmarkEvent =
+  | { type: 'RETRY' }
+  | { type: 'BOOKMARK.ITEM.DELETE'; url: string }
+  | {
+    type: 'REPORT.BOOKMARK.ITEM.SUCCESS'
+    publication: ClientPublication
+    author: Account
+    block: FlowContent | null
+  }
+  | {
+    type: 'REPORT.BOOKMARK.ITEM.ERROR'
+    errorMessage: Error['message']
+  }
 
 export function createBookmarkMachine(client: QueryClient, url: string) {
-  return bookmarkModel.createMachine(
+  return createMachine(
     {
+      tsTypes: {} as import("./bookmarks.typegen").Typegen1,
+      schema: {
+        context: {} as BookmarkContext,
+        events: {} as BookmarkEvent,
+      },
       context: {
-        ...bookmarkModel.initialContext,
         url,
+        publication: null,
+        author: null,
+        block: null,
+        errorMessage: '',
       },
       initial: 'loading',
       states: {
@@ -170,21 +204,11 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
           on: {
             'REPORT.BOOKMARK.ITEM.SUCCESS': {
               target: 'idle',
-              actions: [
-                bookmarkModel.assign({
-                  publication: (_, event) => event.publication,
-                  block: (_, event) => event.block,
-                  author: (_, event) => event.author,
-                }),
-              ],
+              actions: ['assignBookmark'],
             },
             'REPORT.BOOKMARK.ITEM.ERROR': {
               target: 'errored',
-              actions: [
-                bookmarkModel.assign({
-                  errorMessage: (_, event) => event.errorMessage,
-                }),
-              ],
+              actions: ['assignError'],
             },
           },
         },
@@ -192,28 +216,36 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
           on: {
             RETRY: {
               target: 'loading',
-              actions: [
-                bookmarkModel.assign({
-                  errorMessage: '',
-                }),
-              ],
+              actions: ['clearError'],
             },
           },
         },
         idle: {
           on: {
             'BOOKMARK.ITEM.DELETE': {
-              actions: [
-                (_, event) => {
-                  sendParent(bookmarksModel.events['BOOKMARK.REMOVE'](event.url))
-                },
-              ],
+              actions: ['removeBookmark'],
             },
           },
         },
       },
     },
     {
+      actions: {
+        assignBookmark: assign({
+          publication: (_, event) => event.publication,
+          block: (_, event) => event.block,
+          author: (_, event) => event.author,
+        }),
+        assignError: assign({
+          errorMessage: (_, event) => event.errorMessage,
+        }),
+        clearError: assign({
+          errorMessage: (context) => '',
+        }),
+        removeBookmark: (_, event) => {
+          sendParent({ type: 'BOOKMARK.REMOVE', url: event.url })
+        },
+      },
       services: {
         fetchItemData: (context) => (sendBack) => {
           try {
@@ -249,11 +281,10 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
                 })
               }
 
-              sendBack(bookmarkModel.events['REPORT.BOOKMARK.ITEM.SUCCESS'](publication, author, block))
+              sendBack({ type: 'REPORT.BOOKMARK.ITEM.SUCCESS', publication, author, block })
             })()
           } catch (error) {
-            console.log('fetchItemData error: ', error);
-            sendBack(bookmarkModel.events['REPORT.BOOKMARK.ITEM.ERROR'](JSON.stringify(error)))
+            sendBack({ type: 'REPORT.BOOKMARK.ITEM.ERROR', errorMessage: JSON.stringify(error) })
           }
 
         },
@@ -263,8 +294,12 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
 }
 
 const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
-  createInterpreterContext<InterpreterFrom<ReturnType<typeof createBookmarksMachine>>>('Bookmarks')
+  createInterpreterContext<
+    InterpreterFrom<ReturnType<typeof createBookmarkListMachine>>
+  >('Bookmarks')
 
 export { BookmarksProvider, useBookmarksService }
 
-export const useBookmarks = createBookmarksSelector((state) => state.context.bookmarks)
+export const useBookmarks = createBookmarksSelector(
+  (state) => state.context.bookmarks,
+)

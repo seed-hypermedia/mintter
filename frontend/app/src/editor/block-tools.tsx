@@ -1,3 +1,4 @@
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {findPath} from '@app/editor/utils'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Box} from '@components/box'
@@ -28,7 +29,12 @@ const items: {
   [key: string]: Array<{
     label: string
     iconName: keyof typeof icons
-    onSelect: (editor: Editor, element: MttastContent, at: Path, lastSelection: BaseRange | null) => void
+    onSelect: (
+      editor: Editor,
+      element: FlowContent,
+      at: Path,
+      lastSelection: BaseRange | null,
+    ) => void
   }>
 } = {
   statement: [
@@ -117,6 +123,7 @@ export function BlockTools({element}: BlockToolsProps) {
                 </Dropdown.Label>
                 {value.map((item) => (
                   <Dropdown.Item
+                    data-testid={`item-${item.label}`}
                     key={item.label}
                     onSelect={() => {
                       item.onSelect(editor, element, path, editor.selection)
@@ -138,9 +145,15 @@ export function BlockTools({element}: BlockToolsProps) {
 
 /* eslint-disable */
 function setType(fn: any) {
-  return function setToStatementType(editor: Editor, element: MttastContent, at: Path) {
+  return function setToStatementType(
+    editor: Editor,
+    element: FlowContent,
+    at: Path,
+  ) {
     Editor.withoutNormalizing(editor, function () {
-      const keys = ObjectKeys(element).filter((key) => !['type', 'id', 'children', 'data'].includes(key))
+      const keys = ObjectKeys(element).filter(
+        (key) => !['type', 'id', 'children', 'data'].includes(key),
+      )
 
       if (isHeading(element)) {
         Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: [...at, 0]})
@@ -154,13 +167,18 @@ function setType(fn: any) {
       const {id, ...props} = fn()
 
       Transforms.setNodes(editor, props, {at})
+      changesService.addChange(['replaceBlock', element.id])
     })
   }
 }
 
 /* eslint-disable */
 function setList(fn: any) {
-  return function wrapWithListType(editor: Editor, element: MttastContent, at: Path) {
+  return function wrapWithListType(
+    editor: Editor,
+    element: MttastContent,
+    at: Path,
+  ) {
     const list = Node.parent(editor, at)
 
     if (list && isGroupContent(list)) {

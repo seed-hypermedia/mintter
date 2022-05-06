@@ -1,6 +1,8 @@
 import react from '@vitejs/plugin-react'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
+let isTest = process.env.NODE_ENV == 'test'
+
 export default {
   cacheDir: '.vite',
   // prevent vite from obscuring rust errors
@@ -29,8 +31,8 @@ export default {
     //   },
     // }),
     react({
-      fastRefresh: process.env.NODE_ENV != 'test',
-      jsxRuntime: process.env.NODE_ENV != 'test' ? 'automatic' : 'classic'
+      fastRefresh: !isTest,
+      jsxRuntime: isTest ? 'classic' : 'automatic'
     }),
   ],
   test: {

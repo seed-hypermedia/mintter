@@ -1,3 +1,4 @@
+import { EditorDocument } from '@app/editor/use-editor-draft'
 import { queryKeys } from '@app/hooks'
 import { libraryMachine } from '@components/library/library-machine'
 import Navaid from 'navaid'
@@ -126,12 +127,13 @@ function createDraftsMachine(client: QueryClient) {
   )
 }
 
-type MainPageContext = {
+export type MainPageContext = {
   params: {
     docId: string
-    version?: string
-    blockId?: string
+    version: string | null
+    blockId: string | null
   }
+  currentDocument: Document | null
   files: ActorRefFrom<ReturnType<typeof createFilesMachine>>
   drafts: ActorRefFrom<ReturnType<typeof createDraftsMachine>>
   library: ActorRefFrom<typeof libraryMachine>
@@ -174,12 +176,30 @@ type MainPageEvent =
   }
   | {
     type: 'navigateForward'
+  } | {
+    type: 'SET.CURRENT.DOCUMENT'
+    document: EditorDocument
   }
+
+export function defaultMainPageContext(client: QueryClient, overrides: Partial<MainPageContext> = { params: { docId: '' } }) {
+  return () => ({
+    params: {
+      docId: '',
+      version: undefined,
+      blockId: undefined,
+      ...overrides.params
+    },
+    files: spawn(createFilesMachine(client), 'files'),
+    drafts: spawn(createDraftsMachine(client), 'drafts'),
+    library: spawn(libraryMachine, 'library'),
+    ...overrides
+  })
+}
 
 export function createMainPageMachine(client: QueryClient) {
   return createMachine(
     {
-      tsTypes: {} as import('./main-page-machine.typegen').Typegen2,
+      tsTypes: {} as import("./main-page-machine.typegen").Typegen2,
       schema: {
         context: {} as MainPageContext,
         events: {} as MainPageEvent,
@@ -188,13 +208,14 @@ export function createMainPageMachine(client: QueryClient) {
       context: () => ({
         params: {
           docId: '',
-          version: undefined,
-          blockId: undefined,
+          version: null,
+          blockId: null,
         },
+        currentDocument: null,
         files: spawn(createFilesMachine(client), 'files'),
         drafts: spawn(createDraftsMachine(client), 'drafts'),
         library: spawn(libraryMachine, 'library'),
-      }),
+      } as MainPageContext),
       invoke: {
         src: 'router',
         id: 'router',
@@ -223,6 +244,7 @@ export function createMainPageMachine(client: QueryClient) {
                 valid: {
                   tags: ['draft'],
                   entry: ['pushDraftRoute'],
+                  exit: ['clearCurrentDocument'],
                   on: {
                     goToEditor: [
                       {
@@ -235,6 +257,12 @@ export function createMainPageMachine(client: QueryClient) {
                 },
                 error: {},
               },
+              on: {
+                'SET.CURRENT.DOCUMENT': {
+                  target: undefined,
+                  actions: 'setCurrentDocument'
+                }
+              }
             },
             publication: {
               initial: 'validating',
@@ -255,6 +283,7 @@ export function createMainPageMachine(client: QueryClient) {
                 valid: {
                   tags: ['publication'],
                   entry: ['pushPublicationToRoute'],
+                  exit: ['clearCurrentDocument'],
                   on: {
                     goToPublication: [
                       {
@@ -270,6 +299,12 @@ export function createMainPageMachine(client: QueryClient) {
                 },
               },
               onDone: 'idle',
+              on: {
+                'SET.CURRENT.DOCUMENT': {
+                  target: undefined,
+                  actions: 'setCurrentDocument'
+                }
+              }
             },
             settings: {
               tags: [],
@@ -282,7 +317,7 @@ export function createMainPageMachine(client: QueryClient) {
           },
           on: {
             RECONCILE: {
-              actions: 'reconcileLibrary',
+              actions: ['updateLibrary'],
             },
             routeNotFound: '.idle',
             goToHome: '.home',
@@ -305,7 +340,7 @@ export function createMainPageMachine(client: QueryClient) {
             toNewDraft: '.createDraft',
           },
         },
-      },
+      }
     },
     {
       guards: {
@@ -315,6 +350,16 @@ export function createMainPageMachine(client: QueryClient) {
         isEventDifferent: (context, event) => context.params.docId != event.docId,
       },
       actions: {
+        updateLibrary: (context) => {
+          context.files.send('RECONCILE')
+          context.drafts.send('RECONCILE')
+        },
+        setCurrentDocument: assign({
+          currentDocument: (_, event) => event.document
+        }),
+        clearCurrentDocument: assign({
+          currentDocument: (c) => null
+        }),
         setDraftParams: assign({
           params: (_, e, meta) => {
             let { event } = meta.state
@@ -341,7 +386,7 @@ export function createMainPageMachine(client: QueryClient) {
           type: 'pushDraft',
           docId: context.params.docId,
           blockId: context.params.blockId
-        }), { to: 'router' })
+        }), { to: 'router' }),
       },
       services: {
         router: () => (sendBack, receive) => {
@@ -397,13 +442,11 @@ export function createMainPageMachine(client: QueryClient) {
           return () => navRouter?.unlisten()
         },
         createNewDraft: () => (sendBack) => {
-          console.log('createNewDraft invoked!')
-
           createDraft().then((document) => {
             sendBack({ type: 'goToEditor', docId: document.id })
           })
         },
       },
-    },
+    }
   )
 }

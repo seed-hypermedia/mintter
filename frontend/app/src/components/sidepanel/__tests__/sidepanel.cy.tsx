@@ -3,19 +3,26 @@ import {
   ListAccountsResponse,
   ListDraftsResponse,
   ListPublicationsResponse,
-  ListSidepanelResponse
+  ListSidepanelResponse,
 } from '@app/client'
-import { HoverProvider } from '@app/editor/hover-context'
-import { hoverMachine } from '@app/editor/hover-machine'
-import { queryKeys } from '@app/hooks'
-import { mountWithAccount } from '@app/test/utils'
-import { BookmarksProvider, createBookmarksMachine } from '@components/bookmarks'
-import { Box } from '@components/box'
-import { createSidepanelMachine, Sidepanel, SidepanelProvider } from '@components/sidepanel'
-import { group, paragraph, statement, text } from '@mintter/mttast'
-import { useInterpret } from '@xstate/react'
-import { PropsWithChildren } from 'react'
-import { QueryClient } from 'react-query'
+import {HoverProvider} from '@app/editor/hover-context'
+import {hoverMachine} from '@app/editor/hover-machine'
+import {queryKeys} from '@app/hooks'
+import {MainPageProviders, mountWithAccount} from '@app/test/utils'
+import {
+  BookmarksProvider,
+  createBookmarkListMachine,
+} from '@components/bookmarks'
+import {Box} from '@components/box'
+import {
+  createSidepanelMachine,
+  Sidepanel,
+  SidepanelProvider,
+} from '@components/sidepanel'
+import {group, paragraph, statement, text} from '@mintter/mttast'
+import {useInterpret} from '@xstate/react'
+import {PropsWithChildren} from 'react'
+import {QueryClient} from 'react-query'
 
 describe('<Sidepanel />', () => {
   let pub = {
@@ -26,7 +33,9 @@ describe('<Sidepanel />', () => {
       title: 'demo title',
       subtitle: 'demo subtitle',
       author: 'author',
-      content: [group([statement({ id: 'b1' }, [paragraph([text('Hello World')])])])],
+      content: [
+        group([statement({id: 'b1'}, [paragraph([text('Hello World')])])]),
+      ],
       publishTime: undefined,
       updateTime: undefined,
       children: [],
@@ -37,12 +46,15 @@ describe('<Sidepanel />', () => {
   let copyTextToClipboard: any
 
   beforeEach(() => {
-    const { render, client } = mountWithAccount()
+    const {render, client} = mountWithAccount()
 
-    client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
-      publications: [],
-      nextPageToken: '',
-    })
+    client.setQueryData<ListPublicationsResponse>(
+      [queryKeys.GET_PUBLICATION_LIST],
+      {
+        publications: [],
+        nextPageToken: '',
+      },
+    )
 
     client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
       documents: [],
@@ -54,7 +66,10 @@ describe('<Sidepanel />', () => {
       nextPageToken: '',
     })
 
-    client.setQueryData([queryKeys.GET_PUBLICATION, pub.document.id, pub.version], pub)
+    client.setQueryData(
+      [queryKeys.GET_PUBLICATION, pub.document.id, pub.version],
+      pub,
+    )
 
     client.setQueryData<Account>([queryKeys.GET_ACCOUNT, pub.document.author], {
       id: 'author',
@@ -82,9 +97,11 @@ describe('<Sidepanel />', () => {
     copyTextToClipboard = cy.stub().resolves()
 
     render(
-      <SidepanelTestProvider client={client}>
-        <Sidepanel copy={copyTextToClipboard} />
-      </SidepanelTestProvider>,
+      <MainPageProviders client={client}>
+        <SidepanelTestProvider client={client}>
+          <Sidepanel copy={copyTextToClipboard} />
+        </SidepanelTestProvider>
+      </MainPageProviders>,
     )
   })
 
@@ -143,9 +160,12 @@ describe('<Sidepanel />', () => {
   })
 })
 
-function SidepanelTestProvider({ children, client }: PropsWithChildren<{ client: QueryClient }>) {
+function SidepanelTestProvider({
+  children,
+  client,
+}: PropsWithChildren<{client: QueryClient}>) {
   const sidepanel = useInterpret(() => createSidepanelMachine(client))
-  const bookmarks = useInterpret(() => createBookmarksMachine(client))
+  const bookmarks = useInterpret(() => createBookmarkListMachine(client))
   const hover = useInterpret(() => hoverMachine)
   return (
     <HoverProvider value={hover}>
@@ -172,7 +192,10 @@ function SidepanelTestProvider({ children, client }: PropsWithChildren<{ client:
               background: '$background-default',
             }}
           >
-            <button id="trigger" onClick={() => sidepanel.send('SIDEPANEL.TOGGLE')}>
+            <button
+              id="trigger"
+              onClick={() => sidepanel.send('SIDEPANEL.TOGGLE')}
+            >
               sidepanel
             </button>
             {children}

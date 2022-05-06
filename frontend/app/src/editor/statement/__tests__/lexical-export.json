@@ -1,0 +1,206 @@
+{
+  "editorState": {
+    "_nodeMap": [
+      [
+        "root",
+        {
+          "__children": ["1", "3", "12"],
+          "__dir": "ltr",
+          "__format": 0,
+          "__indent": 0,
+          "__key": "root",
+          "__parent": null,
+          "__type": "root"
+        }
+      ],
+      [
+        "1",
+        {
+          "__type": "heading",
+          "__parent": "root",
+          "__key": "1",
+          "__children": ["2"],
+          "__format": 0,
+          "__indent": 0,
+          "__dir": "ltr",
+          "__tag": "h1"
+        }
+      ],
+      [
+        "2",
+        {
+          "__type": "text",
+          "__parent": "1",
+          "__key": "2",
+          "__text": "Welcome to the playground",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "3",
+        {
+          "__type": "paragraph",
+          "__parent": "root",
+          "__key": "3",
+          "__children": ["4", "5", "6", "7", "8", "10", "11"],
+          "__format": 0,
+          "__indent": 0,
+          "__dir": "ltr"
+        }
+      ],
+      [
+        "4",
+        {
+          "__type": "text",
+          "__parent": "3",
+          "__key": "4",
+          "__text": "This is an ",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "5",
+        {
+          "__type": "text",
+          "__parent": "3",
+          "__key": "5",
+          "__text": "example",
+          "__format": 1,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "6",
+        {
+          "__type": "text",
+          "__parent": "3",
+          "__key": "6",
+          "__text": " editor component built with ",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "7",
+        {
+          "__type": "text",
+          "__parent": "3",
+          "__key": "7",
+          "__text": "@lexical/react",
+          "__format": 16,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "8",
+        {
+          "__type": "text",
+          "__parent": "3",
+          "__key": "8",
+          "__text": ". Try writing in some text with ",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "10",
+        {
+          "__type": "text",
+          "__parent": "3",
+          "__key": "10",
+          "__text": "different",
+          "__format": 2,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "11",
+        {
+          "__type": "text",
+          "__parent": "3",
+          "__key": "11",
+          "__text": " formats.",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "12",
+        {
+          "__type": "paragraph",
+          "__parent": "root",
+          "__key": "12",
+          "__children": ["13", "16", "15"],
+          "__format": 0,
+          "__indent": 0,
+          "__dir": "ltr"
+        }
+      ],
+      [
+        "13",
+        {
+          "__type": "text",
+          "__parent": "12",
+          "__key": "13",
+          "__text": "Make sure to check out the various plugins in the toolbar. You can also use ",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "15",
+        {
+          "__type": "text",
+          "__parent": "12",
+          "__key": "15",
+          "__text": " or @-mentions too!",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ],
+      [
+        "16",
+        {
+          "__type": "hashtag",
+          "__parent": "12",
+          "__key": "16",
+          "__text": "#hashtags",
+          "__format": 0,
+          "__style": "",
+          "__mode": 0,
+          "__detail": 0
+        }
+      ]
+    ],
+    "_selection": {
+      "anchor": {"key": "15", "offset": 19, "type": "text"},
+      "focus": {"key": "15", "offset": 19, "type": "text"},
+      "type": "range"
+    }
+  },
+  "lastSaved": 1649946792310,
+  "source": "Playground",
+  "version": "0.2.0"
+}

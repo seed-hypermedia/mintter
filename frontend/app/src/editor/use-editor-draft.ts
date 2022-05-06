@@ -1,15 +1,15 @@
-import { Document, getDraft, Link, Publication, publishDraft, updateDraft } from '@app/client'
-import { MINTTER_LINK_PREFIX } from '@app/constants'
+
+import { Document, getDraft, Publication, publishDraft } from '@app/client'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { changesService } from '@app/editor/mintter-changes/plugin'
 import { queryKeys } from '@app/hooks'
 import { useMainPage } from '@app/main-page-context'
-import { createId, group, isEmbed, isFlowContent, isLink, paragraph, statement, text } from '@mintter/mttast'
+import { createId, group, paragraph, statement, text } from '@mintter/mttast'
 import { useMachine } from '@xstate/react'
-import isEqual from 'fast-deep-equal'
 import { useEffect } from 'react'
 import { QueryClient, useQueryClient } from 'react-query'
-import { visit } from 'unist-util-visit'
+import { Editor, Node } from 'slate'
 import { assign, createMachine, MachineOptionsFrom } from 'xstate'
-import { getEmbedIds } from './embed'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
@@ -21,7 +21,8 @@ export type EditorContext = {
   prevDraft: EditorDocument | null;
   localDraft: EditorDocument | null;
   errorMessage: string;
-  publication: Publication | null
+  publication: Publication | null,
+  shouldMigrate: boolean
 }
 export type EditorEvent = { type: 'FETCH'; documentId: string } | {
   type: 'EDITOR.REPORT.FETCH.SUCCESS'; data: Document
@@ -32,18 +33,22 @@ export type EditorEvent = { type: 'FETCH'; documentId: string } | {
 { type: 'EDITOR.CANCEL' } |
 { type: 'EDITOR.PUBLISH' } |
 { type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication } |
-{ type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message'] }
+{ type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message'] } | {
+  type: 'EDITOR.MIGRATE'
+}
 
 interface DraftEditorMachineProps {
   client: QueryClient;
-  mainPageService: ReturnType<typeof useMainPage>
+  mainPageService: ReturnType<typeof useMainPage>;
+  shouldAutosave: boolean
+  editor: Editor
 }
 
 const defaultContent = [group({ data: { parent: "" } }, [statement({ id: createId() }, [paragraph([text('')])])])]
 
 
-export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachineProps) =>
-  createMachine(
+export function draftEditorMachine({ client, mainPageService, shouldAutosave = true, editor }: DraftEditorMachineProps) {
+  return createMachine(
     {
       tsTypes: {} as import("./use-editor-draft.typegen").Typegen0,
       schema: {
@@ -57,7 +62,8 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
         localDraft: null,
         prevDraft: null,
         errorMessage: '',
-        publication: null
+        publication: null,
+        shouldMigrate: false
       },
       states: {
         idle: {
@@ -97,7 +103,7 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
             'EDITOR.REPORT.FETCH.SUCCESS': {
               target: 'editing',
               actions: [
-                'assignDraftsValue'
+                'assignDraftsValue',
               ],
             },
             'EDITOR.REPORT.FETCH.ERROR': {
@@ -109,13 +115,15 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
           },
         },
         editing: {
+          tags: ['canPublish'],
           id: 'editing',
           initial: 'idle',
+          entry: 'updateCurrentDocument',
           states: {
             idle: {
               on: {
                 'EDITOR.UPDATE': {
-                  actions: ['updateValueToContext'],
+                  actions: ['updateValueToContext', 'updateCurrentDocument'],
                   target: 'debouncing',
                 },
                 'EDITOR.PUBLISH': {
@@ -129,18 +137,18 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
             debouncing: {
               on: {
                 'EDITOR.UPDATE': {
-                  actions: ['updateValueToContext'],
+                  actions: ['updateValueToContext', 'updateCurrentDocument'],
                 },
               },
               after: {
                 1000: [
                   {
                     target: 'saving',
-                    cond: 'isValueDirty',
+                    // cond: 'isValueDirty',
                   },
-                  {
-                    target: 'idle',
-                  },
+                  // {
+                  //   target: 'idle',
+                  // },
                 ],
               },
             },
@@ -149,13 +157,13 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
                 src: 'saveDraft',
                 onError: {
                   target: 'idle',
-                  actions: ['assignErrorToContext'],
+                  actions: ['assignError'],
                 },
               },
               on: {
                 'EDITOR.UPDATE.SUCCESS': {
                   target: 'idle',
-                  actions: 'updateLibrary'
+                  actions: ['updateLibrary']
                 },
                 'EDITOR.UPDATE.ERROR': {
                   target: 'idle',
@@ -172,7 +180,7 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
 
                   publishDraft(context.localDraft.id!)
                     .then((publication) => {
-                      sendBack('EDITOR.PUBLISH.SUCCESS')
+                      sendBack({ type: 'EDITOR.PUBLISH.SUCCESS', publication })
                     })
                     .catch((err: any) => {
                       sendBack({ type: 'EDITOR.PUBLISH.ERROR', errorMessage: err.message })
@@ -213,14 +221,11 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
     },
     {
       guards: {
-        isValueDirty: (context) => {
-          const isContentNotEqual = !isEqual(context.localDraft?.content, context.prevDraft?.content)
-          const isTitleNotEqual = !isEqual(context.localDraft?.title, context.prevDraft?.title)
-          const isSubtitleNotEqual = !isEqual(context.localDraft?.subtitle, context.prevDraft?.subtitle)
-          console.log('isValueDirty', { isContentNotEqual, isTitleNotEqual, isSubtitleNotEqual });
-
-          return isContentNotEqual || isTitleNotEqual || isSubtitleNotEqual
-        },
+        // isValueDirty: (context) => {
+        //   const isContentNotEqual = !isEqual(context.localDraft?.content, context.prevDraft?.content)
+        //   const isTitleNotEqual = !isEqual(context.localDraft?.title, context.prevDraft?.title)
+        //   return isContentNotEqual || isTitleNotEqual
+        // },
         maxRetriesReached: (context) => context.retries == 5
       },
       actions: {
@@ -228,11 +233,20 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
           retries: (context) => context.retries + 1,
         }),
         assignDraftsValue: assign((_, event) => {
-          // TODO: make sure we add the default content in the changes array
-          let newValue = {
+          // TODO: fixme types
+          let newValue: EditorDocument = {
             ...event.data,
-            content: event.data.content ? JSON.parse(event.data.content) : defaultContent,
           }
+
+          if (event.data.children?.length) {
+            newValue.content = [blockNodeToSlate(event.data.children)]
+          } else {
+            newValue.content = defaultContent
+            let entryNode = defaultContent[0].children[0]
+            changesService.addChange(['moveBlock', entryNode.id])
+            changesService.addChange(['replaceBlock', entryNode.id])
+          }
+
           return {
             prevDraft: newValue,
             localDraft: newValue,
@@ -266,43 +280,28 @@ export const draftEditorMachine = ({ client, mainPageService }: DraftEditorMachi
               let data = await client.fetchQuery([queryKeys.GET_DRAFT, event.documentId], () =>
                 getDraft(event.documentId),
               )
+
               sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
             } catch (err: any) {
               sendBack({ type: 'EDITOR.REPORT.FETCH.ERROR', errorMessage: err.message })
-            }
-          })()
-        },
-        saveDraft: (context) => (sendBack) => {
-          ; (async () => {
-            let newDraft = {
-              ...context.localDraft,
-              content: JSON.stringify(context.localDraft?.content),
-            }
-
-            let links = buildLinks(context.localDraft!)
-
-            try {
-              await updateDraft(newDraft as Document, links)
-
-              sendBack('EDITOR.UPDATE.SUCCESS')
-            } catch (err: any) {
-              sendBack({ type: 'EDITOR.UPDATE.ERROR', errorMessage: err.message })
             }
           })()
         }
       }
     },
   )
+}
+
 
 export type UseEditorDraftParams = DraftEditorMachineProps & {
   documentId: string
-  options: MachineOptionsFrom<ReturnType<typeof draftEditorMachine>>
   mainPageService: ReturnType<typeof useMainPage>
+  options: MachineOptionsFrom<ReturnType<typeof draftEditorMachine>>
 }
 
-export function useEditorDraft({ documentId, mainPageService, options }: UseEditorDraftParams) {
+export function useEditorDraft({ documentId, mainPageService, editor, shouldAutosave, options }: UseEditorDraftParams) {
   const client = useQueryClient()
-  const [state, send] = useMachine(() => draftEditorMachine({ client, mainPageService }), options)
+  const [state, send] = useMachine(() => draftEditorMachine({ client, mainPageService, editor, shouldAutosave }), options)
 
   useEffect(() => {
     if (documentId) {
@@ -312,31 +311,6 @@ export function useEditorDraft({ documentId, mainPageService, options }: UseEdit
   return [state, send] as const
 }
 
-function buildLinks(draft: EditorDocument): Array<Link> {
-  let links: Array<Link> = []
-
-  visit(draft.content[0], isFlowContent, (block) => {
-    visit(
-      block.children[0],
-      (node) => (isEmbed(node) || isLink(node)) && node.url.includes(MINTTER_LINK_PREFIX),
-      (node) => {
-        let [documentId, version, blockId] = getEmbedIds(node.url)
-
-        links.push({
-          target: {
-            documentId,
-            version,
-            blockId,
-          },
-          source: {
-            blockId: block.id,
-            version: '',
-            documentId: '',
-          },
-        })
-      },
-    )
-  })
-
-  return links
+export function getTitleFromContent(entry: Editor): string {
+  return Node.string(Node.get(entry, [0, 0, 0])) || ''
 }

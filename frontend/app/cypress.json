@@ -1,5 +1,6 @@
 {
   "projectId": "d3nyda",
+  "fileServerFolder": "site",
   "testFiles": "**/*.cy.tsx",
   "componentFolder": "src",
   "viewportWidth": 800,

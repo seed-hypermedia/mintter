@@ -1,33 +1,52 @@
-import { AppProviders } from '@app/app-providers'
-import { Account, Info, ListAccountsResponse, ListDraftsResponse, ListPublicationsResponse, Profile } from '@app/client'
-import { HoverProvider } from '@app/editor/hover-context'
-import { hoverMachine } from '@app/editor/hover-machine'
-import { queryKeys } from '@app/hooks'
-import { MainPageProvider } from '@app/main-page-context'
-import { createMainPageMachine } from '@app/main-page-machine'
-import { BookmarksProvider, createBookmarksMachine } from '@components/bookmarks'
-import { createSidepanelMachine, SidepanelProvider } from '@components/sidepanel'
-import { mount } from '@cypress/react'
-import { useInterpret } from '@xstate/react'
-import { PropsWithChildren, ReactNode, useState } from 'react'
-import { QueryClient } from 'react-query'
+import {AppProviders} from '@app/app-providers'
+import {
+  Account,
+  Info,
+  ListAccountsResponse,
+  ListDraftsResponse,
+  ListPublicationsResponse,
+  Profile,
+} from '@app/client'
+import {HoverProvider} from '@app/editor/hover-context'
+import {HoverContext, hoverMachine} from '@app/editor/hover-machine'
+import {queryKeys} from '@app/hooks'
+import {MainPageProvider} from '@app/main-page-context'
+import {
+  createMainPageMachine,
+  defaultMainPageContext,
+  MainPageContext,
+} from '@app/main-page-machine'
+import {
+  BookmarkListContext,
+  BookmarksProvider,
+  createBookmarkListMachine,
+} from '@components/bookmarks'
+import {
+  createSidepanelMachine,
+  SidepanelContextType,
+  SidepanelProvider,
+} from '@components/sidepanel'
+import {mount} from '@cypress/react'
+import {useInterpret} from '@xstate/react'
+import {PropsWithChildren, ReactNode, useState} from 'react'
+import {QueryClient} from 'react-query'
 
 export const memoryLocation =
   (path = '/') =>
-    () =>
-      useState(path)
+  () =>
+    useState(path)
 
 export const customHookWithReturn =
   (initialPath = '/') =>
-    () => {
-      const [path, updatePath] = useState(initialPath)
-      const navigate = (path: string) => {
-        updatePath(path)
-        return 'foo'
-      }
-
-      return [path, navigate]
+  () => {
+    const [path, updatePath] = useState(initialPath)
+    const navigate = (path: string) => {
+      updatePath(path)
+      return 'foo'
     }
+
+    return [path, navigate]
+  }
 
 export function mountWithAccount({
   client,
@@ -87,23 +106,42 @@ export function mountWithAccount({
   }
 }
 
-export function MainPageProviders({ children, client }: PropsWithChildren<{ client: QueryClient }>) {
-  let sidepanel = useInterpret(() => createSidepanelMachine(client))
-  let mainPageService = useInterpret(() => createMainPageMachine(client), {
-    actions: {
-      reconcileLibrary: (context) => {
-        context.files.send('RECONCILE')
-        context.drafts.send('RECONCILE')
-      },
-    },
-  })
-  let hover = useInterpret(() => hoverMachine)
-  let bookmarks = useInterpret(() => createBookmarksMachine(client))
+type MainPageProvidersProps = PropsWithChildren<{
+  client: QueryClient
+  hoverContext?: HoverContext
+  bookmarkListContext?: BookmarkListContext
+  sidepanelContext?: SidepanelContextType
+  mainPageContext?: Partial<MainPageContext>
+}>
 
-  client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
-    publications: [],
-    nextPageToken: '',
-  })
+export function MainPageProviders({
+  children,
+  client,
+  hoverContext = {blockId: null},
+  bookmarkListContext = {bookmarks: [], errorMessage: ''},
+  sidepanelContext = {items: [], errorMessage: ''},
+  mainPageContext = {},
+}: MainPageProvidersProps) {
+  let sidepanel = useInterpret(() =>
+    createSidepanelMachine(client).withContext(sidepanelContext),
+  )
+  let mainPageService = useInterpret(() =>
+    createMainPageMachine(client).withContext(
+      defaultMainPageContext(client, mainPageContext),
+    ),
+  )
+  let hover = useInterpret(() => hoverMachine.withContext(hoverContext))
+  let bookmarks = useInterpret(() =>
+    createBookmarkListMachine(client).withContext(bookmarkListContext),
+  )
+
+  client.setQueryData<ListPublicationsResponse>(
+    [queryKeys.GET_PUBLICATION_LIST],
+    {
+      publications: [],
+      nextPageToken: '',
+    },
+  )
 
   client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
     documents: [],

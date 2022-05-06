@@ -16,8 +16,7 @@ export type {
   RegisterResponse
 } from './.generated/daemon/v1alpha/daemon'
 export {
-  Block,
-  BlockNode, CreateDraftRequest,
+  Annotation, Block, BlockNode, CreateDraftRequest,
   DeleteDraftRequest,
   DeletePublicationRequest,
   Document, DocumentChange, GetDraftRequest,
