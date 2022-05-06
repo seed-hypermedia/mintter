@@ -79,7 +79,7 @@ def main():
     )
     def build_desktop(args):
         run("plz build //frontend:app //backend:mintterd")
-        run("rm -rf target/debug/mintterd*")
+        run("rm -rf target/debug/mintter*")
         run("cargo tauri build --debug")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
@@ -89,7 +89,6 @@ def main():
     @cmd(cmds, "run-frontend", "Run frontend web app for development.")
     def run_frontend(args):
         run("plz build //:yarn")
-        run("rm -rf target/debug/mintterd*")
         return run("cd frontend/app && exec yarn dev", args=args)
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
