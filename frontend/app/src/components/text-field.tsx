@@ -1,14 +1,20 @@
-import type { CSS } from '@app/stitches.config'
-import { styled } from '@app/stitches.config'
+import type {CSS} from '@app/stitches.config'
+import {styled} from '@app/stitches.config'
 import * as Label from '@radix-ui/react-label'
 import type * as Stitches from '@stitches/react'
-import { css } from '@stitches/react'
+import {css} from '@stitches/react'
 import autosize from 'autosize'
-import { nanoid } from 'nanoid/non-secure'
-import type { InputHTMLAttributes, LegacyRef, MutableRefObject, PropsWithChildren, RefCallback } from 'react'
-import { forwardRef, useLayoutEffect, useRef } from 'react'
-import { Box } from './box'
-import { Text } from './text'
+import {nanoid} from 'nanoid/non-secure'
+import type {
+  InputHTMLAttributes,
+  LegacyRef,
+  MutableRefObject,
+  PropsWithChildren,
+  RefCallback,
+} from 'react'
+import {forwardRef, useLayoutEffect, useRef} from 'react'
+import {Box} from './box'
+import {Text} from './text'
 
 const InputContainer = styled(Box, {
   display: 'flex',
@@ -32,8 +38,6 @@ const InputContainer = styled(Box, {
 })
 
 const inputStyles = css({
-  $$backgroundColor: '$colors$background-default',
-
   all: 'unset',
   backgroundColor: '$$backgroundColor',
   border: 'none',
@@ -41,7 +45,7 @@ const inputStyles = css({
   boxSizing: 'border-box',
   color: '$$textColor',
   display: 'block',
-  fontFamily: '$default',
+  fontFamily: '$base',
   outline: 'none',
   width: '100%',
 
@@ -58,12 +62,12 @@ const inputStyles = css({
   },
 
   '&:active': {
-    boxShadow: '0 0 0 1px $$hoveredBorderColor',
+    boxShadow: '0 0 0 1px $$activeBorderColor',
   },
 
   '&:focus': {
     outline: 'none',
-    boxShadow: '0 0 0 2px $$hoveredBorderColor',
+    boxShadow: '0 0 0 1px $$activeBorderColor',
   },
 
   '&:disabled': {
@@ -97,25 +101,33 @@ const inputStyles = css({
       },
     },
     status: {
-      neutral: {
-        $$borderColor: '$colors$background-neutral',
-        $$hoveredBorderColor: '$colors$background-neutral-strong',
-        $$textColor: '$colors$text-default',
+      base: {
+        $$backgroundColor: '$colors$base-component-bg-normal',
+        $$borderColor: '$colors$base-border-normal',
+        $$hoveredBorderColor: '$colors$base-border-hover',
+        $$activeBorderColor: '$colors$base-active',
+        $$textColor: '$colors$base-text-low',
       },
       success: {
-        $$borderColor: '$colors$success-softer',
-        $$hoveredBorderColor: '$colors$success-default',
-        $$textColor: '$colors$success-default',
+        $$backgroundColor: '$colors$success-component-bg-normal',
+        $$borderColor: '$colors$success-border-normal',
+        $$hoveredBorderColor: '$colors$success-border-hover',
+        $$activeBorderColor: '$colors$success-active',
+        $$textColor: '$colors$success-text-low',
       },
       warning: {
-        $$borderColor: '$colors$warning-softer',
-        $$hoveredBorderColor: '$colors$warning-default',
-        $$textColor: '$colors$warning-default',
+        $$backgroundColor: '$colors$warning-component-bg-normal',
+        $$borderColor: '$colors$warning-border-normal',
+        $$hoveredBorderColor: '$colors$warning-border-hover',
+        $$activeBorderColor: '$colors$warning-active',
+        $$textColor: '$colors$warning-text-low',
       },
       danger: {
-        $$borderColor: '$colors$danger-softer',
-        $$hoveredBorderColor: '$colors$danger-default',
-        $$textColor: '$colors$danger-default',
+        $$backgroundColor: '$colors$danger-component-bg-normal',
+        $$borderColor: '$colors$danger-border-normal',
+        $$hoveredBorderColor: '$colors$danger-border-hover',
+        $$activeBorderColor: '$colors$danger-active',
+        $$textColor: '$colors$danger-text-low',
       },
     },
   },
@@ -123,7 +135,7 @@ const inputStyles = css({
   defaultVariants: {
     size: '2',
     shape: 'rounded',
-    status: 'neutral',
+    status: 'base',
   },
 })
 
@@ -135,15 +147,18 @@ export type InputVariants = Stitches.VariantProps<typeof inputStyles>
 export type InputProps = InputVariants
 
 // @ts-ignore
-const InputElement = forwardRef<HTMLInputElement, PropsWithChildren<InputProps>>(function InputElement(props, ref) {
+const InputElement = forwardRef<
+  HTMLInputElement,
+  PropsWithChildren<InputProps>
+>(function InputElement(props, ref) {
   return <Input ref={ref} {...props} />
 })
 
 // @ts-ignore
-const TextareaElement = forwardRef<HTMLTextAreaElement, PropsWithChildren<InputProps>>(function TextareaElement(
-  props,
-  ref,
-) {
+const TextareaElement = forwardRef<
+  HTMLTextAreaElement,
+  PropsWithChildren<InputProps>
+>(function TextareaElement(props, ref) {
   return <Textarea ref={ref} {...props} />
 })
 
@@ -151,16 +166,16 @@ const TextFieldHint = styled(Text, {
   variants: {
     status: {
       neutral: {
-        color: '$text-muted',
+        color: '$base-text-low',
       },
       success: {
-        color: '$success-default',
+        color: '$success-text-low',
       },
       warning: {
-        color: '$warning-default',
+        color: '$warning-text-low',
       },
       danger: {
-        color: '$danger-default',
+        color: '$danger-text-low',
       },
     },
   },
@@ -172,18 +187,29 @@ const TextFieldHint = styled(Text, {
 
 type TextFieldProps = PropsWithChildren<
   InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> &
-  InputProps & {
-    id?: string
-    label?: string
-    hint?: string
-    containerCss?: CSS
-    textarea?: boolean
-    rows?: number
-  }
+    InputProps & {
+      id?: string
+      label?: string
+      hint?: string
+      containerCss?: CSS
+      textarea?: boolean
+      rows?: number
+    }
 >
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
-  ({ label, status = 'neutral', hint, id = nanoid(), containerCss, textarea = false, ...props }: TextFieldProps, ref) => {
+  (
+    {
+      label,
+      status = 'base',
+      hint,
+      id = nanoid(),
+      containerCss,
+      textarea = false,
+      ...props
+    }: TextFieldProps,
+    ref,
+  ) => {
     const localRef = useRef<HTMLInputElement>(null)
 
     useLayoutEffect(() => {
@@ -198,12 +224,26 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       <InputContainer size={props.size} css={containerCss}>
         {label ? (
           <Label.Root asChild htmlFor={id}>
-            <Text size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}>{label}</Text>
+            <Text
+              size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}
+              color={status}
+            >
+              {label}
+            </Text>
           </Label.Root>
         ) : null}
-        <InputComponent ref={mergeRefs<HTMLInputElement | HTMLTextAreaElement>([localRef, ref])} {...props} />
+        <InputComponent
+          ref={mergeRefs<HTMLInputElement | HTMLTextAreaElement>([
+            localRef,
+            ref,
+          ])}
+          {...props}
+        />
         {hint ? (
-          <TextFieldHint status={status} size={props.size == 1 || props.size == 2 ? props.size : undefined}>
+          <TextFieldHint
+            status={status}
+            size={props.size == 1 || props.size == 2 ? props.size : undefined}
+          >
             {hint}
           </TextFieldHint>
         ) : null}
@@ -213,13 +253,15 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 )
 TextField.displayName = 'TextField'
 
-function mergeRefs<T = any>(refs: Array<MutableRefObject<T> | LegacyRef<T>>): RefCallback<T> {
+function mergeRefs<T = any>(
+  refs: Array<MutableRefObject<T> | LegacyRef<T>>,
+): RefCallback<T> {
   return (value: T | null) => {
     refs.forEach((ref) => {
       if (typeof ref == 'function') {
         ref(value)
       } else if (ref != null) {
-        ; (ref as MutableRefObject<T | null>).current = value
+        ;(ref as MutableRefObject<T | null>).current = value
       }
     })
   }

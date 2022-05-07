@@ -22,6 +22,7 @@ export interface Typegen0 {
       type: 'error.platform.editor.editing.saving:invocation[0]'
       data: unknown
     }
+    '': {type: ''}
     'xstate.after(1000)#editor.editing.debouncing': {
       type: 'xstate.after(1000)#editor.editing.debouncing'
     }
@@ -48,7 +49,7 @@ export interface Typegen0 {
     delays: never
   }
   eventsCausingServices: {
-    fetchDocument: 'FETCH'
+    fetchDocument: '' | 'FETCH'
     publishDraftService: 'EDITOR.PUBLISH'
     saveDraft: 'xstate.after(1000)#editor.editing.debouncing'
   }
@@ -69,5 +70,5 @@ export interface Typegen0 {
     | 'finishEditing'
     | 'failed'
     | {editing?: 'idle' | 'debouncing' | 'saving' | 'publishing' | 'published'}
-  tags: 'canPublish'
+  tags: 'saving'
 }

@@ -23,7 +23,13 @@ export interface Typegen0 {
   eventsCausingServices: {}
   eventsCausingGuards: {}
   eventsCausingDelays: {}
-  matchesStates: 'idle' | 'errored' | 'ready' | 'ready.closed' | 'ready.opened' | {ready?: 'closed' | 'opened'}
+  matchesStates:
+    | 'idle'
+    | 'errored'
+    | 'ready'
+    | 'ready.closed'
+    | 'ready.opened'
+    | {ready?: 'closed' | 'opened'}
   tags: never
 }
 export interface Typegen1 {
@@ -42,7 +48,10 @@ export interface Typegen1 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.fetchItemData': {type: 'error.platform.fetchItemData'; data: unknown}
+    'error.platform.fetchItemData': {
+      type: 'error.platform.fetchItemData'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchItemData: 'done.invoke.fetchItemData'

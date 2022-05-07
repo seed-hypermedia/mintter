@@ -10,12 +10,9 @@ import {Editor} from '@app/editor/editor'
 import {changesService} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {
-  draftEditorMachine,
-  getTitleFromContent,
-  useEditorDraft,
-} from '@app/editor/use-editor-draft'
+import {draftEditorMachine, useEditorDraft} from '@app/editor/use-editor-draft'
 import {useMainPage, useParams} from '@app/main-page-context'
+import {getTitleFromContent} from '@app/utils/get-document-title'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -162,8 +159,6 @@ export default function EditorPage({
           }
         },
         publishDraftService: (context, event) => (sendBack) => {
-          console.log('publishDraftService: ', context, event)
-
           if (!context.localDraft) return
 
           publishDraft(context.localDraft.id!)
@@ -204,9 +199,12 @@ export default function EditorPage({
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
-        <Box data-testid="editor-wrapper">
+        <Box
+          data-testid="editor-wrapper"
+          css={{paddingHorizontal: '$5', paddingTop: '$5'}}
+        >
           {context.localDraft?.content && (
-            <Box>
+            <>
               <Editor
                 editor={editor}
                 value={context.localDraft.content}
@@ -227,7 +225,7 @@ export default function EditorPage({
                   </Box>
                 )}
               </Box>
-            </Box>
+            </>
           )}
         </Box>
         <Box className={footerStyles()}>
@@ -246,7 +244,7 @@ export default function EditorPage({
             <Button
               color="success"
               size="1"
-              disabled={!state.hasTag('canPublish')}
+              disabled={state.hasTag('saving')}
               data-testid="submit-publish"
               onClick={() => {
                 console.log('PUBLISH PLEASE!!!')
@@ -284,12 +282,12 @@ function EditorStatus({
           height: '$$size',
           borderRadius: '$round',
           backgroundColor: state.matches('editing.idle')
-            ? '$success-softer'
+            ? '$success-component-bg-active'
             : state.matches('editing.debouncing')
-            ? '$background-muted'
+            ? '$base--component-bg-active'
             : state.matches('editing.saving')
-            ? '$warning-soft'
-            : '$danger-soft',
+            ? '$warning-component-bg-active'
+            : '$danger-component-bg-active',
         }}
       />
       <Text color="muted" size="1">

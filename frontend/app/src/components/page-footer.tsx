@@ -1,27 +1,17 @@
 import {css, styled} from '@app/stitches.config'
 
 export const footerStyles = css({
-  background: '$background-alt',
+  background: '$base-background-subtle',
   width: '$full',
   position: 'absolute',
   bottom: 0,
   zIndex: '$max',
   display: 'flex',
   justifyContent: 'space-between',
-  '&:after': {
-    content: '',
-    position: 'absolute',
-    width: '$full',
-    height: 20,
-    background:
-      'linear-gradient(0deg, $colors$background-alt 0%, rgba(255,255,255,0) 100%)',
-    top: -20,
-    left: 0,
-  },
+  paddingHorizontal: '$5',
 })
 export const footerMetadataStyles = css({
   flex: 'none',
-  background: '$background-alt',
   padding: '$5',
   display: 'flex',
   alignItems: 'center',
@@ -40,5 +30,5 @@ export const PageFooterSeparator = styled('div', {
   height: '80%',
   marginLeft: '$4',
   marginRight: '$4',
-  background: '$background-neutral-strong',
+  background: '$base-component-bg-hover',
 })

@@ -12,9 +12,15 @@ export function Section({
   open,
   disabled,
   onOpenChange,
-}: PropsWithChildren<Collapsible.CollapsibleProps & {title: string; icon?: keyof typeof icons}>) {
+}: PropsWithChildren<
+  Collapsible.CollapsibleProps & {title: string; icon?: keyof typeof icons}
+>) {
   return (
-    <Collapsible.Root open={open} onOpenChange={onOpenChange} disabled={disabled}>
+    <Collapsible.Root
+      open={open}
+      onOpenChange={onOpenChange}
+      disabled={disabled}
+    >
       <Collapsible.Trigger asChild>
         <Box
           data-testid="bookmarks-section-trigger"
@@ -27,7 +33,7 @@ export function Section({
             borderRadius: '$2',
 
             '&:hover': {
-              backgroundColor: '$background-neutral-strong',
+              backgroundColor: '$base-component-bg-normal',
               cursor: 'pointer',
             },
             [`&[data-state="open"] [data-arrow]`]: {
@@ -51,7 +57,9 @@ export function Section({
           </Text>
         </Box>
       </Collapsible.Trigger>
-      <Collapsible.Content className={sectionContentStyle()}>{children}</Collapsible.Content>
+      <Collapsible.Content className={sectionContentStyle()}>
+        {children}
+      </Collapsible.Content>
     </Collapsible.Root>
   )
 }
@@ -69,7 +77,7 @@ export function EmptyList() {
       css={{
         marginVertical: '$2',
         padding: '$4',
-        backgroundColor: '$background-neutral-soft',
+        backgroundColor: '$base-component-bg-normal',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

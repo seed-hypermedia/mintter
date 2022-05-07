@@ -40,8 +40,14 @@ let onboardingMachine = createMachine({
   },
 })
 
-export default function OnboardingPage({machineConfig = {}}: {machineConfig?: any}) {
-  const [onboardingMachineState, send] = useMachine(() => onboardingMachine.withConfig(machineConfig))
+export default function OnboardingPage({
+  machineConfig = {},
+}: {
+  machineConfig?: any
+}) {
+  const [onboardingMachineState, send] = useMachine(() =>
+    onboardingMachine.withConfig(machineConfig),
+  )
 
   const onboardingStepProps: OnboardingStepPropsType = useMemo(
     () => ({
@@ -57,12 +63,17 @@ export default function OnboardingPage({machineConfig = {}}: {machineConfig?: an
         alignItems: 'center',
         display: 'flex',
         justifyContent: 'center',
-        minHeight: '100vh',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '$full',
+        height: '$full',
+        backgroundColor: '$base-background-normal',
       }}
     >
       <Box
         css={{
-          backgroundColor: '$background-alt',
+          backgroundColor: '$base-background-subtle',
           borderRadius: '24px',
           boxShadow: '$3',
           display: 'flex',
@@ -74,9 +85,15 @@ export default function OnboardingPage({machineConfig = {}}: {machineConfig?: an
           width: '100%',
         }}
       >
-        {onboardingMachineState.matches('welcome') && <Welcome {...onboardingStepProps} />}
-        {onboardingMachineState.matches('securityPack') && <SecurityPack {...onboardingStepProps} />}
-        {onboardingMachineState.matches('profileInformation') && <ProfileInformation {...onboardingStepProps} />}
+        {onboardingMachineState.matches('welcome') && (
+          <Welcome {...onboardingStepProps} />
+        )}
+        {onboardingMachineState.matches('securityPack') && (
+          <SecurityPack {...onboardingStepProps} />
+        )}
+        {onboardingMachineState.matches('profileInformation') && (
+          <ProfileInformation {...onboardingStepProps} />
+        )}
         {onboardingMachineState.matches('complete') && <Complete />}
       </Box>
     </Box>

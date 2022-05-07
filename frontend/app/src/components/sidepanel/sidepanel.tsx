@@ -373,9 +373,9 @@ export function SidepanelItem({
             position: 'absolute',
             right: 4,
             top: 4,
-            backgroundColor: '$background-alt',
+            backgroundColor: '$base-background-subtle',
             '&:hover': {
-              backgroundColor: '$background-muted',
+              backgroundColor: '$base-component-bg-normal',
             },
           }}
         >
@@ -456,7 +456,7 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
         flexDirection: 'column',
         gap: '$4',
         transition: 'all ease-in-out 0.1s',
-        backgroundColor: '$background-alt',
+        backgroundColor: '$base-background-subtle',
       }}
     >
       <Box
@@ -477,7 +477,7 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
             // paddingHorizontal: '$4',
             [`& [data-element-id="${state.context.block?.id}"] [data-element-type="paragraph"], & [data-element-id="${state.context.block?.id}"] [data-element-type="static-paragraph"]`]:
               {
-                backgroundColor: '$secondary-muted',
+                // TODO: highlight blockId element
               },
           }}
         >
@@ -503,7 +503,7 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
       )}
       <Box
         css={{
-          background: '$background-alt',
+          background: '$base-background-subtle',
           flex: 'none',
           borderTop: '1px solid rgba(0,0,0,0.1)',
           padding: '$4',
@@ -516,7 +516,7 @@ export function PublicationItem({itemRef, children}: SidepanelItemProps) {
           },
           '& *:not(:first-child):before': {
             content: `"|"`,
-            color: '$text-muted',
+            color: '$base-text-low',
             opacity: 0.5,
             position: 'absolute',
             left: '-10px',
@@ -578,7 +578,7 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
         flexDirection: 'column',
         gap: '$4',
         transition: 'all ease-in-out 0.1s',
-        backgroundColor: '$background-alt',
+        backgroundColor: '$base-background-subtle',
         '&:first-child': {
           marginTop: 0,
         },
@@ -601,7 +601,7 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
           // paddingHorizontal: '$4',
           [`& [data-element-id="${state.context.block?.id}"] > span >  [data-element-type="paragraph"], & [data-element-id="${state.context.block?.id}"] > span > [data-element-type="static-paragraph"]`]:
             {
-              borderBottomColor: '$background-neutral-strong',
+              borderBottomColor: '$base-component-bg-normal',
             },
         }}
       >
@@ -624,7 +624,7 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
       </Box>
       <Box
         css={{
-          background: '$background-alt',
+          background: '$base-background-subtle',
           flex: 'none',
           borderTop: '1px solid rgba(0,0,0,0.1)',
           padding: '$4',
@@ -637,7 +637,7 @@ export function BlockItem({itemRef, children}: SidepanelItemProps) {
           },
           '& *:not(:first-child):before': {
             content: `"|"`,
-            color: '$text-muted',
+            color: '$base-text-low',
             opacity: 0.5,
             position: 'absolute',
             left: '-10px',

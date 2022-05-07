@@ -13,7 +13,14 @@ import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
 import isUrl from 'is-url'
-import {FormEvent, ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
+import {
+  FormEvent,
+  ForwardedRef,
+  forwardRef,
+  MouseEvent,
+  useEffect,
+  useState,
+} from 'react'
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
@@ -27,7 +34,7 @@ const StyledLink = styled('span', {
   textDecoration: 'underline',
   appearance: 'none',
   display: 'inline',
-  color: '$text-default',
+  color: '$base-text-hight',
   width: 'auto',
   wordBreak: 'break-all',
   '&:hover': {
@@ -38,13 +45,20 @@ const StyledLink = styled('span', {
 type LinkProps = Omit<RenderElementProps, 'element'> & {element: LinkType}
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
-  return isMintterLink(props.element.url) ? <MintterLink ref={ref} {...props} /> : <WebLink ref={ref} {...props} />
+  return isMintterLink(props.element.url) ? (
+    <MintterLink ref={ref} {...props} />
+  ) : (
+    <WebLink ref={ref} {...props} />
+  )
 }
 
 const MintterLink = forwardRef(RenderMintterLink)
 const WebLink = forwardRef(RenderWebLink)
 
-function RenderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
+function RenderMintterLink(
+  props: LinkProps,
+  ref: ForwardedRef<HTMLAnchorElement>,
+) {
   const mainpageService = useMainPage()
 
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
@@ -72,7 +86,7 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
             display: 'flex',
             alignItems: 'center',
             gap: '$2',
-            fontFamily: '$default',
+            fontFamily: '$base',
           }}
         >
           {props.element.url}
@@ -144,7 +158,10 @@ export interface InsertLinkOptions {
   wrap: boolean
 }
 
-export function insertLink(editor: Editor, {url, selection = editor.selection, wrap = false}: InsertLinkOptions): void {
+export function insertLink(
+  editor: Editor,
+  {url, selection = editor.selection, wrap = false}: InsertLinkOptions,
+): void {
   if (isLinkActive(editor)) {
     unwrapLink(editor)
   }
@@ -153,7 +170,10 @@ export function insertLink(editor: Editor, {url, selection = editor.selection, w
     return
   }
 
-  const newLink: LinkType = link({url}, isCollapsed(selection) ? [text(url)] : [])
+  const newLink: LinkType = link(
+    {url},
+    isCollapsed(selection) ? [text(url)] : [],
+  )
 
   if (isCollapsed(selection)) {
     Transforms.insertNodes(editor, newLink, {at: selection})
@@ -163,35 +183,57 @@ export function insertLink(editor: Editor, {url, selection = editor.selection, w
   }
 }
 
-export function isLinkActive(editor: Editor, selection: BaseSelection = editor.selection): boolean {
+export function isLinkActive(
+  editor: Editor,
+  selection: BaseSelection = editor.selection,
+): boolean {
   if (!selection) return false
 
   const [link] = Editor.nodes(editor, {
-    match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
+    match: (n) =>
+      !Editor.isEditor(n) &&
+      SlateElement.isElement(n) &&
+      n.type == ELEMENT_LINK,
     at: selection,
   })
 
   return !!link
 }
 
-export function unwrapLink(editor: Editor, selection: Range | null = editor.selection): void {
+export function unwrapLink(
+  editor: Editor,
+  selection: Range | null = editor.selection,
+): void {
   Transforms.unwrapNodes(editor, {
-    match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
+    match: (n) =>
+      !Editor.isEditor(n) &&
+      SlateElement.isElement(n) &&
+      n.type == ELEMENT_LINK,
     at: selection ?? undefined,
   })
 }
 
-export function wrapLink(editor: Editor, url: string, selection: Range | null = editor.selection): void {
+export function wrapLink(
+  editor: Editor,
+  url: string,
+  selection: Range | null = editor.selection,
+): void {
   if (isLinkActive(editor)) {
     unwrapLink(editor, selection)
   }
 
-  const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
+  const newLink: LinkType = link(
+    {url},
+    isCollapsed(selection!) ? [text(url)] : [],
+  )
 
   if (isCollapsed(selection!)) {
     Transforms.insertNodes(editor, newLink, {at: selection ?? undefined})
   } else {
-    Transforms.wrapNodes(editor, newLink, {split: true, at: selection ?? undefined})
+    Transforms.wrapNodes(editor, newLink, {
+      split: true,
+      at: selection ?? undefined,
+    })
     Transforms.collapse(editor, {edge: 'end'})
   }
 }
@@ -224,7 +266,11 @@ export interface ToolbarLinkProps extends UseLastSelectionResult {
   sendStoreFocus: (n: boolean) => void
 }
 
-export function ToolbarLink({sendStoreFocus, resetSelection, lastSelection}: ToolbarLinkProps) {
+export function ToolbarLink({
+  sendStoreFocus,
+  resetSelection,
+  lastSelection,
+}: ToolbarLinkProps) {
   const [open, setOpen] = useState(false)
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -304,7 +350,7 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
       css={{
         padding: '$5',
         width: '300px',
-        backgroundColor: '$background-muted',
+        backgroundColor: '$base-component-bg-normal',
         display: 'flex',
         flexDirection: 'column',
         gap: '$4',

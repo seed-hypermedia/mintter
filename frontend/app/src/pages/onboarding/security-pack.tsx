@@ -18,7 +18,11 @@ import {
   SecurityPackIcon,
 } from './common'
 
-export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: OnboardingStepPropsType) {
+export function SecurityPack({
+  prev,
+  next,
+  generateSeed = defaultGenerateSeed,
+}: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery<string[], Error>(
@@ -49,9 +53,12 @@ export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: O
 
   return (
     <OnboardingStep>
-      <OnboardingStepTitle icon={<SecurityPackIcon />}>Security Pack</OnboardingStepTitle>
+      <OnboardingStepTitle icon={<SecurityPackIcon />}>
+        Security Pack
+      </OnboardingStepTitle>
       <OnboardingStepDescription>
-        Please save these 24 words securely! This will allow you to recreate your account:
+        Please save these 24 words securely! This will allow you to recreate
+        your account:
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
@@ -77,16 +84,22 @@ export function SecurityPack({prev, next, generateSeed = defaultGenerateSeed}: O
       )}
       <Button
         type="button"
-        variant="ghost"
         color="muted"
+        variant="outlined"
         onClick={() => toggleOwnSeed((v) => !v)}
         data-testid="button-toogle-custom-seed"
       >
         Setting up a new device?{' '}
-        <Text css={{textDecoration: 'underline', display: 'inline-block'}}>provide your own seed</Text>
+        <Text css={{textDecoration: 'underline', display: 'inline-block'}}>
+          provide your own seed
+        </Text>
       </Button>
       <OnboardingStepActions>
-        <OnboardingStepButton variant="outlined" onClick={prev} data-testid="prev-btn">
+        <OnboardingStepButton
+          variant="outlined"
+          onClick={prev}
+          data-testid="prev-btn"
+        >
           Back
         </OnboardingStepButton>
         <OnboardingStepButton

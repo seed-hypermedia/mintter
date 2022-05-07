@@ -5,13 +5,20 @@ export const buttonStyles = css({
   all: 'unset',
   boxSizing: 'border-box',
   cursor: 'pointer',
-  fontFamily: '$default',
+  fontFamily: '$base',
   fontWeight: '$medium',
   textAlign: 'center',
-
   '&:disabled': {
     opacity: 0.5,
     pointerEvents: 'none',
+
+    '&:hover': {
+      cursor: 'not-allowed',
+    },
+  },
+
+  '&:focus': {
+    boxShadow: '0 0 0 2px $$focus-ring',
   },
 
   variants: {
@@ -47,13 +54,13 @@ export const buttonStyles = css({
     },
     variant: {
       solid: {
-        backgroundColor: '$$solid-background-color',
+        backgroundColor: '$$solid-background-normal',
         color: '$$solid-text-color',
         '&:hover': {
-          backgroundColor: '$$solid-hovered-background-color',
+          backgroundColor: '$$solid-background-hover',
         },
         '&:active, &:focus': {
-          backgroundColor: '$$solid-active-background-color',
+          backgroundColor: '$$solid-background-active',
         },
       },
       outlined: {
@@ -70,12 +77,12 @@ export const buttonStyles = css({
       },
       ghost: {
         backgroundColor: 'transparent',
-        color: '$$outlined-text-color',
+        color: '$$solid-background-normal',
         '&:hover': {
-          backgroundColor: '$$outlined-hovered-background-color',
+          color: '$$solid-background-hover',
         },
         '&:active, &:focus': {
-          backgroundColor: '$$outlined-active-background-color',
+          color: '$$solid-background-active',
         },
       },
     },
@@ -89,76 +96,82 @@ export const buttonStyles = css({
     },
     color: {
       primary: {
-        '$$solid-background-color': '$colors$primary-default',
-        '$$solid-text-color': '$colors$primary-contrast',
-        '$$solid-hovered-background-color': '$colors$primary-strong',
-        '$$solid-active-background-color': '$colors$primary-stronger',
-        '$$outlined-border-color': '$colors$primary-default',
-        '$$outlined-text-color': '$colors$primary-default',
-        '$$outlined-hovered-background-color': '$colors$primary-muted',
-        '$$outlined-active-background-color': '$colors$primary-softer',
+        '$$solid-background-normal': '$colors$primary-normal',
+        '$$solid-background-hover': '$colors$primary-active',
+        '$$solid-background-active': '$colors$primary-text-low',
+        '$$outlined-border-color': '$colors$primary-border-normal',
+        '$$solid-text-color': '$colors$primary-text-opposite',
+        '$$outlined-text-color': '$colors$primary-text-low',
+        '$$outlined-hovered-background-color':
+          '$colors$primary-component-bg-hover',
+        '$$outlined-active-background-color':
+          '$colors$primary-component-bg-active',
+        '$$focus-ring': '$colors$primary-border-subtle',
       },
       secondary: {
-        '$$solid-background-color': '$colors$secondary-default',
-        '$$solid-text-color': '$colors$secondary-contrast',
-        '$$solid-hovered-background-color': '$colors$secondary-strong',
-        '$$solid-active-background-color': '$colors$secondary-stronger',
-        '$$outlined-border-color': '$colors$secondary-default',
-        '$$outlined-text-color': '$colors$secondary-default',
-        '$$outlined-hovered-background-color': '$colors$secondary-muted',
-        '$$outlined-active-background-color': '$colors$secondary-softer',
-      },
-      terciary: {
-        '$$solid-background-color': '$colors$terciary-default',
-        '$$solid-text-color': '$colors$terciary-contrast',
-        '$$solid-hovered-background-color': '$colors$terciary-strong',
-        '$$solid-active-background-color': '$colors$terciary-stronger',
-        '$$outlined-border-color': '$colors$terciary-default',
-        '$$outlined-text-color': '$colors$terciary-default',
-        '$$outlined-hovered-background-color': '$colors$terciary-muted',
-        '$$outlined-active-background-color': '$colors$terciary-softer',
+        '$$solid-background-normal': '$colors$secondary-normal',
+        '$$solid-background-hover': '$colors$secondary-active',
+        '$$solid-background-active': '$colors$secondary-text-low',
+        '$$outlined-border-color': '$colors$secondary-border-normal',
+        '$$solid-text-color': '$colors$secondary-text-opposite',
+        '$$outlined-text-color': '$colors$secondary-text-low',
+        '$$outlined-hovered-background-color':
+          '$colors$secondary-component-bg-hover',
+        '$$outlined-active-background-color':
+          '$colors$secondary-component-bg-active',
+        '$$focus-ring': '$colors$secondary-border-subtle',
       },
       success: {
-        '$$solid-background-color': '$colors$success-default',
-        '$$solid-text-color': '$colors$success-contrast',
-        '$$solid-hovered-background-color': '$colors$success-strong',
-        '$$solid-active-background-color': '$colors$success-stronger',
-        '$$outlined-border-color': '$colors$success-default',
-        '$$outlined-text-color': '$colors$success-default',
-        '$$outlined-hovered-background-color': '$colors$success-muted',
-        '$$outlined-active-background-color': '$colors$success-softer',
+        '$$solid-background-normal': '$colors$success-normal',
+        '$$solid-background-hover': '$colors$success-active',
+        '$$solid-background-active': '$colors$success-text-low',
+        '$$outlined-border-color': '$colors$success-border-normal',
+        '$$solid-text-color': '$colors$success-text-opposite',
+        '$$outlined-text-color': '$colors$success-text-low',
+        '$$outlined-hovered-background-color':
+          '$colors$success-component-bg-hover',
+        '$$outlined-active-background-color':
+          '$colors$success-component-bg-active',
+        '$$focus-ring': '$colors$success-border-subtle',
       },
       warning: {
-        '$$solid-background-color': '$colors$warning-default',
-        '$$solid-text-color': '$colors$warning-contrast',
-        '$$solid-hovered-background-color': '$colors$warning-strong',
-        '$$solid-active-background-color': '$colors$warning-stronger',
-        '$$outlined-border-color': '$colors$warning-default',
-        '$$outlined-text-color': '$colors$warning-default',
-        '$$outlined-hovered-background-color': '$colors$warning-muted',
-        '$$outlined-active-background-color': '$colors$warning-softer',
+        '$$solid-background-normal': '$colors$warning-normal',
+        '$$solid-background-hover': '$colors$warning-active',
+        '$$solid-background-active': '$colors$warning-text-low',
+        '$$outlined-border-color': '$colors$warning-border-normal',
+        '$$solid-text-color': '$colors$warning-text-opposite',
+        '$$outlined-text-color': '$colors$warning-text-low',
+        '$$outlined-hovered-background-color':
+          '$colors$warning-component-bg-hover',
+        '$$outlined-active-background-color':
+          '$colors$warning-component-bg-active',
+        '$$focus-ring': '$colors$warning-border-subtle',
       },
       danger: {
-        '$$solid-background-color': '$colors$danger-default',
-        '$$solid-text-color': '$colors$danger-contrast',
-        '$$solid-hovered-background-color': '$colors$danger-strong',
-        '$$solid-active-background-color': '$colors$danger-stronger',
-        '$$outlined-border-color': '$colors$danger-default',
-        '$$outlined-text-color': '$colors$danger-default',
-        '$$outlined-hovered-background-color': '$colors$danger-muted',
-        '$$outlined-active-background-color': '$colors$danger-softer',
+        '$$solid-background-normal': '$colors$danger-normal',
+        '$$solid-background-hover': '$colors$danger-active',
+        '$$solid-background-active': '$colors$danger-text-low',
+        '$$outlined-border-color': '$colors$danger-border-normal',
+        '$$solid-text-color': '$colors$danger-text-opposite',
+        '$$outlined-text-color': '$colors$danger-text-low',
+        '$$outlined-hovered-background-color':
+          '$colors$danger-component-bg-hover',
+        '$$outlined-active-background-color':
+          '$colors$danger-component-bg-active',
+        '$$focus-ring': '$colors$danger-border-subtle',
       },
       muted: {
-        '$$solid-background-color': '$colors$background-contrast',
-        '$$solid-text-color': '$colors$text-opposite',
-        '$$solid-hovered-background-color':
-          '$colors$background-contrast-strong',
-        '$$solid-active-background-color': '$colors$background-opposite',
-        '$$outlined-border-color': '$colors$background-contrast',
-        '$$outlined-text-color': '$colors$background-contrast',
+        '$$solid-background-normal': '$colors$base-normal',
+        '$$solid-background-hover': '$colors$base-active',
+        '$$solid-background-active': '$colors$base-text-low',
+        '$$outlined-border-color': '$colors$base-border-normal',
+        '$$solid-text-color': '$colors$base-text-opposite',
+        '$$outlined-text-color': '$colors$base-text-low',
         '$$outlined-hovered-background-color':
-          '$colors$background-neutral-soft',
-        '$$outlined-active-background-color': '$colors$background-neutral',
+          '$colors$base-component-bg-hover',
+        '$$outlined-active-background-color':
+          '$colors$base-component-bg-active',
+        '$$focus-ring': '$colors$base-border-subtle',
       },
     },
   },

@@ -89,7 +89,7 @@ export function BookmarkItem({
               backgroundColor: 'transparent',
               '&:hover': {
                 color: 'inherit',
-                backgroundColor: '$background-alt',
+                backgroundColor: '$base-background-subtle',
               },
             }}
           >

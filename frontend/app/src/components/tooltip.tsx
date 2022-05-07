@@ -7,11 +7,11 @@ const StyledContent = styled(TooltipPrimitive.Content, {
   paddingVertical: '$3',
   paddingHorizontal: '$4',
   fontSize: '$2',
-  backgroundColor: '$background-opposite',
-  color: '$text-opposite',
+  backgroundColor: '$base-background-normal',
+  color: '$base-text-opposite',
 })
 const StyledArrow = styled(TooltipPrimitive.Arrow, {
-  fill: '$background-opposite',
+  fill: '$base-background-normal',
 })
 
 export type TooltipProps = PropsWithChildren<{

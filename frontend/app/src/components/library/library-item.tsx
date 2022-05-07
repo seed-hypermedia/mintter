@@ -7,15 +7,16 @@ import {
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useMainPage, useParams} from '@app/main-page-context'
-import {styled} from '@app/stitches.config'
+import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {getDocumentTitle} from '@app/utils/get-document-title'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {useCreateDraft} from '@components/library/use-create-draft'
 import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {invoke} from '@tauri-apps/api'
-import {useMachine} from '@xstate/react'
+import {useActor, useMachine} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import toast from 'react-hot-toast'
 
@@ -28,6 +29,10 @@ export type LibraryItemProps = {
   copyTextToClipboard?: typeof defaultCopyTextToClipboard
 }
 
+let hoverIconStyle = css({
+  color: '$base-text-opposite !important',
+})
+
 export function LibraryItem({
   publication,
   draft,
@@ -38,6 +43,7 @@ export function LibraryItem({
 }: PropsWithChildren<LibraryItemProps>) {
   const sidepanelService = useSidepanel()
   const mainService = useMainPage()
+  const [mainState] = useActor(mainService)
   const {createDraft} = useCreateDraft()
   let match = isDocumentActive(
     //@ts-ignore
@@ -70,11 +76,11 @@ export function LibraryItem({
     if (publication) {
       mainService.send({
         type: 'goToPublication',
-        docId: publication.document?.id,
+        docId: publication.document!.id,
         version: publication.version,
       })
     } else {
-      mainService.send({type: 'goToEditor', docId: draft?.id})
+      mainService.send({type: 'goToEditor', docId: draft!.id})
     }
   }
 
@@ -105,7 +111,9 @@ export function LibraryItem({
     await invoke('open_in_new_window', {url: `/new${href}`})
   }
 
-  let title = publication
+  let title = match
+    ? getDocumentTitle(mainState.context.document)
+    : publication
     ? publication.document?.title
     : draft && draft.title
     ? draft.title
@@ -126,7 +134,12 @@ export function LibraryItem({
               backgroundColor: 'transparent',
             }}
           >
-            <Icon name="MoreHorizontal" size="1" color="muted" />
+            <Icon
+              name="MoreHorizontal"
+              size="1"
+              color="muted"
+              className={match ? hoverIconStyle : null}
+            />
           </ElementDropdown>
         </Dropdown.Trigger>
         <Dropdown.Content
@@ -185,12 +198,13 @@ export var StyledItem = styled(
   'li',
   {
     $$bg: 'transparent',
-    $$bgHover: '$colors$background-neutral-strong',
-    $$foreground: '$colors$text-default',
+    $$bgHover: '$colors$base-component-bg-normal',
+    $$foreground: '$colors$base-text-high',
     display: 'flex',
+    minHeight: 28,
     alignItems: 'center',
     position: 'relative',
-    borderRadius: '$2',
+    borderRadius: '$1',
     backgroundColor: '$$bg',
     '&:hover': {
       cursor: 'pointer',
@@ -222,9 +236,9 @@ export var StyledItem = styled(
     variants: {
       active: {
         true: {
-          $$bg: '$colors$primary-soft',
-          $$bgHover: '$colors$primary-default',
-          $$foreground: '$colors$text-opposite',
+          $$bg: '$colors$primary-normal',
+          $$bgHover: '$colors$primary-active',
+          $$foreground: '$colors$primary-text-opposite',
         },
       },
     },

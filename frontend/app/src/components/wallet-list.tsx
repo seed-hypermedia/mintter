@@ -1,19 +1,24 @@
-import { styled } from '@app/stitches.config'
+import {styled} from '@app/stitches.config'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { useActor, useInterpret } from '@xstate/react'
-import { FormEvent, useRef } from 'react'
+import {useActor, useInterpret} from '@xstate/react'
+import {FormEvent, useRef} from 'react'
 import BarcodeScannerComponent from 'react-qr-barcode-scanner'
-import { ActorRefFrom } from 'xstate'
-import { createWalletMachine, listMachine, listModel, Wallet } from '../wallet-machine'
-import { Box } from './box'
-import { Button } from './button'
-import { dialogContentStyles, overlayStyles } from './dialog-styles'
-import { Text } from './text'
-import { TextField } from './text-field'
+import {ActorRefFrom} from 'xstate'
+import {
+  createWalletMachine,
+  listMachine,
+  listModel,
+  Wallet,
+} from '../wallet-machine'
+import {Box} from './box'
+import {Button} from './button'
+import {dialogContentStyles, overlayStyles} from './dialog-styles'
+import {Text} from './text'
+import {TextField} from './text-field'
 
 export function WalletList() {
   // const [data, setData] = useState('Not Found')
-  const service = useInterpret(() => listMachine, { devTools: true })
+  const service = useInterpret(() => listMachine, {devTools: true})
   const [state, send] = useActor(service)
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -24,16 +29,16 @@ export function WalletList() {
       let name = formData.get('walletName')?.toString()
       let url = formData.get('walletUrl')?.toString()
       if (name && url) {
-        send(listModel.events['NEW.WALLET.COMMIT']({ name, url }))
+        send(listModel.events['NEW.WALLET.COMMIT']({name, url}))
       } else {
-        console.error('error in form values', { name, url })
+        console.error('error in form values', {name, url})
       }
     } else {
       console.error('no current form ref: ', formRef.current)
     }
   }
 
-  let { wallets, walletName, walletUrl, errorMessage } = state.context
+  let {wallets, walletName, walletUrl, errorMessage} = state.context
 
   return (
     <Box>
@@ -43,7 +48,7 @@ export function WalletList() {
           alignItems: 'center',
         }}
       >
-        <Text css={{ flex: 1 }} size="3" fontWeight="bold">
+        <Text css={{flex: 1}} size="3" fontWeight="bold">
           Wallets
         </Text>
       </Box>
@@ -63,23 +68,30 @@ export function WalletList() {
       >
         <TextField
           value={walletName}
-          onChange={(event) => send(listModel.events['NEW.CHANGE.NAME'](event.target.value))}
+          onChange={(event) =>
+            send(listModel.events['NEW.CHANGE.NAME'](event.target.value))
+          }
           name="walletName"
           label="Name"
-          css={{ flex: 1 }}
+          css={{flex: 1}}
         />
         <TextField
           value={walletUrl}
-          onChange={(event) => send(listModel.events['NEW.CHANGE.URL'](event.target.value))}
+          onChange={(event) =>
+            send(listModel.events['NEW.CHANGE.URL'](event.target.value))
+          }
           name="walletUrl"
           label="URL"
-          css={{ flex: 1 }}
+          css={{flex: 1}}
         />
 
         <Button
           size="2"
           type="submit"
-          disabled={state.hasTag('pending') || (!state.context.walletName && !state.context.walletUrl)}
+          disabled={
+            state.hasTag('pending') ||
+            (!state.context.walletName && !state.context.walletUrl)
+          }
         >
           Submit
         </Button>
@@ -101,7 +113,7 @@ export function WalletList() {
       {state.matches('loading') ? (
         <Text>loading wallets...</Text>
       ) : wallets.length > 0 ? (
-        <Box as="ol" css={{ listStyleType: 'decimal' }}>
+        <Box as="ol" css={{listStyleType: 'decimal'}}>
           {wallets.map((wallet: Wallet) => (
             <WalletItem key={wallet.id} walletRef={wallet.ref} />
           ))}
@@ -129,7 +141,7 @@ export function WalletList() {
                 alignItems: 'center',
                 paddingHorizontal: '$5',
                 borderBottom: '1px solid rgba(0,0,0,0.1)',
-                background: '$background-default',
+                background: '$base-background-normal',
                 zIndex: '$max',
               }}
             >
@@ -161,10 +173,14 @@ export function WalletList() {
   )
 }
 
-function WalletItem({ walletRef }: { walletRef: ActorRefFrom<ReturnType<typeof createWalletMachine>> }) {
+function WalletItem({
+  walletRef,
+}: {
+  walletRef: ActorRefFrom<ReturnType<typeof createWalletMachine>>
+}) {
   const [state, send] = useActor(walletRef)
 
-  const { name, balanceSats, isDefault, errorMessage } = state.context
+  const {name, balanceSats, isDefault, errorMessage} = state.context
   return (
     <Box as="li">
       <Text>
@@ -175,7 +191,7 @@ function WalletItem({ walletRef }: { walletRef: ActorRefFrom<ReturnType<typeof c
             css={{
               display: 'inline-block',
               color: 'white',
-              backgroundColor: '$success-default',
+              backgroundColor: '$success-background-normal',
               paddingHorizontal: '$2',
               paddingVertical: '$1',
             }}
@@ -217,7 +233,7 @@ function WalletItem({ walletRef }: { walletRef: ActorRefFrom<ReturnType<typeof c
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
-function CameraDialog({ children, ...props }: DialogPrimitive.DialogProps) {
+function CameraDialog({children, ...props}: DialogPrimitive.DialogProps) {
   return (
     <DialogPrimitive.Root {...props} modal={false}>
       <StyledOverlay />

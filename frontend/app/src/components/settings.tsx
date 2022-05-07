@@ -3,12 +3,9 @@ import {queryKeys, useAccount} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {useTheme} from '@app/theme'
 import {ObjectKeys} from '@app/utils/object-keys'
-import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import {listen} from '@tauri-apps/api/event'
 import {useActor} from '@xstate/react'
-import {useEffect, useState} from 'react'
+import {useEffect} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
 import {useMutation, useQueryClient} from 'react-query'
@@ -26,28 +23,11 @@ type ProfileInformationDataType = {
   bio: string
 }
 
-const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
-
-function SettingsRoot({children}: any) {
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    let unlisten = () => {}
-    listen('open-preferences', () => setOpen(true)).then((_unlisten) => (unlisten = unlisten))
-    return unlisten
-  }, [])
-
-  return (
-    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
-      <StyledOverlay />
-      {children}
-    </DialogPrimitive.Root>
-  )
-}
-
 type SettingsPageProp = {updateAccount?: typeof localApi.updateAccount}
 
-export function Settings({updateAccount = localApi.updateAccount}: SettingsPageProp) {
+export function Settings({
+  updateAccount = localApi.updateAccount,
+}: SettingsPageProp) {
   return (
     <Box
       css={{
@@ -59,7 +39,7 @@ export function Settings({updateAccount = localApi.updateAccount}: SettingsPageP
         width: '100vw',
         height: '100vh',
 
-        background: '$background-muted',
+        background: '$base-component-bg-normal',
       }}
     >
       <StyledTabs defaultValue="profile" orientation="horizontal">
@@ -92,16 +72,6 @@ export function Settings({updateAccount = localApi.updateAccount}: SettingsPageP
   )
 }
 
-var Content = styled(DialogPrimitive.Content, dialogContentStyles, {
-  width: '100%',
-  maxWidth: '70vw',
-  maxHeight: '70vh',
-  height: '100%',
-  padding: 0,
-  borderRadius: '$3',
-  overflow: 'hidden',
-})
-
 var StyledTabs = styled(TabsPrimitive.Root, {
   width: '$full',
   height: '$full',
@@ -125,26 +95,31 @@ var TabTrigger = styled(TabsPrimitive.Trigger, {
   width: 100,
   justifyContent: 'center',
   fontSize: '$3',
+  fontFamily: '$base',
   lineHeight: '1',
-  color: '$text-default',
+  color: '$base-text-hight',
   '&:hover': {
-    background: '$primary-muted',
+    background: '$primary-component-bg-hover',
   },
   '&[data-state="active"]': {
-    color: '$primary-default',
+    color: '$primary-normal',
     fontWeight: '$bold',
     // boxShadow: 'inset 0 -2px 0 0 currentColor, 0 2px 0 0 currentColor',
   },
-  '&:focus': {position: 'relative', background: '$primary-muted'},
+  '&:focus': {position: 'relative', background: '$primary-component-bg-active'},
 })
 
 var TabsContent = styled(TabsPrimitive.Content, {
   flex: 1,
   position: 'relative',
-  background: '$background-muted',
+  background: '$base-component-bg-normal',
 })
 
-function ProfileForm({updateAccount}: {updateAccount: typeof localApi.updateAccount}) {
+function ProfileForm({
+  updateAccount,
+}: {
+  updateAccount: typeof localApi.updateAccount
+}) {
   const {data, isSuccess} = useAccount('', {
     useErrorBoundary: true,
   })
@@ -162,6 +137,8 @@ function ProfileForm({updateAccount}: {updateAccount: typeof localApi.updateAcco
   })
 
   useEffect(() => {
+    console.log('inside settings effect!', data?.profile)
+
     if (data?.profile && isSuccess) {
       const {alias = '', email = '', bio = ''} = data?.profile
       form.reset({
@@ -269,27 +246,39 @@ function AccountInfo() {
           paddingVertical: '$3',
           borderRadius: '$2',
           display: 'block',
-          background: '$primary-muted',
-          border: '1px solid $colors$primary-softer',
+          background: '$primary-component-bg-normal',
+          border: '1px solid $colors$primary-border-normal',
         }}
       >
         All your Mintter content is located in <code>~/.mtt/</code>
       </Text>
-      <TextField readOnly type="text" label="Account ID" name="accountId" value={data?.id} />
+      <TextField
+        readOnly
+        type="text"
+        label="Account ID"
+        name="accountId"
+        value={data?.id}
+      />
       <PeerAddrs />
       <Text as="h4" size="6">
         Devices List
       </Text>
       <Box as="ul">
         {data?.devices && ObjectKeys(data?.devices).length
-          ? Object.entries(data?.devices).map(([id, device]: [string, localApi.Device], index: number) => (
-              <Text as="li" key={id}>
-                <Text as="span" color="muted" css={{display: 'inline-block', marginRight: '$4'}}>
-                  {index + 1}.
+          ? Object.entries(data?.devices).map(
+              ([id, device]: [string, localApi.Device], index: number) => (
+                <Text as="li" key={id}>
+                  <Text
+                    as="span"
+                    color="muted"
+                    css={{display: 'inline-block', marginRight: '$4'}}
+                  >
+                    {index + 1}.
+                  </Text>
+                  {device.peerId}
                 </Text>
-                {device.peerId}
-              </Text>
-            ))
+              ),
+            )
           : null}
       </Box>
     </Box>
@@ -300,8 +289,22 @@ function AppSettings() {
   const themeService = useTheme()
   const [state, send] = useActor(themeService)
   return (
-    <Box css={{alignItems: 'center', display: 'flex', gap: '$3', padding: '$5', marginTop: '$8', marginBottom: '$8'}}>
-      <input id="darkMode" type="checkbox" checked={state.context.current == 'dark'} onChange={() => send('TOGGLE')} />
+    <Box
+      css={{
+        alignItems: 'center',
+        display: 'flex',
+        gap: '$3',
+        padding: '$5',
+        marginTop: '$8',
+        marginBottom: '$8',
+      }}
+    >
+      <input
+        id="darkMode"
+        type="checkbox"
+        checked={state.context.current == 'dark'}
+        onChange={() => send('TOGGLE')}
+      />
       <Text as="label" htmlFor="darkMode">
         Dark Mode
       </Text>

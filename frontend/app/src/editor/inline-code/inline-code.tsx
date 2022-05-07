@@ -7,8 +7,8 @@ export const MARK_CODE = 'code'
 const codeStyles = css({
   padding: '3px 5px',
   borderRadius: '$2',
-  backgroundColor: '$background-neutral',
-  color: '$background-opposite',
+  backgroundColor: '$base-component-bg-normal',
+  color: '$base-text-hight',
   fontSize: '0.9em',
 })
 

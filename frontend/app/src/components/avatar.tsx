@@ -6,7 +6,7 @@ export const Avatar = styled(Box, {
   width: '$$size',
   height: '$$size',
   borderRadius: '$round',
-  backgroundColor: '$background-neutral',
+  backgroundColor: '$base-component-bg-normal',
   variants: {
     size: {
       1: {
