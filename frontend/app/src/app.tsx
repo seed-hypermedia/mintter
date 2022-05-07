@@ -24,8 +24,8 @@ startLogger()
 
 const globalStyles = globalCss({
   body: {
-    backgroundColor: '$background-alt',
-    color: '$text-default',
+    backgroundColor: '$base-background-subtle',
+    color: '$base-text-hight',
   },
 })
 

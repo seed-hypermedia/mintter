@@ -1,7 +1,7 @@
-import {getTitleFromContent} from '@app/editor/use-editor-draft'
 import {useAccount} from '@app/hooks'
 import {useMainPage} from '@app/main-page-context'
 import {css, styled} from '@app/stitches.config'
+import {getDocumentTitle} from '@app/utils/get-document-title'
 import {Text} from '@components/text'
 import {invoke} from '@tauri-apps/api'
 import {useActor} from '@xstate/react'
@@ -17,8 +17,8 @@ export const TopbarStyled = styled(Box, {
   width: '$full',
   height: 40,
   display: 'flex',
-  borderBottom: '1px solid $colors$menu-shadow',
-  background: '$background-alt',
+  borderBottom: '1px solid $colors$base-border-subtle',
+  background: '$base-background-subtle',
   alignItems: 'center',
   justifyContent: 'flex-start',
   paddingHorizontal: '$5',
@@ -37,7 +37,7 @@ let TopbarButton = styled('button', {
   justifyContent: 'center',
   '&:hover': {
     cursor: 'pointer',
-    backgroundColor: '$hover',
+    backgroundColor: '$base-component-bg-hover',
   },
 })
 
@@ -49,7 +49,7 @@ export const topbarSection = css({
 
 type TopbarProps = {
   back?: () => void
-  forward: () => void
+  forward?: () => void
 }
 
 export function Topbar({
@@ -69,7 +69,6 @@ export function Topbar({
   }
 
   let title = getDocumentTitle(mainState.context.document)
-  console.log('Current Location: ', window.location.pathname)
 
   return (
     <TopbarStyled data-tauri-drag-region>
@@ -96,36 +95,42 @@ export function Topbar({
           <Icon name="ArrowChevronRight" color="muted" size="2" />
         </TopbarButton>
       </Box>
+
       <Box
         css={{flex: 1, display: 'flex', alignItems: 'baseline', gap: '$2'}}
         data-tauri-drag-region
       >
-        <Text
-          size="3"
-          fontWeight="medium"
-          aria-label="Document Title"
-          data-testid="topbar-title"
-          data-tauri-drag-region
-        >
-          {title}
-        </Text>
-        <Text size="1" color="muted">
-          by
-        </Text>
-        {data && isSuccess ? (
-          <Text
-            size="1"
-            color="muted"
-            css={{textDecoration: 'underline'}}
-            data-testid="topbar-author"
-          >
-            {data.profile?.alias}
-          </Text>
-        ) : (
-          <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
-            ...
-          </Text>
-        )}
+        {mainState.matches('routes.editor.valid') ||
+        mainState.matches('routes.publication.valid') ? (
+          <>
+            <Text
+              size="3"
+              fontWeight="medium"
+              aria-label="Document Title"
+              data-testid="topbar-title"
+              data-tauri-drag-region
+            >
+              {title}
+            </Text>
+            <Text size="1" color="muted">
+              by
+            </Text>
+            {data && isSuccess ? (
+              <Text
+                size="1"
+                color="muted"
+                css={{textDecoration: 'underline'}}
+                data-testid="topbar-author"
+              >
+                {data.profile?.alias}
+              </Text>
+            ) : (
+              <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
+                ...
+              </Text>
+            )}
+          </>
+        ) : null}
       </Box>
       {/* <Box>other actions</Box> */}
       <TopbarButton onClick={toggleLibrary} data-tauri-drag-region>
@@ -146,14 +151,4 @@ export function Topbar({
       </TopbarButton>
     </TopbarStyled>
   )
-}
-
-function getDocumentTitle(document: any) {
-  let titleText = document?.content
-    ? getTitleFromContent({
-        children: document.content,
-      })
-    : document?.title ?? ''
-
-  return titleText.length < 50 ? titleText : `${titleText.substring(0, 49)}...`
 }

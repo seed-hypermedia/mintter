@@ -23,8 +23,10 @@ const slideLeftAndFade = keyframes({
 
 export const dropdownContentStyle = css({
   minWidth: 220,
-  background: '$background-alt',
+  background: '$base-background-subtle',
   boxShadow: '$menu',
+  borderRadius: '$2',
+  overflow: 'hidden',
 })
 
 export const dropdownItemStyle = css({
@@ -33,7 +35,7 @@ export const dropdownItemStyle = css({
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'start',
-  fontFamily: '$default',
+  fontFamily: '$base',
   gap: '$4',
   paddingVertical: '$3',
   paddingHorizontal: '$4',
@@ -41,7 +43,7 @@ export const dropdownItemStyle = css({
   cursor: 'pointer',
   '&:focus': {
     outline: 'none',
-    backgroundColor: '$background-neutral',
+    backgroundColor: '$base-component-bg-normal',
     cursor: 'pointer',
   },
   '&:disabled': {
@@ -49,7 +51,10 @@ export const dropdownItemStyle = css({
   },
 })
 
-const DropdownContent = styled(DropdownMenuPrimitive.Content, dropdownContentStyle)
+const DropdownContent = styled(
+  DropdownMenuPrimitive.Content,
+  dropdownContentStyle,
+)
 const DropdownItem = styled(DropdownMenuPrimitive.Item, dropdownItemStyle)
 
 const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {})
@@ -67,7 +72,7 @@ export var ElementDropdown = styled('button', {
   width: 24,
   height: 24,
   borderRadius: '$2',
-  backgroundColor: '$hover',
+  backgroundColor: '$base-component-bg-normal',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

@@ -37,7 +37,11 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isBlockquote(element)) {
         return (
-          <BlockQuote mode={editor.mode} element={element} attributes={attributes}>
+          <BlockQuote
+            mode={editor.mode}
+            element={element}
+            attributes={attributes}
+          >
             {children}
           </BlockQuote>
         )
@@ -52,9 +56,13 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
           ev.preventDefault()
           const [, quotePath] = quote
           Editor.withoutNormalizing(editor, () => {
-            Transforms.insertNodes(editor, statement({id: createId()}, [paragraph([text('')])]), {
-              at: Path.next(quotePath),
-            })
+            Transforms.insertNodes(
+              editor,
+              statement({id: createId()}, [paragraph([text('')])]),
+              {
+                at: Path.next(quotePath),
+              },
+            )
             Transforms.select(editor, Path.next(quotePath))
             Transforms.collapse(editor, {edge: 'start'})
           })
@@ -66,10 +74,15 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
 
 export var blockquoteStyle = css(statementStyle, {
   paddingLeft: '$3',
-  borderLeft: '2px solid $colors$primary-softer',
+  borderLeft: '2px solid $colors$primary-border-normal',
 })
 
-function BlockQuote({element, attributes, children, mode}: RenderElementProps & {mode: EditorMode}) {
+function BlockQuote({
+  element,
+  attributes,
+  children,
+  mode,
+}: RenderElementProps & {mode: EditorMode}) {
   let blockProps = {
     'data-element-type': element.type,
     'data-element-id': (element as BlockquoteType).id,
@@ -81,7 +94,11 @@ function BlockQuote({element, attributes, children, mode}: RenderElementProps & 
   }
 
   return (
-    <BlockWrapper element={element as FlowContent} attributes={attributes} mode={mode}>
+    <BlockWrapper
+      element={element as FlowContent}
+      attributes={attributes}
+      mode={mode}
+    >
       <Box className={blockquoteStyle()} {...blockProps}>
         {children}
       </Box>

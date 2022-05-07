@@ -189,7 +189,7 @@ function SidepanelTestProvider({
               gap: 0,
               gridTemplateAreas: `"topbar topbar topbar"
           "library main sidepanel"`,
-              background: '$background-default',
+              background: '$base-background-normal',
             }}
           >
             <button

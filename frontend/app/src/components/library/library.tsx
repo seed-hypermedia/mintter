@@ -4,7 +4,6 @@ import {css} from '@app/stitches.config'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {useCreateDraft} from '@components/library/use-create-draft'
-import {useSidepanel} from '@components/sidepanel'
 import {PropsWithChildren} from 'react'
 import {Box} from '../box'
 import {ScrollArea} from '../scroll-area'
@@ -16,8 +15,8 @@ import {FilesSection} from './section-files'
 
 let libraryStyle = css({
   transition: 'all 0.25s ease',
-  backgroundColor: '$background-default',
-  borderLeft: '1px solid $colors$menu-shadow',
+  backgroundColor: '$base-background-normal',
+  borderLeft: '1px solid $colors$base-border-subtle',
   gridArea: 'library',
   position: 'relative',
   height: '$full',
@@ -41,7 +40,6 @@ export function LibraryShell({children, ...props}: PropsWithChildren<{}>) {
 export function Library() {
   const isOpen = useIsLibraryOpen()
   const {createDraft} = useCreateDraft()
-  const sidepanel = useSidepanel()
 
   async function handleSync() {
     await forceSync()

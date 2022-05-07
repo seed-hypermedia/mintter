@@ -3,7 +3,13 @@ import {Button} from '@components/button'
 import {icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import type {Text as MTTText} from '@mintter/mttast'
-import React, {forwardRef, PropsWithChildren, useEffect, useRef, useState} from 'react'
+import React, {
+  forwardRef,
+  PropsWithChildren,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import ReactDOM from 'react-dom'
 import type {BaseSelection} from 'slate'
 import {Editor, Range, Transforms} from 'slate'
@@ -11,7 +17,10 @@ import {ReactEditor, useSlateStatic} from 'slate-react'
 import {ToolbarLink} from './link'
 import {isMarkActive, toggleMark} from './utils'
 
-type FormatTypes = keyof Omit<MTTText, 'type' | 'text' | 'value' | 'data' | 'position'>
+type FormatTypes = keyof Omit<
+  MTTText,
+  'type' | 'text' | 'value' | 'data' | 'position'
+>
 
 function FormatButton({format}: {format: FormatTypes}) {
   const editor = useSlateStatic()
@@ -23,7 +32,11 @@ function FormatButton({format}: {format: FormatTypes}) {
           isMarkActive(editor, format)
             ? {
                 backgroundColor: '$background-opposite',
-                color: '$text-opposite',
+                color: '$base-text-hight',
+                '&:hover': {
+                  backgroundColor: '$background-opposite !important',
+                  color: '$base-text-hight !important',
+                },
               }
             : {}
         }
@@ -42,36 +55,41 @@ function FormatButton({format}: {format: FormatTypes}) {
 }
 
 const Portal = ({children}: PropsWithChildren<unknown>) => {
-  return typeof document == 'object' ? ReactDOM.createPortal(children, document.body) : null
+  return typeof document == 'object'
+    ? ReactDOM.createPortal(children, document.body)
+    : null
 }
 
-const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(({children, ...props}, ref) => (
-  <Box
-    {...props}
-    ref={ref}
-    css={{
-      boxShadow: '$menu',
-      padding: 0,
-      position: 'absolute',
-      zIndex: '$max',
-      top: '-1000000000px',
-      left: '-1000000000px',
-      marginTop: '-6px',
-      opacity: 0,
-      backgroundColor: '$background-muted',
-      borderRadius: '4px',
-      transition: 'opacity 0.5s',
-      '& > *': {
-        display: 'inline-block',
-      },
-      '& > * + *': {
-        marginLeft: 4,
-      },
-    }}
-  >
-    {children}
-  </Box>
-))
+const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(
+  ({children, ...props}, ref) => (
+    <Box
+      {...props}
+      ref={ref}
+      className="dark-theme"
+      css={{
+        boxShadow: '$menu',
+        padding: 0,
+        position: 'absolute',
+        zIndex: '$max',
+        top: '-1000000000px',
+        left: '-1000000000px',
+        marginTop: '-6px',
+        opacity: 0,
+        backgroundColor: '$base-background-normal',
+        borderRadius: '4px',
+        transition: 'opacity 0.5s',
+        '& > *': {
+          display: 'inline-block',
+        },
+        '& > * + *': {
+          marginLeft: 4,
+        },
+      }}
+    >
+      {children}
+    </Box>
+  ),
+)
 
 Menu.displayName = 'Menu'
 
@@ -116,7 +134,11 @@ export function HoveringToolbar() {
 
     let selection = storeFocus ? lastSelection : editor.selection
 
-    if (!selection || Range.isCollapsed(selection) || Editor.string(editor, selection) == '') {
+    if (
+      !selection ||
+      Range.isCollapsed(selection) ||
+      Editor.string(editor, selection) == ''
+    ) {
       el.removeAttribute('style')
       return
     }
@@ -125,7 +147,9 @@ export function HoveringToolbar() {
     const rect = domRange.getBoundingClientRect()
     el.style.opacity = '1'
     el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`
-    el.style.left = `${rect.left + window.pageXOffset - el.offsetWidth / 2 + rect.width / 2}px`
+    el.style.left = `${
+      rect.left + window.pageXOffset - el.offsetWidth / 2 + rect.width / 2
+    }px`
   })
 
   useEffect(() => {
@@ -150,7 +174,11 @@ export function HoveringToolbar() {
         <FormatButton format="emphasis" />
         <FormatButton format="underline" />
         {/* <FormatButton format="code" /> */}
-        <ToolbarLink lastSelection={lastSelection} resetSelection={resetSelection} sendStoreFocus={sendStoreFocus} />
+        <ToolbarLink
+          lastSelection={lastSelection}
+          resetSelection={resetSelection}
+          sendStoreFocus={sendStoreFocus}
+        />
         {/* <ToggleListButton type="orderedList" />
         <ToggleListButton type="unorderedList" /> */}
       </Menu>

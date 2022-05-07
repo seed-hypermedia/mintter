@@ -23,15 +23,15 @@ export const ScrollBar = styled(ScrollAreaPrimitive.Scrollbar, {
   // disable browser handling of all panning and zooming gestures on touch devices
   touchAction: 'none',
   padding: 2,
-  background: '$background-neutral-soft',
+  background: '$base-component-bg-hover',
   transition: 'background 160ms ease-out',
-  '&:hover': {background: '$background-neutral'},
+  '&:hover': {background: '$base-component-bg-active'},
   '&[data-orientation="vertical"]': {width: SCROLLBAR_SIZE},
 })
 
 export const ScrollBarThumb = styled(ScrollAreaPrimitive.Thumb, {
   flex: 1,
-  background: '$background-neutral-strong',
+  background: '$base-normal',
   borderRadius: SCROLLBAR_SIZE,
   // increase target size for touch devices https://www.w3.org/WAI/WCAG21/Understanding/target-size.html
   position: 'relative',

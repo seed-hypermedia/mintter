@@ -25,13 +25,13 @@ export const paragraphStyles = css({
   lineHeight: '$3',
   '&[data-parent-type=blockquote]': {
     fontStyle: 'italic',
-    color: '$text-alt',
+    color: '$base-text-low',
   },
   '&[data-parent-type=code]': {
     fontFamily: 'monospace',
     margin: 0,
     padding: 0,
-    backgroundColor: '$background-neutral-soft',
+    backgroundColor: '$base-component-bg-normal',
     paddingHorizontal: '$4',
   },
 })
@@ -116,7 +116,7 @@ function Paragraph({
             : 0,
         lineHeight: '$4',
         '&::marker': {
-          color: '$text-muted',
+          color: '$base-text-low',
           fontSize: '$2',
         },
       }}

@@ -88,7 +88,6 @@ function StaticParagraph({
       data-element-type={element.type}
       css={{
         display: mode == EditorMode.Embed ? 'inline' : 'inherit',
-        // backgroundColor: hoverState.context.blockId == heading?.node.id ? '$secondary-muted' : 'transparent',
       }}
       {...sizeProps}
       {...attributes}

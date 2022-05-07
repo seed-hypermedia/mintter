@@ -17,7 +17,8 @@ export function Welcome({next}: OnboardingStepPropsType) {
     <OnboardingStep>
       <OnboardingStepTitle>Welcome to Mintter</OnboardingStepTitle>
       <OnboardingStepDescription>
-        Joining Mintter is fast and easy, these are the only two steps you need to complete:
+        Joining Mintter is fast and easy, these are the only two steps you need
+        to complete:
       </OnboardingStepDescription>
       <OnboardingStepBody
         css={{
@@ -47,7 +48,15 @@ export function Welcome({next}: OnboardingStepPropsType) {
   )
 }
 
-const WelcomeStep = ({icon, title, description}: {icon; title: string; description: string}) => {
+const WelcomeStep = ({
+  icon,
+  title,
+  description,
+}: {
+  icon
+  title: string
+  description: string
+}) => {
   return (
     <Box
       css={{
@@ -60,7 +69,7 @@ const WelcomeStep = ({icon, title, description}: {icon; title: string; descripti
       <Box
         css={{
           alignItems: 'center',
-          backgroundColor: '$primary-muted',
+          backgroundColor: '$primary-active',
           borderRadius: '50%',
           display: 'flex',
           height: 72,

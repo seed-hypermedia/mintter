@@ -95,15 +95,14 @@ export var rootPageStyle = css({
   gap: 0,
   gridTemplateAreas: `"topbar topbar topbar"
   "main sidepanel library"`,
-  background: '$background-default',
+  background: '$base-background-normal',
 })
 
 let mainWindowStyle = css({
   gridArea: 'main',
   position: 'relative',
   overflow: 'auto',
-  backgroundColor: '$background-alt',
-  padding: '$5',
+  backgroundColor: '$base-background-subtle',
   paddingBottom: 0,
 })
 
@@ -152,7 +151,7 @@ function Placeholder() {
           color: 'transparent',
           textShadow: '2px 2px 3px rgba(255,255,255,0.5)',
           backgroundClip: 'text',
-          backgroundColor: '$background-neutral-strong',
+          backgroundColor: '$base-component-bg-normal',
         }}
       >
         Mintter

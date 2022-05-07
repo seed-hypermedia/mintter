@@ -35,7 +35,7 @@ import {TextField} from '@components/text-field'
 import {document, FlowContent, group} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
-import {useEffect} from 'react'
+import {useEffect, useRef} from 'react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {QueryClient, useQueryClient} from 'react-query'
@@ -84,7 +84,7 @@ export default function Publication() {
   // start rendering
   if (state.matches('errored')) {
     return (
-      <Box css={{}}>
+      <Box>
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
         <Button
@@ -103,7 +103,7 @@ export default function Publication() {
     <>
       {state.matches('ready') && (
         <Box
-          css={{padding: '$7', paddingLeft: 0, marginBottom: 200}}
+          css={{paddingHorizontal: '$5', paddingTop: '$5', marginBottom: 200}}
           data-testid="publication-wrapper"
         >
           <Editor
@@ -284,12 +284,15 @@ function usePagePublication(
     },
   })
   const [state, send] = useActor(service)
+  const onlyOnce = useRef(false)
 
   useEffect(() => {
+    if (onlyOnce.current) return
     if (docId) {
       send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
+      onlyOnce.current = true
     }
-  }, [send, docId])
+  }, [docId])
 
   return [state, send] as const
 }
@@ -548,7 +551,7 @@ function TippingModal({
               css={{
                 padding: '$5',
                 width: '300px',
-                backgroundColor: '$background-muted',
+                backgroundColor: '$base-component-bg-normal',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '$4',
@@ -563,7 +566,7 @@ function TippingModal({
             css={{
               padding: '$5',
               width: '300px',
-              backgroundColor: '$background-muted',
+              backgroundColor: '$base-component-bg-normal',
               display: 'flex',
               flexDirection: 'column',
               gap: '$4',
@@ -589,7 +592,7 @@ function TippingModal({
             css={{
               padding: '$5',
               width: '300px',
-              backgroundColor: '$background-muted',
+              backgroundColor: '$base-component-bg-normal',
               display: 'flex',
               flexDirection: 'column',
               gap: '$4',
@@ -629,7 +632,7 @@ function TippingModal({
             css={{
               padding: '$5',
               width: '300px',
-              backgroundColor: '$background-muted',
+              backgroundColor: '$base-component-bg-normal',
               display: 'flex',
               flexDirection: 'column',
               gap: '$4',
@@ -657,7 +660,7 @@ function SetAmount({
       css={{
         padding: '$5',
         width: '300px',
-        backgroundColor: '$background-muted',
+        backgroundColor: '$base-component-bg-normal',
         display: 'flex',
         flexDirection: 'column',
         gap: '$4',
@@ -792,7 +795,7 @@ function DiscussionItem({link}: {link: Link}) {
                 },
                 '& *:not(:first-child):before': {
                   content: `"|"`,
-                  color: '$text-muted',
+                  color: '$base-text-low',
                   opacity: 0.5,
                   position: 'absolute',
                   left: '-10px',

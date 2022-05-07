@@ -1,4 +1,10 @@
-import {Account, getAccount, Link, Publication, SidepanelItem} from '@app/client'
+import {
+  Account,
+  getAccount,
+  Link,
+  Publication,
+  SidepanelItem,
+} from '@app/client'
 import {useBlockCitations} from '@app/editor/citations'
 import {css} from '@app/stitches.config'
 import {getBlock} from '@app/utils/get-block'
@@ -36,7 +42,9 @@ export function BlockCitations({blockId}: BlockCitationsProps) {
       }}
     >
       <button className={citationsButton()} onClick={() => send('TOGGLE')}>
-        <Box className={`citation-index ${citationCount()}`}>{blockCitations.length}</Box>
+        <Box className={`citation-index ${citationCount()}`}>
+          {blockCitations.length}
+        </Box>
         <Text color="primary" fontWeight="bold" size="1">
           {state.matches('collapsed') ? 'Show' : 'Hide'} citations
         </Text>
@@ -53,7 +61,10 @@ export function BlockCitations({blockId}: BlockCitationsProps) {
           }}
         >
           {blockCitations.map((citation) => (
-            <BlockCitationItem key={citation.source?.blockId} citation={citation} />
+            <BlockCitationItem
+              key={citation.source?.blockId}
+              citation={citation}
+            />
           ))}
         </Box>
       ) : null}
@@ -69,7 +80,7 @@ var citationsButton = css({
   alignItems: 'center',
   gap: '$3',
   '&:hover': {
-    background: '$hover',
+    background: '$base-component-bg-hover',
     '& .citation-index': {},
   },
 })
@@ -81,11 +92,11 @@ var citationCount = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: '$hover',
+  background: '$base-component-bg-normal',
   // background: 'green',
-  fontFamily: '$default',
+  fontFamily: '$base',
   fontSize: '$1',
-  color: '$text-muted',
+  color: '$base-text-low',
   textAlign: 'center',
   '& span': {
     background: 'red',
@@ -128,7 +139,9 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
           ;(async () => {
             try {
               let data = await getBlock(citation.source)
-              let author = await getAccount(data?.publication.document?.author || '')
+              let author = await getAccount(
+                data?.publication.document?.author || '',
+              )
 
               if (data) {
                 sendBack({
@@ -183,7 +196,7 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
         alignItems: 'center',
         borderRadius: '$3',
         '&:hover': {
-          background: '$hover',
+          background: '$base-component-bg-hover',
           cursor: 'pointer',
         },
       }}
@@ -200,7 +213,6 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
       <Box
         css={{
           padding: '$3',
-          // background: '$hover',
           borderRadius: '$2',
           display: 'flex',
           flexDirection: 'column',
@@ -228,7 +240,12 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
 }
 
 type BlockCitationEvent =
-  | {type: 'CITATION.FETCH.SUCCESS'; publication: Publication; block: FlowContent; author: Account}
+  | {
+      type: 'CITATION.FETCH.SUCCESS'
+      publication: Publication
+      block: FlowContent
+      author: Account
+    }
   | {type: 'CITATION.FETCH.ERROR'}
   | {type: 'RETRY'}
   | {type: 'OPEN.IN.SIDEPANEL'; item: SidepanelItem}

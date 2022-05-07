@@ -15,7 +15,7 @@ import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {FlowContent, isCode, isHeading} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
-import {MutableRefObject, useEffect, useMemo, useState} from 'react'
+import {MutableRefObject, useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
 import {RenderElementProps} from 'slate-react'
 
@@ -76,12 +76,6 @@ export function BlockWrapper({
     })
     sidepanelService.send('SIDEPANEL.OPEN')
   }
-
-  let showHover = useMemo(
-    () =>
-      hoverState.context.blockId == element.id && element.children.length > 1,
-    [hoverState.context.blockId, element.id, element.children.length],
-  )
 
   return mode == EditorMode.Draft ? (
     <Box
@@ -145,7 +139,7 @@ export function BlockWrapper({
                   ? 1
                   : 0,
               padding: '$1',
-              backgroundColor: '$hover',
+              backgroundColor: '$base-component-bg-hover',
               position: 'absolute',
               width: '24px',
               height: '24px',

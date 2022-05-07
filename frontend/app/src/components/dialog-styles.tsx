@@ -11,7 +11,7 @@ export const contentShow = keyframes({
 })
 
 export const overlayStyles = css({
-  backgroundColor: '$background-neutral-strong',
+  backgroundColor: '$base-component-bg-normal',
   opacity: 0.7,
   position: 'fixed',
   inset: 0,
@@ -22,9 +22,10 @@ export const overlayStyles = css({
 })
 
 export const dialogContentStyles = css({
-  backgroundColor: '$background-default',
+  backgroundColor: '$base-background-normal',
   borderRadius: 6,
-  boxShadow: 'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
+  boxShadow:
+    'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
   position: 'fixed',
   zIndex: '99999999999',
   top: '50%',

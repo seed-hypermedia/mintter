@@ -2,9 +2,9 @@ import {css, styled} from '@app/stitches.config'
 import type * as Stitches from '@stitches/react'
 
 export const textStyles = css({
-  color: '$text-default',
+  color: '$base-text-hight',
   display: 'block',
-  fontFamily: '$default',
+  fontFamily: '$base',
   margin: 0,
 
   variants: {
@@ -58,7 +58,7 @@ export const textStyles = css({
       },
     },
     fontWeight: {
-      default: {
+      base: {
         fontWeight: 'unset',
       },
       regular: {
@@ -77,49 +77,43 @@ export const textStyles = css({
       },
     },
     color: {
-      default: {
-        color: '$text-default',
+      base: {
+        color: '$base-text-low',
       },
       alt: {
-        color: '$text-alt',
+        color: '$base-text-low',
       },
       muted: {
-        color: '$text-muted',
+        color: '$base-text-low',
       },
       opposite: {
-        color: '$text-opposite',
+        color: '$base-text-opposite',
       },
       contrast: {
-        color: '$text-contrast',
+        color: '$base-text-low',
       },
       primary: {
-        color: '$primary-default',
-      },
-      'primary-softer': {
-        color: '$primary-softer',
+        color: '$primary-normal',
       },
       secondary: {
-        color: '$secondary-default',
-      },
-      terciary: {
-        color: '$terciary-default',
+        color: '$secondary-normal',
       },
       success: {
-        color: '$success-default',
+        color: '$success-normal',
       },
       warning: {
-        color: '$warning-default',
+        color: '$warning-normal',
       },
       danger: {
-        color: '$danger-default',
+        color: '$danger-normal',
       },
     },
   },
 
-  defaultVariants: {
+  baseVariants: {
     size: '3',
-    color: 'default',
-    fontWeight: 'default',
+    color: 'base',
+    fontWeight: 'base',
   },
 
   compoundVariants: [
