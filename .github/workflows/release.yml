@@ -91,7 +91,8 @@ jobs:
         env:
           APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
           APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
-      - uses: tauri-apps/tauri-action@v0
+      - uses: JonasKruckenberg/tauri-build@v0.1
+        id: tauri_build
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           ENABLE_CODE_SIGNING: "${{ secrets.APPLE_CERTIFICATE }}"
@@ -104,23 +105,12 @@ jobs:
           TAURI_PRIVATE_KEY: "${{ secrets.TAURI_PRIVATE_KEY }}"
         with:
           configPath: release.tauri.conf.json
-          includeDebug: false
           projectPath: ./desktop/app
-          args: --target ${{ matrix.rust_target }}
+          target: ${{ matrix.rust_target }}
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: |
-            ./target/${{ matrix.rust_target }}/release/bundle/deb/*.deb
-            ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage
-            ./target/${{ matrix.rust_target }}/release/bundle/dmg/*.dmg
-            ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi
-            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz
-            ./target/${{ matrix.rust_target }}/release/bundle/macos/*.app.tar.gz.sig
-            ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi.tar.gz
-            ./target/${{ matrix.rust_target }}/release/bundle/msi/*.msi.tar.gz.sig
-            ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage.tar.gz
-            ./target/${{ matrix.rust_target }}/release/bundle/appimage/*.AppImage.tar.gz.sig
+          path: "${{ steps.tauri_build.outputs.outputs.artifacts }}"
 
   publish:
     needs: build-binaries
@@ -138,14 +128,4 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           draft: false
-          files: |
-            ./artifacts/appimage/*.AppImage
-            ./artifacts/deb/*.deb
-            ./artifacts/dmg/*.dmg
-            ./artifacts/msi/*.msi
-            ./artifacts/macos/*.app.tar.gz
-            ./artifacts/macos/*.app.tar.gz.sig
-            ./artifacts/msi/*.msi.tar.gz
-            ./artifacts/msi/*.msi.tar.gz.sig
-            ./artifacts/appimage/*.AppImage.tar.gz
-            ./artifacts/appimage/*.AppImage.tar.gz.sig
+          files: ./artifacts/**/*
