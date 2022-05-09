@@ -28,7 +28,7 @@
     "ts-proto": "1.106.2",
     "typescript": "4.4.4"
   },
-  "packageManager": "yarn@3.1.0",
+  "packageManager": "yarn@3.2.0",
   "dependencies": {
     "@graphql-codegen/cli": "2.6.2",
     "@graphql-codegen/typescript": "2.4.5",
