@@ -15,7 +15,7 @@ build = "build.rs"
 tauri-build = { version = "1.0.0-rc.5", features = [] }
 
 [dependencies]
-tauri = { version = "1.0.0-rc.6", features = ["cli", "shell-execute", "shell-open", "system-tray", "updater", "window-maximize", "window-start-dragging", "window-unmaximize"] }
+tauri = { version = "1.0.0-rc.6", features = ["cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", branch = "dev", features = ["colored"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", branch = "dev" }
 tokio = { version = "1.17.0", features = ["full"] }
