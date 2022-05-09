@@ -104,17 +104,17 @@ func TestAPIUpdateDraft(t *testing.T) {
 
 	testutil.ProtoEqual(t, want, updated, "UpdateDraft should return the updated document")
 
-	// list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
-	// require.NoError(t, err)
-	// require.Len(t, list.Documents, 1)
-	// require.Equal(t, updated.Id, list.Documents[0].Id)
-	// require.Equal(t, updated.Author, list.Documents[0].Author)
-	// require.Equal(t, updated.Title, list.Documents[0].Title)
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Documents, 1)
+	require.Equal(t, updated.Id, list.Documents[0].Id)
+	require.Equal(t, updated.Author, list.Documents[0].Author)
+	require.Equal(t, updated.Title, list.Documents[0].Title)
 
-	// got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
-	// require.NoError(t, err)
+	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
 
-	// testutil.ProtoEqual(t, draft, got, "must get draft that was updated")
+	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 }
 
 func TestAPIUpdateDraft_Complex(t *testing.T) {
@@ -435,9 +435,10 @@ func updateDraft(ctx context.Context, t *testing.T, api *DocsAPI, id string, upd
 func newTestDocsAPI(t *testing.T, name string) *DocsAPI {
 	u := coretest.NewTester("alice")
 
-	v := vcs.New(newTestSQLite(t))
+	db := newTestSQLite(t)
+	v := vcs.New(db)
 
-	return NewDocsAPI(u.Identity, v)
+	return NewDocsAPI(u.Identity, db, v)
 }
 
 func newTestSQLite(t *testing.T) *sqlitex.Pool {

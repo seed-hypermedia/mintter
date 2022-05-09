@@ -379,3 +379,94 @@ LIMIT 1`
 
 	return out, err
 }
+
+func DraftsInsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, draftsTitle string, draftsSubtitle string, draftsCreateTime int, draftsUpdateTime int) error {
+	const query = `INSERT INTO drafts (id, title, subtitle, create_time, update_time)
+VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000), :draftsTitle, :draftsSubtitle, :draftsCreateTime, :draftsUpdateTime)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetText(":draftsTitle", draftsTitle)
+		stmt.SetText(":draftsSubtitle", draftsSubtitle)
+		stmt.SetInt(":draftsCreateTime", draftsCreateTime)
+		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DraftsInsert: %w", err)
+	}
+
+	return err
+}
+
+func DraftsUpdate(conn *sqlite.Conn, draftsTitle string, draftsSubtitle string, draftsUpdateTime int, objectsMultihash []byte, objectsCodec int) error {
+	const query = `UPDATE drafts
+SET (title, subtitle, update_time) = (:draftsTitle, :draftsSubtitle, :draftsUpdateTime)
+WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":draftsTitle", draftsTitle)
+		stmt.SetText(":draftsSubtitle", draftsSubtitle)
+		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DraftsUpdate: %w", err)
+	}
+
+	return err
+}
+
+type DraftsListResult struct {
+	ObjectsMultihash []byte
+	ObjectsCodec     int
+	DraftsTitle      string
+	DraftsSubtitle   string
+	DraftsCreateTime int
+	DraftsUpdateTime int
+}
+
+func DraftsList(conn *sqlite.Conn) ([]DraftsListResult, error) {
+	const query = `SELECT objects.multihash, objects.codec, drafts.title, drafts.subtitle, drafts.create_time, drafts.update_time
+FROM drafts
+JOIN objects ON objects.id = drafts.id
+`
+
+	var out []DraftsListResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, DraftsListResult{
+			ObjectsMultihash: stmt.ColumnBytes(0),
+			ObjectsCodec:     stmt.ColumnInt(1),
+			DraftsTitle:      stmt.ColumnText(2),
+			DraftsSubtitle:   stmt.ColumnText(3),
+			DraftsCreateTime: stmt.ColumnInt(4),
+			DraftsUpdateTime: stmt.ColumnInt(5),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DraftsList: %w", err)
+	}
+
+	return out, err
+}
