@@ -207,6 +207,14 @@ func generateQueries() error {
 			"FROM", s.Drafts, qb.Line,
 			"JOIN", s.Objects, "ON", s.ObjectsID, "=", s.DraftsID, qb.Line,
 		),
+
+		qb.MakeQuery(s.Schema, "DraftsDelete", sgen.QueryKindExec,
+			"DELETE FROM", s.Drafts, qb.Line,
+			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.ObjectsID, s.Objects,
+				"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+				"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+			),
+		),
 	)
 
 	if err != nil {

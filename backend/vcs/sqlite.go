@@ -313,6 +313,10 @@ func (s *SQLite) StorePermanode(ctx context.Context, blk EncodedBlock[Permanode]
 	return nil
 }
 
+func (s *SQLite) DeletePermanode(ctx context.Context, c cid.Cid) error {
+	return s.bs.DeleteBlock(ctx, c)
+}
+
 func (s *SQLite) LoadPermanode(ctx context.Context, c cid.Cid, v Permanode) error {
 	blk, err := s.bs.Get(ctx, c)
 	if err != nil {
