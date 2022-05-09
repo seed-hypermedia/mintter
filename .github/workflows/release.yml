@@ -108,7 +108,7 @@ jobs:
           projectPath: ./desktop/app
           target: ${{ matrix.rust_target }}
       - name: debug
-        run: echo ${{ steps.tauri_build.outputs.outputs.artifacts }}
+        run: echo "${{ steps.tauri_build.outputs.outputs.artifacts }}"
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts
