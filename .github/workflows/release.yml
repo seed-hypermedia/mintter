@@ -108,11 +108,11 @@ jobs:
           projectPath: ./desktop/app
           target: ${{ matrix.rust_target }}
       - name: debug
-        run: echo "${{ steps.tauri_build.outputs.outputs.artifacts }}"
+        run: echo "${{ steps.tauri_build.outputs }}"
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: "${{ join(fromJSON(steps.tauri_build.outputs.outputs.artifacts), '\\n') }}"
+          path: "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\\n') }}"
 
   publish:
     needs: build-binaries
