@@ -470,3 +470,24 @@ JOIN objects ON objects.id = drafts.id
 
 	return out, err
 }
+
+func DraftsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
+	const query = `DELETE FROM drafts
+WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DraftsDelete: %w", err)
+	}
+
+	return err
+}

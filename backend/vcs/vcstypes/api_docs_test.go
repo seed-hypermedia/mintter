@@ -309,6 +309,26 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 	}
 }
 
+func TestAPIDeleteDraft(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	d1, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	d2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	deleted, err := api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: d1.Id})
+	require.NoError(t, err)
+	require.NotNil(t, deleted)
+
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Documents, 1) // Must be 1 because we've created another document apart from the deleted one.
+	testutil.ProtoEqual(t, d2, list.Documents[0], "second document must be the only thing in the list")
+}
+
 func TestAPIPublishDraft(t *testing.T) {
 	// We'll measure that dates on the published document are greater than start date.
 	// Since the test runs fast we reverse the start time a bit to notice the difference.

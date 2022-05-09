@@ -261,6 +261,31 @@ func (api *DocsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 	return pub, nil
 }
 
+func (api *DocsAPI) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
+	oid, err := cid.Decode(in.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	ocodec, ohash := ipfs.DecodeCID(oid)
+
+	conn, release, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	if err := vcssql.DraftsDelete(conn, ohash, int(ocodec)); err != nil {
+		return nil, err
+	}
+
+	if err := api.vcs.DeletePermanode(ctx, oid); err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
 func (api *DocsAPI) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {

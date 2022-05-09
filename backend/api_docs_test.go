@@ -177,24 +177,6 @@ package backend
 // 	testutil.ProtoEqual(t, doc, got, "must get draft that was updated")
 // }
 
-// func TestAPIDeleteDraft(t *testing.T) {
-// 	back := makeTestBackend(t, "alice", true)
-// 	api := newDocsAPI(back)
-// 	ctx := context.Background()
-
-// 	doc := makeDraft(ctx, t, api, "My Document 1", "Subtitle 1")
-// 	doc2 := makeDraft(ctx, t, api, "My Document 2", "Subtitle 2")
-
-// 	deleted, err := api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: doc.Id})
-// 	require.NoError(t, err)
-// 	require.NotNil(t, deleted)
-
-// 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
-// 	require.NoError(t, err)
-// 	require.Len(t, list.Documents, 1) // Must be 1 because we've created another document apart from the deleted one.
-// 	testutil.ProtoEqual(t, doc2, list.Documents[0], "second document must be the only thing in the list")
-// }
-
 // func TestAPIPublishDraft(t *testing.T) {
 // 	// Move clock back a bit so that timestamps generated in tests
 // 	// are clearly after the test start.
