@@ -6,8 +6,11 @@ import (
 	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/core"
 	"mintter/backend/crdt"
+	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcssql"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"google.golang.org/grpc/codes"
@@ -17,13 +20,15 @@ import (
 )
 
 type DocsAPI struct {
-	vcs *vcs.SQLite
 	me  core.Identity
+	db  *sqlitex.Pool
+	vcs *vcs.SQLite
 }
 
-func NewDocsAPI(me core.Identity, vcs *vcs.SQLite) *DocsAPI {
+func NewDocsAPI(me core.Identity, db *sqlitex.Pool, vcs *vcs.SQLite) *DocsAPI {
 	return &DocsAPI{
 		me:  me,
+		db:  db,
 		vcs: vcs,
 	}
 }
@@ -52,6 +57,20 @@ func (api *DocsAPI) CreateDraft(ctx context.Context, in *documents.CreateDraftRe
 
 	if err := api.vcs.SaveWorkingCopy(ctx, wc); err != nil {
 		return nil, err
+	}
+
+	{
+		conn, release, err := api.db.Conn(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+
+		ocodec, ohash := ipfs.DecodeCID(permablk.Cid())
+
+		if err := vcssql.DraftsInsert(conn, ohash, int(ocodec), "", "", int(p.CreateTime.Unix()), int(p.CreateTime.Unix())); err != nil {
+			return nil, err
+		}
 	}
 
 	return &documents.Document{
@@ -125,6 +144,20 @@ func (api *DocsAPI) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraft
 		return nil, fmt.Errorf("failed to save draft working copy: %w", err)
 	}
 
+	{
+		conn, release, err := api.db.Conn(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+
+		ocodec, ohash := ipfs.DecodeCID(oid)
+
+		if err := vcssql.DraftsUpdate(conn, doc.state.Title, doc.state.Subtitle, int(doc.state.UpdateTime.Unix()), ohash, int(ocodec)); err != nil {
+			return nil, err
+		}
+	}
+
 	// TODO: index links.
 	// Move old links insert new links.
 
@@ -143,6 +176,38 @@ func (api *DocsAPI) GetDraft(ctx context.Context, in *documents.GetDraftRequest)
 	}
 
 	return docToProto(draft.doc)
+}
+
+func (api *DocsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
+	conn, release, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	res, err := vcssql.DraftsList(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &documents.ListDraftsResponse{
+		Documents: make([]*documents.Document, len(res)),
+	}
+
+	aid := api.me.AccountID().String()
+
+	for i, l := range res {
+		out.Documents[i] = &documents.Document{
+			Id:         cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String(),
+			Author:     aid,
+			Title:      l.DraftsTitle,
+			Subtitle:   l.DraftsSubtitle,
+			CreateTime: &timestamppb.Timestamp{Seconds: int64(l.DraftsCreateTime)},
+			UpdateTime: &timestamppb.Timestamp{Seconds: int64(l.DraftsUpdateTime)},
+		}
+	}
+
+	return out, nil
 }
 
 func (api *DocsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {

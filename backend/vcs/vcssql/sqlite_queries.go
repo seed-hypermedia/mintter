@@ -157,6 +157,56 @@ func generateQueries() error {
 			"AND", s.NamedVersionsName, "=", qb.VarCol(s.NamedVersionsName), qb.Line,
 			"LIMIT 1",
 		),
+
+		qb.MakeQuery(s.Schema, "DraftsInsert", sgen.QueryKindExec,
+			"INSERT INTO", s.Drafts, qb.ListColShort(
+				s.DraftsID,
+				s.DraftsTitle,
+				s.DraftsSubtitle,
+				s.DraftsCreateTime,
+				s.DraftsUpdateTime,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.LookupSubQuery(s.ObjectsID, s.Objects,
+					"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+					"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+				),
+				qb.VarCol(s.DraftsTitle),
+				qb.VarCol(s.DraftsSubtitle),
+				qb.VarCol(s.DraftsCreateTime),
+				qb.VarCol(s.DraftsUpdateTime),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "DraftsUpdate", sgen.QueryKindExec,
+			"UPDATE", s.Drafts, qb.Line,
+			"SET", qb.ListColShort(
+				s.DraftsTitle,
+				s.DraftsSubtitle,
+				s.DraftsUpdateTime,
+			), "=", qb.List(
+				qb.VarCol(s.DraftsTitle),
+				qb.VarCol(s.DraftsSubtitle),
+				qb.VarCol(s.DraftsUpdateTime),
+			), qb.Line,
+			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.ObjectsID, s.Objects,
+				"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+				"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "DraftsList", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.ObjectsMultihash),
+				qb.ResultCol(s.ObjectsCodec),
+				qb.ResultCol(s.DraftsTitle),
+				qb.ResultCol(s.DraftsSubtitle),
+				qb.ResultCol(s.DraftsCreateTime),
+				qb.ResultCol(s.DraftsUpdateTime),
+			), qb.Line,
+			"FROM", s.Drafts, qb.Line,
+			"JOIN", s.Objects, "ON", s.ObjectsID, "=", s.DraftsID, qb.Line,
+		),
 	)
 
 	if err != nil {

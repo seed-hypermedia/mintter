@@ -62,7 +62,7 @@ func newDocsAPI(back *backend) DocsServer {
 
 		vcs := vcs.New(back.pool)
 
-		docsapi := vcstypes.NewDocsAPI(id, vcs)
+		docsapi := vcstypes.NewDocsAPI(id, back.pool, vcs)
 		srv.DocsAPI = docsapi
 
 	}()
@@ -145,39 +145,8 @@ func draftToProto(d Draft) *documents.Document {
 	}
 }
 
-func (srv *docsAPI) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
-	list, err := srv.back.ListDrafts(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	out := &documents.ListDraftsResponse{
-		Documents: make([]*documents.Document, len(list)),
-	}
-
-	acc, err := srv.back.Account()
-	if err != nil {
-		return nil, err
-	}
-
-	aid := acc.id.String()
-
-	for i, l := range list {
-		out.Documents[i] = &documents.Document{
-			Id:         cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String(),
-			Author:     aid,
-			Title:      l.DraftsTitle,
-			Subtitle:   l.DraftsSubtitle,
-			CreateTime: timestamppb.New(timeFromSeconds(l.DraftsCreateTime)),
-			UpdateTime: timestamppb.New(timeFromSeconds(l.DraftsUpdateTime)),
-		}
-	}
-
-	return out, nil
-}
-
 func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
-	return nil, status.Error(codes.Unimplemented, "not implemented")
+	return nil, status.Error(codes.Unimplemented, "deprecated")
 
 	c, err := srv.parseDocumentID(in.Document.Id)
 	if err != nil {
