@@ -331,30 +331,6 @@ package backend
 // 	}
 // }
 
-// func TestAPIDeletePublication(t *testing.T) {
-// 	back := makeTestBackend(t, "alice", true)
-// 	api := newDocsAPI(back)
-// 	ctx := context.Background()
-
-// 	doc := makeDraft(ctx, t, api, "My Publication For Delete", "THIS WILL BE DELETED")
-// 	_, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
-// 	require.NoError(t, err)
-
-// 	deleted, err := api.DeletePublication(ctx, &documents.DeletePublicationRequest{DocumentId: doc.Id})
-// 	require.NoError(t, err)
-// 	require.NotNil(t, deleted)
-
-// 	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
-// 	require.NoError(t, err)
-// 	require.Len(t, list.Publications, 0)
-
-// 	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
-// 	s, ok := status.FromError(err)
-// 	require.True(t, ok)
-// 	require.Nil(t, pub)
-// 	require.Equal(t, codes.NotFound, s.Code())
-// }
-
 // func TestAPISyncDocuments(t *testing.T) {
 // 	alice := makeTestBackend(t, "alice", true)
 // 	aapi := newDocsAPI(alice)

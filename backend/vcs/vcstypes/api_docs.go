@@ -233,8 +233,6 @@ func (api *DocsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 
 	newVer := vcs.NewVersion(recorded.LamportTime, recorded.ID)
 
-	// TODO: implement content link indexing.
-
 	// TODO: implement optimistic concurrency control here.
 	if err := api.vcs.StoreNamedVersion(ctx, oid, api.me, "main", newVer); err != nil {
 		return nil, err
@@ -257,6 +255,35 @@ func (api *DocsAPI) PublishDraft(ctx context.Context, in *documents.PublishDraft
 		// TODO: get real latest version.
 		LatestVersion: newVer.String(),
 	}
+
+	// TODO: move this elsewhere. Combine db writes into one transaction.
+	{
+		conn, release, err := api.db.Conn(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer release()
+
+		ocodec, ohash := ipfs.DecodeCID(oid)
+
+		if err := vcssql.DraftsDelete(conn, ohash, int(ocodec)); err != nil {
+			return nil, err
+		}
+
+		if err := vcssql.PublicationsUpsert(conn, ohash, int(ocodec),
+			doc.state.Title,
+			doc.state.Subtitle,
+			int(doc.state.CreateTime.Unix()),
+			int(doc.state.UpdateTime.Unix()),
+			int(pub.Document.PublishTime.Seconds),
+			pub.LatestVersion,
+		); err != nil {
+			return nil, err
+		}
+	}
+
+	// Delete draft from the index.
+	// Add publication to the index.
 
 	return pub, nil
 }
@@ -350,6 +377,56 @@ func (api *DocsAPI) getPublication(ctx context.Context, oid cid.Cid, ver vcs.Ver
 	}
 
 	return doc, nil
+}
+
+func (api *DocsAPI) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
+	c, err := cid.Decode(in.DocumentId)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := api.vcs.DeletePermanode(ctx, c); err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (api *DocsAPI) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
+	conn, release, err := api.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	list, err := vcssql.PublicationsList(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &documents.ListPublicationsResponse{
+		Publications: make([]*documents.Publication, len(list)),
+	}
+
+	for i, l := range list {
+		aid := cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash)
+		pubid := cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String()
+		out.Publications[i] = &documents.Publication{
+			Document: &documents.Document{
+				Id:          pubid,
+				Author:      aid.String(),
+				Title:       l.PublicationsTitle,
+				Subtitle:    l.PublicationsSubtitle,
+				CreateTime:  &timestamppb.Timestamp{Seconds: int64(l.PublicationsCreateTime)},
+				UpdateTime:  &timestamppb.Timestamp{Seconds: int64(l.PublicationsUpdateTime)},
+				PublishTime: &timestamppb.Timestamp{Seconds: int64(l.PublicationsPublishTime)},
+			},
+			Version:       l.PublicationsLatestVersion,
+			LatestVersion: l.PublicationsLatestVersion,
+		}
+	}
+
+	return out, nil
 }
 
 type draft struct {

@@ -314,7 +314,19 @@ func (s *SQLite) StorePermanode(ctx context.Context, blk EncodedBlock[Permanode]
 }
 
 func (s *SQLite) DeletePermanode(ctx context.Context, c cid.Cid) error {
-	return s.bs.DeleteBlock(ctx, c)
+	if err := s.bs.DeleteBlock(ctx, c); err != nil {
+		return err
+	}
+
+	conn, release, err := s.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	ocodec, ohash := ipfs.DecodeCID(c)
+
+	return vcssql.ObjectsDelete(conn, ohash, int(ocodec))
 }
 
 func (s *SQLite) LoadPermanode(ctx context.Context, c cid.Cid, v Permanode) error {

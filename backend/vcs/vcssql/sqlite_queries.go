@@ -129,6 +129,12 @@ func generateQueries() error {
 			),
 		),
 
+		qb.MakeQuery(s.Schema, "ObjectsDelete", sgen.QueryKindExec,
+			"DELETE FROM", s.Objects, qb.Line,
+			"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+			"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+		),
+
 		qb.MakeQuery(s.Schema, "NamedVersionsReplace", sgen.QueryKindExec,
 			"INSERT OR REPLACE INTO", s.NamedVersions, qb.ListColShort(
 				s.NamedVersionsObjectID,
@@ -214,6 +220,49 @@ func generateQueries() error {
 				"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
 				"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
 			),
+		),
+
+		qb.MakeQuery(s.Schema, "PublicationsUpsert", sgen.QueryKindExec,
+			"INSERT OR REPLACE", qb.Line,
+			"INTO", s.Publications, qb.ListColShort(
+				s.PublicationsID,
+				s.PublicationsTitle,
+				s.PublicationsSubtitle,
+				s.PublicationsCreateTime,
+				s.PublicationsUpdateTime,
+				s.PublicationsPublishTime,
+				s.PublicationsLatestVersion,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.LookupSubQuery(s.ObjectsID, s.Objects,
+					"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
+					"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+				),
+				qb.VarCol(s.PublicationsTitle),
+				qb.VarCol(s.PublicationsSubtitle),
+				qb.VarCol(s.PublicationsCreateTime),
+				qb.VarCol(s.PublicationsUpdateTime),
+				qb.VarCol(s.PublicationsPublishTime),
+				qb.VarCol(s.PublicationsLatestVersion),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "PublicationsList", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.ObjectsCodec),
+				qb.ResultCol(s.ObjectsMultihash),
+				qb.ResultCol(s.AccountsCodec),
+				qb.ResultCol(s.AccountsMultihash),
+				qb.ResultCol(s.PublicationsTitle),
+				qb.ResultCol(s.PublicationsSubtitle),
+				qb.ResultCol(s.PublicationsCreateTime),
+				qb.ResultCol(s.PublicationsUpdateTime),
+				qb.ResultCol(s.PublicationsPublishTime),
+				qb.ResultCol(s.PublicationsLatestVersion),
+			), qb.Line,
+			"FROM", s.Publications, qb.Line,
+			"JOIN", s.Objects, "ON", s.ObjectsID, "=", s.PublicationsID, qb.Line,
+			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.ObjectsAccountID,
 		),
 	)
 
