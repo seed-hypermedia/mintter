@@ -8,7 +8,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	documents "mintter/backend/api/documents/v1alpha"
@@ -115,51 +114,6 @@ func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRe
 	}
 
 	return draftToProto(d), nil
-}
-
-func (srv *docsAPI) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
-	list, err := srv.back.ListPublications(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	out := &documents.ListPublicationsResponse{
-		Publications: make([]*documents.Publication, len(list)),
-	}
-
-	for i, l := range list {
-		if l.AccountsCodec != int(codecAccountID) {
-			panic("BUG: wrong codec for account")
-		}
-		aid := cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash)
-		pubid := cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String()
-		out.Publications[i] = &documents.Publication{
-			Document: &documents.Document{
-				Id:          pubid,
-				Author:      aid.String(),
-				Title:       l.PublicationsTitle,
-				Subtitle:    l.PublicationsSubtitle,
-				CreateTime:  timestamppb.New(timeFromSeconds(l.PublicationsCreateTime)),
-				UpdateTime:  timestamppb.New(timeFromSeconds(l.PublicationsUpdateTime)),
-				PublishTime: timestamppb.New(timeFromSeconds(l.PublicationsPublishTime)),
-			},
-			Version:       l.PublicationsLatestVersion,
-			LatestVersion: l.PublicationsLatestVersion,
-		}
-	}
-
-	return out, nil
-}
-
-func (srv *docsAPI) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
-	c, err := srv.parseDocumentID(in.DocumentId)
-	if err != nil {
-		return nil, err
-	}
-
-	err = srv.back.DeletePublication(ctx, c)
-
-	return &emptypb.Empty{}, err
 }
 
 func (srv *docsAPI) parseDocumentID(id string) (cid.Cid, error) {
