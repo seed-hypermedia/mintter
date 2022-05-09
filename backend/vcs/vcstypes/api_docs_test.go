@@ -379,9 +379,9 @@ func TestAPIPublishDraft(t *testing.T) {
 	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
 	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
 
-	// list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
-	// require.NoError(t, err)
-	// require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
 
 	// Draft must be removed after publishing.
 	{
@@ -396,6 +396,42 @@ func TestAPIPublishDraft(t *testing.T) {
 	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
 	require.NoError(t, err, "must get document after publishing")
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
+}
+
+func TestAPIDeletePublication(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc = updateDraft(ctx, t, api, doc.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}}},
+	)
+
+	_, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 1)
+
+	deleted, err := api.DeletePublication(ctx, &documents.DeletePublicationRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+	require.NotNil(t, deleted)
+
+	list, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0)
+
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	require.Error(t, err, "must fail to get deleted publication")
+	_ = pub
+
+	// TODO: fix status codes.
+	// s, ok := status.FromError(err)
+	// require.True(t, ok)
+	// require.Nil(t, pub)
+	// require.Equal(t, codes.NotFound, s.Code())
 }
 
 func TestDocumentToProto(t *testing.T) {

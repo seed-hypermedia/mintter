@@ -317,6 +317,27 @@ VALUES (:objectsMultihash, :objectsCodec, :objectsAccountID)`
 	return err
 }
 
+func ObjectsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
+	const query = `DELETE FROM objects
+WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ObjectsDelete: %w", err)
+	}
+
+	return err
+}
+
 func NamedVersionsReplace(conn *sqlite.Conn, namedVersionsObjectID int, namedVersionsAccountID int, namedVersionsDeviceID int, namedVersionsName string, namedVersionsVersion string) error {
 	const query = `INSERT OR REPLACE INTO named_versions (object_id, account_id, device_id, name, version)
 VALUES (:namedVersionsObjectID, :namedVersionsAccountID, :namedVersionsDeviceID, :namedVersionsName, :namedVersionsVersion)`
@@ -490,4 +511,81 @@ WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multiha
 	}
 
 	return err
+}
+
+func PublicationsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, publicationsTitle string, publicationsSubtitle string, publicationsCreateTime int, publicationsUpdateTime int, publicationsPublishTime int, publicationsLatestVersion string) error {
+	const query = `INSERT OR REPLACE
+INTO publications (id, title, subtitle, create_time, update_time, publish_time, latest_version)
+VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000), :publicationsTitle, :publicationsSubtitle, :publicationsCreateTime, :publicationsUpdateTime, :publicationsPublishTime, :publicationsLatestVersion)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":objectsMultihash", objectsMultihash)
+		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetText(":publicationsTitle", publicationsTitle)
+		stmt.SetText(":publicationsSubtitle", publicationsSubtitle)
+		stmt.SetInt(":publicationsCreateTime", publicationsCreateTime)
+		stmt.SetInt(":publicationsUpdateTime", publicationsUpdateTime)
+		stmt.SetInt(":publicationsPublishTime", publicationsPublishTime)
+		stmt.SetText(":publicationsLatestVersion", publicationsLatestVersion)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PublicationsUpsert: %w", err)
+	}
+
+	return err
+}
+
+type PublicationsListResult struct {
+	ObjectsCodec              int
+	ObjectsMultihash          []byte
+	AccountsCodec             int
+	AccountsMultihash         []byte
+	PublicationsTitle         string
+	PublicationsSubtitle      string
+	PublicationsCreateTime    int
+	PublicationsUpdateTime    int
+	PublicationsPublishTime   int
+	PublicationsLatestVersion string
+}
+
+func PublicationsList(conn *sqlite.Conn) ([]PublicationsListResult, error) {
+	const query = `SELECT objects.codec, objects.multihash, accounts.codec, accounts.multihash, publications.title, publications.subtitle, publications.create_time, publications.update_time, publications.publish_time, publications.latest_version
+FROM publications
+JOIN objects ON objects.id = publications.id
+JOIN accounts ON accounts.id = objects.account_id`
+
+	var out []PublicationsListResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, PublicationsListResult{
+			ObjectsCodec:              stmt.ColumnInt(0),
+			ObjectsMultihash:          stmt.ColumnBytes(1),
+			AccountsCodec:             stmt.ColumnInt(2),
+			AccountsMultihash:         stmt.ColumnBytes(3),
+			PublicationsTitle:         stmt.ColumnText(4),
+			PublicationsSubtitle:      stmt.ColumnText(5),
+			PublicationsCreateTime:    stmt.ColumnInt(6),
+			PublicationsUpdateTime:    stmt.ColumnInt(7),
+			PublicationsPublishTime:   stmt.ColumnInt(8),
+			PublicationsLatestVersion: stmt.ColumnText(9),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PublicationsList: %w", err)
+	}
+
+	return out, err
 }
