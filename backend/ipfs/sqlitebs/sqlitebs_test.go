@@ -175,6 +175,27 @@ func TestPutMany(t *testing.T) {
 	require.Len(t, cids, 3)
 }
 
+func TestPut_InlineCID(t *testing.T) {
+	t.Parallel()
+
+	bs := newBlockstore(t)
+
+	mh, err := multihash.Sum([]byte("this is some data"), multihash.IDENTITY, -1)
+	require.NoError(t, err)
+	c := cid.NewCidV1(cid.Raw, mh)
+
+	blk, err := blocks.NewBlockWithCid(nil, c)
+	require.NoError(t, err)
+
+	require.NoError(t, bs.Put(context.Background(), blk))
+
+	gotBlk, err := bs.Get(context.Background(), c)
+	require.NoError(t, err)
+
+	require.True(t, gotBlk.RawData() == nil)
+	require.Equal(t, c, gotBlk.Cid())
+}
+
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
