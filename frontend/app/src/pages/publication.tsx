@@ -238,11 +238,6 @@ function usePagePublication(
             }
           })
           .catch((err) => {
-            console.log(
-              '🚀 ~ file: publication.tsx ~ line 296 ~ service ~ err',
-              err,
-              window.location.pathname,
-            )
             sendBack({
               type: 'PUBLICATION.REPORT.ERROR',
               errorMessage: 'error fetching',
@@ -265,8 +260,6 @@ function usePagePublication(
               //@ts-ignore
               .then((result: Array<FlowContent>) => {
                 let discussion = document([group(result)])
-                console.log('discussion result: ', {result, discussion})
-
                 sendBack({
                   type: 'REPORT.DISCUSSION.SUCCESS',
                   links: response.links,

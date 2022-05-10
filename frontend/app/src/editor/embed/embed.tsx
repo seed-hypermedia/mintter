@@ -34,7 +34,11 @@ export const createEmbedPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isEmbed(element)) {
         if (!element.url) {
-          console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
+          console.error(
+            `Embed: element does not have a url attribute: ${JSON.stringify(
+              element,
+            )}`,
+          )
           return <span {...attributes}>error on embed{children}</span>
         }
         return (
@@ -48,7 +52,10 @@ export const createEmbedPlugin = (): EditorPlugin => ({
 
 type EmbedProps = Omit<RenderElementProps, 'element'> & {element: EmbedType}
 
-function RenderEmbed({element, attributes, children}: EmbedProps, ref: ForwardedRef<HTMLQuoteElement>) {
+function RenderEmbed(
+  {element, attributes, children}: EmbedProps,
+  ref: ForwardedRef<HTMLQuoteElement>,
+) {
   const sidepanelService = useSidepanel()
   const bookmarksService = useBookmarksService()
   const mainPageService = useMainPage()
@@ -63,26 +70,43 @@ function RenderEmbed({element, attributes, children}: EmbedProps, ref: Forwarded
 
   async function onCopy() {
     await copyTextToClipboard(element.url)
-    toast.success('Embed Reference copied successfully', {position: 'top-center'})
+    toast.success('Embed Reference copied successfully', {
+      position: 'top-center',
+    })
   }
 
   function onGoToPublication() {
-    mainPageService.send({type: 'goToPublication', docId: pubId, version, blockId})
+    mainPageService.send({
+      type: 'goToPublication',
+      docId: pubId,
+      version,
+      blockId,
+    })
   }
 
   function onOpenInSidepanel() {
-    sidepanelService.send({type: 'SIDEPANEL.ADD', item: {type: 'block', url: element.url}})
+    sidepanelService.send({
+      type: 'SIDEPANEL.ADD',
+      item: {type: 'block', url: element.url},
+    })
     sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   async function onOpenInNewWindow() {
-    await invoke('open_in_new_window', {url: `/p/${pubId}/${version}/${blockId}`})
+    await invoke('open_in_new_window', {
+      url: `new/p/${pubId}/${version}/${blockId}`,
+    })
   }
 
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger>
-        <EmbedEditor attributes={attributes} ref={ref} embed={element.url} onClick={onOpenInSidepanel}>
+        <EmbedEditor
+          attributes={attributes}
+          ref={ref}
+          embed={element.url}
+          onClick={onOpenInNewWindow}
+        >
           {children}
         </EmbedEditor>
       </ContextMenu.Trigger>

@@ -384,16 +384,12 @@ export function createMainPageMachine(client: QueryClient) {
         }),
         setPublicationParams: assign({
           params: (c, e, m) => {
-            console.log('setPublicationParams: ', { c, e, m });
-
             let { replace, type, ...rest } = m.state?.event
-            console.log('setPublicationParams: ', m.state?.event);
             return rest
           },
         }),
         pushPublicationRoute: send(
           (context) => {
-            console.log("🚀 ~ file: main-page-machine.ts ~ line 387 ~ createMainPageMachine ~ context", context)
             return {
               type: 'pushPublication',
               ...context.params,

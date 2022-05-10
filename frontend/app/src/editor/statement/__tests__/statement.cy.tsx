@@ -86,12 +86,6 @@ describe('Statement Plugin', () => {
       .type('{enter}')
       .then(() => {
         let [b1, b2] = (elEditor.children[0] as GroupingContent).children
-        console.log(
-          '🚀 ~ file: statement.cy.tsx ~ line 89 ~ .then ~ b1, b2',
-          b1,
-          b2,
-        )
-
         expect(b2.id).to.be.equal('block1')
       })
   })

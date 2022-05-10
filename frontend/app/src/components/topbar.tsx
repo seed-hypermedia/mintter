@@ -1,12 +1,12 @@
-import {useAccount} from '@app/hooks'
-import {useMainPage} from '@app/main-page-context'
-import {css, styled} from '@app/stitches.config'
-import {getDocumentTitle} from '@app/utils/get-document-title'
-import {Text} from '@components/text'
-import {invoke} from '@tauri-apps/api'
-import {useActor} from '@xstate/react'
-import {Box} from './box'
-import {Icon} from './icon'
+import { useAccount } from '@app/hooks'
+import { useMainPage } from '@app/main-page-context'
+import { css, styled } from '@app/stitches.config'
+import { getDocumentTitle } from '@app/utils/get-document-title'
+import { Text } from '@components/text'
+import { invoke } from '@tauri-apps/api'
+import { useActor } from '@xstate/react'
+import { Box } from './box'
+import { Icon } from './icon'
 
 const draggableProps = {
   'data-tauri-drag-region': true,
@@ -53,8 +53,8 @@ type TopbarProps = {
 }
 
 export function Topbar({
-  back = window.history.back,
-  forward = window.history.forward,
+  back = () => window.history.back(),
+  forward = () => window.history.forward(),
 }: TopbarProps) {
   let mainPage = useMainPage()
   let [mainState] = useActor(mainPage)

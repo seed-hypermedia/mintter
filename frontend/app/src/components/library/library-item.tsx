@@ -73,6 +73,8 @@ export function LibraryItem({
   }
 
   function goToItem() {
+    if (match) return
+
     if (publication) {
       mainService.send({
         type: 'goToPublication',
