@@ -114,22 +114,22 @@ var migrations = []string{
 			multihash BLOB UNIQUE NOT NULL,
 			codec INTEGER NOT NULL,
 			-- Reference to the Account that created the Object.
-			account_id INTEGER REFERENCES accounts NOT NULL
-			-- FOREIGN KEY (id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
+			account_id INTEGER REFERENCES accounts NOT NULL,
+			FOREIGN KEY (id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
 		);
 
-		-- CREATE TRIGGER trg_objects_after_insert AFTER INSERT ON objects
-		-- FOR EACH ROW BEGIN
-		-- 	SELECT CASE
-		-- 		WHEN (
-		-- 			SELECT COUNT(id) FROM ipfs_blocks
-		-- 			WHERE id = new.id
-		-- 			AND multihash = new.multihash
-		-- 			AND codec = new.codec
-		-- 		) == 0
-		-- 		THEN RAISE(ABORT, 'foreign key missmatch objects != ipfs_blocks')
-		-- 	END;
-		-- END;
+		CREATE TRIGGER trg_objects_after_insert AFTER INSERT ON objects
+		FOR EACH ROW BEGIN
+			SELECT CASE
+				WHEN (
+					SELECT COUNT(id) FROM ipfs_blocks
+					WHERE id = new.id
+					AND multihash = new.multihash
+					AND codec = new.codec
+				) == 0
+				THEN RAISE(ABORT, 'foreign key missmatch objects != ipfs_blocks')
+			END;
+		END;
 
 		-- Temporary table prior to refactor.
 		CREATE TABLE heads (

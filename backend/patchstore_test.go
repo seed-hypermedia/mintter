@@ -32,77 +32,77 @@ func TestPatchStore_LoadEmpty(t *testing.T) {
 	require.True(t, s.IsEmpty())
 }
 
-func TestPatchStore_AddPatch(t *testing.T) {
-	nowFunc = func() func() time.Time {
-		return func() time.Time {
-			var t time.Time
-			return t.Add(1 * time.Second)
-		}
-	}()
+// func TestPatchStore_AddPatch(t *testing.T) {
+// 	nowFunc = func() func() time.Time {
+// 		return func() time.Time {
+// 			var t time.Time
+// 			return t.Add(1 * time.Second)
+// 		}
+// 	}()
 
-	alice := makeTestPatchStore(t, "alice")
-	oid := testutil.MakeCID(t, "obj-1")
-	kind := PatchKind("test-patch")
-	ctx := context.Background()
+// 	alice := makeTestPatchStore(t, "alice")
+// 	oid := testutil.MakeCID(t, "obj-1")
+// 	kind := PatchKind("test-patch")
+// 	ctx := context.Background()
 
-	s := newChangeset(oid, nil)
-	p1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("p-1")))
-	p2 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("p-2")))
+// 	s := newChangeset(oid, nil)
+// 	p1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("p-1")))
+// 	p2 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("p-2")))
 
-	require.NoError(t, alice.AddPatch(ctx, p1))
-	require.NoError(t, alice.AddPatch(ctx, p2))
+// 	require.NoError(t, alice.AddPatch(ctx, p1))
+// 	require.NoError(t, alice.AddPatch(ctx, p2))
 
-	loaded, err := alice.LoadState(ctx, oid)
-	require.NoError(t, err)
+// 	loaded, err := alice.LoadState(ctx, oid)
+// 	require.NoError(t, err)
 
-	list := loaded.Merge()
-	require.Len(t, list, 2)
-}
+// 	list := loaded.Merge()
+// 	require.Len(t, list, 2)
+// }
 
-func TestPatchStore_AddPatchLoadState(t *testing.T) {
-	nowFunc = func() func() time.Time {
-		return func() time.Time {
-			var t time.Time
-			return t.Add(1 * time.Second)
-		}
-	}()
+// func TestPatchStore_AddPatchLoadState(t *testing.T) {
+// 	nowFunc = func() func() time.Time {
+// 		return func() time.Time {
+// 			var t time.Time
+// 			return t.Add(1 * time.Second)
+// 		}
+// 	}()
 
-	alice := makeTestPatchStore(t, "alice")
-	oid := testutil.MakeCID(t, "obj-1")
-	kind := PatchKind("test-patch")
-	ctx := context.Background()
+// 	alice := makeTestPatchStore(t, "alice")
+// 	oid := testutil.MakeCID(t, "obj-1")
+// 	kind := PatchKind("test-patch")
+// 	ctx := context.Background()
 
-	as := newChangeset(oid, nil)
-	ap := []signedPatch{
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-1"))),
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-2"))),
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-3"))),
-	}
+// 	as := newChangeset(oid, nil)
+// 	ap := []signedPatch{
+// 		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-1"))),
+// 		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-2"))),
+// 		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-3"))),
+// 	}
 
-	require.NoError(t, alice.AddPatch(ctx, ap[0]))
-	require.Error(t, alice.AddPatch(ctx, ap[0]), "must fail storing the same patch twice")
-	require.Error(t, alice.AddPatch(ctx, ap[2]), "must fail storing patch with broken seq")
-	require.NoError(t, alice.AddPatch(ctx, ap[1]))
-	require.NoError(t, alice.AddPatch(ctx, ap[2]))
+// 	require.NoError(t, alice.AddPatch(ctx, ap[0]))
+// 	require.Error(t, alice.AddPatch(ctx, ap[0]), "must fail storing the same patch twice")
+// 	require.Error(t, alice.AddPatch(ctx, ap[2]), "must fail storing patch with broken seq")
+// 	require.NoError(t, alice.AddPatch(ctx, ap[1]))
+// 	require.NoError(t, alice.AddPatch(ctx, ap[2]))
 
-	bob := makeTester(t, "bob")
-	bs := newChangeset(oid, nil)
+// 	bob := makeTester(t, "bob")
+// 	bs := newChangeset(oid, nil)
 
-	bp := []signedPatch{
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-1"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-2"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-3"))),
-	}
-	for _, p := range bp {
-		require.NoError(t, alice.AddPatch(ctx, p), "failed to add "+string(p.Body))
-	}
+// 	bp := []signedPatch{
+// 		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-1"))),
+// 		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-2"))),
+// 		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-3"))),
+// 	}
+// 	for _, p := range bp {
+// 		require.NoError(t, alice.AddPatch(ctx, p), "failed to add "+string(p.Body))
+// 	}
 
-	ss, err := alice.LoadState(ctx, oid)
-	require.NoError(t, err)
-	require.Equal(t, 6, ss.size)
-	require.Equal(t, ap, ss.byPeer[0])
-	require.Equal(t, bp, ss.byPeer[1])
-}
+// 	ss, err := alice.LoadState(ctx, oid)
+// 	require.NoError(t, err)
+// 	require.Equal(t, 6, ss.size)
+// 	require.Equal(t, ap, ss.byPeer[0])
+// 	require.Equal(t, bp, ss.byPeer[1])
+// }
 
 // TODO: add this replicate missing test.
 
