@@ -23,8 +23,8 @@ export interface Typegen0 {
       data: unknown
     }
     '': {type: ''}
-    'xstate.after(1000)#editor.editing.debouncing': {
-      type: 'xstate.after(1000)#editor.editing.debouncing'
+    'xstate.after(1500)#editor.editing.debouncing': {
+      type: 'xstate.after(1500)#editor.editing.debouncing'
     }
     'xstate.init': {type: 'xstate.init'}
     'done.invoke.fetchDocument': {
@@ -51,7 +51,7 @@ export interface Typegen0 {
   eventsCausingServices: {
     fetchDocument: '' | 'FETCH'
     publishDraftService: 'EDITOR.PUBLISH'
-    saveDraft: 'xstate.after(1000)#editor.editing.debouncing'
+    saveDraft: 'xstate.after(1500)#editor.editing.debouncing'
   }
   eventsCausingGuards: {
     maxRetriesReached: 'FETCH'

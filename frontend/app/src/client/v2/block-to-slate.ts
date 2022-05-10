@@ -14,7 +14,7 @@ export function blockToSlate(blk: Block): FlowContent {
 
   const out = {
     id: blk.id,
-    type: blk.type,
+    type: blk.type || 'statement',
     // TODO: handle block attributes too. I guess we've lost
     // the "paragraph" type of the content node during the conversion ¯\_(ツ)_/¯.
     // Let's pretend it's there though.
