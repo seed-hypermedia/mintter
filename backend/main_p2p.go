@@ -58,10 +58,14 @@ func provideBootstrapRelays() ([]peer.AddrInfo, error) {
 		"12D3KooWDEy9x2MkUtDMLwb38isNhWMap39xeKVqL8Wb9AHYPYM7": {
 			"/ip4/18.158.173.157/tcp/4002",      // Julio's personal server
 			"/ip4/18.158.173.157/udp/4002/quic", // Julio's personal server
-			"/ip4/23.20.24.146/tcp/4002",        // Mintter prod server
-			"/ip4/23.20.24.146/udp/4002/quic",   // Mintter prod server
-			"/ip4/52.22.139.174/tcp/4002",       // Mintter test server
-			"/ip4/52.22.139.174/udp/4002/quic",  // Mintter test server
+		},
+		"12D3KooWGDhTSaBMxbvKf5pZTYeDfD6yAyECFwAi24hcRCwG2Fzt": {
+			"/ip4/23.20.24.146/tcp/4002",      // Mintter prod server
+			"/ip4/23.20.24.146/udp/4002/quic", // Mintter prod server
+		},
+		"12D3KooWFrVgcdyzM8iyrvgCSMrsMM9wGjxDtLxkpvBckQHKpRw5": {
+			"/ip4/52.22.139.174/tcp/4002",      // Mintter test server
+			"/ip4/52.22.139.174/udp/4002/quic", // Mintter test server
 		},
 	}
 	relaysInfo := []peer.AddrInfo{}
