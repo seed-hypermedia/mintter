@@ -213,6 +213,8 @@ type GetBlockOptions = Omit<Parameters<typeof Editor.nodes>[1] & {
 export function getBlock(editor: Editor, options: GetBlockOptions): NodeEntry<FlowContent> | undefined {
   let [match] = Editor.nodes<FlowContent>(editor, {
     ...options,
+    reverse: true,
+    mode: 'lowest',
     match: n => matcher(n, options.id),
     at: options.at ?? []
   })

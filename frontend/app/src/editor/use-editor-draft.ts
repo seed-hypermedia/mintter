@@ -66,7 +66,7 @@ export function draftEditorMachine({
 }: DraftEditorMachineProps) {
   return createMachine(
     {
-      tsTypes: {} as import('./use-editor-draft.typegen').Typegen0,
+      tsTypes: {} as import("./use-editor-draft.typegen").Typegen0,
       schema: {
         context: {} as EditorContext,
         events: {} as EditorEvent,
@@ -148,7 +148,7 @@ export function draftEditorMachine({
                 },
               },
               after: {
-                1000: [
+                1500: [
                   {
                     target: 'saving',
                     // cond: 'isValueDirty',
@@ -169,6 +169,7 @@ export function draftEditorMachine({
                 },
               },
               on: {
+                'EDITOR.UPDATE': undefined,
                 'EDITOR.UPDATE.SUCCESS': {
                   target: 'idle',
                   actions: ['updateLibrary'],
@@ -214,9 +215,10 @@ export function draftEditorMachine({
     {
       guards: {
         // isValueDirty: (context) => {
-        //   const isContentNotEqual = !isEqual(context.localDraft?.content, context.prevDraft?.content)
-        //   const isTitleNotEqual = !isEqual(context.localDraft?.title, context.prevDraft?.title)
-        //   return isContentNotEqual || isTitleNotEqual
+        //   let isValueDirty = isEqual(context.localDraft?.content, context.prevDraft?.content)
+        //   console.log("🚀 ~ file: use-editor-draft.ts ~ line 215 ~ isValueDirty", isValueDirty, { new: context.localDraft?.content, prev: context.prevDraft?.content })
+
+        //   return isValueDirty
         // },
         maxRetriesReached: (context) => context.retries == 5,
       },
@@ -231,6 +233,7 @@ export function draftEditorMachine({
           }
 
           if (event.data.children?.length) {
+
             newValue.content = [blockNodeToSlate(event.data.children)]
           } else {
             newValue.content = defaultContent

@@ -93,9 +93,12 @@ export function changesServiceCreator() {
 
   function replaceText(editor: Editor, path: Path) {
 
+
     let entry = getBlock(editor, {
       at: path
     })
+
+    console.log('replaceText', path, entry);
 
     if (entry) {
       let [block] = entry
