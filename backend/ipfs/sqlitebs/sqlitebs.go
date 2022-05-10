@@ -106,7 +106,9 @@ func (b *Blockstore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 // Get implements blockstore.Blockstore interface.
 func (b *Blockstore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var data []byte
+	var found int
 	err := b.exec(ctx, b.queries.Get, func(stmt *sqlite.Stmt) error {
+		found++
 		data = stmt.ColumnBytes(0)
 		return nil
 	}, cid.Hash())
@@ -114,8 +116,12 @@ func (b *Blockstore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error)
 		return nil, err
 	}
 
-	if data == nil {
+	if found == 0 {
 		return nil, blockstore.ErrNotFound
+	}
+
+	if len(data) == 0 && data != nil {
+		data = nil
 	}
 
 	return blocks.NewBlockWithCid(data, cid)

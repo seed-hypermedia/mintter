@@ -31,21 +31,20 @@ var moduleP2P = fx.Options(
 		providePeerstore,
 		provideLibp2p,
 		provideBootstrapPeers,
-		provideSQLiteBlockstore,
+		provideBlockstore,
 		provideBitswap,
 		provideBlockService,
 		provideP2P,
 	),
 )
 
-func provideSQLiteBlockstore(pool *sqlitex.Pool) (bs blockstore.Blockstore, err error) {
+func provideBlockstore(pool *sqlitex.Pool) (bs blockstore.Blockstore, err error) {
 	bs = sqlitebs.New(pool, sqlitebs.Config{
 		TableName:       string(sqliteschema.IPFSBlocks),
 		ColumnMultihash: string(sqliteschema.IPFSBlocksMultihash.ShortName()),
 		ColumnCodec:     string(sqliteschema.IPFSBlocksCodec.ShortName()),
 		ColumnData:      string(sqliteschema.IPFSBlocksData.ShortName()),
 	})
-	bs = blockstore.NewIdStore(bs)
 	bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
 
 	return bs, err

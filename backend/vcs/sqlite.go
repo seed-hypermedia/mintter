@@ -34,7 +34,6 @@ func New(db *sqlitex.Pool) *SQLite {
 		ColumnCodec:     string(sqliteschema.IPFSBlocksCodec.ShortName()),
 		ColumnData:      string(sqliteschema.IPFSBlocksData.ShortName()),
 	})
-	bs = blockstore.NewIdStore(bs)
 	bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
 	if err != nil {
 		panic(err)
