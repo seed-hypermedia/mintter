@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
-	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/event"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -27,10 +26,7 @@ import (
 	accounts "mintter/backend/api/accounts/v1alpha"
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/core"
-	"mintter/backend/ipfs"
-	"mintter/backend/ipfs/sqlitebs"
 	"mintter/backend/lndhub"
-	"mintter/backend/vcs/vcssql"
 )
 
 // Log messages.
@@ -44,7 +40,6 @@ const accountsPullInterval = time.Minute
 // But actually it turned out to be a kitchen sink of all kinds of stuff.
 // Eventually this will need to be cleaned up.
 type backend struct {
-	sqlitePatchStore
 	*graphdb
 
 	log       *zap.Logger
@@ -84,8 +79,6 @@ func newBackend(log *zap.Logger, pool *sqlitex.Pool, r *repo, p2p *p2pNode) *bac
 		dialOpts: makeDialOpts(p2p.libp2p.Host),
 
 		lightningClient: &lnclient{Lndhub: lndhub.NewClient(&http.Client{})},
-
-		sqlitePatchStore: sqlitePatchStore{db: pool, bs: p2p.bs.Blockstore()},
 	}
 
 	return srv
@@ -224,109 +217,6 @@ func timeFromSeconds(sec int) time.Time {
 // Account returns our own account.
 func (srv *backend) Account() (core.PublicKey, error) {
 	return srv.repo.Account()
-}
-
-func (srv *backend) InitObject(ctx context.Context, aid AccountID, did DeviceID, oid cid.Cid, permablk blocks.Block) (err error) {
-	s := srv.sqlitePatchStore
-
-	ocodec, ohash := ipfs.DecodeCID(oid)
-
-	acodec, ahash := ipfs.DecodeCID(cid.Cid(aid))
-	if acodec != codecAccountID {
-		panic("BUG: wrong codec for account")
-	}
-
-	dcodec, dhash := ipfs.DecodeCID(cid.Cid(did))
-	if dcodec != cid.Libp2pKey {
-		panic("BUG: wrong codec for device")
-	}
-
-	conn, ok := sqlitebs.ConnFromContext(ctx)
-	if !ok {
-		c, release, err := s.db.Conn(ctx)
-		if err != nil {
-			return err
-		}
-		defer release()
-		conn = c
-
-		if err := sqlitex.Exec(conn, "BEGIN IMMEDIATE TRANSACTION", nil); err != nil {
-			return err
-		}
-
-		defer func() {
-			if err != nil {
-				err = multierr.Append(err, sqlitex.Exec(conn, "ROLLBACK", nil))
-			} else {
-				err = sqlitex.Exec(conn, "COMMIT", nil)
-			}
-		}()
-	}
-
-	defer sqlitex.Save(conn)(&err)
-
-	if err := accountsInsertOrIgnore(conn, ahash, int(acodec)); err != nil {
-		return err
-	}
-
-	if err := devicesInsertOrIgnore(conn, dhash, int(dcodec), ahash, int(acodec)); err != nil {
-		return err
-	}
-
-	if permablk == nil {
-		blk, err := blocks.NewBlockWithCid(nil, cid.Cid(oid))
-		if err != nil {
-			return err
-		}
-		permablk = blk
-	}
-
-	if err := s.bs.Put(sqlitebs.ContextWithConn(ctx, conn), permablk); err != nil {
-		return err
-	}
-
-	// Insert object reusing data from ipfs blocks table.
-	{
-		dbaid, err := lookupAccID(conn, cid.Cid(aid))
-		if err != nil {
-			return err
-		}
-
-		res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
-		if err != nil {
-			return err
-		}
-
-		if err := vcssql.ObjectsInsertOrIgnore(conn, res.IPFSBlocksID, ohash, int(ocodec), dbaid); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// GetPermanode from the underlying storage.
-func (srv *backend) GetPermanode(ctx context.Context, c cid.Cid) (signedPermanode, error) {
-	// This is all quite messy. Need to clean up.
-	codec, _ := ipfs.DecodeCID(c)
-	if codec != codecDocumentID {
-		panic("BUG: trying to get permanode for non-document object")
-	}
-
-	blk, err := srv.p2p.bs.Blockstore().Get(ctx, c)
-	if err != nil {
-		return signedPermanode{}, err
-	}
-
-	perma, err := decodePermanodeBlock(blk)
-	if err != nil {
-		return signedPermanode{}, err
-	}
-
-	return signedPermanode{
-		perma: perma,
-		blk:   blk,
-	}, nil
 }
 
 // emitEvent notifies subscribers about an internal event that occurred.

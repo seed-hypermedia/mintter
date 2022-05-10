@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/ipfs"
-	"mintter/backend/ipfs/sqlitebs"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -145,47 +144,6 @@ func (srv *backend) UpdateDraft(ctx context.Context, id cid.Cid, title, subtitle
 	}
 
 	return d, nil
-}
-
-// CreateDraft creates a new permanode and stores it in the block store.
-func (srv *backend) CreateDraft(ctx context.Context) (d Draft, err error) {
-	// TODO: this should not be needed.
-	// Remove and test.
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
-
-	acc, err := srv.repo.Account()
-	if err != nil {
-		return Draft{}, err
-	}
-
-	sp, err := newSignedPermanode(codecDocumentID, AccID(acc.CID()), srv.repo.Device())
-	if err != nil {
-		return Draft{}, err
-	}
-
-	d = Draft{
-		ID:         sp.blk.Cid(),
-		Author:     cid.Cid(acc.CID()),
-		CreateTime: sp.perma.CreateTime,
-		UpdateTime: sp.perma.CreateTime,
-	}
-
-	ocodec, ohash := ipfs.DecodeCID(sp.blk.Cid())
-
-	err = srv.pool.WithTx(ctx, func(conn *sqlite.Conn) error {
-		if err := srv.InitObject(sqlitebs.ContextWithConn(ctx, conn), AccID(acc.CID()), DeviceID(srv.repo.Device().CID()), sp.blk.Cid(), sp.blk); err != nil {
-			return err
-		}
-
-		if err := draftsInsert(conn, ohash, int(ocodec), d.Title, d.Subtitle, d.Content, int(d.CreateTime.Unix()), int(d.UpdateTime.Unix())); err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return d, err
 }
 
 func linksFromSQLite(conn *sqlite.Conn, c cid.Cid, draftsOnly bool) (map[Link]struct{}, error) {
