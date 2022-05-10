@@ -1,14 +1,14 @@
-package vcstypes
+package documents
 
 import (
 	"context"
-	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcstypes"
 	"path/filepath"
 	"testing"
 	"time"
@@ -24,7 +24,7 @@ func TestAPICreateDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	doc, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
 	require.NotEqual(t, "", doc.Id)
 	c, err := cid.Decode(doc.Id)
@@ -39,21 +39,21 @@ func TestAPIGetDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	draft, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
 
-	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+	updated := updateDraft(ctx, t, api, draft.Id, []*DocumentChange{
+		{Op: &DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &DocumentChange_MoveBlock_{MoveBlock: &DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &DocumentChange_ReplaceBlock{ReplaceBlock: &Block{
 			Id:   "b1",
 			Type: "statement",
 			Text: "Hello world!",
 		}}},
 	})
 
-	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	got, err := api.GetDraft(ctx, &GetDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 }
@@ -62,14 +62,14 @@ func TestAPIUpdateDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	draft, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
 
-	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+	updated := updateDraft(ctx, t, api, draft.Id, []*DocumentChange{
+		{Op: &DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &DocumentChange_MoveBlock_{MoveBlock: &DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &DocumentChange_ReplaceBlock{ReplaceBlock: &Block{
 			Id:   "b1",
 			Type: "statement",
 			Text: "Hello world!",
@@ -80,14 +80,14 @@ func TestAPIUpdateDraft(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, wc.Data())
 
-	want := &documents.Document{
+	want := &Document{
 		Id:       draft.Id,
 		Title:    "My new document title",
 		Subtitle: "This is my document's abstract",
 		Author:   draft.Author,
-		Children: []*documents.BlockNode{
+		Children: []*BlockNode{
 			{
-				Block: &documents.Block{
+				Block: &Block{
 					Id:          "b1",
 					Type:        "statement",
 					Text:        "Hello world!",
@@ -104,14 +104,14 @@ func TestAPIUpdateDraft(t *testing.T) {
 
 	testutil.ProtoEqual(t, want, updated, "UpdateDraft should return the updated document")
 
-	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	list, err := api.ListDrafts(ctx, &ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 1)
 	require.Equal(t, updated.Id, list.Documents[0].Id)
 	require.Equal(t, updated.Author, list.Documents[0].Author)
 	require.Equal(t, updated.Title, list.Documents[0].Title)
 
-	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	got, err := api.GetDraft(ctx, &GetDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
@@ -121,56 +121,56 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	draft, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
 
 	// === Add some content to the draft ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraftV2(ctx, &UpdateDraftRequestV2{
 			DocumentId: draft.Id,
-			Changes: []*documents.DocumentChange{
-				{Op: &documents.DocumentChange_SetTitle{
+			Changes: []*DocumentChange{
+				{Op: &DocumentChange_SetTitle{
 					SetTitle: "Hello Drafts V2",
 				}},
-				{Op: &documents.DocumentChange_SetSubtitle{
+				{Op: &DocumentChange_SetSubtitle{
 					SetSubtitle: "This is a more granular drafts API",
 				}},
-				{Op: &documents.DocumentChange_MoveBlock_{
-					MoveBlock: &documents.DocumentChange_MoveBlock{
+				{Op: &DocumentChange_MoveBlock_{
+					MoveBlock: &DocumentChange_MoveBlock{
 						BlockId:     "b1",
 						Parent:      "",
 						LeftSibling: "",
 					},
 				}},
-				{Op: &documents.DocumentChange_ReplaceBlock{
-					ReplaceBlock: &documents.Block{
+				{Op: &DocumentChange_ReplaceBlock{
+					ReplaceBlock: &Block{
 						Id:   "b1",
 						Text: "This is the first paragraph.",
 					},
 				}},
-				{Op: &documents.DocumentChange_MoveBlock_{
-					MoveBlock: &documents.DocumentChange_MoveBlock{
+				{Op: &DocumentChange_MoveBlock_{
+					MoveBlock: &DocumentChange_MoveBlock{
 						BlockId:     "b1.1",
 						Parent:      "b1",
 						LeftSibling: "",
 					},
 				}},
-				{Op: &documents.DocumentChange_ReplaceBlock{
-					ReplaceBlock: &documents.Block{
+				{Op: &DocumentChange_ReplaceBlock{
+					ReplaceBlock: &Block{
 						Id:   "b1.1",
 						Text: "This is a child of the first paragraph.",
 					},
 				}},
 
-				{Op: &documents.DocumentChange_MoveBlock_{
-					MoveBlock: &documents.DocumentChange_MoveBlock{
+				{Op: &DocumentChange_MoveBlock_{
+					MoveBlock: &DocumentChange_MoveBlock{
 						BlockId:     "b2",
 						Parent:      "",
 						LeftSibling: "",
 					},
 				}},
-				{Op: &documents.DocumentChange_ReplaceBlock{
-					ReplaceBlock: &documents.Block{
+				{Op: &DocumentChange_ReplaceBlock{
+					ReplaceBlock: &Block{
 						Id:   "b2",
 						Text: "This is inserted before the first paragraph.",
 					},
@@ -179,31 +179,31 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		doc, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+		doc, err := api.GetDraft(ctx, &GetDraftRequest{DocumentId: draft.Id})
 		require.NoError(t, err)
 
-		want := &documents.Document{
+		want := &Document{
 			Id:         draft.Id,
 			Author:     draft.Author,
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
 			UpdateTime: doc.UpdateTime,
-			Children: []*documents.BlockNode{
+			Children: []*BlockNode{
 				{
-					Block: &documents.Block{
+					Block: &Block{
 						Id:   "b2",
 						Text: "This is inserted before the first paragraph.",
 					},
 				},
 				{
-					Block: &documents.Block{
+					Block: &Block{
 						Id:   "b1",
 						Text: "This is the first paragraph.",
 					},
-					Children: []*documents.BlockNode{
+					Children: []*BlockNode{
 						{
-							Block: &documents.Block{
+							Block: &Block{
 								Id:   "b1.1",
 								Text: "This is a child of the first paragraph.",
 							},
@@ -218,11 +218,11 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Now reparent b1.1 ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraftV2(ctx, &UpdateDraftRequestV2{
 			DocumentId: draft.Id,
-			Changes: []*documents.DocumentChange{
-				{Op: &documents.DocumentChange_MoveBlock_{
-					MoveBlock: &documents.DocumentChange_MoveBlock{
+			Changes: []*DocumentChange{
+				{Op: &DocumentChange_MoveBlock_{
+					MoveBlock: &DocumentChange_MoveBlock{
 						BlockId:     "b1.1",
 						Parent:      "",
 						LeftSibling: "b2",
@@ -232,31 +232,31 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		doc, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+		doc, err := api.GetDraft(ctx, &GetDraftRequest{DocumentId: draft.Id})
 		require.NoError(t, err)
 
-		want := &documents.Document{
+		want := &Document{
 			Id:         draft.Id,
 			Author:     draft.Author,
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
 			UpdateTime: doc.UpdateTime,
-			Children: []*documents.BlockNode{
+			Children: []*BlockNode{
 				{
-					Block: &documents.Block{
+					Block: &Block{
 						Id:   "b2",
 						Text: "This is inserted before the first paragraph.",
 					},
 				},
 				{
-					Block: &documents.Block{
+					Block: &Block{
 						Id:   "b1.1",
 						Text: "This is a child of the first paragraph.",
 					},
 				},
 				{
-					Block: &documents.Block{
+					Block: &Block{
 						Id:   "b1",
 						Text: "This is the first paragraph.",
 					},
@@ -269,35 +269,35 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 	// === Now delete b1.1 ===
 	{
-		_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		_, err = api.UpdateDraftV2(ctx, &UpdateDraftRequestV2{
 			DocumentId: draft.Id,
-			Changes: []*documents.DocumentChange{
-				{Op: &documents.DocumentChange_DeleteBlock{
+			Changes: []*DocumentChange{
+				{Op: &DocumentChange_DeleteBlock{
 					DeleteBlock: "b1.1",
 				}},
 			},
 		})
 		require.NoError(t, err)
 
-		doc, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+		doc, err := api.GetDraft(ctx, &GetDraftRequest{DocumentId: draft.Id})
 		require.NoError(t, err)
 
-		want := &documents.Document{
+		want := &Document{
 			Id:         draft.Id,
 			Author:     draft.Author,
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
 			UpdateTime: doc.UpdateTime,
-			Children: []*documents.BlockNode{
+			Children: []*BlockNode{
 				{
-					Block: &documents.Block{
+					Block: &Block{
 						Id:   "b2",
 						Text: "This is inserted before the first paragraph.",
 					},
 				},
 				{
-					Block: &documents.Block{
+					Block: &Block{
 						Id:   "b1",
 						Text: "This is the first paragraph.",
 					},
@@ -313,17 +313,17 @@ func TestAPIDeleteDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	d1, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	d1, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
 
-	d2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	d2, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
 
-	deleted, err := api.DeleteDraft(ctx, &documents.DeleteDraftRequest{DocumentId: d1.Id})
+	deleted, err := api.DeleteDraft(ctx, &DeleteDraftRequest{DocumentId: d1.Id})
 	require.NoError(t, err)
 	require.NotNil(t, deleted)
 
-	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	list, err := api.ListDrafts(ctx, &ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 1) // Must be 1 because we've created another document apart from the deleted one.
 	testutil.ProtoEqual(t, d2, list.Documents[0], "second document must be the only thing in the list")
@@ -339,21 +339,21 @@ func TestAPIPublishDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	draft, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
 
-	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
-		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
-		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+	updated := updateDraft(ctx, t, api, draft.Id, []*DocumentChange{
+		{Op: &DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &DocumentChange_MoveBlock_{MoveBlock: &DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &DocumentChange_ReplaceBlock{ReplaceBlock: &Block{
 			Id:   "b1",
 			Type: "statement",
 			Text: "Hello world!",
 		}}},
 	})
 
-	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	published, err := api.PublishDraft(ctx, &PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	updated.UpdateTime = published.Document.UpdateTime
 	updated.PublishTime = published.Document.PublishTime // This is the only field that should differ.
@@ -379,13 +379,13 @@ func TestAPIPublishDraft(t *testing.T) {
 	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
 	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
 
-	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	list, err := api.ListDrafts(ctx, &ListDraftsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 0, "published draft must be removed from drafts")
 
 	// Draft must be removed after publishing.
 	{
-		draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{
+		draft, err := api.GetDraft(ctx, &GetDraftRequest{
 			DocumentId: draft.Id,
 		})
 		require.Nil(t, draft, "draft must be removed after publishing")
@@ -393,7 +393,7 @@ func TestAPIPublishDraft(t *testing.T) {
 	}
 
 	// Must get publication after publishing.
-	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	got, err := api.GetPublication(ctx, &GetPublicationRequest{DocumentId: draft.Id})
 	require.NoError(t, err, "must get document after publishing")
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 }
@@ -402,28 +402,28 @@ func TestAPIDeletePublication(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
-	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	doc, err := api.CreateDraft(ctx, &CreateDraftRequest{})
 	require.NoError(t, err)
-	doc = updateDraft(ctx, t, api, doc.Id, []*documents.DocumentChange{
-		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}}},
+	doc = updateDraft(ctx, t, api, doc.Id, []*DocumentChange{
+		{Op: &DocumentChange_SetTitle{SetTitle: "My new document title"}}},
 	)
 
-	_, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	_, err = api.PublishDraft(ctx, &PublishDraftRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
 
-	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	list, err := api.ListPublications(ctx, &ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Publications, 1)
 
-	deleted, err := api.DeletePublication(ctx, &documents.DeletePublicationRequest{DocumentId: doc.Id})
+	deleted, err := api.DeletePublication(ctx, &DeletePublicationRequest{DocumentId: doc.Id})
 	require.NoError(t, err)
 	require.NotNil(t, deleted)
 
-	list, err = api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	list, err = api.ListPublications(ctx, &ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, list.Publications, 0)
 
-	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	pub, err := api.GetPublication(ctx, &GetPublicationRequest{DocumentId: doc.Id})
 	require.Error(t, err, "must fail to get deleted publication")
 	_ = pub
 
@@ -438,25 +438,25 @@ func TestDocumentToProto(t *testing.T) {
 	docid := ipfs.MustNewCID(cid.Raw, multihash.IDENTITY, []byte("doc-id"))
 	author := ipfs.MustNewCID(cid.Raw, multihash.IDENTITY, []byte("doc-author"))
 
-	doc := NewDocument(docid, author, time.Now().UTC().Round(time.Second))
+	doc := vcstypes.NewDocument(docid, author, time.Now().UTC().Round(time.Second))
 
 	doc.ChangeTitle("My new document title")
 	doc.ChangeSubtitle("This is my document's abstract")
 	require.NoError(t, doc.MoveBlock("b1", "", ""))
-	require.NoError(t, doc.ReplaceBlock(Block{
+	require.NoError(t, doc.ReplaceBlock(vcstypes.Block{
 		ID:   "b1",
 		Type: "statement",
 		Text: "Hello world",
 	}))
 
-	want := &documents.Document{
+	want := &Document{
 		Id:       docid.String(),
 		Title:    "My new document title",
 		Subtitle: "This is my document's abstract",
 		Author:   author.String(),
-		Children: []*documents.BlockNode{
+		Children: []*BlockNode{
 			{
-				Block: &documents.Block{
+				Block: &Block{
 					Id:          "b1",
 					Type:        "statement",
 					Text:        "Hello world",
@@ -466,8 +466,8 @@ func TestDocumentToProto(t *testing.T) {
 				Children: nil,
 			},
 		},
-		CreateTime: timestamppb.New(doc.state.CreateTime),
-		UpdateTime: timestamppb.New(doc.state.CreateTime),
+		CreateTime: timestamppb.New(doc.State().CreateTime),
+		UpdateTime: timestamppb.New(doc.State().CreateTime),
 	}
 
 	docpb, err := docToProto(doc)
@@ -475,26 +475,26 @@ func TestDocumentToProto(t *testing.T) {
 	testutil.ProtoEqual(t, want, docpb, "must convert document to proto")
 }
 
-func updateDraft(ctx context.Context, t *testing.T, api *DocsAPI, id string, updates []*documents.DocumentChange) *documents.Document {
-	_, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*DocumentChange) *Document {
+	_, err := api.UpdateDraftV2(ctx, &UpdateDraftRequestV2{
 		DocumentId: id,
 		Changes:    updates,
 	})
 	require.NoError(t, err)
 
-	draft, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: id})
+	draft, err := api.GetDraft(ctx, &GetDraftRequest{DocumentId: id})
 	require.NoError(t, err)
 
 	return draft
 }
 
-func newTestDocsAPI(t *testing.T, name string) *DocsAPI {
+func newTestDocsAPI(t *testing.T, name string) *Server {
 	u := coretest.NewTester("alice")
 
 	db := newTestSQLite(t)
 	v := vcs.New(db)
 
-	return NewDocsAPI(u.Identity, db, v)
+	return NewServer(u.Identity, db, v)
 }
 
 func newTestSQLite(t *testing.T) *sqlitex.Pool {

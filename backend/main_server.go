@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"go.uber.org/fx"
 	"go.uber.org/multierr"
 	"golang.org/x/crypto/acme/autocert"
@@ -19,10 +20,12 @@ import (
 	documents "mintter/backend/api/documents/v1alpha"
 	networking "mintter/backend/api/networking/v1alpha"
 	"mintter/backend/config"
+	"mintter/backend/vcs"
 )
 
 var moduleGRPC = fx.Options(
 	fx.Provide(
+		provideVCS,
 		newNetworkingAPI,
 		newAccountsAPI,
 		newDaemonAPI,
@@ -31,6 +34,10 @@ var moduleGRPC = fx.Options(
 	),
 	fx.Invoke(registerGRPC),
 )
+
+func provideVCS(pool *sqlitex.Pool) *vcs.SQLite {
+	return vcs.New(pool)
+}
 
 // Must be registered after GRPC.
 var moduleHTTP = fx.Options(
@@ -141,7 +148,7 @@ func provideHTTPServer(lc fx.Lifecycle, stop fx.Shutdowner, r *repo, cfg config.
 					Prompt:     autocert.AcceptTOS,
 					HostPolicy: autocert.HostWhitelist(cfg.LetsEncrypt.Domain),
 					Email:      cfg.LetsEncrypt.Email,
-					Cache:      autocert.DirCache(r.autocertDir()),
+					Cache:      autocert.DirCache(r.AutocertDir()),
 				}
 
 				wrap.srv.Addr = ":https"

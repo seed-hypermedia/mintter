@@ -1,10 +1,16 @@
 package backend
 
 import (
+	"fmt"
 	"io/ioutil"
 	sgen "mintter/backend/db/sqlitegen"
 	"mintter/backend/db/sqlitegen/qb"
 	s "mintter/backend/db/sqliteschema"
+	"mintter/backend/ipfs"
+	"mintter/backend/vcs/vcssql"
+
+	"crawshaw.io/sqlite"
+	"github.com/ipfs/go-cid"
 )
 
 var _ = generateQueries
@@ -33,22 +39,6 @@ func generateQueries() error {
 			"VALUES", qb.List(
 				qb.VarCol(s.DevicesMultihash),
 				qb.VarCol(s.DevicesCodec),
-				qb.LookupSubQuery(s.AccountsID, s.Accounts,
-					"WHERE", s.AccountsMultihash, "=", qb.VarCol(s.AccountsMultihash),
-					"AND", s.AccountsCodec, "=", qb.VarCol(s.AccountsCodec),
-				),
-			),
-		),
-
-		qb.MakeQuery(s.Schema, "objectsInsertOrIgnore", sgen.QueryKindExec,
-			"INSERT OR IGNORE INTO", s.Objects, qb.ListColShort(
-				s.ObjectsMultihash,
-				s.ObjectsCodec,
-				s.ObjectsAccountID,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.VarCol(s.ObjectsMultihash),
-				qb.VarCol(s.ObjectsCodec),
 				qb.LookupSubQuery(s.AccountsID, s.Accounts,
 					"WHERE", s.AccountsMultihash, "=", qb.VarCol(s.AccountsMultihash),
 					"AND", s.AccountsCodec, "=", qb.VarCol(s.AccountsCodec),
@@ -195,6 +185,7 @@ func generateQueries() error {
 
 		qb.MakeQuery(s.Schema, "accountsGetForDevice", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
+				qb.ResultCol(s.AccountsID),
 				qb.ResultCol(s.AccountsMultihash),
 				qb.ResultCol(s.AccountsCodec),
 			), qb.Line,
@@ -412,4 +403,28 @@ func generateQueries() error {
 	}
 
 	return ioutil.WriteFile("sqlite_queries.gen.go", code, 0600)
+}
+
+func lookupAccID(conn *sqlite.Conn, c cid.Cid) (int, error) {
+	ocodec, ohash := ipfs.DecodeCID(c)
+
+	res, err := vcssql.AccountsLookupPK(conn, ohash, int(ocodec))
+	if err != nil {
+		return 0, err
+	}
+
+	if res.AccountsID != 0 {
+		return res.AccountsID, nil
+	}
+
+	insert, err := vcssql.AccountsInsertPK(conn, ohash, int(ocodec))
+	if err != nil {
+		return 0, err
+	}
+
+	if insert.AccountsID == 0 {
+		return 0, fmt.Errorf("failed to insert account")
+	}
+
+	return insert.AccountsID, nil
 }

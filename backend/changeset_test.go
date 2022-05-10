@@ -16,8 +16,8 @@ func TestPatchRDTState_NewPatch(t *testing.T) {
 
 	s := newChangeset(obj, nil)
 
-	ap1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-1")))
-	require.True(t, ap1.Author.Equals(cid.Cid(alice.Account.id)))
+	ap1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-1")))
+	require.True(t, ap1.Author.Equals(cid.Cid(alice.Account.CID())))
 	require.Equal(t, uint64(1), ap1.Seq)
 	require.Equal(t, uint64(1), ap1.LamportTime)
 	require.Nil(t, ap1.Deps)
@@ -31,7 +31,7 @@ func TestPatchRDTState_NewPatch(t *testing.T) {
 	require.Equal(t, []cid.Cid{ap1.cid}, s.deps, "state must remember new patch as next dependency")
 	require.Equal(t, map[cid.Cid]uint64{ap1.peer: 1}, s.seqs, "state must record peer seq")
 
-	ap2 := mustNewPatch(s.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-2")))
+	ap2 := mustNewPatch(s.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-2")))
 	require.Equal(t, uint64(2), ap2.Seq)
 	require.Equal(t, uint64(2), ap2.LamportTime)
 	require.Len(t, ap2.Deps, 1)
@@ -50,19 +50,19 @@ func TestPatchRDTState_Concurrent(t *testing.T) {
 
 	as := newChangeset(obj, nil)
 	ap := []signedPatch{
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-1"))),
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-2"))),
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-3"))),
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-4"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-1"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-2"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-3"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-4"))),
 	}
 
 	bs := newChangeset(obj, nil)
 	bp := []signedPatch{
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-1"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-2"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-3"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-4"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-5"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-1"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-2"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-3"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-4"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-5"))),
 	}
 
 	merged := newChangeset(obj, [][]signedPatch{ap, bp})
@@ -76,8 +76,8 @@ func TestPatchRDTState_Concurrent(t *testing.T) {
 		require.Equal(t, expected[i], string(sp.Body))
 	}
 
-	ap = append(ap, mustNewPatch(merged.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-5"))))
-	ap = append(ap, mustNewPatch(merged.NewPatch(cid.Cid(alice.Account.id), alice.Device.priv, kind, []byte("alice-patch-6"))))
+	ap = append(ap, mustNewPatch(merged.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-5"))))
+	ap = append(ap, mustNewPatch(merged.NewPatch(cid.Cid(alice.Account.CID()), alice.Device, kind, []byte("alice-patch-6"))))
 
 	require.Equal(t, uint64(5), ap[4].Seq)
 	require.Equal(t, uint64(6), ap[4].LamportTime)

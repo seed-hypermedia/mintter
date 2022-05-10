@@ -3,10 +3,9 @@ package backend
 import (
 	"container/heap"
 	"fmt"
-	"mintter/backend/ipfs"
+	"mintter/backend/core"
 
 	"github.com/ipfs/go-cid"
-	"github.com/libp2p/go-libp2p-core/crypto"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -101,15 +100,12 @@ func (s *changeset) Item() signedPatch {
 
 // NewPatch creates a new patch with the dependencies and logical timestamps that were in the CRDT state.
 // This must only be called after iterating over all the existing patches, otherwise it will panic.
-func (s *changeset) NewPatch(author cid.Cid, key crypto.PrivKey, k PatchKind, body []byte) (signedPatch, error) {
+func (s *changeset) NewPatch(author cid.Cid, key core.KeyPair, k PatchKind, body []byte) (signedPatch, error) {
 	if s.pos != s.size {
 		panic("BUG: must call new patch only after iterating over all the existing patches")
 	}
 
-	peer, err := ipfs.PubKeyAsCID(key.GetPublic())
-	if err != nil {
-		return signedPatch{}, err
-	}
+	peer := key.CID()
 
 	p := Patch{
 		Author:      author,
@@ -141,7 +137,7 @@ func (s *changeset) NewPatch(author cid.Cid, key crypto.PrivKey, k PatchKind, bo
 	return signed, nil
 }
 
-func (s *changeset) NewProtoPatch(author cid.Cid, key crypto.PrivKey, msg proto.Message) (signedPatch, error) {
+func (s *changeset) NewProtoPatch(author cid.Cid, key core.KeyPair, msg proto.Message) (signedPatch, error) {
 	var (
 		data []byte
 		err  error

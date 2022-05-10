@@ -1,17 +1,18 @@
-package backend
+package daemontest
 
 import (
-	"os"
-	"testing"
-
+	"mintter/backend/core/coretest"
 	"mintter/backend/daemon"
 	"mintter/backend/testutil"
+	"os"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
-func makeTestRepo(t *testing.T, tt Tester) *repo {
+// MakeTestRepo creates a new testing repository.
+func MakeTestRepo(t *testing.T, tt coretest.Tester) *daemon.OnDisk {
 	t.Helper()
 
 	dir := testutil.MakeRepoPath(t)

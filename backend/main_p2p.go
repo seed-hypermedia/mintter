@@ -140,7 +140,7 @@ func provideLibp2p(lc fx.Lifecycle, cfg config.P2P, ps peerstore.Peerstore, ds d
 		opts = append(opts, libp2p.BandwidthReporter(m))
 	}
 
-	node, err := ipfs.NewLibp2pNode(r.Device().priv, ds, boot, opts...)
+	node, err := ipfs.NewLibp2pNode(r.Device().Wrapped(), ds, boot, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func provideBlockService(bs blockstore.Blockstore, bswap *ipfs.Bitswap) (blockse
 }
 
 func provideP2P(lc fx.Lifecycle, bs blockservice.BlockService, repo *repo, cfg config.P2P, libp2p *ipfs.Libp2p, boot ipfs.Bootstrappers) (*p2pNode, error) {
-	prov, err := providing.New(repo.providingDBPath(), libp2p.Routing, makeStrategy(bs.Blockstore()))
+	prov, err := providing.New(repo.ProvidingDBPath(), libp2p.Routing, makeStrategy(bs.Blockstore()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create provider: %w", err)
 	}

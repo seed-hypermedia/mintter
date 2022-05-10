@@ -10,9 +10,7 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
-const (
-	DocumentType = "https://schema.mintter.org/Document"
-)
+const DocumentType = "https://schema.mintter.org/Document"
 
 func init() {
 	cbornode.RegisterCborType(DocumentPermanode{})
@@ -26,18 +24,6 @@ type DocumentPermanode struct {
 	Owner      cid.Cid
 	Nonce      []byte
 	CreateTime time.Time
-}
-
-func (dp DocumentPermanode) PermanodeType() string {
-	return dp.Type
-}
-
-func (dp DocumentPermanode) PermanodeCreateTime() time.Time {
-	return dp.CreateTime
-}
-
-func (dp DocumentPermanode) PermanodeOwner() cid.Cid {
-	return dp.Owner
 }
 
 func NewDocumentPermanode(owner cid.Cid) DocumentPermanode {
@@ -54,6 +40,18 @@ func NewDocumentPermanode(owner cid.Cid) DocumentPermanode {
 	}
 
 	return p
+}
+
+func (dp DocumentPermanode) PermanodeType() string {
+	return dp.Type
+}
+
+func (dp DocumentPermanode) PermanodeCreateTime() time.Time {
+	return dp.CreateTime
+}
+
+func (dp DocumentPermanode) PermanodeOwner() cid.Cid {
+	return dp.Owner
 }
 
 type Document struct {
@@ -98,11 +96,7 @@ func (d *Document) MoveBlock(blockID, parent, left string) error {
 
 	d.events = append(d.events, DocumentEvent{
 		// TODO: extract block move struct.
-		BlockMoved: struct {
-			BlockID     string
-			Parent      string
-			LeftSibling string
-		}{
+		BlockMoved: BlockMovedEvent{
 			BlockID:     blockID,
 			Parent:      parent,
 			LeftSibling: left,
@@ -138,33 +132,40 @@ func (d *Document) Events() []DocumentEvent {
 	return d.events
 }
 
+func (d *Document) State() DocumentState { return d.state }
+
+func (d *Document) Apply(evt DocumentEvent, updateTime time.Time) error {
+	return d.state.apply(evt, updateTime)
+}
+
 type DocumentEvent struct {
-	TitleChanged    string
-	SubtitleChanged string
-	BlockMoved      BlockMovedEvent // TODO: add refmt tags to omitempty fields.
-	BlockReplaced   Block
-	BlockDeleted    string
+	// One of.
+	TitleChanged    string          `refmt:"titleChanged,omitempty"`
+	SubtitleChanged string          `refmt:"subtitleChanged,omitempty"`
+	BlockMoved      BlockMovedEvent `refmt:"blockMoved,omitempty"` // TODO: add refmt tags to omitempty fields.
+	BlockReplaced   Block           `refmt:"blockReplaced,omitempty"`
+	BlockDeleted    string          `refmt:"blockDeleted,omitempty"`
 }
 
 type BlockMovedEvent struct {
-	BlockID     string
-	Parent      string
-	LeftSibling string
+	BlockID     string `refmt:"blockID,omitempty"`
+	Parent      string `refmt:"parent,omitempty"`
+	LeftSibling string `refmt:"leftSibling,omitempty"`
 }
 
 type Block struct {
-	ID          string
-	Type        string
-	Attributes  map[string]string
-	Text        string
-	Annotations []Annotation
+	ID          string            `refmt:"id,omitempty""`
+	Type        string            `refmt:"type,omitempty"`
+	Attributes  map[string]string `refmt:"attributes,omitempty"`
+	Text        string            `refmt:"text,omitempty"`
+	Annotations []Annotation      `refmt:"annotations,omitempty"`
 }
 
 type Annotation struct {
-	Type       string
-	Attributes map[string]string
-	Starts     []int32
-	Ends       []int32
+	Type       string            `refmt:"type,omitempty""`
+	Attributes map[string]string `refmt:"attributes,omitempty"`
+	Starts     []int32           `refmt:"starts,omitempty"`
+	Ends       []int32           `refmt:"ends,omitempty"`
 }
 
 type DocumentState struct {

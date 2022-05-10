@@ -28,7 +28,7 @@ func (srv *p2pAPI) GetPeerInfo(ctx context.Context, in *p2p.GetPeerInfoRequest) 
 	}
 
 	return &p2p.PeerInfo{
-		AccountId: acc.id.String(),
+		AccountId: acc.CID().String(),
 	}, nil
 }
 

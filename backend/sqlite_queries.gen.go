@@ -57,29 +57,6 @@ VALUES (:devicesMultihash, :devicesCodec, COALESCE((SELECT accounts.id FROM acco
 	return err
 }
 
-func objectsInsertOrIgnore(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, accountsMultihash []byte, accountsCodec int) error {
-	const query = `INSERT OR IGNORE INTO objects (multihash, codec, account_id)
-VALUES (:objectsMultihash, :objectsCodec, COALESCE((SELECT accounts.id FROM accounts WHERE accounts.multihash = :accountsMultihash AND accounts.codec = :accountsCodec LIMIT 1), -1000))`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
-		stmt.SetBytes(":accountsMultihash", accountsMultihash)
-		stmt.SetInt(":accountsCodec", accountsCodec)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: objectsInsertOrIgnore: %w", err)
-	}
-
-	return err
-}
-
 func draftsUpdate(conn *sqlite.Conn, draftsTitle string, draftsSubtitle string, draftsContent []byte, draftsUpdateTime int, objectsMultihash []byte, objectsCodec int) error {
 	const query = `UPDATE drafts
 SET (title, subtitle, content, update_time) = (:draftsTitle, :draftsSubtitle, :draftsContent, :draftsUpdateTime)
@@ -370,12 +347,13 @@ JOIN accounts ON accounts.id = devices.account_id`
 }
 
 type accountsGetForDeviceResult struct {
+	AccountsID        int
 	AccountsMultihash []byte
 	AccountsCodec     int
 }
 
 func accountsGetForDevice(conn *sqlite.Conn, devicesMultihash []byte) (accountsGetForDeviceResult, error) {
-	const query = `SELECT accounts.multihash, accounts.codec
+	const query = `SELECT accounts.id, accounts.multihash, accounts.codec
 FROM accounts
 WHERE accounts.id = COALESCE((SELECT devices.account_id FROM devices WHERE devices.multihash = :devicesMultihash LIMIT 1), -1000)`
 
@@ -390,8 +368,9 @@ WHERE accounts.id = COALESCE((SELECT devices.account_id FROM devices WHERE devic
 			return errors.New("accountsGetForDevice: more than one result return for a single-kind query")
 		}
 
-		out.AccountsMultihash = stmt.ColumnBytes(0)
-		out.AccountsCodec = stmt.ColumnInt(1)
+		out.AccountsID = stmt.ColumnInt(0)
+		out.AccountsMultihash = stmt.ColumnBytes(1)
+		out.AccountsCodec = stmt.ColumnInt(2)
 		return nil
 	}
 

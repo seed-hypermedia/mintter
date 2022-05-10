@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func TestDaemonEndToEnd(t *testing.T) {
+func TestDaemonSmoke(t *testing.T) {
 	cfg := config.Config{
 		HTTPPort:      "",
 		GRPCPort:      "",

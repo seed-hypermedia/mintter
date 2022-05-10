@@ -16,7 +16,7 @@ func init() {
 }
 
 func TestSignedCBOR(t *testing.T) {
-	key := makeTester(t, "alice").Device.priv
+	key := makeTester(t, "alice").Device
 	in := foo{"Alex"}
 	signed, err := SignCBOR(in, key)
 	require.NoError(t, err)

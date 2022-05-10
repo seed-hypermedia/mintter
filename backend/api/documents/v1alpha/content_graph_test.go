@@ -1,4 +1,4 @@
-package backend
+package documents
 
 // func TestAPICitations_E2E(t *testing.T) {
 // 	alice := makeTestBackend(t, "alice", true)

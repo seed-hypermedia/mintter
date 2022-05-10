@@ -34,10 +34,11 @@ func New(db *sqlitex.Pool) *SQLite {
 		ColumnCodec:     string(sqliteschema.IPFSBlocksCodec.ShortName()),
 		ColumnData:      string(sqliteschema.IPFSBlocksData.ShortName()),
 	})
-	bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
-	if err != nil {
-		panic(err)
-	}
+	// bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
+	// if err != nil {
+	// 	panic(err)
+	// }
+	_ = err
 
 	return &SQLite{db: db, bs: bs}
 }
@@ -305,7 +306,12 @@ func (s *SQLite) StorePermanode(ctx context.Context, blk EncodedBlock[Permanode]
 
 	ocodec, ohash := ipfs.DecodeCID(blk.Cid())
 
-	if err := vcssql.ObjectsInsertOrIgnore(conn, ohash, int(ocodec), aid); err != nil {
+	res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
+	if err != nil {
+		return err
+	}
+
+	if err := vcssql.ObjectsInsertOrIgnore(conn, res.IPFSBlocksID, ohash, int(ocodec), aid); err != nil {
 		return err
 	}
 

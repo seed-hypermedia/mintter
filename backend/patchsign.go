@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"mintter/backend/core"
 	"mintter/backend/ipfs"
 
 	blocks "github.com/ipfs/go-block-format"
@@ -33,7 +34,7 @@ func (sp signedPatch) ProtoBody() (proto.Message, error) {
 	return msg, proto.Unmarshal(sp.Body, msg)
 }
 
-func signPatch(p Patch, k crypto.PrivKey) (signedPatch, error) {
+func signPatch(p Patch, k core.KeyPair) (signedPatch, error) {
 	signed, err := SignCBOR(p, k)
 	if err != nil {
 		return signedPatch{}, err

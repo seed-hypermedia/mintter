@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"mintter/backend/core"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
 
@@ -108,7 +109,7 @@ type SigCBOR struct {
 	pubKey       crypto.PubKey
 }
 
-func SignCBOR(v interface{}, k crypto.PrivKey) (*SigCBOR, error) {
+func SignCBOR(v interface{}, k core.KeyPair) (*SigCBOR, error) {
 	if v == nil {
 		panic("BUG: can't sign nil CBOR type")
 	}
@@ -123,9 +124,12 @@ func SignCBOR(v interface{}, k crypto.PrivKey) (*SigCBOR, error) {
 		return nil, err
 	}
 
-	pk := k.GetPublic()
+	pubKey, err := k.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
 
-	pubKey, err := crypto.MarshalPublicKey(pk)
+	pk, err := crypto.UnmarshalPublicKey(pubKey)
 	if err != nil {
 		return nil, err
 	}

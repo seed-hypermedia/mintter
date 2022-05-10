@@ -16,7 +16,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	swarm "github.com/libp2p/go-libp2p-swarm"
-	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -24,13 +23,14 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 
 	accounts "mintter/backend/api/accounts/v1alpha"
 	p2p "mintter/backend/api/p2p/v1alpha"
+	"mintter/backend/core"
 	"mintter/backend/ipfs"
 	"mintter/backend/ipfs/sqlitebs"
 	"mintter/backend/lndhub"
+	"mintter/backend/vcs/vcssql"
 )
 
 // Log messages.
@@ -114,133 +114,9 @@ func (srv *backend) Start(ctx context.Context) (err error) {
 		return fmt.Errorf("failed to get account to provide: %w", err)
 	}
 
-	srv.p2p.prov.EnqueueProvide(ctx, cid.Cid(acc.id))
+	srv.p2p.prov.EnqueueProvide(ctx, cid.Cid(acc.CID()))
 
 	return g.Wait()
-}
-
-// Register an account on this node using provided mnemonic.
-func (srv *backend) Register(ctx context.Context, m aezeed.Mnemonic, passphraze string) (AccountID, error) {
-	srv.mu.Lock()
-	defer srv.mu.Unlock()
-
-	if len(m) != aezeed.NumMnemonicWords {
-		return AccountID{}, fmt.Errorf("mnemonic must be exactly %d words, got %d", aezeed.NumMnemonicWords, len(m))
-	}
-
-	select {
-	case <-srv.repo.Ready():
-		return AccountID{}, status.Errorf(codes.FailedPrecondition, "account is already initialized")
-	default:
-		acc, err := NewAccountFromMnemonic(m, passphraze)
-		if err != nil {
-			return AccountID{}, fmt.Errorf("failed to create account from mnemonic: %w", err)
-		}
-
-		aid := cid.Cid(acc.id)
-
-		state, err := srv.LoadState(ctx, aid)
-		if err != nil {
-			return AccountID{}, fmt.Errorf("failed to load account state: %w", err)
-		}
-
-		// TODO: this can be non-empty if we have created the account previously,
-		// but failed to write the account file and close the account ready channel.
-		// Thus we have to check here if the incoming account is the same - if not fail,
-		// and if it is the same - skip creating the patch, and just store the account file.
-		// Since it's a very weird situation, we don't have time to deal with that right now.
-		if !state.IsEmpty() {
-			panic("WEIRD BUG: remove your Mintter state folder and start over again")
-		}
-
-		binding, err := InviteDevice(acc, srv.repo.Device())
-		if err != nil {
-			return AccountID{}, fmt.Errorf("failed to create account binding: %w", err)
-		}
-
-		if err := srv.register(ctx, state, binding); err != nil {
-			return AccountID{}, fmt.Errorf("failed to register account: %w", err)
-		}
-
-		if err := srv.repo.CommitAccount(acc); err != nil {
-			return AccountID{}, fmt.Errorf("failed to write account file: %w", err)
-		}
-
-		// TODO: Here we would need to publish our patch on the PubSub, so that people can discover our new device,
-		// but since there would be actually no one to receive the message, it doesn't really make much sense.
-		// Plus it complicates a lot the whole process. There's a bit of a chicken-and-egg problem: we don't know
-		// which topic to publish to until we create the account, and account gets created just when we publish the patch.
-		// We leave it as is right now, but let's see if we need to do something with it in the future.
-
-		return AccountID(aid), nil
-	}
-}
-
-func (srv *backend) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
-	acc, err := srv.repo.Account()
-	if err != nil {
-		return nil, err
-	}
-
-	state, err := srv.LoadState(ctx, cid.Cid(acc.id))
-	if err != nil {
-		return nil, err
-	}
-
-	account, err := accountFromState(state)
-	if err != nil {
-		return nil, err
-	}
-
-	merged := &accounts.Profile{}
-	if account.Profile == nil {
-		account.Profile = &accounts.Profile{}
-	}
-	proto.Merge(merged, account.Profile)
-	proto.Merge(merged, in)
-
-	diff := diffProto(account.Profile, merged)
-	if diff == nil {
-		return account, nil
-	}
-
-	diffu := diff.(*accounts.Profile)
-
-	var evt AccountChange
-
-	if diffu.Alias != "" {
-		evt.NewAlias = diffu.Alias
-	}
-
-	if diffu.Bio != "" {
-		evt.NewBio = diffu.Bio
-	}
-
-	if diffu.Email != "" {
-		evt.NewEmail = diffu.Email
-	}
-
-	account.Profile = merged
-
-	sp, err := state.NewProtoPatch(cid.Cid(acc.id), srv.repo.Device().priv, &evt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to produce patch to update profile: %w", err)
-	}
-
-	if err := srv.AddPatch(ctx, sp); err != nil {
-		return nil, err
-	}
-
-	return account, nil
-}
-
-func (srv *backend) GetAccountState(ctx context.Context, aid AccountID) (*changeset, error) {
-	state, err := srv.LoadState(ctx, cid.Cid(aid))
-	if err != nil {
-		return nil, fmt.Errorf("failed to load state for account %s: %w", aid, err)
-	}
-
-	return state, nil
 }
 
 func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
@@ -254,19 +130,20 @@ func (srv *backend) GetDeviceAddrs(d DeviceID) ([]multiaddr.Multiaddr, error) {
 }
 
 func (srv *backend) GetAccountForDevice(ctx context.Context, d DeviceID) (AccountID, error) {
-	if srv.repo.device.ID().Equals(d) {
+	if srv.repo.Device().CID().Equals(cid.Cid(d)) {
 		acc, err := srv.repo.Account()
 		if err != nil {
 			return AccountID{}, status.Errorf(codes.FailedPrecondition, "failed to get own account: %v", err)
 		}
 
-		return acc.id, nil
+		return AccID(acc.CID()), nil
 	}
 
 	return srv.graphdb.GetAccountForDevice(ctx, d)
 }
 
 func (srv *backend) Connect(ctx context.Context, addrs ...multiaddr.Multiaddr) error {
+	return fmt.Errorf("unimplemented")
 	p2p, err := srv.readyIPFS()
 	if err != nil {
 		return err
@@ -315,7 +192,7 @@ func (srv *backend) ListAccounts(ctx context.Context) ([]accountsListResult, err
 		return nil, err
 	}
 
-	accs, err := accountsList(conn, me.id.Hash())
+	accs, err := accountsList(conn, me.CID().Hash())
 	if err != nil {
 		return nil, err
 	}
@@ -345,7 +222,7 @@ func timeFromSeconds(sec int) time.Time {
 }
 
 // Account returns our own account.
-func (srv *backend) Account() (PublicAccount, error) {
+func (srv *backend) Account() (core.PublicKey, error) {
 	return srv.repo.Account()
 }
 
@@ -396,12 +273,31 @@ func (srv *backend) InitObject(ctx context.Context, aid AccountID, did DeviceID,
 		return err
 	}
 
-	if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), ahash, int(acodec)); err != nil {
+	if permablk == nil {
+		blk, err := blocks.NewBlockWithCid(nil, cid.Cid(oid))
+		if err != nil {
+			return err
+		}
+		permablk = blk
+	}
+
+	if err := s.bs.Put(sqlitebs.ContextWithConn(ctx, conn), permablk); err != nil {
 		return err
 	}
 
-	if permablk != nil {
-		if err := s.bs.Put(sqlitebs.ContextWithConn(ctx, conn), permablk); err != nil {
+	// Insert object reusing data from ipfs blocks table.
+	{
+		dbaid, err := lookupAccID(conn, cid.Cid(aid))
+		if err != nil {
+			return err
+		}
+
+		res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
+		if err != nil {
+			return err
+		}
+
+		if err := vcssql.ObjectsInsertOrIgnore(conn, res.IPFSBlocksID, ohash, int(ocodec), dbaid); err != nil {
 			return err
 		}
 	}
@@ -524,7 +420,7 @@ func (srv *backend) handleMintterPeer(ctx context.Context, evt event.EvtPeerIden
 
 	srv.emitEvent(ctx, accountVerified{
 		Device:  DeviceID(peer.ToCid(pid)),
-		Account: AccountID(aid),
+		Account: AccID(aid),
 	})
 
 	return nil
@@ -544,27 +440,6 @@ func (srv *backend) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn
 	srv.p2p.libp2p.Host.ConnManager().Protect(pid, protocolSupportKey)
 
 	return srv.rpc.Dial(ctx, pid, srv.dialOpts)
-}
-
-func (srv *backend) register(ctx context.Context, state *changeset, binding AccountBinding) error {
-	evt := AccountChange{
-		NewDeviceProof: string(binding.AccountProof),
-	}
-
-	sp, err := state.NewProtoPatch(binding.Account, srv.repo.Device().priv, &evt)
-	if err != nil {
-		return fmt.Errorf("failed to create a patch: %w", err)
-	}
-
-	if err := srv.graphdb.StoreDevice(ctx, AccountID(binding.Account), DeviceID(binding.Member)); err != nil {
-		return fmt.Errorf("failed to store own device-account relationship: %w", err)
-	}
-
-	if err := srv.AddPatch(ctx, sp); err != nil {
-		return fmt.Errorf("failed to add patch: %w", err)
-	}
-
-	return nil
 }
 
 func (srv *backend) readyIPFS() (*p2pNode, error) {

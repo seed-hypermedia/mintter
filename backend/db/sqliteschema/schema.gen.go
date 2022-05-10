@@ -97,12 +97,11 @@ const (
 
 // Table objects.
 const (
-	Objects           sqlitegen.Table  = "objects"
-	ObjectsAccountID  sqlitegen.Column = "objects.account_id"
-	ObjectsCodec      sqlitegen.Column = "objects.codec"
-	ObjectsCreateTime sqlitegen.Column = "objects.create_time"
-	ObjectsID         sqlitegen.Column = "objects.id"
-	ObjectsMultihash  sqlitegen.Column = "objects.multihash"
+	Objects          sqlitegen.Table  = "objects"
+	ObjectsAccountID sqlitegen.Column = "objects.account_id"
+	ObjectsCodec     sqlitegen.Column = "objects.codec"
+	ObjectsID        sqlitegen.Column = "objects.id"
+	ObjectsMultihash sqlitegen.Column = "objects.multihash"
 )
 
 // Table publications.
@@ -188,7 +187,6 @@ var Schema = sqlitegen.Schema{
 		NamedVersionsVersion:      {Table: NamedVersions, SQLType: "TEXT"},
 		ObjectsAccountID:          {Table: Objects, SQLType: "INTEGER"},
 		ObjectsCodec:              {Table: Objects, SQLType: "INTEGER"},
-		ObjectsCreateTime:         {Table: Objects, SQLType: "INTEGER"},
 		ObjectsID:                 {Table: Objects, SQLType: "INTEGER"},
 		ObjectsMultihash:          {Table: Objects, SQLType: "BLOB"},
 		PublicationsCreateTime:    {Table: Publications, SQLType: "INTEGER"},
