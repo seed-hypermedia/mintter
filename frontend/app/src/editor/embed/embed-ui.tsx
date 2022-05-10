@@ -6,19 +6,7 @@ export const EmbedUI = styled('q', {
   borderBottom: '3px solid $colors$base-component-bg-normal',
 
   '&:hover': {
-    borderBottomColor: '$base-component-bg-normal',
+    borderBottomColor: '$secondary-border-subtle',
     cursor: 'pointer',
   },
-
-  // '&::before, &::after': {
-  //   fontWeight: '$bold',
-  //   fontSize: '1.4em',
-  //   color: '$base-text-low',
-  // },
-  // '&::before': {
-  //   content: '[',
-  // },
-  // '&::after': {
-  //   content: ']',
-  // },
 })

@@ -104,8 +104,6 @@ function moveStatement(editor: Editor, up: boolean) {
           })
         }
 
-        console.log('siblings: ', siblings);
-
         siblings.forEach(entry => {
           let [node] = entry
           if (isFlowContent(node)) {

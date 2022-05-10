@@ -58,20 +58,3 @@ export function createDeleteChange(blockId: string): DocumentChange {
     }
   }
 }
-
-export function migrateContentToChanges(editor: Editor, content: any) {
-  let [match] = Node.nodes(content, {
-  })
-
-  console.log('blocks', match);
-
-
-  // if (blocks) {
-  //   for (let entry of blocks) {
-  //     console.log('block entries', entry);
-  //   }
-  // }
-
-
-
-}

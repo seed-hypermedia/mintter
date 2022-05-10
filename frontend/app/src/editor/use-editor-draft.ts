@@ -5,7 +5,7 @@ import { queryKeys } from '@app/hooks'
 import { useMainPage } from '@app/main-page-context'
 import { createId, group, paragraph, statement, text } from '@mintter/mttast'
 import { useMachine } from '@xstate/react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { QueryClient, useQueryClient } from 'react-query'
 import { Editor } from 'slate'
 import { assign, createMachine, MachineOptionsFrom } from 'xstate'
@@ -50,7 +50,11 @@ interface DraftEditorMachineProps {
 
 const defaultContent = [
   group({ data: { parent: '' } }, [
-    statement({ id: createId() }, [paragraph([text('')])]),
+    statement({ id: createId() }, [
+      paragraph([
+        text(''),
+      ])
+    ]),
   ]),
 ]
 
@@ -305,11 +309,8 @@ export function useEditorDraft({
     () => draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
     options,
   )
-  let onlyOnce = useRef(false)
 
   useEffect(() => {
-    if (onlyOnce.current) return
-    console.log('inside useEditor effect!', documentId)
     if (documentId) {
       send({ type: 'FETCH', documentId })
       // onlyOnce.current = true

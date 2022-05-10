@@ -1,14 +1,13 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {BlockCitations} from '@app/editor/block-citations'
 import {BlockTools} from '@app/editor/block-tools'
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useParams} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {useCreateDraft} from '@components/library/use-create-draft'
 import {useSidepanel} from '@components/sidepanel'
@@ -129,30 +128,19 @@ export function BlockWrapper({
     >
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger asChild>
-          <Button
-            variant="ghost"
-            size="1"
-            color="muted"
+          <ElementDropdown
             css={{
               opacity:
                 hoverState.context.blockId == (element as FlowContent).id
                   ? 1
                   : 0,
-              padding: '$1',
-              backgroundColor: '$base-component-bg-hover',
               position: 'absolute',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               right: -20,
               top: 4,
-              // userSelect: 'none',
             }}
           >
             <Icon name="MoreHorizontal" size="1" color="muted" />
-          </Button>
+          </ElementDropdown>
         </Dropdown.Trigger>
         <Dropdown.Content alignOffset={-5} align="end">
           <Dropdown.Item onSelect={onCopy}>

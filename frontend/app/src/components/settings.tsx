@@ -137,8 +137,6 @@ function ProfileForm({
   })
 
   useEffect(() => {
-    console.log('inside settings effect!', data?.profile)
-
     if (data?.profile && isSuccess) {
       const {alias = '', email = '', bio = ''} = data?.profile
       form.reset({

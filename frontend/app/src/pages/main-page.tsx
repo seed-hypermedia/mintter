@@ -12,11 +12,7 @@ import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {ScrollArea} from '@components/scroll-area'
 import {Settings} from '@components/settings'
-import {
-  createSidepanelMachine,
-  Sidepanel,
-  SidepanelProvider,
-} from '@components/sidepanel'
+import {createSidepanelMachine, SidepanelProvider} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
 import {useActor, useInterpret} from '@xstate/react'
@@ -67,7 +63,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
                       {state.matches('routes.idle') ? <Placeholder /> : null}
                     </ErrorBoundary>
                   </MainWindow>
-                  {state.hasTag('sidepanel') ? <Sidepanel /> : null}
+                  {/* {state.hasTag('sidepanel') ? <Sidepanel /> : null} */}
                 </Box>
               )}
             </SidepanelProvider>

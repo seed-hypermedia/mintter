@@ -56,8 +56,6 @@ export default function EditorPage({
     options: {
       actions: {
         afterPublish: (context) => {
-          console.log('After Publish: ', context, mainPageService.getSnapshot())
-
           if (context.publication && context.publication.document) {
             if (!toast.current) {
               toast.current = toastFactory.success('Draft Published!', {
@@ -120,11 +118,6 @@ export default function EditorPage({
           if (shouldAutosave) {
             ;(async function autosave() {
               let contentChanges = changesService.transformChanges(editor)
-              console.log(
-                '🚀 ~ file: editor.tsx ~ line 99 ~ autosave ~ contentChanges',
-                contentChanges,
-                editor,
-              )
               let newTitle = getTitleFromContent(editor)
               let changes: Array<DocumentChange> = newTitle
                 ? [
@@ -163,8 +156,6 @@ export default function EditorPage({
 
           publishDraft(context.localDraft.id!)
             .then((publication) => {
-              console.log('PUBLISHED!', publication)
-
               sendBack({type: 'EDITOR.PUBLISH.SUCCESS', publication})
             })
             .catch((err: any) => {
@@ -247,7 +238,6 @@ export default function EditorPage({
               disabled={state.hasTag('saving')}
               data-testid="submit-publish"
               onClick={() => {
-                console.log('PUBLISH PLEASE!!!')
                 send('EDITOR.PUBLISH')
               }}
             >

@@ -76,11 +76,6 @@ describe('Editor Changes', () => {
       .type('hello demo')
       .then(() => {
         let changes = changesService.getChanges()
-        console.log(
-          '🚀 ~ file: editor-changes.cy.tsx ~ line 77 ~ .then ~ changes',
-          changes,
-        )
-
         expect(changes).to.have.length(3)
       })
   })
@@ -156,10 +151,6 @@ describe('Editor Changes', () => {
 
         .then(() => {
           let changes = changesService.getChanges()
-          console.log(
-            '🚀 ~ file: editor-changes.cy.tsx ~ line 159 ~ .then ~ changes',
-            changes,
-          )
           let newBlock: FlowContent = (elEditor.children[0] as GroupingContent)
             .children[0].children[1]!.children[0]
           expect(changes).to.have.length(2)
@@ -314,11 +305,6 @@ describe('Editor Changes', () => {
 
         .then(() => {
           let changes = changesService.getChanges()
-          console.log(
-            '🚀 ~ file: editor-changes.cy.tsx ~ line 471 ~ .then ~ changes',
-            changes,
-          )
-
           expect(changes).to.have.length(3)
           let expected: Array<ChangeOperation> = [
             ['moveBlock', block3.id],
@@ -393,11 +379,6 @@ describe('Editor Changes', () => {
 
         .then(() => {
           let changes = changesService.getChanges()
-          console.log(
-            '🚀 ~ file: editor-changes.cy.tsx ~ line 395 ~ .then ~ changes',
-            changes,
-          )
-
           expect(changes).to.have.length(1)
           let expected: ChangeOperation = ['deleteBlock', 'block2']
 
@@ -475,11 +456,6 @@ describe('Editor Changes', () => {
 
         .then(() => {
           let changes = changesService.getChanges()
-          console.log(
-            '🚀 ~ file: editor-changes.cy.tsx ~ line 478 ~ .then ~ changes',
-            changes,
-            elEditor.children,
-          )
           let expected: Array<ChangeOperation> = [
             ['deleteBlock', 'block2'],
             ['moveBlock', 'block3'],
