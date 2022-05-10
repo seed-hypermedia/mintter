@@ -2,13 +2,13 @@ package backend
 
 import (
 	"crypto/rand"
+	"mintter/backend/core"
 	"mintter/backend/ipfs"
 	"time"
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
-	"github.com/libp2p/go-libp2p-core/crypto"
 )
 
 func init() {
@@ -20,7 +20,7 @@ type signedPermanode struct {
 	perma permanode
 }
 
-func newSignedPermanode(codec uint64, aid AccountID, k crypto.PrivKey) (signedPermanode, error) {
+func newSignedPermanode(codec uint64, aid AccountID, k core.KeyPair) (signedPermanode, error) {
 	pn := newPermanode(aid)
 
 	signed, err := SignCBOR(pn, k)

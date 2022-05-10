@@ -46,8 +46,8 @@ func TestPatchStore_AddPatch(t *testing.T) {
 	ctx := context.Background()
 
 	s := newChangeset(oid, nil)
-	p1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("p-1")))
-	p2 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("p-2")))
+	p1 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("p-1")))
+	p2 := mustNewPatch(s.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("p-2")))
 
 	require.NoError(t, alice.AddPatch(ctx, p1))
 	require.NoError(t, alice.AddPatch(ctx, p2))
@@ -74,9 +74,9 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 
 	as := newChangeset(oid, nil)
 	ap := []signedPatch{
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-1"))),
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-2"))),
-		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.id), alice.Tester.Device.priv, kind, []byte("alice-patch-3"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-1"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-2"))),
+		mustNewPatch(as.NewPatch(cid.Cid(alice.Tester.Account.CID()), alice.Tester.Device, kind, []byte("alice-patch-3"))),
 	}
 
 	require.NoError(t, alice.AddPatch(ctx, ap[0]))
@@ -89,9 +89,9 @@ func TestPatchStore_AddPatchLoadState(t *testing.T) {
 	bs := newChangeset(oid, nil)
 
 	bp := []signedPatch{
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-1"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-2"))),
-		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.id), bob.Device.priv, kind, []byte("bob-patch-3"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-1"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-2"))),
+		mustNewPatch(bs.NewPatch(cid.Cid(bob.Account.CID()), bob.Device, kind, []byte("bob-patch-3"))),
 	}
 	for _, p := range bp {
 		require.NoError(t, alice.AddPatch(ctx, p), "failed to add "+string(p.Body))

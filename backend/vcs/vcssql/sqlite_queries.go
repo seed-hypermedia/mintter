@@ -118,11 +118,13 @@ func generateQueries() error {
 
 		qb.MakeQuery(s.Schema, "ObjectsInsertOrIgnore", sgen.QueryKindExec,
 			"INSERT OR IGNORE INTO", s.Objects, qb.ListColShort(
+				s.IPFSBlocksID,
 				s.ObjectsMultihash,
 				s.ObjectsCodec,
 				s.ObjectsAccountID,
 			), qb.Line,
 			"VALUES", qb.List(
+				qb.VarCol(s.IPFSBlocksID),
 				qb.VarCol(s.ObjectsMultihash),
 				qb.VarCol(s.ObjectsCodec),
 				qb.VarCol(s.ObjectsAccountID),
@@ -162,6 +164,15 @@ func generateQueries() error {
 			"AND", s.NamedVersionsDeviceID, "=", qb.VarCol(s.NamedVersionsDeviceID), qb.Line,
 			"AND", s.NamedVersionsName, "=", qb.VarCol(s.NamedVersionsName), qb.Line,
 			"LIMIT 1",
+		),
+
+		qb.MakeQuery(s.Schema, "IPFSBlocksLookupPK", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.IPFSBlocksID),
+			), qb.Line,
+			"FROM", s.IPFSBlocks, qb.Line,
+			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash), qb.Line,
+			"AND", s.IPFSBlocksCodec, "=", qb.VarCol(s.IPFSBlocksCodec), qb.Line,
 		),
 
 		qb.MakeQuery(s.Schema, "DraftsInsert", sgen.QueryKindExec,

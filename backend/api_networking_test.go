@@ -26,7 +26,7 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 	back := makeTestBackend(t, "alice", true)
 	net := newNetworkingAPI(back)
 
-	did := back.repo.Device().ID()
+	did := back.repo.Device().CID()
 
 	acc, err := back.repo.Account()
 	require.NoError(t, err)
@@ -36,6 +36,6 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotNil(t, pinfo)
-	require.Equal(t, acc.id.String(), pinfo.AccountId, "account ids must match")
+	require.Equal(t, acc.CID().String(), pinfo.AccountId, "account ids must match")
 	fmt.Println(pinfo)
 }

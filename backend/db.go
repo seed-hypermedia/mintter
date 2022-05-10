@@ -55,7 +55,7 @@ func (db *graphdb) GetAccountForDevice(ctx context.Context, did DeviceID) (aid A
 		return AccountID{}, fmt.Errorf("bad account codec %s", cid.CodecToStr[uint64(res.AccountsCodec)])
 	}
 
-	return AccountID(cid.NewCidV1(uint64(res.AccountsCodec), res.AccountsMultihash)), nil
+	return AccID(cid.NewCidV1(uint64(res.AccountsCodec), res.AccountsMultihash)), nil
 }
 
 func (db *graphdb) IndexPublication(ctx context.Context, pub Publication, newLinks []Link) error {
@@ -132,7 +132,7 @@ func (db *graphdb) ListAccountDevices(ctx context.Context) (map[AccountID][]Devi
 		}
 
 		did := DeviceID(cid.NewCidV1(uint64(l.DevicesCodec), l.DevicesMultihash))
-		aid := AccountID(cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash))
+		aid := AccID(cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash))
 
 		out[aid] = append(out[aid], did)
 	}

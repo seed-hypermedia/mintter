@@ -25,9 +25,8 @@ func init() {
 
 // Ensure interface implementations.
 var (
-	_ Verifier                   = PublicKey{}
-	_ encoding.BinaryMarshaler   = PublicKey{}
-	_ encoding.BinaryUnmarshaler = (*PublicKey)(nil)
+	_ Verifier                 = PublicKey{}
+	_ encoding.BinaryMarshaler = PublicKey{}
 
 	_ Signer = KeyPair{}
 )
@@ -121,21 +120,6 @@ func (pk PublicKey) MarshalBinary() ([]byte, error) {
 	return crypto.MarshalPublicKey(pk.k)
 }
 
-// UnmarshalBinary implements encoding.BinaryUnmarshaler.
-func (pk *PublicKey) UnmarshalBinary(data []byte) error {
-	if pk.k != nil {
-		panic("BUG: unmarshaling already initialized key")
-	}
-
-	key, err := crypto.UnmarshalEd25519PublicKey(data)
-	if err != nil {
-		return err
-	}
-
-	pk.k = key.(*crypto.Ed25519PublicKey)
-	return nil
-}
-
 type KeyPair struct {
 	k *crypto.Ed25519PrivateKey
 
@@ -166,4 +150,9 @@ func NewKeyPair(codec uint64, priv *crypto.Ed25519PrivateKey) (kp KeyPair, err e
 // Sign implements Signer.
 func (kp KeyPair) Sign(data []byte) (Signature, error) {
 	return kp.k.Sign(data)
+}
+
+// Wrapped returns the wrapped libp2p key.
+func (pk KeyPair) Wrapped() crypto.PrivKey {
+	return pk.k
 }

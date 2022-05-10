@@ -25,6 +25,8 @@ func newNetworkingAPI(back *backend) networking.NetworkingServer {
 }
 
 func (srv *networkingAPI) Connect(ctx context.Context, in *networking.ConnectRequest) (*networking.ConnectResponse, error) {
+	return nil, fmt.Errorf("unimplemented")
+
 	if len(in.Addrs) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "must specify at least one address to connect")
 	}

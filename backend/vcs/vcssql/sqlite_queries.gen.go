@@ -295,11 +295,12 @@ VALUES (:devicesMultihash, :devicesCodec) RETURNING devices.id`
 	return out, err
 }
 
-func ObjectsInsertOrIgnore(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, objectsAccountID int) error {
-	const query = `INSERT OR IGNORE INTO objects (multihash, codec, account_id)
-VALUES (:objectsMultihash, :objectsCodec, :objectsAccountID)`
+func ObjectsInsertOrIgnore(conn *sqlite.Conn, ipfsBlocksID int, objectsMultihash []byte, objectsCodec int, objectsAccountID int) error {
+	const query = `INSERT OR IGNORE INTO objects (id, multihash, codec, account_id)
+VALUES (:ipfsBlocksID, :objectsMultihash, :objectsCodec, :objectsAccountID)`
 
 	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":ipfsBlocksID", ipfsBlocksID)
 		stmt.SetBytes(":objectsMultihash", objectsMultihash)
 		stmt.SetInt(":objectsCodec", objectsCodec)
 		stmt.SetInt(":objectsAccountID", objectsAccountID)
@@ -396,6 +397,41 @@ LIMIT 1`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: NamedVersionsGet: %w", err)
+	}
+
+	return out, err
+}
+
+type IPFSBlocksLookupPKResult struct {
+	IPFSBlocksID int
+}
+
+func IPFSBlocksLookupPK(conn *sqlite.Conn, ipfsBlocksMultihash []byte, ipfsBlocksCodec int) (IPFSBlocksLookupPKResult, error) {
+	const query = `SELECT ipfs_blocks.id
+FROM ipfs_blocks
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
+AND ipfs_blocks.codec = :ipfsBlocksCodec
+`
+
+	var out IPFSBlocksLookupPKResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+		stmt.SetInt(":ipfsBlocksCodec", ipfsBlocksCodec)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksLookupPK: more than one result return for a single-kind query")
+		}
+
+		out.IPFSBlocksID = stmt.ColumnInt(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksLookupPK: %w", err)
 	}
 
 	return out, err

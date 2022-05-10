@@ -2,67 +2,45 @@ package backend
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ipfs/go-cid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	accounts "mintter/backend/api/accounts/v1alpha"
-	"mintter/backend/ipfs"
+	"mintter/backend/core"
+	"mintter/backend/vcs"
 )
 
 type accountsAPI struct {
 	back *backend
+
+	*accounts.Server
 }
 
-func newAccountsAPI(back *backend) accounts.AccountsServer {
-	return &accountsAPI{
+func newAccountsAPI(back *backend, v *vcs.SQLite) accounts.AccountsServer {
+	srv := &accountsAPI{
 		back: back,
 	}
-}
 
-func (srv *accountsAPI) GetAccount(ctx context.Context, in *accounts.GetAccountRequest) (*accounts.Account, error) {
-	var aid AccountID
-	if in.Id == "" {
-		acc, err := srv.back.repo.Account()
+	// This is ugly as hell, and racy. It's all mess right now while we're refactoring.
+	// The problem here is lazy account initialization. We start up all the things
+	// before actually having an account, so lots of things are messy because of that.
+	go func() {
+		<-back.repo.Ready()
+		acc, err := back.Account()
 		if err != nil {
-			return nil, err
-		}
-		aid = acc.id
-	} else {
-		c, err := cid.Decode(in.Id)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "can't decode account id as CID: %v", err)
+			panic(err)
 		}
 
-		acodec, _ := ipfs.DecodeCID(c)
-		if acodec != codecAccountID {
-			return nil, fmt.Errorf("wrong codec for account")
-		}
+		aid := cid.Cid(acc.CID())
 
-		aid = AccountID(c)
-	}
+		id := core.NewIdentity(aid, back.repo.Device())
 
-	state, err := srv.back.GetAccountState(ctx, aid)
-	if err != nil {
-		return nil, err
-	}
+		api := accounts.NewServer(id, v)
+		srv.Server = api
 
-	if state.size == 0 {
-		return nil, fmt.Errorf("no information about account: %s", aid.String())
-	}
+	}()
 
-	account, err := accountFromState(state)
-	if err != nil {
-		return nil, fmt.Errorf("failed to hydrate account state %s: %w", aid, err)
-	}
-
-	return account, nil
-}
-
-func (srv *accountsAPI) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
-	return srv.back.UpdateProfile(ctx, in)
+	return srv
 }
 
 func (srv *accountsAPI) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
@@ -80,7 +58,7 @@ func (srv *accountsAPI) ListAccounts(ctx context.Context, in *accounts.ListAccou
 
 	for i, a := range accs {
 		aid := cid.NewCidV1(uint64(a.AccountsCodec), a.AccountsMultihash)
-		devs := devices[AccountID(aid)]
+		devs := devices[AccID(aid)]
 		acc := &accounts.Account{
 			Id: aid.String(),
 			Profile: &accounts.Profile{

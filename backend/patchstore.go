@@ -9,6 +9,7 @@ import (
 	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/ipfs/sqlitebs"
+	"mintter/backend/vcs/vcssql"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -85,8 +86,22 @@ func (s *sqlitePatchStore) AddPatch(ctx context.Context, sps ...signedPatch) (er
 		}
 
 		ocodec, ohash := ipfs.DecodeCID(sp.ObjectID)
-		if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), ahash, int(acodec)); err != nil {
-			return err
+
+		// Insert object reusing data from ipfs blocks table.
+		{
+			dbaid, err := lookupAccID(conn, cid.Cid(sp.Author))
+			if err != nil {
+				return err
+			}
+
+			res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
+			if err != nil {
+				return err
+			}
+
+			if err := vcssql.ObjectsInsertOrIgnore(conn, res.IPFSBlocksID, ohash, int(ocodec), dbaid); err != nil {
+				return err
+			}
 		}
 
 		bcodec, bhash := ipfs.DecodeCID(sp.blk.Cid())
@@ -145,8 +160,18 @@ func (s *sqlitePatchStore) StoreVersion(ctx context.Context, ver *p2p.Version) (
 				return fmt.Errorf("failed to get account for device %s", vv.Peer)
 			}
 
-			if err := objectsInsertOrIgnore(conn, ohash, int(ocodec), acc.AccountsMultihash, acc.AccountsCodec); err != nil {
-				return err
+			// Insert object reusing data from ipfs blocks table.
+			{
+				dbaid := acc.AccountsID
+
+				res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
+				if err != nil {
+					return err
+				}
+
+				if err := vcssql.ObjectsInsertOrIgnore(conn, res.IPFSBlocksID, ohash, int(ocodec), dbaid); err != nil {
+					return err
+				}
 			}
 
 			if err := headsUpsert(conn, ohash, int(ocodec), dhash, int(vv.Seq), int(vv.LamportTime), bhash, int(bcodec)); err != nil {

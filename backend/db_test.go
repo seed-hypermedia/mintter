@@ -24,12 +24,12 @@ func TestDBStoreDevice(t *testing.T) {
 	graph := &graphdb{pool: pool}
 
 	in := map[AccountID][]DeviceID{
-		AccountID(testutil.MakeCIDWithCodec(t, codecAccountID, "a1")): {
+		AccID(testutil.MakeCIDWithCodec(t, codecAccountID, "a1")): {
 			DeviceID(testutil.MakeCIDWithCodec(t, cid.Libp2pKey, "a1d1")),
 			DeviceID(testutil.MakeCIDWithCodec(t, cid.Libp2pKey, "a1d2")),
 			DeviceID(testutil.MakeCIDWithCodec(t, cid.Libp2pKey, "a1d3")),
 		},
-		AccountID(testutil.MakeCIDWithCodec(t, codecAccountID, "a2")): {
+		AccID(testutil.MakeCIDWithCodec(t, codecAccountID, "a2")): {
 			DeviceID(testutil.MakeCIDWithCodec(t, cid.Libp2pKey, "a2d1")),
 			DeviceID(testutil.MakeCIDWithCodec(t, cid.Libp2pKey, "a2d2")),
 			DeviceID(testutil.MakeCIDWithCodec(t, cid.Libp2pKey, "a2d3")),

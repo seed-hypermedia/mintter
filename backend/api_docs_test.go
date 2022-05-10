@@ -92,7 +92,7 @@ package backend
 // 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 // 	require.NoError(t, err)
 // 	require.NotEqual(t, "", doc.Id)
-// 	require.Equal(t, back.repo.acc.id.String(), doc.Author)
+// 	require.Equal(t, back.repo.MustAccount().id.String(), doc.Author)
 // 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 // 	require.False(t, doc.CreateTime.AsTime().IsZero())
 // }

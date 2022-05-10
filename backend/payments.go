@@ -37,7 +37,7 @@ func (srv *backend) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 		return "", fmt.Errorf("account %s not ready yet.", account.String())
 	}
 
-	if account.Equals(srv.repo.acc.id) {
+	if account.Equals(AccID(srv.repo.MustAccount().CID())) {
 		return "", fmt.Errorf("cannot remotely issue an invoice to myself")
 	}
 
@@ -266,7 +266,7 @@ func (srv *backend) RequestInvoice(ctx context.Context, accountID string, amount
 		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID.", accountID)
 	}
 
-	payReq, err := srv.RemoteInvoiceRequest(ctx, AccountID(cID),
+	payReq, err := srv.RemoteInvoiceRequest(ctx, AccID(cID),
 		InvoiceRequest{
 			AmountSats:   amountSats,
 			Memo:         invoiceMemo,

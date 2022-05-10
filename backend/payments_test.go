@@ -34,7 +34,7 @@ func TestReqInvoice(t *testing.T) {
 
 	require.NoError(t, alice.SyncAccounts(ctx))
 
-	payReq, err := alice.RemoteInvoiceRequest(ctx, bob.repo.acc.id, InvoiceRequest{
+	payReq, err := alice.RemoteInvoiceRequest(ctx, AccID(bob.repo.MustAccount().CID()), InvoiceRequest{
 		AmountSats: invoiceAmountSats,
 		Memo:       memo,
 	})
