@@ -2,10 +2,12 @@ package relay
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"testing"
 
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	swarm "github.com/libp2p/go-libp2p-swarm"
@@ -39,6 +41,8 @@ func initAndTest(relayVersion uint8) error {
 		"/ip4/0.0.0.0/tcp/4001",
 		"/ip4/0.0.0.0/udp/4001/quic",
 	}
+	cfg.PrivKey, _ = generateRandomPrivKey()
+
 	if relayVersion == 1 {
 		cfg.RelayV1.Enabled = true
 		cfg.RelayV2.Enabled = false
@@ -168,4 +172,16 @@ func provideBootstrapRelays() ([]peer.AddrInfo, error) {
 		relaysInfo = append(relaysInfo, newRelay)
 	}
 	return relaysInfo, nil
+}
+
+func generateRandomPrivKey() (string, error) {
+	priv, _, err := crypto.GenerateKeyPair(crypto.Ed25519, 128)
+	if err != nil {
+		return "", err
+	}
+	marshaled, err := crypto.MarshalPrivateKey(priv)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(marshaled), nil
 }
