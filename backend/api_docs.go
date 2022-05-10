@@ -78,42 +78,6 @@ func draftToProto(d Draft) *documents.Document {
 
 func (srv *docsAPI) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
 	return nil, status.Error(codes.Unimplemented, "deprecated")
-
-	c, err := srv.parseDocumentID(in.Document.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	cwl := ContentWithLinks{
-		Content: []byte(in.Document.Content),
-	}
-	if in.Links != nil {
-		cwl.Links = make(map[Link]struct{}, len(in.Links))
-	}
-
-	for _, l := range in.Links {
-		target, err := cid.Decode(l.GetTarget().DocumentId)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "failed to parse target document ID: %v", err)
-		}
-
-		// TODO: improve input validation here and return meaningful errors.
-		ll := Link{
-			SourceBlockID:    l.GetSource().GetBlockId(),
-			TargetDocumentID: target,
-			TargetBlockID:    l.GetTarget().BlockId,
-			TargetVersion:    Version(l.GetTarget().Version),
-		}
-
-		cwl.Links[ll] = struct{}{}
-	}
-
-	d, err := srv.back.UpdateDraft(ctx, c, in.Document.Title, in.Document.Subtitle, cwl)
-	if err != nil {
-		return nil, err
-	}
-
-	return draftToProto(d), nil
 }
 
 func (srv *docsAPI) parseDocumentID(id string) (cid.Cid, error) {
