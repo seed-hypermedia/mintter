@@ -117,6 +117,81 @@ func TestAPIUpdateDraft(t *testing.T) {
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 }
 
+func TestUpdateDraft_Annotations(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*DocumentChange{
+		{Op: &DocumentChange_SetTitle{
+			SetTitle: "Hello Drafts V2",
+		}},
+		{Op: &DocumentChange_SetSubtitle{
+			SetSubtitle: "This is a more granular drafts API",
+		}},
+		{Op: &DocumentChange_MoveBlock_{
+			MoveBlock: &DocumentChange_MoveBlock{
+				BlockId:     "b1",
+				Parent:      "",
+				LeftSibling: "",
+			},
+		}},
+		{Op: &DocumentChange_ReplaceBlock{
+			ReplaceBlock: &Block{
+				Id:   "b1",
+				Type: "statement",
+				Text: "This is the first paragraph.",
+				Attributes: map[string]string{
+					"childrenListStyle": "bullet",
+				},
+				Annotations: []*Annotation{
+					{
+						Type: "link",
+						Attributes: map[string]string{
+							"url": "https://exmaple.com",
+						},
+						Starts: []int32{0},
+						Ends:   []int32{5},
+					},
+				},
+			},
+		}},
+	})
+
+	want := []*BlockNode{
+		{
+			Block: &Block{
+				Id:   "b1",
+				Type: "statement",
+				Text: "This is the first paragraph.",
+				Attributes: map[string]string{
+					"childrenListStyle": "bullet",
+				},
+				Annotations: []*Annotation{
+					{
+						Type: "link",
+						Attributes: map[string]string{
+							"url": "https://exmaple.com",
+						},
+						Starts: []int32{
+							0,
+						},
+						Ends: []int32{
+							5,
+						},
+					},
+				},
+			},
+			Children: nil,
+		},
+	}
+
+	require.Len(t, updated.Children, 1)
+	testutil.ProtoEqual(t, want[0], updated.Children[0], "updated draft does't match")
+}
+
 func TestAPIUpdateDraft_Complex(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
@@ -473,6 +548,34 @@ func TestDocumentToProto(t *testing.T) {
 	docpb, err := docToProto(doc)
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, docpb, "must convert document to proto")
+}
+
+func TestBlockProtoTransform(t *testing.T) {
+	b := vcstypes.Block{
+		ID:   "b1",
+		Type: "statement",
+		Attributes: map[string]string{
+			"childrenListType": "bullet",
+		},
+		Text: "Hello world",
+		Annotations: []vcstypes.Annotation{
+			{
+				Type: "link",
+				Attributes: map[string]string{
+					"url": "https://example.com",
+				},
+				Starts: []int32{0},
+				Ends:   []int32{5},
+			},
+		},
+	}
+
+	bpb := blockToProto(b)
+
+	b2, err := blockFromProto(bpb)
+	require.NoError(t, err)
+
+	require.Equal(t, b, b2)
 }
 
 func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*DocumentChange) *Document {

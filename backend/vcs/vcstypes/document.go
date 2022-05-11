@@ -17,6 +17,7 @@ func init() {
 	cbornode.RegisterCborType(DocumentEvent{})
 	cbornode.RegisterCborType(BlockMovedEvent{})
 	cbornode.RegisterCborType(Block{})
+	cbornode.RegisterCborType(Annotation{})
 }
 
 type DocumentPermanode struct {
