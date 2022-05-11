@@ -8,9 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Value must satisfy ReadOnly.
-var _ ReadOnly[interface{}] = (*Value[interface{}])(nil)
-
 func TestFuture(t *testing.T) {
 	f := New[int]()
 
