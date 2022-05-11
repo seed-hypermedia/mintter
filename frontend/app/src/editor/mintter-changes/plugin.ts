@@ -49,6 +49,8 @@ export function changesServiceCreator() {
   }
 
   function reset() {
+    console.log('RESET CHANGES PLIS');
+
     changes = []
   }
 
@@ -97,8 +99,6 @@ export function changesServiceCreator() {
     let entry = getBlock(editor, {
       at: path
     })
-
-    console.log('replaceText', path, entry);
 
     if (entry) {
       let [block] = entry

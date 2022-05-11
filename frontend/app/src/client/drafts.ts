@@ -102,6 +102,8 @@ export type DocumentChanges = {
 
 export async function updateDraftV2(documentChanges: DocumentChanges, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
+  console.log('UPDATE PLISS');
+
   const request = UpdateDraftRequestV2.fromPartial(documentChanges)
   return await new DraftsClientImpl(rpc).updateDraftV2(request)
 }

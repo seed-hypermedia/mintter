@@ -212,6 +212,10 @@ function usePagePublication(
                 document: publication.document,
               })
               let content = [blockNodeToSlate(publication.document.children)]
+              console.log(
+                '🚀 ~ file: publication.tsx ~ line 215 ~ .then ~ content',
+                publication.document.children,
+              )
 
               sendBack({
                 type: 'PUBLICATION.REPORT.SUCCESS',

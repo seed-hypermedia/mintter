@@ -11,11 +11,12 @@ export interface Typegen0 {
       | 'error.platform.editor.editing.saving:invocation[0]'
       | 'EDITOR.UPDATE.ERROR'
       | 'EDITOR.PUBLISH.ERROR'
+    resetChanges: 'RESET.CHANGES' | 'EDITOR.UPDATE.SUCCESS'
     updateValueToContext: 'EDITOR.UPDATE'
     updateCurrentDocument: 'EDITOR.UPDATE' | 'EDITOR.REPORT.FETCH.SUCCESS'
     updateLibrary: 'EDITOR.UPDATE.SUCCESS'
     assignPublication: 'EDITOR.PUBLISH.SUCCESS'
-    afterPublish: 'done.state.editing'
+    afterPublish: 'done.state.editor.editing'
   }
   internalEvents: {
     'error.platform.editor.editing.saving:invocation[0]': {
@@ -23,8 +24,8 @@ export interface Typegen0 {
       data: unknown
     }
     '': {type: ''}
-    'xstate.after(1500)#editor.editing.debouncing': {
-      type: 'xstate.after(1500)#editor.editing.debouncing'
+    'xstate.after(1000)#editor.editing.debouncing.idle': {
+      type: 'xstate.after(1000)#editor.editing.debouncing.idle'
     }
     'xstate.init': {type: 'xstate.init'}
     'done.invoke.fetchDocument': {
@@ -43,7 +44,11 @@ export interface Typegen0 {
     publishDraftService: 'done.invoke.editor.editing.publishing:invocation[0]'
   }
   missingImplementations: {
-    actions: 'displayFailedMessage' | 'updateCurrentDocument' | 'afterPublish'
+    actions:
+      | 'displayFailedMessage'
+      | 'resetChanges'
+      | 'updateCurrentDocument'
+      | 'afterPublish'
     services: 'publishDraftService' | 'saveDraft'
     guards: never
     delays: never
@@ -51,7 +56,7 @@ export interface Typegen0 {
   eventsCausingServices: {
     fetchDocument: '' | 'FETCH'
     publishDraftService: 'EDITOR.PUBLISH'
-    saveDraft: 'xstate.after(1500)#editor.editing.debouncing'
+    saveDraft: 'xstate.after(1000)#editor.editing.debouncing.idle'
   }
   eventsCausingGuards: {
     maxRetriesReached: 'FETCH'
@@ -64,11 +69,21 @@ export interface Typegen0 {
     | 'editing'
     | 'editing.idle'
     | 'editing.debouncing'
+    | 'editing.debouncing.changed'
+    | 'editing.debouncing.idle'
     | 'editing.saving'
     | 'editing.publishing'
     | 'editing.published'
     | 'finishEditing'
     | 'failed'
-    | {editing?: 'idle' | 'debouncing' | 'saving' | 'publishing' | 'published'}
+    | {
+        editing?:
+          | 'idle'
+          | 'debouncing'
+          | 'saving'
+          | 'publishing'
+          | 'published'
+          | {debouncing?: 'changed' | 'idle'}
+      }
   tags: 'saving'
 }
