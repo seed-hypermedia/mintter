@@ -83,32 +83,6 @@ WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multiha
 	return err
 }
 
-func draftsInsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, draftsTitle string, draftsSubtitle string, draftsContent []byte, draftsCreateTime int, draftsUpdateTime int) error {
-	const query = `INSERT INTO drafts (id, title, subtitle, content, create_time, update_time)
-VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000), :draftsTitle, :draftsSubtitle, :draftsContent, :draftsCreateTime, :draftsUpdateTime)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
-		stmt.SetText(":draftsTitle", draftsTitle)
-		stmt.SetText(":draftsSubtitle", draftsSubtitle)
-		stmt.SetBytes(":draftsContent", draftsContent)
-		stmt.SetInt(":draftsCreateTime", draftsCreateTime)
-		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: draftsInsert: %w", err)
-	}
-
-	return err
-}
-
 type draftsGetResult struct {
 	DraftsTitle      string
 	DraftsSubtitle   string

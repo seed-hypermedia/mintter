@@ -58,56 +58,6 @@ func (db *graphdb) GetAccountForDevice(ctx context.Context, did DeviceID) (aid A
 	return AccID(cid.NewCidV1(uint64(res.AccountsCodec), res.AccountsMultihash)), nil
 }
 
-func (db *graphdb) IndexPublication(ctx context.Context, pub Publication, newLinks []Link) error {
-	conn, release, err := db.pool.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	dcodec, dhash := ipfs.DecodeCID(pub.ID)
-	if dcodec != codecDocumentID {
-		panic("BUG: wrong codec for publication " + cid.CodecToStr[dcodec])
-	}
-
-	if err := publicationsIndex(conn, pub); err != nil {
-		return err
-	}
-
-	for _, l := range newLinks {
-		ccodec, chash := ipfs.DecodeCID(l.SourceChangeID)
-		tcodec, thash := ipfs.DecodeCID(l.TargetDocumentID)
-		if err := linksInsertFromPublication(conn,
-			dhash, int(dcodec),
-			l.SourceBlockID,
-			int(ccodec), chash,
-			thash, int(tcodec),
-			l.TargetBlockID,
-			l.TargetVersion.String(),
-		); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func publicationsIndex(conn *sqlite.Conn, pub Publication) error {
-	pcodec, phash := ipfs.DecodeCID(pub.ID)
-	if pcodec != codecDocumentID {
-		panic("BUG: bad codec for publication")
-	}
-
-	return publicationsUpsert(conn, phash, int(pcodec),
-		pub.Title,
-		pub.Subtitle,
-		int(pub.CreateTime.Unix()),
-		int(pub.UpdateTime.Unix()),
-		int(pub.PublishTime.Unix()),
-		pub.Version.String(),
-	)
-}
-
 func (db *graphdb) ListAccountDevices(ctx context.Context) (map[AccountID][]DeviceID, error) {
 	conn, release, err := db.pool.Conn(ctx)
 	if err != nil {
