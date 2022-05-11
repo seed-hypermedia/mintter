@@ -39,6 +39,8 @@ export type EditorEvent =
   | { type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message'] }
   | {
     type: 'EDITOR.MIGRATE'
+  } | {
+    type: 'RESET.CHANGES'
   }
 
 interface DraftEditorMachineProps {
@@ -64,15 +66,10 @@ export function draftEditorMachine({
   shouldAutosave = true,
   editor,
 }: DraftEditorMachineProps) {
+
+  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMSKgAOGs6KGAdmSAB6ICMAHAGw6sCcA7AAYATKwAs7MQGZ+AVgA0IAJ6JhU1jna9ZvduPazWssa2EBfM4tSZcYLFmyRiAMQCiAFQDCACUaVqaLQMSMyIYvzcvLxiwoKcAmr8wryKKgisUuzsOGLSvKacrKyCxbIWVhDo2DgAZmBoAMYAFih0UMSuACIAku4A8gBKOJ4AggBynq4AMn5UNPSMLOn8UrI8GVKCcUn8vGqpqrua2roGnHqCAuXglTa19c2t7V29gzgDrgAKg+44bl7eHAAZQAqp5JkCgbMAkFFohZMIDgheNxBGJ4gJBEJ1MIypYblVcHVGi02h0ev0hh9vgNfv8fDhXAMBoNofNgqAlgikeJzjholJ8oUERJ2FJrtZqtYnnhCCQXpScCDPp0Ru5XGzAgsQkt+OF+dotFIZLphPxWEjztkBQkZFJcmKJbcpbcZfgiOTXkNPiCAEJTbpA3whfzsuEIPX8A2yI0m9hmi3KRBaDQ2s2cTjCZJFJ2EnDStqyj304MUOZajmhZZiNZFY1bTg7PZSHklDS5QU4wQyc68XN3AtQHAQMAAIwwAFc6A0np7FcrVerNbCdYgUbweFJOLJu-xzWpTEiHZpcXxClnhLlWPx+y6aIWR+OpzOyUxYGgAIZoMA4D81b9YAAFEYWwAJTEJKtiug+Y6TtOTzLtqnLJmoOCGPo8Z7sI24pEmCC5BuNrbskaJ7Bmt5QfeQ6wB+ABus52A4uDkAQX41NgAC2+bOpRgSFjR9FtAgrS0RgDRfkEADaggALqIZWSyrFImjiIYJicCUsiZgoeHxsIPAxmiKYRKIFHcVROACbOCpvAuaoaiG5YrshCBKSpNbiKwGlGNpSJaRuHYolk6iYpwZmDpZdHWRStkqvZwJghCUKOTCSFVm5egeepmm+XhQjcEY7BYuI0TGOY+KQeZfHUVFZI2UMdnqoyzKsilYarq5sjKZlaleTluKWteOR5HI+RiGRrDhdBQ7kBOo4ECgsCks8MXen6AZBgl4KuJC8nhqYKw4FiEgxth9ocPwSLxmIBqCuEJkiKZFU8VVMqzfNi3LXObw+v6gaAkyLIDHtHWRtGsa7JhiZpEVN02uNuzEXqU1UcQED0D+75fj+lWDiDLnXjW6z1tsZrNq2OjDZ28ZcEkNYo9VxAfECHjDN44wAOI7fjVY0zkXD2pcqwcHsrZ7FTvD2nqIqNhY+J0BgI7wCElXumAPNcoieFqDdaLxFwWwhbk4X2I4EAa4gUiXjg2IZN2piiI2PLhIRsRiHEsg7qIYhmcSjxtBb6RCponBW1wO5Woe2tYjbo1aLwly5Mbz15hFauBzoymQ+w5paMYCLQ4gKwaKHNaFI2ly4uKKcDtNw6wc+CFtRW4a6MpuJyJ7Zq4oI7B+fEJ6GCs+dW1bDMylZAfN85VYCEeEg4J2mJcJw4SyDeNd3tVODvQtS1N2WqUKWueqbtuu77jiV0x5Id1k5IfAbxUqd17vn2QIHRgcDwcSXAYl6rAkFdVY-IhDSD0DoSM7Bx5T0Pu1FyKwkRWxukvPQktViSzkL7Von1XDTU-sHAWwhw5xCyFHNIxQsw20ltEXY6hzS7F9h+FARBzbTzSrqLcBoYhZnRKHTIWsKEu35G7D2XtxAUUDsQpEqE9ZRASKvWIYowpyyAA */
   return createMachine(
     {
-      tsTypes: {} as import("./use-editor-draft.typegen").Typegen0,
-      schema: {
-        context: {} as EditorContext,
-        events: {} as EditorEvent,
-      },
-      id: 'editor',
-      initial: 'idle',
       context: {
         retries: 0,
         localDraft: null,
@@ -81,6 +78,10 @@ export function draftEditorMachine({
         publication: null,
         shouldMigrate: false,
       },
+      tsTypes: {} as import('./use-editor-draft.typegen').Typegen0,
+      schema: { context: {} as EditorContext, events: {} as EditorEvent },
+      id: 'editor',
+      initial: 'idle',
       states: {
         idle: {
           always: {
@@ -91,19 +92,18 @@ export function draftEditorMachine({
           on: {
             FETCH: [
               {
-                target: 'failed',
+                actions: 'displayFailedMessage',
                 cond: 'maxRetriesReached',
-                actions: ['displayFailedMessage'],
+                target: 'failed',
               },
               {
+                actions: 'incrementRetries',
                 target: 'fetching',
-                actions: ['incrementRetries'],
               },
             ],
           },
         },
         fetching: {
-          id: 'fetching',
           invoke: {
             src: 'fetchDocument',
             id: 'fetchDocument',
@@ -113,19 +113,18 @@ export function draftEditorMachine({
               target: 'idle',
             },
             'EDITOR.REPORT.FETCH.SUCCESS': {
+              actions: 'assignDraftsValue',
               target: 'editing',
-              actions: ['assignDraftsValue'],
             },
             'EDITOR.REPORT.FETCH.ERROR': {
+              actions: 'assignError',
               target: 'errored',
-              actions: ['assignError'],
             },
           },
         },
         editing: {
-          id: 'editing',
-          initial: 'idle',
           entry: 'updateCurrentDocument',
+          initial: 'idle',
           states: {
             idle: {
               on: {
@@ -137,46 +136,53 @@ export function draftEditorMachine({
                   target: 'publishing',
                 },
                 FETCH: {
-                  target: '#fetching',
+                  target: '#editor.fetching',
                 },
               },
             },
             debouncing: {
+              initial: 'idle',
+              states: {
+                changed: {
+                  always: 'idle'
+                },
+                idle: {
+                  after: {
+                    '1000': {
+                      target: '#editor.editing.saving',
+                    },
+                  },
+                }
+              },
               on: {
                 'EDITOR.UPDATE': {
                   actions: ['updateValueToContext', 'updateCurrentDocument'],
+                  target: '.changed'
                 },
-              },
-              after: {
-                1500: [
-                  {
-                    target: 'saving',
-                    // cond: 'isValueDirty',
-                  },
-                  // {
-                  //   target: 'idle',
-                  // },
-                ],
               },
             },
             saving: {
-              tags: ['saving'],
               invoke: {
                 src: 'saveDraft',
-                onError: {
-                  target: 'idle',
-                  actions: ['assignError'],
-                },
+                onError: [
+                  {
+                    actions: 'assignError',
+                    target: 'idle',
+                  },
+                ],
               },
+              tags: 'saving',
               on: {
-                'EDITOR.UPDATE': undefined,
+                'EDITOR.UPDATE': {
+                  target: 'debouncing',
+                },
                 'EDITOR.UPDATE.SUCCESS': {
+                  actions: ['updateLibrary', 'resetChanges'],
                   target: 'idle',
-                  actions: ['updateLibrary'],
                 },
                 'EDITOR.UPDATE.ERROR': {
+                  actions: 'assignError',
                   target: 'idle',
-                  actions: ['assignError'],
                 },
               },
             },
@@ -186,12 +192,12 @@ export function draftEditorMachine({
               },
               on: {
                 'EDITOR.PUBLISH.SUCCESS': {
+                  actions: 'assignPublication',
                   target: 'published',
-                  actions: ['assignPublication'],
                 },
                 'EDITOR.PUBLISH.ERROR': {
+                  actions: 'assignError',
                   target: 'idle',
-                  actions: ['assignError'],
                 },
               },
             },
@@ -199,12 +205,17 @@ export function draftEditorMachine({
               type: 'final',
             },
           },
+          on: {
+            'RESET.CHANGES': {
+              actions: 'resetChanges',
+            },
+          },
           onDone: {
             target: 'finishEditing',
           },
         },
         finishEditing: {
-          entry: ['afterPublish'],
+          entry: 'afterPublish',
           type: 'final',
         },
         failed: {
@@ -279,6 +290,9 @@ export function draftEditorMachine({
                   return getDraft(draftId)
                 },
               )
+
+              console.log('fetch data: ', data);
+
 
               sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
             } catch (err: any) {

@@ -112,6 +112,11 @@ export default function EditorPage({
         updateLibrary: () => {
           mainPageService.send('RECONCILE')
         },
+        resetChanges: () => {
+          console.log('RESET ACTION')
+
+          changesService.reset()
+        },
       },
       services: {
         saveDraft: (context) => (sendBack) => {
@@ -131,6 +136,8 @@ export default function EditorPage({
                   ]
                 : contentChanges
 
+              console.log({changes})
+
               try {
                 await updateDraft({
                   documentId: context.localDraft!.id!,
@@ -140,7 +147,6 @@ export default function EditorPage({
                   type: 'SET.CURRENT.DOCUMENT',
                   document: context.localDraft!,
                 })
-                changesService.reset()
                 sendBack('EDITOR.UPDATE.SUCCESS')
               } catch (err: any) {
                 sendBack({
