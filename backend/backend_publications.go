@@ -10,19 +10,6 @@ import (
 	"github.com/ipfs/go-cid"
 )
 
-type Version string
-
-func (v Version) String() string {
-	return string(v)
-}
-
-type Publication struct {
-	Draft
-
-	Version     Version
-	PublishTime time.Time
-}
-
 type changeMetadata struct {
 	CID         cid.Cid
 	LamportTime uint64

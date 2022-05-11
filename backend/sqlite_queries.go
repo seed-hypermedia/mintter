@@ -65,28 +65,6 @@ func generateQueries() error {
 			),
 		),
 
-		qb.MakeQuery(s.Schema, "draftsInsert", sgen.QueryKindExec,
-			"INSERT INTO", s.Drafts, qb.ListColShort(
-				s.DraftsID,
-				s.DraftsTitle,
-				s.DraftsSubtitle,
-				s.DraftsContent,
-				s.DraftsCreateTime,
-				s.DraftsUpdateTime,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.LookupSubQuery(s.ObjectsID, s.Objects,
-					"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-					"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
-				),
-				qb.VarCol(s.DraftsTitle),
-				qb.VarCol(s.DraftsSubtitle),
-				qb.VarCol(s.DraftsContent),
-				qb.VarCol(s.DraftsCreateTime),
-				qb.VarCol(s.DraftsUpdateTime),
-			),
-		),
-
 		qb.MakeQuery(s.Schema, "draftsGet", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.DraftsTitle),
