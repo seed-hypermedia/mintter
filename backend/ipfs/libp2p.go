@@ -52,11 +52,10 @@ type BootstrapResult struct {
 	NumFailedConnections uint32
 }
 
-// Bootstrap is an optional helper to connect to the given peers and bootstrap
-// the Peer DHT (and Bitswap).
-// This is a best-effort function, but it blocks.
-// It's fine to pass a list where some peers will not be reachable, but caller should
-// handle the results however is required by the application.
+// Bootstrap the given host and routing using the provided bootstrap peers.
+// This function blocks until bootstrapping is complete or context is canceled.
+// It's fine to pass peers that might not be reachable. The caller is responsible
+// to handle the return value where the result for each peer is presented separately.
 func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []peer.AddrInfo) BootstrapResult {
 	res := BootstrapResult{
 		ConnectErrs: make([]error, len(peers)),
