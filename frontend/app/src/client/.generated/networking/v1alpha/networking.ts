@@ -61,30 +61,6 @@ export function connectionStatusToJSON(object: ConnectionStatus): string {
   }
 }
 
-/** Request to start object discovery. */
-export interface StartObjectDiscoveryRequest {
-  /** ID of the object to be discovered. */
-  objectId: string;
-}
-
-/** Response for starting object discovery. */
-export interface StartObjectDiscoveryResponse {}
-
-/** Request to stop object discovery. */
-export interface StopObjectDiscoveryRequest {
-  /** ID of the object for which discovery must be stopped. */
-  objectId: string;
-}
-
-/** Response for stopping object discovery. */
-export interface StopObjectDiscoveryResponse {}
-
-/** Request to get object discovery status. */
-export interface GetObjectDiscoveryStatusRequest {
-  /** ID of the object for which we want to get discovery status. */
-  objectId: string;
-}
-
 /** Request to get peer's addresses. */
 export interface GetPeerInfoRequest {
   /** Required. CID-encoded Peer ID. */
@@ -113,309 +89,9 @@ export interface PeerInfo {
   accountId: string;
 }
 
-/** Status of the object discovery. */
-export interface ObjectDiscoveryStatus {
-  /** List of known peers that provide this object. */
-  peers: string[];
+function createBaseGetPeerInfoRequest(): GetPeerInfoRequest {
+  return { peerId: "" };
 }
-
-const baseStartObjectDiscoveryRequest: object = { objectId: "" };
-
-export const StartObjectDiscoveryRequest = {
-  encode(
-    message: StartObjectDiscoveryRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    if (message.objectId !== "") {
-      writer.uint32(10).string(message.objectId);
-    }
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): StartObjectDiscoveryRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseStartObjectDiscoveryRequest,
-    } as StartObjectDiscoveryRequest;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.objectId = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): StartObjectDiscoveryRequest {
-    const message = {
-      ...baseStartObjectDiscoveryRequest,
-    } as StartObjectDiscoveryRequest;
-    message.objectId =
-      object.objectId !== undefined && object.objectId !== null
-        ? String(object.objectId)
-        : "";
-    return message;
-  },
-
-  toJSON(message: StartObjectDiscoveryRequest): unknown {
-    const obj: any = {};
-    message.objectId !== undefined && (obj.objectId = message.objectId);
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<StartObjectDiscoveryRequest>, I>>(
-    object: I
-  ): StartObjectDiscoveryRequest {
-    const message = {
-      ...baseStartObjectDiscoveryRequest,
-    } as StartObjectDiscoveryRequest;
-    message.objectId = object.objectId ?? "";
-    return message;
-  },
-};
-
-const baseStartObjectDiscoveryResponse: object = {};
-
-export const StartObjectDiscoveryResponse = {
-  encode(
-    _: StartObjectDiscoveryResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): StartObjectDiscoveryResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseStartObjectDiscoveryResponse,
-    } as StartObjectDiscoveryResponse;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(_: any): StartObjectDiscoveryResponse {
-    const message = {
-      ...baseStartObjectDiscoveryResponse,
-    } as StartObjectDiscoveryResponse;
-    return message;
-  },
-
-  toJSON(_: StartObjectDiscoveryResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<StartObjectDiscoveryResponse>, I>>(
-    _: I
-  ): StartObjectDiscoveryResponse {
-    const message = {
-      ...baseStartObjectDiscoveryResponse,
-    } as StartObjectDiscoveryResponse;
-    return message;
-  },
-};
-
-const baseStopObjectDiscoveryRequest: object = { objectId: "" };
-
-export const StopObjectDiscoveryRequest = {
-  encode(
-    message: StopObjectDiscoveryRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    if (message.objectId !== "") {
-      writer.uint32(10).string(message.objectId);
-    }
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): StopObjectDiscoveryRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseStopObjectDiscoveryRequest,
-    } as StopObjectDiscoveryRequest;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.objectId = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): StopObjectDiscoveryRequest {
-    const message = {
-      ...baseStopObjectDiscoveryRequest,
-    } as StopObjectDiscoveryRequest;
-    message.objectId =
-      object.objectId !== undefined && object.objectId !== null
-        ? String(object.objectId)
-        : "";
-    return message;
-  },
-
-  toJSON(message: StopObjectDiscoveryRequest): unknown {
-    const obj: any = {};
-    message.objectId !== undefined && (obj.objectId = message.objectId);
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<StopObjectDiscoveryRequest>, I>>(
-    object: I
-  ): StopObjectDiscoveryRequest {
-    const message = {
-      ...baseStopObjectDiscoveryRequest,
-    } as StopObjectDiscoveryRequest;
-    message.objectId = object.objectId ?? "";
-    return message;
-  },
-};
-
-const baseStopObjectDiscoveryResponse: object = {};
-
-export const StopObjectDiscoveryResponse = {
-  encode(
-    _: StopObjectDiscoveryResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): StopObjectDiscoveryResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseStopObjectDiscoveryResponse,
-    } as StopObjectDiscoveryResponse;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(_: any): StopObjectDiscoveryResponse {
-    const message = {
-      ...baseStopObjectDiscoveryResponse,
-    } as StopObjectDiscoveryResponse;
-    return message;
-  },
-
-  toJSON(_: StopObjectDiscoveryResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<StopObjectDiscoveryResponse>, I>>(
-    _: I
-  ): StopObjectDiscoveryResponse {
-    const message = {
-      ...baseStopObjectDiscoveryResponse,
-    } as StopObjectDiscoveryResponse;
-    return message;
-  },
-};
-
-const baseGetObjectDiscoveryStatusRequest: object = { objectId: "" };
-
-export const GetObjectDiscoveryStatusRequest = {
-  encode(
-    message: GetObjectDiscoveryStatusRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    if (message.objectId !== "") {
-      writer.uint32(10).string(message.objectId);
-    }
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): GetObjectDiscoveryStatusRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = {
-      ...baseGetObjectDiscoveryStatusRequest,
-    } as GetObjectDiscoveryStatusRequest;
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.objectId = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): GetObjectDiscoveryStatusRequest {
-    const message = {
-      ...baseGetObjectDiscoveryStatusRequest,
-    } as GetObjectDiscoveryStatusRequest;
-    message.objectId =
-      object.objectId !== undefined && object.objectId !== null
-        ? String(object.objectId)
-        : "";
-    return message;
-  },
-
-  toJSON(message: GetObjectDiscoveryStatusRequest): unknown {
-    const obj: any = {};
-    message.objectId !== undefined && (obj.objectId = message.objectId);
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<GetObjectDiscoveryStatusRequest>, I>>(
-    object: I
-  ): GetObjectDiscoveryStatusRequest {
-    const message = {
-      ...baseGetObjectDiscoveryStatusRequest,
-    } as GetObjectDiscoveryStatusRequest;
-    message.objectId = object.objectId ?? "";
-    return message;
-  },
-};
-
-const baseGetPeerInfoRequest: object = { peerId: "" };
 
 export const GetPeerInfoRequest = {
   encode(
@@ -431,7 +107,7 @@ export const GetPeerInfoRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GetPeerInfoRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseGetPeerInfoRequest } as GetPeerInfoRequest;
+    const message = createBaseGetPeerInfoRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -447,12 +123,9 @@ export const GetPeerInfoRequest = {
   },
 
   fromJSON(object: any): GetPeerInfoRequest {
-    const message = { ...baseGetPeerInfoRequest } as GetPeerInfoRequest;
-    message.peerId =
-      object.peerId !== undefined && object.peerId !== null
-        ? String(object.peerId)
-        : "";
-    return message;
+    return {
+      peerId: isSet(object.peerId) ? String(object.peerId) : "",
+    };
   },
 
   toJSON(message: GetPeerInfoRequest): unknown {
@@ -464,13 +137,15 @@ export const GetPeerInfoRequest = {
   fromPartial<I extends Exact<DeepPartial<GetPeerInfoRequest>, I>>(
     object: I
   ): GetPeerInfoRequest {
-    const message = { ...baseGetPeerInfoRequest } as GetPeerInfoRequest;
+    const message = createBaseGetPeerInfoRequest();
     message.peerId = object.peerId ?? "";
     return message;
   },
 };
 
-const baseConnectRequest: object = { addrs: "" };
+function createBaseConnectRequest(): ConnectRequest {
+  return { addrs: [] };
+}
 
 export const ConnectRequest = {
   encode(
@@ -486,8 +161,7 @@ export const ConnectRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ConnectRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseConnectRequest } as ConnectRequest;
-    message.addrs = [];
+    const message = createBaseConnectRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -503,9 +177,11 @@ export const ConnectRequest = {
   },
 
   fromJSON(object: any): ConnectRequest {
-    const message = { ...baseConnectRequest } as ConnectRequest;
-    message.addrs = (object.addrs ?? []).map((e: any) => String(e));
-    return message;
+    return {
+      addrs: Array.isArray(object?.addrs)
+        ? object.addrs.map((e: any) => String(e))
+        : [],
+    };
   },
 
   toJSON(message: ConnectRequest): unknown {
@@ -521,13 +197,15 @@ export const ConnectRequest = {
   fromPartial<I extends Exact<DeepPartial<ConnectRequest>, I>>(
     object: I
   ): ConnectRequest {
-    const message = { ...baseConnectRequest } as ConnectRequest;
+    const message = createBaseConnectRequest();
     message.addrs = object.addrs?.map((e) => e) || [];
     return message;
   },
 };
 
-const baseConnectResponse: object = {};
+function createBaseConnectResponse(): ConnectResponse {
+  return {};
+}
 
 export const ConnectResponse = {
   encode(
@@ -540,7 +218,7 @@ export const ConnectResponse = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ConnectResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseConnectResponse } as ConnectResponse;
+    const message = createBaseConnectResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -553,8 +231,7 @@ export const ConnectResponse = {
   },
 
   fromJSON(_: any): ConnectResponse {
-    const message = { ...baseConnectResponse } as ConnectResponse;
-    return message;
+    return {};
   },
 
   toJSON(_: ConnectResponse): unknown {
@@ -565,12 +242,14 @@ export const ConnectResponse = {
   fromPartial<I extends Exact<DeepPartial<ConnectResponse>, I>>(
     _: I
   ): ConnectResponse {
-    const message = { ...baseConnectResponse } as ConnectResponse;
+    const message = createBaseConnectResponse();
     return message;
   },
 };
 
-const basePeerInfo: object = { addrs: "", connectionStatus: 0, accountId: "" };
+function createBasePeerInfo(): PeerInfo {
+  return { addrs: [], connectionStatus: 0, accountId: "" };
+}
 
 export const PeerInfo = {
   encode(
@@ -592,8 +271,7 @@ export const PeerInfo = {
   decode(input: _m0.Reader | Uint8Array, length?: number): PeerInfo {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...basePeerInfo } as PeerInfo;
-    message.addrs = [];
+    const message = createBasePeerInfo();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -615,17 +293,15 @@ export const PeerInfo = {
   },
 
   fromJSON(object: any): PeerInfo {
-    const message = { ...basePeerInfo } as PeerInfo;
-    message.addrs = (object.addrs ?? []).map((e: any) => String(e));
-    message.connectionStatus =
-      object.connectionStatus !== undefined && object.connectionStatus !== null
+    return {
+      addrs: Array.isArray(object?.addrs)
+        ? object.addrs.map((e: any) => String(e))
+        : [],
+      connectionStatus: isSet(object.connectionStatus)
         ? connectionStatusFromJSON(object.connectionStatus)
-        : 0;
-    message.accountId =
-      object.accountId !== undefined && object.accountId !== null
-        ? String(object.accountId)
-        : "";
-    return message;
+        : 0,
+      accountId: isSet(object.accountId) ? String(object.accountId) : "",
+    };
   },
 
   toJSON(message: PeerInfo): unknown {
@@ -642,7 +318,7 @@ export const PeerInfo = {
   },
 
   fromPartial<I extends Exact<DeepPartial<PeerInfo>, I>>(object: I): PeerInfo {
-    const message = { ...basePeerInfo } as PeerInfo;
+    const message = createBasePeerInfo();
     message.addrs = object.addrs?.map((e) => e) || [];
     message.connectionStatus = object.connectionStatus ?? 0;
     message.accountId = object.accountId ?? "";
@@ -650,86 +326,8 @@ export const PeerInfo = {
   },
 };
 
-const baseObjectDiscoveryStatus: object = { peers: "" };
-
-export const ObjectDiscoveryStatus = {
-  encode(
-    message: ObjectDiscoveryStatus,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    for (const v of message.peers) {
-      writer.uint32(10).string(v!);
-    }
-    return writer;
-  },
-
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): ObjectDiscoveryStatus {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseObjectDiscoveryStatus } as ObjectDiscoveryStatus;
-    message.peers = [];
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.peers.push(reader.string());
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): ObjectDiscoveryStatus {
-    const message = { ...baseObjectDiscoveryStatus } as ObjectDiscoveryStatus;
-    message.peers = (object.peers ?? []).map((e: any) => String(e));
-    return message;
-  },
-
-  toJSON(message: ObjectDiscoveryStatus): unknown {
-    const obj: any = {};
-    if (message.peers) {
-      obj.peers = message.peers.map((e) => e);
-    } else {
-      obj.peers = [];
-    }
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<ObjectDiscoveryStatus>, I>>(
-    object: I
-  ): ObjectDiscoveryStatus {
-    const message = { ...baseObjectDiscoveryStatus } as ObjectDiscoveryStatus;
-    message.peers = object.peers?.map((e) => e) || [];
-    return message;
-  },
-};
-
 /** Networking API service of the Mintter daemon. */
 export interface Networking {
-  /**
-   * Start discovery of a given object ID. Server will be instructed to actively looking for peers
-   * that can provide information about the given object ID and will try to be in sync with them.
-   */
-  startObjectDiscovery(
-    request: DeepPartial<StartObjectDiscoveryRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<StartObjectDiscoveryResponse>;
-  /** Get status information about object discovery that was previously started. */
-  getObjectDiscoveryStatus(
-    request: DeepPartial<GetObjectDiscoveryStatusRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ObjectDiscoveryStatus>;
-  /** Stop object discovery that was previously started. */
-  stopObjectDiscovery(
-    request: DeepPartial<StopObjectDiscoveryRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<StopObjectDiscoveryResponse>;
   /** Lookup details about a known peer. */
   getPeerInfo(
     request: DeepPartial<GetPeerInfoRequest>,
@@ -747,44 +345,8 @@ export class NetworkingClientImpl implements Networking {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc;
-    this.startObjectDiscovery = this.startObjectDiscovery.bind(this);
-    this.getObjectDiscoveryStatus = this.getObjectDiscoveryStatus.bind(this);
-    this.stopObjectDiscovery = this.stopObjectDiscovery.bind(this);
     this.getPeerInfo = this.getPeerInfo.bind(this);
     this.connect = this.connect.bind(this);
-  }
-
-  startObjectDiscovery(
-    request: DeepPartial<StartObjectDiscoveryRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<StartObjectDiscoveryResponse> {
-    return this.rpc.unary(
-      NetworkingStartObjectDiscoveryDesc,
-      StartObjectDiscoveryRequest.fromPartial(request),
-      metadata
-    );
-  }
-
-  getObjectDiscoveryStatus(
-    request: DeepPartial<GetObjectDiscoveryStatusRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ObjectDiscoveryStatus> {
-    return this.rpc.unary(
-      NetworkingGetObjectDiscoveryStatusDesc,
-      GetObjectDiscoveryStatusRequest.fromPartial(request),
-      metadata
-    );
-  }
-
-  stopObjectDiscovery(
-    request: DeepPartial<StopObjectDiscoveryRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<StopObjectDiscoveryResponse> {
-    return this.rpc.unary(
-      NetworkingStopObjectDiscoveryDesc,
-      StopObjectDiscoveryRequest.fromPartial(request),
-      metadata
-    );
   }
 
   getPeerInfo(
@@ -812,73 +374,6 @@ export class NetworkingClientImpl implements Networking {
 
 export const NetworkingDesc = {
   serviceName: "com.mintter.networking.v1alpha.Networking",
-};
-
-export const NetworkingStartObjectDiscoveryDesc: UnaryMethodDefinitionish = {
-  methodName: "StartObjectDiscovery",
-  service: NetworkingDesc,
-  requestStream: false,
-  responseStream: false,
-  requestType: {
-    serializeBinary() {
-      return StartObjectDiscoveryRequest.encode(this).finish();
-    },
-  } as any,
-  responseType: {
-    deserializeBinary(data: Uint8Array) {
-      return {
-        ...StartObjectDiscoveryResponse.decode(data),
-        toObject() {
-          return this;
-        },
-      };
-    },
-  } as any,
-};
-
-export const NetworkingGetObjectDiscoveryStatusDesc: UnaryMethodDefinitionish =
-  {
-    methodName: "GetObjectDiscoveryStatus",
-    service: NetworkingDesc,
-    requestStream: false,
-    responseStream: false,
-    requestType: {
-      serializeBinary() {
-        return GetObjectDiscoveryStatusRequest.encode(this).finish();
-      },
-    } as any,
-    responseType: {
-      deserializeBinary(data: Uint8Array) {
-        return {
-          ...ObjectDiscoveryStatus.decode(data),
-          toObject() {
-            return this;
-          },
-        };
-      },
-    } as any,
-  };
-
-export const NetworkingStopObjectDiscoveryDesc: UnaryMethodDefinitionish = {
-  methodName: "StopObjectDiscovery",
-  service: NetworkingDesc,
-  requestStream: false,
-  responseStream: false,
-  requestType: {
-    serializeBinary() {
-      return StopObjectDiscoveryRequest.encode(this).finish();
-    },
-  } as any,
-  responseType: {
-    deserializeBinary(data: Uint8Array) {
-      return {
-        ...StopObjectDiscoveryResponse.decode(data),
-        toObject() {
-          return this;
-        },
-      };
-    },
-  } as any,
 };
 
 export const NetworkingGetPeerInfoDesc: UnaryMethodDefinitionish = {
@@ -1032,4 +527,8 @@ type Exact<P, I extends P> = P extends Builtin
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any;
   _m0.configure();
+}
+
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined;
 }
