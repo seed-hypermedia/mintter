@@ -43,7 +43,7 @@ export function Settings({
       }}
     >
       <StyledTabs defaultValue="profile" orientation="horizontal">
-        <StyledTabsList aria-label="Manage your node">
+        <StyledTabsList aria-label="Manage your node" data-tauri-drag-region>
           <TabTrigger value="profile">Profile</TabTrigger>
           <TabTrigger value="account">Account Info</TabTrigger>
           <TabTrigger value="wallets">Wallets</TabTrigger>
@@ -92,7 +92,7 @@ var TabTrigger = styled(TabsPrimitive.Trigger, {
 
   display: 'flex',
   alignItems: 'center',
-  width: 100,
+  flex: 1,
   justifyContent: 'center',
   fontSize: '$3',
   fontFamily: '$base',
