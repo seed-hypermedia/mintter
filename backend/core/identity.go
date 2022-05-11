@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"fmt"
-	"mintter/backend/slip10"
+	"mintter/backend/pkg/slip10"
 	"time"
 
 	"github.com/ipfs/go-cid"

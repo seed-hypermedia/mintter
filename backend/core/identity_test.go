@@ -2,7 +2,7 @@ package core
 
 import (
 	"encoding/hex"
-	"mintter/backend/slip10"
+	"mintter/backend/pkg/slip10"
 	"testing"
 
 	"github.com/stretchr/testify/require"

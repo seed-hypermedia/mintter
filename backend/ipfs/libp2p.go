@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"mintter/backend/cleanup"
+	"mintter/backend/pkg/cleanup"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-ipns"
