@@ -4,8 +4,6 @@ package com.mintter.p2p.v1alpha;
 
 option go_package = "mintter/backend/api/p2p/v1alpha;p2p";
 
-import "google/protobuf/empty.proto";
-
 // Mintter P2P API.
 service P2P {
   // Get basic information about the peer.
@@ -13,16 +11,6 @@ service P2P {
 
   // Get version of a specific object.
   rpc GetObjectVersion(GetObjectVersionRequest) returns (Version);
-
-  // Exchange want lists upon initial connection.
-  rpc ExchangeWantList(WantList) returns (WantList);
-
-  // Send delta updates of our own wants.
-  rpc UpdateWantList(WantList) returns (UpdateWantsResponse);
-
-  // Notify remote peer about an updated object version.
-  // Only updated PeerVersions can be included if desired.
-  rpc UpdateObjectVersion(Version) returns (google.protobuf.Empty);
 
   // Request a peer to issue a lightning BOLT-11 invoice
   rpc RequestInvoice(RequestInvoiceRequest) returns (RequestInvoiceResponse);
@@ -33,8 +21,6 @@ message GetPeerInfoRequest {}
 message GetObjectVersionRequest {
   string object_id = 1;
 }
-
-message UpdateWantsResponse {}
 
 message PeerInfo {
   // Account ID this peer belongs to.
@@ -55,18 +41,6 @@ message PeerVersion {
   uint64 seq = 3;
 
   uint64 lamport_time = 4;
-}
-
-// List of wanted and unwanted object IDs. Can be used as a snapshot or deltas.
-message WantList {
-  // List of object IDs that are wanted.
-  repeated string wants = 1;
-
-  // List of object IDs that are unwanted.
-  repeated string unwants = 2;
-
-  // Shows whether want list is a snapshot or delta update.
-  bool snapshot = 3;
 }
 
 // List of wanted and unwanted object IDs. Can be used as a snapshot or deltas.

@@ -15,8 +15,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// CorsMiddleware allows different host/origins
-func CorsMiddleware(next http.Handler) http.Handler {
+// CORSMiddleware allows different host/origins.
+func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// allow cross domain AJAX requests
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -35,7 +35,7 @@ func makeHTTPHandler(cfg config.Config, g *grpc.Server, b *backend) http.Handler
 	router.Handle("/debug/metrics", promhttp.Handler())
 	router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
 	router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
-	router.Handle("/graphql", CorsMiddleware(graphql.Handler(b)))
+	router.Handle("/graphql", CORSMiddleware(graphql.Handler(b)))
 	router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 
 	nav := newNavigationHandler(router)
