@@ -46,7 +46,9 @@ export interface Device {
   peerId: string;
 }
 
-const baseGetAccountRequest: object = { id: "" };
+function createBaseGetAccountRequest(): GetAccountRequest {
+  return { id: "" };
+}
 
 export const GetAccountRequest = {
   encode(
@@ -62,7 +64,7 @@ export const GetAccountRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): GetAccountRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseGetAccountRequest } as GetAccountRequest;
+    const message = createBaseGetAccountRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -78,10 +80,9 @@ export const GetAccountRequest = {
   },
 
   fromJSON(object: any): GetAccountRequest {
-    const message = { ...baseGetAccountRequest } as GetAccountRequest;
-    message.id =
-      object.id !== undefined && object.id !== null ? String(object.id) : "";
-    return message;
+    return {
+      id: isSet(object.id) ? String(object.id) : "",
+    };
   },
 
   toJSON(message: GetAccountRequest): unknown {
@@ -93,13 +94,15 @@ export const GetAccountRequest = {
   fromPartial<I extends Exact<DeepPartial<GetAccountRequest>, I>>(
     object: I
   ): GetAccountRequest {
-    const message = { ...baseGetAccountRequest } as GetAccountRequest;
+    const message = createBaseGetAccountRequest();
     message.id = object.id ?? "";
     return message;
   },
 };
 
-const baseListAccountsRequest: object = { pageSize: 0, pageToken: "" };
+function createBaseListAccountsRequest(): ListAccountsRequest {
+  return { pageSize: 0, pageToken: "" };
+}
 
 export const ListAccountsRequest = {
   encode(
@@ -118,7 +121,7 @@ export const ListAccountsRequest = {
   decode(input: _m0.Reader | Uint8Array, length?: number): ListAccountsRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseListAccountsRequest } as ListAccountsRequest;
+    const message = createBaseListAccountsRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -137,16 +140,10 @@ export const ListAccountsRequest = {
   },
 
   fromJSON(object: any): ListAccountsRequest {
-    const message = { ...baseListAccountsRequest } as ListAccountsRequest;
-    message.pageSize =
-      object.pageSize !== undefined && object.pageSize !== null
-        ? Number(object.pageSize)
-        : 0;
-    message.pageToken =
-      object.pageToken !== undefined && object.pageToken !== null
-        ? String(object.pageToken)
-        : "";
-    return message;
+    return {
+      pageSize: isSet(object.pageSize) ? Number(object.pageSize) : 0,
+      pageToken: isSet(object.pageToken) ? String(object.pageToken) : "",
+    };
   },
 
   toJSON(message: ListAccountsRequest): unknown {
@@ -160,14 +157,16 @@ export const ListAccountsRequest = {
   fromPartial<I extends Exact<DeepPartial<ListAccountsRequest>, I>>(
     object: I
   ): ListAccountsRequest {
-    const message = { ...baseListAccountsRequest } as ListAccountsRequest;
+    const message = createBaseListAccountsRequest();
     message.pageSize = object.pageSize ?? 0;
     message.pageToken = object.pageToken ?? "";
     return message;
   },
 };
 
-const baseListAccountsResponse: object = { nextPageToken: "" };
+function createBaseListAccountsResponse(): ListAccountsResponse {
+  return { accounts: [], nextPageToken: "" };
+}
 
 export const ListAccountsResponse = {
   encode(
@@ -189,8 +188,7 @@ export const ListAccountsResponse = {
   ): ListAccountsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseListAccountsResponse } as ListAccountsResponse;
-    message.accounts = [];
+    const message = createBaseListAccountsResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -209,15 +207,14 @@ export const ListAccountsResponse = {
   },
 
   fromJSON(object: any): ListAccountsResponse {
-    const message = { ...baseListAccountsResponse } as ListAccountsResponse;
-    message.accounts = (object.accounts ?? []).map((e: any) =>
-      Account.fromJSON(e)
-    );
-    message.nextPageToken =
-      object.nextPageToken !== undefined && object.nextPageToken !== null
+    return {
+      accounts: Array.isArray(object?.accounts)
+        ? object.accounts.map((e: any) => Account.fromJSON(e))
+        : [],
+      nextPageToken: isSet(object.nextPageToken)
         ? String(object.nextPageToken)
-        : "";
-    return message;
+        : "",
+    };
   },
 
   toJSON(message: ListAccountsResponse): unknown {
@@ -237,7 +234,7 @@ export const ListAccountsResponse = {
   fromPartial<I extends Exact<DeepPartial<ListAccountsResponse>, I>>(
     object: I
   ): ListAccountsResponse {
-    const message = { ...baseListAccountsResponse } as ListAccountsResponse;
+    const message = createBaseListAccountsResponse();
     message.accounts =
       object.accounts?.map((e) => Account.fromPartial(e)) || [];
     message.nextPageToken = object.nextPageToken ?? "";
@@ -245,7 +242,9 @@ export const ListAccountsResponse = {
   },
 };
 
-const baseAccount: object = { id: "" };
+function createBaseAccount(): Account {
+  return { id: "", profile: undefined, devices: {} };
+}
 
 export const Account = {
   encode(
@@ -270,8 +269,7 @@ export const Account = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Account {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseAccount } as Account;
-    message.devices = {};
+    const message = createBaseAccount();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -296,20 +294,21 @@ export const Account = {
   },
 
   fromJSON(object: any): Account {
-    const message = { ...baseAccount } as Account;
-    message.id =
-      object.id !== undefined && object.id !== null ? String(object.id) : "";
-    message.profile =
-      object.profile !== undefined && object.profile !== null
+    return {
+      id: isSet(object.id) ? String(object.id) : "",
+      profile: isSet(object.profile)
         ? Profile.fromJSON(object.profile)
-        : undefined;
-    message.devices = Object.entries(object.devices ?? {}).reduce<{
-      [key: string]: Device;
-    }>((acc, [key, value]) => {
-      acc[key] = Device.fromJSON(value);
-      return acc;
-    }, {});
-    return message;
+        : undefined,
+      devices: isObject(object.devices)
+        ? Object.entries(object.devices).reduce<{ [key: string]: Device }>(
+            (acc, [key, value]) => {
+              acc[key] = Device.fromJSON(value);
+              return acc;
+            },
+            {}
+          )
+        : {},
+    };
   },
 
   toJSON(message: Account): unknown {
@@ -329,7 +328,7 @@ export const Account = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Account>, I>>(object: I): Account {
-    const message = { ...baseAccount } as Account;
+    const message = createBaseAccount();
     message.id = object.id ?? "";
     message.profile =
       object.profile !== undefined && object.profile !== null
@@ -347,7 +346,9 @@ export const Account = {
   },
 };
 
-const baseAccount_DevicesEntry: object = { key: "" };
+function createBaseAccount_DevicesEntry(): Account_DevicesEntry {
+  return { key: "", value: undefined };
+}
 
 export const Account_DevicesEntry = {
   encode(
@@ -369,7 +370,7 @@ export const Account_DevicesEntry = {
   ): Account_DevicesEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseAccount_DevicesEntry } as Account_DevicesEntry;
+    const message = createBaseAccount_DevicesEntry();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -388,14 +389,10 @@ export const Account_DevicesEntry = {
   },
 
   fromJSON(object: any): Account_DevicesEntry {
-    const message = { ...baseAccount_DevicesEntry } as Account_DevicesEntry;
-    message.key =
-      object.key !== undefined && object.key !== null ? String(object.key) : "";
-    message.value =
-      object.value !== undefined && object.value !== null
-        ? Device.fromJSON(object.value)
-        : undefined;
-    return message;
+    return {
+      key: isSet(object.key) ? String(object.key) : "",
+      value: isSet(object.value) ? Device.fromJSON(object.value) : undefined,
+    };
   },
 
   toJSON(message: Account_DevicesEntry): unknown {
@@ -409,7 +406,7 @@ export const Account_DevicesEntry = {
   fromPartial<I extends Exact<DeepPartial<Account_DevicesEntry>, I>>(
     object: I
   ): Account_DevicesEntry {
-    const message = { ...baseAccount_DevicesEntry } as Account_DevicesEntry;
+    const message = createBaseAccount_DevicesEntry();
     message.key = object.key ?? "";
     message.value =
       object.value !== undefined && object.value !== null
@@ -419,7 +416,9 @@ export const Account_DevicesEntry = {
   },
 };
 
-const baseProfile: object = { alias: "", bio: "", email: "" };
+function createBaseProfile(): Profile {
+  return { alias: "", bio: "", email: "" };
+}
 
 export const Profile = {
   encode(
@@ -441,7 +440,7 @@ export const Profile = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Profile {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseProfile } as Profile;
+    const message = createBaseProfile();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -463,18 +462,11 @@ export const Profile = {
   },
 
   fromJSON(object: any): Profile {
-    const message = { ...baseProfile } as Profile;
-    message.alias =
-      object.alias !== undefined && object.alias !== null
-        ? String(object.alias)
-        : "";
-    message.bio =
-      object.bio !== undefined && object.bio !== null ? String(object.bio) : "";
-    message.email =
-      object.email !== undefined && object.email !== null
-        ? String(object.email)
-        : "";
-    return message;
+    return {
+      alias: isSet(object.alias) ? String(object.alias) : "",
+      bio: isSet(object.bio) ? String(object.bio) : "",
+      email: isSet(object.email) ? String(object.email) : "",
+    };
   },
 
   toJSON(message: Profile): unknown {
@@ -486,7 +478,7 @@ export const Profile = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Profile>, I>>(object: I): Profile {
-    const message = { ...baseProfile } as Profile;
+    const message = createBaseProfile();
     message.alias = object.alias ?? "";
     message.bio = object.bio ?? "";
     message.email = object.email ?? "";
@@ -494,7 +486,9 @@ export const Profile = {
   },
 };
 
-const baseDevice: object = { peerId: "" };
+function createBaseDevice(): Device {
+  return { peerId: "" };
+}
 
 export const Device = {
   encode(
@@ -510,7 +504,7 @@ export const Device = {
   decode(input: _m0.Reader | Uint8Array, length?: number): Device {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = { ...baseDevice } as Device;
+    const message = createBaseDevice();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -526,12 +520,9 @@ export const Device = {
   },
 
   fromJSON(object: any): Device {
-    const message = { ...baseDevice } as Device;
-    message.peerId =
-      object.peerId !== undefined && object.peerId !== null
-        ? String(object.peerId)
-        : "";
-    return message;
+    return {
+      peerId: isSet(object.peerId) ? String(object.peerId) : "",
+    };
   },
 
   toJSON(message: Device): unknown {
@@ -541,7 +532,7 @@ export const Device = {
   },
 
   fromPartial<I extends Exact<DeepPartial<Device>, I>>(object: I): Device {
-    const message = { ...baseDevice } as Device;
+    const message = createBaseDevice();
     message.peerId = object.peerId ?? "";
     return message;
   },
@@ -794,4 +785,12 @@ type Exact<P, I extends P> = P extends Builtin
 if (_m0.util.Long !== Long) {
   _m0.util.Long = Long as any;
   _m0.configure();
+}
+
+function isObject(value: any): boolean {
+  return typeof value === "object" && value !== null;
+}
+
+function isSet(value: any): boolean {
+  return value !== null && value !== undefined;
 }

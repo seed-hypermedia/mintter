@@ -3,9 +3,10 @@ package daemon
 import (
 	context "context"
 	"mintter/backend/core/coretest"
-	"mintter/backend/daemon"
 	"mintter/backend/daemon/daemontest"
+	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
+	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
 	"testing"
@@ -22,7 +23,7 @@ func TestGenSeed(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	resp, err := srv.GenSeed(ctx, &GenSeedRequest{})
+	resp, err := srv.GenSeed(ctx, &daemon.GenSeedRequest{})
 	require.NoError(t, err)
 	require.Equal(t, aezeed.NumMnemonicWords, len(resp.Mnemonic))
 }
@@ -32,13 +33,13 @@ func TestRegister(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	resp, err := srv.Register(ctx, &RegisterRequest{
+	resp, err := srv.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,
 	})
 	require.NoError(t, err)
 	require.NotEqual(t, "", resp.AccountId)
 
-	_, err = srv.Register(ctx, &RegisterRequest{
+	_, err = srv.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,
 	})
 	require.Error(t, err, "calling Register more than once must fail")
@@ -58,7 +59,7 @@ func TestGetInfo_NonReady(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	info, err := srv.GetInfo(ctx, &GetInfoRequest{})
+	info, err := srv.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.Error(t, err)
 	require.Nil(t, info)
 
@@ -71,16 +72,16 @@ func TestGetInfo_Ready(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	seed, err := srv.GenSeed(ctx, &GenSeedRequest{})
+	seed, err := srv.GenSeed(ctx, &daemon.GenSeedRequest{})
 	require.NoError(t, err)
 
-	reg, err := srv.Register(ctx, &RegisterRequest{
+	reg, err := srv.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: seed.Mnemonic,
 	})
 	require.NoError(t, err)
 	_ = reg
 
-	info, err := srv.GetInfo(ctx, &GetInfoRequest{})
+	info, err := srv.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)
 	require.Equal(t, srv.repo.Device().CID().String(), info.PeerId)
 
@@ -101,7 +102,7 @@ func newTestServer(t *testing.T, name string) *Server {
 	return NewServer(repo, v, func() {})
 }
 
-func newTestSQLite(t *testing.T, r *daemon.OnDisk) *sqlitex.Pool {
+func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {
 	pool, err := sqliteschema.Open(r.SQLitePath(), 0, 16)
 	require.NoError(t, err)
 	t.Cleanup(func() {

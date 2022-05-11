@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	"mintter/backend/config"
-	"mintter/backend/daemon"
+	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/logging"
 )
@@ -166,8 +166,8 @@ func provideDatastore(lc fx.Lifecycle) datastore.Batching {
 }
 
 func provideRepo(cfg config.Config) (*repo, error) {
-	r, err := daemon.NewOnDisk(cfg.RepoPath, logging.New("mintter/repo", "debug"))
-	if errors.Is(err, daemon.ErrRepoMigrate) {
+	r, err := ondisk.NewOnDisk(cfg.RepoPath, logging.New("mintter/repo", "debug"))
+	if errors.Is(err, ondisk.ErrRepoMigrate) {
 		fmt.Fprintf(os.Stderr, `
 This version of the software has a backward-incompatible database change!
 Please remove data inside %s or use a different repo path.

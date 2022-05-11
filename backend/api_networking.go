@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	networking "mintter/backend/api/networking/v1alpha"
+	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/ipfs"
 )
 

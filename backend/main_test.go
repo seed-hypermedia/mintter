@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	accounts "mintter/backend/api/accounts/v1alpha"
-	daemon "mintter/backend/api/daemon/v1alpha"
-	networking "mintter/backend/api/networking/v1alpha"
 	"mintter/backend/config"
+	accounts "mintter/backend/genproto/accounts/v1alpha"
+	daemon "mintter/backend/genproto/daemon/v1alpha"
+	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"

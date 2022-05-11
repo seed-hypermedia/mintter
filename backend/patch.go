@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	p2p "mintter/backend/api/p2p/v1alpha"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"

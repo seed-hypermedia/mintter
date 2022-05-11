@@ -21,7 +21,7 @@ $TOOLS_PROTOC -I proto \
     --go-grpc_out=module=mintter,require_unimplemented_servers=false:$WORKSPACE \
     $SRCS
 """,
-                out_dir = "//" + package_name().replace("proto", "backend/api"),
+                out_dir = "//" + package_name().replace("proto", "backend/genproto"),
                 tools = [
                     "//build/nix:protoc",
                     "//build/tools:protoc-gen-go",

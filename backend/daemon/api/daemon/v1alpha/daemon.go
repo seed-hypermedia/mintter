@@ -3,6 +3,7 @@ package daemon
 import (
 	context "context"
 	"mintter/backend/core"
+	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
 	sync "sync"
@@ -13,6 +14,10 @@ import (
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+)
+
+type (
+	DaemonServer = daemon.DaemonServer
 )
 
 type Repo interface {
@@ -40,20 +45,20 @@ func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func()) *Server {
 	}
 }
 
-func (srv *Server) GenSeed(ctx context.Context, req *GenSeedRequest) (*GenSeedResponse, error) {
+func (srv *Server) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*daemon.GenSeedResponse, error) {
 	words, err := core.NewMnemonic(req.AezeedPassphrase)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &GenSeedResponse{
+	resp := &daemon.GenSeedResponse{
 		Mnemonic: words,
 	}
 
 	return resp, nil
 }
 
-func (srv *Server) Register(ctx context.Context, req *RegisterRequest) (*RegisterResponse, error) {
+func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
@@ -81,18 +86,18 @@ func (srv *Server) Register(ctx context.Context, req *RegisterRequest) (*Registe
 		return nil, err
 	}
 
-	return &RegisterResponse{
+	return &daemon.RegisterResponse{
 		AccountId: acc.CID().String(),
 	}, nil
 }
 
-func (srv *Server) GetInfo(ctx context.Context, in *GetInfoRequest) (*Info, error) {
+func (srv *Server) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*daemon.Info, error) {
 	pk, err := srv.repo.Account()
 	if err != nil {
 		return nil, status.Error(codes.FailedPrecondition, err.Error())
 	}
 
-	resp := &Info{
+	resp := &daemon.Info{
 		AccountId: pk.CID().String(),
 		PeerId:    srv.repo.Device().CID().String(),
 		StartTime: timestamppb.New(srv.startTime),
@@ -101,7 +106,7 @@ func (srv *Server) GetInfo(ctx context.Context, in *GetInfoRequest) (*Info, erro
 	return resp, nil
 }
 
-func (srv *Server) ForceSync(ctx context.Context, in *ForceSyncRequest) (*emptypb.Empty, error) {
+func (srv *Server) ForceSync(ctx context.Context, in *daemon.ForceSyncRequest) (*emptypb.Empty, error) {
 	go srv.forceSyncFunc()
 
 	return &emptypb.Empty{}, nil

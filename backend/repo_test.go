@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"mintter/backend/daemon"
+	"mintter/backend/daemon/ondisk"
 	"mintter/backend/testutil"
 
 	"github.com/stretchr/testify/require"
@@ -19,7 +19,7 @@ func makeTestRepo(t *testing.T, tt Tester) *repo {
 	log, err := zap.NewDevelopment(zap.WithCaller(false))
 	require.NoError(t, err)
 
-	repo, err := daemon.NewOnDiskWithDeviceKey(dir, log, tt.Device.Wrapped())
+	repo, err := ondisk.NewOnDiskWithDeviceKey(dir, log, tt.Device.Wrapped())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, os.RemoveAll(dir))

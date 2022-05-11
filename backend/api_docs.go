@@ -3,8 +3,8 @@ package backend
 import (
 	"github.com/ipfs/go-cid"
 
-	documents "mintter/backend/api/documents/v1alpha"
 	"mintter/backend/core"
+	documents "mintter/backend/daemon/api/documents/v1alpha"
 	"mintter/backend/vcs"
 )
 

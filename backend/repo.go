@@ -1,5 +1,5 @@
 package backend
 
-import "mintter/backend/daemon"
+import "mintter/backend/daemon/ondisk"
 
-type repo = daemon.OnDisk
+type repo = ondisk.OnDisk

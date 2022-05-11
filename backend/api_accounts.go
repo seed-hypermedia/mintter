@@ -5,8 +5,8 @@ import (
 
 	"github.com/ipfs/go-cid"
 
-	accounts "mintter/backend/api/accounts/v1alpha"
 	"mintter/backend/core"
+	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	"mintter/backend/vcs"
 )
 

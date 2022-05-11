@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package com.mintter.accounts.v1alpha;
 
-option go_package = "mintter/backend/api/accounts/v1alpha;accounts";
+option go_package = "mintter/backend/genproto/accounts/v1alpha;accounts";
 
 // Accounts API service.
 service Accounts {

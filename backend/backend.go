@@ -23,9 +23,8 @@ import (
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/status"
 
-	accounts "mintter/backend/api/accounts/v1alpha"
-	p2p "mintter/backend/api/p2p/v1alpha"
 	"mintter/backend/core"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/lndhub"
 )
 
@@ -409,47 +408,4 @@ func makeDialOpts(host host.Host) []grpc.DialOption {
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 	}
-}
-
-func accountFromState(state *changeset) (*accounts.Account, error) {
-	if state.size == 0 {
-		return nil, fmt.Errorf("state is empty")
-	}
-
-	aid := state.obj.String()
-
-	acc := &accounts.Account{
-		Id:      aid,
-		Profile: &accounts.Profile{},
-		Devices: make(map[string]*accounts.Device),
-	}
-
-	for state.Next() {
-		sp := state.Item()
-
-		var ac AccountChange
-		if err := ac.UnmarshalVT(sp.Body); err != nil {
-			return nil, err
-		}
-
-		if ac.NewDeviceProof != "" {
-			acc.Devices[sp.peer.String()] = &accounts.Device{
-				PeerId: sp.peer.String(),
-			}
-		}
-
-		if ac.NewAlias != "" {
-			acc.Profile.Alias = ac.NewAlias
-		}
-
-		if ac.NewBio != "" {
-			acc.Profile.Bio = ac.NewBio
-		}
-
-		if ac.NewEmail != "" {
-			acc.Profile.Email = ac.NewEmail
-		}
-	}
-
-	return acc, nil
 }
