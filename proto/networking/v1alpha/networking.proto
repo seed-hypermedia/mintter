@@ -6,45 +6,11 @@ option go_package = "mintter/backend/api/networking/v1alpha;networking";
 
 // Networking API service of the Mintter daemon.
 service Networking {
-  // Start discovery of a given object ID. Server will be instructed to actively looking for peers
-  // that can provide information about the given object ID and will try to be in sync with them.
-  rpc StartObjectDiscovery(StartObjectDiscoveryRequest) returns (StartObjectDiscoveryResponse);
-
-  // Get status information about object discovery that was previously started.
-  rpc GetObjectDiscoveryStatus(GetObjectDiscoveryStatusRequest) returns (ObjectDiscoveryStatus);
-
-  // Stop object discovery that was previously started.
-  rpc StopObjectDiscovery(StopObjectDiscoveryRequest) returns (StopObjectDiscoveryResponse);
-
   // Lookup details about a known peer.
   rpc GetPeerInfo(GetPeerInfoRequest) returns (PeerInfo);
 
   // Establishes a direct connection with a given peer explicitly.
   rpc Connect(ConnectRequest) returns (ConnectResponse);
-}
-
-// Request to start object discovery.
-message StartObjectDiscoveryRequest {
-  // ID of the object to be discovered.
-  string object_id = 1;
-}
-
-// Response for starting object discovery.
-message StartObjectDiscoveryResponse {}
-
-// Request to stop object discovery.
-message StopObjectDiscoveryRequest {
-  // ID of the object for which discovery must be stopped.
-  string object_id = 1;
-}
-
-// Response for stopping object discovery.
-message StopObjectDiscoveryResponse {}
-
-// Request to get object discovery status.
-message GetObjectDiscoveryStatusRequest {
-  // ID of the object for which we want to get discovery status.
-  string object_id = 1;
 }
 
 // Request to get peer's addresses.
@@ -90,10 +56,4 @@ enum ConnectionStatus {
   // CannotConnect means recently attempted connecting but failed to connect.
   // (should signal "made effort, failed").
   CANNOT_CONNECT = 3;
-}
-
-// Status of the object discovery.
-message ObjectDiscoveryStatus {
-  // List of known peers that provide this object.
-  repeated string peers = 1;
 }

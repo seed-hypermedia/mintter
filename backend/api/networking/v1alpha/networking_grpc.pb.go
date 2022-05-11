@@ -18,13 +18,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NetworkingClient interface {
-	// Start discovery of a given object ID. Server will be instructed to actively looking for peers
-	// that can provide information about the given object ID and will try to be in sync with them.
-	StartObjectDiscovery(ctx context.Context, in *StartObjectDiscoveryRequest, opts ...grpc.CallOption) (*StartObjectDiscoveryResponse, error)
-	// Get status information about object discovery that was previously started.
-	GetObjectDiscoveryStatus(ctx context.Context, in *GetObjectDiscoveryStatusRequest, opts ...grpc.CallOption) (*ObjectDiscoveryStatus, error)
-	// Stop object discovery that was previously started.
-	StopObjectDiscovery(ctx context.Context, in *StopObjectDiscoveryRequest, opts ...grpc.CallOption) (*StopObjectDiscoveryResponse, error)
 	// Lookup details about a known peer.
 	GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error)
 	// Establishes a direct connection with a given peer explicitly.
@@ -37,33 +30,6 @@ type networkingClient struct {
 
 func NewNetworkingClient(cc grpc.ClientConnInterface) NetworkingClient {
 	return &networkingClient{cc}
-}
-
-func (c *networkingClient) StartObjectDiscovery(ctx context.Context, in *StartObjectDiscoveryRequest, opts ...grpc.CallOption) (*StartObjectDiscoveryResponse, error) {
-	out := new(StartObjectDiscoveryResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.networking.v1alpha.Networking/StartObjectDiscovery", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkingClient) GetObjectDiscoveryStatus(ctx context.Context, in *GetObjectDiscoveryStatusRequest, opts ...grpc.CallOption) (*ObjectDiscoveryStatus, error) {
-	out := new(ObjectDiscoveryStatus)
-	err := c.cc.Invoke(ctx, "/com.mintter.networking.v1alpha.Networking/GetObjectDiscoveryStatus", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *networkingClient) StopObjectDiscovery(ctx context.Context, in *StopObjectDiscoveryRequest, opts ...grpc.CallOption) (*StopObjectDiscoveryResponse, error) {
-	out := new(StopObjectDiscoveryResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.networking.v1alpha.Networking/StopObjectDiscovery", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *networkingClient) GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error) {
@@ -88,13 +54,6 @@ func (c *networkingClient) Connect(ctx context.Context, in *ConnectRequest, opts
 // All implementations should embed UnimplementedNetworkingServer
 // for forward compatibility
 type NetworkingServer interface {
-	// Start discovery of a given object ID. Server will be instructed to actively looking for peers
-	// that can provide information about the given object ID and will try to be in sync with them.
-	StartObjectDiscovery(context.Context, *StartObjectDiscoveryRequest) (*StartObjectDiscoveryResponse, error)
-	// Get status information about object discovery that was previously started.
-	GetObjectDiscoveryStatus(context.Context, *GetObjectDiscoveryStatusRequest) (*ObjectDiscoveryStatus, error)
-	// Stop object discovery that was previously started.
-	StopObjectDiscovery(context.Context, *StopObjectDiscoveryRequest) (*StopObjectDiscoveryResponse, error)
 	// Lookup details about a known peer.
 	GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error)
 	// Establishes a direct connection with a given peer explicitly.
@@ -105,15 +64,6 @@ type NetworkingServer interface {
 type UnimplementedNetworkingServer struct {
 }
 
-func (UnimplementedNetworkingServer) StartObjectDiscovery(context.Context, *StartObjectDiscoveryRequest) (*StartObjectDiscoveryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartObjectDiscovery not implemented")
-}
-func (UnimplementedNetworkingServer) GetObjectDiscoveryStatus(context.Context, *GetObjectDiscoveryStatusRequest) (*ObjectDiscoveryStatus, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetObjectDiscoveryStatus not implemented")
-}
-func (UnimplementedNetworkingServer) StopObjectDiscovery(context.Context, *StopObjectDiscoveryRequest) (*StopObjectDiscoveryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StopObjectDiscovery not implemented")
-}
 func (UnimplementedNetworkingServer) GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPeerInfo not implemented")
 }
@@ -130,60 +80,6 @@ type UnsafeNetworkingServer interface {
 
 func RegisterNetworkingServer(s grpc.ServiceRegistrar, srv NetworkingServer) {
 	s.RegisterService(&Networking_ServiceDesc, srv)
-}
-
-func _Networking_StartObjectDiscovery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StartObjectDiscoveryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkingServer).StartObjectDiscovery(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.networking.v1alpha.Networking/StartObjectDiscovery",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkingServer).StartObjectDiscovery(ctx, req.(*StartObjectDiscoveryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Networking_GetObjectDiscoveryStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetObjectDiscoveryStatusRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkingServer).GetObjectDiscoveryStatus(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.networking.v1alpha.Networking/GetObjectDiscoveryStatus",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkingServer).GetObjectDiscoveryStatus(ctx, req.(*GetObjectDiscoveryStatusRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Networking_StopObjectDiscovery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StopObjectDiscoveryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NetworkingServer).StopObjectDiscovery(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.networking.v1alpha.Networking/StopObjectDiscovery",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkingServer).StopObjectDiscovery(ctx, req.(*StopObjectDiscoveryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Networking_GetPeerInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -229,18 +125,6 @@ var Networking_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "com.mintter.networking.v1alpha.Networking",
 	HandlerType: (*NetworkingServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "StartObjectDiscovery",
-			Handler:    _Networking_StartObjectDiscovery_Handler,
-		},
-		{
-			MethodName: "GetObjectDiscoveryStatus",
-			Handler:    _Networking_GetObjectDiscoveryStatus_Handler,
-		},
-		{
-			MethodName: "StopObjectDiscovery",
-			Handler:    _Networking_StopObjectDiscovery_Handler,
-		},
 		{
 			MethodName: "GetPeerInfo",
 			Handler:    _Networking_GetPeerInfo_Handler,
