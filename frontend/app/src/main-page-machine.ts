@@ -173,10 +173,10 @@ type MainPageEvent =
     type: 'toNewDraft'
   }
   | {
-    type: 'navigateBack'
+    type: 'goBack'
   }
   | {
-    type: 'navigateForward'
+    type: 'goForward'
   } | {
     type: 'SET.CURRENT.DOCUMENT'
     document: EditorDocument
@@ -227,6 +227,7 @@ export function createMainPageMachine(client: QueryClient) {
           states: {
             idle: {},
             home: {
+              entry: ['clearCurrentDocument', 'clearParams'],
               tags: ['topbar', 'library'],
             },
             editor: {
@@ -312,7 +313,8 @@ export function createMainPageMachine(client: QueryClient) {
               }
             },
             settings: {
-              tags: [],
+              tags: ['settings'],
+              entry: ['clearCurrentDocument', 'clearParams'],
             },
             createDraft: {
               invoke: {
@@ -345,6 +347,14 @@ export function createMainPageMachine(client: QueryClient) {
             toNewDraft: '.createDraft',
           },
         },
+      },
+      on: {
+        goBack: {
+          actions: ['navigateBack']
+        },
+        goForward: {
+          actions: ['navigateForward']
+        }
       }
     },
     {
@@ -352,6 +362,7 @@ export function createMainPageMachine(client: QueryClient) {
         isPublication: (_, event) => event.docType == 'p',
         isDraft: (_, event) => event.docType == 'editor',
         isMetaEventDifferent: (context, _, meta) => {
+          console.log('isMetaEventDifferent', context, _, meta);
 
           let { type, ...eventParams } = meta.state.event
           return !isEqual(context.params, eventParams)
@@ -402,29 +413,49 @@ export function createMainPageMachine(client: QueryClient) {
           docId: context.params.docId,
           blockId: context.params.blockId
         }), { to: 'router' }),
+        clearParams: assign((_) => ({
+          params: {
+            docId: '',
+            version: null,
+            blockId: null
+          }
+        }))
       },
       services: {
         router: () => (sendBack, receive) => {
           let navRouter = Navaid('/', () => sendBack('goToHome'))
           // Deserialize events from the URL
           navRouter
-            .on('/', () => sendBack('goToHome'))
-            .on('/settings', () => sendBack('goToSettings'))
-            .on<{ docId: string }>('/editor/:docId', (params) => params ? sendBack({ type: 'goToEditor', ...params }) : sendBack('routeNotFound'),
-          )
+            .on('/', () => {
+              console.log('ENTER IN HOME ROUTE');
+              sendBack('goToHome')
+            })
+            .on('/settings', () => {
+              console.log('ENTER IN SETTINGS ROUTE');
+              sendBack('goToSettings')
+            })
+            .on<{ docId: string }>('/editor/:docId', (params) => {
+              console.log('ENTER IN EDITOR ROUTE', params);
+
+              return params ? sendBack({ type: 'goToEditor', ...params }) : sendBack('routeNotFound')
+            },
+            )
             .on<{
               docId: string
               version?: string
               blockId?: string
-            }>('/p/:docId/:version?/:blockid?', (params) =>
-              params
+            }>('/p/:docId/:version?/:blockid?', (params) => {
+              console.log('ENTER IN PUBLICATION ROUTE: ', params);
+
+              return params
                 ? sendBack({
                   type: 'goToPublication',
                   docId: params.docId,
                   version: params.version,
                   blockId: params.blockId,
                 })
-                : sendBack('routeNotFound'),
+                : sendBack('routeNotFound')
+            },
             )
             .on<{
               docType?: string

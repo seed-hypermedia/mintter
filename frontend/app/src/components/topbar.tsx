@@ -1,12 +1,11 @@
-import { useAccount } from '@app/hooks'
-import { useMainPage } from '@app/main-page-context'
-import { css, styled } from '@app/stitches.config'
-import { getDocumentTitle } from '@app/utils/get-document-title'
-import { Text } from '@components/text'
-import { invoke } from '@tauri-apps/api'
-import { useActor } from '@xstate/react'
-import { Box } from './box'
-import { Icon } from './icon'
+import {useAccount} from '@app/hooks'
+import {useMainPage} from '@app/main-page-context'
+import {css, styled} from '@app/stitches.config'
+import {getDocumentTitle} from '@app/utils/get-document-title'
+import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
+import {Box} from './box'
+import {Icon} from './icon'
 
 const draggableProps = {
   'data-tauri-drag-region': true,
@@ -60,10 +59,6 @@ export function Topbar({
   let [mainState] = useActor(mainPage)
   let {data, isSuccess} = useAccount(mainState.context.document?.author)
 
-  async function onCreateDraft() {
-    await invoke('open_in_new_window', {url: '/new'})
-  }
-
   function toggleLibrary() {
     mainState.context.library.send('LIBRARY.TOGGLE')
   }
@@ -79,7 +74,7 @@ export function Topbar({
           data-testid="history-back"
           onClick={(e) => {
             e.preventDefault()
-            back()
+            mainPage.send('goBack')
           }}
         >
           <Icon name="ArrowChevronLeft" color="muted" size="2" />
@@ -89,7 +84,7 @@ export function Topbar({
           data-testid="history-forward"
           onClick={(e) => {
             e.preventDefault()
-            forward()
+            mainPage.send('goForward')
           }}
         >
           <Icon name="ArrowChevronRight" color="muted" size="2" />
@@ -145,9 +140,6 @@ export function Topbar({
           <Text size="2">Local Node</Text>
           <Icon name="Sidenav" size="2" />
         </Box>
-      </TopbarButton>
-      <TopbarButton onClick={onCreateDraft}>
-        <Icon name="Add" color="muted" />
       </TopbarButton>
     </TopbarStyled>
   )
