@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	networking "mintter/backend/api/networking/v1alpha"
+	networking "mintter/backend/genproto/networking/v1alpha"
 )
 
 func TestAPIConnect(t *testing.T) {

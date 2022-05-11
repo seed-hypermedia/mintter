@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	p2p "mintter/backend/api/p2p/v1alpha"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/peer"

@@ -4,6 +4,7 @@ import (
 	context "context"
 	"fmt"
 	"mintter/backend/core"
+	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
 
@@ -11,6 +12,15 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+)
+
+type (
+	AccountsServer       = accounts.AccountsServer
+	ListAccountsRequest  = accounts.ListAccountsRequest
+	ListAccountsResponse = accounts.ListAccountsResponse
+	Account              = accounts.Account
+	Device               = accounts.Device
+	Profile              = accounts.Profile
 )
 
 type Server struct {
@@ -25,7 +35,7 @@ func NewServer(id core.Identity, v *vcs.SQLite) *Server {
 	}
 }
 
-func (srv *Server) GetAccount(ctx context.Context, in *GetAccountRequest) (*Account, error) {
+func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountRequest) (*accounts.Account, error) {
 	if srv == nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
 	}
@@ -49,7 +59,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *GetAccountRequest) (*Acco
 	return accountToProto(acc.Account), nil
 }
 
-func (srv *Server) UpdateProfile(ctx context.Context, in *Profile) (*Account, error) {
+func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
 	aid := srv.me.AccountID()
 
 	acc, err := srv.getAccount(ctx, aid)
@@ -126,19 +136,19 @@ func (srv *Server) getAccount(ctx context.Context, aid cid.Cid) (*account, error
 	return &account{Account: acc, ver: ver}, nil
 }
 
-func accountToProto(acc *vcstypes.Account) *Account {
-	accpb := &Account{
+func accountToProto(acc *vcstypes.Account) *accounts.Account {
+	accpb := &accounts.Account{
 		Id: acc.State().ID.String(),
-		Profile: &Profile{
+		Profile: &accounts.Profile{
 			Alias: acc.State().Profile.Alias,
 			Bio:   acc.State().Profile.Bio,
 			Email: acc.State().Profile.Email,
 		},
-		Devices: make(map[string]*Device),
+		Devices: make(map[string]*accounts.Device),
 	}
 
 	for did := range acc.State().Devices {
-		accpb.Devices[did.String()] = &Device{
+		accpb.Devices[did.String()] = &accounts.Device{
 			PeerId: did.String(),
 		}
 	}

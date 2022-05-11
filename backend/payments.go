@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	p2p "mintter/backend/api/p2p/v1alpha"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/lndhub"
 	"mintter/backend/wallet"
 	"strings"

@@ -4,6 +4,7 @@ import (
 	context "context"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
+	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
@@ -18,17 +19,17 @@ func TestGetAccount_Own(t *testing.T) {
 	alice := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	want := &Account{
+	want := &accounts.Account{
 		Id:      "bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya",
-		Profile: &Profile{},
-		Devices: map[string]*Device{
+		Profile: &accounts.Profile{},
+		Devices: map[string]*accounts.Device{
 			"bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh": {
 				PeerId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",
 			},
 		},
 	}
 
-	acc, err := alice.GetAccount(ctx, &GetAccountRequest{})
+	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	require.Equal(t, alice.me.AccountID().String(), acc.Id)
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
@@ -38,13 +39,13 @@ func TestAPIUpdateProfile(t *testing.T) {
 	alice := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	want := &Account{
+	want := &accounts.Account{
 		Id: "bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya",
-		Profile: &Profile{
+		Profile: &accounts.Profile{
 			Alias: "fake-alias",
 			Bio:   "Hackeer",
 		},
-		Devices: map[string]*Device{
+		Devices: map[string]*accounts.Device{
 			"bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh": {
 				PeerId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",
 			},
@@ -55,7 +56,7 @@ func TestAPIUpdateProfile(t *testing.T) {
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, updated, "account must be equal")
 
-	stored, err := alice.GetAccount(ctx, &GetAccountRequest{})
+	stored, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, want, stored, "get account must return updated account")
 }

@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	daemon "mintter/backend/api/daemon/v1alpha"
+	daemon "mintter/backend/daemon/api/daemon/v1alpha"
 	"mintter/backend/vcs"
 )
 

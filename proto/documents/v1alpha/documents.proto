@@ -5,7 +5,7 @@ package com.mintter.documents.v1alpha;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-option go_package = "mintter/backend/api/documents/v1alpha;documents";
+option go_package = "mintter/backend/genproto/documents/v1alpha;documents";
 
 // === Draft Service ===
 

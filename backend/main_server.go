@@ -15,11 +15,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	accounts "mintter/backend/api/accounts/v1alpha"
-	daemon "mintter/backend/api/daemon/v1alpha"
-	documents "mintter/backend/api/documents/v1alpha"
-	networking "mintter/backend/api/networking/v1alpha"
 	"mintter/backend/config"
+	accounts "mintter/backend/genproto/accounts/v1alpha"
+	daemon "mintter/backend/genproto/daemon/v1alpha"
+	documents "mintter/backend/genproto/documents/v1alpha"
+	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/vcs"
 )
 

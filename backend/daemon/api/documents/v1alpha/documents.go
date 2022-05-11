@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/crdt"
+	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
@@ -17,6 +18,12 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+type (
+	DraftsServer       = documents.DraftsServer
+	PublicationsServer = documents.PublicationsServer
+	ContentGraphServer = documents.ContentGraphServer
 )
 
 type Server struct {
@@ -33,7 +40,7 @@ func NewServer(me core.Identity, db *sqlitex.Pool, vcs *vcs.SQLite) *Server {
 	}
 }
 
-func (api *Server) CreateDraft(ctx context.Context, in *CreateDraftRequest) (*Document, error) {
+func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
 	if in.ExistingDocumentId != "" {
 		// Load time dag.
 		// Create working copy.
@@ -73,7 +80,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *CreateDraftRequest) (*Do
 		}
 	}
 
-	return &Document{
+	return &documents.Document{
 		Id:         permablk.Cid().String(),
 		Author:     me.String(),
 		CreateTime: timestamppb.New(p.CreateTime),
@@ -81,11 +88,11 @@ func (api *Server) CreateDraft(ctx context.Context, in *CreateDraftRequest) (*Do
 	}, nil
 }
 
-func (api *Server) UpdateDraft(ctx context.Context, in *UpdateDraftRequest) (*Document, error) {
+func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
 	return nil, status.Error(codes.Unimplemented, "deprecated")
 }
 
-func (api *Server) UpdateDraftV2(ctx context.Context, in *UpdateDraftRequestV2) (*emptypb.Empty, error) {
+func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode document id: %w", err)
@@ -105,15 +112,15 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *UpdateDraftRequestV2) 
 
 	for _, c := range in.Changes {
 		switch op := c.Op.(type) {
-		case *DocumentChange_SetTitle:
+		case *documents.DocumentChange_SetTitle:
 			doc.ChangeTitle(op.SetTitle)
-		case *DocumentChange_SetSubtitle:
+		case *documents.DocumentChange_SetSubtitle:
 			doc.ChangeSubtitle(op.SetSubtitle)
-		case *DocumentChange_MoveBlock_:
+		case *documents.DocumentChange_MoveBlock_:
 			if err := doc.MoveBlock(op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
 				return nil, err
 			}
-		case *DocumentChange_ReplaceBlock:
+		case *documents.DocumentChange_ReplaceBlock:
 			blk, err := blockFromProto(op.ReplaceBlock)
 			if err != nil {
 				return nil, err
@@ -121,7 +128,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *UpdateDraftRequestV2) 
 			if err := doc.ReplaceBlock(blk); err != nil {
 				return nil, err
 			}
-		case *DocumentChange_DeleteBlock:
+		case *documents.DocumentChange_DeleteBlock:
 			if err := doc.DeleteBlock(op.DeleteBlock); err != nil {
 				return nil, err
 			}
@@ -168,7 +175,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *UpdateDraftRequestV2) 
 	return &emptypb.Empty{}, nil
 }
 
-func (api *Server) GetDraft(ctx context.Context, in *GetDraftRequest) (*Document, error) {
+func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -182,7 +189,7 @@ func (api *Server) GetDraft(ctx context.Context, in *GetDraftRequest) (*Document
 	return docToProto(draft.doc)
 }
 
-func (api *Server) ListDrafts(ctx context.Context, in *ListDraftsRequest) (*ListDraftsResponse, error) {
+func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
 	conn, release, err := api.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -194,14 +201,14 @@ func (api *Server) ListDrafts(ctx context.Context, in *ListDraftsRequest) (*List
 		return nil, err
 	}
 
-	out := &ListDraftsResponse{
-		Documents: make([]*Document, len(res)),
+	out := &documents.ListDraftsResponse{
+		Documents: make([]*documents.Document, len(res)),
 	}
 
 	aid := api.me.AccountID().String()
 
 	for i, l := range res {
-		out.Documents[i] = &Document{
+		out.Documents[i] = &documents.Document{
 			Id:         cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String(),
 			Author:     aid,
 			Title:      l.DraftsTitle,
@@ -214,7 +221,7 @@ func (api *Server) ListDrafts(ctx context.Context, in *ListDraftsRequest) (*List
 	return out, nil
 }
 
-func (api *Server) PublishDraft(ctx context.Context, in *PublishDraftRequest) (*Publication, error) {
+func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -253,7 +260,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *PublishDraftRequest) (*
 	}
 	docpb.PublishTime = timestamppb.New(recorded.CreateTime)
 
-	pub := &Publication{
+	pub := &documents.Publication{
 		Version:  newVer.String(),
 		Document: docpb,
 		// TODO: get real latest version.
@@ -292,7 +299,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *PublishDraftRequest) (*
 	return pub, nil
 }
 
-func (api *Server) DeleteDraft(ctx context.Context, in *DeleteDraftRequest) (*emptypb.Empty, error) {
+func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -317,7 +324,7 @@ func (api *Server) DeleteDraft(ctx context.Context, in *DeleteDraftRequest) (*em
 	return &emptypb.Empty{}, nil
 }
 
-func (api *Server) GetPublication(ctx context.Context, in *GetPublicationRequest) (*Publication, error) {
+func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -347,7 +354,7 @@ func (api *Server) GetPublication(ctx context.Context, in *GetPublicationRequest
 	}
 	docpb.PublishTime = timestamppb.New(doc.State().UpdateTime)
 
-	return &Publication{
+	return &documents.Publication{
 		Version:  ver.String(),
 		Document: docpb,
 		// TODO: get real latest version.
@@ -383,7 +390,7 @@ func (api *Server) getPublication(ctx context.Context, oid cid.Cid, ver vcs.Vers
 	return doc, nil
 }
 
-func (api *Server) DeletePublication(ctx context.Context, in *DeletePublicationRequest) (*emptypb.Empty, error) {
+func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
 	c, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
@@ -396,7 +403,7 @@ func (api *Server) DeletePublication(ctx context.Context, in *DeletePublicationR
 	return &emptypb.Empty{}, nil
 }
 
-func (api *Server) ListPublications(ctx context.Context, in *ListPublicationsRequest) (*ListPublicationsResponse, error) {
+func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	conn, release, err := api.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -408,15 +415,15 @@ func (api *Server) ListPublications(ctx context.Context, in *ListPublicationsReq
 		return nil, err
 	}
 
-	out := &ListPublicationsResponse{
-		Publications: make([]*Publication, len(list)),
+	out := &documents.ListPublicationsResponse{
+		Publications: make([]*documents.Publication, len(list)),
 	}
 
 	for i, l := range list {
 		aid := cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash)
 		pubid := cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String()
-		out.Publications[i] = &Publication{
-			Document: &Document{
+		out.Publications[i] = &documents.Publication{
+			Document: &documents.Document{
 				Id:          pubid,
 				Author:      aid.String(),
 				Title:       l.PublicationsTitle,
@@ -491,7 +498,7 @@ func (api *Server) getDraft(ctx context.Context, oid cid.Cid, channel string) (*
 	}, nil
 }
 
-func blockFromProto(blk *Block) (vcstypes.Block, error) {
+func blockFromProto(blk *documents.Block) (vcstypes.Block, error) {
 	b := vcstypes.Block{
 		ID:         blk.Id,
 		Type:       blk.Type,
@@ -517,8 +524,8 @@ func blockFromProto(blk *Block) (vcstypes.Block, error) {
 	return b, nil
 }
 
-func docToProto(d *vcstypes.Document) (*Document, error) {
-	docpb := &Document{
+func docToProto(d *vcstypes.Document) (*documents.Document, error) {
+	docpb := &documents.Document{
 		Id:         d.State().ID.String(),
 		Title:      d.State().Title,
 		Subtitle:   d.State().Subtitle,
@@ -527,9 +534,9 @@ func docToProto(d *vcstypes.Document) (*Document, error) {
 		UpdateTime: timestamppb.New(d.State().UpdateTime), // TODO: implement real update time.
 	}
 
-	blockMap := map[string]*BlockNode{}
+	blockMap := map[string]*documents.BlockNode{}
 
-	appendChild := func(parent string, child *BlockNode) {
+	appendChild := func(parent string, child *documents.BlockNode) {
 		if parent == crdt.RootNodeID {
 			docpb.Children = append(docpb.Children, child)
 			return
@@ -551,7 +558,7 @@ func docToProto(d *vcstypes.Document) (*Document, error) {
 			panic("BUG: node id " + cur.NodeID + " doesn't have block in the map")
 		}
 
-		child := &BlockNode{Block: blockToProto(blk)}
+		child := &documents.BlockNode{Block: blockToProto(blk)}
 		appendChild(cur.Parent, child)
 		blockMap[cur.NodeID] = child
 	}
@@ -559,8 +566,8 @@ func docToProto(d *vcstypes.Document) (*Document, error) {
 	return docpb, nil
 }
 
-func blockToProto(blk vcstypes.Block) *Block {
-	bpb := &Block{
+func blockToProto(blk vcstypes.Block) *documents.Block {
+	bpb := &documents.Block{
 		Id:         blk.ID,
 		Type:       blk.Type,
 		Attributes: blk.Attributes,
@@ -568,7 +575,7 @@ func blockToProto(blk vcstypes.Block) *Block {
 	}
 
 	if blk.Annotations != nil {
-		bpb.Annotations = make([]*Annotation, len(blk.Annotations))
+		bpb.Annotations = make([]*documents.Annotation, len(blk.Annotations))
 		for i, a := range blk.Annotations {
 			bpb.Annotations[i] = annotationToProto(a)
 		}
@@ -577,8 +584,8 @@ func blockToProto(blk vcstypes.Block) *Block {
 	return bpb
 }
 
-func annotationToProto(a vcstypes.Annotation) *Annotation {
-	return &Annotation{
+func annotationToProto(a vcstypes.Annotation) *documents.Annotation {
+	return &documents.Annotation{
 		Type:       a.Type,
 		Attributes: a.Attributes,
 		Starts:     a.Starts,

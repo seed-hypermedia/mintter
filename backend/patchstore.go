@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	p2p "mintter/backend/api/p2p/v1alpha"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/ipfs/sqlitebs"
 	"mintter/backend/vcs/vcssql"
