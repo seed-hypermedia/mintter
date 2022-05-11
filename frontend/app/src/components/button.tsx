@@ -67,7 +67,7 @@ export const buttonStyles = css({
         backgroundColor: 'transparent',
         boxShadow:
           'inset 0px 0px 0px $$outlined-border-size $$outlined-border-color',
-        color: '$$outlined-text-color',
+        color: '$$outlined-text-color-normal',
         '&:hover': {
           backgroundColor: '$$outlined-hovered-background-color',
         },
@@ -77,12 +77,13 @@ export const buttonStyles = css({
       },
       ghost: {
         backgroundColor: 'transparent',
-        color: '$$solid-background-normal',
+        color: '$$outlined-text-color-normal',
         '&:hover': {
-          color: '$$solid-background-hover',
+          color: '$$outlined-text-color-hover',
+          backgroundColor: '$$',
         },
         '&:active, &:focus': {
-          color: '$$solid-background-active',
+          color: '$$outlined-text-color-active',
         },
       },
     },
@@ -101,7 +102,9 @@ export const buttonStyles = css({
         '$$solid-background-active': '$colors$primary-text-low',
         '$$outlined-border-color': '$colors$primary-border-normal',
         '$$solid-text-color': '$colors$primary-text-opposite',
-        '$$outlined-text-color': '$colors$primary-text-low',
+        '$$outlined-text-color-normal': '$colors$primary-text-low',
+        '$$outlined-text-color-hover': '$colors$primary-text-high',
+        '$$outlined-text-color-active': '$colors$primary-text-high',
         '$$outlined-hovered-background-color':
           '$colors$primary-component-bg-hover',
         '$$outlined-active-background-color':
@@ -114,7 +117,9 @@ export const buttonStyles = css({
         '$$solid-background-active': '$colors$secondary-text-low',
         '$$outlined-border-color': '$colors$secondary-border-normal',
         '$$solid-text-color': '$colors$secondary-text-opposite',
-        '$$outlined-text-color': '$colors$secondary-text-low',
+        '$$outlined-text-color-normal': '$colors$secondary-text-low',
+        '$$outlined-text-color-hover': '$colors$secondary-text-high',
+        '$$outlined-text-color-active': '$colors$secondary-text-high',
         '$$outlined-hovered-background-color':
           '$colors$secondary-component-bg-hover',
         '$$outlined-active-background-color':
@@ -127,7 +132,9 @@ export const buttonStyles = css({
         '$$solid-background-active': '$colors$success-text-low',
         '$$outlined-border-color': '$colors$success-border-normal',
         '$$solid-text-color': '$colors$success-text-opposite',
-        '$$outlined-text-color': '$colors$success-text-low',
+        '$$outlined-text-color-normal': '$colors$success-text-low',
+        '$$outlined-text-color-hover': '$colors$success-text-high',
+        '$$outlined-text-color-active': '$colors$success-text-high',
         '$$outlined-hovered-background-color':
           '$colors$success-component-bg-hover',
         '$$outlined-active-background-color':
@@ -140,7 +147,9 @@ export const buttonStyles = css({
         '$$solid-background-active': '$colors$warning-text-low',
         '$$outlined-border-color': '$colors$warning-border-normal',
         '$$solid-text-color': '$colors$warning-text-opposite',
-        '$$outlined-text-color': '$colors$warning-text-low',
+        '$$outlined-text-color-normal': '$colors$warning-text-low',
+        '$$outlined-text-color-hover': '$colors$warning-text-high',
+        '$$outlined-text-color-active': '$colors$warning-text-high',
         '$$outlined-hovered-background-color':
           '$colors$warning-component-bg-hover',
         '$$outlined-active-background-color':
@@ -153,7 +162,9 @@ export const buttonStyles = css({
         '$$solid-background-active': '$colors$danger-text-low',
         '$$outlined-border-color': '$colors$danger-border-normal',
         '$$solid-text-color': '$colors$danger-text-opposite',
-        '$$outlined-text-color': '$colors$danger-text-low',
+        '$$outlined-text-color-normal': '$colors$danger-text-low',
+        '$$outlined-text-color-hover': '$colors$danger-text-high',
+        '$$outlined-text-color-active': '$colors$danger-text-high',
         '$$outlined-hovered-background-color':
           '$colors$danger-component-bg-hover',
         '$$outlined-active-background-color':
@@ -163,10 +174,12 @@ export const buttonStyles = css({
       muted: {
         '$$solid-background-normal': '$colors$base-normal',
         '$$solid-background-hover': '$colors$base-active',
-        '$$solid-background-active': '$colors$base-text-low',
+        '$$solid-background-active': '$colors$base-hover',
         '$$outlined-border-color': '$colors$base-border-normal',
         '$$solid-text-color': '$colors$base-text-opposite',
-        '$$outlined-text-color': '$colors$base-text-low',
+        '$$outlined-text-color-normal': '$colors$base-text-low',
+        '$$outlined-text-color-hover': '$colors$base-text-high',
+        '$$outlined-text-color-active': '$colors$base-text-high',
         '$$outlined-hovered-background-color':
           '$colors$base-component-bg-hover',
         '$$outlined-active-background-color':

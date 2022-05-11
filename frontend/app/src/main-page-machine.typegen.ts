@@ -45,11 +45,14 @@ export interface Typegen1 {
 export interface Typegen2 {
   '@@xstate/typegen': true
   eventsCausingActions: {
+    navigateBack: 'goBack'
+    navigateForward: 'goForward'
     updateLibrary: 'RECONCILE'
     setCurrentDocument: 'SET.CURRENT.DOCUMENT'
     setDraftParams: ''
     setPublicationParams: ''
-    clearCurrentDocument: 'xstate.init'
+    clearCurrentDocument: 'goToHome' | 'goToSettings'
+    clearParams: 'goToHome' | 'goToSettings'
     pushDraftRoute: ''
     pushPublicationRoute: ''
   }
@@ -68,7 +71,7 @@ export interface Typegen2 {
     createNewDraft: 'done.invoke.(machine).routes.createDraft:invocation[0]'
   }
   missingImplementations: {
-    actions: never
+    actions: 'navigateBack' | 'navigateForward'
     services: never
     guards: never
     delays: never
@@ -111,5 +114,11 @@ export interface Typegen2 {
               publication?: 'validating' | 'valid' | 'error'
             }
       }
-  tags: 'topbar' | 'library' | 'sidepanel' | 'draft' | 'publication'
+  tags:
+    | 'topbar'
+    | 'library'
+    | 'sidepanel'
+    | 'draft'
+    | 'publication'
+    | 'settings'
 }
