@@ -151,4 +151,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Upload artifacts to S3
-        run: aws s3 sync ./artifacts s3://mintterreleases/ --delete
+        run: aws s3 sync ./artifacts s3://mintterreleases/ --delete --acl public-read
