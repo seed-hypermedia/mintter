@@ -133,6 +133,15 @@ jobs:
         with:
           name: artifacts
           path: artifacts
+      - name: "Setup NodeJS"
+        uses: actions/setup-node@v3
+        with:
+          cache: yarn
+          node-version: 16.x
+      - name: "Install JavaScript dependencies"
+        run: yarn
+      - name: Generate static updater manifest
+        run: node generate-update-manifest.mjs ${{ github.ref_name }} > ./artifacts/manifest.json
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
