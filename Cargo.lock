@@ -518,6 +518,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "workspace-hack",
 ]
 
 [[package]]
@@ -1006,6 +1007,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "serde_json",
+ "workspace-hack",
 ]
 
 [[package]]
@@ -1014,6 +1016,7 @@ version = "0.1.0"
 dependencies = [
  "common",
  "serde_json",
+ "workspace-hack",
 ]
 
 [[package]]
@@ -1038,6 +1041,7 @@ dependencies = [
  "wasi-common",
  "wasmtime",
  "wasmtime-wasi",
+ "workspace-hack",
 ]
 
 [[package]]
@@ -2036,6 +2040,7 @@ dependencies = [
  "tauri-plugin-log",
  "tauri-plugin-store",
  "tokio",
+ "workspace-hack",
 ]
 
 [[package]]
@@ -4469,6 +4474,39 @@ dependencies = [
  "log",
  "thiserror",
  "wast 35.0.2",
+]
+
+[[package]]
+name = "workspace-hack"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "futures-channel",
+ "futures-executor",
+ "futures-io",
+ "futures-util",
+ "generic-array",
+ "indexmap",
+ "libc",
+ "log",
+ "miniz_oxide",
+ "num-integer",
+ "num-traits",
+ "rand 0.8.5",
+ "regex",
+ "regex-syntax",
+ "scopeguard",
+ "semver 1.0.9",
+ "serde_json",
+ "stable_deref_trait",
+ "syn",
+ "tauri",
+ "tauri-macros",
+ "tauri-utils",
+ "tokio",
+ "tracing-core",
+ "winapi",
+ "windows-sys",
 ]
 
 [[package]]

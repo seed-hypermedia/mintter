@@ -49,6 +49,7 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         with:
           cache-on-failure: true
+          working-directory: ./desktop/app
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
         with:
@@ -58,12 +59,12 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
-      - name: "Install required packages"
+      - name: "Install native packages"
         if: "matrix.os == 'ubuntu-latest'"
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
-      - name: "Install app dependencies"
+      - name: "Install JavaScript dependencies"
         run: yarn
       - name: Build Backend (Unix)
         if: "matrix.os != 'windows-latest'"
@@ -89,6 +90,10 @@ jobs:
         env:
           APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
           APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
+      - name: Check workspace hack
+        run: |
+          cargo hakari generate --diff
+          cargo hakari manage-deps --dry-run
       - uses: JonasKruckenberg/tauri-build@v0.1.2-beta.9
         id: tauri_build
         env:
