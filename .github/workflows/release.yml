@@ -14,27 +14,19 @@ env:
 
 jobs:
   build-binaries:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.config.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        goarch: [amd64, arm64]
-        # don't build for arm64 on linux or windows
-        exclude:
-          - os: ubuntu-latest
-            goarch: arm64
-          - os: windows-latest
-            goarch: arm64
-        include:
+        config:
           - os: ubuntu-latest
             goarch: amd64
             rust_target: x86_64-unknown-linux-gnu
           - os: macos-latest
             goarch: amd64
             rust_target: x86_64-apple-darwin
-          - os: macos-latest
+           - os: macos-latest
             goarch: arm64
             rust_target: aarch64-apple-darwin
           - os: windows-latest
@@ -49,7 +41,8 @@ jobs:
           override: true
           profile: minimal
           toolchain: stable
-          target: ${{ matrix.rust_target }}
+          target: ${{ matrix.config.rust_target }}
+      - run: rustc -vV
       - uses: Swatinem/rust-cache@v1
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
@@ -61,40 +54,36 @@ jobs:
         with:
           go-version: 1.18
       - name: "Install native packages"
-        if: "matrix.os == 'ubuntu-latest'"
+        if: "matrix.config.os == 'ubuntu-latest'"
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libayatana-appindicator3-dev librsvg2-dev patchelf
       - name: "Install JavaScript dependencies"
         run: yarn
       - name: Build Backend (Unix)
-        if: "matrix.os != 'windows-latest'"
+        if: "matrix.config.os != 'windows-latest'"
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.rust_target }} ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.rust_target }} ./backend/cmd/mintterd
         env:
-          GOARCH: ${{ matrix.goarch }}
+          GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
       - name: Build Backend (Windows)
-        if: "matrix.os == 'windows-latest'"
+        if: "matrix.config.os == 'windows-latest'"
         run: |
           mkdir -p plz-out/bin/backend
-          go build -o plz-out/bin/backend/mintterd-${{ matrix.rust_target }}.exe ./backend/cmd/mintterd
+          go build -o plz-out/bin/backend/mintterd-${{ matrix.config.rust_target }}.exe ./backend/cmd/mintterd
         env:
-          GOARCH: ${{ matrix.goarch }}
+          GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
       - name: create apple private key file
-        if: "matrix.os == 'macos-latest'"
+        if: "matrix.config.os == 'macos-latest'"
         run: |
           mkdir ./desktop/app/private_keys
           echo "$APPLE_API_PRIVKEY" > ./desktop/app/private_keys/AuthKey_$APPLE_API_KEY.p8
         env:
           APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
           APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
-      # - name: Check workspace hack
-      #   run: |
-      #     cargo hakari generate --diff
-      #     cargo hakari manage-deps --dry-run
       - uses: JonasKruckenberg/tauri-build@v0.1.2-beta.9
         id: tauri_build
         env:
@@ -110,7 +99,7 @@ jobs:
         with:
           configPath: release.tauri.conf.json
           projectPath: ./desktop/app
-          target: ${{ matrix.rust_target }}
+          target: ${{ matrix.config.rust_target }}
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts
@@ -151,4 +140,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Upload artifacts to S3
-        run: aws s3 sync ./artifacts s3://mintterreleases/ --delete --acl public-read
+        run: aws s3 sync ./artifacts s3://mintterreleases/ --delete
