@@ -26,7 +26,7 @@ jobs:
           - os: macos-latest
             goarch: amd64
             rust_target: x86_64-apple-darwin
-           - os: macos-latest
+          - os: macos-latest
             goarch: arm64
             rust_target: aarch64-apple-darwin
           - os: windows-latest
