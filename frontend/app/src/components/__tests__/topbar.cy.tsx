@@ -63,8 +63,16 @@ describe('Topbar', () => {
     let back = cy.stub()
     let forward = cy.stub()
     render(
-      <MainPageProviders client={client}>
-        <Topbar back={back} forward={forward} />
+      <MainPageProviders
+        client={client}
+        mainPageOptions={{
+          actions: {
+            navigateBack: back,
+            navigateForward: forward,
+          },
+        }}
+      >
+        <Topbar />
       </MainPageProviders>,
     )
       .get("[data-testid='history-back']")

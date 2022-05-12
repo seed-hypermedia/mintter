@@ -16,13 +16,13 @@ import {TextField} from '../text-field'
 import {Section} from './section'
 import {SectionError} from './section-error'
 
-export function ConnectionsSection() {
+export function ContactsSection() {
   const {status, data = [], error} = useListAccounts()
 
-  let title = `Connections (${data.length})`
+  let title = `Contacts (${data.length})`
 
   if (status == 'error') {
-    console.error('Connections error: ', error)
+    console.error('Contacts error: ', error)
     return <Text>ERROR</Text>
   }
 
@@ -40,12 +40,12 @@ export function ConnectionsSection() {
           ))}
         </ErrorBoundary>
       ) : null}
-      <ConnectionsPrompt />
+      <ContactsPrompt />
     </Section>
   )
 }
 
-function ConnectionsPrompt() {
+function ContactsPrompt() {
   const [peer, setPeer] = useState('')
 
   async function handleConnect() {

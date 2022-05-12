@@ -53,6 +53,7 @@ export interface Typegen2 {
     setPublicationParams: ''
     clearCurrentDocument: 'goToHome' | 'goToSettings'
     clearParams: 'goToHome' | 'goToSettings'
+    pushToRecents: 'xstate.init'
     pushDraftRoute: ''
     pushPublicationRoute: ''
   }
@@ -71,7 +72,7 @@ export interface Typegen2 {
     createNewDraft: 'done.invoke.(machine).routes.createDraft:invocation[0]'
   }
   missingImplementations: {
-    actions: 'navigateBack' | 'navigateForward'
+    actions: never
     services: never
     guards: never
     delays: never

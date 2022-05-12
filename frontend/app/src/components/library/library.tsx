@@ -3,15 +3,16 @@ import {useIsLibraryOpen} from '@app/main-page-context'
 import {css} from '@app/stitches.config'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
+import {DraftsSection} from '@components/library/section-drafts'
+import {FilesSection} from '@components/library/section-files'
+import {RecentsSection} from '@components/library/section-recents'
 import {useCreateDraft} from '@components/library/use-create-draft'
 import {PropsWithChildren} from 'react'
 import {Box} from '../box'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
-import {ConnectionsSection} from './section-connections'
-import {DraftsSection} from './section-drafts'
-import {FilesSection} from './section-files'
+import {ContactsSection} from './section-connections'
 
 let libraryStyle = css({
   transition: 'all 0.25s ease',
@@ -54,9 +55,7 @@ export function Library() {
       <ScrollArea>
         <Box
           css={{
-            width: isOpen ? 232 : 0,
-            paddingLeft: isOpen ? '$3' : 0,
-            paddingRight: isOpen ? '$3' : 0,
+            width: isOpen ? '$library-width' : 0,
             paddingTop: '$3',
             position: 'relative',
           }}
@@ -66,27 +65,36 @@ export function Library() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              // marginVertical: '$1',
               paddingHorizontal: '$3',
+              // marginHorizontal: '-$3',
             }}
           >
             <Button
               variant="ghost"
               size="1"
-              color="muted"
+              color="success"
               onClick={onCreateDraft}
+              css={{
+                '&:hover': {
+                  backgroundColor: '$success-component-bg-normal',
+                },
+              }}
             >
-              create a new Draft
+              New Draft
             </Button>
             <Button variant="ghost" size="1" color="muted" onClick={handleSync}>
               <Icon name="Reload" size="1" />
             </Button>
           </Box>
+
+          <BookmarksSection />
+          <RecentsSection />
+          <Separator />
+          <ContactsSection />
+          <Separator />
           <FilesSection />
           <DraftsSection />
-          <Separator />
-          <ConnectionsSection />
-          <Separator />
-          <BookmarksSection />
         </Box>
       </ScrollArea>
     </Box>

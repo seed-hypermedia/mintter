@@ -8,7 +8,7 @@ export function DraftsSection() {
   const drafts = useDrafts()
 
   return (
-    <Section title="Drafts" open={true} disabled={status != 'success'}>
+    <Section title="Drafts">
       {drafts.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
@@ -17,7 +17,11 @@ export function DraftsSection() {
           }}
         >
           {drafts.map((document) => (
-            <LibraryItem key={document?.id} href={`/editor/${document?.id}`} draft={document} />
+            <LibraryItem
+              key={document?.id}
+              href={`/editor/${document?.id}`}
+              draft={document}
+            />
           ))}
         </ErrorBoundary>
       ) : null}
