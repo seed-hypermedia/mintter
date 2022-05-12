@@ -8,7 +8,9 @@ export interface Typegen0 {
     assignAmount: 'TIPPING.UPDATE.AMOUNT'
     clearError: 'RETRY' | 'TIPPING.REQUEST.INVOICE'
     assignInvoice: 'REPORT.TIPPING.REQUEST.INVOICE.SUCCESS'
-    assignError: 'REPORT.TIPPING.REQUEST.INVOICE.ERROR' | 'REPORT.TIPPING.PAYMENT.ERROR'
+    assignError:
+      | 'REPORT.TIPPING.REQUEST.INVOICE.ERROR'
+      | 'REPORT.TIPPING.PAYMENT.ERROR'
   }
   internalEvents: {
     'xstate.init': {type: 'xstate.init'}
@@ -33,6 +35,15 @@ export interface Typegen0 {
     | 'open.paying'
     | 'open.success'
     | 'open.paid'
-    | {open?: 'setAmount' | 'errored' | 'requestInvoice' | 'readyToPay' | 'paying' | 'success' | 'paid'}
+    | {
+        open?:
+          | 'setAmount'
+          | 'errored'
+          | 'requestInvoice'
+          | 'readyToPay'
+          | 'paying'
+          | 'success'
+          | 'paid'
+      }
   tags: 'pending'
 }

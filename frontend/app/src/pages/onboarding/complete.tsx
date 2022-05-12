@@ -17,12 +17,19 @@ export const Complete: React.FC = () => {
 
   return (
     <OnboardingStep>
-      <OnboardingStepTitle css={{marginTop: 'auto'}}>Thank You</OnboardingStepTitle>
+      <OnboardingStepTitle css={{marginTop: 'auto'}}>
+        Thank You
+      </OnboardingStepTitle>
       <OnboardingStepDescription>
-        You just created your Mintter account. Please share it with others and help us spread the word.
+        You just created your Mintter account. Please share it with others and
+        help us spread the word.
       </OnboardingStepDescription>
       <OnboardingStepActions>
-        <OnboardingStepButton color="success" onClick={handleSubmit} data-testid="next-btn">
+        <OnboardingStepButton
+          color="success"
+          onClick={handleSubmit}
+          data-testid="next-btn"
+        >
           Open Mintter App
         </OnboardingStepButton>
       </OnboardingStepActions>

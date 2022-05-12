@@ -1,26 +1,31 @@
-import { Publication } from "@app/client";
-import { FlowContent } from "@mintter/mttast";
-import { createMachine } from "xstate";
+import {Publication} from '@app/client'
+import {FlowContent} from '@mintter/mttast'
+import {createMachine} from 'xstate'
 
 export type EmbedMachineContext = {
-  publication: Publication | null,
+  publication: Publication | null
   block: FlowContent | null
   errorMessage: string
 }
 
-export type EmbedMachineEvent = {
-  type: 'REPORT.PUBLICATION.SUCCESS',
-  publication: Publication
-} | {
-  type: 'REPORT.PUBLICATION.ERROR',
-  errorMessage: string
-} | { type: 'RETRY' } | {
-  type: 'REPORT.BLOCK.SUCCESS',
-  block: FlowContent
-} | {
-  type: 'REPORT.BLOCK.ERROR',
-  errorMessage: string
-}
+export type EmbedMachineEvent =
+  | {
+      type: 'REPORT.PUBLICATION.SUCCESS'
+      publication: Publication
+    }
+  | {
+      type: 'REPORT.PUBLICATION.ERROR'
+      errorMessage: string
+    }
+  | {type: 'RETRY'}
+  | {
+      type: 'REPORT.BLOCK.SUCCESS'
+      block: FlowContent
+    }
+  | {
+      type: 'REPORT.BLOCK.ERROR'
+      errorMessage: string
+    }
 
 export let embedMachine = createMachine({
   context: {
@@ -28,8 +33,8 @@ export let embedMachine = createMachine({
     publication: null,
     block: null,
   },
-  tsTypes: {} as import("./embed-machine.typegen").Typegen0,
-  schema: { context: {} as EmbedMachineContext, events: {} as any },
+  tsTypes: {} as import('./embed-machine.typegen').Typegen0,
+  schema: {context: {} as EmbedMachineContext, events: {} as any},
   id: 'embedMachine',
   initial: 'loading',
   states: {
@@ -55,7 +60,7 @@ export let embedMachine = createMachine({
         block: {
           invoke: {
             src: 'filterBlock',
-            id: 'filderBlock'
+            id: 'filderBlock',
           },
           on: {
             'REPORT.BLOCK.SUCCESS': {
@@ -71,9 +76,7 @@ export let embedMachine = createMachine({
       },
     },
     ready: {
-      always: [
-
-      ],
+      always: [],
     },
     error: {
       on: {

@@ -7,14 +7,17 @@ export function isNullEvent(eventName: string) {
 }
 
 export function isInternalEvent(eventName: string) {
-  const allEventsExceptNull = Object.values(ActionTypes).filter((val) => !isNullEvent(val))
+  const allEventsExceptNull = Object.values(ActionTypes).filter(
+    (val) => !isNullEvent(val),
+  )
   return allEventsExceptNull.some((prefix) => eventName.startsWith(prefix))
 }
 
-export function createInterpreterContext<TInterpreter extends Interpreter<any, any, any, any, any>>(
-  displayName: string,
-) {
-  const [Provider, useContext] = createRequiredContext<TInterpreter>(displayName)
+export function createInterpreterContext<
+  TInterpreter extends Interpreter<any, any, any, any, any>,
+>(displayName: string) {
+  const [Provider, useContext] =
+    createRequiredContext<TInterpreter>(displayName)
 
   const createUseSelector =
     <Data>(selector: (state: TInterpreter['state']) => Data) =>
@@ -31,7 +34,9 @@ export function createRequiredContext<TContext>(displayName: string) {
   function useContext() {
     const ctx = defaultUseContext(context)
     if (!ctx) {
-      throw new Error(`use${displayName} must be called inside a ${displayName}Provider`)
+      throw new Error(
+        `use${displayName} must be called inside a ${displayName}Provider`,
+      )
     }
 
     return ctx

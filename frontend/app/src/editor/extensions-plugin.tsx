@@ -23,7 +23,14 @@ export const extensionsPlugin = (plugins: string[]): EditorPlugin => {
 
           return {
             default: () => (
-              <iframe src="null" srcDoc={html} scrolling="no" frameBorder="0" width="560" height="315"></iframe>
+              <iframe
+                src="null"
+                srcDoc={html}
+                scrolling="no"
+                frameBorder="0"
+                width="560"
+                height="315"
+              ></iframe>
             ),
           }
         })

@@ -6,7 +6,10 @@ import {unified} from 'unified'
 import {visit} from 'unist-util-visit'
 import {EditorPlugin} from './types'
 
-var processor = unified().use(rehypeParse).use(sanitize, sanitizeSchema).freeze()
+var processor = unified()
+  .use(rehypeParse)
+  .use(sanitize, sanitizeSchema)
+  .freeze()
 
 export function createPlainTextPastePlugin(): EditorPlugin {
   return {

@@ -97,13 +97,17 @@ export const tippingMachine = createMachine(
                     }
                   }
                 `
-                request<{requestInvoice: {paymentRequest: string}}>(MINTTER_GRAPHQL_API_URL, mutation, {
-                  input: {
-                    amountSats: context.amount,
-                    accountID: context.accountID,
-                    publicationID: context.publicationID,
+                request<{requestInvoice: {paymentRequest: string}}>(
+                  MINTTER_GRAPHQL_API_URL,
+                  mutation,
+                  {
+                    input: {
+                      amountSats: context.amount,
+                      accountID: context.accountID,
+                      publicationID: context.publicationID,
+                    },
                   },
-                })
+                )
                   .then((response) => {
                     sendBack({
                       type: 'REPORT.TIPPING.REQUEST.INVOICE.SUCCESS',
@@ -113,7 +117,9 @@ export const tippingMachine = createMachine(
                   .catch((err) => {
                     sendBack({
                       type: 'REPORT.TIPPING.REQUEST.INVOICE.ERROR',
-                      errorMessage: err.response.errors.map((e: any) => e.message).join(' | '),
+                      errorMessage: err.response.errors
+                        .map((e: any) => e.message)
+                        .join(' | '),
                     })
                   })
               },
@@ -157,7 +163,9 @@ export const tippingMachine = createMachine(
                   .catch((err) => {
                     sendBack({
                       type: 'REPORT.TIPPING.PAYMENT.ERROR',
-                      errorMessage: err.response.errors.map((e: any) => e.message).join(' | '),
+                      errorMessage: err.response.errors
+                        .map((e: any) => e.message)
+                        .join(' | '),
                     })
                   })
               },

@@ -32,7 +32,7 @@ export default {
     // }),
     react({
       fastRefresh: !isTest,
-      jsxRuntime: isTest ? 'classic' : 'automatic'
+      jsxRuntime: isTest ? 'classic' : 'automatic',
     }),
   ],
   test: {

@@ -1,13 +1,19 @@
-import type { Document, Image, MttastContent, Text, Video } from '@mintter/mttast'
+import type {Document, Image, MttastContent, Text, Video} from '@mintter/mttast'
 import React from 'react'
-import type { BaseEditor, Editor, NodeEntry, Range } from 'slate'
-import type { HistoryEditor } from 'slate-history'
-import type { ReactEditor, RenderElementProps, RenderLeafProps } from 'slate-react'
-import { EditorMode } from './plugin-utils'
+import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
+import type {HistoryEditor} from 'slate-history'
+import type {
+  ReactEditor,
+  RenderElementProps,
+  RenderLeafProps,
+} from 'slate-react'
+import {EditorMode} from './plugin-utils'
 
 declare module 'slate' {
   export interface CustomTypes {
-    Editor: BaseEditor & ReactEditor & HistoryEditor & { mode: EditorMode; readOnly: boolean }
+    Editor: BaseEditor &
+      ReactEditor &
+      HistoryEditor & {mode: EditorMode; readOnly: boolean}
     Element: Exclude<MttastContent, Document | Text | Video | Image>
     Text: Text
   }
@@ -144,7 +150,9 @@ export interface EditableEventHandlers {
 }
 
 type EditorEventHandlers = {
-  [key in keyof EditableEventHandlers]: (editor: Editor) => EditableEventHandlers[key] | undefined | void
+  [key in keyof EditableEventHandlers]: (
+    editor: Editor,
+  ) => EditableEventHandlers[key] | undefined | void
 }
 
 export interface EditorPlugin extends EditorEventHandlers {
@@ -165,12 +173,16 @@ export interface EditorPlugin extends EditorEventHandlers {
    * Render a mttast element. The hook receives the editor object and `RenderElementProps`.
    * It can return a JSX element to be rendered on page.
    */
-  renderElement?: (editor: Editor) => (props: RenderElementProps) => JSX.Element | undefined | void
+  renderElement?: (
+    editor: Editor,
+  ) => (props: RenderElementProps) => JSX.Element | undefined | void
   /**
    * Render a mttast leaf. The hook receives the editor object and `RenderLeafProps`.
    * It can return a JSX element to be rendered on page.
    */
-  renderLeaf?: (editor: Editor) => (props: RenderLeafProps) => JSX.Element | undefined | void
+  renderLeaf?: (
+    editor: Editor,
+  ) => (props: RenderLeafProps) => JSX.Element | undefined | void
   /**
    * Return decoration ranges. The hook receives the editor object and a `NodeEntry`.
    * It can return an array of ranges.

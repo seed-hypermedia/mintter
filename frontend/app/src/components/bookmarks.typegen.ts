@@ -17,7 +17,10 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.bookmarks-fetch': {type: 'error.platform.bookmarks-fetch'; data: unknown}
+    'error.platform.bookmarks-fetch': {
+      type: 'error.platform.bookmarks-fetch'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchBookmarkList: 'done.invoke.bookmarks-fetch'
@@ -51,7 +54,10 @@ export interface Typegen1 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.fetchItemData': {type: 'error.platform.fetchItemData'; data: unknown}
+    'error.platform.fetchItemData': {
+      type: 'error.platform.fetchItemData'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchItemData: 'done.invoke.fetchItemData'

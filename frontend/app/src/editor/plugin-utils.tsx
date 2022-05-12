@@ -2,7 +2,13 @@ import {error} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {createEditor, Editor, NodeEntry, Range} from 'slate'
 import {withHistory} from 'slate-history'
-import {DefaultElement, DefaultLeaf, RenderElementProps, RenderLeafProps, withReact} from 'slate-react'
+import {
+  DefaultElement,
+  DefaultLeaf,
+  RenderElementProps,
+  RenderLeafProps,
+  withReact,
+} from 'slate-react'
 import {EditableProps} from 'slate-react/dist/components/editable'
 import {EditableEventHandlers, EditorPlugin} from './types'
 
@@ -27,7 +33,9 @@ const byApply =
 
 const hasHook =
   (hook: keyof EditorPlugin) =>
-  (plugin: EditorPlugin): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
+  (
+    plugin: EditorPlugin,
+  ): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
     return typeof plugin[hook] === 'function'
   }
 
@@ -37,8 +45,13 @@ const withMode = (mode: EditorMode) => (editor: Editor) => {
   return editor
 }
 
-export function buildEditorHook(plugins: EditorPlugin[], mode: EditorMode): Editor {
-  const filteredPlugins = plugins.filter(byApply(mode)).filter(hasHook('configureEditor'))
+export function buildEditorHook(
+  plugins: EditorPlugin[],
+  mode: EditorMode,
+): Editor {
+  const filteredPlugins = plugins
+    .filter(byApply(mode))
+    .filter(hasHook('configureEditor'))
 
   let editor = withMode(mode)(withHistory(withReact(createEditor())))
   for (const {name, configureEditor} of filteredPlugins) {
@@ -54,8 +67,13 @@ export function buildEditorHook(plugins: EditorPlugin[], mode: EditorMode): Edit
   return editor
 }
 
-export function buildRenderElementHook(plugins: EditorPlugin[], editor: Editor): EditableProps['renderElement'] {
-  const filteredPlugins = plugins.filter(byApply(editor.mode)).filter(hasHook('renderElement'))
+export function buildRenderElementHook(
+  plugins: EditorPlugin[],
+  editor: Editor,
+): EditableProps['renderElement'] {
+  const filteredPlugins = plugins
+    .filter(byApply(editor.mode))
+    .filter(hasHook('renderElement'))
   if (!filteredPlugins.length) return undefined
 
   return function SlateElement(props: RenderElementProps) {
@@ -72,8 +90,13 @@ export function buildRenderElementHook(plugins: EditorPlugin[], editor: Editor):
   }
 }
 
-export function buildRenderLeafHook(plugins: EditorPlugin[], editor: Editor): EditableProps['renderLeaf'] {
-  const filteredPlugins = plugins.filter(byApply(editor.mode)).filter(hasHook('renderLeaf'))
+export function buildRenderLeafHook(
+  plugins: EditorPlugin[],
+  editor: Editor,
+): EditableProps['renderLeaf'] {
+  const filteredPlugins = plugins
+    .filter(byApply(editor.mode))
+    .filter(hasHook('renderLeaf'))
   if (!filteredPlugins.length) return undefined
 
   return function SlateLeaf(props: RenderLeafProps) {
@@ -93,8 +116,13 @@ export function buildRenderLeafHook(plugins: EditorPlugin[], editor: Editor): Ed
   }
 }
 
-export function buildDecorateHook(plugins: EditorPlugin[], editor: Editor): EditableProps['decorate'] {
-  const filteredPlugins = plugins.filter(byApply(editor.mode)).filter(hasHook('decorate'))
+export function buildDecorateHook(
+  plugins: EditorPlugin[],
+  editor: Editor,
+): EditableProps['decorate'] {
+  const filteredPlugins = plugins
+    .filter(byApply(editor.mode))
+    .filter(hasHook('decorate'))
   if (!filteredPlugins.length) return undefined
 
   return function decorate(entry: NodeEntry) {
@@ -112,12 +140,15 @@ export function buildDecorateHook(plugins: EditorPlugin[], editor: Editor): Edit
   }
 }
 
-export function buildEventHandlerHooks(plugins: EditorPlugin[], editor: Editor): EditableEventHandlers {
+export function buildEventHandlerHooks(
+  plugins: EditorPlugin[],
+  editor: Editor,
+): EditableEventHandlers {
   const handlers: EditableEventHandlers = {}
   const filteredPlugins = plugins.filter(byApply(editor.mode))
-  const events = filteredPlugins.flatMap((p) => ObjectKeys(p).filter((k) => k.startsWith('on'))) as Array<
-    keyof EditableEventHandlers
-  >
+  const events = filteredPlugins.flatMap((p) =>
+    ObjectKeys(p).filter((k) => k.startsWith('on')),
+  ) as Array<keyof EditableEventHandlers>
 
   for (const event of events) {
     const pluginsWithHook = filteredPlugins.filter(hasHook(event))

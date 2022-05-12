@@ -73,7 +73,8 @@ var addWalletListToContext = listModel.assign(
 )
 
 const fetchWallets =
-  (_: any, event: EventFrom<typeof listMachine>) => (sendBack: Sender<EventFrom<typeof listMachine>>) => {
+  (_: any, event: EventFrom<typeof listMachine>) =>
+  (sendBack: Sender<EventFrom<typeof listMachine>>) => {
     let query = gql`
       {
         me {
@@ -150,12 +151,16 @@ export const listMachine = listModel.createMachine(
               }
             `
 
-            request<CreateWalletPayload, MutationSetupLndHubWalletArgs>(MINTTER_GRAPHQL_API_URL, mutation, {
-              input: {
-                name: context.walletName,
-                url: context.walletUrl,
+            request<CreateWalletPayload, MutationSetupLndHubWalletArgs>(
+              MINTTER_GRAPHQL_API_URL,
+              mutation,
+              {
+                input: {
+                  name: context.walletName,
+                  url: context.walletUrl,
+                },
               },
-            })
+            )
               .then(() => {
                 sendBack(listModel.events['REPORT.WALLET.COMMIT.SUCCESS']())
               })
@@ -245,7 +250,12 @@ export const walletModel = createModel(
   },
 )
 
-export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) {
+export function createWalletMachine({
+  id,
+  name,
+  balanceSats,
+  isDefault,
+}: Wallet) {
   return walletModel.createMachine(
     {
       context: {
@@ -279,9 +289,13 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
                   }
                 }
               `
-              request<SetDefaultWalletPayload, MutationSetDefaultWalletArgs>(MINTTER_GRAPHQL_API_URL, mutation, {
-                input: {id: context.id},
-              })
+              request<SetDefaultWalletPayload, MutationSetDefaultWalletArgs>(
+                MINTTER_GRAPHQL_API_URL,
+                mutation,
+                {
+                  input: {id: context.id},
+                },
+              )
                 .then((response) => {
                   sendBack(walletModel.events['REPORT.DEFAULT.SUCCESS']())
                 })
@@ -308,9 +322,13 @@ export function createWalletMachine({id, name, balanceSats, isDefault}: Wallet) 
                   }
                 }
               `
-              request<DeleteWalletPayload, MutationDeleteWalletArgs>(MINTTER_GRAPHQL_API_URL, mutation, {
-                input: {id: context.id},
-              })
+              request<DeleteWalletPayload, MutationDeleteWalletArgs>(
+                MINTTER_GRAPHQL_API_URL,
+                mutation,
+                {
+                  input: {id: context.id},
+                },
+              )
                 .then((response) => {
                   sendBack(walletModel.events['REPORT.DELETE.SUCCESS']())
                 })

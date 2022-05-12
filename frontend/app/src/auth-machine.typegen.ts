@@ -13,7 +13,10 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.authMachine-fetch': {type: 'error.platform.authMachine-fetch'; data: unknown}
+    'error.platform.authMachine-fetch': {
+      type: 'error.platform.authMachine-fetch'
+      data: unknown
+    }
   }
   invokeSrcNameMap: {
     fetchInfo: 'done.invoke.authMachine-fetch'

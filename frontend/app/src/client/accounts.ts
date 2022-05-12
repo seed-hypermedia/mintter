@@ -1,6 +1,14 @@
 import type {Account, Profile} from './.generated/accounts/v1alpha/accounts'
-import {AccountsClientImpl, GetAccountRequest, ListAccountsRequest} from './.generated/accounts/v1alpha/accounts'
-import {DaemonClientImpl, GenSeedRequest, RegisterRequest} from './.generated/daemon/v1alpha/daemon'
+import {
+  AccountsClientImpl,
+  GetAccountRequest,
+  ListAccountsRequest,
+} from './.generated/accounts/v1alpha/accounts'
+import {
+  DaemonClientImpl,
+  GenSeedRequest,
+  RegisterRequest,
+} from './.generated/daemon/v1alpha/daemon'
 import type {GrpcClient} from './grpc-client'
 import {createGrpcClient} from './grpc-client'
 /**
@@ -60,7 +68,11 @@ export function updateAccount(profile: Profile, rpc?: GrpcClient) {
  * @param rpc
  * @returns
  */
-export function listAccounts(pageSize?: number, pageToken?: string, rpc?: GrpcClient) {
+export function listAccounts(
+  pageSize?: number,
+  pageToken?: string,
+  rpc?: GrpcClient,
+) {
   rpc ||= createGrpcClient()
 
   const request = ListAccountsRequest.fromPartial({

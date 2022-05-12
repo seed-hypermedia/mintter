@@ -1,4 +1,4 @@
-import { store } from './store'
+import {store} from './store'
 
 const LIST_SIDEPANEL = 'listSidepanel'
 
@@ -13,7 +13,7 @@ export type ListSidepanelResponse = {
 
 export async function listSidepanel(): Promise<ListSidepanelResponse> {
   let items = (await store.get<Array<SidepanelItem>>(LIST_SIDEPANEL)) || []
-  return { items }
+  return {items}
 }
 
 export function updateListSidepanel(list: Array<SidepanelItem>) {

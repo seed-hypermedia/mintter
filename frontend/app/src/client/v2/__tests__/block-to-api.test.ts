@@ -1,11 +1,23 @@
-import {embed, heading, Heading, link, paragraph, Statement, statement, staticParagraph, text} from '@mintter/mttast'
+import {
+  embed,
+  heading,
+  Heading,
+  link,
+  paragraph,
+  Statement,
+  statement,
+  staticParagraph,
+  text,
+} from '@mintter/mttast'
 import {describe, expect, test} from 'vitest'
 import {blockToApi} from '../block-to-api'
 import {Block} from '../types'
 
 describe('Transform: blockToApi', () => {
   test('should return an empty annotations list', () => {
-    let input: Statement = statement({id: 'blockId'}, [paragraph([text('Hello world')])])
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([text('Hello world')]),
+    ])
 
     let output: Partial<Block> = {
       id: 'blockId',
@@ -17,7 +29,9 @@ describe('Transform: blockToApi', () => {
   })
 
   test('should return a heading block', () => {
-    let input: Heading = heading({id: 'blockId'}, [staticParagraph([text('Hello world')])])
+    let input: Heading = heading({id: 'blockId'}, [
+      staticParagraph([text('Hello world')]),
+    ])
 
     let output: Partial<Block> = {
       id: 'blockId',
@@ -96,14 +110,24 @@ describe('Transform: blockToApi', () => {
 
   test('Links: simple', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([text('hello '), link({url: 'https://mintter.com'}, [text('Mintter')])]),
+      paragraph([
+        text('hello '),
+        link({url: 'https://mintter.com'}, [text('Mintter')]),
+      ]),
     ])
 
     let output = {
       id: 'blockId',
       type: 'statement',
       text: 'hello Mintter',
-      layers: [{type: 'link', attributes: {url: 'https://mintter.com'}, starts: [6], ends: [13]}],
+      layers: [
+        {
+          type: 'link',
+          attributes: {url: 'https://mintter.com'},
+          starts: [6],
+          ends: [13],
+        },
+      ],
     }
 
     expect(blockToApi(input)).toEqual(output)
@@ -122,8 +146,18 @@ describe('Transform: blockToApi', () => {
       type: 'statement',
       text: 'Mintterdemo',
       layers: [
-        {type: 'link', attributes: {url: 'https://mintter.com'}, starts: [0], ends: [7]},
-        {type: 'link', attributes: {url: 'https://demo.com'}, starts: [7], ends: [11]},
+        {
+          type: 'link',
+          attributes: {url: 'https://mintter.com'},
+          starts: [0],
+          ends: [7],
+        },
+        {
+          type: 'link',
+          attributes: {url: 'https://demo.com'},
+          starts: [7],
+          ends: [11],
+        },
       ],
     }
 
@@ -134,7 +168,10 @@ describe('Transform: blockToApi', () => {
     let input: Statement = statement({id: 'blockId'}, [
       paragraph([
         text('hello '),
-        link({url: 'https://mintter.com'}, [text('Mintter '), text('team!', {strong: true})]),
+        link({url: 'https://mintter.com'}, [
+          text('Mintter '),
+          text('team!', {strong: true}),
+        ]),
       ]),
     ])
 
@@ -143,7 +180,12 @@ describe('Transform: blockToApi', () => {
       type: 'statement',
       text: 'hello Mintter team!',
       layers: [
-        {type: 'link', attributes: {url: 'https://mintter.com'}, starts: [6], ends: [19]},
+        {
+          type: 'link',
+          attributes: {url: 'https://mintter.com'},
+          starts: [6],
+          ends: [19],
+        },
         {type: 'strong', starts: [14], ends: [19], attributes: null},
       ],
     }
@@ -152,7 +194,9 @@ describe('Transform: blockToApi', () => {
   })
 
   test('Embeds: simple', () => {
-    let input: Statement = statement({id: 'blockId'}, [paragraph([embed({url: 'mtt://doc1/block1'}, [text('')])])])
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([embed({url: 'mtt://doc1/block1'}, [text('')])]),
+    ])
 
     let output = {
       id: 'blockId',
@@ -173,7 +217,10 @@ describe('Transform: blockToApi', () => {
 
   test('Embeds: multiple embeds together', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([embed({url: 'mtt://doc1/block1'}, [text('')]), embed({url: 'mtt://doc2/block2'}, [text('')])]),
+      paragraph([
+        embed({url: 'mtt://doc1/block1'}, [text('')]),
+        embed({url: 'mtt://doc2/block2'}, [text('')]),
+      ]),
     ])
 
     let output = {
@@ -235,7 +282,9 @@ describe('Transform: blockToApi', () => {
   })
 
   test('emojis', () => {
-    let input: Statement = statement({id: 'blockId'}, [paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', {emphasis: true})])])
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', {emphasis: true})]),
+    ])
 
     let output = {
       id: 'blockId',
@@ -256,7 +305,11 @@ describe('Transform: blockToApi', () => {
 
   test('combining layers', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([text('Alice', {strong: true}), text(', Bob and '), text('Carol', {strong: true})]),
+      paragraph([
+        text('Alice', {strong: true}),
+        text(', Bob and '),
+        text('Carol', {strong: true}),
+      ]),
     ])
 
     let output = {

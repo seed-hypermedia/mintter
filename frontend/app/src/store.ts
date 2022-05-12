@@ -45,7 +45,9 @@ export class LocalStore {
   }
 }
 
-function getStoreFallback<T = unknown>(path: string): Promise<LocalStorageStore<T>> {
+function getStoreFallback<T = unknown>(
+  path: string,
+): Promise<LocalStorageStore<T>> {
   return new Promise((resolve, reject) => {
     try {
       let state = window.localStorage.getItem(path) || '{}'

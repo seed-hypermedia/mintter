@@ -16,9 +16,13 @@ export async function getBlock(entry?: LinkNode): Promise<GetBlockResult> {
   let block: FlowContent
 
   if (publication.document?.content) {
-    visit(JSON.parse(publication.document.content)[0], {id: entry.blockId}, (node) => {
-      block = node
-    })
+    visit(
+      JSON.parse(publication.document.content)[0],
+      {id: entry.blockId},
+      (node) => {
+        block = node
+      },
+    )
   }
 
   //@ts-ignore

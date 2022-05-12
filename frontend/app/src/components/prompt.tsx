@@ -3,7 +3,11 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type {ComponentProps, PropsWithChildren} from 'react'
 import {Box} from './box'
 import {Button} from './button'
-import {dialogContentStyles, dialogFooterStyles, overlayStyles} from './dialog-styles'
+import {
+  dialogContentStyles,
+  dialogFooterStyles,
+  overlayStyles,
+} from './dialog-styles'
 import type {TextProps} from './text'
 import {Text} from './text'
 
@@ -18,7 +22,10 @@ function Root({children, ...props}: any) {
   )
 }
 
-function Trigger(props: ComponentProps<typeof DialogPrimitive.Trigger> & ComponentProps<typeof Button>) {
+function Trigger(
+  props: ComponentProps<typeof DialogPrimitive.Trigger> &
+    ComponentProps<typeof Button>,
+) {
   return (
     <DialogPrimitive.Trigger asChild>
       <Button {...props} />
