@@ -1,4 +1,6 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {changesService} from '@app/editor/mintter-changes/plugin'
+import {getBlock} from '@app/editor/utils'
 import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
@@ -181,6 +183,8 @@ export function insertLink(
     Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
     Transforms.collapse(editor, {edge: 'end'})
   }
+
+  addLinkChange(editor, selection)
 }
 
 export function isLinkActive(
@@ -204,6 +208,7 @@ export function unwrapLink(
   editor: Editor,
   selection: Range | null = editor.selection,
 ): void {
+  addLinkChange(editor, selection)
   Transforms.unwrapNodes(editor, {
     match: (n) =>
       !Editor.isEditor(n) &&
@@ -211,6 +216,7 @@ export function unwrapLink(
       n.type == ELEMENT_LINK,
     at: selection ?? undefined,
   })
+  Transforms.collapse(editor, {edge: 'end'})
 }
 
 export function wrapLink(
@@ -220,6 +226,8 @@ export function wrapLink(
 ): void {
   if (isLinkActive(editor)) {
     unwrapLink(editor, selection)
+  } else {
+    addLinkChange(editor, selection)
   }
 
   const newLink: LinkType = link(
@@ -253,12 +261,22 @@ function wrapMintterLink(editor: Editor, url: string) {
   const {selection} = editor
 
   const newEmbed: Embed = embed({url}, [text('')])
-  // const newLink: LinkType = link({url}, isCollapsed(selection!) ? [text(url)] : [])
 
   if (isCollapsed(selection!)) {
     Transforms.insertNodes(editor, newEmbed)
   } else {
     wrapLink(editor, url)
+  }
+}
+
+function addLinkChange(editor: Editor, at: Range | null = editor.selection) {
+  let blockEntry = getBlock(editor, {
+    //@ts-ignore
+    at,
+  })
+  if (blockEntry) {
+    let [node] = blockEntry
+    changesService.addChange(['replaceBlock', node.id])
   }
 }
 
@@ -279,6 +297,7 @@ export function ToolbarLink({
           variant="ghost"
           size="1"
           color="muted"
+          data-testid="toolbar-link-button"
           onClick={() => {
             setOpen((v) => {
               sendStoreFocus(!v)
@@ -373,6 +392,7 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
           id="address"
           name="address"
           label="Link Address"
+          data-testid="modal-link-input"
           value={link}
           onChange={(e) => setLink(e.currentTarget.value)}
           size={1}
@@ -393,6 +413,7 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
               e.preventDefault()
               handleRemove()
             }}
+            data-testid="modal-link-remove-button"
             disabled={!isLink}
             variant="outlined"
             color="danger"

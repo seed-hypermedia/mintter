@@ -1,5 +1,5 @@
-import { EditorDocument } from "@app/editor/use-editor-draft"
-import { Node } from "slate"
+import { EditorDocument } from "@app/editor/use-editor-draft";
+import { Node } from "slate";
 
 export function getTitleFromContent(entry: {
   children: Array<EditorDocument['children']>
@@ -15,5 +15,5 @@ export function getDocumentTitle(document: any) {
     })
     : document?.title ?? ''
 
-  return titleText.length < 50 ? titleText : `${titleText.substring(0, 49)}...`
+  return titleText ? titleText.length < 50 ? titleText : `${titleText.substring(0, 49)}...` : 'New Document'
 }

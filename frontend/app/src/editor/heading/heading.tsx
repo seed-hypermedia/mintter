@@ -48,9 +48,16 @@ export const createHeadingPlugin = (): EditorPlugin => ({
       if (Element.isElement(node) && isHeading(node)) {
         if (removeEmptyHeading(editor, entry as NodeEntry<HeadingType>)) return
 
-        if (isFirstChild(path.concat(0)) && !isStaticParagraph(node.children[0])) {
+        if (
+          isFirstChild(path.concat(0)) &&
+          !isStaticParagraph(node.children[0])
+        ) {
           // transform to static paragraph if there's only one child and is not static paragraph
-          Transforms.setNodes(editor, {type: 'staticParagraph'}, {at: path.concat(0)})
+          Transforms.setNodes(
+            editor,
+            {type: 'staticParagraph'},
+            {at: path.concat(0)},
+          )
           return
         } else if (node.children.length > 2) {
           let secondChild = node.children[1]
@@ -65,13 +72,23 @@ export const createHeadingPlugin = (): EditorPlugin => ({
         } else if (node.children.length == 2) {
           if (!isGroupContent(node.children[1])) {
             // move second static paragraph outside if the second node is not a group
-            let pGroupEntry = Editor.above(editor, {at: path.concat(1), match: isGroupContent})
+            let pGroupEntry = Editor.above(editor, {
+              at: path.concat(1),
+              match: isGroupContent,
+            })
 
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)
               Transforms.setNodes(editor, {type: 'paragraph'}, {at})
               Transforms.wrapNodes(editor, statement({id: createId()}), {at})
-              Transforms.wrapNodes(editor, {type: pGroupEntry ? pGroupEntry[0].type : 'group', children: []}, {at})
+              Transforms.wrapNodes(
+                editor,
+                {
+                  type: pGroupEntry ? pGroupEntry[0].type : 'group',
+                  children: [],
+                },
+                {at},
+              )
             })
             return
           }
@@ -83,7 +100,12 @@ export const createHeadingPlugin = (): EditorPlugin => ({
   },
 })
 
-function Heading({attributes, children, element, mode}: RenderElementProps & {mode: EditorMode}) {
+function Heading({
+  attributes,
+  children,
+  element,
+  mode,
+}: RenderElementProps & {mode: EditorMode}) {
   let blockProps = {
     'data-element-type': element.type,
     'data-element-id': (element as HeadingType).id,
@@ -95,7 +117,11 @@ function Heading({attributes, children, element, mode}: RenderElementProps & {mo
   }
 
   return (
-    <BlockWrapper element={element as FlowContent} attributes={attributes} mode={mode}>
+    <BlockWrapper
+      element={element as FlowContent}
+      attributes={attributes}
+      mode={mode}
+    >
       <Box className={headingStyle()} {...blockProps}>
         {children}
       </Box>
@@ -103,7 +129,10 @@ function Heading({attributes, children, element, mode}: RenderElementProps & {mo
   )
 }
 
-function removeEmptyHeading(editor: Editor, entry: NodeEntry<Heading>): boolean | undefined {
+function removeEmptyHeading(
+  editor: Editor,
+  entry: NodeEntry<Heading>,
+): boolean | undefined {
   const [node, path] = entry
   if (node.children.length == 1) {
     let child = Editor.node(editor, path.concat(0))

@@ -55,10 +55,20 @@ export function changesServiceCreator() {
   }
 
   function send({ operation, editor }: ChangesEvent) {
+    console.log('operation: ', operation);
+
     switch (operation.type) {
       case 'insert_node':
-        addOperation('moveBlock', operation.node)
-        // insertNode(editor!, operation.path)
+        if (isFlowContent(operation.node)) {
+          let entry = getBlock(editor!, {
+            at: operation.path
+          })
+          console.log('insert_node entry: ', entry);
+
+          addOperation(editor!, 'moveBlock', operation.node)
+        } else {
+          insertNode(editor!, operation.path)
+        }
         break;
       case 'insert_text':
       case 'set_node':
@@ -67,7 +77,7 @@ export function changesServiceCreator() {
         replaceText(editor!, operation.path)
         break;
       case 'remove_node':
-        addOperation('deleteBlock', operation.node)
+        addOperation(editor!, 'deleteBlock', operation.node)
         break;
       default:
         break;
@@ -84,13 +94,15 @@ export function changesServiceCreator() {
 
   function insertNode(editor: Editor, path: Path) {
     let entry = getBlock(editor, {
-      at: path
+      at: path,
+      mode: 'lowest'
     })
-    if (entry) {
-      let [block] = entry
-      addOperation('moveBlock', block)
-      addOperation('replaceBlock', block)
-    }
+    console.log("🚀 ~ file: plugin.ts ~ line 99 ~ insertNode ~ entry", entry, editor)
+    // if (entry) {
+    //   let [block] = entry
+    //   addOperation(editor, 'moveBlock', block)
+    //   addOperation(editor, 'replaceBlock', block)
+    // }
   }
 
   function replaceText(editor: Editor, path: Path) {
@@ -102,7 +114,7 @@ export function changesServiceCreator() {
 
     if (entry) {
       let [block] = entry
-      addOperation('replaceBlock', block)
+      addOperation(editor, 'replaceBlock', block)
     }
   }
 
@@ -110,14 +122,13 @@ export function changesServiceCreator() {
     return changes
   }
 
-  function addOperation(opType: ChangeType, node: Node) {
+  function addOperation(editor: Editor, opType: ChangeType, node: Node) {
     if (isFlowContent(node)) {
       let newChange: ChangeOperation = [opType, node.id]
       if (!shouldOverride(newChange, changes[changes.length - 1])) {
         changes.push(newChange)
       }
     } else {
-
     }
   }
 
