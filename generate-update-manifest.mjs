@@ -11,7 +11,7 @@ async function main() {
   const tag = process.argv[2];
 
   const obj = {
-    name: tag,
+    name: tag.replace("desktop/", ""),
     notes: await getNotesForTag(tag),
     pub_date: new Date().toISOString(),
     platforms: {
