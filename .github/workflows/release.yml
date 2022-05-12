@@ -102,7 +102,7 @@ jobs:
           target: ${{ matrix.config.rust_target }}
       - uses: actions/upload-artifact@v3
         with:
-          name: artifacts
+          name: artifacts-${{ matrix.config.goarch }}
           path: "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\n') }}"
 
   publish-to-github:
@@ -110,11 +110,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v3
+      - name: Download amd64 artifacts
+        uses: actions/download-artifact@v3
         id: download
         with:
-          name: artifacts
-          path: artifacts
+          name: artifacts-amd64
+          path: artifacts/amd64
+      - name: Download arm64 artifacts
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: artifacts-arm64
+          path: artifacts/arm64
       - name: "create release"
         uses: softprops/action-gh-release@master
         env:
@@ -128,11 +135,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v3
+      - name: Download amd64 artifacts
+        uses: actions/download-artifact@v3
         id: download
         with:
-          name: artifacts
-          path: artifacts
+          name: artifacts-amd64
+          path: artifacts/amd64
+      - name: Download arm64 artifacts
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: artifacts-arm64
+          path: artifacts/arm64
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
         with:

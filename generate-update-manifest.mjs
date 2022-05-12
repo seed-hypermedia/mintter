@@ -15,9 +15,19 @@ async function main() {
     notes: await getNotesForTag(tag),
     pub_date: new Date().toISOString(),
     platforms: {
-      darwin: await getPlatform("app.tar.gz", "app.tar.gz.sig"),
-      linux: await getPlatform("AppImage.tar.gz", "AppImage.tar.gz.sig"),
-      windows: await getPlatform("msi.zip", "msi.zip.sig"),
+      "darwin-aarch64": await getPlatform("arm64", [
+        "app.tar.gz",
+        "app.tar.gz.sig",
+      ]),
+      "darwin-x86_64": await getPlatform("amd64", [
+        "app.tar.gz",
+        "app.tar.gz.sig",
+      ]),
+      "linux-x86_64": await getPlatform("amd64", [
+        "AppImage.tar.gz",
+        "AppImage.tar.gz.sig",
+      ]),
+      "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
     },
   };
 
@@ -35,8 +45,8 @@ async function getNotesForTag(tag) {
   ]);
 }
 
-async function getPlatform(...exts) {
-  const [artifact, signature] = await glob(`**/*.{${exts.join(",")}}`);
+async function getPlatform(arch, exts) {
+  const [artifact, signature] = await glob(`${arch}/**/*.{${exts.join(",")}}`);
 
   return {
     url: `${BASE_URL}${artifact}`,

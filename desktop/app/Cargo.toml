@@ -1,6 +1,6 @@
 [package]
 name = "mintter"
-version = "0.1.0"
+version = "0.0.1"
 description = "A publishing platform where other content creators can reuse your content keeping your authorship and royalties."
 authors = ["The mintter team"]
 license = ""
@@ -15,7 +15,7 @@ build = "build.rs"
 tauri-build = { version = "1.0.0-rc.8", features = [] }
 
 [dependencies]
-tauri = { version = "1.0.0-rc.10", features = ["ayatana-tray", "cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
+tauri = { version = "1.0.0-rc.10", features = ["ayatana-tray", "cli", "shell-execute", "shell-open", "system-tray", "updater", "window-maximize", "window-start-dragging", "window-unmaximize"] }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", commit = "0e993f8ded5867772b29ca7aee5bc5594aba6fb9", features = ["colored"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", commit = "0e993f8ded5867772b29ca7aee5bc5594aba6fb9" }
 tokio = { version = "1.18.2", features = ["full"] }
