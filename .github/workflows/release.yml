@@ -42,8 +42,9 @@ jobs:
           profile: minimal
           toolchain: stable
           target: ${{ matrix.config.rust_target }}
-      - run: rustc -vV
       - uses: Swatinem/rust-cache@v1
+        with:
+          sharedKey: ${{ matrix.config.rust_target }}
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
         with:
