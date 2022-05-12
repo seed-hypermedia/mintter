@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  AWS_REGION: us-east-1
+
 jobs:
   build-binaries:
     runs-on: ${{ matrix.os }}
