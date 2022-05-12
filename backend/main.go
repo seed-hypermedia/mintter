@@ -13,14 +13,17 @@ import (
 	"go.uber.org/zap"
 
 	"mintter/backend/config"
+	"mintter/backend/core"
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/logging"
+	"mintter/backend/pkg/future"
 )
 
 var moduleBackend = fx.Options(
 	fx.Provide(
 		provideRepo,
+		provideAccount,
 		provideSQLite,
 		provideBackend,
 	),
@@ -175,6 +178,25 @@ Please remove data inside %s or use a different repo path.
 		os.Exit(1)
 	}
 	return r, err
+}
+
+func provideAccount(repo *repo) (*future.ReadOnly[core.Identity], error) {
+	fut := future.New[core.Identity]()
+
+	go func() {
+		<-repo.Ready()
+		acc, err := repo.Account()
+		if err != nil {
+			panic(err)
+		}
+
+		id := core.NewIdentity(acc.CID(), repo.Device())
+		if err := fut.Resolve(id); err != nil {
+			panic(err)
+		}
+	}()
+
+	return fut.ReadOnly, nil
 }
 
 type fxLogger struct {

@@ -2,10 +2,12 @@ package documents
 
 import (
 	"context"
+	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
@@ -31,7 +33,7 @@ func TestAPICreateDraft(t *testing.T) {
 	c, err := cid.Decode(doc.Id)
 	require.Equal(t, int(cid.DagCBOR), int(c.Prefix().Codec))
 	require.NoError(t, err)
-	require.Equal(t, api.me.AccountID().String(), doc.Author)
+	require.Equal(t, api.me.MustGet().AccountID().String(), doc.Author)
 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 }
@@ -444,7 +446,7 @@ func TestAPIPublishDraft(t *testing.T) {
 	docid, err := cid.Decode(published.Document.Id)
 	require.NoError(t, err)
 
-	version, err := api.vcs.LoadNamedVersion(ctx, docid, api.me.AccountID(), api.me.DeviceKey().CID(), "main")
+	version, err := api.vcs.LoadNamedVersion(ctx, docid, api.me.MustGet().AccountID(), api.me.MustGet().DeviceKey().CID(), "main")
 	require.NoError(t, err)
 
 	require.Equal(t, published.Version, version.String(), "published version must match the database")
@@ -598,7 +600,10 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	db := newTestSQLite(t)
 	v := vcs.New(db)
 
-	return NewServer(u.Identity, db, v)
+	fut := future.New[core.Identity]()
+	require.NoError(t, fut.Resolve(u.Identity))
+
+	return NewServer(fut.ReadOnly, db, v)
 }
 
 func newTestSQLite(t *testing.T) *sqlitex.Pool {

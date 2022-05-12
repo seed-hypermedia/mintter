@@ -7,6 +7,7 @@ import (
 	"mintter/backend/crdt"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
@@ -27,12 +28,12 @@ type (
 )
 
 type Server struct {
-	me  core.Identity
+	me  *future.ReadOnly[core.Identity]
 	db  *sqlitex.Pool
 	vcs *vcs.SQLite
 }
 
-func NewServer(me core.Identity, db *sqlitex.Pool, vcs *vcs.SQLite) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, vcs *vcs.SQLite) *Server {
 	return &Server{
 		me:  me,
 		db:  db,
@@ -47,9 +48,12 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, status.Errorf(codes.Unimplemented, "updating publications is not implemented yet")
 	}
 
-	me := api.me.AccountID()
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
+	}
 
-	p := vcstypes.NewDocumentPermanode(me)
+	p := vcstypes.NewDocumentPermanode(me.AccountID())
 
 	permablk, err := vcs.EncodeBlock[vcs.Permanode](p)
 	if err != nil {
@@ -82,7 +86,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 
 	return &documents.Document{
 		Id:         permablk.Cid().String(),
-		Author:     me.String(),
+		Author:     me.AccountID().String(),
 		CreateTime: timestamppb.New(p.CreateTime),
 		UpdateTime: timestamppb.New(p.CreateTime),
 	}, nil
@@ -205,7 +209,12 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 		Documents: make([]*documents.Document, len(res)),
 	}
 
-	aid := api.me.AccountID().String()
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
+	}
+
+	aid := me.AccountID().String()
 
 	for i, l := range res {
 		out.Documents[i] = &documents.Document{
@@ -232,8 +241,13 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
+	}
+
 	// TODO: ensure transactionality here.
-	recorded, err := api.vcs.RecordChange(ctx, oid, api.me, wc.Version(), "mintter.Document", wc.Data())
+	recorded, err := api.vcs.RecordChange(ctx, oid, me, wc.Version(), "mintter.Document", wc.Data())
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +259,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	newVer := vcs.NewVersion(recorded.LamportTime, recorded.ID)
 
 	// TODO: implement optimistic concurrency control here.
-	if err := api.vcs.StoreNamedVersion(ctx, oid, api.me, "main", newVer); err != nil {
+	if err := api.vcs.StoreNamedVersion(ctx, oid, me, "main", newVer); err != nil {
 		return nil, err
 	}
 
@@ -330,9 +344,14 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, err
 	}
 
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
+	}
+
 	var ver vcs.Version
 	if in.Version == "" {
-		ver, err = api.vcs.LoadNamedVersion(ctx, oid, api.me.AccountID(), api.me.DeviceKey().CID(), "main")
+		ver, err = api.vcs.LoadNamedVersion(ctx, oid, me.AccountID(), me.DeviceKey().CID(), "main")
 		if err != nil {
 			return nil, err
 		}

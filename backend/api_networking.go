@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ipfs/go-cid"
-	"github.com/multiformats/go-multiaddr"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/ipfs"
+
+	"github.com/ipfs/go-cid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type networkingAPI struct {
@@ -27,20 +26,20 @@ func newNetworkingAPI(back *backend) networking.NetworkingServer {
 func (srv *networkingAPI) Connect(ctx context.Context, in *networking.ConnectRequest) (*networking.ConnectResponse, error) {
 	return nil, fmt.Errorf("unimplemented")
 
-	if len(in.Addrs) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "must specify at least one address to connect")
-	}
+	// if len(in.Addrs) == 0 {
+	// 	return nil, status.Error(codes.InvalidArgument, "must specify at least one address to connect")
+	// }
 
-	mas := make([]multiaddr.Multiaddr, len(in.Addrs))
-	for i, a := range in.Addrs {
-		ma, err := multiaddr.NewMultiaddr(a)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, "bad multiaddr %s: %v", a, err)
-		}
-		mas[i] = ma
-	}
+	// mas := make([]multiaddr.Multiaddr, len(in.Addrs))
+	// for i, a := range in.Addrs {
+	// 	ma, err := multiaddr.NewMultiaddr(a)
+	// 	if err != nil {
+	// 		return nil, status.Errorf(codes.InvalidArgument, "bad multiaddr %s: %v", a, err)
+	// 	}
+	// 	mas[i] = ma
+	// }
 
-	return &networking.ConnectResponse{}, srv.back.Connect(ctx, mas...)
+	// return &networking.ConnectResponse{}, srv.back.Connect(ctx, mas...)
 }
 
 func (srv *networkingAPI) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRequest) (*networking.PeerInfo, error) {
