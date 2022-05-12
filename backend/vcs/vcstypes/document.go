@@ -4,13 +4,14 @@ import (
 	"crypto/rand"
 	"fmt"
 	"mintter/backend/crdt"
+	"mintter/backend/vcs"
 	"time"
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
-const DocumentType = "https://schema.mintter.org/Document"
+const DocumentType vcs.ObjectType = "https://schema.mintter.org/Document"
 
 func init() {
 	cbornode.RegisterCborType(DocumentPermanode{})
@@ -21,18 +22,19 @@ func init() {
 }
 
 type DocumentPermanode struct {
-	Type       string `refmt:"@type"`
-	Owner      cid.Cid
-	Nonce      []byte
-	CreateTime time.Time
+	vcs.BasePermanode
+
+	Nonce []byte
 }
 
 func NewDocumentPermanode(owner cid.Cid) DocumentPermanode {
 	p := DocumentPermanode{
-		Type:       DocumentType,
-		Owner:      owner,
-		CreateTime: time.Now().UTC().Round(time.Second),
-		Nonce:      make([]byte, 8),
+		BasePermanode: vcs.BasePermanode{
+			Type:       DocumentType,
+			Owner:      owner,
+			CreateTime: time.Now().UTC().Round(time.Second),
+		},
+		Nonce: make([]byte, 8),
 	}
 
 	_, err := rand.Read(p.Nonce)
@@ -41,18 +43,6 @@ func NewDocumentPermanode(owner cid.Cid) DocumentPermanode {
 	}
 
 	return p
-}
-
-func (dp DocumentPermanode) PermanodeType() string {
-	return dp.Type
-}
-
-func (dp DocumentPermanode) PermanodeCreateTime() time.Time {
-	return dp.CreateTime
-}
-
-func (dp DocumentPermanode) PermanodeOwner() cid.Cid {
-	return dp.Owner
 }
 
 type Document struct {

@@ -12,7 +12,7 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	v, err := DecodeVersion("")
+	v, err := ParseVersion("")
 	require.NoError(t, err)
 	require.True(t, v.IsZero())
 
@@ -24,7 +24,7 @@ func TestVersion(t *testing.T) {
 	v = NewVersion(10, cids...)
 	require.Equal(t, "bbiavkaafnbswy3dpafkqablxn5zgyza", v.String())
 
-	v2, err := DecodeVersion(v.String())
+	v2, err := ParseVersion(v.String())
 	require.NoError(t, err)
 	require.Equal(t, v, v2)
 	require.Equal(t, uint64(10), v.TotalCount())

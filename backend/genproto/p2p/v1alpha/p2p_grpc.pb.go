@@ -18,6 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type P2PClient interface {
+	// Handshake gets called whenever two Mintter peers connect to each other.
+	// No matter who initiates the connect, this will make sure both peers exchange their information.
+	Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error)
 	// Get basic information about the peer.
 	GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error)
 	// Get version of a specific object.
@@ -32,6 +35,15 @@ type p2PClient struct {
 
 func NewP2PClient(cc grpc.ClientConnInterface) P2PClient {
 	return &p2PClient{cc}
+}
+
+func (c *p2PClient) Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error) {
+	out := new(HandshakeInfo)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/Handshake", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *p2PClient) GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error) {
@@ -65,6 +77,9 @@ func (c *p2PClient) RequestInvoice(ctx context.Context, in *RequestInvoiceReques
 // All implementations should embed UnimplementedP2PServer
 // for forward compatibility
 type P2PServer interface {
+	// Handshake gets called whenever two Mintter peers connect to each other.
+	// No matter who initiates the connect, this will make sure both peers exchange their information.
+	Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error)
 	// Get basic information about the peer.
 	GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error)
 	// Get version of a specific object.
@@ -77,6 +92,9 @@ type P2PServer interface {
 type UnimplementedP2PServer struct {
 }
 
+func (UnimplementedP2PServer) Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Handshake not implemented")
+}
 func (UnimplementedP2PServer) GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPeerInfo not implemented")
 }
@@ -96,6 +114,24 @@ type UnsafeP2PServer interface {
 
 func RegisterP2PServer(s grpc.ServiceRegistrar, srv P2PServer) {
 	s.RegisterService(&P2P_ServiceDesc, srv)
+}
+
+func _P2P_Handshake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HandshakeInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(P2PServer).Handshake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.p2p.v1alpha.P2P/Handshake",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(P2PServer).Handshake(ctx, req.(*HandshakeInfo))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _P2P_GetPeerInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -159,6 +195,10 @@ var P2P_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "com.mintter.p2p.v1alpha.P2P",
 	HandlerType: (*P2PServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Handshake",
+			Handler:    _P2P_Handshake_Handler,
+		},
 		{
 			MethodName: "GetPeerInfo",
 			Handler:    _P2P_GetPeerInfo_Handler,

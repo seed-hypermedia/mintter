@@ -104,6 +104,16 @@ var migrations = []string{
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 		);
 
+		CREATE TABLE device_accounts (
+			account_id INTEGER REFERENCES accounts NOT NULL,
+			device_id INTEGER REFERENCES devices NOT NULL,
+			-- Subjective (locally perceived) time when the item was created.
+			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+			PRIMARY KEY (account_id, device_id)
+		) WITHOUT ROWID;
+
+		CREATE INDEX idx_account_devices ON device_accounts (device_id, account_id);
+
 		-- Index to support querying devices by account.
 		CREATE INDEX idx_devices_by_account ON devices (account_id);
 

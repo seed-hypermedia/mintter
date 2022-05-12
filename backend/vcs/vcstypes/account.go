@@ -12,7 +12,7 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
-const AccountType = "https://schema.mintter.org/Account"
+const AccountType vcs.ObjectType = "https://schema.mintter.org/Account"
 
 func init() {
 	cbornode.RegisterCborType(AccountPermanode{})
@@ -21,29 +21,17 @@ func init() {
 }
 
 type AccountPermanode struct {
-	Type       string `refmt:"@type"`
-	Owner      cid.Cid
-	CreateTime time.Time
+	vcs.BasePermanode
 }
 
 func NewAccountPermanode(owner cid.Cid) AccountPermanode {
 	return AccountPermanode{
-		Type:       AccountType,
-		Owner:      owner,
-		CreateTime: time.Time{}, // zero time for deterministic permanode.
+		BasePermanode: vcs.BasePermanode{
+			Type:       AccountType,
+			Owner:      owner,
+			CreateTime: time.Time{}, // zero time for deterministic permanode.
+		},
 	}
-}
-
-func (ap AccountPermanode) PermanodeType() string {
-	return ap.Type
-}
-
-func (ap AccountPermanode) PermanodeCreateTime() time.Time {
-	return ap.CreateTime
-}
-
-func (ap AccountPermanode) PermanodeOwner() cid.Cid {
-	return ap.Owner
 }
 
 type Account struct {
@@ -188,6 +176,22 @@ func (a *Account) Apply(evt AccountEvent, updateTime time.Time) error {
 	return nil
 }
 
+func (a *Account) ApplyChange(id cid.Cid, c vcs.Change) error {
+	var evts []AccountEvent
+
+	if err := cbornode.DecodeInto(c.Body, &evts); err != nil {
+		return fmt.Errorf("failed to decode account events: %w", err)
+	}
+
+	for _, e := range evts {
+		if err := a.Apply(e, c.CreateTime); err != nil {
+			return fmt.Errorf("failed to apply account event: %w", err)
+		}
+	}
+
+	return nil
+}
+
 type AccountState struct {
 	ID      cid.Cid
 	Profile Profile
@@ -225,7 +229,7 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 		return cid.Undef, err
 	}
 
-	if err := v.StorePermanode(ctx, blk); err != nil {
+	if err := v.StorePermanode(ctx, blk.Block, blk.Value); err != nil {
 		return cid.Undef, err
 	}
 

@@ -56,7 +56,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	if err := api.vcs.StorePermanode(ctx, permablk); err != nil {
+	if err := api.vcs.StorePermanode(ctx, permablk.Block, permablk.Value); err != nil {
 		return nil, err
 	}
 
@@ -337,7 +337,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 			return nil, err
 		}
 	} else {
-		ver, err = vcs.DecodeVersion(in.Version)
+		ver, err = vcs.ParseVersion(in.Version)
 		if err != nil {
 			return nil, err
 		}
@@ -363,14 +363,16 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 }
 
 func (api *Server) getPublication(ctx context.Context, oid cid.Cid, ver vcs.Version) (*vcstypes.Document, error) {
-	var p vcstypes.DocumentPermanode
-	if err := api.vcs.LoadPermanode(ctx, oid, &p); err != nil {
+	pblk, err := vcs.LoadPermanode[vcstypes.DocumentPermanode](ctx, api.vcs.BlockGetter(), oid)
+	if err != nil {
 		return nil, err
 	}
 
+	p := pblk.Value
+
 	doc := vcstypes.NewDocument(oid, p.Owner, p.CreateTime)
 
-	if err := api.vcs.IterateChanges(ctx, oid, ver, func(c vcs.Change) error {
+	if err := api.vcs.IterateChanges(ctx, oid, ver, func(c vcs.RecordedChange) error {
 		var evt []vcstypes.DocumentEvent
 		if err := cbornode.DecodeInto(c.Body, &evt); err != nil {
 			return err
@@ -447,10 +449,12 @@ type draft struct {
 }
 
 func (api *Server) getDraft(ctx context.Context, oid cid.Cid, channel string) (*draft, error) {
-	var p vcstypes.DocumentPermanode
-	if err := api.vcs.LoadPermanode(ctx, oid, &p); err != nil {
-		return nil, fmt.Errorf("failed to load permanode: %w", err)
+	pblk, err := vcs.LoadPermanode[vcstypes.DocumentPermanode](ctx, api.vcs.BlockGetter(), oid)
+	if err != nil {
+		return nil, err
 	}
+
+	p := pblk.Value
 
 	wc, err := api.vcs.LoadWorkingCopy(ctx, oid, "main")
 	if err != nil {
@@ -459,7 +463,7 @@ func (api *Server) getDraft(ctx context.Context, oid cid.Cid, channel string) (*
 
 	doc := vcstypes.NewDocument(oid, p.Owner, p.CreateTime)
 
-	if err := api.vcs.IterateChanges(ctx, oid, wc.Version(), func(c vcs.Change) error {
+	if err := api.vcs.IterateChanges(ctx, oid, wc.Version(), func(c vcs.RecordedChange) error {
 		var evt []vcstypes.DocumentEvent
 		if err := cbornode.DecodeInto(c.Body, &evt); err != nil {
 			return fmt.Errorf("failed to decode document change: %w", err)

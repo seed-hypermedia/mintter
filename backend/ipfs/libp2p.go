@@ -42,6 +42,8 @@ func DefaultBootstrapPeers() Bootstrappers {
 
 // BootstrapResult is a result of the bootstrap process.
 type BootstrapResult struct {
+	// Peers that were used for bootstrapping.
+	Peers []peer.AddrInfo
 	// ConnectErrs is a list of results from the
 	// Connect() call for all the peers in the input order.
 	ConnectErrs []error
@@ -58,6 +60,7 @@ type BootstrapResult struct {
 // to handle the return value where the result for each peer is presented separately.
 func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []peer.AddrInfo) BootstrapResult {
 	res := BootstrapResult{
+		Peers:       peers,
 		ConnectErrs: make([]error, len(peers)),
 	}
 

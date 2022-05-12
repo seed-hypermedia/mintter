@@ -29,7 +29,7 @@ func TestSQLiteWorkingCopy(t *testing.T) {
 	blk, err := EncodeBlock[Permanode](bp)
 	require.NoError(t, err)
 
-	require.NoError(t, vcs.StorePermanode(ctx, blk))
+	require.NoError(t, vcs.StorePermanode(ctx, blk.Block, blk.Value))
 
 	_, err = vcs.LoadWorkingCopy(ctx, blk.Cid(), "main")
 	require.Error(t, errNotFound, err)
