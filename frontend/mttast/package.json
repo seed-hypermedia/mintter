@@ -10,9 +10,10 @@
   },
   "scripts": {
     "build": "tsc",
-    "lint": "eslint .",
+    "lint:eslint": "eslint .",
+    "lint:prettier": "prettier --check \"**/*.{css,md,js,jsx,json,ts,tsx}\"",
+    "lint": "yarn lint:prettier && yarn lint:eslint",
     "format": "prettier --write .",
-    "validate": "lint && nr format",
     "test": "vitest --run",
     "test:watch": "test --watch"
   },

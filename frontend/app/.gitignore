@@ -11,3 +11,4 @@ cypress/videos
 cypress/downloads
 cypress/screenshots
 cypress/snapshots
+src/**/*.typegen.*

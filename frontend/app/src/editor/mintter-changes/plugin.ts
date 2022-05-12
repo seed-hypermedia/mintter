@@ -132,7 +132,6 @@ export function changesServiceCreator() {
       if (!shouldOverride(newChange, changes[changes.length - 1])) {
         changes.push(newChange)
       }
-    } else {
     }
   }
 

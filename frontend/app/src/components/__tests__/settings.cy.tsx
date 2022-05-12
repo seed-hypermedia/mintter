@@ -4,7 +4,9 @@ import {Settings} from '@components/settings'
 import {mockIPC} from '@tauri-apps/api/mocks'
 
 beforeEach(() => {
-  mockIPC(() => {})
+  mockIPC(() => {
+    // noop
+  })
 })
 
 describe('<Settings />', () => {

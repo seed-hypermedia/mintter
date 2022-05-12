@@ -224,7 +224,7 @@ export function ProfileInformationIcon() {
   )
 }
 
-function IconContainer({children}: PropsWithChildren<{}>) {
+function IconContainer({children}: PropsWithChildren<any>) {
   return (
     <Box
       css={{

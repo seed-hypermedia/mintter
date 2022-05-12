@@ -7,9 +7,9 @@
   "private": true,
   "scripts": {
     "build": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run build",
-    "lint": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run lint",
-    "format": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run format",
-    "test": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run test",
+    "lint": "yarn mttast lint && yarn app lint",
+    "format": "yarn mttast format && yarn app format",
+    "test": "yarn mttast format && yarn app format",
     "app": "yarn workspace @mintter/app",
     "mttast": "yarn workspace @mintter/mttast",
     "codegen": "graphql-codegen"
