@@ -14,6 +14,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -43,10 +44,14 @@ func New(db *sqlitex.Pool) *SQLite {
 	return &SQLite{db: db, bs: bs}
 }
 
-func (s *SQLite) IterateChanges(ctx context.Context, oid ObjectID, v Version, fn func(Change) error) error {
+func (s *SQLite) Blockstore() blockstore.Blockstore {
+	return s.bs
+}
+
+func (s *SQLite) IterateChanges(ctx context.Context, oid ObjectID, v Version, fn func(RecordedChange) error) error {
 	queue := v.CIDs()
 
-	visited := make(map[cid.Cid]Change)
+	visited := make(map[cid.Cid]RecordedChange)
 
 	for len(queue) > 0 {
 		last := len(queue) - 1
@@ -62,18 +67,19 @@ func (s *SQLite) IterateChanges(ctx context.Context, oid ObjectID, v Version, fn
 			return err
 		}
 
-		var sc SignedCBOR[Change]
-		if err := cbornode.DecodeInto(blk.RawData(), &sc); err != nil {
+		sc, err := ParseChangeBlock(blk)
+		if err != nil {
 			return err
 		}
-		visited[id] = sc.Payload
+
+		visited[id] = RecordedChange{ID: blk.Cid(), Change: sc.Payload}
 
 		for _, p := range sc.Payload.Parents {
 			queue = append(queue, p)
 		}
 	}
 
-	out := make([]Change, len(visited))
+	out := make([]RecordedChange, len(visited))
 	var i int
 	for _, c := range visited {
 		out[i] = c
@@ -117,7 +123,7 @@ func (s *SQLite) LoadWorkingCopy(ctx context.Context, oid ObjectID, name string)
 		return WorkingCopy{}, errNotFound
 	}
 
-	ver, err := DecodeVersion(res.WorkingCopyVersion)
+	ver, err := ParseVersion(res.WorkingCopyVersion)
 	if err != nil {
 		return WorkingCopy{}, fmt.Errorf("failed to decode working copy version %s: %w", res.WorkingCopyVersion, err)
 	}
@@ -246,6 +252,10 @@ func (s *SQLite) StoreNamedVersion(ctx context.Context, o ObjectID, id core.Iden
 	return nil
 }
 
+func IsErrNotFound(err error) bool {
+	return errors.Is(err, errNotFound)
+}
+
 func (s *SQLite) LoadNamedVersion(ctx context.Context, o ObjectID, account cid.Cid, device cid.Cid, name string) (Version, error) {
 	conn, release, err := s.db.Conn(ctx)
 	if err != nil {
@@ -274,10 +284,10 @@ func (s *SQLite) LoadNamedVersion(ctx context.Context, o ObjectID, account cid.C
 	}
 
 	if res.NamedVersionsVersion == "" {
-		return Version{}, fmt.Errorf("not found version named %s for object %s", name, o)
+		return Version{}, fmt.Errorf("object = %s version = %s: %w", o, name, errNotFound)
 	}
 
-	ver, err := DecodeVersion(res.NamedVersionsVersion)
+	ver, err := ParseVersion(res.NamedVersionsVersion)
 	if err != nil {
 		return Version{}, fmt.Errorf("failed to decode named version: %w", err)
 	}
@@ -285,7 +295,7 @@ func (s *SQLite) LoadNamedVersion(ctx context.Context, o ObjectID, account cid.C
 	return ver, nil
 }
 
-func (s *SQLite) StorePermanode(ctx context.Context, blk EncodedBlock[Permanode]) error {
+func (s *SQLite) StorePermanode(ctx context.Context, blk blocks.Block, p Permanode) error {
 	if err := s.bs.Put(ctx, blk); err != nil {
 		return err
 	}
@@ -299,7 +309,7 @@ func (s *SQLite) StorePermanode(ctx context.Context, blk EncodedBlock[Permanode]
 	defer release()
 
 	// Ensure account exists.
-	aid, err := s.lookupAccountID(conn, blk.Value.PermanodeOwner())
+	aid, err := s.lookupAccountID(conn, p.PermanodeOwner())
 	if err != nil {
 		return err
 	}
@@ -334,17 +344,8 @@ func (s *SQLite) DeletePermanode(ctx context.Context, c cid.Cid) error {
 	return vcssql.ObjectsDelete(conn, ohash, int(ocodec))
 }
 
-func (s *SQLite) LoadPermanode(ctx context.Context, c cid.Cid, v Permanode) error {
-	blk, err := s.bs.Get(ctx, c)
-	if err != nil {
-		return err
-	}
-
-	if err := cbornode.DecodeInto(blk.RawData(), v); err != nil {
-		return err
-	}
-
-	return nil
+func (s *SQLite) BlockGetter() BlockGetter {
+	return bstoreGetter{s.bs}
 }
 
 func (s *SQLite) lookupObjectID(conn *sqlite.Conn, c cid.Cid) (int, error) {

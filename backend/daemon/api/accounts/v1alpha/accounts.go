@@ -116,19 +116,8 @@ func (srv *Server) getAccount(ctx context.Context, aid cid.Cid) (*account, error
 
 	acc := vcstypes.NewAccount(blk.Cid(), aid)
 
-	if err := srv.vcs.IterateChanges(ctx, blk.Cid(), ver, func(c vcs.Change) error {
-		var evts []vcstypes.AccountEvent
-		if err := cbornode.DecodeInto(c.Body, &evts); err != nil {
-			return fmt.Errorf("failed to decode account events: %w", err)
-		}
-
-		for _, e := range evts {
-			if err := acc.Apply(e, c.CreateTime); err != nil {
-				return fmt.Errorf("failed to apply account event: %w", err)
-			}
-		}
-
-		return nil
+	if err := srv.vcs.IterateChanges(ctx, blk.Cid(), ver, func(rc vcs.RecordedChange) error {
+		return acc.ApplyChange(rc.ID, rc.Change)
 	}); err != nil {
 		return nil, err
 	}

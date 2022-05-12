@@ -24,6 +24,14 @@ const (
 	BacklinksID    sqlitegen.Column = "backlinks.id"
 )
 
+// Table device_accounts.
+const (
+	DeviceAccounts           sqlitegen.Table  = "device_accounts"
+	DeviceAccountsAccountID  sqlitegen.Column = "device_accounts.account_id"
+	DeviceAccountsCreateTime sqlitegen.Column = "device_accounts.create_time"
+	DeviceAccountsDeviceID   sqlitegen.Column = "device_accounts.device_id"
+)
+
 // Table devices.
 const (
 	Devices           sqlitegen.Table  = "devices"
@@ -149,6 +157,9 @@ var Schema = sqlitegen.Schema{
 		AccountsMultihash:         {Table: Accounts, SQLType: "BLOB"},
 		BacklinksDepth:            {Table: Backlinks, SQLType: "INTEGER"},
 		BacklinksID:               {Table: Backlinks, SQLType: "INTEGER"},
+		DeviceAccountsAccountID:   {Table: DeviceAccounts, SQLType: "INTEGER"},
+		DeviceAccountsCreateTime:  {Table: DeviceAccounts, SQLType: "INTEGER"},
+		DeviceAccountsDeviceID:    {Table: DeviceAccounts, SQLType: "INTEGER"},
 		DevicesAccountID:          {Table: Devices, SQLType: "INTEGER"},
 		DevicesCodec:              {Table: Devices, SQLType: "INTEGER"},
 		DevicesCreateTime:         {Table: Devices, SQLType: "INTEGER"},

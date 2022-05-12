@@ -18,6 +18,7 @@ require (
 	github.com/ipfs/go-datastore v0.5.1
 	github.com/ipfs/go-ipfs-blockstore v1.1.2
 	github.com/ipfs/go-ipfs-config v0.19.0
+	github.com/ipfs/go-ipfs-exchange-interface v0.1.0
 	github.com/ipfs/go-ipfs-provider v0.7.1
 	github.com/ipfs/go-ipld-cbor v0.0.6
 	github.com/ipfs/go-ipld-format v0.2.0
@@ -108,7 +109,6 @@ require (
 	github.com/ipfs/go-fetcher v1.5.0 // indirect
 	github.com/ipfs/go-ipfs-delay v0.0.1 // indirect
 	github.com/ipfs/go-ipfs-ds-help v1.1.0 // indirect
-	github.com/ipfs/go-ipfs-exchange-interface v0.1.0 // indirect
 	github.com/ipfs/go-ipfs-pq v0.0.2 // indirect
 	github.com/ipfs/go-ipfs-util v0.0.2 // indirect
 	github.com/ipfs/go-ipld-legacy v0.1.0 // indirect
