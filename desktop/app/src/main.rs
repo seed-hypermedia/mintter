@@ -12,7 +12,7 @@ use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 use window_management::WindowExt;
 
 mod daemon;
-mod extensions;
+// mod extensions;
 mod menu;
 mod system_tray;
 mod window_management;
@@ -45,7 +45,7 @@ async fn main() {
     .plugin(log_plugin)
     .plugin(daemon::Plugin::default())
     .plugin(StorePluginBuilder::default().build())
-    .plugin(extensions::Plugin::default())
+    // .plugin(extensions::Plugin::default())
     .menu(menu::get_menu())
     .on_menu_event(menu::event_handler)
     .system_tray(system_tray::get_tray())
