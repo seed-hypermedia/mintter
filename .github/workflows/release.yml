@@ -120,6 +120,10 @@ jobs:
         with:
           name: artifacts-arm64
           path: artifacts/arm64
+      - name: Rename .app artifacts
+        run: |
+          mv ./artifacts/amd64/macos/Mintter.app.tar.gz ./artifacts/amd64/macos/Mintter_x86.app.tar.gz
+          mv ./artifacts/arm64/macos/Mintter.app.tar.gz ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz
       - name: "create release"
         uses: softprops/action-gh-release@master
         env:
