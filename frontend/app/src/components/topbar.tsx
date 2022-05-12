@@ -46,15 +46,7 @@ export const topbarSection = css({
   alignItems: 'center',
 })
 
-type TopbarProps = {
-  back?: () => void
-  forward?: () => void
-}
-
-export function Topbar({
-  back = () => window.history.back(),
-  forward = () => window.history.forward(),
-}: TopbarProps) {
+export function Topbar() {
   let mainPage = useMainPage()
   let [mainState] = useActor(mainPage)
   let {data, isSuccess} = useAccount(mainState.context.document?.author)

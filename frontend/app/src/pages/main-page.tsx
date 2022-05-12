@@ -30,20 +30,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   const hoverService = useInterpret(() => hoverMachine)
   const citationsService = useInterpret(() => createCitationsMachine(client))
-  const mainPageService = useInterpret(() =>
-    createMainPageMachine(client).withConfig({
-      actions: {
-        navigateBack: () => {
-          if (!window.history) return
-          window.history.back()
-        },
-        navigateForward: () => {
-          if (!window.history) return
-          window.history.forward()
-        },
-      },
-    }),
-  )
+  const mainPageService = useInterpret(() => createMainPageMachine(client))
 
   const [state] = useActor(mainPageService)
 

@@ -134,7 +134,8 @@ export type MainPageContext = {
     version: string | null
     blockId: string | null
   }
-  document: Document | null
+  document: Document | null,
+  recents: Array<string>,
   files: ActorRefFrom<ReturnType<typeof createFilesMachine>>
   drafts: ActorRefFrom<ReturnType<typeof createDraftsMachine>>
   library: ActorRefFrom<typeof libraryMachine>
@@ -182,14 +183,16 @@ type MainPageEvent =
     document: EditorDocument
   }
 
-export function defaultMainPageContext(client: QueryClient, overrides: Partial<MainPageContext> = { params: { docId: '' } }) {
+export function defaultMainPageContext(client: QueryClient, overrides: Partial<MainPageContext> = { params: { docId: '', version: null, blockId: null } }) {
   return () => ({
     params: {
       docId: '',
-      version: undefined,
-      blockId: undefined,
+      version: null,
+      blockId: null,
       ...overrides.params
     },
+    document: null,
+    recents: [],
     files: spawn(createFilesMachine(client), 'files'),
     drafts: spawn(createDraftsMachine(client), 'drafts'),
     library: spawn(libraryMachine, 'library'),
@@ -206,17 +209,7 @@ export function createMainPageMachine(client: QueryClient) {
         events: {} as MainPageEvent,
       },
       initial: 'routes',
-      context: () => ({
-        params: {
-          docId: '',
-          version: null,
-          blockId: null,
-        },
-        document: null,
-        files: spawn(createFilesMachine(client), 'files'),
-        drafts: spawn(createDraftsMachine(client), 'drafts'),
-        library: spawn(libraryMachine, 'library'),
-      } as MainPageContext),
+      context: defaultMainPageContext(client),
       invoke: {
         src: 'router',
         id: 'router',
@@ -246,7 +239,7 @@ export function createMainPageMachine(client: QueryClient) {
                 valid: {
                   tags: ['draft'],
                   entry: ['pushDraftRoute'],
-                  exit: ['clearCurrentDocument'],
+                  exit: ['pushToRecents', 'clearCurrentDocument'],
                   on: {
                     goToEditor: [
                       {
@@ -289,7 +282,7 @@ export function createMainPageMachine(client: QueryClient) {
                 valid: {
                   tags: ['publication'],
                   entry: ['pushPublicationRoute'],
-                  exit: ['clearCurrentDocument'],
+                  exit: ['pushToRecents', 'clearCurrentDocument'],
                   on: {
                     goToPublication: [
                       {
@@ -329,8 +322,12 @@ export function createMainPageMachine(client: QueryClient) {
             routeNotFound: '.idle',
             goToHome: '.home',
             goToSettings: '.settings',
-            goToEditor: '.editor',
-            goToPublication: '.publication',
+            goToEditor: {
+              target: '.editor',
+            },
+            goToPublication: {
+              target: '.publication',
+            },
             goToNew: [
               {
                 cond: 'isPublication',
@@ -375,6 +372,16 @@ export function createMainPageMachine(client: QueryClient) {
         }
       },
       actions: {
+        pushToRecents: assign((context, event) => {
+          console.log('pushToRecents', { location: window.location.pathname, context, event })
+          let _set = new Set<string>(context.recents)
+          if (_set.has(window.location.pathname)) _set.delete(window.location.pathname)
+          _set.add(window.location.pathname)
+          console.log('result = ', [..._set])
+          return {
+            recents: [..._set]
+          }
+        }),
         updateLibrary: (context) => {
           context.files.send('RECONCILE')
           context.drafts.send('RECONCILE')
@@ -419,7 +426,15 @@ export function createMainPageMachine(client: QueryClient) {
             version: null,
             blockId: null
           }
-        }))
+        })),
+        navigateBack: () => {
+          if (!window.history) return
+          window.history.back()
+        },
+        navigateForward: () => {
+          if (!window.history) return
+          window.history.forward()
+        },
       },
       services: {
         router: () => (sendBack, receive) => {

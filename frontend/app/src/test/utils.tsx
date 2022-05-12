@@ -30,6 +30,7 @@ import {mount} from '@cypress/react'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, ReactNode, useState} from 'react'
 import {QueryClient} from 'react-query'
+import {MachineOptionsFrom} from 'xstate'
 
 export const memoryLocation =
   (path = '/') =>
@@ -112,6 +113,7 @@ type MainPageProvidersProps = PropsWithChildren<{
   bookmarkListContext?: BookmarkListContext
   sidepanelContext?: SidepanelContextType
   mainPageContext?: Partial<MainPageContext>
+  mainPageOptions?: MachineOptionsFrom<ReturnType<typeof createMainPageMachine>>
 }>
 
 export function MainPageProviders({
@@ -121,14 +123,17 @@ export function MainPageProviders({
   bookmarkListContext = {bookmarks: [], errorMessage: ''},
   sidepanelContext = {items: [], errorMessage: ''},
   mainPageContext = {},
+  mainPageOptions = {},
 }: MainPageProvidersProps) {
   let sidepanel = useInterpret(() =>
     createSidepanelMachine(client).withContext(sidepanelContext),
   )
-  let mainPageService = useInterpret(() =>
-    createMainPageMachine(client).withContext(
-      defaultMainPageContext(client, mainPageContext),
-    ),
+  let mainPageService = useInterpret(
+    () =>
+      createMainPageMachine(client).withContext(
+        defaultMainPageContext(client, mainPageContext),
+      ),
+    mainPageOptions,
   )
   let hover = useInterpret(() => hoverMachine.withContext(hoverContext))
   let bookmarks = useInterpret(() =>
