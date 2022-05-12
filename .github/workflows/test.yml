@@ -17,10 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        # include:
-        #   - os: ubuntu-latest
-        #     container: iterpre/tauri
-    # container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v3
       - name: Install stable toolchain
@@ -29,11 +25,11 @@ jobs:
           toolchain: stable
           override: true
       - uses: Swatinem/rust-cache@v1
-      - name: Install required packages
+      - name: "Install native packages"
         if: "matrix.os == 'ubuntu-latest'"
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libayatana-appindicator3-dev librsvg2-dev patchelf
       - name: Mock Files
         if: matrix.os == 'ubuntu-latest'
         run: |
