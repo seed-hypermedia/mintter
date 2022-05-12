@@ -19,9 +19,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  audit-javascript:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: audit
-        run: yarn audit
+  # audit-javascript:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: "Setup NodeJS"
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         cache: yarn
+  #         node-version: 16.x
+  #     - name: audit
+  #       run: yarn audit
