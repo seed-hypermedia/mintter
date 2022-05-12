@@ -47,8 +47,6 @@ jobs:
           toolchain: stable
           target: ${{ matrix.rust_target }}
       - uses: Swatinem/rust-cache@v1
-        with:
-          cache-on-failure: true
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
         with:
