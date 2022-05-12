@@ -2,9 +2,11 @@ package accounts
 
 import (
 	context "context"
+	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
+	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
@@ -31,7 +33,7 @@ func TestGetAccount_Own(t *testing.T) {
 
 	acc, err := alice.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
-	require.Equal(t, alice.me.AccountID().String(), acc.Id)
+	require.Equal(t, alice.me.MustGet().AccountID().String(), acc.Id)
 	testutil.ProtoEqual(t, want, acc, "accounts don't match")
 }
 
@@ -70,7 +72,10 @@ func newTestServer(t *testing.T, name string) *Server {
 	_, err := vcstypes.Register(context.Background(), u.Account, u.Device, v)
 	require.NoError(t, err)
 
-	return NewServer(u.Identity, v)
+	fut := future.New[core.Identity]()
+	require.NoError(t, fut.Resolve(u.Identity))
+
+	return NewServer(fut.ReadOnly, v)
 }
 
 func newTestSQLite(t *testing.T) *sqlitex.Pool {

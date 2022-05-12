@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
+	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
 
@@ -24,11 +25,11 @@ type (
 )
 
 type Server struct {
-	me  core.Identity
+	me  *future.ReadOnly[core.Identity]
 	vcs *vcs.SQLite
 }
 
-func NewServer(id core.Identity, v *vcs.SQLite) *Server {
+func NewServer(id *future.ReadOnly[core.Identity], v *vcs.SQLite) *Server {
 	return &Server{
 		me:  id,
 		vcs: v,
@@ -42,7 +43,11 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 
 	var aid cid.Cid
 	if in.Id == "" {
-		aid = srv.me.AccountID()
+		me, err := srv.getMe()
+		if err != nil {
+			return nil, err
+		}
+		aid = me.AccountID()
 	} else {
 		acc, err := cid.Decode(in.Id)
 		if err != nil {
@@ -60,7 +65,11 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 }
 
 func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
-	aid := srv.me.AccountID()
+	me, err := srv.getMe()
+	if err != nil {
+		return nil, err
+	}
+	aid := me.AccountID()
 
 	acc, err := srv.getAccount(ctx, aid)
 	if err != nil {
@@ -79,14 +88,14 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 			return nil, fmt.Errorf("failed to encode account update events: %w", err)
 		}
 
-		recorded, err := srv.vcs.RecordChange(ctx, acc.ObjectID(), srv.me, acc.ver, "mintter.Account", data)
+		recorded, err := srv.vcs.RecordChange(ctx, acc.ObjectID(), me, acc.ver, "mintter.Account", data)
 		if err != nil {
 			return nil, fmt.Errorf("failed to record account change: %w", err)
 		}
 
 		ver := vcs.NewVersion(recorded.LamportTime, recorded.ID)
 
-		if err := srv.vcs.StoreNamedVersion(ctx, recorded.Object, srv.me, "main", ver); err != nil {
+		if err := srv.vcs.StoreNamedVersion(ctx, recorded.Object, me, "main", ver); err != nil {
 			return nil, fmt.Errorf("failed to store new account version: %w", err)
 		}
 
@@ -101,7 +110,20 @@ type account struct {
 	ver vcs.Version
 }
 
+func (srv *Server) getMe() (core.Identity, error) {
+	me, ok := srv.me.Get()
+	if !ok {
+		return core.Identity{}, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
+	}
+	return me, nil
+}
+
 func (srv *Server) getAccount(ctx context.Context, aid cid.Cid) (*account, error) {
+	me, err := srv.getMe()
+	if err != nil {
+		return nil, err
+	}
+
 	ap := vcstypes.NewAccountPermanode(aid)
 
 	blk, err := vcs.EncodeBlock(ap)
@@ -109,7 +131,7 @@ func (srv *Server) getAccount(ctx context.Context, aid cid.Cid) (*account, error
 		return nil, err
 	}
 
-	ver, err := srv.vcs.LoadNamedVersion(ctx, blk.Cid(), aid, srv.me.DeviceKey().CID(), "main")
+	ver, err := srv.vcs.LoadNamedVersion(ctx, blk.Cid(), aid, me.DeviceKey().CID(), "main")
 	if err != nil {
 		return nil, err
 	}

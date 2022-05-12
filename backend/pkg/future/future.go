@@ -64,3 +64,13 @@ func (v *ReadOnly[T]) Get() (val T, ok bool) {
 
 	return vv.(T), true
 }
+
+// MustGet is like Get, but panics if future is not yet resolved.
+func (v *ReadOnly[T]) MustGet() T {
+	vv, ok := v.Get()
+	if !ok {
+		panic("future is not resolved yet")
+	}
+
+	return vv
+}

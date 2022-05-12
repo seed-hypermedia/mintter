@@ -7,6 +7,7 @@ import (
 
 	"mintter/backend/core"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
+	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 )
 
@@ -16,31 +17,11 @@ type accountsAPI struct {
 	*accounts.Server
 }
 
-func newAccountsAPI(back *backend, v *vcs.SQLite) accounts.AccountsServer {
-	srv := &accountsAPI{
-		back: back,
+func newAccountsAPI(back *backend, id *future.ReadOnly[core.Identity], v *vcs.SQLite) accounts.AccountsServer {
+	return &accountsAPI{
+		back:   back,
+		Server: accounts.NewServer(id, v),
 	}
-
-	// This is ugly as hell, and racy. It's all mess right now while we're refactoring.
-	// The problem here is lazy account initialization. We start up all the things
-	// before actually having an account, so lots of things are messy because of that.
-	go func() {
-		<-back.repo.Ready()
-		acc, err := back.Account()
-		if err != nil {
-			panic(err)
-		}
-
-		aid := cid.Cid(acc.CID())
-
-		id := core.NewIdentity(aid, back.repo.Device())
-
-		api := accounts.NewServer(id, v)
-		srv.Server = api
-
-	}()
-
-	return srv
 }
 
 func (srv *accountsAPI) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {

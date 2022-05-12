@@ -343,18 +343,3 @@ func LoadPermanode[P Permanode](ctx context.Context, bg BlockGetter, c cid.Cid) 
 
 	return out, nil
 }
-
-func LoadIPLD[T any](ctx context.Context, bg BlockGetter, c cid.Cid) (out EncodedBlock[T], err error) {
-	blk, err := bg.GetBlock(ctx, c)
-	if err != nil {
-		return out, err
-	}
-
-	if err := cbornode.DecodeInto(blk.RawData(), &out.Value); err != nil {
-		return out, err
-	}
-
-	out.Block = blk
-
-	return out, nil
-}

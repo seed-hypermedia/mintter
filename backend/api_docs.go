@@ -1,11 +1,12 @@
 package backend
 
 import (
-	"github.com/ipfs/go-cid"
-
 	"mintter/backend/core"
 	documents "mintter/backend/daemon/api/documents/v1alpha"
+	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
+
+	"crawshaw.io/sqlite/sqlitex"
 )
 
 // DocsServer combines Drafts and Publications servers.
@@ -18,29 +19,8 @@ type docsAPI struct {
 	*documents.Server
 }
 
-func newDocsAPI(back *backend) DocsServer {
-	srv := &docsAPI{}
-
-	// This is ugly as hell, and racy. It's all mess right now while we're refactoring.
-	// The problem here is lazy account initialization. We start up all the things
-	// before actually having an account, so lots of things are messy because of that.
-	go func() {
-		<-back.repo.Ready()
-		acc, err := back.Account()
-		if err != nil {
-			panic(err)
-		}
-
-		aid := cid.Cid(acc.CID())
-
-		id := core.NewIdentity(aid, back.repo.Device())
-
-		vcs := vcs.New(back.pool)
-
-		docsapi := documents.NewServer(id, back.pool, vcs)
-		srv.Server = docsapi
-
-	}()
-
-	return srv
+func newDocsAPI(id *future.ReadOnly[core.Identity], vcs *vcs.SQLite, pool *sqlitex.Pool) DocsServer {
+	return &docsAPI{
+		Server: documents.NewServer(id, pool, vcs),
+	}
 }
