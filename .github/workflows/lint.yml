@@ -24,6 +24,8 @@ jobs:
           override: true
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v1
+        with:
+          cache-on-failure: true
       - name: "Install native packages"
         run: |
           sudo apt-get update
