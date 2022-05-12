@@ -1,7 +1,6 @@
 {
   "package": {
-    "productName": "Mintter",
-    "version": "0.1.0"
+    "productName": "Mintter"
   },
   "build": {
     "distDir": "../../plz-out/gen/frontend/dist/client",
@@ -46,6 +45,7 @@
     "updater": {
       "active": false,
       "dialog": true,
+      "endpoints": ["https://mintterreleases.s3.amazonaws.com/manifest.json"],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM4N0Q3NDU0MTVFQzY0MkUKUldRdVpPd1ZWSFI5T0MrampqQytES1oyaUg1RWhEZjd1T0hvLzZrWktrbFZ0SHpMNzB2MjEwY0UK"
     },
     "allowlist": {
