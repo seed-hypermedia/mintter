@@ -45,7 +45,7 @@ jobs:
       - name: "Setup Rust"
         uses: actions-rs/toolchain@v1
         with:
-          override: true
+          default: true
           profile: minimal
           toolchain: stable
           target: ${{ matrix.rust_target }}
