@@ -60,12 +60,10 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 
 	n.p2p.ConnManager().Protect(info.ID, protocolSupportKey)
 
-	conn, err := n.dialPeer(ctx, info.ID)
+	c, err := n.RPCClient(ctx, device)
 	if err != nil {
-		return fmt.Errorf("failed to dial device %s: %w", device, err)
+		return err
 	}
-
-	c := p2p.NewP2PClient(conn)
 
 	myInfo, err := n.handshakeInfo(ctx)
 	if err != nil {

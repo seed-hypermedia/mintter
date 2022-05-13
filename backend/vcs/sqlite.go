@@ -44,6 +44,12 @@ func New(db *sqlitex.Pool) *SQLite {
 	return &SQLite{db: db, bs: bs}
 }
 
+// DB returns the underlying database. Only here during refactoring.
+// TODO: get rid of this!
+func (s *SQLite) DB() *sqlitex.Pool {
+	return s.db
+}
+
 func (s *SQLite) Blockstore() blockstore.Blockstore {
 	return s.bs
 }

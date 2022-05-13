@@ -2,7 +2,7 @@ package resolver
 
 import (
 	"context"
-	"mintter/backend/wallet"
+	wallet "mintter/backend/wallet/walletsql"
 )
 
 // This file will not be regenerated automatically.

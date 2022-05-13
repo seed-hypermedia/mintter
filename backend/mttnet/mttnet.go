@@ -12,9 +12,11 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcssql"
 	"net"
 	"sync"
 
+	"github.com/ipfs/go-cid"
 	dssync "github.com/ipfs/go-datastore/sync"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
@@ -83,6 +85,7 @@ type Node struct {
 	me              core.Identity
 	cfg             config.P2P
 	accountObjectID vcs.ObjectID
+	invoicer        Invoicer
 
 	p2p      *ipfs.Libp2p
 	bitswap  *ipfs.Bitswap
@@ -146,12 +149,58 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	return n, nil
 }
 
+// ID returns the node's identity.
+func (n *Node) ID() core.Identity {
+	return n.me
+}
+
+// RPCClient dials a remote peer if necessary and returns the RPC client handle.
+func (n *Node) RPCClient(ctx context.Context, device cid.Cid) (p2p.P2PClient, error) {
+	pid, err := peer.FromCid(device)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := n.dialPeer(ctx, pid)
+	if err != nil {
+		return nil, err
+	}
+
+	return p2p.NewP2PClient(conn), nil
+}
+
+func (n *Node) AccountForDevice(ctx context.Context, device cid.Cid) (cid.Cid, error) {
+	conn, release, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return cid.Undef, err
+	}
+	defer release()
+
+	res, err := vcssql.AccountsGetForDevice(conn, device.Hash())
+	if err != nil {
+		return cid.Undef, err
+	}
+
+	if res.AccountsMultihash == nil {
+		return cid.Undef, fmt.Errorf("failed to find account for device %s", device)
+	}
+
+	if res.AccountsCodec != core.CodecAccountKey {
+		return cid.Undef, fmt.Errorf("bad account codec %s", cid.CodecToStr[uint64(res.AccountsCodec)])
+	}
+
+	return cid.NewCidV1(uint64(res.AccountsCodec), res.AccountsMultihash), nil
+}
+
+// Libp2p returns the underlying libp2p host.
+func (n *Node) Libp2p() *ipfs.Libp2p { return n.p2p }
+
 // Start the node. It will block while node is running.
 func (n *Node) Start(ctx context.Context) (err error) {
 	n.ctx = ctx
 
-	n.log.Debug("StartOperationStated")
-	defer func() { n.log.Debug("StartOperationFinished", zap.Error(err)) }()
+	n.log.Debug("NodeStartStated")
+	defer func() { n.log.Debug("NodeStartFinished", zap.Error(err)) }()
 
 	if err := n.startLibp2p(ctx); err != nil {
 		return err
@@ -190,6 +239,8 @@ func (n *Node) AddrInfo() peer.AddrInfo {
 	return n.p2p.AddrInfo()
 }
 
+// Ready channel is closed when the node is ready to use. It can be used
+// to await for the node to be bootstrapped and ready.
 func (n *Node) Ready() <-chan struct{} {
 	return n.ready
 }
@@ -265,8 +316,6 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 
 type rpcHandler struct {
 	*Node
-
-	p2p.UnimplementedP2PServer
 }
 
 type grpcConnections struct {

@@ -1,168 +1,125 @@
 package wallet
 
-import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-	"testing"
-
-	"crawshaw.io/sqlite"
-	"crawshaw.io/sqlite/sqlitex"
-	"github.com/stretchr/testify/require"
-	"go.uber.org/multierr"
-)
-
 const (
-	id1      = "2bd1fb78d1fbc89ea80629500b58b6f50da462b36c9fdc893776593f33cb6d46"
-	address1 = "https://lndhub.io"
-	name1    = "my LND wallet"
-	type1    = "LND"
-	balance1 = 0
-
-	id2      = "fcbe2645d60556c3842971934ee836eec07898fa8357597c37fd86377fa95478"
-	address2 = "https://lndhub.io"
-	name2    = "my LNDHub wallet"
-	type2    = "LNDHUB"
-	balance2 = 102345
+	testCredentials   = "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
+	memo              = "include this test memo"
+	timeoutSeconds    = 25
+	invoiceAmountSats = 1000
 )
 
-var (
-	auth1 = []byte("f7b32cb8ae914a1706b94bbe46d304e3")
-	auth2 = []byte("4f671cadcf0e5977559ed7727b2ee2f4f7b32ca8ae914a1703b94bbe4fd304e3")
-)
+// func TestReqInvoice(t *testing.T) {
+// 	t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
-func TestQueries(t *testing.T) {
-	conn, closer, err := makeConn()
-	require.NoError(t, err)
-	defer func() { require.NoError(t, closer()) }()
+// 	alice := makeTestService(t, "alice")
+// 	bob := makeTestService(t, "bob")
 
-	{
-		err = InsertWallet(conn, Wallet{
-			ID:      id1,
-			Address: address1,
-			Name:    name1,
-			Type:    type1,
-			Balance: balance1,
-		}, auth1)
-		require.NoError(t, err)
+// 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+// 	defer cancel()
+// 	connectPeers(ctx, t, alice, bob, true)
 
-		got, err := getWallet(conn, id1)
-		require.NoError(t, err)
+// 	_, err := alice.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred alice wallet")
+// 	require.NoError(t, err)
 
-		require.Equal(t, id1, got.WalletsID)
-		require.Equal(t, address1, got.WalletsAddress)
-		require.Equal(t, name1, got.WalletsName)
-		require.Equal(t, strings.ToLower(type1), got.WalletsType)
-		require.Equal(t, balance1, got.WalletsBalance)
+// 	_, err = bob.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred bob wallet")
+// 	require.NoError(t, err)
 
-		defaultWallet, err := GetDefaultWallet(conn)
-		require.NoError(t, err)
-		require.Equal(t, defaultWallet.ID, got.WalletsID)
+// 	require.NoError(t, alice.SyncAccounts(ctx))
 
-		err = InsertWallet(conn, Wallet{
-			ID:      id2,
-			Address: address2,
-			Name:    name2,
-			Type:    type2,
-			Balance: balance2,
-		}, auth2)
-		require.NoError(t, err)
+// 	payReq, err := alice.RemoteInvoiceRequest(ctx, AccID(bob.repo.MustAccount().CID()), InvoiceRequest{
+// 		AmountSats: invoiceAmountSats,
+// 		Memo:       memo,
+// 	})
+// 	require.NoError(t, err)
 
-		defaultWallet, err = GetDefaultWallet(conn)
-		require.NoError(t, err)
-		require.Equal(t, defaultWallet.ID, got.WalletsID)
+// 	invoice, err := lndhub.DecodeInvoice(payReq)
+// 	require.NoError(t, err)
 
-		got, err = getWallet(conn, id2)
-		require.NoError(t, err)
+// 	require.NotNil(t, invoice.Description, "returned memo shouldn't be empty")
+// 	require.Equal(t, memo, *invoice.Description)
+// 	require.Equal(t, invoiceAmountSats, int(invoice.MilliSat.ToSatoshis()))
 
-		require.Equal(t, id2, got.WalletsID)
-		require.Equal(t, address2, got.WalletsAddress)
-		require.Equal(t, name2, got.WalletsName)
-		require.Equal(t, strings.ToLower(type2), got.WalletsType)
-		require.Equal(t, balance2, got.WalletsBalance)
+// 	// TODO: pay invoice
+// }
 
-		err = InsertWallet(conn, Wallet{
-			ID:      id2,
-			Name:    name2,
-			Type:    type2,
-			Balance: balance2,
-		}, auth2)
-		require.Error(t, err)
+// func TestModifyWallets(t *testing.T) {
+// 	t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
-		newDefaultWallet, err := UpdateDefaultWallet(conn, id2)
-		require.NoError(t, err)
-		require.Equal(t, newDefaultWallet.ID, got.WalletsID)
+// 	alice := makeTestService(t, "alice")
 
-		nwallets, err := getWalletCount(conn)
-		require.NoError(t, err)
-		require.Equal(t, 2, nwallets.Count)
+// 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+// 	defer cancel()
 
-		require.NoError(t, RemoveWallet(conn, newDefaultWallet.ID))
-		defaultWallet, err = GetDefaultWallet(conn)
-		require.NoError(t, err)
-		require.Equal(t, defaultWallet.ID, id1)
+// 	firstWallet, err := alice.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred alice wallet")
+// 	require.NoError(t, err)
+// 	defaultWallet, err := alice.GetDefaultWallet(ctx)
+// 	require.NoError(t, err)
+// 	require.Equal(t, firstWallet, defaultWallet)
+// 	err = alice.DeleteWallet(ctx, defaultWallet.ID)
+// 	require.NoError(t, err)
+// 	_, err = alice.GetDefaultWallet(ctx)
+// 	require.NoError(t, err)
+// }
 
-		newwallet1, err := UpdateWalletName(conn, id1, name2)
-		require.NoError(t, err)
-		require.Equal(t, newwallet1.Name, name2)
-	}
-}
+// func makeTestService(t *testing.T, name string) *Service {
+// 	u := coretest.NewTester(name)
 
-func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
-	dir, err := ioutil.TempDir("", "sqlitegen-")
-	if err != nil {
-		return nil, nil, err
-	}
-	defer func() {
-		if err != nil {
-			os.RemoveAll(dir)
-		}
-	}()
+// 	db := makeTestSQLite(t)
 
-	conn, err = sqlite.OpenConn(filepath.Join(dir, "db.sqlite"))
-	if err != nil {
-		return nil, nil, err
-	}
-	defer func() {
-		if err != nil {
-			conn.Close()
-		}
-	}()
+// 	node, closenode := makeTestPeer(t, u, db)
+// 	t.Cleanup(closenode)
 
-	err = sqlitex.ExecScript(conn, `
-	CREATE TABLE wallets (
-		-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
-		id TEXT PRIMARY KEY,
-		-- Address of the LND node backing up this wallet. In case lndhub, this will be the
-		-- URL to connect via rest api. In case LND wallet, this will be the clearnet/onion address.
-		address TEXT NOT NULL,
-		-- The type of the wallet. Either lnd or lndhub
-		type TEXT CHECK( type IN ('lnd','lndhub') ) NOT NULL DEFAULT 'lndhub',
-		-- The Authentication of the wallet. api token in case lndhub and macaroon
-		-- bytes in case lnd. This blob should be encrypted
-		auth BLOB NOT NULL,
-		-- Human readable name to help the user identify each wallet
-		name TEXT NOT NULL,
-		-- The balance in satoshis the wallet had at the moment of creation. For audit purposes
-		balance INTEGER DEFAULT 0
-	);
-	-- Stores global metadata/configuration about any other table
-	CREATE TABLE global_meta (
-		key TEXT PRIMARY KEY,
-		value TEXT
-	) WITHOUT ROWID;
+// 	fut := future.New[*mttnet.Node]()
+// 	require.NoError(t, fut.Resolve(node))
 
-`)
-	if err != nil {
-		return nil, nil, err
-	}
+// 	return New(db, fut.ReadOnly)
+// }
 
-	return conn, func() error {
-		return multierr.Combine(
-			os.RemoveAll(dir),
-			conn.Close(),
-		)
-	}, nil
+// func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.Node, context.CancelFunc) {
+// 	hvcs := vcs.New(db)
 
-}
+// 	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
+// 	require.NoError(t, err)
+
+// 	n, err := mttnet.New(config.P2P{
+// 		Addr:        "/ip4/0.0.0.0/tcp/0",
+// 		NoRelay:     true,
+// 		NoBootstrap: true,
+// 		NoMetrics:   true,
+// 	}, hvcs, reg, u.Identity, zap.NewNop())
+// 	require.NoError(t, err)
+
+// 	errc := make(chan error, 1)
+// 	ctx, cancel := context.WithCancel(context.Background())
+// 	go func() {
+// 		errc <- n.Start(ctx)
+// 	}()
+
+// 	t.Cleanup(func() {
+// 		require.NoError(t, <-errc)
+// 	})
+
+// 	select {
+// 	case <-n.Ready():
+// 	case err := <-errc:
+// 		require.NoError(t, err)
+// 	}
+
+// 	return n, cancel
+// }
+
+// func makeTestSQLite(t *testing.T) *sqlitex.Pool {
+// 	path := testutil.MakeRepoPath(t)
+
+// 	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
+// 	require.NoError(t, err)
+// 	t.Cleanup(func() {
+// 		require.NoError(t, pool.Close())
+// 	})
+
+// 	conn := pool.Get(context.Background())
+// 	defer pool.Put(conn)
+
+// 	require.NoError(t, sqliteschema.Migrate(conn))
+
+// 	return pool
+// }
