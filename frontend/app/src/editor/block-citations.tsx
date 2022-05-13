@@ -22,7 +22,7 @@ export type BlockCitationsProps = {
 
 export function BlockCitations({blockId}: BlockCitationsProps) {
   const blockCitations = useBlockCitations(blockId)
-  const [state, send] = useMachine(blockCitationsMachine)
+  const [state, send] = useMachine(() => blockCitationsMachine)
 
   return blockCitations.length ? (
     <Box

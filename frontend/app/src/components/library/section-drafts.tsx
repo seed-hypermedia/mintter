@@ -1,14 +1,14 @@
 import {useDrafts} from '@app/main-page-context'
 import {LibraryItem} from '@components/library/library-item'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Section} from './section'
+import {EmptyList, Section} from './section'
 import {SectionError} from './section-error'
 
 export function DraftsSection() {
   const drafts = useDrafts()
 
   return (
-    <Section title="Drafts">
+    <Section title="Drafts" icon="List">
       {drafts.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
@@ -24,7 +24,9 @@ export function DraftsSection() {
             />
           ))}
         </ErrorBoundary>
-      ) : null}
+      ) : (
+        <EmptyList />
+      )}
     </Section>
   )
 }

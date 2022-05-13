@@ -212,10 +212,6 @@ function usePagePublication(
                 document: publication.document,
               })
               let content = [blockNodeToSlate(publication.document.children)]
-              console.log(
-                '🚀 ~ file: publication.tsx ~ line 215 ~ .then ~ content',
-                publication.document.children,
-              )
 
               sendBack({
                 type: 'PUBLICATION.REPORT.SUCCESS',
@@ -950,24 +946,6 @@ export function createDiscussionMachine(client: QueryClient) {
 }
 
 function PublicationShell() {
-  const [state] = useMachine(
-    createMachine({
-      initial: 'idle',
-      states: {
-        idle: {
-          after: {
-            100: {
-              target: 'delayed',
-            },
-          },
-        },
-        delayed: {
-          type: 'final',
-        },
-      },
-    }),
-  )
-
   return (
     <Box
       css={{

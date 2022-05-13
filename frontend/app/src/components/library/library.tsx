@@ -11,8 +11,8 @@ import {PropsWithChildren} from 'react'
 import {Box} from '../box'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
-import {BookmarksSection} from './section-bookmarks'
 import {ContactsSection} from './section-connections'
+import {BookmarksSection} from './_section-bookmarks'
 
 let libraryStyle = css({
   transition: 'all 0.25s ease',
@@ -59,6 +59,7 @@ export function Library() {
             width: isOpen ? '$library-width' : 0,
             paddingTop: '$3',
             position: 'relative',
+            paddingHorizontal: isOpen ? '$4' : 0,
           }}
         >
           <Box
@@ -66,9 +67,8 @@ export function Library() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              // marginVertical: '$1',
               paddingHorizontal: '$3',
-              // marginHorizontal: '-$3',
+              marginBottom: '$5',
             }}
           >
             <Button

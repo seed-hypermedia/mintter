@@ -27,7 +27,7 @@ export function BookmarkItem({
 
   const [, setLocation] = useLocation()
 
-  const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
+  const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     services: {
       deleteEntry: () =>
         new Promise(() => {

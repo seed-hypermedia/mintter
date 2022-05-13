@@ -134,7 +134,7 @@ export type MainPageContext = {
     version: string | null
     blockId: string | null
   }
-  document: Document | null,
+  document: EditorDocument | null,
   recents: Array<string>,
   files: ActorRefFrom<ReturnType<typeof createFilesMachine>>
   drafts: ActorRefFrom<ReturnType<typeof createDraftsMachine>>
@@ -201,19 +201,19 @@ export function defaultMainPageContext(client: QueryClient, overrides: Partial<M
 }
 
 export function createMainPageMachine(client: QueryClient) {
+
+  /** @xstate-layout N4IgpgJg5mDOIC5QAoC2BDAxgCwJYDswBKAOgCcB7AVwBc4TJcaKySA3dAG1wnRoKgBiRKAAOFWE1wV8IkAA9EAJgCcABhJqVKgIwB2HQDY9AZh1LjhgDQgAnoj0BWFZpV7DhlQA41hnY4AWLwBfYJs0LDxCUkpaekZmVg5uCEEoCgAVCgBRCCYWOXFJfhk5RQQTNT0SAJ01E0cdAMcvI0MTaztEIOrjL2dHNQCTVvc9UPCMHAJicmo6WAY8xMEAZWyMkgBhAFUAJT3sgDlNgBEAeV2AWWOMwokpUqQFRH8XWr9Aw1bPHW8bewVAwkRx6PRaJRDFSOUHjMIgCLTaJzOKLURUABG3EwfGk+HYXB4uPwQnuxTxZUQHhqzi8FladR8XgBryUShITgCkL8ai8AV8XhMEwRUyis1iCxI6KxuBxJXxyR4aUyFAACpjsbinmIHvLKRUqjU6g0mi02h0WQgdHUOYFuYz+d8hfDEWKYvN6NLNfK1httvtDicSBdrrcyY9ZM9ykZ2QFhiZ3B0dAmVEFLQBaRzshp6Zr1FpOJQJgLC10zd2owSHLbnI5bACSABlsuG9VGqRptP4nCYAk5nMNLeZcyQ6TC1INBlyVKXReWUQtBBKwEcKDQAGLUfAQVsU9sIdNmdkMlQeOq1OmdQHWlQmW2OXvtVp8xqzyLz5ewZVZAASFFQYC7tqLwHkeo43meQw6JeQ5aIYmgmJUaiqAmyE6G+SLih6X7pFkqxgDQ-AkvAzxFBG+qHuY4F-JBF4WBmTTVG4ZipoYzgeEMGFugucDfjkywFKRup7qA5SUceEE8nRV4OM4rjuJ4PifH2XEfthfHqjKcoiSAZFtqJiDidRp5SdB9FdBU1okG4p7WoYSj6A5Raqcin58UcYAAO5AZGBmgVRJ60WZMkIOoJD6AEKhKF4ehFrmDQuVhlbMB5nmnGQ6AAGY0D5FFgYFpkwRZbjwV46gOV4z4dF4hiJUQyoAEJYAA1rl+7guFSiOMYCYjE4ag6BmATtLaw1xoE3UjBYdXKpuZCeegZA7kJ5LAeUhgaGxlQmEWdJFg5AQZuOJDfNCwyQshbiOKE8L4BQEBwHIZaudhJA8JwgEreR+7pv47JRbo4KVEow1KHoQ5-DoJ09H2cUA3VPGLNg-6fTqq2+SBv2CuFk6qPUppxiYsGgiQIy8tBRhVEpCOfks+RJISvBEVAbV+STgr8vohhcnyQxsZaHj-fZvImN4UW1CWLpzi9qJ04kBIpKzIHuAE8mRXo0K5n4lrDVDkUg+T+2IQ+NOvQkLAMGQlBkErYkuGVJXjlCqjaxZdKq0Mqipg+agDchpuy+bNtffpmOIaO2juE7+unpaIxeCCDlaI+cZOQHkperKWoKozxIsyHOlibFILmJFxYwrSShDlFIJ9q0E69f47Tp56GpZ-KCs8LbiCIbGxqNM0PztCF5jwf4DT1Ly0WVddUvvjLGdt9pMiW9b3cHt1mg1ZCyYWKPRZDmYpMGBOYMg60k0t2iS-Z+v6aniXIO3rmFfeFXFkJhydKCno-ROb26E56YQrJKWABFmYkTRt9Pyv1vggmMFzaC3hQSDQsljeC9kHwa2GM4X2IQgHcVppgMgYA+BgHSllHKBc1qGWghoFogRIbdV0OLS00I7wdDMBrX2vgQbOkmPPJKCw76IVKpJc8wUMxgyhuxWKiFagTmTHVERG1jJBSKoCQ80IS41SGHGMqBgYo3WCEAA */
   return createMachine(
     {
-      tsTypes: {} as import("./main-page-machine.typegen").Typegen2,
-      schema: {
-        context: {} as MainPageContext,
-        events: {} as MainPageEvent,
-      },
-      initial: 'routes',
       context: defaultMainPageContext(client),
+      tsTypes: {} as import('./main-page-machine.typegen').Typegen2,
+      schema: { context: {} as MainPageContext, events: {} as MainPageEvent },
       invoke: {
         src: 'router',
         id: 'router',
       },
+      id: '(machine)',
+      initial: 'routes',
       states: {
         routes: {
           initial: 'idle',
@@ -230,16 +230,19 @@ export function createMainPageMachine(client: QueryClient) {
                 validating: {
                   always: [
                     {
+                      actions: 'setDraftParams',
                       cond: 'isMetaEventDifferent',
                       target: 'valid',
-                      actions: ['setDraftParams'],
+                    },
+                    {
+                      target: 'error',
                     },
                   ],
                 },
                 valid: {
-                  tags: ['draft'],
-                  entry: ['pushDraftRoute'],
+                  entry: 'pushDraftRoute',
                   exit: ['pushToRecents', 'clearCurrentDocument'],
+                  tags: 'draft',
                   on: {
                     goToEditor: [
                       {
@@ -248,31 +251,28 @@ export function createMainPageMachine(client: QueryClient) {
                       },
                       {},
                     ],
-                    goToPublication: {
-                      target: '#publication'
-                    }
                   },
                 },
-                error: {},
+                error: {
+                  type: 'final',
+                },
               },
               on: {
                 'SET.CURRENT.DOCUMENT': {
-                  target: undefined,
-                  actions: 'setCurrentDocument'
-                }
-              }
+                  actions: 'setCurrentDocument',
+                },
+              },
             },
             publication: {
-              id: 'publication',
-              initial: 'validating',
               tags: ['topbar', 'library', 'sidepanel'],
+              initial: 'validating',
               states: {
                 validating: {
                   always: [
                     {
+                      actions: 'setPublicationParams',
                       cond: 'isMetaEventDifferent',
                       target: 'valid',
-                      actions: ['setPublicationParams'],
                     },
                     {
                       target: 'error',
@@ -280,9 +280,9 @@ export function createMainPageMachine(client: QueryClient) {
                   ],
                 },
                 valid: {
-                  tags: ['publication'],
-                  entry: ['pushPublicationRoute'],
+                  entry: 'pushPublicationRoute',
                   exit: ['pushToRecents', 'clearCurrentDocument'],
+                  tags: 'publication',
                   on: {
                     goToPublication: [
                       {
@@ -297,17 +297,15 @@ export function createMainPageMachine(client: QueryClient) {
                   type: 'final',
                 },
               },
-              onDone: 'idle',
               on: {
                 'SET.CURRENT.DOCUMENT': {
-                  target: undefined,
-                  actions: 'setCurrentDocument'
-                }
-              }
+                  actions: 'setCurrentDocument',
+                },
+              },
             },
             settings: {
-              tags: ['settings'],
               entry: ['clearCurrentDocument', 'clearParams'],
+              tags: 'settings',
             },
             createDraft: {
               invoke: {
@@ -317,11 +315,17 @@ export function createMainPageMachine(client: QueryClient) {
           },
           on: {
             RECONCILE: {
-              actions: ['updateLibrary'],
+              actions: 'updateLibrary',
             },
-            routeNotFound: '.idle',
-            goToHome: '.home',
-            goToSettings: '.settings',
+            routeNotFound: {
+              target: '.idle',
+            },
+            goToHome: {
+              target: '.home',
+            },
+            goToSettings: {
+              target: '.settings',
+            },
             goToEditor: {
               target: '.editor',
             },
@@ -341,45 +345,45 @@ export function createMainPageMachine(client: QueryClient) {
                 target: '.createDraft',
               },
             ],
-            toNewDraft: '.createDraft',
+            toNewDraft: {
+              target: '.createDraft',
+            },
           },
         },
       },
       on: {
         goBack: {
-          actions: ['navigateBack']
+          actions: 'navigateBack',
         },
         goForward: {
-          actions: ['navigateForward']
-        }
-      }
+          actions: 'navigateForward',
+        },
+      },
     },
     {
       guards: {
         isPublication: (_, event) => event.docType == 'p',
         isDraft: (_, event) => event.docType == 'editor',
         isMetaEventDifferent: (context, _, meta) => {
-          console.log('isMetaEventDifferent', context, _, meta);
-
           let { type, ...eventParams } = meta.state.event
           return !isEqual(context.params, eventParams)
 
         },
         isEventDifferent: (context, event) => {
           let { type, ...eventParams } = event
-
-          return !isEqual(context.params, eventParams)
+          let result = !isEqual(context.params, eventParams)
+          return result
         }
       },
       actions: {
         pushToRecents: assign((context, event) => {
-          console.log('pushToRecents', { location: window.location.pathname, context, event })
+          let location = window.location.pathname
+
           let _set = new Set<string>(context.recents)
-          if (_set.has(window.location.pathname)) _set.delete(window.location.pathname)
+          if (_set.has(location)) _set.delete(location)
           _set.add(window.location.pathname)
-          console.log('result = ', [..._set])
           return {
-            recents: [..._set]
+            recents: [..._set].reverse()
           }
         }),
         updateLibrary: (context) => {
@@ -410,16 +414,21 @@ export function createMainPageMachine(client: QueryClient) {
           (context) => {
             return {
               type: 'pushPublication',
-              ...context.params,
+              docId: context.params.docId,
+              version: context.params.version,
+              blockId: context.params.blockId
             }
           },
           { to: 'router' },
         ),
-        pushDraftRoute: send((context, ev, meta) => ({
-          type: 'pushDraft',
-          docId: context.params.docId,
-          blockId: context.params.blockId
-        }), { to: 'router' }),
+        pushDraftRoute: send((context) => {
+          return {
+            type: 'pushDraft',
+            docId: context.params.docId,
+            blockId: context.params.blockId
+          }
+
+        }, { to: 'router' }),
         clearParams: assign((_) => ({
           params: {
             docId: '',
@@ -442,16 +451,12 @@ export function createMainPageMachine(client: QueryClient) {
           // Deserialize events from the URL
           navRouter
             .on('/', () => {
-              console.log('ENTER IN HOME ROUTE');
               sendBack('goToHome')
             })
             .on('/settings', () => {
-              console.log('ENTER IN SETTINGS ROUTE');
               sendBack('goToSettings')
             })
             .on<{ docId: string }>('/editor/:docId', (params) => {
-              console.log('ENTER IN EDITOR ROUTE', params);
-
               return params ? sendBack({ type: 'goToEditor', ...params }) : sendBack('routeNotFound')
             },
             )
@@ -460,8 +465,6 @@ export function createMainPageMachine(client: QueryClient) {
               version?: string
               blockId?: string
             }>('/p/:docId/:version?/:blockid?', (params) => {
-              console.log('ENTER IN PUBLICATION ROUTE: ', params);
-
               return params
                 ? sendBack({
                   type: 'goToPublication',
