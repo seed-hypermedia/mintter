@@ -113,8 +113,6 @@ export default function EditorPage({
           mainPageService.send('RECONCILE')
         },
         resetChanges: () => {
-          console.log('RESET ACTION')
-
           changesService.reset()
         },
       },
@@ -135,8 +133,6 @@ export default function EditorPage({
                     },
                   ]
                 : contentChanges
-
-              console.log({changes})
 
               try {
                 await updateDraft({
@@ -228,11 +224,11 @@ export default function EditorPage({
         <Box className={footerStyles()}>
           <Box className={footerMetadataStyles()}>
             <Text size="1" color="muted">
-              Created on: {getDateFormat(context.localDraft!, 'createTime')}
+              Created on: {getDateFormat(context.prevDraft!, 'createTime')}
             </Text>
             <PageFooterSeparator />
             <Text size="1" color="muted">
-              Last modified: {getDateFormat(context.localDraft!, 'updateTime')}
+              Last modified: {getDateFormat(context.prevDraft!, 'updateTime')}
             </Text>
             <PageFooterSeparator />
             <EditorStatus state={state} />

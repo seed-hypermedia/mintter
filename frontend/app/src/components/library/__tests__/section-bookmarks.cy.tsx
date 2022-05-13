@@ -1,8 +1,12 @@
-import {Account, ListDraftsResponse, ListPublicationsResponse} from '@app/client'
+import {
+  Account,
+  ListDraftsResponse,
+  ListPublicationsResponse,
+} from '@app/client'
 import {ListBookmarksResponse} from '@app/client/bookmarks'
 import {queryKeys} from '@app/hooks'
 import {MainPageProviders, mountWithAccount} from '@app/test/utils'
-import {BookmarksSection} from '@components/library/section-bookmarks'
+import {BookmarksSection} from '@components/library/_section-bookmarks'
 import {group, paragraph, statement, text} from '@mintter/mttast'
 
 describe.only('<BookmarkItem />', () => {
@@ -14,7 +18,9 @@ describe.only('<BookmarkItem />', () => {
       title: 'demo title',
       subtitle: 'demo subtitle',
       author: 'author',
-      content: [group([statement({id: 'b1'}, [paragraph([text('Hello World')])])])],
+      content: [
+        group([statement({id: 'b1'}, [paragraph([text('Hello World')])])]),
+      ],
       publishTime: undefined,
       updateTime: undefined,
       children: [],
@@ -26,19 +32,28 @@ describe.only('<BookmarkItem />', () => {
   beforeEach(() => {
     let {client, render} = mountWithAccount()
 
-    client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
-      publications: [],
-      nextPageToken: '',
-    })
+    client.setQueryData<ListPublicationsResponse>(
+      [queryKeys.GET_PUBLICATION_LIST],
+      {
+        publications: [],
+        nextPageToken: '',
+      },
+    )
 
     client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
       documents: [],
       nextPageToken: '',
     })
 
-    client.setQueryData<ListBookmarksResponse>([queryKeys.GET_BOOKMARK_LIST], ['mtt://doc1/v1/b1'])
+    client.setQueryData<ListBookmarksResponse>(
+      [queryKeys.GET_BOOKMARK_LIST],
+      ['mtt://doc1/v1/b1'],
+    )
 
-    client.setQueryData([queryKeys.GET_PUBLICATION, pub.document.id, pub.version], pub)
+    client.setQueryData(
+      [queryKeys.GET_PUBLICATION, pub.document.id, pub.version],
+      pub,
+    )
 
     client.setQueryData<Account>([queryKeys.GET_ACCOUNT, pub.document.author], {
       id: 'author',

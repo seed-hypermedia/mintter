@@ -8,6 +8,9 @@ type KeyOfType<T, U = Keys<T>> = { [P in keyof T]: T[P] extends U ? P : never }[
 export type DateKeys = KeyOfType<Document, Date | undefined>
 
 export function getDateFormat(document: EditorDocument | Document | undefined, key: DateKeys) {
+
+  if (!document) return ''
+
   var months = [
     'January',
     'February',
@@ -23,9 +26,7 @@ export function getDateFormat(document: EditorDocument | Document | undefined, k
     'December',
   ]
 
-  if (!document) return ''
-
   var date = new Date(document[key]!)
 
-  return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} (${date.getHours()}:${date.getMinutes()})`
+  return date.toLocaleString("en-us", { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
 }

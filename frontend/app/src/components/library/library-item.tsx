@@ -51,7 +51,7 @@ export function LibraryItem({
     publication?.version,
   )
 
-  const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
+  const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     services: {
       deleteEntry: () =>
         publication
@@ -80,6 +80,7 @@ export function LibraryItem({
         type: 'goToPublication',
         docId: publication.document!.id,
         version: publication.version,
+        blockId: undefined,
       })
     } else {
       mainService.send({type: 'goToEditor', docId: draft!.id})
@@ -200,7 +201,7 @@ export var StyledItem = styled(
   'li',
   {
     $$bg: 'transparent',
-    $$bgHover: '$colors$base-component-bg-normal',
+    $$bgHover: '$colors$base-component-bg-hover',
     $$foreground: '$colors$base-text-high',
     display: 'flex',
     minHeight: 28,

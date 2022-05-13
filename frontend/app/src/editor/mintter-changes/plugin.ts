@@ -49,13 +49,11 @@ export function changesServiceCreator() {
   }
 
   function reset() {
-    console.log('RESET CHANGES PLIS');
-
     changes = []
   }
 
   function send({ operation, editor }: ChangesEvent) {
-    console.log('operation: ', operation);
+    // console.log('operation: ', operation);
 
     switch (operation.type) {
       case 'insert_node':
@@ -63,8 +61,6 @@ export function changesServiceCreator() {
           let entry = getBlock(editor!, {
             at: operation.path
           })
-          console.log('insert_node entry: ', entry);
-
           addOperation(editor!, 'moveBlock', operation.node)
         } else {
           insertNode(editor!, operation.path)
@@ -97,7 +93,6 @@ export function changesServiceCreator() {
       at: path,
       mode: 'lowest'
     })
-    console.log("🚀 ~ file: plugin.ts ~ line 99 ~ insertNode ~ entry", entry, editor)
     // if (entry) {
     //   let [block] = entry
     //   addOperation(editor, 'moveBlock', block)

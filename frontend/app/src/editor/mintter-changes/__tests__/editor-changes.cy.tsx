@@ -152,10 +152,6 @@ describe('Editor Changes', () => {
 
         .then(() => {
           let changes = changesService.getChanges()
-          console.log(
-            '🚀 ~ file: editor-changes.cy.tsx ~ line 154 ~ .then ~ changes',
-            changes,
-          )
           let newBlock: FlowContent = (elEditor.children[0] as GroupingContent)
             .children[0].children[1]!.children[0]
           expect(changes).to.have.length(2)

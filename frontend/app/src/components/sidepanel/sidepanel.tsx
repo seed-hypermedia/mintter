@@ -312,7 +312,7 @@ export function SidepanelItem({
   const mainPageService = useMainPage()
   const bookmarkService = useBookmarksService()
   const sidepanelService = useSidepanel()
-  const [deleteState, deleteSend] = useMachine(deleteDialogMachine, {
+  const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     services: {
       deleteEntry: () =>
         new Promise(() =>
