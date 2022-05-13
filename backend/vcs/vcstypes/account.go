@@ -5,7 +5,9 @@ import (
 	"encoding"
 	"fmt"
 	"mintter/backend/core"
+	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcssql"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -262,7 +264,33 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 		return cid.Undef, fmt.Errorf("failed to store named version for account: %w", err)
 	}
 
-	// TODO: index account table.
+	conn, release, err := v.DB().Conn(ctx)
+	if err != nil {
+		return cid.Undef, err
+	}
+	defer release()
+
+	dcodec, dhash := ipfs.DecodeCID(device.CID())
+	devicedb, err := vcssql.DevicesLookupPK(conn, dhash, int(dcodec))
+	if err != nil {
+		return cid.Undef, err
+	}
+	if devicedb.DevicesID == 0 {
+		return cid.Undef, fmt.Errorf("no device in the database")
+	}
+
+	acodec, ahash := ipfs.DecodeCID(account.CID())
+	accdb, err := vcssql.AccountsLookupPK(conn, ahash, int(acodec))
+	if err != nil {
+		return cid.Undef, err
+	}
+	if accdb.AccountsID == 0 {
+		return cid.Undef, fmt.Errorf("no account in the database")
+	}
+
+	if err := vcssql.DevicesUpdateAccount(conn, accdb.AccountsID, devicedb.DevicesID); err != nil {
+		return cid.Undef, fmt.Errorf("failed to index account device: %w", err)
+	}
 
 	return blk.Cid(), nil
 }

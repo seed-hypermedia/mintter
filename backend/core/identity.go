@@ -9,9 +9,91 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/lightningnetwork/lnd/keychain"
 )
+
+type AccountID struct {
+	str string
+	c   cid.Cid
+}
+
+func AccountIDFromString(s string) (a AccountID, err error) {
+	c, err := cid.Decode(s)
+	if err != nil {
+		return a, err
+	}
+
+	return AccountIDFromCID(c)
+}
+
+func AccountIDFromCID(c cid.Cid) (a AccountID, err error) {
+	if c.Prefix().Codec != CodecAccountKey {
+		return a, fmt.Errorf("cid is not an account key")
+	}
+
+	return AccountID{str: c.String(), c: c}, nil
+}
+
+// CID returns the wrapped CID object.
+func (aid AccountID) CID() cid.Cid {
+	return aid.c
+}
+
+// String representation of the Account ID.
+func (aid AccountID) String() string {
+	return aid.str
+}
+
+// Equals checks if two Account IDs are equal.
+func (aid AccountID) Equals(other AccountID) bool {
+	return aid.c.Equals(other.c)
+}
+
+type DeviceID struct {
+	str string
+	pid peer.ID
+	c   cid.Cid
+}
+
+func DeviceIDFromString(s string) (d DeviceID, err error) {
+	c, err := cid.Decode(s)
+	if err != nil {
+		return d, err
+	}
+
+	return DeviceIDFromCID(c)
+}
+
+func DeviceIDFromCID(c cid.Cid) (d DeviceID, err error) {
+	if c.Prefix().Codec != CodecDeviceKey {
+		return d, fmt.Errorf("cid is not a device key")
+	}
+
+	pid, err := peer.FromCid(c)
+	if err != nil {
+		return d, fmt.Errorf("failed to parse peer id from cid: %w", err)
+	}
+
+	return DeviceID{
+		str: c.String(),
+		c:   c,
+		pid: pid,
+	}, nil
+}
+
+func (did DeviceID) String() string {
+	return did.str
+}
+
+func (did DeviceID) CID() cid.Cid {
+	return did.c
+}
+
+func (did DeviceID) PeerID() peer.ID {
+	return did.pid
+}
 
 type Identity struct {
 	account       cid.Cid

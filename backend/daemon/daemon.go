@@ -2,20 +2,11 @@ package daemon
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"mintter/backend/config"
-	"mintter/backend/core"
-	"mintter/backend/daemon/ondisk"
-	"mintter/backend/db/sqliteschema"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcstypes"
-	"os"
 
-	"crawshaw.io/sqlite/sqlitex"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -25,130 +16,20 @@ func Module(cfg config.Config) fx.Option {
 		fx.Supply(cfg),
 		fx.Logger(&fxLogger{zap.NewNop().Sugar()}), // sometimes we may want to pass real zap logger here.
 		fx.Provide(
-			ProvideRepo,
-			ProvideAccount,
-			ProvideSQLite,
-			ProvideVCS,
-			ProvideNetwork,
+			provideRepo,
+			provideAccount,
+			provideSQLite,
+			provideVCS,
+			provideNetwork,
+			provideGRPCServer,
+			provideHTTPServer,
+		),
+		fx.Invoke(
+			registerGRPC,
+			registerHTTP,
+			logAppLifecycle,
 		),
 	)
-}
-
-func ProvideRepo(cfg config.Config) (*ondisk.OnDisk, error) {
-	r, err := ondisk.NewOnDisk(cfg.RepoPath, logging.New("mintter/repo", "debug"))
-	if errors.Is(err, ondisk.ErrRepoMigrate) {
-		fmt.Fprintf(os.Stderr, `
-This version of the software has a backward-incompatible database change!
-Please remove data inside %s or use a different repo path.
-`, cfg.RepoPath)
-		os.Exit(1)
-	}
-	return r, err
-}
-
-func ProvideAccount(repo *ondisk.OnDisk) (*future.ReadOnly[core.Identity], error) {
-	fut := future.New[core.Identity]()
-
-	go func() {
-		<-repo.Ready()
-
-		acc, err := repo.Account()
-		if err != nil {
-			panic(err)
-		}
-
-		if err := fut.Resolve(core.NewIdentity(acc.CID(), repo.Device())); err != nil {
-			panic(err)
-		}
-	}()
-
-	return fut.ReadOnly, nil
-}
-
-func ProvideSQLite(lc fx.Lifecycle, repo *ondisk.OnDisk) (*sqlitex.Pool, error) {
-	pool, err := sqliteschema.Open(repo.SQLitePath(), 0, 16)
-	if err != nil {
-		return nil, err
-	}
-
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
-
-	if err := sqliteschema.Migrate(conn); err != nil {
-		return nil, err
-	}
-
-	lc.Append(fx.Hook{
-		OnStop: func(context.Context) error {
-			return pool.Close()
-		},
-	})
-
-	return pool, nil
-}
-
-func ProvideVCS(db *sqlitex.Pool) *vcs.SQLite {
-	return vcs.New(db)
-}
-
-func ProvideNetwork(lc fx.Lifecycle, cfg config.Config, vcsh *vcs.SQLite, repo *ondisk.OnDisk) (*future.ReadOnly[*mttnet.Node], error) {
-	fut := future.New[*mttnet.Node]()
-
-	log := logging.New("mintter/network", "debug")
-
-	ctx, cancel := context.WithCancel(context.Background())
-
-	errc := make(chan error, 1)
-
-	go func() {
-		errc <- func() error {
-			select {
-			case <-repo.Ready():
-				acc, err := repo.Account()
-				if err != nil {
-					return err
-				}
-
-				me := core.NewIdentity(acc.CID(), repo.Device())
-
-				// If we're here it means that account was already registered within the repo,
-				// and our own account's permanode was stored. But we don't have access to it here.
-				// Since account permanodes are deterministically derived from account ID we do exactly that here.
-				perma := vcstypes.NewAccountPermanode(acc.CID())
-				blk, err := vcs.EncodeBlock(perma)
-				if err != nil {
-					return err
-				}
-
-				node, err := mttnet.New(cfg.P2P, vcsh, blk.Cid(), me, log)
-				if err != nil {
-					return err
-				}
-
-				return fut.Resolve(node)
-			case <-ctx.Done():
-				return nil
-			}
-		}()
-	}()
-
-	lc.Append(fx.Hook{
-		OnStop: func(ctx context.Context) error {
-			cancel()
-			return <-errc
-		},
-	})
-
-	return fut.ReadOnly, nil
-}
-
-func StartDaemon(lc fx.Lifecycle, cfg config.Config) error {
-	// start grpc
-	// start http
-	// register handlers
-	// start listeners
-
-	return nil
 }
 
 type fxLogger struct {
@@ -157,4 +38,46 @@ type fxLogger struct {
 
 func (l *fxLogger) Printf(msg string, args ...interface{}) {
 	l.l.Debugf(msg, args...)
+}
+
+func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config, grpc *grpcServer, srv *httpServer, net *future.ReadOnly[*mttnet.Node]) {
+	log := logging.New("mintter/daemon", "debug")
+
+	if cfg.LetsEncrypt.Domain != "" {
+		log.Warn("Let's Encrypt is enabled, HTTP-port configuration value is ignored, will listen on the default TLS port (443)")
+	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			go func() {
+				<-grpc.ready
+				<-srv.ready
+				log.Info("DaemonStarted",
+					zap.String("grpcListener", grpc.lis.Addr().String()),
+					zap.String("httpListener", srv.lis.Addr().String()),
+					zap.String("repoPath", cfg.RepoPath),
+				)
+				net, err := net.Await(context.Background())
+				if err != nil {
+					panic(err)
+				}
+				<-net.Ready()
+				addrs, err := net.Libp2p().Network().InterfaceListenAddresses()
+				if err != nil {
+					log.Error("FailedToParseOwnAddrs", zap.Error(err))
+					if err := stop.Shutdown(); err != nil {
+						panic(err)
+					}
+					return
+				}
+				log.Info("P2PNodeStarted", zap.Any("listeners", addrs))
+			}()
+			return nil
+		},
+		OnStop: func(context.Context) error {
+			log.Info("GracefulShutdownStarted")
+			log.Debug("Press ctrl+c again to force quit, but it's better to wait :)")
+			return nil
+		},
+	})
 }

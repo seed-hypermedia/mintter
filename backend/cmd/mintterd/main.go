@@ -7,8 +7,8 @@ import (
 	_ "expvar"
 	_ "net/http/pprof"
 
-	"mintter/backend"
 	"mintter/backend/config"
+	"mintter/backend/daemon"
 
 	"github.com/alecthomas/kong"
 	"github.com/burdiyan/go/kongcli"
@@ -30,7 +30,7 @@ func main() {
 
 	mainutil.Run(func() error {
 		app := fx.New(
-			backend.Module(cfg),
+			daemon.Module(cfg),
 			fx.StopTimeout(1*time.Minute),
 		)
 

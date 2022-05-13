@@ -7,8 +7,11 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
 
+	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	codes "google.golang.org/grpc/codes"
@@ -27,12 +30,14 @@ type (
 type Server struct {
 	me  *future.ReadOnly[core.Identity]
 	vcs *vcs.SQLite
+	db  *sqlitex.Pool
 }
 
 func NewServer(id *future.ReadOnly[core.Identity], v *vcs.SQLite) *Server {
 	return &Server{
 		me:  id,
 		vcs: v,
+		db:  v.DB(),
 	}
 }
 
@@ -103,6 +108,60 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	}
 
 	return accountToProto(acc.Account), nil
+}
+
+func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
+	conn, release, err := srv.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	accs, err := srv.listAccounts(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	devices, err := vcssql.ListAccountDevices(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*accounts.Account, len(accs))
+
+	for i, a := range accs {
+		aid := cid.NewCidV1(uint64(a.AccountsCodec), a.AccountsMultihash)
+		devs := devices[aid]
+		acc := &accounts.Account{
+			Id: aid.String(),
+			Profile: &accounts.Profile{
+				Email: a.AccountsEmail,
+				Bio:   a.AccountsBio,
+				Alias: a.AccountsAlias,
+			},
+			Devices: make(map[string]*accounts.Device, len(devs)),
+		}
+		for _, d := range devs {
+			acc.Devices[d.String()] = &accounts.Device{
+				PeerId: d.String(),
+			}
+		}
+
+		out[i] = acc
+	}
+
+	return &accounts.ListAccountsResponse{
+		Accounts: out,
+	}, nil
+}
+
+func (srv *Server) listAccounts(conn *sqlite.Conn) ([]vcssql.AccountsListResult, error) {
+	me, err := srv.getMe()
+	if err != nil {
+		return nil, err
+	}
+
+	return vcssql.AccountsList(conn, me.AccountID().Hash())
 }
 
 type account struct {
