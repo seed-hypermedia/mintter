@@ -3432,7 +3432,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-log"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-log#0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
+source = "git+https://github.com/tauri-apps/tauri-plugin-log?rev=0e993f8ded5867772b29ca7aee5bc5594aba6fb9#0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
 dependencies = [
  "byte-unit",
  "chrono",
@@ -3447,7 +3447,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-store"
 version = "0.0.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-store#5726952177b88d1d10063cdf8e7506bac84772cf"
+source = "git+https://github.com/tauri-apps/tauri-plugin-store?rev=5726952177b88d1d10063cdf8e7506bac84772cf#5726952177b88d1d10063cdf8e7506bac84772cf"
 dependencies = [
  "log",
  "serde",
