@@ -293,6 +293,68 @@ FROM profiles
 	return out, err
 }
 
+func DocumentsIndex(conn *sqlite.Conn, documentsID int, documentsTitle string, documentsSubtitle string, documentsChangeID int) error {
+	const query = `INSERT OR IGNORE INTO documents (id, title, subtitle, change_id)
+VALUES (:documentsID, :documentsTitle, :documentsSubtitle, :documentsChangeID)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":documentsID", documentsID)
+		stmt.SetText(":documentsTitle", documentsTitle)
+		stmt.SetText(":documentsSubtitle", documentsSubtitle)
+		stmt.SetInt(":documentsChangeID", documentsChangeID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DocumentsIndex: %w", err)
+	}
+
+	return err
+}
+
+type DocumentsListIndexedResult struct {
+	DocumentsID       int
+	DocumentsTitle    string
+	DocumentsSubtitle string
+	DocumentsChangeID int
+	ChangeData        []byte
+}
+
+func DocumentsListIndexed(conn *sqlite.Conn) ([]DocumentsListIndexedResult, error) {
+	const query = `SELECT documents.id, documents.title, documents.subtitle, documents.change_id, ipfs_blocks.data AS change_data
+FROM documents
+JOIN ipfs_blocks ON ipfs_blocks.id = documents.change_id
+`
+
+	var out []DocumentsListIndexedResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, DocumentsListIndexedResult{
+			DocumentsID:       stmt.ColumnInt(0),
+			DocumentsTitle:    stmt.ColumnText(1),
+			DocumentsSubtitle: stmt.ColumnText(2),
+			DocumentsChangeID: stmt.ColumnInt(3),
+			ChangeData:        stmt.ColumnBytes(4),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DocumentsListIndexed: %w", err)
+	}
+
+	return out, err
+}
+
 type DevicesLookupPKResult struct {
 	DevicesID int
 }
@@ -510,18 +572,16 @@ type IPFSBlocksLookupPKResult struct {
 	IPFSBlocksID int
 }
 
-func IPFSBlocksLookupPK(conn *sqlite.Conn, ipfsBlocksMultihash []byte, ipfsBlocksCodec int) (IPFSBlocksLookupPKResult, error) {
+func IPFSBlocksLookupPK(conn *sqlite.Conn, ipfsBlocksMultihash []byte) (IPFSBlocksLookupPKResult, error) {
 	const query = `SELECT ipfs_blocks.id
 FROM ipfs_blocks
 WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
-AND ipfs_blocks.codec = :ipfsBlocksCodec
 `
 
 	var out IPFSBlocksLookupPKResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
-		stmt.SetInt(":ipfsBlocksCodec", ipfsBlocksCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -762,6 +822,93 @@ VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: PermanodeOwnersInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+type PermanodesListByTypeResult struct {
+	PermanodesID             int
+	PermanodeOwnersAccountID int
+	AccountsMultihash        []byte
+	IPFSBlocksCodec          int
+	IPFSBlocksMultihash      []byte
+	PermanodesCreateTime     int
+}
+
+func PermanodesListByType(conn *sqlite.Conn, permanodesType string) ([]PermanodesListByTypeResult, error) {
+	const query = `SELECT permanodes.id, permanode_owners.account_id, accounts.multihash, ipfs_blocks.codec, ipfs_blocks.multihash, permanodes.create_time
+FROM permanodes
+JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
+JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id JOIN accounts ON accounts.id = permanode_owners.account_id WHERE permanodes.type = :permanodesType`
+
+	var out []PermanodesListByTypeResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":permanodesType", permanodesType)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, PermanodesListByTypeResult{
+			PermanodesID:             stmt.ColumnInt(0),
+			PermanodeOwnersAccountID: stmt.ColumnInt(1),
+			AccountsMultihash:        stmt.ColumnBytes(2),
+			IPFSBlocksCodec:          stmt.ColumnInt(3),
+			IPFSBlocksMultihash:      stmt.ColumnBytes(4),
+			PermanodesCreateTime:     stmt.ColumnInt(5),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PermanodesListByType: %w", err)
+	}
+
+	return out, err
+}
+
+func ChangesInsertOrIgnore(conn *sqlite.Conn, changesID int, changesPermanodeID int, changesKind string, changesLamportTime int, changesCreateTime int) error {
+	const query = `INSERT OR IGNORE INTO changes (id, permanode_id, kind, lamport_time, create_time)
+VALUES (:changesID, :changesPermanodeID, :changesKind, :changesLamportTime, :changesCreateTime)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":changesID", changesID)
+		stmt.SetInt(":changesPermanodeID", changesPermanodeID)
+		stmt.SetText(":changesKind", changesKind)
+		stmt.SetInt(":changesLamportTime", changesLamportTime)
+		stmt.SetInt(":changesCreateTime", changesCreateTime)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+func ChangeAuthorsInsertOrIgnore(conn *sqlite.Conn, changeAuthorsAccountID int, changeAuthorsChangeID int) error {
+	const query = `INSERT OR IGNORE INTO change_authors (account_id, change_id)
+VALUES (:changeAuthorsAccountID, :changeAuthorsChangeID)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":changeAuthorsAccountID", changeAuthorsAccountID)
+		stmt.SetInt(":changeAuthorsChangeID", changeAuthorsChangeID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangeAuthorsInsertOrIgnore: %w", err)
 	}
 
 	return err

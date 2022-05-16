@@ -120,7 +120,7 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	n := &Node{
 		log:             log,
 		vcs:             vcs,
-		syncer:          vcstypes.NewSyncer(vcstypes.NewService(vcs.DB()), me),
+		syncer:          vcstypes.NewSyncer(vcstypes.NewIndex(vcs.DB()), me),
 		me:              me,
 		cfg:             cfg,
 		accountObjectID: accountObj,

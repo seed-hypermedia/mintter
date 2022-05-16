@@ -126,6 +126,34 @@ var (
 		),
 	)
 
+	documents = add(
+		qb.MakeQuery(s.Schema, "DocumentsIndex", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.Documents, qb.ListColShort(
+				s.DocumentsID,
+				s.DocumentsTitle,
+				s.DocumentsSubtitle,
+				s.DocumentsChangeID,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(s.DocumentsID),
+				qb.VarCol(s.DocumentsTitle),
+				qb.VarCol(s.DocumentsSubtitle),
+				qb.VarCol(s.DocumentsChangeID),
+			),
+		),
+		qb.MakeQuery(s.Schema, "DocumentsListIndexed", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.DocumentsID),
+				qb.ResultCol(s.DocumentsTitle),
+				qb.ResultCol(s.DocumentsSubtitle),
+				qb.ResultCol(s.DocumentsChangeID),
+				qb.ResultColAlias(s.IPFSBlocksData, "change_data"),
+			), qb.Line,
+			"FROM", s.Documents, qb.Line,
+			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.DocumentsChangeID, qb.Line,
+		),
+	)
+
 	devices = add(
 		qb.MakeQuery(s.Schema, "DevicesLookupPK", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
@@ -211,7 +239,6 @@ var (
 			), qb.Line,
 			"FROM", s.IPFSBlocks, qb.Line,
 			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash), qb.Line,
-			"AND", s.IPFSBlocksCodec, "=", qb.VarCol(s.IPFSBlocksCodec), qb.Line,
 		),
 	)
 
@@ -269,49 +296,6 @@ var (
 		),
 	)
 
-	publications = add(
-		qb.MakeQuery(s.Schema, "PublicationsUpsert", sgen.QueryKindExec,
-			"INSERT OR REPLACE", qb.Line,
-			"INTO", s.Publications, qb.ListColShort(
-				s.PublicationsID,
-				s.PublicationsTitle,
-				s.PublicationsSubtitle,
-				s.PublicationsCreateTime,
-				s.PublicationsUpdateTime,
-				s.PublicationsPublishTime,
-				s.PublicationsLatestVersion,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
-					"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
-				),
-				qb.VarCol(s.PublicationsTitle),
-				qb.VarCol(s.PublicationsSubtitle),
-				qb.VarCol(s.PublicationsCreateTime),
-				qb.VarCol(s.PublicationsUpdateTime),
-				qb.VarCol(s.PublicationsPublishTime),
-				qb.VarCol(s.PublicationsLatestVersion),
-			),
-		),
-		qb.MakeQuery(s.Schema, "PublicationsList", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.IPFSBlocksCodec),
-				qb.ResultCol(s.IPFSBlocksMultihash),
-				qb.ResultCol(s.AccountsMultihash),
-				qb.ResultCol(s.PublicationsTitle),
-				qb.ResultCol(s.PublicationsSubtitle),
-				qb.ResultCol(s.PublicationsCreateTime),
-				qb.ResultCol(s.PublicationsUpdateTime),
-				qb.ResultCol(s.PublicationsPublishTime),
-				qb.ResultCol(s.PublicationsLatestVersion),
-			), qb.Line,
-			"FROM", s.Publications, qb.Line,
-			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.PublicationsID, qb.Line,
-			"JOIN", s.PermanodeOwners, "ON", s.PermanodeOwnersPermanodeID, "=", s.IPFSBlocksID,
-			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.PermanodeOwnersAccountID,
-		),
-	)
-
 	permanodes = add(
 		qb.MakeQuery(s.Schema, "PermanodesInsertOrIgnore", sgen.QueryKindExec,
 			"INSERT OR IGNORE INTO", s.Permanodes, qb.ListColShort(
@@ -333,6 +317,50 @@ var (
 			"VALUES", qb.List(
 				qb.VarCol(s.PermanodeOwnersAccountID),
 				qb.VarCol(s.PermanodeOwnersPermanodeID),
+			),
+		),
+		qb.MakeQuery(s.Schema, "PermanodesListByType", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.PermanodesID),
+				qb.ResultCol(s.PermanodeOwnersAccountID),
+				qb.ResultCol(s.AccountsMultihash),
+				qb.ResultCol(s.IPFSBlocksCodec),
+				qb.ResultCol(s.IPFSBlocksMultihash),
+				qb.ResultCol(s.PermanodesCreateTime),
+			), qb.Line,
+			"FROM", s.Permanodes, qb.Line,
+			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.PermanodesID, qb.Line,
+			"JOIN", s.PermanodeOwners, "ON", s.PermanodeOwnersPermanodeID, "=", s.PermanodesID,
+			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.PermanodeOwnersAccountID,
+			"WHERE", s.PermanodesType, "=", qb.VarCol(s.PermanodesType),
+		),
+	)
+
+	changes = add(
+		qb.MakeQuery(s.Schema, "ChangesInsertOrIgnore", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.Changes, qb.ListColShort(
+				s.ChangesID,
+				s.ChangesPermanodeID,
+				s.ChangesKind,
+				s.ChangesLamportTime,
+				s.ChangesCreateTime,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(s.ChangesID),
+				qb.VarCol(s.ChangesPermanodeID),
+				qb.VarCol(s.ChangesKind),
+				qb.VarCol(s.ChangesLamportTime),
+				qb.VarCol(s.ChangesCreateTime),
+			),
+		),
+		qb.MakeQuery(s.Schema, "ChangeAuthorsInsertOrIgnore", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.ChangeAuthors, qb.ListColShort(
+				s.ChangeAuthorsAccountID,
+				s.ChangeAuthorsChangeID,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(s.ChangeAuthorsAccountID),
+				qb.VarCol(s.ChangeAuthorsChangeID),
 			),
 		),
 	)

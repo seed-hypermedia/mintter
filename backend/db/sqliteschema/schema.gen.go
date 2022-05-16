@@ -29,6 +29,23 @@ const (
 	BacklinksID    sqlitegen.Column = "backlinks.id"
 )
 
+// Table change_authors.
+const (
+	ChangeAuthors          sqlitegen.Table  = "change_authors"
+	ChangeAuthorsAccountID sqlitegen.Column = "change_authors.account_id"
+	ChangeAuthorsChangeID  sqlitegen.Column = "change_authors.change_id"
+)
+
+// Table changes.
+const (
+	Changes            sqlitegen.Table  = "changes"
+	ChangesCreateTime  sqlitegen.Column = "changes.create_time"
+	ChangesID          sqlitegen.Column = "changes.id"
+	ChangesKind        sqlitegen.Column = "changes.kind"
+	ChangesLamportTime sqlitegen.Column = "changes.lamport_time"
+	ChangesPermanodeID sqlitegen.Column = "changes.permanode_id"
+)
+
 // Table devices.
 const (
 	Devices           sqlitegen.Table  = "devices"
@@ -36,6 +53,15 @@ const (
 	DevicesID         sqlitegen.Column = "devices.id"
 	DevicesMultihash  sqlitegen.Column = "devices.multihash"
 	DevicesPublicKey  sqlitegen.Column = "devices.public_key"
+)
+
+// Table documents.
+const (
+	Documents         sqlitegen.Table  = "documents"
+	DocumentsChangeID sqlitegen.Column = "documents.change_id"
+	DocumentsID       sqlitegen.Column = "documents.id"
+	DocumentsSubtitle sqlitegen.Column = "documents.subtitle"
+	DocumentsTitle    sqlitegen.Column = "documents.title"
 )
 
 // Table drafts.
@@ -88,15 +114,6 @@ const (
 	NamedVersionsVersion   sqlitegen.Column = "named_versions.version"
 )
 
-// Table object_index.
-const (
-	ObjectIndex          sqlitegen.Table  = "object_index"
-	ObjectIndexAttribute sqlitegen.Column = "object_index.attribute"
-	ObjectIndexChangeID  sqlitegen.Column = "object_index.change_id"
-	ObjectIndexObjectID  sqlitegen.Column = "object_index.object_id"
-	ObjectIndexValue     sqlitegen.Column = "object_index.value"
-)
-
 // Table permanode_owners.
 const (
 	PermanodeOwners            sqlitegen.Table  = "permanode_owners"
@@ -120,18 +137,6 @@ const (
 	ProfilesBio       sqlitegen.Column = "profiles.bio"
 	ProfilesChangeID  sqlitegen.Column = "profiles.change_id"
 	ProfilesEmail     sqlitegen.Column = "profiles.email"
-)
-
-// Table publications.
-const (
-	Publications              sqlitegen.Table  = "publications"
-	PublicationsCreateTime    sqlitegen.Column = "publications.create_time"
-	PublicationsID            sqlitegen.Column = "publications.id"
-	PublicationsLatestVersion sqlitegen.Column = "publications.latest_version"
-	PublicationsPublishTime   sqlitegen.Column = "publications.publish_time"
-	PublicationsSubtitle      sqlitegen.Column = "publications.subtitle"
-	PublicationsTitle         sqlitegen.Column = "publications.title"
-	PublicationsUpdateTime    sqlitegen.Column = "publications.update_time"
 )
 
 // Table wallets.
@@ -167,10 +172,21 @@ var Schema = sqlitegen.Schema{
 		AccountsMultihash:          {Table: Accounts, SQLType: "BLOB"},
 		BacklinksDepth:             {Table: Backlinks, SQLType: "INTEGER"},
 		BacklinksID:                {Table: Backlinks, SQLType: "INTEGER"},
+		ChangeAuthorsAccountID:     {Table: ChangeAuthors, SQLType: "INTEGER"},
+		ChangeAuthorsChangeID:      {Table: ChangeAuthors, SQLType: "INTEGER"},
+		ChangesCreateTime:          {Table: Changes, SQLType: "INTEGER"},
+		ChangesID:                  {Table: Changes, SQLType: "INTEGER"},
+		ChangesKind:                {Table: Changes, SQLType: "TEXT"},
+		ChangesLamportTime:         {Table: Changes, SQLType: "INTEGER"},
+		ChangesPermanodeID:         {Table: Changes, SQLType: "INTEGER"},
 		DevicesCreateTime:          {Table: Devices, SQLType: "INTEGER"},
 		DevicesID:                  {Table: Devices, SQLType: "INTEGER"},
 		DevicesMultihash:           {Table: Devices, SQLType: "BLOB"},
 		DevicesPublicKey:           {Table: Devices, SQLType: "BLOB"},
+		DocumentsChangeID:          {Table: Documents, SQLType: "INTEGER"},
+		DocumentsID:                {Table: Documents, SQLType: "INTEGER"},
+		DocumentsSubtitle:          {Table: Documents, SQLType: "TEXT"},
+		DocumentsTitle:             {Table: Documents, SQLType: "TEXT"},
 		DraftsContent:              {Table: Drafts, SQLType: "BLOB"},
 		DraftsCreateTime:           {Table: Drafts, SQLType: "INTEGER"},
 		DraftsID:                   {Table: Drafts, SQLType: "INTEGER"},
@@ -196,10 +212,6 @@ var Schema = sqlitegen.Schema{
 		NamedVersionsName:          {Table: NamedVersions, SQLType: "TEXT"},
 		NamedVersionsObjectID:      {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsVersion:       {Table: NamedVersions, SQLType: "TEXT"},
-		ObjectIndexAttribute:       {Table: ObjectIndex, SQLType: "TEXT"},
-		ObjectIndexChangeID:        {Table: ObjectIndex, SQLType: "INTEGER"},
-		ObjectIndexObjectID:        {Table: ObjectIndex, SQLType: "INTEGER"},
-		ObjectIndexValue:           {Table: ObjectIndex, SQLType: "BLOB"},
 		PermanodeOwnersAccountID:   {Table: PermanodeOwners, SQLType: "INTEGER"},
 		PermanodeOwnersPermanodeID: {Table: PermanodeOwners, SQLType: "INTEGER"},
 		PermanodesCreateTime:       {Table: Permanodes, SQLType: "INTEGER"},
@@ -210,13 +222,6 @@ var Schema = sqlitegen.Schema{
 		ProfilesBio:                {Table: Profiles, SQLType: "TEXT"},
 		ProfilesChangeID:           {Table: Profiles, SQLType: "INTEGER"},
 		ProfilesEmail:              {Table: Profiles, SQLType: "TEXT"},
-		PublicationsCreateTime:     {Table: Publications, SQLType: "INTEGER"},
-		PublicationsID:             {Table: Publications, SQLType: "INTEGER"},
-		PublicationsLatestVersion:  {Table: Publications, SQLType: "TEXT"},
-		PublicationsPublishTime:    {Table: Publications, SQLType: "INTEGER"},
-		PublicationsSubtitle:       {Table: Publications, SQLType: "TEXT"},
-		PublicationsTitle:          {Table: Publications, SQLType: "TEXT"},
-		PublicationsUpdateTime:     {Table: Publications, SQLType: "INTEGER"},
 		WalletsAddress:             {Table: Wallets, SQLType: "TEXT"},
 		WalletsAuth:                {Table: Wallets, SQLType: "BLOB"},
 		WalletsBalance:             {Table: Wallets, SQLType: "INTEGER"},

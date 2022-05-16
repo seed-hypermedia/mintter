@@ -3,7 +3,6 @@ package vcstypes
 import (
 	"context"
 	"fmt"
-	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 
@@ -11,19 +10,19 @@ import (
 	"github.com/ipfs/go-cid"
 )
 
-type Service struct {
+type Index struct {
 	db  *sqlitex.Pool
 	vcs *vcs.SQLite
 }
 
-func NewService(db *sqlitex.Pool) *Service {
-	return &Service{
+func NewIndex(db *sqlitex.Pool) *Index {
+	return &Index{
 		db:  db,
 		vcs: vcs.New(db),
 	}
 }
 
-func (svc *Service) IndexAccountChange(ctx context.Context, changeID cid.Cid, c vcs.Change, evts []AccountEvent) error {
+func (svc *Index) IndexAccountChange(ctx context.Context, changeID cid.Cid, c vcs.Change, evts []AccountEvent) error {
 	if c.Kind != "mintter.Account" {
 		return fmt.Errorf("unexpected change kind for account: %q", c.Kind)
 	}
@@ -34,8 +33,7 @@ func (svc *Service) IndexAccountChange(ctx context.Context, changeID cid.Cid, c 
 	}
 	defer release()
 
-	ccodec, chash := ipfs.DecodeCID(changeID)
-	ciddb, err := vcssql.IPFSBlocksLookupPK(conn, chash, int(ccodec))
+	ciddb, err := vcssql.IPFSBlocksLookupPK(conn, changeID.Hash())
 	if err != nil {
 		return err
 	}
@@ -97,9 +95,44 @@ func (svc *Service) IndexAccountChange(ctx context.Context, changeID cid.Cid, c 
 	return nil
 }
 
-func (svc *Service) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c vcs.Change, evts []DocumentEvent) error {
+func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c vcs.Change, evts []DocumentEvent) error {
 	if c.Kind != "mintter.Document" {
 		return fmt.Errorf("unexpected change kind for document: %q", c.Kind)
+	}
+
+	conn, release, err := svc.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	oiddb, err := vcssql.IPFSBlocksLookupPK(conn, c.Object.Hash())
+	if err != nil {
+		return err
+	}
+
+	ciddb, err := vcssql.IPFSBlocksLookupPK(conn, changeID.Hash())
+	if err != nil {
+		return err
+	}
+
+	var (
+		title    string
+		subtitle string
+	)
+
+	for _, e := range evts {
+		switch {
+		case e.TitleChanged != "":
+			title = e.TitleChanged
+		case e.SubtitleChanged != "":
+			subtitle = e.SubtitleChanged
+		}
+		// TODO: index links
+	}
+
+	if err := vcssql.DocumentsIndex(conn, oiddb.IPFSBlocksID, title, subtitle, ciddb.IPFSBlocksID); err != nil {
+		return err
 	}
 
 	return nil
