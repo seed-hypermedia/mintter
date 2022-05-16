@@ -327,7 +327,11 @@ func (s *SQLite) StorePermanode(ctx context.Context, blk blocks.Block, p Permano
 		return err
 	}
 
-	if err := vcssql.ObjectsInsertOrIgnore(conn, res.IPFSBlocksID, ohash, int(ocodec), aid); err != nil {
+	if err := vcssql.PermanodesInsertOrIgnore(conn, string(p.PermanodeType()), res.IPFSBlocksID, int(p.PermanodeCreateTime().Unix())); err != nil {
+		return err
+	}
+
+	if err := vcssql.PermanodeOwnersInsertOrIgnore(conn, aid, res.IPFSBlocksID); err != nil {
 		return err
 	}
 
@@ -339,15 +343,7 @@ func (s *SQLite) DeletePermanode(ctx context.Context, c cid.Cid) error {
 		return err
 	}
 
-	conn, release, err := s.db.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	ocodec, ohash := ipfs.DecodeCID(c)
-
-	return vcssql.ObjectsDelete(conn, ohash, int(ocodec))
+	return nil
 }
 
 func (s *SQLite) BlockGetter() BlockGetter {
@@ -357,31 +353,22 @@ func (s *SQLite) BlockGetter() BlockGetter {
 func (s *SQLite) lookupObjectID(conn *sqlite.Conn, c cid.Cid) (int, error) {
 	ocodec, ohash := ipfs.DecodeCID(c)
 
-	res, err := vcssql.ObjectsLookupPK(conn, ohash, int(ocodec))
+	res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
 	if err != nil {
 		return 0, err
 	}
 
-	if res.ObjectsID != 0 {
-		return res.ObjectsID, nil
+	if res.IPFSBlocksID == 0 {
+		return 0, fmt.Errorf("object not found: %w", errNotFound)
 	}
 
-	insert, err := vcssql.ObjectsInsertPK(conn, ohash, int(ocodec))
-	if err != nil {
-		return 0, err
-	}
-
-	if insert.ObjectsID == 0 {
-		return 0, fmt.Errorf("failed to insert account")
-	}
-
-	return insert.ObjectsID, nil
+	return res.IPFSBlocksID, nil
 }
 
 func (s *SQLite) lookupAccountID(conn *sqlite.Conn, c cid.Cid) (int, error) {
-	ocodec, ohash := ipfs.DecodeCID(c)
+	ohash := c.Hash()
 
-	res, err := vcssql.AccountsLookupPK(conn, ohash, int(ocodec))
+	res, err := vcssql.AccountsLookupPK(conn, ohash)
 	if err != nil {
 		return 0, err
 	}
@@ -390,7 +377,7 @@ func (s *SQLite) lookupAccountID(conn *sqlite.Conn, c cid.Cid) (int, error) {
 		return res.AccountsID, nil
 	}
 
-	insert, err := vcssql.AccountsInsertPK(conn, ohash, int(ocodec))
+	insert, err := vcssql.AccountsInsertPK(conn, ohash)
 	if err != nil {
 		return 0, err
 	}
@@ -403,9 +390,9 @@ func (s *SQLite) lookupAccountID(conn *sqlite.Conn, c cid.Cid) (int, error) {
 }
 
 func (s *SQLite) lookupDeviceID(conn *sqlite.Conn, c cid.Cid) (int, error) {
-	ocodec, ohash := ipfs.DecodeCID(c)
+	dhash := c.Hash()
 
-	res, err := vcssql.DevicesLookupPK(conn, ohash, int(ocodec))
+	res, err := vcssql.DevicesLookupPK(conn, dhash)
 	if err != nil {
 		return 0, err
 	}
@@ -414,7 +401,7 @@ func (s *SQLite) lookupDeviceID(conn *sqlite.Conn, c cid.Cid) (int, error) {
 		return res.DevicesID, nil
 	}
 
-	insert, err := vcssql.DevicesInsertPK(conn, ohash, int(ocodec))
+	insert, err := vcssql.DevicesInsertPK(conn, dhash)
 	if err != nil {
 		return 0, err
 	}

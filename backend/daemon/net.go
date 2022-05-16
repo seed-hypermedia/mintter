@@ -11,6 +11,7 @@ import (
 	"mintter/backend/vcs/vcstypes"
 
 	"go.uber.org/fx"
+	"golang.org/x/sync/errgroup"
 )
 
 func provideNetwork(lc fx.Lifecycle, cfg config.Config, vcsh *vcs.SQLite, me *future.ReadOnly[core.Identity]) *future.ReadOnly[*mttnet.Node] {
@@ -18,41 +19,43 @@ func provideNetwork(lc fx.Lifecycle, cfg config.Config, vcsh *vcs.SQLite, me *fu
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	errc := make(chan error, 1)
+	var g errgroup.Group
 
-	go func() {
-		id, err := me.Await(context.Background())
+	g.Go(func() error {
+		id, err := me.Await(ctx)
 		if err != nil {
-			panic(err)
+			return nil
 		}
 
 		// We assume registration already happened.
 		perma := vcstypes.NewAccountPermanode(id.AccountID())
 		blk, err := vcs.EncodeBlock(perma)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		node, err := mttnet.New(cfg.P2P, vcsh, blk.Cid(), id, logging.New("mintter/network", "debug"))
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		go func() {
-			errc <- node.Start(ctx)
-		}()
+		g.Go(func() error {
+			return node.Start(ctx)
+		})
 
 		<-node.Ready()
 
 		if err := fut.Resolve(node); err != nil {
-			panic(err)
+			return err
 		}
-	}()
+
+		return nil
+	})
 
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
 			cancel()
-			return <-errc
+			return g.Wait()
 		},
 	})
 

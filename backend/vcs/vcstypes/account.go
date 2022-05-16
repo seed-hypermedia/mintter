@@ -270,8 +270,8 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 	}
 	defer release()
 
-	dcodec, dhash := ipfs.DecodeCID(device.CID())
-	devicedb, err := vcssql.DevicesLookupPK(conn, dhash, int(dcodec))
+	dhash := device.CID().Hash()
+	devicedb, err := vcssql.DevicesLookupPK(conn, dhash)
 	if err != nil {
 		return cid.Undef, err
 	}
@@ -279,8 +279,8 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 		return cid.Undef, fmt.Errorf("no device in the database")
 	}
 
-	acodec, ahash := ipfs.DecodeCID(account.CID())
-	accdb, err := vcssql.AccountsLookupPK(conn, ahash, int(acodec))
+	ahash := account.CID().Hash()
+	accdb, err := vcssql.AccountsLookupPK(conn, ahash)
 	if err != nil {
 		return cid.Undef, err
 	}
@@ -288,8 +288,14 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 		return cid.Undef, fmt.Errorf("no account in the database")
 	}
 
-	if err := vcssql.DevicesUpdateAccount(conn, accdb.AccountsID, devicedb.DevicesID); err != nil {
-		return cid.Undef, fmt.Errorf("failed to index account device: %w", err)
+	ccodec, chash := ipfs.DecodeCID(recorded.ID)
+	blkdb, err := vcssql.IPFSBlocksLookupPK(conn, chash, int(ccodec))
+	if err != nil {
+		return cid.Undef, fmt.Errorf("failed to lookup database id of the recorded change: %w", err)
+	}
+
+	if err := vcssql.AccountDevicesInsertOrIgnore(conn, accdb.AccountsID, devicedb.DevicesID, blkdb.IPFSBlocksID); err != nil {
+		return cid.Undef, err
 	}
 
 	return blk.Cid(), nil

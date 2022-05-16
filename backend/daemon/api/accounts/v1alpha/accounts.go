@@ -127,18 +127,21 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 		return nil, err
 	}
 
+	attrs, err := vcssql.ObjectIndexListMaxAttrs(conn, string(vcstypes.AccountType))
+	if err != nil {
+		return nil, err
+	}
+
 	out := make([]*accounts.Account, len(accs))
 
+	accMap := map[string]*accounts.Account{}
+
 	for i, a := range accs {
-		aid := cid.NewCidV1(uint64(a.AccountsCodec), a.AccountsMultihash)
+		aid := cid.NewCidV1(uint64(core.CodecAccountKey), a.AccountsMultihash)
 		devs := devices[aid]
 		acc := &accounts.Account{
-			Id: aid.String(),
-			Profile: &accounts.Profile{
-				Email: a.AccountsEmail,
-				Bio:   a.AccountsBio,
-				Alias: a.AccountsAlias,
-			},
+			Id:      aid.String(),
+			Profile: &accounts.Profile{},
 			Devices: make(map[string]*accounts.Device, len(devs)),
 		}
 		for _, d := range devs {
@@ -147,7 +150,34 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 			}
 		}
 
+		// TODO: we don't want this here!
+		ap := vcstypes.NewAccountPermanode(aid)
+		apblk, err := vcs.EncodeBlock(ap)
+		if err != nil {
+			return nil, err
+		}
+
+		accMap[apblk.Cid().KeyString()] = acc
+
 		out[i] = acc
+	}
+
+	for _, attr := range attrs {
+		k := cid.NewCidV1(cid.DagCBOR, attr.IPFSBlocksMultihash).KeyString()
+		switch attr.ObjectIndexAttribute {
+		case "email":
+			if err := cbornode.DecodeInto(attr.ObjectIndexValue, &accMap[k].Profile.Email); err != nil {
+				return nil, err
+			}
+		case "alias":
+			if err := cbornode.DecodeInto(attr.ObjectIndexValue, &accMap[k].Profile.Alias); err != nil {
+				return nil, err
+			}
+		case "bio":
+			if err := cbornode.DecodeInto(attr.ObjectIndexValue, &accMap[k].Profile.Bio); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return &accounts.ListAccountsResponse{

@@ -13,6 +13,7 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
+	"mintter/backend/vcs/vcstypes"
 	"net"
 	"sync"
 
@@ -82,6 +83,7 @@ func DefaultRelays() []peer.AddrInfo {
 type Node struct {
 	log             *zap.Logger
 	vcs             *vcs.SQLite
+	syncer          *vcstypes.Syncer
 	me              core.Identity
 	cfg             config.P2P
 	accountObjectID vcs.ObjectID
@@ -118,6 +120,7 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	n := &Node{
 		log:             log,
 		vcs:             vcs,
+		syncer:          vcstypes.NewSyncer(vcstypes.NewService(vcs.DB()), me),
 		me:              me,
 		cfg:             cfg,
 		accountObjectID: accountObj,
@@ -185,11 +188,7 @@ func (n *Node) AccountForDevice(ctx context.Context, device cid.Cid) (cid.Cid, e
 		return cid.Undef, fmt.Errorf("failed to find account for device %s", device)
 	}
 
-	if res.AccountsCodec != core.CodecAccountKey {
-		return cid.Undef, fmt.Errorf("bad account codec %s", cid.CodecToStr[uint64(res.AccountsCodec)])
-	}
-
-	return cid.NewCidV1(uint64(res.AccountsCodec), res.AccountsMultihash), nil
+	return cid.NewCidV1(uint64(core.CodecAccountKey), res.AccountsMultihash), nil
 }
 
 // Libp2p returns the underlying libp2p host.
@@ -386,6 +385,15 @@ func makeDialOpts(host host.Host) []grpc.DialOption {
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 	}
+}
+
+func AddrInfoToStrings(info peer.AddrInfo) []string {
+	var addrs []string
+	for _, a := range info.Addrs {
+		addrs = append(addrs, a.Encapsulate(must.Two(multiaddr.NewComponent("p2p", info.ID.String()))).String())
+	}
+
+	return addrs
 }
 
 // AddrInfoFromStrings converts a list of full multiaddrs belonging to the same peer ID into a AddrInfo structure.

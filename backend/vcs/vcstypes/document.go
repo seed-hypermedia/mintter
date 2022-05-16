@@ -65,7 +65,9 @@ func (d *Document) ChangeTitle(title string) {
 		TitleChanged: title,
 	})
 
-	d.state.apply(d.events[len(d.events)-1], time.Now().UTC().Round(time.Second))
+	if err := d.state.apply(d.events[len(d.events)-1], time.Now().UTC().Round(time.Second)); err != nil {
+		panic(err) // TODO: don't panic.
+	}
 }
 
 func (d *Document) ChangeSubtitle(subtitle string) {
@@ -77,7 +79,9 @@ func (d *Document) ChangeSubtitle(subtitle string) {
 		SubtitleChanged: subtitle,
 	})
 
-	d.state.apply(d.events[len(d.events)-1], time.Now().UTC().Round(time.Second))
+	if err := d.state.apply(d.events[len(d.events)-1], time.Now().UTC().Round(time.Second)); err != nil {
+		panic(err) // TODO: don't panic.
+	}
 }
 
 func (d *Document) MoveBlock(blockID, parent, left string) error {

@@ -3,13 +3,67 @@ package daemon
 import (
 	"context"
 	"mintter/backend/config"
+	"mintter/backend/core"
+	"mintter/backend/daemon/ondisk"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
+	"mintter/backend/vcs"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
+
+type Daemon struct {
+	fx.In
+
+	Config config.Config
+	GRPC   *grpcServer
+	HTTP   *httpServer
+	Net    *future.ReadOnly[*mttnet.Node]
+	Repo   *ondisk.OnDisk
+	Me     *future.ReadOnly[core.Identity]
+	SQLite *sqlitex.Pool
+	VCS    *vcs.SQLite
+}
+
+// func Boot(cfg config.Config) (d *Daemon, err error) {
+// 	d.Config = cfg
+
+// 	// In case of error during boot, we want to cleanly close the things
+// 	// that were already started. This is optional, but me (@burdiyan) is a graceful shutdown nerd ;)
+// 	defer func() {
+// 		if err != nil {
+// 			err = multierr.Append(err, d.clean.Close())
+// 		}
+// 	}()
+
+// 	d.Repo, err = provideRepo(cfg)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	d.Me, err = provideAccount(d.Repo)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	d.SQLite, err = provideSQLite(nil, d.Repo)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	d.clean.Add(d.SQLite)
+
+// 	d.VCS = provideVCS(d.SQLite)
+
+// 	d.Net = provideNetwork(nil, cfg, d.VCS, d.Me)
+// 	// clean.Add(d.Net)
+
+// 	d.GRPC = provideGRPCServer(nil, d.Net)
+// }
+
+// func startGRPC()
 
 func Module(cfg config.Config) fx.Option {
 	return fx.Options(
