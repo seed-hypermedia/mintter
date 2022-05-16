@@ -61,6 +61,16 @@ var migrations = []string{
 			-- Subjective (locally perceived) time when the item was created.
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 		);
+		
+		-- Stores profile information.
+		CREATE TABLE profiles (
+			account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
+			alias TEXT,
+			email TEXT,
+			bio TEXT,
+			change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+			PRIMARY KEY (account_id, change_id)
+		) WITHOUT ROWID;
 
 		-- Stores data about Mintter Devices.
 		CREATE TABLE devices (

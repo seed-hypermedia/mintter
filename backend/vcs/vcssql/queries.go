@@ -92,10 +92,37 @@ var (
 		),
 		qb.MakeQuery(s.Schema, "AccountsList", sgen.QueryKindMany,
 			"SELECT", qb.Results(
+				qb.ResultCol(s.AccountsID),
 				qb.ResultCol(s.AccountsMultihash),
 			), qb.Line,
 			"FROM", s.Accounts, qb.Line,
 			"WHERE", s.AccountsMultihash, "!=", qb.Var("ownAccountMultihash", sgen.TypeBytes),
+		),
+		qb.MakeQuery(s.Schema, "AccountsIndexProfile", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.Profiles, qb.ListColShort(
+				s.ProfilesAccountID,
+				s.ProfilesAlias,
+				s.ProfilesEmail,
+				s.ProfilesBio,
+				s.ProfilesChangeID,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(s.ProfilesAccountID),
+				qb.VarCol(s.ProfilesAlias),
+				qb.VarCol(s.ProfilesEmail),
+				qb.VarCol(s.ProfilesBio),
+				qb.VarCol(s.ProfilesChangeID),
+			),
+		),
+		qb.MakeQuery(s.Schema, "AccountsListProfiles", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.ProfilesAccountID),
+				qb.ResultCol(s.ProfilesAlias),
+				qb.ResultCol(s.ProfilesEmail),
+				qb.ResultCol(s.ProfilesBio),
+				qb.ResultCol(s.ProfilesChangeID),
+			), qb.Line,
+			"FROM", s.Profiles, qb.Line,
 		),
 	)
 
@@ -134,6 +161,15 @@ var (
 			), qb.Line,
 			"FROM", s.AccountDevices, qb.Line,
 			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.AccountDevicesAccountID,
+			"JOIN", s.Devices, "ON", s.DevicesID, "=", s.AccountDevicesDeviceID,
+		),
+		qb.MakeQuery(s.Schema, "DevicesList", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.DevicesMultihash),
+				qb.ResultCol(s.AccountDevicesDeviceID),
+				qb.ResultCol(s.AccountDevicesAccountID),
+			), qb.Line,
+			"FROM", s.AccountDevices, qb.Line,
 			"JOIN", s.Devices, "ON", s.DevicesID, "=", s.AccountDevicesDeviceID,
 		),
 	)
@@ -298,39 +334,6 @@ var (
 				qb.VarCol(s.PermanodeOwnersAccountID),
 				qb.VarCol(s.PermanodeOwnersPermanodeID),
 			),
-		),
-	)
-
-	index = add(
-		qb.MakeQuery(s.Schema, "ObjectIndexInsertOrIgnore", sgen.QueryKindExec,
-			"INSERT OR IGNORE INTO", s.ObjectIndex, qb.ListColShort(
-				s.ObjectIndexObjectID,
-				s.ObjectIndexAttribute,
-				s.ObjectIndexChangeID,
-				s.ObjectIndexValue,
-			),
-			"VALUES", qb.List(
-				qb.VarCol(s.ObjectIndexObjectID),
-				qb.VarCol(s.ObjectIndexAttribute),
-				qb.VarCol(s.ObjectIndexChangeID),
-				qb.VarCol(s.ObjectIndexValue),
-			),
-		),
-
-		qb.MakeQuery(s.Schema, "ObjectIndexListMaxAttrs", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.IPFSBlocksMultihash),
-				qb.ResultCol(s.ObjectIndexObjectID),
-				qb.ResultCol(s.ObjectIndexAttribute),
-				qb.ResultCol(s.ObjectIndexValue),
-				// TODO: need to use logical clock here to properly resolve possible conflicts for versioning.
-				qb.ResultExpr(qb.SQLFunc("MAX", string(s.ObjectIndexChangeID)), "version", sgen.TypeInt),
-			),
-			"FROM", s.ObjectIndex, qb.Line,
-			"JOIN", s.Permanodes, "ON", s.PermanodesID, "=", s.ObjectIndexObjectID, qb.Line,
-			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.PermanodesID, qb.Line,
-			"WHERE", s.PermanodesType, "=", qb.VarCol(s.PermanodesType),
-			"GROUP BY", s.ObjectIndexAttribute,
 		),
 	)
 )

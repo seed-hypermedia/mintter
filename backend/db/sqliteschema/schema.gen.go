@@ -112,6 +112,16 @@ const (
 	PermanodesType       sqlitegen.Column = "permanodes.type"
 )
 
+// Table profiles.
+const (
+	Profiles          sqlitegen.Table  = "profiles"
+	ProfilesAccountID sqlitegen.Column = "profiles.account_id"
+	ProfilesAlias     sqlitegen.Column = "profiles.alias"
+	ProfilesBio       sqlitegen.Column = "profiles.bio"
+	ProfilesChangeID  sqlitegen.Column = "profiles.change_id"
+	ProfilesEmail     sqlitegen.Column = "profiles.email"
+)
+
 // Table publications.
 const (
 	Publications              sqlitegen.Table  = "publications"
@@ -195,6 +205,11 @@ var Schema = sqlitegen.Schema{
 		PermanodesCreateTime:       {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesID:               {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesType:             {Table: Permanodes, SQLType: "TEXT"},
+		ProfilesAccountID:          {Table: Profiles, SQLType: "INTEGER"},
+		ProfilesAlias:              {Table: Profiles, SQLType: "TEXT"},
+		ProfilesBio:                {Table: Profiles, SQLType: "TEXT"},
+		ProfilesChangeID:           {Table: Profiles, SQLType: "INTEGER"},
+		ProfilesEmail:              {Table: Profiles, SQLType: "TEXT"},
 		PublicationsCreateTime:     {Table: Publications, SQLType: "INTEGER"},
 		PublicationsID:             {Table: Publications, SQLType: "INTEGER"},
 		PublicationsLatestVersion:  {Table: Publications, SQLType: "TEXT"},

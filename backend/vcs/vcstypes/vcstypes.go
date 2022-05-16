@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/ipfs"
-	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
 type Service struct {
@@ -36,13 +34,6 @@ func (svc *Service) IndexAccountChange(ctx context.Context, changeID cid.Cid, c 
 	}
 	defer release()
 
-	ocodec, ohash := ipfs.DecodeCID(c.Object)
-
-	oiddb, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
-	if err != nil {
-		return err
-	}
-
 	ccodec, chash := ipfs.DecodeCID(changeID)
 	ciddb, err := vcssql.IPFSBlocksLookupPK(conn, chash, int(ccodec))
 	if err != nil {
@@ -54,24 +45,20 @@ func (svc *Service) IndexAccountChange(ctx context.Context, changeID cid.Cid, c 
 		return err
 	}
 
-	addAttr := func(name string, value []byte) error {
-		return vcssql.ObjectIndexInsertOrIgnore(conn, oiddb.IPFSBlocksID, name, ciddb.IPFSBlocksID, value)
-	}
+	var (
+		alias string
+		bio   string
+		email string
+	)
 
 	for _, evt := range evts {
 		switch {
 		case evt.AliasChanged != "":
-			if err := addAttr("alias", must.Two(cbornode.DumpObject(evt.AliasChanged))); err != nil {
-				return err
-			}
+			alias = evt.AliasChanged
 		case evt.BioChanged != "":
-			if err := addAttr("bio", must.Two(cbornode.DumpObject(evt.BioChanged))); err != nil {
-				return err
-			}
+			bio = evt.BioChanged
 		case evt.EmailChanged != "":
-			if err := addAttr("email", must.Two(cbornode.DumpObject(evt.EmailChanged))); err != nil {
-				return err
-			}
+			email = evt.EmailChanged
 		case evt.DeviceRegistered.Proof != nil:
 			var diddb int
 			{
@@ -101,6 +88,10 @@ func (svc *Service) IndexAccountChange(ctx context.Context, changeID cid.Cid, c 
 		default:
 			return fmt.Errorf("BUG: unknown account event type: %+v", evt)
 		}
+	}
+
+	if err := vcssql.AccountsIndexProfile(conn, aiddb.AccountsID, alias, email, bio, ciddb.IPFSBlocksID); err != nil {
+		return err
 	}
 
 	return nil

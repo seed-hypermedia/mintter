@@ -117,67 +117,68 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 	}
 	defer release()
 
+	// list accounts
 	accs, err := srv.listAccounts(conn)
 	if err != nil {
 		return nil, err
 	}
 
-	devices, err := vcssql.ListAccountDevices(conn)
+	// list devices with their accounts
+	devices, err := vcssql.DevicesList(conn)
 	if err != nil {
 		return nil, err
 	}
 
-	attrs, err := vcssql.ObjectIndexListMaxAttrs(conn, string(vcstypes.AccountType))
+	// list profiles
+	profiles, err := vcssql.AccountsListProfiles(conn)
 	if err != nil {
 		return nil, err
 	}
 
-	out := make([]*accounts.Account, len(accs))
+	// combine all together
+	combined := map[int]*accounts.Account{}
 
-	accMap := map[string]*accounts.Account{}
-
-	for i, a := range accs {
-		aid := cid.NewCidV1(uint64(core.CodecAccountKey), a.AccountsMultihash)
-		devs := devices[aid]
-		acc := &accounts.Account{
-			Id:      aid.String(),
+	for _, a := range accs {
+		combined[a.AccountsID] = &accounts.Account{
+			Id:      cid.NewCidV1(core.CodecAccountKey, a.AccountsMultihash).String(),
 			Profile: &accounts.Profile{},
-			Devices: make(map[string]*accounts.Device, len(devs)),
+			Devices: make(map[string]*accounts.Device),
 		}
-		for _, d := range devs {
-			acc.Devices[d.String()] = &accounts.Device{
-				PeerId: d.String(),
-			}
-		}
-
-		// TODO: we don't want this here!
-		ap := vcstypes.NewAccountPermanode(aid)
-		apblk, err := vcs.EncodeBlock(ap)
-		if err != nil {
-			return nil, err
-		}
-
-		accMap[apblk.Cid().KeyString()] = acc
-
-		out[i] = acc
 	}
 
-	for _, attr := range attrs {
-		k := cid.NewCidV1(cid.DagCBOR, attr.IPFSBlocksMultihash).KeyString()
-		switch attr.ObjectIndexAttribute {
-		case "email":
-			if err := cbornode.DecodeInto(attr.ObjectIndexValue, &accMap[k].Profile.Email); err != nil {
-				return nil, err
-			}
-		case "alias":
-			if err := cbornode.DecodeInto(attr.ObjectIndexValue, &accMap[k].Profile.Alias); err != nil {
-				return nil, err
-			}
-		case "bio":
-			if err := cbornode.DecodeInto(attr.ObjectIndexValue, &accMap[k].Profile.Bio); err != nil {
-				return nil, err
-			}
+	for _, d := range devices {
+		acc, ok := combined[d.AccountDevicesAccountID]
+		if !ok {
+			continue
 		}
+		did := cid.NewCidV1(core.CodecDeviceKey, d.DevicesMultihash).String()
+		acc.Devices[did] = &accounts.Device{
+			PeerId: did,
+		}
+	}
+
+	for _, p := range profiles {
+		acc, ok := combined[p.ProfilesAccountID]
+		if !ok {
+			panic("BUG: unknown account id when filling profiles")
+		}
+
+		if p.ProfilesAlias != "" {
+			acc.Profile.Alias = p.ProfilesAlias
+		}
+
+		if p.ProfilesEmail != "" {
+			acc.Profile.Email = p.ProfilesEmail
+		}
+
+		if p.ProfilesBio != "" {
+			acc.Profile.Bio = p.ProfilesBio
+		}
+	}
+
+	out := make([]*accounts.Account, 0, len(combined))
+	for _, acc := range combined {
+		out = append(out, acc)
 	}
 
 	return &accounts.ListAccountsResponse{
