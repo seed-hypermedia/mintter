@@ -229,6 +229,39 @@ func (s *SQLite) RecordChange(ctx context.Context, oid ObjectID, id core.Identit
 	return RecordedChange{ID: blk.Cid(), Change: c}, nil
 }
 
+// func (s *SQLite) StoreChangeMetadata(ctx context.Context, c cid.Cid, change Change) error {
+// 	conn, release, err := s.db.Conn(ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer release()
+
+// 	oiddb, err := s.lookupObjectID(conn, change.Object)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	aiddb, err := s.lookupAccountID(conn, change.Author)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	ciddb, err := vcssql.IPFSBlocksLookupPK(conn, blk.Cid().Hash())
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	if err := vcssql.ChangesInsertOrIgnore(conn, ciddb.IPFSBlocksID, oiddb, c.Kind, int(c.LamportTime), int(c.CreateTime.Unix())); err != nil {
+// 		return err
+// 	}
+
+// 	if err := vcssql.ChangeAuthorsInsertOrIgnore(conn, aiddb, ciddb.IPFSBlocksID); err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
 func (s *SQLite) StoreNamedVersion(ctx context.Context, o ObjectID, id core.Identity, name string, v Version) error {
 	conn, release, err := s.db.Conn(ctx)
 	if err != nil {
@@ -320,9 +353,9 @@ func (s *SQLite) StorePermanode(ctx context.Context, blk blocks.Block, p Permano
 		return err
 	}
 
-	ocodec, ohash := ipfs.DecodeCID(blk.Cid())
+	ohash := blk.Cid().Hash()
 
-	res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
+	res, err := vcssql.IPFSBlocksLookupPK(conn, ohash)
 	if err != nil {
 		return err
 	}
@@ -351,9 +384,7 @@ func (s *SQLite) BlockGetter() BlockGetter {
 }
 
 func (s *SQLite) lookupObjectID(conn *sqlite.Conn, c cid.Cid) (int, error) {
-	ocodec, ohash := ipfs.DecodeCID(c)
-
-	res, err := vcssql.IPFSBlocksLookupPK(conn, ohash, int(ocodec))
+	res, err := vcssql.IPFSBlocksLookupPK(conn, c.Hash())
 	if err != nil {
 		return 0, err
 	}

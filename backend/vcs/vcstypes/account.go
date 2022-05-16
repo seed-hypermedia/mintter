@@ -5,7 +5,6 @@ import (
 	"encoding"
 	"fmt"
 	"mintter/backend/core"
-	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 	"time"
@@ -288,8 +287,7 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 		return cid.Undef, fmt.Errorf("no account in the database")
 	}
 
-	ccodec, chash := ipfs.DecodeCID(recorded.ID)
-	blkdb, err := vcssql.IPFSBlocksLookupPK(conn, chash, int(ccodec))
+	blkdb, err := vcssql.IPFSBlocksLookupPK(conn, recorded.ID.Hash())
 	if err != nil {
 		return cid.Undef, fmt.Errorf("failed to lookup database id of the recorded change: %w", err)
 	}

@@ -30,212 +30,218 @@ func init() {
 //
 //go:generate gorun -tags codegen generateSchema
 var migrations = []string{
-	`-- Stores the content of IPFS blobs.
-		CREATE TABLE ipfs_blocks (
-			-- Short numerical ID to be used internally.
-			id INTEGER PRIMARY KEY,
-			-- Original multihash of the IPFS blob.
-			-- We don't store CIDs, this is what most blockstore
-			-- implementations are doing.
-			-- We don't want to store the content more than once,
-			-- so UNIQUE constraint is needed here.
-			-- We don't use multihash as a primary key to reduce the database size,
-			-- as there're multiple other tables referencing records from this table.
-			multihash BLOB NOT NULL,
-			-- Multicodec describing the data stored in the block.
-			codec INTEGER NOT NULL,
-			-- Actual content of the block.
-			data BLOB NOT NULL,
-			-- Subjective (locally perceived) time when this block was fetched for the first time.
-			-- Not sure if actually useful, but might become at some point.
-			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-			UNIQUE (multihash)
-		);
+	`
+-- Stores the content of IPFS blobs.
+	CREATE TABLE ipfs_blocks (
+		-- Short numerical ID to be used internally.
+		id INTEGER PRIMARY KEY,
+		-- Original multihash of the IPFS blob.
+		-- We don't store CIDs, this is what most blockstore
+		-- implementations are doing.
+		-- We don't want to store the content more than once,
+		-- so UNIQUE constraint is needed here.
+		-- We don't use multihash as a primary key to reduce the database size,
+		-- as there're multiple other tables referencing records from this table.
+		multihash BLOB NOT NULL,
+		-- Multicodec describing the data stored in the block.
+		codec INTEGER NOT NULL,
+		-- Actual content of the block.
+		data BLOB NOT NULL,
+		-- Subjective (locally perceived) time when this block was fetched for the first time.
+		-- Not sure if actually useful, but might become at some point.
+		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+		UNIQUE (multihash)
+	);
 
-		-- Stores data about Mintter Accounts.
-		CREATE TABLE accounts (
-			-- Short numerical ID to be used internally.
-			id INTEGER PRIMARY KEY,
-			-- Multihash part of the Account ID.
-			multihash BLOB UNIQUE NOT NULL,
-			-- Subjective (locally perceived) time when the item was created.
-			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
-		);
-		
-		-- Stores profile information.
-		CREATE TABLE profiles (
-			account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
-			alias TEXT,
-			email TEXT,
-			bio TEXT,
-			change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			PRIMARY KEY (account_id, change_id)
-		) WITHOUT ROWID;
+	-- Stores data about Mintter Accounts.
+	CREATE TABLE accounts (
+		-- Short numerical ID to be used internally.
+		id INTEGER PRIMARY KEY,
+		-- Multihash part of the Account ID.
+		multihash BLOB UNIQUE NOT NULL,
+		-- Subjective (locally perceived) time when the item was created.
+		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
+	);
+	
+	-- Stores profile information.
+	CREATE TABLE profiles (
+		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
+		alias TEXT,
+		email TEXT,
+		bio TEXT,
+		change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		PRIMARY KEY (account_id, change_id),
+		CHECK (account_id != change_id)
+	) WITHOUT ROWID;
 
-		-- Stores data about Mintter Devices.
-		CREATE TABLE devices (
-			-- Short numerical ID to be used internally.
-			id INTEGER PRIMARY KEY,
-			-- Multihash part of the Device ID.
-			multihash BLOB UNIQUE NOT NULL,
-			-- Bytes of the public key.
-			-- Mostly NULL because Ed25519 keys can be extracted from the CID.
-			public_key BLOB DEFAULT NULL,
-			-- Subjective (locally perceived) time when the item was created.
-			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
-		);
+	-- Stores data about Mintter Devices.
+	CREATE TABLE devices (
+		-- Short numerical ID to be used internally.
+		id INTEGER PRIMARY KEY,
+		-- Multihash part of the Device ID.
+		multihash BLOB UNIQUE NOT NULL,
+		-- Bytes of the public key.
+		-- Mostly NULL because Ed25519 keys can be extracted from the CID.
+		public_key BLOB DEFAULT NULL,
+		-- Subjective (locally perceived) time when the item was created.
+		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
+	);
 
-		-- Stores relationships between accounts and devices.
-		CREATE TABLE account_devices (
-			account_id INTEGER REFERENCES accounts NOT NULL,
-			device_id INTEGER REFERENCES devices NOT NULL,
-			change_id INTEGER REFERENCES ipfs_blocks NOT NULL,
-			PRIMARY KEY (account_id, device_id)
-		) WITHOUT ROWID;
+	-- Stores relationships between accounts and devices.
+	CREATE TABLE account_devices (
+		account_id INTEGER REFERENCES accounts NOT NULL,
+		device_id INTEGER REFERENCES devices NOT NULL,
+		change_id INTEGER REFERENCES ipfs_blocks NOT NULL,
+		PRIMARY KEY (account_id, device_id)
+	) WITHOUT ROWID;
 
-		-- Helps to query accounts of a device.
-		CREATE INDEX idx_device_accounts ON account_devices (device_id, account_id);
-		
-		-- Stores references to the IPFS blocks that are Mintter Permanodes.
-		CREATE TABLE permanodes (
-			id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			type TEXT NOT NULL CHECK (type != ''),
-			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-			PRIMARY KEY (type, id)
-		) WITHOUT ROWID;
+	-- Helps to query accounts of a device.
+	CREATE INDEX idx_device_accounts ON account_devices (device_id, account_id);
+	
+	-- Stores references to the IPFS blocks that are Mintter Permanodes.
+	CREATE TABLE permanodes (
+		id INTEGER PRIMARY KEY,
+		type TEXT NOT NULL CHECK (type != ''),
+		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+		FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
+	);
 
-		-- Helps to query permanode by IPFS block ID. We don't do it often,
-		-- but it's useful for deletes and some other things.
-		CREATE INDEX idx_permanodes_block ON permanodes (id);
-		
-		-- Stores owners of the Mintter Permanode objects.
-		CREATE TABLE permanode_owners (
-			account_id INTEGER REFERENCES accounts NOT NULL,
-			permanode_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			PRIMARY KEY (account_id, permanode_id)
-		) WITHOUT ROWID;
+	-- Help to query permanodes by type.
+	CREATE INDEX idx_permanodes_by_type ON permanodes (type);
+	
+	-- Stores owners of the Mintter Permanode objects.
+	CREATE TABLE permanode_owners (
+		account_id INTEGER REFERENCES accounts NOT NULL,
+		permanode_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		PRIMARY KEY (account_id, permanode_id)
+	) WITHOUT ROWID;
 
-		-- Helps to query by block ID which is useful when deleting a permanode.
-		CREATE INDEX idx_permanode_owners_by_block ON permanode_owners (permanode_id);
+	-- Helps to query by owners of a permanode.
+	CREATE INDEX idx_permanode_owners_by_permanode ON permanode_owners (permanode_id, account_id);
 
-		CREATE TABLE object_index (
-			object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			attribute TEXT NOT NULL CHECK (attribute != ''),
-			change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			value BLOB NOT NULL,
-			PRIMARY KEY (object_id, attribute, change_id)
-		) WITHOUT ROWID;
-		
-		CREATE TABLE named_versions (
-			object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
-			device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
-			name TEXT NOT NULL,
-			version TEXT NOT NULL,
-			PRIMARY KEY (object_id, account_id, device_id, name)
-		) WITHOUT ROWID;
+	CREATE TABLE changes (
+		id INTEGER PRIMARY KEY,
+		permanode_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
+		kind TEXT,
+		lamport_time INTEGER NOT NULL,
+		create_time INTEGER NOT NULL,
+		FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
+	);
 
-		CREATE TABLE working_copy (
-			object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			name TEXT NOT NULL,
-			data BLOB,
-			version TEXT DEFAULT ('') NOT NULL,
-			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-			update_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-			PRIMARY KEY (object_id, name)
-		) WITHOUT ROWID;
+	CREATE TABLE change_authors (
+		change_id INTEGER REFERENCES changes ON DELETE CASCADE NOT NULL,
+		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
+		PRIMARY KEY (change_id, account_id)
+	) WITHOUT ROWID;
+	
+	CREATE TABLE named_versions (
+		object_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
+		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
+		device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
+		name TEXT NOT NULL,
+		version TEXT NOT NULL,
+		PRIMARY KEY (object_id, account_id, device_id, name)
+	) WITHOUT ROWID;
 
-		-- Stores draft-related attributes of an Object.
-		CREATE TABLE drafts (
-			id INTEGER PRIMARY KEY,
-			title TEXT NOT NULL,
-			subtitle TEXT NOT NULL,
-			content BLOB,
-			create_time INTEGER NOT NULL CHECK (create_time > 500),
-			update_time INTEGER NOT NULL CHECK (update_time > 500),
-			FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
-		);
+	CREATE TABLE working_copy (
+		object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		name TEXT NOT NULL,
+		data BLOB,
+		version TEXT DEFAULT ('') NOT NULL,
+		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+		update_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+		PRIMARY KEY (object_id, name)
+	) WITHOUT ROWID;
 
-		-- Stores publication-related attributes of an Object.
-		CREATE TABLE publications (
-			id INTEGER NOT NULL PRIMARY KEY,
-			title TEXT NOT NULL,
-			subtitle TEXT NOT NULL,
-			create_time INTEGER NOT NULL CHECK (create_time > 500),
-			update_time INTEGER NOT NULL CHECK (update_time > 500),
-			publish_time INTEGER NOT NULL CHECK (publish_time > 500),
-			latest_version TEXT NOT NULL,
-			FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
-		);
+	-- Stores draft-related attributes of an Object.
+	CREATE TABLE drafts (
+		id INTEGER PRIMARY KEY,
+		title TEXT NOT NULL,
+		subtitle TEXT NOT NULL,
+		content BLOB,
+		create_time INTEGER NOT NULL CHECK (create_time > 500),
+		update_time INTEGER NOT NULL CHECK (update_time > 500),
+		FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
+	);
 
-		-- Index for links from Documents.
-		CREATE TABLE links (
-			-- Alias to the rowid so we can delete links efficiently.
-			id INTEGER PRIMARY KEY,
-			-- Reference to Document ID from which link originates.
-			source_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			-- Block ID inside the Document which contains the link.
-			source_block_id TEXT NOT NULL CHECK (source_block_id != ''),
-			-- Reference to the IPFS block of the change that introduced the link.
-			-- Only required for publications. Otherwise the link is from the current draft.
-			source_ipfs_block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
-			-- Reference to Document ID that is linked.
-			target_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-			-- Block ID that is linked. Can be NULL if links is to the whole Document.
-			target_block_id TEXT NOT NULL DEFAULT '',
-			-- Version of the target Document that is linked.
-			target_version TEXT NOT NULL CHECK (target_version != ''),
-			UNIQUE (source_object_id, source_block_id, target_object_id, target_block_id, target_version)
-		);
+	-- Stores document-related indexed attributes
+	CREATE TABLE documents (
+		id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		title TEXT NOT NULL,
+		subtitle TEXT NOT NULL,
+		change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		PRIMARY KEY (id, change_id),
+		CHECK(id != change_id)
+	) WITHOUT ROWID;
 
-		-- Trigger to delete links when drafts are deleted.
-		CREATE TRIGGER trg_drafts_delete_links AFTER DELETE ON drafts
-		BEGIN
-			DELETE FROM links
-			WHERE source_object_id = old.id
-			AND source_ipfs_block_id IS NULL;
-		END;
+	-- Index for links from Documents.
+	CREATE TABLE links (
+		-- Alias to the rowid so we can delete links efficiently.
+		id INTEGER PRIMARY KEY,
+		-- Reference to Document ID from which link originates.
+		source_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		-- Block ID inside the Document which contains the link.
+		source_block_id TEXT NOT NULL CHECK (source_block_id != ''),
+		-- Reference to the IPFS block of the change that introduced the link.
+		-- Only required for publications. Otherwise the link is from the current draft.
+		source_ipfs_block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
+		-- Reference to Document ID that is linked.
+		target_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		-- Block ID that is linked. Can be NULL if links is to the whole Document.
+		target_block_id TEXT NOT NULL DEFAULT '',
+		-- Version of the target Document that is linked.
+		target_version TEXT NOT NULL CHECK (target_version != ''),
+		UNIQUE (source_object_id, source_block_id, target_object_id, target_block_id, target_version)
+	);
 
-		-- Index to request outgoing links by source object ID.
-		CREATE INDEX idx_links_source_object_id ON links (source_object_id);
+	-- Trigger to delete links when drafts are deleted.
+	CREATE TRIGGER trg_drafts_delete_links AFTER DELETE ON drafts
+	BEGIN
+		DELETE FROM links
+		WHERE source_object_id = old.id
+		AND source_ipfs_block_id IS NULL;
+	END;
 
-		-- Index for backlinks.
-		CREATE INDEX idx_links_target_object_id ON links (target_object_id);
+	-- Index to request outgoing links by source object ID.
+	CREATE INDEX idx_links_source_object_id ON links (source_object_id);
 
-		-- Virtual table for backlinks.
-		CREATE VIRTUAL TABLE backlinks USING transitive_closure (
-			tablename = 'links',
-			-- We need to treat target documents as parents
-			-- for transitive closure to inclide the source documents.
-			idcolumn = 'source_object_id',
-			parentcolumn = 'target_object_id'
-		);
+	-- Index for backlinks.
+	CREATE INDEX idx_links_target_object_id ON links (target_object_id);
 
-		-- Stores Lightning wallets both externals (imported wallets like bluewallet
-		-- based on lndhub) and internals (based on the LND embedded node).
-		CREATE TABLE wallets (
-			-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
-			id TEXT PRIMARY KEY,
-			-- Address of the LND node backing up this wallet. In case lndhub, this will be the 
-			-- URL to connect via rest api. In case LND wallet, this will be the clearnet/onion address.
-			address TEXT NOT NULL,
-			-- The type of the wallet. Either lnd or lndhub
-			type TEXT CHECK( type IN ('lnd','lndhub') ) NOT NULL DEFAULT 'lndhub',
-			-- The Authentication of the wallet. api token in case lndhub and macaroon 
-			-- bytes in case lnd. This blob should be encrypted
-			auth BLOB NOT NULL,
-			-- Human readable name to help the user identify each wallet
-			name TEXT NOT NULL,
-			-- The balance in satoshis
-			balance INTEGER DEFAULT 0
-		);
+	-- Virtual table for backlinks.
+	CREATE VIRTUAL TABLE backlinks USING transitive_closure (
+		tablename = 'links',
+		-- We need to treat target documents as parents
+		-- for transitive closure to inclide the source documents.
+		idcolumn = 'source_object_id',
+		parentcolumn = 'target_object_id'
+	);
 
-		-- Stores global metadata/configuration about any other table
-		CREATE TABLE global_meta (
-    		key TEXT PRIMARY KEY,
-    		value TEXT
-		) WITHOUT ROWID;
-	`,
+	-- Stores Lightning wallets both externals (imported wallets like bluewallet
+	-- based on lndhub) and internals (based on the LND embedded node).
+	CREATE TABLE wallets (
+		-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
+		id TEXT PRIMARY KEY,
+		-- Address of the LND node backing up this wallet. In case lndhub, this will be the 
+		-- URL to connect via rest api. In case LND wallet, this will be the clearnet/onion address.
+		address TEXT NOT NULL,
+		-- The type of the wallet. Either lnd or lndhub
+		type TEXT CHECK( type IN ('lnd','lndhub') ) NOT NULL DEFAULT 'lndhub',
+		-- The Authentication of the wallet. api token in case lndhub and macaroon 
+		-- bytes in case lnd. This blob should be encrypted
+		auth BLOB NOT NULL,
+		-- Human readable name to help the user identify each wallet
+		name TEXT NOT NULL,
+		-- The balance in satoshis
+		balance INTEGER DEFAULT 0
+	);
+
+	-- Stores global metadata/configuration about any other table
+	CREATE TABLE global_meta (
+		key TEXT PRIMARY KEY,
+		value TEXT
+	) WITHOUT ROWID;
+`,
 }
 
 // Open a connection pool for SQLite, enabling some needed functionality for our schema

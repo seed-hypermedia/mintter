@@ -7,9 +7,11 @@ import (
 	"mintter/backend/crdt"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/future"
+	"mintter/backend/pkg/maps"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
+	"sort"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -20,23 +22,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type (
-	DraftsServer       = documents.DraftsServer
-	PublicationsServer = documents.PublicationsServer
-	ContentGraphServer = documents.ContentGraphServer
-)
-
 type Server struct {
 	me  *future.ReadOnly[core.Identity]
 	db  *sqlitex.Pool
 	vcs *vcs.SQLite
+	// TODO: take it as a dependency.
+	index *vcstypes.Index
 }
 
 func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, vcs *vcs.SQLite) *Server {
 	return &Server{
-		me:  me,
-		db:  db,
-		vcs: vcs,
+		me:    me,
+		db:    db,
+		vcs:   vcs,
+		index: vcstypes.NewIndex(db),
 	}
 }
 
@@ -276,8 +275,6 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	pub := &documents.Publication{
 		Version:  newVer.String(),
 		Document: docpb,
-		// TODO: get real latest version.
-		LatestVersion: newVer.String(),
 	}
 
 	// TODO: move this elsewhere. Combine db writes into one transaction.
@@ -294,20 +291,16 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 			return nil, err
 		}
 
-		if err := vcssql.PublicationsUpsert(conn, ohash,
-			doc.State().Title,
-			doc.State().Subtitle,
-			int(doc.State().CreateTime.Unix()),
-			int(doc.State().UpdateTime.Unix()),
-			int(pub.Document.PublishTime.Seconds),
-			pub.LatestVersion,
-		); err != nil {
+		// TODO: avoid this redundant
+		var recordedEvts []vcstypes.DocumentEvent
+		if err := cbornode.DecodeInto(recorded.Body, &recordedEvts); err != nil {
+			return nil, err
+		}
+
+		if err := api.index.IndexDocumentChange(ctx, recorded.ID, recorded.Change, recordedEvts); err != nil {
 			return nil, err
 		}
 	}
-
-	// Delete draft from the index.
-	// Add publication to the index.
 
 	return pub, nil
 }
@@ -371,8 +364,6 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	return &documents.Publication{
 		Version:  ver.String(),
 		Document: docpb,
-		// TODO: get real latest version.
-		LatestVersion: ver.String(),
 	}, nil
 }
 
@@ -420,40 +411,93 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 }
 
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
+	me, ok := api.me.Get()
+	if !ok {
+		return nil, fmt.Errorf("account is not initialized yet")
+	}
+
 	conn, release, err := api.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer release()
 
-	list, err := vcssql.PublicationsList(conn)
+	pubs, err := vcssql.PermanodesListByType(conn, string(vcstypes.DocumentType))
 	if err != nil {
 		return nil, err
 	}
 
-	out := &documents.ListPublicationsResponse{
-		Publications: make([]*documents.Publication, len(list)),
+	indexed, err := vcssql.DocumentsListIndexed(conn)
+	if err != nil {
+		return nil, err
 	}
 
-	for i, l := range list {
-		aid := cid.NewCidV1(uint64(core.CodecAccountKey), l.AccountsMultihash)
-		pubid := cid.NewCidV1(uint64(l.IPFSBlocksCodec), l.IPFSBlocksMultihash).String()
-		out.Publications[i] = &documents.Publication{
+	combined := map[int]*documents.Publication{}
+
+	for _, p := range pubs {
+		if p.IPFSBlocksCodec != cid.DagCBOR {
+			panic("BUG: bad cid codec for document permanode")
+		}
+
+		// If we got more than one row when listing permanodes it means that it has
+		// more than one owner, because we join permanodes with their owners in the query.
+		// While this is something we made possible for the future, right now it's not implemented,
+		// nor supported anywhere beyond the database schema.
+		if _, ok := combined[p.PermanodesID]; ok {
+			panic("BUG: permanodes with multiple owners are not supported yet")
+		}
+
+		oid := cid.NewCidV1(uint64(p.IPFSBlocksCodec), p.IPFSBlocksMultihash)
+		aid := cid.NewCidV1(core.CodecAccountKey, p.AccountsMultihash)
+
+		// TODO: we should be storing versions for each device separately and combine the version set into one on demand.
+		ver, err := api.vcs.LoadNamedVersion(ctx, oid, me.AccountID(), me.DeviceKey().CID(), "main")
+		if err != nil {
+			return nil, err
+		}
+
+		combined[p.PermanodesID] = &documents.Publication{
 			Document: &documents.Document{
-				Id:          pubid,
-				Author:      aid.String(),
-				Title:       l.PublicationsTitle,
-				Subtitle:    l.PublicationsSubtitle,
-				CreateTime:  &timestamppb.Timestamp{Seconds: int64(l.PublicationsCreateTime)},
-				UpdateTime:  &timestamppb.Timestamp{Seconds: int64(l.PublicationsUpdateTime)},
-				PublishTime: &timestamppb.Timestamp{Seconds: int64(l.PublicationsPublishTime)},
+				Id:         oid.String(),
+				Author:     aid.String(),
+				CreateTime: &timestamppb.Timestamp{Seconds: int64(p.PermanodesCreateTime)},
 			},
-			Version:       l.PublicationsLatestVersion,
-			LatestVersion: l.PublicationsLatestVersion,
+			Version: ver.String(),
 		}
 	}
 
-	return out, nil
+	for _, d := range indexed {
+		pubpb, ok := combined[d.DocumentsID]
+		if !ok {
+			continue
+		}
+
+		if d.DocumentsTitle != "" {
+			pubpb.Document.Title = d.DocumentsTitle
+		}
+
+		if d.DocumentsSubtitle != "" {
+			pubpb.Document.Subtitle = d.DocumentsSubtitle
+		}
+
+		// TODO: get rid of this. Index required fields of changes in a separate table.
+		// Otherwise the cost of serialization for each list item is going to be huge.
+		var sc vcs.SignedCBOR[vcs.Change]
+		if err := cbornode.DecodeInto(d.ChangeData, &sc); err != nil {
+			return nil, err
+		}
+
+		pubpb.Document.UpdateTime = timestamppb.New(sc.Payload.CreateTime)
+	}
+
+	out := maps.Values(combined)
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].Document.CreateTime.Seconds < out[j].Document.CreateTime.Seconds
+	})
+
+	return &documents.ListPublicationsResponse{
+		Publications: out,
+	}, nil
 }
 
 type draft struct {

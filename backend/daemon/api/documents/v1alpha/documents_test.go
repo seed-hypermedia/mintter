@@ -439,9 +439,7 @@ func TestAPIPublishDraft(t *testing.T) {
 
 	require.NotEqual(t, "", published.Document.Id, "publication must have id")
 	require.NotEqual(t, "", published.Version, "publication must have version")
-	require.NotEqual(t, "", published.LatestVersion, "publication must have latest version")
 	require.Equal(t, draft.Id, published.Document.Id)
-	require.Equal(t, published.Version, published.LatestVersion, "published version must be the last one")
 
 	docid, err := cid.Decode(published.Document.Id)
 	require.NoError(t, err)
@@ -451,7 +449,6 @@ func TestAPIPublishDraft(t *testing.T) {
 
 	require.Equal(t, published.Version, version.String(), "published version must match the database")
 	require.Len(t, version.CIDs(), 1, "published version must have one CID")
-	require.Equal(t, published.LatestVersion, version.String(), "published latest version must match the database")
 
 	require.True(t, start.Before(published.Document.CreateTime.AsTime()), "create time must be after test start")
 	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")

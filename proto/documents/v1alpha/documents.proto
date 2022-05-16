@@ -224,10 +224,6 @@ message Publication {
 
   // Document metadata.
   Document document = 2;
-
-  // The most recent version of the publication that is stored locally.
-  // This could be useful to detect that the publication being read is not the most recent one.
-  string latest_version = 3;
 }
 
 // Document represents metadata and content of a draft or publication.

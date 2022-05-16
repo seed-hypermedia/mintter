@@ -17,13 +17,13 @@ import (
 
 type Syncer struct {
 	vcs   *vcs.SQLite
-	index *Service
+	index *Index
 
 	// TODO: this shouldn't be needed. Need to implement hydrating the object from a version set of multiple peers.
 	me core.Identity
 }
 
-func NewSyncer(idx *Service, me core.Identity) *Syncer {
+func NewSyncer(idx *Index, me core.Identity) *Syncer {
 	return &Syncer{
 		index: idx,
 		vcs:   idx.vcs,

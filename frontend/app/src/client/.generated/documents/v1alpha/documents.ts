@@ -171,11 +171,6 @@ export interface Publication {
   version: string;
   /** Document metadata. */
   document: Document | undefined;
-  /**
-   * The most recent version of the publication that is stored locally.
-   * This could be useful to detect that the publication being read is not the most recent one.
-   */
-  latestVersion: string;
 }
 
 /** Document represents metadata and content of a draft or publication. */
@@ -1427,7 +1422,7 @@ export const ListCitationsResponse = {
 };
 
 function createBasePublication(): Publication {
-  return { version: "", document: undefined, latestVersion: "" };
+  return { version: "", document: undefined };
 }
 
 export const Publication = {
@@ -1440,9 +1435,6 @@ export const Publication = {
     }
     if (message.document !== undefined) {
       Document.encode(message.document, writer.uint32(18).fork()).ldelim();
-    }
-    if (message.latestVersion !== "") {
-      writer.uint32(26).string(message.latestVersion);
     }
     return writer;
   },
@@ -1460,9 +1452,6 @@ export const Publication = {
         case 2:
           message.document = Document.decode(reader, reader.uint32());
           break;
-        case 3:
-          message.latestVersion = reader.string();
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1477,9 +1466,6 @@ export const Publication = {
       document: isSet(object.document)
         ? Document.fromJSON(object.document)
         : undefined,
-      latestVersion: isSet(object.latestVersion)
-        ? String(object.latestVersion)
-        : "",
     };
   },
 
@@ -1490,8 +1476,6 @@ export const Publication = {
       (obj.document = message.document
         ? Document.toJSON(message.document)
         : undefined);
-    message.latestVersion !== undefined &&
-      (obj.latestVersion = message.latestVersion);
     return obj;
   },
 
@@ -1504,7 +1488,6 @@ export const Publication = {
       object.document !== undefined && object.document !== null
         ? Document.fromPartial(object.document)
         : undefined;
-    message.latestVersion = object.latestVersion ?? "";
     return message;
   },
 };
