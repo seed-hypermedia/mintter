@@ -6,7 +6,6 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcstypes"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -80,7 +79,9 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 		return err
 	}
 
-	n.verifyMintterPeerAsync(h)
+	if err := n.verifyMintterPeer(ctx, h); err != nil {
+		return fmt.Errorf("failed to verify mintter peer: %w", err)
+	}
 
 	return nil
 }
@@ -146,16 +147,13 @@ func decodeHandshake(device cid.Cid, theirInfo *p2p.HandshakeInfo) (out decodedH
 func (n *Node) verifyMintterPeer(ctx context.Context, h decodedHandshake) error {
 	sess := n.bitswap.NewSession(ctx)
 
-	if err := vcstypes.SyncObjectFromVersion(ctx, n.vcs, n.me, h.accountObj, sess, h.ver); err != nil {
+	if err := n.syncer.SyncFromVersion(ctx, n.me.AccountID(), n.me.DeviceKey().CID(), h.accountObj, sess, h.ver); err != nil {
 		return fmt.Errorf("failed to sync peer account object: %w", err)
 	}
 
-	// Sync
-	// Index
+	// TODO:
 	// Check if device is trusted.
 	// Disconnet, unprotect, and blacklist if revoked.
-
-	// n.vcs.SyncObjectFromVersion(ctx)
 
 	return nil
 }

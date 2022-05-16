@@ -19,25 +19,6 @@ func init() {
 	)
 }
 
-// We'll need this table in the future, but not now.
-// -- Stores changes for objects.
-// 		CREATE TABLE changes (
-// 			-- Alias to the rowid for simpler indexing.
-// 			id INTEGER PRIMARY KEY,
-// 			-- Reference to the Object being changed.
-// 			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
-// 			-- Reference to the Device that signed the Change.
-// 			device_id INTEGER REFERENCES devices NOT NULL,
-// 			-- Sequence number from the Change.
-// 			seq INTEGER CHECK (seq > 0),
-// 			-- Lamport timestamp of the Change.
-// 			lamport_time INTEGER CHECK (lamport_time > 0),
-// 			-- Reference to the IPFS Blob with contents of the Change.
-// 			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
-// 			-- Composite key that uniquely identifies a Change.
-// 			UNIQUE (object_id, device_id, seq)
-// 		);
-
 // The list with a global set of database migrations.
 // Append-only! DO NOT REMOVE, EDIT, OR REORDER PREVIOUS ENTRIES.
 // Do not add statements to existing migration scripts, append new ones instead.
@@ -68,7 +49,7 @@ var migrations = []string{
 			-- Subjective (locally perceived) time when this block was fetched for the first time.
 			-- Not sure if actually useful, but might become at some point.
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-			UNIQUE (multihash, codec)
+			UNIQUE (multihash)
 		);
 
 		-- Stores data about Mintter Accounts.
@@ -77,14 +58,8 @@ var migrations = []string{
 			id INTEGER PRIMARY KEY,
 			-- Multihash part of the Account ID.
 			multihash BLOB UNIQUE NOT NULL,
-			-- Codec part of the Account ID.
-			codec INTEGER NOT NULL,
-			-- Currently known value for the profile alias.
-			alias TEXT,
-			-- Currently known value for the profile bio.
-			bio TEXT,
-			-- Currently known value for the profile email.
-			email TEXT
+			-- Subjective (locally perceived) time when the item was created.
+			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 		);
 
 		-- Stores data about Mintter Devices.
@@ -93,66 +68,56 @@ var migrations = []string{
 			id INTEGER PRIMARY KEY,
 			-- Multihash part of the Device ID.
 			multihash BLOB UNIQUE NOT NULL,
-			-- Codec part of the Device ID.
-			codec INTEGER NOT NULL,
 			-- Bytes of the public key.
 			-- Mostly NULL because Ed25519 keys can be extracted from the CID.
 			public_key BLOB DEFAULT NULL,
-			-- Reference to the Account this Device belongs to.
-			account_id INTEGER REFERENCES accounts,
 			-- Subjective (locally perceived) time when the item was created.
 			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 		);
 
-		CREATE TABLE device_accounts (
+		-- Stores relationships between accounts and devices.
+		CREATE TABLE account_devices (
 			account_id INTEGER REFERENCES accounts NOT NULL,
 			device_id INTEGER REFERENCES devices NOT NULL,
-			-- Subjective (locally perceived) time when the item was created.
-			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+			change_id INTEGER REFERENCES ipfs_blocks NOT NULL,
 			PRIMARY KEY (account_id, device_id)
 		) WITHOUT ROWID;
 
-		CREATE INDEX idx_account_devices ON device_accounts (device_id, account_id);
+		-- Helps to query accounts of a device.
+		CREATE INDEX idx_device_accounts ON account_devices (device_id, account_id);
+		
+		-- Stores references to the IPFS blocks that are Mintter Permanodes.
+		CREATE TABLE permanodes (
+			id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+			type TEXT NOT NULL CHECK (type != ''),
+			create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+			PRIMARY KEY (type, id)
+		) WITHOUT ROWID;
 
-		-- Index to support querying devices by account.
-		CREATE INDEX idx_devices_by_account ON devices (account_id);
-
-		-- Stores data about Mintter Objects.
-		CREATE TABLE objects (
-			-- Short numerical ID to be used internally.
-			id INTEGER PRIMARY KEY,
-			multihash BLOB UNIQUE NOT NULL,
-			codec INTEGER NOT NULL,
-			-- Reference to the Account that created the Object.
+		-- Helps to query permanode by IPFS block ID. We don't do it often,
+		-- but it's useful for deletes and some other things.
+		CREATE INDEX idx_permanodes_block ON permanodes (id);
+		
+		-- Stores owners of the Mintter Permanode objects.
+		CREATE TABLE permanode_owners (
 			account_id INTEGER REFERENCES accounts NOT NULL,
-			FOREIGN KEY (id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
-		);
+			permanode_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+			PRIMARY KEY (account_id, permanode_id)
+		) WITHOUT ROWID;
 
-		CREATE TRIGGER trg_objects_after_insert AFTER INSERT ON objects
-		FOR EACH ROW BEGIN
-			SELECT CASE
-				WHEN (
-					SELECT COUNT(id) FROM ipfs_blocks
-					WHERE id = new.id
-					AND multihash = new.multihash
-					AND codec = new.codec
-				) == 0
-				THEN RAISE(ABORT, 'foreign key missmatch objects != ipfs_blocks')
-			END;
-		END;
+		-- Helps to query by block ID which is useful when deleting a permanode.
+		CREATE INDEX idx_permanode_owners_by_block ON permanode_owners (permanode_id);
 
-		-- Temporary table prior to refactor.
-		CREATE TABLE heads (
-			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
-			device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
-			seq INTEGER CHECK (seq > 0) NOT NULL,
-			lamport_time INTEGER CHECK (lamport_time > 0) NOT NULL,
-			ipfs_block_id INTEGER REFERENCES ipfs_blocks NOT NULL,
-			PRIMARY KEY (object_id, device_id)
-		);
-
+		CREATE TABLE object_index (
+			object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+			attribute TEXT NOT NULL CHECK (attribute != ''),
+			change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+			value BLOB NOT NULL,
+			PRIMARY KEY (object_id, attribute, change_id)
+		) WITHOUT ROWID;
+		
 		CREATE TABLE named_versions (
-			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 			account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
 			device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
 			name TEXT NOT NULL,
@@ -161,7 +126,7 @@ var migrations = []string{
 		) WITHOUT ROWID;
 
 		CREATE TABLE working_copy (
-			object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 			name TEXT NOT NULL,
 			data BLOB,
 			version TEXT DEFAULT ('') NOT NULL,
@@ -178,7 +143,7 @@ var migrations = []string{
 			content BLOB,
 			create_time INTEGER NOT NULL CHECK (create_time > 500),
 			update_time INTEGER NOT NULL CHECK (update_time > 500),
-			FOREIGN KEY (id) REFERENCES objects ON DELETE CASCADE
+			FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
 		);
 
 		-- Stores publication-related attributes of an Object.
@@ -190,7 +155,7 @@ var migrations = []string{
 			update_time INTEGER NOT NULL CHECK (update_time > 500),
 			publish_time INTEGER NOT NULL CHECK (publish_time > 500),
 			latest_version TEXT NOT NULL,
-			FOREIGN KEY (id) REFERENCES objects ON DELETE CASCADE
+			FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
 		);
 
 		-- Index for links from Documents.
@@ -198,14 +163,14 @@ var migrations = []string{
 			-- Alias to the rowid so we can delete links efficiently.
 			id INTEGER PRIMARY KEY,
 			-- Reference to Document ID from which link originates.
-			source_object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			source_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 			-- Block ID inside the Document which contains the link.
 			source_block_id TEXT NOT NULL CHECK (source_block_id != ''),
 			-- Reference to the IPFS block of the change that introduced the link.
 			-- Only required for publications. Otherwise the link is from the current draft.
 			source_ipfs_block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
 			-- Reference to Document ID that is linked.
-			target_object_id INTEGER REFERENCES objects ON DELETE CASCADE NOT NULL,
+			target_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 			-- Block ID that is linked. Can be NULL if links is to the whole Document.
 			target_block_id TEXT NOT NULL DEFAULT '',
 			-- Version of the target Document that is linked.
@@ -267,6 +232,7 @@ var migrations = []string{
 // like foreign keys.
 func Open(uri string, flags sqlite.OpenFlags, poolSize int) (*sqlitex.Pool, error) {
 	return open(uri, flags, poolSize,
+		"PRAGMA encoding = \"UTF-8\";",
 		"PRAGMA foreign_keys = ON;",
 		"PRAGMA synchronous = NORMAL;",
 		"PRAGMA journal_mode = WAL;",

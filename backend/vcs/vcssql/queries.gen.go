@@ -104,16 +104,15 @@ type AccountsLookupPKResult struct {
 	AccountsID int
 }
 
-func AccountsLookupPK(conn *sqlite.Conn, accountsMultihash []byte, accountsCodec int) (AccountsLookupPKResult, error) {
+func AccountsLookupPK(conn *sqlite.Conn, accountsMultihash []byte) (AccountsLookupPKResult, error) {
 	const query = `SELECT accounts.id
 FROM accounts
-WHERE accounts.multihash = :accountsMultihash AND accounts.codec = :accountsCodec`
+WHERE accounts.multihash = :accountsMultihash`
 
 	var out AccountsLookupPKResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":accountsMultihash", accountsMultihash)
-		stmt.SetInt(":accountsCodec", accountsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -133,85 +132,18 @@ WHERE accounts.multihash = :accountsMultihash AND accounts.codec = :accountsCode
 	return out, err
 }
 
-type ObjectsLookupPKResult struct {
-	ObjectsID int
-}
-
-func ObjectsLookupPK(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) (ObjectsLookupPKResult, error) {
-	const query = `SELECT objects.id
-FROM objects
-WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec`
-
-	var out ObjectsLookupPKResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("ObjectsLookupPK: more than one result return for a single-kind query")
-		}
-
-		out.ObjectsID = stmt.ColumnInt(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ObjectsLookupPK: %w", err)
-	}
-
-	return out, err
-}
-
-type DevicesLookupPKResult struct {
-	DevicesID int
-}
-
-func DevicesLookupPK(conn *sqlite.Conn, devicesMultihash []byte, devicesCodec int) (DevicesLookupPKResult, error) {
-	const query = `SELECT devices.id
-FROM devices
-WHERE devices.multihash = :devicesMultihash AND devices.codec = :devicesCodec`
-
-	var out DevicesLookupPKResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":devicesMultihash", devicesMultihash)
-		stmt.SetInt(":devicesCodec", devicesCodec)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("DevicesLookupPK: more than one result return for a single-kind query")
-		}
-
-		out.DevicesID = stmt.ColumnInt(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: DevicesLookupPK: %w", err)
-	}
-
-	return out, err
-}
-
 type AccountsInsertPKResult struct {
 	AccountsID int
 }
 
-func AccountsInsertPK(conn *sqlite.Conn, accountsMultihash []byte, accountsCodec int) (AccountsInsertPKResult, error) {
-	const query = `INSERT INTO accounts (multihash, codec)
-VALUES (:accountsMultihash, :accountsCodec) RETURNING accounts.id`
+func AccountsInsertPK(conn *sqlite.Conn, accountsMultihash []byte) (AccountsInsertPKResult, error) {
+	const query = `INSERT INTO accounts (multihash)
+VALUES (:accountsMultihash) RETURNING accounts.id`
 
 	var out AccountsInsertPKResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":accountsMultihash", accountsMultihash)
-		stmt.SetInt(":accountsCodec", accountsCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -234,13 +166,13 @@ VALUES (:accountsMultihash, :accountsCodec) RETURNING accounts.id`
 type AccountsGetForDeviceResult struct {
 	AccountsID        int
 	AccountsMultihash []byte
-	AccountsCodec     int
 }
 
 func AccountsGetForDevice(conn *sqlite.Conn, devicesMultihash []byte) (AccountsGetForDeviceResult, error) {
-	const query = `SELECT accounts.id, accounts.multihash, accounts.codec
+	const query = `SELECT accounts.id, accounts.multihash
 FROM accounts
-WHERE accounts.id = COALESCE((SELECT devices.account_id FROM devices WHERE devices.multihash = :devicesMultihash LIMIT 1), -1000)`
+JOIN account_devices ON account_devices.account_id = accounts.id
+WHERE account_devices.device_id = COALESCE((SELECT devices.id FROM devices WHERE devices.multihash = :devicesMultihash LIMIT 1), -1000)`
 
 	var out AccountsGetForDeviceResult
 
@@ -255,7 +187,6 @@ WHERE accounts.id = COALESCE((SELECT devices.account_id FROM devices WHERE devic
 
 		out.AccountsID = stmt.ColumnInt(0)
 		out.AccountsMultihash = stmt.ColumnBytes(1)
-		out.AccountsCodec = stmt.ColumnInt(2)
 		return nil
 	}
 
@@ -268,15 +199,11 @@ WHERE accounts.id = COALESCE((SELECT devices.account_id FROM devices WHERE devic
 }
 
 type AccountsListResult struct {
-	AccountsCodec     int
 	AccountsMultihash []byte
-	AccountsAlias     string
-	AccountsEmail     string
-	AccountsBio       string
 }
 
 func AccountsList(conn *sqlite.Conn, ownAccountMultihash []byte) ([]AccountsListResult, error) {
-	const query = `SELECT accounts.codec, accounts.multihash, accounts.alias, accounts.email, accounts.bio
+	const query = `SELECT accounts.multihash
 FROM accounts
 WHERE accounts.multihash != :ownAccountMultihash`
 
@@ -288,11 +215,7 @@ WHERE accounts.multihash != :ownAccountMultihash`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, AccountsListResult{
-			AccountsCodec:     stmt.ColumnInt(0),
-			AccountsMultihash: stmt.ColumnBytes(1),
-			AccountsAlias:     stmt.ColumnText(2),
-			AccountsEmail:     stmt.ColumnText(3),
-			AccountsBio:       stmt.ColumnText(4),
+			AccountsMultihash: stmt.ColumnBytes(0),
 		})
 
 		return nil
@@ -306,33 +229,33 @@ WHERE accounts.multihash != :ownAccountMultihash`
 	return out, err
 }
 
-type ObjectsInsertPKResult struct {
-	ObjectsID int
+type DevicesLookupPKResult struct {
+	DevicesID int
 }
 
-func ObjectsInsertPK(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) (ObjectsInsertPKResult, error) {
-	const query = `INSERT INTO objects (multihash, codec)
-VALUES (:objectsMultihash, :objectsCodec) RETURNING objects.id`
+func DevicesLookupPK(conn *sqlite.Conn, devicesMultihash []byte) (DevicesLookupPKResult, error) {
+	const query = `SELECT devices.id
+FROM devices
+WHERE devices.multihash = :devicesMultihash`
 
-	var out ObjectsInsertPKResult
+	var out DevicesLookupPKResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":devicesMultihash", devicesMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("ObjectsInsertPK: more than one result return for a single-kind query")
+			return errors.New("DevicesLookupPK: more than one result return for a single-kind query")
 		}
 
-		out.ObjectsID = stmt.ColumnInt(0)
+		out.DevicesID = stmt.ColumnInt(0)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: ObjectsInsertPK: %w", err)
+		err = fmt.Errorf("failed query: DevicesLookupPK: %w", err)
 	}
 
 	return out, err
@@ -342,15 +265,14 @@ type DevicesInsertPKResult struct {
 	DevicesID int
 }
 
-func DevicesInsertPK(conn *sqlite.Conn, devicesMultihash []byte, devicesCodec int) (DevicesInsertPKResult, error) {
-	const query = `INSERT INTO devices (multihash, codec)
-VALUES (:devicesMultihash, :devicesCodec) RETURNING devices.id`
+func DevicesInsertPK(conn *sqlite.Conn, devicesMultihash []byte) (DevicesInsertPKResult, error) {
+	const query = `INSERT INTO devices (multihash)
+VALUES (:devicesMultihash) RETURNING devices.id`
 
 	var out DevicesInsertPKResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":devicesMultihash", devicesMultihash)
-		stmt.SetInt(":devicesCodec", devicesCodec)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -370,14 +292,13 @@ VALUES (:devicesMultihash, :devicesCodec) RETURNING devices.id`
 	return out, err
 }
 
-func DevicesUpdateAccount(conn *sqlite.Conn, devicesAccountID int, devicesID int) error {
-	const query = `UPDATE devices
-SET account_id = :devicesAccountID
-WHERE id = :devicesID`
+func AccountDevicesInsertOrIgnore(conn *sqlite.Conn, accountDevicesAccountID int, accountDevicesDeviceID int, accountDevicesChangeID int) error {
+	const query = `INSERT OR IGNORE INTO account_devices (account_id, device_id, change_id) VALUES (:accountDevicesAccountID, :accountDevicesDeviceID, :accountDevicesChangeID)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":devicesAccountID", devicesAccountID)
-		stmt.SetInt(":devicesID", devicesID)
+		stmt.SetInt(":accountDevicesAccountID", accountDevicesAccountID)
+		stmt.SetInt(":accountDevicesDeviceID", accountDevicesDeviceID)
+		stmt.SetInt(":accountDevicesChangeID", accountDevicesChangeID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -386,35 +307,31 @@ WHERE id = :devicesID`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: DevicesUpdateAccount: %w", err)
+		err = fmt.Errorf("failed query: AccountDevicesInsertOrIgnore: %w", err)
 	}
 
 	return err
 }
 
-type DevicesListResult struct {
-	DevicesCodec      int
+type AccountDevicesListResult struct {
 	DevicesMultihash  []byte
-	AccountsCodec     int
 	AccountsMultihash []byte
 }
 
-func DevicesList(conn *sqlite.Conn) ([]DevicesListResult, error) {
-	const query = `SELECT devices.codec, devices.multihash, accounts.codec, accounts.multihash
-FROM devices
-JOIN accounts ON accounts.id = devices.account_id`
+func AccountDevicesList(conn *sqlite.Conn) ([]AccountDevicesListResult, error) {
+	const query = `SELECT devices.multihash, accounts.multihash
+FROM account_devices
+JOIN accounts ON accounts.id = account_devices.account_id JOIN devices ON devices.id = account_devices.device_id`
 
-	var out []DevicesListResult
+	var out []AccountDevicesListResult
 
 	before := func(stmt *sqlite.Stmt) {
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, DevicesListResult{
-			DevicesCodec:      stmt.ColumnInt(0),
-			DevicesMultihash:  stmt.ColumnBytes(1),
-			AccountsCodec:     stmt.ColumnInt(2),
-			AccountsMultihash: stmt.ColumnBytes(3),
+		out = append(out, AccountDevicesListResult{
+			DevicesMultihash:  stmt.ColumnBytes(0),
+			AccountsMultihash: stmt.ColumnBytes(1),
 		})
 
 		return nil
@@ -422,54 +339,10 @@ JOIN accounts ON accounts.id = devices.account_id`
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: DevicesList: %w", err)
+		err = fmt.Errorf("failed query: AccountDevicesList: %w", err)
 	}
 
 	return out, err
-}
-
-func ObjectsInsertOrIgnore(conn *sqlite.Conn, ipfsBlocksID int, objectsMultihash []byte, objectsCodec int, objectsAccountID int) error {
-	const query = `INSERT OR IGNORE INTO objects (id, multihash, codec, account_id)
-VALUES (:ipfsBlocksID, :objectsMultihash, :objectsCodec, :objectsAccountID)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":ipfsBlocksID", ipfsBlocksID)
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
-		stmt.SetInt(":objectsAccountID", objectsAccountID)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ObjectsInsertOrIgnore: %w", err)
-	}
-
-	return err
-}
-
-func ObjectsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
-	const query = `DELETE FROM objects
-WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ObjectsDelete: %w", err)
-	}
-
-	return err
 }
 
 func NamedVersionsReplace(conn *sqlite.Conn, namedVersionsObjectID int, namedVersionsAccountID int, namedVersionsDeviceID int, namedVersionsName string, namedVersionsVersion string) error {
@@ -570,13 +443,12 @@ AND ipfs_blocks.codec = :ipfsBlocksCodec
 	return out, err
 }
 
-func DraftsInsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, draftsTitle string, draftsSubtitle string, draftsCreateTime int, draftsUpdateTime int) error {
+func DraftsInsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, draftsTitle string, draftsSubtitle string, draftsCreateTime int, draftsUpdateTime int) error {
 	const query = `INSERT INTO drafts (id, title, subtitle, create_time, update_time)
-VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000), :draftsTitle, :draftsSubtitle, :draftsCreateTime, :draftsUpdateTime)`
+VALUES (COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000), :draftsTitle, :draftsSubtitle, :draftsCreateTime, :draftsUpdateTime)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
 		stmt.SetText(":draftsTitle", draftsTitle)
 		stmt.SetText(":draftsSubtitle", draftsSubtitle)
 		stmt.SetInt(":draftsCreateTime", draftsCreateTime)
@@ -595,17 +467,16 @@ VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :obje
 	return err
 }
 
-func DraftsUpdate(conn *sqlite.Conn, draftsTitle string, draftsSubtitle string, draftsUpdateTime int, objectsMultihash []byte, objectsCodec int) error {
+func DraftsUpdate(conn *sqlite.Conn, draftsTitle string, draftsSubtitle string, draftsUpdateTime int, ipfsBlocksMultihash []byte) error {
 	const query = `UPDATE drafts
 SET (title, subtitle, update_time) = (:draftsTitle, :draftsSubtitle, :draftsUpdateTime)
-WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000)`
+WHERE drafts.id = COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":draftsTitle", draftsTitle)
 		stmt.SetText(":draftsSubtitle", draftsSubtitle)
 		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -621,18 +492,18 @@ WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multiha
 }
 
 type DraftsListResult struct {
-	ObjectsMultihash []byte
-	ObjectsCodec     int
-	DraftsTitle      string
-	DraftsSubtitle   string
-	DraftsCreateTime int
-	DraftsUpdateTime int
+	IPFSBlocksMultihash []byte
+	IPFSBlocksCodec     int
+	DraftsTitle         string
+	DraftsSubtitle      string
+	DraftsCreateTime    int
+	DraftsUpdateTime    int
 }
 
 func DraftsList(conn *sqlite.Conn) ([]DraftsListResult, error) {
-	const query = `SELECT objects.multihash, objects.codec, drafts.title, drafts.subtitle, drafts.create_time, drafts.update_time
+	const query = `SELECT ipfs_blocks.multihash, ipfs_blocks.codec, drafts.title, drafts.subtitle, drafts.create_time, drafts.update_time
 FROM drafts
-JOIN objects ON objects.id = drafts.id
+JOIN ipfs_blocks ON ipfs_blocks.id = drafts.id
 `
 
 	var out []DraftsListResult
@@ -642,12 +513,12 @@ JOIN objects ON objects.id = drafts.id
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, DraftsListResult{
-			ObjectsMultihash: stmt.ColumnBytes(0),
-			ObjectsCodec:     stmt.ColumnInt(1),
-			DraftsTitle:      stmt.ColumnText(2),
-			DraftsSubtitle:   stmt.ColumnText(3),
-			DraftsCreateTime: stmt.ColumnInt(4),
-			DraftsUpdateTime: stmt.ColumnInt(5),
+			IPFSBlocksMultihash: stmt.ColumnBytes(0),
+			IPFSBlocksCodec:     stmt.ColumnInt(1),
+			DraftsTitle:         stmt.ColumnText(2),
+			DraftsSubtitle:      stmt.ColumnText(3),
+			DraftsCreateTime:    stmt.ColumnInt(4),
+			DraftsUpdateTime:    stmt.ColumnInt(5),
 		})
 
 		return nil
@@ -661,13 +532,12 @@ JOIN objects ON objects.id = drafts.id
 	return out, err
 }
 
-func DraftsDelete(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int) error {
+func DraftsDelete(conn *sqlite.Conn, ipfsBlocksMultihash []byte) error {
 	const query = `DELETE FROM drafts
-WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000)`
+WHERE drafts.id = COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -682,14 +552,13 @@ WHERE drafts.id = COALESCE((SELECT objects.id FROM objects WHERE objects.multiha
 	return err
 }
 
-func PublicationsUpsert(conn *sqlite.Conn, objectsMultihash []byte, objectsCodec int, publicationsTitle string, publicationsSubtitle string, publicationsCreateTime int, publicationsUpdateTime int, publicationsPublishTime int, publicationsLatestVersion string) error {
+func PublicationsUpsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, publicationsTitle string, publicationsSubtitle string, publicationsCreateTime int, publicationsUpdateTime int, publicationsPublishTime int, publicationsLatestVersion string) error {
 	const query = `INSERT OR REPLACE
 INTO publications (id, title, subtitle, create_time, update_time, publish_time, latest_version)
-VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :objectsMultihash AND objects.codec = :objectsCodec LIMIT 1), -1000), :publicationsTitle, :publicationsSubtitle, :publicationsCreateTime, :publicationsUpdateTime, :publicationsPublishTime, :publicationsLatestVersion)`
+VALUES (COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000), :publicationsTitle, :publicationsSubtitle, :publicationsCreateTime, :publicationsUpdateTime, :publicationsPublishTime, :publicationsLatestVersion)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":objectsMultihash", objectsMultihash)
-		stmt.SetInt(":objectsCodec", objectsCodec)
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
 		stmt.SetText(":publicationsTitle", publicationsTitle)
 		stmt.SetText(":publicationsSubtitle", publicationsSubtitle)
 		stmt.SetInt(":publicationsCreateTime", publicationsCreateTime)
@@ -711,9 +580,8 @@ VALUES (COALESCE((SELECT objects.id FROM objects WHERE objects.multihash = :obje
 }
 
 type PublicationsListResult struct {
-	ObjectsCodec              int
-	ObjectsMultihash          []byte
-	AccountsCodec             int
+	IPFSBlocksCodec           int
+	IPFSBlocksMultihash       []byte
 	AccountsMultihash         []byte
 	PublicationsTitle         string
 	PublicationsSubtitle      string
@@ -724,10 +592,10 @@ type PublicationsListResult struct {
 }
 
 func PublicationsList(conn *sqlite.Conn) ([]PublicationsListResult, error) {
-	const query = `SELECT objects.codec, objects.multihash, accounts.codec, accounts.multihash, publications.title, publications.subtitle, publications.create_time, publications.update_time, publications.publish_time, publications.latest_version
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, accounts.multihash, publications.title, publications.subtitle, publications.create_time, publications.update_time, publications.publish_time, publications.latest_version
 FROM publications
-JOIN objects ON objects.id = publications.id
-JOIN accounts ON accounts.id = objects.account_id`
+JOIN ipfs_blocks ON ipfs_blocks.id = publications.id
+JOIN permanode_owners ON permanode_owners.permanode_id = ipfs_blocks.id JOIN accounts ON accounts.id = permanode_owners.account_id`
 
 	var out []PublicationsListResult
 
@@ -736,16 +604,15 @@ JOIN accounts ON accounts.id = objects.account_id`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, PublicationsListResult{
-			ObjectsCodec:              stmt.ColumnInt(0),
-			ObjectsMultihash:          stmt.ColumnBytes(1),
-			AccountsCodec:             stmt.ColumnInt(2),
-			AccountsMultihash:         stmt.ColumnBytes(3),
-			PublicationsTitle:         stmt.ColumnText(4),
-			PublicationsSubtitle:      stmt.ColumnText(5),
-			PublicationsCreateTime:    stmt.ColumnInt(6),
-			PublicationsUpdateTime:    stmt.ColumnInt(7),
-			PublicationsPublishTime:   stmt.ColumnInt(8),
-			PublicationsLatestVersion: stmt.ColumnText(9),
+			IPFSBlocksCodec:           stmt.ColumnInt(0),
+			IPFSBlocksMultihash:       stmt.ColumnBytes(1),
+			AccountsMultihash:         stmt.ColumnBytes(2),
+			PublicationsTitle:         stmt.ColumnText(3),
+			PublicationsSubtitle:      stmt.ColumnText(4),
+			PublicationsCreateTime:    stmt.ColumnInt(5),
+			PublicationsUpdateTime:    stmt.ColumnInt(6),
+			PublicationsPublishTime:   stmt.ColumnInt(7),
+			PublicationsLatestVersion: stmt.ColumnText(8),
 		})
 
 		return nil
@@ -754,6 +621,111 @@ JOIN accounts ON accounts.id = objects.account_id`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: PublicationsList: %w", err)
+	}
+
+	return out, err
+}
+
+func PermanodesInsertOrIgnore(conn *sqlite.Conn, permanodesType string, permanodesID int, permanodesCreateTime int) error {
+	const query = `INSERT OR IGNORE INTO permanodes (type, id, create_time)
+VALUES (:permanodesType, :permanodesID, :permanodesCreateTime)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":permanodesType", permanodesType)
+		stmt.SetInt(":permanodesID", permanodesID)
+		stmt.SetInt(":permanodesCreateTime", permanodesCreateTime)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PermanodesInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+func PermanodeOwnersInsertOrIgnore(conn *sqlite.Conn, permanodeOwnersAccountID int, permanodeOwnersPermanodeID int) error {
+	const query = `INSERT OR IGNORE INTO permanode_owners (account_id, permanode_id)
+VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":permanodeOwnersAccountID", permanodeOwnersAccountID)
+		stmt.SetInt(":permanodeOwnersPermanodeID", permanodeOwnersPermanodeID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PermanodeOwnersInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+func ObjectIndexInsertOrIgnore(conn *sqlite.Conn, objectIndexObjectID int, objectIndexAttribute string, objectIndexChangeID int, objectIndexValue []byte) error {
+	const query = `INSERT OR IGNORE INTO object_index (object_id, attribute, change_id, value) VALUES (:objectIndexObjectID, :objectIndexAttribute, :objectIndexChangeID, :objectIndexValue)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":objectIndexObjectID", objectIndexObjectID)
+		stmt.SetText(":objectIndexAttribute", objectIndexAttribute)
+		stmt.SetInt(":objectIndexChangeID", objectIndexChangeID)
+		stmt.SetBytes(":objectIndexValue", objectIndexValue)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ObjectIndexInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+type ObjectIndexListMaxAttrsResult struct {
+	IPFSBlocksMultihash  []byte
+	ObjectIndexObjectID  int
+	ObjectIndexAttribute string
+	ObjectIndexValue     []byte
+	Version              int
+}
+
+func ObjectIndexListMaxAttrs(conn *sqlite.Conn, permanodesType string) ([]ObjectIndexListMaxAttrsResult, error) {
+	const query = `SELECT ipfs_blocks.multihash, object_index.object_id, object_index.attribute, object_index.value, MAX(object_index.change_id) AS version FROM object_index
+JOIN permanodes ON permanodes.id = object_index.object_id
+JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
+WHERE permanodes.type = :permanodesType GROUP BY object_index.attribute`
+
+	var out []ObjectIndexListMaxAttrsResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":permanodesType", permanodesType)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, ObjectIndexListMaxAttrsResult{
+			IPFSBlocksMultihash:  stmt.ColumnBytes(0),
+			ObjectIndexObjectID:  stmt.ColumnInt(1),
+			ObjectIndexAttribute: stmt.ColumnText(2),
+			ObjectIndexValue:     stmt.ColumnBytes(3),
+			Version:              stmt.ColumnInt(4),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ObjectIndexListMaxAttrs: %w", err)
 	}
 
 	return out, err

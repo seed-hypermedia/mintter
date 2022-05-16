@@ -6,7 +6,10 @@ subinclude("//build/rules/go:defs", "//build/rules/codegen:defs")
 # exposed and depended on in the `mintterd` rule.
 generated(
     name = "schema",
-    srcs = ["gen.go"],
+    srcs = [
+        "gen.go",
+        "sqliteschema.go",
+    ],
     outs = ["schema.gen.go"],
     cmd = """
 export GOROOT="$($TOOLS_GO env GOROOT)"

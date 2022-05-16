@@ -6,7 +6,6 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/crdt"
 	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/ipfs"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
@@ -77,9 +76,9 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		}
 		defer release()
 
-		ocodec, ohash := ipfs.DecodeCID(permablk.Cid())
+		ohash := permablk.Cid().Hash()
 
-		if err := vcssql.DraftsInsert(conn, ohash, int(ocodec), "", "", int(p.CreateTime.Unix()), int(p.CreateTime.Unix())); err != nil {
+		if err := vcssql.DraftsInsert(conn, ohash, "", "", int(p.CreateTime.Unix()), int(p.CreateTime.Unix())); err != nil {
 			return nil, err
 		}
 	}
@@ -166,9 +165,9 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		}
 		defer release()
 
-		ocodec, ohash := ipfs.DecodeCID(oid)
+		ohash := oid.Hash()
 
-		if err := vcssql.DraftsUpdate(conn, doc.State().Title, doc.State().Subtitle, int(doc.State().UpdateTime.Unix()), ohash, int(ocodec)); err != nil {
+		if err := vcssql.DraftsUpdate(conn, doc.State().Title, doc.State().Subtitle, int(doc.State().UpdateTime.Unix()), ohash); err != nil {
 			return nil, err
 		}
 	}
@@ -218,7 +217,7 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 
 	for i, l := range res {
 		out.Documents[i] = &documents.Document{
-			Id:         cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String(),
+			Id:         cid.NewCidV1(uint64(l.IPFSBlocksCodec), l.IPFSBlocksMultihash).String(),
 			Author:     aid,
 			Title:      l.DraftsTitle,
 			Subtitle:   l.DraftsSubtitle,
@@ -289,13 +288,13 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		}
 		defer release()
 
-		ocodec, ohash := ipfs.DecodeCID(oid)
+		ohash := oid.Hash()
 
-		if err := vcssql.DraftsDelete(conn, ohash, int(ocodec)); err != nil {
+		if err := vcssql.DraftsDelete(conn, ohash); err != nil {
 			return nil, err
 		}
 
-		if err := vcssql.PublicationsUpsert(conn, ohash, int(ocodec),
+		if err := vcssql.PublicationsUpsert(conn, ohash,
 			doc.State().Title,
 			doc.State().Subtitle,
 			int(doc.State().CreateTime.Unix()),
@@ -319,17 +318,13 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 		return nil, err
 	}
 
-	ocodec, ohash := ipfs.DecodeCID(oid)
+	// if err := vcssql.DraftsDelete(conn, ohash); err != nil {
+	// 	return nil, err
+	// }
 
-	conn, release, err := api.db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	if err := vcssql.DraftsDelete(conn, ohash, int(ocodec)); err != nil {
-		return nil, err
-	}
+	// TODO: we need to be careful here, we don't want to delete permanode actually,
+	// because there might be other changes that were published. We just want to delete the working copy and the index entry.
+	// This will break when we implement versioning.
 
 	if err := api.vcs.DeletePermanode(ctx, oid); err != nil {
 		return nil, err
@@ -441,8 +436,8 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	}
 
 	for i, l := range list {
-		aid := cid.NewCidV1(uint64(l.AccountsCodec), l.AccountsMultihash)
-		pubid := cid.NewCidV1(uint64(l.ObjectsCodec), l.ObjectsMultihash).String()
+		aid := cid.NewCidV1(uint64(core.CodecAccountKey), l.AccountsMultihash)
+		pubid := cid.NewCidV1(uint64(l.IPFSBlocksCodec), l.IPFSBlocksMultihash).String()
 		out.Publications[i] = &documents.Publication{
 			Document: &documents.Document{
 				Id:          pubid,

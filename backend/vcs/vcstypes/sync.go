@@ -15,8 +15,24 @@ import (
 	"go.uber.org/multierr"
 )
 
-func SyncObjectFromVersion(ctx context.Context, vcsh *vcs.SQLite, me core.Identity, obj cid.Cid, sess exchange.Fetcher, remoteVer vcs.Version) error {
-	bs := vcsh.Blockstore()
+type Syncer struct {
+	vcs   *vcs.SQLite
+	index *Service
+
+	// TODO: this shouldn't be needed. Need to implement hydrating the object from a version set of multiple peers.
+	me core.Identity
+}
+
+func NewSyncer(idx *Service, me core.Identity) *Syncer {
+	return &Syncer{
+		index: idx,
+		vcs:   idx.vcs,
+		me:    me,
+	}
+}
+
+func (s *Syncer) SyncFromVersion(ctx context.Context, acc, device, obj cid.Cid, sess exchange.Fetcher, remoteVer vcs.Version) error {
+	bs := s.vcs.Blockstore()
 
 	var permanode vcs.Permanode
 	{
@@ -49,13 +65,13 @@ func SyncObjectFromVersion(ctx context.Context, vcsh *vcs.SQLite, me core.Identi
 		permanode = p
 
 		if !has {
-			if err := vcsh.StorePermanode(ctx, perma, p); err != nil {
+			if err := s.vcs.StorePermanode(ctx, perma, p); err != nil {
 				return err
 			}
 		}
 	}
 
-	remoteChanges, err := fetchMissingChanges(ctx, vcsh, obj, sess, remoteVer)
+	remoteChanges, err := fetchMissingChanges(ctx, s.vcs, obj, sess, remoteVer)
 	if err != nil {
 		return fmt.Errorf("failed to fetch missing changes: %w", err)
 	}
@@ -64,7 +80,7 @@ func SyncObjectFromVersion(ctx context.Context, vcsh *vcs.SQLite, me core.Identi
 		return nil
 	}
 
-	localVer, err := vcsh.LoadNamedVersion(ctx, obj, me.AccountID(), me.DeviceKey().CID(), "main")
+	localVer, err := s.vcs.LoadNamedVersion(ctx, obj, s.me.AccountID(), s.me.DeviceKey().CID(), "main")
 	if err != nil {
 		if !vcs.IsErrNotFound(err) {
 			return err
@@ -75,20 +91,31 @@ func SyncObjectFromVersion(ctx context.Context, vcsh *vcs.SQLite, me core.Identi
 	case AccountType:
 		acc := NewAccount(obj, permanode.PermanodeOwner())
 
-		if err := vcsh.IterateChanges(ctx, obj, localVer, func(rc vcs.RecordedChange) error {
+		if err := s.vcs.IterateChanges(ctx, obj, localVer, func(rc vcs.RecordedChange) error {
 			return acc.ApplyChange(rc.ID, rc.Change)
 		}); err != nil {
 			return err
 		}
 
 		for _, f := range remoteChanges {
-			if err := acc.ApplyChange(f.Cid(), f.sc.Payload); err != nil {
-				return fmt.Errorf("failed to apply remote account change: %w", err)
+			var evts []AccountEvent
+			if err := cbornode.DecodeInto(f.sc.Payload.Body, &evts); err != nil {
+				return err
+			}
+
+			for _, evt := range evts {
+				if err := acc.Apply(evt, f.sc.Payload.CreateTime); err != nil {
+					return err
+				}
+			}
+
+			if err := s.index.IndexAccountChange(ctx, f.Cid(), f.sc.Payload, evts); err != nil {
+				return err
 			}
 		}
 
 		// TODO: Index account
-		if err := vcsh.StoreNamedVersion(ctx, obj, me, "main", remoteVer); err != nil {
+		if err := s.vcs.StoreNamedVersion(ctx, obj, s.me, "main", remoteVer); err != nil {
 			return err
 		}
 	// case DocumentType:

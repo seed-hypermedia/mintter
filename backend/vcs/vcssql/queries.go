@@ -10,11 +10,21 @@ import (
 	s "mintter/backend/db/sqliteschema"
 )
 
-var _ = generateQueries
+// Doing this indirection here so that it's easier to navigate the file with CMD+R
+// in the IDE and skip to the desired "group" of queries by variable name.
+// Should probably split them in different files instead, to avoid linters complaining
+// about unused variables. Also could explicitly pass each variable to the codegen function,
+// but it's easy to forget to do that when iterating quickly.
 
-//go:generate gorun generateQueries
-func generateQueries() error {
-	code, err := sgen.CodegenQueries("vcssql",
+var global []sgen.QueryTemplate
+
+func add(qq ...sgen.QueryTemplate) int {
+	global = append(global, qq...)
+	return 0
+}
+
+var (
+	workingCopy = add(
 		qb.MakeQuery(s.Schema, "WorkingCopyReplace", sgen.QueryKindExec,
 			"INSERT OR REPLACE INTO", s.WorkingCopy, qb.ListColShort(
 				s.WorkingCopyObjectID,
@@ -33,7 +43,6 @@ func generateQueries() error {
 				qb.VarCol(s.WorkingCopyUpdateTime),
 			),
 		),
-
 		qb.MakeQuery(s.Schema, "WorkingCopyGet", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.WorkingCopyData),
@@ -46,138 +55,90 @@ func generateQueries() error {
 			"AND", s.WorkingCopyName, "=", qb.VarCol(s.WorkingCopyName), qb.Line,
 			"LIMIT 1",
 		),
-
 		qb.MakeQuery(s.Schema, "WorkingCopyDelete", sgen.QueryKindExec,
 			"DELETE FROM", s.WorkingCopy, qb.Line,
 			"WHERE", s.WorkingCopyObjectID, "=", qb.VarCol(s.WorkingCopyObjectID), qb.Line,
 			"AND", s.WorkingCopyName, "=", qb.VarCol(s.WorkingCopyName),
 		),
+	)
 
+	accounts = add(
 		qb.MakeQuery(s.Schema, "AccountsLookupPK", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.AccountsID),
 			), qb.Line,
 			"FROM", s.Accounts, qb.Line,
 			"WHERE", s.AccountsMultihash, "=", qb.VarCol(s.AccountsMultihash),
-			"AND", s.AccountsCodec, "=", qb.VarCol(s.AccountsCodec),
 		),
-
-		qb.MakeQuery(s.Schema, "ObjectsLookupPK", sgen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.ObjectsID),
+		qb.MakeQuery(s.Schema, "AccountsInsertPK", sgen.QueryKindSingle,
+			"INSERT INTO", s.Accounts, qb.ListColShort(
+				s.AccountsMultihash,
 			), qb.Line,
-			"FROM", s.Objects, qb.Line,
-			"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-			"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+			"VALUES", qb.List(
+				qb.VarCol(s.AccountsMultihash),
+			),
+			"RETURNING", qb.Results(qb.ResultCol(s.AccountsID)),
 		),
+		qb.MakeQuery(s.Schema, "AccountsGetForDevice", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.AccountsID),
+				qb.ResultCol(s.AccountsMultihash),
+			), qb.Line,
+			"FROM", s.Accounts, qb.Line,
+			"JOIN", s.AccountDevices, "ON", s.AccountDevicesAccountID, "=", s.AccountsID, qb.Line,
+			"WHERE", s.AccountDevicesDeviceID, "=", qb.LookupSubQuery(s.DevicesID, s.Devices,
+				"WHERE", s.DevicesMultihash, "=", qb.VarCol(s.DevicesMultihash),
+			),
+		),
+		qb.MakeQuery(s.Schema, "AccountsList", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.AccountsMultihash),
+			), qb.Line,
+			"FROM", s.Accounts, qb.Line,
+			"WHERE", s.AccountsMultihash, "!=", qb.Var("ownAccountMultihash", sgen.TypeBytes),
+		),
+	)
 
+	devices = add(
 		qb.MakeQuery(s.Schema, "DevicesLookupPK", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.DevicesID),
 			), qb.Line,
 			"FROM", s.Devices, qb.Line,
 			"WHERE", s.DevicesMultihash, "=", qb.VarCol(s.DevicesMultihash),
-			"AND", s.DevicesCodec, "=", qb.VarCol(s.DevicesCodec),
 		),
-
-		qb.MakeQuery(s.Schema, "AccountsInsertPK", sgen.QueryKindSingle,
-			"INSERT INTO", s.Accounts, qb.ListColShort(
-				s.AccountsMultihash,
-				s.AccountsCodec,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.VarCol(s.AccountsMultihash),
-				qb.VarCol(s.AccountsCodec),
-			),
-			"RETURNING", qb.Results(qb.ResultCol(s.AccountsID)),
-		),
-
-		qb.MakeQuery(s.Schema, "AccountsGetForDevice", sgen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.AccountsID),
-				qb.ResultCol(s.AccountsMultihash),
-				qb.ResultCol(s.AccountsCodec),
-			), qb.Line,
-			"FROM", s.Accounts, qb.Line,
-			"WHERE", s.AccountsID, "=", qb.LookupSubQuery(s.DevicesAccountID, s.Devices,
-				"WHERE", s.DevicesMultihash, "=", qb.VarCol(s.DevicesMultihash),
-			),
-		),
-
-		qb.MakeQuery(s.Schema, "AccountsList", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.AccountsCodec),
-				qb.ResultCol(s.AccountsMultihash),
-				qb.ResultCol(s.AccountsAlias),
-				qb.ResultCol(s.AccountsEmail),
-				qb.ResultCol(s.AccountsBio),
-			), qb.Line,
-			"FROM", s.Accounts, qb.Line,
-			"WHERE", s.AccountsMultihash, "!=", qb.Var("ownAccountMultihash", sgen.TypeBytes),
-		),
-
-		qb.MakeQuery(s.Schema, "ObjectsInsertPK", sgen.QueryKindSingle,
-			"INSERT INTO", s.Objects, qb.ListColShort(
-				s.ObjectsMultihash,
-				s.ObjectsCodec,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.VarCol(s.ObjectsMultihash),
-				qb.VarCol(s.ObjectsCodec),
-			),
-			"RETURNING", qb.Results(qb.ResultCol(s.ObjectsID)),
-		),
-
 		qb.MakeQuery(s.Schema, "DevicesInsertPK", sgen.QueryKindSingle,
 			"INSERT INTO", s.Devices, qb.ListColShort(
 				s.DevicesMultihash,
-				s.DevicesCodec,
 			), qb.Line,
 			"VALUES", qb.List(
 				qb.VarCol(s.DevicesMultihash),
-				qb.VarCol(s.DevicesCodec),
 			),
 			"RETURNING", qb.Results(qb.ResultCol(s.DevicesID)),
 		),
-
-		qb.MakeQuery(s.Schema, "DevicesUpdateAccount", sgen.QueryKindExec,
-			"UPDATE", s.Devices, qb.Line,
-			"SET", s.DevicesAccountID.ShortName(), "=", qb.VarCol(s.DevicesAccountID), qb.Line,
-			"WHERE", s.DevicesID.ShortName(), "=", qb.VarCol(s.DevicesID),
-		),
-
-		qb.MakeQuery(s.Schema, "DevicesList", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				qb.ResultCol(s.DevicesCodec),
-				qb.ResultCol(s.DevicesMultihash),
-				qb.ResultCol(s.AccountsCodec),
-				qb.ResultCol(s.AccountsMultihash),
-			), qb.Line,
-			"FROM", s.Devices, qb.Line,
-			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.DevicesAccountID,
-		),
-
-		qb.MakeQuery(s.Schema, "ObjectsInsertOrIgnore", sgen.QueryKindExec,
-			"INSERT OR IGNORE INTO", s.Objects, qb.ListColShort(
-				s.IPFSBlocksID,
-				s.ObjectsMultihash,
-				s.ObjectsCodec,
-				s.ObjectsAccountID,
-			), qb.Line,
-			"VALUES", qb.List(
-				qb.VarCol(s.IPFSBlocksID),
-				qb.VarCol(s.ObjectsMultihash),
-				qb.VarCol(s.ObjectsCodec),
-				qb.VarCol(s.ObjectsAccountID),
+		qb.MakeQuery(s.Schema, "AccountDevicesInsertOrIgnore", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.AccountDevices, qb.ListColShort(
+				s.AccountDevicesAccountID,
+				s.AccountDevicesDeviceID,
+				s.AccountDevicesChangeID,
+			), "VALUES", qb.List(
+				qb.VarCol(s.AccountDevicesAccountID),
+				qb.VarCol(s.AccountDevicesDeviceID),
+				qb.VarCol(s.AccountDevicesChangeID),
 			),
 		),
-
-		qb.MakeQuery(s.Schema, "ObjectsDelete", sgen.QueryKindExec,
-			"DELETE FROM", s.Objects, qb.Line,
-			"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-			"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+		qb.MakeQuery(s.Schema, "AccountDevicesList", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.DevicesMultihash),
+				qb.ResultCol(s.AccountsMultihash),
+			), qb.Line,
+			"FROM", s.AccountDevices, qb.Line,
+			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.AccountDevicesAccountID,
+			"JOIN", s.Devices, "ON", s.DevicesID, "=", s.AccountDevicesDeviceID,
 		),
+	)
 
+	namedVersions = add(
 		qb.MakeQuery(s.Schema, "NamedVersionsReplace", sgen.QueryKindExec,
 			"INSERT OR REPLACE INTO", s.NamedVersions, qb.ListColShort(
 				s.NamedVersionsObjectID,
@@ -194,7 +155,6 @@ func generateQueries() error {
 				qb.VarCol(s.NamedVersionsVersion),
 			),
 		),
-
 		qb.MakeQuery(s.Schema, "NamedVersionsGet", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.NamedVersionsVersion),
@@ -206,7 +166,9 @@ func generateQueries() error {
 			"AND", s.NamedVersionsName, "=", qb.VarCol(s.NamedVersionsName), qb.Line,
 			"LIMIT 1",
 		),
+	)
 
+	ipfsBlocks = add(
 		qb.MakeQuery(s.Schema, "IPFSBlocksLookupPK", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.IPFSBlocksID),
@@ -215,7 +177,9 @@ func generateQueries() error {
 			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash), qb.Line,
 			"AND", s.IPFSBlocksCodec, "=", qb.VarCol(s.IPFSBlocksCodec), qb.Line,
 		),
+	)
 
+	drafts = add(
 		qb.MakeQuery(s.Schema, "DraftsInsert", sgen.QueryKindExec,
 			"INSERT INTO", s.Drafts, qb.ListColShort(
 				s.DraftsID,
@@ -225,9 +189,8 @@ func generateQueries() error {
 				s.DraftsUpdateTime,
 			), qb.Line,
 			"VALUES", qb.List(
-				qb.LookupSubQuery(s.ObjectsID, s.Objects,
-					"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-					"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+				qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
+					"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
 				),
 				qb.VarCol(s.DraftsTitle),
 				qb.VarCol(s.DraftsSubtitle),
@@ -235,7 +198,6 @@ func generateQueries() error {
 				qb.VarCol(s.DraftsUpdateTime),
 			),
 		),
-
 		qb.MakeQuery(s.Schema, "DraftsUpdate", sgen.QueryKindExec,
 			"UPDATE", s.Drafts, qb.Line,
 			"SET", qb.ListColShort(
@@ -247,33 +209,31 @@ func generateQueries() error {
 				qb.VarCol(s.DraftsSubtitle),
 				qb.VarCol(s.DraftsUpdateTime),
 			), qb.Line,
-			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.ObjectsID, s.Objects,
-				"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-				"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
+				"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
 			),
 		),
-
 		qb.MakeQuery(s.Schema, "DraftsList", sgen.QueryKindMany,
 			"SELECT", qb.Results(
-				qb.ResultCol(s.ObjectsMultihash),
-				qb.ResultCol(s.ObjectsCodec),
+				qb.ResultCol(s.IPFSBlocksMultihash),
+				qb.ResultCol(s.IPFSBlocksCodec),
 				qb.ResultCol(s.DraftsTitle),
 				qb.ResultCol(s.DraftsSubtitle),
 				qb.ResultCol(s.DraftsCreateTime),
 				qb.ResultCol(s.DraftsUpdateTime),
 			), qb.Line,
 			"FROM", s.Drafts, qb.Line,
-			"JOIN", s.Objects, "ON", s.ObjectsID, "=", s.DraftsID, qb.Line,
+			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.DraftsID, qb.Line,
 		),
-
 		qb.MakeQuery(s.Schema, "DraftsDelete", sgen.QueryKindExec,
 			"DELETE FROM", s.Drafts, qb.Line,
-			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.ObjectsID, s.Objects,
-				"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-				"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
+				"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
 			),
 		),
+	)
 
+	publications = add(
 		qb.MakeQuery(s.Schema, "PublicationsUpsert", sgen.QueryKindExec,
 			"INSERT OR REPLACE", qb.Line,
 			"INTO", s.Publications, qb.ListColShort(
@@ -286,9 +246,8 @@ func generateQueries() error {
 				s.PublicationsLatestVersion,
 			), qb.Line,
 			"VALUES", qb.List(
-				qb.LookupSubQuery(s.ObjectsID, s.Objects,
-					"WHERE", s.ObjectsMultihash, "=", qb.VarCol(s.ObjectsMultihash),
-					"AND", s.ObjectsCodec, "=", qb.VarCol(s.ObjectsCodec),
+				qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
+					"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
 				),
 				qb.VarCol(s.PublicationsTitle),
 				qb.VarCol(s.PublicationsSubtitle),
@@ -298,12 +257,10 @@ func generateQueries() error {
 				qb.VarCol(s.PublicationsLatestVersion),
 			),
 		),
-
 		qb.MakeQuery(s.Schema, "PublicationsList", sgen.QueryKindMany,
 			"SELECT", qb.Results(
-				qb.ResultCol(s.ObjectsCodec),
-				qb.ResultCol(s.ObjectsMultihash),
-				qb.ResultCol(s.AccountsCodec),
+				qb.ResultCol(s.IPFSBlocksCodec),
+				qb.ResultCol(s.IPFSBlocksMultihash),
 				qb.ResultCol(s.AccountsMultihash),
 				qb.ResultCol(s.PublicationsTitle),
 				qb.ResultCol(s.PublicationsSubtitle),
@@ -313,10 +270,74 @@ func generateQueries() error {
 				qb.ResultCol(s.PublicationsLatestVersion),
 			), qb.Line,
 			"FROM", s.Publications, qb.Line,
-			"JOIN", s.Objects, "ON", s.ObjectsID, "=", s.PublicationsID, qb.Line,
-			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.ObjectsAccountID,
+			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.PublicationsID, qb.Line,
+			"JOIN", s.PermanodeOwners, "ON", s.PermanodeOwnersPermanodeID, "=", s.IPFSBlocksID,
+			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.PermanodeOwnersAccountID,
 		),
 	)
+
+	permanodes = add(
+		qb.MakeQuery(s.Schema, "PermanodesInsertOrIgnore", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.Permanodes, qb.ListColShort(
+				s.PermanodesType,
+				s.PermanodesID,
+				s.PermanodesCreateTime,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(s.PermanodesType),
+				qb.VarCol(s.PermanodesID),
+				qb.VarCol(s.PermanodesCreateTime),
+			),
+		),
+		qb.MakeQuery(s.Schema, "PermanodeOwnersInsertOrIgnore", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.PermanodeOwners, qb.ListColShort(
+				s.PermanodeOwnersAccountID,
+				s.PermanodeOwnersPermanodeID,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(s.PermanodeOwnersAccountID),
+				qb.VarCol(s.PermanodeOwnersPermanodeID),
+			),
+		),
+	)
+
+	index = add(
+		qb.MakeQuery(s.Schema, "ObjectIndexInsertOrIgnore", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.ObjectIndex, qb.ListColShort(
+				s.ObjectIndexObjectID,
+				s.ObjectIndexAttribute,
+				s.ObjectIndexChangeID,
+				s.ObjectIndexValue,
+			),
+			"VALUES", qb.List(
+				qb.VarCol(s.ObjectIndexObjectID),
+				qb.VarCol(s.ObjectIndexAttribute),
+				qb.VarCol(s.ObjectIndexChangeID),
+				qb.VarCol(s.ObjectIndexValue),
+			),
+		),
+
+		qb.MakeQuery(s.Schema, "ObjectIndexListMaxAttrs", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.IPFSBlocksMultihash),
+				qb.ResultCol(s.ObjectIndexObjectID),
+				qb.ResultCol(s.ObjectIndexAttribute),
+				qb.ResultCol(s.ObjectIndexValue),
+				// TODO: need to use logical clock here to properly resolve possible conflicts for versioning.
+				qb.ResultExpr(qb.SQLFunc("MAX", string(s.ObjectIndexChangeID)), "version", sgen.TypeInt),
+			),
+			"FROM", s.ObjectIndex, qb.Line,
+			"JOIN", s.Permanodes, "ON", s.PermanodesID, "=", s.ObjectIndexObjectID, qb.Line,
+			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.PermanodesID, qb.Line,
+			"WHERE", s.PermanodesType, "=", qb.VarCol(s.PermanodesType),
+			"GROUP BY", s.ObjectIndexAttribute,
+		),
+	)
+)
+
+//go:generate gorun generateQueries
+func generateQueries() error {
+	code, err := sgen.CodegenQueries("vcssql", global...)
 
 	if err != nil {
 		return err

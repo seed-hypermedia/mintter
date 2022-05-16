@@ -6,3 +6,15 @@ func Splice[S ~[]V, V any](s S, i int, v V) S {
 	s[i] = v
 	return s
 }
+
+func Concat[S ~[]V, V any](s ...S) S {
+	var out S
+
+	for _, ss := range s {
+		for _, val := range ss {
+			out = append(out, val)
+		}
+	}
+
+	return out
+}
