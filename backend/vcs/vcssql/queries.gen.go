@@ -199,11 +199,12 @@ WHERE account_devices.device_id = COALESCE((SELECT devices.id FROM devices WHERE
 }
 
 type AccountsListResult struct {
+	AccountsID        int
 	AccountsMultihash []byte
 }
 
 func AccountsList(conn *sqlite.Conn, ownAccountMultihash []byte) ([]AccountsListResult, error) {
-	const query = `SELECT accounts.multihash
+	const query = `SELECT accounts.id, accounts.multihash
 FROM accounts
 WHERE accounts.multihash != :ownAccountMultihash`
 
@@ -215,7 +216,8 @@ WHERE accounts.multihash != :ownAccountMultihash`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, AccountsListResult{
-			AccountsMultihash: stmt.ColumnBytes(0),
+			AccountsID:        stmt.ColumnInt(0),
+			AccountsMultihash: stmt.ColumnBytes(1),
 		})
 
 		return nil
@@ -224,6 +226,68 @@ WHERE accounts.multihash != :ownAccountMultihash`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: AccountsList: %w", err)
+	}
+
+	return out, err
+}
+
+func AccountsIndexProfile(conn *sqlite.Conn, profilesAccountID int, profilesAlias string, profilesEmail string, profilesBio string, profilesChangeID int) error {
+	const query = `INSERT OR IGNORE INTO profiles (account_id, alias, email, bio, change_id)
+VALUES (:profilesAccountID, :profilesAlias, :profilesEmail, :profilesBio, :profilesChangeID)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":profilesAccountID", profilesAccountID)
+		stmt.SetText(":profilesAlias", profilesAlias)
+		stmt.SetText(":profilesEmail", profilesEmail)
+		stmt.SetText(":profilesBio", profilesBio)
+		stmt.SetInt(":profilesChangeID", profilesChangeID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: AccountsIndexProfile: %w", err)
+	}
+
+	return err
+}
+
+type AccountsListProfilesResult struct {
+	ProfilesAccountID int
+	ProfilesAlias     string
+	ProfilesEmail     string
+	ProfilesBio       string
+	ProfilesChangeID  int
+}
+
+func AccountsListProfiles(conn *sqlite.Conn) ([]AccountsListProfilesResult, error) {
+	const query = `SELECT profiles.account_id, profiles.alias, profiles.email, profiles.bio, profiles.change_id
+FROM profiles
+`
+
+	var out []AccountsListProfilesResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, AccountsListProfilesResult{
+			ProfilesAccountID: stmt.ColumnInt(0),
+			ProfilesAlias:     stmt.ColumnText(1),
+			ProfilesEmail:     stmt.ColumnText(2),
+			ProfilesBio:       stmt.ColumnText(3),
+			ProfilesChangeID:  stmt.ColumnInt(4),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: AccountsListProfiles: %w", err)
 	}
 
 	return out, err
@@ -340,6 +404,40 @@ JOIN accounts ON accounts.id = account_devices.account_id JOIN devices ON device
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: AccountDevicesList: %w", err)
+	}
+
+	return out, err
+}
+
+type DevicesListResult struct {
+	DevicesMultihash        []byte
+	AccountDevicesDeviceID  int
+	AccountDevicesAccountID int
+}
+
+func DevicesList(conn *sqlite.Conn) ([]DevicesListResult, error) {
+	const query = `SELECT devices.multihash, account_devices.device_id, account_devices.account_id
+FROM account_devices
+JOIN devices ON devices.id = account_devices.device_id`
+
+	var out []DevicesListResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, DevicesListResult{
+			DevicesMultihash:        stmt.ColumnBytes(0),
+			AccountDevicesDeviceID:  stmt.ColumnInt(1),
+			AccountDevicesAccountID: stmt.ColumnInt(2),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DevicesList: %w", err)
 	}
 
 	return out, err
@@ -667,66 +765,4 @@ VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
 	}
 
 	return err
-}
-
-func ObjectIndexInsertOrIgnore(conn *sqlite.Conn, objectIndexObjectID int, objectIndexAttribute string, objectIndexChangeID int, objectIndexValue []byte) error {
-	const query = `INSERT OR IGNORE INTO object_index (object_id, attribute, change_id, value) VALUES (:objectIndexObjectID, :objectIndexAttribute, :objectIndexChangeID, :objectIndexValue)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":objectIndexObjectID", objectIndexObjectID)
-		stmt.SetText(":objectIndexAttribute", objectIndexAttribute)
-		stmt.SetInt(":objectIndexChangeID", objectIndexChangeID)
-		stmt.SetBytes(":objectIndexValue", objectIndexValue)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ObjectIndexInsertOrIgnore: %w", err)
-	}
-
-	return err
-}
-
-type ObjectIndexListMaxAttrsResult struct {
-	IPFSBlocksMultihash  []byte
-	ObjectIndexObjectID  int
-	ObjectIndexAttribute string
-	ObjectIndexValue     []byte
-	Version              int
-}
-
-func ObjectIndexListMaxAttrs(conn *sqlite.Conn, permanodesType string) ([]ObjectIndexListMaxAttrsResult, error) {
-	const query = `SELECT ipfs_blocks.multihash, object_index.object_id, object_index.attribute, object_index.value, MAX(object_index.change_id) AS version FROM object_index
-JOIN permanodes ON permanodes.id = object_index.object_id
-JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
-WHERE permanodes.type = :permanodesType GROUP BY object_index.attribute`
-
-	var out []ObjectIndexListMaxAttrsResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":permanodesType", permanodesType)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, ObjectIndexListMaxAttrsResult{
-			IPFSBlocksMultihash:  stmt.ColumnBytes(0),
-			ObjectIndexObjectID:  stmt.ColumnInt(1),
-			ObjectIndexAttribute: stmt.ColumnText(2),
-			ObjectIndexValue:     stmt.ColumnBytes(3),
-			Version:              stmt.ColumnInt(4),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ObjectIndexListMaxAttrs: %w", err)
-	}
-
-	return out, err
 }
