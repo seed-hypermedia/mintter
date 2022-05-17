@@ -84,7 +84,10 @@ export default function Publication() {
   // start rendering
   if (state.matches('errored')) {
     return (
-      <Box>
+      <Box
+        css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}
+        data-testid="publication-wrapper"
+      >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
         <Button
@@ -103,7 +106,7 @@ export default function Publication() {
     <>
       {state.matches('ready') && (
         <Box
-          css={{paddingHorizontal: '$5', paddingTop: '$5', marginBottom: 200}}
+          css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}
           data-testid="publication-wrapper"
         >
           <Editor
@@ -816,9 +819,13 @@ function DiscussionItem({link}: {link: Link}) {
                   'createTime',
                 )}
               </Text>
-              {/* <Text size="1" color="muted">
-            Last modified: {getDateFormat(state.context.publication?.document, 'updateTime')}
-          </Text> */}
+              <Text size="1" color="muted">
+                Last modified:{' '}
+                {getDateFormat(
+                  state.context.publication?.document,
+                  'updateTime',
+                )}
+              </Text>
             </Box>
           </Box>
         </ContextMenu.Trigger>

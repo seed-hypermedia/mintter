@@ -11,12 +11,7 @@ export function Section({
   ...props
 }: PropsWithChildren<{title: string; icon?: keyof typeof icons}>) {
   return (
-    <Box
-      css={{
-        marginBottom: '$6',
-      }}
-      {...props}
-    >
+    <Box {...props}>
       <Box
         css={{
           display: 'flex',

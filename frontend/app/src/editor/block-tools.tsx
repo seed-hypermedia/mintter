@@ -100,7 +100,6 @@ export function BlockTools({element}: BlockToolsProps) {
       }}
     >
       <Box
-        css={{}}
         onMouseEnter={() => {
           hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
         }}
@@ -186,6 +185,7 @@ function setList(fn: any) {
         const {children} = list
         Transforms.removeNodes(editor, {at: Path.parent(at)})
         Transforms.insertNodes(editor, fn(children), {at: Path.parent(at)})
+        // TODO: replace parent block to set the new block type
       })
     }
   }

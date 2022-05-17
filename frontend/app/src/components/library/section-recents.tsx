@@ -3,7 +3,7 @@ import {queryKeys} from '@app/hooks'
 import {useMainPage, useRecents} from '@app/main-page-context'
 import {css} from '@app/stitches.config'
 import {StyledItem} from '@components/library/library-item'
-import {EmptyList, Section} from '@components/library/section'
+import {Section} from '@components/library/section'
 import {useMachine} from '@xstate/react'
 import {useQueryClient} from 'react-query'
 import {assign, createMachine} from 'xstate'
@@ -13,11 +13,9 @@ export function RecentsSection() {
 
   return (
     <Section title="Recents" icon="Clock">
-      {recents.length ? (
-        recents.map((item) => <RecentItem key={item} item={item} />)
-      ) : (
-        <EmptyList />
-      )}
+      {recents.length
+        ? recents.map((item) => <RecentItem key={item} item={item} />)
+        : null}
     </Section>
   )
 }
@@ -132,7 +130,7 @@ function RecentItem({item}: {item: string}) {
   return (
     <StyledItem className={listItemStyle()}>
       <a className="title" onClick={goToDocument} href="">
-        {state.context.document?.title}
+        {state.context.document?.title || 'Untitled Document'}
       </a>
     </StyledItem>
   )

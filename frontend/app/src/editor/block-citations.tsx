@@ -22,6 +22,10 @@ export type BlockCitationsProps = {
 
 export function BlockCitations({blockId}: BlockCitationsProps) {
   const blockCitations = useBlockCitations(blockId)
+  console.log(
+    '🚀 ~ file: block-citations.tsx ~ line 25 ~ BlockCitations ~ blockCitations',
+    blockCitations,
+  )
   const [state, send] = useMachine(() => blockCitationsMachine)
 
   return blockCitations.length ? (
