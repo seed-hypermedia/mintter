@@ -222,17 +222,6 @@ export default function EditorPage({
           )}
         </Box>
         <Box className={footerStyles()}>
-          <Box className={footerMetadataStyles()}>
-            <Text size="1" color="muted">
-              Created on: {getDateFormat(context.prevDraft!, 'createTime')}
-            </Text>
-            <PageFooterSeparator />
-            <Text size="1" color="muted">
-              Last modified: {getDateFormat(context.prevDraft!, 'updateTime')}
-            </Text>
-            <PageFooterSeparator />
-            <EditorStatus state={state} />
-          </Box>
           <Box className={footerButtonsStyles()}>
             <Button
               color="success"
@@ -245,6 +234,17 @@ export default function EditorPage({
             >
               Publish
             </Button>
+          </Box>
+          <Box className={footerMetadataStyles()}>
+            <Text size="1" color="muted">
+              Created on: {getDateFormat(context.prevDraft!, 'createTime')}
+            </Text>
+            <PageFooterSeparator />
+            <Text size="1" color="muted">
+              Last modified: {getDateFormat(context.prevDraft!, 'updateTime')}
+            </Text>
+            <PageFooterSeparator />
+            <EditorStatus state={state} />
           </Box>
         </Box>
       </ErrorBoundary>

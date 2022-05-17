@@ -1,5 +1,4 @@
 import {
-  createDraft,
   getInfo,
   getPublication,
   Link,
@@ -23,6 +22,7 @@ import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
+import {useCreateDraft} from '@components/library/use-create-draft'
 import {
   footerButtonsStyles,
   footerMetadataStyles,
@@ -46,6 +46,7 @@ export default function Publication() {
   const citations = useCitationService()
   const mainPageService = useMainPage()
   let {docId, version} = useParams()
+  let {createDraft} = useCreateDraft()
 
   const [state, send] = usePagePublication(client, docId, version)
 
@@ -105,32 +106,38 @@ export default function Publication() {
   return (
     <>
       {state.matches('ready') && (
-        <Box
-          css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}
-          data-testid="publication-wrapper"
-        >
-          <Editor
-            mode={EditorMode.Publication}
-            value={state.context.publication?.document.content}
-            onChange={() => {
-              // noop
-            }}
-          />
-        </Box>
+        <>
+          <Box
+            css={{padding: '$5', paddingBottom: 0, marginBottom: 50}}
+            data-testid="publication-wrapper"
+          >
+            <Editor
+              mode={EditorMode.Publication}
+              value={state.context.publication?.document.content}
+              onChange={() => {
+                // noop
+              }}
+            />
+          </Box>
+          <Box css={{marginBottom: 200, paddingLeft: 32}}>
+            <Button variant="ghost" color="primary" size="1">
+              View Discussion/Citations
+            </Button>
+          </Box>
+        </>
       )}
       <Box className={footerStyles()}>
-        <Box className={footerMetadataStyles()}>
-          <Text size="1" color="muted">
-            Created on:{' '}
-            {getDateFormat(state.context.publication?.document, 'createTime')}
-          </Text>
-          <PageFooterSeparator />
-          <Text size="1" color="muted">
-            Last modified:{' '}
-            {getDateFormat(state.context.publication?.document, 'updateTime')}
-          </Text>
-        </Box>
         <Box className={footerButtonsStyles()}>
+          <Button
+            onClick={() => {
+              console.log('NEW DOCUMENT!')
+              createDraft()
+            }}
+            size="1"
+            color="primary"
+          >
+            New Document
+          </Button>
           <Button
             variant="outlined"
             size="1"
@@ -140,7 +147,7 @@ export default function Publication() {
               console.log('Send: IMPLEMENT ME!')
             }}
           >
-            Send
+            Reply
           </Button>
           {state.context.canUpdate ? (
             <>
@@ -185,6 +192,17 @@ export default function Publication() {
               </Button>
             </>
           )}
+        </Box>
+        <Box className={footerMetadataStyles()}>
+          <Text size="1" color="muted">
+            Created on:{' '}
+            {getDateFormat(state.context.publication?.document, 'createTime')}
+          </Text>
+          <PageFooterSeparator />
+          <Text size="1" color="muted">
+            Last modified:{' '}
+            {getDateFormat(state.context.publication?.document, 'updateTime')}
+          </Text>
         </Box>
       </Box>
     </>
