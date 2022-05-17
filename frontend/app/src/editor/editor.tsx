@@ -123,8 +123,6 @@ export function Editor({
     )
   }
 
-  console.log('ELSE!')
-
   return (
     <Suspense fallback={'loading'}>
       <Box

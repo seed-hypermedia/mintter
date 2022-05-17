@@ -21,9 +21,6 @@ export function createFilesMachine(client: QueryClient) {
       },
       states: {
         idle: {
-          entry: () => {
-            console.log('inside files idle!!!')
-          },
           invoke: [
             {
               src: () => (sendBack) => {
@@ -524,7 +521,6 @@ export function createMainPageMachine(client: QueryClient) {
             })
 
           receive((event) => {
-            console.log('received router event', event);
 
             if (event.type == 'pushHome') {
               navRouter.route('/')
@@ -541,7 +537,6 @@ export function createMainPageMachine(client: QueryClient) {
             } else if (event.type == 'pushPublicationList') {
               navRouter.route('/publications')
             } else if (event.type == 'pushDraftList') {
-              console.log('received pushDraftList');
               navRouter.route('/drafts')
             } else {
               navRouter.route('/')

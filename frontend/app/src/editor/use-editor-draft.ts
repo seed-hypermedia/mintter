@@ -65,8 +65,8 @@ export function draftEditorMachine({
   shouldAutosave = true,
   editor,
 }: DraftEditorMachineProps) {
+  console.log('draftEditorMachine');
 
-  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMSKgAOGs6KGAdmSAB6ICMAHAGw6sCcA7AAYATKwAs7MQGZ+AVgA0IAJ6JhU1jna9ZvduPazWssa2EBfM4tSZcYLFmyRiAMQCiAFQDCACUaVqaLQMSMyIYvzcvLxiwoKcAmr8wryKKgisUuzsOGLSvKacrKyCxbIWVhDo2DgAZmBoAMYAFih0UMSuACIAku4A8gBKOJ4AggBynq4AMn5UNPSMLOn8UrI8GVKCcUn8vGqpqrua2roGnHqCAuXglTa19c2t7V29gzgDrgAKg+44bl7eHAAZQAqp5JkCgbMAkFFohZMIDgheNxBGJ4gJBEJ1MIypYblVcHVGi02h0ev0hh9vgNfv8fDhXAMBoNofNgqAlgikeJzjholJ8oUERJ2FJrtZqtYnnhCCQXpScCDPp0Ru5XGzAgsQkt+OF+dotFIZLphPxWEjztkBQkZFJcmKJbcpbcZfgiOTXkNPiCAEJTbpA3whfzsuEIPX8A2yI0m9hmi3KRBaDQ2s2cTjCZJFJ2EnDStqyj304MUOZajmhZZiNZFY1bTg7PZSHklDS5QU4wQyc68XN3AtQHAQMAAIwwAFc6A0np7FcrVerNbCdYgUbweFJOLJu-xzWpTEiHZpcXxClnhLlWPx+y6aIWR+OpzOyUxYGgAIZoMA4D81b9YAAFEYWwAJTEJKtiug+Y6TtOTzLtqnLJmoOCGPo8Z7sI24pEmCC5BuNrbskaJ7Bmt5QfeQ6wB+ABus52A4uDkAQX41NgAC2+bOpRgSFjR9FtAgrS0RgDRfkEADaggALqIZWSyrFImjiIYJicCUsiZgoeHxsIPAxmiKYRKIFHcVROACbOCpvAuaoaiG5YrshCBKSpNbiKwGlGNpSJaRuHYolk6iYpwZmDpZdHWRStkqvZwJghCUKOTCSFVm5egeepmm+XhQjcEY7BYuI0TGOY+KQeZfHUVFZI2UMdnqoyzKsilYarq5sjKZlaleTluKWteOR5HI+RiGRrDhdBQ7kBOo4ECgsCks8MXen6AZBgl4KuJC8nhqYKw4FiEgxth9ocPwSLxmIBqCuEJkiKZFU8VVMqzfNi3LXObw+v6gaAkyLIDHtHWRtGsa7JhiZpEVN02uNuzEXqU1UcQED0D+75fj+lWDiDLnXjW6z1tsZrNq2OjDZ28ZcEkNYo9VxAfECHjDN44wAOI7fjVY0zkXD2pcqwcHsrZ7FTvD2nqIqNhY+J0BgI7wCElXumAPNcoieFqDdaLxFwWwhbk4X2I4EAa4gUiXjg2IZN2piiI2PLhIRsRiHEsg7qIYhmcSjxtBb6RCponBW1wO5Woe2tYjbo1aLwly5Mbz15hFauBzoymQ+w5paMYCLQ4gKwaKHNaFI2ly4uKKcDtNw6wc+CFtRW4a6MpuJyJ7Zq4oI7B+fEJ6GCs+dW1bDMylZAfN85VYCEeEg4J2mJcJw4SyDeNd3tVODvQtS1N2WqUKWueqbtuu77jiV0x5Id1k5IfAbxUqd17vn2QIHRgcDwcSXAYl6rAkFdVY-IhDSD0DoSM7Bx5T0Pu1FyKwkRWxukvPQktViSzkL7Von1XDTU-sHAWwhw5xCyFHNIxQsw20ltEXY6hzS7F9h+FARBzbTzSrqLcBoYhZnRKHTIWsKEu35G7D2XtxAUUDsQpEqE9ZRASKvWIYowpyyAA */
   return createMachine(
     {
       context: {
@@ -278,21 +278,20 @@ export function draftEditorMachine({
       },
       services: {
         fetchDocument: (_, event) => (sendBack) => {
+          console.log('fetchDocument');
+
           ; (async () => {
             try {
               let { context } = mainPageService.getSnapshot()
               let data = await client.fetchQuery(
                 [queryKeys.GET_DRAFT, context.params.docId],
                 ({ queryKey }) => {
+                  console.log('FETCHING');
 
                   let [_, draftId] = queryKey
                   return getDraft(draftId)
                 },
               )
-
-              console.log('fetch data: ', data);
-
-
               sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
             } catch (err: any) {
               sendBack({
@@ -321,8 +320,7 @@ export function useEditorDraft({
   options,
 }: UseEditorDraftParams) {
   const client = useQueryClient()
-  const [state, send] = useMachine(
-    () => draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
+  const [state, send] = useMachine(draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
     options,
   )
 

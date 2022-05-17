@@ -134,8 +134,6 @@ export function EditorHoveringToolbar() {
 
     let selection = storeFocus ? lastSelection : editor.selection
 
-    console.log('PublicationHoveringToolbar selection: ', selection)
-
     if (
       !selection ||
       Range.isCollapsed(selection) ||
