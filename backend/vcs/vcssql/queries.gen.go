@@ -568,6 +568,50 @@ LIMIT 1`
 	return out, err
 }
 
+type NamedVersionsListByObjectOwnerResult struct {
+	AccountsMultihash    []byte
+	DevicesMultihash     []byte
+	NamedVersionsVersion string
+	PermanodeCodec       int
+	PermanodeMultihash   []byte
+}
+
+func NamedVersionsListByObjectOwner(conn *sqlite.Conn, permanodeOwnersAccountID int) ([]NamedVersionsListByObjectOwnerResult, error) {
+	const query = `SELECT accounts.multihash, devices.multihash, named_versions.version, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash
+FROM named_versions
+INNER JOIN permanode_owners ON permanode_owners.permanode_id = named_versions.object_id
+INNER JOIN devices ON devices.id = named_versions.device_id
+INNER JOIN accounts ON accounts.id = named_versions.account_id
+INNER JOIN ipfs_blocks ON ipfs_blocks.id = named_versions.object_id
+WHERE permanode_owners.account_id = :permanodeOwnersAccountID
+`
+
+	var out []NamedVersionsListByObjectOwnerResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":permanodeOwnersAccountID", permanodeOwnersAccountID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, NamedVersionsListByObjectOwnerResult{
+			AccountsMultihash:    stmt.ColumnBytes(0),
+			DevicesMultihash:     stmt.ColumnBytes(1),
+			NamedVersionsVersion: stmt.ColumnText(2),
+			PermanodeCodec:       stmt.ColumnInt(3),
+			PermanodeMultihash:   stmt.ColumnBytes(4),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: NamedVersionsListByObjectOwner: %w", err)
+	}
+
+	return out, err
+}
+
 type IPFSBlocksLookupPKResult struct {
 	IPFSBlocksID int
 }
@@ -708,80 +752,6 @@ WHERE drafts.id = COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_bl
 	}
 
 	return err
-}
-
-func PublicationsUpsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, publicationsTitle string, publicationsSubtitle string, publicationsCreateTime int, publicationsUpdateTime int, publicationsPublishTime int, publicationsLatestVersion string) error {
-	const query = `INSERT OR REPLACE
-INTO publications (id, title, subtitle, create_time, update_time, publish_time, latest_version)
-VALUES (COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000), :publicationsTitle, :publicationsSubtitle, :publicationsCreateTime, :publicationsUpdateTime, :publicationsPublishTime, :publicationsLatestVersion)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
-		stmt.SetText(":publicationsTitle", publicationsTitle)
-		stmt.SetText(":publicationsSubtitle", publicationsSubtitle)
-		stmt.SetInt(":publicationsCreateTime", publicationsCreateTime)
-		stmt.SetInt(":publicationsUpdateTime", publicationsUpdateTime)
-		stmt.SetInt(":publicationsPublishTime", publicationsPublishTime)
-		stmt.SetText(":publicationsLatestVersion", publicationsLatestVersion)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: PublicationsUpsert: %w", err)
-	}
-
-	return err
-}
-
-type PublicationsListResult struct {
-	IPFSBlocksCodec           int
-	IPFSBlocksMultihash       []byte
-	AccountsMultihash         []byte
-	PublicationsTitle         string
-	PublicationsSubtitle      string
-	PublicationsCreateTime    int
-	PublicationsUpdateTime    int
-	PublicationsPublishTime   int
-	PublicationsLatestVersion string
-}
-
-func PublicationsList(conn *sqlite.Conn) ([]PublicationsListResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, accounts.multihash, publications.title, publications.subtitle, publications.create_time, publications.update_time, publications.publish_time, publications.latest_version
-FROM publications
-JOIN ipfs_blocks ON ipfs_blocks.id = publications.id
-JOIN permanode_owners ON permanode_owners.permanode_id = ipfs_blocks.id JOIN accounts ON accounts.id = permanode_owners.account_id`
-
-	var out []PublicationsListResult
-
-	before := func(stmt *sqlite.Stmt) {
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, PublicationsListResult{
-			IPFSBlocksCodec:           stmt.ColumnInt(0),
-			IPFSBlocksMultihash:       stmt.ColumnBytes(1),
-			AccountsMultihash:         stmt.ColumnBytes(2),
-			PublicationsTitle:         stmt.ColumnText(3),
-			PublicationsSubtitle:      stmt.ColumnText(4),
-			PublicationsCreateTime:    stmt.ColumnInt(5),
-			PublicationsUpdateTime:    stmt.ColumnInt(6),
-			PublicationsPublishTime:   stmt.ColumnInt(7),
-			PublicationsLatestVersion: stmt.ColumnText(8),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: PublicationsList: %w", err)
-	}
-
-	return out, err
 }
 
 func PermanodesInsertOrIgnore(conn *sqlite.Conn, permanodesType string, permanodesID int, permanodesCreateTime int) error {

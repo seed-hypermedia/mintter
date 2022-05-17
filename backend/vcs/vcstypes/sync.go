@@ -87,6 +87,7 @@ func (s *Syncer) SyncFromVersion(ctx context.Context, acc, device, obj cid.Cid, 
 		}
 	}
 
+	// TODO: DRY this up when it's known to work.
 	switch permanode.PermanodeType() {
 	case AccountType:
 		acc := NewAccount(obj, permanode.PermanodeOwner())
@@ -114,12 +115,37 @@ func (s *Syncer) SyncFromVersion(ctx context.Context, acc, device, obj cid.Cid, 
 			}
 		}
 
-		// TODO: Index account
 		if err := s.vcs.StoreNamedVersion(ctx, obj, s.me, "main", remoteVer); err != nil {
 			return err
 		}
-	// case DocumentType:
-	// Load apply store
+	case DocumentType:
+		doc := NewDocument(obj, permanode.PermanodeOwner(), permanode.PermanodeCreateTime())
+		if err := s.vcs.IterateChanges(ctx, obj, localVer, func(rc vcs.RecordedChange) error {
+			return doc.ApplyChange(rc.ID, rc.Change)
+		}); err != nil {
+			return err
+		}
+
+		for _, f := range remoteChanges {
+			var evts []DocumentEvent
+			if err := cbornode.DecodeInto(f.sc.Payload.Body, &evts); err != nil {
+				return err
+			}
+
+			for _, evt := range evts {
+				if err := doc.Apply(evt, f.sc.Payload.CreateTime); err != nil {
+					return err
+				}
+			}
+
+			if err := s.index.IndexDocumentChange(ctx, f.Cid(), f.sc.Payload, evts); err != nil {
+				return err
+			}
+		}
+
+		if err := s.vcs.StoreNamedVersion(ctx, obj, s.me, "main", remoteVer); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unsupported permanode type %s", permanode.PermanodeType())
 	}
@@ -202,6 +228,11 @@ func fetchMissingChanges(ctx context.Context, v *vcs.SQLite, obj cid.Cid, sess e
 		for _, p := range sc.Payload.Parents {
 			queue = append(queue, p)
 		}
+	}
+
+	// Avoid returning preallocated slice if we never ended up discovering new blocks to fetch.
+	if len(fetched) == 0 {
+		return nil, nil
 	}
 
 	sort.Slice(fetched, func(i, j int) bool {

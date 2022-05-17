@@ -2,6 +2,7 @@ package mttnet
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
@@ -158,7 +159,13 @@ func (n *Node) verifyMintterPeer(ctx context.Context, h decodedHandshake) error 
 	return nil
 }
 
+var errDialSelf = errors.New("can't dial self")
+
 func (n *Node) dialPeer(ctx context.Context, pid peer.ID) (*grpc.ClientConn, error) {
+	if n.me.DeviceKey().ID() == pid {
+		return nil, errDialSelf
+	}
+
 	sw, ok := n.p2p.Host.Network().(*swarm.Swarm)
 	if ok {
 		sw.Backoff().Clear(pid)

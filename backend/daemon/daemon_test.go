@@ -11,11 +11,30 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 )
+
+func TestDaemonSync(t *testing.T) {
+	t.Skip()
+
+	t.Parallel()
+
+	alice := makeTestDaemon(t, "alice", true)
+	bob := makeTestDaemon(t, "bob", true)
+	ctx := context.Background()
+
+	alice.connect(ctx, t, bob)
+
+	time.Sleep(time.Second)
+
+	res, err := alice.Daemon.Net.MustGet().Sync(ctx)
+	require.NoError(t, err)
+	litter.Dump(res)
+}
 
 func TestDaemonConnect(t *testing.T) {
 	t.Parallel()
@@ -24,11 +43,7 @@ func TestDaemonConnect(t *testing.T) {
 	bob := makeTestDaemon(t, "bob", true)
 	ctx := context.Background()
 
-	conn, err := networking.NewNetworkingClient(alice.grpcConn).Connect(ctx, &networking.ConnectRequest{
-		Addrs: bob.addrs(),
-	})
-	require.NoError(t, err)
-	require.NotNil(t, conn)
+	alice.connect(ctx, t, bob)
 
 	checkListAccounts := func(t *testing.T, a, b *testDaemon) {
 		accs, err := accounts.NewAccountsClient(a.grpcConn).ListAccounts(ctx, &accounts.ListAccountsRequest{})
@@ -106,6 +121,14 @@ type testDaemon struct {
 	name      string
 	grpcConn  *grpc.ClientConn
 	pbAccount *accounts.Account
+}
+
+func (d *testDaemon) connect(ctx context.Context, t *testing.T, remote *testDaemon) {
+	conn, err := networking.NewNetworkingClient(d.grpcConn).Connect(ctx, &networking.ConnectRequest{
+		Addrs: remote.addrs(),
+	})
+	require.NoError(t, err)
+	require.NotNil(t, conn)
 }
 
 func (d *testDaemon) addrs() []string {

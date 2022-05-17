@@ -371,6 +371,52 @@ func (s *SQLite) StorePermanode(ctx context.Context, blk blocks.Block, p Permano
 	return nil
 }
 
+type Ref struct {
+	Account cid.Cid
+	Device  cid.Cid
+	Version Version
+}
+
+func (s *SQLite) ListVersionsByOwner(ctx context.Context, owner cid.Cid) (map[cid.Cid][]Ref, error) {
+	conn, release, err := s.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	ahash := owner.Hash()
+	aiddb, err := vcssql.AccountsLookupPK(conn, ahash)
+	if err != nil {
+		return nil, err
+	}
+
+	versions, err := vcssql.NamedVersionsListByObjectOwner(conn, aiddb.AccountsID)
+	if err != nil {
+		return nil, err
+	}
+
+	refs := make(map[cid.Cid][]Ref, len(versions))
+
+	for _, ver := range versions {
+		oid := cid.NewCidV1(uint64(ver.PermanodeCodec), ver.PermanodeMultihash)
+		aid := cid.NewCidV1(core.CodecAccountKey, ver.AccountsMultihash)
+		did := cid.NewCidV1(core.CodecDeviceKey, ver.DevicesMultihash)
+
+		v, err := ParseVersion(ver.NamedVersionsVersion)
+		if err != nil {
+			return nil, err
+		}
+
+		refs[oid] = append(refs[oid], Ref{
+			Account: aid,
+			Device:  did,
+			Version: v,
+		})
+	}
+
+	return refs, nil
+}
+
 func (s *SQLite) DeletePermanode(ctx context.Context, c cid.Cid) error {
 	if err := s.bs.DeleteBlock(ctx, c); err != nil {
 		return err

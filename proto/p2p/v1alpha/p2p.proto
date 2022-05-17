@@ -10,11 +10,13 @@ service P2P {
   // No matter who initiates the connect, this will make sure both peers exchange their information.
   rpc Handshake(HandshakeInfo) returns (HandshakeInfo);
 
+  // Returns list of all the objects authored by the account this peer belongs to.
+  // Used for syncing objects between peers. Clients are expected to periodically
+  // use this call to pull the latest objects from the remote peer.
+  rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
+
   // Get basic information about the peer.
   rpc GetPeerInfo(GetPeerInfoRequest) returns (PeerInfo);
-
-  // Get version of a specific object.
-  rpc GetObjectVersion(GetObjectVersionRequest) returns (Version);
 
   // Request a peer to issue a lightning BOLT-11 invoice
   rpc RequestInvoice(RequestInvoiceRequest) returns (RequestInvoiceResponse);
@@ -31,31 +33,40 @@ message HandshakeInfo {
   string version = 3;
 }
 
-message GetPeerInfoRequest {}
-
-message GetObjectVersionRequest {
-  string object_id = 1;
+message ListObjectsRequest {
+  // TODO: add some filtering options here.
+  // Some ideas:
+  // - Filter by account ID.
+  // - Filter by object type.
+  // - Send the timestamps of the last sync to avoid sending old data.
+  // - etc.
 }
+
+message ListObjectsResponse {
+  repeated Object objects = 1;
+}
+
+message Object {
+  string id = 1;
+
+  repeated Version version_set = 2;
+}
+
+message Version {
+  string account_id = 1;
+
+  string device_id = 2;
+
+  string version = 3;
+
+  // TODO: implement signed versions to allow clients to distinguish between first-party and third-party state.
+}
+
+message GetPeerInfoRequest {}
 
 message PeerInfo {
   // Account ID this peer belongs to.
   string account_id = 1;
-}
-
-message Version {
-  string object_id = 1;
-
-  repeated PeerVersion version_vector = 2;
-}
-
-message PeerVersion {
-  string peer = 1;
-
-  string head = 2;
-
-  uint64 seq = 3;
-
-  uint64 lamport_time = 4;
 }
 
 // List of wanted and unwanted object IDs. Can be used as a snapshot or deltas.
