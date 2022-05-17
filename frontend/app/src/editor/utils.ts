@@ -1,3 +1,4 @@
+import { changesService } from '@app/editor/mintter-changes/plugin'
 import type { GroupingContent } from '@mintter/mttast'
 import { FlowContent, group, isFlowContent, isGroup, isGroupContent, isStatement, Statement, statement } from '@mintter/mttast'
 import type { Ancestor, Descendant, NodeEntry, Point, Span } from 'slate'
@@ -171,6 +172,7 @@ export function resetFlowContent(editor: Editor): boolean | undefined {
           })
           Transforms.removeNodes(editor, { at: path })
           Transforms.select(editor, path.concat(0))
+          changesService.addChange(['replaceBlock', node.id])
         })
         return true
       }
@@ -189,6 +191,7 @@ export function resetGroupingContent(editor: Editor): boolean {
       const [listNode, listPath] = list
       if (!Node.string(listNode)) {
         Editor.withoutNormalizing(editor, () => {
+          // TODO: check if we need to send changes from here
           Transforms.insertNodes(editor, group(listNode.children), { at: Path.next(listPath) })
           Transforms.removeNodes(editor, { at: listPath })
           Transforms.select(editor, listPath.concat(0))

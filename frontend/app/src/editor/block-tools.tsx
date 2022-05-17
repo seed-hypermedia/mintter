@@ -10,6 +10,7 @@ import {
   FlowContent,
   group,
   heading,
+  isFlowContent,
   isGroupContent,
   isHeading,
   MttastContent,
@@ -150,6 +151,7 @@ function setType(fn: any) {
     at: Path,
   ) {
     Editor.withoutNormalizing(editor, function () {
+      changesService.addChange(['replaceBlock', element.id])
       const keys = ObjectKeys(element).filter(
         (key) => !['type', 'id', 'children', 'data'].includes(key),
       )
@@ -166,7 +168,6 @@ function setType(fn: any) {
       const {id, ...props} = fn()
 
       Transforms.setNodes(editor, props, {at})
-      changesService.addChange(['replaceBlock', element.id])
     })
   }
 }
@@ -185,7 +186,19 @@ function setList(fn: any) {
         const {children} = list
         Transforms.removeNodes(editor, {at: Path.parent(at)})
         Transforms.insertNodes(editor, fn(children), {at: Path.parent(at)})
-        // TODO: replace parent block to set the new block type
+
+        if (at.length == 2) {
+          // block is at the root level
+        } else {
+          let parentBlockEntry = Editor.above(editor, {
+            match: isFlowContent,
+            at,
+          })
+          if (parentBlockEntry) {
+            let [block] = parentBlockEntry
+            changesService.addChange(['replaceBlock', block.id])
+          }
+        }
       })
     }
   }

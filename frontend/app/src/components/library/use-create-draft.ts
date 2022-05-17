@@ -4,9 +4,9 @@ import { useMainPage } from "@app/main-page-context"
 export function useCreateDraft() {
   const mainPageService = useMainPage()
 
-  function createDraft(callback?: () => void) {
+  function createDraft(pubId?: string, callback?: () => void) {
     try {
-      apiCreateDraft().then(function createDraftSuccess(newDraft: Document) {
+      apiCreateDraft(pubId).then(function createDraftSuccess(newDraft: Document) {
         callback?.()
         mainPageService.send('RECONCILE')
         mainPageService.send({ type: 'goToEditor', docId: newDraft.id })

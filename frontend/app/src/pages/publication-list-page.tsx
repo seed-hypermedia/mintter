@@ -3,14 +3,17 @@ import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {footerButtonsStyles, footerStyles} from '@components/page-footer'
 import {Text} from '@components/text'
+import {invoke} from '@tauri-apps/api'
 
 export function PublicationList() {
   let files = useFiles()
 
-  let {createDraft} = useCreateDraft()
+  async function onOpenInNewWindow() {
+    await invoke('open_in_new_window', {url: `/new`})
+  }
+
   return (
     <>
       <Box css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}>
@@ -38,7 +41,7 @@ export function PublicationList() {
               }}
             >
               <Text>No Publications yet.</Text>
-              <Button onClick={() => createDraft()} size="1" variant="outlined">
+              <Button onClick={onOpenInNewWindow} size="1" variant="outlined">
                 Create a new Document
               </Button>
             </Box>
@@ -47,7 +50,7 @@ export function PublicationList() {
       </Box>
       <Box className={footerStyles()}>
         <Box className={footerButtonsStyles()}>
-          <Button onClick={() => createDraft()} size="1" color="primary">
+          <Button onClick={onOpenInNewWindow} size="1" color="primary">
             New Document
           </Button>
         </Box>

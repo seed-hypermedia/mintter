@@ -1,9 +1,23 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {css, styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import type {Code as CodeType} from '@mintter/mttast'
-import {createId, isCode, isParagraph, paragraph, statement, text} from '@mintter/mttast'
-import {getHighlighter, Highlighter, IThemeRegistration, Lang, setCDN} from 'shiki'
+import {
+  createId,
+  isCode,
+  isParagraph,
+  paragraph,
+  statement,
+  text,
+} from '@mintter/mttast'
+import {
+  getHighlighter,
+  Highlighter,
+  IThemeRegistration,
+  Lang,
+  setCDN,
+} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useSlateStatic} from 'slate-react'
@@ -85,11 +99,15 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
             if (ev.shiftKey) {
               const [, codePath] = code
               Editor.withoutNormalizing(editor, () => {
-                Transforms.insertNodes(editor, statement({id: createId()}, [paragraph([text('')])]), {
+                let newBlock = statement({id: createId()}, [
+                  paragraph([text('')]),
+                ])
+                Transforms.insertNodes(editor, newBlock, {
                   at: Path.next(codePath),
                 })
                 Transforms.select(editor, Path.next(codePath))
                 Transforms.collapse(editor, {edge: 'start'})
+                changesService.addChange(['moveBlock', newBlock.id])
               })
             } else {
               Transforms.insertText(editor, '\n')
@@ -106,7 +124,11 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
         // if the codeblock has a lang attribute but no highlighter yet, attach one
         if (isCode(node) && !node.data?.[HIGHLIGHTER] && node.lang) {
           getHighlighter({theme, langs: [node.lang]}).then((highlighter) => {
-            Transforms.setNodes(editor, {data: {...node.data, [HIGHLIGHTER]: highlighter}}, {at: path})
+            Transforms.setNodes(
+              editor,
+              {data: {...node.data, [HIGHLIGHTER]: highlighter}},
+              {at: path},
+            )
           })
         }
 
@@ -130,7 +152,10 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
             for (const token of tokens) {
               const range: Range & Record<string, unknown> = {
                 anchor: {path: [...path, ...textPath], offset},
-                focus: {path: [...path, ...textPath], offset: offset + token.content.length},
+                focus: {
+                  path: [...path, ...textPath],
+                  offset: offset + token.content.length,
+                },
                 color: token.color,
               }
 
@@ -164,7 +189,11 @@ function Code({
     const {...newData} = element.data || {}
     delete newData[HIGHLIGHTER]
 
-    Transforms.setNodes(editor, {lang: e.target.value as Lang, data: newData}, {at: path})
+    Transforms.setNodes(
+      editor,
+      {lang: e.target.value as Lang, data: newData},
+      {at: path},
+    )
   }
 
   let lang = element.lang || ''
@@ -197,7 +226,12 @@ function Code({
               zIndex: 2,
             }}
           >
-            <select id="lang-selection" name="lang-selection" value={lang} onChange={setLanguage}>
+            <select
+              id="lang-selection"
+              name="lang-selection"
+              value={lang}
+              onChange={setLanguage}
+            >
               <option value="">Select a Language</option>
               <option value="javascript">JavaScript</option>
               <option value="typescript">TypeScript</option>

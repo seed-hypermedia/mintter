@@ -1,4 +1,5 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {statementStyle} from '@app/editor/statement'
 import {css} from '@app/stitches.config'
@@ -65,6 +66,8 @@ export const createHeadingPlugin = (): EditorPlugin => ({
           if (isStaticParagraph(secondChild)) {
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)
+              console.log('CHANGE INSIDE HEADING')
+
               Transforms.moveNodes(editor, {at, to: path.concat(2, 0)})
               return
             })
@@ -79,8 +82,9 @@ export const createHeadingPlugin = (): EditorPlugin => ({
 
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)
+              let newBlock = statement({id: createId()})
               Transforms.setNodes(editor, {type: 'paragraph'}, {at})
-              Transforms.wrapNodes(editor, statement({id: createId()}), {at})
+              Transforms.wrapNodes(editor, newBlock, {at})
               Transforms.wrapNodes(
                 editor,
                 {
@@ -89,6 +93,8 @@ export const createHeadingPlugin = (): EditorPlugin => ({
                 },
                 {at},
               )
+              changesService.addChange(['replaceBlock', node.id])
+              changesService.addChange(['moveBlock', newBlock.id])
             })
             return
           }

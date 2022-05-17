@@ -34,8 +34,9 @@ import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {document, FlowContent, group} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {invoke} from '@tauri-apps/api'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
-import {useEffect, useRef} from 'react'
+import {useEffect} from 'react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {QueryClient, useQueryClient} from 'react-query'
@@ -48,38 +49,14 @@ export default function Publication() {
   let {docId, version} = useParams()
   let {createDraft} = useCreateDraft()
 
-  const [state, send] = usePagePublication(client, docId, version)
-
-  const {data: author} = useAccount(
-    state.context.publication?.document?.author,
-    {
-      enabled: !!state.context.publication?.document?.author,
-    },
-  )
-
-  useEffect(() => {
-    if (docId) {
-      send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
-      citations.send({type: 'CITATIONS.FETCH', documentId: docId, version})
-    }
-  }, [docId])
-
-  async function handleEdit() {
-    try {
-      const d = await createDraft(docId)
-      if (d?.id) {
-        mainPageService.send({type: 'goToEditor', docId: d.id})
-      }
-    } catch (err) {
-      console.warn(
-        `createDraft Error: "createDraft" does not returned a Document`,
-        err,
-      )
-    }
-  }
+  const [state, send] = usePagePublication(client)
 
   if (state.matches('fetching')) {
     return <PublicationShell />
+  }
+
+  async function onOpenInNewWindow() {
+    await invoke('open_in_new_window', {url: `/new`})
   }
 
   // start rendering
@@ -91,12 +68,7 @@ export default function Publication() {
       >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
-        <Button
-          onClick={() =>
-            send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
-          }
-          color="muted"
-        >
+        <Button onClick={() => send('PUBLICATION.FETCH.DATA')} color="muted">
           try again
         </Button>
       </Box>
@@ -128,26 +100,8 @@ export default function Publication() {
       )}
       <Box className={footerStyles()}>
         <Box className={footerButtonsStyles()}>
-          <Button
-            onClick={() => {
-              console.log('NEW DOCUMENT!')
-              createDraft()
-            }}
-            size="1"
-            color="primary"
-          >
+          <Button onClick={onOpenInNewWindow} size="1" color="primary">
             New Document
-          </Button>
-          <Button
-            variant="outlined"
-            size="1"
-            disabled={state.hasTag('pending')}
-            data-testid="submit-edit"
-            onClick={() => {
-              console.log('Send: IMPLEMENT ME!')
-            }}
-          >
-            Reply
           </Button>
           {state.context.canUpdate ? (
             <>
@@ -209,11 +163,7 @@ export default function Publication() {
   )
 }
 
-function usePagePublication(
-  client: QueryClient,
-  docId?: string,
-  version?: string,
-) {
+function usePagePublication(client: QueryClient) {
   const mainService = useMainPage()
 
   const service = useInterpret(() => publicationMachine, {
@@ -298,15 +248,6 @@ function usePagePublication(
     },
   })
   const [state, send] = useActor(service)
-  const onlyOnce = useRef(false)
-
-  useEffect(() => {
-    if (onlyOnce.current) return
-    if (docId) {
-      send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
-      onlyOnce.current = true
-    }
-  }, [docId])
 
   return [state, send] as const
 }

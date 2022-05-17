@@ -5,7 +5,7 @@ import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'
-import {HoveringToolbar} from './hovering-toolbar'
+import {EditorHoveringToolbar} from './editor-hovering-toolbar'
 import {
   buildDecorateHook,
   buildEditorHook,
@@ -93,6 +93,8 @@ export function Editor({
   }
 
   if (mode == EditorMode.Publication || mode == EditorMode.Discussion) {
+    console.log('Editor: ', _editor)
+
     return (
       <Suspense fallback={'loading'}>
         <Box
@@ -105,12 +107,13 @@ export function Editor({
             value={value as Array<Descendant>}
             onChange={onChange as any}
           >
+            {/* <PublicationHoveringToolbar /> */}
             <Editable
-              readOnly={true}
               data-testid="editor"
               renderElement={renderElement}
               renderLeaf={renderLeaf}
               decorate={decorate}
+              placeholder="Start typing here..."
               {...eventHandlers}
             />
             {children}
@@ -119,6 +122,8 @@ export function Editor({
       </Suspense>
     )
   }
+
+  console.log('ELSE!')
 
   return (
     <Suspense fallback={'loading'}>
@@ -132,7 +137,7 @@ export function Editor({
           value={value as Array<Descendant>}
           onChange={onChange as any}
         >
-          <HoveringToolbar />
+          <EditorHoveringToolbar />
           <Editable
             data-testid="editor"
             readOnly={_editor.readOnly}

@@ -26,7 +26,7 @@ import {
 import type {BaseRange, BaseSelection, Range} from 'slate'
 import {Editor, Element as SlateElement, Transforms} from 'slate'
 import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
-import type {UseLastSelectionResult} from '../hovering-toolbar'
+import type {UseLastSelectionResult} from '../editor-hovering-toolbar'
 import type {EditorPlugin} from '../types'
 import {isCollapsed} from '../utils'
 

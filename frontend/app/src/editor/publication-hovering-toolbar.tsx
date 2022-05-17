@@ -1,8 +1,5 @@
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {icons} from '@components/icon'
-import {Tooltip} from '@components/tooltip'
-import type {Text as MTTText} from '@mintter/mttast'
 import React, {
   forwardRef,
   PropsWithChildren,
@@ -14,45 +11,6 @@ import ReactDOM from 'react-dom'
 import type {BaseSelection} from 'slate'
 import {Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
-import {ToolbarLink} from './link'
-import {isMarkActive, toggleMark} from './utils'
-
-type FormatTypes = keyof Omit<
-  MTTText,
-  'type' | 'text' | 'value' | 'data' | 'position'
->
-
-function FormatButton({format}: {format: FormatTypes}) {
-  const editor = useSlateStatic()
-  const IconComponent = icons[capitalize(format)]
-  return (
-    <Tooltip content={format}>
-      <Button
-        css={
-          isMarkActive(editor, format)
-            ? {
-                backgroundColor: '$background-opposite',
-                color: '$base-text-hight',
-                '&:hover': {
-                  backgroundColor: '$background-opposite !important',
-                  color: '$base-text-hight !important',
-                },
-              }
-            : {}
-        }
-        onMouseDown={(event) => {
-          event.preventDefault()
-          toggleMark(editor, format)
-        }}
-        variant="ghost"
-        size="1"
-        color="muted"
-      >
-        <IconComponent />
-      </Button>
-    </Tooltip>
-  )
-}
 
 const Portal = ({children}: PropsWithChildren<unknown>) => {
   return typeof document == 'object'
@@ -71,10 +29,10 @@ const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(
         padding: 0,
         position: 'absolute',
         zIndex: '$max',
-        top: '-1000000000px',
-        left: '-1000000000px',
+        // top: '-1000000000px',
+        // left: '-1000000000px',
         marginTop: '-6px',
-        opacity: 0,
+        // opacity: 0,
         backgroundColor: '$base-background-normal',
         borderRadius: '4px',
         transition: 'opacity 0.5s',
@@ -120,10 +78,10 @@ export function useLastEditorSelection(): UseLastSelectionResult {
  * @todo handle escape key to remove toolbar
  * @body
  */
-export function HoveringToolbar() {
-  const ref = useRef<HTMLDivElement | null>()
+export function PublicationHoveringToolbar() {
+  const ref = useRef<HTMLDivElement | null>(null)
   const editor = useSlateStatic()
-  const [storeFocus, sendStoreFocus] = useState(false)
+  const [storeFocus] = useState(false)
   const {lastSelection, resetSelection} = useLastEditorSelection()
 
   useEffect(() => {
@@ -170,17 +128,17 @@ export function HoveringToolbar() {
   return (
     <Portal>
       <Menu ref={ref}>
-        <FormatButton format="strong" />
-        <FormatButton format="emphasis" />
-        <FormatButton format="underline" />
-        {/* <FormatButton format="code" /> */}
-        <ToolbarLink
-          lastSelection={lastSelection}
-          resetSelection={resetSelection}
-          sendStoreFocus={sendStoreFocus}
-        />
-        {/* <ToggleListButton type="orderedList" />
-        <ToggleListButton type="unorderedList" /> */}
+        <Button
+          onMouseDown={(event) => {
+            event.preventDefault()
+            // TODO: IMPLEMENT ME
+          }}
+          variant="ghost"
+          size="1"
+          color="muted"
+        >
+          Copy Selection Reference
+        </Button>
       </Menu>
     </Portal>
   )
