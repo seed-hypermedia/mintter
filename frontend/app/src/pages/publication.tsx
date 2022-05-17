@@ -49,14 +49,35 @@ export default function Publication() {
   let {docId, version} = useParams()
   let {createDraft} = useCreateDraft()
 
-  const [state, send] = usePagePublication(client)
+  const [state, send] = usePagePublication(client, mainPageService)
 
-  if (state.matches('fetching')) {
-    return <PublicationShell />
-  }
+  useEffect(() => {
+    if (docId) {
+      send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
+      citations.send({type: 'CITATIONS.FETCH', documentId: docId, version})
+    }
+  }, [docId])
 
   async function onOpenInNewWindow() {
     await invoke('open_in_new_window', {url: `/new`})
+  }
+
+  async function handleEdit() {
+    try {
+      const d = await createDraft(docId)
+      if (d?.id) {
+        mainPageService.send({type: 'goToEditor', docId: d.id})
+      }
+    } catch (err) {
+      console.warn(
+        `createDraft Error: "createDraft" does not returned a Document`,
+        err,
+      )
+    }
+  }
+
+  if (state.matches('fetching')) {
+    return <PublicationShell />
   }
 
   // start rendering
@@ -68,7 +89,12 @@ export default function Publication() {
       >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
-        <Button onClick={() => send('PUBLICATION.FETCH.DATA')} color="muted">
+        <Button
+          onClick={() =>
+            send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
+          }
+          color="muted"
+        >
           try again
         </Button>
       </Box>
@@ -102,6 +128,17 @@ export default function Publication() {
         <Box className={footerButtonsStyles()}>
           <Button onClick={onOpenInNewWindow} size="1" color="primary">
             New Document
+          </Button>
+          <Button
+            variant="outlined"
+            size="1"
+            disabled={state.hasTag('pending')}
+            data-testid="submit-edit"
+            onClick={() => {
+              console.log('Send: IMPLEMENT ME!')
+            }}
+          >
+            Reply
           </Button>
           {state.context.canUpdate ? (
             <>
@@ -163,16 +200,24 @@ export default function Publication() {
   )
 }
 
-function usePagePublication(client: QueryClient) {
+function usePagePublication(
+  client: QueryClient,
+  mainPageService: ReturnType<typeof useMainPage>,
+) {
   const mainService = useMainPage()
 
   const service = useInterpret(() => publicationMachine, {
     services: {
-      fetchPublicationData: (context) => (sendBack) => {
+      fetchPublicationData: () => (sendBack) => {
+        let {context} = mainPageService.getSnapshot()
         Promise.all([
           client.fetchQuery(
-            [queryKeys.GET_PUBLICATION, context.id, context.version],
-            () => getPublication(context.id, context.version),
+            [
+              queryKeys.GET_PUBLICATION,
+              context.params.docId,
+              context.params.version,
+            ],
+            () => getPublication(context.params.docId, context.params.version),
           ),
           client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
         ])
@@ -298,11 +343,8 @@ export const publicationMachine = createMachine(
     initial: 'idle',
     states: {
       idle: {
-        on: {
-          'PUBLICATION.FETCH.DATA': {
-            actions: ['assignId', 'assignVersion'],
-            target: '#publication-machine.fetching',
-          },
+        always: {
+          target: '#publication-machine.fetching',
         },
       },
       fetching: {

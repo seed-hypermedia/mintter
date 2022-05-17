@@ -3,11 +3,11 @@
 export interface Typegen0 {
   '@@xstate/typegen': true
   eventsCausingActions: {
-    assignId: 'PUBLICATION.FETCH.DATA'
-    assignVersion: 'PUBLICATION.FETCH.DATA'
     assignPublication: 'PUBLICATION.REPORT.SUCCESS'
     assignCanUpdate: 'PUBLICATION.REPORT.SUCCESS'
     assignError: 'PUBLICATION.REPORT.ERROR' | 'REPORT.DISCUSSION.ERROR'
+    assignId: 'PUBLICATION.FETCH.DATA'
+    assignVersion: 'PUBLICATION.FETCH.DATA'
     assignLinks: 'REPORT.DISCUSSION.SUCCESS'
     assignDiscussion: 'REPORT.DISCUSSION.SUCCESS'
     clearLinks: 'PUBLICATION.FETCH.DATA' | 'TOGGLE.DISCUSSION'
@@ -38,7 +38,7 @@ export interface Typegen0 {
     delays: never
   }
   eventsCausingServices: {
-    fetchPublicationData: 'PUBLICATION.FETCH.DATA'
+    fetchPublicationData: '' | 'PUBLICATION.FETCH.DATA'
     fetchDiscussionData: '' | 'TOGGLE.DISCUSSION'
   }
   eventsCausingGuards: {
