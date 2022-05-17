@@ -13,6 +13,10 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       useErrorBoundary: true,
+      staleTime: Infinity,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     },
   },
 })
@@ -23,7 +27,10 @@ type AppProvidersProps = {
   client?: QueryClient
 }
 
-export function AppProviders({children, client = queryClient}: PropsWithChildren<AppProvidersProps>) {
+export function AppProviders({
+  children,
+  client = queryClient,
+}: PropsWithChildren<AppProvidersProps>) {
   const authService = useInterpret(() => authMachine, {
     services: {
       fetchInfo: () => (sendBack) => {
