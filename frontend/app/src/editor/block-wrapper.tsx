@@ -10,7 +10,6 @@ import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Icon} from '@components/icon'
 import {useCreateDraft} from '@components/library/use-create-draft'
-import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {FlowContent, isCode, isHeading} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
@@ -28,7 +27,6 @@ export function BlockWrapper({
   element: FlowContent
 }) {
   const bookmarksService = useBookmarksService()
-  const sidepanelService = useSidepanel()
   const {createDraft} = useCreateDraft()
   const hoverService = useHover()
   const [hoverState, hoverSend] = useActor(hoverService)
@@ -57,23 +55,6 @@ export function BlockWrapper({
       type: 'BOOKMARK.ADD',
       url: `${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`,
     })
-  }
-
-  function onStartDraft() {
-    createDraft(onSidepanel)
-  }
-
-  function onSidepanel() {
-    let url = `mtt://${params?.docId}/${params?.version}/${element.id}`
-    sidepanelService.send({
-      type: 'SIDEPANEL.ADD',
-      item: {
-        type: 'block',
-        //@ts-ignore
-        url,
-      },
-    })
-    sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   return mode == EditorMode.Draft ? (
@@ -155,14 +136,6 @@ export function BlockWrapper({
           >
             <Icon size="1" name="ArrowBottomRight" />
             <Text size="2">Add to Bookmarks</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={onSidepanel}>
-            <Icon size="1" name="ArrowTopRight" />
-            <Text size="2">Add to Sidepanel</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={onStartDraft}>
-            <Icon size="1" name="AddCircle" />
-            <Text size="2">Start a Draft</Text>
           </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Root>

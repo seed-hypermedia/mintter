@@ -5,7 +5,6 @@ import { queryKeys } from '@app/hooks'
 import { useMainPage } from '@app/main-page-context'
 import { createId, group, paragraph, statement, text } from '@mintter/mttast'
 import { useMachine } from '@xstate/react'
-import { useEffect } from 'react'
 import { QueryClient, useQueryClient } from 'react-query'
 import { Editor } from 'slate'
 import { assign, createMachine, MachineOptionsFrom } from 'xstate'
@@ -327,11 +326,5 @@ export function useEditorDraft({
     options,
   )
 
-  useEffect(() => {
-    if (documentId) {
-      send({ type: 'FETCH', documentId })
-      // onlyOnce.current = true
-    }
-  }, [documentId])
   return [state, send] as const
 }

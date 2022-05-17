@@ -80,6 +80,9 @@ export const textStyles = css({
       base: {
         color: '$base-text-low',
       },
+      'base-hight': {
+        color: '$base-text-high',
+      },
       alt: {
         color: '$base-text-low',
       },

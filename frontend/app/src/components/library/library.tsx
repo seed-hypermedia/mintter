@@ -152,7 +152,7 @@ function LibraryButton({title, icon, onClick, active}: LibraryButtonProps) {
       <Text
         size="2"
         fontWeight="medium"
-        color={active ? 'primary-opposite' : 'base'}
+        color={active ? 'primary-opposite' : 'base-hight'}
       >
         {title}
       </Text>

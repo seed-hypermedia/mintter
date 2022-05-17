@@ -1,4 +1,5 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
@@ -56,15 +57,13 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
           ev.preventDefault()
           const [, quotePath] = quote
           Editor.withoutNormalizing(editor, () => {
-            Transforms.insertNodes(
-              editor,
-              statement({id: createId()}, [paragraph([text('')])]),
-              {
-                at: Path.next(quotePath),
-              },
-            )
+            let newBlock = statement({id: createId()}, [paragraph([text('')])])
+            Transforms.insertNodes(editor, newBlock, {
+              at: Path.next(quotePath),
+            })
             Transforms.select(editor, Path.next(quotePath))
             Transforms.collapse(editor, {edge: 'start'})
+            changesService.addChange(['moveBlock', newBlock.id])
           })
         }
       }

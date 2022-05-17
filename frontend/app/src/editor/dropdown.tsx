@@ -76,4 +76,7 @@ export var ElementDropdown = styled('button', {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+  '&:hover': {
+    cursor: 'pointer',
+  },
 })

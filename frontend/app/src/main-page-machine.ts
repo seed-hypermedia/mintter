@@ -21,12 +21,17 @@ export function createFilesMachine(client: QueryClient) {
       },
       states: {
         idle: {
+          entry: () => {
+            console.log('inside files idle!!!')
+          },
           invoke: [
             {
               src: () => (sendBack) => {
                 client
                   .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => listPublications())
                   .then(function filesResponse(response) {
+                    console.log("🚀 ~ file: main-page-machine.ts ~ line 30 ~ filesResponse ~ response", response)
+
                     let data = response.publications.map((pub) => ({
                       ...pub,
                       ref: 'TODO',
