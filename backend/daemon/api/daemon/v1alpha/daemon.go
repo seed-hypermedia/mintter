@@ -31,12 +31,12 @@ type Server struct {
 	repo      Repo
 	startTime time.Time
 
-	forceSyncFunc func()
+	forceSyncFunc func() error
 
 	mu sync.Mutex // we only want one register request at a time.
 }
 
-func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func()) *Server {
+func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func() error) *Server {
 	return &Server{
 		vcs:           vcs,
 		repo:          r,
@@ -107,7 +107,13 @@ func (srv *Server) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*dae
 }
 
 func (srv *Server) ForceSync(ctx context.Context, in *daemon.ForceSyncRequest) (*emptypb.Empty, error) {
-	go srv.forceSyncFunc()
+	if srv.forceSyncFunc == nil {
+		return &emptypb.Empty{}, status.Error(codes.FailedPrecondition, "force sync function is not set")
+	}
+
+	if err := srv.forceSyncFunc(); err != nil {
+		return nil, err
+	}
 
 	return &emptypb.Empty{}, nil
 }
