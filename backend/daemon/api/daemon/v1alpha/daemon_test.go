@@ -99,7 +99,7 @@ func newTestServer(t *testing.T, name string) *Server {
 	db := newTestSQLite(t, repo)
 	v := vcs.New(db)
 
-	return NewServer(repo, v, func() {})
+	return NewServer(repo, v, nil)
 }
 
 func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {
