@@ -228,6 +228,7 @@ export function createMainPageMachine(client: QueryClient) {
               tags: ['topbar', 'library'],
             },
             editor: {
+              id: 'editor',
               tags: ['topbar', 'library'],
               initial: 'validating',
               states: {
@@ -268,6 +269,7 @@ export function createMainPageMachine(client: QueryClient) {
               },
             },
             publication: {
+              id: 'publication',
               tags: ['topbar', 'library'],
               initial: 'validating',
               states: {
@@ -295,6 +297,7 @@ export function createMainPageMachine(client: QueryClient) {
                       },
                       {},
                     ],
+                    goToEditor: "#editor"
                   },
                 },
                 error: {
