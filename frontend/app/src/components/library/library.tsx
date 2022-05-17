@@ -1,18 +1,18 @@
 import {forceSync} from '@app/client/daemon'
-import {useIsLibraryOpen} from '@app/main-page-context'
+import {useIsLibraryOpen, useMainPage} from '@app/main-page-context'
 import {css} from '@app/stitches.config'
+import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {DraftsSection} from '@components/library/section-drafts'
-import {FilesSection} from '@components/library/section-files'
+import {Icon, icons} from '@components/icon'
 import {RecentsSection} from '@components/library/section-recents'
 import {useCreateDraft} from '@components/library/use-create-draft'
+import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
-import {Box} from '../box'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
+import {BookmarksSection} from './section-bookmarks'
 import {ContactsSection} from './section-connections'
-import {BookmarksSection} from './_section-bookmarks'
 
 let libraryStyle = css({
   transition: 'all 0.25s ease',
@@ -42,6 +42,8 @@ export function LibraryShell({children, ...props}: PropsWithChildren<{}>) {
 export function Library() {
   const isOpen = useIsLibraryOpen()
   const {createDraft} = useCreateDraft()
+  var service = useMainPage()
+  var [mainPageState, mainPageSend] = useActor(service)
 
   async function handleSync() {
     await forceSync()
@@ -59,7 +61,7 @@ export function Library() {
             width: isOpen ? '$library-width' : 0,
             paddingTop: '$3',
             position: 'relative',
-            paddingHorizontal: isOpen ? '$4' : 0,
+            paddingHorizontal: isOpen ? '$3' : 0,
           }}
         >
           <Box
@@ -94,10 +96,66 @@ export function Library() {
           <Separator />
           <ContactsSection />
           <Separator />
-          <FilesSection />
-          <DraftsSection />
+          <LibraryButton
+            icon="File"
+            onClick={() => service.send('goToPublicationList')}
+            title="Files"
+            active={mainPageState.matches('routes.publicationList')}
+          />
+          <LibraryButton
+            icon="PencilAdd"
+            onClick={() => service.send('goToDraftList')}
+            title="Drafts"
+            active={mainPageState.matches('routes.draftList')}
+          />
         </Box>
       </ScrollArea>
+    </Box>
+  )
+}
+
+type LibraryButtonProps = {
+  title: string
+  icon?: keyof typeof icons
+  onClick: React.MouseEventHandler<HTMLDivElement>
+  active: boolean
+}
+
+function LibraryButton({title, icon, onClick, active}: LibraryButtonProps) {
+  return (
+    <Box
+      onClick={onClick}
+      css={{
+        display: 'flex',
+        gap: '$3',
+        alignItems: 'center',
+        paddingHorizontal: '$3',
+        paddingVertical: '$2',
+        borderRadius: '$2',
+        backgroundColor: active ? '$primary-normal' : 'transparent',
+
+        '&:hover': {
+          backgroundColor: active
+            ? '$primary-active'
+            : '$base-component-bg-normal',
+          cursor: 'pointer',
+        },
+      }}
+    >
+      {icon && (
+        <Icon
+          color={active ? 'primary-opposite' : 'primary'}
+          name={icon}
+          size="1"
+        />
+      )}
+      <Text
+        size="2"
+        fontWeight="medium"
+        color={active ? 'primary-opposite' : 'base'}
+      >
+        {title}
+      </Text>
     </Box>
   )
 }

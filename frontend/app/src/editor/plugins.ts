@@ -1,4 +1,5 @@
 import { createMintterChangesPlugin } from '@app/editor/mintter-changes/plugin'
+import { Operation } from 'slate'
 import { createBlockquotePlugin } from './blockquote'
 // import { createCodePlugin } from './code'
 import { createColorPlugin } from './color'
@@ -53,7 +54,22 @@ export const plugins: EditorPlugin[] = [
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),
   createPlainTextPastePlugin(),
-  createMintterChangesPlugin()
+  createMintterChangesPlugin(),
   // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
+  {
+    name: 'DEMO',
+    configureEditor(editor) {
+      let { apply } = editor
+
+      editor.apply = function demoApply(op: Operation) {
+        if (op.type == 'set_selection') {
+          console.log(op)
+        }
+        apply(op)
+      }
+
+      return editor
+    }
+  }
 ]
 

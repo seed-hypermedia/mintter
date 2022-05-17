@@ -1,7 +1,7 @@
 import {useFiles} from '@app/main-page-context'
 import {LibraryItem} from '@components/library/library-item'
 import {ErrorBoundary} from 'react-error-boundary'
-import {EmptyList, Section} from './section'
+import {Section} from './section'
 import {SectionError} from './section-error'
 
 export function FilesSection() {
@@ -27,9 +27,7 @@ export function FilesSection() {
             )
           })}
         </ErrorBoundary>
-      ) : (
-        <EmptyList />
-      )}
+      ) : null}
     </Section>
   )
 }

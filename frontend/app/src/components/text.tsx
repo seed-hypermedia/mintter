@@ -95,6 +95,9 @@ export const textStyles = css({
       primary: {
         color: '$primary-normal',
       },
+      'primary-opposite': {
+        color: '$primary-text-opposite',
+      },
       secondary: {
         color: '$secondary-normal',
       },

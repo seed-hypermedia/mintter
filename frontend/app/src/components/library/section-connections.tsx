@@ -27,7 +27,7 @@ export function ContactsSection() {
   }
 
   return (
-    <Section title={title}>
+    <Section title={title} icon="Person">
       {data.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}

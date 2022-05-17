@@ -51,11 +51,21 @@ export interface Typegen2 {
     setCurrentDocument: 'SET.CURRENT.DOCUMENT'
     setDraftParams: ''
     setPublicationParams: ''
-    clearCurrentDocument: 'goToHome' | 'goToSettings'
-    clearParams: 'goToHome' | 'goToSettings'
+    clearCurrentDocument:
+      | 'goToHome'
+      | 'goToSettings'
+      | 'goToPublicationList'
+      | 'goToDraftList'
+    clearParams:
+      | 'goToHome'
+      | 'goToSettings'
+      | 'goToPublicationList'
+      | 'goToDraftList'
     pushToRecents: 'xstate.init'
     pushDraftRoute: ''
     pushPublicationRoute: ''
+    pushPublicationListRoute: 'goToPublicationList'
+    pushDraftListRoute: 'goToDraftList'
   }
   internalEvents: {
     '': {type: ''}
@@ -101,6 +111,8 @@ export interface Typegen2 {
     | 'routes.publication.valid'
     | 'routes.publication.error'
     | 'routes.settings'
+    | 'routes.publicationList'
+    | 'routes.draftList'
     | 'routes.createDraft'
     | {
         routes?:
@@ -109,17 +121,13 @@ export interface Typegen2 {
           | 'editor'
           | 'publication'
           | 'settings'
+          | 'publicationList'
+          | 'draftList'
           | 'createDraft'
           | {
               editor?: 'validating' | 'valid' | 'error'
               publication?: 'validating' | 'valid' | 'error'
             }
       }
-  tags:
-    | 'topbar'
-    | 'library'
-    | 'sidepanel'
-    | 'draft'
-    | 'publication'
-    | 'settings'
+  tags: 'topbar' | 'library' | 'draft' | 'publication' | 'settings'
 }

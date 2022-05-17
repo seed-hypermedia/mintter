@@ -19,8 +19,10 @@ import {useActor, useInterpret} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {QueryClient, useQueryClient} from 'react-query'
+import {DraftList} from './draft-list-page'
 import EditorPage from './editor'
 import Publication from './publication'
+import {PublicationList} from './publication-list-page'
 
 export function MainPage({client: propClient}: {client?: QueryClient}) {
   // eslint-disable-line
@@ -60,7 +62,11 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
                       {state.hasTag('draft') ? (
                         <EditorPage key={state.context.params.docId} />
                       ) : null}
-                      {state.matches('routes.idle') ? <Placeholder /> : null}
+                      {state.matches('routes.home') ? <Placeholder /> : null}
+                      {state.matches('routes.draftList') ? <DraftList /> : null}
+                      {state.matches('routes.publicationList') ? (
+                        <PublicationList />
+                      ) : null}
                     </ErrorBoundary>
                   </MainWindow>
                   {/* {state.hasTag('sidepanel') ? <Sidepanel /> : null} */}

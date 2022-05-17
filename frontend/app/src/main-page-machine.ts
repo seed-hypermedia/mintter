@@ -164,6 +164,12 @@ type MainPageEvent =
     type: 'goToHome'
   }
   | {
+    type: 'goToPublicationList'
+  }
+  | {
+    type: 'goToDraftList'
+  }
+  | {
     type: 'goToNew'
     docType?: string
     docId?: string
@@ -201,8 +207,6 @@ export function defaultMainPageContext(client: QueryClient, overrides: Partial<M
 }
 
 export function createMainPageMachine(client: QueryClient) {
-
-  /** @xstate-layout N4IgpgJg5mDOIC5QAoC2BDAxgCwJYDswBKAOgCcB7AVwBc4TJcaKySA3dAG1wnRoKgBiRKAAOFWE1wV8IkAA9EAJgCcABhJqVKgIwB2HQDY9AZh1LjhgDQgAnoj0BWFZpV7DhlQA41hnY4AWLwBfYJs0LDxCUkpaekZmVg5uCEEoCgAVCgBRCCYWOXFJfhk5RQQTNT0SAJ01E0cdAMcvI0MTaztEIOrjL2dHNQCTVvc9UPCMHAJicmo6WAY8xMEAZWyMkgBhAFUAJT3sgDlNgBEAeV2AWWOMwokpUqQFRH8XWr9Aw1bPHW8bewVAwkRx6PRaJRDFSOUHjMIgCLTaJzOKLURUABG3EwfGk+HYXB4uPwQnuxTxZUQHhqzi8FladR8XgBryUShITgCkL8ai8AV8XhMEwRUyis1iCxI6KxuBxJXxyR4aUyFAACpjsbinmIHvLKRUqjU6g0mi02h0WQgdHUOYFuYz+d8hfDEWKYvN6NLNfK1httvtDicSBdrrcyY9ZM9ykZ2QFhiZ3B0dAmVEFLQBaRzshp6Zr1FpOJQJgLC10zd2owSHLbnI5bACSABlsuG9VGqRptP4nCYAk5nMNLeZcyQ6TC1INBlyVKXReWUQtBBKwEcKDQAGLUfAQVsU9sIdNmdkMlQeOq1OmdQHWlQmW2OXvtVp8xqzyLz5ewZVZAASFFQYC7tqLwHkeo43meQw6JeQ5aIYmgmJUaiqAmyE6G+SLih6X7pFkqxgDQ-AkvAzxFBG+qHuY4F-JBF4WBmTTVG4ZipoYzgeEMGFugucDfjkywFKRup7qA5SUceEE8nRV4OM4rjuJ4PifH2XEfthfHqjKcoiSAZFtqJiDidRp5SdB9FdBU1okG4p7WoYSj6A5Raqcin58UcYAAO5AZGBmgVRJ60WZMkIOoJD6AEKhKF4ehFrmDQuVhlbMB5nmnGQ6AAGY0D5FFgYFpkwRZbjwV46gOV4z4dF4hiJUQyoAEJYAA1rl+7guFSiOMYCYjE4ag6BmATtLaw1xoE3UjBYdXKpuZCeegZA7kJ5LAeUhgaGxlQmEWdJFg5AQZuOJDfNCwyQshbiOKE8L4BQEBwHIZaudhJA8JwgEreR+7pv47JRbo4KVEow1KHoQ5-DoJ09H2cUA3VPGLNg-6fTqq2+SBv2CuFk6qPUppxiYsGgiQIy8tBRhVEpCOfks+RJISvBEVAbV+STgr8vohhcnyQxsZaHj-fZvImN4UW1CWLpzi9qJ04kBIpKzIHuAE8mRXo0K5n4lrDVDkUg+T+2IQ+NOvQkLAMGQlBkErYkuGVJXjlCqjaxZdKq0Mqipg+agDchpuy+bNtffpmOIaO2juE7+unpaIxeCCDlaI+cZOQHkperKWoKozxIsyHOlibFILmJFxYwrSShDlFIJ9q0E69f47Tp56GpZ-KCs8LbiCIbGxqNM0PztCF5jwf4DT1Ly0WVddUvvjLGdt9pMiW9b3cHt1mg1ZCyYWKPRZDmYpMGBOYMg60k0t2iS-Z+v6aniXIO3rmFfeFXFkJhydKCno-ROb26E56YQrJKWABFmYkTRt9Pyv1vggmMFzaC3hQSDQsljeC9kHwa2GM4X2IQgHcVppgMgYA+BgHSllHKBc1qGWghoFogRIbdV0OLS00I7wdDMBrX2vgQbOkmPPJKCw76IVKpJc8wUMxgyhuxWKiFagTmTHVERG1jJBSKoCQ80IS41SGHGMqBgYo3WCEAA */
   return createMachine(
     {
       context: defaultMainPageContext(client),
@@ -224,7 +228,7 @@ export function createMainPageMachine(client: QueryClient) {
               tags: ['topbar', 'library'],
             },
             editor: {
-              tags: ['topbar', 'library', 'sidepanel'],
+              tags: ['topbar', 'library'],
               initial: 'validating',
               states: {
                 validating: {
@@ -264,7 +268,7 @@ export function createMainPageMachine(client: QueryClient) {
               },
             },
             publication: {
-              tags: ['topbar', 'library', 'sidepanel'],
+              tags: ['topbar', 'library'],
               initial: 'validating',
               states: {
                 validating: {
@@ -307,6 +311,14 @@ export function createMainPageMachine(client: QueryClient) {
               entry: ['clearCurrentDocument', 'clearParams'],
               tags: 'settings',
             },
+            publicationList: {
+              entry: ['clearCurrentDocument', 'clearParams', 'pushPublicationListRoute'],
+              tags: ['topbar', 'library'],
+            },
+            draftList: {
+              entry: ['clearCurrentDocument', 'clearParams', 'pushDraftListRoute'],
+              tags: ['topbar', 'library'],
+            },
             createDraft: {
               invoke: {
                 src: 'createNewDraft',
@@ -325,6 +337,12 @@ export function createMainPageMachine(client: QueryClient) {
             },
             goToSettings: {
               target: '.settings',
+            },
+            goToPublicationList: {
+              target: '.publicationList',
+            },
+            goToDraftList: {
+              target: '.draftList',
             },
             goToEditor: {
               target: '.editor',
@@ -444,6 +462,13 @@ export function createMainPageMachine(client: QueryClient) {
           if (!window.history) return
           window.history.forward()
         },
+        pushDraftListRoute: send({
+          type: 'pushDraftList',
+        }, { to: 'router' }),
+
+        pushPublicationListRoute: send({
+          type: 'pushPublicationList',
+        }, { to: 'router' }),
       },
       services: {
         router: () => (sendBack, receive) => {
@@ -455,6 +480,12 @@ export function createMainPageMachine(client: QueryClient) {
             })
             .on('/settings', () => {
               sendBack('goToSettings')
+            })
+            .on('/publications', () => {
+              sendBack('goToPublicationList')
+            })
+            .on('/drafts', () => {
+              sendBack('goToDraftList')
             })
             .on<{ docId: string }>('/editor/:docId', (params) => {
               return params ? sendBack({ type: 'goToEditor', ...params }) : sendBack('routeNotFound')
@@ -485,6 +516,8 @@ export function createMainPageMachine(client: QueryClient) {
             })
 
           receive((event) => {
+            console.log('received router event', event);
+
             if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
@@ -497,6 +530,13 @@ export function createMainPageMachine(client: QueryClient) {
               navRouter.route(`/editor/${event.docId}${event.blockId ? `/${event.blockId}` : ''}`, event.replace)
             } else if (event.type == 'goToSettings') {
               navRouter.route('/settings')
+            } else if (event.type == 'pushPublicationList') {
+              navRouter.route('/publications')
+            } else if (event.type == 'pushDraftList') {
+              console.log('received pushDraftList');
+              navRouter.route('/drafts')
+            } else {
+              navRouter.route('/')
             }
           })
 

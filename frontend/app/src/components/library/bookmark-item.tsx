@@ -7,7 +7,6 @@ import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
 import {useCreateDraft} from '@components/library/use-create-draft'
-import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {useActor, useMachine} from '@xstate/react'
 import toast from 'react-hot-toast'
@@ -20,7 +19,6 @@ export function BookmarkItem({
 }: {
   itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>
 }) {
-  const sidepanelService = useSidepanel()
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
   const {createDraft} = useCreateDraft()
@@ -52,23 +50,8 @@ export function BookmarkItem({
     setLocation(`/p/${link}`)
   }
 
-  function onSidePanel() {
-    sidepanelService.send({
-      type: 'SIDEPANEL.ADD',
-      item: {
-        type: 'block',
-        url: state.context.url,
-      },
-    })
-    sidepanelService.send('SIDEPANEL.OPEN')
-  }
-
   function afterDelete() {
     // TODO: implement me
-  }
-
-  async function onStartDraft() {
-    createDraft(onSidePanel)
   }
 
   return (
@@ -109,10 +92,6 @@ export function BookmarkItem({
             <Icon size="1" name="ArrowTopRight" />
             <Text size="2">Open in main panel</Text>
           </Dropdown.Item>
-          <Dropdown.Item data-testid="sidepanel-item" onSelect={onSidePanel}>
-            <Icon size="1" name="ArrowBottomRight" />
-            <Text size="2">Open in sidepanel</Text>
-          </Dropdown.Item>
           <DeleteDialog
             state={deleteState}
             send={deleteSend}
@@ -127,10 +106,6 @@ export function BookmarkItem({
               <Text size="2">Delete bookmark</Text>
             </Dropdown.Item>
           </DeleteDialog>
-          <Dropdown.Item onSelect={onStartDraft}>
-            <Icon size="1" name="AddCircle" />
-            <Text size="2">Start a Draft</Text>
-          </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Root>
     </StyledItem>
