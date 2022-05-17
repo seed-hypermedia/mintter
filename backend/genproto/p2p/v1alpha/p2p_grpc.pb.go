@@ -21,10 +21,12 @@ type P2PClient interface {
 	// Handshake gets called whenever two Mintter peers connect to each other.
 	// No matter who initiates the connect, this will make sure both peers exchange their information.
 	Handshake(ctx context.Context, in *HandshakeInfo, opts ...grpc.CallOption) (*HandshakeInfo, error)
+	// Returns list of all the objects authored by the account this peer belongs to.
+	// Used for syncing objects between peers. Clients are expected to periodically
+	// use this call to pull the latest objects from the remote peer.
+	ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error)
 	// Get basic information about the peer.
 	GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error)
-	// Get version of a specific object.
-	GetObjectVersion(ctx context.Context, in *GetObjectVersionRequest, opts ...grpc.CallOption) (*Version, error)
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(ctx context.Context, in *RequestInvoiceRequest, opts ...grpc.CallOption) (*RequestInvoiceResponse, error)
 }
@@ -46,18 +48,18 @@ func (c *p2PClient) Handshake(ctx context.Context, in *HandshakeInfo, opts ...gr
 	return out, nil
 }
 
-func (c *p2PClient) GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error) {
-	out := new(PeerInfo)
-	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/GetPeerInfo", in, out, opts...)
+func (c *p2PClient) ListObjects(ctx context.Context, in *ListObjectsRequest, opts ...grpc.CallOption) (*ListObjectsResponse, error) {
+	out := new(ListObjectsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/ListObjects", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *p2PClient) GetObjectVersion(ctx context.Context, in *GetObjectVersionRequest, opts ...grpc.CallOption) (*Version, error) {
-	out := new(Version)
-	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/GetObjectVersion", in, out, opts...)
+func (c *p2PClient) GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error) {
+	out := new(PeerInfo)
+	err := c.cc.Invoke(ctx, "/com.mintter.p2p.v1alpha.P2P/GetPeerInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,10 +82,12 @@ type P2PServer interface {
 	// Handshake gets called whenever two Mintter peers connect to each other.
 	// No matter who initiates the connect, this will make sure both peers exchange their information.
 	Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error)
+	// Returns list of all the objects authored by the account this peer belongs to.
+	// Used for syncing objects between peers. Clients are expected to periodically
+	// use this call to pull the latest objects from the remote peer.
+	ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error)
 	// Get basic information about the peer.
 	GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error)
-	// Get version of a specific object.
-	GetObjectVersion(context.Context, *GetObjectVersionRequest) (*Version, error)
 	// Request a peer to issue a lightning BOLT-11 invoice
 	RequestInvoice(context.Context, *RequestInvoiceRequest) (*RequestInvoiceResponse, error)
 }
@@ -95,11 +99,11 @@ type UnimplementedP2PServer struct {
 func (UnimplementedP2PServer) Handshake(context.Context, *HandshakeInfo) (*HandshakeInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Handshake not implemented")
 }
+func (UnimplementedP2PServer) ListObjects(context.Context, *ListObjectsRequest) (*ListObjectsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListObjects not implemented")
+}
 func (UnimplementedP2PServer) GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPeerInfo not implemented")
-}
-func (UnimplementedP2PServer) GetObjectVersion(context.Context, *GetObjectVersionRequest) (*Version, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetObjectVersion not implemented")
 }
 func (UnimplementedP2PServer) RequestInvoice(context.Context, *RequestInvoiceRequest) (*RequestInvoiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestInvoice not implemented")
@@ -134,6 +138,24 @@ func _P2P_Handshake_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _P2P_ListObjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListObjectsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(P2PServer).ListObjects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.p2p.v1alpha.P2P/ListObjects",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(P2PServer).ListObjects(ctx, req.(*ListObjectsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _P2P_GetPeerInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetPeerInfoRequest)
 	if err := dec(in); err != nil {
@@ -148,24 +170,6 @@ func _P2P_GetPeerInfo_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(P2PServer).GetPeerInfo(ctx, req.(*GetPeerInfoRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _P2P_GetObjectVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetObjectVersionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(P2PServer).GetObjectVersion(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.p2p.v1alpha.P2P/GetObjectVersion",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(P2PServer).GetObjectVersion(ctx, req.(*GetObjectVersionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -200,12 +204,12 @@ var P2P_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _P2P_Handshake_Handler,
 		},
 		{
-			MethodName: "GetPeerInfo",
-			Handler:    _P2P_GetPeerInfo_Handler,
+			MethodName: "ListObjects",
+			Handler:    _P2P_ListObjects_Handler,
 		},
 		{
-			MethodName: "GetObjectVersion",
-			Handler:    _P2P_GetObjectVersion_Handler,
+			MethodName: "GetPeerInfo",
+			Handler:    _P2P_GetPeerInfo_Handler,
 		},
 		{
 			MethodName: "RequestInvoice",

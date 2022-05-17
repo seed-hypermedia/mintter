@@ -32,7 +32,7 @@ Repo layout v1 file tree:
 const (
 	// This is changed when breaking changes are made. Eventually we'd want
 	// to support some migration mechanisms to help with backward-compatibility.
-	compatibilityVersion = "2022-05-16.01"
+	compatibilityVersion = "2022-05-17.01"
 
 	keysDir     = "keys"
 	dbDir       = "db"

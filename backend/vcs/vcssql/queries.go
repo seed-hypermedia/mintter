@@ -230,7 +230,47 @@ var (
 			"AND", s.NamedVersionsName, "=", qb.VarCol(s.NamedVersionsName), qb.Line,
 			"LIMIT 1",
 		),
+		qb.MakeQuery(s.Schema, "NamedVersionsListByObjectOwner", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.AccountsMultihash),
+				qb.ResultCol(s.DevicesMultihash),
+				qb.ResultCol(s.NamedVersionsVersion),
+				qb.ResultColAlias(s.IPFSBlocksCodec, "permanode_codec"),
+				qb.ResultColAlias(s.IPFSBlocksMultihash, "permanode_multihash"),
+			), qb.Line,
+			"FROM", s.NamedVersions, qb.Line,
+			"INNER JOIN", s.PermanodeOwners, "ON", s.PermanodeOwnersPermanodeID, "=", s.NamedVersionsObjectID, qb.Line,
+			"INNER JOIN", s.Devices, "ON", s.DevicesID, "=", s.NamedVersionsDeviceID, qb.Line,
+			"INNER JOIN", s.Accounts, "ON", s.AccountsID, "=", s.NamedVersionsAccountID, qb.Line,
+			"INNER JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.NamedVersionsObjectID, qb.Line,
+			"WHERE", s.PermanodeOwnersAccountID, "=", qb.VarCol(s.PermanodeOwnersAccountID), qb.Line,
+		),
 	)
+
+	/*
+		with my_permanodes as (
+			select id from permanodes where account_id = ?
+		),
+
+
+		select
+		from permanode_owners
+		inner join named_versions on named_versions.object_id = permanode_owners.permanode_id
+		inner join devices on devices.id = named_versions
+		where permanode_owners.account_id = ?
+		select * from named_versions
+		inner join permanode_owners
+		on permanode_owners.permanode_id = named_versions.object_id
+		and permanode_owners.account_it = ?
+
+
+		select * from named_versions
+		where object_id in (
+			select id from permanodes
+			where account_id = ?
+		)
+
+	*/
 
 	ipfsBlocks = add(
 		qb.MakeQuery(s.Schema, "IPFSBlocksLookupPK", sgen.QueryKindSingle,

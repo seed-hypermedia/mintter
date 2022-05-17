@@ -319,6 +319,15 @@ func VarCol(col sqlitegen.Column) Opt {
 	}
 }
 
+// Indent doesn't do anything special and just writes the segments that were given.
+// It's useful for visual indentation of a query though, and can help organize
+// large join clauses and others into nested logical blocks.
+func Indent(vv ...interface{}) Opt {
+	return func(qb *queryBuilder) {
+		qb.writeSegments(vv...)
+	}
+}
+
 // Coalesce wraps a nd b into a COALESCE SQL function.
 func Coalesce(a, b interface{}) Opt {
 	if a == nil || b == nil {

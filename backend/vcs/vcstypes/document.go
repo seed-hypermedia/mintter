@@ -129,6 +129,22 @@ func (d *Document) Events() []DocumentEvent {
 
 func (d *Document) State() DocumentState { return d.state }
 
+func (d *Document) ApplyChange(id cid.Cid, c vcs.Change) error {
+	var evts []DocumentEvent
+
+	if err := cbornode.DecodeInto(c.Body, &evts); err != nil {
+		return fmt.Errorf("failed to decode account events: %w", err)
+	}
+
+	for _, e := range evts {
+		if err := d.Apply(e, c.CreateTime); err != nil {
+			return fmt.Errorf("failed to apply account event: %w", err)
+		}
+	}
+
+	return nil
+}
+
 func (d *Document) Apply(evt DocumentEvent, updateTime time.Time) error {
 	return d.state.apply(evt, updateTime)
 }

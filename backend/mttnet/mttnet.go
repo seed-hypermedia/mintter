@@ -16,11 +16,13 @@ import (
 	"mintter/backend/vcs/vcstypes"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/ipfs/go-cid"
 	dssync "github.com/ipfs/go-datastore/sync"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
@@ -84,6 +86,8 @@ type Node struct {
 	log             *zap.Logger
 	vcs             *vcs.SQLite
 	syncer          *vcstypes.Syncer
+	repo            *vcstypes.Repo
+	singleflight    singleflight.Group
 	me              core.Identity
 	cfg             config.P2P
 	accountObjectID vcs.ObjectID
@@ -121,6 +125,7 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 		log:             log,
 		vcs:             vcs,
 		syncer:          vcstypes.NewSyncer(vcstypes.NewIndex(vcs.DB()), me),
+		repo:            vcstypes.NewRepo(me, vcs),
 		me:              me,
 		cfg:             cfg,
 		accountObjectID: accountObj,
@@ -212,7 +217,7 @@ func (n *Node) Start(ctx context.Context) (err error) {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	// Start background workers.
+	// Start Mintter protocol listener over libp2p.
 	{
 		g.Go(func() error {
 			return n.grpc.Serve(lis)
@@ -227,6 +232,49 @@ func (n *Node) Start(ctx context.Context) (err error) {
 
 	// Indicate that node is ready to work with.
 	close(n.ready)
+
+	// Start the periodic sync.
+	g.Go(func() error {
+		const (
+			warmupDuration = time.Minute
+			syncInterval   = time.Minute
+		)
+
+		t := time.NewTimer(warmupDuration)
+
+		// Sync periodically until context is canceled.
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-t.C:
+				log := n.log.With(zap.Int64("traceID", time.Now().Unix()))
+
+				log.Debug("SyncLoopStarted")
+
+				res, err := n.Sync(ctx)
+				if err != nil {
+					return fmt.Errorf("fatal error in the sync background loop: %w", err)
+				}
+
+				for i, err := range res.Errs {
+					if err != nil {
+						log.Debug("SyncLoopError",
+							zap.String("device", res.Devices[i].String()),
+							zap.Error(err),
+						)
+					}
+				}
+
+				log.Debug("SyncLoopFinished",
+					zap.Int("failures", res.NumSyncFailed),
+					zap.Int("successes", res.NumSyncOK),
+				)
+
+				t.Reset(syncInterval)
+			}
+		}
+	})
 
 	// When context is canceled the whole errgroup will be tearing down.
 	// We have to wait until all goroutines finish, and then call the cleanup stack.

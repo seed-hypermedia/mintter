@@ -23,20 +23,34 @@ import (
 )
 
 type Server struct {
-	me  *future.ReadOnly[core.Identity]
-	db  *sqlitex.Pool
-	vcs *vcs.SQLite
+	me   *future.ReadOnly[core.Identity]
+	db   *sqlitex.Pool
+	vcs  *vcs.SQLite
+	repo *vcstypes.Repo
 	// TODO: take it as a dependency.
 	index *vcstypes.Index
 }
 
 func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, vcs *vcs.SQLite) *Server {
-	return &Server{
+	srv := &Server{
 		me:    me,
 		db:    db,
 		vcs:   vcs,
 		index: vcstypes.NewIndex(db),
 	}
+
+	// TODO: this is racy, but should never actually happen.
+	// Get rid of this when it's known to work properly.
+	go func() {
+		id, err := me.Await(context.Background())
+		if err != nil {
+			panic(err)
+		}
+
+		srv.repo = vcstypes.NewRepo(id, vcs)
+	}()
+
+	return srv
 }
 
 func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
@@ -261,7 +275,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
-	doc, err := api.getPublication(ctx, oid, newVer)
+	doc, err := api.repo.LoadPublication(ctx, oid, newVer)
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +364,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		}
 	}
 
-	doc, err := api.getPublication(ctx, oid, ver)
+	doc, err := api.repo.LoadPublication(ctx, oid, ver)
 	if err != nil {
 		return nil, err
 	}
@@ -365,36 +379,6 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		Version:  ver.String(),
 		Document: docpb,
 	}, nil
-}
-
-func (api *Server) getPublication(ctx context.Context, oid cid.Cid, ver vcs.Version) (*vcstypes.Document, error) {
-	pblk, err := vcs.LoadPermanode[vcstypes.DocumentPermanode](ctx, api.vcs.BlockGetter(), oid)
-	if err != nil {
-		return nil, err
-	}
-
-	p := pblk.Value
-
-	doc := vcstypes.NewDocument(oid, p.Owner, p.CreateTime)
-
-	if err := api.vcs.IterateChanges(ctx, oid, ver, func(c vcs.RecordedChange) error {
-		var evt []vcstypes.DocumentEvent
-		if err := cbornode.DecodeInto(c.Body, &evt); err != nil {
-			return err
-		}
-
-		for _, e := range evt {
-			if err := doc.Apply(e, c.CreateTime); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return doc, nil
 }
 
 func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
