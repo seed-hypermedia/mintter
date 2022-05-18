@@ -797,17 +797,60 @@ VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
 	return err
 }
 
+type PermanodesListPublicationsResult struct {
+	PermanodesID             int
+	PermanodeOwnersAccountID int
+	AccountsMultihash        []byte
+	PermanodeCodec           int
+	PermanodeMultihash       []byte
+	PermanodesCreateTime     int
+}
+
+func PermanodesListPublications(conn *sqlite.Conn) ([]PermanodesListPublicationsResult, error) {
+	const query = `SELECT permanodes.id, permanode_owners.account_id, accounts.multihash, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash, permanodes.create_time
+FROM permanodes
+JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
+JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id
+JOIN accounts ON accounts.id = permanode_owners.account_id
+WHERE permanodes.id IN (SELECT DISTINCT named_versions.object_id FROM named_versions)`
+
+	var out []PermanodesListPublicationsResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, PermanodesListPublicationsResult{
+			PermanodesID:             stmt.ColumnInt(0),
+			PermanodeOwnersAccountID: stmt.ColumnInt(1),
+			AccountsMultihash:        stmt.ColumnBytes(2),
+			PermanodeCodec:           stmt.ColumnInt(3),
+			PermanodeMultihash:       stmt.ColumnBytes(4),
+			PermanodesCreateTime:     stmt.ColumnInt(5),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PermanodesListPublications: %w", err)
+	}
+
+	return out, err
+}
+
 type PermanodesListByTypeResult struct {
 	PermanodesID             int
 	PermanodeOwnersAccountID int
 	AccountsMultihash        []byte
-	IPFSBlocksCodec          int
-	IPFSBlocksMultihash      []byte
+	PermanodeCodec           int
+	PermanodeMultihash       []byte
 	PermanodesCreateTime     int
 }
 
 func PermanodesListByType(conn *sqlite.Conn, permanodesType string) ([]PermanodesListByTypeResult, error) {
-	const query = `SELECT permanodes.id, permanode_owners.account_id, accounts.multihash, ipfs_blocks.codec, ipfs_blocks.multihash, permanodes.create_time
+	const query = `SELECT permanodes.id, permanode_owners.account_id, accounts.multihash, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash, permanodes.create_time
 FROM permanodes
 JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
 JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id JOIN accounts ON accounts.id = permanode_owners.account_id WHERE permanodes.type = :permanodesType`
@@ -823,8 +866,8 @@ JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id JOIN acco
 			PermanodesID:             stmt.ColumnInt(0),
 			PermanodeOwnersAccountID: stmt.ColumnInt(1),
 			AccountsMultihash:        stmt.ColumnBytes(2),
-			IPFSBlocksCodec:          stmt.ColumnInt(3),
-			IPFSBlocksMultihash:      stmt.ColumnBytes(4),
+			PermanodeCodec:           stmt.ColumnInt(3),
+			PermanodeMultihash:       stmt.ColumnBytes(4),
 			PermanodesCreateTime:     stmt.ColumnInt(5),
 		})
 

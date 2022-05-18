@@ -406,7 +406,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	}
 	defer release()
 
-	pubs, err := vcssql.PermanodesListByType(conn, string(vcstypes.DocumentType))
+	pubs, err := vcssql.PermanodesListPublications(conn)
 	if err != nil {
 		return nil, err
 	}
@@ -419,7 +419,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	combined := map[int]*documents.Publication{}
 
 	for _, p := range pubs {
-		if p.IPFSBlocksCodec != cid.DagCBOR {
+		if p.PermanodeCodec != cid.DagCBOR {
 			panic("BUG: bad cid codec for document permanode")
 		}
 
@@ -431,7 +431,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 			panic("BUG: permanodes with multiple owners are not supported yet")
 		}
 
-		oid := cid.NewCidV1(uint64(p.IPFSBlocksCodec), p.IPFSBlocksMultihash)
+		oid := cid.NewCidV1(uint64(p.PermanodeCodec), p.PermanodeMultihash)
 		aid := cid.NewCidV1(core.CodecAccountKey, p.AccountsMultihash)
 
 		// TODO: we should be storing versions for each device separately and combine the version set into one on demand.

@@ -23,7 +23,49 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func TestBrokenPublicationListBug(t *testing.T) {
+	// See: https://www.notion.so/mintter/Fix-List-of-Publications-Breaks-c5f37e237cca4618bd3296d926958cd6.
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, published)
+
+	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	require.NotNil(t, draft2)
+
+	list, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err, "must list publications correctly with existing drafts")
+	require.Len(t, list.Publications, 1)
+
+	dlist, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err, "must list drafts correctly with existing publications")
+	require.Len(t, dlist.Documents, 1)
+}
+
 func TestAPICreateDraft(t *testing.T) {
+	t.Parallel()
+
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
@@ -39,6 +81,8 @@ func TestAPICreateDraft(t *testing.T) {
 }
 
 func TestAPIGetDraft(t *testing.T) {
+	t.Parallel()
+
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
@@ -121,6 +165,8 @@ func TestAPIUpdateDraft(t *testing.T) {
 }
 
 func TestUpdateDraft_Annotations(t *testing.T) {
+	t.Parallel()
+
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
@@ -196,6 +242,8 @@ func TestUpdateDraft_Annotations(t *testing.T) {
 }
 
 func TestAPIUpdateDraft_Complex(t *testing.T) {
+	t.Parallel()
+
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
@@ -408,6 +456,8 @@ func TestAPIDeleteDraft(t *testing.T) {
 }
 
 func TestAPIPublishDraft(t *testing.T) {
+	t.Parallel()
+
 	// We'll measure that dates on the published document are greater than start date.
 	// Since the test runs fast we reverse the start time a bit to notice the difference.
 	start := time.Now().Add(time.Minute * -1).UTC().Round(time.Second)
@@ -510,6 +560,8 @@ func TestAPIDeletePublication(t *testing.T) {
 }
 
 func TestDocumentToProto(t *testing.T) {
+	t.Parallel()
+
 	docid := ipfs.MustNewCID(cid.Raw, multihash.IDENTITY, []byte("doc-id"))
 	author := ipfs.MustNewCID(cid.Raw, multihash.IDENTITY, []byte("doc-author"))
 
