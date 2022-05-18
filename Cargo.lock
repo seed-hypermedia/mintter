@@ -2038,11 +2038,14 @@ dependencies = [
 
 [[package]]
 name = "mintter"
-version = "0.0.1"
+version = "0.0.0"
 dependencies = [
  "anyhow",
+ "cap-std",
  "cocoa",
+ "common",
  "env_logger",
+ "extension-host",
  "log",
  "objc",
  "serde",
