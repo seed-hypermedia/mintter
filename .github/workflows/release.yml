@@ -85,6 +85,8 @@ jobs:
         env:
           APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
           APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
+      - name: Set version in Cargo.toml
+        run: node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{ github.ref_name }}
       - uses: JonasKruckenberg/tauri-build@v0.1.2-beta.9
         id: tauri_build
         env:
@@ -156,7 +158,7 @@ jobs:
       - name: "Install JavaScript dependencies"
         run: yarn
       - name: Generate static updater manifest
-        run: node generate-update-manifest.mjs ${{ github.ref_name }} > ./artifacts/manifest.json
+        run: node scripts/generate-update-manifest.mjs ${{ github.ref_name }} > ./artifacts/manifest.json
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
