@@ -10,11 +10,19 @@ export type DeleteDialogProps = PropsWithChildren<{
   send: any
 }>
 
-export function DeleteDialog({children, state, send, title, description}: DeleteDialogProps) {
+export function DeleteDialog({
+  children,
+  state,
+  send,
+  title,
+  description,
+}: DeleteDialogProps) {
   return (
     <Alert.Root
       open={state.matches('opened')}
-      onOpenChange={(newVal: boolean) => (newVal ? send('DELETE.DIALOG.OPEN') : send('DELETE.DIALOG.CANCEL'))}
+      onOpenChange={(newVal: boolean) =>
+        newVal ? send('DELETE.DIALOG.OPEN') : send('DELETE.DIALOG.CANCEL')
+      }
     >
       <Alert.Trigger asChild>{children}</Alert.Trigger>
       <Alert.Portal>
@@ -30,7 +38,10 @@ export function DeleteDialog({children, state, send, title, description}: Delete
             </Alert.Description>
           )}
           <Alert.Actions>
-            <Alert.Cancel data-testid="delete-dialog-cancel" disabled={state.hasTag('pending')}>
+            <Alert.Cancel
+              data-testid="delete-dialog-cancel"
+              disabled={state.hasTag('pending')}
+            >
               Cancel
             </Alert.Cancel>
             <Alert.Action
@@ -122,10 +133,20 @@ export const deleteDialogMachine = createMachine(
             },
           },
           canceled: {
-            type: 'final',
+            tags: ['dismiss'],
+            after: {
+              200: {
+                target: 'idle',
+              },
+            },
           },
           dismiss: {
-            type: 'final',
+            tags: ['dismiss'],
+            after: {
+              200: {
+                target: 'idle',
+              },
+            },
           },
         },
         onDone: {
