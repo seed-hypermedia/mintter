@@ -24,6 +24,8 @@ export function createFilesMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
+                console.log('FILES RECONCILE!');
+
                 client
                   .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => listPublications())
                   .then(function filesResponse(response) {
@@ -47,7 +49,10 @@ export function createFilesMachine(client: QueryClient) {
         },
         ready: {
           on: {
-            RECONCILE: 'idle',
+            RECONCILE: {
+              target: 'idle',
+              actions: ['clearCache']
+            },
           },
         },
       },
@@ -57,6 +62,9 @@ export function createFilesMachine(client: QueryClient) {
         assignData: assign({
           data: (_, event) => event.data,
         }),
+        clearCache: () => {
+          client.invalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+        }
       },
     },
   )
@@ -94,6 +102,7 @@ function createDraftsMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
+                console.log('DRAFTS RECONCILE!');
                 client
                   .fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts())
                   .then(function filesResponse(response) {
@@ -115,7 +124,10 @@ function createDraftsMachine(client: QueryClient) {
         },
         ready: {
           on: {
-            RECONCILE: 'idle',
+            RECONCILE: {
+              target: 'idle',
+              actions: ['clearCache']
+            },
           },
         },
       },
@@ -125,6 +137,9 @@ function createDraftsMachine(client: QueryClient) {
         assignData: assign({
           data: (_, event) => event.data,
         }),
+        clearCache: () => {
+          client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
+        }
       },
     },
   )
@@ -410,6 +425,8 @@ export function createMainPageMachine(client: QueryClient) {
           }
         }),
         updateLibrary: (context) => {
+          console.log('updateLibrary!!');
+
           context.files.send('RECONCILE')
           context.drafts.send('RECONCILE')
         },

@@ -41,5 +41,5 @@ export interface Typegen0 {
     | 'opened.canceled'
     | 'opened.dismiss'
     | {opened?: 'idle' | 'deleting' | 'errored' | 'canceled' | 'dismiss'}
-  tags: never
+  tags: 'dismiss'
 }

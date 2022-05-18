@@ -4,6 +4,7 @@ export interface Typegen0 {
   '@@xstate/typegen': true
   eventsCausingActions: {
     assignData: 'REPORT.DATA.SUCCESS'
+    clearCache: 'RECONCILE'
   }
   internalEvents: {
     'xstate.init': {type: 'xstate.init'}
@@ -25,6 +26,7 @@ export interface Typegen1 {
   '@@xstate/typegen': true
   eventsCausingActions: {
     assignData: 'REPORT.DATA.SUCCESS'
+    clearCache: 'RECONCILE'
   }
   internalEvents: {
     'xstate.init': {type: 'xstate.init'}
