@@ -5,11 +5,14 @@ import (
 	"mintter/backend/config"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
+	documents "mintter/backend/genproto/documents/v1alpha"
 	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/mttnet"
 	"mintter/backend/testutil"
 	"testing"
 	"time"
+
+	faker "github.com/bxcodec/faker/v3"
 
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
@@ -138,6 +141,32 @@ func (d *testDaemon) addrs() []string {
 func (d *testDaemon) awaitNet(t *testing.T) {
 	_, err := d.Net.Await(context.Background())
 	require.NoError(t, err)
+}
+
+func (d *testDaemon) makeTestPublication(t *testing.T, ctx context.Context) {
+	dc := documents.NewDraftsClient(d.grpcConn)
+
+	draft, err := dc.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	_, err = dc.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		DocumentId: draft.Id,
+		Changes: []*documents.DocumentChange{
+			{Op: &documents.DocumentChange_SetTitle{SetTitle: faker.Sentence()}},
+			{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: faker.Sentence()}},
+			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+				Id:   "b1",
+				Type: "statement",
+				Text: faker.Sentence(),
+			}}},
+		},
+	})
+	require.NoError(t, err)
+
+	pub, err := dc.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, pub)
 }
 
 func makeTestDaemon(t *testing.T, name string, register bool) *testDaemon {
