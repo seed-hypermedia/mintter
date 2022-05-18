@@ -320,7 +320,7 @@ export function useEditorDraft({
   options,
 }: UseEditorDraftParams) {
   const client = useQueryClient()
-  const [state, send] = useMachine(draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
+  const [state, send] = useMachine(() => draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
     options,
   )
 

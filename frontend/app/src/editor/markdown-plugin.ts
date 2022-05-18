@@ -1,9 +1,9 @@
+import { ELEMENT_HEADING } from '@app/editor/heading'
 import { changesService } from '@app/editor/mintter-changes/plugin'
+import { ELEMENT_STATIC_PARAGRAPH } from '@app/editor/static-paragraph'
 import { isFlowContent, isGroupContent, isOrderedList, isParagraph, isStatement, ol, ul } from '@mintter/mttast'
 import { Editor, Path, Range, Transforms } from 'slate'
-import { ELEMENT_HEADING } from './heading'
 import { ELEMENT_ORDERED_LIST } from './ordered-list'
-import { ELEMENT_STATIC_PARAGRAPH } from './static-paragraph'
 import type { EditorPlugin } from './types'
 import { ELEMENT_UNORDERED_LIST } from './unordered-list'
 import { isFirstChild } from './utils'
@@ -24,8 +24,9 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
         const path = block ? block[1] : []
         const start = Editor.start(editor, path)
-        const range = { anchor, focus: start }
+        let range = { anchor, focus: start }
         const beforeText = Editor.string(editor, range)
+        console.log("🚀 ~ file: markdown-plugin.ts ~ line 28 ~ configureEditor ~ start", { start, range, beforeText, path, anchor, selection })
 
         // turn Group into UnorderedList
         if (['-', '*', '+'].includes(beforeText)) {
@@ -115,6 +116,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
               Transforms.setNodes(editor, { type: ELEMENT_STATIC_PARAGRAPH }, { match: isParagraph })
               changesService.addChange(['replaceBlock', above[0].id])
             })
+            return
           }
         }
       }

@@ -109,6 +109,7 @@ export function Editor({
           >
             {/* <PublicationHoveringToolbar /> */}
             <Editable
+              readOnly={_editor.readOnly}
               data-testid="editor"
               renderElement={renderElement}
               renderLeaf={renderLeaf}
@@ -137,6 +138,9 @@ export function Editor({
         >
           <EditorHoveringToolbar />
           <Editable
+            spellCheck={false}
+            autoCorrect="false"
+            autoCapitalize="false"
             data-testid="editor"
             readOnly={_editor.readOnly}
             renderElement={renderElement}

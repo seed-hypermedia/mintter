@@ -39,7 +39,7 @@ function RecentItem({item}: {item: string}) {
   let client = useQueryClient()
   let mainService = useMainPage()
   const [, type, docId, version, blockId] = item.split('/')
-  let [state] = useMachine(
+  let [state] = useMachine(() =>
     recentItemMachine.withConfig({
       services: {
         fetchDocument: () => (sendBack) => {

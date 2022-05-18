@@ -129,17 +129,6 @@ export default function Publication() {
           <Button onClick={onOpenInNewWindow} size="1" color="primary">
             New Document
           </Button>
-          <Button
-            variant="outlined"
-            size="1"
-            disabled={state.hasTag('pending')}
-            data-testid="submit-edit"
-            onClick={() => {
-              console.log('Send: IMPLEMENT ME!')
-            }}
-          >
-            Reply
-          </Button>
           {state.context.canUpdate ? (
             <>
               <Button
@@ -174,9 +163,9 @@ export default function Publication() {
                 variant="outlined"
                 size="1"
                 disabled={state.hasTag('pending')}
-                data-testid="submit-reply"
+                data-testid="submit-edit"
                 onClick={() => {
-                  console.log('Reply: IMPLEMENT ME!')
+                  console.log('Send: IMPLEMENT ME!')
                 }}
               >
                 Reply

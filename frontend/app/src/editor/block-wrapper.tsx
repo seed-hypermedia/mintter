@@ -9,7 +9,6 @@ import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Icon} from '@components/icon'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {Text} from '@components/text'
 import {FlowContent, isCode, isHeading} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
@@ -27,7 +26,6 @@ export function BlockWrapper({
   element: FlowContent
 }) {
   const bookmarksService = useBookmarksService()
-  const {createDraft} = useCreateDraft()
   const hoverService = useHover()
   const [hoverState, hoverSend] = useActor(hoverService)
   let params = useParams()
