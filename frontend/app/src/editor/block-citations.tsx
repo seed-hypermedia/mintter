@@ -130,61 +130,57 @@ type BlockCitationItemProps = {
 function BlockCitationItem({citation}: BlockCitationItemProps) {
   const sidepanelService = useSidepanel()
 
-  const [state, send] = useMachine(
-    //@ts-ignore
-    () => blockCitationMachine,
-    {
-      services: {
-        fetchCitation: () => (sendBack) => {
-          ;(async () => {
-            try {
-              let data = await getBlock(citation.source)
-              let author = await getAccount(
-                data?.publication.document?.author || '',
-              )
+  const [state, send] = useMachine(() => blockCitationMachine, {
+    services: {
+      fetchCitation: () => (sendBack) => {
+        ;(async () => {
+          try {
+            let data = await getBlock(citation.source)
+            let author = await getAccount(
+              data?.publication.document?.author || '',
+            )
 
-              if (data) {
-                sendBack({
-                  type: 'CITATION.FETCH.SUCCESS',
-                  publication: data.publication,
-                  block: data.block,
-                  author,
-                })
-              } else {
-                sendBack({type: 'CITATION.FETCH.ERROR'})
-              }
-            } catch {
+            if (data) {
+              sendBack({
+                type: 'CITATION.FETCH.SUCCESS',
+                publication: data.publication,
+                block: data.block,
+                author,
+              })
+            } else {
               sendBack({type: 'CITATION.FETCH.ERROR'})
             }
-          })()
-        },
-      },
-      actions: {
-        assignAuthor: assign({
-          author: (_, event) => event.author,
-        }),
-        assignBlock: assign({
-          block: (_, event) => event.block,
-        }),
-        assignPublication: assign({
-          publication: (_, event) => event.publication,
-        }),
-        assignError: assign({
-          errorMessage: (context) => 'Error fetching',
-        }),
-        clearError: assign({
-          errorMessage: (context) => '',
-        }),
-        openInSidepanel: (_, event) => {
-          sidepanelService.send({
-            type: 'SIDEPANEL.ADD',
-            item: event.item,
-          })
-          sidepanelService.send('SIDEPANEL.OPEN')
-        },
+          } catch {
+            sendBack({type: 'CITATION.FETCH.ERROR'})
+          }
+        })()
       },
     },
-  )
+    actions: {
+      assignAuthor: assign({
+        author: (_, event) => event.author,
+      }),
+      assignBlock: assign({
+        block: (_, event) => event.block,
+      }),
+      assignPublication: assign({
+        publication: (_, event) => event.publication,
+      }),
+      assignError: assign({
+        errorMessage: (context) => 'Error fetching',
+      }),
+      clearError: assign({
+        errorMessage: (context) => '',
+      }),
+      openInSidepanel: (_, event) => {
+        sidepanelService.send({
+          type: 'SIDEPANEL.ADD',
+          item: event.item,
+        })
+        sidepanelService.send('SIDEPANEL.OPEN')
+      },
+    },
+  })
 
   let title = state.context?.publication?.document?.title || 'Untitled Document'
   let authorAlias = state.context?.author?.profile?.alias || 'anonymous'

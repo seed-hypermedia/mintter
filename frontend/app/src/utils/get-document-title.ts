@@ -15,5 +15,13 @@ export function getDocumentTitle(document: any) {
     })
     : document?.title ?? ''
 
-  return titleText ? titleText.length < 50 ? titleText : `${titleText.substring(0, 49)}...` : 'New Document'
+  if (titleText) {
+    if (titleText.length < 50) {
+      return titleText
+    } else {
+      return `${titleText.substring(0, 49)}...`
+    }
+  } else {
+    return ""
+  }
 }

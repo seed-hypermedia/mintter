@@ -1,3 +1,4 @@
+import {getDocumentTitle} from '@app/utils/get-document-title'
 import {useSelector} from '@xstate/react'
 import {InterpreterFrom} from 'xstate'
 import {createMainPageMachine} from './main-page-machine'
@@ -30,6 +31,29 @@ export let useDraftsService = createMainPageSelector(
 export const useLibrary = createMainPageSelector(
   (state) => state.context.library,
 )
+
+export var usePageTitle = createMainPageSelector(function pageTitleSelector(
+  state,
+) {
+  var result = ''
+
+  if (state.matches('routes.draftList')) {
+    result = 'Drafts'
+  }
+
+  if (state.matches('routes.publicationList')) {
+    result = 'Publications'
+  }
+
+  if (
+    state.matches('routes.editor.valid') ||
+    state.matches('routes.publication.valid')
+  ) {
+    result = getDocumentTitle(state.context.document)
+  }
+
+  return result
+})
 
 export function useIsLibraryOpen() {
   let ref = createMainPageSelector((state) => state.context.library)()

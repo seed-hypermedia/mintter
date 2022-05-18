@@ -129,5 +129,11 @@ export interface Typegen2 {
               publication?: 'validating' | 'valid' | 'error'
             }
       }
-  tags: 'topbar' | 'library' | 'draft' | 'publication' | 'settings'
+  tags:
+    | 'topbar'
+    | 'library'
+    | 'documentView'
+    | 'draft'
+    | 'publication'
+    | 'settings'
 }

@@ -10,6 +10,10 @@ import {invoke} from '@tauri-apps/api'
 
 export function PublicationList() {
   let files = useFiles()
+  console.log(
+    '🚀 ~ file: publication-list-page.tsx ~ line 13 ~ PublicationList ~ files',
+    files,
+  )
   let {createDraft} = useCreateDraft()
 
   async function onOpenInNewWindow() {

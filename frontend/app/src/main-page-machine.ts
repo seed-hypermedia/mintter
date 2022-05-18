@@ -249,7 +249,7 @@ export function createMainPageMachine(client: QueryClient) {
                 valid: {
                   entry: 'pushDraftRoute',
                   exit: ['pushToRecents', 'clearCurrentDocument'],
-                  tags: 'draft',
+                  tags: ['documentView', 'draft'],
                   on: {
                     goToEditor: [
                       {
@@ -290,7 +290,7 @@ export function createMainPageMachine(client: QueryClient) {
                 valid: {
                   entry: 'pushPublicationRoute',
                   exit: ['pushToRecents', 'clearCurrentDocument'],
-                  tags: 'publication',
+                  tags: ['documentView', 'publication'],
                   on: {
                     goToPublication: [
                       {
