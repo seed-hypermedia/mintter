@@ -1,0 +1,30 @@
+name: Test JavaScript
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/test-javascript.yml"
+      - "frontend/**"
+  pull_request:
+    paths:
+      - ".github/workflows/test-javascript.yml"
+      - "frontend/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.x"
+          cache: "yarn"
+      - name: Install Dependencies
+        run: yarn
+      - run: yarn test

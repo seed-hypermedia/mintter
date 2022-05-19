@@ -24,8 +24,6 @@ pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::S
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
 
-  println!("{:?}", daemon_flags.inner());
-
   let (mut cx, child) = Command::new_sidecar("mintterd")
     .expect("failed to create `mintterd` binary command")
     .args(daemon_flags.inner().0.iter())
@@ -85,7 +83,7 @@ impl<R: Runtime> TauriPlugin<R> for Plugin<R> {
 
     let cli_config = app.config().tauri.cli.clone().unwrap();
 
-    let flags = get_matches(&cli_config, app.package_info())
+    let mut flags = get_matches(&cli_config, app.package_info())
       .ok()
       .and_then(|matches| {
         let str = matches.args.get("daemon-flags")?.value.as_str()?;
@@ -97,6 +95,10 @@ impl<R: Runtime> TauriPlugin<R> for Plugin<R> {
         )
       })
       .unwrap_or_default();
+
+    let repo_path = app.path_resolver().app_dir().unwrap();
+
+    flags.push(format!("--repo-path={}", repo_path.as_path().display()));
 
     app.manage(Flags(flags));
     Ok(())

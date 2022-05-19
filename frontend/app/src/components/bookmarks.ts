@@ -3,22 +3,22 @@ import {
   getAccount,
   getPublication,
   listBookmarks,
-  updateListBookmarks
+  updateListBookmarks,
 } from '@app/client'
-import { queryKeys } from '@app/hooks'
-import { ClientPublication } from '@app/pages/publication'
-import { getIdsfromUrl } from '@app/utils/get-ids-from-url'
-import { createInterpreterContext } from '@app/utils/machine-utils'
-import { FlowContent, GroupingContent } from '@mintter/mttast'
-import { QueryClient } from 'react-query'
-import { visit } from 'unist-util-visit'
+import {queryKeys} from '@app/hooks'
+import {ClientPublication} from '@app/pages/publication'
+import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {createInterpreterContext} from '@app/utils/machine-utils'
+import {FlowContent, GroupingContent} from '@mintter/mttast'
+import {QueryClient} from 'react-query'
+import {visit} from 'unist-util-visit'
 import {
   ActorRefFrom,
   assign,
   createMachine,
   InterpreterFrom,
   sendParent,
-  spawn
+  spawn,
 } from 'xstate'
 
 export type Bookmark = {
@@ -32,12 +32,12 @@ export type BookmarkListContext = {
 }
 
 type BookmarkListEvent =
-  | { type: 'REPORT.BOOKMARKS.SUCCESS'; bookmarks: Array<string> }
-  | { type: 'REPORT.BOOKMARKS.ERROR'; errorMessage: Error['message'] }
-  | { type: 'BOOKMARK.ADD'; url: string }
-  | { type: 'BOOKMARK.REMOVE'; url: string }
-  | { type: 'BOOKMARK.CLEARALL' }
-  | { type: 'BOOKMARK.RESET' }
+  | {type: 'REPORT.BOOKMARKS.SUCCESS'; bookmarks: Array<string>}
+  | {type: 'REPORT.BOOKMARKS.ERROR'; errorMessage: Error['message']}
+  | {type: 'BOOKMARK.ADD'; url: string}
+  | {type: 'BOOKMARK.REMOVE'; url: string}
+  | {type: 'BOOKMARK.CLEARALL'}
+  | {type: 'BOOKMARK.RESET'}
 
 export function createBookmarkListMachine(client: QueryClient) {
   return createMachine(
@@ -94,7 +94,7 @@ export function createBookmarkListMachine(client: QueryClient) {
       actions: {
         persist: (ctx) => {
           try {
-            updateListBookmarks(ctx.bookmarks.map(({ url }) => url) || [])
+            updateListBookmarks(ctx.bookmarks.map(({url}) => url) || [])
           } catch (e) {
             console.error(e)
           }
@@ -166,23 +166,23 @@ export type BookmarkContext = {
 }
 
 type BookmarkEvent =
-  | { type: 'RETRY' }
-  | { type: 'BOOKMARK.ITEM.DELETE'; url: string }
+  | {type: 'RETRY'}
+  | {type: 'BOOKMARK.ITEM.DELETE'; url: string}
   | {
-    type: 'REPORT.BOOKMARK.ITEM.SUCCESS'
-    publication: ClientPublication
-    author: Account
-    block: FlowContent | null
-  }
+      type: 'REPORT.BOOKMARK.ITEM.SUCCESS'
+      publication: ClientPublication
+      author: Account
+      block: FlowContent | null
+    }
   | {
-    type: 'REPORT.BOOKMARK.ITEM.ERROR'
-    errorMessage: Error['message']
-  }
+      type: 'REPORT.BOOKMARK.ITEM.ERROR'
+      errorMessage: Error['message']
+    }
 
 export function createBookmarkMachine(client: QueryClient, url: string) {
   return createMachine(
     {
-      tsTypes: {} as import("./bookmarks.typegen").Typegen1,
+      tsTypes: {} as import('./bookmarks.typegen').Typegen1,
       schema: {
         context: {} as BookmarkContext,
         events: {} as BookmarkEvent,
@@ -243,21 +243,22 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
           errorMessage: (context) => '',
         }),
         removeBookmark: (_, event) => {
-          sendParent({ type: 'BOOKMARK.REMOVE', url: event.url })
+          sendParent({type: 'BOOKMARK.REMOVE', url: event.url})
         },
       },
       services: {
         fetchItemData: (context) => (sendBack) => {
           try {
-            ; (async () => {
-
+            ;(async () => {
               let [documentId, version, blockId] = getIdsfromUrl(context.url)
 
               let publication: ClientPublication = await client.fetchQuery(
                 [queryKeys.GET_PUBLICATION, documentId, version],
                 async () => {
                   let pub = await getPublication(documentId, version)
-                  let content: [GroupingContent] = pub.document?.content ? JSON.parse(pub.document?.content) : null
+                  let content: [GroupingContent] = pub.document?.content
+                    ? JSON.parse(pub.document?.content)
+                    : null
 
                   return {
                     ...pub,
@@ -269,24 +270,36 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
                 },
               )
 
-              let author = await client.fetchQuery([queryKeys.GET_ACCOUNT, publication.document?.author], () =>
-                getAccount(publication.document?.author as string),
+              let author = await client.fetchQuery(
+                [queryKeys.GET_ACCOUNT, publication.document?.author],
+                () => getAccount(publication.document?.author as string),
               )
 
               let block: FlowContent | null = null
 
               if (publication.document.content) {
-                visit(publication.document.content[0], { id: blockId }, (node) => {
-                  block = node
-                })
+                visit(
+                  publication.document.content[0],
+                  {id: blockId},
+                  (node) => {
+                    block = node
+                  },
+                )
               }
 
-              sendBack({ type: 'REPORT.BOOKMARK.ITEM.SUCCESS', publication, author, block })
+              sendBack({
+                type: 'REPORT.BOOKMARK.ITEM.SUCCESS',
+                publication,
+                author,
+                block,
+              })
             })()
           } catch (error) {
-            sendBack({ type: 'REPORT.BOOKMARK.ITEM.ERROR', errorMessage: JSON.stringify(error) })
+            sendBack({
+              type: 'REPORT.BOOKMARK.ITEM.ERROR',
+              errorMessage: JSON.stringify(error),
+            })
           }
-
         },
       },
     },
@@ -298,7 +311,7 @@ const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
     InterpreterFrom<ReturnType<typeof createBookmarkListMachine>>
   >('Bookmarks')
 
-export { BookmarksProvider, useBookmarksService }
+export {BookmarksProvider, useBookmarksService}
 
 export const useBookmarks = createBookmarksSelector(
   (state) => state.context.bookmarks,

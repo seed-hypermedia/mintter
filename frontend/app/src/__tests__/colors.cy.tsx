@@ -36,7 +36,7 @@ function Colors({theme}: any) {
   return (
     <ColorWrapper>
       {Object.values(theme.colors).map(({value}: any) => (
-        <Color css={{backgroundColor: value}} />
+        <Color key={value} css={{backgroundColor: value}} />
       ))}
     </ColorWrapper>
   )

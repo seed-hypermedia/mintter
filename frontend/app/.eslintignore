@@ -7,3 +7,4 @@ dist-ssr
 jest.config.js
 cypress/plugins/index.js
 src/client/.generated
+src/**/*.typegen.*

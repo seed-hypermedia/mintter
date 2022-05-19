@@ -10,11 +10,12 @@
   },
   "scripts": {
     "build": "tsc",
-    "lint": "eslint .",
-    "format": "nr prettier --write .",
-    "validate": "nr lint && nr format",
+    "lint:eslint": "eslint .",
+    "lint:prettier": "prettier --check \"**/*.{css,md,js,jsx,json,ts,tsx}\"",
+    "lint": "yarn lint:prettier && yarn lint:eslint",
+    "format": "prettier --write .",
     "test": "vitest --run",
-    "test:watch": "nr test --watch"
+    "test:watch": "test --watch"
   },
   "devDependencies": {
     "@mintter/mttast": "^0.1.0",

@@ -4,14 +4,20 @@ import type {PropsWithChildren} from 'react'
 import {Box} from './box'
 import type {ButtonProps} from './button'
 import {Button} from './button'
-import {dialogContentStyles, dialogFooterStyles, overlayStyles} from './dialog-styles'
+import {
+  dialogContentStyles,
+  dialogFooterStyles,
+  overlayStyles,
+} from './dialog-styles'
 import type {TextProps} from './text'
 import {Text} from './text'
 
 const StyledOverlay = styled(AlertDialogPrimitive.Overlay, overlayStyles)
 
 function Root({children, ...props}: any) {
-  return <AlertDialogPrimitive.Root {...props}>{children}</AlertDialogPrimitive.Root>
+  return (
+    <AlertDialogPrimitive.Root {...props}>{children}</AlertDialogPrimitive.Root>
+  )
 }
 
 const StyledContent = styled(AlertDialogPrimitive.Content, dialogContentStyles)
@@ -37,10 +43,18 @@ const Actions = styled(Box, dialogFooterStyles)
 function Cancel({
   disabled = false,
   ...props
-}: PropsWithChildren<Omit<ButtonProps, 'variant' | 'color' | 'size'> & {disabled?: boolean}>) {
+}: PropsWithChildren<
+  Omit<ButtonProps, 'variant' | 'color' | 'size'> & {disabled?: boolean}
+>) {
   return (
     <AlertDialogPrimitive.Cancel asChild>
-      <Button variant="ghost" color="muted" size="1" disabled={disabled} {...props} />
+      <Button
+        variant="ghost"
+        color="muted"
+        size="1"
+        disabled={disabled}
+        {...props}
+      />
     </AlertDialogPrimitive.Cancel>
   )
 }
@@ -48,7 +62,9 @@ function Cancel({
 function Action({
   disabled = false,
   ...props
-}: PropsWithChildren<Omit<ButtonProps, 'size'> & {disabled?: boolean} & {onClick: any}>) {
+}: PropsWithChildren<
+  Omit<ButtonProps, 'size'> & {disabled?: boolean} & {onClick: any}
+>) {
   return (
     <AlertDialogPrimitive.Action asChild>
       <Button size="1" disabled={disabled} {...props} />

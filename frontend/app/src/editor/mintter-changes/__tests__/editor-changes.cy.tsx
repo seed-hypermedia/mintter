@@ -159,7 +159,9 @@ describe('Editor Changes', () => {
         })
     })
 
-    it.skip('should respect block id when pressing escape in the beginning of a block AND the previous block is empty', () => {})
+    it.skip('should respect block id when pressing escape in the beginning of a block AND the previous block is empty', () => {
+      // noop
+    })
 
     it('add new block when press enter', () => {
       let date = new Date()

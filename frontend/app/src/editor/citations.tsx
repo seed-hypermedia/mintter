@@ -99,14 +99,27 @@ export function createCitationsMachine(client: QueryClient) {
       },
       services: {
         fetchCitations: (context) => (sendBack) => {
-          client.fetchQuery([queryKeys.GET_PUBLICATION_ANNOTATIONS, context.documentId, context.version], async () => {
-            try {
-              let resp = await listCitations(context.documentId)
-              sendBack({type: 'CITATIONS.FETCH.SUCCESS', citations: resp.links})
-            } catch (error) {
-              sendBack({type: 'CITATIONS.FETCH.ERROR', errorMessage: `Fetch Citations error: ${error}`})
-            }
-          })
+          client.fetchQuery(
+            [
+              queryKeys.GET_PUBLICATION_ANNOTATIONS,
+              context.documentId,
+              context.version,
+            ],
+            async () => {
+              try {
+                let resp = await listCitations(context.documentId)
+                sendBack({
+                  type: 'CITATIONS.FETCH.SUCCESS',
+                  citations: resp.links,
+                })
+              } catch (error) {
+                sendBack({
+                  type: 'CITATIONS.FETCH.ERROR',
+                  errorMessage: `Fetch Citations error: ${error}`,
+                })
+              }
+            },
+          )
         },
       },
     },
@@ -114,12 +127,16 @@ export function createCitationsMachine(client: QueryClient) {
 }
 
 const [CitationsProvider, useCitationService, createCitationsSelector] =
-  createInterpreterContext<InterpreterFrom<ReturnType<typeof createCitationsMachine>>>('Citation')
+  createInterpreterContext<
+    InterpreterFrom<ReturnType<typeof createCitationsMachine>>
+  >('Citation')
 
 export {CitationsProvider, useCitationService}
 
 //@ts-ignore
-export const useCitations = createCitationsSelector<Array<Link>>((state) => state.context.citations)
+export const useCitations = createCitationsSelector<Array<Link>>(
+  (state) => state.context.citations,
+)
 
 export function useBlockCitations(blockId: string) {
   let citations = useCitations()
