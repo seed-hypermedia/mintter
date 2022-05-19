@@ -1,4 +1,5 @@
 import {store} from '@app/client/store'
+import {error} from '@app/utils/logger'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
 import {darkTheme, lightTheme} from './stitches.config'
 import {createInterpreterContext} from './utils/machine-utils'
@@ -94,7 +95,7 @@ export let themeMachine = createMachine(
         try {
           store.set('theme', context.current)
         } catch (e) {
-          console.error(e)
+          error(e)
         }
       },
       assignTheme: assign({

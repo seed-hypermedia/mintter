@@ -1,5 +1,6 @@
 import { EditorDocument } from '@app/editor/use-editor-draft'
 import { queryKeys } from '@app/hooks'
+import { debug } from '@app/utils/logger'
 import { libraryMachine } from '@components/library/library-machine'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
@@ -24,12 +25,12 @@ export function createFilesMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
-                console.log('FILES RECONCILE!');
+                debug('FILES RECONCILE!');
 
                 client
                   .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => listPublications())
                   .then(function filesResponse(response) {
-                    console.log("🚀 ~ file: main-page-machine.ts ~ line 30 ~ filesResponse ~ response", response)
+                    debug("🚀 ~ file: main-page-machine.ts ~ line 30 ~ filesResponse ~ response", response)
 
                     let data = response.publications.map((pub) => ({
                       ...pub,
@@ -102,7 +103,7 @@ function createDraftsMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
-                console.log('DRAFTS RECONCILE!');
+                debug('DRAFTS RECONCILE!');
                 client
                   .fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts())
                   .then(function filesResponse(response) {
@@ -425,7 +426,7 @@ export function createMainPageMachine(client: QueryClient) {
           }
         }),
         updateLibrary: (context) => {
-          console.log('updateLibrary!!');
+          debug('updateLibrary!!');
 
           context.files.send('RECONCILE')
           context.drafts.send('RECONCILE')

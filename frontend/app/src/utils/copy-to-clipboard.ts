@@ -1,3 +1,5 @@
+import { error } from "@app/utils/logger"
+
 export function copyTextToClipboard(text: string) {
   return new Promise((resolve, reject) => {
     if (!navigator.clipboard) {
@@ -8,7 +10,7 @@ export function copyTextToClipboard(text: string) {
         resolve(text)
       },
       (err) => {
-        console.error('Async: Could not copy text: ', err)
+        error('Async: Could not copy text: ', err)
         reject(err)
       },
     )
@@ -33,7 +35,7 @@ function fallbackCopyTextToClipboard(text: string) {
     try {
       document.execCommand('copy')
     } catch (err) {
-      console.error('Fallback: Oops, unable to copy', err)
+      error('Fallback: Oops, unable to copy', err)
       reject(err)
     }
 

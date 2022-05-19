@@ -1,6 +1,7 @@
 import {useMainPage} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
 import {useSidepanel} from '@components/sidepanel'
@@ -34,7 +35,7 @@ export const createEmbedPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isEmbed(element)) {
         if (!element.url) {
-          console.error(
+          error(
             `Embed: element does not have a url attribute: ${JSON.stringify(
               element,
             )}`,

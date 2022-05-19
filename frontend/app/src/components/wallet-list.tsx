@@ -1,4 +1,5 @@
 import {styled} from '@app/stitches.config'
+import {error} from '@app/utils/logger'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useActor, useInterpret} from '@xstate/react'
 import {FormEvent, useRef} from 'react'
@@ -31,10 +32,10 @@ export function WalletList() {
       if (name && url) {
         send(listModel.events['NEW.WALLET.COMMIT']({name, url}))
       } else {
-        console.error('error in form values', {name, url})
+        error('error in form values', {name, url})
       }
     } else {
-      console.error('no current form ref: ', formRef.current)
+      error('no current form ref: ', formRef.current)
     }
   }
 
@@ -156,7 +157,7 @@ export function WalletList() {
             }}
           >
             <BarcodeScannerComponent
-              onError={console.error}
+              onError={error}
               width={340}
               height={340}
               onUpdate={(err, result: any) => {

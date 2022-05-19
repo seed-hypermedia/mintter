@@ -3,6 +3,7 @@ import {changesService} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {statementStyle} from '@app/editor/statement'
 import {css} from '@app/stitches.config'
+import {info} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {
   createId,
@@ -66,8 +67,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
           if (isStaticParagraph(secondChild)) {
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)
-              console.log('CHANGE INSIDE HEADING')
-
+              info('CHANGE INSIDE HEADING')
               Transforms.moveNodes(editor, {at, to: path.concat(2, 0)})
               return
             })

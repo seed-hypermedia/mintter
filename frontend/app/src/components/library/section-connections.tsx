@@ -22,7 +22,7 @@ export function ContactsSection() {
   let title = `Contacts (${data.length})`
 
   if (status == 'error') {
-    console.error('Contacts error: ', error)
+    error('Contacts error: ', error)
     return <Text>ERROR</Text>
   }
 
@@ -59,7 +59,7 @@ function ContactsPrompt() {
         })
         setPeer('')
       } catch (err: any) {
-        console.error(err.message)
+        error(err.message)
       }
     }
   }

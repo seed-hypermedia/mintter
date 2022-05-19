@@ -2,6 +2,7 @@ import {Document, getDraft, getPublication} from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {useMainPage, useRecents} from '@app/main-page-context'
 import {css} from '@app/stitches.config'
+import {error} from '@app/utils/logger'
 import {StyledItem} from '@components/library/library-item'
 import {Section} from '@components/library/section'
 import {useMachine} from '@xstate/react'
@@ -122,7 +123,7 @@ function RecentItem({item}: {item: string}) {
   }
 
   if (state.matches('error')) {
-    console.log('RECENT ITEM ERROR', state.context.errorMessage)
+    error(`RECENT ITEM ERROR - ${state.context.errorMessage}`)
 
     return <StyledItem>ERROR</StyledItem>
   }

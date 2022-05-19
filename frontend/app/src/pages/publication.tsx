@@ -18,6 +18,7 @@ import {tippingMachine} from '@app/tipping-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getBlock} from '@app/utils/get-block'
 import {getDateFormat} from '@app/utils/get-format-date'
+import {debug, error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -69,7 +70,7 @@ export default function Publication() {
         mainPageService.send({type: 'goToEditor', docId: d.id})
       }
     } catch (err) {
-      console.warn(
+      error(
         `createDraft Error: "createDraft" does not returned a Document`,
         err,
       )
@@ -154,7 +155,7 @@ export default function Publication() {
                 disabled={state.hasTag('pending')}
                 data-testid="submit-review"
                 onClick={() => {
-                  console.log('Review: IMPLEMENT ME!')
+                  debug('Review: IMPLEMENT ME!')
                 }}
               >
                 Review
@@ -165,7 +166,7 @@ export default function Publication() {
                 disabled={state.hasTag('pending')}
                 data-testid="submit-edit"
                 onClick={() => {
-                  console.log('Send: IMPLEMENT ME!')
+                  debug('Send: IMPLEMENT ME!')
                 }}
               >
                 Reply
@@ -499,8 +500,6 @@ function TippingModal({
   }, [publicationId, accountId])
 
   if (typeof publicationId == 'undefined' || typeof accountId == 'undefined') {
-    // console.error(`Tipping Modal ERROR: invalid publicationId or accountId: ${{publicationId, accountId}}`)
-
     return null
   }
 
