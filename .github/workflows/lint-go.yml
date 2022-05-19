@@ -1,0 +1,31 @@
+name: Lint Go
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/lint-go.yml"
+      - "go.mod"
+      - "backend/**"
+  pull_request:
+    paths:
+      - ".github/workflows/lint-go.yml"
+      - "go.mod"
+      - "backend/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          only-new-issues: true
+          args: --timeout=5m
