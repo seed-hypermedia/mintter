@@ -1585,7 +1585,7 @@ __metadata:
     "@radix-ui/react-tooltip": 0.1.6
     "@stitches/core": 1.2.7
     "@stitches/react": 1.2.7
-    "@tauri-apps/api": =1.0.0-rc.3
+    "@tauri-apps/api": 1.0.0-rc.5
     "@testing-library/jest-dom": 5.16.2
     "@testing-library/react": 12.1.3
     "@testing-library/user-event": 13.5.0
@@ -2762,15 +2762,6 @@ __metadata:
   dependencies:
     type-fest: 2.12.2
   checksum: fa224d0b09c56186becad886cf9646e72a2f4ac383af5c4a0ca8a453a0a5dc6571d6419f692b22a836dc4539482fc58e3155a79b5f3c0f4d3dc19fd02eb55876
-  languageName: node
-  linkType: hard
-
-"@tauri-apps/api@npm:=1.0.0-rc.3":
-  version: 1.0.0-rc.3
-  resolution: "@tauri-apps/api@npm:1.0.0-rc.3"
-  dependencies:
-    type-fest: 2.12.1
-  checksum: 7c47269c4028993ad0a9776c3d8e97b854182710c153272bc45cc33ea2aea7ed276d48d2029a7951fdb8bfd8daba9f45a0b2f27c94037a93932103dc26e74c74
   languageName: node
   linkType: hard
 
@@ -14475,13 +14466,6 @@ __metadata:
   version: 4.0.8
   resolution: "type-detect@npm:4.0.8"
   checksum: 62b5628bff67c0eb0b66afa371bd73e230399a8d2ad30d852716efcc4656a7516904570cd8631a49a3ce57c10225adf5d0cbdcb47f6b0255fe6557c453925a15
-  languageName: node
-  linkType: hard
-
-"type-fest@npm:2.12.1":
-  version: 2.12.1
-  resolution: "type-fest@npm:2.12.1"
-  checksum: faac07668190b7709c16ba4696e42b6cc83b702fa11e8936ce94d9ed1415eb9034b157ae25bba23e222d755e031787f7b92552710704d55e39aadcc27f0ee1da
   languageName: node
   linkType: hard
 
