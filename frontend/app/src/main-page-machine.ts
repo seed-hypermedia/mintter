@@ -1,17 +1,11 @@
-import {EditorDocument} from '@app/editor/use-editor-draft'
-import {queryKeys} from '@app/hooks'
-import {libraryMachine} from '@components/library/library-machine'
+import { EditorDocument } from '@app/editor/use-editor-draft'
+import { queryKeys } from '@app/hooks'
+import { libraryMachine } from '@components/library/library-machine'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
-import {QueryClient} from 'react-query'
-import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
-import {
-  createDraft,
-  Document,
-  listDrafts,
-  listPublications,
-  Publication,
-} from './client'
+import { QueryClient } from 'react-query'
+import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
+import { createDraft, Document, listDrafts, listPublications, Publication } from './client'
 
 export function createFilesMachine(client: QueryClient) {
   return createMachine(
@@ -30,16 +24,18 @@ export function createFilesMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
+                console.log('FILES RECONCILE!');
+
                 client
-                  .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () =>
-                    listPublications(),
-                  )
+                  .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => listPublications())
                   .then(function filesResponse(response) {
+                    console.log("🚀 ~ file: main-page-machine.ts ~ line 30 ~ filesResponse ~ response", response)
+
                     let data = response.publications.map((pub) => ({
                       ...pub,
                       ref: 'TODO',
                     }))
-                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
+                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                   })
               },
             },
@@ -53,7 +49,10 @@ export function createFilesMachine(client: QueryClient) {
         },
         ready: {
           on: {
-            RECONCILE: 'idle',
+            RECONCILE: {
+              target: 'idle',
+              actions: ['clearCache']
+            },
           },
         },
       },
@@ -63,6 +62,9 @@ export function createFilesMachine(client: QueryClient) {
         assignData: assign({
           data: (_, event) => event.data,
         }),
+        clearCache: () => {
+          client.invalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+        }
       },
     },
   )
@@ -78,10 +80,10 @@ type FilesContext<T = any> = {
 
 type FilesEvent<T = any> =
   | {
-      type: 'REPORT.DATA.SUCCESS'
-      data: Array<T>
-    }
-  | {type: 'RECONCILE'}
+    type: 'REPORT.DATA.SUCCESS'
+    data: Array<T>
+  }
+  | { type: 'RECONCILE' }
 
 function createDraftsMachine(client: QueryClient) {
   return createMachine(
@@ -100,6 +102,7 @@ function createDraftsMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
+                console.log('DRAFTS RECONCILE!');
                 client
                   .fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts())
                   .then(function filesResponse(response) {
@@ -107,7 +110,7 @@ function createDraftsMachine(client: QueryClient) {
                       ...doc,
                       ref: 'TODO',
                     }))
-                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
+                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                   })
               },
             },
@@ -121,7 +124,10 @@ function createDraftsMachine(client: QueryClient) {
         },
         ready: {
           on: {
-            RECONCILE: 'idle',
+            RECONCILE: {
+              target: 'idle',
+              actions: ['clearCache']
+            },
           },
         },
       },
@@ -131,6 +137,9 @@ function createDraftsMachine(client: QueryClient) {
         assignData: assign({
           data: (_, event) => event.data,
         }),
+        clearCache: () => {
+          client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
+        }
       },
     },
   )
@@ -142,92 +151,90 @@ export type MainPageContext = {
     version: string | null
     blockId: string | null
   }
-  document: Document | null
-  recents: Array<string>
+  document: EditorDocument | null,
+  recents: Array<string>,
   files: ActorRefFrom<ReturnType<typeof createFilesMachine>>
   drafts: ActorRefFrom<ReturnType<typeof createDraftsMachine>>
   library: ActorRefFrom<typeof libraryMachine>
 }
 
 type MainPageEvent =
-  | {type: 'RECONCILE'}
+  | { type: 'RECONCILE' }
   | {
-      type: 'routeNotFound'
-    }
+    type: 'routeNotFound'
+  }
   | {
-      type: 'goToEditor'
-      docId: string
-    }
+    type: 'goToEditor'
+    docId: string
+  }
   | {
-      type: 'goToPublication'
-      docId: string
-      version?: string
-      blockId?: string
-      replace?: boolean
-    }
+    type: 'goToPublication'
+    docId: string
+    version?: string
+    blockId?: string
+    replace?: boolean
+  }
   | {
-      type: 'goToSettings'
-    }
+    type: 'goToSettings'
+  }
   | {
-      type: 'goToHome'
-    }
+    type: 'goToHome'
+  }
   | {
-      type: 'goToNew'
-      docType?: string
-      docId?: string
-      version?: string
-      blockId?: string
-    }
+    type: 'goToPublicationList'
+  }
   | {
-      type: 'toNewDraft'
-    }
+    type: 'goToDraftList'
+  }
   | {
-      type: 'goBack'
-    }
+    type: 'goToNew'
+    docType?: string
+    docId?: string
+    version?: string
+    blockId?: string
+  }
   | {
-      type: 'goForward'
-    }
+    type: 'toNewDraft'
+  }
   | {
-      type: 'SET.CURRENT.DOCUMENT'
-      document: EditorDocument
-    }
+    type: 'goBack'
+  }
+  | {
+    type: 'goForward'
+  } | {
+    type: 'SET.CURRENT.DOCUMENT'
+    document: EditorDocument
+  }
 
-export function defaultMainPageContext(
-  client: QueryClient,
-  overrides: Partial<MainPageContext> = {
-    params: {docId: '', version: null, blockId: null},
-  },
-) {
+export function defaultMainPageContext(client: QueryClient, overrides: Partial<MainPageContext> = { params: { docId: '', version: null, blockId: null } }) {
   return () => ({
     params: {
       docId: '',
       version: null,
       blockId: null,
-      ...overrides.params,
+      ...overrides.params
     },
     document: null,
     recents: [],
     files: spawn(createFilesMachine(client), 'files'),
     drafts: spawn(createDraftsMachine(client), 'drafts'),
     library: spawn(libraryMachine, 'library'),
-    ...overrides,
+    ...overrides
   })
 }
 
 export function createMainPageMachine(client: QueryClient) {
   return createMachine(
     {
-      tsTypes: {} as import('./main-page-machine.typegen').Typegen2,
-      schema: {
-        context: {} as MainPageContext,
-        events: {} as MainPageEvent,
-      },
-      initial: 'routes',
       context: defaultMainPageContext(client),
+      tsTypes: {} as import('./main-page-machine.typegen').Typegen2,
+      schema: { context: {} as MainPageContext, events: {} as MainPageEvent },
       invoke: {
         src: 'router',
         id: 'router',
       },
+      id: '(machine)',
+      initial: 'routes',
       states: {
         routes: {
           initial: 'idle',
@@ -238,55 +245,16 @@ export function createMainPageMachine(client: QueryClient) {
               tags: ['topbar', 'library'],
             },
             editor: {
-              tags: ['topbar', 'library', 'sidepanel'],
+              id: 'editor',
+              tags: ['topbar', 'library'],
               initial: 'validating',
               states: {
                 validating: {
                   always: [
                     {
+                      actions: 'setDraftParams',
                       cond: 'isMetaEventDifferent',
                       target: 'valid',
-                      actions: ['setDraftParams'],
-                    },
-                  ],
-                },
-                valid: {
-                  tags: ['draft'],
-                  entry: ['pushDraftRoute'],
-                  exit: ['pushToRecents', 'clearCurrentDocument'],
-                  on: {
-                    goToEditor: [
-                      {
-                        cond: 'isEventDifferent',
-                        target: 'validating',
-                      },
-                      {},
-                    ],
-                    goToPublication: {
-                      target: '#publication',
-                    },
-                  },
-                },
-                error: {},
-              },
-              on: {
-                'SET.CURRENT.DOCUMENT': {
-                  target: undefined,
-                  actions: 'setCurrentDocument',
-                },
-              },
-            },
-            publication: {
-              id: 'publication',
-              initial: 'validating',
-              tags: ['topbar', 'library', 'sidepanel'],
-              states: {
-                validating: {
-                  always: [
-                    {
-                      cond: 'isMetaEventDifferent',
-                      target: 'valid',
-                      actions: ['setPublicationParams'],
                     },
                     {
                       target: 'error',
@@ -294,11 +262,11 @@ export function createMainPageMachine(client: QueryClient) {
                   ],
                 },
                 valid: {
-                  tags: ['publication'],
-                  entry: ['pushPublicationRoute'],
+                  entry: 'pushDraftRoute',
                   exit: ['pushToRecents', 'clearCurrentDocument'],
+                  tags: ['documentView', 'draft'],
                   on: {
-                    goToPublication: [
+                    goToEditor: [
                       {
                         cond: 'isEventDifferent',
                         target: 'validating',
@@ -311,17 +279,65 @@ export function createMainPageMachine(client: QueryClient) {
                   type: 'final',
                 },
               },
-              onDone: 'idle',
               on: {
                 'SET.CURRENT.DOCUMENT': {
-                  target: undefined,
+                  actions: 'setCurrentDocument',
+                },
+              },
+            },
+            publication: {
+              id: 'publication',
+              tags: ['topbar', 'library'],
+              initial: 'validating',
+              states: {
+                validating: {
+                  always: [
+                    {
+                      actions: 'setPublicationParams',
+                      cond: 'isMetaEventDifferent',
+                      target: 'valid',
+                    },
+                    {
+                      target: 'error',
+                    },
+                  ],
+                },
+                valid: {
+                  entry: 'pushPublicationRoute',
+                  exit: ['pushToRecents', 'clearCurrentDocument'],
+                  tags: ['documentView', 'publication'],
+                  on: {
+                    goToPublication: [
+                      {
+                        cond: 'isEventDifferent',
+                        target: 'validating',
+                      },
+                      {},
+                    ],
+                    goToEditor: "#editor"
+                  },
+                },
+                error: {
+                  type: 'final',
+                },
+              },
+              on: {
+                'SET.CURRENT.DOCUMENT': {
                   actions: 'setCurrentDocument',
                 },
               },
             },
             settings: {
-              tags: ['settings'],
               entry: ['clearCurrentDocument', 'clearParams'],
+              tags: 'settings',
+            },
+            publicationList: {
+              entry: ['clearCurrentDocument', 'clearParams', 'pushPublicationListRoute'],
+              tags: ['topbar', 'library'],
+            },
+            draftList: {
+              entry: ['clearCurrentDocument', 'clearParams', 'pushDraftListRoute'],
+              tags: ['topbar', 'library'],
             },
             createDraft: {
               invoke: {
@@ -331,11 +347,23 @@ export function createMainPageMachine(client: QueryClient) {
           },
           on: {
             RECONCILE: {
-              actions: ['updateLibrary'],
+              actions: 'updateLibrary',
             },
-            routeNotFound: '.idle',
-            goToHome: '.home',
-            goToSettings: '.settings',
+            routeNotFound: {
+              target: '.idle',
+            },
+            goToHome: {
+              target: '.home',
+            },
+            goToSettings: {
+              target: '.settings',
+            },
+            goToPublicationList: {
+              target: '.publicationList',
+            },
+            goToDraftList: {
+              target: '.draftList',
+            },
             goToEditor: {
               target: '.editor',
             },
@@ -355,16 +383,18 @@ export function createMainPageMachine(client: QueryClient) {
                 target: '.createDraft',
               },
             ],
-            toNewDraft: '.createDraft',
+            toNewDraft: {
+              target: '.createDraft',
+            },
           },
         },
       },
       on: {
         goBack: {
-          actions: ['navigateBack'],
+          actions: 'navigateBack',
         },
         goForward: {
-          actions: ['navigateForward'],
+          actions: 'navigateForward',
         },
       },
     },
@@ -373,46 +403,42 @@ export function createMainPageMachine(client: QueryClient) {
         isPublication: (_, event) => event.docType == 'p',
         isDraft: (_, event) => event.docType == 'editor',
         isMetaEventDifferent: (context, _, meta) => {
-          console.log('isMetaEventDifferent', context, _, meta)
-
-          let {type, ...eventParams} = meta.state.event
+          let { type, ...eventParams } = meta.state.event
           return !isEqual(context.params, eventParams)
+
         },
         isEventDifferent: (context, event) => {
-          let {type, ...eventParams} = event
-
-          return !isEqual(context.params, eventParams)
-        },
+          let { type, ...eventParams } = event
+          let result = !isEqual(context.params, eventParams)
+          return result
+        }
       },
       actions: {
         pushToRecents: assign((context, event) => {
-          console.log('pushToRecents', {
-            location: window.location.pathname,
-            context,
-            event,
-          })
+          let location = window.location.pathname
+
           let _set = new Set<string>(context.recents)
-          if (_set.has(window.location.pathname))
-            _set.delete(window.location.pathname)
+          if (_set.has(location)) _set.delete(location)
           _set.add(window.location.pathname)
-          console.log('result = ', [..._set])
           return {
-            recents: [..._set],
+            recents: [..._set].reverse()
           }
         }),
         updateLibrary: (context) => {
+          console.log('updateLibrary!!');
+
           context.files.send('RECONCILE')
           context.drafts.send('RECONCILE')
         },
         setCurrentDocument: assign({
-          document: (_, event) => event.document,
+          document: (_, event) => event.document
         }),
         clearCurrentDocument: assign({
-          document: (c) => null,
+          document: (c) => null
         }),
         setDraftParams: assign({
           params: (_, e, meta) => {
-            let {event} = meta.state
+            let { event } = meta.state
             return {
               docId: event.docId,
             }
@@ -420,7 +446,7 @@ export function createMainPageMachine(client: QueryClient) {
         }),
         setPublicationParams: assign({
           params: (c, e, m) => {
-            let {replace, type, ...rest} = m.state?.event
+            let { replace, type, ...rest } = m.state?.event
             return rest
           },
         }),
@@ -428,25 +454,27 @@ export function createMainPageMachine(client: QueryClient) {
           (context) => {
             return {
               type: 'pushPublication',
-              ...context.params,
+              docId: context.params.docId,
+              version: context.params.version,
+              blockId: context.params.blockId
             }
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
-        pushDraftRoute: send(
-          (context, ev, meta) => ({
+        pushDraftRoute: send((context) => {
+          return {
             type: 'pushDraft',
             docId: context.params.docId,
-            blockId: context.params.blockId,
-          }),
-          {to: 'router'},
-        ),
+            blockId: context.params.blockId
+          }
+
+        }, { to: 'router' }),
         clearParams: assign((_) => ({
           params: {
             docId: '',
             version: null,
-            blockId: null,
-          },
+            blockId: null
+          }
         })),
         navigateBack: () => {
           if (!window.history) return
@@ -456,6 +484,13 @@ export function createMainPageMachine(client: QueryClient) {
           if (!window.history) return
           window.history.forward()
         },
+        pushDraftListRoute: send({
+          type: 'pushDraftList',
+        }, { to: 'router' }),
+
+        pushPublicationListRoute: send({
+          type: 'pushPublicationList',
+        }, { to: 'router' }),
       },
       services: {
         router: () => (sendBack, receive) => {
@@ -463,68 +498,65 @@ export function createMainPageMachine(client: QueryClient) {
           // Deserialize events from the URL
           navRouter
             .on('/', () => {
-              console.log('ENTER IN HOME ROUTE')
               sendBack('goToHome')
             })
             .on('/settings', () => {
-              console.log('ENTER IN SETTINGS ROUTE')
               sendBack('goToSettings')
             })
-            .on<{docId: string}>('/editor/:docId', (params) => {
-              console.log('ENTER IN EDITOR ROUTE', params)
-
-              return params
-                ? sendBack({type: 'goToEditor', ...params})
-                : sendBack('routeNotFound')
+            .on('/publications', () => {
+              sendBack('goToPublicationList')
             })
+            .on('/drafts', () => {
+              sendBack('goToDraftList')
+            })
+            .on<{ docId: string }>('/editor/:docId', (params) => {
+              return params ? sendBack({ type: 'goToEditor', ...params }) : sendBack('routeNotFound')
+            },
+            )
             .on<{
               docId: string
               version?: string
               blockId?: string
             }>('/p/:docId/:version?/:blockid?', (params) => {
-              console.log('ENTER IN PUBLICATION ROUTE: ', params)
-
               return params
                 ? sendBack({
-                    type: 'goToPublication',
-                    docId: params.docId,
-                    version: params.version,
-                    blockId: params.blockId,
-                  })
+                  type: 'goToPublication',
+                  docId: params.docId,
+                  version: params.version,
+                  blockId: params.blockId,
+                })
                 : sendBack('routeNotFound')
-            })
+            },
+            )
             .on<{
               docType?: string
               docId?: string
               version?: string
               blockId?: string
             }>('/new/:docType?/:docId?/:version?/:blockId?', (params) => {
-              sendBack({type: 'goToNew', ...params})
+              sendBack({ type: 'goToNew', ...params })
             })
 
           receive((event) => {
+
             if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
               navRouter.route(
-                `/p/${event.docId}${
-                  event.version
-                    ? `/${event.version}${
-                        event.blockId ? `/${event.blockId}` : ''
-                      }`
-                    : ''
+                `/p/${event.docId}${event.version ? `/${event.version}${event.blockId ? `/${event.blockId}` : ''}` : ''
                 }`,
                 event.replace,
               )
             } else if (event.type == 'pushDraft') {
-              navRouter.route(
-                `/editor/${event.docId}${
-                  event.blockId ? `/${event.blockId}` : ''
-                }`,
-                event.replace,
-              )
+              navRouter.route(`/editor/${event.docId}${event.blockId ? `/${event.blockId}` : ''}`, event.replace)
             } else if (event.type == 'goToSettings') {
               navRouter.route('/settings')
+            } else if (event.type == 'pushPublicationList') {
+              navRouter.route('/publications')
+            } else if (event.type == 'pushDraftList') {
+              navRouter.route('/drafts')
+            } else {
+              navRouter.route('/')
             }
           })
 
@@ -534,10 +566,10 @@ export function createMainPageMachine(client: QueryClient) {
         },
         createNewDraft: () => (sendBack) => {
           createDraft().then((document) => {
-            sendBack({type: 'goToEditor', docId: document.id})
+            sendBack({ type: 'goToEditor', docId: document.id })
           })
         },
       },
-    },
+    }
   )
 }
