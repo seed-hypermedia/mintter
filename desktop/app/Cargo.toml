@@ -25,9 +25,9 @@ log = "0.4.17"
 anyhow = "1.0.57"
 env_logger = "0.9.0"
 workspace-hack = { version = "0.1", path = "../workspace-hack" }
-cap-std = "0.24.3"
-extension-host = { path = "../extension-host" }
-common = { path = "../common" }
+# cap-std = "0.24.3"
+# extension-host = { path = "../extension-host" }
+# common = { path = "../common" }
 
 [target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.24.0"
