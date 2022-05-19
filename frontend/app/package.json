@@ -104,7 +104,7 @@
     "@types/is-url": "1.2.30",
     "@types/long": "4.0.2",
     "@types/mdast": "3.0.10",
-    "@types/react": "17.0.39",
+    "@types/react": "17.0.45",
     "@types/react-copy-to-clipboard": "5.0.2",
     "@types/react-dom": "17.0.13",
     "@types/unist": "2.0.6",
