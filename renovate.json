@@ -3,6 +3,10 @@
   "labels": ["dependencies"],
   "packageRules": [
     {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
       "languages": ["javascript"],
       "labels": ["languages::JavaScript"]
     },
