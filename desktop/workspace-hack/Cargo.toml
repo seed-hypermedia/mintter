@@ -25,8 +25,8 @@ regex-syntax = { version = "0.6", features = ["unicode", "unicode-age", "unicode
 semver = { version = "1", features = ["serde", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
 stable_deref_trait = { version = "1", features = ["alloc", "std"] }
-tauri = { version = "1.0.0-rc.10", features = ["clap", "cli", "compression", "custom-protocol", "objc-exception", "open", "os_pipe", "process-command-api", "regex", "shared_child", "shell-execute", "shell-open", "shell-open-api", "system-tray", "tauri-runtime-wry", "window-maximize", "window-start-dragging", "window-unmaximize", "wry"] }
-tauri-utils = { version = "1.0.0-rc.6", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
+tauri = { version = "1.0.0-rc.11", features = ["clap", "cli", "compression", "custom-protocol", "objc-exception", "open", "os_pipe", "process-command-api", "regex", "shared_child", "shell-execute", "shell-open", "shell-open-api", "system-tray", "tauri-runtime-wry", "window-maximize", "window-start-dragging", "window-unmaximize", "wry"] }
+tauri-utils = { version = "1.0.0-rc.7", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 tokio = { version = "1", features = ["bytes", "fs", "full", "io-std", "io-util", "libc", "macros", "memchr", "mio", "net", "num_cpus", "once_cell", "parking_lot", "process", "rt", "rt-multi-thread", "signal", "signal-hook-registry", "socket2", "sync", "time", "tokio-macros"] }
 tracing-core = { version = "0.1", features = ["lazy_static", "std"] }
 
@@ -39,8 +39,8 @@ regex-syntax = { version = "0.6", features = ["unicode", "unicode-age", "unicode
 serde_json = { version = "1", features = ["raw_value", "std"] }
 stable_deref_trait = { version = "1", features = ["alloc", "std"] }
 syn = { version = "1", features = ["clone-impls", "derive", "extra-traits", "fold", "full", "parsing", "printing", "proc-macro", "quote", "visit", "visit-mut"] }
-tauri-macros = { version = "1.0.0-rc.6", default-features = false, features = ["compression", "custom-protocol", "shell-scope"] }
-tauri-utils = { version = "1.0.0-rc.6", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
+tauri-macros = { version = "1.0.0-rc.7", default-features = false, features = ["compression", "custom-protocol", "shell-scope"] }
+tauri-utils = { version = "1.0.0-rc.7", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
 futures-channel = { version = "0.3", features = ["alloc", "futures-sink", "sink", "std"] }
