@@ -1,5 +1,5 @@
 // import {Store as TauriStore} from 'tauri-plugin-store-api'
-import { error } from "@app/utils/logger"
+import {error} from '@app/utils/logger'
 
 // export function createStore(path: string): TauriStore | LocalStore {
 export function createStore(path: string): LocalStore {
@@ -23,14 +23,14 @@ export class LocalStore {
   }
 
   set(key: string, value: unknown): Promise<void> {
-    return setFallback({ path: this.path, key, value })
+    return setFallback({path: this.path, key, value})
   }
 
   get<T>(key: string): Promise<T | null> {
-    return getFallback({ path: this.path, key })
+    return getFallback({path: this.path, key})
   }
 
-  entries<T>(): Promise<{ [key: string]: T }> {
+  entries<T>(): Promise<{[key: string]: T}> {
     return getStoreFallback<T>(this.path)
   }
 
@@ -65,7 +65,7 @@ type SetParams = {
   value: unknown
 }
 
-function setFallback({ path, key, value }: SetParams): Promise<void> {
+function setFallback({path, key, value}: SetParams): Promise<void> {
   return getStoreFallback(path)
     .then(setValueFallback)
     .catch((err) => {
@@ -83,7 +83,7 @@ type GetParams = {
   key: string
 }
 
-function getFallback<T>({ path, key }: GetParams): Promise<T | null> {
+function getFallback<T>({path, key}: GetParams): Promise<T | null> {
   //@ts-ignore
   return getStoreFallback(path)
     .then(getValueFallback)

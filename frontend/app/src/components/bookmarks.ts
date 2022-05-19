@@ -3,23 +3,23 @@ import {
   getAccount,
   getPublication,
   listBookmarks,
-  updateListBookmarks
+  updateListBookmarks,
 } from '@app/client'
-import { queryKeys } from '@app/hooks'
-import { ClientPublication } from '@app/pages/publication'
-import { getIdsfromUrl } from '@app/utils/get-ids-from-url'
-import { error } from '@app/utils/logger'
-import { createInterpreterContext } from '@app/utils/machine-utils'
-import { FlowContent, GroupingContent } from '@mintter/mttast'
-import { QueryClient } from 'react-query'
-import { visit } from 'unist-util-visit'
+import {queryKeys} from '@app/hooks'
+import {ClientPublication} from '@app/pages/publication'
+import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {error} from '@app/utils/logger'
+import {createInterpreterContext} from '@app/utils/machine-utils'
+import {FlowContent, GroupingContent} from '@mintter/mttast'
+import {QueryClient} from 'react-query'
+import {visit} from 'unist-util-visit'
 import {
   ActorRefFrom,
   assign,
   createMachine,
   InterpreterFrom,
   sendParent,
-  spawn
+  spawn,
 } from 'xstate'
 
 export type Bookmark = {
@@ -33,12 +33,12 @@ export type BookmarkListContext = {
 }
 
 type BookmarkListEvent =
-  | { type: 'REPORT.BOOKMARKS.SUCCESS'; bookmarks: Array<string> }
-  | { type: 'REPORT.BOOKMARKS.ERROR'; errorMessage: Error['message'] }
-  | { type: 'BOOKMARK.ADD'; url: string }
-  | { type: 'BOOKMARK.REMOVE'; url: string }
-  | { type: 'BOOKMARK.CLEARALL' }
-  | { type: 'BOOKMARK.RESET' }
+  | {type: 'REPORT.BOOKMARKS.SUCCESS'; bookmarks: Array<string>}
+  | {type: 'REPORT.BOOKMARKS.ERROR'; errorMessage: Error['message']}
+  | {type: 'BOOKMARK.ADD'; url: string}
+  | {type: 'BOOKMARK.REMOVE'; url: string}
+  | {type: 'BOOKMARK.CLEARALL'}
+  | {type: 'BOOKMARK.RESET'}
 
 export function createBookmarkListMachine(client: QueryClient) {
   return createMachine(
@@ -95,7 +95,7 @@ export function createBookmarkListMachine(client: QueryClient) {
       actions: {
         persist: (ctx) => {
           try {
-            updateListBookmarks(ctx.bookmarks.map(({ url }) => url) || [])
+            updateListBookmarks(ctx.bookmarks.map(({url}) => url) || [])
           } catch (e) {
             error(e)
           }
@@ -167,18 +167,18 @@ export type BookmarkContext = {
 }
 
 type BookmarkEvent =
-  | { type: 'RETRY' }
-  | { type: 'BOOKMARK.ITEM.DELETE'; url: string }
+  | {type: 'RETRY'}
+  | {type: 'BOOKMARK.ITEM.DELETE'; url: string}
   | {
-    type: 'REPORT.BOOKMARK.ITEM.SUCCESS'
-    publication: ClientPublication
-    author: Account
-    block: FlowContent | null
-  }
+      type: 'REPORT.BOOKMARK.ITEM.SUCCESS'
+      publication: ClientPublication
+      author: Account
+      block: FlowContent | null
+    }
   | {
-    type: 'REPORT.BOOKMARK.ITEM.ERROR'
-    errorMessage: Error['message']
-  }
+      type: 'REPORT.BOOKMARK.ITEM.ERROR'
+      errorMessage: Error['message']
+    }
 
 export function createBookmarkMachine(client: QueryClient, url: string) {
   return createMachine(
@@ -244,13 +244,13 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
           errorMessage: (context) => '',
         }),
         removeBookmark: (_, event) => {
-          sendParent({ type: 'BOOKMARK.REMOVE', url: event.url })
+          sendParent({type: 'BOOKMARK.REMOVE', url: event.url})
         },
       },
       services: {
         fetchItemData: (context) => (sendBack) => {
           try {
-            ; (async () => {
+            ;(async () => {
               let [documentId, version, blockId] = getIdsfromUrl(context.url)
 
               let publication: ClientPublication = await client.fetchQuery(
@@ -281,7 +281,7 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
               if (publication.document.content) {
                 visit(
                   publication.document.content[0],
-                  { id: blockId },
+                  {id: blockId},
                   (node) => {
                     block = node
                   },
@@ -312,7 +312,7 @@ const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
     InterpreterFrom<ReturnType<typeof createBookmarkListMachine>>
   >('Bookmarks')
 
-export { BookmarksProvider, useBookmarksService }
+export {BookmarksProvider, useBookmarksService}
 
 export const useBookmarks = createBookmarksSelector(
   (state) => state.context.bookmarks,

@@ -31,6 +31,15 @@ import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, ReactNode, useState} from 'react'
 import {QueryClient} from 'react-query'
 import {MachineOptionsFrom} from 'xstate'
+;(function mockTauriIpc() {
+  console.log('mockTauriIpc', window)
+
+  if (window) {
+    window.__TAURI_IPC__ = function mockTAURI_IPC() {
+      // noob
+    }
+  }
+})()
 
 export const memoryLocation =
   (path = '/') =>

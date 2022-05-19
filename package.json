@@ -6,13 +6,14 @@
   "author": "Mintter Team",
   "private": true,
   "scripts": {
-    "build": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run build",
+    "build": "yarn mttast build && yarn app build",
     "lint": "yarn mttast lint && yarn app lint",
     "format": "yarn mttast format && yarn app format",
     "test": "yarn mttast test && yarn app test",
     "app": "yarn workspace @mintter/app",
     "mttast": "yarn workspace @mintter/mttast",
-    "codegen": "graphql-codegen"
+    "codegen": "graphql-codegen",
+    "validate": "yarn format && yarn lint && yarn test"
   },
   "workspaces": [
     "frontend/*"
