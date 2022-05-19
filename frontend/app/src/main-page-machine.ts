@@ -1,12 +1,18 @@
-import { EditorDocument } from '@app/editor/use-editor-draft'
-import { queryKeys } from '@app/hooks'
-import { debug } from '@app/utils/logger'
-import { libraryMachine } from '@components/library/library-machine'
+import {EditorDocument} from '@app/editor/use-editor-draft'
+import {queryKeys} from '@app/hooks'
+import {debug} from '@app/utils/logger'
+import {libraryMachine} from '@components/library/library-machine'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
-import { QueryClient } from 'react-query'
-import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
-import { createDraft, Document, listDrafts, listPublications, Publication } from './client'
+import {QueryClient} from 'react-query'
+import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
+import {
+  createDraft,
+  Document,
+  listDrafts,
+  listPublications,
+  Publication,
+} from './client'
 
 export function createFilesMachine(client: QueryClient) {
   return createMachine(
@@ -25,18 +31,23 @@ export function createFilesMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
-                debug('FILES RECONCILE!');
+                debug('FILES RECONCILE!')
 
                 client
-                  .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () => listPublications())
+                  .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () =>
+                    listPublications(),
+                  )
                   .then(function filesResponse(response) {
-                    debug("🚀 ~ file: main-page-machine.ts ~ line 30 ~ filesResponse ~ response", response)
+                    debug(
+                      '🚀 ~ file: main-page-machine.ts ~ line 30 ~ filesResponse ~ response',
+                      response,
+                    )
 
                     let data = response.publications.map((pub) => ({
                       ...pub,
                       ref: 'TODO',
                     }))
-                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
+                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
                   })
               },
             },
@@ -52,7 +63,7 @@ export function createFilesMachine(client: QueryClient) {
           on: {
             RECONCILE: {
               target: 'idle',
-              actions: ['clearCache']
+              actions: ['clearCache'],
             },
           },
         },
@@ -65,7 +76,7 @@ export function createFilesMachine(client: QueryClient) {
         }),
         clearCache: () => {
           client.invalidateQueries([queryKeys.GET_PUBLICATION_LIST])
-        }
+        },
       },
     },
   )
@@ -81,10 +92,10 @@ type FilesContext<T = any> = {
 
 type FilesEvent<T = any> =
   | {
-    type: 'REPORT.DATA.SUCCESS'
-    data: Array<T>
-  }
-  | { type: 'RECONCILE' }
+      type: 'REPORT.DATA.SUCCESS'
+      data: Array<T>
+    }
+  | {type: 'RECONCILE'}
 
 function createDraftsMachine(client: QueryClient) {
   return createMachine(
@@ -103,7 +114,7 @@ function createDraftsMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
-                debug('DRAFTS RECONCILE!');
+                debug('DRAFTS RECONCILE!')
                 client
                   .fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts())
                   .then(function filesResponse(response) {
@@ -111,7 +122,7 @@ function createDraftsMachine(client: QueryClient) {
                       ...doc,
                       ref: 'TODO',
                     }))
-                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
+                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
                   })
               },
             },
@@ -127,7 +138,7 @@ function createDraftsMachine(client: QueryClient) {
           on: {
             RECONCILE: {
               target: 'idle',
-              actions: ['clearCache']
+              actions: ['clearCache'],
             },
           },
         },
@@ -140,7 +151,7 @@ function createDraftsMachine(client: QueryClient) {
         }),
         clearCache: () => {
           client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
-        }
+        },
       },
     },
   )
@@ -152,75 +163,81 @@ export type MainPageContext = {
     version: string | null
     blockId: string | null
   }
-  document: EditorDocument | null,
-  recents: Array<string>,
+  document: EditorDocument | null
+  recents: Array<string>
   files: ActorRefFrom<ReturnType<typeof createFilesMachine>>
   drafts: ActorRefFrom<ReturnType<typeof createDraftsMachine>>
   library: ActorRefFrom<typeof libraryMachine>
 }
 
 type MainPageEvent =
-  | { type: 'RECONCILE' }
+  | {type: 'RECONCILE'}
   | {
-    type: 'routeNotFound'
-  }
+      type: 'routeNotFound'
+    }
   | {
-    type: 'goToEditor'
-    docId: string
-  }
+      type: 'goToEditor'
+      docId: string
+    }
   | {
-    type: 'goToPublication'
-    docId: string
-    version?: string
-    blockId?: string
-    replace?: boolean
-  }
+      type: 'goToPublication'
+      docId: string
+      version?: string
+      blockId?: string
+      replace?: boolean
+    }
   | {
-    type: 'goToSettings'
-  }
+      type: 'goToSettings'
+    }
   | {
-    type: 'goToHome'
-  }
+      type: 'goToHome'
+    }
   | {
-    type: 'goToPublicationList'
-  }
+      type: 'goToPublicationList'
+    }
   | {
-    type: 'goToDraftList'
-  }
+      type: 'goToDraftList'
+    }
   | {
-    type: 'goToNew'
-    docType?: string
-    docId?: string
-    version?: string
-    blockId?: string
-  }
+      type: 'goToNew'
+      docType?: string
+      docId?: string
+      version?: string
+      blockId?: string
+    }
   | {
-    type: 'toNewDraft'
-  }
+      type: 'toNewDraft'
+    }
   | {
-    type: 'goBack'
-  }
+      type: 'goBack'
+    }
   | {
-    type: 'goForward'
-  } | {
-    type: 'SET.CURRENT.DOCUMENT'
-    document: EditorDocument
-  }
+      type: 'goForward'
+    }
+  | {
+      type: 'SET.CURRENT.DOCUMENT'
+      document: EditorDocument
+    }
 
-export function defaultMainPageContext(client: QueryClient, overrides: Partial<MainPageContext> = { params: { docId: '', version: null, blockId: null } }) {
+export function defaultMainPageContext(
+  client: QueryClient,
+  overrides: Partial<MainPageContext> = {
+    params: {docId: '', version: null, blockId: null},
+  },
+) {
   return () => ({
     params: {
       docId: '',
       version: null,
       blockId: null,
-      ...overrides.params
+      ...overrides.params,
     },
     document: null,
     recents: [],
     files: spawn(createFilesMachine(client), 'files'),
     drafts: spawn(createDraftsMachine(client), 'drafts'),
     library: spawn(libraryMachine, 'library'),
-    ...overrides
+    ...overrides,
   })
 }
 
@@ -229,7 +246,7 @@ export function createMainPageMachine(client: QueryClient) {
     {
       context: defaultMainPageContext(client),
       tsTypes: {} as import('./main-page-machine.typegen').Typegen2,
-      schema: { context: {} as MainPageContext, events: {} as MainPageEvent },
+      schema: {context: {} as MainPageContext, events: {} as MainPageEvent},
       invoke: {
         src: 'router',
         id: 'router',
@@ -315,7 +332,7 @@ export function createMainPageMachine(client: QueryClient) {
                       },
                       {},
                     ],
-                    goToEditor: "#editor"
+                    goToEditor: '#editor',
                   },
                 },
                 error: {
@@ -333,11 +350,19 @@ export function createMainPageMachine(client: QueryClient) {
               tags: 'settings',
             },
             publicationList: {
-              entry: ['clearCurrentDocument', 'clearParams', 'pushPublicationListRoute'],
+              entry: [
+                'clearCurrentDocument',
+                'clearParams',
+                'pushPublicationListRoute',
+              ],
               tags: ['topbar', 'library'],
             },
             draftList: {
-              entry: ['clearCurrentDocument', 'clearParams', 'pushDraftListRoute'],
+              entry: [
+                'clearCurrentDocument',
+                'clearParams',
+                'pushDraftListRoute',
+              ],
               tags: ['topbar', 'library'],
             },
             createDraft: {
@@ -404,15 +429,14 @@ export function createMainPageMachine(client: QueryClient) {
         isPublication: (_, event) => event.docType == 'p',
         isDraft: (_, event) => event.docType == 'editor',
         isMetaEventDifferent: (context, _, meta) => {
-          let { type, ...eventParams } = meta.state.event
+          let {type, ...eventParams} = meta.state.event
           return !isEqual(context.params, eventParams)
-
         },
         isEventDifferent: (context, event) => {
-          let { type, ...eventParams } = event
+          let {type, ...eventParams} = event
           let result = !isEqual(context.params, eventParams)
           return result
-        }
+        },
       },
       actions: {
         pushToRecents: assign((context, event) => {
@@ -422,24 +446,24 @@ export function createMainPageMachine(client: QueryClient) {
           if (_set.has(location)) _set.delete(location)
           _set.add(window.location.pathname)
           return {
-            recents: [..._set].reverse()
+            recents: [..._set].reverse(),
           }
         }),
         updateLibrary: (context) => {
-          debug('updateLibrary!!');
+          debug('updateLibrary!!')
 
           context.files.send('RECONCILE')
           context.drafts.send('RECONCILE')
         },
         setCurrentDocument: assign({
-          document: (_, event) => event.document
+          document: (_, event) => event.document,
         }),
         clearCurrentDocument: assign({
-          document: (c) => null
+          document: (c) => null,
         }),
         setDraftParams: assign({
           params: (_, e, meta) => {
-            let { event } = meta.state
+            let {event} = meta.state
             return {
               docId: event.docId,
             }
@@ -447,7 +471,7 @@ export function createMainPageMachine(client: QueryClient) {
         }),
         setPublicationParams: assign({
           params: (c, e, m) => {
-            let { replace, type, ...rest } = m.state?.event
+            let {replace, type, ...rest} = m.state?.event
             return rest
           },
         }),
@@ -457,25 +481,27 @@ export function createMainPageMachine(client: QueryClient) {
               type: 'pushPublication',
               docId: context.params.docId,
               version: context.params.version,
-              blockId: context.params.blockId
+              blockId: context.params.blockId,
             }
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
-        pushDraftRoute: send((context) => {
-          return {
-            type: 'pushDraft',
-            docId: context.params.docId,
-            blockId: context.params.blockId
-          }
-
-        }, { to: 'router' }),
+        pushDraftRoute: send(
+          (context) => {
+            return {
+              type: 'pushDraft',
+              docId: context.params.docId,
+              blockId: context.params.blockId,
+            }
+          },
+          {to: 'router'},
+        ),
         clearParams: assign((_) => ({
           params: {
             docId: '',
             version: null,
-            blockId: null
-          }
+            blockId: null,
+          },
         })),
         navigateBack: () => {
           if (!window.history) return
@@ -485,13 +511,19 @@ export function createMainPageMachine(client: QueryClient) {
           if (!window.history) return
           window.history.forward()
         },
-        pushDraftListRoute: send({
-          type: 'pushDraftList',
-        }, { to: 'router' }),
+        pushDraftListRoute: send(
+          {
+            type: 'pushDraftList',
+          },
+          {to: 'router'},
+        ),
 
-        pushPublicationListRoute: send({
-          type: 'pushPublicationList',
-        }, { to: 'router' }),
+        pushPublicationListRoute: send(
+          {
+            type: 'pushPublicationList',
+          },
+          {to: 'router'},
+        ),
       },
       services: {
         router: () => (sendBack, receive) => {
@@ -510,10 +542,11 @@ export function createMainPageMachine(client: QueryClient) {
             .on('/drafts', () => {
               sendBack('goToDraftList')
             })
-            .on<{ docId: string }>('/editor/:docId', (params) => {
-              return params ? sendBack({ type: 'goToEditor', ...params }) : sendBack('routeNotFound')
-            },
-            )
+            .on<{docId: string}>('/editor/:docId', (params) => {
+              return params
+                ? sendBack({type: 'goToEditor', ...params})
+                : sendBack('routeNotFound')
+            })
             .on<{
               docId: string
               version?: string
@@ -521,35 +554,43 @@ export function createMainPageMachine(client: QueryClient) {
             }>('/p/:docId/:version?/:blockid?', (params) => {
               return params
                 ? sendBack({
-                  type: 'goToPublication',
-                  docId: params.docId,
-                  version: params.version,
-                  blockId: params.blockId,
-                })
+                    type: 'goToPublication',
+                    docId: params.docId,
+                    version: params.version,
+                    blockId: params.blockId,
+                  })
                 : sendBack('routeNotFound')
-            },
-            )
+            })
             .on<{
               docType?: string
               docId?: string
               version?: string
               blockId?: string
             }>('/new/:docType?/:docId?/:version?/:blockId?', (params) => {
-              sendBack({ type: 'goToNew', ...params })
+              sendBack({type: 'goToNew', ...params})
             })
 
           receive((event) => {
-
             if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
               navRouter.route(
-                `/p/${event.docId}${event.version ? `/${event.version}${event.blockId ? `/${event.blockId}` : ''}` : ''
+                `/p/${event.docId}${
+                  event.version
+                    ? `/${event.version}${
+                        event.blockId ? `/${event.blockId}` : ''
+                      }`
+                    : ''
                 }`,
                 event.replace,
               )
             } else if (event.type == 'pushDraft') {
-              navRouter.route(`/editor/${event.docId}${event.blockId ? `/${event.blockId}` : ''}`, event.replace)
+              navRouter.route(
+                `/editor/${event.docId}${
+                  event.blockId ? `/${event.blockId}` : ''
+                }`,
+                event.replace,
+              )
             } else if (event.type == 'goToSettings') {
               navRouter.route('/settings')
             } else if (event.type == 'pushPublicationList') {
@@ -567,10 +608,10 @@ export function createMainPageMachine(client: QueryClient) {
         },
         createNewDraft: () => (sendBack) => {
           createDraft().then((document) => {
-            sendBack({ type: 'goToEditor', docId: document.id })
+            sendBack({type: 'goToEditor', docId: document.id})
           })
         },
       },
-    }
+    },
   )
 }

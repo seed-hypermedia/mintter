@@ -58,13 +58,13 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'A B C D E F',
-      layers: [
-        {type: 'strong', starts: [0], ends: [2], attributes: null},
-        {type: 'emphasis', starts: [2], ends: [4], attributes: null},
-        {type: 'underline', starts: [4], ends: [6], attributes: null},
-        {type: 'strikethrough', starts: [6], ends: [8], attributes: null},
-        {type: 'superscript', starts: [8], ends: [10], attributes: null},
-        {type: 'subscript', starts: [10], ends: [11], attributes: null},
+      annotations: [
+        {type: 'strong', starts: [0], ends: [2], attributes: {}},
+        {type: 'emphasis', starts: [2], ends: [4], attributes: {}},
+        {type: 'underline', starts: [4], ends: [6], attributes: {}},
+        {type: 'strikethrough', starts: [6], ends: [8], attributes: {}},
+        {type: 'superscript', starts: [8], ends: [10], attributes: {}},
+        {type: 'subscript', starts: [10], ends: [11], attributes: {}},
       ],
     }
 
@@ -84,9 +84,9 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'Mintter is Awesome',
-      layers: [
-        {type: 'strong', starts: [0], ends: [10], attributes: null},
-        {type: 'emphasis', starts: [8], ends: [18], attributes: null},
+      annotations: [
+        {type: 'strong', starts: [0], ends: [10], attributes: {}},
+        {type: 'emphasis', starts: [8], ends: [18], attributes: {}},
       ],
     }
 
@@ -102,7 +102,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello from 👨‍👩‍👧‍👦 family',
-      layers: [{type: 'strong', starts: [6], ends: [25], attributes: null}],
+      annotations: [{type: 'strong', starts: [6], ends: [25], attributes: {}}],
     }
 
     expect(blockToApi(input)).toEqual(output)
@@ -120,7 +120,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello Mintter',
-      layers: [
+      annotations: [
         {
           type: 'link',
           attributes: {url: 'https://mintter.com'},
@@ -145,7 +145,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'Mintterdemo',
-      layers: [
+      annotations: [
         {
           type: 'link',
           attributes: {url: 'https://mintter.com'},
@@ -179,14 +179,14 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello Mintter team!',
-      layers: [
+      annotations: [
         {
           type: 'link',
           attributes: {url: 'https://mintter.com'},
           starts: [6],
           ends: [19],
         },
-        {type: 'strong', starts: [14], ends: [19], attributes: null},
+        {type: 'strong', starts: [14], ends: [19], attributes: {}},
       ],
     }
 
@@ -202,7 +202,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
-      layers: [
+      annotations: [
         {
           type: 'embed',
           attributes: {url: 'mtt://doc1/block1'},
@@ -227,7 +227,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC\uFFFC',
-      layers: [
+      annotations: [
         {
           type: 'embed',
           attributes: {url: 'mtt://doc1/block1'},
@@ -261,14 +261,14 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'This \uFFFC and also this are very important: \uFFFC',
-      layers: [
+      annotations: [
         {
           type: 'embed',
           attributes: {url: 'mtt://doc1/block1'},
           starts: [5],
           ends: [6],
         },
-        {starts: [30], ends: [41], type: 'strong', attributes: null},
+        {starts: [30], ends: [41], type: 'strong', attributes: {}},
         {
           type: 'embed',
           attributes: {url: 'mtt://doc2/block2'},
@@ -290,12 +290,12 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '😀 😎 👨‍👩‍👧‍👦',
-      layers: [
+      annotations: [
         {
           type: 'emphasis',
           starts: [4],
           ends: [11],
-          attributes: null,
+          attributes: {},
         },
       ],
     }
@@ -312,11 +312,10 @@ describe('Transform: blockToApi', () => {
       ]),
     ])
 
-    const output: Block = {
+    let output = {
       id: 'blockId',
       type: 'statement',
       text: 'Alice, Bob and Carol',
-      attributes: {},
       annotations: [
         {
           type: 'strong',

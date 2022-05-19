@@ -1,10 +1,10 @@
-import { info } from '@app/utils/logger'
-import { createMachine } from 'xstate'
+import {info} from '@app/utils/logger'
+import {createMachine} from 'xstate'
 
 type LibraryEvent =
-  | { type: 'LIBRARY.OPEN' }
-  | { type: 'LIBRARY.CLOSE' }
-  | { type: 'LIBRARY.TOGGLE' }
+  | {type: 'LIBRARY.OPEN'}
+  | {type: 'LIBRARY.CLOSE'}
+  | {type: 'LIBRARY.TOGGLE'}
 
 export const libraryMachine = createMachine(
   {
@@ -34,7 +34,7 @@ export const libraryMachine = createMachine(
   {
     actions: {
       closing: (context, event) => {
-        info(`CLOSING LIBRARY! - ${JSON.stringify({ context, event })}`)
+        info(`CLOSING LIBRARY! - ${JSON.stringify({context, event})}`)
       },
     },
   },

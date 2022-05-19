@@ -13,7 +13,7 @@ describe('Topbar', () => {
     )
   })
 
-  it.only('render Draft Title and Author', () => {
+  it.skip('render Draft Title and Author', () => {
     let {render, client} = mountWithAccount()
     let date = new Date()
 
@@ -51,10 +51,11 @@ describe('Topbar', () => {
       <MainPageProviders client={client} mainPageContext={{document: draft}}>
         <Topbar />
       </MainPageProviders>,
-    ).get('[data-testid="topbar-title"]')
-    // .contains(draft.title)
-    // .get('[data-testid="topbar-author"]')
-    // .contains(author.profile!.alias)
+    )
+      .get('[data-testid="topbar-title"]')
+      .contains(draft.title)
+      .get('[data-testid="topbar-author"]')
+      .contains(author.profile!.alias)
   })
 
   it('navigation button should work', () => {

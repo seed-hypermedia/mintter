@@ -43,16 +43,6 @@ describe('<LibraryItem />', () => {
       .get('[data-testid="library-item-dropdown-root"]')
       .should('be.visible')
   })
-
-  it('should Open in Sidepanel', () => {
-    cy.get('[data-testid="library-item"]')
-      .get('[data-trigger]')
-      .click()
-      .get('[data-testid="sidepanel-item"]')
-      .should('be.visible')
-      .contains('Open in sidepanel')
-      .click()
-  })
 })
 
 describe('<LibraryItem /> with Draft', () => {

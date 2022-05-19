@@ -14,6 +14,16 @@ describe('Statement Plugin', () => {
   let elRender: any
 
   beforeEach(() => {
+    ;(function mockTauriIpc() {
+      if (window) {
+        console.log({window})
+
+        window.__TAURI_IPC__ = function mockTAURI_IPC() {
+          // noob
+        }
+      }
+    })()
+
     const {client, render} = mountWithAccount()
     let date = new Date()
 
@@ -85,7 +95,7 @@ describe('Statement Plugin', () => {
       })
       .type('{enter}')
       .then(() => {
-        let [b1, b2] = (elEditor.children[0] as GroupingContent).children
+        let [, b2] = (elEditor.children[0] as GroupingContent).children
         expect(b2.id).to.be.equal('block1')
       })
   })

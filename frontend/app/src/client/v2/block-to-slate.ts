@@ -1,9 +1,8 @@
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
-import { Annotation, Block, BlockNode } from '@app/client'
-import { info } from '@app/utils/logger'
-import { FlowContent, group, PhrasingContent } from '@mintter/mttast'
+import {Annotation, Block, BlockNode} from '@app/client'
+import {FlowContent, group, PhrasingContent} from '@mintter/mttast'
 // import { interpret } from "xstate";
-import { annotationContains } from './classes'
+import {annotationContains} from './classes'
 
 // function main() {
 //   let service = interpret(toSlateMachine).start()
@@ -14,7 +13,7 @@ import { annotationContains } from './classes'
 export function blockToSlate(blk: Block): FlowContent {
   const out = {
     id: blk.id,
-    type: blk.type || 'statement',
+    type: blk.type,
     // TODO: handle block attributes too. I guess we've lost
     // the "paragraph" type of the content node during the conversion ¯\_(ツ)_/¯.
     // Let's pretend it's there though.
@@ -59,7 +58,7 @@ export function blockToSlate(blk: Block): FlowContent {
   const leafAnnotations = new Set<Annotation>()
 
   if (blk.text == '') {
-    leaves.push({ type: 'text', value: blk.text })
+    leaves.push({type: 'text', value: blk.text})
     return out as FlowContent
   }
 
@@ -79,7 +78,7 @@ export function blockToSlate(blk: Block): FlowContent {
 
     // When we reach the stop point, we need to finish the current leaf before returning.
     if (stopPoint < 0) {
-      info('STOP IS LESS THAN ZERO', blk)
+      console.log('STOP IS LESS THAN ZERO', blk)
     }
     if (i == stopPoint) {
       if (annotationsChanged) {
@@ -200,7 +199,7 @@ export function blockToSlate(blk: Block): FlowContent {
 
     if (linkOrEmbed) {
       if (linkOrEmbed.type == 'embed') {
-        linkOrEmbed.children.push({ ...leaf, value: '' })
+        linkOrEmbed.children.push({...leaf, value: ''})
       } else {
         linkOrEmbed.children.push(leaf)
       }
@@ -252,7 +251,7 @@ function isSurrogate(s: string, i: number): boolean {
 
 export function blockNodeToSlate(entry: Array<BlockNode>) {
   return group(
-    entry.map(({ block, children }) => {
+    entry.map(({block, children}) => {
       let slateBlock = blockToSlate(block!)
       if (children.length) {
         slateBlock.children[1] = blockNodeToSlate(children)

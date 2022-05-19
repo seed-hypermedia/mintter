@@ -1,4 +1,4 @@
-import { error } from "@app/utils/logger"
+import {error} from '@app/utils/logger'
 
 export function copyTextToClipboard(text: string) {
   return new Promise((resolve, reject) => {

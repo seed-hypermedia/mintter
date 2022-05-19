@@ -37,12 +37,16 @@ export var usePageTitle = createMainPageSelector(function pageTitleSelector(
   state,
 ) {
   var result = ''
+  console.log('enters usePageTitle', state.value)
 
   if (state.matches('routes.draftList')) {
+    console.log('enters in DraftList')
+
     result = 'Drafts'
   }
 
   if (state.matches('routes.publicationList')) {
+    console.log('enters in publicationList')
     result = 'Publications'
   }
 
@@ -50,7 +54,9 @@ export var usePageTitle = createMainPageSelector(function pageTitleSelector(
     state.matches('routes.editor.valid') ||
     state.matches('routes.publication.valid')
   ) {
+    console.log('enters in editor or publication', state.value)
     let value = getDocumentTitle(state.context.document)
+    console.log('🚀 ~ file: main-page-context.tsx ~ line 58 ~ value', value)
     debug('🚀 ~ file: main-page-context.tsx ~ line 53 ~ value', value)
     result = value
   }

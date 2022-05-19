@@ -6,7 +6,7 @@ import {
 import {ListBookmarksResponse} from '@app/client/bookmarks'
 import {queryKeys} from '@app/hooks'
 import {MainPageProviders, mountWithAccount} from '@app/test/utils'
-import {BookmarksSection} from '@components/library/_section-bookmarks'
+import {BookmarksSection} from '@components/library/section-bookmarks'
 import {group, paragraph, statement, text} from '@mintter/mttast'
 
 describe.only('<BookmarkItem />', () => {
@@ -74,8 +74,6 @@ describe.only('<BookmarkItem />', () => {
         <BookmarksSection />
       </MainPageProviders>,
     )
-
-    cy.get('[data-testid="bookmarks-section-trigger"]').click({force: true})
   })
 
   it('default item', () => {
@@ -88,16 +86,6 @@ describe.only('<BookmarkItem />', () => {
       .click()
       .get('[data-testid="bookmark-item-dropdown-root"]')
       .should('be.visible')
-  })
-
-  it('should Open in Sidepanel', () => {
-    cy.get('[data-testid="bookmark-item"]')
-      .get('[data-trigger]')
-      .click()
-      .get('[data-testid="sidepanel-item"]')
-      .should('be.visible')
-      .contains('Open in sidepanel')
-      .click()
   })
 
   it('should delete bookmark', () => {
