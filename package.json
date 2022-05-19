@@ -9,7 +9,7 @@
     "build": "yarn workspaces foreach -ptR --from '{@mintter/mttast,@mintter/app}' run build",
     "lint": "yarn mttast lint && yarn app lint",
     "format": "yarn mttast format && yarn app format",
-    "test": "yarn mttast format && yarn app format",
+    "test": "yarn mttast test && yarn app test",
     "app": "yarn workspace @mintter/app",
     "mttast": "yarn workspace @mintter/mttast",
     "codegen": "graphql-codegen"
