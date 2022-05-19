@@ -6,7 +6,9 @@ export function useCreateDraft() {
 
   function createDraft(pubId?: string, callback?: () => void) {
     try {
-      apiCreateDraft(pubId).then(function createDraftSuccess(newDraft: Document) {
+      apiCreateDraft(pubId).then(function createDraftSuccess(
+        newDraft: Document,
+      ) {
         callback?.()
         mainPageService.send('RECONCILE')
         mainPageService.send({type: 'goToEditor', docId: newDraft.id})
