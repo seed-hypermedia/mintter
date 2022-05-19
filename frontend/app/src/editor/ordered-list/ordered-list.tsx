@@ -1,5 +1,10 @@
 import {styled} from '@app/stitches.config'
-import {createId, isFlowContent, isOrderedList, statement} from '@mintter/mttast'
+import {
+  createId,
+  isFlowContent,
+  isOrderedList,
+  statement,
+} from '@mintter/mttast'
 import {Element, Node, Transforms} from 'slate'
 import {groupStyle, removeEmptyGroup} from '../group'
 import type {EditorPlugin} from '../types'
@@ -16,7 +21,11 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isOrderedList(element)) {
         return (
-          <OrderedList data-element-type={element.type} start={element.start} {...attributes}>
+          <OrderedList
+            data-element-type={element.type}
+            start={element.start}
+            {...attributes}
+          >
             {children}
           </OrderedList>
         )
@@ -32,7 +41,9 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
         if (removeEmptyGroup(editor, entry)) return
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child) && !isFlowContent(child)) {
-            Transforms.wrapNodes(editor, statement({id: createId()}), {at: childPath})
+            Transforms.wrapNodes(editor, statement({id: createId()}), {
+              at: childPath,
+            })
             return
           }
         }

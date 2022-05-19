@@ -41,8 +41,14 @@ export {ConnectionStatus} from './.generated/networking/v1alpha/networking'
 export type {
   ConnectRequest,
   ConnectResponse,
+  GetObjectDiscoveryStatusRequest,
   GetPeerInfoRequest,
+  ObjectDiscoveryStatus,
   PeerInfo,
+  StartObjectDiscoveryRequest,
+  StartObjectDiscoveryResponse,
+  StopObjectDiscoveryRequest,
+  StopObjectDiscoveryResponse,
 } from './.generated/networking/v1alpha/networking'
 export * from './.generated/types'
 export {

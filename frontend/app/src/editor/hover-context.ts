@@ -7,4 +7,6 @@ const [HoverProvider, useHover, createHoverSelector] =
 
 export {HoverProvider, useHover}
 
-export const useHoverBlockId = createHoverSelector((state) => state.context.blockId)
+export const useHoverBlockId = createHoverSelector(
+  (state) => state.context.blockId,
+)

@@ -1,16 +1,18 @@
-import type { Document } from '@app/client'
-import { EditorDocument } from '@app/editor/use-editor-draft'
+import type {Document} from '@app/client'
+import {EditorDocument} from '@app/editor/use-editor-draft'
 
-type Keys<T> = { [P in keyof T]: T[P] }[typeof P]
+type Keys<T> = {[P in keyof T]: T[P]}[typeof P]
 
-type KeyOfType<T, U = Keys<T>> = { [P in keyof T]: T[P] extends U ? P : never }[keyof T]
+type KeyOfType<T, U = Keys<T>> = {
+  [P in keyof T]: T[P] extends U ? P : never
+}[keyof T]
 
 export type DateKeys = KeyOfType<Document, Date | undefined>
 
-export function getDateFormat(document: EditorDocument | Document | undefined, key: DateKeys) {
-
-  if (!document) return ''
-
+export function getDateFormat(
+  document: EditorDocument | Document | undefined,
+  key: DateKeys,
+) {
   var months = [
     'January',
     'February',
@@ -26,7 +28,11 @@ export function getDateFormat(document: EditorDocument | Document | undefined, k
     'December',
   ]
 
+  if (!document) return ''
+
   var date = new Date(document[key]!)
 
-  return date.toLocaleString("en-us", { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${
+    months[date.getMonth()]
+  } ${date.getDate()}, ${date.getFullYear()} (${date.getHours()}:${date.getMinutes()})`
 }

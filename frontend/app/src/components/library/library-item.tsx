@@ -11,10 +11,11 @@ import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy
 import {getDocumentTitle} from '@app/utils/get-document-title'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
+import {useCreateDraft} from '@components/library/use-create-draft'
 import {Text} from '@components/text'
 import {invoke} from '@tauri-apps/api'
 import {useActor, useMachine} from '@xstate/react'
-import {PropsWithChildren} from 'react'
+import {PropsWithChildren, useMemo} from 'react'
 import toast from 'react-hot-toast'
 
 export type LibraryItemProps = {
@@ -40,11 +41,12 @@ export function LibraryItem({
 }: PropsWithChildren<LibraryItemProps>) {
   const mainService = useMainPage()
   const [mainState] = useActor(mainService)
-  let match = isDocumentActive(
-    //@ts-ignore
-    publication ? publication.document?.id : draft?.id,
-    publication?.version,
-  )
+  const {createDraft} = useCreateDraft()
+  let params = useParams()
+  let match = useMemo(() => {
+    let docId = publication ? publication.document?.id : draft?.id
+    return params.docId == docId && params.version == publication?.version
+  }, [params.docId, params.version])
 
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     services: {
@@ -83,7 +85,6 @@ export function LibraryItem({
   }
 
   function afterDelete() {
-    deleteSend('DELETE.DIALOG.CANCEL')
     if (match) {
       mainService.send('goToHome')
     }
@@ -107,65 +108,64 @@ export function LibraryItem({
       <Text size="2" className="title" color="primary" onClick={goToItem}>
         {title}
       </Text>
-      {!deleteState.hasTag('dismiss') ? (
-        <Dropdown.Root modal={false}>
-          <Dropdown.Trigger asChild>
-            <ElementDropdown
-              data-trigger
-              className="dropdown"
-              css={{
-                backgroundColor: 'transparent',
-              }}
-            >
-              <Icon
-                name="MoreHorizontal"
-                size="1"
-                color="muted"
-                className={match ? hoverIconStyle : null}
-              />
-            </ElementDropdown>
-          </Dropdown.Trigger>
-          <Dropdown.Content
-            align="start"
-            data-testid="library-item-dropdown-root"
-            hidden={deleteState.matches('opened')}
+
+      <Dropdown.Root modal={false}>
+        <Dropdown.Trigger asChild>
+          <ElementDropdown
+            data-trigger
+            className="dropdown"
+            css={{
+              backgroundColor: 'transparent',
+            }}
+          >
+            <Icon
+              name="MoreHorizontal"
+              size="1"
+              color="muted"
+              className={match ? hoverIconStyle : null}
+            />
+          </ElementDropdown>
+        </Dropdown.Trigger>
+        <Dropdown.Content
+          align="start"
+          data-testid="library-item-dropdown-root"
+          hidden={deleteState.matches('opened')}
+        >
+          <Dropdown.Item
+            data-testid="copy-item"
+            disabled={!!draft}
+            onSelect={onCopy}
+          >
+            <Icon name="Copy" size="1" />
+            <Text size="2">Copy Document ID</Text>
+          </Dropdown.Item>
+          <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
+            <Icon size="1" name="ArrowTopRight" />
+            <Text size="2">Open in main panel</Text>
+          </Dropdown.Item>
+          <Dropdown.Item
+            data-testid="sidepanel-item"
+            onSelect={onOpenInNewWindow}
+          >
+            <Icon size="1" name="OpenInNewWindow" />
+            <Text size="2">Open in new Window</Text>
+          </Dropdown.Item>
+          <DeleteDialog
+            state={deleteState}
+            send={deleteSend}
+            title="Delete document"
+            description="Are you sure you want to delete this document? This action is not reversible."
           >
             <Dropdown.Item
-              data-testid="copy-item"
-              disabled={!!draft}
-              onSelect={onCopy}
+              data-testid="delete-item"
+              onSelect={(e) => e.preventDefault()}
             >
-              <Icon name="Copy" size="1" />
-              <Text size="2">Copy Document ID</Text>
+              <Icon size="1" name="Close" />
+              <Text size="2">Delete Document</Text>
             </Dropdown.Item>
-            <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
-              <Icon size="1" name="ArrowTopRight" />
-              <Text size="2">Open in main panel</Text>
-            </Dropdown.Item>
-            <Dropdown.Item
-              data-testid="sidepanel-item"
-              onSelect={onOpenInNewWindow}
-            >
-              <Icon size="1" name="OpenInNewWindow" />
-              <Text size="2">Open in new Window</Text>
-            </Dropdown.Item>
-            <DeleteDialog
-              state={deleteState}
-              send={deleteSend}
-              title="Delete document"
-              description="Are you sure you want to delete this document? This action is not reversible."
-            >
-              <Dropdown.Item
-                data-testid="delete-item"
-                onSelect={(e) => e.preventDefault()}
-              >
-                <Icon size="1" name="Close" />
-                <Text size="2">Delete Document</Text>
-              </Dropdown.Item>
-            </DeleteDialog>
-          </Dropdown.Content>
-        </Dropdown.Root>
-      ) : null}
+          </DeleteDialog>
+        </Dropdown.Content>
+      </Dropdown.Root>
     </StyledItem>
   )
 }
@@ -220,9 +220,3 @@ export var StyledItem = styled(
     },
   },
 )
-
-function isDocumentActive(docId: string, version?: string) {
-  let params = useParams()
-
-  return params.docId == docId && params.version == version
-}

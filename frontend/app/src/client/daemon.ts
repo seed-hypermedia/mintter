@@ -1,4 +1,8 @@
-import {DaemonClientImpl, ForceSyncRequest, GetInfoRequest} from './.generated/daemon/v1alpha/daemon'
+import {
+  DaemonClientImpl,
+  ForceSyncRequest,
+  GetInfoRequest,
+} from './.generated/daemon/v1alpha/daemon'
 import type {GrpcClient} from './grpc-client'
 import {createGrpcClient} from './grpc-client'
 

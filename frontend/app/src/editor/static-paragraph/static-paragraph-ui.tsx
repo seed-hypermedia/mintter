@@ -17,8 +17,16 @@ type StaticParagraphUIProps = PropsWithChildren<
   }
 >
 
-export const StaticParagraphUI = forwardRef<HTMLHeadingElement, StaticParagraphUIProps>(
-  function forwardedStaticParagraphUI({className, ...props}, ref) {
-    return <Text fontWeight="bold" ref={ref} className={staticParagraphStyles()} {...props} />
-  },
-)
+export const StaticParagraphUI = forwardRef<
+  HTMLHeadingElement,
+  StaticParagraphUIProps
+>(function forwardedStaticParagraphUI({className, ...props}, ref) {
+  return (
+    <Text
+      fontWeight="bold"
+      ref={ref}
+      className={staticParagraphStyles()}
+      {...props}
+    />
+  )
+})

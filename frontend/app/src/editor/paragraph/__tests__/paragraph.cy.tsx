@@ -10,7 +10,10 @@ import {useMemo} from 'react'
 import {QueryClient} from 'react-query'
 
 function TestEditor({value, client}: {value: any; client: QueryClient}) {
-  const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Publication), [])
+  const editor = useMemo(
+    () => buildEditorHook(plugins, EditorMode.Publication),
+    [],
+  )
 
   const citations = useInterpret(() => createCitationsMachine(client))
 
@@ -40,11 +43,15 @@ describe('Editor Element Fixtures', () => {
     },
     {
       name: 'ordered > statement',
-      value: [ol([statement([paragraph([text('Statement in an Ordered list')])])])],
+      value: [
+        ol([statement([paragraph([text('Statement in an Ordered list')])])]),
+      ],
     },
     {
       name: 'unordered > statement',
-      value: [ul([statement([paragraph([text('Statement in an Unordered list')])])])],
+      value: [
+        ul([statement([paragraph([text('Statement in an Unordered list')])])]),
+      ],
     },
   ]
 

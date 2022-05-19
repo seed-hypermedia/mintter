@@ -1,5 +1,4 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
-import {changesService} from '@app/editor/mintter-changes/plugin'
 import {css, styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import type {Code as CodeType} from '@mintter/mttast'
@@ -99,15 +98,15 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
             if (ev.shiftKey) {
               const [, codePath] = code
               Editor.withoutNormalizing(editor, () => {
-                let newBlock = statement({id: createId()}, [
-                  paragraph([text('')]),
-                ])
-                Transforms.insertNodes(editor, newBlock, {
-                  at: Path.next(codePath),
-                })
+                Transforms.insertNodes(
+                  editor,
+                  statement({id: createId()}, [paragraph([text('')])]),
+                  {
+                    at: Path.next(codePath),
+                  },
+                )
                 Transforms.select(editor, Path.next(codePath))
                 Transforms.collapse(editor, {edge: 'start'})
-                changesService.addChange(['moveBlock', newBlock.id])
               })
             } else {
               Transforms.insertText(editor, '\n')

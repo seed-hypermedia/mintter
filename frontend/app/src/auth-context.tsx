@@ -6,4 +6,6 @@ const [AuthProvider, useAuth, createAuthSelector] =
 
 export {AuthProvider, useAuth}
 
-export const useAccountInfo = createAuthSelector((state) => state.context.accountInfo)
+export const useAccountInfo = createAuthSelector(
+  (state) => state.context.accountInfo,
+)

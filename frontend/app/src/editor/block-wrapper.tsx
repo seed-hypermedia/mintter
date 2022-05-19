@@ -143,10 +143,7 @@ export function BlockWrapper({
   )
 }
 
-export function useOnScreen(
-  ref: MutableRefObject<any>,
-  rootMargin: string = '0px',
-) {
+export function useOnScreen(ref: MutableRefObject<any>, rootMargin = '0px') {
   const [isVisible, setState] = useState(false)
 
   useEffect(() => {

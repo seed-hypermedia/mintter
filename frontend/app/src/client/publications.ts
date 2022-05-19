@@ -44,7 +44,11 @@ export function listPublications(rpc?: GrpcClient) {
  * @param rpc - gRPC client
  * @returns Publication (Promise)
  */
-export async function getPublication(documentId: string, version = '', rpc?: GrpcClient): Promise<Publication> {
+export async function getPublication(
+  documentId: string,
+  version = '',
+  rpc?: GrpcClient,
+): Promise<Publication> {
   rpc ||= createGrpcClient()
   const request = GetPublicationRequest.fromPartial({documentId, version})
   const result = await new PublicationsClientImpl(rpc).getPublication(request)

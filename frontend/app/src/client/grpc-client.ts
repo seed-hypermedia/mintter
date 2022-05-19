@@ -2,7 +2,8 @@ import {grpc} from '@improbable-eng/grpc-web'
 import {BrowserHeaders} from 'browser-headers'
 
 /* eslint-disable */
-export const MINTTER_API_URL_DEFAULT = (import.meta as any).env.VITE_MINTTER_API_URL || 'http://localhost:55001'
+export const MINTTER_API_URL_DEFAULT =
+  (import.meta as any).env.VITE_MINTTER_API_URL || 'http://localhost:55001'
 
 export interface GrpcClient {
   unary<T extends grpc.UnaryMethodDefinition<any, any>>(
@@ -19,7 +20,9 @@ interface createGrpcClientOptions {
   debug?: boolean
 }
 
-export function createGrpcClient(options: createGrpcClientOptions = {}): GrpcClient {
+export function createGrpcClient(
+  options: createGrpcClientOptions = {},
+): GrpcClient {
   return {
     unary(methodDesc, _request, _metadata) {
       const request = {..._request, ...methodDesc.requestType}

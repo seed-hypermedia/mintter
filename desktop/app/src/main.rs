@@ -8,11 +8,11 @@ use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
-use tauri_plugin_store::Builder as StorePluginBuilder;
+use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 use window_management::WindowExt;
 
 mod daemon;
-mod extensions;
+// mod extensions;
 mod menu;
 mod system_tray;
 mod window_management;
@@ -45,7 +45,7 @@ async fn main() {
     .plugin(log_plugin)
     .plugin(daemon::Plugin::default())
     .plugin(StorePluginBuilder::default().build())
-    .plugin(extensions::Plugin::default())
+    // .plugin(extensions::Plugin::default())
     .menu(menu::get_menu())
     .on_menu_event(menu::event_handler)
     .system_tray(system_tray::get_tray())

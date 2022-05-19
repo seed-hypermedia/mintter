@@ -1,4 +1,4 @@
-import { MttastNode } from "@mintter/mttast"
+import {MttastNode} from '@mintter/mttast'
 
 export function toString(node: MttastNode, separator = ''): string {
   let index = -1
@@ -15,7 +15,6 @@ export function toString(node: MttastNode, separator = ''): string {
   if (children.length === 1 && 'value' in children[0]) {
     return children[0].value
   }
-
 
   const values: Array<string> = []
 

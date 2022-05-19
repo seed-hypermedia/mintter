@@ -1,5 +1,10 @@
 import {styled} from '@app/stitches.config'
-import {createId, isFlowContent, isUnorderedList, statement} from '@mintter/mttast'
+import {
+  createId,
+  isFlowContent,
+  isUnorderedList,
+  statement,
+} from '@mintter/mttast'
 import {Element, Node, Transforms} from 'slate'
 import {groupStyle, removeEmptyGroup} from '../group'
 import type {EditorPlugin} from '../types'
@@ -32,7 +37,9 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
         if (removeEmptyGroup(editor, entry)) return
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child) && !isFlowContent(child)) {
-            Transforms.wrapNodes(editor, statement({id: createId()}), {at: childPath})
+            Transforms.wrapNodes(editor, statement({id: createId()}), {
+              at: childPath,
+            })
             return
           }
         }

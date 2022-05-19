@@ -108,7 +108,7 @@ let mainWindowStyle = css({
   paddingBottom: 0,
 })
 
-function MainWindow({children}: PropsWithChildren<{}>) {
+function MainWindow({children}: PropsWithChildren<any>) {
   return (
     <Box className={mainWindowStyle()}>
       <ScrollArea>{children}</ScrollArea>
@@ -117,14 +117,14 @@ function MainWindow({children}: PropsWithChildren<{}>) {
   )
 }
 
-export function MainWindowShell({children, ...props}: PropsWithChildren<{}>) {
+export function MainWindowShell({children, ...props}: PropsWithChildren<any>) {
   return (
     <Box {...props} className={mainWindowStyle()}>
       {children}
     </Box>
   )
 }
-export function MainPageShell(props: PropsWithChildren<{}>) {
+export function MainPageShell(props: PropsWithChildren<any>) {
   return <Box {...props} className={rootPageStyle()} />
 }
 

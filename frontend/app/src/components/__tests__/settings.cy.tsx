@@ -1,10 +1,12 @@
-import { Account } from '@app/client'
-import { mountWithAccount } from '@app/test/utils'
-import { Settings } from '@components/settings'
-import { mockIPC } from "@tauri-apps/api/mocks"
+import {Account} from '@app/client'
+import {mountWithAccount} from '@app/test/utils'
+import {Settings} from '@components/settings'
+import {mockIPC} from '@tauri-apps/api/mocks'
 
 beforeEach(() => {
-  mockIPC(() => { })
+  mockIPC(() => {
+    // noop
+  })
 })
 
 describe('<Settings />', () => {
@@ -29,7 +31,7 @@ describe('<Settings />', () => {
       },
     } as Account)
 
-    const { render } = mountWithAccount({
+    const {render} = mountWithAccount({
       profile,
       accountId,
     })

@@ -1,8 +1,8 @@
-import { useAccountInfo } from '@app/auth-context'
-import type { FlowContent } from '@mintter/mttast'
-import { useMemo } from 'react'
-import type { UseQueryResult } from 'react-query'
-import { useQuery, useQueryClient } from 'react-query'
+import {useAccountInfo} from '@app/auth-context'
+import type {FlowContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import type {UseQueryResult} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
 import {
   Account,
   Document,
@@ -19,9 +19,9 @@ import {
   listPublications,
   ListPublicationsResponse,
   PeerInfo,
-  Publication
+  Publication,
 } from '../client'
-import type { HookOptions } from './types'
+import type {HookOptions} from './types'
 
 export * from './types'
 
@@ -39,7 +39,7 @@ export const queryKeys = {
   GET_BOOKMARK_LIST: 'GET_BOOKMARK_LIST',
   GET_SIDEPANEL_LIST: 'GET_SIDEPANEL_LIST',
   GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
-  GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION'
+  GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
 }
 
 /**
@@ -49,7 +49,11 @@ export const queryKeys = {
  * @returns
  */
 export function useAccount(accountId = '', options: HookOptions<Account> = {}) {
-  return useQuery([queryKeys.GET_ACCOUNT, accountId], () => getAccount(accountId, options.rpc), options)
+  return useQuery(
+    [queryKeys.GET_ACCOUNT, accountId],
+    () => getAccount(accountId, options.rpc),
+    options,
+  )
 }
 
 /**
@@ -73,22 +77,25 @@ export function useInfo(options: HookOptions<Info> = {}) {
  * @param options
  * @returns
  */
-export function useDraft(draftId: string, options: HookOptions<Document> = {}): UseQueryResult<Document> {
+export function useDraft(
+  draftId: string,
+  options: HookOptions<Document> = {},
+): UseQueryResult<Document> {
   if (!draftId) {
     throw new Error(`useDraft: parameter "draftId" is required`)
   }
 
   if (Array.isArray(draftId)) {
     throw new Error(
-      `Impossible render: You are trying to access a draft passing ${draftId.length} draft Ids => ${draftId
-        .map((q) => q)
-        .join(', ')}`,
+      `Impossible render: You are trying to access a draft passing ${
+        draftId.length
+      } draft Ids => ${draftId.map((q) => q).join(', ')}`,
     )
   }
 
   return useQuery(
     [queryKeys.GET_DRAFT, draftId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [, draftId] = queryKey as [string, string]
       return await getDraft(draftId, options.rpc)
     },
@@ -105,12 +112,15 @@ export function useDraft(draftId: string, options: HookOptions<Document> = {}): 
  * @returns
  */
 export function useDraftList() {
-  const draftsListQuery = useQuery<ListDraftsResponse>(queryKeys.GET_DRAFT_LIST, () => {
-    return listDrafts()
-  })
+  const draftsListQuery = useQuery<ListDraftsResponse>(
+    queryKeys.GET_DRAFT_LIST,
+    () => {
+      return listDrafts()
+    },
+  )
 
-  const data: Array<{ document: Document }> = useMemo(
-    () => draftsListQuery.data?.documents?.map((d) => ({ document: d })) || [],
+  const data: Array<{document: Document}> = useMemo(
+    () => draftsListQuery.data?.documents?.map((d) => ({document: d})) || [],
     [draftsListQuery],
   )
 
@@ -126,7 +136,10 @@ export function useDraftList() {
  * @param options
  * @returns
  */
-export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['addrs']> = {}) {
+export function usePeerAddrs(
+  peerId?: string,
+  options: HookOptions<PeerInfo['addrs']> = {},
+) {
   const queryClient = useQueryClient()
 
   let requestId: string
@@ -160,10 +173,14 @@ export function usePeerAddrs(peerId?: string, options: HookOptions<PeerInfo['add
  * @param options
  * @returns
  */
-export function usePublication(publicationId: string, version?: string, options: HookOptions<Publication> = {}) {
+export function usePublication(
+  publicationId: string,
+  version?: string,
+  options: HookOptions<Publication> = {},
+) {
   const publicationQuery = useQuery(
     [queryKeys.GET_PUBLICATION, publicationId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [, publicationId] = queryKey as [string, string]
       return getPublication(publicationId, version, options.rpc)
     },
@@ -174,7 +191,10 @@ export function usePublication(publicationId: string, version?: string, options:
   )
 
   const content: Array<FlowContent> = useMemo(
-    () => (publicationQuery.data?.document?.content ? JSON.parse(publicationQuery.data?.document?.content) : null),
+    () =>
+      publicationQuery.data?.document?.content
+        ? JSON.parse(publicationQuery.data?.document?.content)
+        : null,
     [publicationQuery],
   )
 
@@ -198,7 +218,10 @@ export function useFiles(options: HookOptions<ListPublicationsResponse> = {}) {
     },
     options,
   )
-  const data = useMemo(() => fileListQuery.data?.publications, [fileListQuery.data])
+  const data = useMemo(
+    () => fileListQuery.data?.publications,
+    [fileListQuery.data],
+  )
 
   return {
     ...fileListQuery,
@@ -206,7 +229,9 @@ export function useFiles(options: HookOptions<ListPublicationsResponse> = {}) {
   }
 }
 
-export function useOthersPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
+export function useOthersPublicationsList(
+  options: HookOptions<ListPublicationsResponse> = {},
+) {
   const info = useAccountInfo()
   const myPubsListQuery = useQuery(
     [queryKeys.GET_PUBLICATION_LIST, queryKeys.OTHERS_PUBLICATION_LIST],
@@ -230,7 +255,9 @@ export function useOthersPublicationsList(options: HookOptions<ListPublicationsR
   }
 }
 
-export function useMyPublicationsList(options: HookOptions<ListPublicationsResponse> = {}) {
+export function useMyPublicationsList(
+  options: HookOptions<ListPublicationsResponse> = {},
+) {
   const info = useAccountInfo()
   const myPubsListQuery = useQuery(
     [queryKeys.GET_PUBLICATION_LIST, queryKeys.MY_PUBLICATION_LIST],
@@ -254,13 +281,22 @@ export function useMyPublicationsList(options: HookOptions<ListPublicationsRespo
   }
 }
 
-export function useListAccounts(options: HookOptions<ListAccountsResponse> = {}) {
-  const listAccountsQuery = useQuery([queryKeys.GET_ACCOUNT_LIST], () => listAccounts(), {
-    // refetchInterval: 10000,
-    ...options,
-  })
+export function useListAccounts(
+  options: HookOptions<ListAccountsResponse> = {},
+) {
+  const listAccountsQuery = useQuery(
+    [queryKeys.GET_ACCOUNT_LIST],
+    () => listAccounts(),
+    {
+      // refetchInterval: 10000,
+      ...options,
+    },
+  )
 
-  const data = useMemo(() => listAccountsQuery.data?.accounts || [], [listAccountsQuery])
+  const data = useMemo(
+    () => listAccountsQuery.data?.accounts || [],
+    [listAccountsQuery],
+  )
 
   return {
     ...listAccountsQuery,

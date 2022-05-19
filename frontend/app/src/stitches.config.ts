@@ -10,9 +10,22 @@ import loraMediumItalic from '@app/static/fonts/lora/medium-italic.ttf'
 import loraMedium from '@app/static/fonts/lora/medium.ttf'
 import loraRegularItalic from '@app/static/fonts/lora/regular-italic.ttf'
 import loraRegular from '@app/static/fonts/lora/regular.ttf'
-import { blue, blueDark, gray, grayDark, green, greenDark, orange, orangeDark, red, redDark, yellow, yellowDark } from '@radix-ui/colors'
+import {
+  blue,
+  blueDark,
+  gray,
+  grayDark,
+  green,
+  greenDark,
+  orange,
+  orangeDark,
+  red,
+  redDark,
+  yellow,
+  yellowDark,
+} from '@radix-ui/colors'
 import type * as Stitches from '@stitches/react'
-import { createStitches, defaultThemeMap } from '@stitches/react'
+import {createStitches, defaultThemeMap} from '@stitches/react'
 
 const stitches = createStitches({
   prefix: 'mtt',
@@ -151,7 +164,7 @@ const stitches = createStitches({
       'three-quarters': '75%',
       full: '100%',
       'prose-width': '70ch',
-      'library-width': '232px'
+      'library-width': '232px',
     },
     space: {
       0: 0,
@@ -179,10 +192,22 @@ const stitches = createStitches({
     bp3: '(min-width: 1400px)',
   },
   utils: {
-    marginHorizontal: (val: Stitches.PropertyValue<'margin'>) => ({ marginLeft: val, marginRight: val }),
-    marginVertical: (val: Stitches.PropertyValue<'margin'>) => ({ marginTop: val, marginBottom: val }),
-    paddingHorizontal: (val: Stitches.PropertyValue<'padding'>) => ({ paddingLeft: val, paddingRight: val }),
-    paddingVertical: (val: Stitches.PropertyValue<'padding'>) => ({ paddingTop: val, paddingBottom: val }),
+    marginHorizontal: (val: Stitches.PropertyValue<'margin'>) => ({
+      marginLeft: val,
+      marginRight: val,
+    }),
+    marginVertical: (val: Stitches.PropertyValue<'margin'>) => ({
+      marginTop: val,
+      marginBottom: val,
+    }),
+    paddingHorizontal: (val: Stitches.PropertyValue<'padding'>) => ({
+      paddingLeft: val,
+      paddingRight: val,
+    }),
+    paddingVertical: (val: Stitches.PropertyValue<'padding'>) => ({
+      paddingTop: val,
+      paddingBottom: val,
+    }),
   },
   themeMap: {
     ...defaultThemeMap,
@@ -193,7 +218,7 @@ const stitches = createStitches({
   },
 })
 
-export const { styled, css, globalCss, keyframes, config, createTheme } = stitches
+export const {styled, css, globalCss, keyframes, config, createTheme} = stitches
 export type CSS = Stitches.CSS<typeof config> & typeof lightTheme
 export type ThemeColorValue = Stitches.PropertyValue<'backgroundColor'>
 

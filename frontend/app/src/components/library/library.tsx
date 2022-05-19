@@ -31,7 +31,7 @@ let libraryStyle = css({
   },
 })
 
-export function LibraryShell({children, ...props}: PropsWithChildren<{}>) {
+export function LibraryShell({children, ...props}: PropsWithChildren<any>) {
   return (
     <Box {...props} className={libraryStyle()}>
       {children}

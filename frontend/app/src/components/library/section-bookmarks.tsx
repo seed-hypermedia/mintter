@@ -17,24 +17,22 @@ export function BookmarksSection() {
   return (
     <Section title="Bookmarks" icon="Star">
       {state.context?.bookmarks?.length ? (
-        <>
-          <ErrorBoundary FallbackComponent={SectionError} onReset={onReset}>
-            {state.context.bookmarks.map((bookmark) => (
-              <BookmarkItem key={bookmark.url} itemRef={bookmark.ref} />
-            ))}
-          </ErrorBoundary>
-          <Button
-            onClick={() => send('BOOKMARK.CLEARALL')}
-            variant="ghost"
-            color="primary"
-            data-testid="clear-bookmarks"
-            size="1"
-            css={{textAlign: 'left'}}
-          >
-            clear bookmarks
-          </Button>
-        </>
+        <ErrorBoundary FallbackComponent={SectionError} onReset={onReset}>
+          {state.context.bookmarks.map((bookmark) => (
+            <BookmarkItem key={bookmark.url} itemRef={bookmark.ref} />
+          ))}
+        </ErrorBoundary>
       ) : null}
+      <Button
+        onClick={() => send('BOOKMARK.CLEARALL')}
+        variant="ghost"
+        color="primary"
+        data-testid="clear-bookmarks"
+        size="1"
+        css={{textAlign: 'left'}}
+      >
+        clear bookmarks
+      </Button>
     </Section>
   )
 }

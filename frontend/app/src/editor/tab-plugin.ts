@@ -1,8 +1,8 @@
-import { changesService } from '@app/editor/mintter-changes/plugin'
-import type { GroupingContent } from '@mintter/mttast'
-import { isFlowContent, isGroupContent, isParent } from '@mintter/mttast'
-import { Editor, Node, Path, Transforms } from 'slate'
-import type { EditorPlugin } from './types'
+import {changesService} from '@app/editor/mintter-changes/plugin'
+import type {GroupingContent} from '@mintter/mttast'
+import {isFlowContent, isGroupContent, isParent} from '@mintter/mttast'
+import {Editor, Node, Path, Transforms} from 'slate'
+import type {EditorPlugin} from './types'
 
 /**
  * This plugin handles the <Tab> interactions with the editor:
@@ -38,38 +38,39 @@ function moveStatement(editor: Editor, up: boolean) {
   Editor.withoutNormalizing(editor, () => {
     changesService.addChange(['moveBlock', statement.id])
     if (!up) {
-      const [prev, prevPath] = Editor.previous(editor, { at: statementPath, match: isFlowContent }) || []
+      const [prev, prevPath] =
+        Editor.previous(editor, {at: statementPath, match: isFlowContent}) || []
 
       if (!isParent(prev) || !prevPath) return
 
       if (prev.children.length == 1) {
-
         Transforms.wrapNodes(
           editor,
-          { type: isGroupContent(parent) ? parent.type : 'group', children: [] },
-          { at: statementPath },
+          {type: isGroupContent(parent) ? parent.type : 'group', children: []},
+          {at: statementPath},
         )
 
         Transforms.moveNodes(editor, {
           at: statementPath,
           to: [...prevPath, 1],
         })
-
       } else {
-
         Transforms.moveNodes(editor, {
           at: statementPath,
-          to: [...prevPath, 1, (prev.children[1] as GroupingContent).children.length],
+          to: [
+            ...prevPath,
+            1,
+            (prev.children[1] as GroupingContent).children.length,
+          ],
         })
         let prevLength = (prev.children[1] as GroupingContent).children.length
-        let prevLastChild = (prev.children[1] as GroupingContent).children[prevLength - 1]
+        let prevLastChild = (prev.children[1] as GroupingContent).children[
+          prevLength - 1
+        ]
       }
     } else {
-
-
       // don't try to lift anything if we're already at the root level (with default group the root is depth 4)
       if (statementPath.length < 4) return
-
 
       const siblings = Array.from(nextSiblings(editor, statementPath))
 
@@ -84,7 +85,10 @@ function moveStatement(editor: Editor, up: boolean) {
         if (statement?.children.length == 1) {
           Transforms.wrapNodes(
             editor,
-            { type: isGroupContent(parent) ? parent.type : 'group', children: [] },
+            {
+              type: isGroupContent(parent) ? parent.type : 'group',
+              children: [],
+            },
             {
               match: (_, path) => siblings.some((s) => Path.equals(s[1], path)),
               at: range,
@@ -104,13 +108,12 @@ function moveStatement(editor: Editor, up: boolean) {
           })
         }
 
-        siblings.forEach(entry => {
+        siblings.forEach((entry) => {
           let [node] = entry
           if (isFlowContent(node)) {
             changesService.addChange(['moveBlock', node.id])
           }
         })
-
       }
 
       doubleLift(editor, statementPath)
@@ -130,9 +133,9 @@ function* nextSiblings(editor: Editor, path: Path) {
 function doubleLift(editor: Editor, path: Path) {
   const ref = Editor.pathRef(editor, path)
 
-  Transforms.liftNodes(editor, { at: path })
+  Transforms.liftNodes(editor, {at: path})
   if (!ref.current) throw new Error('couldnt track path')
-  Transforms.liftNodes(editor, { at: ref.current })
+  Transforms.liftNodes(editor, {at: ref.current})
 
   ref.unref()
 }
