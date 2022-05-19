@@ -113,6 +113,7 @@
     "@typescript-eslint/typescript-estree": "4.33.0",
     "@vitejs/plugin-react": "1.2.0",
     "@vitest/ui": "0.0.142",
+    "@xstate/cli": "^0.1.7",
     "@xstate/inspect": "0.6.3",
     "@xstate/test": "0.5.1",
     "cypress": "9.5.1",
