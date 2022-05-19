@@ -1651,8 +1651,8 @@ __metadata:
     slate-history: "github:mintterteam/slate#workspace=slate-history&tag=v0.70.0-unist"
     slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.70.0-unist"
     slate-react: "github:mintterteam/slate#workspace=slate-react&tag=v0.70.0-unist"
-    tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#head=dev"
-    tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#head=dev"
+    tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
+    tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
     typedoc: 0.22.12
     typedoc-plugin-markdown: 3.11.14
     typescript: 4.4.4
@@ -13918,7 +13918,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log#head=dev":
+"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9":
   version: 0.1.0
   resolution: "tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log.git#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
   dependencies:
@@ -13928,7 +13928,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tauri-plugin-store-api@https://github.com/tauri-apps/tauri-plugin-store#head=dev":
+"tauri-plugin-store-api@https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf":
   version: 0.1.0
   resolution: "tauri-plugin-store-api@https://github.com/tauri-apps/tauri-plugin-store.git#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
   dependencies:
