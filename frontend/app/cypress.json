@@ -3,14 +3,14 @@
   "fileServerFolder": "site",
   "testFiles": "**/*.cy.tsx",
   "componentFolder": "src",
-  "viewportWidth": 800,
-  "viewportHeight": 600,
+  "viewportWidth": 1024,
+  "viewportHeight": 768,
   "pluginsFile": "cypress/plugins/index.js",
   "fixturesFolder": false,
   "screenshotsFolder": "./cypress/snapshots/actual",
   "trashAssetsBeforeRuns": true,
   "retries": {
-    "runMode": 2,
+    "runMode": 5,
     "openMode": 0
   }
 }
