@@ -264,6 +264,7 @@ function wrapMintterLink(editor: Editor, url: string) {
 
   if (isCollapsed(selection!)) {
     Transforms.insertNodes(editor, newEmbed)
+    addLinkChange(editor)
   } else {
     wrapLink(editor, url)
   }
