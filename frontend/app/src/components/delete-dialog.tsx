@@ -1,3 +1,4 @@
+import {error} from '@app/utils/logger'
 import {Alert} from '@components/alert'
 import {overlayStyles} from '@components/dialog-styles'
 import {MouseEvent, PropsWithChildren} from 'react'
@@ -158,7 +159,7 @@ export const deleteDialogMachine = createMachine(
   {
     actions: {
       onError: (_, event) => {
-        console.log('DELETE ERROR: ', event)
+        error('DELETE ERROR: ', event)
       },
     },
   },

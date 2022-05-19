@@ -1,6 +1,6 @@
-import {gql, request} from 'graphql-request'
-import {EventFrom, Sender, sendParent, spawn} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+import { gql, request } from 'graphql-request'
+import { EventFrom, Sender, sendParent, spawn } from 'xstate'
+import { createModel } from 'xstate/lib/model'
 import {
   DeleteWalletPayload,
   LightningWallet,
@@ -11,7 +11,7 @@ import {
   MutationSetDefaultWalletArgs,
   MutationSetupLndHubWalletArgs,
   SetDefaultWalletPayload,
-  SetupLndHubWalletPayload,
+  SetupLndHubWalletPayload
 } from './client'
 
 export const MINTTER_GRAPHQL_API_URL = `${MINTTER_API_URL_DEFAULT}/graphql`
@@ -25,21 +25,21 @@ export const listModel = createModel(
   },
   {
     events: {
-      'REPORT.LIST.SUCCESS': (wallets: Array<Wallet>) => ({wallets}),
-      'REPORT.LIST.ERROR': (error: any) => ({error}),
-      'NEW.WALLET.COMMIT': (wallet: {name: string; url: string}) => ({wallet}),
+      'REPORT.LIST.SUCCESS': (wallets: Array<Wallet>) => ({ wallets }),
+      'REPORT.LIST.ERROR': (error: any) => ({ error }),
+      'NEW.WALLET.COMMIT': (wallet: { name: string; url: string }) => ({ wallet }),
       'REPORT.WALLET.COMMIT.SUCCESS': () => ({}),
-      'REPORT.WALLET.COMMIT.ERROR': (error: any) => ({error}),
-      'WALLET.SET.DEFAULT': (walletId: string) => ({walletId}),
-      'WALLET.DELETE': (walletId: string) => ({walletId}),
-      'WALLET.COMMIT.NAME': (wallet: {name: string; id: string}) => ({wallet}),
+      'REPORT.WALLET.COMMIT.ERROR': (error: any) => ({ error }),
+      'WALLET.SET.DEFAULT': (walletId: string) => ({ walletId }),
+      'WALLET.DELETE': (walletId: string) => ({ walletId }),
+      'WALLET.COMMIT.NAME': (wallet: { name: string; id: string }) => ({ wallet }),
       // CANCEL_ADD_WALLET: () => ({}),
       'CAMERA.ACTIVATE': () => ({}),
       'CAMERA.CLOSE': () => ({}),
-      'REPORT.CAMERA.SUCCESS': (url: string) => ({url}),
-      'REPORT.CAMERA.ERROR': (error: string) => ({error}),
-      'NEW.CHANGE.NAME': (value: string) => ({value}),
-      'NEW.CHANGE.URL': (value: string) => ({value}),
+      'REPORT.CAMERA.SUCCESS': (url: string) => ({ url }),
+      'REPORT.CAMERA.ERROR': (error: string) => ({ error }),
+      'NEW.CHANGE.NAME': (value: string) => ({ value }),
+      'NEW.CHANGE.URL': (value: string) => ({ value }),
       'WALLET.COMMIT': () => ({}),
     },
   },
@@ -74,8 +74,8 @@ var addWalletListToContext = listModel.assign(
 
 const fetchWallets =
   (_: any, event: EventFrom<typeof listMachine>) =>
-  (sendBack: Sender<EventFrom<typeof listMachine>>) => {
-    let query = gql`
+    (sendBack: Sender<EventFrom<typeof listMachine>>) => {
+      let query = gql`
       {
         me {
           wallets {
@@ -87,14 +87,14 @@ const fetchWallets =
         }
       }
     `
-    request<MePayload>(MINTTER_GRAPHQL_API_URL, query)
-      .then(({me: {wallets}}) => {
-        sendBack(listModel.events['REPORT.LIST.SUCCESS'](wallets))
-      })
-      .catch((err: any) => {
-        sendBack(listModel.events['REPORT.LIST.ERROR'](err))
-      })
-  }
+      request<MePayload>(MINTTER_GRAPHQL_API_URL, query)
+        .then(({ me: { wallets } }) => {
+          sendBack(listModel.events['REPORT.LIST.SUCCESS'](wallets))
+        })
+        .catch((err: any) => {
+          sendBack(listModel.events['REPORT.LIST.ERROR'](err))
+        })
+    }
 
 export const listMachine = listModel.createMachine(
   {
@@ -245,7 +245,7 @@ export const walletModel = createModel(
       'REPORT.SUCCESS': () => ({}),
       'REPORT.DELETE.SUCCESS': () => ({}),
       'REPORT.DEFAULT.SUCCESS': () => ({}),
-      'REPORT.ERROR': (errorMessage: string) => ({errorMessage}),
+      'REPORT.ERROR': (errorMessage: string) => ({ errorMessage }),
     },
   },
 )
@@ -293,7 +293,7 @@ export function createWalletMachine({
                 MINTTER_GRAPHQL_API_URL,
                 mutation,
                 {
-                  input: {id: context.id},
+                  input: { id: context.id },
                 },
               )
                 .then((response) => {
@@ -326,7 +326,7 @@ export function createWalletMachine({
                 MINTTER_GRAPHQL_API_URL,
                 mutation,
                 {
-                  input: {id: context.id},
+                  input: { id: context.id },
                 },
               )
                 .then((response) => {

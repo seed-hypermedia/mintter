@@ -1,5 +1,6 @@
 import {useFiles} from '@app/main-page-context'
 import {pageListStyle} from '@app/pages/list-page'
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
@@ -10,7 +11,7 @@ import {invoke} from '@tauri-apps/api'
 
 export function PublicationList() {
   let files = useFiles()
-  console.log(
+  debug(
     '🚀 ~ file: publication-list-page.tsx ~ line 13 ~ PublicationList ~ files',
     files,
   )

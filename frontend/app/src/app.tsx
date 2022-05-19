@@ -1,5 +1,5 @@
 import {useAuth} from '@app/auth-context'
-import {startLogger} from '@app/utils/logger'
+import {error, info, startLogger, warn} from '@app/utils/logger'
 import {LibraryShell} from '@components/library'
 import {TopbarStyled} from '@components/topbar'
 import {useActor} from '@xstate/react'
@@ -10,8 +10,8 @@ import {MainPage, MainPageShell, MainWindowShell} from './pages/main-page'
 import {globalCss} from './stitches.config'
 
 setLogger({
-  log: console.log,
-  warn: console.warn,
+  log: info,
+  warn: warn,
   // ✅ no more errors on the console
   error: () => {
     // noop
@@ -57,7 +57,7 @@ export function App() {
     )
   }
 
-  console.error('ERROR: no state match on MainPage')
+  error('ERROR: no state match on MainPage')
 
   return null
 }

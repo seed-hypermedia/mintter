@@ -4,6 +4,7 @@ import {useAccount} from '@app/hooks'
 import {useMainPage, usePageTitle} from '@app/main-page-context'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {debug, error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
@@ -55,7 +56,14 @@ export function Topbar({copy = copyTextToClipboard}) {
   let bookmarkService = useBookmarksService()
   let [mainState] = useActor(mainPage)
   let title = usePageTitle()
-  let {data, isSuccess} = useAccount(mainState.context.document?.author)
+  debug('🚀 ~ file: topbar.tsx ~ line 58 ~ Topbar ~ title', title)
+  let {data, isSuccess, isError} = useAccount(
+    mainState.context.document?.author,
+  )
+
+  if (isError) {
+    error('accountError!')
+  }
 
   function toggleLibrary() {
     mainState.context.library.send('LIBRARY.TOGGLE')

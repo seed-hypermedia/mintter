@@ -17,6 +17,7 @@ import {css} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {useSidepanel} from '@components/sidepanel'
@@ -155,7 +156,7 @@ export function createSidepanelMachine(client: QueryClient) {
               })),
             )
           } catch (e) {
-            console.error(e)
+            error(e)
           }
         },
         assignError: assign({

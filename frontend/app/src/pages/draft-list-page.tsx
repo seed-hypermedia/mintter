@@ -10,10 +10,6 @@ import {invoke} from '@tauri-apps/api'
 
 export function DraftList() {
   let drafts = useDrafts()
-  console.log(
-    '🚀 ~ file: draft-list-page.tsx ~ line 13 ~ DraftList ~ drafts',
-    drafts,
-  )
   let {createDraft} = useCreateDraft()
 
   async function onOpenInNewWindow() {

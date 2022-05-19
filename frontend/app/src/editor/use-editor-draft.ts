@@ -1,14 +1,15 @@
-import {Document, getDraft, Publication} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import {queryKeys} from '@app/hooks'
-import {useMainPage} from '@app/main-page-context'
-import {createId, group, paragraph, statement, text} from '@mintter/mttast'
-import {useMachine} from '@xstate/react'
-import {useEffect} from 'react'
-import {QueryClient, useQueryClient} from 'react-query'
-import {Editor} from 'slate'
-import {assign, createMachine, MachineOptionsFrom} from 'xstate'
+import { Document, getDraft, Publication } from '@app/client'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { changesService } from '@app/editor/mintter-changes/plugin'
+import { queryKeys } from '@app/hooks'
+import { useMainPage } from '@app/main-page-context'
+import { info } from '@app/utils/logger'
+import { createId, group, paragraph, statement, text } from '@mintter/mttast'
+import { useMachine } from '@xstate/react'
+import { useEffect } from 'react'
+import { QueryClient, useQueryClient } from 'react-query'
+import { Editor } from 'slate'
+import { assign, createMachine, MachineOptionsFrom } from 'xstate'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
@@ -24,25 +25,25 @@ export type EditorContext = {
   shouldMigrate: boolean
 }
 export type EditorEvent =
-  | {type: 'FETCH'; documentId: string}
+  | { type: 'FETCH'; documentId: string }
   | {
-      type: 'EDITOR.REPORT.FETCH.SUCCESS'
-      data: Document
-    }
-  | {type: 'EDITOR.REPORT.FETCH.ERROR'; errorMessage: Error['message']}
-  | {type: 'EDITOR.UPDATE'; payload: Partial<EditorDocument>}
-  | {type: 'EDITOR.UPDATE.SUCCESS'}
-  | {type: 'EDITOR.UPDATE.ERROR'; errorMessage: Error['message']}
-  | {type: 'EDITOR.CANCEL'}
-  | {type: 'EDITOR.PUBLISH'}
-  | {type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication}
-  | {type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message']}
+    type: 'EDITOR.REPORT.FETCH.SUCCESS'
+    data: Document
+  }
+  | { type: 'EDITOR.REPORT.FETCH.ERROR'; errorMessage: Error['message'] }
+  | { type: 'EDITOR.UPDATE'; payload: Partial<EditorDocument> }
+  | { type: 'EDITOR.UPDATE.SUCCESS' }
+  | { type: 'EDITOR.UPDATE.ERROR'; errorMessage: Error['message'] }
+  | { type: 'EDITOR.CANCEL' }
+  | { type: 'EDITOR.PUBLISH' }
+  | { type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication }
+  | { type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message'] }
   | {
-      type: 'EDITOR.MIGRATE'
-    }
+    type: 'EDITOR.MIGRATE'
+  }
   | {
-      type: 'RESET.CHANGES'
-    }
+    type: 'RESET.CHANGES'
+  }
 
 interface DraftEditorMachineProps {
   client: QueryClient
@@ -52,8 +53,8 @@ interface DraftEditorMachineProps {
 }
 
 const defaultContent = [
-  group({data: {parent: ''}}, [
-    statement({id: createId()}, [paragraph([text('')])]),
+  group({ data: { parent: '' } }, [
+    statement({ id: createId() }, [paragraph([text('')])]),
   ]),
 ]
 
@@ -75,7 +76,7 @@ export function draftEditorMachine({
         shouldMigrate: false,
       },
       tsTypes: {} as import('./use-editor-draft.typegen').Typegen0,
-      schema: {context: {} as EditorContext, events: {} as EditorEvent},
+      schema: { context: {} as EditorContext, events: {} as EditorEvent },
       id: 'editor',
       initial: 'idle',
       states: {
@@ -221,12 +222,6 @@ export function draftEditorMachine({
     },
     {
       guards: {
-        // isValueDirty: (context) => {
-        //   let isValueDirty = isEqual(context.localDraft?.content, context.prevDraft?.content)
-        //   console.log("🚀 ~ file: use-editor-draft.ts ~ line 215 ~ isValueDirty", isValueDirty, { new: context.localDraft?.content, prev: context.prevDraft?.content })
-
-        //   return isValueDirty
-        // },
         maxRetriesReached: (context) => context.retries == 5,
       },
       actions: {
@@ -274,20 +269,22 @@ export function draftEditorMachine({
       },
       services: {
         fetchDocument: (_, event) => (sendBack) => {
-          ;(async () => {
+          ; (async () => {
             try {
-              let {context} = mainPageService.getSnapshot()
+              let { context } = mainPageService.getSnapshot()
               let data = await client.fetchQuery(
                 [queryKeys.GET_DRAFT, context.params.docId],
-                ({queryKey}) => {
+                ({ queryKey }) => {
                   let [_, draftId] = queryKey
                   return getDraft(draftId)
                 },
               )
 
-              console.log('fetch data: ', data)
 
-              sendBack({type: 'EDITOR.REPORT.FETCH.SUCCESS', data})
+              info('Fetch result')
+              info(JSON.stringify(data))
+
+              sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
             } catch (err: any) {
               sendBack({
                 type: 'EDITOR.REPORT.FETCH.ERROR',
@@ -316,13 +313,13 @@ export function useEditorDraft({
 }: UseEditorDraftParams) {
   const client = useQueryClient()
   const [state, send] = useMachine(
-    () => draftEditorMachine({client, mainPageService, editor, shouldAutosave}),
+    () => draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
     options,
   )
 
   useEffect(() => {
     if (documentId) {
-      send({type: 'FETCH', documentId})
+      send({ type: 'FETCH', documentId })
       // onlyOnce.current = true
     }
   }, [documentId])
