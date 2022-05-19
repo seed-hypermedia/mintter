@@ -1,3 +1,4 @@
+import {Block} from '@app/client'
 import {
   embed,
   heading,
@@ -11,7 +12,6 @@ import {
 } from '@mintter/mttast'
 import {describe, expect, test} from 'vitest'
 import {blockToApi} from '../block-to-api'
-import {Block} from '../types'
 
 describe('Transform: blockToApi', () => {
   test('should return an empty annotations list', () => {
@@ -312,16 +312,17 @@ describe('Transform: blockToApi', () => {
       ]),
     ])
 
-    let output = {
+    const output: Block = {
       id: 'blockId',
       type: 'statement',
       text: 'Alice, Bob and Carol',
-      layers: [
+      attributes: {},
+      annotations: [
         {
           type: 'strong',
           starts: [0, 15],
           ends: [5, 20],
-          attributes: null,
+          attributes: {},
         },
       ],
     }
