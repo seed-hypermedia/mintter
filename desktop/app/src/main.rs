@@ -32,7 +32,7 @@ async fn main() {
 
     let filter = std::env::var("RUST_LOG")
       .map(|ref filter| FilterBuilder::new().parse(filter).build().filter())
-      .unwrap_or(LevelFilter::Trace);
+      .unwrap_or(LevelFilter::Debug);
 
     LoggerBuilder::new()
       .with_colors(colors)
