@@ -11,12 +11,12 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "tauri-cli";
-  version = "1.0.0-rc.8";
+  version = "1.0.0-rc.11";
   src = fetchCrate {
     crateName = pname;
     version = version;
-    # To update the hash run nix-prefetch fetchCreate --crateName tauri-cli --version <desired-version>.
-    sha256 = "sha256-4JLPOb3F5b6AkoVLDFC6fO+R/q39OHwKBz0NpCNBSFg=";
+    # To update the hash run nix-prefetch fetchCrate --crateName tauri-cli --version <desired-version>.
+    sha256 = "sha256-FliwQ1UoWenVVXbr6T8DFGNLCM3GpyPfb0IuLkueU/w=";
   };
   cargoLock = {
     lockFile = "${src}/Cargo.lock";
