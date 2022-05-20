@@ -94,7 +94,7 @@
   },
   "devDependencies": {
     "@cypress/react": "5.12.5",
-    "@cypress/vite-dev-server": "2.2.2",
+    "@cypress/vite-dev-server": "2.2.3",
     "@faker-js/faker": "6.0.0-alpha.7",
     "@testing-library/jest-dom": "5.16.2",
     "@testing-library/react": "12.1.3",
