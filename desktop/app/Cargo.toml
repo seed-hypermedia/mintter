@@ -15,7 +15,8 @@ build = "build.rs"
 tauri-build = { version = "1.0.0-rc.9", features = [] }
 
 [dependencies]
-tauri = { version = "1.0.0-rc.11", features = ["ayatana-tray", "cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
+tauri = { git = "https://github.com/tauri-apps/tauri", rev = "356b3e1c467d5120f7600717dfff08d8dbedcc04", features = ["ayatana-tray", "cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
+# tauri = { version = "1.0.0-rc.11", features = ["ayatana-tray", "cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", rev = "0e993f8ded5867772b29ca7aee5bc5594aba6fb9", features = ["colored"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", rev = "5726952177b88d1d10063cdf8e7506bac84772cf" }
 tokio = { version = "1.18.2", features = ["full"] }
@@ -34,5 +35,9 @@ cocoa = "0.24.0"
 objc = "0.2.7"
 
 [features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
 default = [ "custom-protocol" ]
+# this feature is used used for production builds where `devPath` points to the filesystem
+# DO NOT remove this
 custom-protocol = [ "tauri/custom-protocol" ]
