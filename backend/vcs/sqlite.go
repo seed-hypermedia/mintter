@@ -417,6 +417,21 @@ func (s *SQLite) ListVersionsByOwner(ctx context.Context, owner cid.Cid) (map[ci
 	return refs, nil
 }
 
+func (s *SQLite) GetPermanode(ctx context.Context, c cid.Cid, p Permanode) error {
+	blk, err := s.bs.Get(ctx, c)
+	if err != nil {
+		if err == blockstore.ErrNotFound {
+			return fmt.Errorf("permanode %s: %w", c, errNotFound)
+		}
+	}
+
+	if err := cbornode.DecodeInto(blk.RawData(), p); err != nil {
+		return fmt.Errorf("unable to decode permanode %s: %w", c, err)
+	}
+
+	return nil
+}
+
 func (s *SQLite) DeletePermanode(ctx context.Context, c cid.Cid) error {
 	if err := s.bs.DeleteBlock(ctx, c); err != nil {
 		return err

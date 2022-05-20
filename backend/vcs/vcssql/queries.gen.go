@@ -797,7 +797,7 @@ VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
 	return err
 }
 
-type PermanodesListPublicationsResult struct {
+type PermanodesListWithVersionsByTypeResult struct {
 	PermanodesID             int
 	PermanodeOwnersAccountID int
 	AccountsMultihash        []byte
@@ -806,21 +806,23 @@ type PermanodesListPublicationsResult struct {
 	PermanodesCreateTime     int
 }
 
-func PermanodesListPublications(conn *sqlite.Conn) ([]PermanodesListPublicationsResult, error) {
+func PermanodesListWithVersionsByType(conn *sqlite.Conn, permanodesType string) ([]PermanodesListWithVersionsByTypeResult, error) {
 	const query = `SELECT permanodes.id, permanode_owners.account_id, accounts.multihash, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash, permanodes.create_time
 FROM permanodes
 JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
 JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id
 JOIN accounts ON accounts.id = permanode_owners.account_id
-WHERE permanodes.id IN (SELECT DISTINCT named_versions.object_id FROM named_versions)`
+WHERE permanodes.type = :permanodesType
+AND permanodes.id IN (SELECT DISTINCT named_versions.object_id FROM named_versions)`
 
-	var out []PermanodesListPublicationsResult
+	var out []PermanodesListWithVersionsByTypeResult
 
 	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":permanodesType", permanodesType)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, PermanodesListPublicationsResult{
+		out = append(out, PermanodesListWithVersionsByTypeResult{
 			PermanodesID:             stmt.ColumnInt(0),
 			PermanodeOwnersAccountID: stmt.ColumnInt(1),
 			AccountsMultihash:        stmt.ColumnBytes(2),
@@ -834,7 +836,7 @@ WHERE permanodes.id IN (SELECT DISTINCT named_versions.object_id FROM named_vers
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: PermanodesListPublications: %w", err)
+		err = fmt.Errorf("failed query: PermanodesListWithVersionsByType: %w", err)
 	}
 
 	return out, err
