@@ -792,9 +792,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cypress/react@npm:5.12.3":
-  version: 5.12.3
-  resolution: "@cypress/react@npm:5.12.3"
+"@cypress/react@npm:5.12.5":
+  version: 5.12.5
+  resolution: "@cypress/react@npm:5.12.5"
   dependencies:
     "@cypress/mount-utils": 1.0.2
     debug: ^4.3.2
@@ -826,7 +826,7 @@ __metadata:
       optional: true
     webpack:
       optional: true
-  checksum: 8c0ebd300ae71c6af2a955386e6f0794076cbc7861ad17854c58a7f83abd4437d659bcfeb702025358299c96f5a9026eaffeda5ec195e6b2011a483d35f67c58
+  checksum: d6c56f1473d5eb0ed9afa3adf25a78cdaaa2484b73dce6ccb58c9d2b77c332c296d5d18062899557c2208da327282b0eea73e46e10252a9a99b65debd0b3e9ed
   languageName: node
   linkType: hard
 
@@ -1562,7 +1562,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/app@workspace:frontend/app"
   dependencies:
-    "@cypress/react": 5.12.3
+    "@cypress/react": 5.12.5
     "@cypress/vite-dev-server": 2.2.2
     "@faker-js/faker": 6.0.0-alpha.7
     "@improbable-eng/grpc-web": 0.14.1
