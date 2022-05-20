@@ -1596,7 +1596,7 @@ __metadata:
     "@types/mdast": 3.0.10
     "@types/react": 17.0.45
     "@types/react-copy-to-clipboard": 5.0.2
-    "@types/react-dom": 17.0.13
+    "@types/react-dom": 17.0.17
     "@types/unist": 2.0.6
     "@typescript-eslint/eslint-plugin": 4.33.0
     "@typescript-eslint/parser": 4.33.0
@@ -3027,16 +3027,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:17.0.13":
-  version: 17.0.13
-  resolution: "@types/react-dom@npm:17.0.13"
-  dependencies:
-    "@types/react": "*"
-  checksum: 62c42a54ac8961c23a0e74b9cdd8b0a78563757e462b1ab665b2aa365bfd8b86a73d3f6eafc09a4a80fb08659321db168f012aa597c41c0df36f645a94e9266b
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:<18.0.0":
+"@types/react-dom@npm:17.0.17, @types/react-dom@npm:<18.0.0":
   version: 17.0.17
   resolution: "@types/react-dom@npm:17.0.17"
   dependencies:
