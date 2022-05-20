@@ -129,7 +129,6 @@ describe('<LibraryItem /> with Draft', () => {
 describe('<LibraryItem /> with Publication', () => {
   let publication: Publication = {
     version: 'testversion',
-    latestVersion: 'testversion',
     document: {
       id: 'testId',
       title: 'test publication title',

@@ -1,14 +1,14 @@
-import {DocumentChange} from '@app/client'
-import {blockToApi} from '@app/client/v2/block-to-api'
-import {getBlock} from '@app/editor/utils'
-import {FlowContent} from '@mintter/mttast'
-import {Editor, Node, Path} from 'slate'
+import { DocumentChange } from '@app/client'
+import { blockToApi } from '@app/client/v2/block-to-api'
+import { getBlock } from '@app/editor/utils'
+import { FlowContent } from '@mintter/mttast'
+import { Editor, Node, Path } from 'slate'
 
 export function createMoveChange(
   editor: Editor,
   blockId: string,
 ): DocumentChange {
-  let blockEntry = getBlock(editor, {id: blockId})
+  let blockEntry = getBlock(editor, { id: blockId })
 
   if (blockEntry) {
     let [, path] = blockEntry
@@ -40,7 +40,7 @@ export function createReplaceChange(
   editor: Editor,
   blockId: string,
 ): DocumentChange {
-  let blockEntry = getBlock(editor, {id: blockId})
+  let blockEntry = getBlock(editor, { id: blockId })
 
   if (blockEntry) {
     return {
@@ -67,16 +67,4 @@ export function createDeleteChange(blockId: string): DocumentChange {
       deleteBlock: blockId,
     },
   }
-}
-
-export function migrateContentToChanges(editor: Editor, content: any) {
-  let [match] = Node.nodes(content, {})
-
-  console.log('blocks', match)
-
-  // if (blocks) {
-  //   for (let entry of blocks) {
-  //     console.log('block entries', entry);
-  //   }
-  // }
 }

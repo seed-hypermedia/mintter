@@ -37,7 +37,6 @@ import {document, FlowContent, group} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {invoke} from '@tauri-apps/api'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
-import {useEffect} from 'react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
 import {QueryClient, useQueryClient} from 'react-query'
@@ -51,13 +50,6 @@ export default function Publication() {
   let {createDraft} = useCreateDraft()
 
   const [state, send] = usePagePublication(client, mainPageService)
-
-  useEffect(() => {
-    if (docId) {
-      send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
-      citations.send({type: 'CITATIONS.FETCH', documentId: docId, version})
-    }
-  }, [docId])
 
   async function onOpenInNewWindow() {
     await invoke('open_in_new_window', {url: `/new`})
@@ -489,15 +481,15 @@ function TippingModal({
   const service = useInterpret(tippingMachine)
   const [state, send] = useActor(service)
 
-  useEffect(() => {
-    if (publicationId && accountId) {
-      send({
-        type: 'TIPPING.SET.TIP.DATA',
-        publicationID: publicationId,
-        accountID: accountId,
-      })
-    }
-  }, [publicationId, accountId])
+  // useEffect(() => {
+  //   if (publicationId && accountId) {
+  //     send({
+  //       type: 'TIPPING.SET.TIP.DATA',
+  //       publicationID: publicationId,
+  //       accountID: accountId,
+  //     })
+  //   }
+  // }, [publicationId, accountId])
 
   if (typeof publicationId == 'undefined' || typeof accountId == 'undefined') {
     return null
@@ -740,14 +732,11 @@ function DiscussionItem({link}: {link: Link}) {
   function onGoToPublication() {
     mainPageService.send({
       type: 'goToPublication',
-      docId: link.source?.documentId,
-      version: link.source?.version,
+      docId: link.source!.documentId,
+      version: link.source!.version,
+      blockId: 'hola',
     })
   }
-
-  useEffect(() => {
-    send({type: 'FETCH', link})
-  }, [])
 
   if (state.hasTag('pending')) {
     return null
@@ -856,6 +845,7 @@ type DiscussionEvent =
   | {type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message']}
   | {type: 'RETRY'}
 
+// TODO: transition always to fetching (I removed the useEffect that transitioned before to it)
 export function createDiscussionMachine(client: QueryClient) {
   return createMachine(
     {
