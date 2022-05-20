@@ -79,7 +79,6 @@ def main():
     )
     def build_desktop(args):
         run("plz build //frontend:app //backend:mintterd")
-        run("rm -rf target/debug/mintter*")
         run("cargo tauri build --debug")
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
@@ -93,7 +92,6 @@ def main():
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):
-        run("rm -rf target/debug/mintter*")
         run("plz build //backend:mintterd //:yarn")
         return run("cd desktop/app && cargo tauri dev", args=args)
 
