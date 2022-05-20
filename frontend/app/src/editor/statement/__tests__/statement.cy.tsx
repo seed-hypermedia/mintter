@@ -16,8 +16,6 @@ describe('Statement Plugin', () => {
   beforeEach(() => {
     ;(function mockTauriIpc() {
       if (window) {
-        console.log({window})
-
         window.__TAURI_IPC__ = function mockTAURI_IPC() {
           // noob
         }

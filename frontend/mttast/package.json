@@ -14,8 +14,10 @@
     "lint:prettier": "prettier --check \"**/*.{css,md,js,jsx,json,ts,tsx}\"",
     "lint": "yarn lint:prettier && yarn lint:eslint",
     "format": "prettier --write .",
+    "test": "yarn test:unit",
     "test:unit": "vitest --run",
-    "test:unit:watch": "test --watch"
+    "test:unit:watch": "test --watch",
+    "validate": "yarn format && yarn lint && yarn test"
   },
   "devDependencies": {
     "@mintter/mttast": "^0.1.0",

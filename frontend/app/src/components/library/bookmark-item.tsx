@@ -1,17 +1,17 @@
 import {FlowContent} from '@app/../../mttast/dist'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {useMainPage} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {debug} from '@app/utils/logger'
 import {createBookmarkMachine, useBookmarksService} from '@components/bookmarks'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {Text} from '@components/text'
 import {useActor, useMachine} from '@xstate/react'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
-import {useLocation} from 'wouter'
 import {ActorRefFrom} from 'xstate'
 
 export function BookmarkItem({
@@ -21,24 +21,24 @@ export function BookmarkItem({
 }) {
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
-  const {createDraft} = useCreateDraft()
-
-  const [, setLocation] = useLocation()
+  const mainService = useMainPage()
 
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     services: {
-      deleteEntry: () =>
-        new Promise(() => {
-          bookmarks.send({
-            type: 'BOOKMARK.REMOVE',
-            url: state.context.url,
-          })
-        }),
+      deleteEntry: () => (sendBack) => {
+        bookmarks.send({
+          type: 'BOOKMARK.REMOVE',
+          url: state.context.url,
+        })
+        sendBack('DELETE.SYNC.SUCCESS')
+      },
     },
     actions: {
       onSuccess: afterDelete,
     },
   })
+
+  debug('deleteState', deleteState)
 
   async function onCopy() {
     await copyTextToClipboard(state.context.url)
@@ -46,17 +46,36 @@ export function BookmarkItem({
   }
 
   function onMainPanel() {
-    let link = state.context.url.replace(MINTTER_LINK_PREFIX, '')
-    setLocation(`/p/${link}`)
+    let [docId, version, blockId] = getIdsfromUrl(state.context.url)
+    debug(
+      '🚀 ~ file: bookmark-item.tsx ~ line 47 ~ onMainPanel ~ docId, version, blockId',
+      docId,
+      version,
+      blockId,
+    )
+    mainService.send({
+      type: 'goToPublication',
+      docId,
+      version,
+      blockId,
+    })
   }
 
   function afterDelete() {
     // TODO: implement me
+    debug('DELETED!!')
+    mainService.send('RECONCILE')
   }
 
   return (
     <StyledItem data-testid="bookmark-item">
-      <Text size="2" className="title">
+      <Text
+        size="2"
+        className="title"
+        onClick={onMainPanel}
+        data-testid="bookmark-item-title"
+        css={{flex: 1}}
+      >
         {state.context.publication?.document.title
           ? state.context.publication?.document.title
           : state.context.block

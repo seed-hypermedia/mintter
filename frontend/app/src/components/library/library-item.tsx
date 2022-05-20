@@ -50,7 +50,7 @@ export function LibraryItem({
 
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     services: {
-      deleteEntry: () =>
+      deleteEntry: () => () =>
         publication
           ? deletePublication(publication.document?.id as string)
           : deleteDraft(draft?.id as string),

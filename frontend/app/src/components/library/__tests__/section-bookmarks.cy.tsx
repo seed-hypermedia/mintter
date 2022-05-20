@@ -80,6 +80,17 @@ describe.only('<BookmarkItem />', () => {
     cy.get('[data-testid="bookmark-item"]').contains(pub.document.title)
   })
 
+  it.only('should open boomark in main panel', () => {
+    cy.get('[data-testid="bookmark-item"]')
+      .get('[data-testid="bookmark-item-title"]')
+      .click()
+      .then(() => {
+        cy.window().then((win) => {
+          expect(win.location.pathname).to.equal('/p/doc1/v1/b1')
+        })
+      })
+  })
+
   it('should open dropdown element', () => {
     cy.get('[data-testid="bookmark-item"]')
       .get('[data-trigger]')

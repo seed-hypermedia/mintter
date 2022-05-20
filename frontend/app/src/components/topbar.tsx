@@ -56,7 +56,6 @@ export function Topbar({copy = copyTextToClipboard}) {
   let bookmarkService = useBookmarksService()
   let [mainState] = useActor(mainPage)
   let title = usePageTitle()
-  console.log('🚀 ~ file: topbar.tsx ~ line 59 ~ Topbar ~ title', title)
   debug('🚀 ~ file: topbar.tsx ~ line 58 ~ Topbar ~ title', title)
   let {data, isSuccess, isError} = useAccount(
     mainState.context.document?.author,

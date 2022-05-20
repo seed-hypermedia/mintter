@@ -1,5 +1,6 @@
 import {getInfo} from '@app/client'
 import {queryKeys} from '@app/hooks'
+import {debug} from '@app/utils/logger'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
@@ -39,9 +40,11 @@ export function AppProviders({
         client
           .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
           .then(function (accountInfo) {
+            debug('accountInfo: SUCCESS', accountInfo)
             sendBack({type: 'REPORT.DEVICE.INFO.PRESENT', accountInfo})
           })
           .catch(function (err) {
+            debug('accountInfo: ERROR')
             sendBack('REPORT.DEVICE.INFO.MISSING')
           })
       },
