@@ -1603,7 +1603,7 @@ __metadata:
     "@typescript-eslint/typescript-estree": 4.33.0
     "@vitejs/plugin-react": 1.2.0
     "@vitest/ui": 0.0.142
-    "@xstate/cli": ^0.1.7
+    "@xstate/cli": 0.1.7
     "@xstate/inspect": 0.6.3
     "@xstate/react": 2.0.1
     "@xstate/test": 0.5.1
@@ -3365,7 +3365,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xstate/cli@npm:^0.1.7":
+"@xstate/cli@npm:0.1.7":
   version: 0.1.7
   resolution: "@xstate/cli@npm:0.1.7"
   dependencies:
@@ -10329,7 +10329,7 @@ __metadata:
     npm-run-all: 4.1.5
     prettier: 2.5.1
     rollup: 2.69.0
-    tiny-glob: ^0.2.9
+    tiny-glob: 0.2.9
     ts-proto: 1.106.2
     typescript: 4.4.4
   languageName: unknown
@@ -14008,7 +14008,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tiny-glob@npm:^0.2.9":
+"tiny-glob@npm:0.2.9":
   version: 0.2.9
   resolution: "tiny-glob@npm:0.2.9"
   dependencies:
