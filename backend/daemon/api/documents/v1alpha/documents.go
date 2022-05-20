@@ -387,6 +387,19 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 		return nil, err
 	}
 
+	var dp vcstypes.DocumentPermanode
+	if err := api.vcs.GetPermanode(ctx, c, &dp); err != nil {
+		if vcs.IsErrNotFound(err) {
+			return nil, status.Errorf(codes.NotFound, "%v", err)
+		}
+
+		return nil, err
+	}
+
+	if dp.PermanodeType() != vcstypes.DocumentType {
+		return nil, status.Error(codes.NotFound, "not a document")
+	}
+
 	if err := api.vcs.DeletePermanode(ctx, c); err != nil {
 		return nil, err
 	}
@@ -406,7 +419,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	}
 	defer release()
 
-	pubs, err := vcssql.PermanodesListPublications(conn)
+	pubs, err := vcssql.PermanodesListWithVersionsByType(conn, string(vcstypes.DocumentType))
 	if err != nil {
 		return nil, err
 	}

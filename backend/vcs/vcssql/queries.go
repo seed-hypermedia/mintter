@@ -359,7 +359,7 @@ var (
 				qb.VarCol(s.PermanodeOwnersPermanodeID),
 			),
 		),
-		qb.MakeQuery(s.Schema, "PermanodesListPublications", sgen.QueryKindMany,
+		qb.MakeQuery(s.Schema, "PermanodesListWithVersionsByType", sgen.QueryKindMany,
 			"SELECT", qb.Results(
 				qb.ResultCol(s.PermanodesID),
 				qb.ResultCol(s.PermanodeOwnersAccountID),
@@ -372,7 +372,8 @@ var (
 			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.PermanodesID, '\n',
 			"JOIN", s.PermanodeOwners, "ON", s.PermanodeOwnersPermanodeID, "=", s.PermanodesID, '\n',
 			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.PermanodeOwnersAccountID, '\n',
-			"WHERE", s.PermanodesID, "IN", qb.SubQuery(
+			"WHERE", s.PermanodesType, "=", qb.VarCol(s.PermanodesType), '\n',
+			"AND", s.PermanodesID, "IN", qb.SubQuery(
 				"SELECT DISTINCT", s.NamedVersionsObjectID,
 				"FROM", s.NamedVersions,
 			),

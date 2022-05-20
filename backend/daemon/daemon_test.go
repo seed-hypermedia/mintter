@@ -21,6 +21,21 @@ import (
 	"google.golang.org/grpc"
 )
 
+func TestDaemonList(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestDaemon(t, "alice", true)
+
+	list, err := documents.NewPublicationsClient(alice.grpcConn).ListPublications(context.Background(), &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0, "account object must not be listed as publication")
+
+	_, err = documents.NewPublicationsClient(alice.grpcConn).DeletePublication(context.Background(), &documents.DeletePublicationRequest{
+		DocumentId: alice.Me.MustGet().AccountID().String(),
+	})
+	require.Error(t, err, "we must not be able to delete other objects than publications")
+}
+
 func TestDaemonSync(t *testing.T) {
 	t.Skip()
 
