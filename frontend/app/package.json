@@ -93,7 +93,7 @@
     "xstate": "4.30.3"
   },
   "devDependencies": {
-    "@cypress/react": "5.12.3",
+    "@cypress/react": "5.12.5",
     "@cypress/vite-dev-server": "2.2.2",
     "@faker-js/faker": "6.0.0-alpha.7",
     "@testing-library/jest-dom": "5.16.2",
