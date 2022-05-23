@@ -35,6 +35,56 @@ func (r *Repo) CreateDocument(ctx context.Context) (*Document, error) {
 	return doc, nil
 }
 
+func (r *Repo) LoadAccount(ctx context.Context, oid cid.Cid, ver vcs.Version) (*Account, error) {
+	var p AccountPermanode
+
+	// If we requested an account key, we need to convert it into an account object id.
+	if oid.Prefix().Codec == core.CodecAccountKey {
+		p = NewAccountPermanode(oid)
+		blk, err := vcs.EncodeBlock[vcs.Permanode](p)
+		if err != nil {
+			return nil, err
+		}
+		oid = blk.Cid()
+	} else {
+		pblk, err := vcs.LoadPermanode[AccountPermanode](ctx, r.vcs.BlockGetter(), oid)
+		if err != nil {
+			return nil, err
+		}
+
+		p = pblk.Value
+	}
+
+	if ver.IsZero() {
+		vv, err := r.vcs.LoadNamedVersion(ctx, oid, r.me.AccountID(), r.me.DeviceKey().CID(), "main")
+		if err != nil {
+			return nil, err
+		}
+		ver = vv
+	}
+
+	doc := NewAccount(oid, p.Owner)
+
+	if err := r.vcs.IterateChanges(ctx, oid, ver, func(c vcs.RecordedChange) error {
+		var evt []AccountEvent
+		if err := cbornode.DecodeInto(c.Body, &evt); err != nil {
+			return err
+		}
+
+		for _, e := range evt {
+			if err := doc.Apply(e, c.CreateTime); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return doc, nil
+}
+
 func (r *Repo) LoadPublication(ctx context.Context, oid cid.Cid, ver vcs.Version) (*Document, error) {
 	if ver.IsZero() {
 		vv, err := r.vcs.LoadNamedVersion(ctx, oid, r.me.AccountID(), r.me.DeviceKey().CID(), "main")

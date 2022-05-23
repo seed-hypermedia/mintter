@@ -221,7 +221,7 @@ func (srv *Server) getAccount(ctx context.Context, aid cid.Cid) (*account, error
 		return nil, err
 	}
 
-	ver, err := srv.vcs.LoadNamedVersion(ctx, blk.Cid(), aid, me.DeviceKey().CID(), "main")
+	ver, err := srv.vcs.LoadNamedVersion(ctx, blk.Cid(), me.AccountID(), me.DeviceKey().CID(), "main")
 	if err != nil {
 		return nil, err
 	}

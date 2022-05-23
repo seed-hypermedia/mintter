@@ -14,12 +14,23 @@ import (
 
 	faker "github.com/bxcodec/faker/v3"
 
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 	"google.golang.org/grpc"
 )
+
+func TestBug_UnableOpenThirdPartyDocument(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestDaemon(t, "alice", true)
+	bob := makeTestDaemon(t, "bob", true)
+	ctx := context.Background()
+
+	alice.connect(ctx, t, bob)
+
+	alice.makeTestPublication(t, ctx)
+}
 
 func TestDaemonList(t *testing.T) {
 	t.Parallel()
@@ -37,8 +48,6 @@ func TestDaemonList(t *testing.T) {
 }
 
 func TestDaemonSync(t *testing.T) {
-	t.Skip()
-
 	t.Parallel()
 
 	alice := makeTestDaemon(t, "alice", true)
@@ -47,11 +56,23 @@ func TestDaemonSync(t *testing.T) {
 
 	alice.connect(ctx, t, bob)
 
-	time.Sleep(time.Second)
+	pub := alice.makeTestPublication(t, ctx)
 
-	res, err := alice.Daemon.Net.MustGet().Sync(ctx)
+	_, err := bob.Net.MustGet().Sync(ctx)
 	require.NoError(t, err)
-	litter.Dump(res)
+
+	pub2, err := documents.NewPublicationsClient(bob.grpcConn).GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: pub.Document.Id,
+	})
+	require.NoError(t, err)
+
+	testutil.ProtoEqual(t, pub, pub2, "bob must sync alice's publication")
+
+	aliceInBob, err := accounts.NewAccountsClient(bob.grpcConn).GetAccount(ctx, &accounts.GetAccountRequest{
+		Id: alice.Me.MustGet().AccountID().String(),
+	})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, alice.pbAccount, aliceInBob, "bob must sync alice's account")
 }
 
 func TestDaemonConnect(t *testing.T) {
@@ -158,7 +179,7 @@ func (d *testDaemon) awaitNet(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func (d *testDaemon) makeTestPublication(t *testing.T, ctx context.Context) {
+func (d *testDaemon) makeTestPublication(t *testing.T, ctx context.Context) *documents.Publication {
 	dc := documents.NewDraftsClient(d.grpcConn)
 
 	draft, err := dc.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -182,6 +203,7 @@ func (d *testDaemon) makeTestPublication(t *testing.T, ctx context.Context) {
 	pub, err := dc.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	require.NotNil(t, pub)
+	return pub
 }
 
 func makeTestDaemon(t *testing.T, name string, register bool) *testDaemon {

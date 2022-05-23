@@ -25,7 +25,7 @@ func TestConnect(t *testing.T) {
 
 	// Wait a bit until peers are verified.
 	// TODO: provide some hooks to wait for verification explicitly.
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second)
 
 	checkExchange := func(t *testing.T, a, b *Node) {
 		ver, err := a.vcs.LoadNamedVersion(ctx, b.accountObjectID, a.me.AccountID(), a.me.DeviceKey().CID(), "main")
@@ -43,4 +43,8 @@ func TestConnect(t *testing.T) {
 
 	checkExchange(t, alice, bob)
 	checkExchange(t, bob, alice)
+
+	acc, err := bob.repo.LoadAccount(ctx, alice.me.AccountID(), vcs.Version{})
+	require.NoError(t, err)
+	require.NotNil(t, acc)
 }
