@@ -19,32 +19,32 @@ mod window_management;
 
 #[tokio::main]
 async fn main() {
-  // let log_plugin = {
-  //   let targets = [
-  //     LogTarget::LogDir,
-  //     #[cfg(debug_assertions)]
-  //     LogTarget::Stdout,
-  //     // #[cfg(debug_assertions)]
-  //     // LogTarget::Webview,
-  //   ];
+  let log_plugin = {
+    let targets = [
+      LogTarget::LogDir,
+      #[cfg(debug_assertions)]
+      LogTarget::Stdout,
+      // #[cfg(debug_assertions)]
+      // LogTarget::Webview,
+    ];
 
-  //   let colors = ColoredLevelConfig::default();
+    let colors = ColoredLevelConfig::default();
 
-  //   let filter = std::env::var("RUST_LOG")
-  //     .map(|ref filter| FilterBuilder::new().parse(filter).build().filter())
-  //     .unwrap_or(LevelFilter::Debug);
+    let filter = std::env::var("RUST_LOG")
+      .map(|ref filter| FilterBuilder::new().parse(filter).build().filter())
+      .unwrap_or(LevelFilter::Debug);
 
-  //   LoggerBuilder::new()
-  //     .with_colors(colors)
-  //     .targets(targets)
-  //     .level(filter)
-  //     .build()
-  // };
+    LoggerBuilder::new()
+      .with_colors(colors)
+      .targets(targets)
+      .level(filter)
+      .build()
+  };
 
   tauri::Builder::default()
-    // .plugin(log_plugin)
+    .plugin(log_plugin)
+    .plugin(StorePluginBuilder::default().build())
     .plugin(daemon::Plugin::default())
-    // .plugin(StorePluginBuilder::default().build())
     // .plugin(extensions::Plugin::default())
     .menu(menu::get_menu())
     .on_menu_event(menu::event_handler)
