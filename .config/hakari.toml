@@ -23,3 +23,10 @@ platforms = [
 
 # Write out exact versions rather than a semver range. (Defaults to false.)
 # exact-versions = true
+
+[final-excludes]
+# workspace-members = ["my-crate", "your-crate"]
+third-party = [
+    { name = "tauri", version = "1.0.0-rc.11" },
+    { name = "tauri-macros", version = "1.0.0-rc.7" }
+]
