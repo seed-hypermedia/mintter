@@ -23,7 +23,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TestBrokenPublicationListBug(t *testing.T) {
+func TestBug_BrokenPublicationList(t *testing.T) {
 	// See: https://www.notion.so/mintter/Fix-List-of-Publications-Breaks-c5f37e237cca4618bd3296d926958cd6.
 	t.Parallel()
 

@@ -85,4 +85,8 @@ func TestSync(t *testing.T) {
 	require.Equal(t, doc.State(), bobdoc.State())
 
 	_ = recorded
+
+	bobalice, err := bob.repo.LoadAccount(ctx, alice.me.AccountID(), vcs.Version{})
+	require.NoError(t, err)
+	require.NotNil(t, bobalice)
 }
