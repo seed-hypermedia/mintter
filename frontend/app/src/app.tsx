@@ -10,8 +10,8 @@ import {MainPage, MainPageShell, MainWindowShell} from './pages/main-page'
 import {globalCss} from './stitches.config'
 
 setLogger({
-  log: info,
-  warn: warn,
+  log: (...args) => info(args.toString()),
+  warn: (...args) => warn(args.toString()),
   // ✅ no more errors on the console
   error: () => {
     // noop
