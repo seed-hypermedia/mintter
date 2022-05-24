@@ -1628,7 +1628,7 @@ __metadata:
     is-url: 1.2.4
     jsdom: 19.0.0
     long: 4.0.0
-    nanoid: 3.3.1
+    nanoid: 3.3.4
     navaid: 1.2.0
     ni: 0.0.2
     prettier: 2.5.1
@@ -10297,16 +10297,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:3.3.1":
-  version: 3.3.1
-  resolution: "nanoid@npm:3.3.1"
-  bin:
-    nanoid: bin/nanoid.cjs
-  checksum: 4ef0969e1bbe866fc223eb32276cbccb0961900bfe79104fa5abe34361979dead8d0e061410a5c03bc3d47455685adf32c09d6f27790f4a6898fb51f7df7ec86
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^3.1.30, nanoid@npm:^3.3.4":
+"nanoid@npm:3.3.4, nanoid@npm:^3.1.30, nanoid@npm:^3.3.4":
   version: 3.3.4
   resolution: "nanoid@npm:3.3.4"
   bin:
