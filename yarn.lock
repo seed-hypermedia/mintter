@@ -1568,7 +1568,7 @@ __metadata:
     "@improbable-eng/grpc-web": 0.14.1
     "@mintter/mttast": ^0.1.0
     "@radix-ui/colors": 0.1.8
-    "@radix-ui/react-accessible-icon": 0.1.3
+    "@radix-ui/react-accessible-icon": 0.1.4
     "@radix-ui/react-alert-dialog": 0.1.5
     "@radix-ui/react-collapsible": 0.1.6
     "@radix-ui/react-context-menu": 0.1.4
@@ -1882,15 +1882,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-accessible-icon@npm:0.1.3":
-  version: 0.1.3
-  resolution: "@radix-ui/react-accessible-icon@npm:0.1.3"
+"@radix-ui/react-accessible-icon@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@radix-ui/react-accessible-icon@npm:0.1.4"
   dependencies:
     "@babel/runtime": ^7.13.10
-    "@radix-ui/react-visually-hidden": 0.1.3
+    "@radix-ui/react-visually-hidden": 0.1.4
   peerDependencies:
     react: ^16.8 || ^17.0
-  checksum: a1cb85593e8b1c80748cb4a9f427f825a4956432cb1da73bb0f193394ae476a5723ee512452d454baf528d31e6ab117acb7410ef34b6865e47960b2b254873fb
+  checksum: 5ae8090aff7b526c9dec574a10e50d40474a0d8d08d360508750eda051597e06621acfe06c489e2fc0ead85c27858f4d88c1282254fb3a9eb00976022303dec9
   languageName: node
   linkType: hard
 
@@ -2688,6 +2688,18 @@ __metadata:
   peerDependencies:
     react: ^16.8 || ^17.0
   checksum: 4434bc95244c8224af5eb4e37f6278da96df1bce05e85ea7c4fecef1ed9c0ed3252e1269c7f979b9c115a9c75ad057a028078abc42ebebddcde0b97a0e06f92d
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-visually-hidden@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@radix-ui/react-visually-hidden@npm:0.1.4"
+  dependencies:
+    "@babel/runtime": ^7.13.10
+    "@radix-ui/react-primitive": 0.1.4
+  peerDependencies:
+    react: ^16.8 || ^17.0
+  checksum: f551d27534c3c214fc2c085da6dabd8301c0e0d44268c0d6388ddcb194adfd3ef937366e390e931a03df3742eca83230f4718b807ad5565bbb75c03603e69c2c
   languageName: node
   linkType: hard
 
