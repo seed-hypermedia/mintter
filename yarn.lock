@@ -1664,7 +1664,7 @@ __metadata:
     unist-util-visit: 4.1.0
     unist-util-visit-parents: 5.1.0
     vite: 2.8.6
-    vite-plugin-checker: 0.4.2
+    vite-plugin-checker: 0.4.6
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
     vite-tsconfig-paths: 3.4.1
@@ -15138,9 +15138,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-checker@npm:0.4.2":
-  version: 0.4.2
-  resolution: "vite-plugin-checker@npm:0.4.2"
+"vite-plugin-checker@npm:0.4.6":
+  version: 0.4.6
+  resolution: "vite-plugin-checker@npm:0.4.6"
   dependencies:
     "@babel/code-frame": ^7.12.13
     ansi-escapes: ^4.3.0
@@ -15161,7 +15161,7 @@ __metadata:
     vite: ^2.0.0
   bin:
     vite-plugin-checker-vls: bin/vls
-  checksum: c5f221cf288bd064e9a396e595bf95cbccdd3ab78442654734cf845f7c05bb0f34c9335fe874848da1ef4dab4eb08ce99ba71c84f8532564092d322c5e4e90e6
+  checksum: c6eddc40393f8000a096b3084c0d1eb7e9a3ba6b89e11f003b01920a00939d02b13e731e060310fe58b28cf4c6362b8ed8f129d951cf7b7b13bf2fee15ebbaab
   languageName: node
   linkType: hard
 
