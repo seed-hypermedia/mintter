@@ -1,11 +1,11 @@
 import {useAuth} from '@app/auth-context'
-import {error, info, startLogger, warn} from '@app/utils/logger'
 import {LibraryShell} from '@components/library'
 import {TopbarStyled} from '@components/topbar'
 import {useActor} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {setLogger} from 'react-query'
+import {error, info, warn} from 'tauri-plugin-log-api'
 import {MainPage, MainPageShell, MainWindowShell} from './pages/main-page'
 import {globalCss} from './stitches.config'
 
@@ -19,8 +19,6 @@ setLogger({
 })
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
-
-startLogger()
 
 const globalStyles = globalCss({
   body: {

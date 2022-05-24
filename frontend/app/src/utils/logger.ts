@@ -1,40 +1,41 @@
-// import * as tauriLog from 'tauri-plugin-log-api'
+import * as tauriLog from 'tauri-plugin-log-api'
 
-// export var error = loggerFactory(tauriLog.error)
-// export var warn = loggerFactory(tauriLog.warn)
-// export var info = loggerFactory(tauriLog.info)
-// export var debug = loggerFactory(tauriLog.debug)
-// export var trace = loggerFactory(tauriLog.trace)
-
-export function startLogger() {
-  // tauriLog.attachConsole().catch((err) => {
-  //   error('attachConsole ERROR', err)
-  // })
-  // if (window) {
-  //   window.addEventListener('error', (e) => error(e.message))
-  // }
+export const error = (message: string) => {
+  if (import.meta.env.TAURI_DEBUG) {
+    tauriLog.error(message)
+  } else {
+    console.error(message)
+  }
 }
 
-// export function loggerFactory(cb: (m: string) => Promise<void>) {
-//   return function actualLogger(...args: Array<any>): Promise<void> {
-//     if (args.length == 1) {
-//       return cb(args[0])
-//     } else {
-//       let message = args
-//         .map((v) => {
-//           if (typeof v == 'string') {
-//             return v
-//           } else {
-//             return JSON.stringify(v)
-//           }
-//         })
-//         .join(', ')
+export const warn = (message: string) => {
+  if (import.meta.env.TAURI_DEBUG) {
+    tauriLog.warn(message)
+  } else {
+    console.warn(message)
+  }
+}
 
-//       return cb(message)
-//     }
-//   }
-// }
+export const info = (message: string) => {
+  if (import.meta.env.TAURI_DEBUG) {
+    tauriLog.info(message)
+  } else {
+    console.log(message)
+  }
+}
 
-var { error, warn, info, debug, trace } = console
+export const debug = (message: string) => {
+  if (import.meta.env.TAURI_DEBUG) {
+    tauriLog.debug(message)
+  } else {
+    console.debug(message)
+  }
+}
 
-export { error, warn, info, debug, trace }
+export const trace = (message: string) => {
+  if (import.meta.env.TAURI_DEBUG) {
+    tauriLog.trace(message)
+  } else {
+    console.trace(message)
+  }
+}
