@@ -66,9 +66,7 @@ async fn main() {
     })
     .on_window_event(|event| {
       if let WindowEvent::Focused(_) = event.event() {
-        if !event.window().is_transparent_titlebar() {
-          event.window().set_transparent_titlebar(true);
-        }
+        event.window().set_transparent_titlebar(true);
 
         if event.window().label() == "preferences" {
           event.window().set_minimizable(false);
