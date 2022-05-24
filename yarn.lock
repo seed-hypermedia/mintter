@@ -1641,7 +1641,7 @@ __metadata:
     react-hook-form: 6.15.8
     react-hot-toast: 2.2.0
     react-qr-barcode-scanner: 1.0.6
-    react-qr-code: 2.0.3
+    react-qr-code: 2.0.7
     react-query: 3.34.16
     rehype: 12.0.1
     rehype-parse: 8.0.4
@@ -11698,16 +11698,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-qr-code@npm:2.0.3":
-  version: 2.0.3
-  resolution: "react-qr-code@npm:2.0.3"
+"react-qr-code@npm:2.0.7":
+  version: 2.0.7
+  resolution: "react-qr-code@npm:2.0.7"
   dependencies:
     prop-types: ^15.7.2
     qr.js: 0.0.0
   peerDependencies:
-    react: ^16.x || ^17.x
+    react: ^16.x || ^17.x || ^18.x
     react-native-svg: "*"
-  checksum: d82d3c2e8929bc40fdcbab714d088890744bc67aa5de5a998c14352f1fe56ca10032613abb49ea649bd9b8363ed5f482a942e5ed5e676a6f5e0b00a7e9960cb0
+  peerDependenciesMeta:
+    react-native-svg:
+      optional: true
+  checksum: f79d6ae9756b722afe59fe2f86ae6e810a13bc91d72c019f529f87e30dc3dfe1a46f8f2cbb57a05f149f32efe91012ca22d0a700a81b392135cdaa3e8ea1794e
   languageName: node
   linkType: hard
 
