@@ -3,6 +3,9 @@ self: super: {
   nodejs = super.nodejs-16_x;
   bazel-wrapper = super.callPackage ./bazel-wrapper {};
   impure-cc = super.callPackage ./impure-cc {};
+  golangci-lint = super.golangci-lint.override {
+    buildGoModule = self.buildGo117Module;
+  };
   mkShell = super.mkShell.override {
     stdenv = super.stdenvNoCC;
   };

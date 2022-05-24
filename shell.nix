@@ -20,42 +20,19 @@ let
       tauri-cli
       black
     ];
-    libs = [
-      # libiconv
-    ];
+    libs = [];
   };
   shellDarwin = {
     tools = [
       impure-cc
     ];
-    libs = [
-      # darwin.apple_sdk.frameworks.AppKit
-      # darwin.apple_sdk.frameworks.CoreFoundation
-      # darwin.apple_sdk.frameworks.CoreVideo
-      # darwin.apple_sdk.frameworks.CoreGraphics
-      # darwin.apple_sdk.frameworks.Security
-      # darwin.apple_sdk.frameworks.WebKit
-      # darwin.apple_sdk.frameworks.Carbon
-      # darwin.apple_sdk.frameworks.QuartzCore
-      # darwin.apple_sdk.frameworks.Foundation
-    ];
+    libs = [];
   };
   shellLinux = {
     tools = [
-      gcc
-      pkg-config
+      impure-cc
     ];
-    libs = [
-      gtk3.dev
-      openssl.dev
-      webkitgtk.dev
-      glib.dev
-      cairo.dev
-      pango.dev
-      libappindicator.dev
-      libappindicator-gtk3.dev
-      libcanberra
-    ];
+    libs = [];
   };
 in
   mkShell {
