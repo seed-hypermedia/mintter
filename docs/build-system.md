@@ -1,4 +1,4 @@
-NOTE: this is a living document (well, as any other) and doesn't provide a complete information. Please, do ask questions and let us know if this can be improved.
+NOTE: this is a living document (well, as any other) and might not provide the complete information. Please, do ask questions and let us know if this can be improved.
 
 ## Better Build Systems (Arguably)
 
