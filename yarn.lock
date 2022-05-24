@@ -1657,7 +1657,7 @@ __metadata:
     typedoc: 0.22.15
     typedoc-plugin-markdown: 3.11.14
     typescript: 4.4.4
-    unified: 10.1.1
+    unified: 10.1.2
     unist-builder: 3.0.0
     unist-util-is: 5.1.1
     unist-util-to-string-with-nodes: 0.1.1
@@ -1703,7 +1703,7 @@ __metadata:
     shiki: 0.9.15
     trim-trailing-lines: ^2.0.0
     typescript: 4.4.4
-    unified: 10.1.1
+    unified: 10.1.2
     unist-builder: ^3.0.0
     unist-util-remove-position: ^4.0.1
     unist-util-visit: ^4.1.0
@@ -14603,22 +14603,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unified@npm:10.1.1":
-  version: 10.1.1
-  resolution: "unified@npm:10.1.1"
-  dependencies:
-    "@types/unist": ^2.0.0
-    bail: ^2.0.0
-    extend: ^3.0.0
-    is-buffer: ^2.0.0
-    is-plain-obj: ^4.0.0
-    trough: ^2.0.0
-    vfile: ^5.0.0
-  checksum: 5419bd8d9608393bd6637d9b7948fa50b7ecfd1641513293f4af38ac602aadc2b04074c2714191ed5a783a2bffbcb0ee2665fe5367b436a45ee493d264e14e71
-  languageName: node
-  linkType: hard
-
-"unified@npm:^10.0.0":
+"unified@npm:10.1.2, unified@npm:^10.0.0":
   version: 10.1.2
   resolution: "unified@npm:10.1.2"
   dependencies:
