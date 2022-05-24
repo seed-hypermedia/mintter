@@ -1579,7 +1579,7 @@ __metadata:
     "@radix-ui/react-popover": 0.1.6
     "@radix-ui/react-portal": 0.1.4
     "@radix-ui/react-scroll-area": 0.1.4
-    "@radix-ui/react-separator": 0.1.3
+    "@radix-ui/react-separator": 0.1.4
     "@radix-ui/react-slot": 0.1.2
     "@radix-ui/react-tabs": 0.1.5
     "@radix-ui/react-tooltip": 0.1.6
@@ -2366,15 +2366,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-separator@npm:0.1.3":
-  version: 0.1.3
-  resolution: "@radix-ui/react-separator@npm:0.1.3"
+"@radix-ui/react-separator@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@radix-ui/react-separator@npm:0.1.4"
   dependencies:
     "@babel/runtime": ^7.13.10
-    "@radix-ui/react-primitive": 0.1.3
+    "@radix-ui/react-primitive": 0.1.4
   peerDependencies:
     react: ^16.8 || ^17.0
-  checksum: fbe619c1271fe061ca5907476d8c11a53a6611c29e3d7ddabe8d05d57c1e14eb162fa7c4431312eeb2ff9cebe0d95caeb487abc7d52316ef865a01f813c52d68
+  checksum: 9e9767966a02b1f7362115b651e03fcf915147b6f5ad0b4b52f7161c1d0a2ca9b786033f45dfd0d9da8ac2acf544fbe7f30f1e824e406fb529dd58a2d965fbd8
   languageName: node
   linkType: hard
 
