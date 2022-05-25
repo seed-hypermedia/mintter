@@ -1721,7 +1721,7 @@ __metadata:
     "@typescript-eslint/parser": 4.33.0
     "@typescript-eslint/typescript-estree": 4.33.0
     "@vitejs/plugin-react": 1.3.2
-    "@vitest/ui": 0.0.142
+    "@vitest/ui": 0.12.9
     "@xstate/cli": 0.1.7
     "@xstate/inspect": 0.6.3
     "@xstate/react": 2.0.1
@@ -3250,12 +3250,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/ui@npm:0.0.142":
-  version: 0.0.142
-  resolution: "@vitest/ui@npm:0.0.142"
+"@vitest/ui@npm:0.12.9":
+  version: 0.12.9
+  resolution: "@vitest/ui@npm:0.12.9"
   dependencies:
-    sirv: ^2.0.0
-  checksum: 9dbda35b587d3ad6b1740f8c30e7200cf950696b32440643e468faaa1e5fef2b9bb55396ba949a4b80d20482f0a856952a109200713d956ed181cf7443af855b
+    sirv: ^2.0.2
+  checksum: 4acb111521d0f368845b9540c47677c1892e85889e183c10894e822343aacdc5bc3db3e30804bbabe87b72738d3a5edbb239c25ad70f0548c0b35fd1a7b785fd
   languageName: node
   linkType: hard
 
@@ -13111,7 +13111,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sirv@npm:^2.0.0":
+"sirv@npm:^2.0.2":
   version: 2.0.2
   resolution: "sirv@npm:2.0.2"
   dependencies:
