@@ -16,7 +16,7 @@
     },
     {
       "languages": ["golang"],
-      "labels": ["languages::GoLang"]
+      "labels": ["languages::Go"]
     }
   ]
 }
