@@ -15,7 +15,7 @@ export function DraftList() {
   let {createDraft} = useCreateDraft()
 
   async function onOpenInNewWindow() {
-    await invoke('open_in_new_window', {url: `/new`})
+    await invoke('plugin:window|new_window', {url: `/new`})
   }
 
   return (
