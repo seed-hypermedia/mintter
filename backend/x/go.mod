@@ -3,7 +3,7 @@ module mintter/backend/x
 go 1.17
 
 require (
-	github.com/DataDog/zstd v1.5.0
+	github.com/DataDog/zstd v1.5.2
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/fxamacker/cbor/v2 v2.3.0
 	github.com/sanity-io/litter v1.5.1
