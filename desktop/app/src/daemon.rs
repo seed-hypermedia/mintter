@@ -5,20 +5,10 @@ use tauri::{
     cli::get_matches,
     process::{Command, CommandEvent},
   },
-  plugin::{Plugin as TauriPlugin, Result as PluginResult},
-  AppHandle, Invoke, Manager, Runtime,
+  plugin::{Builder as PluginBuilder, TauriPlugin},
+  Manager, Runtime,
 };
 use tokio::sync::mpsc::{self, Sender};
-
-pub struct Plugin<R: Runtime> {
-  invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
-}
-
-#[derive(Debug, Default)]
-pub struct Connection(Mutex<Option<Sender<()>>>);
-
-#[derive(Debug, Default)]
-pub struct Flags(pub(crate) Vec<String>);
 
 pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::State<Flags>) {
   let mut lock = connection.0.lock().unwrap();
@@ -63,49 +53,38 @@ pub fn stop_daemon(connection: tauri::State<'_, Connection>) {
   *lock = None;
 }
 
-impl<R: Runtime> Default for Plugin<R> {
-  fn default() -> Self {
-    Self {
-      invoke_handler: Box::new(tauri::generate_handler![]),
-    }
-  }
-}
+#[derive(Debug, Default)]
+pub struct Connection(Mutex<Option<Sender<()>>>);
 
-impl<R: Runtime> TauriPlugin<R> for Plugin<R> {
-  /// The plugin name. Must be defined and used on the `invoke` calls.
-  fn name(&self) -> &'static str {
-    "daemon"
-  }
+#[derive(Debug, Default)]
+pub struct Flags(pub(crate) Vec<String>);
 
-  /// initialize plugin with the config provided on `tauri.conf.json > plugins > $yourPluginName` or the default value.
-  fn initialize(&mut self, app: &AppHandle<R>, _: serde_json::Value) -> PluginResult<()> {
-    app.manage(Connection::default());
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+  PluginBuilder::new("daemon")
+    .setup(|app_handle| {
+      app_handle.manage(Connection::default());
 
-    let cli_config = app.config().tauri.cli.clone().unwrap();
+      let cli_config = app_handle.config().tauri.cli.clone().unwrap();
 
-    let mut flags = get_matches(&cli_config, app.package_info())
-      .ok()
-      .and_then(|matches| {
-        let str = matches.args.get("daemon-flags")?.value.as_str()?;
-        Some(
-          str[1..str.len() - 1]
-            .split_whitespace()
-            .map(ToString::to_string)
-            .collect::<Vec<String>>(),
-        )
-      })
-      .unwrap_or_default();
+      let mut flags = get_matches(&cli_config, app_handle.package_info())
+        .ok()
+        .and_then(|matches| {
+          let str = matches.args.get("daemon-flags")?.value.as_str()?;
+          Some(
+            str[1..str.len() - 1]
+              .split_whitespace()
+              .map(ToString::to_string)
+              .collect::<Vec<String>>(),
+          )
+        })
+        .unwrap_or_default();
 
-    let repo_path = app.path_resolver().app_dir().unwrap();
+      let repo_path = app_handle.path_resolver().app_dir().unwrap();
 
-    flags.push(format!("--repo-path={}", repo_path.as_path().display()));
+      flags.push(format!("--repo-path={}", repo_path.as_path().display()));
 
-    app.manage(Flags(flags));
-    Ok(())
-  }
-
-  /// Extend the invoke handler.
-  fn extend_api(&mut self, message: Invoke<R>) {
-    (self.invoke_handler)(message)
-  }
+      app_handle.manage(Flags(flags));
+      Ok(())
+    })
+    .build()
 }
