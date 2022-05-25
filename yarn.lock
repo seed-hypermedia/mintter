@@ -987,10 +987,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:6.0.0-alpha.7":
-  version: 6.0.0-alpha.7
-  resolution: "@faker-js/faker@npm:6.0.0-alpha.7"
-  checksum: 1322aa3b8c5975fdd7cf826caecde71708bb73d21b3cbcf8dca8ba451398857f3d8c0946b65d5b0927bfddc9b9d71353ce3531264ad9a570948452053ee57f0c
+"@faker-js/faker@npm:6.3.1":
+  version: 6.3.1
+  resolution: "@faker-js/faker@npm:6.3.1"
+  checksum: 05071e952248f4565218a95b089ef8f616130c6ff914bb416ba7c891f81d123b637c2abe8aa2eb7b207b5d4b8bd9c75c8c2133019d2d11db4176948737a95813
   languageName: node
   linkType: hard
 
@@ -1564,7 +1564,7 @@ __metadata:
   dependencies:
     "@cypress/react": 5.12.5
     "@cypress/vite-dev-server": 2.2.3
-    "@faker-js/faker": 6.0.0-alpha.7
+    "@faker-js/faker": 6.3.1
     "@improbable-eng/grpc-web": 0.14.1
     "@mintter/mttast": ^0.1.0
     "@radix-ui/colors": 0.1.8
