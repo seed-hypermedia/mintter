@@ -3,7 +3,10 @@ use common::{MenuItem, MenuKind, RenderElementProps, RenderLeafProps};
 use extension_host::{FsModuleLoader, Host};
 use log::info;
 use std::sync::Arc;
-use tauri::{plugin::Plugin as TauriPlugin, Invoke, Manager, Runtime, State};
+use tauri::{
+  plugin::{Builder as PluginBuilder, TauriPlugin},
+  Invoke, Manager, Runtime, State,
+};
 use tokio::sync::Mutex;
 
 pub struct PluginHostWrapper(Arc<Mutex<Host<FsModuleLoader>>>);
@@ -61,50 +64,28 @@ async fn render_leaf<R: Runtime>(
   host.render_leaf(&props).await.map_err(|e| e.to_string())
 }
 
-pub struct Plugin<R: Runtime> {
-  invoke_handler: Box<dyn Fn(Invoke<R>) + Send + Sync>,
-}
+pub fn init<R: Runtime>() -> TauriPlugin<R> {
+  PluginBuilder::new("extensions")
+    .invoke_handler(tauri::generate_handler![
+      load_extension,
+      menu,
+      render_element,
+      render_leaf
+    ])
+    .setup(|app_handle| {
+      let mut app_dir = app_handle.path_resolver().app_dir().unwrap();
+      app_dir.push("extensions");
 
-impl<R: Runtime> Default for Plugin<R> {
-  fn default() -> Self {
-    Self {
-      invoke_handler: Box::new(tauri::generate_handler![
-        load_extension,
-        menu,
-        render_element,
-        render_leaf
-      ]),
-    }
-  }
-}
+      std::fs::create_dir_all(app_dir.clone()).unwrap();
 
-impl<R: Runtime> TauriPlugin<R> for Plugin<R> {
-  fn name(&self) -> &'static str {
-    "extensions"
-  }
+      info!("extension dir {:?}", app_dir);
 
-  fn initialize(
-    &mut self,
-    app: &tauri::AppHandle<R>,
-    _: serde_json::Value,
-  ) -> tauri::plugin::Result<()> {
-    let mut app_dir = app.path_resolver().app_dir().unwrap();
-    app_dir.push("extensions");
+      let dir = Dir::open_ambient_dir(app_dir, ambient_authority())?;
+      let host = Host::new(FsModuleLoader::new(dir));
 
-    std::fs::create_dir_all(app_dir.clone()).unwrap();
+      app_handle.manage(PluginHostWrapper(Arc::new(Mutex::new(host))));
 
-    info!("extension dir {:?}", app_dir);
-
-    let dir = Dir::open_ambient_dir(app_dir, ambient_authority())?;
-    let host = Host::new(FsModuleLoader::new(dir));
-
-    app.manage(PluginHostWrapper(Arc::new(Mutex::new(host))));
-
-    Ok(())
-  }
-
-  /// Extend the invoke handler.
-  fn extend_api(&mut self, message: Invoke<R>) {
-    (self.invoke_handler)(message)
-  }
+      Ok(())
+    })
+    .build()
 }
