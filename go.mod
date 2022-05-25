@@ -41,7 +41,7 @@ require (
 	github.com/multiformats/go-multihash v0.1.0
 	github.com/planetscale/vtprotobuf v0.2.0
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
-	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/client_golang v1.12.2
 	github.com/sanity-io/litter v1.3.0
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/tinyqueue v0.1.1
