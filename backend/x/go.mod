@@ -7,7 +7,7 @@ require (
 	github.com/alexeyco/simpletable v1.0.0
 	github.com/fxamacker/cbor/v2 v2.3.0
 	github.com/sanity-io/litter v1.5.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	github.com/tidwall/gjson v1.12.1
 	google.golang.org/protobuf v1.27.1
 )
