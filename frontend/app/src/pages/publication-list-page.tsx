@@ -18,7 +18,7 @@ export function PublicationList() {
   let {createDraft} = useCreateDraft()
 
   async function onOpenInNewWindow() {
-    await invoke('open_in_new_window', {url: `/new`})
+    await invoke('plugin:window|open_in_new_window', {url: `/new`})
   }
 
   return (

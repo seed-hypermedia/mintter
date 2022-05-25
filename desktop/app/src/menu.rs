@@ -1,4 +1,4 @@
-use crate::window_management::{close_all_windows, new_window};
+use crate::window::{close_all_windows, new_window};
 use anyhow::bail;
 use log::error;
 use tauri::{

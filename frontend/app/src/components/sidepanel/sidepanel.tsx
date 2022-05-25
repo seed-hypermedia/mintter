@@ -358,7 +358,9 @@ export function SidepanelItem({
 
   async function onOpenInNewWindow() {
     const [publicationId, version] = getEmbedIds(state.context.url)
-    await invoke('open_in_new_window', {url: `/p/${publicationId}/${version}`})
+    await invoke('plugin:window|open_in_new_window', {
+      url: `/p/${publicationId}/${version}`,
+    })
   }
 
   let isExpanded = state.matches('expanded')

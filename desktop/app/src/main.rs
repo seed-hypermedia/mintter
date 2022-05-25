@@ -9,13 +9,14 @@ use log::LevelFilter;
 use tauri::{Manager, WindowEvent};
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
 use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
-use window_management::WindowExt;
+use window_ext::WindowExt;
 
 mod daemon;
 // mod extensions;
 mod menu;
 mod system_tray;
-mod window_management;
+mod window;
+mod window_ext;
 
 #[tokio::main]
 async fn main() {
@@ -44,15 +45,13 @@ async fn main() {
   tauri::Builder::default()
     .plugin(log_plugin)
     .plugin(StorePluginBuilder::default().build())
-    .plugin(daemon::Plugin::default())
+    .plugin(daemon::init())
+    .plugin(window::init())
     // .plugin(extensions::Plugin::default())
     .menu(menu::get_menu())
     .on_menu_event(menu::event_handler)
     .system_tray(system_tray::get_tray())
     .on_system_tray_event(system_tray::event_handler)
-    .invoke_handler(tauri::generate_handler![
-      window_management::open_in_new_window
-    ])
     .setup(|app| {
       daemon::start_daemon(
         app.state::<daemon::Connection>(),

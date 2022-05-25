@@ -52,7 +52,7 @@ export default function Publication() {
   const [state, send] = usePagePublication(client, mainPageService)
 
   async function onOpenInNewWindow() {
-    await invoke('open_in_new_window', {url: `/new`})
+    await invoke('plugin:window|new_window', {url: `/new`})
   }
 
   async function handleEdit() {
