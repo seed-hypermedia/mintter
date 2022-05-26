@@ -1786,7 +1786,7 @@ __metadata:
     vite-plugin-checker: 0.4.6
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
-    vite-tsconfig-paths: 3.4.1
+    vite-tsconfig-paths: 3.5.0
     vitest: 0.7.11
     xstate: 4.30.3
   peerDependencies:
@@ -14207,7 +14207,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsconfig-paths@npm:^3.14.1, tsconfig-paths@npm:^3.9.0":
+"tsconfig-paths@npm:^3.14.1":
   version: 3.14.1
   resolution: "tsconfig-paths@npm:3.14.1"
   dependencies:
@@ -14216,6 +14216,17 @@ __metadata:
     minimist: ^1.2.6
     strip-bom: ^3.0.0
   checksum: 8afa01c673ebb4782ba53d3a12df97fa837ce524f8ad38ee4e2b2fd57f5ac79abc21c574e9e9eb014d93efe7fe8214001b96233b5c6ea75bd1ea82afe17a4c6d
+  languageName: node
+  linkType: hard
+
+"tsconfig-paths@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "tsconfig-paths@npm:4.0.0"
+  dependencies:
+    json5: ^2.2.1
+    minimist: ^1.2.6
+    strip-bom: ^3.0.0
+  checksum: a8cf746ffe438513a71c70c1bcdee8da7d62ab2af286efbe2728ff55c4d4c92c2aea80a0822982ded6d0a13c7686c24632934d7c0f4f564be9e1b2cdc3d65eea
   languageName: node
   linkType: hard
 
@@ -15049,17 +15060,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-tsconfig-paths@npm:3.4.1":
-  version: 3.4.1
-  resolution: "vite-tsconfig-paths@npm:3.4.1"
+"vite-tsconfig-paths@npm:3.5.0":
+  version: 3.5.0
+  resolution: "vite-tsconfig-paths@npm:3.5.0"
   dependencies:
     debug: ^4.1.1
     globrex: ^0.1.2
     recrawl-sync: ^2.0.3
-    tsconfig-paths: ^3.9.0
+    tsconfig-paths: ^4.0.0
   peerDependencies:
     vite: ">2.0.0-0"
-  checksum: 76928e00adda8537f7371736d261cea8893c5fb959380704eccb5df08f2fbb2cb8f5b1f3911ef24f0ebc3864845c48bb887916b1ad1560e2e8af82679ac57752
+  checksum: d6d4828fdba639445251b3baf06901f2eb46a98b2741ba5e30e3d791c8a25f8533d23df13c5422eece63cf449865750dcd57e825dbe43b5c985e5edf42b17fea
   languageName: node
   linkType: hard
 
