@@ -28,7 +28,7 @@
     "prettier": "2.6.2",
     "rollup": "2.74.1",
     "tiny-glob": "0.2.9",
-    "ts-proto": "1.106.2",
+    "ts-proto": "1.112.2",
     "typescript": "4.4.4"
   },
   "packageManager": "yarn@3.2.1",
