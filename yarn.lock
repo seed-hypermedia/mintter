@@ -1766,7 +1766,7 @@ __metadata:
     rehype-parse: 8.0.4
     rehype-sanitize: 5.0.1
     rehype-stringify: 9.0.3
-    shiki: 0.9.15
+    shiki: 0.10.1
     slate: "github:mintterteam/slate#workspace=slate&tag=v0.70.0-unist"
     slate-history: "github:mintterteam/slate#workspace=slate-history&tag=v0.70.0-unist"
     slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.70.0-unist"
@@ -1819,7 +1819,7 @@ __metadata:
     rehype-parse: ^8.0.3
     rehype-preset-minify: 6.0.0
     rehype-sanitize: ^5.0.1
-    shiki: 0.9.15
+    shiki: 0.10.1
     trim-trailing-lines: ^2.0.0
     typescript: 4.4.4
     unified: 10.1.2
@@ -13009,18 +13009,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shiki@npm:0.9.15":
-  version: 0.9.15
-  resolution: "shiki@npm:0.9.15"
-  dependencies:
-    jsonc-parser: ^3.0.0
-    vscode-oniguruma: ^1.6.1
-    vscode-textmate: 5.2.0
-  checksum: 58d1e3e106320252b67c63dc1269c4b834152e9c675a06a4565ec41db1c93aea2dd94e22640d7ec99334cb47cd41b914642d936577143b689ef2a0db7d938c13
-  languageName: node
-  linkType: hard
-
-"shiki@npm:^0.10.1":
+"shiki@npm:0.10.1, shiki@npm:^0.10.1":
   version: 0.10.1
   resolution: "shiki@npm:0.10.1"
   dependencies:

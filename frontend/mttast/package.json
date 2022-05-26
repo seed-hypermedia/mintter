@@ -31,7 +31,7 @@
     "ni": "0.0.2",
     "prettier": "2.6.2",
     "rehype-preset-minify": "6.0.0",
-    "shiki": "0.9.15",
+    "shiki": "0.10.1",
     "typescript": "4.4.4",
     "unified": "10.1.2",
     "vitest": "0.3.6"
