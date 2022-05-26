@@ -1708,7 +1708,7 @@ __metadata:
     "@testing-library/jest-dom": 5.16.4
     "@testing-library/react": 12.1.5
     "@testing-library/user-event": 13.5.0
-    "@types/google-protobuf": 3.15.5
+    "@types/google-protobuf": 3.15.6
     "@types/hast": 2.3.4
     "@types/is-url": 1.2.30
     "@types/long": 4.0.2
@@ -1738,7 +1738,7 @@ __metadata:
     eslint-plugin-react-hooks: 4.5.0
     fast-deep-equal: 3.1.3
     framer-motion: 5.6.0
-    google-protobuf: 3.19.4
+    google-protobuf: 3.20.1
     graphql: 16.3.0
     graphql-request: 3.7.0
     hast: 1.0.0
@@ -2763,10 +2763,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/google-protobuf@npm:3.15.5":
-  version: 3.15.5
-  resolution: "@types/google-protobuf@npm:3.15.5"
-  checksum: 43f52df3b56fe858ffca6a560cd83bb5b0d4441d11634dcf1f6838fda91629027687650389b9fd8960c18fcf3f530c11f74699b3d11e4fa9db1df4048c76ac40
+"@types/google-protobuf@npm:3.15.6":
+  version: 3.15.6
+  resolution: "@types/google-protobuf@npm:3.15.6"
+  checksum: e8f7cd9d263093cd0a72eb10ff0bb8221e28aa8b9f601eddbe19b286932aae96fbc9ccb1f3a744525e7811fa87a6aeefd431858b6e2034f14a2dc68710a86d54
   languageName: node
   linkType: hard
 
@@ -7474,10 +7474,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"google-protobuf@npm:3.19.4":
-  version: 3.19.4
-  resolution: "google-protobuf@npm:3.19.4"
-  checksum: c0ebc0afbb635271b54db933be74441429e0df095347d0145ae7036377a2cc6fc402ed015855ebc1809c7cedfde3246344ad28a98eac1e6a21800c7b572b2caf
+"google-protobuf@npm:3.20.1":
+  version: 3.20.1
+  resolution: "google-protobuf@npm:3.20.1"
+  checksum: a440fbc329bb441b253bc421b01540918f4b66921c47a3bc57d154d2677dc917cb1a29126ff35ddc4d8872d1b5843ef1ece60b6dff506ba64a9f5807962d3f61
   languageName: node
   linkType: hard
 
