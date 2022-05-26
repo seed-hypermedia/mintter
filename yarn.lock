@@ -1581,14 +1581,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@improbable-eng/grpc-web@npm:0.14.1":
-  version: 0.14.1
-  resolution: "@improbable-eng/grpc-web@npm:0.14.1"
+"@improbable-eng/grpc-web@npm:0.15.0":
+  version: 0.15.0
+  resolution: "@improbable-eng/grpc-web@npm:0.15.0"
   dependencies:
     browser-headers: ^0.4.1
   peerDependencies:
     google-protobuf: ^3.14.0
-  checksum: 8a3a6efe4ecb855ff636df634723e795ba97aeb2a3e1eeceb0a82086d1e27dfe1495915e09a29af8be4e4bde1fb0fd39b1d0608f3327d26f41d78df72fe77b53
+  checksum: 8c6322e681965be4fcadf58fde0571f7972c36b48290474e87c7d12bed09b27163fd6ed73c6c36e896885da782abf1835bbeaf65b35bcdb65d9114ea8a0e6ba5
   languageName: node
   linkType: hard
 
@@ -1684,7 +1684,7 @@ __metadata:
     "@cypress/react": 5.12.5
     "@cypress/vite-dev-server": 2.2.3
     "@faker-js/faker": 6.3.1
-    "@improbable-eng/grpc-web": 0.14.1
+    "@improbable-eng/grpc-web": 0.15.0
     "@mintter/mttast": ^0.1.0
     "@radix-ui/colors": 0.1.8
     "@radix-ui/react-accessible-icon": 0.1.4
