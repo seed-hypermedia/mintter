@@ -77,7 +77,7 @@
     "rehype-parse": "8.0.4",
     "rehype-sanitize": "5.0.1",
     "rehype-stringify": "9.0.3",
-    "shiki": "0.9.15",
+    "shiki": "0.10.1",
     "slate": "github:mintterteam/slate#workspace=slate&tag=v0.70.0-unist",
     "slate-history": "github:mintterteam/slate#workspace=slate-history&tag=v0.70.0-unist",
     "slate-hyperscript": "github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.70.0-unist",
