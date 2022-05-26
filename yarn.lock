@@ -1774,7 +1774,7 @@ __metadata:
     tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
     typedoc: 0.22.15
-    typedoc-plugin-markdown: 3.11.14
+    typedoc-plugin-markdown: 3.12.1
     typescript: 4.4.4
     unified: 10.1.2
     unist-builder: 3.0.0
@@ -14343,14 +14343,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc-plugin-markdown@npm:3.11.14":
-  version: 3.11.14
-  resolution: "typedoc-plugin-markdown@npm:3.11.14"
+"typedoc-plugin-markdown@npm:3.12.1":
+  version: 3.12.1
+  resolution: "typedoc-plugin-markdown@npm:3.12.1"
   dependencies:
     handlebars: ^4.7.7
   peerDependencies:
     typedoc: ">=0.22.0"
-  checksum: 7eff9e5b8b6b2457b484ea16bbae453c23313c838b4ac8826bd166c5d37a18010242dd43a21010b759965d860106951ddd321f85bd0ff39b78dcb172daa60e6e
+  checksum: 72c4ab6076f327ca9366d2244cedd7d476b999056eec75b02c0573f89fa02d988914ade66d8245a6df28af41e8bb5ffd6b934383a6ab4a2688c099e47cff4ed1
   languageName: node
   linkType: hard
 
