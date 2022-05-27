@@ -1767,10 +1767,10 @@ __metadata:
     rehype-sanitize: 5.0.1
     rehype-stringify: 9.0.3
     shiki: 0.10.1
-    slate: "github:mintterteam/slate#workspace=slate&tag=v0.70.0-unist"
-    slate-history: "github:mintterteam/slate#workspace=slate-history&tag=v0.70.0-unist"
-    slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.70.0-unist"
-    slate-react: "github:mintterteam/slate#workspace=slate-react&tag=v0.70.0-unist"
+    slate: "github:mintterteam/slate#workspace=slate&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
+    slate-history: "github:mintterteam/slate#workspace=slate-history&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
+    slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
+    slate-react: "github:mintterteam/slate#workspace=slate-react&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
     tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
     typedoc: 0.22.15
@@ -13077,31 +13077,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate-history@github:mintterteam/slate#workspace=slate-history&tag=v0.70.0-unist":
+"slate-history@github:mintterteam/slate#workspace=slate-history&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654":
   version: 0.66.0
-  resolution: "slate-history@https://github.com/mintterteam/slate.git#workspace=slate-history&commit=888fb9b3a87478db0da3b2a4be75d49a83408f15"
+  resolution: "slate-history@https://github.com/mintterteam/slate.git#workspace=slate-history&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
   dependencies:
     is-plain-object: ^5.0.0
   peerDependencies:
     slate: ">=0.65.3"
-  checksum: 8d88d6db1ad22b5aa0b3e96573a0fd11a75a52defe8266aaffd5fcfc86254d0eb36d94307fefba79c4542bdda5c09cfce9dc73296233c59c6107d682309e1cd2
+  checksum: dcec61f5ffe72218c7a368608ea5da492a2a7d605b7a560590d1363a3e5e4199be53412d98a5fd082edaf079c417f313686a007811edc61c7f559d818b2b120a
   languageName: node
   linkType: hard
 
-"slate-hyperscript@github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.70.0-unist":
-  version: 0.67.0
-  resolution: "slate-hyperscript@https://github.com/mintterteam/slate.git#workspace=slate-hyperscript&commit=888fb9b3a87478db0da3b2a4be75d49a83408f15"
+"slate-hyperscript@github:mintterteam/slate#workspace=slate-hyperscript&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654":
+  version: 0.77.0
+  resolution: "slate-hyperscript@https://github.com/mintterteam/slate.git#workspace=slate-hyperscript&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
   dependencies:
     is-plain-object: ^5.0.0
   peerDependencies:
     slate: ">=0.65.3"
-  checksum: 2c7e376e8a9e4c2b730706712586c2d84d58e4a73173d29240b733e8872c04126124638e5605dcc786cab2e295d0907e021045e88a80b026d314df781b0f7e50
+  checksum: 8c5609b671da45abf56fb898740c15c99d406e796f9f6698692d4daa6702f8cf722442326b6cc8519bcdc63510d93acc441a72c2501b1f193be97a4d9f473052
   languageName: node
   linkType: hard
 
-"slate-react@github:mintterteam/slate#workspace=slate-react&tag=v0.70.0-unist":
-  version: 0.69.0
-  resolution: "slate-react@https://github.com/mintterteam/slate.git#workspace=slate-react&commit=888fb9b3a87478db0da3b2a4be75d49a83408f15"
+"slate-react@github:mintterteam/slate#workspace=slate-react&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654":
+  version: 0.80.0
+  resolution: "slate-react@https://github.com/mintterteam/slate.git#workspace=slate-react&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
   dependencies:
     "@types/is-hotkey": ^0.1.1
     "@types/lodash": ^4.14.149
@@ -13115,18 +13115,18 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.65.3"
-  checksum: cd641fc573270e2502536b2f49d1bf802ed24bcdbbcd153992928d1f648f295e44b076de92eb549c96dcf6b7c7bd371b8291d420693dea05f0bb0fa40164275c
+  checksum: d0bb4ddeda192c8c1019c3cb26a1541757489af6c05e8b7dec25efef910a7e009fbad4f27679bd6cbd3ba2f69fb72689e749ff0d3a0c3a00c4bede04001ec24e
   languageName: node
   linkType: hard
 
-"slate@github:mintterteam/slate#workspace=slate&tag=v0.70.0-unist":
-  version: 0.67.1
-  resolution: "slate@https://github.com/mintterteam/slate.git#workspace=slate&commit=888fb9b3a87478db0da3b2a4be75d49a83408f15"
+"slate@github:mintterteam/slate#workspace=slate&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654":
+  version: 0.80.0
+  resolution: "slate@https://github.com/mintterteam/slate.git#workspace=slate&commit=31261ede92dd84fdb200affd1fb1b6a4d60dd654"
   dependencies:
     immer: ^9.0.6
     is-plain-object: ^5.0.0
     tiny-warning: ^1.0.3
-  checksum: 6651f0681c6cbaeecbdaf47243a285ca7067af1975c7da843fd3516e7860146bd39343dd8b00ec0a2e23ee0f48d9dcea6dc1641ac4cd0ada41fd3b47187a13a4
+  checksum: fddf198dd720e82cdbbc5f62377c8813779c9c9f880fdbbef04e6a9003c16615da75ae67a85ce8d23d2353e20f74c92ac920e143c689647365b385491fe39dfc
   languageName: node
   linkType: hard
 
