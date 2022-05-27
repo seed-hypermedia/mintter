@@ -92,7 +92,7 @@ export function LibraryItem({
   }
 
   async function onOpenInNewWindow() {
-    await invoke('open_in_new_window', {url: `/new${href}`})
+    await invoke('plugin:window|open_in_new_window', {url: `/new${href}`})
   }
 
   let title = match
