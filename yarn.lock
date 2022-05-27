@@ -1788,7 +1788,7 @@ __metadata:
     vite-react-jsx: 1.1.2
     vite-tsconfig-paths: 3.5.0
     vitest: 0.7.11
-    xstate: 4.30.3
+    xstate: 4.32.1
   peerDependencies:
     typescript: 4.7.2
   languageName: unknown
@@ -15563,14 +15563,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xstate@npm:4.30.3":
-  version: 4.30.3
-  resolution: "xstate@npm:4.30.3"
-  checksum: fd8cb5b65c0a82439c04f184e49c272df22157c627550d6bd2f29073968be4dccbf0e958091f262bfc98299548faea66b12d5ce21694f1569ea1da182e0cceb9
-  languageName: node
-  linkType: hard
-
-"xstate@npm:^4.29.0":
+"xstate@npm:4.32.1, xstate@npm:^4.29.0":
   version: 4.32.1
   resolution: "xstate@npm:4.32.1"
   checksum: c16298b2b3dab7689da99d5b1e5128d2ca3bf381f37c8cb95e4af83bb1044b9251629fc00758f7f31785a72c2ddddd26f602b2801e6068cd78373b7f6dd6c28b
