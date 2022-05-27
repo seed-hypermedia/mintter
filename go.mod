@@ -67,6 +67,7 @@ require (
 	github.com/btcsuite/btcd/btcutil/psbt v1.1.4 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btclog v0.0.0-20170628155309-84c8d2346e9f // indirect
+	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
 	github.com/btcsuite/btcwallet v0.15.1-0.20220512002839-af5562928b70 // indirect
 	github.com/btcsuite/btcwallet/wallet/txauthor v1.2.3 // indirect
 	github.com/btcsuite/btcwallet/wallet/txrules v1.2.0 // indirect
@@ -216,4 +217,4 @@ require (
 replace crawshaw.io/sqlite => ./third_party/sqlite
 
 // Replace to make LND work ¯\_(ツ)_/¯.
-replace github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.0-beta.0.20220413172512-bf64c8bdbbbf
+replace github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.1
