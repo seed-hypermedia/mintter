@@ -3,7 +3,7 @@ module mintter
 go 1.18
 
 require (
-	crawshaw.io/sqlite v0.0.0
+	crawshaw.io/sqlite v0.3.2
 	github.com/99designs/gqlgen v0.14.0
 	github.com/alecthomas/kong v0.2.11
 	github.com/btcsuite/btcd v0.22.0-beta.0.20211005184431-e3449998be39
