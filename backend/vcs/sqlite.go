@@ -18,6 +18,7 @@ import (
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	format "github.com/ipfs/go-ipld-format"
 )
 
 // SQLite is a VCS backed by a SQLite database.
@@ -420,7 +421,7 @@ func (s *SQLite) ListVersionsByOwner(ctx context.Context, owner cid.Cid) (map[ci
 func (s *SQLite) GetPermanode(ctx context.Context, c cid.Cid, p Permanode) error {
 	blk, err := s.bs.Get(ctx, c)
 	if err != nil {
-		if err == blockstore.ErrNotFound {
+		if format.IsNotFound(err) {
 			return fmt.Errorf("permanode %s: %w", c, errNotFound)
 		}
 	}

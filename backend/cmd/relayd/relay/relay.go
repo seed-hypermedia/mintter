@@ -7,14 +7,13 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
+	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 	relay_v1 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv1/relay"
 	relay_v2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-
-	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr/net"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Relay is the may struct to hold all the relay operations

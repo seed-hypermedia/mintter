@@ -6,6 +6,7 @@ import (
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
@@ -47,11 +48,11 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	require.NoError(t, err)
 
 	n, err := New(config.P2P{
-		Addr:        "/ip4/0.0.0.0/tcp/0",
+		Port:        0,
 		NoRelay:     true,
 		NoBootstrap: true,
 		NoMetrics:   true,
-	}, hvcs, reg, u.Identity, zap.NewNop())
+	}, hvcs, reg, u.Identity, must.Two(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

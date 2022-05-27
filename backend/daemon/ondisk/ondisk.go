@@ -12,7 +12,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"go.uber.org/zap"
 )
@@ -170,7 +169,7 @@ func (r *OnDisk) CommitAccount(acc core.PublicKey) error {
 	}
 
 	if codec := acc.Codec(); codec != core.CodecAccountKey {
-		return fmt.Errorf("invalid account codec: %s", cid.CodecToStr[codec])
+		return fmt.Errorf("invalid account codec: %d", codec)
 	}
 
 	if err := r.setAccount(acc); err != nil {
@@ -256,7 +255,7 @@ func (r *OnDisk) setupKeys(pk crypto.PrivKey) error {
 
 func (r *OnDisk) writeAccountFile(k core.PublicKey) error {
 	if codec := k.Codec(); codec != core.CodecAccountKey {
-		return fmt.Errorf("invalid account codec: %s", cid.CodecToStr[codec])
+		return fmt.Errorf("invalid account codec: %d", codec)
 	}
 
 	data, err := k.MarshalBinary()

@@ -14,14 +14,10 @@ import (
 
 // Multicodecs.
 const (
-	CodecDeviceKey  = cid.Libp2pKey
+	CodecDeviceKey = cid.Libp2pKey
+	// TODO: need to register this codec withing the multicodecs repo table.
 	CodecAccountKey = 1091161161
 )
-
-func init() {
-	cid.Codecs["mintter-account"] = CodecAccountKey
-	cid.CodecToStr[CodecAccountKey] = "mintter-account"
-}
 
 // Ensure interface implementations.
 var (

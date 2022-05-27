@@ -19,11 +19,11 @@ import (
 	"go.uber.org/multierr"
 
 	ipfsconfig "github.com/ipfs/go-ipfs-config"
-	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	routing "github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
+	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 )
 
 // Bootstrappers is a convenience alias for a list of bootstrap addresses.

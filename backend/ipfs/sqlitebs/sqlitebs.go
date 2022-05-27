@@ -9,6 +9,7 @@ import (
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	format "github.com/ipfs/go-ipld-format"
 	"go.uber.org/zap"
 )
 
@@ -117,7 +118,7 @@ func (b *Blockstore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error)
 	}
 
 	if found == 0 {
-		return nil, blockstore.ErrNotFound
+		return nil, format.ErrNotFound{Cid: cid}
 	}
 
 	if len(data) == 0 && data != nil {
@@ -139,7 +140,7 @@ func (b *Blockstore) GetSize(ctx context.Context, cid cid.Cid) (int, error) {
 	}
 
 	if size == 0 {
-		return 0, blockstore.ErrNotFound
+		return 0, format.ErrNotFound{Cid: cid}
 	}
 
 	return size, nil
