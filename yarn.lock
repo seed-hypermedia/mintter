@@ -1761,7 +1761,7 @@ __metadata:
     react-hot-toast: 2.2.0
     react-qr-barcode-scanner: 1.0.6
     react-qr-code: 2.0.7
-    react-query: 3.34.16
+    react-query: 3.39.0
     rehype: 12.0.1
     rehype-parse: 8.0.4
     rehype-sanitize: 5.0.1
@@ -11792,21 +11792,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-query@npm:3.34.16":
-  version: 3.34.16
-  resolution: "react-query@npm:3.34.16"
+"react-query@npm:3.39.0":
+  version: 3.39.0
+  resolution: "react-query@npm:3.39.0"
   dependencies:
     "@babel/runtime": ^7.5.5
     broadcast-channel: ^3.4.1
     match-sorter: ^6.0.2
   peerDependencies:
-    react: ^16.8.0 || ^17.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
   peerDependenciesMeta:
     react-dom:
       optional: true
     react-native:
       optional: true
-  checksum: 77f5ee7279fa82642d5210b785f7b9eccc6e81c5b27b59bf112101b14e90737efeb8b73f9597bff56a08c5792ec5fa6889e14913aa196f5086ff4faeb077abd8
+  checksum: 18fd745ef86375c73496d6bcffdd4a6d02b48feb1e63c05bcb1881406a91ecf776543d0751b776a6ff6ffddd3d7bf31973a37df8e4eb72d1626c41b815396aef
   languageName: node
   linkType: hard
 
