@@ -93,14 +93,17 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
       Ok(())
     })
     .on_event(|app_handle, event| {
-      if let RunEvent::WindowEvent { label, event, .. } = event {
-        if let WindowEvent::Destroyed = event {
-          let window_table = app_handle.state::<WindowTable>();
+      if let RunEvent::WindowEvent {
+        label,
+        event: WindowEvent::Destroyed,
+        ..
+      } = event
+      {
+        let window_table = app_handle.state::<WindowTable>();
 
-          let mut window_table = window_table.0.lock().unwrap();
+        let mut window_table = window_table.0.lock().unwrap();
 
-          window_table.remove(label);
-        }
+        window_table.remove(label);
       }
     })
     .build()
