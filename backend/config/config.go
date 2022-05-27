@@ -20,8 +20,8 @@ type LetsEncrypt struct {
 // P2P configuration.
 type P2P struct {
 	// TODO: make this a slice and add ip6 and quic addresses.
-	Addr        string `help:"Address for binding p2p listener" default:"/ip4/0.0.0.0/tcp/55000"`
-	NoRelay     bool   `help:"Disable libp2p circuit relay"`
-	NoBootstrap bool   `help:"Disable IPFS bootstrapping"`
-	NoMetrics   bool   `help:"Disable Prometheus metrics collection"`
+	Port        int  `help:"Port to listen for incoming P2P connections" default:"55000"`
+	NoRelay     bool `help:"Disable libp2p circuit relay"`
+	NoBootstrap bool `help:"Disable IPFS bootstrapping"`
+	NoMetrics   bool `help:"Disable Prometheus metrics collection"`
 }

@@ -163,7 +163,7 @@ func NewMnemonic(passphraze string) ([]string, error) {
 		return nil, fmt.Errorf("unable to generate random seed: %w", err)
 	}
 
-	seed, err := aezeed.New(keychain.KeyDerivationVersion, &entropy, time.Now())
+	seed, err := aezeed.New(keychain.CurrentKeyDerivationVersion, &entropy, time.Now())
 	if err != nil {
 		return nil, err
 	}

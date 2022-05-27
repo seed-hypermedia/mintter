@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"mintter/backend/relay"
+	"mintter/backend/cmd/relayd/relay"
 	"os"
 	"os/signal"
 	"syscall"

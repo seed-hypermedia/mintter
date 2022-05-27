@@ -54,7 +54,7 @@ func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.Cancel
 	require.NoError(t, err)
 
 	n, err := mttnet.New(config.P2P{
-		Addr:        "/ip4/0.0.0.0/tcp/0",
+		Port:        0,
 		NoRelay:     true,
 		NoBootstrap: true,
 		NoMetrics:   true,

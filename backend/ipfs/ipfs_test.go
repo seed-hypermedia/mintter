@@ -9,6 +9,7 @@ import (
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	format "github.com/ipfs/go-ipld-format"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/multiformats/go-multiaddr"
@@ -34,7 +35,8 @@ func TestBitSwap(t *testing.T) {
 
 	{
 		_, err := bob.bs.Get(ctx, b1.Cid())
-		require.Equal(t, blockstore.ErrNotFound, err, "bob must not have alice's block in his blockstore")
+
+		require.True(t, format.IsNotFound(err), "bob must not have alice's block in his blockstore")
 
 		fetched, err := bob.bitswap.GetBlock(ctx, b1.Cid())
 		require.NoError(t, err)
@@ -44,7 +46,7 @@ func TestBitSwap(t *testing.T) {
 	require.NoError(t, carol.Connect(ctx, bob.AddrInfo()), "carol must connect to bob")
 	{
 		_, err := carol.bs.Get(ctx, b1.Cid())
-		require.Equal(t, blockstore.ErrNotFound, err, "carol must not have alice's block in her blockstore")
+		require.True(t, format.IsNotFound(err), "carol must not have alice's block in her blockstore")
 
 		require.Equal(t, network.NotConnected, carol.Network().Connectedness(alice.ID()), "carol must not be connected with alice after connecting with bob")
 

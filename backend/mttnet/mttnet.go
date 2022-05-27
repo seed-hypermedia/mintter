@@ -15,6 +15,7 @@ import (
 	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -33,6 +34,7 @@ import (
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
+	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -225,6 +227,7 @@ func (n *Node) Start(ctx context.Context) (err error) {
 
 		g.Go(func() error {
 			<-ctx.Done()
+			n.log.Debug("ClosedLibp2pRPC", zap.Error(n.rpcConns.Close()))
 			n.grpc.GracefulStop()
 			return nil
 		})
@@ -276,9 +279,13 @@ func (n *Node) Start(ctx context.Context) (err error) {
 		}
 	})
 
+	werr := g.Wait()
+
+	cerr := n.quit.Close()
+
 	// When context is canceled the whole errgroup will be tearing down.
 	// We have to wait until all goroutines finish, and then call the cleanup stack.
-	return multierr.Combine(g.Wait(), n.quit.Close())
+	return multierr.Combine(werr, cerr)
 }
 
 // AddrInfo returns info for our own peer.
@@ -293,48 +300,18 @@ func (n *Node) Ready() <-chan struct{} {
 }
 
 func (n *Node) startLibp2p(ctx context.Context) error {
-	ma, err := multiaddr.NewMultiaddr(n.cfg.Addr)
-	if err != nil {
-		return fmt.Errorf("failed to parse listen addr: %w", err)
+	port := strconv.Itoa(n.cfg.Port)
+
+	addrs := []multiaddr.Multiaddr{
+		must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/" + port)),
+		must.Two(multiaddr.NewMultiaddr("/ip6/::/tcp/" + port)),
+		// TODO(burdiyan): uncomment this when quic is known to work. Find other places for `quic-support`.
+		// must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/udp/" + port + "/quic")),
+		// must.Two(multiaddr.NewMultiaddr("/ip6/::/udp/" + port + "/quic")),
 	}
 
-	if err := n.p2p.Network().Listen(ma); err != nil {
+	if err := n.p2p.Network().Listen(addrs...); err != nil {
 		return err
-	}
-
-	var port string
-	{
-		addrs := n.p2p.Network().ListenAddresses()
-		for _, a := range addrs {
-			multiaddr.ForEach(a, func(comp multiaddr.Component) bool {
-				if comp.Protocol().Name != "tcp" {
-					return true
-				}
-
-				port = comp.Value()
-
-				return false
-			})
-
-			if port != "" {
-				break
-			}
-		}
-	}
-
-	if port == "" {
-		return fmt.Errorf("failed to listen on port")
-	}
-
-	// TODO: clean this up. Provide just ip and port separately + desired protocols.
-
-	quicma, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/udp/" + port + "/quic")
-	if err != nil {
-		return err
-	}
-
-	if err := n.p2p.Network().Listen(quicma); err != nil {
-		return fmt.Errorf("failed to start listening quic: %w", err)
 	}
 
 	if !n.cfg.NoBootstrap {
@@ -490,6 +467,8 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
 		libp2p.EnableNATService(),
+		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
+		libp2p.Transport(tcp.NewTCPTransport),
 	}
 
 	if !cfg.NoRelay {
@@ -509,14 +488,13 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 	if err != nil {
 		return nil, nil, err
 	}
+	clean.Add(node)
 
 	m.SetHost(node.Host)
 
 	if !cfg.NoMetrics {
 		prometheus.MustRegister(m)
 	}
-
-	clean.Add(node)
 
 	return node, &clean, nil
 }

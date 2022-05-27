@@ -98,6 +98,8 @@ func TestDaemonConnect(t *testing.T) {
 }
 
 func TestDaemonSmoke(t *testing.T) {
+	t.Parallel()
+
 	dmn := makeTestDaemon(t, "alice", false)
 	ctx := context.Background()
 
@@ -215,7 +217,7 @@ func makeTestDaemon(t *testing.T, name string, register bool) *testDaemon {
 		NoOpenBrowser: true,
 		RepoPath:      testutil.MakeRepoPath(t),
 		P2P: config.P2P{
-			Addr:        "/ip4/0.0.0.0/tcp/0",
+			Port:        0,
 			NoBootstrap: true,
 			NoRelay:     true,
 			NoMetrics:   true,

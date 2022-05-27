@@ -8,7 +8,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	format "github.com/ipfs/go-ipld-format"
 	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
 )
@@ -49,14 +49,14 @@ func TestGet_Missing(t *testing.T) {
 	c := makeCID(t, []byte("missing-data"))
 	got, err := bs.Get(context.Background(), c)
 	require.Nil(t, got)
-	require.Equal(t, blockstore.ErrNotFound, err)
+	require.True(t, format.IsNotFound(err))
 
 	ok, err := bs.Has(context.Background(), c)
 	require.False(t, ok)
 	require.NoError(t, err)
 
 	size, err := bs.GetSize(context.Background(), c)
-	require.Equal(t, blockstore.ErrNotFound, err)
+	require.True(t, format.IsNotFound(err))
 	require.Equal(t, 0, size)
 }
 
