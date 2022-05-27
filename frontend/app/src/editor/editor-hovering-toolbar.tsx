@@ -3,10 +3,11 @@ import {Button} from '@components/button'
 import {icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import type {Text as MTTText} from '@mintter/mttast'
-import React, {
+import {
   forwardRef,
   PropsWithChildren,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -25,11 +26,16 @@ type FormatTypes = keyof Omit<
 function FormatButton({format}: {format: FormatTypes}) {
   const editor = useSlateStatic()
   const IconComponent = icons[capitalize(format)]
+  const markActive = useMemo(
+    () => isMarkActive(editor, format),
+    [editor, format],
+  )
+
   return (
     <Tooltip content={format}>
       <Button
         css={
-          isMarkActive(editor, format)
+          markActive
             ? {
                 backgroundColor: '$background-opposite',
                 color: '$base-text-hight',
