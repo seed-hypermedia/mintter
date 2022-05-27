@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	crawshaw.io/sqlite v0.3.2
-	github.com/99designs/gqlgen v0.17.8
+	github.com/99designs/gqlgen v0.17.9
 	github.com/alecthomas/kong v0.5.0
 	github.com/btcsuite/btcd v0.22.1
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
@@ -43,7 +43,7 @@ require (
 	github.com/sanity-io/litter v1.5.5
 	github.com/stretchr/testify v1.7.1
 	github.com/tidwall/tinyqueue v0.1.1
-	github.com/vektah/gqlparser/v2 v2.4.3
+	github.com/vektah/gqlparser/v2 v2.4.4
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/fx v1.17.1
 	go.uber.org/multierr v1.8.0
