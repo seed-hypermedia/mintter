@@ -41,6 +41,8 @@ dmitri.shuralyov.com/state v0.0.0-20180228185332-28bcc343414c/go.mod h1:0PRwlb0D
 git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 github.com/99designs/gqlgen v0.17.8 h1:E4+esmRv/CXMO/e3toNknTGBEaPGsFAhrn5wEXJkmeo=
 github.com/99designs/gqlgen v0.17.8/go.mod h1:IQRBY3eXkx7Je5pq1aw9gAXNhPuUNQy9iY5DJ6e68Qs=
+github.com/99designs/gqlgen v0.17.9 h1:0XvE3nMaTaLYq7XbBz1MY0t9BFcntydlt1zzNa4eY+4=
+github.com/99designs/gqlgen v0.17.9/go.mod h1:PThAZAK9t2pAat7g8QdSI4dCBMOhBO+t2qj+0jvDqps=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
@@ -1402,6 +1404,8 @@ github.com/urfave/cli/v2 v2.8.1 h1:CGuYNZF9IKZY/rfBe3lJpccSoIY1ytfvmgQT90cNOl4=
 github.com/urfave/cli/v2 v2.8.1/go.mod h1:Z41J9TPoffeoqP0Iza0YbAhGvymRdZAd2uPmZ5JxRdY=
 github.com/vektah/gqlparser/v2 v2.4.3 h1:pg/VX0B6K9aSdXLsoKQY6XYVJigtWEfClUrv4Io1plg=
 github.com/vektah/gqlparser/v2 v2.4.3/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
+github.com/vektah/gqlparser/v2 v2.4.4 h1:rh9hwZ5Jx9cCq88zXz2YHKmuQBuwY1JErHU8GywFdwE=
+github.com/vektah/gqlparser/v2 v2.4.4/go.mod h1:flJWIR04IMQPGz+BXLrORkrARBxv/rtyIAFvd/MceW0=
 github.com/viant/assertly v0.4.8/go.mod h1:aGifi++jvCrUaklKEKT0BU95igDNaqkvz+49uaYMPRU=
 github.com/viant/toolbox v0.24.0/go.mod h1:OxMCG57V0PXuIP2HNQrtJf2CjqdmbrOx5EkMILuUhzM=
 github.com/wangjia184/sortedset v0.0.0-20160527075905-f5d03557ba30/go.mod h1:YkocrP2K2tcw938x9gCOmT5G5eCD6jsTz0SZuyAqwIE=
