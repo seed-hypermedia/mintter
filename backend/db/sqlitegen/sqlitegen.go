@@ -7,6 +7,8 @@ import (
 
 	"crawshaw.io/sqlite"
 	"go.uber.org/multierr"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var initialisms = map[string]struct{}{
@@ -77,7 +79,7 @@ func GoNameFromSQLName(s string, exported bool) string {
 			continue
 		}
 
-		parts[i] = strings.Title(p)
+		parts[i] = cases.Title(language.English).String(p)
 	}
 
 	return strings.Join(parts, "")
