@@ -43,29 +43,24 @@ async fn open_in_new_window<R: Runtime>(
     }
   }
 
-  let id = SystemTime::now()
-    .duration_since(UNIX_EPOCH)
-    .expect("Failed to construct unix timestamp")
-    .as_millis()
-    .to_string();
+  let label = window_label();
 
-  WindowBuilder::new(&app, id.clone(), WindowUrl::App(url.clone()))
+  WindowBuilder::new(&app, label.clone(), WindowUrl::App(url.clone()))
+    .min_inner_size(500.0, 500.0)
     .build()
     .map_err(|err| err.to_string())?;
 
-  window_table.insert(id, url);
+  window_table.insert(label, url);
 
   Ok(())
 }
 
 pub fn new_window<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
-  let id = SystemTime::now()
-    .duration_since(UNIX_EPOCH)
-    .expect("Failed to construct unix timestamp")
-    .as_millis()
-    .to_string();
+  let label = window_label();
 
-  WindowBuilder::new(manager, id, WindowUrl::App("index.html".into())).build()?;
+  WindowBuilder::new(manager, label, WindowUrl::App("index.html".into()))
+    .min_inner_size(500.0, 500.0)
+    .build()?;
 
   Ok(())
 }
@@ -76,6 +71,14 @@ pub fn close_all_windows<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Resul
   }
 
   Ok(())
+}
+
+fn window_label() -> String {
+  SystemTime::now()
+    .duration_since(UNIX_EPOCH)
+    .expect("Failed to construct unix timestamp")
+    .as_millis()
+    .to_string()
 }
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
