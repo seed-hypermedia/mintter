@@ -422,7 +422,7 @@ export function createMainPageMachine(client: QueryClient) {
             goToPublication: {
               actions: [
                 (...all: any) => {
-                  debug('goToPublication', all)
+                  debug(`goToPublication ${all}`)
                 },
               ],
               target: '.publication',
@@ -561,7 +561,6 @@ export function createMainPageMachine(client: QueryClient) {
           },
           {to: 'router'},
         ),
-
         pushPublicationListRoute: send(
           {
             type: 'pushPublicationList',
