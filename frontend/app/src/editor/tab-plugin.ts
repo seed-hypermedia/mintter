@@ -39,9 +39,11 @@ function moveStatement(editor: Editor, up: boolean) {
     changesService.addChange(['moveBlock', statement.id])
     if (!up) {
       const [prev, prevPath] =
-        Editor.previous(editor, {at: statementPath, match: isFlowContent}) || []
+        Editor.previous(editor, {
+          at: statementPath,
+        }) || []
 
-      if (!isParent(prev) || !prevPath) return
+      if (!prev || !prevPath || !isParent(prev)) return
 
       if (prev.children.length == 1) {
         Transforms.wrapNodes(
@@ -63,10 +65,6 @@ function moveStatement(editor: Editor, up: boolean) {
             (prev.children[1] as GroupingContent).children.length,
           ],
         })
-        let prevLength = (prev.children[1] as GroupingContent).children.length
-        let prevLastChild = (prev.children[1] as GroupingContent).children[
-          prevLength - 1
-        ]
       }
     } else {
       // don't try to lift anything if we're already at the root level (with default group the root is depth 4)
