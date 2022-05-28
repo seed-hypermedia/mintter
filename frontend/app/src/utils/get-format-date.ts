@@ -1,9 +1,7 @@
 import type {Document} from '@app/client'
 import {EditorDocument} from '@app/editor/use-editor-draft'
 
-type Keys<T> = {[P in keyof T]: T[P]}[typeof P]
-
-type KeyOfType<T, U = Keys<T>> = {
+type KeyOfType<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never
 }[keyof T]
 
