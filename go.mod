@@ -30,7 +30,7 @@ require (
 	github.com/libp2p/go-libp2p-gostream v0.3.1
 	github.com/libp2p/go-libp2p-kad-dht v0.15.0
 	github.com/libp2p/go-libp2p-kbucket v0.4.7
-	github.com/libp2p/go-libp2p-peerstore v0.6.0
+	github.com/libp2p/go-libp2p-peerstore v0.7.0
 	github.com/libp2p/go-libp2p-record v0.1.3
 	github.com/lightningnetwork/lnd v0.15.0-beta.rc3
 	github.com/mitchellh/mapstructure v1.5.0
