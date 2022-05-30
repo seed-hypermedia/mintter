@@ -37,6 +37,7 @@ function moveStatement(editor: Editor, up: boolean) {
 
   Editor.withoutNormalizing(editor, () => {
     changesService.addChange(['moveBlock', statement.id])
+    changesService.addChange(['replaceBlock', statement.id])
     if (!up) {
       const [prev, prevPath] =
         Editor.previous(editor, {
@@ -110,6 +111,7 @@ function moveStatement(editor: Editor, up: boolean) {
           let [node] = entry
           if (isFlowContent(node)) {
             changesService.addChange(['moveBlock', node.id])
+            changesService.addChange(['replaceBlock', node.id])
           }
         })
       }

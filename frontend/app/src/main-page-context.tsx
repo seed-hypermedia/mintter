@@ -1,5 +1,4 @@
 import {getDocumentTitle} from '@app/utils/get-document-title'
-import {debug} from '@app/utils/logger'
 import {useSelector} from '@xstate/react'
 import {InterpreterFrom} from 'xstate'
 import {createMainPageMachine} from './main-page-machine'
@@ -51,7 +50,6 @@ export var usePageTitle = createMainPageSelector(function pageTitleSelector(
     state.matches('routes.publication.valid')
   ) {
     let value = getDocumentTitle(state.context.document)
-    debug('🚀 ~ file: main-page-context.tsx ~ line 53 ~ value', value)
     result = value
   }
 

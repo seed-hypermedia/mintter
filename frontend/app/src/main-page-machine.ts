@@ -31,18 +31,11 @@ export function createFilesMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
-                debug('FILES RECONCILE!')
-
                 client
                   .fetchQuery([queryKeys.GET_PUBLICATION_LIST], () =>
                     listPublications(),
                   )
                   .then(function filesResponse(response) {
-                    debug(
-                      '🚀 ~ file: main-page-machine.ts ~ line 30 ~ filesResponse ~ response',
-                      response,
-                    )
-
                     let data = response.publications.map((pub) => ({
                       ...pub,
                       ref: 'TODO',
@@ -114,7 +107,6 @@ function createDraftsMachine(client: QueryClient) {
           invoke: [
             {
               src: () => (sendBack) => {
-                debug('DRAFTS RECONCILE!')
                 client
                   .fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts())
                   .then(function filesResponse(response) {
@@ -461,12 +453,10 @@ export function createMainPageMachine(client: QueryClient) {
         isDraft: (_, event) => event.docType == 'editor',
         isMetaEventDifferent: (context, _, meta) => {
           let {type, ...eventParams} = meta.state.event
-          debug('isMetaEventDifferent: ', eventParams)
           return !isEqual(context.params, eventParams)
         },
         isEventDifferent: (context, event) => {
           let {type, ...eventParams} = event
-          debug('isEventDifferent: ', eventParams)
           let result = !isEqual(context.params, eventParams)
           return result
         },
@@ -654,3 +644,96 @@ export function createMainPageMachine(client: QueryClient) {
     },
   )
 }
+
+let chhchchc = [
+  {
+    op: {
+      $case: 'replaceBlock',
+      replaceBlock: {
+        id: 'A_BrRYGH',
+        type: 'statement',
+        annotations: [
+          {type: 'strong', attributes: {}, starts: [4], ends: [22]},
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol',
+            },
+            starts: [53],
+            ends: [69],
+          },
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String',
+            },
+            starts: [91],
+            ends: [97],
+          },
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array',
+            },
+            starts: [99],
+            ends: [104],
+          },
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments',
+            },
+            starts: [132],
+            ends: [141],
+          },
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/API/NodeList',
+            },
+            starts: [145],
+            ends: [153],
+          },
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray',
+            },
+            starts: [156],
+            ends: [166],
+          },
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map',
+            },
+            starts: [168],
+            ends: [171],
+          },
+          {
+            type: 'link',
+            attributes: {
+              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set',
+            },
+            starts: [173],
+            ends: [176],
+          },
+        ],
+        text: 'The for...of statement creates a loop iterating over iterable objects, including: built-in String, Array, array-like objects (e.g., arguments or NodeList), TypedArray, Map, Set, and user-defined iterables. It invokes a custom iteration hook with statements to be executed for the value of each distinct property of the object. ',
+      },
+    },
+  },
+  {
+    op: {
+      $case: 'moveBlock',
+      moveBlock: {parent: '', leftSibling: 'A_BrRYGH', blockId: 'OUc3M5Nk'},
+    },
+  },
+  {
+    op: {
+      $case: 'setTitle',
+      setTitle:
+        'The for...of statement creates a loop iterating over iterable objects, including: built-in String, Array, array-like objects (e.g., arguments or NodeList), TypedArray, Map, Set, and user-defined iterables. It invokes a custom iteration hook with statements to be executed for the value of each distinct property of the object. ',
+    },
+  },
+]

@@ -3,7 +3,6 @@ import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {changesService} from '@app/editor/mintter-changes/plugin'
 import {queryKeys} from '@app/hooks'
 import {useMainPage} from '@app/main-page-context'
-import {info} from '@app/utils/logger'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast'
 import {useMachine} from '@xstate/react'
 import {useEffect} from 'react'
@@ -279,9 +278,6 @@ export function draftEditorMachine({
                   return getDraft(draftId)
                 },
               )
-
-              info('Fetch result')
-              info(JSON.stringify(data))
 
               sendBack({type: 'EDITOR.REPORT.FETCH.SUCCESS', data})
             } catch (err: any) {

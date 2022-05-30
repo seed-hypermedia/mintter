@@ -34,7 +34,7 @@ export let embedMachine = createMachine({
     block: null,
   },
   tsTypes: {} as import('./embed-machine.typegen').Typegen0,
-  schema: {context: {} as EmbedMachineContext, events: {} as any},
+  schema: {context: {} as EmbedMachineContext, events: {} as EmbedMachineEvent},
   id: 'embedMachine',
   initial: 'loading',
   states: {
@@ -75,9 +75,7 @@ export let embedMachine = createMachine({
         },
       },
     },
-    ready: {
-      always: [],
-    },
+    ready: {},
     error: {
       on: {
         RETRY: {

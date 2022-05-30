@@ -14,6 +14,7 @@ import {draftEditorMachine, useEditorDraft} from '@app/editor/use-editor-draft'
 import {useMainPage, useParams} from '@app/main-page-context'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {getDateFormat} from '@app/utils/get-format-date'
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {
@@ -134,6 +135,7 @@ export default function EditorPage({
                   ]
                 : contentChanges
 
+              debug('=== CHANGES:', JSON.stringify(changes, null, 3))
               try {
                 await updateDraft({
                   documentId: context.localDraft!.id!,

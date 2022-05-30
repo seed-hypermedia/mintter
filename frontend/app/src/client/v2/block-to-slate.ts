@@ -1,7 +1,7 @@
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
 import {Annotation, Block, BlockNode} from '@app/client'
 import {debug} from '@app/utils/logger'
-import {FlowContent, group, PhrasingContent} from '@mintter/mttast'
+import {FlowContent, group, isText, PhrasingContent} from '@mintter/mttast'
 // import { interpret } from "xstate";
 import {annotationContains} from './classes'
 
@@ -94,7 +94,11 @@ export function blockToSlate(blk: Block): FlowContent {
       finishLeaf(textStart, i + 1)
 
       if (linkOrEmbed) {
+        if (!isText(leaves[leaves.length - 1])) {
+          leaves.push({type: 'text', value: ''})
+        }
         leaves.push(linkOrEmbed)
+        leaves.push({type: 'text', value: ''})
         linkOrEmbed = null
       }
 
@@ -155,6 +159,7 @@ export function blockToSlate(blk: Block): FlowContent {
           'underline',
           'superscript',
           'subscript',
+          'code',
         ].includes(l.type)
       ) {
         leaf[l.type] = true
@@ -164,7 +169,11 @@ export function blockToSlate(blk: Block): FlowContent {
     if (linkAnnotation) {
       if (linkOrEmbed) {
         if (linkChangedIdentity(linkAnnotation)) {
+          if (!isText(leaves[leaves.length - 1])) {
+            leaves.push({type: 'text', value: ''})
+          }
           leaves.push(linkOrEmbed)
+          leaves.push({type: 'text', value: ''})
           linkOrEmbed = {
             type: (linkAnnotation as Annotation).type,
             ...(linkAnnotation as Annotation).attributes,
@@ -180,7 +189,11 @@ export function blockToSlate(blk: Block): FlowContent {
       }
     } else {
       if (linkOrEmbed) {
+        if (!isText(leaves[leaves.length - 1])) {
+          leaves.push({type: 'text', value: ''})
+        }
         leaves.push(linkOrEmbed)
+        leaves.push({type: 'text', value: ''})
         linkOrEmbed = null
       }
     }

@@ -24,7 +24,7 @@ export interface UnhangRangeOptions {
 /**
  * unhangRange:
  *
- * sometimes selections starts at the fvery start or end of other nodes.
+ * sometimes selections starts at the very start or end of other nodes.
  * this causes some troubles when transforming nodes.
  * `unhangRange` removes the remaining selection portion of a node in the selection.
  *

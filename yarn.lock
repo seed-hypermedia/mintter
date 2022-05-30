@@ -1767,6 +1767,7 @@ __metadata:
     rehype-sanitize: 5.0.1
     rehype-stringify: 9.0.3
     shiki: 0.10.1
+    show-keys: ^1.1.2
     slate: "github:mintterteam/slate#workspace=slate&tag=v0.80.0-unist"
     slate-history: "github:mintterteam/slate#workspace=slate-history&tag=v0.80.0-unist"
     slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&tag=v0.80.0-unist"
@@ -13017,6 +13018,13 @@ __metadata:
     vscode-oniguruma: ^1.6.1
     vscode-textmate: 5.2.0
   checksum: fb746f3cb3de7e545e3b10a6cb658d3938f840e4ccc9a3c90ceb7e69a8f89dbb432171faac1e9f02a03f103684dad88ee5e54b5c4964fa6b579fca6e8e26424d
+  languageName: node
+  linkType: hard
+
+"show-keys@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "show-keys@npm:1.1.2"
+  checksum: bce9370e2d5b5e46f07729db440167ebeb69e9e2f84ae638e19b9cacae23858ce37aca4d4ef2398e92c29764c11b08f853efa534629f4cc361c14f26ce7cea57
   languageName: node
   linkType: hard
 

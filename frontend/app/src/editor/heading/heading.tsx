@@ -95,6 +95,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
               )
               changesService.addChange(['replaceBlock', node.id])
               changesService.addChange(['moveBlock', newBlock.id])
+              changesService.addChange(['replaceBlock', newBlock.id])
             })
             return
           }

@@ -1,41 +1,33 @@
 import * as tauriLog from 'tauri-plugin-log-api'
 
-export const error = (message: string) => {
-  if (import.meta.env.TAURI_DEBUG) {
-    tauriLog.error(message)
-  } else {
-    console.error(message)
-  }
-}
+type FnType = 'error' | 'warn' | 'info' | 'debug' | 'trace'
 
-export const warn = (message: string) => {
-  if (import.meta.env.TAURI_DEBUG) {
-    tauriLog.warn(message)
-  } else {
-    console.warn(message)
-  }
-}
+export var error = loggerFactory('error')
+export var warn = loggerFactory('warn')
+export var info = loggerFactory('info')
+export var debug = loggerFactory('debug')
+export var trace = loggerFactory('trace')
 
-export const info = (message: string) => {
-  if (import.meta.env.TAURI_DEBUG) {
-    tauriLog.info(message)
-  } else {
-    console.log(message)
-  }
-}
+function loggerFactory(cb: FnType) {
+  let fn = import.meta.env.TAURI_DEBUG
+    ? tauriLog[cb]
+    : (m: string) => Promise.resolve(console[cb](m))
 
-export const debug = (message: string) => {
-  if (import.meta.env.TAURI_DEBUG) {
-    tauriLog.debug(message)
-  } else {
-    console.debug(message)
-  }
-}
+  return function actualLogger(...args: Array<any>): Promise<void> {
+    if (args.length == 1) {
+      return fn(args[0])
+    } else {
+      let message = args
+        .map((v) => {
+          if (typeof v == 'string') {
+            return v
+          } else {
+            return JSON.stringify(v)
+          }
+        })
+        .join(', ')
 
-export const trace = (message: string) => {
-  if (import.meta.env.TAURI_DEBUG) {
-    tauriLog.trace(message)
-  } else {
-    console.trace(message)
+      return fn(message)
+    }
   }
 }

@@ -12,7 +12,6 @@ describe('Editor Page', () => {
 
     let publication: Publication = {
       version: '1',
-      latestVersion: '1',
       document: {
         id: 'foo',
         title: 'test demo',

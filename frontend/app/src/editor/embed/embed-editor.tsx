@@ -4,9 +4,9 @@ import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {getEmbedIds} from '@app/editor/embed'
 import {queryKeys} from '@app/hooks'
 import {useMachine} from '@xstate/react'
-import {ForwardedRef, forwardRef} from 'react'
+import {ForwardedRef, forwardRef, memo} from 'react'
 import {useQueryClient} from 'react-query'
-import {RenderElementProps} from 'slate-react'
+import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {assign} from 'xstate'
 import {Editor} from '../editor'
@@ -22,7 +22,7 @@ export type EmbedEditorProps = Pick<
   onClick?: any
 }
 
-export const EmbedEditor = forwardRef(RenderEmbedEditor)
+export const EmbedEditor = memo(forwardRef(RenderEmbedEditor))
 
 function RenderEmbedEditor(
   {embed, children, attributes, ...props}: EmbedEditorProps,
@@ -30,6 +30,9 @@ function RenderEmbedEditor(
 ) {
   let client = useQueryClient()
   let [publicationId, version, blockId] = getEmbedIds(embed)
+  let selected = useSelected()
+  let focused = useFocused()
+
   let [state] = useMachine(() =>
     embedMachine.withConfig({
       actions: {
@@ -54,7 +57,14 @@ function RenderEmbedEditor(
             async ({queryKey}) => {
               const [, publicationId] = queryKey as [string, string]
               try {
-                let publication = await getPublication(publicationId, version)
+                let publication = await client.fetchQuery(
+                  [queryKeys.GET_PUBLICATION, publicationId, version],
+                  async ({queryKey}) => {
+                    let [, docId, version] = queryKey
+                    let pub = await getPublication(docId, version)
+                    return pub
+                  },
+                )
                 sendBack({type: 'REPORT.PUBLICATION.SUCCESS', publication})
               } catch (e: any) {
                 sendBack({
@@ -112,6 +122,10 @@ function RenderEmbedEditor(
         {...attributes}
         contentEditable={false}
         ref={ref}
+        css={{
+          backgroundColor:
+            selected && focused ? '$colors$primary-component-bg-hover' : 'none',
+        }}
       >
         <Editor
           as="span"

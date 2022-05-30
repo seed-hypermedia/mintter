@@ -166,6 +166,7 @@ describe('Transform: blockToSlate', () => {
         paragraph([
           text('hello '),
           link({url: 'https://mintter.com'}, [text('Mintter')]),
+          text(''),
         ]),
       ])
 
@@ -190,7 +191,9 @@ describe('Transform: blockToSlate', () => {
 
       let output: Statement = statement({id: 'blockId'}, [
         paragraph([
+          text(''),
           link({url: 'https://hola.com'}, [text('A', {strong: true})]),
+          text(''),
           text('B'),
         ]),
       ])
@@ -221,8 +224,11 @@ describe('Transform: blockToSlate', () => {
 
       let output = statement({id: 'blockId'}, [
         paragraph([
+          text(''),
           link({url: 'https://mintter.com'}, [text('Mintter')]),
+          text(''),
           link({url: 'https://demo.com'}, [text('demo')]),
+          text(''),
         ]),
       ])
 
@@ -252,6 +258,7 @@ describe('Transform: blockToSlate', () => {
             text('Mintter '),
             text('team!', {strong: true}),
           ]),
+          text(''),
         ]),
       ])
 
@@ -276,7 +283,11 @@ describe('Transform: blockToSlate', () => {
       })
 
       let output = statement({id: 'blockId'}, [
-        paragraph([embed({url: 'mtt://doc1/block1'}, [text('')])]),
+        paragraph([
+          text(''),
+          embed({url: 'mtt://doc1/block1'}, [text('')]),
+          text(''),
+        ]),
       ])
 
       expect(blockToSlate(input)).toEqual(output)
@@ -305,8 +316,11 @@ describe('Transform: blockToSlate', () => {
 
       let output = statement({id: 'blockId'}, [
         paragraph([
+          text(''),
           embed({url: 'mtt://doc1/block1'}, [text('')]),
+          text(''),
           embed({url: 'mtt://doc2/block2'}, [text('')]),
+          text(''),
         ]),
       ])
 
@@ -339,9 +353,11 @@ describe('Transform: blockToSlate', () => {
         paragraph([
           text('This '),
           embed({url: 'mtt://doc1/block1'}, [text('')]),
+          text(''),
           text(' and also this are very '),
           text('important: ', {strong: true}),
           embed({url: 'mtt://doc2/block2'}, [text('')]),
+          text(''),
         ]),
       ])
 
