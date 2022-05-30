@@ -23,8 +23,15 @@ import {
   useEffect,
   useState,
 } from 'react'
-import type {BaseRange, BaseSelection, Range} from 'slate'
-import {Editor, Element as SlateElement, Transforms} from 'slate'
+import {
+  BaseRange,
+  BaseSelection,
+  Editor,
+  Element as SlateElement,
+  Path,
+  Range,
+  Transforms,
+} from 'slate'
 import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
 import type {UseLastSelectionResult} from '../editor-hovering-toolbar'
 import type {EditorPlugin} from '../types'
@@ -181,8 +188,11 @@ export function insertLink(
     Transforms.insertNodes(editor, newLink, {at: selection})
   } else {
     Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
-    Transforms.collapse(editor, {edge: 'end'})
+    // Transforms.collapse(editor, {edge: 'end'})
   }
+  Transforms.insertNodes(editor, text(''), {
+    at: Path.next(selection.focus.path),
+  })
 
   addLinkChange(editor, selection)
 }

@@ -6,7 +6,7 @@ import {
 } from '@app/client/v2/change-creators'
 import {EditorPlugin} from '@app/editor/types'
 import {getBlock} from '@app/editor/utils'
-import {debug, info} from '@app/utils/logger'
+import {info} from '@app/utils/logger'
 import {FlowContent, isFlowContent} from '@mintter/mttast'
 import {Editor, Node, Operation, Path} from 'slate'
 
@@ -66,11 +66,11 @@ export function changesServiceCreator() {
           let entry = getBlock(editor!, {
             at: operation.path,
           })
+
           // TODO: wtf I wanted to do here?
-          debug('== insert_node entry ==')
-          debug(entry)
 
           addOperation(editor!, 'moveBlock', operation.node)
+          addOperation(editor!, 'replaceBlock', operation.node)
         } else {
           insertNode(editor!, operation.path)
         }

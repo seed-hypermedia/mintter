@@ -1,15 +1,19 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {useHoverBlockId} from '@app/editor/hover-context'
+import {changesService} from '@app/editor/mintter-changes/plugin'
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
-import type {Statement as StatementType} from '@mintter/mttast'
 import {
   createId,
+  FlowContent,
+  isEmbed,
   isFlowContent,
   isGroupContent,
   isParagraph,
   isStatement,
   paragraph,
   statement,
+  Statement as StatementType,
   text,
 } from '@mintter/mttast'
 import {Editor, Element, Node, NodeEntry, Path, Transforms} from 'slate'
@@ -127,9 +131,19 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
         if (currentEntry) {
           let [, path] = currentEntry
-          let newBlock = statement({id: createId()}, [paragraph([text('')])])
-          Transforms.insertNodes(editor, newBlock, {at: path})
-          return
+          let isEnd = Editor.isEnd(editor, selection.focus, path)
+          let isStart = Editor.isStart(editor, selection.anchor, path)
+          let isEmbedOnly = hasEmbedOnly(currentEntry)
+          debug('=== ISEND: ', {isEnd, isStart})
+          if (isEnd) {
+            insertBreak()
+          } else {
+            let newBlock = statement({id: createId()}, [paragraph([text('')])])
+            Transforms.insertNodes(editor, newBlock, {at: path})
+            changesService.addChange(['moveBlock', newBlock.id])
+            changesService.addChange(['replaceBlock', newBlock.id])
+            return
+          }
         }
       } else {
         insertBreak()
@@ -206,4 +220,23 @@ export function removeEmptyStatement(
       return true
     }
   }
+}
+
+function hasEmbedOnly(entry: NodeEntry<FlowContent>) {
+  let [node] = entry
+  let hasContent = !!Node.string(node)
+  let result = false
+
+  if (!hasContent) {
+    debug('=== hasContent == FALSE')
+    for (let childEntry of Node.descendants(node)) {
+      let [child] = childEntry
+
+      if (isEmbed(child)) {
+        debug('=== theres an EMBED!', child)
+        result = true
+      }
+    }
+  }
+  return result
 }

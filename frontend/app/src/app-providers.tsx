@@ -40,7 +40,6 @@ export function AppProviders({
         client
           .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
           .then(function (accountInfo) {
-            debug('accountInfo: SUCCESS', accountInfo)
             sendBack({type: 'REPORT.DEVICE.INFO.PRESENT', accountInfo})
           })
           .catch(function (err) {

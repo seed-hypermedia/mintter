@@ -57,6 +57,10 @@ export function blockToApi(slateBlock: FlowContent): Block {
       annotations.addSpan('subscript', null, start, end)
     }
 
+    if (leaf.code) {
+      annotations.addSpan('code', null, start, end)
+    }
+
     if (leaf.url) {
       if (leaf.value == '\uFFFC') {
         annotations.addSpan('embed', {url: leaf.url}, start, end)

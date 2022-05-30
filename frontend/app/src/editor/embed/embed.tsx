@@ -1,10 +1,9 @@
 import {useMainPage} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {error} from '@app/utils/logger'
+import {debug, error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
-import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import type {Embed as EmbedType} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
@@ -57,10 +56,11 @@ function RenderEmbed(
   {element, attributes, children}: EmbedProps,
   ref: ForwardedRef<HTMLQuoteElement>,
 ) {
-  const sidepanelService = useSidepanel()
   const bookmarksService = useBookmarksService()
   const mainPageService = useMainPage()
   const [pubId, version, blockId] = getIdsfromUrl(element.url)
+
+  debug('\n\n=== embed component render?')
 
   function addBookmark() {
     bookmarksService.send({
@@ -83,14 +83,6 @@ function RenderEmbed(
       version,
       blockId,
     })
-  }
-
-  function onOpenInSidepanel() {
-    sidepanelService.send({
-      type: 'SIDEPANEL.ADD',
-      item: {type: 'block', url: element.url},
-    })
-    sidepanelService.send('SIDEPANEL.OPEN')
   }
 
   async function onOpenInNewWindow() {
@@ -123,10 +115,6 @@ function RenderEmbed(
         <ContextMenu.Item onSelect={onGoToPublication}>
           <Icon name="ArrowTopRight" size="1" />
           <Text size="2">Open Embed in main Panel</Text>
-        </ContextMenu.Item>
-        <ContextMenu.Item onSelect={onOpenInSidepanel}>
-          <Icon name="ArrowTopRight" size="1" />
-          <Text size="2">Open Embed in sidepanel</Text>
         </ContextMenu.Item>
         <ContextMenu.Item onSelect={onOpenInNewWindow}>
           <Icon name="OpenInNewWindow" size="1" />
