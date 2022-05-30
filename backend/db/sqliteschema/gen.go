@@ -34,22 +34,6 @@ func generateSchema() error {
 		return err
 	}
 
-	// We need to manually set types for backlinks table,
-	// because it's a virtual table and there's no type information
-	// available inside the SQLite's table info.
-	{
-		col := sqlitegen.Column("backlinks.id")
-		info := schema.Columns[col]
-		info.SQLType = "INTEGER"
-		schema.Columns[col] = info
-	}
-	{
-		col := sqlitegen.Column("backlinks.depth")
-		info := schema.Columns[col]
-		info.SQLType = "INTEGER"
-		schema.Columns[col] = info
-	}
-
 	code, err := sqlitegen.CodegenSchema("sqliteschema", schema)
 	if err != nil {
 		return err

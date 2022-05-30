@@ -355,6 +355,57 @@ JOIN ipfs_blocks ON ipfs_blocks.id = documents.change_id
 	return out, err
 }
 
+func ContentLinksInsert(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string, contentLinksSourceChangeID int, contentLinksTargetDocumentID int, contentLinksTargetBlockID string, contentLinksTargetVersion string) error {
+	const query = `INSERT OR IGNORE INTO content_links (source_document_id, source_block_id, source_change_id, target_document_id, target_block_id, target_version)
+VALUES (:contentLinksSourceDocumentID, :contentLinksSourceBlockID, :contentLinksSourceChangeID, :contentLinksTargetDocumentID, :contentLinksTargetBlockID, :contentLinksTargetVersion)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":contentLinksSourceDocumentID", contentLinksSourceDocumentID)
+		stmt.SetText(":contentLinksSourceBlockID", contentLinksSourceBlockID)
+		stmt.SetInt(":contentLinksSourceChangeID", contentLinksSourceChangeID)
+		stmt.SetInt(":contentLinksTargetDocumentID", contentLinksTargetDocumentID)
+		stmt.SetText(":contentLinksTargetBlockID", contentLinksTargetBlockID)
+		stmt.SetText(":contentLinksTargetVersion", contentLinksTargetVersion)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ContentLinksInsert: %w", err)
+	}
+
+	return err
+}
+
+type BacklinksListByTargetDocumentResult struct {
+}
+
+func BacklinksListByTargetDocument(conn *sqlite.Conn, contentLinksTargetDocumentID int) ([]BacklinksListByTargetDocumentResult, error) {
+	const query = `WITH RECURSIVE parent AS (SELECT content_links.*, 1 AS level FROM content_links WHERE content_links.target_document_id = :contentLinksTargetDocumentID UNION ALL SELECT content_links.*, parent.level + 1 AS child_level FROM content_links parent WHERE parent.source_document_id = content_links.target_document_id AND child_level <= 2 ORDER BY child_level) SELECT  FROM parent`
+
+	var out []BacklinksListByTargetDocumentResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":contentLinksTargetDocumentID", contentLinksTargetDocumentID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, BacklinksListByTargetDocumentResult{})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: BacklinksListByTargetDocument: %w", err)
+	}
+
+	return out, err
+}
+
 type DevicesLookupPKResult struct {
 	DevicesID int
 }

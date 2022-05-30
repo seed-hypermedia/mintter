@@ -4,6 +4,7 @@
 package vcssql
 
 import (
+	"fmt"
 	"io/ioutil"
 	sgen "mintter/backend/db/sqlitegen"
 	"mintter/backend/db/sqlitegen/qb"
@@ -151,6 +152,42 @@ var (
 			), '\n',
 			"FROM", s.Documents, '\n',
 			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.DocumentsChangeID, '\n',
+		),
+	)
+
+	contentLinks = add(
+		qb.MakeQuery(s.Schema, "ContentLinksInsert", sgen.QueryKindExec,
+			"INSERT OR IGNORE INTO", s.ContentLinks, qb.ListColShort(
+				s.ContentLinksSourceDocumentID,
+				s.ContentLinksSourceBlockID,
+				s.ContentLinksSourceChangeID,
+				s.ContentLinksTargetDocumentID,
+				s.ContentLinksTargetBlockID,
+				s.ContentLinksTargetVersion,
+			), '\n',
+			"VALUES", qb.List(
+				qb.VarCol(s.ContentLinksSourceDocumentID),
+				qb.VarCol(s.ContentLinksSourceBlockID),
+				qb.VarCol(s.ContentLinksSourceChangeID),
+				qb.VarCol(s.ContentLinksTargetDocumentID),
+				qb.VarCol(s.ContentLinksTargetBlockID),
+				qb.VarCol(s.ContentLinksTargetVersion),
+			),
+		),
+		qb.MakeQuery(s.Schema, "BacklinksListByTargetDocument", sgen.QueryKindMany,
+			"WITH RECURSIVE",
+			"parent AS", qb.SubQuery(
+				"SELECT", fmt.Sprintf("%s.*, 1 AS level", s.ContentLinks),
+				"FROM", s.ContentLinks, "WHERE", s.ContentLinksTargetDocumentID, "=", qb.VarCol(s.ContentLinksTargetDocumentID),
+				"UNION ALL",
+				"SELECT", fmt.Sprintf("%s.*, parent.level + 1 AS child_level", s.ContentLinks),
+				"FROM", s.ContentLinks, "parent",
+				"WHERE", "parent."+s.ContentLinksSourceDocumentID.ShortName(), "=", s.ContentLinksTargetDocumentID,
+				"AND child_level <= 2", // hardcoded backlinks depth
+				"ORDER BY child_level",
+			),
+			"SELECT", qb.Results(),
+			"FROM parent",
 		),
 	)
 

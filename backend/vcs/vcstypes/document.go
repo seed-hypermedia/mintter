@@ -172,6 +172,17 @@ type Block struct {
 	Annotations []Annotation      `refmt:"annotations,omitempty"`
 }
 
+func (b Block) ForEachLink(f func() bool) {
+	for _, a := range b.Annotations {
+		// if a.Type != ""
+
+		_ = a
+		if !f() {
+			return
+		}
+	}
+}
+
 type Annotation struct {
 	Type       string            `refmt:"type,omitempty""`
 	Attributes map[string]string `refmt:"attributes,omitempty"`
