@@ -72,7 +72,7 @@
     "react-hot-toast": "2.2.0",
     "react-qr-barcode-scanner": "1.0.6",
     "react-qr-code": "2.0.7",
-    "react-query": "3.39.0",
+    "react-query": "3.39.1",
     "rehype": "12.0.1",
     "rehype-parse": "8.0.4",
     "rehype-sanitize": "5.0.1",
