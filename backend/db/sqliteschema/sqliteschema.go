@@ -174,48 +174,15 @@ var migrations = []string{
 		CHECK(id != change_id)
 	) WITHOUT ROWID;
 
-	-- Index for links from Documents.
-	CREATE TABLE links (
-		-- Alias to the rowid so we can delete links efficiently.
-		id INTEGER PRIMARY KEY,
-		-- Reference to Document ID from which link originates.
-		source_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-		-- Block ID inside the Document which contains the link.
-		source_block_id TEXT NOT NULL CHECK (source_block_id != ''),
-		-- Reference to the IPFS block of the change that introduced the link.
-		-- Only required for publications. Otherwise the link is from the current draft.
-		source_ipfs_block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE,
-		-- Reference to Document ID that is linked.
-		target_object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-		-- Block ID that is linked. Can be NULL if links is to the whole Document.
-		target_block_id TEXT NOT NULL DEFAULT '',
-		-- Version of the target Document that is linked.
-		target_version TEXT NOT NULL CHECK (target_version != ''),
-		UNIQUE (source_object_id, source_block_id, target_object_id, target_block_id, target_version)
-	);
-
-	-- Trigger to delete links when drafts are deleted.
-	CREATE TRIGGER trg_drafts_delete_links AFTER DELETE ON drafts
-	BEGIN
-		DELETE FROM links
-		WHERE source_object_id = old.id
-		AND source_ipfs_block_id IS NULL;
-	END;
-
-	-- Index to request outgoing links by source object ID.
-	CREATE INDEX idx_links_source_object_id ON links (source_object_id);
-
-	-- Index for backlinks.
-	CREATE INDEX idx_links_target_object_id ON links (target_object_id);
-
-	-- Virtual table for backlinks.
-	CREATE VIRTUAL TABLE backlinks USING transitive_closure (
-		tablename = 'links',
-		-- We need to treat target documents as parents
-		-- for transitive closure to inclide the source documents.
-		idcolumn = 'source_object_id',
-		parentcolumn = 'target_object_id'
-	);
+	CREATE TABLE content_links (
+		source_document_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
+		source_block_id TEXT NOT NULL,
+		source_change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		target_document_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
+		target_block_id TEXT NOT NULL,
+		target_version TEXT NOT NULL,
+		PRIMARY KEY (target_document_id, target_block_id, target_version, source_document_id, source_block_id, source_change_id)
+	) WITHOUT ROWID;
 
 	-- Stores Lightning wallets both externals (imported wallets like bluewallet
 	-- based on lndhub) and internals (based on the LND embedded node).
