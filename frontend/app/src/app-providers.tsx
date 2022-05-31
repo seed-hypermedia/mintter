@@ -13,6 +13,7 @@ import {themeMachine, ThemeProvider} from './theme'
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      useErrorBoundary: true,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       retry: false,

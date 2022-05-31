@@ -187,17 +187,6 @@ type MainPageEvent =
     type: 'goToDraftList'
   }
   | {
-    type: 'goToNew'
-    docType?: string
-    docId?: string
-    version?: string
-    blockId?: string
-    replace: boolean
-  }
-  | {
-    type: 'toNewDraft'
-  }
-  | {
     type: 'goBack'
   }
   | {
@@ -206,6 +195,11 @@ type MainPageEvent =
   | {
     type: 'SET.CURRENT.DOCUMENT'
     document: EditorDocument
+  } | {
+    type: 'CREATE_NEW_DRAFT'
+  } | {
+    type: 'OPEN_WINDOW'
+    path?: string
   }
 
 type RouterEvent =
@@ -411,21 +405,11 @@ export function createMainPageMachine(client: QueryClient) {
             goToPublication: {
               target: '.publication',
             },
-            goToNew: [
-              {
-                cond: 'isPublication',
-                target: '.publication',
-              },
-              {
-                cond: 'isDraft',
-                target: '.editor',
-              },
-              {
-                target: '.createDraft',
-              },
-            ],
-            toNewDraft: {
+            CREATE_NEW_DRAFT: {
               target: '.createDraft',
+            },
+            OPEN_WINDOW: {
+              actions: 'openWindow'
             },
           },
         },
@@ -454,6 +438,9 @@ export function createMainPageMachine(client: QueryClient) {
         },
       },
       actions: {
+        openWindow: async (context, event) => {
+          openWindow(event.path)
+        },
         pushToRecents: assign((context, event) => {
           let location = window.location.pathname
 
@@ -591,14 +578,6 @@ export function createMainPageMachine(client: QueryClient) {
                 })
                 : sendBack('routeNotFound')
             })
-            .on<{
-              docType?: string
-              docId?: string
-              version?: string
-              blockId?: string
-            }>('/new/:docType?/:docId?/:version?/:blockId?', (params) => {
-              sendBack({ type: 'goToNew', ...params, replace: true })
-            })
 
           receive((event: RouterEvent) => {
 
@@ -643,4 +622,18 @@ export function createMainPageMachine(client: QueryClient) {
       },
     },
   )
+}
+
+
+function openWindow(path?: string) {
+  if (path) {
+    // Open window with path
+    debug('OPEN WINDOW WITH PATH', path)
+  } else {
+    createDraft().then(doc => {
+      let path = `/editor/${doc.id}`
+      // open window with new path
+      debug('OPEN WINDOW WITH NEW PATH', path)
+    })
+  }
 }

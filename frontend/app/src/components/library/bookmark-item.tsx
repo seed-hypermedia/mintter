@@ -38,8 +38,6 @@ export function BookmarkItem({
     },
   })
 
-  debug('deleteState', deleteState)
-
   async function onCopy() {
     await copyTextToClipboard(state.context.url)
     toast.success('Bookmark ID copied successfully', {position: 'top-center'})
@@ -47,12 +45,6 @@ export function BookmarkItem({
 
   function onMainPanel() {
     let [docId, version, blockId] = getIdsfromUrl(state.context.url)
-    debug(
-      '🚀 ~ file: bookmark-item.tsx ~ line 47 ~ onMainPanel ~ docId, version, blockId',
-      docId,
-      version,
-      blockId,
-    )
     mainService.send({
       type: 'goToPublication',
       docId,

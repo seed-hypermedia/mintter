@@ -1,20 +1,14 @@
-import {useFiles} from '@app/main-page-context'
+import {useFiles, useMainPage} from '@app/main-page-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {footerButtonsStyles, footerStyles} from '@components/page-footer'
 import {Text} from '@components/text'
-import {invoke} from '@tauri-apps/api'
 
 export function PublicationList() {
   let files = useFiles()
-  let {createDraft} = useCreateDraft()
-
-  async function onOpenInNewWindow() {
-    await invoke('plugin:window|open_in_new_window', {path: `/new`})
-  }
+  let mainService = useMainPage()
 
   return (
     <>
@@ -43,7 +37,11 @@ export function PublicationList() {
               }}
             >
               <Text>No Publications yet.</Text>
-              <Button onClick={() => createDraft()} size="1" variant="outlined">
+              <Button
+                onClick={() => mainService.send('CREATE_NEW_DRAFT')}
+                size="1"
+                variant="outlined"
+              >
                 Create a new Document
               </Button>
             </Box>
@@ -52,7 +50,11 @@ export function PublicationList() {
       </Box>
       <Box className={footerStyles()}>
         <Box className={footerButtonsStyles()}>
-          <Button onClick={onOpenInNewWindow} size="1" color="primary">
+          <Button
+            onClick={() => mainService.send('OPEN_WINDOW')}
+            size="1"
+            color="primary"
+          >
             New Document
           </Button>
         </Box>

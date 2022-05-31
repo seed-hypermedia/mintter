@@ -1,10 +1,8 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
-import {useAccount} from '@app/hooks'
 import {useMainPage, usePageTitle} from '@app/main-page-context'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
@@ -56,13 +54,7 @@ export function Topbar({copy = copyTextToClipboard}) {
   let bookmarkService = useBookmarksService()
   let [mainState] = useActor(mainPage)
   let title = usePageTitle()
-  let {data, isSuccess, isError} = useAccount(
-    mainState.context.document?.author,
-  )
-
-  if (isError) {
-    error('accountError!')
-  }
+  // let {data, isSuccess} = useAccount(mainState.context.document?.author)
 
   function toggleLibrary() {
     mainState.context.library.send('LIBRARY.TOGGLE')
@@ -140,7 +132,7 @@ export function Topbar({copy = copyTextToClipboard}) {
             <Text size="1" color="muted">
               by
             </Text>
-            {isSuccess ? (
+            {/* {isSuccess ? (
               <Text
                 size="1"
                 color="muted"
@@ -153,7 +145,7 @@ export function Topbar({copy = copyTextToClipboard}) {
               <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
                 ...
               </Text>
-            )}
+            )} */}
           </>
         ) : null}
       </Box>
