@@ -1,15 +1,17 @@
 import {StrictMode} from 'react'
-import {hydrate} from 'react-dom'
+import {createRoot} from 'react-dom/client'
 import {ReactQueryDevtools} from 'react-query/devtools'
 import {App} from './app'
 import {AppProviders} from './app-providers'
 
-hydrate(
+var container = document.getElementById('root')
+var root = createRoot(container)
+
+root.render(
   <StrictMode>
     <AppProviders>
       <App />
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </AppProviders>
   </StrictMode>,
-  document.getElementById('root'),
 )

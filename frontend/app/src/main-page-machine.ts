@@ -1,18 +1,12 @@
-import {EditorDocument} from '@app/editor/use-editor-draft'
-import {queryKeys} from '@app/hooks'
-import {debug} from '@app/utils/logger'
-import {libraryMachine} from '@components/library/library-machine'
+import { EditorDocument } from '@app/editor/use-editor-draft'
+import { queryKeys } from '@app/hooks'
+import { debug } from '@app/utils/logger'
+import { libraryMachine } from '@components/library/library-machine'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
-import {QueryClient} from 'react-query'
-import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
-import {
-  createDraft,
-  Document,
-  listDrafts,
-  listPublications,
-  Publication,
-} from './client'
+import { QueryClient } from 'react-query'
+import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
+import { createDraft, Document, listDrafts, listPublications, Publication } from './client'
 
 export function createFilesMachine(client: QueryClient) {
   return createMachine(
@@ -40,7 +34,7 @@ export function createFilesMachine(client: QueryClient) {
                       ...pub,
                       ref: 'TODO',
                     }))
-                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
+                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                   })
               },
             },
@@ -85,10 +79,10 @@ type FilesContext<T = any> = {
 
 type FilesEvent<T = any> =
   | {
-      type: 'REPORT.DATA.SUCCESS'
-      data: Array<T>
-    }
-  | {type: 'RECONCILE'}
+    type: 'REPORT.DATA.SUCCESS'
+    data: Array<T>
+  }
+  | { type: 'RECONCILE' }
 
 function createDraftsMachine(client: QueryClient) {
   return createMachine(
@@ -114,7 +108,7 @@ function createDraftsMachine(client: QueryClient) {
                       ...doc,
                       ref: 'TODO',
                     }))
-                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
+                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                   })
               },
             },
@@ -154,6 +148,7 @@ export type MainPageContext = {
     docId: string
     version: string | null
     blockId: string | null
+    replace: boolean
   }
   document: EditorDocument | null
   recents: Array<string>
@@ -163,84 +158,86 @@ export type MainPageContext = {
 }
 
 type MainPageEvent =
-  | {type: 'RECONCILE'}
+  | { type: 'RECONCILE' }
   | {
-      type: 'routeNotFound'
-    }
+    type: 'routeNotFound'
+  }
   | {
-      type: 'goToEditor'
-      docId: string
-    }
+    type: 'goToEditor'
+    docId: string,
+    replace?: boolean
+  }
   | {
-      type: 'goToPublication'
-      docId: string
-      version?: string
-      blockId?: string
-      replace?: boolean
-    }
+    type: 'goToPublication'
+    docId: string
+    version?: string
+    blockId?: string
+    replace?: boolean
+  }
   | {
-      type: 'goToSettings'
-    }
+    type: 'goToSettings'
+  }
   | {
-      type: 'goToHome'
-    }
+    type: 'goToHome'
+  }
   | {
-      type: 'goToPublicationList'
-    }
+    type: 'goToPublicationList'
+  }
   | {
-      type: 'goToDraftList'
-    }
+    type: 'goToDraftList'
+  }
   | {
-      type: 'goToNew'
-      docType?: string
-      docId?: string
-      version?: string
-      blockId?: string
-    }
+    type: 'goToNew'
+    docType?: string
+    docId?: string
+    version?: string
+    blockId?: string
+    replace: boolean
+  }
   | {
-      type: 'toNewDraft'
-    }
+    type: 'toNewDraft'
+  }
   | {
-      type: 'goBack'
-    }
+    type: 'goBack'
+  }
   | {
-      type: 'goForward'
-    }
+    type: 'goForward'
+  }
   | {
-      type: 'SET.CURRENT.DOCUMENT'
-      document: EditorDocument
-    }
+    type: 'SET.CURRENT.DOCUMENT'
+    document: EditorDocument
+  }
 
 type RouterEvent =
   | {
-      type: 'pushHome'
-    }
+    type: 'pushHome'
+  }
   | {
-      type: 'pushPublication'
-      docId: string
-      version: string
-      blockId?: string
-      replace?: boolean
-    }
+    type: 'pushPublication'
+    docId: string
+    version: string
+    blockId?: string
+    replace?: boolean
+  }
   | {
-      type: 'pushDraft'
-      docId: string
-      replace?: boolean
-    }
+    type: 'pushDraft'
+    docId: string
+    replace?: boolean
+  }
   | {
-      type: 'pushSettings'
-    }
+    type: 'pushSettings'
+  }
   | {
-      type: 'pushPublicationList'
-    }
+    type: 'pushPublicationList'
+  }
   | {
-      type: 'pushDraftList'
-    }
+    type: 'pushDraftList'
+  }
 
 export function defaultMainPageContext(
   client: QueryClient,
   overrides: Partial<MainPageContext> = {
-    params: {docId: '', version: null, blockId: null},
+    params: { docId: '', version: null, blockId: null, replace: false },
   },
 ) {
   return () => ({
@@ -264,7 +261,7 @@ export function createMainPageMachine(client: QueryClient) {
     {
       context: defaultMainPageContext(client),
       tsTypes: {} as import('./main-page-machine.typegen').Typegen2,
-      schema: {context: {} as MainPageContext, events: {} as MainPageEvent},
+      schema: { context: {} as MainPageContext, events: {} as MainPageEvent },
       invoke: {
         src: 'router',
         id: 'router',
@@ -412,11 +409,6 @@ export function createMainPageMachine(client: QueryClient) {
               target: '.editor',
             },
             goToPublication: {
-              actions: [
-                (...all: any) => {
-                  debug(`goToPublication ${all}`)
-                },
-              ],
               target: '.publication',
             },
             goToNew: [
@@ -452,11 +444,11 @@ export function createMainPageMachine(client: QueryClient) {
         isPublication: (_, event) => event.docType == 'p',
         isDraft: (_, event) => event.docType == 'editor',
         isMetaEventDifferent: (context, _, meta) => {
-          let {type, ...eventParams} = meta.state.event
+          let { type, ...eventParams } = meta.state.event
           return !isEqual(context.params, eventParams)
         },
         isEventDifferent: (context, event) => {
-          let {type, ...eventParams} = event
+          let { type, ...eventParams } = event
           let result = !isEqual(context.params, eventParams)
           return result
         },
@@ -486,20 +478,22 @@ export function createMainPageMachine(client: QueryClient) {
         }),
         setDraftParams: assign({
           params: (_, e, meta) => {
-            let {event} = meta.state
+            let { event } = meta.state
             return {
               docId: event.docId,
+              replace: event.replace,
             }
           },
         }),
         setPublicationParams: assign({
-          params: (c, e, m) => {
-            let {replace, type, ...rest} = m.state?.event
-            debug('setPublicationParams', rest, e, m)
+          params: (c, e, meta) => {
+            // debug('\n\n === setPublicationParams: ', JSON.stringify({ c, e, meta }))
+            let { event } = meta.state
             return {
-              docId: rest.docId,
-              version: rest.version,
-              blockId: rest.blockId,
+              docId: event.docId,
+              version: event.version,
+              blockId: event.blockId,
+              replace: event.replace,
             }
           },
         }),
@@ -510,9 +504,10 @@ export function createMainPageMachine(client: QueryClient) {
               docId: context.params.docId,
               version: context.params.version,
               blockId: context.params.blockId,
+              replace: context.params.replace,
             }
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         pushDraftRoute: send(
           (context) => {
@@ -520,15 +515,16 @@ export function createMainPageMachine(client: QueryClient) {
               type: 'pushDraft',
               docId: context.params.docId,
               blockId: context.params.blockId,
+              replace: context.params.replace,
             }
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         pushSettings: send(
           {
             type: 'pushSettings',
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         clearParams: assign((_) => ({
           params: {
@@ -549,13 +545,13 @@ export function createMainPageMachine(client: QueryClient) {
           {
             type: 'pushDraftList',
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         pushPublicationListRoute: send(
           {
             type: 'pushPublicationList',
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
       },
       services: {
@@ -575,9 +571,9 @@ export function createMainPageMachine(client: QueryClient) {
             .on('/drafts', () => {
               sendBack('goToDraftList')
             })
-            .on<{docId: string}>('/editor/:docId', (params) => {
+            .on<{ docId: string }>('/editor/:docId', (params) => {
               return params
-                ? sendBack({type: 'goToEditor', ...params})
+                ? sendBack({ type: 'goToEditor', ...params })
                 : sendBack('routeNotFound')
             })
             .on<{
@@ -588,11 +584,11 @@ export function createMainPageMachine(client: QueryClient) {
               debug('params:', params)
               return params
                 ? sendBack({
-                    type: 'goToPublication',
-                    docId: params.docId,
-                    version: params.version,
-                    blockId: params.blockId,
-                  })
+                  type: 'goToPublication',
+                  docId: params.docId,
+                  version: params.version,
+                  blockId: params.blockId,
+                })
                 : sendBack('routeNotFound')
             })
             .on<{
@@ -601,31 +597,35 @@ export function createMainPageMachine(client: QueryClient) {
               version?: string
               blockId?: string
             }>('/new/:docType?/:docId?/:version?/:blockId?', (params) => {
-              sendBack({type: 'goToNew', ...params})
+              sendBack({ type: 'goToNew', ...params, replace: true })
             })
 
           receive((event: RouterEvent) => {
+
             if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
-              navRouter.route(
-                `/p/${event.docId}${
-                  event.version
-                    ? `/${event.version}${
-                        event.blockId ? `/${event.blockId}` : ''
-                      }`
-                    : ''
-                }`,
-                event.replace,
-              )
+              let { pathname } = window.location
+              let newRoute = `/p/${event.docId}${event.version
+                ? `/${event.version}${event.blockId ? `/${event.blockId}` : ''
+                }`
+                : ''
+                }`
+              if (pathname != newRoute) {
+                navRouter.route(newRoute, event.replace)
+              }
             } else if (event.type == 'pushDraft') {
-              navRouter.route(`/editor/${event.docId}`, event.replace)
-            } else if (event.type == 'pushSettings') {
-              navRouter.route('/settings')
+              let { pathname } = window.location
+              let newRoute = `/editor/${event.docId}`
+              if (pathname != newRoute) {
+                navRouter.route(newRoute, event.replace)
+              }
             } else if (event.type == 'pushPublicationList') {
               navRouter.route('/publications')
             } else if (event.type == 'pushDraftList') {
               navRouter.route('/drafts')
+            } else if (event.type == 'pushSettings') {
+              navRouter.route('/settings')
             } else {
               navRouter.route('/')
             }
@@ -637,103 +637,10 @@ export function createMainPageMachine(client: QueryClient) {
         },
         createNewDraft: () => (sendBack) => {
           createDraft().then((document) => {
-            sendBack({type: 'goToEditor', docId: document.id})
+            sendBack({ type: 'goToEditor', docId: document.id, replace: true })
           })
         },
       },
     },
   )
 }
-
-let chhchchc = [
-  {
-    op: {
-      $case: 'replaceBlock',
-      replaceBlock: {
-        id: 'A_BrRYGH',
-        type: 'statement',
-        annotations: [
-          {type: 'strong', attributes: {}, starts: [4], ends: [22]},
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_iterable_protocol',
-            },
-            starts: [53],
-            ends: [69],
-          },
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String',
-            },
-            starts: [91],
-            ends: [97],
-          },
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array',
-            },
-            starts: [99],
-            ends: [104],
-          },
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments',
-            },
-            starts: [132],
-            ends: [141],
-          },
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/API/NodeList',
-            },
-            starts: [145],
-            ends: [153],
-          },
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray',
-            },
-            starts: [156],
-            ends: [166],
-          },
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map',
-            },
-            starts: [168],
-            ends: [171],
-          },
-          {
-            type: 'link',
-            attributes: {
-              url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set',
-            },
-            starts: [173],
-            ends: [176],
-          },
-        ],
-        text: 'The for...of statement creates a loop iterating over iterable objects, including: built-in String, Array, array-like objects (e.g., arguments or NodeList), TypedArray, Map, Set, and user-defined iterables. It invokes a custom iteration hook with statements to be executed for the value of each distinct property of the object. ',
-      },
-    },
-  },
-  {
-    op: {
-      $case: 'moveBlock',
-      moveBlock: {parent: '', leftSibling: 'A_BrRYGH', blockId: 'OUc3M5Nk'},
-    },
-  },
-  {
-    op: {
-      $case: 'setTitle',
-      setTitle:
-        'The for...of statement creates a loop iterating over iterable objects, including: built-in String, Array, array-like objects (e.g., arguments or NodeList), TypedArray, Map, Set, and user-defined iterables. It invokes a custom iteration hook with statements to be executed for the value of each distinct property of the object. ',
-    },
-  },
-]

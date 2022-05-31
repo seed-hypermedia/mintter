@@ -1,6 +1,5 @@
 import {useHover} from '@app/editor/hover-context'
 import {css} from '@app/stitches.config'
-import {info} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
@@ -94,9 +93,6 @@ export function Editor({
   }
 
   if (mode == EditorMode.Publication || mode == EditorMode.Discussion) {
-    info(`== Editor ==`)
-    info(JSON.stringify(_editor))
-
     return (
       <Suspense fallback={'loading'}>
         <Box
