@@ -87,7 +87,7 @@ function RenderEmbed(
 
   async function onOpenInNewWindow() {
     await invoke('plugin:window|open_in_new_window', {
-      url: `new/p/${pubId}/${version}/${blockId}`,
+      path: `p/${pubId}/${version}/${blockId}`,
     })
   }
 
