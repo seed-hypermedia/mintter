@@ -177,6 +177,9 @@ var migrations = []string{
 	CREATE TABLE content_links (
 		source_document_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
 		source_block_id TEXT NOT NULL,
+		-- In theory this is not needed, because source_change_id will always be the correct version.
+		-- but to simplify the queries we store it here too.
+		source_version TEXT NOT NULL,
 		source_change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 		target_document_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
 		target_block_id TEXT NOT NULL,

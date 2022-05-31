@@ -355,14 +355,15 @@ JOIN ipfs_blocks ON ipfs_blocks.id = documents.change_id
 	return out, err
 }
 
-func ContentLinksInsert(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string, contentLinksSourceChangeID int, contentLinksTargetDocumentID int, contentLinksTargetBlockID string, contentLinksTargetVersion string) error {
-	const query = `INSERT OR IGNORE INTO content_links (source_document_id, source_block_id, source_change_id, target_document_id, target_block_id, target_version)
-VALUES (:contentLinksSourceDocumentID, :contentLinksSourceBlockID, :contentLinksSourceChangeID, :contentLinksTargetDocumentID, :contentLinksTargetBlockID, :contentLinksTargetVersion)`
+func ContentLinksInsert(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string, contentLinksSourceChangeID int, contentLinksSourceVersion string, contentLinksTargetDocumentID int, contentLinksTargetBlockID string, contentLinksTargetVersion string) error {
+	const query = `INSERT OR IGNORE INTO content_links (source_document_id, source_block_id, source_change_id, source_version, target_document_id, target_block_id, target_version)
+VALUES (:contentLinksSourceDocumentID, :contentLinksSourceBlockID, :contentLinksSourceChangeID, :contentLinksSourceVersion, :contentLinksTargetDocumentID, :contentLinksTargetBlockID, :contentLinksTargetVersion)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":contentLinksSourceDocumentID", contentLinksSourceDocumentID)
 		stmt.SetText(":contentLinksSourceBlockID", contentLinksSourceBlockID)
 		stmt.SetInt(":contentLinksSourceChangeID", contentLinksSourceChangeID)
+		stmt.SetText(":contentLinksSourceVersion", contentLinksSourceVersion)
 		stmt.SetInt(":contentLinksTargetDocumentID", contentLinksTargetDocumentID)
 		stmt.SetText(":contentLinksTargetBlockID", contentLinksTargetBlockID)
 		stmt.SetText(":contentLinksTargetVersion", contentLinksTargetVersion)
@@ -381,19 +382,33 @@ VALUES (:contentLinksSourceDocumentID, :contentLinksSourceBlockID, :contentLinks
 }
 
 type BacklinksListByTargetDocumentResult struct {
+	SourceDocumentMultihash   []byte
+	ContentLinksSourceBlockID string
+	ContentLinksSourceVersion string
+	TargetDocumentMultihash   []byte
+	ContentLinksTargetBlockID string
+	ContentLinksTargetVersion string
 }
 
-func BacklinksListByTargetDocument(conn *sqlite.Conn, contentLinksTargetDocumentID int) ([]BacklinksListByTargetDocumentResult, error) {
-	const query = `WITH RECURSIVE parent AS (SELECT content_links.*, 1 AS level FROM content_links WHERE content_links.target_document_id = :contentLinksTargetDocumentID UNION ALL SELECT content_links.*, parent.level + 1 AS child_level FROM content_links parent WHERE parent.source_document_id = content_links.target_document_id AND child_level <= 2 ORDER BY child_level) SELECT  FROM parent`
+func BacklinksListByTargetDocument(conn *sqlite.Conn, targetDocumentID int, depth int) ([]BacklinksListByTargetDocumentResult, error) {
+	const query = `WITH RECURSIVE parent AS (SELECT content_links.*, 0 AS level FROM content_links WHERE content_links.target_document_id = :targetDocumentID UNION ALL SELECT content_links.*, parent.level + 1 AS child_level FROM content_links, parent WHERE parent.source_document_id = content_links.target_document_id AND child_level <= :depth ORDER BY child_level) SELECT s.multihash, content_links.source_block_id, content_links.source_version, t.multihash, content_links.target_block_id, content_links.target_version FROM parent AS content_links JOIN ipfs_blocks s ON s.id = content_links.source_document_id JOIN ipfs_blocks t on t.id = content_links.target_document_id WHERE content_links.source_document_id != :targetDocumentID`
 
 	var out []BacklinksListByTargetDocumentResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":contentLinksTargetDocumentID", contentLinksTargetDocumentID)
+		stmt.SetInt(":targetDocumentID", targetDocumentID)
+		stmt.SetInt(":depth", depth)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, BacklinksListByTargetDocumentResult{})
+		out = append(out, BacklinksListByTargetDocumentResult{
+			SourceDocumentMultihash:   stmt.ColumnBytes(0),
+			ContentLinksSourceBlockID: stmt.ColumnText(1),
+			ContentLinksSourceVersion: stmt.ColumnText(2),
+			TargetDocumentMultihash:   stmt.ColumnBytes(3),
+			ContentLinksTargetBlockID: stmt.ColumnText(4),
+			ContentLinksTargetVersion: stmt.ColumnText(5),
+		})
 
 		return nil
 	}

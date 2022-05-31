@@ -122,6 +122,8 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 		subtitle string
 	)
 
+	srcVer := vcs.NewVersion(c.LamportTime, changeID).String()
+
 	for _, e := range evts {
 		switch {
 		case e.TitleChanged != "":
@@ -140,13 +142,13 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 					continue
 				}
 
-				// Malformed URL.
 				url := a.Attributes["url"]
+
+				// Malformed URL.
 				if url == "" {
 					continue
 				}
 
-				// Parse url.
 				link, err := parseMintterLink(url)
 				if err != nil {
 					continue
@@ -161,6 +163,7 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 					oiddb.IPFSBlocksID,
 					blk.ID,
 					ciddb.IPFSBlocksID,
+					srcVer,
 					tdocid.IPFSBlocksID,
 					link.TargetBlock,
 					link.TargetVersion,

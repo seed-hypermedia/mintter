@@ -271,6 +271,13 @@ func ResultColAlias(col sqlitegen.Column, as string) ResultOpt {
 	}
 }
 
+// ResultRaw annotates a raw SQL expression to be a result of a query.
+func ResultRaw(sql, columnName string, t sqlitegen.Type) ResultOpt {
+	return func(s sqlitegen.Schema) Result {
+		return Result{SQL: sql, ColumnName: columnName, Type: t}
+	}
+}
+
 // ResultExpr is a SQL expression that is annotated as a query result.
 //
 // For example: ResultExpr("COUNT(*)", "count", sqlitegen.Int).

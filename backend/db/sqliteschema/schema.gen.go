@@ -45,6 +45,7 @@ const (
 	ContentLinksSourceBlockID    sqlitegen.Column = "content_links.source_block_id"
 	ContentLinksSourceChangeID   sqlitegen.Column = "content_links.source_change_id"
 	ContentLinksSourceDocumentID sqlitegen.Column = "content_links.source_document_id"
+	ContentLinksSourceVersion    sqlitegen.Column = "content_links.source_version"
 	ContentLinksTargetBlockID    sqlitegen.Column = "content_links.target_block_id"
 	ContentLinksTargetDocumentID sqlitegen.Column = "content_links.target_document_id"
 	ContentLinksTargetVersion    sqlitegen.Column = "content_links.target_version"
@@ -172,6 +173,7 @@ var Schema = sqlitegen.Schema{
 		ContentLinksSourceBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
 		ContentLinksSourceChangeID:   {Table: ContentLinks, SQLType: "INTEGER"},
 		ContentLinksSourceDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
+		ContentLinksSourceVersion:    {Table: ContentLinks, SQLType: "TEXT"},
 		ContentLinksTargetBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
 		ContentLinksTargetDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
 		ContentLinksTargetVersion:    {Table: ContentLinks, SQLType: "TEXT"},
