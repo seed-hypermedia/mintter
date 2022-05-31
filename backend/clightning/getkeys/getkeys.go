@@ -132,7 +132,7 @@ func (g *GetKeys) Call() (jrpc2.Result, error) {
 }
 
 func (f *GetKeys) Name() string {
-	return "getkeys"
+	return "mintter"
 }
 
 func (f *GetKeys) New() interface{} {

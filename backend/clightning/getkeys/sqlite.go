@@ -2,8 +2,6 @@ package getkeys
 
 import (
 	"database/sql"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func openDB(path string) (*sql.DB, error) {

@@ -159,7 +159,6 @@ require (
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/matryer/moq v0.2.7 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-sqlite3 v1.14.13 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mikioh/tcpinfo v0.0.0-20190314235526-30a79bb1804b // indirect
