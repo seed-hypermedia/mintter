@@ -5,8 +5,8 @@
 )]
 
 use env_logger::filter::Builder as FilterBuilder;
-use log::{debug, LevelFilter};
-use tauri::{Manager, Window, WindowEvent};
+use log::LevelFilter;
+use tauri::{AppHandle, Manager, Runtime, WindowEvent};
 use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
 use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 use window_ext::WindowExt as _;
@@ -19,10 +19,14 @@ mod window;
 mod window_ext;
 
 #[tauri::command]
-async fn url(win: Window) {
-  let url = win.url().unwrap();
-
-  debug!("url {}", url);
+async fn emit_all<R: Runtime>(
+  app_handle: AppHandle<R>,
+  event: String,
+  payload: Option<String>,
+) -> Result<(), String> {
+  app_handle
+    .emit_all(&event, payload)
+    .map_err(|e| e.to_string())
 }
 
 #[tokio::main]
@@ -58,7 +62,7 @@ async fn main() {
     .on_menu_event(menu::event_handler)
     .system_tray(system_tray::get_tray())
     .on_system_tray_event(system_tray::event_handler)
-    .invoke_handler(tauri::generate_handler![url])
+    .invoke_handler(tauri::generate_handler![emit_all])
     .setup(|app| {
       daemon::start_daemon(
         app.state::<daemon::Connection>(),
