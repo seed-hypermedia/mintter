@@ -135,7 +135,7 @@ export default function EditorPage({
                   ]
                 : contentChanges
 
-              debug('=== CHANGES:', JSON.stringify(changes, null, 3))
+              debug('=== CHANGES:', JSON.stringify(changes))
               try {
                 await updateDraft({
                   documentId: context.localDraft!.id!,
