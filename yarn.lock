@@ -1676,7 +1676,7 @@ __metadata:
     "@vitest/ui": 0.13.0
     "@xstate/cli": 0.1.7
     "@xstate/inspect": 0.7.0
-    "@xstate/react": 2.0.1
+    "@xstate/react": 3.0.0
     "@xstate/test": 0.5.1
     autosize: 5.0.1
     browser-headers: 0.4.1
@@ -3179,22 +3179,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xstate/react@npm:2.0.1":
-  version: 2.0.1
-  resolution: "@xstate/react@npm:2.0.1"
+"@xstate/react@npm:3.0.0":
+  version: 3.0.0
+  resolution: "@xstate/react@npm:3.0.0"
   dependencies:
     use-isomorphic-layout-effect: ^1.0.0
-    use-subscription: ^1.3.0
+    use-sync-external-store: ^1.0.0
   peerDependencies:
-    "@xstate/fsm": ^1.6.5
-    react: ^16.8.0 || ^17.0.0
-    xstate: ^4.30.3
+    "@xstate/fsm": ^2.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    xstate: ^4.31.0
   peerDependenciesMeta:
     "@xstate/fsm":
       optional: true
     xstate:
       optional: true
-  checksum: 5409c2059534b73fdaafaa34f28c23916498caf68e8ae7be01e6f18e6112c8c580297770ecfb40a8fc32fd94d2fbf3c5abff4c239e9cea96f4ed25047e96510c
+  checksum: 3ead5ce2bfda1ac3e6ebd1f1a842d3fcdf7236b11edb548d32e58979de7640a860747434704bace9911e01c9a5c9daa6e31b13a774b35f6b931ca338d722d7c5
   languageName: node
   linkType: hard
 
@@ -14397,18 +14397,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-subscription@npm:^1.3.0":
-  version: 1.7.0
-  resolution: "use-subscription@npm:1.7.0"
-  dependencies:
-    use-sync-external-store: ^1.1.0
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  checksum: a70c1668cf91c700614381e689b38b974234798cae1f3c2ec185cd5ab56d525f0fd37bd0d048d7b3bf003bfed3f5652f7801214cabe10a4114efe2671acedc59
-  languageName: node
-  linkType: hard
-
-"use-sync-external-store@npm:^1.1.0":
+"use-sync-external-store@npm:^1.0.0":
   version: 1.1.0
   resolution: "use-sync-external-store@npm:1.1.0"
   peerDependencies:
