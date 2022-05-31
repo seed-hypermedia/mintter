@@ -7,7 +7,6 @@ import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import type {Embed as EmbedType} from '@mintter/mttast'
 import {isEmbed} from '@mintter/mttast'
-import {invoke} from '@tauri-apps/api'
 import {ForwardedRef, forwardRef} from 'react'
 import toast from 'react-hot-toast'
 import {RenderElementProps} from 'slate-react'
@@ -86,9 +85,8 @@ function RenderEmbed(
   }
 
   async function onOpenInNewWindow() {
-    await invoke('plugin:window|open_in_new_window', {
-      path: `p/${pubId}/${version}/${blockId}`,
-    })
+    let path = `p/${pubId}/${version}/${blockId}`
+    mainPageService.send({type: 'OPEN_WINDOW', path})
   }
 
   return (

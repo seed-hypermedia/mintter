@@ -18,7 +18,6 @@ export function DeleteDialog({
   title,
   description,
 }: DeleteDialogProps) {
-  debug('delete state:', state.value)
   return (
     <Alert.Root
       open={state.matches('opened')}

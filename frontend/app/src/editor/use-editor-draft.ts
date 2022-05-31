@@ -1,14 +1,15 @@
-import {Document, getDraft, Publication} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import {queryKeys} from '@app/hooks'
-import {useMainPage} from '@app/main-page-context'
-import {createId, group, paragraph, statement, text} from '@mintter/mttast'
-import {useMachine} from '@xstate/react'
-import {useEffect} from 'react'
-import {QueryClient, useQueryClient} from 'react-query'
-import {Editor} from 'slate'
-import {assign, createMachine, MachineOptionsFrom} from 'xstate'
+
+import { Document, getDraft, Publication } from '@app/client'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { changesService } from '@app/editor/mintter-changes/plugin'
+import { queryKeys } from '@app/hooks'
+import { useMainPage } from '@app/main-page-context'
+import { createId, group, isEmbed, paragraph, statement, text } from '@mintter/mttast'
+import { useMachine } from '@xstate/react'
+import { useEffect } from 'react'
+import { QueryClient, useQueryClient } from 'react-query'
+import { Editor } from 'slate'
+import { assign, createMachine, MachineOptionsFrom } from 'xstate'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
@@ -20,29 +21,30 @@ export type EditorContext = {
   prevDraft: EditorDocument | null
   localDraft: EditorDocument | null
   errorMessage: string
-  publication: Publication | null
-  shouldMigrate: boolean
+  publication: Publication | null,
+  canPublish: boolean
 }
+
 export type EditorEvent =
-  | {type: 'FETCH'; documentId: string}
+  | { type: 'FETCH'; documentId: string }
   | {
-      type: 'EDITOR.REPORT.FETCH.SUCCESS'
-      data: Document
-    }
-  | {type: 'EDITOR.REPORT.FETCH.ERROR'; errorMessage: Error['message']}
-  | {type: 'EDITOR.UPDATE'; payload: Partial<EditorDocument>}
-  | {type: 'EDITOR.UPDATE.SUCCESS'}
-  | {type: 'EDITOR.UPDATE.ERROR'; errorMessage: Error['message']}
-  | {type: 'EDITOR.CANCEL'}
-  | {type: 'EDITOR.PUBLISH'}
-  | {type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication}
-  | {type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message']}
+    type: 'EDITOR.REPORT.FETCH.SUCCESS'
+    data: Document
+  }
+  | { type: 'EDITOR.REPORT.FETCH.ERROR'; errorMessage: Error['message'] }
+  | { type: 'EDITOR.UPDATE'; payload: Partial<EditorDocument> }
+  | { type: 'EDITOR.UPDATE.SUCCESS' }
+  | { type: 'EDITOR.UPDATE.ERROR'; errorMessage: Error['message'] }
+  | { type: 'EDITOR.CANCEL' }
+  | { type: 'EDITOR.PUBLISH' }
+  | { type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication }
+  | { type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message'] }
   | {
-      type: 'EDITOR.MIGRATE'
-    }
+    type: 'EDITOR.MIGRATE'
+  }
   | {
-      type: 'RESET.CHANGES'
-    }
+    type: 'RESET.CHANGES'
+  }
 
 interface DraftEditorMachineProps {
   client: QueryClient
@@ -52,8 +54,8 @@ interface DraftEditorMachineProps {
 }
 
 const defaultContent = [
-  group({data: {parent: ''}}, [
-    statement({id: createId()}, [paragraph([text('')])]),
+  group({ data: { parent: '' } }, [
+    statement({ id: createId() }, [paragraph([text('')])]),
   ]),
 ]
 
@@ -63,7 +65,7 @@ export function draftEditorMachine({
   shouldAutosave = true,
   editor,
 }: DraftEditorMachineProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMSKgAOGs6KGAdmSAB6ICMAHAGw6sCcA7AAYATKwAs7MQGZ+AVgA0IAJ6JhU1jna9ZvduPazWssa2EBfM4tSZcYLFmyRiAMQCiAFQDCACUaVqaLQMSMyIYvzcvLxiwoKcAmr8wryKKgisUuzsOGLSvKacrKyCxbIWVhDo2DgAZmBoAMYAFih0UMSuACIAku4A8gBKOJ4AggBynq4AMn5UNPSMLOn8UrI8GVKCcUn8vGqpqrua2roGnHqCAuXglTa19c2t7V29gzgDrgAKg+44bl7eHAAZQAqp5JkCgbMAkFFohZMIDgheNxBGJ4gJBEJ1MIypYblVcHVGi02h0ev0hh9vgNfv8fDhXAMBoNofNgqAlgikeJzjholJ8oUERJ2FJrtZqtYnnhCCQXpScCDPp0Ru5XGzAgsQkt+OF+dotFIZLphPxWEjztkBQkZFJcmKJbcpbcZfgiOTXkNPiCAEJTbpA3whfzsuEIPX8A2yI0m9hmi3KRBaDQ2s2cTjCZJFJ2EnDStqyj304MUOZajmhZZiNZFY1bTg7PZSHklDS5QU4wQyc68XN3AtQHAQMAAIwwAFc6A0np7FcrVerNbCdYgUbweFJOLJu-xzWpTEiHZpcXxClnhLlWPx+y6aIWR+OpzOyUxYGgAIZoMA4D81b9YAAFEYWwAJTEJKtiug+Y6TtOTzLtqnLJmoOCGPo8Z7sI24pEmCC5BuNrbskaJ7Bmt5QfeQ6wB+ABus52A4uDkAQX41NgAC2+bOpRgSFjR9FtAgrS0RgDRfkEADaggALqIZWSyrFImjiIYJicCUsiZgoeHxsIPAxmiKYRKIFHcVROACbOCpvAuaoaiG5YrshCBKSpNbiKwGlGNpSJaRuHYolk6iYpwZmDpZdHWRStkqvZwJghCUKOTCSFVm5egeepmm+XhQjcEY7BYuI0TGOY+KQeZfHUVFZI2UMdnqoyzKsilYarq5sjKZlaleTluKWteOR5HI+RiGRrDhdBQ7kBOo4ECgsCks8MXen6AZBgl4KuJC8nhqYKw4FiEgxth9ocPwSLxmIBqCuEJkiKZFU8VVMqzfNi3LXObw+v6gaAkyLIDHtHWRtGsa7JhiZpEVN02uNuzEXqU1UcQED0D+75fj+lWDiDLnXjW6z1tsZrNq2OjDZ28ZcEkNYo9VxAfECHjDN44wAOI7fjVY0zkXD2pcqwcHsrZ7FTvD2nqIqNhY+J0BgI7wCElXumAPNcoieFqDdaLxFwWwhbk4X2I4EAa4gUiXjg2IZN2piiI2PLhIRsRiHEsg7qIYhmcSjxtBb6RCponBW1wO5Woe2tYjbo1aLwly5Mbz15hFauBzoymQ+w5paMYCLQ4gKwaKHNaFI2ly4uKKcDtNw6wc+CFtRW4a6MpuJyJ7Zq4oI7B+fEJ6GCs+dW1bDMylZAfN85VYCEeEg4J2mJcJw4SyDeNd3tVODvQtS1N2WqUKWueqbtuu77jiV0x5Id1k5IfAbxUqd17vn2QIHRgcDwcSXAYl6rAkFdVY-IhDSD0DoSM7Bx5T0Pu1FyKwkRWxukvPQktViSzkL7Von1XDTU-sHAWwhw5xCyFHNIxQsw20ltEXY6hzS7F9h+FARBzbTzSrqLcBoYhZnRKHTIWsKEu35G7D2XtxAUUDsQpEqE9ZRASKvWIYowpyyAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMSKgAOGs6KGAdmSAB6ICMAbOzgMwCcA7AAZu3dr1YAWQewBMAVgA0IAJ5sZvOTgAc-dhIm9BM-iOkBfM0tSZcYLFmyRiAMQCiAFQDCACUaVqaLQMSMxsWprcwnJaMez8rDqKKmxCmnISrKyCcrzG6oJaFlYQ6Ng4AGZgaADGABYodFDErgAiAJLuAPIASjieAIIAcp6uADJ+VDT0jCwIHFx8QiJiktLySqpz3BLc2rr6GeyC-FIyReAlNhVVdQ1NrR09ON2uAAo97jhuXt44AMoAVU8Iz+fwmASCM0QchkGzYUn4OHSmW46nYfEEEkKlgupVwlRq9UazXaXV6L3e3U+3x8OFc3W6PXBU2CoFmMmEMm0AkMOm4kg57DhcxkWlYOEMemiWnE6Ny52sZWsdzwhBIDzJOABrxa-XcrmZgWmIVm7Dkuzk5rkgl4OgOomFZsEOH45okcgS7FY3C06IVlyVlxV+CIJMevVeAIAQqM2n9fCF-CyoQg9BarTa7foHckEDEua7uJaZTJ0fwxf68ThlY1VaGaQmKJMjazQnMclxDO6ZDsOR6hbmUZp1BlsloJDI+NFK1ca1AcBAwAAjDAAVzo1RVdQAho0nIbISa1JwcN6CpjWCcJLokptiy63ekR+wxXIZ4GaLXFyv15vayGSCYWA0G3NAwBwbdyjArAAAoskEQQAEpiEVWwgy-Zc1w3YM1QPY02UQdReFPfgZFYdRJyLHtb0QPguWtKV9C0QRWBhE53zQz952-LC-3uUknm1XV9Tw1tZkMTQhAEeJ+FSc1eGFGEJAfbZpUMCTeA46t0PnWBtwANzuFD7DKcgCFA8psAAW20qs5xwPTDMaBAGn0jBqlAoIAG1BAAXVElNS2Iy8yIokQlJohB+A0JFjDkM0fSxcduC0+zHKMjVBJ1PUDUTZtDwIhAiJI0LcnC6jFP5HB5G2DkDBlSRUp0hyDIygTeiEnL-iBEEwTyiF8LbYxgtI8iyqo91HWi2LXWi7Myv4JquJapz+PDLVsv1OkGSZfrkyPIqZRKsbKIixTppqrFUUncIdCWwJa3IVclwIFBYCJNbNUjGM41+QFgVcUEAoO20JQ9URrRMUQtGMYVMlkFTZA4cGZFLe6VSel63o+sMvujWN422xlumBwqEqRDNbSvHYB02aLJMfY5otyBJ0eJCB6HA4DQPA1DbIeqBSbbVjeE7TElNRbIOGFW7qt4CcEOvbJuzZpoXj+Dw+m8IYAHFAaF2ZXWUn1WFyPQCl0XgFMHQU5YybhSMxX1sRxOgMEXeAQj5gCDehWFB0icUR0yFiX3kCRUpMrBIF9hA5H4OHmPFcR9lF61RB7LSCVuRpY8vBDqqxeRslFdR4rh4xlNdKVJF0cdy1VuswFjj1gvi81RrFXgczpm0JUxYRSOiViMkbnjfy3WpdxgCA8-IxFfSOZZOE4CRFMtU8iOvVHjEkN8cT5+zx+w-9cL2lsU29MQcHdBq4gd9F9HXzQxvl0jUfid0x8wifc-Pgq2wxHFFJWSl45J8GFDsYihYmJejEGbRu6U-5NgGmJRA5YwZX0hssGGCdcx8GUqKaSpEJwcFtOwRumNXrvTuLHHQxExCnB7EYMarAZbZB4ByViEtZJYkoc9ahtQY7-0GrMbYuxbSlkiGRH0o04aXi0DgdECFSICDiGaCOB8AycQFi3ZSGgsHHBwaWSKpZFEMQkHEK244ciuizg0bGrgdJ53iM6KRosFZaB9LaGWVU9D20kScU22JihVnKNuFARBZ4iLQQgfQEQoinBYqXf2mwEgsQlJePQadhCyE0aEmwsdRRwxigxGE5oOAFFYhQiwZggA */
   return createMachine(
     {
       context: {
@@ -72,10 +74,10 @@ export function draftEditorMachine({
         prevDraft: null,
         errorMessage: '',
         publication: null,
-        shouldMigrate: false,
+        canPublish: false,
       },
       tsTypes: {} as import('./use-editor-draft.typegen').Typegen0,
-      schema: {context: {} as EditorContext, events: {} as EditorEvent},
+      schema: { context: {} as EditorContext, events: {} as EditorEvent },
       id: 'editor',
       initial: 'idle',
       states: {
@@ -125,7 +127,11 @@ export function draftEditorMachine({
             idle: {
               on: {
                 'EDITOR.UPDATE': {
-                  actions: ['updateValueToContext', 'updateCurrentDocument'],
+                  actions: [
+                    'validateCanPublish',
+                    'updateValueToContext',
+                    'updateCurrentDocument',
+                  ],
                   target: 'debouncing',
                 },
                 'EDITOR.PUBLISH': {
@@ -140,7 +146,9 @@ export function draftEditorMachine({
               initial: 'idle',
               states: {
                 changed: {
-                  always: 'idle',
+                  always: {
+                    target: 'idle',
+                  },
                 },
                 idle: {
                   after: {
@@ -224,6 +232,23 @@ export function draftEditorMachine({
         maxRetriesReached: (context) => context.retries == 5,
       },
       actions: {
+        validateCanPublish: assign((context) => {
+          let hasContent = Editor.string(editor, [])
+          let hasEmbed = Editor.nodes(editor, {
+            at: [],
+            match: isEmbed
+          })
+
+          console.log('validateCanPublish', { hasContent, hasEmbed });
+
+          if (!context.canPublish) {
+            return {
+              canPublish: true
+            }
+          }
+
+          return {}
+        }),
         incrementRetries: assign({
           retries: (context) => context.retries + 1,
         }),
@@ -268,18 +293,18 @@ export function draftEditorMachine({
       },
       services: {
         fetchDocument: (_, event) => (sendBack) => {
-          ;(async () => {
+          ; (async () => {
             try {
-              let {context} = mainPageService.getSnapshot()
+              let { context } = mainPageService.getSnapshot()
               let data = await client.fetchQuery(
                 [queryKeys.GET_DRAFT, context.params.docId],
-                ({queryKey}) => {
+                ({ queryKey }) => {
                   let [_, draftId] = queryKey
                   return getDraft(draftId)
                 },
               )
 
-              sendBack({type: 'EDITOR.REPORT.FETCH.SUCCESS', data})
+              sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
             } catch (err: any) {
               sendBack({
                 type: 'EDITOR.REPORT.FETCH.ERROR',
@@ -308,13 +333,13 @@ export function useEditorDraft({
 }: UseEditorDraftParams) {
   const client = useQueryClient()
   const [state, send] = useMachine(
-    () => draftEditorMachine({client, mainPageService, editor, shouldAutosave}),
+    () => draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
     options,
   )
 
   useEffect(() => {
     if (documentId) {
-      send({type: 'FETCH', documentId})
+      send({ type: 'FETCH', documentId })
       // onlyOnce.current = true
     }
   }, [documentId])

@@ -11,9 +11,7 @@ import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy
 import {getDocumentTitle} from '@app/utils/get-document-title'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {Text} from '@components/text'
-import {invoke} from '@tauri-apps/api'
 import {useActor, useMachine} from '@xstate/react'
 import {PropsWithChildren, useMemo} from 'react'
 import toast from 'react-hot-toast'
@@ -41,7 +39,6 @@ export function LibraryItem({
 }: PropsWithChildren<LibraryItemProps>) {
   const mainService = useMainPage()
   const [mainState] = useActor(mainService)
-  const {createDraft} = useCreateDraft()
   let params = useParams()
   let match = useMemo(() => {
     let docId = publication ? publication.document?.id : draft?.id
@@ -92,7 +89,7 @@ export function LibraryItem({
   }
 
   async function onOpenInNewWindow() {
-    await invoke('plugin:window|open_in_new_window', {path: href})
+    mainService.send({type: 'OPEN_WINDOW', path: href})
   }
 
   let title = match

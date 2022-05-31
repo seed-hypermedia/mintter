@@ -5,7 +5,6 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {RecentsSection} from '@components/library/section-recents'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
@@ -41,16 +40,11 @@ export function LibraryShell({children, ...props}: PropsWithChildren<any>) {
 
 export function Library() {
   const isOpen = useIsLibraryOpen()
-  const {createDraft} = useCreateDraft()
   var service = useMainPage()
-  var [mainPageState, mainPageSend] = useActor(service)
+  var [mainPageState] = useActor(service)
 
   async function handleSync() {
     await forceSync()
-  }
-
-  function onCreateDraft() {
-    createDraft()
   }
 
   return (
@@ -77,7 +71,7 @@ export function Library() {
               variant="ghost"
               size="1"
               color="success"
-              onClick={onCreateDraft}
+              onClick={() => service.send('CREATE_NEW_DRAFT')}
               css={{
                 '&:hover': {
                   backgroundColor: '$success-component-bg-normal',

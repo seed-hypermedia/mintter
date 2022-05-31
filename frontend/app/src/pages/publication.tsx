@@ -18,12 +18,11 @@ import {tippingMachine} from '@app/tipping-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getBlock} from '@app/utils/get-block'
 import {getDateFormat} from '@app/utils/get-format-date'
-import {debug, error} from '@app/utils/logger'
+import {debug} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {useCreateDraft} from '@components/library/use-create-draft'
 import {
   footerButtonsStyles,
   footerMetadataStyles,
@@ -35,7 +34,6 @@ import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {document, FlowContent, group} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {invoke} from '@tauri-apps/api'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
@@ -47,27 +45,8 @@ export default function Publication() {
   const citations = useCitationService()
   const mainPageService = useMainPage()
   let {docId, version} = useParams()
-  let {createDraft} = useCreateDraft()
 
   const [state, send] = usePagePublication(client, mainPageService)
-
-  async function onOpenInNewWindow() {
-    await invoke('plugin:window|open_in_new_window', {path: `/new`})
-  }
-
-  async function handleEdit() {
-    try {
-      const d = await createDraft(docId)
-      if (d?.id) {
-        mainPageService.send({type: 'goToEditor', docId: d.id})
-      }
-    } catch (err) {
-      error(
-        `createDraft Error: "createDraft" does not returned a Document`,
-        err,
-      )
-    }
-  }
 
   if (state.matches('fetching')) {
     return <PublicationShell />
@@ -119,7 +98,11 @@ export default function Publication() {
       )}
       <Box className={footerStyles()}>
         <Box className={footerButtonsStyles()}>
-          <Button onClick={onOpenInNewWindow} size="1" color="primary">
+          <Button
+            onClick={() => mainPageService.send('OPEN_WINDOW')}
+            size="1"
+            color="primary"
+          >
             New Document
           </Button>
           {state.context.canUpdate ? (
@@ -129,7 +112,9 @@ export default function Publication() {
                 size="1"
                 disabled={state.hasTag('pending')}
                 data-testid="submit-edit"
-                onClick={handleEdit}
+                onClick={() =>
+                  mainPageService.send({type: 'EDIT_PUBLICATION', docId})
+                }
               >
                 Edit
               </Button>

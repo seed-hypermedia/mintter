@@ -22,7 +22,6 @@ import {useBookmarksService} from '@components/bookmarks'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {useSidepanel} from '@components/sidepanel'
 import {FlowContent, GroupingContent} from '@mintter/mttast'
-import {invoke} from '@tauri-apps/api'
 import {useActor, useMachine} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -356,13 +355,6 @@ export function SidepanelItem({
     })
   }
 
-  async function onOpenInNewWindow() {
-    const [publicationId, version] = getEmbedIds(state.context.url)
-    await invoke('plugin:window|open_in_new_window', {
-      path: `/p/${publicationId}/${version}`,
-    })
-  }
-
   let isExpanded = state.matches('expanded')
 
   if (state.matches('loading')) return <span>...</span>
@@ -399,10 +391,6 @@ export function SidepanelItem({
         <Dropdown.Item onSelect={() => navigate?.(state.context.url)}>
           <Icon name="ArrowTopRight" size="1" />
           <Text size="2">Open in main Panel</Text>
-        </Dropdown.Item>
-        <Dropdown.Item onSelect={onOpenInNewWindow}>
-          <Icon name="OpenInNewWindow" size="1" />
-          <Text size="2">Open in new Window</Text>
         </Dropdown.Item>
         <Dropdown.Item
           onSelect={() => {
