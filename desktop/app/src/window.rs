@@ -37,7 +37,7 @@ async fn open_in_new_window(app_handle: AppHandle, path: &str) -> Result<(), Err
 
   let label = window_label();
 
-  WindowBuilder::new(&app_handle, label.clone(), WindowUrl::App(path.into()))
+  WindowBuilder::new(&app_handle, label, WindowUrl::App(path.into()))
     .min_inner_size(500.0, 500.0)
     .build()?;
 
