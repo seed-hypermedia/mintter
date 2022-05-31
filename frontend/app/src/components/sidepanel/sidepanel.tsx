@@ -359,7 +359,7 @@ export function SidepanelItem({
   async function onOpenInNewWindow() {
     const [publicationId, version] = getEmbedIds(state.context.url)
     await invoke('plugin:window|open_in_new_window', {
-      url: `/p/${publicationId}/${version}`,
+      path: `/p/${publicationId}/${version}`,
     })
   }
 

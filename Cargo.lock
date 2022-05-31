@@ -2044,7 +2044,9 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-log",
  "tauri-plugin-store",
+ "thiserror",
  "tokio",
+ "url",
  "workspace-hack",
 ]
 
