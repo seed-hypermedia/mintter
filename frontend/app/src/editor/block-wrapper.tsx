@@ -27,7 +27,7 @@ export function BlockWrapper({
 }) {
   const bookmarksService = useBookmarksService()
   const hoverService = useHover()
-  const [hoverState, hoverSend] = useActor(hoverService)
+  const [, hoverSend] = useActor(hoverService)
   let params = useParams()
 
   async function onCopy() {
@@ -105,14 +105,21 @@ export function BlockWrapper({
         hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
       }}
     >
-      <Dropdown.Root modal={false}>
+      <Dropdown.Root
+        modal={false}
+        onOpenChange={(value) => {
+          if (!value) {
+            hoverSend('MOUSE_LEAVE')
+          }
+        }}
+      >
         <Dropdown.Trigger asChild>
           <ElementDropdown
             css={{
-              opacity:
-                hoverState.context.blockId == (element as FlowContent).id
-                  ? 1
-                  : 0,
+              opacity: 0,
+              [`[data-hover-block="${element.id}"] &`]: {
+                opacity: 1,
+              },
               position: 'absolute',
               right: -20,
               top: 4,
