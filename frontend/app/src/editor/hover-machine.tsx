@@ -1,7 +1,5 @@
-import {debug} from '@app/utils/logger'
 import {invoke} from '@tauri-apps/api'
 import {listen, UnlistenFn} from '@tauri-apps/api/event'
-import {getCurrent} from '@tauri-apps/api/window'
 import {createMachine} from 'xstate'
 
 export type HoverContext = {
@@ -60,11 +58,6 @@ export const hoverMachine = createMachine(
 
         async function bootListener() {
           unlisten = await listen<string>('block_hover', (event) => {
-            debug(
-              'block_hover LISTENER!!',
-              getCurrent().label,
-              JSON.stringify(event, null, 3),
-            )
             let blockId = event.payload ?? undefined
             let currentBlockId = document.body.dataset.hoverBlock
             if (blockId != currentBlockId) {
