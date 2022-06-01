@@ -18,19 +18,26 @@ the app is controlled by one machine: The main page machine. this machine is in 
 
 When the machine is spawned, it also spawns the files, draft and library machine and stores a reference to them in its extended state (context) [source](https://github.com/mintterteam/mintter/blob/master/frontend/app/src/main-page-machine.ts#L252-L254)
 
-It also [spawns the router actor](https://github.com/mintterteam/mintter/blob/master/frontend/app/src/main-page-machine.ts#L265-L268), which is in charge of transition the machine to its proper state.
+It also [spawns the router actor](https://github.com/mintterteam/mintter/blob/c23cef5992612455626c73db25bbf989a9c0372e/frontend/app/src/main-page-machine.ts#L268-L271), which is in charge of transition the machine to its proper state.
 
 We have one big state (`routes` state) that cointains all the actual app states, this is needed to prevent infinite loops in the machine.
 As you can see, the initial state is `routes.idle`, and this state does nothing. this is in purpose since the machine waits for the router to send the event needed. Here's where Navaid comes in.
 
-[Navaid](https://github.com/lukeed/navaid) is the tool that listens to the actual page route and updates it. when we enter the app, we are in `routes.idle`, but the actual page route can be different. You can [see here](https://github.com/mintterteam/mintter/blob/master/frontend/app/src/main-page-machine.ts#L559-L602) all the `navaid` listeners, that based on a route pattern, sends the appropiate event to the main-page machine to change its state.
+[Navaid](https://github.com/lukeed/navaid) is the tool that listens to the actual page route and updates it. when we enter the app, we are in `routes.idle`, but the actual page route can be different. You can [see here](https://github.com/mintterteam/mintter/blob/master/frontend/app/src/main-page-machine.ts#L557-L589) all the `navaid` listeners, that based on a route pattern, sends the appropiate event to the main-page machine to change its state.
 
-The Router actor also receives events from the parent machine, this is needed to update the page route based on any machine transition. you can see the [events here](https://github.com/mintterteam/mintter/blob/master/frontend/app/src/main-page-machine.ts#L603-L633). We generally send this events after we settle the state in the main-page machine. to make sure that if the user reloads the page, we land in the same state as before.
+The Router actor also receive events from the parent machine, this is needed to update the page route based on any machine transition. you can see the [events here](https://github.com/mintterteam/mintter/blob/c23cef5992612455626c73db25bbf989a9c0372e/frontend/app/src/main-page-machine.ts#L591-L621). We generally send this events after we settle the state in the main-page machine. to make sure that if the user reloads the page, we land in the same state as before.
 
-## Creating a new Draft
+You can checkout [this gist](https://gist.github.com/ChrisShank/369aa8cbd4002244d7769bd1ba3e232a) to see some core ideas and a simple example
 
-![Publication List View]('./publication-list.png')
+## Open a New Window
 
-When the user clicks the `New Document` button, this creates new window. this new window will create a new draft and opens it in the editor view.
+All the new window creation is handled by Tauri. we just create the draft and calls the open window function. Tauri will check if the document is currently open in any of its available windows. If there's one window available, it will focus that window. If not, it will create a new window with the new URL.
 
-all the new window creation is handled by Tauri. we just create the draft and calls the open window function.
+There are multiple ways a user can create a new window. For every way, the one that controls the actions is the main-machine.
+
+You will find multiple buttons and context menu items throughout the app that triggers the creation of a new window, but those can be summarize into a couple of Scenarios:
+
+1. **Open a Publication**: We pass the Publication's URL to the open function
+1. **Open a Draft**: We pass the Draft's URL to the open function
+1. **Create a new Draft**: In this case, the main-machine will create a new draft, generates the new URL and then call the open function with the generated URL.
+1. **Edit a Publication**: In this case, the main-machine will create a new draft from the current publication, generates the new URL and then call the open function with the generated URL.

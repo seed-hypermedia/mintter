@@ -1,18 +1,18 @@
-import {EditorDocument} from '@app/editor/use-editor-draft'
-import {queryKeys} from '@app/hooks'
-import {debug} from '@app/utils/logger'
-import {libraryMachine} from '@components/library/library-machine'
-import {invoke as tauriInvoke} from '@tauri-apps/api'
+import { EditorDocument } from '@app/editor/use-editor-draft'
+import { queryKeys } from '@app/hooks'
+import { debug } from '@app/utils/logger'
+import { libraryMachine } from '@components/library/library-machine'
+import { invoke as tauriInvoke } from '@tauri-apps/api'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
-import {QueryClient} from 'react-query'
-import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
+import { QueryClient } from 'react-query'
+import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
 import {
   createDraft,
   Document,
   listDrafts,
   listPublications,
-  Publication,
+  Publication
 } from './client'
 
 export function createFilesMachine(client: QueryClient) {
@@ -41,7 +41,7 @@ export function createFilesMachine(client: QueryClient) {
                       ...pub,
                       ref: 'TODO',
                     }))
-                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
+                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                   })
               },
             },
@@ -86,10 +86,10 @@ type FilesContext<T = any> = {
 
 type FilesEvent<T = any> =
   | {
-      type: 'REPORT.DATA.SUCCESS'
-      data: Array<T>
-    }
-  | {type: 'RECONCILE'}
+    type: 'REPORT.DATA.SUCCESS'
+    data: Array<T>
+  }
+  | { type: 'RECONCILE' }
 
 function createDraftsMachine(client: QueryClient) {
   return createMachine(
@@ -115,7 +115,7 @@ function createDraftsMachine(client: QueryClient) {
                       ...doc,
                       ref: 'TODO',
                     }))
-                    sendBack({type: 'REPORT.DATA.SUCCESS', data})
+                    sendBack({ type: 'REPORT.DATA.SUCCESS', data })
                   })
               },
             },
@@ -165,82 +165,82 @@ export type MainPageContext = {
 }
 
 type MainPageEvent =
-  | {type: 'RECONCILE'}
+  | { type: 'RECONCILE' }
   | {
-      type: 'routeNotFound'
-    }
+    type: 'routeNotFound'
+  }
   | {
-      type: 'goToEditor'
-      docId: string
-      replace?: boolean
-    }
+    type: 'goToEditor'
+    docId: string
+    replace?: boolean
+  }
   | {
-      type: 'goToPublication'
-      docId: string
-      version?: string
-      blockId?: string
-      replace?: boolean
-    }
+    type: 'goToPublication'
+    docId: string
+    version?: string
+    blockId?: string
+    replace?: boolean
+  }
   | {
-      type: 'goToSettings'
-    }
+    type: 'goToSettings'
+  }
   | {
-      type: 'goToHome'
-    }
+    type: 'goToHome'
+  }
   | {
-      type: 'goToPublicationList'
-    }
+    type: 'goToPublicationList'
+  }
   | {
-      type: 'goToDraftList'
-    }
+    type: 'goToDraftList'
+  }
   | {
-      type: 'goBack'
-    }
+    type: 'goBack'
+  }
   | {
-      type: 'goForward'
-    }
+    type: 'goForward'
+  }
   | {
-      type: 'SET.CURRENT.DOCUMENT'
-      document: EditorDocument
-    }
+    type: 'SET.CURRENT.DOCUMENT'
+    document: EditorDocument
+  }
   | {
-      type: 'CREATE_NEW_DRAFT'
-    }
+    type: 'CREATE_NEW_DRAFT'
+  }
   | {
-      type: 'OPEN_WINDOW'
-      path?: string
-    }
+    type: 'OPEN_WINDOW'
+    path?: string
+  }
 
 type RouterEvent =
   | {
-      type: 'pushHome'
-    }
+    type: 'pushHome'
+  }
   | {
-      type: 'pushPublication'
-      docId: string
-      version: string
-      blockId?: string
-      replace?: boolean
-    }
+    type: 'pushPublication'
+    docId: string
+    version: string
+    blockId?: string
+    replace?: boolean
+  }
   | {
-      type: 'pushDraft'
-      docId: string
-      replace?: boolean
-    }
+    type: 'pushDraft'
+    docId: string
+    replace?: boolean
+  }
   | {
-      type: 'pushSettings'
-    }
+    type: 'pushSettings'
+  }
   | {
-      type: 'pushPublicationList'
-    }
+    type: 'pushPublicationList'
+  }
   | {
-      type: 'pushDraftList'
-    }
+    type: 'pushDraftList'
+  }
 
 export function defaultMainPageContext(
   client: QueryClient,
   overrides: Partial<MainPageContext> = {
-    params: {docId: '', version: null, blockId: null, replace: false},
+    params: { docId: '', version: null, blockId: null, replace: false },
   },
 ) {
   return () => ({
@@ -264,7 +264,7 @@ export function createMainPageMachine(client: QueryClient) {
     {
       context: defaultMainPageContext(client),
       tsTypes: {} as import('./main-page-machine.typegen').Typegen2,
-      schema: {context: {} as MainPageContext, events: {} as MainPageEvent},
+      schema: { context: {} as MainPageContext, events: {} as MainPageEvent },
       invoke: {
         src: 'router',
         id: 'router',
@@ -434,14 +434,12 @@ export function createMainPageMachine(client: QueryClient) {
     },
     {
       guards: {
-        isPublication: (_, event) => event.docType == 'p',
-        isDraft: (_, event) => event.docType == 'editor',
         isMetaEventDifferent: (context, _, meta) => {
-          let {type, ...eventParams} = meta.state.event
+          let { type, ...eventParams } = meta.state.event
           return !isEqual(context.params, eventParams)
         },
         isEventDifferent: (context, event) => {
-          let {type, ...eventParams} = event
+          let { type, ...eventParams } = event
           let result = !isEqual(context.params, eventParams)
           return result
         },
@@ -474,7 +472,7 @@ export function createMainPageMachine(client: QueryClient) {
         }),
         setDraftParams: assign({
           params: (_, e, meta) => {
-            let {event} = meta.state
+            let { event } = meta.state
             return {
               docId: event.docId,
               replace: event.replace,
@@ -484,7 +482,7 @@ export function createMainPageMachine(client: QueryClient) {
         setPublicationParams: assign({
           params: (c, e, meta) => {
             // debug('\n\n === setPublicationParams: ', JSON.stringify({ c, e, meta }))
-            let {event} = meta.state
+            let { event } = meta.state
             return {
               docId: event.docId,
               version: event.version,
@@ -503,7 +501,7 @@ export function createMainPageMachine(client: QueryClient) {
               replace: context.params.replace,
             }
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         pushDraftRoute: send(
           (context) => {
@@ -514,13 +512,13 @@ export function createMainPageMachine(client: QueryClient) {
               replace: context.params.replace,
             }
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         pushSettings: send(
           {
             type: 'pushSettings',
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         clearParams: assign((_) => ({
           params: {
@@ -541,16 +539,17 @@ export function createMainPageMachine(client: QueryClient) {
           {
             type: 'pushDraftList',
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
         pushPublicationListRoute: send(
           {
             type: 'pushPublicationList',
           },
-          {to: 'router'},
+          { to: 'router' },
         ),
       },
       services: {
+        // router reference: https://gist.github.com/ChrisShank/369aa8cbd4002244d7769bd1ba3e232a
         router: () => (sendBack, receive) => {
           let navRouter = Navaid('/', () => sendBack('goToHome'))
           // Deserialize events from the URL
@@ -567,9 +566,9 @@ export function createMainPageMachine(client: QueryClient) {
             .on('/drafts', () => {
               sendBack('goToDraftList')
             })
-            .on<{docId: string}>('/editor/:docId', (params) => {
+            .on<{ docId: string }>('/editor/:docId', (params) => {
               return params
-                ? sendBack({type: 'goToEditor', ...params})
+                ? sendBack({ type: 'goToEditor', ...params })
                 : sendBack('routeNotFound')
             })
             .on<{
@@ -580,11 +579,11 @@ export function createMainPageMachine(client: QueryClient) {
               debug('params:', params)
               return params
                 ? sendBack({
-                    type: 'goToPublication',
-                    docId: params.docId,
-                    version: params.version,
-                    blockId: params.blockId,
-                  })
+                  type: 'goToPublication',
+                  docId: params.docId,
+                  version: params.version,
+                  blockId: params.blockId,
+                })
                 : sendBack('routeNotFound')
             })
 
@@ -592,19 +591,17 @@ export function createMainPageMachine(client: QueryClient) {
             if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
-              let {pathname} = window.location
-              let newRoute = `/p/${event.docId}${
-                event.version
-                  ? `/${event.version}${
-                      event.blockId ? `/${event.blockId}` : ''
-                    }`
-                  : ''
-              }`
+              let { pathname } = window.location
+              let newRoute = `/p/${event.docId}${event.version
+                ? `/${event.version}${event.blockId ? `/${event.blockId}` : ''
+                }`
+                : ''
+                }`
               if (pathname != newRoute) {
                 navRouter.route(newRoute, event.replace)
               }
             } else if (event.type == 'pushDraft') {
-              let {pathname} = window.location
+              let { pathname } = window.location
               let newRoute = `/editor/${event.docId}`
               if (pathname != newRoute) {
                 navRouter.route(newRoute, event.replace)
@@ -626,7 +623,7 @@ export function createMainPageMachine(client: QueryClient) {
         },
         createNewDraft: () => (sendBack) => {
           createDraft().then((document) => {
-            sendBack({type: 'goToEditor', docId: document.id, replace: true})
+            sendBack({ type: 'goToEditor', docId: document.id, replace: true })
           })
         },
       },
@@ -637,12 +634,12 @@ export function createMainPageMachine(client: QueryClient) {
 function openWindow(path?: string) {
   if (path) {
     // Open window with path
-    tauriInvoke('plugin:window|open', {path})
+    tauriInvoke('plugin:window|open', { path })
   } else {
     createDraft().then((doc) => {
       let path = `/editor/${doc.id}`
       // open window with new path
-      tauriInvoke('plugin:window|open', {path})
+      tauriInvoke('plugin:window|open', { path })
     })
   }
 }
