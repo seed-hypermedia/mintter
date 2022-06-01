@@ -98,7 +98,7 @@ export function LibraryItem({
     ? publication.document?.title
     : draft && draft.title
     ? draft.title
-    : 'New Document'
+    : 'Untitled Document'
 
   return (
     <StyledItem active={match} data-testid="library-item">
