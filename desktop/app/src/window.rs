@@ -23,7 +23,7 @@ impl Serialize for Error {
 }
 
 #[tauri::command]
-async fn open_in_new_window(app_handle: AppHandle, path: &str) -> Result<(), Error> {
+async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
   for (_, win) in app_handle.windows() {
     debug!(
       "comparing win url {}  to requested {}",
@@ -72,6 +72,6 @@ fn window_label() -> String {
 
 pub fn init() -> TauriPlugin<Wry> {
   PluginBuilder::new("window")
-    .invoke_handler(tauri::generate_handler![open_in_new_window])
+    .invoke_handler(tauri::generate_handler![open])
     .build()
 }
