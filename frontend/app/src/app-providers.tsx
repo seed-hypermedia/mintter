@@ -18,7 +18,6 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       retry: false,
       retryOnMount: false,
-      useErrorBoundary: true,
       staleTime: Infinity,
       refetchOnReconnect: false,
     },
