@@ -1,10 +1,10 @@
 /** @jsx jsx */
-import { DocumentChange } from '@app/client'
-import { blockToApi } from '@app/client/v2/block-to-api'
-import { changesService } from '@app/editor/mintter-changes/plugin'
-import { getBlock } from '@app/editor/utils'
-import { Editor } from 'slate'
-import { afterEach, describe, expect, test } from 'vitest'
+import {DocumentChange} from '@app/client'
+import {blockToApi} from '@app/client/v2/block-to-api'
+import {changesService} from '@app/editor/mintter-changes/plugin'
+import {getBlock} from '@app/editor/utils'
+import {Editor} from 'slate'
+import {afterEach, describe, expect, test} from 'vitest'
 
 describe.skip('Change Transforms', () => {
   let editor = (
