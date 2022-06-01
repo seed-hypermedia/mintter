@@ -210,6 +210,10 @@ type MainPageEvent =
     type: 'OPEN_WINDOW'
     path?: string
   }
+  | {
+    type: 'EDIT_PUBLICATION'
+    docId: string
+  }
 
 type RouterEvent =
   | {
@@ -420,6 +424,9 @@ export function createMainPageMachine(client: QueryClient) {
             OPEN_WINDOW: {
               actions: 'openWindow',
             },
+            EDIT_PUBLICATION: {
+              actions: 'editPublication'
+            }
           },
         },
       },
@@ -547,6 +554,11 @@ export function createMainPageMachine(client: QueryClient) {
           },
           { to: 'router' },
         ),
+        editPublication: (_, event) => {
+          createDraft(event.docId).then(doc => {
+            openWindow(`/editor/${doc.id}`)
+          })
+        }
       },
       services: {
         // router reference: https://gist.github.com/ChrisShank/369aa8cbd4002244d7769bd1ba3e232a
@@ -576,7 +588,6 @@ export function createMainPageMachine(client: QueryClient) {
               version?: string
               blockId?: string
             }>('/p/:docId/:version?/:blockId?', (params) => {
-              debug('params:', params)
               return params
                 ? sendBack({
                   type: 'goToPublication',

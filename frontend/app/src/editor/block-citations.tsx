@@ -10,7 +10,6 @@ import {css} from '@app/stitches.config'
 import {getBlock} from '@app/utils/get-block'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
-import {useSidepanel} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {FlowContent} from '@mintter/mttast'
 import {useMachine} from '@xstate/react'
@@ -128,8 +127,6 @@ type BlockCitationItemProps = {
 }
 
 function BlockCitationItem({citation}: BlockCitationItemProps) {
-  const sidepanelService = useSidepanel()
-
   const [state, send] = useMachine(() => blockCitationMachine, {
     services: {
       fetchCitation: () => (sendBack) => {
@@ -172,13 +169,6 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
       clearError: assign({
         errorMessage: (context) => '',
       }),
-      openInSidepanel: (_, event) => {
-        sidepanelService.send({
-          type: 'SIDEPANEL.ADD',
-          item: event.item,
-        })
-        sidepanelService.send('SIDEPANEL.OPEN')
-      },
     },
   })
 
