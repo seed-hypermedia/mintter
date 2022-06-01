@@ -624,16 +624,15 @@ export function createMainPageMachine(client: QueryClient) {
   )
 }
 
-
 function openWindow(path?: string) {
   if (path) {
     // Open window with path
-    debug('OPEN WINDOW WITH PATH', path)
+    tauriInvoke('plugin:window|open', {path})
   } else {
-    createDraft().then(doc => {
+    createDraft().then((doc) => {
       let path = `/editor/${doc.id}`
       // open window with new path
-      debug('OPEN WINDOW WITH NEW PATH', path)
+      tauriInvoke('plugin:window|open', {path})
     })
   }
 }
