@@ -39,7 +39,7 @@ impl Extension {
   // TODO: verify extension exports/imports and permissions here
   pub fn new<L: ModuleLoader>(host: &Host<L>, bytes: &[u8], id: usize) -> Result<Self, Error> {
     debug!(target = "new", "Parsing wasm module from bytes");
-    let module = Module::new_with_name(host.engine(), bytes, &id.to_string())?;
+    let module = Module::new(host.engine(), bytes)?;
 
     debug!(
       target = "new",
