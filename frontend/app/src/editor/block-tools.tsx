@@ -86,15 +86,20 @@ type BlockToolsProps = {
 export function BlockTools({element}: BlockToolsProps) {
   const editor = useSlateStatic()
   const hoverService = useHover()
-  const [state, hoverSend] = useActor(hoverService)
+  const [, hoverSend] = useActor(hoverService)
   const path = findPath(element)
 
   return (
     <Box
       contentEditable={false}
+      className="DEBUGME"
       css={{
-        opacity: state.context.blockId == element.id ? 1 : 0,
-        pointerEvents: state.context.blockId == element.id ? 'all' : 'none',
+        opacity: 0,
+        pointerEvents: 'none',
+        [`[data-hover-block="${element.id}"] &`]: {
+          opacity: 1,
+          pointerEvents: 'all',
+        },
         '&:hover': {
           cursor: 'pointer',
         },

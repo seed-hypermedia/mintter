@@ -99,7 +99,7 @@ var citationCount = css({
   color: '$base-text-low',
   textAlign: 'center',
   '& span': {
-    background: 'red',
+    background: '$primary-component-bg-active',
     display: 'block',
   },
 })

@@ -119,6 +119,10 @@ function Paragraph({
           color: '$base-text-low',
           fontSize: '$2',
         },
+        transition: 'all ease-in-out 0.1s',
+        [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
+          background: '$primary-component-bg-hover',
+        },
       }}
       data-parent-type={(parentNode as FlowContent)?.type}
       onMouseEnter={() =>
