@@ -155,7 +155,7 @@ export default function Publication() {
     )
   }
 
-  debug('PUB STATE: ', state.value)
+  // debug('PUB STATE: ', state.value)
   return (
     <>
       {state.matches('publication.ready') && (
@@ -313,9 +313,6 @@ export const publicationMachine =
                   target: 'visible',
                 },
                 'DISCUSSION.TOGGLE': {
-                  actions: () => {
-                    debug('TOGGLE DISCUSSIONS!!')
-                  },
                   target: 'visible',
                 },
               },
@@ -325,10 +322,10 @@ export const publicationMachine =
               states: {
                 ready: {
                   entry: (context, event) => {
-                    debug(
-                      'DISCUSSION READY: ',
-                      JSON.stringify({context, event}, null, 3),
-                    )
+                    // debug(
+                    //   'DISCUSSION READY: ',
+                    //   JSON.stringify({context, event}, null, 3),
+                    // )
                   },
                 },
                 errored: {
