@@ -290,6 +290,7 @@ export function createMainPageMachine(client: QueryClient) {
               initial: 'validating',
               states: {
                 validating: {
+                  entry: ['clearCurrentDocument'],
                   always: [
                     {
                       actions: 'setDraftParams',
@@ -303,7 +304,7 @@ export function createMainPageMachine(client: QueryClient) {
                 },
                 valid: {
                   entry: 'pushDraftRoute',
-                  exit: ['pushToRecents', 'clearCurrentDocument'],
+                  exit: ['pushToRecents'],
                   tags: ['documentView', 'draft'],
                   on: {
                     goToEditor: [
@@ -331,6 +332,7 @@ export function createMainPageMachine(client: QueryClient) {
               initial: 'validating',
               states: {
                 validating: {
+                  entry: ['pushToRecents', 'clearCurrentDocument'],
                   always: [
                     {
                       actions: 'setPublicationParams',
@@ -344,12 +346,14 @@ export function createMainPageMachine(client: QueryClient) {
                 },
                 valid: {
                   entry: 'pushPublicationRoute',
-                  exit: ['pushToRecents', 'clearCurrentDocument'],
                   tags: ['documentView', 'publication'],
                   on: {
                     goToPublication: [
                       {
                         cond: 'isEventDifferent',
+                        actions: (...args) => {
+                          debug('goToPublication INSIDE PUBLICATION VALID', args)
+                        },
                         target: 'validating',
                       },
                       {},

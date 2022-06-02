@@ -13,12 +13,11 @@ import {EditableProps} from 'slate-react/dist/components/editable'
 import {EditableEventHandlers, EditorPlugin} from './types'
 
 export enum EditorMode {
-  Draft,
-  Publication,
   Embed,
   Mention,
   Discussion,
-  Sidepanel,
+  Publication,
+  Draft,
 }
 
 const byApply =

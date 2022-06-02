@@ -63,36 +63,7 @@ export function Editor({
   )
   const hoverService = useHover()
 
-  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return (
-      <Suspense fallback={'loading'}>
-        <Box
-          as="span"
-          className={className}
-          onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
-        >
-          <Slate
-            editor={_editor}
-            value={value as Array<Descendant>}
-            onChange={onChange as any}
-          >
-            <Editable
-              as={as}
-              data-testid="editor"
-              style={{display: 'inline'}}
-              readOnly={_editor.readOnly}
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              decorate={decorate}
-              {...eventHandlers}
-            />
-          </Slate>
-        </Box>
-      </Suspense>
-    )
-  }
-
-  if (mode == EditorMode.Publication || mode == EditorMode.Discussion) {
+  if (mode == EditorMode.Draft) {
     return (
       <Suspense fallback={'loading'}>
         <Box
@@ -105,10 +76,13 @@ export function Editor({
             value={value as Array<Descendant>}
             onChange={onChange as any}
           >
-            {/* <PublicationHoveringToolbar /> */}
+            <EditorHoveringToolbar />
             <Editable
-              readOnly={_editor.readOnly}
+              spellCheck={false}
+              autoCorrect="false"
+              autoCapitalize="false"
               data-testid="editor"
+              readOnly={_editor.readOnly}
               renderElement={renderElement}
               renderLeaf={renderLeaf}
               decorate={decorate}
@@ -125,8 +99,8 @@ export function Editor({
   return (
     <Suspense fallback={'loading'}>
       <Box
+        as="span"
         className={className}
-        css={{position: 'relative'}}
         onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
       >
         <Slate
@@ -134,20 +108,16 @@ export function Editor({
           value={value as Array<Descendant>}
           onChange={onChange as any}
         >
-          <EditorHoveringToolbar />
           <Editable
-            spellCheck={false}
-            autoCorrect="false"
-            autoCapitalize="false"
+            as={as}
             data-testid="editor"
-            readOnly={_editor.readOnly}
+            style={{display: 'inline'}}
+            readOnly
             renderElement={renderElement}
             renderLeaf={renderLeaf}
             decorate={decorate}
-            placeholder="Start typing here..."
             {...eventHandlers}
           />
-          {children}
         </Slate>
       </Box>
     </Suspense>
