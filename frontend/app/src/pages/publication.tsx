@@ -111,7 +111,9 @@ export default function Publication() {
             },
           )
           .then((response) => {
-            Promise.all(response.links.map(({source}) => getBlock(source)))
+            debug('\n\n=== LINKS: ', response.links)
+            let links = response.links.filter(Boolean)
+            Promise.all(links.map(({source}) => getBlock(source)))
               //@ts-ignore
               .then((result: Array<GetBlockResult>) => {
                 debug('DISCUSSION BLOCK RESULT: ', result)
@@ -690,7 +692,10 @@ function Discussion({service}: DiscussionProps) {
         }}
       >
         {state.context.discussion.map((entry) => (
-          <DiscussionItem entry={entry} />
+          <DiscussionItem
+            key={`${entry.publication.document?.id}/${entry.publication.version}/${entry.block?.id}`}
+            entry={entry}
+          />
         ))}
       </Box>
     )
@@ -700,12 +705,14 @@ function Discussion({service}: DiscussionProps) {
 }
 
 function DiscussionItem({entry}: {entry: GetBlockResult}) {
-  debug('DiscussionItem', entry)
   const {data: author} = useAccount(entry.publication.document?.author)
   const bookmarkService = useBookmarksService()
   const mainPageService = useMainPage()
 
-  let url = `${MINTTER_LINK_PREFIX}${entry.publication.document?.id}/${entry.publication.version}/${entry?.block.id}`
+  let url =
+    entry.publication.document && entry.block
+      ? `${MINTTER_LINK_PREFIX}${entry.publication.document?.id}/${entry.publication.version}/${entry?.block.id}`
+      : ''
 
   function addBookmark() {
     bookmarkService.send({
@@ -743,9 +750,11 @@ function DiscussionItem({entry}: {entry: GetBlockResult}) {
             },
           }}
         >
-          {block ? (
-            <Editor mode={EditorMode.Discussion} value={[block]} />
-          ) : null}
+          <Editor
+            mode={EditorMode.Discussion}
+            value={entry.publication.document.content}
+          />
+
           <Box
             css={{
               paddingVertical: '$6',
@@ -807,7 +816,7 @@ function DiscussionItem({entry}: {entry: GetBlockResult}) {
           onSelect={() =>
             mainPageService.send({
               type: 'OPEN_WINDOW',
-              path: `/p/${entry.publication.document.id}/${entry.publication.version}/${entry.block.id}`,
+              path: `/p/${entry.publication.document?.id}/${entry.publication.version}/${entry.block?.id}`,
             })
           }
         >
