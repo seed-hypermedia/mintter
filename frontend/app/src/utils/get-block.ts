@@ -25,13 +25,17 @@ export async function getBlock(entry?: LinkNode): Promise<GetBlockResult | undef
         },
       )
     }
-  }
 
-
-  //@ts-ignore
-  return {
-    publication,
-    //@ts-ignore
-    block,
+    return {
+      publication: {
+        ...publication,
+        document: {
+          ...publication.document,
+          content: [content]
+        }
+      },
+      //@ts-ignore
+      block,
+    }
   }
 }
