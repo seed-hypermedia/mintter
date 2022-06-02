@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
-	"regexp"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -179,46 +178,4 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 	}
 
 	return nil
-}
-
-type mintterLink struct {
-	TargetDocument cid.Cid
-	TargetVersion  string
-	TargetBlock    string
-}
-
-var linkRegex = regexp.MustCompile(`^mtt:\/\/([a-z0-9]+)\/([a-z0-9]+)\/?([a-z0-9]+)?$`)
-
-func parseMintterLink(s string) (mintterLink, error) {
-	match := linkRegex.FindStringSubmatch(s)
-	if l := len(match); l < 3 || l > 4 {
-		return mintterLink{}, fmt.Errorf("malformed mintter link %s", s)
-	}
-
-	var out mintterLink
-	for i, part := range match {
-		switch i {
-		case 0:
-			// Skip the original full match.
-			continue
-		case 1:
-			docid, err := cid.Decode(part)
-			if err != nil {
-				return mintterLink{}, fmt.Errorf("failed to parse document id from link %s", s)
-			}
-			out.TargetDocument = docid
-		case 2:
-			_, err := vcs.ParseVersion(part)
-			if err != nil {
-				return mintterLink{}, fmt.Errorf("failed to parse version from link %s", s)
-			}
-			out.TargetVersion = part
-		case 3:
-			out.TargetBlock = part
-		default:
-			return mintterLink{}, fmt.Errorf("unexpected link segment in link %s", s)
-		}
-	}
-
-	return out, nil
 }

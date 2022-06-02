@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mintter/backend/crdt"
 	"mintter/backend/vcs"
+	"regexp"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -172,12 +173,30 @@ type Block struct {
 	Annotations []Annotation      `refmt:"annotations,omitempty"`
 }
 
-func (b Block) ForEachLink(f func() bool) {
+func (b Block) ForEachLink(f func(mintterLink) bool) {
 	for _, a := range b.Annotations {
-		// if a.Type != ""
+		if a.Type != "link" && a.Type != "embed" {
+			continue
+		}
 
-		_ = a
-		if !f() {
+		// Malformed link. Must have url attribute.
+		if a.Attributes == nil {
+			continue
+		}
+
+		url := a.Attributes["url"]
+
+		// Malformed URL.
+		if url == "" {
+			continue
+		}
+
+		link, err := parseMintterLink(url)
+		if err != nil {
+			continue
+		}
+
+		if !f(link) {
 			return
 		}
 	}
@@ -280,4 +299,46 @@ func (ds *DocumentState) apply(evt DocumentEvent, updateTime time.Time) error {
 	ds.UpdateTime = updateTime
 
 	return nil
+}
+
+type mintterLink struct {
+	TargetDocument cid.Cid
+	TargetVersion  string
+	TargetBlock    string
+}
+
+var linkRegex = regexp.MustCompile(`^mtt:\/\/([a-z0-9]+)\/([a-z0-9]+)\/?([^\/]+)?$`)
+
+func parseMintterLink(s string) (mintterLink, error) {
+	match := linkRegex.FindStringSubmatch(s)
+	if l := len(match); l < 3 || l > 4 {
+		return mintterLink{}, fmt.Errorf("malformed mintter link %s", s)
+	}
+
+	var out mintterLink
+	for i, part := range match {
+		switch i {
+		case 0:
+			// Skip the original full match.
+			continue
+		case 1:
+			docid, err := cid.Decode(part)
+			if err != nil {
+				return mintterLink{}, fmt.Errorf("failed to parse document id from link %s", s)
+			}
+			out.TargetDocument = docid
+		case 2:
+			_, err := vcs.ParseVersion(part)
+			if err != nil {
+				return mintterLink{}, fmt.Errorf("failed to parse version from link %s", s)
+			}
+			out.TargetVersion = part
+		case 3:
+			out.TargetBlock = part
+		default:
+			return mintterLink{}, fmt.Errorf("unexpected link segment in link %s", s)
+		}
+	}
+
+	return out, nil
 }
