@@ -1,29 +1,32 @@
-import {getPublication, LinkNode, Publication} from '@app/client'
-import {FlowContent} from '@mintter/mttast'
-import {visit} from 'unist-util-visit'
+import { getPublication, LinkNode, Publication } from '@app/client'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { FlowContent } from '@mintter/mttast'
+import { visit } from 'unist-util-visit'
 
-export type GetBlockResult =
-  | {
-      publication: Publication
-      block: FlowContent
-    }
-  | undefined
+export type GetBlockResult = {
+  publication: Publication
+  block: FlowContent
+}
 
-export async function getBlock(entry?: LinkNode): Promise<GetBlockResult> {
+export async function getBlock(entry?: LinkNode): Promise<GetBlockResult | undefined> {
   if (!entry) return
   let publication = await getPublication(entry.documentId)
 
   let block: FlowContent
 
-  if (publication.document?.content) {
-    visit(
-      JSON.parse(publication.document.content)[0],
-      {id: entry.blockId},
-      (node) => {
-        block = node
-      },
-    )
+  if (publication.document) {
+    let content = blockNodeToSlate(publication.document.children)
+    if (content) {
+      visit(
+        content,
+        { id: entry.blockId },
+        (node) => {
+          block = node
+        },
+      )
+    }
   }
+
 
   //@ts-ignore
   return {

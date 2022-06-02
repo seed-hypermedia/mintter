@@ -22,7 +22,7 @@ function loggerFactory(cb: FnType) {
           if (typeof v == 'string') {
             return v
           } else {
-            return JSON.stringify(v)
+            return JSON.stringify(v, null, 3)
           }
         })
         .join(', ')

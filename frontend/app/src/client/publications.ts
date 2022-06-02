@@ -1,4 +1,3 @@
-import { debug } from '@app/utils/logger'
 import {
   ContentGraphClientImpl,
   DeletePublicationRequest,
@@ -60,6 +59,5 @@ export function listCitations(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = ListCitationsRequest.fromPartial({ documentId, depth: 2 })
   let result = new ContentGraphClientImpl(rpc).listCitations(request)
-  debug('\n\n ====== listCitations: ', JSON.stringify({ result, documentId }, null, 2), '\n\n')
   return result
 }

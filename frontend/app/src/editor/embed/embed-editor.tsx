@@ -31,75 +31,6 @@ function RenderEmbedEditor(
   let focused = useFocused()
   let hoverService = useHover()
 
-  // let service = useInterpret(() =>
-  //   embedMachine.withConfig({
-  //     actions: {
-  //       assignError: assign({
-  //         errorMessage: (_, event) => {
-  //           return event.errorMessage
-  //         },
-  //       }),
-  //       assignPublication: assign({
-  //         publication: (_, event) => {
-  //           debug('\n================ assignPublication: ', event.publication)
-  //           return event.publication
-  //         },
-  //       }),
-  //       assignBlock: assign({
-  //         block: (_, event) => event.block,
-  //       }),
-  //     },
-  //     services: {
-  //       fetchPublication: () => (sendBack) => {
-  //         client.fetchQuery(
-  //           [queryKeys.GET_PUBLICATION, publicationId],
-  //           async ({queryKey}) => {
-  //             const [, publicationId] = queryKey as [string, string]
-  //             try {
-  //               let publication = await client.fetchQuery(
-  //                 [queryKeys.GET_PUBLICATION, publicationId, version],
-  //                 async ({queryKey}) => {
-  //                   let [, docId, version] = queryKey
-  //                   let pub = await getPublication(docId, version)
-
-  //                   return pub
-  //                 },
-  //               )
-  //               debug('\n\n === EMBED PUBLICATION: ', publication)
-  //               sendBack({type: 'REPORT.PUBLICATION.SUCCESS', publication})
-  //             } catch (e: any) {
-  //               sendBack({
-  //                 type: 'REPORT.PUBLICATION.ERROR',
-  //                 errorMessage: JSON.stringify(e),
-  //               })
-  //             }
-  //           },
-  //         )
-  //       },
-  //       filterBlock: (context) => (sendBack) => {
-  //         debug('\n\n === INSIDE FILTER BLOCK INVOKE', context)
-  //         if (context.publication?.document?.children.length) {
-  //           let slateValue = blockNodeToSlate(
-  //             context.publication!.document!.children,
-  //           )
-
-  //           new Promise((resolve, reject) => {})
-  //             .then((block: any) => {
-  //               sendBack({type: 'REPORT.BLOCK.SUCCESS', block})
-  //             })
-  //             .catch((error) => {
-  //               sendBack({
-  //                 type: 'REPORT.BLOCK.ERROR',
-  //                 errorMessage: 'error capturing block',
-  //               })
-  //             })
-  //         }
-  //       },
-  //     },
-  //   }),
-  // )
-  // let [state] = useActor(service)
-
   let state = useEmbed(embed)
 
   if (state.status == 'error') {
@@ -121,11 +52,13 @@ function RenderEmbedEditor(
         onMouseEnter={() => hoverService.send({type: 'MOUSE_ENTER', blockId})}
         ref={ref}
         css={{
-          [`[data-hover-block="${blockId}"] &`]: {
-            backgroundColor: '$primary-component-bg-hover',
-          },
           backgroundColor:
-            selected && focused ? '$primary-component-bg-hover' : 'none',
+            selected && focused
+              ? '$primary-component-bg-active'
+              : 'transparent',
+          [`[data-hover-block="${blockId}"] &`]: {
+            backgroundColor: '$primary-component-bg-active',
+          },
         }}
       >
         <Editor

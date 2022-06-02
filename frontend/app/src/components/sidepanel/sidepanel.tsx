@@ -1,11 +1,4 @@
-import {
-  Account,
-  getAccount,
-  getPublication,
-  listSidepanel,
-  SidepanelItem as SidepanelItemType,
-  updateListSidepanel,
-} from '@app/client'
+import {Account, getAccount, getPublication} from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {Editor} from '@app/editor/editor'
 import {getEmbedIds} from '@app/editor/embed'
@@ -78,7 +71,7 @@ export function createSidepanelMachine(client: QueryClient) {
             id: 'fetchSidepanel',
             src: () => (sendBack) => {
               client
-                .fetchQuery([queryKeys.GET_SIDEPANEL_LIST], listSidepanel)
+                .fetchQuery([queryKeys.GET_SIDEPANEL_LIST], () => ({items: []}))
                 .then(({items}) => {
                   sendBack({type: 'REPORT.SIDEPANEL.SUCCESS', items})
                 })
@@ -148,12 +141,6 @@ export function createSidepanelMachine(client: QueryClient) {
       actions: {
         persist: (ctx) => {
           try {
-            updateListSidepanel(
-              ctx.items.map(({url, type}) => ({
-                url,
-                type,
-              })),
-            )
           } catch (e) {
             error(e)
           }
