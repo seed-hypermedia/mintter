@@ -74,7 +74,8 @@ function RenderMintterLink(
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
-    mainpageService.send({type: 'goToPublication', docId, version, blockId})
+    // debug('\n\n === MINTTER LINK CLICKED', {docId, version, blockId})
+    // mainpageService.send({type: 'goToPublication', docId, version, blockId})
   }
 
   return <StyledLink ref={ref} {...props} onClick={onClick} />

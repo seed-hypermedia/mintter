@@ -1,4 +1,5 @@
 import { EditorDocument } from '@app/editor/use-editor-draft'
+import { debug } from '@app/utils/logger'
 import { Node } from 'slate'
 
 export function getTitleFromContent(entry: {
@@ -8,6 +9,7 @@ export function getTitleFromContent(entry: {
 }
 
 export function getDocumentTitle(document: any) {
+  debug('getDocumentTitle: ', document)
   let titleText = document?.content
     ? getTitleFromContent({
       children: document.content,

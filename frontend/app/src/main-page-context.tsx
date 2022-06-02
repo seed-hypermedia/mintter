@@ -35,6 +35,7 @@ export const useLibrary = createMainPageSelector(
 export var usePageTitle = createMainPageSelector(function pageTitleSelector(
   state,
 ) {
+  // return useMemo(() => {
   var result = ''
 
   if (state.matches('routes.draftList')) {
@@ -54,6 +55,7 @@ export var usePageTitle = createMainPageSelector(function pageTitleSelector(
   }
 
   return result
+  // }, [state.changed])
 })
 
 export function useIsLibraryOpen() {
