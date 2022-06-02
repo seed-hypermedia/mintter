@@ -15,7 +15,7 @@ export interface Literal extends Node {
 }
 
 export interface Parent extends Node {
-  children: Array<MttastContent>
+  children: MttastContent[]
 }
 
 export interface Document extends Parent {
@@ -30,28 +30,28 @@ export interface Document extends Parent {
 
 export interface Group extends Parent {
   type: 'group'
-  children: Array<FlowContent>
+  children: FlowContent[]
 }
 
 export interface OrderedList extends Parent {
   type: 'orderedList'
   start?: number
-  children: Array<FlowContent>
+  children: FlowContent[]
 }
 
 export interface UnorderedList extends Parent {
   type: 'unorderedList'
-  children: Array<FlowContent>
+  children: FlowContent[]
 }
 
 export interface Paragraph extends Parent {
   type: 'paragraph'
-  children: Array<PhrasingContent>
+  children: PhrasingContent[]
 }
 
 export interface StaticParagraph extends Parent {
   type: 'staticParagraph'
-  children: Array<StaticPhrasingContent>
+  children: StaticPhrasingContent[]
 }
 
 export interface Statement extends Parent {
@@ -100,7 +100,7 @@ export interface Embed extends Alternative, Resource, Parent {
 
 export interface Link extends Resource, Parent {
   type: 'link'
-  children: Array<StaticPhrasingContent>
+  children: StaticPhrasingContent[]
 }
 
 export interface Text extends Literal {
