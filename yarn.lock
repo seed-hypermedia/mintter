@@ -1668,7 +1668,7 @@ __metadata:
     autosize: 5.0.1
     browser-headers: 0.4.1
     cypress: ^10.0.0
-    cypress-plugin-tab: ^1.0.5
+    cypress-plugin-tab: "https://github.com/AndrewLeedham/cypress-plugin-tab"
     eslint: 8.16.0
     eslint-config-preact: 1.3.0
     eslint-config-prettier: 8.5.0
@@ -3347,16 +3347,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ally.js@npm:^1.4.1":
-  version: 1.4.1
-  resolution: "ally.js@npm:1.4.1"
-  dependencies:
-    css.escape: ^1.5.0
-    platform: 1.3.3
-  checksum: 78c397235c9c063854e880757795ff181a0668d918d9c3d7cde1a5288c583a0a65842631a565582bd01f429e16e2a2942d8b810c3164fd2c48f90a2bf83f5841
-  languageName: node
-  linkType: hard
-
 "ansi-colors@npm:^4.1.1":
   version: 4.1.3
   resolution: "ansi-colors@npm:4.1.3"
@@ -5005,13 +4995,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css.escape@npm:^1.5.0":
-  version: 1.5.1
-  resolution: "css.escape@npm:1.5.1"
-  checksum: f6d38088d870a961794a2580b2b2af1027731bb43261cfdce14f19238a88664b351cc8978abc20f06cc6bbde725699dec8deb6fe9816b139fc3f2af28719e774
-  languageName: node
-  linkType: hard
-
 "cssom@npm:^0.5.0":
   version: 0.5.0
   resolution: "cssom@npm:0.5.0"
@@ -5052,12 +5035,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cypress-plugin-tab@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "cypress-plugin-tab@npm:1.0.5"
-  dependencies:
-    ally.js: ^1.4.1
-  checksum: 87d68c8caf03bb8d330901c68caa4253442d7c5364dae92899c744286a459dd16fd47c3633288eb35940655b3079502d425c83fbb489841722c7f4d7c77dd212
+"cypress-plugin-tab@https://github.com/AndrewLeedham/cypress-plugin-tab":
+  version: 1.0.1
+  resolution: "cypress-plugin-tab@https://github.com/AndrewLeedham/cypress-plugin-tab.git#commit=837e4f06c552be10a7dc8a9e1af8cc72e336e0f5"
+  checksum: a4c3669068a34cd4d5a7c55eacef374cc4d455d1258fd675609dc7fff9b33a0e820961bb11a2a5a41e2aadb40308d268f9a26e51260719b0fd00ebf6f87246d6
   languageName: node
   linkType: hard
 
@@ -10927,13 +10908,6 @@ __metadata:
   version: 4.0.5
   resolution: "pirates@npm:4.0.5"
   checksum: c9994e61b85260bec6c4fc0307016340d9b0c4f4b6550a957afaaff0c9b1ad58fbbea5cfcf083860a25cb27a375442e2b0edf52e2e1e40e69934e08dcc52d227
-  languageName: node
-  linkType: hard
-
-"platform@npm:1.3.3":
-  version: 1.3.3
-  resolution: "platform@npm:1.3.3"
-  checksum: e7a95273e0ec33b6fcf85ba1464bb8ae028f101530dc51f2ee3430fa0b93783511da874af75a5fc065084376619b2382aad7fce0377bcce82dd9f6d3c812183a
   languageName: node
   linkType: hard
 
