@@ -1,4 +1,3 @@
-import {useHover} from '@app/editor/hover-context'
 import {useMainPage} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
@@ -59,7 +58,6 @@ function RenderEmbed(
   const bookmarksService = useBookmarksService()
   const mainPageService = useMainPage()
   const [pubId, version, blockId] = getIdsfromUrl(element.url)
-  const hoverService = useHover()
 
   function addBookmark() {
     bookmarksService.send({

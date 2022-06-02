@@ -1,6 +1,6 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {changesService} from '@app/editor/mintter-changes/plugin'
-import {getBlock} from '@app/editor/utils'
+import {getEditorBlock} from '@app/editor/utils'
 import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
@@ -281,7 +281,7 @@ function wrapMintterLink(editor: Editor, url: string) {
 }
 
 function addLinkChange(editor: Editor, at: Range | null = editor.selection) {
-  let blockEntry = getBlock(editor, {
+  let blockEntry = getEditorBlock(editor, {
     //@ts-ignore
     at,
   })

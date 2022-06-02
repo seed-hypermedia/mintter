@@ -2,7 +2,7 @@
 import {DocumentChange} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {changesService} from '@app/editor/mintter-changes/plugin'
-import {getBlock} from '@app/editor/utils'
+import {getEditorBlock} from '@app/editor/utils'
 import {Editor} from 'slate'
 import {afterEach, describe, expect, test} from 'vitest'
 
@@ -73,7 +73,7 @@ describe.skip('Change Transforms', () => {
 
   test('replaceBlock', () => {
     changesService.addChange(['replaceBlock', 'block1'])
-    let blockEntry = getBlock(editor, {id: 'block1'})
+    let blockEntry = getEditorBlock(editor, {id: 'block1'})
     let expected: Array<DocumentChange> = [
       {
         op: {
@@ -100,7 +100,7 @@ describe.skip('Change Transforms', () => {
     expect(changesService.transformChanges(editor)).toEqual(expected)
   }),
     test('all together', () => {
-      let blockEntry = getBlock(editor, {id: 'block1'})
+      let blockEntry = getEditorBlock(editor, {id: 'block1'})
       changesService.addChange(['deleteBlock', 'block2-2'])
       changesService.addChange(['moveBlock', 'block2'])
       changesService.addChange(['replaceBlock', 'block1'])

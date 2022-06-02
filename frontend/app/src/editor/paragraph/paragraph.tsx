@@ -120,8 +120,9 @@ function Paragraph({
           fontSize: '$2',
         },
         transition: 'all ease-in-out 0.1s',
+        backgroundColor: 'transparent',
         [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
-          background: '$base-background-normal',
+          backgroundColor: '$primary-component-bg-active',
         },
       }}
       data-parent-type={(parentNode as FlowContent)?.type}

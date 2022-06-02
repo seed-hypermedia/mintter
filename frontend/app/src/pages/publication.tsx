@@ -1,7 +1,6 @@
 import {
   getInfo,
   getPublication,
-  Link,
   listCitations,
   Publication as PublicationType,
 } from '@app/client'
@@ -15,7 +14,7 @@ import {queryKeys, useAccount} from '@app/hooks'
 import {useMainPage, useParams} from '@app/main-page-context'
 import {tippingMachine} from '@app/tipping-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {getBlock} from '@app/utils/get-block'
+import {getBlock, GetBlockResult} from '@app/utils/get-block'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {debug, error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
@@ -31,18 +30,18 @@ import {
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
-import {document, FlowContent, group} from '@mintter/mttast'
+import {FlowContent} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {useActor, useInterpret, useMachine} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import toast from 'react-hot-toast'
 import QRCode from 'react-qr-code'
-import {QueryClient, useQueryClient} from 'react-query'
+import {useQueryClient} from 'react-query'
 import {assign, createMachine, InterpreterFrom, StateFrom} from 'xstate'
 
 export default function Publication() {
   const client = useQueryClient()
   const mainPageService = useMainPage()
-  let {docId, version} = useParams()
+  const {docId} = useParams()
 
   const publicationService = useInterpret(() => publicationMachine, {
     services: {
@@ -55,7 +54,11 @@ export default function Publication() {
               context.params.docId,
               context.params.version,
             ],
-            () => getPublication(context.params.docId, context.params.version),
+            () =>
+              getPublication(
+                context.params.docId,
+                context.params.version ?? '',
+              ),
           ),
           client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
         ])
@@ -108,14 +111,13 @@ export default function Publication() {
             },
           )
           .then((response) => {
-            debug('CITATIONS RESPONSE: ', response)
             Promise.all(response.links.map(({source}) => getBlock(source)))
               //@ts-ignore
-              .then((result: Array<FlowContent>) => {
-                let discussion = document([group(result)])
+              .then((result: Array<GetBlockResult>) => {
+                debug('DISCUSSION BLOCK RESULT: ', result)
                 sendBack({
                   type: 'DISCUSSION.REPORT.SUCCESS',
-                  discussion,
+                  discussion: result,
                 })
               })
           })
@@ -143,12 +145,7 @@ export default function Publication() {
       >
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
-        <Button
-          onClick={() =>
-            send({type: 'PUBLICATION.FETCH.DATA', id: docId, version})
-          }
-          color="muted"
-        >
+        <Button onClick={() => send('PUBLICATION.FETCH.DATA')} color="muted">
           try again
         </Button>
       </Box>
@@ -172,7 +169,16 @@ export default function Publication() {
               }}
             />
           </Box>
-          <Box css={{marginBottom: 200, paddingLeft: 32}}>
+          <Box
+            css={{
+              marginBottom: 200,
+              paddingHorizontal: 32,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '$4',
+            }}
+          >
             <Button
               variant="ghost"
               color="primary"
@@ -268,7 +274,7 @@ export type PublicationContext = {
   publication: ClientPublication | null
   errorMessage: string
   canUpdate: boolean
-  discussion: Document | null
+  discussion: Array<GetBlockResult>
 }
 
 export type PublicationEvent =
@@ -283,7 +289,7 @@ export type PublicationEvent =
   | {type: 'DISCUSSION.SHOW'}
   | {type: 'DISCUSSION.HIDE'}
   | {type: 'DISCUSSION.TOGGLE'}
-  | {type: 'DISCUSSION.REPORT.SUCCESS'; discussion: any}
+  | {type: 'DISCUSSION.REPORT.SUCCESS'; discussion: Array<GetBlockResult>}
   | {type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string}
 
 export const publicationMachine =
@@ -294,7 +300,7 @@ export const publicationMachine =
         publication: null,
         errorMessage: '',
         canUpdate: false,
-        discussion: null,
+        discussion: [],
       },
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
@@ -662,7 +668,7 @@ type DiscussionProps = {
 }
 
 function Discussion({service}: DiscussionProps) {
-  const [state, send] = useActor(service)
+  const [state] = useActor(service)
 
   if (state.matches('discussion.visible.fetching')) {
     return <span>loading discussion...</span>
@@ -680,15 +686,12 @@ function Discussion({service}: DiscussionProps) {
           display: 'flex',
           flexDirection: 'column',
           gap: '$4',
+          paddingHorizontal: '$4',
         }}
       >
-        Discussion here
-        {/* {links.map((link) => (
-          <DiscussionItem
-            key={`${link.source?.documentId}-${link.target?.documentId}-${link.target?.blockId}`}
-            link={link}
-          />
-        ))} */}
+        {state.context.discussion.map((entry) => (
+          <DiscussionItem entry={entry} />
+        ))}
       </Box>
     )
   }
@@ -696,26 +699,23 @@ function Discussion({service}: DiscussionProps) {
   return null
 }
 
-function DiscussionItem({link}: {link: Link}) {
-  const client = useQueryClient()
-  const [state, send] = useMachine(() => createDiscussionMachine(client))
-  const {data: author} = useAccount(
-    state?.context?.publication?.document?.author,
-  )
+function DiscussionItem({entry}: {entry: GetBlockResult}) {
+  debug('DiscussionItem', entry)
+  const {data: author} = useAccount(entry.publication.document?.author)
   const bookmarkService = useBookmarksService()
   const mainPageService = useMainPage()
+
+  let url = `${MINTTER_LINK_PREFIX}${entry.publication.document?.id}/${entry.publication.version}/${entry?.block.id}`
 
   function addBookmark() {
     bookmarkService.send({
       type: 'BOOKMARK.ADD',
-      url: `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
+      url,
     })
   }
 
   async function onCopy() {
-    await copyTextToClipboard(
-      `${MINTTER_LINK_PREFIX}${link.source?.documentId}/${link.source?.version}/${link.source?.blockId}`,
-    )
+    await copyTextToClipboard(url)
     toast.success('Embed Reference copied successfully', {
       position: 'top-center',
     })
@@ -724,199 +724,98 @@ function DiscussionItem({link}: {link: Link}) {
   function onGoToPublication() {
     mainPageService.send({
       type: 'goToPublication',
-      docId: link.source!.documentId,
-      version: link.source!.version,
+      docId: entry.publication.document!.id,
+      version: entry.publication.version,
       blockId: 'hola',
     })
   }
 
-  if (state.hasTag('pending')) {
-    return null
-  }
+  const {block, publication} = entry
 
-  const {block, publication} = state.context
-
-  if (state.matches('ready')) {
-    return (
-      <ContextMenu.Root>
-        <ContextMenu.Trigger>
+  return (
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <Box
+          css={{
+            borderBottom: '1px solid rgba(0,0,0,0.1)',
+            '&:hover': {
+              cursor: 'pointer',
+            },
+          }}
+        >
+          {block ? (
+            <Editor mode={EditorMode.Discussion} value={[block]} />
+          ) : null}
           <Box
             css={{
-              borderBottom: '1px solid rgba(0,0,0,0.1)',
-              '&:hover': {
-                cursor: 'pointer',
+              paddingVertical: '$6',
+              $$gap: '16px',
+              display: 'flex',
+              gap: '$$gap',
+              alignItems: 'center',
+              '& *': {
+                position: 'relative',
+              },
+              '& *:not(:first-child):before': {
+                content: `"|"`,
+                color: '$base-text-low',
+                opacity: 0.5,
+                position: 'absolute',
+                left: '-10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
               },
             }}
           >
-            {block ? <Editor mode={EditorMode.Embed} value={[block]} /> : null}
-            <Box
-              css={{
-                paddingVertical: '$6',
-                $$gap: '16px',
-                display: 'flex',
-                gap: '$$gap',
-                alignItems: 'center',
-                '& *': {
-                  position: 'relative',
-                },
-                '& *:not(:first-child):before': {
-                  content: `"|"`,
-                  color: '$base-text-low',
-                  opacity: 0.5,
-                  position: 'absolute',
-                  left: '-10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                },
-              }}
-            >
-              <Text size="1" color="muted">
-                {publication?.document?.title}
+            <Text size="1" color="muted">
+              {publication?.document?.title}
+            </Text>
+            {author && (
+              <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+                <span>Signed by </span>
+                <span style={{textDecoration: 'underline'}}>
+                  {author.profile?.alias}
+                </span>
               </Text>
-              {author && (
-                <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-                  <span>Signed by </span>
-                  <span style={{textDecoration: 'underline'}}>
-                    {author.profile?.alias}
-                  </span>
-                </Text>
-              )}
+            )}
 
-              <Text size="1" color="muted">
-                Created on:{' '}
-                {getDateFormat(
-                  state.context.publication?.document,
-                  'createTime',
-                )}
-              </Text>
-              <Text size="1" color="muted">
-                Last modified:{' '}
-                {getDateFormat(
-                  state.context.publication?.document,
-                  'updateTime',
-                )}
-              </Text>
-            </Box>
+            <Text size="1" color="muted">
+              Created on:{' '}
+              {getDateFormat(entry.publication?.document, 'createTime')}
+            </Text>
+            <Text size="1" color="muted">
+              Last modified:{' '}
+              {getDateFormat(entry.publication?.document, 'updateTime')}
+            </Text>
           </Box>
-        </ContextMenu.Trigger>
-        <ContextMenu.Content>
-          <ContextMenu.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Embed Reference</Text>
-          </ContextMenu.Item>
-          <ContextMenu.Item onSelect={addBookmark}>
-            <Icon name="ArrowChevronDown" size="1" />
-            <Text size="2">Add to Bookmarks</Text>
-          </ContextMenu.Item>
-          <ContextMenu.Item onSelect={() => onGoToPublication()}>
-            <Icon name="ArrowTopRight" size="1" />
-            <Text size="2">Open Embed in main Panel</Text>
-          </ContextMenu.Item>
-        </ContextMenu.Content>
-      </ContextMenu.Root>
-    )
-  }
-
-  return null
-}
-
-type DiscussionContextType = {
-  link: Link | null
-  publication: PublicationType | null
-  block: FlowContent | null
-  errorMessage: string
-}
-
-type DiscussionEvent =
-  | {type: 'FETCH'; link: Link}
-  | {
-      type: 'REPORT.FETCH.SUCCESS'
-      publication: PublicationType
-      block: FlowContent
-    }
-  | {type: 'REPORT.FETCH.ERROR'; errorMessage: Error['message']}
-  | {type: 'RETRY'}
-
-// TODO: transition always to fetching (I removed the useEffect that transitioned before to it)
-export function createDiscussionMachine(client: QueryClient) {
-  return createMachine(
-    {
-      tsTypes: {} as import('./publication.typegen').Typegen1,
-      schema: {
-        context: {} as DiscussionContextType,
-        events: {} as DiscussionEvent,
-      },
-      initial: 'idle',
-      context: {
-        link: null,
-        publication: null,
-        block: null,
-        errorMessage: '',
-      },
-      states: {
-        idle: {
-          tags: ['pending'],
-          always: {
-            target: 'fetching',
-          },
-        },
-        fetching: {
-          tags: ['pending'],
-          invoke: {
-            src: (context) => (sendBack) => {
-              if (!context.link?.source) {
-                sendBack({
-                  type: 'REPORT.FETCH.ERROR',
-                  errorMessage: 'Error on Discussion Link',
-                })
-              } else {
-                getBlock(context.link!.source!).then((data) => {
-                  if (data && data.block) {
-                    sendBack({
-                      type: 'REPORT.FETCH.SUCCESS',
-                      publication: data.publication,
-                      block: data.block,
-                    })
-                  }
-                })
-              }
-            },
-          },
-          on: {
-            'REPORT.FETCH.SUCCESS': {
-              target: 'ready',
-              actions: ['assignPublication', 'assignBlock'],
-            },
-            'REPORT.FETCH.ERROR': {
-              actions: ['assignError'],
-              target: 'errored',
-            },
-          },
-        },
-        errored: {
-          on: {
-            RETRY: 'fetching',
-          },
-        },
-        ready: {},
-      },
-    },
-    {
-      actions: {
-        assignLink: assign({
-          link: (_, event) => event.link,
-        }),
-        assignBlock: assign({
-          block: (_, event) => event.block,
-        }),
-        assignPublication: assign({
-          publication: (_, event) => event.publication,
-        }),
-        assignError: assign({
-          errorMessage: (_, event) => event.errorMessage,
-        }),
-      },
-    },
+        </Box>
+      </ContextMenu.Trigger>
+      <ContextMenu.Content>
+        <ContextMenu.Item onSelect={onCopy}>
+          <Icon name="Copy" size="1" />
+          <Text size="2">Copy Embed Reference</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={addBookmark}>
+          <Icon name="ArrowChevronDown" size="1" />
+          <Text size="2">Add to Bookmarks</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item onSelect={() => onGoToPublication()}>
+          <Icon name="ArrowTopRight" size="1" />
+          <Text size="2">Open Embed in main Panel</Text>
+        </ContextMenu.Item>
+        <ContextMenu.Item
+          onSelect={() =>
+            mainPageService.send({
+              type: 'OPEN_WINDOW',
+              path: `/p/${entry.publication.document.id}/${entry.publication.version}/${entry.block.id}`,
+            })
+          }
+        >
+          <Icon name="OpenInNewWindow" size="1" />
+          <Text size="2">Open Embed in new Window</Text>
+        </ContextMenu.Item>
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   )
 }
 
@@ -955,4 +854,15 @@ function BlockPlaceholder() {
       <Placeholder css={{height: 24, width: '90%'}} />
     </Box>
   )
+}
+
+function filterBlocks(entry: Array<GetBlockResult>): Array<FlowContent> {
+  let result: Array<FlowContent> = []
+
+  entry.forEach((item) => {
+    if (item) {
+      result.push(item.block)
+    }
+  })
+  return result
 }
