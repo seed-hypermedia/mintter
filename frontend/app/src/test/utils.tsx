@@ -26,8 +26,8 @@ import {
   SidepanelContextType,
   SidepanelProvider,
 } from '@components/sidepanel'
-import {mount} from '@cypress/react'
 import {useInterpret} from '@xstate/react'
+import {mount} from 'cypress/react'
 import {PropsWithChildren, ReactNode, useState} from 'react'
 import {QueryClient} from 'react-query'
 import {MachineOptionsFrom} from 'xstate'
