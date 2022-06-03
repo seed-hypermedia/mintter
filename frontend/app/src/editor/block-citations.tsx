@@ -5,7 +5,6 @@ import {
   Publication,
   SidepanelItem,
 } from '@app/client'
-import {useBlockCitations} from '@app/editor/citations'
 import {css} from '@app/stitches.config'
 import {getBlock} from '@app/utils/get-block'
 import {Avatar} from '@components/avatar'
@@ -20,7 +19,7 @@ export type BlockCitationsProps = {
 }
 
 export function BlockCitations({blockId}: BlockCitationsProps) {
-  const blockCitations = useBlockCitations(blockId)
+  const blockCitations: any = []
   const [state, send] = useMachine(() => blockCitationsMachine)
 
   return blockCitations.length ? (

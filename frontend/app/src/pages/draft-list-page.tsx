@@ -1,4 +1,5 @@
-import {useDrafts, useMainPage} from '@app/main-page-context'
+import {useDraftList} from '@app/files-context'
+import {useMainPage} from '@app/main-page-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -7,7 +8,7 @@ import {footerButtonsStyles, footerStyles} from '@components/page-footer'
 import {Text} from '@components/text'
 
 export function DraftList() {
-  let drafts = useDrafts()
+  let drafts = useDraftList()
   let mainService = useMainPage()
 
   return (

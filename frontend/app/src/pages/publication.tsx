@@ -1,12 +1,7 @@
-import {getInfo, getPublication, listCitations} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {queryKeys} from '@app/hooks'
-import {useMainPage, useParams} from '@app/main-page-context'
-import {publicationMachine} from '@app/publication-machine'
-import {getBlock, GetBlockResult} from '@app/utils/get-block'
+import {usePublicationRef} from '@app/files-context'
+import {useParams} from '@app/main-page-context'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
@@ -21,104 +16,14 @@ import {
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
-import {useActor, useInterpret} from '@xstate/react'
-import {useQueryClient} from 'react-query'
+import {useActor} from '@xstate/react'
 
 export default function Publication() {
-  const client = useQueryClient()
-  const mainPageService = useMainPage()
+  const publicationService = usePublicationRef()
+
+  let [state, send] = useActor(publicationService)
+
   const {docId} = useParams()
-
-  const publicationService = useInterpret(() => publicationMachine, {
-    services: {
-      fetchPublicationData: () => (sendBack) => {
-        let {context} = mainPageService.getSnapshot()
-        Promise.all([
-          client.fetchQuery(
-            [
-              queryKeys.GET_PUBLICATION,
-              context.params.docId,
-              context.params.version,
-            ],
-            () =>
-              getPublication(
-                context.params.docId,
-                context.params.version ?? '',
-              ),
-          ),
-          client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
-        ])
-          .then(([publication, info]) => {
-            if (publication.document?.children.length) {
-              mainPageService.send({
-                type: 'SET.CURRENT.DOCUMENT',
-                document: publication.document,
-              })
-              let content = [blockNodeToSlate(publication.document.children)]
-
-              sendBack({
-                type: 'PUBLICATION.REPORT.SUCCESS',
-                publication: Object.assign(publication, {
-                  document: {
-                    ...publication.document,
-                    content,
-                  },
-                }),
-                canUpdate: info.accountId == publication.document.author,
-              })
-            } else {
-              if (publication.document?.children.length == 0) {
-                sendBack({
-                  type: 'PUBLICATION.REPORT.ERROR',
-                  errorMessage: 'Content is Empty',
-                })
-              } else {
-                sendBack({
-                  type: 'PUBLICATION.REPORT.ERROR',
-                  errorMessage: `error, fetching publication ${context.id}`,
-                })
-              }
-            }
-          })
-          .catch((err) => {
-            sendBack({
-              type: 'PUBLICATION.REPORT.ERROR',
-              errorMessage: 'error fetching',
-            })
-          })
-      },
-      fetchDiscussionData: (c) => (sendBack) => {
-        let {context} = mainPageService.getSnapshot()
-        client
-          .fetchQuery(
-            [queryKeys.GET_PUBLICATION_DISCUSSION, context.params.docId],
-            () => {
-              return listCitations(context.params.docId)
-            },
-          )
-          .then((response) => {
-            debug('\n\n=== LINKS: ', response.links)
-            let links = response.links.filter(Boolean)
-            Promise.all(links.map(({source}) => getBlock(source)))
-              //@ts-ignore
-              .then((result: Array<GetBlockResult>) => {
-                debug('DISCUSSION BLOCK RESULT: ', result)
-                sendBack({
-                  type: 'DISCUSSION.REPORT.SUCCESS',
-                  discussion: result,
-                })
-              })
-          })
-          .catch((error: any) => {
-            sendBack({
-              type: 'DISCUSSION.REPORT.ERROR',
-              errorMessage: `Error fetching Discussion: ${error.message}`,
-            })
-          })
-      },
-    },
-  })
-  const [state, send] = useActor(publicationService)
 
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
@@ -140,7 +45,6 @@ export default function Publication() {
     )
   }
 
-  // debug('PUB STATE: ', state.value)
   return (
     <>
       {state.matches('publication.ready') && (
@@ -173,7 +77,7 @@ export default function Publication() {
               size="1"
               onClick={() => send('DISCUSSION.TOGGLE')}
             >
-              {state.matches('discussion.hidden') ? 'Show ' : 'Hide '}
+              {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
               Discussion/Citations
             </Button>
             <Discussion service={publicationService} />

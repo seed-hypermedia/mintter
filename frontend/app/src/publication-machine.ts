@@ -8,6 +8,8 @@ export type ClientPublication = Omit<Publication, 'document'> & {
 }
 
 export type PublicationContext = {
+  docId: string
+  version: string
   publication: ClientPublication | null
   errorMessage: string
   canUpdate: boolean
@@ -15,6 +17,8 @@ export type PublicationContext = {
 }
 
 export type PublicationEvent =
+  { type: 'LOAD' }
+  | { type: 'UNLOAD' }
   | { type: 'PUBLICATION.FETCH.DATA' }
   | {
     type: 'PUBLICATION.REPORT.SUCCESS'
@@ -30,89 +34,75 @@ export type PublicationEvent =
   | { type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string }
 
 export const publicationMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs5hiBDBkAxABEAkgGUAwgFUpUiQHkAcsykAJZQHVEKEj2Ll9IAB6IATAGYArM0sBGAAwBOW48sA2ABy3XbgDsADQgAJ6I1gAsXsxRzgmWtoFeHo6BAL4ZoWhYeES81LQMTKzsnNy8-NiCwuLS8ooq6gAqygDi7QAyAKKmyIbYxmSmFgiWSQ4u7p6+-kGhEQjWrlFxCc5OgXaWfl5ZORg4BMNF9IwsbBxcPOTMAG7s2FgsYABObyRvkPWyCkpqZgAMR6LRkmmYYgAgi0of1BsNRohXJZXMxks5rBMbD5Av4vIsrFE0RsEikfM4Yo4oplsiBcscCuQziVLuUblVHjwXswAGZgQjnMhQX6NAHqABKPQACsoJS0NHIZDIeop4UZeEiED4dcxKXMoh5bJtrNZCcsfGtSdZAjYkv5LAd6Ud8qcaEK2ddKncuc9MCx+YKSiLJH8moCpbL5cwehKJXL1UNNUhzIgdT49TE-IbHMabGbwlZXIE9dbUs4vNYnQzXYV3ayyl7bnxfTyav6RInESmxpWM5YooOfJ4Ys5HAWlkbSwkvK5h3ZiY5qy6TnXihdGxVmw8ni9Rf9msxNBIxH0UwMNSYe1Zc1M3B5vH4AsXzVFh+sEuPTXPMVW6TXV2ZesNyuLdOV3DtQzFQ82k6Xou2TUAxhsewnHvWYnwWQtxjnD9NmLVZVj8Zc8kAyhgNKACmT4dswE7c8EUQ1MEEcAJmFcDi5x8Vx0lcStrB8c09gcY1c0CKJLExY0-0OUjqJZDcqOGZh3k+b4IBEaU5AAIS6CQZBhQ8QTBCFoVhBCryQxA8WcZgfDsPxbRWRxuKic0AliDZc2sZxbBiDj9n-Fd5IolglKqQMhRFLTdP0wyIxlOUFSkJUVTVBjLxGa8EECNxmCxMdi2scc5wnay2K85xcW8WxbGKkjGTdddKOC5TIuDTSdL0gyWkPSMkpjOMEwypNLOY3K0QK1jthK+zzRcCZp3wmkCs2LI6TIEghHgc9WrXD1Nw5O4BCELKDEyrVbXNHzYi8DZiq8PE6tSWlZMa-aG1Ao6WwglhvnwCAlnO0azuYxxHC8NZtiiaJIdq6w7rKhA32sJa7sscSIfshrayA5rPTAn1fpUj4vkgCzQbGcHIeYaHYcNZ7MWuzFmAhx6NlcLFtlcHGyIU0ovu9H7uX9PkBSiimtRWzNfHs3y+MrCtrox2njUpaJDScLwlyCuSmoOwXt1bUXaMl7Lwc8BxLQHHYohcmJzS8FXAh8bW-CxKkJl5kL8cOoWdxFsAzas5HiRlnUfPxRWCWw9JPK81jUQmbZAre3HyN9w2mIvEGpcE2OWdJCH0kCDisVsb39YbcK7lNkbuxDq7sL8Wykk2ZxAk8CHfIr3X3rxg6a74VSyYgYPmLLq3wY41FPFxRx3JhuzTXiYrKUtV3K4+xS9rudrGCgcfkNWfLJO8F2EcxCTbCEy2bJcSs8WHYct4H6vd74f7AaP5FOan1iUQ8V2J3W+GZSRzlSNNGGr8M6Dw-j-ZG+clidxLKSW0XcKRVRgfzIO9cmLITcthHyS1vKSQrJzLwgUshAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiRChI9i5MSAAeiAEwA2ACzMlCgAwBOBQGYA7CoCsC43oAcAGhABPRHpVqLezWeMWlxldr1eAvv42aFh4RLzUtAxMrOyc3LzMAGZghPSMUMIAIgCSAMoAwgCqeXk5APIAcswASgCiAArlNQAqzHU1Nc0yyBLYUmQy8ggKAIxKzL4GxhoqBhbKFip6NvYIowaazJo7mqNLWtpuxoHBGDgEA5HpMWwcXDzkyak3mbmFJWVVtY3NbXlFAoFOqlHp9AZDRALVaIJQGCbGXb7bTGUYmCwnIIgEIXcLka7RFh3eKPPgAJzA+AgtmYDAgEDAZGy+WKpQq1TyAAlygB1MGSXiQhDGVHMCzaJY+cWGCwGGEIJTaCa7NzaI5jPR6BSnbHnMJXGg3IlxB6JClUml0hlM96sr7VFrlADiToAMnV+f1BUg5IgRaMxRKnBKprL5UY1CrNUpDAo5jqcfqIobCbF7gknubqcwAG7sbBYES2z7s5icnJZD0+3oC6Q+4bGAwGZg+NUWNHaFRaTzh3TbXaGWN+UYJvWXZNRRjG9Ok5hZml5niF5kfNnfR0u92eiH1v2i8WSkMyuV2WEqCz9nbKcabUa+Uehcf4lNTtMkxJgMlkkgUiAru2lgAYnULQFJyzBZAAgi0kHbt6oDDGMExTDMcbzIsyzymYzYqhsejGNoBhHEoD64gak4xImT58AIQjCK65SQVkcF1ghih3pMbamEY3i6E28qjFqzaKkoGxGEoSiyk4pFJs+FEsFReJ8J+36-sIDRFAAQq6OQFNBQEgWBEHQbB1bgvBvrCgoF6oiKFh7PMMZ+PKIaXpoEn6CoSiaNJWKKeRRrMP5iQpGk0SZBp2m6fp3z1E0rTMACQIgnkLGDLuwrudseijMiaI5eYhgCQo0xijGTg6Bi54uDJ1EEq+wVPKFrzqVpOl6S0pZxX87SdN0Zm1ulbEIOeyFqiiuiFZoWrGAJow+ZxbYldNsokX5Y5KfVlEbQMc6UtSwhFJUDFMWlQoWAszAEaM5hNpoBh6L4s2nus+XqE2XZ3QocadoEWJkCQDLwNWO0ToFxKmk8tFgGdGUGAoWFqm5+z4fD+EWLVm0vrcJoZnwzXhbDw1zGoRjfZ4XiqiKJ5rEhblaOi+gPSomMBamEN43tFq0gI1pE5ZlgXpJ0z3XMbgldYL1eBMWg7DlUo+SKrNg+zuOzvOub5oW-PDPC2jMMz+GGE28LffKIktgOnhKhonjK3J4Nq2a+1rOIg1Cn4ajC4iRibN98zyo2xhuXs00SuKa1nI+WPyW+kPKV+P6QDriDwwJRxipqjhqt9Pn3ut0ds6+HOkinI2S2shFuajlhxp4LMF2RKsNaDUOCDDA1eqxlmXV5sqWEqTh+NZxWKuocIXRJd5GLo9uUNjCmtwnqnJ53O7DXdkzebo+z2csKwvfNyiZ5qJv6PsI6N7J8+x41+MvITa8WbrCOHzs+tmDsuULPd9dz1ti9C7OwtGXTeSodBjAuj5TUxUFD6xVKoNE7l4QYyvnVBeQUl5l3PC5cYblGyGHGAsbQ-8F5lzjFhSMA4nAigHoYP6-ggA */
   createMachine(
     {
       context: {
+        docId: '',
+        version: '',
         publication: null,
         errorMessage: '',
         canUpdate: false,
         discussion: [],
       },
-      tsTypes: {} as import("./publication-machine.typegen").Typegen0,
-      schema: {
-        context: {} as PublicationContext,
-        events: {} as PublicationEvent,
-      },
+      tsTypes: {} as import('./publication-machine.typegen').Typegen0,
+      schema: { context: {} as PublicationContext, events: {} as PublicationEvent },
       type: 'parallel',
       id: 'publication-machine',
       states: {
         discussion: {
-          initial: 'hidden',
+          initial: 'idle',
           states: {
-            hidden: {
+            idle: {
+              always: {
+                target: 'fetching',
+              },
+            },
+            fetching: {
+              invoke: {
+                src: 'fetchDiscussionData',
+                id: 'fetchDiscussionData',
+              },
               on: {
-                'DISCUSSION.SHOW': {
-                  target: 'visible',
+                'DISCUSSION.REPORT.ERROR': {
+                  actions: 'assignError',
+                  target: 'errored',
                 },
-                'DISCUSSION.TOGGLE': {
-                  target: 'visible',
+                'DISCUSSION.REPORT.SUCCESS': {
+                  actions: 'assignDiscussion',
+                  target: 'ready',
                 },
               },
             },
-            visible: {
-              initial: 'fetching',
+            ready: {
+              initial: 'hidden',
               states: {
-                ready: {
-                  entry: (context, event) => {
-                    // debug(
-                    //   'DISCUSSION READY: ',
-                    //   JSON.stringify({context, event}, null, 3),
-                    // )
-                  },
-                },
-                errored: {
+                hidden: {
                   on: {
-                    'DISCUSSION.FETCH.DATA': {
-                      target: 'fetching',
+                    'DISCUSSION.SHOW': {
+                      target: 'visible',
+                    },
+                    'DISCUSSION.TOGGLE': {
+                      target: 'visible',
                     },
                   },
                 },
-                fetching: {
-                  invoke: {
-                    src: 'fetchDiscussionData',
-                    id: 'fetchDiscussionData',
-                  },
-                  tags: 'pending',
+                visible: {
                   on: {
-                    'DISCUSSION.REPORT.SUCCESS': {
-                      actions: 'assignDiscussion',
-                      target: 'ready',
+                    'DISCUSSION.HIDE': {
+                      target: 'hidden',
                     },
-                    'DISCUSSION.REPORT.ERROR': {
-                      actions: 'assignError',
-                      target: 'errored',
+                    'DISCUSSION.TOGGLE': {
+                      target: 'hidden',
                     },
                   },
-                },
-                idle: {
-                  always: [
-                    {
-                      cond: 'isCached',
-                      target: 'ready',
-                    },
-                    {
-                      target: 'fetching',
-                    },
-                  ],
                 },
               },
+            },
+            errored: {
               on: {
-                'DISCUSSION.HIDE': {
-                  target: 'hidden',
-                },
-                'DISCUSSION.TOGGLE': {
-                  target: 'hidden',
+                'DISCUSSION.FETCH.DATA': {
+                  target: 'fetching',
                 },
               },
             },
@@ -122,8 +112,16 @@ export const publicationMachine =
           initial: 'idle',
           states: {
             idle: {
-              always: {
-                target: 'fetching',
+              on: {
+                LOAD: [
+                  {
+                    cond: 'isCached',
+                    target: 'ready',
+                  },
+                  {
+                    target: 'fetching',
+                  },
+                ],
               },
             },
             errored: {
@@ -151,7 +149,13 @@ export const publicationMachine =
                 },
               },
             },
-            ready: {},
+            ready: {
+              on: {
+                UNLOAD: {
+                  target: 'idle',
+                },
+              },
+            },
           },
         },
       },

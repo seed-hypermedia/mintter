@@ -1,4 +1,5 @@
-import {useFiles, useMainPage} from '@app/main-page-context'
+import {usePublicationList} from '@app/files-context'
+import {useMainPage} from '@app/main-page-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -7,16 +8,15 @@ import {footerButtonsStyles, footerStyles} from '@components/page-footer'
 import {Text} from '@components/text'
 
 export function PublicationList() {
-  let files = useFiles()
+  let pubList = usePublicationList()
   let mainService = useMainPage()
-
   return (
     <>
       <Box css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}>
         <Text size="8">Publications</Text>
         <ol className={pageListStyle()}>
-          {files.length ? (
-            files.map((publication) => (
+          {pubList.length ? (
+            pubList.map((publication) => (
               <LibraryItem
                 key={publication.version}
                 publication={publication}

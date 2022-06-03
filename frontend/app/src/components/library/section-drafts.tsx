@@ -1,11 +1,11 @@
-import {useDrafts} from '@app/main-page-context'
+import {useDraftList} from '@app/files-context'
 import {LibraryItem} from '@components/library/library-item'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Section} from './section'
 import {SectionError} from './section-error'
 
 export function DraftsSection() {
-  const drafts = useDrafts()
+  const drafts = useDraftList()
 
   return (
     <Section title="Drafts" icon="List">

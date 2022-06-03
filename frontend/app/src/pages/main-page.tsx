@@ -1,6 +1,7 @@
-import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
 import {HoverProvider} from '@app/editor/hover-context'
 import {hoverMachine} from '@app/editor/hover-machine'
+import {FilesProvider, useFilesService} from '@app/files-context'
+import {createFilesMachine} from '@app/files-machine'
 import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageMachine} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
@@ -31,14 +32,16 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   const sidepanelService = useInterpret(() => createSidepanelMachine(client))
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   const hoverService = useInterpret(() => hoverMachine)
-  const citationsService = useInterpret(() => createCitationsMachine(client))
-  const mainPageService = useInterpret(() => createMainPageMachine(client))
+  const filesService = useInterpret(() => createFilesMachine(client))
+  const mainPageService = useInterpret(() =>
+    createMainPageMachine(filesService),
+  )
 
   const [state] = useActor(mainPageService)
 
   return (
     <MainPageProvider value={mainPageService}>
-      <CitationsProvider value={citationsService}>
+      <FilesProvider value={filesService}>
         <HoverProvider value={hoverService}>
           <BookmarksProvider value={bookmarksService}>
             <SidepanelProvider value={sidepanelService}>
@@ -55,8 +58,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
                         window.location.reload()
                       }}
                     >
-                      {state.hasTag('publication') &&
-                      !!state.context.params.docId ? (
+                      {state.hasTag('publication') ? (
                         <Publication key={state.context.params.docId} />
                       ) : null}
                       {state.hasTag('draft') ? (
@@ -75,7 +77,7 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
             </SidepanelProvider>
           </BookmarksProvider>
         </HoverProvider>
-      </CitationsProvider>
+      </FilesProvider>
     </MainPageProvider>
   )
 }
@@ -109,12 +111,21 @@ let mainWindowStyle = css({
 })
 
 function MainWindow({children}: PropsWithChildren<any>) {
-  return (
-    <Box className={mainWindowStyle()}>
-      <ScrollArea>{children}</ScrollArea>
-      {/* {children} */}
-    </Box>
-  )
+  let filesService = useFilesService()
+  let [filesState] = useActor(filesService)
+
+  // debug('FILES STATE: ', filesState.context)
+
+  if (filesState.matches('ready')) {
+    return (
+      <Box className={mainWindowStyle()}>
+        <ScrollArea>{children}</ScrollArea>
+        {/* {children} */}
+      </Box>
+    )
+  }
+
+  return null
 }
 
 export function MainWindowShell({children, ...props}: PropsWithChildren<any>) {

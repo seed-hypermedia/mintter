@@ -10,24 +10,6 @@ const [MainPageProvider, useMainPage, createMainPageSelector] =
 
 export {MainPageProvider, useMainPage}
 
-export function useFiles() {
-  let ref = createMainPageSelector((state) => state.context.files)()
-  return useSelector(ref, (state) => state.context.data)
-}
-
-export let useFilesService = createMainPageSelector(
-  (state) => state.context.files,
-)
-
-export function useDrafts() {
-  let ref = createMainPageSelector((state) => state.context.drafts)()
-  return useSelector(ref, (state) => state.context.data)
-}
-
-export let useDraftsService = createMainPageSelector(
-  (state) => state.context.drafts,
-)
-
 export const useLibrary = createMainPageSelector(
   (state) => state.context.library,
 )
@@ -35,7 +17,6 @@ export const useLibrary = createMainPageSelector(
 export var usePageTitle = createMainPageSelector(function pageTitleSelector(
   state,
 ) {
-  // return useMemo(() => {
   var result = ''
 
   if (state.matches('routes.draftList')) {
@@ -64,5 +45,19 @@ export function useIsLibraryOpen() {
 }
 
 export let useParams = createMainPageSelector((state) => state.context.params)
+
+export function getRefFromParams(
+  type: 'pub' | 'doc',
+  docId: string,
+  version: string | null,
+): string {
+  if (type == 'doc') {
+    return `draft-${docId}`
+  } else if (type == 'pub') {
+    return `pub-${docId}-${version}`
+  }
+
+  return ''
+}
 
 export let useRecents = createMainPageSelector((state) => state.context.recents)
