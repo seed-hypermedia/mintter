@@ -13,7 +13,7 @@ use std::os::raw::c_char;
 use webkit2gtk::traits::WebViewExt;
 
 #[cfg(windows)]
-use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2;
+use webview2_com::take_pwstr;
 #[cfg(windows)]
 use windows::core::PWSTR;
 
