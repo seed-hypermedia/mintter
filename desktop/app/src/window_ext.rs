@@ -115,9 +115,7 @@ impl WindowExt for Window<Wry> {
 
       #[cfg(windows)]
       {
-        let mut buffer: Vec<u16> = Vec::with_capacity(257);
-
-        let mut pwstr = PWSTR(buffer.as_mut_ptr());
+        let mut pwstr = PWSTR::default();
 
         let webview = unsafe { webview.controller().CoreWebView2().unwrap() };
         unsafe { webview.Source(&mut pwstr).unwrap() };
