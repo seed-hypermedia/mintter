@@ -1,21 +1,21 @@
-import {Document, getDraft, Publication} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import {queryKeys} from '@app/hooks'
-import {useMainPage} from '@app/main-page-context'
+import { Document, getDraft, Publication } from '@app/client'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { changesService } from '@app/editor/mintter-changes/plugin'
+import { queryKeys } from '@app/hooks'
+import { useMainPage } from '@app/main-page-context'
 import {
   createId,
   group,
   isEmbed,
   paragraph,
   statement,
-  text,
+  text
 } from '@mintter/mttast'
-import {useMachine} from '@xstate/react'
-import {useEffect} from 'react'
-import {QueryClient, useQueryClient} from 'react-query'
-import {Editor} from 'slate'
-import {assign, createMachine, MachineOptionsFrom} from 'xstate'
+import { useMachine } from '@xstate/react'
+import { useEffect } from 'react'
+import { QueryClient, useQueryClient } from 'react-query'
+import { Editor } from 'slate'
+import { assign, createMachine, MachineOptionsFrom } from 'xstate'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
@@ -32,25 +32,25 @@ export type EditorContext = {
 }
 
 export type EditorEvent =
-  | {type: 'FETCH'; documentId: string}
+  | { type: 'FETCH'; documentId: string }
   | {
-      type: 'EDITOR.REPORT.FETCH.SUCCESS'
-      data: Document
-    }
-  | {type: 'EDITOR.REPORT.FETCH.ERROR'; errorMessage: Error['message']}
-  | {type: 'EDITOR.UPDATE'; payload: Partial<EditorDocument>}
-  | {type: 'EDITOR.UPDATE.SUCCESS'}
-  | {type: 'EDITOR.UPDATE.ERROR'; errorMessage: Error['message']}
-  | {type: 'EDITOR.CANCEL'}
-  | {type: 'EDITOR.PUBLISH'}
-  | {type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication}
-  | {type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message']}
+    type: 'EDITOR.REPORT.FETCH.SUCCESS'
+    data: Document
+  }
+  | { type: 'EDITOR.REPORT.FETCH.ERROR'; errorMessage: Error['message'] }
+  | { type: 'EDITOR.UPDATE'; payload: Partial<EditorDocument> }
+  | { type: 'EDITOR.UPDATE.SUCCESS' }
+  | { type: 'EDITOR.UPDATE.ERROR'; errorMessage: Error['message'] }
+  | { type: 'EDITOR.CANCEL' }
+  | { type: 'EDITOR.PUBLISH' }
+  | { type: 'EDITOR.PUBLISH.SUCCESS'; publication: Publication }
+  | { type: 'EDITOR.PUBLISH.ERROR'; errorMessage: Error['message'] }
   | {
-      type: 'EDITOR.MIGRATE'
-    }
+    type: 'EDITOR.MIGRATE'
+  }
   | {
-      type: 'RESET.CHANGES'
-    }
+    type: 'RESET.CHANGES'
+  }
 
 interface DraftEditorMachineProps {
   client: QueryClient
@@ -60,18 +60,17 @@ interface DraftEditorMachineProps {
 }
 
 const defaultContent = [
-  group({data: {parent: ''}}, [
-    statement({id: createId()}, [paragraph([text('')])]),
+  group({ data: { parent: '' } }, [
+    statement({ id: createId() }, [paragraph([text('')])]),
   ]),
 ]
 
 export function draftEditorMachine({
   client,
   mainPageService,
-  shouldAutosave = true,
   editor,
 }: DraftEditorMachineProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMSKgAOGs6KGAdmSAB6ICMAbOzgMwCcA7AAZu3dr1YAWQewBMAVgA0IAJ5sZvOTgAc-dhIm9BM-iOkBfM0tSZcYLFmyRiAMQCiAFQDCACUaVqaLQMSMxsWprcwnJaMez8rDqKKmxCmnISrKyCcrzG6oJaFlYQ6Ng4AGZgaADGABYodFDErgAiAJLuAPIASjieAIIAcp6uADJ+VDT0jCwIHFx8QiJiktLySqpz3BLc2rr6GeyC-FIyReAlNhVVdQ1NrR09ON2uAAo97jhuXt44AMoAVU8Iz+fwmASCM0QchkGzYUn4OHSmW46nYfEEEkKlgupVwlRq9UazXaXV6L3e3U+3x8OFc3W6PXBU2CoFmMmEMm0AkMOm4kg57DhcxkWlYOEMemiWnE6Ny52sZWsdzwhBIDzJOABrxa-XcrmZgWmIVm7Dkuzk5rkgl4OgOomFZsEOH45okcgS7FY3C06IVlyVlxV+CIJMevVeAIAQqM2n9fCF-CyoQg9BarTa7foHckEDEua7uJaZTJ0fwxf68ThlY1VaGaQmKJMjazQnMclxDO6ZDsOR6hbmUZp1BlsloJDI+NFK1ca1AcBAwAAjDAAVzo1RVdQAho0nIbISa1JwcN6CpjWCcJLokptiy63ekR+wxXIZ4GaLXFyv15vayGSCYWA0G3NAwBwbdyjArAAAoskEQQAEpiEVWwgy-Zc1w3YM1QPY02UQdReFPfgZFYdRJyLHtb0QPguWtKV9C0QRWBhE53zQz952-LC-3uUknm1XV9Tw1tZkMTQhAEeJ+FSc1eGFGEJAfbZpUMCTeA46t0PnWBtwANzuFD7DKcgCFA8psAAW20qs5xwPTDMaBAGn0jBqlAoIAG1BAAXVElNS2Iy8yIokQlJohB+A0JFjDkM0fSxcduC0+zHKMjVBJ1PUDUTZtDwIhAiJI0LcnC6jFP5HB5G2DkDBlSRUp0hyDIygTeiEnL-iBEEwTyiF8LbYxgtI8iyqo91HWi2LXWi7Myv4JquJapz+PDLVsv1OkGSZfrkyPIqZRKsbKIixTppqrFUUncIdCWwJa3IVclwIFBYCJNbNUjGM41+QFgVcUEAoO20JQ9URrRMUQtGMYVMlkFTZA4cGZFLe6VSel63o+sMvujWN422xlumBwqEqRDNbSvHYB02aLJMfY5otyBJ0eJCB6HA4DQPA1DbIeqBSbbVjeE7TElNRbIOGFW7qt4CcEOvbJuzZpoXj+Dw+m8IYAHFAaF2ZXWUn1WFyPQCl0XgFMHQU5YybhSMxX1sRxOgMEXeAQj5gCDehWFB0icUR0yFiX3kCRUpMrBIF9hA5H4OHmPFcR9lF61RB7LSCVuRpY8vBDqqxeRslFdR4rh4xlNdKVJF0cdy1VuswFjj1gvi81RrFXgczpm0JUxYRSOiViMkbnjfy3WpdxgCA8-IxFfSOZZOE4CRFMtU8iOvVHjEkN8cT5+zx+w-9cL2lsU29MQcHdBq4gd9F9HXzQxvl0jUfid0x8wifc-Pgq2wxHFFJWSl45J8GFDsYihYmJejEGbRu6U-5NgGmJRA5YwZX0hssGGCdcx8GUqKaSpEJwcFtOwRumNXrvTuLHHQxExCnB7EYMarAZbZB4ByViEtZJYkoc9ahtQY7-0GrMbYuxbSlkiGRH0o04aXi0DgdECFSICDiGaCOB8AycQFi3ZSGgsHHBwaWSKpZFEMQkHEK244ciuizg0bGrgdJ53iM6KRosFZaB9LaGWVU9D20kScU22JihVnKNuFARBZ4iLQQgfQEQoinBYqXf2mwEgsQlJePQadhCyE0aEmwsdRRwxigxGE5oOAFFYhQiwZggA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMSKgAOGs6KGAdmSAB6ICMA7AKw4Ccf-ANgEAGACziATABoQATzYBmVgJxChE0e1YcAHMIUBfAzNSZcYLFmyRiAMQCiAFQDCACUaVqaWgyTM2PCo8CuyaXDrByuwCMvIIHBI8OKL8nMLCAkqsEpxGJhDo2DgAZmBoAMYAFih0UMT2ACIAko4A8gBKOM4AggByzvYAMh5UNPSMLPFcvPx8QmKSsYoCoqpq7MIRrCF54AVmJWVVNXWNLR047fYACh2OOA4urjgAygCqzgMvLyNePhOITjSORsURKZL8BQ5DQSUK5Yx7Qq4UoVaq1erNNqdK63dr3R5uHD2drtDq-Ma+UCTCTbFTCTiiATaNIKCLsJbxZSrFJ8BSidL0gQSCS7UxFUwnPCEEhnLE4N7XBrdRz2cnecZ+SYbHS8RKhMQ6Vg8CQCHQc0Q6BQzPicTjGnQ5AQ8UX7cX7SX4IgY86da5vABCgyaL3cfk8FIBCCdOuNPH1FqNJrNIIQWm4syN7B4DrSAhdSJwEtqUq9BNDFFG6sp-niKxUaWijJ0TK5MRTzO5gjESct+YORagOAgYAARhgAK50cqSqoAQ1qNjV-01ij5OFYOi4iR4ok4CmEPE4HIUPFY1rjQIdwSz8PyBYHQ9HE6nHulxCYsDQs7QYBws+KP5YAAFKwAoAJTEGK5jusWw5jpO07Fp6YBLhqVKIHyqyHkoCi2iawp8OyKbCmeAoCtsrAMrSfZujQsFPghJzenKCpKiqqHVpMgSkewDoZAsGRcMenDsOee58BEOiaDR0F0YOsCzgAbkxFhWLg5AEN+xTYAAtoWrqyd4xYKcptQIDUikYOU34+AA2sIAC6HGRkoWF7tseFCtuRFxJkwjrvw2wHruIiGAiUH6XJOAmUxsoXKxyqqmGlbLuhCCYbw7m4UCXmEceKwQoRl6JCEzrhQZkVGfJSmxZi8WKolrwfF8PzJX8aE1lCbk4Z5BFxhynCsKsRo2vulraAeMmVZKMXonFnQJSqRIkmSbURiu6VrthHk5X1PmIKI2SFcEAgibhXCHlND7kOOI4ECgsBoqcdW+gGQYhk1nz2N8zkbdk+0IDa56nXGvH8iK5X3jBg43XdD1PcxFx+oGwbPMSpLtL9aXarqcb8gmxqmhyQoxvwjKgadwjsOwV3Q8QED0L+n7fr+EUDljNatjgDZ1s22h1hym6iTy2Z7lCQLZLTcnEFcLxOF0rh9AA4t9HNalm66bod3aGokbZxNkOTHZag1CLxRgInQGDDvAfgRchauAsCBtQv5aTkfStqUTTkP9pY1gQI7CAiRyG4SFaPI6Ia7A5LaFpTSixy1EHHBOjgOiDSk9K8ZwAgA8yEjcx7praKIGhS1VJYoWtVaRrnWF69mIQbBkyZxAyhcjYEjehEIFeSnBz6IYOc4LoHNepZzG5WsK6jU3a2h8seGfnhneinnnZV3v20OPvBL5IdKKdgqJDbU7ufJDQ6y-pvwa8HlEW+IjvUWD4xycTx1XEhDgVN8SI4hBJHmIjHYGQ0SJZlEP3YyNUP4VnapxNgVMOQkXXGoQ6YMTS4WgTDW691HonCDsEbgVN9BAhZBuPOxNcI4AUHQiQlosFpBNDgnAsN8GVEgEHEIhdhDh13NoPQJVTqh3SEkd26RGQMI4HwnBQdLQcjjL-MiwgKJUQUHmX2RRig1HhvYaGKcLrpzznw5sQIGEZEFruc8WcBQpB0AnWcKAiDj3getNKIVdQbjLnaGkWZtihwdBHCS0dY4MgcVorAQcGEoNWCo+J6QVgWwMEAA */
   return createMachine(
     {
       context: {
@@ -83,7 +82,7 @@ export function draftEditorMachine({
         canPublish: false,
       },
       tsTypes: {} as import('./use-editor-draft.typegen').Typegen0,
-      schema: {context: {} as EditorContext, events: {} as EditorEvent},
+      schema: { context: {} as EditorContext, events: {} as EditorEvent },
       id: 'editor',
       initial: 'idle',
       states: {
@@ -245,7 +244,7 @@ export function draftEditorMachine({
             match: isEmbed,
           })
 
-          console.log('validateCanPublish', {hasContent, hasEmbed})
+          console.log('validateCanPublish', { hasContent, hasEmbed })
 
           if (!context.canPublish) {
             return {
@@ -299,18 +298,18 @@ export function draftEditorMachine({
       },
       services: {
         fetchDocument: (_, event) => (sendBack) => {
-          ;(async () => {
+          ; (async () => {
             try {
-              let {context} = mainPageService.getSnapshot()
+              let { context } = mainPageService.getSnapshot()
               let data = await client.fetchQuery(
                 [queryKeys.GET_DRAFT, context.params.docId],
-                ({queryKey}) => {
+                ({ queryKey }) => {
                   let [_, draftId] = queryKey
                   return getDraft(draftId)
                 },
               )
 
-              sendBack({type: 'EDITOR.REPORT.FETCH.SUCCESS', data})
+              sendBack({ type: 'EDITOR.REPORT.FETCH.SUCCESS', data })
             } catch (err: any) {
               sendBack({
                 type: 'EDITOR.REPORT.FETCH.ERROR',
@@ -339,13 +338,13 @@ export function useEditorDraft({
 }: UseEditorDraftParams) {
   const client = useQueryClient()
   const [state, send] = useMachine(
-    () => draftEditorMachine({client, mainPageService, editor, shouldAutosave}),
+    () => draftEditorMachine({ client, mainPageService, editor, shouldAutosave }),
     options,
   )
 
   useEffect(() => {
     if (documentId) {
-      send({type: 'FETCH', documentId})
+      send({ type: 'FETCH', documentId })
       // onlyOnce.current = true
     }
   }, [documentId])

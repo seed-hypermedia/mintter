@@ -9,13 +9,11 @@ import {
 } from '@app/client'
 import {HoverProvider} from '@app/editor/hover-context'
 import {HoverContext, hoverMachine} from '@app/editor/hover-machine'
+import {FilesProvider} from '@app/files-context'
+import {createFilesMachine} from '@app/files-machine'
 import {queryKeys} from '@app/hooks'
 import {MainPageProvider} from '@app/main-page-context'
-import {
-  createMainPageMachine,
-  defaultMainPageContext,
-  MainPageContext,
-} from '@app/main-page-machine'
+import {MainPageContext, mainPageMachine} from '@app/main-page-machine'
 import {
   BookmarkListContext,
   BookmarksProvider,
@@ -120,7 +118,7 @@ type MainPageProvidersProps = PropsWithChildren<{
   bookmarkListContext?: BookmarkListContext
   sidepanelContext?: SidepanelContextType
   mainPageContext?: Partial<MainPageContext>
-  mainPageOptions?: MachineOptionsFrom<ReturnType<typeof createMainPageMachine>>
+  mainPageOptions?: MachineOptionsFrom<typeof mainPageMachine>
 }>
 
 export function MainPageProviders({
@@ -135,13 +133,20 @@ export function MainPageProviders({
   let sidepanel = useInterpret(() =>
     createSidepanelMachine(client).withContext(sidepanelContext),
   )
-  let mainPageService = useInterpret(
-    () =>
-      createMainPageMachine(client).withContext(
-        defaultMainPageContext(client, mainPageContext),
-      ),
-    mainPageOptions,
-  )
+  let filesService = useInterpret(() => createFilesMachine(client))
+  let mainPageService = useInterpret(() => mainPageMachine, {
+    ...mainPageOptions,
+    actions: {
+      ...mainPageOptions.actions,
+      loadDraft: (_, event) => {
+        filesService.send({type: 'LOAD.DRAFT', ref: event.ref})
+      },
+      loadPublication: (_, event) => {
+        filesService.send({type: 'LOAD.PUBLICATION', ref: event.ref})
+      },
+    },
+  })
+
   let hover = useInterpret(() => hoverMachine.withContext(hoverContext))
   let bookmarks = useInterpret(() =>
     createBookmarkListMachine(client).withContext(bookmarkListContext),
@@ -167,11 +172,13 @@ export function MainPageProviders({
 
   return (
     <MainPageProvider value={mainPageService}>
-      <HoverProvider value={hover}>
-        <BookmarksProvider value={bookmarks}>
-          <SidepanelProvider value={sidepanel}>{children}</SidepanelProvider>
-        </BookmarksProvider>
-      </HoverProvider>
+      <FilesProvider value={filesService}>
+        <HoverProvider value={hover}>
+          <BookmarksProvider value={bookmarks}>
+            <SidepanelProvider value={sidepanel}>{children}</SidepanelProvider>
+          </BookmarksProvider>
+        </HoverProvider>
+      </FilesProvider>
     </MainPageProvider>
   )
 }

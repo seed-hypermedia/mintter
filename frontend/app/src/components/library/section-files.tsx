@@ -1,22 +1,22 @@
-import {useFiles} from '@app/main-page-context'
+import {usePublicationList} from '@app/files-context'
 import {LibraryItem} from '@components/library/library-item'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Section} from './section'
 import {SectionError} from './section-error'
 
 export function FilesSection() {
-  const files = useFiles()
+  const pubList = usePublicationList()
 
   return (
     <Section title="All Documents" icon="List">
-      {files.length ? (
+      {pubList.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
           onReset={() => {
             window.location.reload()
           }}
         >
-          {files.map((publication) => {
+          {pubList.map((publication) => {
             let {document, version} = publication
             return (
               <LibraryItem

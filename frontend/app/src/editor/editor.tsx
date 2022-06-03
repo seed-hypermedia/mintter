@@ -82,7 +82,6 @@ export function Editor({
               autoCorrect="false"
               autoCapitalize="false"
               data-testid="editor"
-              readOnly={_editor.readOnly}
               renderElement={renderElement}
               renderLeaf={renderLeaf}
               decorate={decorate}

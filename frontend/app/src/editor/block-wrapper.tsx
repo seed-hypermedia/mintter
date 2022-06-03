@@ -31,6 +31,8 @@ export function BlockWrapper({
   let params = useParams()
 
   async function onCopy() {
+    if (mode == EditorMode.Discussion) {
+    }
     if (params) {
       //@ts-ignore
       await copyTextToClipboard(

@@ -12,16 +12,16 @@ export type DiscussionProps = {
 export function Discussion({service}: DiscussionProps) {
   const [state] = useActor(service)
 
-  if (state.matches('discussion.visible.fetching')) {
+  if (state.matches('discussion.fetching')) {
     return <span>loading discussion...</span>
   }
 
-  if (state.matches('discussion.visible.errored')) {
+  if (state.matches('discussion.errored')) {
     error('Discussion Error')
     return <span>Discussion ERROR</span>
   }
 
-  if (state.matches('discussion.visible.ready')) {
+  if (state.matches('discussion.ready.visible')) {
     return (
       <Box
         css={{
