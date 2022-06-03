@@ -1,14 +1,21 @@
-use std::os::raw::c_char;
-
-#[cfg(target_os = "macos")]
-use cocoa::appkit::{NSWindow, NSWindowStyleMask, NSWindowTitleVisibility};
-use objc::runtime::Object;
-#[cfg(target_os = "macos")]
-use objc::{class, msg_send, sel, sel_impl};
+use std::borrow::Cow;
 use tauri::{Window, Wry};
 use url::Url;
 
-const UTF8_ENCODING: usize = 4;
+#[cfg(target_os = "macos")]
+use cocoa::appkit::{NSWindow, NSWindowStyleMask, NSWindowTitleVisibility};
+#[cfg(target_os = "macos")]
+use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+#[cfg(target_os = "macos")]
+use std::os::raw::c_char;
+
+#[cfg(target_os = "linux")]
+use webkit2gtk::traits::WebViewExt;
+
+#[cfg(windows)]
+use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2;
+#[cfg(windows)]
+use windows::core::PWSTR;
 
 pub trait WindowExt {
   fn set_transparent_titlebar(&self, transparent: bool);
@@ -97,23 +104,48 @@ impl WindowExt for Window<Wry> {
   fn set_minimizable(&self, _minimizable: bool) {}
 
   fn url(&self) -> tauri::Result<Url> {
-    let (tx, rx) = std::sync::mpsc::channel::<&str>();
+    let (tx, rx) = std::sync::mpsc::channel::<Cow<'_, str>>();
 
     self.with_webview(move |webview| {
-      let url_obj: *mut Object = unsafe { msg_send![webview.inner(), URL] };
-      let absolute_url: *mut Object = unsafe { msg_send![url_obj, absoluteString] };
+      #[cfg(target_os = "linux")]
+      {
+        let uri = webview.inner().uri().unwrap();
+        tx.send(uri.into()).unwrap();
+      }
 
-      let bytes = {
-        let bytes: *const c_char = unsafe { msg_send![absolute_url, UTF8String] };
-        bytes as *const u8
-      };
-      let len = unsafe { msg_send![absolute_url, lengthOfBytesUsingEncoding: UTF8_ENCODING] };
-      let bytes = unsafe { std::slice::from_raw_parts(bytes, len) };
+      #[cfg(windows)]
+      {
+        let mut buffer: Vec<u16> = Vec::with_capacity(257);
 
-      tx.send(std::str::from_utf8(bytes).unwrap()).unwrap();
+        let mut pwstr = PWSTR(buffer.as_mut_ptr());
+
+        let webview = unsafe { webview.controller().CoreWebView2().unwrap() };
+        unsafe { webview.Source(&mut pwstr).unwrap() };
+
+        let uri = take_pwstr(pwstr);
+
+        tx.send(uri.into()).unwrap();
+      }
+
+      #[cfg(target_os = "macos")]
+      {
+        let url_obj: *mut Object = unsafe { msg_send![webview.inner(), URL] };
+        let absolute_url: *mut Object = unsafe { msg_send![url_obj, absoluteString] };
+
+        let bytes = {
+          let bytes: *const c_char = unsafe { msg_send![absolute_url, UTF8String] };
+          bytes as *const u8
+        };
+
+        // 4 represents utf8 encoding
+        let len = unsafe { msg_send![absolute_url, lengthOfBytesUsingEncoding: 4] };
+        let bytes = unsafe { std::slice::from_raw_parts(bytes, len) };
+
+        tx.send(String::from_utf8_lossy(bytes)).unwrap();
+      }
     })?;
 
     let str = rx.recv().expect("Failed to receive string pointer");
-    Url::parse(str).map_err(tauri::Error::InvalidUrl)
+    Url::parse(&str).map_err(tauri::Error::InvalidUrl)
   }
 }

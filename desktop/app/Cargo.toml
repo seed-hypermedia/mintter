@@ -35,6 +35,13 @@ thiserror = "1.0.31"
 cocoa = "0.24.0"
 objc = "0.2.7"
 
+[target."cfg(target_os = \"linux\")".dependencies]
+webkit2gtk = "0.18.0"
+
+[target."cfg(target_os = \"windows\")".dependencies]
+windows = "0.37.0"
+webview2-com = "0.16.0"
+
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL

@@ -2047,6 +2047,9 @@ dependencies = [
  "thiserror",
  "tokio",
  "url",
+ "webkit2gtk",
+ "webview2-com",
+ "windows",
  "workspace-hack",
 ]
 
