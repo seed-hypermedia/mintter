@@ -17,7 +17,7 @@ env_logger = "0.9.0"
 cap-std = "0.24.4"
 thiserror = "1.0.31"
 futures-util = "0.3.21"
-async-trait = "0.1.53"
+async-trait = "0.1.56"
 semver = { version = "1.0.9", features = ["serde"] }
 cached = "0.34.0"
 tracing = "0.1.34"
