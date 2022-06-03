@@ -110,7 +110,7 @@ impl WindowExt for Window<Wry> {
       #[cfg(target_os = "linux")]
       {
         let uri = webview.inner().uri().unwrap();
-        tx.send(uri.as_str().to_string()).unwrap();
+        tx.send(uri.as_str().to_string().into()).unwrap();
       }
 
       #[cfg(windows)]
@@ -120,7 +120,9 @@ impl WindowExt for Window<Wry> {
         let webview = unsafe { webview.controller().CoreWebView2().unwrap() };
         unsafe { webview.Source(&mut pwstr).unwrap() };
 
-        tx.send(take_pwstr(pwstr)).unwrap();
+        let uri = take_pwstr(pwstr);
+
+        tx.send(uri.into()).unwrap();
       }
 
       #[cfg(target_os = "macos")]
