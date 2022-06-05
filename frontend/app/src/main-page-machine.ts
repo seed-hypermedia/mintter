@@ -8,7 +8,8 @@ import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
 import { ActorRefFrom, assign, createMachine, InterpreterFrom, send, spawn } from 'xstate'
 import {
-  createDraft
+  createDraft,
+  Publication
 } from './client'
 
 export type MainPageContext = {
@@ -38,6 +39,10 @@ type MainPageEvent =
     version: string
     blockId?: string
     replace?: boolean
+  }
+  | {
+    type: 'COMMIT.PUBLICATION',
+    publication: Publication
   }
   | {
     type: 'goToSettings'
@@ -298,6 +303,10 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
             goToPublication: {
               target: '.publication',
             },
+            'COMMIT.PUBLICATION': {
+              target: '.publication',
+              actions: ['updateFiles']
+            },
             CREATE_NEW_DRAFT: {
               target: '.createDraft',
             },
@@ -332,6 +341,9 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
         },
       },
       actions: {
+        updateFiles: (_, event) => {
+          filesService.send(event)
+        },
         loadDraft: (_, event) => {
           let ref = getRefFromParams('doc', event.docId, null)
           filesService.send({ type: 'LOAD.DRAFT', ref })

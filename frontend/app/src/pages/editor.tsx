@@ -11,6 +11,7 @@ import {changesService} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {draftEditorMachine, useEditorDraft} from '@app/editor/use-editor-draft'
+import {useFilesService} from '@app/files-context'
 import {useMainPage, useParams} from '@app/main-page-context'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {getDateFormat} from '@app/utils/get-format-date'
@@ -46,6 +47,7 @@ export default function EditorPage({
     [],
   )
   const mainPageService = useMainPage()
+  const filesService = useFilesService()
 
   const editor = propEditor ?? localEditor
   const [state, send] = useEditorDraft({
@@ -70,6 +72,12 @@ export default function EditorPage({
                 id: toast.current,
               })
             }
+
+            filesService.send({
+              type: 'COMMIT.PUBLICATION',
+              publication: context.publication,
+            })
+
             mainPageService.send({
               type: 'goToPublication',
               docId: context.publication?.document?.id,

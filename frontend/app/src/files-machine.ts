@@ -1,28 +1,13 @@
-import {
-  Document,
-  getInfo,
-  getPublication,
-  listCitations,
-  listDrafts
-} from '@app/client'
-import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { Document, listDrafts } from '@app/client'
 import { queryKeys } from '@app/hooks'
 import { getRefFromParams } from '@app/main-page-context'
-import { publicationMachine } from '@app/publication-machine'
-import { getBlock, GetBlockResult } from '@app/utils/get-block'
+import { createPublicationMachine } from '@app/publication-machine'
 import { QueryClient } from 'react-query'
-import {
-  ActorRefFrom,
-  assign,
-  createMachine,
-  send,
-  sendParent,
-  spawn
-} from 'xstate'
+import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
 import { listPublications, Publication } from './client'
 
 export type PublicationWithRef = Publication & {
-  ref: ActorRefFrom<typeof publicationMachine>
+  ref: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
 }
 
 export type DraftWithRef = Document & {
@@ -48,6 +33,7 @@ export type FilesEvent =
   | { type: 'RECONCILE' }
   | { type: 'LOAD.PUBLICATION'; ref: string }
   | { type: 'LOAD.DRAFT'; ref: string }
+  | { type: 'COMMIT.PUBLICATION', publication: Publication }
 
 export function createFilesMachine(client: QueryClient) {
   /** @xstate-layout N4IgpgJg5mDOIC5QDMCWAbOBaAtgQwGMALVAOzADpUJMBiAJQFEAFAeXoBUKARAQQ94UAygFUAwmMZChiUAAcA9rFQAXVAtKyQAD0QAmAMwAGCgFYALAEYAbNb2WDATj2nTj0wBoQAT32PHZgamRo4A7MHWABzmrgC+sV5omLC4hCTkFABOYHgQ3gyMYqwAcmIAkgAyjFqKymoaWroIBpYmjlGh1qbWlu7WoZbmXr4IlpF6FP7+XaFG5pHWQebxiRjY+MRklNm5+QBilVIUFay83BTMIgBCFWVi-GUlNUqq6ppIOojm5tYUBv1jSKmMa2ULmAzDRBjCZTMJGOzRPR6MErEBJdZpLa0A5VITHU7nS43O4PJ4fWqvBofJp6H4UKJBRzmFyOAxssGQ0Z6eIJECkBQQOBadEpDbpSjUTDPOpvRqILBjAwUcZRdrzWaOQbWTl6SIBUxBEJWSyWXVg5a8kWpTYZHZ5aWU96gJoxUwUebjUJ6VlGSLjSI6sGTKYGrrwgy01FWsVbB31J2fBBYPRGULKvSq6zqkJazmtAKw8xGUyhUts6I82JAA */
@@ -59,7 +45,7 @@ export function createFilesMachine(client: QueryClient) {
         queue: [],
         errorMessage: '',
       },
-      tsTypes: {} as import("./files-machine.typegen").Typegen0,
+      tsTypes: {} as import('./files-machine.typegen').Typegen0,
       schema: {
         context: {} as FilesContext,
         events: {} as FilesEvent,
@@ -98,6 +84,9 @@ export function createFilesMachine(client: QueryClient) {
               actions: 'clearCache',
               target: 'idle',
             },
+            "COMMIT.PUBLICATION": {
+              actions: ['addPublication']
+            }
           },
         },
         errored: {},
@@ -128,6 +117,17 @@ export function createFilesMachine(client: QueryClient) {
         },
       },
       actions: {
+        addPublication: assign({
+          publicationList: (context, event) => {
+            return [
+              ...context.publicationList,
+              {
+                ...event.publication,
+                ref: spawn(createPublicationMachine(client, event.publication), `pub-${event.publication.document!.id}-${event.publication.version}`)
+              }
+            ]
+          }
+        }),
         assignError: assign({
           errorMessage: (_, event) => event.errorMessage,
         }),
@@ -142,118 +142,7 @@ export function createFilesMachine(client: QueryClient) {
             return event.publicationList.map((pub) => ({
               ...pub,
               ref: spawn(
-                publicationMachine
-                  .withContext({
-                    docId: pub.document?.id ?? '',
-                    version: pub.version,
-                    publication: null,
-                    errorMessage: '',
-                    canUpdate: false,
-                    discussion: [],
-                  })
-                  .withConfig({
-                    services: {
-                      fetchPublicationData: (context) => (sendBack) => {
-                        Promise.all([
-                          client.fetchQuery(
-                            [
-                              queryKeys.GET_PUBLICATION,
-                              context.docId,
-                              context.version,
-                            ],
-                            () =>
-                              getPublication(context.docId, context.version),
-                          ),
-                          client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () =>
-                            getInfo(),
-                          ),
-                        ])
-                          .then(([publication, info]) => {
-                            if (publication.document?.children.length) {
-                              sendParent({
-                                type: 'SET.CURRENT.DOCUMENT',
-                                document: publication.document,
-                              })
-                              let content = [
-                                blockNodeToSlate(publication.document.children),
-                              ]
-
-                              sendBack({
-                                type: 'PUBLICATION.REPORT.SUCCESS',
-                                publication: Object.assign(publication, {
-                                  document: {
-                                    ...publication.document,
-                                    content,
-                                  },
-                                }),
-                                canUpdate:
-                                  info.accountId == publication.document.author,
-                              })
-                            } else {
-                              if (publication.document?.children.length == 0) {
-                                sendBack({
-                                  type: 'PUBLICATION.REPORT.ERROR',
-                                  errorMessage: 'Content is Empty',
-                                })
-                              } else {
-                                sendBack({
-                                  type: 'PUBLICATION.REPORT.ERROR',
-                                  errorMessage: `error, fetching publication ${context.docId}`,
-                                })
-                              }
-                            }
-                          })
-                          .catch((err) => {
-                            sendBack({
-                              type: 'PUBLICATION.REPORT.ERROR',
-                              errorMessage: 'error fetching',
-                            })
-                          })
-                      },
-                      fetchDiscussionData: (context) => (sendBack) => {
-                        if (context.docId) {
-                          client
-                            .fetchQuery(
-                              [
-                                queryKeys.GET_PUBLICATION_DISCUSSION,
-                                context.docId,
-                                context.version,
-                              ],
-                              () => {
-                                return listCitations(context.docId)
-                              },
-                            )
-                            .then((response) => {
-                              let links = response.links.filter(Boolean)
-
-                              // This is importat to make citations accessible to Editor elements
-
-                              Promise.all(
-                                links.map(({ source }) => getBlock(source)),
-                              )
-                                //@ts-ignore
-                                .then((result: Array<GetBlockResult>) => {
-                                  sendBack({
-                                    type: 'DISCUSSION.REPORT.SUCCESS',
-                                    discussion: result,
-                                  })
-                                })
-                            })
-                            .catch((error: any) => {
-                              sendBack({
-                                type: 'DISCUSSION.REPORT.ERROR',
-                                errorMessage: `Error fetching Discussion: ${error.message}`,
-                              })
-                            })
-                        } else {
-                          sendBack({
-                            type: 'DISCUSSION.REPORT.ERROR',
-                            errorMessage: `Error fetching Discussion: No docId found: ${pub}`,
-                          })
-                        }
-                      },
-                    },
-                  }),
+                createPublicationMachine(client, pub),
                 getRefFromParams('pub', pub.document!.id, pub.version),
               ),
             }))

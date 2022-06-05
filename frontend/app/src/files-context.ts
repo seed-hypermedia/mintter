@@ -36,6 +36,5 @@ export function usePublicationRef(
     },
     [params, paramsRef],
   )
-  debug('PUBLICATION ACTOR: ', actor)
   return actor
 }

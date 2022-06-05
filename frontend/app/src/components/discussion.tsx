@@ -1,4 +1,4 @@
-import {publicationMachine} from '@app/publication-machine'
+import {createPublicationMachine} from '@app/publication-machine'
 import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {DiscussionItem} from '@components/discussion-item'
@@ -6,7 +6,7 @@ import {useActor} from '@xstate/react'
 import {InterpreterFrom} from 'xstate'
 
 export type DiscussionProps = {
-  service: InterpreterFrom<typeof publicationMachine>
+  service: InterpreterFrom<ReturnType<typeof createPublicationMachine>>
 }
 
 export function Discussion({service}: DiscussionProps) {

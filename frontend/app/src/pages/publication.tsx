@@ -1,7 +1,7 @@
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {usePublicationRef} from '@app/files-context'
-import {useParams} from '@app/main-page-context'
+import {useMainPage, useParams} from '@app/main-page-context'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
@@ -20,7 +20,7 @@ import {useActor} from '@xstate/react'
 
 export default function Publication() {
   const publicationService = usePublicationRef()
-
+  const mainPageService = useMainPage()
   let [state, send] = useActor(publicationService)
 
   const {docId} = useParams()
