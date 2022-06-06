@@ -95,7 +95,7 @@ export function BlockTools({element}: BlockToolsProps) {
       className="DEBUGME"
       css={{
         opacity: 0,
-        pointerEvents: 'none',
+        // pointerEvents: 'none',
         [`[data-hover-block="${element.id}"] &`]: {
           opacity: 1,
           pointerEvents: 'all',

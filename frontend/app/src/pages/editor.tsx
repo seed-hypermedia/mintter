@@ -182,15 +182,8 @@ export default function EditorPage({
   })
 
   const {context} = state
-  console.log('🚀 ~ file: editor.tsx ~ line 175 ~ context', context)
 
   let disablePublish = !state.context.canPublish || state.hasTag('saving')
-  console.log(
-    '🚀 ~ file: editor.tsx ~ line 177 ~ disablePublish',
-    disablePublish,
-    state.context.canPublish,
-    state.hasTag('saving'),
-  )
   // useLayoutEffect(() => {
   //   if (context.localDraft?.title) {
   //     // set the window title to reflect the documents title

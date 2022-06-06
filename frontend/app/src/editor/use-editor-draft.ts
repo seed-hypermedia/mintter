@@ -244,8 +244,6 @@ export function draftEditorMachine({
             match: isEmbed,
           })
 
-          console.log('validateCanPublish', { hasContent, hasEmbed })
-
           if (!context.canPublish) {
             return {
               canPublish: true,

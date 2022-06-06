@@ -14,6 +14,7 @@ import {createFilesMachine} from '@app/files-machine'
 import {queryKeys} from '@app/hooks'
 import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageMachine, MainPageContext} from '@app/main-page-machine'
+import {DeepPartial} from '@app/types'
 import {
   BookmarkListContext,
   BookmarksProvider,
@@ -117,8 +118,8 @@ type MainPageProvidersProps = PropsWithChildren<{
   hoverContext?: HoverContext
   bookmarkListContext?: BookmarkListContext
   sidepanelContext?: SidepanelContextType
-  mainPageContext?: Partial<MainPageContext>
-  mainPageOptions?: MachineOptionsFrom<typeof mainPageMachine>
+  mainPageContext?: DeepPartial<MainPageContext>
+  mainPageOptions?: MachineOptionsFrom<ReturnType<typeof createMainPageMachine>>
 }>
 
 export function MainPageProviders({
@@ -127,7 +128,7 @@ export function MainPageProviders({
   hoverContext = {blockId: null},
   bookmarkListContext = {bookmarks: [], errorMessage: ''},
   sidepanelContext = {items: [], errorMessage: ''},
-  mainPageContext = {},
+  mainPageContext = {params: {}},
   mainPageOptions = {},
 }: MainPageProvidersProps) {
   let sidepanel = useInterpret(() =>
@@ -135,7 +136,7 @@ export function MainPageProviders({
   )
   let filesService = useInterpret(() => createFilesMachine(client))
   let mainPageService = useInterpret(
-    () => createMainPageMachine(filesService),
+    () => createMainPageMachine(filesService).withContext(mainPageContext),
     {
       ...mainPageOptions,
       actions: {
