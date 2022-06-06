@@ -1,10 +1,10 @@
-import { Document, listDrafts } from '@app/client'
-import { queryKeys } from '@app/hooks'
-import { getRefFromParams } from '@app/main-page-context'
-import { createPublicationMachine } from '@app/publication-machine'
-import { QueryClient } from 'react-query'
-import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
-import { listPublications, Publication } from './client'
+import {Document, listDrafts} from '@app/client'
+import {queryKeys} from '@app/hooks'
+import {getRefFromParams} from '@app/main-page-context'
+import {createPublicationMachine} from '@app/publication-machine'
+import {QueryClient} from 'react-query'
+import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
+import {listPublications, Publication} from './client'
 
 export type PublicationWithRef = Publication & {
   ref: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
@@ -25,15 +25,15 @@ export type FilesContext = {
 
 export type FilesEvent =
   | {
-    type: 'REPORT.DATA.SUCCESS'
-    publicationList: Array<Publication>
-    draftList: Array<Document>
-  }
-  | { type: 'REPORT.DATA.ERROR'; errorMessage: string }
-  | { type: 'RECONCILE' }
-  | { type: 'LOAD.PUBLICATION'; ref: string }
-  | { type: 'LOAD.DRAFT'; ref: string }
-  | { type: 'COMMIT.PUBLICATION', publication: Publication }
+      type: 'REPORT.DATA.SUCCESS'
+      publicationList: Array<Publication>
+      draftList: Array<Document>
+    }
+  | {type: 'REPORT.DATA.ERROR'; errorMessage: string}
+  | {type: 'RECONCILE'}
+  | {type: 'LOAD.PUBLICATION'; ref: string}
+  | {type: 'LOAD.DRAFT'; ref: string}
+  | {type: 'COMMIT.PUBLICATION'; publication: Publication}
 
 export function createFilesMachine(client: QueryClient) {
   /** @xstate-layout N4IgpgJg5mDOIC5QDMCWAbOBaAtgQwGMALVAOzADpUJMBiAJQFEAFAeXoBUKARAQQ94UAygFUAwmMZChiUAAcA9rFQAXVAtKyQAD0QAmAMwAGCgFYALAEYAbNb2WDATj2nTj0wBoQAT32PHZgamRo4A7MHWABzmrgC+sV5omLC4hCTkFABOYHgQ3gyMYqwAcmIAkgAyjFqKymoaWroIBpYmjlGh1qbWlu7WoZbmXr4IlpF6FP7+XaFG5pHWQebxiRjY+MRklNm5+QBilVIUFay83BTMIgBCFWVi-GUlNUqq6ppIOojm5tYUBv1jSKmMa2ULmAzDRBjCZTMJGOzRPR6MErEBJdZpLa0A5VITHU7nS43O4PJ4fWqvBofJp6H4UKJBRzmFyOAxssGQ0Z6eIJECkBQQOBadEpDbpSjUTDPOpvRqILBjAwUcZRdrzWaOQbWTl6SIBUxBEJWSyWXVg5a8kWpTYZHZ5aWU96gJoxUwUebjUJ6VlGSLjSI6sGTKYGrrwgy01FWsVbB31J2fBBYPRGULKvSq6zqkJazmtAKw8xGUyhUts6I82JAA */
@@ -84,9 +84,9 @@ export function createFilesMachine(client: QueryClient) {
               actions: 'clearCache',
               target: 'idle',
             },
-            "COMMIT.PUBLICATION": {
-              actions: ['addPublication']
-            }
+            'COMMIT.PUBLICATION': {
+              actions: ['addPublication'],
+            },
           },
         },
         errored: {},
@@ -123,10 +123,15 @@ export function createFilesMachine(client: QueryClient) {
               ...context.publicationList,
               {
                 ...event.publication,
-                ref: spawn(createPublicationMachine(client, event.publication), `pub-${event.publication.document!.id}-${event.publication.version}`)
-              }
+                ref: spawn(
+                  createPublicationMachine(client, event.publication),
+                  `pub-${event.publication.document!.id}-${
+                    event.publication.version
+                  }`,
+                ),
+              },
             ]
-          }
+          },
         }),
         assignError: assign({
           errorMessage: (_, event) => event.errorMessage,
@@ -152,9 +157,9 @@ export function createFilesMachine(client: QueryClient) {
           client.invalidateQueries([queryKeys.GET_PUBLICATION_LIST])
         },
         clearQueue: assign((context) => {
-          let { queue } = context
+          let {queue} = context
           let set = new Set(queue)
-          set.forEach((ref) => send('LOAD', { to: ref }))
+          set.forEach((ref) => send('LOAD', {to: ref}))
           return {
             queue: [],
           }

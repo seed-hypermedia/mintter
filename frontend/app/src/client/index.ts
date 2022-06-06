@@ -5,7 +5,7 @@ export type {
   GetAccountRequest,
   ListAccountsRequest,
   ListAccountsResponse,
-  Profile
+  Profile,
 } from './.generated/accounts/v1alpha/accounts'
 export type {
   GenSeedRequest,
@@ -13,7 +13,7 @@ export type {
   GetInfoRequest,
   Info,
   RegisterRequest,
-  RegisterResponse
+  RegisterResponse,
 } from './.generated/daemon/v1alpha/daemon'
 export {
   Annotation,
@@ -35,14 +35,14 @@ export {
   Publication,
   PublishDraftRequest,
   UpdateDraftRequest,
-  UpdateDraftRequestV2
+  UpdateDraftRequestV2,
 } from './.generated/documents/v1alpha/documents'
-export { ConnectionStatus } from './.generated/networking/v1alpha/networking'
+export {ConnectionStatus} from './.generated/networking/v1alpha/networking'
 export type {
   ConnectRequest,
   ConnectResponse,
   GetPeerInfoRequest,
-  PeerInfo
+  PeerInfo,
 } from './.generated/networking/v1alpha/networking'
 export * from './.generated/types'
 export {
@@ -50,10 +50,10 @@ export {
   getAccount,
   listAccounts,
   registerAccount,
-  updateAccount
+  updateAccount,
 } from './accounts'
-export { listBookmarks, updateListBookmarks } from './bookmarks'
-export { getInfo } from './daemon'
+export {listBookmarks, updateListBookmarks} from './bookmarks'
+export {getInfo} from './daemon'
 export {
   createDraft,
   deleteDraft,
@@ -61,15 +61,14 @@ export {
   listDrafts,
   publishDraft,
   updateDraft,
-  updateDraftV2
+  updateDraftV2,
 } from './drafts'
-export { createGrpcClient, MINTTER_API_URL_DEFAULT } from './grpc-client'
-export type { GrpcClient } from './grpc-client'
-export { connect, getPeerInfo, listPeerAddrs } from './networking'
+export {createGrpcClient, MINTTER_API_URL_DEFAULT} from './grpc-client'
+export type {GrpcClient} from './grpc-client'
+export {connect, getPeerInfo, listPeerAddrs} from './networking'
 export {
   deletePublication,
   getPublication,
   listCitations,
-  listPublications
+  listPublications,
 } from './publications'
-

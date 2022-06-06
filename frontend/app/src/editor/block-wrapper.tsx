@@ -32,6 +32,7 @@ export function BlockWrapper({
 
   async function onCopy() {
     if (mode == EditorMode.Discussion) {
+      // noop
     }
     if (params) {
       //@ts-ignore

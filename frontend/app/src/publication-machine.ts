@@ -1,14 +1,10 @@
-import {
-  getInfo,
-  getPublication,
-  listCitations, Publication
-} from '@app/client'
-import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
-import { EditorDocument } from '@app/editor/use-editor-draft'
-import { queryKeys } from '@app/hooks'
-import { getBlock, GetBlockResult } from '@app/utils/get-block'
-import { QueryClient } from 'react-query'
-import { assign, createMachine, sendParent } from 'xstate'
+import {getInfo, getPublication, listCitations, Publication} from '@app/client'
+import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
+import {EditorDocument} from '@app/editor/use-editor-draft'
+import {queryKeys} from '@app/hooks'
+import {getBlock, GetBlockResult} from '@app/utils/get-block'
+import {QueryClient} from 'react-query'
+import {assign, createMachine, sendParent} from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -24,23 +20,26 @@ export type PublicationContext = {
 }
 
 export type PublicationEvent =
-  { type: 'LOAD' }
-  | { type: 'UNLOAD' }
-  | { type: 'PUBLICATION.FETCH.DATA' }
+  | {type: 'LOAD'}
+  | {type: 'UNLOAD'}
+  | {type: 'PUBLICATION.FETCH.DATA'}
   | {
-    type: 'PUBLICATION.REPORT.SUCCESS'
-    publication: ClientPublication
-    canUpdate?: boolean
-  }
-  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
-  | { type: 'DISCUSSION.FETCH.DATA' }
-  | { type: 'DISCUSSION.SHOW' }
-  | { type: 'DISCUSSION.HIDE' }
-  | { type: 'DISCUSSION.TOGGLE' }
-  | { type: 'DISCUSSION.REPORT.SUCCESS'; discussion: Array<GetBlockResult> }
-  | { type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string }
+      type: 'PUBLICATION.REPORT.SUCCESS'
+      publication: ClientPublication
+      canUpdate?: boolean
+    }
+  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
+  | {type: 'DISCUSSION.FETCH.DATA'}
+  | {type: 'DISCUSSION.SHOW'}
+  | {type: 'DISCUSSION.HIDE'}
+  | {type: 'DISCUSSION.TOGGLE'}
+  | {type: 'DISCUSSION.REPORT.SUCCESS'; discussion: Array<GetBlockResult>}
+  | {type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string}
 
-export function createPublicationMachine(client: QueryClient, publication: Publication) {
+export function createPublicationMachine(
+  client: QueryClient,
+  publication: Publication,
+) {
   return createMachine(
     {
       context: {
@@ -52,7 +51,10 @@ export function createPublicationMachine(client: QueryClient, publication: Publi
         discussion: [],
       },
       tsTypes: {} as import('./publication-machine.typegen').Typegen0,
-      schema: { context: {} as PublicationContext, events: {} as PublicationEvent },
+      schema: {
+        context: {} as PublicationContext,
+        events: {} as PublicationEvent,
+      },
       type: 'parallel',
       id: 'publication-machine',
       states: {
@@ -171,17 +173,10 @@ export function createPublicationMachine(client: QueryClient, publication: Publi
         fetchPublicationData: (context) => (sendBack) => {
           Promise.all([
             client.fetchQuery(
-              [
-                queryKeys.GET_PUBLICATION,
-                context.docId,
-                context.version,
-              ],
-              () =>
-                getPublication(context.docId, context.version),
+              [queryKeys.GET_PUBLICATION, context.docId, context.version],
+              () => getPublication(context.docId, context.version),
             ),
-            client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () =>
-              getInfo(),
-            ),
+            client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
           ])
             .then(([publication, info]) => {
               if (publication.document?.children.length) {
@@ -189,9 +184,7 @@ export function createPublicationMachine(client: QueryClient, publication: Publi
                   type: 'SET.CURRENT.DOCUMENT',
                   document: publication.document,
                 })
-                let content = [
-                  blockNodeToSlate(publication.document.children),
-                ]
+                let content = [blockNodeToSlate(publication.document.children)]
 
                 sendBack({
                   type: 'PUBLICATION.REPORT.SUCCESS',
@@ -201,8 +194,7 @@ export function createPublicationMachine(client: QueryClient, publication: Publi
                       content,
                     },
                   }),
-                  canUpdate:
-                    info.accountId == publication.document.author,
+                  canUpdate: info.accountId == publication.document.author,
                 })
               } else {
                 if (publication.document?.children.length == 0) {
@@ -243,9 +235,7 @@ export function createPublicationMachine(client: QueryClient, publication: Publi
 
                 // This is importat to make citations accessible to Editor elements
 
-                Promise.all(
-                  links.map(({ source }) => getBlock(source)),
-                )
+                Promise.all(links.map(({source}) => getBlock(source)))
                   //@ts-ignore
                   .then((result: Array<GetBlockResult>) => {
                     sendBack({

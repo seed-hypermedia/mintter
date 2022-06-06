@@ -1,16 +1,16 @@
-import { createFilesMachine } from '@app/files-machine'
-import { getRefFromParams, useParams } from '@app/main-page-context'
-import { debug } from '@app/utils/logger'
-import { useMemo } from 'react'
-import { InterpreterFrom } from 'xstate'
-import { createInterpreterContext } from './utils/machine-utils'
+import {createFilesMachine} from '@app/files-machine'
+import {getRefFromParams, useParams} from '@app/main-page-context'
+import {debug} from '@app/utils/logger'
+import {useMemo} from 'react'
+import {InterpreterFrom} from 'xstate'
+import {createInterpreterContext} from './utils/machine-utils'
 
 const [FilesProvider, useFilesService, createFilesSelector] =
   createInterpreterContext<
     InterpreterFrom<ReturnType<typeof createFilesMachine>>
   >('Files')
 
-export { FilesProvider, useFilesService }
+export {FilesProvider, useFilesService}
 
 export function usePublicationList() {
   debug('HELLO PUB LIST')
@@ -21,9 +21,9 @@ export function useDraftList() {
   return createFilesSelector((state) => state.context.draftList)()
 }
 
-export function usePublicationRef(
-  params = useParams(),
-) {
+export function usePublicationRef(params: ReturnType<typeof useParams>) {
+  let hookParams = useParams()
+  params ||= hookParams
   let pubList = usePublicationList()
   let paramsRef = getRefFromParams('pub', params.docId, params.version)
 

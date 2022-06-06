@@ -138,11 +138,10 @@ function ProfileForm({
 
   useEffect(() => {
     if (data?.profile && isSuccess) {
-      const {alias = '', email = '', bio = ''} = data?.profile
       form.reset({
-        alias,
-        email,
-        bio,
+        alias: data.profile.alias || '',
+        email: data.profile.email || '',
+        bio: data.profile.bio || '',
       })
     }
   }, [isSuccess])
