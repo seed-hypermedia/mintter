@@ -13,7 +13,7 @@ import {FilesProvider} from '@app/files-context'
 import {createFilesMachine} from '@app/files-machine'
 import {queryKeys} from '@app/hooks'
 import {MainPageProvider} from '@app/main-page-context'
-import {MainPageContext, mainPageMachine} from '@app/main-page-machine'
+import {createMainPageMachine, MainPageContext} from '@app/main-page-machine'
 import {
   BookmarkListContext,
   BookmarksProvider,
@@ -24,8 +24,8 @@ import {
   SidepanelContextType,
   SidepanelProvider,
 } from '@components/sidepanel'
+import {mount} from '@cypress/react'
 import {useInterpret} from '@xstate/react'
-import {mount} from 'cypress/react'
 import {PropsWithChildren, ReactNode, useState} from 'react'
 import {QueryClient} from 'react-query'
 import {MachineOptionsFrom} from 'xstate'
@@ -134,18 +134,21 @@ export function MainPageProviders({
     createSidepanelMachine(client).withContext(sidepanelContext),
   )
   let filesService = useInterpret(() => createFilesMachine(client))
-  let mainPageService = useInterpret(() => mainPageMachine, {
-    ...mainPageOptions,
-    actions: {
-      ...mainPageOptions.actions,
-      loadDraft: (_, event) => {
-        filesService.send({type: 'LOAD.DRAFT', ref: event.ref})
-      },
-      loadPublication: (_, event) => {
-        filesService.send({type: 'LOAD.PUBLICATION', ref: event.ref})
+  let mainPageService = useInterpret(
+    () => createMainPageMachine(filesService),
+    {
+      ...mainPageOptions,
+      actions: {
+        ...mainPageOptions.actions,
+        loadDraft: (_, event) => {
+          filesService.send({type: 'LOAD.DRAFT', ref: event.ref})
+        },
+        loadPublication: (_, event) => {
+          filesService.send({type: 'LOAD.PUBLICATION', ref: event.ref})
+        },
       },
     },
-  })
+  )
 
   let hover = useInterpret(() => hoverMachine.withContext(hoverContext))
   let bookmarks = useInterpret(() =>

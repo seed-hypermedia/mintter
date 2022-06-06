@@ -4,7 +4,7 @@
 // import {Info} from '@app/client'
 // import {queryKeys} from '@app/hooks'
 // import OnboardingPage from '@app/pages/onboarding'
-// import {mount} from 'cypress/react'
+// import {mount} from '@cypress/react'
 import {createModel} from '@xstate/test'
 // import {QueryClient} from 'react-query'
 import {createMachine} from 'xstate'

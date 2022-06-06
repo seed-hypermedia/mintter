@@ -1,4 +1,4 @@
-import {CitationsProvider, createCitationsMachine} from '@app/editor/citations'
+import {citationMachine, CitationProvider} from '@app/editor/citations'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -15,12 +15,12 @@ function TestEditor({value, client}: {value: any; client: QueryClient}) {
     [],
   )
 
-  const citations = useInterpret(() => createCitationsMachine(client))
+  const citations = useInterpret(() => citationMachine)
 
   return (
     <Box css={{padding: '$9'}}>
       <MainPageProviders client={client}>
-        <CitationsProvider value={citations}>
+        <CitationProvider value={citations}>
           <Editor
             mode={EditorMode.Publication}
             editor={editor}
@@ -29,7 +29,7 @@ function TestEditor({value, client}: {value: any; client: QueryClient}) {
               // noop
             }}
           />
-        </CitationsProvider>
+        </CitationProvider>
       </MainPageProviders>
     </Box>
   )

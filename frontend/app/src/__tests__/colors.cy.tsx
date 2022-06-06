@@ -1,5 +1,5 @@
 import {darkTheme, lightTheme, styled} from '@app/stitches.config'
-import {mount} from 'cypress/react'
+import {mount} from '@cypress/react'
 
 const Color = styled('div', {
   width: '$full',
