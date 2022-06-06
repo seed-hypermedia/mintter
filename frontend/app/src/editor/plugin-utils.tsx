@@ -26,7 +26,7 @@ const byApply =
     if (typeof plugin.apply == 'function') {
       return plugin.apply(mode)
     } else {
-      return plugin.apply === undefined || plugin.apply === mode
+      return plugin.apply == undefined || plugin.apply == mode
     }
   }
 
@@ -35,7 +35,7 @@ const hasHook =
   (
     plugin: EditorPlugin,
   ): plugin is EditorPlugin & Required<Pick<EditorPlugin, typeof hook>> => {
-    return typeof plugin[hook] === 'function'
+    return typeof plugin[hook] == 'function'
   }
 
 const withMode = (mode: EditorMode) => (editor: Editor) => {
