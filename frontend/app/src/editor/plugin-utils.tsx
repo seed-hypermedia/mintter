@@ -40,7 +40,7 @@ const hasHook =
 
 const withMode = (mode: EditorMode) => (editor: Editor) => {
   editor.mode = mode
-  editor.readOnly = mode >= EditorMode.Publication
+  editor.readOnly = mode != EditorMode.Draft
   return editor
 }
 
