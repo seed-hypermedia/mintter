@@ -110,7 +110,7 @@
     "@typescript-eslint/parser": "^5.27.0",
     "@typescript-eslint/typescript-estree": "^5.27.0",
     "@vitejs/plugin-react": "1.3.2",
-    "@vitest/ui": "0.13.0",
+    "@vitest/ui": "0.14.1",
     "@xstate/cli": "0.1.7",
     "@xstate/inspect": "0.7.0",
     "@xstate/test": "0.5.1",
