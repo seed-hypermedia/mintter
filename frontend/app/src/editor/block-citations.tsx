@@ -1,10 +1,4 @@
-import {
-  Account,
-  getAccount,
-  Link,
-  Publication,
-  SidepanelItem,
-} from '@app/client'
+import {Account, getAccount, Link, Publication} from '@app/client'
 import {css} from '@app/stitches.config'
 import {getBlock} from '@app/utils/get-block'
 import {Avatar} from '@components/avatar'
@@ -185,15 +179,6 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
           cursor: 'pointer',
         },
       }}
-      onClick={() => {
-        send({
-          type: 'OPEN.IN.SIDEPANEL',
-          item: {
-            type: 'block',
-            url: `mtt://${citation.source?.documentId}/${citation.source?.version}/${citation.source?.blockId}`,
-          },
-        })
-      }}
     >
       <Box
         css={{
@@ -233,7 +218,6 @@ type BlockCitationEvent =
     }
   | {type: 'CITATION.FETCH.ERROR'}
   | {type: 'RETRY'}
-  | {type: 'OPEN.IN.SIDEPANEL'; item: SidepanelItem}
 
 const blockCitationMachine = createMachine({
   tsTypes: {} as import('./block-citations.typegen').Typegen0,
@@ -270,13 +254,7 @@ const blockCitationMachine = createMachine({
         },
       },
     },
-    ready: {
-      on: {
-        'OPEN.IN.SIDEPANEL': {
-          actions: ['openInSidepanel'],
-        },
-      },
-    },
+    ready: {},
     errored: {
       on: {
         RETRY: {

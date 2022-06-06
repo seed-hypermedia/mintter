@@ -20,11 +20,6 @@ import {
   BookmarksProvider,
   createBookmarkListMachine,
 } from '@components/bookmarks'
-import {
-  createSidepanelMachine,
-  SidepanelContextType,
-  SidepanelProvider,
-} from '@components/sidepanel'
 import {mount} from '@cypress/react'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, ReactNode, useState} from 'react'
@@ -117,7 +112,6 @@ type MainPageProvidersProps = PropsWithChildren<{
   client: QueryClient
   hoverContext?: HoverContext
   bookmarkListContext?: BookmarkListContext
-  sidepanelContext?: SidepanelContextType
   mainPageContext?: DeepPartial<MainPageContext>
   mainPageOptions?: MachineOptionsFrom<ReturnType<typeof createMainPageMachine>>
 }>
@@ -127,13 +121,9 @@ export function MainPageProviders({
   client,
   hoverContext = {blockId: null},
   bookmarkListContext = {bookmarks: [], errorMessage: ''},
-  sidepanelContext = {items: [], errorMessage: ''},
   mainPageContext = {params: {}},
   mainPageOptions = {},
 }: MainPageProvidersProps) {
-  let sidepanel = useInterpret(() =>
-    createSidepanelMachine(client).withContext(sidepanelContext),
-  )
   let filesService = useInterpret(() => createFilesMachine(client))
   let mainPageService = useInterpret(
     () => createMainPageMachine(filesService).withContext(mainPageContext),
@@ -178,9 +168,7 @@ export function MainPageProviders({
     <MainPageProvider value={mainPageService}>
       <FilesProvider value={filesService}>
         <HoverProvider value={hover}>
-          <BookmarksProvider value={bookmarks}>
-            <SidepanelProvider value={sidepanel}>{children}</SidepanelProvider>
-          </BookmarksProvider>
+          <BookmarksProvider value={bookmarks}>{children}</BookmarksProvider>
         </HoverProvider>
       </FilesProvider>
     </MainPageProvider>

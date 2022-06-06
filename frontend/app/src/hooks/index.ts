@@ -1,8 +1,8 @@
-import { useAccountInfo } from '@app/auth-context'
-import type { FlowContent } from '@mintter/mttast'
-import { useMemo } from 'react'
-import type { UseQueryResult } from 'react-query'
-import { useQuery, useQueryClient } from 'react-query'
+import {useAccountInfo} from '@app/auth-context'
+import type {FlowContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import type {UseQueryResult} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
 import {
   Account,
   Document,
@@ -19,9 +19,9 @@ import {
   listPublications,
   ListPublicationsResponse,
   PeerInfo,
-  Publication
+  Publication,
 } from '../client'
-import type { HookOptions } from './types'
+import type {HookOptions} from './types'
 
 export * from './types'
 
@@ -37,7 +37,6 @@ export const queryKeys = {
   OTHERS_PUBLICATION_LIST: 'OTHERS_PUBLICATION_LIST',
   MY_PUBLICATION_LIST: 'MY_PUBLICATION_LIST',
   GET_BOOKMARK_LIST: 'GET_BOOKMARK_LIST',
-  GET_SIDEPANEL_LIST: 'GET_SIDEPANEL_LIST',
   GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
   GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
 }
@@ -87,14 +86,15 @@ export function useDraft(
 
   if (Array.isArray(draftId)) {
     throw new Error(
-      `Impossible render: You are trying to access a draft passing ${draftId.length
+      `Impossible render: You are trying to access a draft passing ${
+        draftId.length
       } draft Ids => ${draftId.map((q) => q).join(', ')}`,
     )
   }
 
   return useQuery(
     [queryKeys.GET_DRAFT, draftId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [, draftId] = queryKey as [string, string]
       return await getDraft(draftId, options.rpc)
     },
@@ -118,8 +118,8 @@ export function useDraftList() {
     },
   )
 
-  const data: Array<{ document: Document }> = useMemo(
-    () => draftsListQuery.data?.documents?.map((d) => ({ document: d })) || [],
+  const data: Array<{document: Document}> = useMemo(
+    () => draftsListQuery.data?.documents?.map((d) => ({document: d})) || [],
     [draftsListQuery],
   )
 
@@ -179,7 +179,7 @@ export function usePublication(
 ) {
   const publicationQuery = useQuery(
     [queryKeys.GET_PUBLICATION, publicationId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [, publicationId] = queryKey as [string, string]
       return getPublication(publicationId, version, options.rpc)
     },

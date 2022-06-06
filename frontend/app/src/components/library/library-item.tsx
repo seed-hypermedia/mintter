@@ -141,7 +141,7 @@ export function LibraryItem({
             <Text size="2">Open in main panel</Text>
           </Dropdown.Item>
           <Dropdown.Item
-            data-testid="sidepanel-item"
+            data-testid="new-window-item"
             onSelect={onOpenInNewWindow}
           >
             <Icon size="1" name="OpenInNewWindow" />

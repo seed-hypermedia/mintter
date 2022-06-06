@@ -13,7 +13,6 @@ import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {ScrollArea} from '@components/scroll-area'
 import {Settings} from '@components/settings'
-import {createSidepanelMachine, SidepanelProvider} from '@components/sidepanel'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
 import {useActor, useInterpret} from '@xstate/react'
@@ -29,7 +28,6 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
   // eslint-disable-line
   const localClient = useQueryClient()
   const client = propClient ?? localClient
-  const sidepanelService = useInterpret(() => createSidepanelMachine(client))
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   const hoverService = useInterpret(() => hoverMachine)
   const filesService = useInterpret(() => createFilesMachine(client))
@@ -44,37 +42,34 @@ export function MainPage({client: propClient}: {client?: QueryClient}) {
       <FilesProvider value={filesService}>
         <HoverProvider value={hoverService}>
           <BookmarksProvider value={bookmarksService}>
-            <SidepanelProvider value={sidepanelService}>
-              {state.matches('routes.settings') ? (
-                <Settings />
-              ) : (
-                <Box className={rootPageStyle()}>
-                  {state.hasTag('topbar') ? <Topbar /> : null}
-                  {state.hasTag('library') ? <Library /> : null}
-                  <MainWindow>
-                    <ErrorBoundary
-                      FallbackComponent={PageError}
-                      onReset={() => {
-                        window.location.reload()
-                      }}
-                    >
-                      {state.hasTag('publication') ? (
-                        <Publication key={state.context.params.docId} />
-                      ) : null}
-                      {state.hasTag('draft') ? (
-                        <EditorPage key={state.context.params.docId} />
-                      ) : null}
-                      {state.matches('routes.home') ? <Placeholder /> : null}
-                      {state.matches('routes.draftList') ? <DraftList /> : null}
-                      {state.matches('routes.publicationList') ? (
-                        <PublicationList />
-                      ) : null}
-                    </ErrorBoundary>
-                  </MainWindow>
-                  {/* {state.hasTag('sidepanel') ? <Sidepanel /> : null} */}
-                </Box>
-              )}
-            </SidepanelProvider>
+            {state.matches('routes.settings') ? (
+              <Settings />
+            ) : (
+              <Box className={rootPageStyle()}>
+                {state.hasTag('topbar') ? <Topbar /> : null}
+                {state.hasTag('library') ? <Library /> : null}
+                <MainWindow>
+                  <ErrorBoundary
+                    FallbackComponent={PageError}
+                    onReset={() => {
+                      window.location.reload()
+                    }}
+                  >
+                    {state.hasTag('publication') ? (
+                      <Publication key={state.context.params.docId} />
+                    ) : null}
+                    {state.hasTag('draft') ? (
+                      <EditorPage key={state.context.params.docId} />
+                    ) : null}
+                    {state.matches('routes.home') ? <Placeholder /> : null}
+                    {state.matches('routes.draftList') ? <DraftList /> : null}
+                    {state.matches('routes.publicationList') ? (
+                      <PublicationList />
+                    ) : null}
+                  </ErrorBoundary>
+                </MainWindow>
+              </Box>
+            )}
           </BookmarksProvider>
         </HoverProvider>
       </FilesProvider>
@@ -95,10 +90,10 @@ export var rootPageStyle = css({
   gridAutoFlow: 'column',
   gridAutoColumns: '1fr',
   gridTemplateRows: '40px 1fr',
-  gridTemplateColumns: '1fr auto auto',
+  gridTemplateColumns: '1fr auto',
   gap: 0,
-  gridTemplateAreas: `"topbar topbar topbar"
-  "main sidepanel library"`,
+  gridTemplateAreas: `"topbar topbar"
+  "main library"`,
   background: '$base-background-normal',
 })
 
