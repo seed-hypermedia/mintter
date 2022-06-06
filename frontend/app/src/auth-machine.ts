@@ -1,5 +1,5 @@
-import { assign, createMachine } from 'xstate'
-import { Info } from './client'
+import {assign, createMachine} from 'xstate'
+import {Info} from './client'
 
 type AuthContext = {
   accountInfo?: Info
@@ -8,12 +8,12 @@ type AuthContext = {
 
 type AuthEvent =
   | {
-    type: 'REPORT.DEVICE.INFO.PRESENT'
-    accountInfo: Info
-  }
+      type: 'REPORT.DEVICE.INFO.PRESENT'
+      accountInfo: Info
+    }
   | {
-    type: 'REPORT.DEVICE.INFO.MISSING'
-  }
+      type: 'REPORT.DEVICE.INFO.MISSING'
+    }
 
 export const authMachine = createMachine(
   {
@@ -75,8 +75,8 @@ export const authMachine = createMachine(
         accountInfo: event.accountInfo,
       })),
       removeAccountInfo: assign({
-        accountInfo: (context) => undefined
-      })
+        accountInfo: (context) => undefined,
+      }),
     },
   },
 )

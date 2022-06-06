@@ -1,17 +1,21 @@
-import { EditorDocument } from '@app/editor/use-editor-draft'
-import { createFilesMachine } from '@app/files-machine'
-import { getRefFromParams } from '@app/main-page-context'
-import { DeepPartial } from '@app/types'
-import { debug } from '@app/utils/logger'
-import { libraryMachine } from '@components/library/library-machine'
-import { invoke as tauriInvoke } from '@tauri-apps/api'
+import {EditorDocument} from '@app/editor/use-editor-draft'
+import {createFilesMachine} from '@app/files-machine'
+import {getRefFromParams} from '@app/main-page-context'
+import {DeepPartial} from '@app/types'
+import {debug} from '@app/utils/logger'
+import {libraryMachine} from '@components/library/library-machine'
+import {invoke as tauriInvoke} from '@tauri-apps/api'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
-import { ActorRefFrom, assign, createMachine, InterpreterFrom, send, spawn } from 'xstate'
 import {
-  createDraft,
-  Publication
-} from './client'
+  ActorRefFrom,
+  assign,
+  createMachine,
+  InterpreterFrom,
+  send,
+  spawn,
+} from 'xstate'
+import {createDraft, Publication} from './client'
 
 export type MainPageContext = {
   params: {
@@ -27,95 +31,95 @@ export type MainPageContext = {
 
 type MainPageEvent =
   | {
-    type: 'routeNotFound'
-  }
+      type: 'routeNotFound'
+    }
   | {
-    type: 'goToEditor'
-    docId: string
-    replace?: boolean
-  }
+      type: 'goToEditor'
+      docId: string
+      replace?: boolean
+    }
   | {
-    type: 'goToPublication'
-    docId: string
-    version: string
-    blockId?: string
-    replace?: boolean
-  }
+      type: 'goToPublication'
+      docId: string
+      version: string
+      blockId?: string
+      replace?: boolean
+    }
   | {
-    type: 'COMMIT.PUBLICATION',
-    publication: Publication
-  }
+      type: 'COMMIT.PUBLICATION'
+      publication: Publication
+    }
   | {
-    type: 'goToSettings'
-  }
+      type: 'goToSettings'
+    }
   | {
-    type: 'goToHome'
-  }
+      type: 'goToHome'
+    }
   | {
-    type: 'goToPublicationList'
-  }
+      type: 'goToPublicationList'
+    }
   | {
-    type: 'goToDraftList'
-  }
+      type: 'goToDraftList'
+    }
   | {
-    type: 'goBack'
-  }
+      type: 'goBack'
+    }
   | {
-    type: 'goForward'
-  }
+      type: 'goForward'
+    }
   | {
-    type: 'SET.CURRENT.DOCUMENT'
-    document: EditorDocument
-  }
+      type: 'SET.CURRENT.DOCUMENT'
+      document: EditorDocument
+    }
   | {
-    type: 'CREATE_NEW_DRAFT'
-  }
+      type: 'CREATE_NEW_DRAFT'
+    }
   | {
-    type: 'OPEN_WINDOW'
-    path?: string
-  }
+      type: 'OPEN_WINDOW'
+      path?: string
+    }
   | {
-    type: 'EDIT_PUBLICATION'
-    docId: string
-  }
+      type: 'EDIT_PUBLICATION'
+      docId: string
+    }
   | {
-    type: 'LOAD.DRAFT',
-    ref: string
-  }
+      type: 'LOAD.DRAFT'
+      ref: string
+    }
   | {
-    type: 'LOAD.PUBLICATION',
-    ref: string
-  }
+      type: 'LOAD.PUBLICATION'
+      ref: string
+    }
 
 type RouterEvent =
   | {
-    type: 'pushHome'
-  }
+      type: 'pushHome'
+    }
   | {
-    type: 'pushPublication'
-    docId: string
-    version: string
-    blockId?: string
-    replace?: boolean
-  }
+      type: 'pushPublication'
+      docId: string
+      version: string
+      blockId?: string
+      replace?: boolean
+    }
   | {
-    type: 'pushDraft'
-    docId: string
-    replace?: boolean
-  }
+      type: 'pushDraft'
+      docId: string
+      replace?: boolean
+    }
   | {
-    type: 'pushSettings'
-  }
+      type: 'pushSettings'
+    }
   | {
-    type: 'pushPublicationList'
-  }
+      type: 'pushPublicationList'
+    }
   | {
-    type: 'pushDraftList'
-  }
+      type: 'pushDraftList'
+    }
 
 export function defaultMainPageContext(
   overrides: DeepPartial<MainPageContext> = {
-    params: { docId: '', version: null, blockId: null, replace: false },
+    params: {docId: '', version: null, blockId: null, replace: false},
   },
 ) {
   return () => ({
@@ -132,7 +136,9 @@ export function defaultMainPageContext(
   })
 }
 
-export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<typeof createFilesMachine>>) {
+export function createMainPageMachine(
+  filesService: InterpreterFrom<ReturnType<typeof createFilesMachine>>,
+) {
   return createMachine(
     {
       context: () => ({
@@ -140,14 +146,14 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
           docId: '',
           version: null,
           blockId: null,
-          replace: false
+          replace: false,
         },
         document: null,
         recents: [],
         library: spawn(libraryMachine, 'library'),
       }),
       tsTypes: {} as import('./main-page-machine.typegen').Typegen0,
-      schema: { context: {} as MainPageContext, events: {} as MainPageEvent },
+      schema: {context: {} as MainPageContext, events: {} as MainPageEvent},
       invoke: {
         src: 'router',
         id: 'router',
@@ -155,8 +161,7 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
       id: 'main-page',
       initial: 'routes',
       states: {
-        idle: {
-        },
+        idle: {},
         routes: {
           initial: 'idle',
           states: {
@@ -170,11 +175,7 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
               initial: 'validating',
               states: {
                 validating: {
-                  entry: [
-                    'pushToRecents',
-                    'clearCurrentDocument',
-                    'loadDraft',
-                  ],
+                  entry: ['pushToRecents', 'clearCurrentDocument', 'loadDraft'],
                   always: [
                     {
                       actions: 'setDraftParams',
@@ -238,7 +239,10 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
                     goToPublication: [
                       {
                         actions: (...args) => {
-                          debug('goToPublication INSIDE PUBLICATION VALID', args)
+                          debug(
+                            'goToPublication INSIDE PUBLICATION VALID',
+                            args,
+                          )
                         },
                         cond: 'isEventDifferent',
                         target: 'validating',
@@ -273,7 +277,11 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
               tags: ['topbar', 'library'],
             },
             draftList: {
-              entry: ['clearCurrentDocument', 'clearParams', 'pushDraftListRoute'],
+              entry: [
+                'clearCurrentDocument',
+                'clearParams',
+                'pushDraftListRoute',
+              ],
               tags: ['topbar', 'library'],
             },
             createDraft: {
@@ -306,7 +314,7 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
             },
             'COMMIT.PUBLICATION': {
               target: '.publication',
-              actions: ['updateFiles']
+              actions: ['updateFiles'],
             },
             CREATE_NEW_DRAFT: {
               target: '.createDraft',
@@ -332,11 +340,11 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
     {
       guards: {
         isMetaEventDifferent: (context, _, meta) => {
-          let { type, ...eventParams } = meta.state.event
+          let {type, ...eventParams} = meta.state.event
           return !isEqual(context.params, eventParams)
         },
         isEventDifferent: (context, event) => {
-          let { type, ...eventParams } = event
+          let {type, ...eventParams} = event
           let result = !isEqual(context.params, eventParams)
           return result
         },
@@ -347,11 +355,11 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
         },
         loadDraft: (_, event) => {
           let ref = getRefFromParams('doc', event.docId, null)
-          filesService.send({ type: 'LOAD.DRAFT', ref })
+          filesService.send({type: 'LOAD.DRAFT', ref})
         },
         loadPublication: (_, event) => {
           let ref = getRefFromParams('pub', event.docId, event.version)
-          filesService.send({ type: 'LOAD.PUBLICATION', ref })
+          filesService.send({type: 'LOAD.PUBLICATION', ref})
         },
         openWindow: async (context, event) => {
           openWindow(event.path)
@@ -374,7 +382,7 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
         }),
         setDraftParams: assign({
           params: (_, e, meta) => {
-            let { event } = meta.state
+            let {event} = meta.state
             return {
               docId: event.docId,
               replace: event.replace,
@@ -384,7 +392,7 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
         setPublicationParams: assign({
           params: (c, e, meta) => {
             // debug('\n\n === setPublicationParams: ', JSON.stringify({ c, e, meta }))
-            let { event } = meta.state
+            let {event} = meta.state
             return {
               docId: event.docId,
               version: event.version,
@@ -403,7 +411,7 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
               replace: context.params.replace,
             }
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         pushDraftRoute: send(
           (context) => {
@@ -414,20 +422,20 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
               replace: context.params.replace,
             }
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         pushSettings: send(
           {
             type: 'pushSettings',
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         clearParams: assign((_) => ({
           params: {
             docId: '',
             version: null,
             blockId: null,
-            replace: false
+            replace: false,
           },
         })),
         navigateBack: () => {
@@ -442,16 +450,16 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
           {
             type: 'pushDraftList',
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         pushPublicationListRoute: send(
           {
             type: 'pushPublicationList',
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         editPublication: (_, event) => {
-          createDraft(event.docId).then(doc => {
+          createDraft(event.docId).then((doc) => {
             openWindow(`/editor/${doc.id}`)
           })
         },
@@ -474,9 +482,9 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
             .on('/drafts', () => {
               sendBack('goToDraftList')
             })
-            .on<{ docId: string }>('/editor/:docId', (params) => {
+            .on<{docId: string}>('/editor/:docId', (params) => {
               return params
-                ? sendBack({ type: 'goToEditor', ...params })
+                ? sendBack({type: 'goToEditor', ...params})
                 : sendBack('routeNotFound')
             })
             .on<{
@@ -486,11 +494,11 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
             }>('/p/:docId/:version?/:blockId?', (params) => {
               return params
                 ? sendBack({
-                  type: 'goToPublication',
-                  docId: params.docId,
-                  version: params.version,
-                  blockId: params.blockId,
-                })
+                    type: 'goToPublication',
+                    docId: params.docId,
+                    version: params.version,
+                    blockId: params.blockId,
+                  })
                 : sendBack('routeNotFound')
             })
 
@@ -498,17 +506,19 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
             if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
-              let { pathname } = window.location
-              let newRoute = `/p/${event.docId}${event.version
-                ? `/${event.version}${event.blockId ? `/${event.blockId}` : ''
-                }`
-                : ''
-                }`
+              let {pathname} = window.location
+              let newRoute = `/p/${event.docId}${
+                event.version
+                  ? `/${event.version}${
+                      event.blockId ? `/${event.blockId}` : ''
+                    }`
+                  : ''
+              }`
               if (pathname != newRoute) {
                 navRouter.route(newRoute, event.replace)
               }
             } else if (event.type == 'pushDraft') {
-              let { pathname } = window.location
+              let {pathname} = window.location
               let newRoute = `/editor/${event.docId}`
               if (pathname != newRoute) {
                 navRouter.route(newRoute, event.replace)
@@ -530,7 +540,7 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
         },
         createNewDraft: () => (sendBack) => {
           createDraft().then((document) => {
-            sendBack({ type: 'goToEditor', docId: document.id, replace: true })
+            sendBack({type: 'goToEditor', docId: document.id, replace: true})
           })
         },
       },
@@ -538,16 +548,15 @@ export function createMainPageMachine(filesService: InterpreterFrom<ReturnType<t
   )
 }
 
-
 function openWindow(path?: string) {
   if (path) {
     // Open window with path
-    tauriInvoke('plugin:window|open', { path })
+    tauriInvoke('plugin:window|open', {path})
   } else {
     createDraft().then((doc) => {
       let path = `/editor/${doc.id}`
       // open window with new path
-      tauriInvoke('plugin:window|open', { path })
+      tauriInvoke('plugin:window|open', {path})
     })
   }
 }

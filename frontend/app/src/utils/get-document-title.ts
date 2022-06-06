@@ -1,5 +1,5 @@
-import { EditorDocument } from '@app/editor/use-editor-draft'
-import { Node } from 'slate'
+import {EditorDocument} from '@app/editor/use-editor-draft'
+import {Node} from 'slate'
 
 export function getTitleFromContent(entry: {
   children: Array<EditorDocument['children']>
@@ -10,8 +10,8 @@ export function getTitleFromContent(entry: {
 export function getDocumentTitle(document: any) {
   let titleText = document?.content
     ? getTitleFromContent({
-      children: document.content,
-    })
+        children: document.content,
+      })
     : document?.title ?? ''
 
   return titleText
