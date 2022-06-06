@@ -5,7 +5,6 @@ import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
-import {assign} from 'xstate'
 import {AuthProvider} from './auth-context'
 import {authMachine} from './auth-machine'
 import {themeMachine, ThemeProvider} from './theme'
@@ -47,14 +46,6 @@ export function AppProviders({
             sendBack('REPORT.DEVICE.INFO.MISSING')
           })
       },
-    },
-    actions: {
-      assignAccountInfo: assign((_, event) => ({
-        accountInfo: event.accountInfo,
-      })),
-      removeAccountInfo: assign({
-        accountInfo: undefined,
-      }),
     },
   })
   const themeService = useInterpret(() => themeMachine)

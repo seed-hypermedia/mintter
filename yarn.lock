@@ -1681,7 +1681,6 @@ __metadata:
     autosize: 5.0.1
     browser-headers: 0.4.1
     cypress: 9.7.0
-    cypress-plugin-tab: "https://github.com/AndrewLeedham/cypress-plugin-tab"
     eslint: 8.16.0
     eslint-config-preact: 1.3.0
     eslint-config-prettier: 8.5.0
@@ -5162,13 +5161,6 @@ __metadata:
     "@mapbox/node-pre-gyp": ^1.0.5
     neon-cli: ^0.8.1
   checksum: ba51ffae8f8427faf004428f18b9281f3d9b0a67a1ac05aca93042137795762f2965c5b121e8694a4cfaf93fb746aa99c74a89ad58d8214956fd0db88d2f03a6
-  languageName: node
-  linkType: hard
-
-"cypress-plugin-tab@https://github.com/AndrewLeedham/cypress-plugin-tab":
-  version: 1.0.1
-  resolution: "cypress-plugin-tab@https://github.com/AndrewLeedham/cypress-plugin-tab.git#commit=837e4f06c552be10a7dc8a9e1af8cc72e336e0f5"
-  checksum: a4c3669068a34cd4d5a7c55eacef374cc4d455d1258fd675609dc7fff9b33a0e820961bb11a2a5a41e2aadb40308d268f9a26e51260719b0fd00ebf6f87246d6
   languageName: node
   linkType: hard
 

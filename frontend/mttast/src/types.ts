@@ -1,5 +1,5 @@
-import type {Lang} from 'shiki'
-import {Position} from 'unist'
+import type { Lang } from 'shiki'
+import { Position } from 'unist'
 
 // Nodes
 

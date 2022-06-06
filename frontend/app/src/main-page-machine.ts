@@ -1,6 +1,7 @@
 import { EditorDocument } from '@app/editor/use-editor-draft'
 import { createFilesMachine } from '@app/files-machine'
 import { getRefFromParams } from '@app/main-page-context'
+import { DeepPartial } from '@app/types'
 import { debug } from '@app/utils/logger'
 import { libraryMachine } from '@components/library/library-machine'
 import { invoke as tauriInvoke } from '@tauri-apps/api'
@@ -113,7 +114,7 @@ type RouterEvent =
   }
 
 export function defaultMainPageContext(
-  overrides: Partial<MainPageContext> = {
+  overrides: DeepPartial<MainPageContext> = {
     params: { docId: '', version: null, blockId: null, replace: false },
   },
 ) {
