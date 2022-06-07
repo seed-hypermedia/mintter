@@ -1553,7 +1553,7 @@ __metadata:
     "@typescript-eslint/typescript-estree": ^5.27.0
     "@vitejs/plugin-react": 1.3.2
     "@vitest/ui": 0.14.1
-    "@xstate/cli": 0.1.7
+    "@xstate/cli": 0.2.0
     "@xstate/inspect": 0.7.0
     "@xstate/react": 2.0.1
     "@xstate/test": 0.5.1
@@ -2963,19 +2963,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xstate/cli@npm:0.1.7":
-  version: 0.1.7
-  resolution: "@xstate/cli@npm:0.1.7"
+"@xstate/cli@npm:0.2.0":
+  version: 0.2.0
+  resolution: "@xstate/cli@npm:0.2.0"
   dependencies:
     "@babel/core": ^7.12.10
-    "@xstate/machine-extractor": 0.6.4
-    "@xstate/tools-shared": 1.1.5
+    "@xstate/machine-extractor": 0.7.0
+    "@xstate/tools-shared": 1.1.6
     chokidar: ^3.5.3
     commander: ^8.0.0
     xstate: ^4.29.0
   bin:
     xstate: bin/bin.js
-  checksum: f74e78a30f89c498d43101937648a527caa99434977438e01955fbddd5401880ffb96a17205861e160e3d9c8e357bcdf245ec463649b7a5ac62c25ef9db3e72d
+  checksum: ff0b39b882c83492d4b304ad09271b101d62a27fc16426281b0ee208a1068b3271a90bcb491f4cea66bae13ba2ca0b4a61c6207a69c07dc8455fc1a9191ed304
   languageName: node
   linkType: hard
 
@@ -3004,13 +3004,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xstate/machine-extractor@npm:0.6.4":
-  version: 0.6.4
-  resolution: "@xstate/machine-extractor@npm:0.6.4"
+"@xstate/machine-extractor@npm:0.7.0":
+  version: 0.7.0
+  resolution: "@xstate/machine-extractor@npm:0.7.0"
   peerDependencies:
     "@babel/core": ^7
     xstate: ^4
-  checksum: a2a57127f6f92e1998034a46da9770f38030ae80e68ed8940fdef6641ec76e206f938e6a1d84c13144b0da60d32b5296c4f93474373a5cfdc52b8467a369b6ab
+  checksum: 139cba4217523034161d373d24e138c0d27e5527ca119f292dfc2c45a13d56cf72cb6ad4c94845b28192d9a908be3edf2d907c58cd35bac51cbacdefc9faefae
   languageName: node
   linkType: hard
 
@@ -3045,15 +3045,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xstate/tools-shared@npm:1.1.5":
-  version: 1.1.5
-  resolution: "@xstate/tools-shared@npm:1.1.5"
+"@xstate/tools-shared@npm:1.1.6":
+  version: 1.1.6
+  resolution: "@xstate/tools-shared@npm:1.1.6"
   dependencies:
-    "@xstate/machine-extractor": 0.6.4
+    "@xstate/machine-extractor": 0.7.0
   peerDependencies:
     prettier: ^2.3.1
     xstate: ^4
-  checksum: 664bb9d1c9595ca6f752132b8813b0fc436b5a30bf1211882c27e8f60d10c059690b23b4370c14f21ac626e55a49db44b94acad63f7631b94243abdd9648b8c5
+  checksum: 13703e38124c952fd49355e18b7a34463bb1037a3013db057e3a3f6e05a8641a5a7a70da640888e358a5988fc8d55ba3fcdde4d305723fc07f28dbf663b8a0f7
   languageName: node
   linkType: hard
 
