@@ -1606,7 +1606,7 @@ __metadata:
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
     typedoc: 0.22.17
     typedoc-plugin-markdown: 3.12.1
-    typescript: 4.7.2
+    typescript: 4.7.3
     unified: 10.1.2
     unist-builder: 3.0.0
     unist-util-is: 5.1.1
@@ -1621,7 +1621,7 @@ __metadata:
     vitest: 0.13.0
     xstate: 4.32.1
   peerDependencies:
-    typescript: 4.7.2
+    typescript: 4.7.3
   languageName: unknown
   linkType: soft
 
@@ -1653,7 +1653,7 @@ __metadata:
     rehype-sanitize: ^5.0.1
     shiki: 0.10.1
     trim-trailing-lines: ^2.0.0
-    typescript: 4.7.2
+    typescript: 4.7.3
     unified: 10.1.2
     unist-builder: ^3.0.0
     unist-util-remove-position: ^4.0.1
@@ -9689,7 +9689,7 @@ __metadata:
     rollup: 2.75.5
     tiny-glob: 0.2.9
     ts-proto: 1.115.4
-    typescript: 4.7.2
+    typescript: 4.7.3
   languageName: unknown
   linkType: soft
 
@@ -13755,23 +13755,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:4.7.2":
-  version: 4.7.2
-  resolution: "typescript@npm:4.7.2"
+"typescript@npm:4.7.3":
+  version: 4.7.3
+  resolution: "typescript@npm:4.7.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 5163585e6b56410f77d5483b698d9489bbee8902c99029eb70cf6d21525a186530ce19a00951af84eefd4a131cc51d0959f5118e25e70ab61f45ac4057dbd1ef
+  checksum: fd13a1ce53790a36bb8350e1f5e5e384b5f6cb9b0635114a6d01d49cb99916abdcfbc13c7521cdae2f2d3f6d8bc4a8ae7625edf645a04ee940588cd5e7597b2f
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@4.7.2#~builtin<compat/typescript>":
-  version: 4.7.2
-  resolution: "typescript@patch:typescript@npm%3A4.7.2#~builtin<compat/typescript>::version=4.7.2&hash=7ad353"
+"typescript@patch:typescript@4.7.3#~builtin<compat/typescript>":
+  version: 4.7.3
+  resolution: "typescript@patch:typescript@npm%3A4.7.3#~builtin<compat/typescript>::version=4.7.3&hash=7ad353"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 7e2b9a9f4a70fb7616f1b0d986977f8e34a74f046202fa7f24fdee79589598277810fa216b3776c20c0683a9235872c73be34fdb93f67f98c1efaca40999422f
+  checksum: 137d18a77f52254a284960b16ab53d0619f57b69b5d585804b8413f798a1175ce3e774fb95e6a101868577aafe357d8fcfc9171f0dc9fc0c210e9ae59d107cc0
   languageName: node
   linkType: hard
 
