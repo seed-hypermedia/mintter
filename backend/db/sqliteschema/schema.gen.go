@@ -60,13 +60,14 @@ const (
 	DevicesPublicKey  sqlitegen.Column = "devices.public_key"
 )
 
-// Table documents.
+// Table document_changes.
 const (
-	Documents         sqlitegen.Table  = "documents"
-	DocumentsChangeID sqlitegen.Column = "documents.change_id"
-	DocumentsID       sqlitegen.Column = "documents.id"
-	DocumentsSubtitle sqlitegen.Column = "documents.subtitle"
-	DocumentsTitle    sqlitegen.Column = "documents.title"
+	DocumentChanges           sqlitegen.Table  = "document_changes"
+	DocumentChangesChangeID   sqlitegen.Column = "document_changes.change_id"
+	DocumentChangesChangeTime sqlitegen.Column = "document_changes.change_time"
+	DocumentChangesID         sqlitegen.Column = "document_changes.id"
+	DocumentChangesSubtitle   sqlitegen.Column = "document_changes.subtitle"
+	DocumentChangesTitle      sqlitegen.Column = "document_changes.title"
 )
 
 // Table drafts.
@@ -95,6 +96,7 @@ const (
 	IPFSBlocksData       sqlitegen.Column = "ipfs_blocks.data"
 	IPFSBlocksID         sqlitegen.Column = "ipfs_blocks.id"
 	IPFSBlocksMultihash  sqlitegen.Column = "ipfs_blocks.multihash"
+	IPFSBlocksSize       sqlitegen.Column = "ipfs_blocks.size"
 )
 
 // Table named_versions.
@@ -181,10 +183,11 @@ var Schema = sqlitegen.Schema{
 		DevicesID:                    {Table: Devices, SQLType: "INTEGER"},
 		DevicesMultihash:             {Table: Devices, SQLType: "BLOB"},
 		DevicesPublicKey:             {Table: Devices, SQLType: "BLOB"},
-		DocumentsChangeID:            {Table: Documents, SQLType: "INTEGER"},
-		DocumentsID:                  {Table: Documents, SQLType: "INTEGER"},
-		DocumentsSubtitle:            {Table: Documents, SQLType: "TEXT"},
-		DocumentsTitle:               {Table: Documents, SQLType: "TEXT"},
+		DocumentChangesChangeID:      {Table: DocumentChanges, SQLType: "INTEGER"},
+		DocumentChangesChangeTime:    {Table: DocumentChanges, SQLType: "INTEGER"},
+		DocumentChangesID:            {Table: DocumentChanges, SQLType: "INTEGER"},
+		DocumentChangesSubtitle:      {Table: DocumentChanges, SQLType: "TEXT"},
+		DocumentChangesTitle:         {Table: DocumentChanges, SQLType: "TEXT"},
 		DraftsContent:                {Table: Drafts, SQLType: "BLOB"},
 		DraftsCreateTime:             {Table: Drafts, SQLType: "INTEGER"},
 		DraftsID:                     {Table: Drafts, SQLType: "INTEGER"},
@@ -198,6 +201,7 @@ var Schema = sqlitegen.Schema{
 		IPFSBlocksData:               {Table: IPFSBlocks, SQLType: "BLOB"},
 		IPFSBlocksID:                 {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksMultihash:          {Table: IPFSBlocks, SQLType: "BLOB"},
+		IPFSBlocksSize:               {Table: IPFSBlocks, SQLType: "INTEGER"},
 		NamedVersionsAccountID:       {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsDeviceID:        {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsName:            {Table: NamedVersions, SQLType: "TEXT"},

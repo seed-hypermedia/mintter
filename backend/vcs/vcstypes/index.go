@@ -180,7 +180,7 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 		}
 	}
 
-	if err := vcssql.DocumentsIndex(conn, oiddb.IPFSBlocksID, title, subtitle, ciddb.IPFSBlocksID); err != nil {
+	if err := vcssql.DocumentsIndex(conn, oiddb.IPFSBlocksID, title, subtitle, ciddb.IPFSBlocksID, int(c.CreateTime.Unix())); err != nil {
 		return err
 	}
 

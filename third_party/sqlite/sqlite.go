@@ -962,6 +962,13 @@ func (stmt *Stmt) ColumnBytes(col int) []byte {
 	return buf
 }
 
+// ColumnBytesUnsafe returns C-managed memory directly.
+// The caller must not mutate the returned slice, and must use all of it before
+// the statement will be reset.
+func (stmt *Stmt) ColumnBytesUnsafe(col int) []byte {
+	return stmt.columnBytes(col)
+}
+
 // ColumnReader creates a byte reader for a query result column.
 //
 // The reader directly references C-managed memory that stops

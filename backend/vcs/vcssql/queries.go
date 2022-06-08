@@ -129,29 +129,30 @@ var (
 
 	documents = add(
 		qb.MakeQuery(s.Schema, "DocumentsIndex", sgen.QueryKindExec,
-			"INSERT OR IGNORE INTO", s.Documents, qb.ListColShort(
-				s.DocumentsID,
-				s.DocumentsTitle,
-				s.DocumentsSubtitle,
-				s.DocumentsChangeID,
+			"INSERT OR IGNORE INTO", s.DocumentChanges, qb.ListColShort(
+				s.DocumentChangesID,
+				s.DocumentChangesTitle,
+				s.DocumentChangesSubtitle,
+				s.DocumentChangesChangeID,
+				s.DocumentChangesChangeTime,
 			), '\n',
 			"VALUES", qb.List(
-				qb.VarCol(s.DocumentsID),
-				qb.VarCol(s.DocumentsTitle),
-				qb.VarCol(s.DocumentsSubtitle),
-				qb.VarCol(s.DocumentsChangeID),
+				qb.VarCol(s.DocumentChangesID),
+				qb.VarCol(s.DocumentChangesTitle),
+				qb.VarCol(s.DocumentChangesSubtitle),
+				qb.VarCol(s.DocumentChangesChangeID),
+				qb.VarCol(s.DocumentChangesChangeTime),
 			),
 		),
 		qb.MakeQuery(s.Schema, "DocumentsListIndexed", sgen.QueryKindMany,
 			"SELECT", qb.Results(
-				qb.ResultCol(s.DocumentsID),
-				qb.ResultCol(s.DocumentsTitle),
-				qb.ResultCol(s.DocumentsSubtitle),
-				qb.ResultCol(s.DocumentsChangeID),
-				qb.ResultColAlias(s.IPFSBlocksData, "change_data"),
+				qb.ResultCol(s.DocumentChangesID),
+				qb.ResultCol(s.DocumentChangesTitle),
+				qb.ResultCol(s.DocumentChangesSubtitle),
+				qb.ResultCol(s.DocumentChangesChangeID),
+				qb.ResultCol(s.DocumentChangesChangeTime),
 			), '\n',
-			"FROM", s.Documents, '\n',
-			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.DocumentsChangeID, '\n',
+			"FROM", s.DocumentChanges,
 		),
 	)
 
