@@ -104,10 +104,6 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	}, nil
 }
 
-func (api *Server) UpdateDraft(ctx context.Context, in *documents.UpdateDraftRequest) (*documents.Document, error) {
-	return nil, status.Error(codes.Unimplemented, "deprecated")
-}
-
 func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
@@ -590,7 +586,7 @@ func docToProto(d *vcstypes.Document) (*documents.Document, error) {
 		Subtitle:   d.State().Subtitle,
 		Author:     d.State().Author.String(),
 		CreateTime: timestamppb.New(d.State().CreateTime),
-		UpdateTime: timestamppb.New(d.State().UpdateTime), // TODO: implement real update time.
+		UpdateTime: timestamppb.New(d.State().UpdateTime),
 	}
 
 	blockMap := map[string]*documents.BlockNode{}

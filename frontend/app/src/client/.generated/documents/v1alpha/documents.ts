@@ -3,7 +3,7 @@
 /* eslint-disable */
 import Long from "long";
 import { grpc } from "@improbable-eng/grpc-web";
-import _m0 from "protobufjs/minimal";
+import * as _m0 from "protobufjs/minimal";
 import { Empty } from "../../google/protobuf/empty";
 import { BrowserHeaders } from "browser-headers";
 import { Timestamp } from "../../google/protobuf/timestamp";
@@ -28,18 +28,6 @@ export interface DeleteDraftRequest {
 export interface GetDraftRequest {
   /** ID of the document for which draft was previously created. */
   documentId: string;
-}
-
-/** Request to update an existing draft. */
-export interface UpdateDraftRequest {
-  /** Instance of the document to be updated. */
-  document: Document | undefined;
-  /**
-   * The outgoing links of this document. These links will be stored
-   * and indexed for retrieval using ContentGraph service. In the "source"
-   * LinkNode only blockID is required, because the rest can be derived.
-   */
-  links: Link[];
 }
 
 /** Request to update an existing draft using granular operations. */
@@ -183,14 +171,6 @@ export interface Document {
   subtitle: string;
   /** Output only. Author of the document. */
   author: string;
-  /**
-   * JSON-serialized Mintter AST.
-   * It's expected to be the first child of the document root,
-   * which must be of type GroupingContent.
-   *
-   * TODO: remove this when op-based editing is implemented.
-   */
-  content: string;
   /** This is WIP feature for block-aware API. It will supersede the `content` field. */
   children: BlockNode[];
   /** Output only. Time when document was created. */
@@ -442,83 +422,6 @@ export const GetDraftRequest = {
   ): GetDraftRequest {
     const message = createBaseGetDraftRequest();
     message.documentId = object.documentId ?? "";
-    return message;
-  },
-};
-
-function createBaseUpdateDraftRequest(): UpdateDraftRequest {
-  return { document: undefined, links: [] };
-}
-
-export const UpdateDraftRequest = {
-  encode(
-    message: UpdateDraftRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
-    if (message.document !== undefined) {
-      Document.encode(message.document, writer.uint32(10).fork()).ldelim();
-    }
-    for (const v of message.links) {
-      Link.encode(v!, writer.uint32(18).fork()).ldelim();
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateDraftRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUpdateDraftRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.document = Document.decode(reader, reader.uint32());
-          break;
-        case 2:
-          message.links.push(Link.decode(reader, reader.uint32()));
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): UpdateDraftRequest {
-    return {
-      document: isSet(object.document)
-        ? Document.fromJSON(object.document)
-        : undefined,
-      links: Array.isArray(object?.links)
-        ? object.links.map((e: any) => Link.fromJSON(e))
-        : [],
-    };
-  },
-
-  toJSON(message: UpdateDraftRequest): unknown {
-    const obj: any = {};
-    message.document !== undefined &&
-      (obj.document = message.document
-        ? Document.toJSON(message.document)
-        : undefined);
-    if (message.links) {
-      obj.links = message.links.map((e) => (e ? Link.toJSON(e) : undefined));
-    } else {
-      obj.links = [];
-    }
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<UpdateDraftRequest>, I>>(
-    object: I
-  ): UpdateDraftRequest {
-    const message = createBaseUpdateDraftRequest();
-    message.document =
-      object.document !== undefined && object.document !== null
-        ? Document.fromPartial(object.document)
-        : undefined;
-    message.links = object.links?.map((e) => Link.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1498,7 +1401,6 @@ function createBaseDocument(): Document {
     title: "",
     subtitle: "",
     author: "",
-    content: "",
     children: [],
     createTime: undefined,
     updateTime: undefined,
@@ -1522,9 +1424,6 @@ export const Document = {
     }
     if (message.author !== "") {
       writer.uint32(34).string(message.author);
-    }
-    if (message.content !== "") {
-      writer.uint32(42).string(message.content);
     }
     for (const v of message.children) {
       BlockNode.encode(v!, writer.uint32(74).fork()).ldelim();
@@ -1569,9 +1468,6 @@ export const Document = {
         case 4:
           message.author = reader.string();
           break;
-        case 5:
-          message.content = reader.string();
-          break;
         case 9:
           message.children.push(BlockNode.decode(reader, reader.uint32()));
           break;
@@ -1604,7 +1500,6 @@ export const Document = {
       title: isSet(object.title) ? String(object.title) : "",
       subtitle: isSet(object.subtitle) ? String(object.subtitle) : "",
       author: isSet(object.author) ? String(object.author) : "",
-      content: isSet(object.content) ? String(object.content) : "",
       children: Array.isArray(object?.children)
         ? object.children.map((e: any) => BlockNode.fromJSON(e))
         : [],
@@ -1626,7 +1521,6 @@ export const Document = {
     message.title !== undefined && (obj.title = message.title);
     message.subtitle !== undefined && (obj.subtitle = message.subtitle);
     message.author !== undefined && (obj.author = message.author);
-    message.content !== undefined && (obj.content = message.content);
     if (message.children) {
       obj.children = message.children.map((e) =>
         e ? BlockNode.toJSON(e) : undefined
@@ -1649,7 +1543,6 @@ export const Document = {
     message.title = object.title ?? "";
     message.subtitle = object.subtitle ?? "";
     message.author = object.author ?? "";
-    message.content = object.content ?? "";
     message.children =
       object.children?.map((e) => BlockNode.fromPartial(e)) || [];
     message.createTime = object.createTime ?? undefined;
@@ -2288,11 +2181,6 @@ export interface Drafts {
     request: DeepPartial<GetDraftRequest>,
     metadata?: grpc.Metadata
   ): Promise<Document>;
-  /** Updates a draft instance. Does NOT support partial updates. */
-  updateDraft(
-    request: DeepPartial<UpdateDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Document>;
   /** Updates a draft using granular update operations. */
   updateDraftV2(
     request: DeepPartial<UpdateDraftRequestV2>,
@@ -2318,7 +2206,6 @@ export class DraftsClientImpl implements Drafts {
     this.createDraft = this.createDraft.bind(this);
     this.deleteDraft = this.deleteDraft.bind(this);
     this.getDraft = this.getDraft.bind(this);
-    this.updateDraft = this.updateDraft.bind(this);
     this.updateDraftV2 = this.updateDraftV2.bind(this);
     this.listDrafts = this.listDrafts.bind(this);
     this.publishDraft = this.publishDraft.bind(this);
@@ -2353,17 +2240,6 @@ export class DraftsClientImpl implements Drafts {
     return this.rpc.unary(
       DraftsGetDraftDesc,
       GetDraftRequest.fromPartial(request),
-      metadata
-    );
-  }
-
-  updateDraft(
-    request: DeepPartial<UpdateDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Document> {
-    return this.rpc.unary(
-      DraftsUpdateDraftDesc,
-      UpdateDraftRequest.fromPartial(request),
       metadata
     );
   }
@@ -2458,28 +2334,6 @@ export const DraftsGetDraftDesc: UnaryMethodDefinitionish = {
   requestType: {
     serializeBinary() {
       return GetDraftRequest.encode(this).finish();
-    },
-  } as any,
-  responseType: {
-    deserializeBinary(data: Uint8Array) {
-      return {
-        ...Document.decode(data),
-        toObject() {
-          return this;
-        },
-      };
-    },
-  } as any,
-};
-
-export const DraftsUpdateDraftDesc: UnaryMethodDefinitionish = {
-  methodName: "UpdateDraft",
-  service: DraftsDesc,
-  requestStream: false,
-  responseStream: false,
-  requestType: {
-    serializeBinary() {
-      return UpdateDraftRequest.encode(this).finish();
     },
   } as any,
   responseType: {
