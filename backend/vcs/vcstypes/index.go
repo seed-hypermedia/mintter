@@ -170,6 +170,13 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 					return fmt.Errorf("failed to insert link: %w", err)
 				}
 			}
+		case e.BlockMoved.BlockID != "":
+			continue
+		case e.BlockDeleted != "":
+			// TODO: should we remove the links for blocks deleted in future versions?
+			continue
+		default:
+			panic("BUG: unhandled document event type")
 		}
 	}
 
