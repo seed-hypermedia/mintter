@@ -10,6 +10,7 @@ import (
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	format "github.com/ipfs/go-ipld-format"
+	"github.com/klauspost/compress/zstd"
 	"go.uber.org/zap"
 )
 
@@ -25,6 +26,9 @@ type Blockstore struct {
 	db      *sqlitex.Pool
 	cfg     Config
 	queries queries
+
+	encoder *zstd.Encoder
+	decoder *zstd.Decoder
 }
 
 // Config for table and column names.
@@ -33,6 +37,7 @@ type Config struct {
 	ColumnMultihash string
 	ColumnCodec     string
 	ColumnData      string
+	ColumnSize      string
 }
 
 type queries struct {
@@ -51,6 +56,7 @@ func DefaultConfig() Config {
 		ColumnMultihash: "multihash",
 		ColumnCodec:     "codec",
 		ColumnData:      "data",
+		ColumnSize:      "size",
 	}
 }
 
@@ -58,6 +64,16 @@ func DefaultConfig() Config {
 // The corresponding table and columns must be created beforehand.
 // Use DefaultConfig() for default table and column names.
 func New(db *sqlitex.Pool, cfg Config) *Blockstore {
+	enc, err := zstd.NewWriter(nil)
+	if err != nil {
+		panic(err)
+	}
+
+	dec, err := zstd.NewReader(nil)
+	if err != nil {
+		panic(err)
+	}
+
 	return &Blockstore{
 		Log: zap.NewNop(),
 
@@ -65,12 +81,14 @@ func New(db *sqlitex.Pool, cfg Config) *Blockstore {
 		cfg: cfg,
 		queries: queries{
 			Has:       "SELECT 1 FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
-			Get:       "SELECT " + cfg.ColumnData + " FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
-			GetSize:   "SELECT LENGTH(" + cfg.ColumnData + ") FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
-			Put:       "INSERT OR IGNORE INTO " + cfg.TableName + " (" + cfg.ColumnMultihash + ", " + cfg.ColumnCodec + ", " + cfg.ColumnData + ") VALUES (?, ?, ?)",
+			Get:       "SELECT " + cfg.ColumnData + ", " + cfg.ColumnSize + " FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
+			GetSize:   "SELECT " + cfg.ColumnSize + " FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
+			Put:       "INSERT OR IGNORE INTO " + cfg.TableName + " (" + cfg.ColumnMultihash + ", " + cfg.ColumnCodec + ", " + cfg.ColumnData + ", " + cfg.ColumnSize + ") VALUES (?, ?, ?, ?)",
 			Delete:    "DELETE FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
 			SelectAll: "SELECT " + cfg.ColumnMultihash + ", " + cfg.ColumnCodec + " FROM " + cfg.TableName,
 		},
+		encoder: enc,
+		decoder: dec,
 	}
 }
 
@@ -82,7 +100,8 @@ func (b *Blockstore) CreateTables(ctx context.Context) error {
 CREATE TABLE `+b.cfg.TableName+` (
 	`+b.cfg.ColumnMultihash+` BLOB PRIMARY KEY,
 	`+b.cfg.ColumnCodec+` INTEGER,
-	`+b.cfg.ColumnData+` BYTES
+	`+b.cfg.ColumnData+` BYTES,
+	`+b.cfg.ColumnSize+` INTEGER
 ) WITHOUT ROWID;
 `)
 	})
@@ -108,9 +127,16 @@ func (b *Blockstore) Has(ctx context.Context, cid cid.Cid) (bool, error) {
 func (b *Blockstore) Get(ctx context.Context, cid cid.Cid) (blocks.Block, error) {
 	var data []byte
 	var found int
-	err := b.exec(ctx, b.queries.Get, func(stmt *sqlite.Stmt) error {
+	err := b.exec(ctx, b.queries.Get, func(stmt *sqlite.Stmt) (err error) {
 		found++
-		data = stmt.ColumnBytes(0)
+		size := stmt.ColumnInt(1)
+		data = make([]byte, 0, size)
+		compressed := stmt.ColumnBytesUnsafe(0)
+		data, err = b.decoder.DecodeAll(compressed, data)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}, cid.Hash())
 	if err != nil {
@@ -172,7 +198,10 @@ func (b *Blockstore) putBlock(conn *sqlite.Conn, block blocks.Block) error {
 		data  = block.RawData()
 	)
 
-	err := sqlitex.Exec(conn, b.queries.Put, nil, cid.Hash(), codec, data)
+	out := make([]byte, 0, len(data))
+	out = b.encoder.EncodeAll(data, out)
+
+	err := sqlitex.Exec(conn, b.queries.Put, nil, cid.Hash(), codec, out, len(data))
 	if err != nil {
 		return err
 	}

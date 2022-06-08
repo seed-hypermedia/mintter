@@ -460,27 +460,20 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	}
 
 	for _, d := range indexed {
-		pubpb, ok := combined[d.DocumentsID]
+		pubpb, ok := combined[d.DocumentChangesID]
 		if !ok {
 			continue
 		}
 
-		if d.DocumentsTitle != "" {
-			pubpb.Document.Title = d.DocumentsTitle
+		if d.DocumentChangesTitle != "" {
+			pubpb.Document.Title = d.DocumentChangesTitle
 		}
 
-		if d.DocumentsSubtitle != "" {
-			pubpb.Document.Subtitle = d.DocumentsSubtitle
+		if d.DocumentChangesSubtitle != "" {
+			pubpb.Document.Subtitle = d.DocumentChangesSubtitle
 		}
 
-		// TODO: get rid of this. Index required fields of changes in a separate table.
-		// Otherwise the cost of serialization for each list item is going to be huge.
-		var sc vcs.SignedCBOR[vcs.Change]
-		if err := cbornode.DecodeInto(d.ChangeData, &sc); err != nil {
-			return nil, err
-		}
-
-		pubpb.Document.UpdateTime = timestamppb.New(sc.Payload.CreateTime)
+		pubpb.Document.UpdateTime = &timestamppb.Timestamp{Seconds: int64(d.DocumentChangesChangeTime)}
 	}
 
 	out := maps.Values(combined)

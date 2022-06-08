@@ -45,8 +45,10 @@ var migrations = []string{
 		multihash BLOB NOT NULL,
 		-- Multicodec describing the data stored in the block.
 		codec INTEGER NOT NULL,
-		-- Actual content of the block.
+		-- Actual content of the block. Compressed with zstd.
 		data BLOB NOT NULL,
+		-- Byte size of the original uncompressed data.
+		size INTEGER NOT NULL,
 		-- Subjective (locally perceived) time when this block was fetched for the first time.
 		-- Not sure if actually useful, but might become at some point.
 		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
@@ -164,12 +166,13 @@ var migrations = []string{
 		FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
 	);
 
-	-- Stores document-related indexed attributes
-	CREATE TABLE documents (
+	-- Stores document-related indexed attributes.
+	CREATE TABLE document_changes (
 		id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 		title TEXT NOT NULL,
 		subtitle TEXT NOT NULL,
 		change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		change_time INTEGER NOT NULL,
 		PRIMARY KEY (id, change_id),
 		CHECK(id != change_id)
 	) WITHOUT ROWID;

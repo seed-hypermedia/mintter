@@ -35,6 +35,7 @@ func New(db *sqlitex.Pool) *SQLite {
 		ColumnMultihash: string(sqliteschema.IPFSBlocksMultihash.ShortName()),
 		ColumnCodec:     string(sqliteschema.IPFSBlocksCodec.ShortName()),
 		ColumnData:      string(sqliteschema.IPFSBlocksData.ShortName()),
+		ColumnSize:      string(sqliteschema.IPFSBlocksSize.ShortName()),
 	})
 	// bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
 	// if err != nil {

@@ -293,15 +293,16 @@ FROM profiles
 	return out, err
 }
 
-func DocumentsIndex(conn *sqlite.Conn, documentsID int, documentsTitle string, documentsSubtitle string, documentsChangeID int) error {
-	const query = `INSERT OR IGNORE INTO documents (id, title, subtitle, change_id)
-VALUES (:documentsID, :documentsTitle, :documentsSubtitle, :documentsChangeID)`
+func DocumentsIndex(conn *sqlite.Conn, documentChangesID int, documentChangesTitle string, documentChangesSubtitle string, documentChangesChangeID int, documentChangesChangeTime int) error {
+	const query = `INSERT OR IGNORE INTO document_changes (id, title, subtitle, change_id, change_time)
+VALUES (:documentChangesID, :documentChangesTitle, :documentChangesSubtitle, :documentChangesChangeID, :documentChangesChangeTime)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":documentsID", documentsID)
-		stmt.SetText(":documentsTitle", documentsTitle)
-		stmt.SetText(":documentsSubtitle", documentsSubtitle)
-		stmt.SetInt(":documentsChangeID", documentsChangeID)
+		stmt.SetInt(":documentChangesID", documentChangesID)
+		stmt.SetText(":documentChangesTitle", documentChangesTitle)
+		stmt.SetText(":documentChangesSubtitle", documentChangesSubtitle)
+		stmt.SetInt(":documentChangesChangeID", documentChangesChangeID)
+		stmt.SetInt(":documentChangesChangeTime", documentChangesChangeTime)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -317,18 +318,16 @@ VALUES (:documentsID, :documentsTitle, :documentsSubtitle, :documentsChangeID)`
 }
 
 type DocumentsListIndexedResult struct {
-	DocumentsID       int
-	DocumentsTitle    string
-	DocumentsSubtitle string
-	DocumentsChangeID int
-	ChangeData        []byte
+	DocumentChangesID         int
+	DocumentChangesTitle      string
+	DocumentChangesSubtitle   string
+	DocumentChangesChangeID   int
+	DocumentChangesChangeTime int
 }
 
 func DocumentsListIndexed(conn *sqlite.Conn) ([]DocumentsListIndexedResult, error) {
-	const query = `SELECT documents.id, documents.title, documents.subtitle, documents.change_id, ipfs_blocks.data AS change_data
-FROM documents
-JOIN ipfs_blocks ON ipfs_blocks.id = documents.change_id
-`
+	const query = `SELECT document_changes.id, document_changes.title, document_changes.subtitle, document_changes.change_id, document_changes.change_time
+FROM document_changes`
 
 	var out []DocumentsListIndexedResult
 
@@ -337,11 +336,11 @@ JOIN ipfs_blocks ON ipfs_blocks.id = documents.change_id
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, DocumentsListIndexedResult{
-			DocumentsID:       stmt.ColumnInt(0),
-			DocumentsTitle:    stmt.ColumnText(1),
-			DocumentsSubtitle: stmt.ColumnText(2),
-			DocumentsChangeID: stmt.ColumnInt(3),
-			ChangeData:        stmt.ColumnBytes(4),
+			DocumentChangesID:         stmt.ColumnInt(0),
+			DocumentChangesTitle:      stmt.ColumnText(1),
+			DocumentChangesSubtitle:   stmt.ColumnText(2),
+			DocumentChangesChangeID:   stmt.ColumnInt(3),
+			DocumentChangesChangeTime: stmt.ColumnInt(4),
 		})
 
 		return nil
