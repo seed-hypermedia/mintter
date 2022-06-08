@@ -20,9 +20,6 @@ service Drafts {
   // Gets a single draft if exists.
   rpc GetDraft(GetDraftRequest) returns (Document);
 
-  // Updates a draft instance. Does NOT support partial updates.
-  rpc UpdateDraft(UpdateDraftRequest) returns (Document);
-
   // Updates a draft using granular update operations.
   rpc UpdateDraftV2(UpdateDraftRequestV2) returns (google.protobuf.Empty);
 
@@ -51,17 +48,6 @@ message DeleteDraftRequest {
 message GetDraftRequest {
   // ID of the document for which draft was previously created.
   string document_id = 1;
-}
-
-// Request to update an existing draft.
-message UpdateDraftRequest {
-  // Instance of the document to be updated.
-  Document document = 1;
-
-  // The outgoing links of this document. These links will be stored
-  // and indexed for retrieval using ContentGraph service. In the "source"
-  // LinkNode only blockID is required, because the rest can be derived.
-  repeated Link links = 2;
 }
 
 // Request to update an existing draft using granular operations.
@@ -239,13 +225,6 @@ message Document {
 
   // Output only. Author of the document.
   string author = 4;
-
-  // JSON-serialized Mintter AST.
-  // It's expected to be the first child of the document root,
-  // which must be of type GroupingContent.
-  //
-  // TODO: remove this when op-based editing is implemented.
-  string content = 5;
 
   // This is WIP feature for block-aware API. It will supersede the `content` field.
   repeated BlockNode children = 9;

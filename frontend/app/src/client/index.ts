@@ -34,7 +34,6 @@ export {
   ListPublicationsResponse,
   Publication,
   PublishDraftRequest,
-  UpdateDraftRequest,
   UpdateDraftRequestV2,
 } from './.generated/documents/v1alpha/documents'
 export {ConnectionStatus} from './.generated/networking/v1alpha/networking'
@@ -60,7 +59,6 @@ export {
   getDraft,
   listDrafts,
   publishDraft,
-  updateDraft,
   updateDraftV2,
 } from './drafts'
 export {createGrpcClient, MINTTER_API_URL_DEFAULT} from './grpc-client'

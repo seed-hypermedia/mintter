@@ -8,7 +8,6 @@ import {
   ListDraftsRequest,
   ListDraftsResponse,
   PublishDraftRequest,
-  UpdateDraftRequest,
   UpdateDraftRequestV2,
 } from './.generated/documents/v1alpha/documents'
 import type {GrpcClient} from './grpc-client'
@@ -40,22 +39,6 @@ export function deleteDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
   const request = DeleteDraftRequest.fromPartial({documentId})
   return new DraftsClientImpl(rpc).deleteDraft(request)
-}
-
-/**
- *
- * @param draft
- * @param rpc
- * @returns
- */
-export function updateDraft(
-  entry: Document,
-  links: any[] = [],
-  rpc?: GrpcClient,
-): Promise<Document> {
-  rpc ||= createGrpcClient()
-  const request = UpdateDraftRequest.fromPartial({document: entry, links})
-  return new DraftsClientImpl(rpc).updateDraft(request)
 }
 
 /**
