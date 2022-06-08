@@ -187,6 +187,8 @@ var migrations = []string{
 		PRIMARY KEY (target_document_id, target_block_id, target_version, source_document_id, source_block_id, source_change_id)
 	) WITHOUT ROWID;
 
+	CREATE INDEX content_links_by_source ON content_links (source_document_id, source_block_id);
+
 	-- Stores Lightning wallets both externals (imported wallets like bluewallet
 	-- based on lndhub) and internals (based on the LND embedded node).
 	CREATE TABLE wallets (

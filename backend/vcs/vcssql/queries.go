@@ -201,6 +201,11 @@ var (
 			"JOIN ipfs_blocks t on t.id =", s.ContentLinksTargetDocumentID,
 			"WHERE", s.ContentLinksSourceDocumentID, "!= :targetDocumentID",
 		),
+		qb.MakeQuery(s.Schema, "ContentLinksDelete", sgen.QueryKindExec,
+			"DELETE FROM", s.ContentLinks, '\n',
+			"WHERE", s.ContentLinksSourceDocumentID, "=", qb.VarCol(s.ContentLinksSourceDocumentID), '\n',
+			"AND", s.ContentLinksSourceBlockID, "=", qb.VarCol(s.ContentLinksSourceBlockID),
+		),
 	)
 
 	devices = add(

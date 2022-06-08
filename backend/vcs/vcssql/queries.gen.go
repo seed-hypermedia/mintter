@@ -421,6 +421,28 @@ func BacklinksListByTargetDocument(conn *sqlite.Conn, targetDocumentID int, dept
 	return out, err
 }
 
+func ContentLinksDelete(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string) error {
+	const query = `DELETE FROM content_links
+WHERE content_links.source_document_id = :contentLinksSourceDocumentID
+AND content_links.source_block_id = :contentLinksSourceBlockID`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":contentLinksSourceDocumentID", contentLinksSourceDocumentID)
+		stmt.SetText(":contentLinksSourceBlockID", contentLinksSourceBlockID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ContentLinksDelete: %w", err)
+	}
+
+	return err
+}
+
 type DevicesLookupPKResult struct {
 	DevicesID int
 }
