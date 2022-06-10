@@ -1,48 +1,51 @@
-import {
-  Account,
-  ListDraftsResponse,
-  ListPublicationsResponse,
-} from '@app/client'
+import {Publication} from '@app/client'
 import {ListBookmarksResponse} from '@app/client/bookmarks'
+import {blockToApi} from '@app/client/v2/block-to-api'
 import {queryKeys} from '@app/hooks'
-import {MainPageProviders, mountWithAccount} from '@app/test/utils'
+import {mountProviders} from '@app/test/utils'
 import {BookmarksSection} from '@components/library/section-bookmarks'
-import {group, paragraph, statement, text} from '@mintter/mttast'
+import {paragraph, statement, text} from '@mintter/mttast'
 
 describe.only('<BookmarkItem />', () => {
-  let pub = {
+  let pub: Publication = {
     version: 'v1',
-    latestVersion: 'v1',
     document: {
       id: 'doc1',
       title: 'demo title',
       subtitle: 'demo subtitle',
       author: 'author',
-      content: [
-        group([statement({id: 'b1'}, [paragraph([text('Hello World')])])]),
-      ],
+      content: '',
       publishTime: undefined,
       updateTime: undefined,
-      children: [],
+      children: [
+        {
+          block: blockToApi(
+            statement({id: 'b1'}, [paragraph([text('Hello World')])]),
+          ),
+          children: [],
+        },
+      ],
       createTime: undefined,
     },
   }
 
   let copyTextToClipboard: any
   beforeEach(() => {
-    let {client, render} = mountWithAccount()
-
-    client.setQueryData<ListPublicationsResponse>(
-      [queryKeys.GET_PUBLICATION_LIST],
-      {
-        publications: [],
-        nextPageToken: '',
+    let {client, render} = mountProviders({
+      publication: pub,
+      account: {
+        id: 'author',
+        profile: {
+          alias: 'demo',
+          bio: 'demo',
+          email: 'demo@d.com',
+        },
+        devices: {
+          foo: {
+            peerId: 'foo',
+          },
+        },
       },
-    )
-
-    client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
-      documents: [],
-      nextPageToken: '',
     })
 
     client.setQueryData<ListBookmarksResponse>(
@@ -50,34 +53,11 @@ describe.only('<BookmarkItem />', () => {
       ['mtt://doc1/v1/b1'],
     )
 
-    client.setQueryData(
-      [queryKeys.GET_PUBLICATION, pub.document.id, pub.version],
-      pub,
-    )
-
-    client.setQueryData<Account>([queryKeys.GET_ACCOUNT, pub.document.author], {
-      id: 'author',
-      profile: {
-        alias: 'demo',
-        bio: 'demo',
-        email: 'demo@d.com',
-      },
-      devices: {
-        foo: {
-          peerId: 'foo',
-        },
-      },
-    })
-
-    render(
-      <MainPageProviders client={client}>
-        <BookmarksSection />
-      </MainPageProviders>,
-    )
+    render(<BookmarksSection />)
   })
 
   it('default item', () => {
-    cy.get('[data-testid="bookmark-item"]').contains(pub.document.title)
+    cy.get('[data-testid="bookmark-item"]').contains(pub.document!.title)
   })
 
   it.only('should open boomark in main panel', () => {

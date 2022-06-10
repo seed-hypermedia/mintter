@@ -64,7 +64,7 @@ export function createBookmarkListMachine(client: QueryClient) {
       states: {
         loading: {
           invoke: {
-            id: 'bookmarks-fetch',
+            id: 'fetchBookmarkList',
             src: 'fetchBookmarkList',
           },
           on: {

@@ -2,7 +2,7 @@ import {citationMachine, CitationProvider} from '@app/editor/citations'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {MainPageProviders, mountWithAccount} from '@app/test/utils'
+import {MainPageProviders, mountProviders} from '@app/test/utils'
 import {Box} from '@components/box'
 import {group, ol, paragraph, statement, text, ul} from '@mintter/mttast'
 import {useInterpret} from '@xstate/react'
@@ -58,7 +58,7 @@ describe('Editor Element Fixtures', () => {
   values.forEach((fixture) => {
     let {name, value} = fixture
     it(name, () => {
-      const {render, client} = mountWithAccount()
+      const {render, client} = mountProviders()
       render(<TestEditor value={value} client={client} />)
       cy.get('[data-element-type="statement"]')
     })

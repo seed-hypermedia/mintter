@@ -1,5 +1,5 @@
 import {darkTheme, lightTheme, styled} from '@app/stitches.config'
-import {mount} from '@cypress/react'
+import {mountProviders} from '@app/test/utils'
 
 const Color = styled('div', {
   width: '$full',
@@ -23,7 +23,8 @@ const ColorWrapper = styled('div', {
 
 describe('Colors', () => {
   it('Default', () => {
-    mount(
+    const {render} = mountProviders()
+    render(
       <>
         <Colors theme={lightTheme} />
         <Colors theme={darkTheme} />

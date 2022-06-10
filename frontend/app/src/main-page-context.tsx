@@ -1,11 +1,10 @@
-import {getDocumentTitle} from '@app/utils/get-document-title'
 import {useSelector} from '@xstate/react'
 import {InterpreterFrom} from 'xstate'
-import {createMainPageMachine} from './main-page-machine'
+import {createMainPageService} from './main-page-machine'
 import {createInterpreterContext} from './utils/machine-utils'
 const [MainPageProvider, useMainPage, createMainPageSelector] =
   createInterpreterContext<
-    InterpreterFrom<ReturnType<typeof createMainPageMachine>>
+    InterpreterFrom<ReturnType<typeof createMainPageService>>
   >('MainPage')
 
 export {MainPageProvider, useMainPage}
@@ -13,31 +12,6 @@ export {MainPageProvider, useMainPage}
 export const useLibrary = createMainPageSelector(
   (state) => state.context.library,
 )
-
-export var usePageTitle = createMainPageSelector(function pageTitleSelector(
-  state,
-) {
-  var result = ''
-
-  if (state.matches('routes.draftList')) {
-    result = 'Drafts'
-  }
-
-  if (state.matches('routes.publicationList')) {
-    result = 'Publications'
-  }
-
-  if (
-    state.matches('routes.editor.valid') ||
-    state.matches('routes.publication.valid')
-  ) {
-    let value = getDocumentTitle(state.context.document)
-    result = value
-  }
-
-  return result
-  // }, [state.changed])
-})
 
 export function useIsLibraryOpen() {
   let ref = createMainPageSelector((state) => state.context.library)()
@@ -47,11 +21,11 @@ export function useIsLibraryOpen() {
 export let useParams = createMainPageSelector((state) => state.context.params)
 
 export function getRefFromParams(
-  type: 'pub' | 'doc',
+  type: 'pub' | 'draft',
   docId: string,
   version: string | null,
 ): string {
-  if (type == 'doc') {
+  if (type == 'draft') {
     return `draft-${docId}`
   } else if (type == 'pub') {
     return `pub-${docId}-${version}`

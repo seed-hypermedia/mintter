@@ -1,4 +1,3 @@
-import {usePublicationList} from '@app/files-context'
 import {useMainPage} from '@app/main-page-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
@@ -6,10 +5,12 @@ import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {footerButtonsStyles, footerStyles} from '@components/page-footer'
 import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 
 export function PublicationList() {
-  let pubList = usePublicationList()
   let mainService = useMainPage()
+  let [mainState] = useActor(mainService)
+  let pubList = mainState.context.publicationList
   return (
     <>
       <Box css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}>
@@ -18,9 +19,8 @@ export function PublicationList() {
           {pubList.length ? (
             pubList.map((publication) => (
               <LibraryItem
+                fileRef={publication.ref}
                 key={publication.version}
-                publication={publication}
-                href={`/p/${publication.document?.id}/${publication.version}`}
               />
             ))
           ) : (
@@ -38,7 +38,7 @@ export function PublicationList() {
             >
               <Text>No Publications yet.</Text>
               <Button
-                onClick={() => mainService.send('CREATE_NEW_DRAFT')}
+                onClick={() => mainService.send('COMMIT.NEW.DRAFT')}
                 size="1"
                 variant="outlined"
               >
@@ -51,7 +51,7 @@ export function PublicationList() {
       <Box className={footerStyles()}>
         <Box className={footerButtonsStyles()}>
           <Button
-            onClick={() => mainService.send('OPEN_WINDOW')}
+            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
             size="1"
             color="primary"
           >

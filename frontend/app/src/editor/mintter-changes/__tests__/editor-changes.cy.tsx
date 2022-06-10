@@ -1,4 +1,4 @@
-import {Account, Document} from '@app/client'
+import {Document} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {
   ChangeOperation,
@@ -8,7 +8,7 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import EditorPage from '@app/pages/editor'
-import {MainPageProviders, mountWithAccount} from '@app/test/utils'
+import {MainPageProviders, mountProviders} from '@app/test/utils'
 import {
   FlowContent,
   group,
@@ -25,40 +25,30 @@ import {QueryClient} from 'react-query'
 describe('Editor Changes', () => {
   let elClient: QueryClient
   let elRender: any
+  let date = new Date()
+  let elDraft: Document
 
   beforeEach(() => {
-    const {client, render} = mountWithAccount()
-    let date = new Date()
-
-    client.setQueryData<Document>([queryKeys.GET_DRAFT, 'foo'], {
+    let draft: Document = {
       id: 'foo',
       title: '',
       subtitle: '',
-      author: 'authortest',
+      author: '', // this will be oveeriden by the account created inside `mountProviders`
       content: '',
       updateTime: date,
       createTime: date,
       publishTime: date,
       children: [],
-    })
+    }
 
-    client.setQueryData<Account>([queryKeys.GET_ACCOUNT, 'authortest'], {
-      id: 'authortest',
-      profile: {
-        alias: 'demo',
-        email: 'demo@demo.com',
-        bio: 'demo',
-      },
-      devices: {
-        d1: {
-          peerId: 'd1',
-        },
-      },
+    const {client, render} = mountProviders({
+      draft,
     })
 
     changesService.reset()
     elClient = client
     elRender = render
+    elDraft = draft
   })
 
   it.skip('should add title change', () => {
@@ -82,23 +72,10 @@ describe('Editor Changes', () => {
   })
 
   describe('Move Operations', () => {
-    it('add default content block to changes', () => {
+    it.only('add default content block to changes', () => {
       let elEditor = buildEditorHook(plugins, EditorMode.Draft)
-      elRender(
-        <MainPageProviders
-          client={elClient}
-          mainPageContext={{
-            params: {
-              docId: 'foo',
-              version: null,
-              replace: false,
-              blockId: null,
-            },
-          }}
-        >
-          <EditorPage editor={elEditor} shouldAutosave={false} />
-        </MainPageProviders>,
-      )
+
+      elRender(<EditorPage editor={elEditor} shouldAutosave={false} />)
 
       cy.get('[data-testid="editor"]').then(() => {
         expect(changesService.getChanges()).to.have.length(2)
@@ -222,11 +199,6 @@ describe('Editor Changes', () => {
 
         .then(() => {
           let changes = changesService.getChanges()
-          console.log(
-            '🚀 ~ file: editor-changes.cy.tsx ~ line 226 ~ .then ~ changes',
-            changes,
-          )
-
           let newBlock: FlowContent = (elEditor.children[0] as GroupingContent)
             .children[1]
           expect(changes).to.have.length(3)

@@ -47,7 +47,7 @@ export function DiscussionItem({entry}: {entry: GetBlockResult}) {
 
   function onGoToPublication() {
     mainPageService.send({
-      type: 'goToPublication',
+      type: 'GO.TO.PUBLICATION',
       docId: entry.publication.document!.id,
       version: entry.publication.version,
       blockId: 'hola',
@@ -140,7 +140,7 @@ export function DiscussionItem({entry}: {entry: GetBlockResult}) {
           <ContextMenu.Item
             onSelect={() =>
               mainPageService.send({
-                type: 'OPEN_WINDOW',
+                type: 'COMMIT.OPEN.WINDOW',
                 path: `/p/${entry.publication.document?.id}/${entry.publication.version}/${entry.block?.id}`,
               })
             }

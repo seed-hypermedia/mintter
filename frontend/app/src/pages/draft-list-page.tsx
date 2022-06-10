@@ -1,4 +1,3 @@
-import {useDraftList} from '@app/files-context'
 import {useMainPage} from '@app/main-page-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
@@ -6,10 +5,12 @@ import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {footerButtonsStyles, footerStyles} from '@components/page-footer'
 import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 
 export function DraftList() {
-  let drafts = useDraftList()
   let mainService = useMainPage()
+  let [mainState] = useActor(mainService)
+  let drafts = mainState.context.draftList
 
   return (
     <>
@@ -24,11 +25,7 @@ export function DraftList() {
         <ol className={pageListStyle()}>
           {drafts.length ? (
             drafts.map((draft) => (
-              <LibraryItem
-                key={draft.id}
-                draft={draft}
-                href={`/editor/${draft.id}`}
-              />
+              <LibraryItem key={draft.id} fileRef={draft.ref} />
             ))
           ) : (
             <Box
@@ -45,7 +42,7 @@ export function DraftList() {
             >
               <Text>No Publications yet.</Text>
               <Button
-                onClick={() => mainService.send('CREATE_NEW_DRAFT')}
+                onClick={() => mainService.send('COMMIT.NEW.DRAFT')}
                 size="1"
                 variant="outlined"
               >
@@ -58,7 +55,7 @@ export function DraftList() {
       <Box className={footerStyles()}>
         <Box className={footerButtonsStyles()}>
           <Button
-            onClick={() => mainService.send('OPEN_WINDOW')}
+            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
             size="1"
             color="primary"
           >

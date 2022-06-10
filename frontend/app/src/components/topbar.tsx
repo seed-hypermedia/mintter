@@ -1,12 +1,13 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
-import {useAccount} from '@app/hooks'
-import {useMainPage, usePageTitle} from '@app/main-page-context'
+import {useMainPage} from '@app/main-page-context'
+import {CurrentFile, DraftRef, PublicationRef} from '@app/main-page-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
+import {useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
@@ -50,41 +51,30 @@ export const topbarSection = css({
   alignItems: 'center',
 })
 
-export function Topbar({copy = copyTextToClipboard}) {
+type TopbarProps = {
+  copy?: typeof copyTextToClipboard
+  currentFile?: CurrentFile | null
+}
+
+export function Topbar({copy = copyTextToClipboard, currentFile}: TopbarProps) {
   let mainPage = useMainPage()
-  let bookmarkService = useBookmarksService()
   let [mainState] = useActor(mainPage)
-  let title = usePageTitle()
-  // debug(
-  //   'MainState value: ',
-  //   mainState.value,
-  //   mainState.changed,
-  //   mainState.context,
-  // )
-  let {data, isSuccess} = useAccount(mainState.context.document?.author)
+  // debug('CURRENT FILE:', mainState.context.currentFile)
+
+  let title = useMemo(() => {
+    if (mainState.matches('routes.draftList')) {
+      return 'Drafts'
+    }
+
+    if (mainState.matches('routes.publicationList')) {
+      return 'Publications'
+    }
+
+    return ''
+  }, [mainState.value])
 
   function toggleLibrary() {
     mainState.context.library.send('LIBRARY.TOGGLE')
-  }
-
-  async function onCopyReference() {
-    if (mainState.matches('routes.publication')) {
-      await copy(
-        `${MINTTER_LINK_PREFIX}${mainState.context.params.docId}/${mainState.context.params.version}`,
-      )
-      toast.success('Document Reference copied successfully', {
-        position: 'top-center',
-      })
-    }
-  }
-
-  function onBookmark() {
-    if (mainState.matches('routes.publication')) {
-      bookmarkService.send({
-        type: 'BOOKMARK.ADD',
-        url: `${MINTTER_LINK_PREFIX}${mainState.context.params.docId}/${mainState.context.params.version}`,
-      })
-    }
   }
 
   return (
@@ -96,7 +86,7 @@ export function Topbar({copy = copyTextToClipboard}) {
           data-testid="history-back"
           onClick={(e) => {
             e.preventDefault()
-            mainPage.send('goBack')
+            mainPage.send('GO.BACK')
           }}
         >
           <Icon name="ArrowChevronLeft" color="muted" size="2" />
@@ -106,13 +96,88 @@ export function Topbar({copy = copyTextToClipboard}) {
           data-testid="history-forward"
           onClick={(e) => {
             e.preventDefault()
-            mainPage.send('goForward')
+            mainPage.send('GO.FORWARD')
           }}
         >
           <Icon name="ArrowChevronRight" color="muted" size="2" />
         </TopbarButton>
       </Box>
+      {currentFile ? (
+        <FilesData
+          fileRef={currentFile}
+          isPublication={mainState.hasTag('publication')}
+        />
+      ) : (
+        <Text
+          size="3"
+          fontWeight="medium"
+          aria-label="Document Title"
+          data-testid="topbar-title"
+          data-tauri-drag-region
+          css={{flex: 'none'}}
+        >
+          {mainState.matches('routes.draftList')
+            ? 'Drafts'
+            : mainState.matches('routes.publicationList')
+            ? 'Publications'
+            : ''}
+        </Text>
+      )}
+      <Box css={{flex: 1}} />
+      <Box css={{flex: 'none'}}>
+        <TopbarButton
+          css={{
+            flex: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$2',
+            height: '$full',
+          }}
+          onClick={toggleLibrary}
+          data-tauri-drag-region
+        >
+          <Text size="2">Local Node</Text>
+          <Icon name="Sidenav" size="2" />
+        </TopbarButton>
+      </Box>
+    </TopbarStyled>
+  )
+}
 
+function FilesData({
+  fileRef,
+  isPublication = false,
+  copy = copyTextToClipboard,
+}: {
+  copy: typeof copyTextToClipboard
+  fileRef: PublicationRef | DraftRef
+  isPublication: boolean
+}) {
+  let bookmarkService = useBookmarksService()
+  const [state] = useActor(fileRef)
+
+  async function onCopyReference() {
+    if (isPublication) {
+      await copy(
+        `${MINTTER_LINK_PREFIX}${state.context.publication.document.id}/${state.context.publication.version}`,
+      )
+      toast.success('Document Reference copied successfully', {
+        position: 'top-center',
+      })
+    }
+  }
+
+  function onBookmark() {
+    if (isPublication) {
+      bookmarkService.send({
+        type: 'BOOKMARK.ADD',
+        url: `${MINTTER_LINK_PREFIX}${state.context.publication.document.id}/${state.context.publication.version}`,
+      })
+    }
+  }
+
+  return (
+    <>
       <Box
         css={{
           flex: 'none',
@@ -126,37 +191,28 @@ export function Topbar({copy = copyTextToClipboard}) {
       >
         <Text
           size="3"
-          fontWeight="bold"
+          fontWeight="medium"
           aria-label="Document Title"
           data-testid="topbar-title"
           data-tauri-drag-region
           css={{flex: 'none'}}
         >
-          {title}
+          {state.context.title || 'Untitled Draft'}
         </Text>
-        {mainState.hasTag('documentView') ? (
-          <>
-            <Text size="1" color="muted">
-              by
-            </Text>
-            {isSuccess ? (
-              <Text
-                size="1"
-                color="muted"
-                css={{textDecoration: 'underline'}}
-                data-testid="topbar-author"
-              >
-                {data!.profile?.alias}
-              </Text>
-            ) : (
-              <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
-                ...
-              </Text>
-            )}
-          </>
-        ) : null}
+        <Text size="1" color="muted">
+          by
+        </Text>
+
+        <Text
+          size="1"
+          color="muted"
+          css={{textDecoration: 'underline'}}
+          data-testid="topbar-author"
+        >
+          {state.context?.author?.profile?.alias || 'AUTHOR'}
+        </Text>
       </Box>
-      {mainState.hasTag('publication') ? (
+      {isPublication ? (
         <Box>
           <Dropdown.Root>
             <Dropdown.Trigger asChild>
@@ -177,24 +233,6 @@ export function Topbar({copy = copyTextToClipboard}) {
           </Dropdown.Root>
         </Box>
       ) : null}
-
-      <Box css={{flex: 1}} />
-      <Box css={{flex: 'none'}}>
-        <TopbarButton
-          css={{
-            flex: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$2',
-            height: '$full',
-          }}
-          onClick={toggleLibrary}
-          data-tauri-drag-region
-        >
-          <Text size="2">Local Node</Text>
-          <Icon name="Sidenav" size="2" />
-        </TopbarButton>
-      </Box>
-    </TopbarStyled>
+    </>
   )
 }

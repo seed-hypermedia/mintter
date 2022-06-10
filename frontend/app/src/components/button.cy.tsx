@@ -1,5 +1,5 @@
 import {styled} from '@app/stitches.config'
-import {mountWithAccount} from '@app/test/utils'
+import {mountProviders} from '@app/test/utils'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 
@@ -12,7 +12,7 @@ let Wrapper = styled(Box, {
 
 describe('Buttons', () => {
   it('Full Overview', () => {
-    let {render} = mountWithAccount()
+    let {render} = mountProviders()
 
     render(
       <Box>

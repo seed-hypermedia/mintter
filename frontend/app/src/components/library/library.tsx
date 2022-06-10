@@ -71,7 +71,7 @@ export function Library() {
               variant="ghost"
               size="1"
               color="success"
-              onClick={() => service.send('CREATE_NEW_DRAFT')}
+              onClick={() => service.send('COMMIT.NEW.DRAFT')}
               css={{
                 '&:hover': {
                   backgroundColor: '$success-component-bg-normal',
@@ -92,13 +92,13 @@ export function Library() {
           <Separator />
           <LibraryButton
             icon="File"
-            onClick={() => service.send('goToPublicationList')}
+            onClick={() => service.send('GO.TO.PUBLICATIONLIST')}
             title="Files"
             active={mainPageState.matches('routes.publicationList')}
           />
           <LibraryButton
             icon="PencilAdd"
-            onClick={() => service.send('goToDraftList')}
+            onClick={() => service.send('GO.TO.DRAFTLIST')}
             title="Drafts"
             active={mainPageState.matches('routes.draftList')}
           />

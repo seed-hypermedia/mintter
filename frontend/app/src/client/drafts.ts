@@ -1,4 +1,5 @@
-import type {Document} from './.generated/documents/v1alpha/documents'
+import { debug } from '@app/utils/logger'
+import type { Document } from './.generated/documents/v1alpha/documents'
 import {
   CreateDraftRequest,
   DeleteDraftRequest,
@@ -8,10 +9,10 @@ import {
   ListDraftsRequest,
   ListDraftsResponse,
   PublishDraftRequest,
-  UpdateDraftRequestV2,
+  UpdateDraftRequestV2
 } from './.generated/documents/v1alpha/documents'
-import type {GrpcClient} from './grpc-client'
-import {createGrpcClient} from './grpc-client'
+import type { GrpcClient } from './grpc-client'
+import { createGrpcClient } from './grpc-client'
 
 /**
  *
@@ -37,7 +38,8 @@ export async function createDraft(
  */
 export function deleteDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  const request = DeleteDraftRequest.fromPartial({documentId})
+  debug('\n=== deleteDraft', documentId)
+  const request = DeleteDraftRequest.fromPartial({ documentId })
   return new DraftsClientImpl(rpc).deleteDraft(request)
 }
 
@@ -72,7 +74,7 @@ export function listDrafts(
  */
 export function publishDraft(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  const request = PublishDraftRequest.fromPartial({documentId})
+  const request = PublishDraftRequest.fromPartial({ documentId })
   return new DraftsClientImpl(rpc).publishDraft(request)
 }
 
@@ -87,7 +89,7 @@ export async function getDraft(
   rpc?: GrpcClient,
 ): Promise<Document> {
   rpc ||= createGrpcClient()
-  const request = GetDraftRequest.fromPartial({documentId})
+  const request = GetDraftRequest.fromPartial({ documentId })
   const doc = await new DraftsClientImpl(rpc).getDraft(request)
   return doc
 }
