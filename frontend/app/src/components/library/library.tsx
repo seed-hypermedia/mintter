@@ -14,7 +14,7 @@ import {BookmarksSection} from './section-bookmarks'
 import {ContactsSection} from './section-connections'
 
 let libraryStyle = css({
-  transition: 'all 0.25s ease',
+  transition: 'all 0.1s ease',
   backgroundColor: '$base-background-normal',
   overflow: 'hidden',
   borderLeft: '1px solid $colors$base-border-subtle',

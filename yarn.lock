@@ -12135,35 +12135,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:2.75.6":
-  version: 2.75.6
-  resolution: "rollup@npm:2.75.6"
-  dependencies:
-    fsevents: ~2.3.2
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  bin:
-    rollup: dist/bin/rollup
-  checksum: df83c6d43a144a296daf82bed7f12f2dfcc6c495a64245e840d15fd21f2ab8b66bb3423e61c974875b33ccf53fb659d2ed099f272937ecf23af48815277c6cd5
-  languageName: node
-  linkType: hard
-
-"rollup@npm:^2.59.0, rollup@npm:^2.74.1":
-  version: 2.75.5
-  resolution: "rollup@npm:2.75.5"
-  dependencies:
-    fsevents: ~2.3.2
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  bin:
-    rollup: dist/bin/rollup
-  checksum: fa3e61959efbc88cda75315dc22f035489be9dda3ae7d45a3a474f19efc3661ef6f9849486c7ca51e1a3e2aedef91f4e3223e8123bbeaf155913533d071994d1
-  languageName: node
-  linkType: hard
-
-"rollup@npm:^2.59.0, rollup@npm:^2.74.1":
+"rollup@npm:2.75.6, rollup@npm:^2.59.0, rollup@npm:^2.74.1":
   version: 2.75.6
   resolution: "rollup@npm:2.75.6"
   dependencies:
