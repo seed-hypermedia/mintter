@@ -1,21 +1,24 @@
-import {Document, getDraft, getPublication} from '@app/client'
-import {queryKeys} from '@app/hooks'
-import {useMainPage, useRecents} from '@app/main-page-context'
+import {Document} from '@app/client'
+import {useMainPage} from '@app/main-page-context'
+import {DraftRef, PublicationRef} from '@app/main-page-machine'
+import {createPublicationMachine} from '@app/publication-machine'
 import {css} from '@app/stitches.config'
-import {error} from '@app/utils/logger'
 import {StyledItem} from '@components/library/library-item'
 import {Section} from '@components/library/section'
-import {useMachine} from '@xstate/react'
-import {useQueryClient} from 'react-query'
-import {assign, createMachine} from 'xstate'
+import {useActor} from '@xstate/react'
+import {createMachine, StateFrom} from 'xstate'
 
 export function RecentsSection() {
-  let recents = useRecents()
+  let mainService = useMainPage()
+  let [state] = useActor(mainService)
+  let {recents} = state.context
 
   return (
     <Section title="Recents" icon="Clock">
       {recents.length
-        ? recents.map((item) => <RecentItem key={item} item={item} />)
+        ? recents.map((fileRef) => (
+            <RecentItem key={fileRef.id} fileRef={fileRef} />
+          ))
         : null}
     </Section>
   )
@@ -36,102 +39,33 @@ var listItemStyle = css({
   },
 })
 
-function RecentItem({item}: {item: string}) {
-  let client = useQueryClient()
+function RecentItem({fileRef}: {fileRef: PublicationRef | DraftRef}) {
   let mainService = useMainPage()
-  const [, type, docId, version, blockId] = item.split('/')
-  let [state] = useMachine(() =>
-    recentItemMachine.withConfig({
-      services: {
-        fetchDocument: () => (sendBack) => {
-          try {
-            if (type == 'editor') {
-              client
-                .fetchQuery([queryKeys.GET_DRAFT, docId], ({queryKey}) => {
-                  let [, docId] = queryKey
-                  return getDraft(docId)
-                })
-                .then((draft) => {
-                  sendBack({
-                    type: 'REPORT.PUBLICATION.SUCCESS',
-                    document: draft,
-                  })
-                })
-            } else {
-              client
-                .fetchQuery(
-                  [queryKeys.GET_PUBLICATION, docId, version],
-                  ({queryKey}) => {
-                    let [, docId, version] = queryKey
-                    return getPublication(docId, version)
-                  },
-                )
-                .then((publication) => {
-                  if (publication.document) {
-                    sendBack({
-                      type: 'REPORT.PUBLICATION.SUCCESS',
-                      document: publication.document,
-                    })
-                  } else {
-                    sendBack({
-                      type: 'REPORT.PUBLICATION.ERROR',
-                      errorMessage: `Document is not defined in Publication ${docId} with version ${version}`,
-                    })
-                  }
-                })
-            }
-          } catch (err) {
-            sendBack({
-              type: 'REPORT.PUBLICATION.ERROR',
-              errorMessage: `inside catch of fetchDocument: ${JSON.stringify(
-                err,
-              )}`,
-            })
-          }
-        },
-      },
-      actions: {
-        assignDocument: assign({
-          document: (_, event) => event.document,
-        }),
-        assignError: assign({
-          errorMessage: (_, event) => event.errorMessage,
-        }),
-      },
-    }),
-  )
+  let [state] = useActor(fileRef)
 
   function goToDocument(e) {
     e.preventDefault()
-    if (type == 'editor') {
+    if (fileRef.id.startsWith('doc-')) {
       mainService.send({
-        type: 'GO.TO.EDITOR',
-        docId,
+        type: 'GO.TO.DRAFT',
+        docId: state.context.documentId,
       })
     } else {
+      // TODO: here we might be missing the blockId from the URL, not sure where do we need to store this or if we need to.
       mainService.send({
         type: 'GO.TO.PUBLICATION',
-        docId,
-        version,
-        blockId,
+        docId: state.context.documentId,
+        version: (
+          state as StateFrom<ReturnType<typeof createPublicationMachine>>
+        ).context.version,
       })
     }
-  }
-
-  if (state.matches('fetching')) {
-    return <StyledItem>...</StyledItem>
-  }
-
-  if (state.matches('error')) {
-    error(`RECENT ITEM ERROR - ${state.context.errorMessage}`)
-
-    return <StyledItem>ERROR</StyledItem>
   }
 
   return (
     <StyledItem className={listItemStyle()}>
       <a className="title" onClick={goToDocument} href="">
-        {state.context.document?.title || 'Untitled Document'}
+        {state.context.title || 'Untitled Document'}
       </a>
     </StyledItem>
   )

@@ -34,7 +34,7 @@ export type MainPageContext = {
     blockId: string | null
     replace: boolean
   }
-  recents: Array<string>
+  recents: Array<PublicationRef | DraftRef>
   library: ActorRefFrom<typeof libraryMachine>,
   publicationList: Array<PublicationWithRef>
   draftList: Array<DraftWithRef>
@@ -47,7 +47,7 @@ type MainPageEvent =
     type: 'ROUTE.NOT.FOUND'
   }
   | {
-    type: 'GO.TO.EDITOR'
+    type: 'GO.TO.DRAFT'
     docId: string
     replace?: boolean
   }
@@ -216,10 +216,9 @@ export function createMainPageService(
               initial: 'validating',
               states: {
                 validating: {
-                  entry: ['pushToRecents'],
                   always: [
                     {
-                      actions: ['setDraftParams', 'setDraftAsCurrent'],
+                      actions: ['pushToRecents', 'setDraftParams', 'setDraftAsCurrent'],
                       cond: 'isMetaEventDifferent',
                       target: 'valid',
                     },
@@ -230,15 +229,15 @@ export function createMainPageService(
                 },
                 valid: {
                   entry: ['pushDraftRoute'],
-                  // exit: 'pushToRecents',
                   tags: ['documentView', 'draft'],
                   on: {
                     'COMMIT.NEW.PUBLICATION': {
                       target: 'publishing'
                     },
-                    'GO.TO.EDITOR': [
+                    'GO.TO.DRAFT': [
                       {
                         cond: 'isEventDifferent',
+                        actions: ['pushToRecents'],
                         target: 'validating',
                       },
                       {},
@@ -268,10 +267,9 @@ export function createMainPageService(
               initial: 'validating',
               states: {
                 validating: {
-                  entry: ['pushToRecents'],
                   always: [
                     {
-                      actions: ['setPublicationParams', 'setPublicationAsCurrent'],
+                      actions: ['pushToRecents', 'setPublicationParams', 'setPublicationAsCurrent'],
                       cond: 'isMetaEventDifferent',
                       target: 'valid',
                     },
@@ -281,18 +279,18 @@ export function createMainPageService(
                   ],
                 },
                 valid: {
-                  // exit: ['pushToRecents'],
-                  entry: 'pushPublicationRoute',
+                  entry: ['pushPublicationRoute'],
                   tags: ['documentView', 'publication'],
                   on: {
                     'GO.TO.PUBLICATION': [
                       {
                         cond: 'isEventDifferent',
+                        actions: ['pushToRecents'],
                         target: 'validating',
                       },
                       {},
                     ],
-                    'GO.TO.EDITOR': {
+                    'GO.TO.DRAFT': {
                       target: '#main-page.routes.editor',
                     },
                   },
@@ -398,7 +396,7 @@ export function createMainPageService(
             'GO.TO.DRAFTLIST': {
               target: '.draftList',
             },
-            'GO.TO.EDITOR': {
+            'GO.TO.DRAFT': {
               target: '.editor',
             },
             'GO.TO.PUBLICATION': {
@@ -476,16 +474,18 @@ export function createMainPageService(
         openWindow: async (context, event) => {
           openWindow(event.path)
         },
-        pushToRecents: assign((context, event) => {
-          debug('PUSH TO RECENTS', event)
-          let location = window.location.pathname
-
-          let _set = new Set<string>(context.recents)
-          if (_set.has(location)) _set.delete(location)
-          _set.add(window.location.pathname)
-          return {
-            recents: [..._set].reverse(),
+        pushToRecents: assign(({ currentFile, recents }) => {
+          if (currentFile) {
+            let _set = new Set<typeof currentFile>(recents)
+            if (_set.has(currentFile)) _set.delete(currentFile)
+            _set.add(currentFile)
+            return {
+              recents: [..._set].reverse()
+            }
+          } else {
+            return {}
           }
+
         }),
         clearCurrentFile: assign({
           currentFile: (c) => null,
@@ -678,7 +678,7 @@ export function createMainPageService(
             })
             .on<{ docId: string }>('/editor/:docId', (params) => {
               return params
-                ? sendBack({ type: 'GO.TO.EDITOR', ...params })
+                ? sendBack({ type: 'GO.TO.DRAFT', ...params })
                 : sendBack('ROUTE.NOT.FOUND')
             })
             .on<{

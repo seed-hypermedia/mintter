@@ -77,7 +77,7 @@ export function LibraryItem({
         blockId: undefined,
       })
     } else {
-      mainService.send({type: 'GO.TO.EDITOR', docId: state.context.documentId})
+      mainService.send({type: 'GO.TO.DRAFT', docId: state.context.documentId})
     }
   }
 
