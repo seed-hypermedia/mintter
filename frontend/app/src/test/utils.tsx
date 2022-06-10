@@ -1,19 +1,24 @@
 import {AppProviders} from '@app/app-providers'
 import {
   Account,
+  Document,
   Info,
   ListAccountsResponse,
   ListDraftsResponse,
   ListPublicationsResponse,
-  Profile,
+  Publication,
 } from '@app/client'
 import {HoverProvider} from '@app/editor/hover-context'
-import {HoverContext, hoverMachine} from '@app/editor/hover-machine'
+import {HoverContext} from '@app/editor/hover-machine'
 import {FilesProvider} from '@app/files-context'
-import {createFilesMachine} from '@app/files-machine'
+import {createFilesMachine, FilesContext} from '@app/files-machine'
 import {queryKeys} from '@app/hooks'
 import {MainPageProvider} from '@app/main-page-context'
-import {createMainPageMachine, MainPageContext} from '@app/main-page-machine'
+import {
+  createMainPageService,
+  defaultMainPageContext,
+  MainPageContext,
+} from '@app/main-page-machine'
 import {DeepPartial} from '@app/types'
 import {
   BookmarkListContext,
@@ -50,21 +55,28 @@ export const customHookWithReturn =
     return [path, navigate]
   }
 
-export function mountWithAccount({
-  client,
-  accountId,
-  profile,
-}: {
+type MountProvidersProps = {
   client?: QueryClient
-  accountId?: string
-  profile?: Profile
-} = {}) {
-  accountId ||= 'testaccountid'
-  profile ||= {
-    alias: 'demo',
-    email: 'test@demo.com',
-    bio: 'demo bio',
-  }
+  account?: Account
+  accountList?: Array<Account>
+  draftList?: Array<Document>
+  draft?: Document
+  publication?: Publication
+  publicationList?: Array<Publication>
+  initialRoute?: string
+}
+
+export function mountProviders({
+  client,
+  account,
+  accountList,
+  draft,
+  draftList,
+  publication,
+  publicationList,
+  initialRoute,
+}: MountProvidersProps = {}) {
+  let peerId = 'testPeerId'
 
   client ||= new QueryClient({
     defaultOptions: {
@@ -78,33 +90,94 @@ export function mountWithAccount({
     },
   })
 
+  account ||= {
+    id: 'testAccountId',
+    profile: {
+      alias: 'demo',
+      email: 'test@demo.com',
+      bio: 'demo bio',
+    },
+    devices: {
+      [peerId]: {
+        peerId,
+      },
+    },
+  }
+
   client.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], {
-    peerId: 'testpeerid',
-    accountId,
+    peerId,
+    accountId: account.id,
     startTime: undefined,
   })
 
-  client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], {
-    id: accountId,
-    profile,
-    devices: {
-      foo: {
-        peerId: 'foopeerid',
-      },
-    },
+  client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
+
+  accountList ||= []
+
+  client.setQueryData<ListAccountsResponse>([queryKeys.GET_ACCOUNT_LIST], {
+    accounts: accountList,
+    nextPageToken: '',
   })
+
+  draftList ||= draft ? [draft] : []
+
+  client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
+    documents: draftList,
+    nextPageToken: '',
+  })
+
+  if (draft) {
+    client.setQueryData<Document>([queryKeys.GET_DRAFT, draft.id], {
+      ...draft,
+      author: account.id,
+    })
+  }
+
+  publicationList ||= publication ? [publication] : []
+
+  client.setQueryData<ListPublicationsResponse>(
+    [queryKeys.GET_PUBLICATION_LIST],
+    {
+      publications: publicationList,
+      nextPageToken: '',
+    },
+  )
+
+  if (publication) {
+    client.setQueryData<Publication>(
+      [
+        queryKeys.GET_PUBLICATION,
+        publication.document?.id,
+        publication.version,
+      ],
+      {
+        ...publication,
+        document: {
+          ...publication.document,
+          author: account.id,
+        },
+      },
+    )
+  }
 
   client.invalidateQueries = cy.spy()
 
   function render(ui: ReactNode) {
-    return mount(<AppProviders client={client}>{ui}</AppProviders>)
+    return mount(
+      <AppProviders client={client} initialRoute={initialRoute}>
+        {ui}
+      </AppProviders>,
+    )
   }
 
   return {
     client,
+    account,
+    draftList,
+    publicationList,
+    draft,
+    publication,
     render,
-    accountId,
-    profile,
   }
 }
 
@@ -113,7 +186,9 @@ type MainPageProvidersProps = PropsWithChildren<{
   hoverContext?: HoverContext
   bookmarkListContext?: BookmarkListContext
   mainPageContext?: DeepPartial<MainPageContext>
-  mainPageOptions?: MachineOptionsFrom<ReturnType<typeof createMainPageMachine>>
+  mainPageOptions?: MachineOptionsFrom<ReturnType<typeof createMainPageService>>
+  filesContext?: Partial<FilesContext>
+  route?: string
 }>
 
 export function MainPageProviders({
@@ -123,20 +198,27 @@ export function MainPageProviders({
   bookmarkListContext = {bookmarks: [], errorMessage: ''},
   mainPageContext = {params: {}},
   mainPageOptions = {},
+  filesContext = {},
+  route = '/',
 }: MainPageProvidersProps) {
-  let filesService = useInterpret(() => createFilesMachine(client))
+  let filesService = useInterpret(() =>
+    createFilesMachine(client).withContext({
+      publicationList: [],
+      draftList: [],
+      currentFile: null,
+      errorMessage: '',
+      ...filesContext,
+    }),
+  )
   let mainPageService = useInterpret(
-    () => createMainPageMachine(filesService).withContext(mainPageContext),
+    () =>
+      createMainPageService(client, route).withContext(
+        defaultMainPageContext(mainPageContext),
+      ),
     {
       ...mainPageOptions,
       actions: {
         ...mainPageOptions.actions,
-        loadDraft: (_, event) => {
-          filesService.send({type: 'LOAD.DRAFT', ref: event.ref})
-        },
-        loadPublication: (_, event) => {
-          filesService.send({type: 'LOAD.PUBLICATION', ref: event.ref})
-        },
       },
     },
   )

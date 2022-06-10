@@ -1,79 +1,78 @@
-import {HoverProvider} from '@app/editor/hover-context'
-import {hoverMachine} from '@app/editor/hover-machine'
-import {FilesProvider, useFilesService} from '@app/files-context'
-import {createFilesMachine} from '@app/files-machine'
-import {MainPageProvider} from '@app/main-page-context'
-import {createMainPageMachine} from '@app/main-page-machine'
+import {useMainPage} from '@app/main-page-context'
+import {DraftRef, PublicationRef} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
-import {
-  BookmarksProvider,
-  createBookmarkListMachine,
-} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {ScrollArea} from '@components/scroll-area'
 import {Settings} from '@components/settings'
 import {Text} from '@components/text'
 import {Topbar} from '@components/topbar'
-import {useActor, useInterpret} from '@xstate/react'
+import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {QueryClient, useQueryClient} from 'react-query'
 import {DraftList} from './draft-list-page'
 import EditorPage from './editor'
 import Publication from './publication'
 import {PublicationList} from './publication-list-page'
 
-export function MainPage({client: propClient}: {client?: QueryClient}) {
-  // eslint-disable-line
-  const localClient = useQueryClient()
-  const client = propClient ?? localClient
-  const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
-  const hoverService = useInterpret(() => hoverMachine)
-  const filesService = useInterpret(() => createFilesMachine(client))
-  const mainPageService = useInterpret(() =>
-    createMainPageMachine(filesService),
-  )
-
+export function MainPage() {
+  const mainPageService = useMainPage()
   const [state] = useActor(mainPageService)
 
+  if (state.matches('routes.settings')) {
+    return <Settings />
+  }
+
   return (
-    <MainPageProvider value={mainPageService}>
-      <FilesProvider value={filesService}>
-        <HoverProvider value={hoverService}>
-          <BookmarksProvider value={bookmarksService}>
-            {state.matches('routes.settings') ? (
-              <Settings />
-            ) : (
-              <Box className={rootPageStyle()}>
-                {state.hasTag('topbar') ? <Topbar /> : null}
-                {state.hasTag('library') ? <Library /> : null}
-                <MainWindow>
-                  <ErrorBoundary
-                    FallbackComponent={PageError}
-                    onReset={() => {
-                      window.location.reload()
-                    }}
-                  >
-                    {state.hasTag('publication') ? (
-                      <Publication key={state.context.params.docId} />
-                    ) : null}
-                    {state.hasTag('draft') ? (
-                      <EditorPage key={state.context.params.docId} />
-                    ) : null}
-                    {state.matches('routes.home') ? <Placeholder /> : null}
-                    {state.matches('routes.draftList') ? <DraftList /> : null}
-                    {state.matches('routes.publicationList') ? (
-                      <PublicationList />
-                    ) : null}
-                  </ErrorBoundary>
-                </MainWindow>
-              </Box>
-            )}
-          </BookmarksProvider>
-        </HoverProvider>
-      </FilesProvider>
-    </MainPageProvider>
+    <Box className={rootPageStyle()}>
+      {state.hasTag('topbar') ? (
+        <Topbar currentFile={state.context.currentFile} />
+      ) : null}
+      {state.hasTag('library') ? <Library /> : null}
+      <MainWindow>
+        <ErrorBoundary
+          FallbackComponent={PageError}
+          onReset={() => {
+            window.location.reload()
+          }}
+        >
+          {state.context.currentFile ? (
+            state.hasTag('publication') ? (
+              <Publication
+                publicationRef={state.context.currentFile as PublicationRef}
+                key={state.context.params.docId}
+              />
+            ) : state.hasTag('draft') ? (
+              <EditorPage
+                key={state.context.params.docId}
+                draftRef={state.context.currentFile as DraftRef}
+              />
+            ) : null
+          ) : null}
+          {state.matches('routes.home') ? <PublicationList /> : null}
+          {state.matches('routes.draftList') ? <DraftList /> : null}
+          {state.matches('routes.publicationList') ? <PublicationList /> : null}
+        </ErrorBoundary>
+        {/* <Box
+          css={{
+            position: 'absolute',
+            zIndex: '$max',
+            maxWidth: 300,
+
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            color: 'white',
+            top: 100,
+            left: 20,
+            padding: 20,
+            bottom: 100,
+            overflow: 'auto',
+          }}
+        >
+          <pre>{JSON.stringify(state.value, null, 2)}</pre>
+          <pre>{JSON.stringify(state, null, 2)}</pre>
+        </Box> */}
+      </MainWindow>
+    </Box>
   )
 }
 
@@ -106,21 +105,11 @@ let mainWindowStyle = css({
 })
 
 function MainWindow({children}: PropsWithChildren<any>) {
-  let filesService = useFilesService()
-  let [filesState] = useActor(filesService)
-
-  // debug('FILES STATE: ', filesState.context)
-
-  if (filesState.matches('ready')) {
-    return (
-      <Box className={mainWindowStyle()}>
-        <ScrollArea>{children}</ScrollArea>
-        {/* {children} */}
-      </Box>
-    )
-  }
-
-  return null
+  return (
+    <Box className={mainWindowStyle()}>
+      <ScrollArea>{children}</ScrollArea>
+    </Box>
+  )
 }
 
 export function MainWindowShell({children, ...props}: PropsWithChildren<any>) {
@@ -159,7 +148,7 @@ function Placeholder() {
           color: 'transparent',
           textShadow: '2px 2px 3px rgba(255,255,255,0.5)',
           backgroundClip: 'text',
-          backgroundColor: '$base-component-bg-normal',
+          backgroundColor: '$base-component-bg-active',
         }}
       >
         Mintter

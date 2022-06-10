@@ -1,5 +1,5 @@
 import {Account} from '@app/client'
-import {mountWithAccount} from '@app/test/utils'
+import {mountProviders} from '@app/test/utils'
 import {Settings} from '@components/settings'
 import {mockIPC} from '@tauri-apps/api/mocks'
 
@@ -31,18 +31,25 @@ describe('<Settings />', () => {
       },
     } as Account)
 
-    const {render} = mountWithAccount({
-      profile,
-      accountId,
+    const {render, account} = mountProviders({
+      account: {
+        id: accountId,
+        profile,
+        devices: {
+          foo: {
+            peerId: 'foo',
+          },
+        },
+      },
     })
 
     render(<Settings updateAccount={updateAccount} />)
       .get('[data-testid="input-alias"]')
-      .should('have.value', profile.alias)
+      .should('have.value', account.profile?.alias)
       .get('[data-testid="input-email"]')
-      .should('have.value', profile.email)
+      .should('have.value', account.profile?.email)
       .get('[data-testid="input-bio"]')
-      .should('have.value', profile.bio)
+      .should('have.value', account.profile?.bio)
       .get('[data-testid="input-alias"]')
       .type('2')
       .get('[data-testid="submit"]')

@@ -1,20 +1,16 @@
 import {Account, Document} from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {MainPageProviders, mountWithAccount} from '@app/test/utils'
+import {mountProviders} from '@app/test/utils'
 import {Topbar} from '@components/topbar'
 
 describe('Topbar', () => {
   it('default render', () => {
-    let {render, client} = mountWithAccount()
-    render(
-      <MainPageProviders client={client}>
-        <Topbar />
-      </MainPageProviders>,
-    )
+    let {render, client} = mountProviders()
+    render(<Topbar />)
   })
 
   it.skip('render Draft Title and Author', () => {
-    let {render, client} = mountWithAccount()
+    let {render, client} = mountProviders()
     let date = new Date()
 
     let draft: Document = {
@@ -47,11 +43,7 @@ describe('Topbar', () => {
 
     client.setQueryData<Account>([queryKeys.GET_ACCOUNT, 'authortest'], author)
 
-    render(
-      <MainPageProviders client={client} mainPageContext={{document: draft}}>
-        <Topbar />
-      </MainPageProviders>,
-    )
+    render(<Topbar />)
       .get('[data-testid="topbar-title"]')
       .contains(draft.title)
       .get('[data-testid="topbar-author"]')
@@ -59,22 +51,10 @@ describe('Topbar', () => {
   })
 
   it('navigation button should work', () => {
-    let {render, client} = mountWithAccount()
+    let {render} = mountProviders()
     let back = cy.stub()
     let forward = cy.stub()
-    render(
-      <MainPageProviders
-        client={client}
-        mainPageOptions={{
-          actions: {
-            navigateBack: back,
-            navigateForward: forward,
-          },
-        }}
-      >
-        <Topbar />
-      </MainPageProviders>,
-    )
+    render(<Topbar />)
       .get("[data-testid='history-back']")
       .click()
       .get("[data-testid='history-forward']")

@@ -1,7 +1,7 @@
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {usePublicationRef} from '@app/files-context'
-import {useMainPage, useParams} from '@app/main-page-context'
+import {useMainPage} from '@app/main-page-context'
+import {PublicationRef} from '@app/main-page-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
@@ -17,13 +17,27 @@ import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
 import {useActor} from '@xstate/react'
+import {useEffect} from 'react'
 
-export default function Publication() {
-  const publicationService = usePublicationRef()
+type PublicationProps = {
+  publicationRef: PublicationRef
+}
+
+function usePublication(ref: PublicationRef) {
+  useEffect(() => {
+    ref.send('LOAD')
+
+    return () => {
+      ref.send('UNLOAD')
+    }
+  }, [ref])
+
+  return useActor(ref)
+}
+
+export default function Publication({publicationRef}: PublicationProps) {
   const mainPageService = useMainPage()
-  let [state, send] = useActor(publicationService)
-
-  const {docId} = useParams()
+  let [state, send] = usePublication(publicationRef)
 
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
@@ -53,13 +67,16 @@ export default function Publication() {
             css={{padding: '$5', paddingBottom: 0, marginBottom: 50}}
             data-testid="publication-wrapper"
           >
-            <Editor
-              mode={EditorMode.Publication}
-              value={state.context.publication?.document.content}
-              onChange={() => {
-                // noop
-              }}
-            />
+            {state.context.publication?.document?.content && (
+              <Editor
+                editor={state.context.editor}
+                mode={EditorMode.Publication}
+                value={state.context.publication?.document.content}
+                onChange={() => {
+                  // noop
+                }}
+              />
+            )}
           </Box>
           <Box
             css={{
@@ -80,14 +97,14 @@ export default function Publication() {
               {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
               Discussion/Citations
             </Button>
-            <Discussion service={publicationService} />
+            <Discussion service={publicationRef} />
           </Box>
         </>
       )}
       <Box className={footerStyles()}>
         <Box className={footerButtonsStyles()}>
           <Button
-            onClick={() => mainPageService.send('OPEN_WINDOW')}
+            onClick={() => mainPageService.send('COMMIT.OPEN.WINDOW')}
             size="1"
             color="primary"
           >
@@ -102,8 +119,8 @@ export default function Publication() {
                 data-testid="submit-edit"
                 onClick={() =>
                   mainPageService.send({
-                    type: 'EDIT_PUBLICATION',
-                    docId,
+                    type: 'COMMIT.EDIT.PUBLICATION',
+                    docId: state.context.docId,
                   })
                 }
               >

@@ -24,17 +24,13 @@ export function BookmarkItem({
   const mainService = useMainPage()
 
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
-    services: {
-      deleteEntry: () => (sendBack) => {
+    actions: {
+      deleteConfirm: () => {
         bookmarks.send({
           type: 'BOOKMARK.REMOVE',
           url: state.context.url,
         })
-        sendBack('DELETE.SYNC.SUCCESS')
       },
-    },
-    actions: {
-      onSuccess: afterDelete,
     },
   })
 
@@ -46,7 +42,7 @@ export function BookmarkItem({
   function onMainPanel() {
     let [docId, version, blockId] = getIdsfromUrl(state.context.url)
     mainService.send({
-      type: 'goToPublication',
+      type: 'GO.TO.PUBLICATION',
       docId,
       version,
       blockId,

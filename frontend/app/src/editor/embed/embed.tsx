@@ -75,7 +75,7 @@ function RenderEmbed(
 
   function onGoToPublication() {
     mainPageService.send({
-      type: 'goToPublication',
+      type: 'GO.TO.PUBLICATION',
       docId: pubId,
       version,
       blockId,
@@ -84,7 +84,7 @@ function RenderEmbed(
 
   async function onOpenInNewWindow() {
     let path = `p/${pubId}/${version}/${blockId}`
-    mainPageService.send({type: 'OPEN_WINDOW', path})
+    mainPageService.send({type: 'COMMIT.OPEN.WINDOW', path})
   }
 
   return (

@@ -1,54 +1,71 @@
-import {getInfo, getPublication, listCitations, Publication} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {EditorDocument} from '@app/editor/use-editor-draft'
-import {queryKeys} from '@app/hooks'
-import {getBlock, GetBlockResult} from '@app/utils/get-block'
-import {QueryClient} from 'react-query'
-import {assign, createMachine, sendParent} from 'xstate'
+import {
+  Account,
+  getAccount,
+  getInfo,
+  getPublication,
+  listCitations,
+  Publication
+} from '@app/client'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { EditorDocument } from '@app/draft-machine'
+import { queryKeys } from '@app/hooks'
+import { getBlock, GetBlockResult } from '@app/utils/get-block'
+import { QueryClient } from 'react-query'
+import { Editor } from 'slate'
+import { assign, createMachine, sendParent } from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
 }
 
 export type PublicationContext = {
-  docId: string
+  documentId: string
   version: string
-  publication: ClientPublication | null
+  author: Account | null
+  publication: Publication | ClientPublication | null
   errorMessage: string
   canUpdate: boolean
   discussion: Array<GetBlockResult>
+  editor: Editor
+  title: string
 }
 
 export type PublicationEvent =
-  | {type: 'LOAD'}
-  | {type: 'UNLOAD'}
-  | {type: 'PUBLICATION.FETCH.DATA'}
+  | { type: 'LOAD' }
+  | { type: 'UNLOAD' }
+  | { type: 'PUBLICATION.FETCH.DATA' }
   | {
-      type: 'PUBLICATION.REPORT.SUCCESS'
-      publication: ClientPublication
-      canUpdate?: boolean
-    }
-  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
-  | {type: 'DISCUSSION.FETCH.DATA'}
-  | {type: 'DISCUSSION.SHOW'}
-  | {type: 'DISCUSSION.HIDE'}
-  | {type: 'DISCUSSION.TOGGLE'}
-  | {type: 'DISCUSSION.REPORT.SUCCESS'; discussion: Array<GetBlockResult>}
-  | {type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string}
+    type: 'PUBLICATION.REPORT.SUCCESS'
+    publication: ClientPublication
+    canUpdate?: boolean
+  }
+  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
+  | { type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string }
+  | { type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account }
+  | { type: 'DISCUSSION.FETCH.DATA' }
+  | { type: 'DISCUSSION.SHOW' }
+  | { type: 'DISCUSSION.HIDE' }
+  | { type: 'DISCUSSION.TOGGLE' }
+  | { type: 'DISCUSSION.REPORT.SUCCESS'; discussion: Array<GetBlockResult> }
+  | { type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string }
 
 export function createPublicationMachine(
   client: QueryClient,
   publication: Publication,
+  editor: Editor
 ) {
   return createMachine(
     {
       context: {
-        docId: publication.document!.id,
+        title: publication.document!.title,
+        documentId: publication.document!.id,
         version: publication.version,
-        publication: null,
+        editor,
+        publication,
+        author: null,
+        discussion: [],
         errorMessage: '',
         canUpdate: false,
-        discussion: [],
       },
       tsTypes: {} as import('./publication-machine.typegen').Typegen0,
       schema: {
@@ -57,6 +74,15 @@ export function createPublicationMachine(
       },
       type: 'parallel',
       id: 'publication-machine',
+      invoke: {
+        src: 'fetchAuthor',
+        id: 'fetchAuthor',
+      },
+      on: {
+        'PUBLICATION.REPORT.AUTHOR.SUCCESS': {
+          actions: ['assignAuthor'],
+        },
+      },
       states: {
         discussion: {
           initial: 'idle',
@@ -148,7 +174,7 @@ export function createPublicationMachine(
               tags: 'pending',
               on: {
                 'PUBLICATION.REPORT.SUCCESS': {
-                  actions: ['assignPublication', 'assignCanUpdate'],
+                  actions: ['assignPublication', 'assignCanUpdate', 'assignTitle'],
                   target: 'ready',
                 },
                 'PUBLICATION.REPORT.ERROR': {
@@ -170,11 +196,40 @@ export function createPublicationMachine(
     },
     {
       services: {
+        fetchAuthor: (context) => (sendBack) => {
+          let author = context.publication?.document?.author || ''
+          if (author) {
+            client
+              .fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
+                getAccount(author),
+              )
+              .then((author) => {
+                sendBack({
+                  type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS',
+                  author,
+                })
+              })
+              .catch((err) => {
+                sendBack({
+                  type: 'PUBLICATION.REPORT.AUTHOR.ERROR',
+                  errorMessage: `fetchAuthor ERROR: ${JSON.stringify(err)}`,
+                })
+              })
+          }
+        },
         fetchPublicationData: (context) => (sendBack) => {
           Promise.all([
             client.fetchQuery(
-              [queryKeys.GET_PUBLICATION, context.docId, context.version],
-              () => getPublication(context.docId, context.version),
+              [
+                queryKeys.GET_PUBLICATION,
+                context.publication?.document?.id,
+                context.publication?.version,
+              ],
+              () =>
+                getPublication(
+                  context.publication!.document!.id!,
+                  context.publication!.version,
+                ),
             ),
             client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
           ])
@@ -205,7 +260,7 @@ export function createPublicationMachine(
                 } else {
                   sendBack({
                     type: 'PUBLICATION.REPORT.ERROR',
-                    errorMessage: `error, fetching publication ${context.docId}`,
+                    errorMessage: `error, fetching publication ${context.publication?.document?.id}`,
                   })
                 }
               }
@@ -218,16 +273,16 @@ export function createPublicationMachine(
             })
         },
         fetchDiscussionData: (context) => (sendBack) => {
-          if (context.docId) {
+          if (context.publication?.document?.id) {
             client
               .fetchQuery(
                 [
                   queryKeys.GET_PUBLICATION_DISCUSSION,
-                  context.docId,
-                  context.version,
+                  context.publication.document.id,
+                  context.publication.version,
                 ],
                 () => {
-                  return listCitations(context.docId)
+                  return listCitations(context.publication!.document!.id!)
                 },
               )
               .then((response) => {
@@ -235,7 +290,7 @@ export function createPublicationMachine(
 
                 // This is importat to make citations accessible to Editor elements
 
-                Promise.all(links.map(({source}) => getBlock(source)))
+                Promise.all(links.map(({ source }) => getBlock(source)))
                   //@ts-ignore
                   .then((result: Array<GetBlockResult>) => {
                     sendBack({
@@ -262,6 +317,12 @@ export function createPublicationMachine(
         isCached: () => false,
       },
       actions: {
+        assignTitle: assign({
+          title: (_, event) => event.publication.document.title || 'Untitled Document'
+        }),
+        assignAuthor: assign({
+          author: (_, event) => event.author,
+        }),
         assignPublication: assign({
           publication: (_, event) => event.publication,
         }),
@@ -275,7 +336,7 @@ export function createPublicationMachine(
           errorMessage: (_, event) => event.errorMessage,
         }),
         clearDiscussion: assign({
-          discussion: (context) => null,
+          discussion: (context) => [],
         }),
         clearError: assign({
           errorMessage: (context) => '',

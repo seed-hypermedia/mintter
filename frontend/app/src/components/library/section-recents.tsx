@@ -105,12 +105,12 @@ function RecentItem({item}: {item: string}) {
     e.preventDefault()
     if (type == 'editor') {
       mainService.send({
-        type: 'goToEditor',
+        type: 'GO.TO.EDITOR',
         docId,
       })
     } else {
       mainService.send({
-        type: 'goToPublication',
+        type: 'GO.TO.PUBLICATION',
         docId,
         version,
         blockId,

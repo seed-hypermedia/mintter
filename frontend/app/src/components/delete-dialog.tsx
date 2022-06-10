@@ -1,7 +1,8 @@
-import {debug, error} from '@app/utils/logger'
+import {error} from '@app/utils/logger'
 import {Alert} from '@components/alert'
 import {overlayStyles} from '@components/dialog-styles'
 import {MouseEvent, PropsWithChildren} from 'react'
+import {debug} from 'tauri-plugin-log-api'
 import {createMachine, StateFrom} from 'xstate'
 
 export type DeleteDialogProps = PropsWithChildren<{
@@ -22,8 +23,6 @@ export function DeleteDialog({
     <Alert.Root
       open={state.matches('opened')}
       onOpenChange={(newVal: boolean) => {
-        debug('onOpenChange', newVal)
-
         newVal ? send('DELETE.DIALOG.OPEN') : send('DELETE.DIALOG.CANCEL')
       }}
     >
@@ -102,7 +101,8 @@ export const deleteDialogMachine = createMachine(
           idle: {
             on: {
               'DELETE.DIALOG.CONFIRM': {
-                target: 'deleting',
+                actions: ['deleteConfirm'],
+                target: 'dismiss',
               },
               'DELETE.DIALOG.CANCEL': {
                 target: 'dismiss',
@@ -112,36 +112,12 @@ export const deleteDialogMachine = createMachine(
               },
             },
           },
-          deleting: {
-            invoke: {
-              id: 'deleteEntry',
-              src: 'deleteEntry',
-              onDone: [
-                {
-                  actions: 'onSuccess',
-                  target: 'dismiss',
-                },
-              ],
-              onError: [
-                {
-                  target: 'errored',
-                  actions: ['onError'],
-                },
-              ],
-            },
-            on: {
-              'DELETE.SYNC.SUCCESS': [
-                {
-                  actions: 'onSuccess',
-                  target: '#closed',
-                },
-              ],
-            },
-          },
+
           errored: {
             on: {
               'DELETE.DIALOG.CONFIRM': {
-                target: 'deleting',
+                actions: ['deleteConfirm'],
+                target: 'dismiss',
               },
               'DELETE.DIALOG.CANCEL': {
                 target: 'dismiss',
@@ -149,21 +125,20 @@ export const deleteDialogMachine = createMachine(
             },
           },
           dismiss: {
-            entry: () => {
-              debug('enter in dismiss!')
-            },
             tags: ['dismiss'],
             after: {
               200: {
+                actions: [
+                  (context, event) => {
+                    debug('SEND TO CLOSED')
+                  },
+                ],
                 target: '#closed',
               },
             },
           },
         },
         onDone: {
-          actions: () => {
-            debug('ONDONE DELETE MACHINE')
-          },
           target: 'closed',
         },
       },

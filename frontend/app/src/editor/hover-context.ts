@@ -1,9 +1,11 @@
+import {createHoverService} from '@app/editor/hover-machine'
 import {InterpreterFrom} from 'xstate'
 import {createInterpreterContext} from '../utils/machine-utils'
-import {hoverMachine} from './hover-machine'
 
 const [HoverProvider, useHover, createHoverSelector] =
-  createInterpreterContext<InterpreterFrom<typeof hoverMachine>>('Hover')
+  createInterpreterContext<
+    InterpreterFrom<ReturnType<typeof createHoverService>>
+  >('Hover')
 
 export {HoverProvider, useHover}
 

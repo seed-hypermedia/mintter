@@ -1,6 +1,7 @@
 import {Account, connect, ConnectionStatus, getPeerInfo} from '@app/client'
 import {useListAccounts} from '@app/hooks'
 import {CSS, keyframes, styled} from '@app/stitches.config'
+import {error as debugError} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {StyledItem} from '@components/library/library-item'
 import * as HoverCard from '@radix-ui/react-hover-card'
@@ -22,8 +23,8 @@ export function ContactsSection() {
   let title = `Contacts (${data.length})`
 
   if (status == 'error') {
-    error('Contacts error: ', error)
-    return <Text>ERROR</Text>
+    debugError('Contacts error: ', data, JSON.stringify(error))
+    return <Text>Contacts ERROR</Text>
   }
 
   return (

@@ -1,14 +1,12 @@
 import {
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
-  Document,
-  Publication,
 } from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useMainPage, useParams} from '@app/main-page-context'
+import {DraftRef, PublicationRef} from '@app/main-page-machine'
 import {css, styled} from '@app/stitches.config'
-import {copyTextToClipboard as defaultCopyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {getDocumentTitle} from '@app/utils/get-document-title'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
@@ -17,12 +15,10 @@ import {PropsWithChildren, useMemo} from 'react'
 import toast from 'react-hot-toast'
 
 export type LibraryItemProps = {
-  publication?: Publication
-  draft?: Document
-  href: string
+  fileRef: PublicationRef | DraftRef
   deleteDraft?: typeof defaultDeleteDraft
   deletePublication?: typeof defaultDeletePublication
-  copyTextToClipboard?: typeof defaultCopyTextToClipboard
+  copy?: typeof copyTextToClipboard
 }
 
 let hoverIconStyle = css({
@@ -30,37 +26,40 @@ let hoverIconStyle = css({
 })
 
 export function LibraryItem({
-  publication,
-  draft,
-  href,
-  deleteDraft = defaultDeleteDraft,
-  deletePublication = defaultDeletePublication,
-  copyTextToClipboard = defaultCopyTextToClipboard,
+  fileRef,
+  copy = copyTextToClipboard,
 }: PropsWithChildren<LibraryItemProps>) {
   const mainService = useMainPage()
   const [mainState] = useActor(mainService)
+  const [state] = useActor(fileRef)
   let params = useParams()
+  let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [])
   let match = useMemo(() => {
-    let docId = publication ? publication.document?.id : draft?.id
-    return params.docId == docId && params.version == publication?.version
+    if (isPublication) {
+      return (
+        state.context.documentId == params.docId &&
+        state.context.version == params.version
+      )
+    } else {
+      return state.context.documentId == params.docId
+    }
   }, [params.docId, params.version])
 
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
-    services: {
-      deleteEntry: () => () =>
-        publication
-          ? deletePublication(publication.document?.id as string)
-          : deleteDraft(draft?.id as string),
-    },
     actions: {
-      onSuccess: afterDelete,
+      deleteConfirm: () => {
+        mainService.send({
+          type: 'COMMIT.DELETE.FILE',
+          ref: state.context.documentId,
+        })
+      },
     },
   })
 
   async function onCopy() {
-    if (publication) {
+    if (isPublication) {
       await copyTextToClipboard(
-        `mtt://${publication.document?.id}/${publication.version}`,
+        `mtt://${state.context.documentId}/${state.context.version}`,
       )
       toast.success('Document ID copied successfully', {position: 'top-center'})
     }
@@ -69,36 +68,29 @@ export function LibraryItem({
   function goToItem() {
     if (match) return
 
-    if (publication) {
+    if (isPublication) {
       mainService.send({
-        type: 'goToPublication',
-        docId: publication.document!.id,
-        version: publication.version,
+        type: 'GO.TO.PUBLICATION',
+
+        docId: state.context.documentId,
+        version: state.context.version,
         blockId: undefined,
       })
     } else {
-      mainService.send({type: 'goToEditor', docId: draft!.id})
+      mainService.send({type: 'GO.TO.EDITOR', docId: state.context.documentId})
     }
-  }
-
-  function afterDelete() {
-    if (match) {
-      mainService.send('goToHome')
-    }
-    mainService.send('RECONCILE')
   }
 
   async function onOpenInNewWindow() {
-    mainService.send({type: 'OPEN_WINDOW', path: href})
+    mainService.send({
+      type: 'COMMIT.OPEN.WINDOW',
+      path: isPublication
+        ? `/p/${state.context.documentId}/${state.context.version}`
+        : `/editor/${state.context.documentId}`,
+    })
   }
 
-  let title = match
-    ? getDocumentTitle(mainState.context.document)
-    : publication
-    ? publication.document?.title
-    : draft && draft.title
-    ? draft.title
-    : 'Untitled Document'
+  let title = state.context.title || 'Untitled Document'
 
   return (
     <StyledItem active={match} data-testid="library-item">
@@ -130,7 +122,7 @@ export function LibraryItem({
         >
           <Dropdown.Item
             data-testid="copy-item"
-            disabled={!!draft}
+            disabled={!isPublication}
             onSelect={onCopy}
           >
             <Icon name="Copy" size="1" />

@@ -5,13 +5,13 @@ import {
   Publication,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {MainPageProviders, mountWithAccount} from '@app/test/utils'
+import {mountProviders} from '@app/test/utils'
 import {LibraryItem} from '@components/library/library-item'
 import Sinon from 'cypress/types/sinon'
 
 describe('<LibraryItem />', () => {
   beforeEach(() => {
-    let {client, render} = mountWithAccount()
+    let {client, render} = mountProviders()
 
     client.setQueryData<ListPublicationsResponse>(
       [queryKeys.GET_PUBLICATION_LIST],
@@ -26,11 +26,7 @@ describe('<LibraryItem />', () => {
       nextPageToken: '',
     })
 
-    render(
-      <MainPageProviders client={client}>
-        <LibraryItem href="/demo" />
-      </MainPageProviders>,
-    )
+    render(<LibraryItem href="/demo" />)
   })
   it('default item', () => {
     cy.get('[data-testid="library-item"]').contains('Untitled Document')
@@ -62,33 +58,18 @@ describe('<LibraryItem /> with Draft', () => {
   let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
 
   beforeEach(() => {
-    let {client, render} = mountWithAccount()
-
-    client.setQueryData<ListPublicationsResponse>(
-      [queryKeys.GET_PUBLICATION_LIST],
-      {
-        publications: [],
-        nextPageToken: '',
-      },
-    )
-
-    client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
-      documents: [],
-      nextPageToken: '',
-    })
+    let {client, render} = mountProviders()
 
     deleteDraft = cy.spy()
     copyTextToClipboard = cy.stub()
 
     render(
-      <MainPageProviders client={client}>
-        <LibraryItem
-          href={`/editor/${draft.id}`}
-          deleteDraft={deleteDraft}
-          copyTextToClipboard={copyTextToClipboard}
-          draft={draft}
-        />
-      </MainPageProviders>,
+      <LibraryItem
+        href={`/editor/${draft.id}`}
+        deleteDraft={deleteDraft}
+        copyTextToClipboard={copyTextToClipboard}
+        draft={draft}
+      />,
     )
   })
 
@@ -146,33 +127,18 @@ describe('<LibraryItem /> with Publication', () => {
   let copyTextToClipboard: any
 
   beforeEach(() => {
-    let {client, render} = mountWithAccount()
-
-    client.setQueryData<ListPublicationsResponse>(
-      [queryKeys.GET_PUBLICATION_LIST],
-      {
-        publications: [],
-        nextPageToken: '',
-      },
-    )
-
-    client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
-      documents: [],
-      nextPageToken: '',
-    })
+    let {client, render} = mountProviders()
 
     deletePublication = cy.spy()
     copyTextToClipboard = cy.stub().resolves()
 
     render(
-      <MainPageProviders client={client}>
-        <LibraryItem
-          href={`/p/${publication.document?.id}/${publication.version}`}
-          deletePublication={deletePublication}
-          copyTextToClipboard={copyTextToClipboard}
-          publication={publication}
-        />
-      </MainPageProviders>,
+      <LibraryItem
+        href={`/p/${publication.document?.id}/${publication.version}`}
+        deletePublication={deletePublication}
+        copyTextToClipboard={copyTextToClipboard}
+        publication={publication}
+      />,
     )
   })
 
