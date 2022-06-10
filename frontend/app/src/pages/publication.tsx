@@ -102,14 +102,18 @@ export default function Publication({publicationRef}: PublicationProps) {
         </>
       )}
       <Box className={footerStyles()}>
+        <Box className={footerMetadataStyles()}>
+          <Text size="1" color="muted">
+            Created on:{' '}
+            {getDateFormat(state.context.publication?.document, 'createTime')}
+          </Text>
+          <PageFooterSeparator />
+          <Text size="1" color="muted">
+            Last modified:{' '}
+            {getDateFormat(state.context.publication?.document, 'updateTime')}
+          </Text>
+        </Box>
         <Box className={footerButtonsStyles()}>
-          <Button
-            onClick={() => mainPageService.send('COMMIT.OPEN.WINDOW')}
-            size="1"
-            color="primary"
-          >
-            New Document
-          </Button>
           {state.context.canUpdate ? (
             <>
               <Button
@@ -120,7 +124,7 @@ export default function Publication({publicationRef}: PublicationProps) {
                 onClick={() =>
                   mainPageService.send({
                     type: 'COMMIT.EDIT.PUBLICATION',
-                    docId: state.context.docId,
+                    docId: state.context.documentId,
                   })
                 }
               >
@@ -130,8 +134,8 @@ export default function Publication({publicationRef}: PublicationProps) {
           ) : (
             <>
               <TippingModal
-                publicationId={state.context.publication?.document.id}
-                accountId={state.context.publication?.document.author}
+                publicationId={state.context.documentId}
+                accountId={state.context.author?.id}
                 visible={!state.context.canUpdate}
               />
               <Button
@@ -158,17 +162,13 @@ export default function Publication({publicationRef}: PublicationProps) {
               </Button>
             </>
           )}
-        </Box>
-        <Box className={footerMetadataStyles()}>
-          <Text size="1" color="muted">
-            Created on:{' '}
-            {getDateFormat(state.context.publication?.document, 'createTime')}
-          </Text>
-          <PageFooterSeparator />
-          <Text size="1" color="muted">
-            Last modified:{' '}
-            {getDateFormat(state.context.publication?.document, 'updateTime')}
-          </Text>
+          <Button
+            onClick={() => mainPageService.send('COMMIT.OPEN.WINDOW')}
+            size="1"
+            color="primary"
+          >
+            New Document
+          </Button>
         </Box>
       </Box>
     </>

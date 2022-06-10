@@ -87,6 +87,17 @@ export default function EditorPage({draftRef}: EditorPageProps) {
           )}
         </Box>
         <Box className={footerStyles()}>
+          <Box className={footerMetadataStyles()}>
+            <Text size="1" color="muted">
+              Created on: {getDateFormat(context.draft, 'createTime')}
+            </Text>
+            <PageFooterSeparator />
+            <Text size="1" color="muted">
+              Last modified: {getDateFormat(context.draft, 'updateTime')}
+            </Text>
+            <PageFooterSeparator />
+            <EditorStatus state={state} />
+          </Box>
           <Box className={footerButtonsStyles()}>
             <Button
               color="success"
@@ -99,17 +110,6 @@ export default function EditorPage({draftRef}: EditorPageProps) {
             >
               Publish
             </Button>
-          </Box>
-          <Box className={footerMetadataStyles()}>
-            <Text size="1" color="muted">
-              Created on: {getDateFormat(context.draft, 'createTime')}
-            </Text>
-            <PageFooterSeparator />
-            <Text size="1" color="muted">
-              Last modified: {getDateFormat(context.draft, 'updateTime')}
-            </Text>
-            <PageFooterSeparator />
-            <EditorStatus state={state} />
           </Box>
         </Box>
       </ErrorBoundary>
