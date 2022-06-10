@@ -11,14 +11,17 @@ export const footerStyles = css({
   paddingHorizontal: '$5',
 })
 export const footerMetadataStyles = css({
-  flex: 'none',
+  flex: 1,
   padding: '$5',
   display: 'flex',
   alignItems: 'center',
+  overflow: 'hidden',
+  width: '$full',
 })
 
 export const footerButtonsStyles = css({
   display: 'flex',
+  flex: 'none',
   gap: '$5',
   padding: '$5',
   paddingRight: 0,

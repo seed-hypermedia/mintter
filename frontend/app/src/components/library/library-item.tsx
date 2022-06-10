@@ -1,9 +1,9 @@
+import {mainService as defaultMainService} from '@app/app-providers'
 import {
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
 } from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {useMainPage, useParams} from '@app/main-page-context'
 import {DraftRef, PublicationRef} from '@app/main-page-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -19,6 +19,7 @@ export type LibraryItemProps = {
   deleteDraft?: typeof defaultDeleteDraft
   deletePublication?: typeof defaultDeletePublication
   copy?: typeof copyTextToClipboard
+  mainService?: typeof defaultMainService
 }
 
 let hoverIconStyle = css({
@@ -28,11 +29,12 @@ let hoverIconStyle = css({
 export function LibraryItem({
   fileRef,
   copy = copyTextToClipboard,
+  mainService = defaultMainService,
+  deleteDraft,
 }: PropsWithChildren<LibraryItemProps>) {
-  const mainService = useMainPage()
-  const [mainState] = useActor(mainService)
   const [state] = useActor(fileRef)
-  let params = useParams()
+  const [mainState] = useActor(mainService)
+  let {params} = mainState.context
   let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [])
   let match = useMemo(() => {
     if (isPublication) {
@@ -48,19 +50,23 @@ export function LibraryItem({
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     actions: {
       deleteConfirm: () => {
-        mainService.send({
-          type: 'COMMIT.DELETE.FILE',
-          ref: state.context.documentId,
-        })
+        console.log('DELETE!', deleteDraft)
+
+        if (deleteDraft) {
+          deleteDraft(state.context.documentId)
+        } else {
+          mainService.send({
+            type: 'COMMIT.DELETE.FILE',
+            ref: state.context.documentId,
+          })
+        }
       },
     },
   })
 
   async function onCopy() {
     if (isPublication) {
-      await copyTextToClipboard(
-        `mtt://${state.context.documentId}/${state.context.version}`,
-      )
+      await copy(`mtt://${state.context.documentId}/${state.context.version}`)
       toast.success('Document ID copied successfully', {position: 'top-center'})
     }
   }
@@ -92,9 +98,17 @@ export function LibraryItem({
 
   let title = state.context.title || 'Untitled Document'
 
+  console.log('ISPUBLICATION', isPublication, fileRef.id)
+
   return (
     <StyledItem active={match} data-testid="library-item">
-      <Text size="2" className="title" color="primary" onClick={goToItem}>
+      <Text
+        size="2"
+        className="title"
+        color="primary"
+        onClick={goToItem}
+        data-testid="library-item-title"
+      >
         {title}
       </Text>
 
@@ -111,7 +125,7 @@ export function LibraryItem({
               name="MoreHorizontal"
               size="1"
               color="muted"
-              className={match ? hoverIconStyle : null}
+              className={match ? hoverIconStyle() : ''}
             />
           </ElementDropdown>
         </Dropdown.Trigger>

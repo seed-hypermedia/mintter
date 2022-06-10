@@ -1,11 +1,10 @@
+import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-
 import {citationMachine, CitationProvider} from '@app/editor/citations'
 import {ContextMenu} from '@app/editor/context-menu'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useAccount} from '@app/hooks'
-import {useMainPage} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {GetBlockResult} from '@app/utils/get-block'
 import {getDateFormat} from '@app/utils/get-format-date'
@@ -16,10 +15,18 @@ import {Text} from '@components/text'
 import {useInterpret} from '@xstate/react'
 import toast from 'react-hot-toast'
 
-export function DiscussionItem({entry}: {entry: GetBlockResult}) {
+type DiscussionItemProps = {
+  entry: GetBlockResult
+  mainService?: typeof defaultMainService
+}
+
+export function DiscussionItem({
+  entry,
+  mainService = defaultMainService,
+}: DiscussionItemProps) {
   const {data: author} = useAccount(entry.publication.document?.author)
   const bookmarkService = useBookmarksService()
-  const mainPageService = useMainPage()
+
   const citationService = useInterpret(() =>
     citationMachine.withContext({
       link: entry,
@@ -46,7 +53,7 @@ export function DiscussionItem({entry}: {entry: GetBlockResult}) {
   }
 
   function onGoToPublication() {
-    mainPageService.send({
+    mainService.send({
       type: 'GO.TO.PUBLICATION',
       docId: entry.publication.document!.id,
       version: entry.publication.version,
@@ -139,7 +146,7 @@ export function DiscussionItem({entry}: {entry: GetBlockResult}) {
           </ContextMenu.Item>
           <ContextMenu.Item
             onSelect={() =>
-              mainPageService.send({
+              mainService.send({
                 type: 'COMMIT.OPEN.WINDOW',
                 path: `/p/${entry.publication.document?.id}/${entry.publication.version}/${entry.block?.id}`,
               })

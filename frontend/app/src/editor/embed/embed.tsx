@@ -1,12 +1,11 @@
-import {useMainPage} from '@app/main-page-context'
+import {mainService as defaultMainService} from '@app/app-providers'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {error} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
-import type {Embed as EmbedType} from '@mintter/mttast'
-import {isEmbed} from '@mintter/mttast'
+import {Embed as EmbedType, isEmbed} from '@mintter/mttast'
 import {ForwardedRef, forwardRef} from 'react'
 import toast from 'react-hot-toast'
 import {RenderElementProps} from 'slate-react'
@@ -49,14 +48,16 @@ export const createEmbedPlugin = (): EditorPlugin => ({
     },
 })
 
-type EmbedProps = Omit<RenderElementProps, 'element'> & {element: EmbedType}
+type EmbedProps = Omit<RenderElementProps, 'element'> & {
+  element: EmbedType
+  mainService?: typeof defaultMainService
+}
 
 function RenderEmbed(
-  {element, attributes, children}: EmbedProps,
+  {element, attributes, children, mainService = defaultMainService}: EmbedProps,
   ref: ForwardedRef<HTMLQuoteElement>,
 ) {
   const bookmarksService = useBookmarksService()
-  const mainPageService = useMainPage()
   const [pubId, version, blockId] = getIdsfromUrl(element.url)
 
   function addBookmark() {
@@ -74,7 +75,7 @@ function RenderEmbed(
   }
 
   function onGoToPublication() {
-    mainPageService.send({
+    mainService.send({
       type: 'GO.TO.PUBLICATION',
       docId: pubId,
       version,
@@ -84,7 +85,7 @@ function RenderEmbed(
 
   async function onOpenInNewWindow() {
     let path = `p/${pubId}/${version}/${blockId}`
-    mainPageService.send({type: 'COMMIT.OPEN.WINDOW', path})
+    mainService.send({type: 'COMMIT.OPEN.WINDOW', path})
   }
 
   return (

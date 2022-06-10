@@ -1,10 +1,13 @@
+import {
+  mainService as defaultMainService,
+  mainService,
+} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {BlockCitations} from '@app/editor/block-citations'
 import {BlockTools} from '@app/editor/block-tools'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {useParams} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
@@ -24,11 +27,12 @@ export function BlockWrapper({
 }: Omit<RenderElementProps, 'element'> & {
   mode: EditorMode
   element: FlowContent
+  mainService?: typeof defaultMainService
 }) {
   const bookmarksService = useBookmarksService()
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
-  let params = useParams()
+  const [mainState] = useActor(mainService)
 
   async function onCopy() {
     if (mode == EditorMode.Discussion) {

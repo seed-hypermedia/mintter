@@ -1,13 +1,12 @@
+import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
-import {useMainPage} from '@app/main-page-context'
 import {CurrentFile, DraftRef, PublicationRef} from '@app/main-page-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
-import {useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
@@ -54,25 +53,15 @@ export const topbarSection = css({
 type TopbarProps = {
   copy?: typeof copyTextToClipboard
   currentFile?: CurrentFile | null
+  mainService?: typeof defaultMainService
 }
 
-export function Topbar({copy = copyTextToClipboard, currentFile}: TopbarProps) {
-  let mainPage = useMainPage()
-  let [mainState] = useActor(mainPage)
-  // debug('CURRENT FILE:', mainState.context.currentFile)
-
-  let title = useMemo(() => {
-    if (mainState.matches('routes.draftList')) {
-      return 'Drafts'
-    }
-
-    if (mainState.matches('routes.publicationList')) {
-      return 'Publications'
-    }
-
-    return ''
-  }, [mainState.value])
-
+export function Topbar({
+  copy = copyTextToClipboard,
+  currentFile,
+  mainService = defaultMainService,
+}: TopbarProps) {
+  let [mainState, mainSend] = useActor(mainService)
   function toggleLibrary() {
     mainState.context.library.send('LIBRARY.TOGGLE')
   }
@@ -86,7 +75,7 @@ export function Topbar({copy = copyTextToClipboard, currentFile}: TopbarProps) {
           data-testid="history-back"
           onClick={(e) => {
             e.preventDefault()
-            mainPage.send('GO.BACK')
+            mainSend('GO.BACK')
           }}
         >
           <Icon name="ArrowChevronLeft" color="muted" size="2" />
@@ -96,7 +85,7 @@ export function Topbar({copy = copyTextToClipboard, currentFile}: TopbarProps) {
           data-testid="history-forward"
           onClick={(e) => {
             e.preventDefault()
-            mainPage.send('GO.FORWARD')
+            mainSend('GO.FORWARD')
           }}
         >
           <Icon name="ArrowChevronRight" color="muted" size="2" />
@@ -104,6 +93,7 @@ export function Topbar({copy = copyTextToClipboard, currentFile}: TopbarProps) {
       </Box>
       {currentFile ? (
         <FilesData
+          copy={copy}
           fileRef={currentFile}
           isPublication={mainState.hasTag('publication')}
         />
@@ -180,25 +170,41 @@ function FilesData({
     <>
       <Box
         css={{
-          flex: 'none',
+          // flex: 'none',
+          overflow: 'hidden',
           width: '$full',
           maxWidth: 448,
           display: 'flex',
           alignItems: 'baseline',
+          justifyContent: 'flex-start',
           gap: '$2',
         }}
         data-tauri-drag-region
       >
-        <Text
-          size="3"
-          fontWeight="medium"
-          aria-label="Document Title"
-          data-testid="topbar-title"
-          data-tauri-drag-region
-          css={{flex: 'none'}}
+        <Box
+          css={{
+            display: 'flex',
+            flex: '0 1 1',
+            overflow: 'hidden',
+            marginRight: '$2',
+          }}
         >
-          {state.context.title || 'Untitled Draft'}
-        </Text>
+          <Text
+            size={{
+              '@initial': 2,
+              '@bp2': 3,
+            }}
+            fontWeight="medium"
+            aria-label="Document Title"
+            data-testid="topbar-title"
+            data-tauri-drag-region
+            css={{flex: 'none'}}
+          >
+            {state.context.title.length > 50
+              ? `${state.context.title.substring(0, 50)}...`
+              : state.context.title || 'Untitled Draft'}
+          </Text>
+        </Box>
         <Text size="1" color="muted">
           by
         </Text>

@@ -1,7 +1,7 @@
+import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {changesService} from '@app/editor/mintter-changes/plugin'
 import {getEditorBlock} from '@app/editor/utils'
-import {useMainPage} from '@app/main-page-context'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {Box} from '@components/box'
@@ -51,7 +51,10 @@ const StyledLink = styled('span', {
   },
 })
 
-type LinkProps = Omit<RenderElementProps, 'element'> & {element: LinkType}
+type LinkProps = Omit<RenderElementProps, 'element'> & {
+  element: LinkType
+  mainService?: typeof defaultMainService
+}
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   return isMintterLink(props.element.url) ? (
@@ -68,14 +71,12 @@ function RenderMintterLink(
   props: LinkProps,
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
-  const mainpageService = useMainPage()
-
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
     // debug('\n\n === MINTTER LINK CLICKED', {docId, version, blockId})
-    // mainpageService.send({type: 'GO.TO.PUBLICATION', docId, version, blockId})
+    // props.mainService.send({type: 'GO.TO.PUBLICATION', docId, version, blockId})
   }
 
   return <StyledLink ref={ref} {...props} onClick={onClick} />

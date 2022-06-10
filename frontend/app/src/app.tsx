@@ -1,3 +1,4 @@
+import {mainService as defaultMainService} from '@app/app-providers'
 import {useAuth} from '@app/auth-context'
 import {LibraryShell} from '@components/library'
 import {TopbarStyled} from '@components/topbar'
@@ -52,12 +53,14 @@ const globalStyles = globalCss({
   },
 })
 
+type AppProps = {
+  mainService?: typeof defaultMainService
+}
+
 export function App() {
   globalStyles()
   const service = useAuth()
   const [state] = useActor(service)
-
-  // return <AppShell />
 
   if (state.matches('checkingAccount')) {
     return <AppShell />
