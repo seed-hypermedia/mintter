@@ -182,7 +182,7 @@ function FilesData({
         css={{
           flex: 'none',
           width: '$full',
-          maxWidth: 460,
+          maxWidth: 448,
           display: 'flex',
           alignItems: 'baseline',
           gap: '$2',

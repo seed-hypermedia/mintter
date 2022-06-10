@@ -1,6 +1,7 @@
 import {EditorMode} from '@app/editor/plugin-utils'
 import {findPath} from '@app/editor/utils'
-import type {TextProps} from '@components/text'
+import {css} from '@app/stitches.config'
+import {Text, TextProps} from '@components/text'
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
 import {Editor} from 'slate'
@@ -8,9 +9,14 @@ import type {RenderElementProps} from 'slate-react'
 import {useSlateStatic} from 'slate-react'
 import {useHover} from '../hover-context'
 import type {EditorPlugin} from '../types'
-import {StaticParagraphUI} from './static-paragraph-ui'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
+
+export const staticParagraphStyles = css({
+  // fontWeight: '$bold',
+  // marginTop: '1.5em',
+  userSelect: 'text',
+})
 
 const headingMap: {
   [key: number | string]: Pick<TextProps, 'size'> & {
@@ -19,23 +25,18 @@ const headingMap: {
 } = {
   2: {
     as: 'h2',
-    size: 8,
   },
   4: {
     as: 'h3',
-    size: 7,
   },
   6: {
     as: 'h4',
-    size: 6,
   },
   8: {
     as: 'h5',
-    size: 5,
   },
   default: {
     as: 'p',
-    size: 4,
   },
 }
 
@@ -84,8 +85,10 @@ function StaticParagraph({
   var hoverService = useHover()
 
   return (
-    <StaticParagraphUI
+    <Text
       data-element-type={element.type}
+      className={staticParagraphStyles()}
+      size="4"
       css={{
         display: mode == EditorMode.Embed ? 'inline' : 'inherit',
       }}
@@ -98,6 +101,6 @@ function StaticParagraph({
       }}
     >
       {children}
-    </StaticParagraphUI>
+    </Text>
   )
 }

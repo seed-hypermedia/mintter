@@ -1,2 +1,2 @@
-export * from './static-paragraph'
-export * from './static-paragraph-ui'
+export * from './static-paragraph';
+
