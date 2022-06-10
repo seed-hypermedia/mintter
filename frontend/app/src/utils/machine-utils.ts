@@ -44,3 +44,17 @@ export function createRequiredContext<TContext>(displayName: string) {
 
   return [context.Provider, useContext] as const
 }
+
+export function getRefFromParams(
+  type: 'pub' | 'draft',
+  docId: string,
+  version: string | null,
+): string {
+  if (type == 'draft') {
+    return `draft-${docId}`
+  } else if (type == 'pub') {
+    return `pub-${docId}-${version}`
+  }
+
+  return ''
+}

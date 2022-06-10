@@ -1,6 +1,6 @@
+import {mainService as defaultMainService} from '@app/app-providers'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {useMainPage} from '@app/main-page-context'
 import {PublicationRef} from '@app/main-page-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {debug} from '@app/utils/logger'
@@ -21,6 +21,7 @@ import {useEffect} from 'react'
 
 type PublicationProps = {
   publicationRef: PublicationRef
+  mainService?: typeof defaultMainService
 }
 
 function usePublication(ref: PublicationRef) {
@@ -35,8 +36,10 @@ function usePublication(ref: PublicationRef) {
   return useActor(ref)
 }
 
-export default function Publication({publicationRef}: PublicationProps) {
-  const mainPageService = useMainPage()
+export default function Publication({
+  publicationRef,
+  mainService = defaultMainService,
+}: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
 
   if (state.matches('publication.fetching')) {
@@ -102,7 +105,13 @@ export default function Publication({publicationRef}: PublicationProps) {
         </>
       )}
       <Box className={footerStyles()}>
-        <Box className={footerMetadataStyles()}>
+        <Box
+          className={footerMetadataStyles()}
+          css={{
+            flex: 1,
+            overflow: 'hidden',
+          }}
+        >
           <Text size="1" color="muted">
             Created on:{' '}
             {getDateFormat(state.context.publication?.document, 'createTime')}
@@ -113,7 +122,12 @@ export default function Publication({publicationRef}: PublicationProps) {
             {getDateFormat(state.context.publication?.document, 'updateTime')}
           </Text>
         </Box>
-        <Box className={footerButtonsStyles()}>
+        <Box
+          className={footerButtonsStyles()}
+          css={{
+            flex: 'none',
+          }}
+        >
           {state.context.canUpdate ? (
             <>
               <Button
@@ -122,7 +136,7 @@ export default function Publication({publicationRef}: PublicationProps) {
                 disabled={state.hasTag('pending')}
                 data-testid="submit-edit"
                 onClick={() =>
-                  mainPageService.send({
+                  mainService.send({
                     type: 'COMMIT.EDIT.PUBLICATION',
                     docId: state.context.documentId,
                   })
@@ -163,7 +177,7 @@ export default function Publication({publicationRef}: PublicationProps) {
             </>
           )}
           <Button
-            onClick={() => mainPageService.send('COMMIT.OPEN.WINDOW')}
+            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
             size="1"
             color="primary"
           >

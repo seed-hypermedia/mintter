@@ -3,10 +3,10 @@ import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {DiscussionItem} from '@components/discussion-item'
 import {useActor} from '@xstate/react'
-import {InterpreterFrom} from 'xstate'
+import {ActorRefFrom} from 'xstate'
 
 export type DiscussionProps = {
-  service: InterpreterFrom<ReturnType<typeof createPublicationMachine>>
+  service: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
 }
 
 export function Discussion({service}: DiscussionProps) {

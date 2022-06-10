@@ -1,4 +1,7 @@
-import {AppProviders} from '@app/app-providers'
+import {
+  AppProviders,
+  mainService as defaultMainService,
+} from '@app/app-providers'
 import {
   Account,
   Document,
@@ -8,28 +11,12 @@ import {
   ListPublicationsResponse,
   Publication,
 } from '@app/client'
-import {HoverProvider} from '@app/editor/hover-context'
-import {HoverContext} from '@app/editor/hover-machine'
-import {FilesProvider} from '@app/files-context'
-import {createFilesMachine, FilesContext} from '@app/files-machine'
 import {queryKeys} from '@app/hooks'
-import {MainPageProvider} from '@app/main-page-context'
-import {
-  createMainPageService,
-  defaultMainPageContext,
-  MainPageContext,
-} from '@app/main-page-machine'
-import {DeepPartial} from '@app/types'
-import {
-  BookmarkListContext,
-  BookmarksProvider,
-  createBookmarkListMachine,
-} from '@components/bookmarks'
+import {createMainPageService} from '@app/main-page-machine'
 import {mount} from '@cypress/react'
-import {useInterpret} from '@xstate/react'
-import {PropsWithChildren, ReactNode, useState} from 'react'
+import {ReactNode} from 'react'
 import {QueryClient} from 'react-query'
-import {MachineOptionsFrom} from 'xstate'
+import {interpret} from 'xstate'
 ;(function mockTauriIpc() {
   if (window) {
     window.__TAURI_IPC__ = function mockTAURI_IPC() {
@@ -38,22 +25,19 @@ import {MachineOptionsFrom} from 'xstate'
   }
 })()
 
-export const memoryLocation =
-  (path = '/') =>
-  () =>
-    useState(path)
-
-export const customHookWithReturn =
-  (initialPath = '/') =>
-  () => {
-    const [path, updatePath] = useState(initialPath)
-    const navigate = (path: string) => {
-      updatePath(path)
-      return 'foo'
-    }
-
-    return [path, navigate]
-  }
+export function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
+        retry: false,
+        retryOnMount: false,
+        staleTime: Infinity,
+      },
+    },
+  })
+}
 
 type MountProvidersProps = {
   client?: QueryClient
@@ -64,6 +48,7 @@ type MountProvidersProps = {
   publication?: Publication
   publicationList?: Array<Publication>
   initialRoute?: string
+  mainService?: typeof defaultMainService
 }
 
 export function mountProviders({
@@ -75,20 +60,11 @@ export function mountProviders({
   publication,
   publicationList,
   initialRoute,
+  mainService = defaultMainService,
 }: MountProvidersProps = {}) {
   let peerId = 'testPeerId'
 
-  client ||= new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        retry: false,
-        retryOnMount: false,
-        staleTime: Infinity,
-      },
-    },
-  })
+  client ||= createTestQueryClient()
 
   account ||= {
     id: 'testAccountId',
@@ -162,15 +138,28 @@ export function mountProviders({
 
   client.invalidateQueries = cy.spy()
 
+  if (typeof mainService == 'undefined') {
+    console.log('MAIN SERVICE IS UNDEFINED')
+
+    mainService = interpret(createMainPageService({client, initialRoute}))
+  }
+
+  console.log('MAIN SERVICE:', mainService, client.getQueryData())
+
   function render(ui: ReactNode) {
     return mount(
-      <AppProviders client={client} initialRoute={initialRoute}>
+      <AppProviders
+        client={client}
+        initialRoute={initialRoute}
+        mainService={mainService}
+      >
         {ui}
       </AppProviders>,
     )
   }
 
   return {
+    mainService,
     client,
     account,
     draftList,
@@ -179,80 +168,4 @@ export function mountProviders({
     publication,
     render,
   }
-}
-
-type MainPageProvidersProps = PropsWithChildren<{
-  client: QueryClient
-  hoverContext?: HoverContext
-  bookmarkListContext?: BookmarkListContext
-  mainPageContext?: DeepPartial<MainPageContext>
-  mainPageOptions?: MachineOptionsFrom<ReturnType<typeof createMainPageService>>
-  filesContext?: Partial<FilesContext>
-  route?: string
-}>
-
-export function MainPageProviders({
-  children,
-  client,
-  hoverContext = {blockId: null},
-  bookmarkListContext = {bookmarks: [], errorMessage: ''},
-  mainPageContext = {params: {}},
-  mainPageOptions = {},
-  filesContext = {},
-  route = '/',
-}: MainPageProvidersProps) {
-  let filesService = useInterpret(() =>
-    createFilesMachine(client).withContext({
-      publicationList: [],
-      draftList: [],
-      currentFile: null,
-      errorMessage: '',
-      ...filesContext,
-    }),
-  )
-  let mainPageService = useInterpret(
-    () =>
-      createMainPageService(client, route).withContext(
-        defaultMainPageContext(mainPageContext),
-      ),
-    {
-      ...mainPageOptions,
-      actions: {
-        ...mainPageOptions.actions,
-      },
-    },
-  )
-
-  let hover = useInterpret(() => hoverMachine.withContext(hoverContext))
-  let bookmarks = useInterpret(() =>
-    createBookmarkListMachine(client).withContext(bookmarkListContext),
-  )
-
-  client.setQueryData<ListPublicationsResponse>(
-    [queryKeys.GET_PUBLICATION_LIST],
-    {
-      publications: [],
-      nextPageToken: '',
-    },
-  )
-
-  client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
-    documents: [],
-    nextPageToken: '',
-  })
-
-  client.setQueryData<ListAccountsResponse>([queryKeys.GET_ACCOUNT_LIST], {
-    accounts: [],
-    nextPageToken: '',
-  })
-
-  return (
-    <MainPageProvider value={mainPageService}>
-      <FilesProvider value={filesService}>
-        <HoverProvider value={hover}>
-          <BookmarksProvider value={bookmarks}>{children}</BookmarksProvider>
-        </HoverProvider>
-      </FilesProvider>
-    </MainPageProvider>
-  )
 }

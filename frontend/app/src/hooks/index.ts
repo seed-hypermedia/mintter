@@ -1,11 +1,12 @@
-import { useAccountInfo } from '@app/auth-context'
-import type { FlowContent } from '@mintter/mttast'
-import { useMemo } from 'react'
-import { useQuery, useQueryClient } from 'react-query'
+import {useAccountInfo} from '@app/auth-context'
+import type {FlowContent} from '@mintter/mttast'
+import {useMemo} from 'react'
+import {useQuery, useQueryClient} from 'react-query'
 import {
   Account,
   Document,
-  getAccount, getInfo,
+  getAccount,
+  getInfo,
   getPublication,
   Info,
   listAccounts,
@@ -16,9 +17,9 @@ import {
   listPublications,
   ListPublicationsResponse,
   PeerInfo,
-  Publication
+  Publication,
 } from '../client'
-import type { HookOptions } from './types'
+import type {HookOptions} from './types'
 
 export * from './types'
 
@@ -80,8 +81,8 @@ export function useDraftList() {
     },
   )
 
-  const data: Array<{ document: Document }> = useMemo(
-    () => draftsListQuery.data?.documents?.map((d) => ({ document: d })) || [],
+  const data: Array<{document: Document}> = useMemo(
+    () => draftsListQuery.data?.documents?.map((d) => ({document: d})) || [],
     [draftsListQuery],
   )
 
@@ -141,7 +142,7 @@ export function usePublication(
 ) {
   const publicationQuery = useQuery(
     [queryKeys.GET_PUBLICATION, publicationId],
-    async ({ queryKey }) => {
+    async ({queryKey}) => {
       const [, publicationId] = queryKey as [string, string]
       return getPublication(publicationId, version, options.rpc)
     },

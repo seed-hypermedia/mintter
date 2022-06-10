@@ -1,6 +1,5 @@
-import {FlowContent} from '@app/../../mttast/dist'
+import {mainService as defaultMainService} from '@app/app-providers'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {useMainPage} from '@app/main-page-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug} from '@app/utils/logger'
@@ -9,6 +8,7 @@ import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
 import {Text} from '@components/text'
+import {FlowContent} from '@mintter/mttast'
 import {useActor, useMachine} from '@xstate/react'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
@@ -16,12 +16,13 @@ import {ActorRefFrom} from 'xstate'
 
 export function BookmarkItem({
   itemRef,
+  mainService = defaultMainService,
 }: {
   itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>
+  mainService?: typeof defaultMainService
 }) {
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
-  const mainService = useMainPage()
 
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     actions: {

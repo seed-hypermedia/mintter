@@ -2,7 +2,7 @@ import {citationMachine, CitationProvider} from '@app/editor/citations'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {MainPageProviders, mountProviders} from '@app/test/utils'
+import {mountProviders} from '@app/test/utils'
 import {Box} from '@components/box'
 import {group, ol, paragraph, statement, text, ul} from '@mintter/mttast'
 import {useInterpret} from '@xstate/react'
@@ -19,18 +19,16 @@ function TestEditor({value, client}: {value: any; client: QueryClient}) {
 
   return (
     <Box css={{padding: '$9'}}>
-      <MainPageProviders client={client}>
-        <CitationProvider value={citations}>
-          <Editor
-            mode={EditorMode.Publication}
-            editor={editor}
-            value={value}
-            onChange={() => {
-              // noop
-            }}
-          />
-        </CitationProvider>
-      </MainPageProviders>
+      <CitationProvider value={citations}>
+        <Editor
+          mode={EditorMode.Publication}
+          editor={editor}
+          value={value}
+          onChange={() => {
+            // noop
+          }}
+        />
+      </CitationProvider>
     </Box>
   )
 }

@@ -1,4 +1,4 @@
-import {useMainPage} from '@app/main-page-context'
+import {mainService as defaultMainService} from '@app/app-providers'
 import {DraftRef, PublicationRef} from '@app/main-page-machine'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
@@ -15,9 +15,14 @@ import EditorPage from './editor'
 import Publication from './publication'
 import {PublicationList} from './publication-list-page'
 
-export function MainPage() {
-  const mainPageService = useMainPage()
-  const [state] = useActor(mainPageService)
+type MainPageProps = {
+  mainService?: typeof defaultMainService
+}
+
+export function MainPage({mainService = defaultMainService}: MainPageProps) {
+  const [state] = useActor(mainService)
+
+  console.log('MAIN PAGE STATE', state)
 
   if (state.matches('routes.settings')) {
     return <Settings />

@@ -1,35 +1,49 @@
-import {
-  Document,
-  ListDraftsResponse,
-  ListPublicationsResponse,
-  Publication,
-} from '@app/client'
-import {queryKeys} from '@app/hooks'
+import {Document, Publication} from '@app/client'
+import {createDraftMachine} from '@app/draft-machine'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
+import {createPublicationMachine} from '@app/publication-machine'
 import {mountProviders} from '@app/test/utils'
 import {LibraryItem} from '@components/library/library-item'
 import Sinon from 'cypress/types/sinon'
+import {spawn} from 'xstate'
 
 describe('<LibraryItem />', () => {
+  let publication: Publication = {
+    version: 'v1',
+    document: {
+      id: 'd1',
+      title: 'test title',
+      subtitle: '',
+      children: [],
+      author: '',
+      updateTime: undefined,
+      publishTime: undefined,
+      createTime: new Date(),
+    },
+  }
+
+  let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
+
   beforeEach(() => {
-    let {client, render} = mountProviders()
-
-    client.setQueryData<ListPublicationsResponse>(
-      [queryKeys.GET_PUBLICATION_LIST],
-      {
-        publications: [],
-        nextPageToken: '',
-      },
-    )
-
-    client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
-      documents: [],
-      nextPageToken: '',
+    let {client, render} = mountProviders({
+      publication,
     })
+    copyTextToClipboard = cy.stub()
 
-    render(<LibraryItem href="/demo" />)
+    let editor = buildEditorHook(plugins, EditorMode.Publication)
+    render(
+      <LibraryItem
+        fileRef={spawn(
+          createPublicationMachine(client, publication, editor),
+          'pub-d1-v1',
+        )}
+        copy={copyTextToClipboard}
+      />,
+    )
   })
   it('default item', () => {
-    cy.get('[data-testid="library-item"]').contains('Untitled Document')
+    cy.get('[data-testid="library-item"]').contains(publication.document!.title)
   })
 
   it('should open dropdown element', () => {
@@ -39,6 +53,20 @@ describe('<LibraryItem />', () => {
       .get('[data-testid="library-item-dropdown-root"]')
       .should('be.visible')
   })
+
+  it('should Copy to Clipboard', () => {
+    cy.get('[data-testid="library-item"]')
+      .get('[data-trigger]')
+      .click()
+      .get('[data-testid="copy-item"]')
+      .click()
+      .then(() => {
+        expect(copyTextToClipboard).to.have.been.calledOnce
+        expect(copyTextToClipboard).to.have.been.calledWith(
+          `mtt://${publication.document?.id}/${publication.version}`,
+        )
+      })
+  })
 })
 
 describe('<LibraryItem /> with Draft', () => {
@@ -46,7 +74,6 @@ describe('<LibraryItem /> with Draft', () => {
     id: 'testId',
     title: 'test draft title',
     subtitle: 'test subtitle',
-    content: '',
     updateTime: undefined,
     createTime: new Date(),
     author: 'testauthor',
@@ -58,17 +85,23 @@ describe('<LibraryItem /> with Draft', () => {
   let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
 
   beforeEach(() => {
-    let {client, render} = mountProviders()
+    let {client, render} = mountProviders({
+      draft,
+    })
 
     deleteDraft = cy.spy()
     copyTextToClipboard = cy.stub()
 
+    let editor = buildEditorHook(plugins, EditorMode.Draft)
+
     render(
       <LibraryItem
-        href={`/editor/${draft.id}`}
+        fileRef={spawn(
+          createDraftMachine({draft, client, editor, shouldAutosave: false}),
+          `draft-${draft.id}`,
+        )}
         deleteDraft={deleteDraft}
-        copyTextToClipboard={copyTextToClipboard}
-        draft={draft}
+        copy={copyTextToClipboard}
       />,
     )
   })
@@ -98,86 +131,11 @@ describe('<LibraryItem /> with Draft', () => {
       })
   })
 
-  it('should Copy to Clipboard be disabled on drafts', async () => {
+  it.skip('should Copy to Clipboard be disabled on drafts', async () => {
     cy.get('[data-testid="library-item"]')
       .get('[data-trigger]')
       .click()
       .get('[data-testid="copy-item"]')
       .should('be.disabled')
-  })
-})
-
-describe('<LibraryItem /> with Publication', () => {
-  let publication: Publication = {
-    version: 'testversion',
-    document: {
-      id: 'testId',
-      title: 'test publication title',
-      subtitle: 'test subtitle',
-      content: '',
-      updateTime: undefined,
-      createTime: new Date(),
-      author: 'testauthor',
-      children: [],
-      publishTime: undefined,
-    },
-  }
-
-  let deletePublication: Cypress.Agent<Sinon.SinonSpy>
-  let copyTextToClipboard: any
-
-  beforeEach(() => {
-    let {client, render} = mountProviders()
-
-    deletePublication = cy.spy()
-    copyTextToClipboard = cy.stub().resolves()
-
-    render(
-      <LibraryItem
-        href={`/p/${publication.document?.id}/${publication.version}`}
-        deletePublication={deletePublication}
-        copyTextToClipboard={copyTextToClipboard}
-        publication={publication}
-      />,
-    )
-  })
-
-  it('should render publication title', () => {
-    cy.get('[data-testid="library-item"]').contains('test publication title')
-  })
-
-  it('should Delete', () => {
-    cy.get('[data-testid="library-item"]')
-      .get('[data-trigger]')
-      .click()
-      .get('[data-testid="delete-item"]')
-      .click()
-      .get('[data-testid="delete-dialog-title"]')
-      .should('be.visible')
-      .contains(/Delete document/i)
-      .get('[data-testid="delete-dialog-cancel"]')
-      .should('be.visible')
-      .should('be.enabled')
-      .get('[data-testid="delete-dialog-confirm"]')
-      .should('be.visible')
-      .should('be.enabled')
-      .click()
-      .then(() => {
-        expect(deletePublication).to.have.been.calledOnce
-      })
-  })
-
-  it('should Copy to Clipboard', () => {
-    cy.get('[data-testid="library-item"]')
-      .get('[data-trigger]')
-      .click()
-      .get('[data-testid="copy-item"]')
-      .click()
-      .then(() => {
-        expect(copyTextToClipboard).to.have.been.calledOnce
-        expect(copyTextToClipboard).to.have.been.calledWith(
-          `mtt://${publication.document?.id}/${publication.version}`,
-        )
-      })
   })
 })

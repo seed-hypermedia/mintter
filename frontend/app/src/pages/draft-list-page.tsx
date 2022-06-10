@@ -1,4 +1,4 @@
-import {useMainPage} from '@app/main-page-context'
+import {mainService as defaultMainService} from '@app/app-providers'
 import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -7,8 +7,11 @@ import {footerButtonsStyles, footerStyles} from '@components/page-footer'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 
-export function DraftList() {
-  let mainService = useMainPage()
+type DraftListProps = {
+  mainService?: typeof defaultMainService
+}
+
+export function DraftList({mainService = defaultMainService}: DraftListProps) {
   let [mainState] = useActor(mainService)
   let drafts = mainState.context.draftList
 

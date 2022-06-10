@@ -1,9 +1,9 @@
 // import 'show-keys'
 import {AppError} from '@app/app'
+import {mainService as defaultMainService} from '@app/app-providers'
 import {Document} from '@app/client'
 import {createDraftMachine} from '@app/draft-machine'
 import {Editor} from '@app/editor/editor'
-import {useMainPage} from '@app/main-page-context'
 import {DraftRef} from '@app/main-page-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
@@ -26,6 +26,7 @@ export type EditorPageProps = {
   editor?: SlateEditor
   shouldAutosave?: boolean
   draftRef: DraftRef
+  mainService?: typeof defaultMainService
 }
 
 export function useDraft(ref: DraftRef) {
@@ -39,9 +40,11 @@ export function useDraft(ref: DraftRef) {
   return useActor(ref)
 }
 
-export default function EditorPage({draftRef}: EditorPageProps) {
+export default function EditorPage({
+  draftRef,
+  mainService = defaultMainService,
+}: EditorPageProps) {
   const [visible, setVisible] = useState(false)
-  const mainPageService = useMainPage()
   const [state, send] = useDraft(draftRef)
   const {context} = state
 
@@ -105,7 +108,7 @@ export default function EditorPage({draftRef}: EditorPageProps) {
               disabled={disablePublish}
               data-testid="submit-publish"
               onClick={() => {
-                mainPageService.send('COMMIT.NEW.PUBLICATION')
+                mainService.send('COMMIT.NEW.PUBLICATION')
               }}
             >
               Publish

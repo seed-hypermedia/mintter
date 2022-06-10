@@ -1,8 +1,5 @@
 import {HoverProvider} from '@app/editor/hover-context'
 import {createHoverService} from '@app/editor/hover-machine'
-import {FilesProvider} from '@app/files-context'
-import {createFilesMachine} from '@app/files-machine'
-import {MainPageProvider} from '@app/main-page-context'
 import {createMainPageService} from '@app/main-page-machine'
 import {
   BookmarksProvider,
@@ -12,6 +9,7 @@ import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, Suspense} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
+import {interpret} from 'xstate'
 import {AuthProvider} from './auth-context'
 import {createAuthService} from './auth-machine'
 import {createThemeService, ThemeProvider} from './theme'
@@ -32,24 +30,28 @@ export const queryClient = new QueryClient({
 
 const dehydrateState = dehydrate(queryClient)
 
+const initMainService = interpret(createMainPageService({client: queryClient}))
+
+export const mainService = initMainService
+
 type AppProvidersProps = {
   client?: QueryClient
   initialRoute?: string
+  mainService?: typeof initMainService
 }
 
 export function AppProviders({
   children,
   client = queryClient,
-  initialRoute,
+  mainService = initMainService,
 }: PropsWithChildren<AppProvidersProps>) {
+  console.log('APP PROVIDER MAIN SERVICE', mainService)
+
+  mainService.start()
   const themeService = useInterpret(() => createThemeService())
   const authService = useInterpret(() => createAuthService(client))
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   const hoverService = useInterpret(() => createHoverService())
-  const filesService = useInterpret(() => createFilesMachine(client))
-  const mainPageService = useInterpret(() =>
-    createMainPageService(client, initialRoute),
-  )
 
   return (
     <QueryClientProvider client={client}>
@@ -57,15 +59,11 @@ export function AppProviders({
         <ThemeProvider value={themeService}>
           <Suspense fallback={<p>loading...</p>}>
             <Hydrate state={dehydrateState}>
-              <MainPageProvider value={mainPageService}>
-                <HoverProvider value={hoverService}>
-                  <FilesProvider value={filesService}>
-                    <BookmarksProvider value={bookmarksService}>
-                      {children}
-                    </BookmarksProvider>
-                  </FilesProvider>
-                </HoverProvider>
-              </MainPageProvider>
+              <HoverProvider value={hoverService}>
+                <BookmarksProvider value={bookmarksService}>
+                  {children}
+                </BookmarksProvider>
+              </HoverProvider>
               <Toaster position="bottom-right" />
             </Hydrate>
           </Suspense>

@@ -1,15 +1,14 @@
-import { Document, listDrafts } from '@app/client'
-import { createDraftMachine } from '@app/draft-machine'
-import { buildEditorHook, EditorMode } from '@app/editor/plugin-utils'
-import { plugins } from '@app/editor/plugins'
-import { queryKeys } from '@app/hooks'
-import { getRefFromParams } from '@app/main-page-context'
-import { DraftRef, PublicationRef } from '@app/main-page-machine'
-import { createPublicationMachine } from '@app/publication-machine'
-import { debug, error } from '@app/utils/logger'
-import { QueryClient } from 'react-query'
-import { ActorRefFrom, assign, createMachine, spawn } from 'xstate'
-import { listPublications, Publication } from './client'
+import {Document, listDrafts} from '@app/client'
+import {createDraftMachine} from '@app/draft-machine'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
+import {queryKeys} from '@app/hooks'
+import {DraftRef, PublicationRef} from '@app/main-page-machine'
+import {createPublicationMachine} from '@app/publication-machine'
+import {getRefFromParams} from '@app/utils/machine-utils'
+import {QueryClient} from 'react-query'
+import {ActorRefFrom, assign, createMachine, spawn} from 'xstate'
+import {listPublications, Publication} from './client'
 
 export type PublicationWithRef = Publication & {
   ref: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
@@ -31,13 +30,13 @@ export type FilesContext = {
 
 export type FilesEvent =
   | {
-    type: 'REPORT.FILES.SUCCESS'
-    publicationList: Array<Publication>
-    draftList: Array<Document>
-  }
-  | { type: 'REPORT.FILES.ERROR'; errorMessage: string }
-  | { type: 'RECONCILE' }
-  | { type: 'COMMIT.PUBLICATION'; publication: Publication }
+      type: 'REPORT.FILES.SUCCESS'
+      publicationList: Array<Publication>
+      draftList: Array<Document>
+    }
+  | {type: 'REPORT.FILES.ERROR'; errorMessage: string}
+  | {type: 'RECONCILE'}
+  | {type: 'COMMIT.PUBLICATION'; publication: Publication}
 
 export function createFilesMachine(client: QueryClient) {
   /** @xstate-layout N4IgpgJg5mDOIC5QDMCWAbOBaAtgQwGMALVAOzADpUJMBiAJQFEAFAeXoBUKARAQQ94UAygFUAwmMZChiUAAcA9rFQAXVAtKyQAD0QAmAMwAGCgFYALAEYAbNb2WDATj2nTj0wBoQAT32PHZgamRo4A7MHWABzmrgC+sV5omLC4hCTkFABOYHgQ3gyMYqwAcmIAkgAyjFqKymoaWroIBpYmjlGh1qbWlu7WoZbmXr4IlpF6FP7+XaFG5pHWQebxiRjY+MRklNm5+QBilVIUFay83BTMIgBCFWVi-GUlNUqq6ppIOojm5tYUBv1jSKmMa2ULmAzDRBjCZTMJGOzRPR6MErEBJdZpLa0A5VITHU7nS43O4PJ4fWqvBofJp6H4UKJBRzmFyOAxssGQ0Z6eIJECkBQQOBadEpDbpSjUTDPOpvRqILBjAwUcZRdrzWaOQbWTl6SIBUxBEJWSyWXVg5a8kWpTYZHZ5aWU96gJoxUwUebjUJ6VlGSLjSI6sGTKYGrrwgy01FWsVbB31J2fBBYPRGULKvSq6zqkJazmtAKw8xGUyhUts6I82JAA */
@@ -122,7 +121,8 @@ export function createFilesMachine(client: QueryClient) {
                 ...event.publication,
                 ref: spawn(
                   createPublicationMachine(client, event.publication),
-                  `pub-${event.publication.document!.id}-${event.publication.version
+                  `pub-${event.publication.document!.id}-${
+                    event.publication.version
                   }`,
                 ),
               },
@@ -139,85 +139,28 @@ export function createFilesMachine(client: QueryClient) {
               return {
                 ...draft,
                 ref: spawn(
-                  createDraftMachine({ client, editor, draft }),
+                  createDraftMachine({client, editor, draft}),
                   getRefFromParams('draft', draft.id, null),
                 ),
               }
             })
           },
           publicationList: (_, event) => {
-            return event.publicationList.map((pub) => ({
-              ...pub,
-              ref: spawn(
-                createPublicationMachine(client, pub),
-                getRefFromParams('pub', pub.document!.id, pub.version),
-              ),
-            }))
+            return event.publicationList.map((pub) => {
+              let editor = buildEditorHook(plugins, EditorMode.Draft)
+              return {
+                ...pub,
+                ref: spawn(
+                  createPublicationMachine(client, pub, editor),
+                  getRefFromParams('pub', pub.document!.id, pub.version),
+                ),
+              }
+            })
           },
         }),
         clearCache: () => {
           client.invalidateQueries([queryKeys.GET_PUBLICATION_LIST])
         },
-        clearQueue: assign((context) => {
-          let { queue } = context
-          let set = new Set(queue)
-          var fileRef
-
-          set.forEach((ref) => {
-            if (ref.startsWith('pub-')) {
-              fileRef = context.publicationList.find(
-                (file) => file.ref.id == ref,
-              )?.ref
-              debug('IS PUBLICATION', fileRef)
-            } else {
-              debug('CLEARQUEUE setting currentFile')
-              fileRef = context.draftList.find(
-                (file) => file.ref.id == ref,
-              )?.ref
-            }
-          })
-          return {
-            queue: [],
-            currentFile: fileRef || null,
-          }
-        }),
-        addToQueue: assign({
-          queue: (context, event) => {
-            return [...context.queue, event.ref]
-          },
-        }),
-        assignDraftToCurrentFile: assign({
-          currentFile: (context, event) => {
-            let file = context.draftList.find((d) => d.ref.id == event.ref)?.ref
-            if (file) {
-              return file
-            } else {
-              error(
-                'assignDraftToCurrentFile: draft not found',
-                event.ref,
-                context.draftList,
-              )
-              return null
-            }
-          },
-        }),
-        assignPublicationCurrentFile: assign({
-          currentFile: (context, event) => {
-            let file = context.publicationList.find(
-              (d) => d.ref.id == event.ref,
-            )?.ref
-            if (file) {
-              return file
-            } else {
-              error(
-                'assignPublicationCurrentFile: Publication not found',
-                event.ref,
-                context.publicationList,
-              )
-              return null
-            }
-          },
-        }),
       },
     },
   )
