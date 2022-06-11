@@ -26,7 +26,7 @@ require (
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/ipfs/go-merkledag v0.6.0
 	github.com/klauspost/compress v1.15.1
-	github.com/libp2p/go-libp2p v0.20.0
+	github.com/libp2p/go-libp2p v0.20.1
 	github.com/libp2p/go-libp2p-core v0.16.1
 	github.com/libp2p/go-libp2p-gostream v0.3.1
 	github.com/libp2p/go-libp2p-kad-dht v0.15.0
@@ -144,7 +144,7 @@ require (
 	github.com/libp2p/go-netroute v0.2.0 // indirect
 	github.com/libp2p/go-openssl v0.0.7 // indirect
 	github.com/libp2p/go-reuseport v0.2.0 // indirect
-	github.com/libp2p/go-yamux/v3 v3.1.1 // indirect
+	github.com/libp2p/go-yamux/v3 v3.1.2 // indirect
 	github.com/lightninglabs/gozmq v0.0.0-20191113021534-d20a764486bf // indirect
 	github.com/lightninglabs/neutrino v0.14.1 // indirect
 	github.com/lightningnetwork/lnd/clock v1.1.0 // indirect
