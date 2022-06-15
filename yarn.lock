@@ -1607,7 +1607,7 @@ __metadata:
     long: 5.2.0
     nanoid: 4.0.0
     navaid: 1.2.0
-    prettier: 2.6.2
+    prettier: 2.7.0
     protobufjs: 6.11.3
     react: 18.1.0
     react-async-ssr: 0.7.2
@@ -1671,7 +1671,7 @@ __metadata:
     is-hidden: 2.0.0
     is-plain-object: 5.0.0
     nanoid: 4.0.0
-    prettier: 2.6.2
+    prettier: 2.7.0
     rehype-minify-whitespace: 5.0.1
     rehype-parse: 8.0.4
     rehype-sanitize: 5.0.1
@@ -9459,7 +9459,7 @@ __metadata:
     eslint: 8.17.0
     ni: 0.0.2
     npm-run-all: 4.1.5
-    prettier: 2.6.2
+    prettier: 2.7.0
     rollup: 2.75.6
     tiny-glob: 0.2.9
     ts-proto: 1.115.4
@@ -10660,7 +10660,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:2.6.2, prettier@npm:^2.5.1":
+"prettier@npm:2.7.0":
+  version: 2.7.0
+  resolution: "prettier@npm:2.7.0"
+  bin:
+    prettier: bin-prettier.js
+  checksum: 5b55bb1dced9d16635b83229df8e670d150890fdb343f19e8a66e610094a108e960c0f57352b3e5cdbc4eff4ef00a834406047ffcd9f20bd22a6497ba143c81f
+  languageName: node
+  linkType: hard
+
+"prettier@npm:^2.5.1":
   version: 2.6.2
   resolution: "prettier@npm:2.6.2"
   bin:
