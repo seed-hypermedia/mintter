@@ -6,7 +6,7 @@ require (
 	crawshaw.io/sqlite v0.3.2
 	github.com/99designs/gqlgen v0.17.10
 	github.com/alecthomas/kong v0.5.0
-	github.com/btcsuite/btcd v0.22.1
+	github.com/btcsuite/btcd v0.23.1
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
 	github.com/bxcodec/faker/v3 v3.8.0
@@ -216,4 +216,4 @@ require (
 replace crawshaw.io/sqlite => ./third_party/sqlite
 
 // Replace to make LND work ¯\_(ツ)_/¯.
-replace github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.22.0-beta.0.20220413172512-bf64c8bdbbbf
+replace github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.23.1
