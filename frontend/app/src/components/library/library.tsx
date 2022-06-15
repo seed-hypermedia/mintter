@@ -81,7 +81,7 @@ export function Library({
               variant="ghost"
               size="1"
               color="success"
-              onClick={() => mainService.send('COMMIT.NEW.DRAFT')}
+              onClick={() => mainService.send('CREATE.NEW.DRAFT')}
               css={{
                 '&:hover': {
                   backgroundColor: '$success-component-bg-normal',

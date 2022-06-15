@@ -12,7 +12,7 @@ import { EditorDocument } from '@app/draft-machine'
 import { queryKeys } from '@app/hooks'
 import { QueryClient } from 'react-query'
 import { Editor } from 'slate'
-import { assign, createMachine, sendParent } from 'xstate'
+import { assign, createMachine } from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -48,15 +48,21 @@ export type PublicationEvent =
   | { type: 'DISCUSSION.TOGGLE' }
   | { type: 'DISCUSSION.REPORT.SUCCESS'; links: Array<Link> }
   | { type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string }
+  | { type: 'FILE.DELETE.OPEN' }
+  | { type: 'FILE.DELETE.CLOSE' }
+  | { type: 'FILE.DELETE.CANCEL' }
+  | { type: 'FILE.DELETE.CONFIRM' }
 
 type CreatePublicationProps = {
-  client: QueryClient,
-  publication: Publication,
-  editor: Editor,
+  client: QueryClient
+  publication: Publication
+  editor: Editor
 }
 
 export function createPublicationMachine({
-  client, publication, editor
+  client,
+  publication,
+  editor,
 }: CreatePublicationProps) {
   return createMachine(
     {
@@ -243,12 +249,7 @@ export function createPublicationMachine({
           ])
             .then(([publication, info]) => {
               if (publication.document?.children.length) {
-                sendParent({
-                  type: 'SET.CURRENT.DOCUMENT',
-                  document: publication.document,
-                })
                 let content = [blockNodeToSlate(publication.document.children)]
-
                 sendBack({
                   type: 'PUBLICATION.REPORT.SUCCESS',
                   publication: Object.assign(publication, {

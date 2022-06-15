@@ -5,10 +5,10 @@ import {
   ListCitationsRequest,
   ListPublicationsRequest,
   Publication,
-  PublicationsClientImpl
+  PublicationsClientImpl,
 } from './.generated/documents/v1alpha/documents'
-import type { GrpcClient } from './grpc-client'
-import { createGrpcClient } from './grpc-client'
+import type {GrpcClient} from './grpc-client'
+import {createGrpcClient} from './grpc-client'
 
 /**
  *
@@ -16,9 +16,13 @@ import { createGrpcClient } from './grpc-client'
  * @param rpc
  * @returns Promise<void>
  */
-export async function deletePublication(documentId: string, version: string, rpc?: GrpcClient) {
+export async function deletePublication(
+  documentId: string,
+  version: string,
+  rpc?: GrpcClient,
+) {
   rpc ||= createGrpcClient()
-  const request = DeletePublicationRequest.fromPartial({ documentId, version })
+  const request = DeletePublicationRequest.fromPartial({documentId, version})
   return await new PublicationsClientImpl(rpc).deletePublication(request)
 }
 
@@ -50,14 +54,14 @@ export async function getPublication(
   rpc?: GrpcClient,
 ): Promise<Publication> {
   rpc ||= createGrpcClient()
-  const request = GetPublicationRequest.fromPartial({ documentId, version })
+  const request = GetPublicationRequest.fromPartial({documentId, version})
   const result = await new PublicationsClientImpl(rpc).getPublication(request)
   return result
 }
 
 export function listCitations(documentId: string, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
-  const request = ListCitationsRequest.fromPartial({ documentId, depth: 2 })
+  const request = ListCitationsRequest.fromPartial({documentId, depth: 2})
   let result = new ContentGraphClientImpl(rpc).listCitations(request)
   return result
 }

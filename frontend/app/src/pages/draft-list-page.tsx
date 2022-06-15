@@ -49,7 +49,7 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
             >
               <Text>No Publications yet.</Text>
               <Button
-                onClick={() => mainService.send('COMMIT.NEW.DRAFT')}
+                onClick={() => mainService.send('CREATE.NEW.DRAFT')}
                 size="1"
                 variant="outlined"
               >

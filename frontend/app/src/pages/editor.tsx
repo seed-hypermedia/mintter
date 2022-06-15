@@ -49,8 +49,6 @@ export default function EditorPage({
   const [state, send] = useDraft(draftRef)
   const {context} = state
 
-  let disablePublish = state.hasTag('saving')
-
   if (state.matches('errored')) {
     return <Text>ERROR: {context.errorMessage}</Text>
   }
@@ -107,10 +105,10 @@ export default function EditorPage({
             <Button
               color="success"
               size="1"
-              disabled={disablePublish}
+              disabled={!state.can('DRAFT.PUBLISH')}
               data-testid="submit-publish"
               onClick={() => {
-                mainService.send('COMMIT.NEW.PUBLICATION')
+                send('DRAFT.PUBLISH')
               }}
             >
               Publish

@@ -44,7 +44,7 @@ export function PublicationList({
             >
               <Text>No Publications yet.</Text>
               <Button
-                onClick={() => mainService.send('COMMIT.NEW.DRAFT')}
+                onClick={() => mainService.send('CREATE.NEW.DRAFT')}
                 size="1"
                 variant="outlined"
               >

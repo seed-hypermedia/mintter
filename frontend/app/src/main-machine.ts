@@ -1,4 +1,10 @@
-import { deleteDraft, deletePublication, publishDraft } from '@app/client'
+import type { Document } from '@app/client'
+import {
+  createDraft, listDrafts,
+  listPublications,
+  Publication,
+  publishDraft
+} from '@app/client'
 import { createDraftMachine } from '@app/draft-machine'
 import { buildEditorHook, EditorMode } from '@app/editor/plugin-utils'
 import { plugins } from '@app/editor/plugins'
@@ -12,14 +18,7 @@ import { invoke as tauriInvoke } from '@tauri-apps/api'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
 import { QueryClient } from 'react-query'
-import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
-import {
-  createDraft,
-  Document,
-  listDrafts,
-  listPublications,
-  Publication
-} from './client'
+import { ActorRefFrom, assign, createMachine, send, sendParent, spawn } from 'xstate'
 
 export type PublicationRef = ActorRefFrom<
   ReturnType<typeof createPublicationMachine>
@@ -82,7 +81,7 @@ type MainPageEvent =
     type: 'listenRoute'
   }
   | {
-    type: 'COMMIT.NEW.DRAFT'
+    type: 'CREATE.NEW.DRAFT'
   }
   | {
     type: 'COMMIT.OPEN.WINDOW'
@@ -98,9 +97,7 @@ type MainPageEvent =
     draftList: Array<Document>
   }
   | { type: 'REPORT.FILES.ERROR'; errorMessage: string }
-  | { type: 'COMMIT.NEW.DRAFT'; draft: Document }
-  | { type: 'COMMIT.NEW.PUBLICATION' }
-  | { type: 'REPORT.PUBLISH.SUCCESS'; publication: Publication }
+  | { type: 'COMMIT.PUBLISH'; publication: Publication; documentId: string }
   | { type: 'COMMIT.DELETE.FILE'; documentId: string; version: string | null }
 
 type RouterEvent =
@@ -181,7 +178,14 @@ export function createMainPageService({
         errorMessage: '',
       }),
       tsTypes: {} as import("./main-machine.typegen").Typegen0,
-      schema: { context: {} as MainPageContext, events: {} as MainPageEvent },
+      schema: {
+        context: {} as MainPageContext, events: {} as MainPageEvent,
+        services: {
+          createNewDraft: {
+            data: Document
+          }
+        }
+      },
       id: 'main-page',
       initial: 'loadingFiles',
       invoke: {
@@ -216,6 +220,15 @@ export function createMainPageService({
             home: {
               entry: ['clearCurrentFile', 'clearParams'],
               tags: ['topbar', 'library'],
+              on: {
+                'COMMIT.DELETE.FILE': {
+                  actions: [
+                    'removePublicationFromCitations',
+                    'removeFileFromRecentList',
+                    'updatePublicationList',
+                  ],
+                },
+              },
             },
             editor: {
               tags: ['topbar', 'library'],
@@ -241,9 +254,6 @@ export function createMainPageService({
                   entry: ['pushDraftRoute'],
                   tags: ['documentView', 'draft'],
                   on: {
-                    'COMMIT.NEW.PUBLICATION': {
-                      target: 'publishing',
-                    },
                     'GO.TO.DRAFT': [
                       {
                         cond: 'isEventDifferent',
@@ -252,21 +262,6 @@ export function createMainPageService({
                       },
                       {},
                     ],
-                  },
-                },
-                publishing: {
-                  invoke: {
-                    id: 'publishDraft',
-                    src: 'publishDraft',
-                  },
-                  on: {
-                    'REPORT.PUBLISH.SUCCESS': {
-                      actions: [
-                        'removeDraftFromList',
-                        'asssignNewPublicationValues',
-                      ],
-                      target: '#routes.publication.valid',
-                    },
                   },
                 },
                 error: {
@@ -332,7 +327,11 @@ export function createMainPageService({
                 idle: {
                   on: {
                     'COMMIT.DELETE.FILE': {
-                      actions: ['removePublicationFromCitations', 'removeFileFromRecentList', 'updatePublicationList']
+                      actions: [
+                        'removePublicationFromCitations',
+                        'removeFileFromRecentList',
+                        'updatePublicationList',
+                      ],
                     },
                   },
                 },
@@ -346,7 +345,7 @@ export function createMainPageService({
                 idle: {
                   on: {
                     'COMMIT.DELETE.FILE': {
-                      actions: ['removeFileFromRecentList', 'updateDraftList']
+                      actions: ['removeFileFromRecentList', 'updateDraftList'],
                     },
                   },
                 },
@@ -355,12 +354,11 @@ export function createMainPageService({
             createDraft: {
               invoke: {
                 src: 'createNewDraft',
-              },
-              on: {
-                'COMMIT.NEW.DRAFT': {
+                id: 'createNewDraft',
+                onDone: {
                   actions: ['assignNewDraftValues'],
                   target: 'editor.valid',
-                },
+                }
               },
             },
           },
@@ -386,7 +384,7 @@ export function createMainPageService({
             'GO.TO.PUBLICATION': {
               target: '.publication',
             },
-            'COMMIT.NEW.DRAFT': {
+            'CREATE.NEW.DRAFT': {
               target: '.createDraft',
             },
             'COMMIT.OPEN.WINDOW': {
@@ -394,6 +392,13 @@ export function createMainPageService({
             },
             'COMMIT.EDIT.PUBLICATION': {
               actions: 'editPublication',
+            },
+            'COMMIT.PUBLISH': {
+              actions: [
+                'removeDraftFromList',
+                'asssignNewPublicationValues',
+              ],
+              target: '#routes.publication.valid',
             },
           },
         },
@@ -421,7 +426,7 @@ export function createMainPageService({
       },
       actions: {
         assignError: (_, event) => {
-          debug('MainPageMachine: assignError:', event)
+
         },
         assignFiles: assign(function assignFilesPredicate(_, event, meta) {
           let draftList = event.draftList.map(function draftListMapper(draft) {
@@ -429,7 +434,21 @@ export function createMainPageService({
             return {
               ...draft,
               ref: spawn(
-                createDraftMachine({ client, draft, editor }),
+                createDraftMachine({ client, draft, editor }).withConfig({
+                  services: {
+                    publishDraft: (context) => {
+                      debug('PUBLISH SERVICE!')
+                      return publishDraft(context.documentId)
+                    }
+                  },
+                  actions: {
+                    afterPublish: sendParent((context, event) => ({
+                      type: 'COMMIT.PUBLISH',
+                      publication: event.data,
+                      documentId: context.documentId
+                    }))
+                  }
+                }),
                 getRefFromParams('draft', draft.id, null),
               ),
             }
@@ -582,14 +601,14 @@ export function createMainPageService({
         },
         updateDraftList: assign((context, event) => {
           let draftId = getRefFromParams('draft', event.documentId, null)
+          debug('UPDATE DRAFTLIST', draftId)
           return {
-            draftList: context.draftList.filter(
-              (d) => d.ref.id != draftId,
-            ),
+            draftList: context.draftList.filter((d) => d.ref.id != draftId),
           }
         }),
         updatePublicationList: assign((context, event) => {
           let pubId = getRefFromParams('pub', event.documentId, event.version)
+          debug('UPDATE PUBLIST', pubId)
           return {
             publicationList: context.publicationList.filter(
               (p) => p.ref.id != pubId,
@@ -597,17 +616,33 @@ export function createMainPageService({
           }
         }),
         removeFileFromRecentList: assign({
-          recents: (context, event) => context.recents.filter(ref => !ref.id.includes(event.documentId))
+          recents: (context, event) =>
+            context.recents.filter((ref) => !ref.id.includes(event.documentId)),
         }),
         assignNewDraftValues: assign((context, event) => {
           let editor = buildEditorHook(plugins, EditorMode.Draft)
           let draftRef = spawn(
-            createDraftMachine({ client, editor, draft: event.draft }),
-            getRefFromParams('draft', event.draft.id, null),
+            createDraftMachine({ client, editor, draft: event.data as Document }).withConfig({
+              services: {
+                publishDraft: (context) => {
+                  return publishDraft(context.documentId)
+                }
+              },
+              actions: {
+                afterPublish: (context, event) => {
+                  sendParent<MainPageContext, MainPageEvent>({
+                    type: 'COMMIT.PUBLISH',
+                    publication: event.data,
+                    documentId: context.documentId
+                  })
+                }
+              }
+            }),
+            getRefFromParams('draft', event.data.id, null),
           )
           return {
             params: {
-              docId: event.draft.id,
+              docId: event.data.id,
               replace: true,
               version: null,
               blockId: null,
@@ -616,16 +651,21 @@ export function createMainPageService({
             draftList: [
               ...context.draftList,
               {
-                ...event.draft,
+                ...event.data,
                 ref: draftRef,
               },
             ],
           }
         }),
         asssignNewPublicationValues: assign((context, event) => {
+          debug('asssignNewPublicationValues', event)
           let editor = buildEditorHook(plugins, EditorMode.Publication)
           let publicationRef = spawn(
-            createPublicationMachine({ client, publication: event.publication, editor }),
+            createPublicationMachine({
+              client,
+              publication: event.publication,
+              editor,
+            }),
             getRefFromParams(
               'pub',
               event.publication.document!.id,
@@ -651,9 +691,9 @@ export function createMainPageService({
           }
         }),
         removeDraftFromList: assign({
-          draftList: (context) => {
-            let ref = getRefFromParams('draft', context.params.docId, null)
-
+          draftList: (context, event) => {
+            let ref = getRefFromParams('draft', event.documentId, null)
+            debug('REMOVE DRAFT:', ref)
             return context.draftList.filter((d) => d.ref.id != ref)
           },
         }),
@@ -679,10 +719,6 @@ export function createMainPageService({
                 errorMessage: JSON.stringify(error),
               })
             })
-
-          receive((event) => {
-            debug('EVENT RECEIVED!!', event)
-          })
         },
         // router reference: https://gist.github.com/ChrisShank/369aa8cbd4002244d7769bd1ba3e232a
         router: () => (sendBack, receive) => {
@@ -759,20 +795,12 @@ export function createMainPageService({
 
           return () => navRouter?.unlisten?.()
         },
-        createNewDraft: () => (sendBack) => {
-          createDraft().then((document) => {
-            debug('DRAFT CREATED:', document)
-            sendBack({ type: 'COMMIT.NEW.DRAFT', draft: document })
-          })
-        },
-        publishDraft: (context, event) => (sendBack) => {
-          publishDraft(context.params.docId).then((publication) => {
-            sendBack({ type: 'REPORT.PUBLISH.SUCCESS', publication })
-          })
-        },
-        deleteDraft: (_, event) => deleteDraft(event.ref),
-        deletePublication: (_, event) => deletePublication(event.ref),
+        createNewDraft: async () => {
+          let doc = await createDraft()
+          return doc
+        }
       },
+
     },
   )
 }
