@@ -5,14 +5,14 @@ import {
   getPublication,
   Link,
   listCitations,
-  Publication,
+  Publication
 } from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {EditorDocument} from '@app/draft-machine'
-import {queryKeys} from '@app/hooks'
-import {QueryClient} from 'react-query'
-import {Editor} from 'slate'
-import {assign, createMachine, sendParent} from 'xstate'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { EditorDocument } from '@app/draft-machine'
+import { queryKeys } from '@app/hooks'
+import { QueryClient } from 'react-query'
+import { Editor } from 'slate'
+import { assign, createMachine, sendParent } from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -31,29 +31,33 @@ export type PublicationContext = {
 }
 
 export type PublicationEvent =
-  | {type: 'LOAD'}
-  | {type: 'UNLOAD'}
-  | {type: 'PUBLICATION.FETCH.DATA'}
+  | { type: 'LOAD' }
+  | { type: 'UNLOAD' }
+  | { type: 'PUBLICATION.FETCH.DATA' }
   | {
-      type: 'PUBLICATION.REPORT.SUCCESS'
-      publication: ClientPublication
-      canUpdate?: boolean
-    }
-  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
-  | {type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string}
-  | {type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account}
-  | {type: 'DISCUSSION.FETCH.DATA'}
-  | {type: 'DISCUSSION.SHOW'}
-  | {type: 'DISCUSSION.HIDE'}
-  | {type: 'DISCUSSION.TOGGLE'}
-  | {type: 'DISCUSSION.REPORT.SUCCESS'; links: Array<Link>}
-  | {type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string}
+    type: 'PUBLICATION.REPORT.SUCCESS'
+    publication: ClientPublication
+    canUpdate?: boolean
+  }
+  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
+  | { type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string }
+  | { type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account }
+  | { type: 'DISCUSSION.FETCH.DATA' }
+  | { type: 'DISCUSSION.SHOW' }
+  | { type: 'DISCUSSION.HIDE' }
+  | { type: 'DISCUSSION.TOGGLE' }
+  | { type: 'DISCUSSION.REPORT.SUCCESS'; links: Array<Link> }
+  | { type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string }
 
-export function createPublicationMachine(
+type CreatePublicationProps = {
   client: QueryClient,
   publication: Publication,
   editor: Editor,
-) {
+}
+
+export function createPublicationMachine({
+  client, publication, editor
+}: CreatePublicationProps) {
   return createMachine(
     {
       context: {

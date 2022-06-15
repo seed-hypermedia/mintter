@@ -3,14 +3,17 @@ import {
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
 } from '@app/client'
+import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
+import {debug} from '@app/utils/logger'
+import {useBookmarksService} from '@components/bookmarks'
+import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
-import {useActor, useMachine} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import {PropsWithChildren, useMemo} from 'react'
 import toast from 'react-hot-toast'
 
@@ -30,10 +33,12 @@ export function LibraryItem({
   fileRef,
   copy = copyTextToClipboard,
   mainService = defaultMainService,
-  deleteDraft,
+  deleteDraft = defaultDeleteDraft,
+  deletePublication = defaultDeletePublication,
 }: PropsWithChildren<LibraryItemProps>) {
   const [state] = useActor(fileRef)
   const [mainState] = useActor(mainService)
+  let bookmarksService = useBookmarksService()
   let {params} = mainState.context
   let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [])
   let match = useMemo(() => {
@@ -47,20 +52,43 @@ export function LibraryItem({
     }
   }, [params.docId, params.version])
 
-  const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
-    actions: {
-      deleteConfirm: () => {
-        if (deleteDraft) {
-          deleteDraft(state.context.documentId)
-        } else {
+  const deleteService = useInterpret(
+    () =>
+      deleteFileMachine.withContext({
+        documentId: state.context.documentId,
+        version: state.context.version,
+        errorMessage: '',
+      }),
+    {
+      services: {
+        performDelete: (context) => {
+          if (context.version) {
+            return deletePublication(context.documentId, context.version)
+          } else {
+            return deleteDraft(context.documentId)
+          }
+        },
+      },
+      actions: {
+        persistDelete: (context) => {
+          debug('persistDelete', context)
           mainService.send({
             type: 'COMMIT.DELETE.FILE',
-            ref: state.context.documentId,
+            documentId: context.documentId,
+            version: context.version,
           })
-        }
+        },
+        removeFileFromBookmarks: (context) => {
+          bookmarksService.send({
+            type: 'BOOKMARK.FILE.DELETE',
+            documentId: context.documentId,
+            version: context.version,
+          })
+        },
       },
     },
-  })
+  )
+  const [deleteState] = useActor(deleteService)
 
   async function onCopy() {
     if (isPublication) {
@@ -75,7 +103,6 @@ export function LibraryItem({
     if (isPublication) {
       mainService.send({
         type: 'GO.TO.PUBLICATION',
-
         docId: state.context.documentId,
         version: state.context.version,
         blockId: undefined,
@@ -150,8 +177,7 @@ export function LibraryItem({
             <Text size="2">Open in new Window</Text>
           </Dropdown.Item>
           <DeleteDialog
-            state={deleteState}
-            send={deleteSend}
+            deleteRef={deleteService}
             title="Delete document"
             description="Are you sure you want to delete this document? This action is not reversible."
           >

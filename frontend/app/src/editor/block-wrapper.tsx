@@ -7,6 +7,7 @@ import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useFile} from '@app/file-provider'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {debug} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Icon} from '@components/icon'
@@ -47,14 +48,11 @@ export function BlockWrapper({
     }
   }
 
-  function addBookmark(
-    docId: string,
-    version: string,
-    blockId: FlowContent['id'],
-  ) {
+  function addBookmark() {
+    debug('ADD BOOKMARK IN BLOCK')
     bookmarksService.send({
       type: 'BOOKMARK.ADD',
-      url: `${MINTTER_LINK_PREFIX}${docId}/${version}/${blockId}`,
+      url: `${MINTTER_LINK_PREFIX}${fileState.context.documentId}/${fileState.context.version}/${element.id}`,
     })
   }
 
@@ -136,12 +134,7 @@ export function BlockWrapper({
             <Icon name="Copy" size="1" />
             <Text size="2">Copy Block ID</Text>
           </Dropdown.Item>
-          <Dropdown.Item
-            onSelect={() => {
-              //@ts-ignore
-              addBookmark(params!.docId, params?.version, element.id)
-            }}
-          >
+          <Dropdown.Item onSelect={addBookmark}>
             <Icon size="1" name="ArrowBottomRight" />
             <Text size="2">Add to Bookmarks</Text>
           </Dropdown.Item>
