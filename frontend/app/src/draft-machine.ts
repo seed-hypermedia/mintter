@@ -2,6 +2,7 @@ import {
   Account, Document, DocumentChange,
   getAccount,
   getDraft,
+  publishDraft,
   updateDraftV2 as apiUpdateDraft
 } from '@app/client'
 import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
@@ -12,7 +13,7 @@ import { debug } from '@app/utils/logger'
 import { createId, group, paragraph, statement, text } from '@mintter/mttast'
 import { QueryClient } from 'react-query'
 import { Editor } from 'slate'
-import { assign, createMachine } from 'xstate'
+import { assign, createMachine, sendParent } from 'xstate'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
@@ -292,6 +293,11 @@ export function createDraftMachine({
         resetChanges: () => {
           changesService.reset()
         },
+        afterPublish: sendParent((context, event) => ({
+          type: 'COMMIT.PUBLISH',
+          publication: event.data,
+          documentId: context.documentId
+        }))
       },
       services: {
         fetchDraftContent: (context) => (sendBack) => {
@@ -371,6 +377,9 @@ export function createDraftMachine({
               })
           }
         },
+        publishDraft: (context) => {
+          return publishDraft(context.documentId)
+        }
       },
     },
   )
