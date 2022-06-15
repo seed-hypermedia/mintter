@@ -11,12 +11,8 @@ export type DiscussionProps = {
   mainService?: typeof defaultMainService
 }
 
-export function Discussion({
-  service,
-  mainService = defaultMainService,
-}: DiscussionProps) {
+export function Discussion({service, mainService}: DiscussionProps) {
   const [state] = useActor(service)
-  const [mainState] = useActor(mainService)
 
   if (state.matches('discussion.fetching')) {
     return <span>loading discussion...</span>
@@ -40,7 +36,9 @@ export function Discussion({
         {state.context.links.map((link) => {
           let {source} = link
           let key = `link-${source?.documentId}-${source?.version}-${source?.blockId}`
-          return <DiscussionItem key={key} link={link} />
+          return (
+            <DiscussionItem key={key} link={link} mainService={mainService} />
+          )
         })}
       </Box>
     )

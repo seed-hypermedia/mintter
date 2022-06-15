@@ -22,6 +22,7 @@ export type EditorDocument = Partial<Document> & {
 
 export type DraftContext = {
   documentId: string
+  version: null
   draft: Document
   localDraft: EditorDocument | null
   errorMessage: string
@@ -83,6 +84,7 @@ export function createDraftMachine({
     {
       context: {
         documentId: draft.id,
+        version: null,
         draft,
         editor,
         localDraft: null,
@@ -279,8 +281,6 @@ export function createDraftMachine({
                 .fetchQuery(
                   [queryKeys.GET_DRAFT, context.draft.id],
                   ({queryKey}) => {
-                    console.log('GETTING DRAFT', context)
-
                     let [_, draftId] = queryKey
                     return getDraft(draftId)
                   },

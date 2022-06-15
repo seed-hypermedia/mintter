@@ -3,9 +3,8 @@ import {Link, LinkNode} from '@app/client'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
-import {PublicationRef} from '@app/main-page-machine'
+import {PublicationRef} from '@app/main-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
-import {debug} from '@app/utils/logger'
 import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
 import {Text} from '@components/text'
@@ -39,16 +38,15 @@ export function DiscussionItem({
 }
 
 function DiscussionEditor({fileRef}: {fileRef: PublicationRef}) {
-  let [state, send] = useActor(fileRef)
+  let [state] = useActor(fileRef)
 
   useEffect(() => {
     fileRef.send('LOAD')
+    fileRef.send('DISCUSSION.SHOW')
     return () => {
       fileRef.send('UNLOAD')
     }
   }, [fileRef])
-
-  debug('DiscussionEditor', state.context.author)
 
   return (
     <Box
@@ -66,13 +64,7 @@ function DiscussionEditor({fileRef}: {fileRef: PublicationRef}) {
           }}
         >
           {state.context.publication?.document?.content && (
-            <FileProvider
-              value={{
-                type: 'pub',
-                documentId: state.context.documentId,
-                version: state.context.version,
-              }}
-            >
+            <FileProvider value={fileRef}>
               <Editor
                 mode={EditorMode.Discussion}
                 value={state.context.publication!.document!.content}

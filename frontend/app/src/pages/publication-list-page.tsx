@@ -24,6 +24,7 @@ export function PublicationList({
           {pubList.length ? (
             pubList.map((publication) => (
               <LibraryItem
+                mainService={mainService}
                 fileRef={publication.ref}
                 key={publication.version}
               />

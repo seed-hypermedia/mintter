@@ -37,7 +37,7 @@ export type MainPageContext = {
     replace: boolean
   }
   recents: Array<PublicationRef | DraftRef>
-  library: ActorRefFrom<typeof libraryMachine>
+  library: ActorRefFrom<typeof libraryMachine> | null
   publicationList: Array<PublicationWithRef>
   draftList: Array<DraftWithRef>
   errorMessage: string
@@ -692,8 +692,6 @@ export function createMainPageService({
             client.fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts()),
           ])
             .then(function filesResponse([pubList, draftList]) {
-              console.log('FILES RESPONSE', pubList, draftList)
-
               sendBack({
                 type: 'REPORT.FILES.SUCCESS',
                 publicationList: pubList.publications,

@@ -1,10 +1,7 @@
+import {DraftRef, PublicationRef} from '@app/main-machine'
 import {createContext, useContext} from 'react'
 
-type FileContext = {
-  type: 'pub' | 'draft'
-  documentId: string
-  version?: string
-}
+type FileContext = PublicationRef | DraftRef
 
 const fileContext = createContext<FileContext | null>(null)
 
