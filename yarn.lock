@@ -1604,7 +1604,7 @@ __metadata:
     http-server: 13.1.0
     is-url: 1.2.4
     jsdom: 19.0.0
-    long: 4.0.0
+    long: 5.2.0
     nanoid: 4.0.0
     navaid: 1.2.0
     prettier: 2.6.2
@@ -8947,7 +8947,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:4.0.0, long@npm:^4.0.0":
+"long@npm:5.2.0":
+  version: 5.2.0
+  resolution: "long@npm:5.2.0"
+  checksum: 37aa4e67b9c3eebc6d9d675adcc9d06f06059ca268922a71273de389746bf07f0ff282f9e604d17fdf84c4149099b44e936ea2b621a6c4759a216621afa97efd
+  languageName: node
+  linkType: hard
+
+"long@npm:^4.0.0":
   version: 4.0.0
   resolution: "long@npm:4.0.0"
   checksum: 16afbe8f749c7c849db1f4de4e2e6a31ac6e617cead3bdc4f9605cb703cd20e1e9fc1a7baba674ffcca57d660a6e5b53a9e236d7b25a295d3855cca79cc06744
