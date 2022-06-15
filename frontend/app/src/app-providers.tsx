@@ -1,6 +1,6 @@
 import {HoverProvider} from '@app/editor/hover-context'
 import {createHoverService} from '@app/editor/hover-machine'
-import {createMainPageService} from '@app/main-page-machine'
+import {createMainPageService} from '@app/main-machine'
 import {
   BookmarksProvider,
   createBookmarkListMachine,
@@ -30,7 +30,9 @@ export const queryClient = new QueryClient({
 
 const dehydrateState = dehydrate(queryClient)
 
-const initMainService = interpret(createMainPageService({client: queryClient}))
+const initMainService = interpret(
+  createMainPageService({client: queryClient}),
+).start()
 
 export const mainService = initMainService
 
@@ -45,9 +47,6 @@ export function AppProviders({
   client = queryClient,
   mainService = initMainService,
 }: PropsWithChildren<AppProvidersProps>) {
-  console.log('APP PROVIDER MAIN SERVICE', mainService)
-
-  mainService.start()
   const themeService = useInterpret(() => createThemeService())
   const authService = useInterpret(() => createAuthService(client))
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))

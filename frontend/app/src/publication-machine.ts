@@ -63,7 +63,7 @@ export function createPublicationMachine(
         editor,
         publication,
         author: null,
-        discussion: [],
+        links: [],
         errorMessage: '',
         canUpdate: false,
       },
@@ -272,7 +272,7 @@ export function createPublicationMachine(
             .catch((err) => {
               sendBack({
                 type: 'PUBLICATION.REPORT.ERROR',
-                errorMessage: 'error fetching',
+                errorMessage: `error fetching publication: ${err}`,
               })
             })
         },

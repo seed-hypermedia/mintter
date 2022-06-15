@@ -2,7 +2,7 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
-import {PublicationRef} from '@app/main-page-machine'
+import {PublicationRef} from '@app/main-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
@@ -72,13 +72,7 @@ export default function Publication({
             data-testid="publication-wrapper"
           >
             {state.context.publication?.document?.content && (
-              <FileProvider
-                value={{
-                  type: 'pub',
-                  documentId: state.context.documentId,
-                  version: state.context.version,
-                }}
-              >
+              <FileProvider value={publicationRef}>
                 <Editor
                   editor={state.context.editor}
                   mode={EditorMode.Publication}
@@ -109,7 +103,7 @@ export default function Publication({
               {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
               Discussion/Citations
             </Button>
-            <Discussion service={publicationRef} />
+            <Discussion service={publicationRef} mainService={mainService} />
           </Box>
         </>
       )}

@@ -28,7 +28,11 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
         <ol className={pageListStyle()}>
           {drafts.length ? (
             drafts.map((draft) => (
-              <LibraryItem key={draft.id} fileRef={draft.ref} />
+              <LibraryItem
+                key={draft.id}
+                fileRef={draft.ref}
+                mainService={mainService}
+              />
             ))
           ) : (
             <Box

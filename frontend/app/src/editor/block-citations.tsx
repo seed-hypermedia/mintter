@@ -138,10 +138,16 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
                 author,
               })
             } else {
-              sendBack({type: 'CITATION.FETCH.ERROR'})
+              sendBack({
+                type: 'CITATION.FETCH.ERROR',
+                errorMessage: 'error fetching citations: no data back',
+              })
             }
           } catch {
-            sendBack({type: 'CITATION.FETCH.ERROR'})
+            sendBack({
+              type: 'CITATION.FETCH.ERROR',
+              errorMessage: 'error fetching citations',
+            })
           }
         })()
       },
@@ -157,7 +163,7 @@ function BlockCitationItem({citation}: BlockCitationItemProps) {
         publication: (_, event) => event.publication,
       }),
       assignError: assign({
-        errorMessage: (context) => 'Error fetching',
+        errorMessage: (context, event) => event.errorMessage,
       }),
       clearError: assign({
         errorMessage: (context) => '',
@@ -216,7 +222,7 @@ type BlockCitationEvent =
       block: FlowContent
       author: Account
     }
-  | {type: 'CITATION.FETCH.ERROR'}
+  | {type: 'CITATION.FETCH.ERROR'; errorMessage: string}
   | {type: 'RETRY'}
 
 const blockCitationMachine = createMachine({

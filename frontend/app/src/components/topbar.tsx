@@ -1,7 +1,7 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
-import {CurrentFile, DraftRef, PublicationRef} from '@app/main-page-machine'
+import {CurrentFile, DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'

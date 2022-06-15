@@ -4,7 +4,7 @@ import {
   deletePublication as defaultDeletePublication,
 } from '@app/client'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {DraftRef, PublicationRef} from '@app/main-page-machine'
+import {DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
@@ -50,8 +50,6 @@ export function LibraryItem({
   const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
     actions: {
       deleteConfirm: () => {
-        console.log('DELETE!', deleteDraft)
-
         if (deleteDraft) {
           deleteDraft(state.context.documentId)
         } else {
@@ -97,8 +95,6 @@ export function LibraryItem({
   }
 
   let title = state.context.title || 'Untitled Document'
-
-  console.log('ISPUBLICATION', isPublication, fileRef.id)
 
   return (
     <StyledItem active={match} data-testid="library-item">

@@ -1,6 +1,6 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {Document} from '@app/client'
-import {DraftRef, PublicationRef} from '@app/main-page-machine'
+import {DraftRef, PublicationRef} from '@app/main-machine'
 import {createPublicationMachine} from '@app/publication-machine'
 import {css} from '@app/stitches.config'
 import {StyledItem} from '@components/library/library-item'

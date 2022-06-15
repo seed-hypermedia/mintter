@@ -20,7 +20,7 @@ import {
   staticParagraph,
   text,
 } from '@mintter/mttast'
-import {useMachine} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {QueryClient} from 'react-query'
 import {Editor as EditorType} from 'slate'
@@ -52,7 +52,6 @@ describe('Editor', () => {
       render(<TestEditor editor={editor} client={client} draft={draft} />)
 
       cy.get('[data-testid="editor"]').then(() => {
-        console.log({editor})
         expect(changesService.getChanges()).to.have.length(2)
       })
     })
@@ -103,10 +102,6 @@ describe('Editor', () => {
         .type('{enter}')
         .then(() => {
           let changes = changesService.getChanges()
-          console.log(
-            '🚀 ~ file: editor.cy.tsx ~ line 99 ~ .then ~ changes',
-            changes,
-          )
           let newBlock: FlowContent = (editor.children[0] as GroupingContent)
             .children[0].children[1]!.children[0]
           expect(changes).to.have.length(6)
@@ -610,8 +605,8 @@ type TestEditorProps = {
 }
 
 function TestEditor({editor, client, draft}: TestEditorProps) {
-  let [state, send] = useMachine(
-    () => createDraftMachine({editor, client, draft, shouldAutosave: false}),
+  let service = useInterpret(
+    createDraftMachine({editor, client, draft, shouldAutosave: false}),
     {
       actions: {
         updateLibrary: () => {
@@ -620,6 +615,7 @@ function TestEditor({editor, client, draft}: TestEditorProps) {
       },
     },
   )
+  let [state, send] = useActor(service)
 
   useEffect(() => {
     send('LOAD')
@@ -631,9 +627,7 @@ function TestEditor({editor, client, draft}: TestEditorProps) {
 
   if (state.matches('editing') && state.context.localDraft?.content) {
     return (
-      <FileProvider
-        value={{type: 'draft', documentId: state.context.documentId}}
-      >
+      <FileProvider value={service}>
         <Editor
           value={state.context.localDraft.content}
           editor={state.context.editor}

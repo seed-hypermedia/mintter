@@ -12,11 +12,9 @@ import {
   Publication,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {createMainPageService} from '@app/main-page-machine'
 import {mount} from '@cypress/react'
 import {ReactNode} from 'react'
 import {QueryClient} from 'react-query'
-import {interpret} from 'xstate'
 ;(function mockTauriIpc() {
   if (window) {
     window.__TAURI_IPC__ = function mockTAURI_IPC() {
@@ -60,7 +58,6 @@ export function mountProviders({
   publication,
   publicationList,
   initialRoute,
-  mainService = defaultMainService,
 }: MountProvidersProps = {}) {
   let peerId = 'testPeerId'
 
@@ -138,28 +135,15 @@ export function mountProviders({
 
   client.invalidateQueries = cy.spy()
 
-  if (typeof mainService == 'undefined') {
-    console.log('MAIN SERVICE IS UNDEFINED')
-
-    mainService = interpret(createMainPageService({client, initialRoute}))
-  }
-
-  console.log('MAIN SERVICE:', mainService, client.getQueryData())
-
   function render(ui: ReactNode) {
     return mount(
-      <AppProviders
-        client={client}
-        initialRoute={initialRoute}
-        mainService={mainService}
-      >
+      <AppProviders client={client} initialRoute={initialRoute}>
         {ui}
       </AppProviders>,
     )
   }
 
   return {
-    mainService,
     client,
     account,
     draftList,

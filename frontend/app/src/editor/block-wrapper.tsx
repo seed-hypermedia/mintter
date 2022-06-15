@@ -30,11 +30,11 @@ export function BlockWrapper({
   const bookmarksService = useBookmarksService()
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
-  let {type, documentId, version} = useFile()
+  let fileRef = useFile()
+  let [fileState] = useActor(fileRef)
   async function onCopy() {
-    if (mode == EditorMode.Discussion) {
-    }
-    if (type == 'pub') {
+    if (fileState.context.version) {
+      let {documentId, version} = fileState.context
       //@ts-ignore
       await copyTextToClipboard(
         `${MINTTER_LINK_PREFIX}${documentId}/${version}/${element.id}`,

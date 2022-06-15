@@ -57,7 +57,7 @@ type AppProps = {
   mainService?: typeof defaultMainService
 }
 
-export function App() {
+export function App({mainService = defaultMainService}: AppProps) {
   globalStyles()
   const service = useAuth()
   const [state] = useActor(service)
@@ -78,7 +78,7 @@ export function App() {
           location.reload()
         }}
       >
-        <MainPage />
+        <MainPage mainService={mainService} />
       </ErrorBoundary>
     )
   }

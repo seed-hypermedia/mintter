@@ -1,5 +1,5 @@
 import {mainService as defaultMainService} from '@app/app-providers'
-import {DraftRef, PublicationRef} from '@app/main-page-machine'
+import {DraftRef, PublicationRef} from '@app/main-machine'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
@@ -21,8 +21,6 @@ type MainPageProps = {
 
 export function MainPage({mainService = defaultMainService}: MainPageProps) {
   const [state] = useActor(mainService)
-
-  console.log('MAIN PAGE STATE', state)
 
   if (state.matches('routes.settings')) {
     return <Settings />
@@ -54,9 +52,15 @@ export function MainPage({mainService = defaultMainService}: MainPageProps) {
               />
             ) : null
           ) : null}
-          {state.matches('routes.home') ? <PublicationList /> : null}
-          {state.matches('routes.draftList') ? <DraftList /> : null}
-          {state.matches('routes.publicationList') ? <PublicationList /> : null}
+          {state.matches('routes.home') ? (
+            <PublicationList mainService={mainService} />
+          ) : null}
+          {state.matches('routes.draftList') ? (
+            <DraftList mainService={mainService} />
+          ) : null}
+          {state.matches('routes.publicationList') ? (
+            <PublicationList mainService={mainService} />
+          ) : null}
         </ErrorBoundary>
         {/* <Box
           css={{

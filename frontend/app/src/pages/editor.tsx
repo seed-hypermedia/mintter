@@ -5,7 +5,7 @@ import {Document} from '@app/client'
 import {createDraftMachine} from '@app/draft-machine'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
-import {DraftRef} from '@app/main-page-machine'
+import {DraftRef} from '@app/main-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -67,9 +67,7 @@ export default function EditorPage({
         >
           {context.localDraft?.content && (
             <>
-              <FileProvider
-                value={{type: 'draft', documentId: context.documentId}}
-              >
+              <FileProvider value={draftRef}>
                 <Editor
                   editor={state.context.editor}
                   value={context.localDraft.content}

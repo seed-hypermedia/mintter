@@ -33,28 +33,16 @@
     ".git/**": true
   },
   "editor.formatOnSave": true,
-  "[javascript]": {
-    "editor.tabSize": 2
-  },
-  "[typescript]": {
-    "editor.tabSize": 2
-  },
-  "[nix]": {
-    "editor.tabSize": 2
-  },
+  "editor.tabSize": 2,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
     "source.organizeImports": true
   },
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.formatOnSave": true
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "eslint.nodePath": ".yarn/sdks",
-  "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
-  "rust-analyzer.updates.channel": "nightly",
   "go.lintTool": "golangci-lint",
   "files.associations": {
     "*.plz": "starlark",

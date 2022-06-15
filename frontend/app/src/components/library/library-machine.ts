@@ -6,7 +6,7 @@ type LibraryEvent =
   | {type: 'LIBRARY.CLOSE'}
   | {type: 'LIBRARY.TOGGLE'}
 
-export const libraryMachine = createMachine(
+export var libraryMachine = createMachine(
   {
     initial: 'closed',
     tsTypes: {} as import('./library-machine.typegen').Typegen0,
