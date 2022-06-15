@@ -56,10 +56,10 @@ describe('Topbar', () => {
         currentFile={spawn(
           createDraftMachine({client, draft, editor}).withContext({
             draft,
+            version: null,
             documentId: draft.id,
             localDraft: null,
             errorMessage: '',
-            canPublish: false,
             editor,
             title: draft.title,
             author: account,

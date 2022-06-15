@@ -71,7 +71,7 @@ export function LibraryItem({
       },
       actions: {
         persistDelete: (context) => {
-          debug('persistDelete', context)
+          debug('persistDelete!!!!', mainService.getSnapshot().value)
           mainService.send({
             type: 'COMMIT.DELETE.FILE',
             documentId: context.documentId,
@@ -79,6 +79,7 @@ export function LibraryItem({
           })
         },
         removeFileFromBookmarks: (context) => {
+          debug('removeFileFromBookmarks!!')
           bookmarksService.send({
             type: 'BOOKMARK.FILE.DELETE',
             documentId: context.documentId,
@@ -155,7 +156,7 @@ export function LibraryItem({
         <Dropdown.Content
           align="start"
           data-testid="library-item-dropdown-root"
-          hidden={deleteState.matches('opened')}
+          hidden={deleteState.matches('open')}
         >
           <Dropdown.Item
             data-testid="copy-item"

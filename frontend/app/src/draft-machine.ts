@@ -1,19 +1,18 @@
 import {
-  Document,
-  DocumentChange,
+  Account, Document, DocumentChange,
   getAccount,
   getDraft,
-  updateDraftV2 as apiUpdateDraft,
+  updateDraftV2 as apiUpdateDraft
 } from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import {queryKeys} from '@app/hooks'
-import {getTitleFromContent} from '@app/utils/get-document-title'
-import {createId, group, paragraph, statement, text} from '@mintter/mttast'
-import {QueryClient} from 'react-query'
-import {Editor} from 'slate'
-import {assign, createMachine} from 'xstate'
-import {Account} from './../../../plz-out/tmp/frontend/app._build/frontend/app/src/client/.generated/accounts/v1alpha/accounts'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { changesService } from '@app/editor/mintter-changes/plugin'
+import { queryKeys } from '@app/hooks'
+import { getTitleFromContent } from '@app/utils/get-document-title'
+import { debug } from '@app/utils/logger'
+import { createId, group, paragraph, statement, text } from '@mintter/mttast'
+import { QueryClient } from 'react-query'
+import { Editor } from 'slate'
+import { assign, createMachine } from 'xstate'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
@@ -26,37 +25,37 @@ export type DraftContext = {
   draft: Document
   localDraft: EditorDocument | null
   errorMessage: string
-  canPublish: boolean
   editor: Editor
   author: Account | null
   title: string
 }
 
 export type DraftEvent =
-  | {type: 'FETCH'; documentId: string}
+  | { type: 'FETCH'; documentId: string }
   | {
-      type: 'DRAFT.REPORT.FETCH.SUCCESS'
-      data: Document
-    }
-  | {type: 'DRAFT.REPORT.FETCH.ERROR'; errorMessage: string}
-  | {type: 'DRAFT.UPDATE'; payload: Partial<EditorDocument>}
-  | {type: 'DRAFT.UPDATE.SUCCESS'}
-  | {type: 'DRAFT.UPDATE.ERROR'; errorMessage: Error['message']}
-  | {type: 'DRAFT.CANCEL'}
+    type: 'DRAFT.REPORT.FETCH.SUCCESS'
+    data: Document
+  }
+  | { type: 'DRAFT.REPORT.FETCH.ERROR'; errorMessage: string }
+  | { type: 'DRAFT.UPDATE'; payload: Partial<EditorDocument> }
+  | { type: 'DRAFT.UPDATE.SUCCESS' }
+  | { type: 'DRAFT.UPDATE.ERROR'; errorMessage: Error['message'] }
+  | { type: 'DRAFT.CANCEL' }
   | {
-      type: 'DRAFT.MIGRATE'
-    }
+    type: 'DRAFT.MIGRATE'
+  }
   | {
-      type: 'LOAD'
-    }
+    type: 'LOAD'
+  }
   | {
-      type: 'UNLOAD'
-    }
+    type: 'UNLOAD'
+  }
   | {
-      type: 'RESET.CHANGES'
-    }
-  | {type: 'DRAFT.REPORT.AUTHOR.ERROR'; errorMessage: string}
-  | {type: 'DRAFT.REPORT.AUTHOR.SUCCESS'; author: Account}
+    type: 'RESET.CHANGES'
+  }
+  | { type: 'DRAFT.REPORT.AUTHOR.ERROR'; errorMessage: string }
+  | { type: 'DRAFT.REPORT.AUTHOR.SUCCESS'; author: Account }
+  | { type: 'DRAFT.PUBLISH' }
 
 export interface CreateDraftMachineProps {
   draft: Document
@@ -67,8 +66,8 @@ export interface CreateDraftMachineProps {
 }
 
 const defaultContent = [
-  group({data: {parent: ''}}, [
-    statement({id: createId()}, [paragraph([text('')])]),
+  group({ data: { parent: '' } }, [
+    statement({ id: createId() }, [paragraph([text('')])]),
   ]),
 ]
 
@@ -89,12 +88,11 @@ export function createDraftMachine({
         editor,
         localDraft: null,
         errorMessage: '',
-        canPublish: false,
         author: null,
         title: draft.title,
       },
       tsTypes: {} as import('./draft-machine.typegen').Typegen0,
-      schema: {context: {} as DraftContext, events: {} as DraftEvent},
+      schema: { context: {} as DraftContext, events: {} as DraftEvent },
       id: 'editor',
       initial: 'idle',
       invoke: {
@@ -149,6 +147,7 @@ export function createDraftMachine({
                 FETCH: {
                   target: '#editor.fetching',
                 },
+                'DRAFT.PUBLISH': '#publishing'
               },
             },
             debouncing: {
@@ -191,7 +190,7 @@ export function createDraftMachine({
                   target: 'debouncing',
                 },
                 'DRAFT.UPDATE.SUCCESS': {
-                  actions: ['updateLibrary', 'resetChanges'],
+                  actions: ['resetChanges'],
                   target: 'idle',
                 },
                 'DRAFT.UPDATE.ERROR': {
@@ -207,8 +206,29 @@ export function createDraftMachine({
             },
           },
         },
-
+        publishing: {
+          id: 'publishing',
+          entry: (context, event) => {
+            debug('IN PUBLISHING!', { context, event })
+          },
+          invoke: {
+            src: 'publishDraft',
+            id: 'publishDraft',
+            onDone: {
+              target: 'published',
+              actions: ['afterPublish']
+            },
+            onError: {
+              target: '#errored',
+              actions: ['assignError']
+            }
+          },
+        },
+        published: {
+          type: 'final',
+        },
         errored: {
+          id: 'errored',
           on: {
             FETCH: [
               {
@@ -248,7 +268,7 @@ export function createDraftMachine({
         }),
         updateTitle: assign({
           title: (_, event) => {
-            return getTitleFromContent({children: event.payload.content})
+            return getTitleFromContent({ children: event.payload.content })
           },
         }),
         assignTitle: assign({
@@ -275,18 +295,18 @@ export function createDraftMachine({
       },
       services: {
         fetchDraftContent: (context) => (sendBack) => {
-          ;(async () => {
+          ; (async () => {
             try {
               client
                 .fetchQuery(
                   [queryKeys.GET_DRAFT, context.draft.id],
-                  ({queryKey}) => {
+                  ({ queryKey }) => {
                     let [_, draftId] = queryKey
                     return getDraft(draftId)
                   },
                 )
                 .then((data) => {
-                  sendBack({type: 'DRAFT.REPORT.FETCH.SUCCESS', data})
+                  sendBack({ type: 'DRAFT.REPORT.FETCH.SUCCESS', data })
                 })
             } catch (err: any) {
               sendBack({
@@ -298,19 +318,19 @@ export function createDraftMachine({
         },
         saveDraft: (context) => (sendBack) => {
           if (shouldAutosave) {
-            ;(async function autosave() {
+            ; (async function autosave() {
               let contentChanges = changesService.transformChanges(editor)
               let newTitle = context.title
               let changes: Array<DocumentChange> = newTitle
                 ? [
-                    ...contentChanges,
-                    {
-                      op: {
-                        $case: 'setTitle',
-                        setTitle: newTitle,
-                      },
+                  ...contentChanges,
+                  {
+                    op: {
+                      $case: 'setTitle',
+                      setTitle: newTitle,
                     },
-                  ]
+                  },
+                ]
                 : contentChanges
 
               try {

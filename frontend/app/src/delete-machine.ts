@@ -1,14 +1,19 @@
-import { assign, createMachine } from 'xstate';
+import {assign, createMachine} from 'xstate'
+import {Empty} from './../../../plz-out/gen/frontend/app/src/client/.generated/google/protobuf/empty'
 
-export type DeleteMachineEvent = {
-  type: 'DELETE.OPEN'
-} | {
-  type: 'DELETE.CLOSE'
-} | {
-  type: 'DELETE.CANCEL'
-} | {
-  type: 'DELETE.CONFIRM'
-}
+export type DeleteMachineEvent =
+  | {
+      type: 'DELETE.OPEN'
+    }
+  | {
+      type: 'DELETE.CLOSE'
+    }
+  | {
+      type: 'DELETE.CANCEL'
+    }
+  | {
+      type: 'DELETE.CONFIRM'
+    }
 
 export type DeleteMachineContext = {
   documentId: string
@@ -18,65 +23,68 @@ export type DeleteMachineContext = {
 
 export type DeleteMachineServices = {
   performDelete: {
-    data: {}
+    data: Empty
   }
 }
-export const deleteFileMachine = createMachine({
-  tsTypes: {} as import("./delete-machine.typegen").Typegen0,
-  schema: {
-    context: {} as DeleteMachineContext,
-    events: {} as DeleteMachineEvent,
-    services: {} as DeleteMachineServices
-  },
-  context: {
-    documentId: '',
-    version: null,
-    errorMessage: ''
-  },
-  initial: 'close',
-  states: {
-    close: {
-      id: 'close',
-      on: {
-        'DELETE.OPEN': 'open'
-      }
+export const deleteFileMachine = createMachine(
+  {
+    tsTypes: {} as import('./delete-machine.typegen').Typegen0,
+    schema: {
+      context: {} as DeleteMachineContext,
+      events: {} as DeleteMachineEvent,
+      services: {} as DeleteMachineServices,
     },
-    open: {
-      initial: 'idle',
-      states: {
-        idle: {
-          on: {
-            'DELETE.CANCEL': '#close',
-            'DELETE.CONFIRM': 'deleting'
-          }
+    context: {
+      documentId: '',
+      version: null,
+      errorMessage: '',
+    },
+    initial: 'close',
+    states: {
+      close: {
+        id: 'close',
+        on: {
+          'DELETE.OPEN': 'open',
         },
-        deleting: {
-          on: {
-            'DELETE.CANCEL': '#close'
-          },
-          invoke: {
-            src: 'performDelete',
-            id: 'performDelete',
-            onError: {
-              target: 'idle',
-              actions: ['assignError'],
+      },
+      open: {
+        initial: 'idle',
+        states: {
+          idle: {
+            on: {
+              'DELETE.CANCEL': '#close',
+              'DELETE.CONFIRM': 'deleting',
             },
-            onDone: {
-              target: 'deleted',
-              actions: ['persistDelete', 'removeFileFromBookmarks']
-            }
-          }
+          },
+          deleting: {
+            on: {
+              'DELETE.CANCEL': '#close',
+            },
+            invoke: {
+              src: 'performDelete',
+              id: 'performDelete',
+              onError: {
+                target: 'idle',
+                actions: ['assignError'],
+              },
+              onDone: {
+                target: 'deleted',
+                actions: ['persistDelete', 'removeFileFromBookmarks'],
+              },
+            },
+          },
+          deleted: {
+            type: 'final',
+          },
         },
-        deleted: {
-          type: 'final'
-        }
-      }
-    }
-  }
-}, {
-  actions: {
-    assignError: assign({
-      errorMessage: (_, event) => `Delete error: ${event.data}`
-    })
-  }
-})
+      },
+    },
+  },
+  {
+    actions: {
+      assignError: assign({
+        errorMessage: (_, event) => `Delete error: ${event.data}`,
+      }),
+    },
+  },
+)
