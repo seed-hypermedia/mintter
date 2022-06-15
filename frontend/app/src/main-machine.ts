@@ -2,8 +2,7 @@ import type { Document } from '@app/client'
 import {
   createDraft, listDrafts,
   listPublications,
-  Publication,
-  publishDraft
+  Publication
 } from '@app/client'
 import { createDraftMachine } from '@app/draft-machine'
 import { buildEditorHook, EditorMode } from '@app/editor/plugin-utils'
@@ -18,7 +17,7 @@ import { invoke as tauriInvoke } from '@tauri-apps/api'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
 import { QueryClient } from 'react-query'
-import { ActorRefFrom, assign, createMachine, send, sendParent, spawn } from 'xstate'
+import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
 
 export type PublicationRef = ActorRefFrom<
   ReturnType<typeof createPublicationMachine>
@@ -434,21 +433,7 @@ export function createMainPageService({
             return {
               ...draft,
               ref: spawn(
-                createDraftMachine({ client, draft, editor }).withConfig({
-                  services: {
-                    publishDraft: (context) => {
-                      debug('PUBLISH SERVICE!')
-                      return publishDraft(context.documentId)
-                    }
-                  },
-                  actions: {
-                    afterPublish: sendParent((context, event) => ({
-                      type: 'COMMIT.PUBLISH',
-                      publication: event.data,
-                      documentId: context.documentId
-                    }))
-                  }
-                }),
+                createDraftMachine({ client, draft, editor }),
                 getRefFromParams('draft', draft.id, null),
               ),
             }
@@ -622,22 +607,7 @@ export function createMainPageService({
         assignNewDraftValues: assign((context, event) => {
           let editor = buildEditorHook(plugins, EditorMode.Draft)
           let draftRef = spawn(
-            createDraftMachine({ client, editor, draft: event.data as Document }).withConfig({
-              services: {
-                publishDraft: (context) => {
-                  return publishDraft(context.documentId)
-                }
-              },
-              actions: {
-                afterPublish: (context, event) => {
-                  sendParent<MainPageContext, MainPageEvent>({
-                    type: 'COMMIT.PUBLISH',
-                    publication: event.data,
-                    documentId: context.documentId
-                  })
-                }
-              }
-            }),
+            createDraftMachine({ client, editor, draft: event.data }),
             getRefFromParams('draft', event.data.id, null),
           )
           return {
