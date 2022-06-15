@@ -3,15 +3,16 @@ import {
   getAccount,
   getInfo,
   getPublication,
-  Link, listCitations,
-  Publication
+  Link,
+  listCitations,
+  Publication,
 } from '@app/client'
-import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
-import { EditorDocument } from '@app/draft-machine'
-import { queryKeys } from '@app/hooks'
-import { QueryClient } from 'react-query'
-import { Editor } from 'slate'
-import { assign, createMachine, sendParent } from 'xstate'
+import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
+import {EditorDocument} from '@app/draft-machine'
+import {queryKeys} from '@app/hooks'
+import {QueryClient} from 'react-query'
+import {Editor} from 'slate'
+import {assign, createMachine, sendParent} from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -30,23 +31,23 @@ export type PublicationContext = {
 }
 
 export type PublicationEvent =
-  | { type: 'LOAD' }
-  | { type: 'UNLOAD' }
-  | { type: 'PUBLICATION.FETCH.DATA' }
+  | {type: 'LOAD'}
+  | {type: 'UNLOAD'}
+  | {type: 'PUBLICATION.FETCH.DATA'}
   | {
-    type: 'PUBLICATION.REPORT.SUCCESS'
-    publication: ClientPublication
-    canUpdate?: boolean
-  }
-  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
-  | { type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string }
-  | { type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account }
-  | { type: 'DISCUSSION.FETCH.DATA' }
-  | { type: 'DISCUSSION.SHOW' }
-  | { type: 'DISCUSSION.HIDE' }
-  | { type: 'DISCUSSION.TOGGLE' }
-  | { type: 'DISCUSSION.REPORT.SUCCESS'; links: Array<Link> }
-  | { type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string }
+      type: 'PUBLICATION.REPORT.SUCCESS'
+      publication: ClientPublication
+      canUpdate?: boolean
+    }
+  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
+  | {type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string}
+  | {type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account}
+  | {type: 'DISCUSSION.FETCH.DATA'}
+  | {type: 'DISCUSSION.SHOW'}
+  | {type: 'DISCUSSION.HIDE'}
+  | {type: 'DISCUSSION.TOGGLE'}
+  | {type: 'DISCUSSION.REPORT.SUCCESS'; links: Array<Link>}
+  | {type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string}
 
 export function createPublicationMachine(
   client: QueryClient,
@@ -289,7 +290,11 @@ export function createPublicationMachine(
                 },
               )
               .then((response) => {
-                let links = response.links.filter(link => typeof link.source != 'undefined' && typeof link.target != 'undefined')
+                let links = response.links.filter(
+                  (link) =>
+                    typeof link.source != 'undefined' &&
+                    typeof link.target != 'undefined',
+                )
 
                 sendBack({
                   type: 'DISCUSSION.REPORT.SUCCESS',
