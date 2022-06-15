@@ -1,11 +1,10 @@
-import {citationMachine, CitationProvider} from '@app/editor/citations'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
+import {FileProvider} from '@app/file-provider'
 import {mountProviders} from '@app/test/utils'
 import {Box} from '@components/box'
 import {group, ol, paragraph, statement, text, ul} from '@mintter/mttast'
-import {useInterpret} from '@xstate/react'
 import {useMemo} from 'react'
 import {QueryClient} from 'react-query'
 
@@ -15,11 +14,9 @@ function TestEditor({value, client}: {value: any; client: QueryClient}) {
     [],
   )
 
-  const citations = useInterpret(() => citationMachine)
-
   return (
     <Box css={{padding: '$9'}}>
-      <CitationProvider value={citations}>
+      <FileProvider value={{type: 'draft', documentId: 'foo'}}>
         <Editor
           mode={EditorMode.Publication}
           editor={editor}
@@ -28,7 +25,7 @@ function TestEditor({value, client}: {value: any; client: QueryClient}) {
             // noop
           }}
         />
-      </CitationProvider>
+      </FileProvider>
     </Box>
   )
 }

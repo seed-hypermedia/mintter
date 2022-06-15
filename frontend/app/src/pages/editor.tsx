@@ -4,6 +4,7 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {Document} from '@app/client'
 import {createDraftMachine} from '@app/draft-machine'
 import {Editor} from '@app/editor/editor'
+import {FileProvider} from '@app/file-provider'
 import {DraftRef} from '@app/main-page-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
@@ -66,16 +67,19 @@ export default function EditorPage({
         >
           {context.localDraft?.content && (
             <>
-              <Editor
-                editor={state.context.editor}
-                value={context.localDraft.content}
-                //@ts-ignore
-                onChange={(content: ChildrenOf<Document>) => {
-                  if (!content && typeof content == 'string') return
-                  send({type: 'DRAFT.UPDATE', payload: {content}})
-                }}
-              />
-
+              <FileProvider
+                value={{type: 'draft', documentId: context.documentId}}
+              >
+                <Editor
+                  editor={state.context.editor}
+                  value={context.localDraft.content}
+                  //@ts-ignore
+                  onChange={(content: ChildrenOf<Document>) => {
+                    if (!content && typeof content == 'string') return
+                    send({type: 'DRAFT.UPDATE', payload: {content}})
+                  }}
+                />
+              </FileProvider>
               <Box css={{margin: '$9', marginLeft: '$7'}}>
                 <button type="button" onClick={() => setVisible((v) => !v)}>
                   toggle Value

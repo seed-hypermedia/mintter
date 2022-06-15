@@ -1,13 +1,11 @@
-import {
-  mainService as defaultMainService,
-  mainService,
-} from '@app/app-providers'
+import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {BlockCitations} from '@app/editor/block-citations'
 import {BlockTools} from '@app/editor/block-tools'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {useFile} from '@app/file-provider'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
@@ -32,16 +30,14 @@ export function BlockWrapper({
   const bookmarksService = useBookmarksService()
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
-  const [mainState] = useActor(mainService)
-
+  let {type, documentId, version} = useFile()
   async function onCopy() {
     if (mode == EditorMode.Discussion) {
-      // noop
     }
-    if (params) {
+    if (type == 'pub') {
       //@ts-ignore
       await copyTextToClipboard(
-        `${MINTTER_LINK_PREFIX}${params.docId}/${params.version}/${element.id}`,
+        `${MINTTER_LINK_PREFIX}${documentId}/${version}/${element.id}`,
       )
       toast.success('Statement Reference copied successfully', {
         position: 'top-center',

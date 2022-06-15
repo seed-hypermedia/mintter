@@ -1,162 +1,132 @@
 import {mainService as defaultMainService} from '@app/app-providers'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {citationMachine, CitationProvider} from '@app/editor/citations'
-import {ContextMenu} from '@app/editor/context-menu'
+import {Link, LinkNode} from '@app/client'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {useAccount} from '@app/hooks'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {GetBlockResult} from '@app/utils/get-block'
+import {FileProvider} from '@app/file-provider'
+import {PublicationRef} from '@app/main-page-machine'
 import {getDateFormat} from '@app/utils/get-format-date'
-import {useBookmarksService} from '@components/bookmarks'
+import {debug} from '@app/utils/logger'
+import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
-import {Icon} from '@components/icon'
 import {Text} from '@components/text'
-import {useInterpret} from '@xstate/react'
-import toast from 'react-hot-toast'
+import {useActor, useSelector} from '@xstate/react'
+import {useEffect} from 'react'
+
+function useDiscussionFileRef(
+  mainService: typeof defaultMainService,
+  source: LinkNode,
+) {
+  return useSelector(mainService, (state) => {
+    let linkRef = getRefFromParams('pub', source.documentId, source.version)
+    let pubList = state.context.publicationList
+    let pubRef = pubList.find((p) => p.ref.id == linkRef)!.ref
+    return pubRef
+  })
+}
 
 type DiscussionItemProps = {
-  entry: GetBlockResult
+  link: Link
   mainService?: typeof defaultMainService
 }
 
 export function DiscussionItem({
-  entry,
+  link,
   mainService = defaultMainService,
 }: DiscussionItemProps) {
-  const {data: author} = useAccount(entry.publication.document?.author)
-  const bookmarkService = useBookmarksService()
+  let fileRef = useDiscussionFileRef(mainService, link.source!)
 
-  const citationService = useInterpret(() =>
-    citationMachine.withContext({
-      link: entry,
-    }),
-  )
+  return <DiscussionEditor fileRef={fileRef} />
+}
 
-  let url =
-    entry.publication.document && entry.block
-      ? `${MINTTER_LINK_PREFIX}${entry.publication.document?.id}/${entry.publication.version}/${entry?.block.id}`
-      : ''
+function DiscussionEditor({fileRef}: {fileRef: PublicationRef}) {
+  let [state, send] = useActor(fileRef)
 
-  function addBookmark() {
-    bookmarkService.send({
-      type: 'BOOKMARK.ADD',
-      url,
-    })
-  }
+  useEffect(() => {
+    fileRef.send('LOAD')
+    return () => {
+      fileRef.send('UNLOAD')
+    }
+  }, [fileRef])
 
-  async function onCopy() {
-    await copyTextToClipboard(url)
-    toast.success('Embed Reference copied successfully', {
-      position: 'top-center',
-    })
-  }
+  debug('DiscussionEditor', state.context.author)
 
-  function onGoToPublication() {
-    mainService.send({
-      type: 'GO.TO.PUBLICATION',
-      docId: entry.publication.document!.id,
-      version: entry.publication.version,
-      blockId: 'hola',
-    })
-  }
-
-  const {block, publication} = entry
   return (
-    <CitationProvider value={citationService}>
-      <ContextMenu.Root>
-        <ContextMenu.Trigger>
-          <Box
-            css={{
-              borderBottom: '1px solid rgba(0,0,0,0.1)',
-              '&:hover': {
-                cursor: 'pointer',
-              },
-            }}
-          >
-            <Box
-              css={{
-                marginLeft: -32,
+    <Box
+      css={{
+        borderBottom: '1px solid rgba(0,0,0,0.1)',
+        '&:hover': {
+          cursor: 'pointer',
+        },
+      }}
+    >
+      {state.matches('publication.ready') && (
+        <Box
+          css={{
+            marginLeft: -32,
+          }}
+        >
+          {state.context.publication?.document?.content && (
+            <FileProvider
+              value={{
+                type: 'pub',
+                documentId: state.context.documentId,
+                version: state.context.version,
               }}
             >
-              {entry.publication.document?.content && (
-                <Editor
-                  mode={EditorMode.Discussion}
-                  value={entry.publication.document.content}
-                />
-              )}
-            </Box>
+              <Editor
+                mode={EditorMode.Discussion}
+                value={state.context.publication!.document!.content}
+                editor={state.context.editor}
+                onChange={() => {
+                  // noop
+                }}
+              />
+            </FileProvider>
+          )}
+        </Box>
+      )}
+      <Box
+        css={{
+          paddingVertical: '$6',
+          $$gap: '16px',
+          display: 'flex',
+          gap: '$$gap',
+          alignItems: 'center',
+          '& *': {
+            position: 'relative',
+          },
+          '& *:not(:first-child):before': {
+            content: `"|"`,
+            color: '$base-text-low',
+            opacity: 0.5,
+            position: 'absolute',
+            left: '-10px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+          },
+        }}
+      >
+        <Text size="1" color="muted">
+          {state.context.title}
+        </Text>
+        {state.context.author && (
+          <Text size="1" color="muted" css={{paddingRight: '$3'}}>
+            <span>Signed by </span>
+            <span style={{textDecoration: 'underline'}}>
+              {state.context.author.profile?.alias}
+            </span>
+          </Text>
+        )}
 
-            <Box
-              css={{
-                paddingVertical: '$6',
-                $$gap: '16px',
-                display: 'flex',
-                gap: '$$gap',
-                alignItems: 'center',
-                '& *': {
-                  position: 'relative',
-                },
-                '& *:not(:first-child):before': {
-                  content: `"|"`,
-                  color: '$base-text-low',
-                  opacity: 0.5,
-                  position: 'absolute',
-                  left: '-10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                },
-              }}
-            >
-              <Text size="1" color="muted">
-                {publication?.document?.title}
-              </Text>
-              {author && (
-                <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-                  <span>Signed by </span>
-                  <span style={{textDecoration: 'underline'}}>
-                    {author.profile?.alias}
-                  </span>
-                </Text>
-              )}
-
-              <Text size="1" color="muted">
-                Created on:{' '}
-                {getDateFormat(entry.publication?.document, 'createTime')}
-              </Text>
-              <Text size="1" color="muted">
-                Last modified:{' '}
-                {getDateFormat(entry.publication?.document, 'updateTime')}
-              </Text>
-            </Box>
-          </Box>
-        </ContextMenu.Trigger>
-        <ContextMenu.Content>
-          <ContextMenu.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Embed Reference</Text>
-          </ContextMenu.Item>
-          <ContextMenu.Item onSelect={addBookmark}>
-            <Icon name="ArrowChevronDown" size="1" />
-            <Text size="2">Add to Bookmarks</Text>
-          </ContextMenu.Item>
-          <ContextMenu.Item onSelect={() => onGoToPublication()}>
-            <Icon name="ArrowTopRight" size="1" />
-            <Text size="2">Open Embed in main Panel</Text>
-          </ContextMenu.Item>
-          <ContextMenu.Item
-            onSelect={() =>
-              mainService.send({
-                type: 'COMMIT.OPEN.WINDOW',
-                path: `/p/${entry.publication.document?.id}/${entry.publication.version}/${entry.block?.id}`,
-              })
-            }
-          >
-            <Icon name="OpenInNewWindow" size="1" />
-            <Text size="2">Open Embed in new Window</Text>
-          </ContextMenu.Item>
-        </ContextMenu.Content>
-      </ContextMenu.Root>
-    </CitationProvider>
+        <Text size="1" color="muted">
+          Created on:{' '}
+          {getDateFormat(state.context.publication?.document, 'createTime')}
+        </Text>
+        <Text size="1" color="muted">
+          Last modified:{' '}
+          {getDateFormat(state.context.publication?.document, 'updateTime')}
+        </Text>
+      </Box>
+    </Box>
   )
 }
