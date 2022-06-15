@@ -8,6 +8,7 @@ import {
 } from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
+import {FileProvider} from '@app/file-provider'
 import {mountProviders} from '@app/test/utils'
 import {
   FlowContent,
@@ -630,14 +631,18 @@ function TestEditor({editor, client, draft}: TestEditorProps) {
 
   if (state.matches('editing') && state.context.localDraft?.content) {
     return (
-      <Editor
-        value={state.context.localDraft.content}
-        editor={state.context.editor}
-        onChange={(content) => {
-          if (!content && typeof content == 'string') return
-          send({type: 'DRAFT.UPDATE', payload: {content}})
-        }}
-      />
+      <FileProvider
+        value={{type: 'draft', documentId: state.context.documentId}}
+      >
+        <Editor
+          value={state.context.localDraft.content}
+          editor={state.context.editor}
+          onChange={(content) => {
+            if (!content && typeof content == 'string') return
+            send({type: 'DRAFT.UPDATE', payload: {content}})
+          }}
+        />
+      </FileProvider>
     )
   }
 

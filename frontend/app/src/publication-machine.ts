@@ -3,16 +3,15 @@ import {
   getAccount,
   getInfo,
   getPublication,
-  listCitations,
-  Publication,
+  Link, listCitations,
+  Publication
 } from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {EditorDocument} from '@app/draft-machine'
-import {queryKeys} from '@app/hooks'
-import {getBlock, GetBlockResult} from '@app/utils/get-block'
-import {QueryClient} from 'react-query'
-import {Editor} from 'slate'
-import {assign, createMachine, sendParent} from 'xstate'
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
+import { EditorDocument } from '@app/draft-machine'
+import { queryKeys } from '@app/hooks'
+import { QueryClient } from 'react-query'
+import { Editor } from 'slate'
+import { assign, createMachine, sendParent } from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -25,29 +24,29 @@ export type PublicationContext = {
   publication: Publication | ClientPublication | null
   errorMessage: string
   canUpdate: boolean
-  discussion: Array<GetBlockResult>
+  links: Array<Link>
   editor: Editor
   title: string
 }
 
 export type PublicationEvent =
-  | {type: 'LOAD'}
-  | {type: 'UNLOAD'}
-  | {type: 'PUBLICATION.FETCH.DATA'}
+  | { type: 'LOAD' }
+  | { type: 'UNLOAD' }
+  | { type: 'PUBLICATION.FETCH.DATA' }
   | {
-      type: 'PUBLICATION.REPORT.SUCCESS'
-      publication: ClientPublication
-      canUpdate?: boolean
-    }
-  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
-  | {type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string}
-  | {type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account}
-  | {type: 'DISCUSSION.FETCH.DATA'}
-  | {type: 'DISCUSSION.SHOW'}
-  | {type: 'DISCUSSION.HIDE'}
-  | {type: 'DISCUSSION.TOGGLE'}
-  | {type: 'DISCUSSION.REPORT.SUCCESS'; discussion: Array<GetBlockResult>}
-  | {type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string}
+    type: 'PUBLICATION.REPORT.SUCCESS'
+    publication: ClientPublication
+    canUpdate?: boolean
+  }
+  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
+  | { type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string }
+  | { type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account }
+  | { type: 'DISCUSSION.FETCH.DATA' }
+  | { type: 'DISCUSSION.SHOW' }
+  | { type: 'DISCUSSION.HIDE' }
+  | { type: 'DISCUSSION.TOGGLE' }
+  | { type: 'DISCUSSION.REPORT.SUCCESS'; links: Array<Link> }
+  | { type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string }
 
 export function createPublicationMachine(
   client: QueryClient,
@@ -103,7 +102,7 @@ export function createPublicationMachine(
                   target: 'errored',
                 },
                 'DISCUSSION.REPORT.SUCCESS': {
-                  actions: 'assignDiscussion',
+                  actions: 'assignLinks',
                   target: 'ready',
                 },
               },
@@ -161,7 +160,7 @@ export function createPublicationMachine(
             errored: {
               on: {
                 'PUBLICATION.FETCH.DATA': {
-                  actions: ['clearError', 'clearDiscussion'],
+                  actions: ['clearError', 'clearLinks'],
                   target: 'fetching',
                 },
               },
@@ -290,18 +289,12 @@ export function createPublicationMachine(
                 },
               )
               .then((response) => {
-                let links = response.links.filter(Boolean)
+                let links = response.links.filter(link => typeof link.source != 'undefined' && typeof link.target != 'undefined')
 
-                // This is importat to make citations accessible to Editor elements
-
-                Promise.all(links.map(({source}) => getBlock(source)))
-                  //@ts-ignore
-                  .then((result: Array<GetBlockResult>) => {
-                    sendBack({
-                      type: 'DISCUSSION.REPORT.SUCCESS',
-                      discussion: result,
-                    })
-                  })
+                sendBack({
+                  type: 'DISCUSSION.REPORT.SUCCESS',
+                  links,
+                })
               })
               .catch((error: any) => {
                 sendBack({
@@ -334,14 +327,14 @@ export function createPublicationMachine(
         assignCanUpdate: assign({
           canUpdate: (_, event) => Boolean(event.canUpdate),
         }),
-        assignDiscussion: assign({
-          discussion: (_, event) => event.discussion,
+        assignLinks: assign({
+          links: (_, event) => event.links,
         }),
         assignError: assign({
           errorMessage: (_, event) => event.errorMessage,
         }),
-        clearDiscussion: assign({
-          discussion: (context) => [],
+        clearLinks: assign({
+          links: (context) => [],
         }),
         clearError: assign({
           errorMessage: (context) => '',
