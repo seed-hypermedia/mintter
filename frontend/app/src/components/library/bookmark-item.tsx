@@ -1,15 +1,15 @@
 import {mainService as defaultMainService} from '@app/app-providers'
+import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {debug} from '@app/utils/logger'
 import {createBookmarkMachine, useBookmarksService} from '@components/bookmarks'
-import {DeleteDialog, deleteDialogMachine} from '@components/delete-dialog'
+import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
 import {Text} from '@components/text'
 import {FlowContent} from '@mintter/mttast'
-import {useActor, useMachine} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import toast from 'react-hot-toast'
 import {visit} from 'unist-util-visit'
 import {ActorRefFrom} from 'xstate'
@@ -24,16 +24,31 @@ export function BookmarkItem({
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
 
-  const [deleteState, deleteSend] = useMachine(() => deleteDialogMachine, {
+  const deleteService = useInterpret(() => deleteFileMachine, {
     actions: {
-      deleteConfirm: () => {
+      removeFileFromBookmarks: (context) => {
+        bookmarks.send({
+          type: 'BOOKMARK.FILE.DELETE',
+          documentId: context.documentId,
+          version: context.version,
+        })
+      },
+      persistDelete: (context) => {
         bookmarks.send({
           type: 'BOOKMARK.REMOVE',
           url: state.context.url,
         })
       },
     },
+    services: {
+      performDelete: async () => {
+        // we are not dealing with any API for bookmarks (yet)
+        return await Promise.resolve({})
+      },
+    },
   })
+
+  const [deleteState] = useActor(deleteService)
 
   async function onCopy() {
     await copyTextToClipboard(state.context.url)
@@ -48,12 +63,6 @@ export function BookmarkItem({
       version,
       blockId,
     })
-  }
-
-  function afterDelete() {
-    // TODO: implement me
-    debug('DELETED!!')
-    mainService.send('RECONCILE')
   }
 
   return (
@@ -101,8 +110,7 @@ export function BookmarkItem({
             <Text size="2">Open in main panel</Text>
           </Dropdown.Item>
           <DeleteDialog
-            state={deleteState}
-            send={deleteSend}
+            deleteRef={deleteService}
             title="Delete Bookmark"
             description="Are you sure you want to delete this bookmark? This action is not reversible."
           >

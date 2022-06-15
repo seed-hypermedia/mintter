@@ -35,7 +35,7 @@ describe('<LibraryItem />', () => {
     render(
       <LibraryItem
         fileRef={spawn(
-          createPublicationMachine(client, publication, editor),
+          createPublicationMachine({client, publication, editor}),
           'pub-d1-v1',
         )}
         copy={copyTextToClipboard}
