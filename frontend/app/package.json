@@ -60,7 +60,7 @@
     "hast": "1.0.0",
     "hast-util-sanitize": "4.0.0",
     "is-url": "1.2.4",
-    "long": "4.0.0",
+    "long": "5.2.0",
     "nanoid": "4.0.0",
     "navaid": "1.2.0",
     "protobufjs": "6.11.3",
