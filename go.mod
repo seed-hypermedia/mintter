@@ -42,7 +42,7 @@ require (
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sanity-io/litter v1.5.5
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/vektah/gqlparser/v2 v2.4.4
 	go.etcd.io/bbolt v1.3.6
@@ -208,7 +208,7 @@ require (
 	google.golang.org/genproto v0.0.0-20220525015930-6ca3db687a9d // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
 )
