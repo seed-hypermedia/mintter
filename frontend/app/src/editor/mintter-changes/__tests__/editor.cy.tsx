@@ -109,8 +109,62 @@ describe('Editor', () => {
         })
     })
 
-    it.skip('should respect block id when pressing escape in the beginning of a block AND the previous block is empty', () => {
-      // noop
+    it.only('should respect block id when pressing escape in the beginning of a block AND the previous block is empty', () => {
+      let block1 = statement({id: 'b1'}, [paragraph([text('')])])
+      let block2 = statement({id: 'b2'}, [paragraph([text('move this block')])])
+
+      let draft: Document = {
+        id: 'foo',
+        title: 'demo',
+        subtitle: '',
+        children: [
+          {
+            block: blockToApi(block1),
+            children: [],
+          },
+          {
+            block: blockToApi(block2),
+            children: [],
+          },
+        ],
+        createTime: new Date(),
+        updateTime: new Date(),
+        author: '',
+        publishTime: undefined,
+      }
+
+      let editor = buildEditorHook(plugins, EditorMode.Draft)
+
+      let {render, client} = mountProviders({
+        draft,
+      })
+
+      render(<TestEditor editor={editor} client={client} draft={draft} />)
+
+      cy.get('[data-testid="editor"]')
+        .focus()
+        .then(() => {
+          editor.apply({
+            type: 'set_selection',
+            properties: null,
+            newProperties: {
+              anchor: {
+                path: [0, 1, 0, 0],
+                offset: 0,
+              },
+              focus: {
+                path: [0, 1, 0, 0],
+                offset: 0,
+              },
+            },
+          })
+        })
+        .type('{backspace}')
+        .then(() => {
+          let changes = changesService.getChanges()
+          expect(changes).to.have.length(1)
+          expect(changes[0]).to.deep.equal(['deleteBlock', block1.id])
+        })
     })
 
     it('should add new block after press enter', () => {
