@@ -96,14 +96,19 @@ export function Topbar({
       <Box css={{flex: 1}} />
       <Box
         css={{
-          width: '$library-width',
+          width: 'auto',
+          '@bp1': {
+            width: '$library-width',
+          },
           flex: 'none',
           display: 'flex',
           justifyContent: 'space-between',
-          paddingLeft: '$4',
         }}
       >
-        <Box css={{display: 'flex'}} {...draggableProps}>
+        <Box
+          css={{display: 'flex', paddingHorizontal: '$4'}}
+          {...draggableProps}
+        >
           <TopbarButton
             color="muted"
             data-testid="history-back"
