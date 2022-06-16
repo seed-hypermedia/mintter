@@ -1,14 +1,14 @@
-import {info} from '@app/utils/logger'
-import {createMachine} from 'xstate'
+import { info } from '@app/utils/logger'
+import { createMachine } from 'xstate'
 
 type LibraryEvent =
-  | {type: 'LIBRARY.OPEN'}
-  | {type: 'LIBRARY.CLOSE'}
-  | {type: 'LIBRARY.TOGGLE'}
+  | { type: 'LIBRARY.OPEN' }
+  | { type: 'LIBRARY.CLOSE' }
+  | { type: 'LIBRARY.TOGGLE' }
 
 export var libraryMachine = createMachine(
   {
-    initial: 'closed',
+    initial: 'opened',
     tsTypes: {} as import('./library-machine.typegen').Typegen0,
     schema: {
       events: {} as LibraryEvent,
@@ -34,7 +34,7 @@ export var libraryMachine = createMachine(
   {
     actions: {
       closing: (context, event) => {
-        info(`CLOSING LIBRARY! - ${JSON.stringify({context, event})}`)
+        info(`CLOSING LIBRARY! - ${JSON.stringify({ context, event })}`)
       },
     },
   },
