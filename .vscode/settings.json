@@ -14,6 +14,42 @@
     ".plz-cache/**": true,
     ".git/**": true
   },
+  "files.associations": {
+    "*.plz": "starlark",
+    "*.build_defs": "starlark"
+  },
+  "search.exclude": {
+    ".bazel/**": true,
+    "plz-out/**": true,
+    "**/.yarn": true,
+    "**/.pnp.*": true,
+    ".git/**": true
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  },
+
+  // Please, don't set global editor tab size!
+  // Keep the default and use per-language settings otherwise.
+  // Don't set tab size for Go here. Go uses TAB for tabs, not spaces, so everyone
+  // is willing to chose their preffered width in their local settings without disrupting the file contents.
+
+  "[typescript]": {
+    "editor.tabSize": 2
+  },
+  "[javascript]": {
+    "editor.tabSize": 2
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "xstate.showVisualEditorWarnings": false,
+
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform"
+  },
+
   "gopls": {
     "build.experimentalWorkspaceModule": true,
     "build.directoryFilters": [
@@ -25,29 +61,7 @@
       "+build"
     ]
   },
-  "search.exclude": {
-    ".bazel/**": true,
-    "plz-out/**": true,
-    "**/.yarn": true,
-    "**/.pnp.*": true,
-    ".git/**": true
-  },
-  "editor.formatOnSave": true,
-  "editor.tabSize": 2,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.organizeImports": true
-  },
-  "[terraform]": {
-    "editor.defaultFormatter": "hashicorp.terraform",
-  },
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true,
   "go.lintTool": "golangci-lint",
-  "files.associations": {
-    "*.plz": "starlark",
-    "*.build_defs": "starlark"
-  },
-  "xstate.showVisualEditorWarnings": false,
+
   "python.formatting.provider": "black"
 }
