@@ -276,12 +276,10 @@ export function wrapLink(
   )
 
   if (isCollapsed(selection!)) {
-    Editor.withoutNormalizing(editor, () => {
-      Editor.withoutNormalizing(editor, () => {
-        Transforms.insertNodes(editor, text(''))
-        Transforms.insertNodes(editor, newLink, {at: selection ?? undefined})
-      })
-    })
+    // Editor.withoutNormalizing(editor, () => {
+    Transforms.insertNodes(editor, [newLink, text('')])
+    // Transforms.insertNodes(editor, , {at: selection ?? undefined})
+    // })
   } else {
     Editor.withoutNormalizing(editor, () => {
       Transforms.wrapNodes(editor, newLink, {

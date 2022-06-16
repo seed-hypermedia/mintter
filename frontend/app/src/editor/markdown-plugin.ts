@@ -4,33 +4,33 @@ import {
   isParagraph,
   isStatement,
   ol,
-  ul,
+  ul
 } from '@mintter/mttast'
-import {Editor, Path, Range, Transforms} from 'slate'
-import {ELEMENT_HEADING} from './heading'
-import {ELEMENT_ORDERED_LIST} from './ordered-list'
-import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
-import type {EditorPlugin} from './types'
-import {ELEMENT_UNORDERED_LIST} from './unordered-list'
-import {isFirstChild} from './utils'
+import { Editor, Path, Range, Transforms } from 'slate'
+import { ELEMENT_HEADING } from './heading'
+import { ELEMENT_ORDERED_LIST } from './ordered-list'
+import { ELEMENT_STATIC_PARAGRAPH } from './static-paragraph'
+import type { EditorPlugin } from './types'
+import { ELEMENT_UNORDERED_LIST } from './unordered-list'
+import { isFirstChild } from './utils'
 
 export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
   name: 'markdown shortcuts',
   configureEditor(editor) {
-    const {insertText} = editor
+    const { insertText } = editor
 
     editor.insertText = (text) => {
-      const {selection} = editor
+      const { selection } = editor
 
       if (text == ' ' && selection && Range.isCollapsed(selection)) {
-        const {anchor} = selection
+        const { anchor } = selection
         const block = Editor.above(editor, {
           match: (n) => Editor.isBlock(editor, n),
         })
 
         const path = block ? block[1] : []
         const start = Editor.start(editor, path)
-        const range = {anchor, focus: start}
+        const range = { anchor, focus: start }
         const beforeText = Editor.string(editor, range)
 
         // turn Group into UnorderedList
@@ -47,8 +47,8 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 Transforms.delete(editor)
                 Transforms.setNodes(
                   editor,
-                  {type: ELEMENT_UNORDERED_LIST},
-                  {match: isGroupContent},
+                  { type: ELEMENT_UNORDERED_LIST },
+                  { match: isGroupContent },
                 )
               })
               return
@@ -71,7 +71,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
         }
 
         // turn Group into OrderedList
-        if (/\d\./.test(beforeText)) {
+        if (/^\d\./.test(beforeText)) {
           const above = Editor.above(editor, {
             match: isStatement,
             mode: 'lowest',
@@ -87,8 +87,8 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
                 Transforms.setNodes(
                   editor,
-                  {type: ELEMENT_ORDERED_LIST, start},
-                  {match: isGroupContent},
+                  { type: ELEMENT_ORDERED_LIST, start },
+                  { match: isGroupContent },
                 )
               })
               return
@@ -99,7 +99,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
                 const start = parseInt(beforeText)
 
-                Transforms.wrapNodes(editor, ol({start}, []), {
+                Transforms.wrapNodes(editor, ol({ start }, []), {
                   at: above[1],
                   match: isStatement,
                 })
@@ -126,13 +126,13 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
               Transforms.delete(editor)
               Transforms.setNodes(
                 editor,
-                {type: ELEMENT_HEADING},
-                {match: isStatement},
+                { type: ELEMENT_HEADING },
+                { match: isStatement },
               )
               Transforms.setNodes(
                 editor,
-                {type: ELEMENT_STATIC_PARAGRAPH},
-                {match: isParagraph},
+                { type: ELEMENT_STATIC_PARAGRAPH },
+                { match: isParagraph },
               )
             })
           }
