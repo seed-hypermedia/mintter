@@ -1,11 +1,11 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {BlockCitations} from '@app/editor/block-citations'
 import {BlockTools} from '@app/editor/block-tools'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useFile} from '@app/file-provider'
+import {createPublicationMachine} from '@app/publication-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {debug} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
@@ -14,9 +14,25 @@ import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {FlowContent, isCode, isHeading} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
-import {MutableRefObject, useEffect, useState} from 'react'
+import {useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {RenderElementProps} from 'slate-react'
+import {StateFrom} from 'xstate'
+
+function useCitations(
+  state: StateFrom<ReturnType<typeof createPublicationMachine>>,
+  blockId: string,
+) {
+  return useMemo(() => {
+    if (state.context.links) {
+      return state.context.links.filter(
+        (link) => link.target?.blockId == blockId,
+      )
+    }
+
+    return []
+  }, [state])
+}
 
 export function BlockWrapper({
   attributes,
@@ -33,6 +49,8 @@ export function BlockWrapper({
   const [, hoverSend] = useActor(hoverService)
   let fileRef = useFile()
   let [fileState] = useActor(fileRef)
+  let citations = useCitations(fileState, element.id)
+  debug('CITATIONS: ', citations)
   async function onCopy() {
     if (fileState.context.version) {
       let {documentId, version} = fileState.context
@@ -141,7 +159,47 @@ export function BlockWrapper({
         </Dropdown.Content>
       </Dropdown.Root>
       {children}
-      <BlockCitations blockId={(element as FlowContent).id} />
+      {citations.length ? (
+        <Box
+          contentEditable={false}
+          css={{
+            padding: '$4',
+            width: '$full',
+            maxWidth: 240,
+            marginTop: '-$4',
+            '@bp2': {
+              transform: 'translateX(100%)',
+              position: 'absolute',
+              right: -12,
+              top: 4,
+              overflow: 'hidden',
+            },
+          }}
+        >
+          <Box
+            css={{
+              width: 24,
+              height: 24,
+              borderRadius: '$2',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '$base-component-bg-normal',
+              // background: 'green',
+              fontFamily: '$base',
+              fontSize: '$1',
+              color: '$base-text-low',
+              textAlign: 'center',
+              '& span': {
+                background: '$primary-component-bg-active',
+                display: 'block',
+              },
+            }}
+          >
+            {citations.length}
+          </Box>
+        </Box>
+      ) : null}
     </Box>
   )
 }
