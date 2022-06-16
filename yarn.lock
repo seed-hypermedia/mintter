@@ -1602,6 +1602,7 @@ __metadata:
     hast: 1.0.0
     hast-util-sanitize: 4.0.0
     http-server: 13.1.0
+    is-hotkey: 0.2.0
     is-url: 1.2.4
     jsdom: 19.0.0
     long: 5.2.0
@@ -7995,6 +7996,13 @@ __metadata:
   version: 2.0.0
   resolution: "is-hidden@npm:2.0.0"
   checksum: ab86fa524fcfbbc87019f49da986fe42e6922e199a18be743dbbcd593c3a96f91acecf2d269c1219a843b81b1b0d5a875b130c82b149cbd243f3630af51e79e4
+  languageName: node
+  linkType: hard
+
+"is-hotkey@npm:0.2.0":
+  version: 0.2.0
+  resolution: "is-hotkey@npm:0.2.0"
+  checksum: 97d295cfd8c3eb2c9b218daee5bff0ddaf47210930e3eb1eff36d2e6ad74854028203c640f35ea2d183d0cba94ac4c4bcd291925bc3a343d8a4c7d2c5ab3e2a6
   languageName: node
   linkType: hard
 

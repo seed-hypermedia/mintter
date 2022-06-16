@@ -884,8 +884,8 @@ function Sidenav(props: Stitches.VariantProps<typeof Svg>) {
       <path
         d="M20.5 25.5L20.5 6.5M5 26L27 26C27.5523 26 28 25.5523 28 25L28 7C28 6.44772 27.5523 6 27 6L5 6C4.44772 6 4 6.44772 4 7L4 25C4 25.5523 4.44772 26 5 26Z"
         stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Svg>
   )

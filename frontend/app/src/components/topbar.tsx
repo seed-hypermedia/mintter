@@ -39,7 +39,6 @@ let TopbarButton = styled('button', {
   alignItems: 'center',
   justifyContent: 'center',
   '&:hover': {
-    cursor: 'pointer',
     backgroundColor: '$base-component-bg-hover',
   },
 })
@@ -82,7 +81,12 @@ export function Topbar({
           aria-label="Document Title"
           data-testid="topbar-title"
           data-tauri-drag-region
-          css={{flex: 'none'}}
+          css={{
+            flex: 'none',
+            '&:hover': {
+              cursor: 'default',
+            },
+          }}
         >
           {mainState.matches('routes.draftList')
             ? 'Drafts'
@@ -194,6 +198,9 @@ function FilesData({
           alignItems: 'baseline',
           justifyContent: 'flex-start',
           gap: '$2',
+          '&:hover': {
+            cursor: 'default',
+          },
         }}
         data-tauri-drag-region
       >
@@ -214,21 +221,39 @@ function FilesData({
             aria-label="Document Title"
             data-testid="topbar-title"
             data-tauri-drag-region
-            css={{flex: 'none'}}
+            css={{
+              flex: 'none',
+              '&:hover': {
+                cursor: 'default',
+              },
+            }}
           >
             {state.context.title.length > 50
               ? `${state.context.title.substring(0, 50)}...`
               : state.context.title || 'Untitled Draft'}
           </Text>
         </Box>
-        <Text size="1" color="muted">
+        <Text
+          size="1"
+          color="muted"
+          css={{
+            '&:hover': {
+              cursor: 'default',
+            },
+          }}
+        >
           by
         </Text>
 
         <Text
           size="1"
           color="muted"
-          css={{textDecoration: 'underline'}}
+          css={{
+            textDecoration: 'underline',
+            '&:hover': {
+              cursor: 'default',
+            },
+          }}
           data-testid="topbar-author"
         >
           {state.context?.author?.profile?.alias || 'AUTHOR'}

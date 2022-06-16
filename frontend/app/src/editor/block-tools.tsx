@@ -1,5 +1,6 @@
 import {changesService} from '@app/editor/mintter-changes/plugin'
 import {findPath} from '@app/editor/utils'
+import {useFile} from '@app/file-provider'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Box} from '@components/box'
 import {Icon, icons} from '@components/icon'
@@ -40,14 +41,14 @@ const items: {
 } = {
   statement: [
     {
-      label: 'Statement',
-      iconName: 'Paragraph',
-      onSelect: setType(statement),
-    },
-    {
       label: 'Heading',
       iconName: 'Heading',
       onSelect: setType(heading),
+    },
+    {
+      label: 'Statement',
+      iconName: 'Paragraph',
+      onSelect: setType(statement),
     },
     {
       label: 'Blockquote',
@@ -88,6 +89,8 @@ export function BlockTools({element}: BlockToolsProps) {
   const hoverService = useHover()
   const [, hoverSend] = useActor(hoverService)
   const path = findPath(element)
+  let fileRef = useFile()
+  let [fileState] = useActor(fileRef)
 
   return (
     <Box
@@ -97,7 +100,7 @@ export function BlockTools({element}: BlockToolsProps) {
         opacity: 0,
         // pointerEvents: 'none',
         [`[data-hover-block="${element.id}"] &`]: {
-          opacity: 1,
+          opacity: fileState.matches('editing.debouncing') ? 0 : 1,
           pointerEvents: 'all',
         },
         '&:hover': {
