@@ -3,6 +3,8 @@ package sqlitebs
 
 import (
 	"context"
+	"strings"
+	"text/template"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -41,12 +43,12 @@ type Config struct {
 }
 
 type queries struct {
-	Get       string
-	Has       string
-	GetSize   string
-	Put       string
-	Delete    string
-	SelectAll string
+	Get      string
+	Has      string
+	GetSize  string
+	Put      string
+	Delete   string
+	ListCIDs string
 }
 
 // DefaultConfig creates a default config.
@@ -64,6 +66,25 @@ func DefaultConfig() Config {
 // The corresponding table and columns must be created beforehand.
 // Use DefaultConfig() for default table and column names.
 func New(db *sqlitex.Pool, cfg Config) *Blockstore {
+	compileTpl := func(tpl string) string {
+		var w strings.Builder
+
+		if err := template.Must(template.New("").Parse(tpl)).Execute(&w, cfg); err != nil {
+			panic(err)
+		}
+
+		return w.String()
+	}
+
+	q := queries{
+		Has:      compileTpl(`SELECT 1 FROM {{.TableName}} WHERE {{.ColumnMultihash}} = ?`),
+		Get:      compileTpl(`SELECT {{.ColumnData}}, {{.ColumnSize}} FROM {{.TableName}} WHERE {{.ColumnMultihash}} = ?`),
+		GetSize:  compileTpl(`SELECT {{.ColumnSize}} FROM {{.TableName}} WHERE {{.ColumnMultihash}} = ?`),
+		Put:      compileTpl(`INSERT OR IGNORE INTO {{.TableName}} ({{.ColumnMultihash}}, {{.ColumnCodec}}, {{.ColumnData}}, {{.ColumnSize}}) VALUES (?, ?, ?, ?)`),
+		Delete:   compileTpl(`DELETE FROM {{.TableName}} WHERE {{.ColumnMultihash}} = ?`),
+		ListCIDs: compileTpl(`SELECT {{.ColumnMultihash}}, {{.ColumnCodec}} FROM {{.TableName}}`),
+	}
+
 	enc, err := zstd.NewWriter(nil)
 	if err != nil {
 		panic(err)
@@ -77,16 +98,9 @@ func New(db *sqlitex.Pool, cfg Config) *Blockstore {
 	return &Blockstore{
 		Log: zap.NewNop(),
 
-		db:  db,
-		cfg: cfg,
-		queries: queries{
-			Has:       "SELECT 1 FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
-			Get:       "SELECT " + cfg.ColumnData + ", " + cfg.ColumnSize + " FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
-			GetSize:   "SELECT " + cfg.ColumnSize + " FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
-			Put:       "INSERT OR IGNORE INTO " + cfg.TableName + " (" + cfg.ColumnMultihash + ", " + cfg.ColumnCodec + ", " + cfg.ColumnData + ", " + cfg.ColumnSize + ") VALUES (?, ?, ?, ?)",
-			Delete:    "DELETE FROM " + cfg.TableName + " WHERE " + cfg.ColumnMultihash + " = ?",
-			SelectAll: "SELECT " + cfg.ColumnMultihash + ", " + cfg.ColumnCodec + " FROM " + cfg.TableName,
-		},
+		db:      db,
+		cfg:     cfg,
+		queries: q,
 		encoder: enc,
 		decoder: dec,
 	}
@@ -228,7 +242,7 @@ func (b *Blockstore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
 	}
 
 	go func() {
-		err := sqlitex.Exec(conn, b.queries.SelectAll, func(stmt *sqlite.Stmt) error {
+		err := sqlitex.Exec(conn, b.queries.ListCIDs, func(stmt *sqlite.Stmt) error {
 			mh := stmt.ColumnBytes(0)
 			codec := stmt.ColumnInt(1)
 			c <- cid.NewCidV1(uint64(codec), mh)
