@@ -312,6 +312,7 @@ export function createDraftMachine({
                   },
                 )
                 .then((data) => {
+                  debug('DRAFT DATA', data.children)
                   sendBack({ type: 'DRAFT.REPORT.FETCH.SUCCESS', data })
                 })
             } catch (err: any) {
@@ -325,7 +326,7 @@ export function createDraftMachine({
         saveDraft: (context) => (sendBack) => {
           if (shouldAutosave) {
             ; (async function autosave() {
-              let contentChanges = changesService.transformChanges(editor)
+              let contentChanges = changesService.transformChanges(editor).filter(Boolean)
               let newTitle = context.title
               let changes: Array<DocumentChange> = newTitle
                 ? [

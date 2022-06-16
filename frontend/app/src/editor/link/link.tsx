@@ -4,6 +4,7 @@ import {changesService} from '@app/editor/mintter-changes/plugin'
 import {getEditorBlock} from '@app/editor/utils'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -190,10 +191,11 @@ export function insertLink(
     Transforms.insertNodes(editor, newLink, {at: selection})
   } else {
     Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
-    // Transforms.collapse(editor, {edge: 'end'})
+    Transforms.collapse(editor, {edge: 'end'})
   }
+  let nextPath = Path.next(selection.focus.path)
   Transforms.insertNodes(editor, text(''), {
-    at: Path.next(selection.focus.path),
+    at: nextPath,
   })
 
   addLinkChange(editor, selection)
@@ -272,12 +274,14 @@ function isMintterLink(text: string) {
 function wrapMintterLink(editor: Editor, url: string) {
   const {selection} = editor
 
-  const newEmbed: Embed = embed({url}, [text('')])
-
   if (isCollapsed(selection!)) {
+    debug('wrapMintterLink: COLLAPSED', selection)
+    const newEmbed: Embed = embed({url}, [text('')])
     Transforms.insertNodes(editor, newEmbed)
+    Transforms.move(editor, {distance: 1, unit: 'offset'})
     addLinkChange(editor)
   } else {
+    debug('wrapMintterLink: NOT COLLAPSED', selection)
     wrapLink(editor, url)
   }
 }
@@ -350,10 +354,11 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
     if (!editor) return
     if (link && (isUrl(link) || isMintterLink(link))) {
       ReactEditor.focus(editor)
-      setTimeout(() => {
-        Transforms.setSelection(editor, lastSelection!)
-        insertLink(editor, {url: link, selection: lastSelection, wrap: true})
-      }, 0)
+      insertLink(editor, {url: link, selection: lastSelection, wrap: true})
+      Transforms.move(editor, {
+        distance: 1,
+        unit: 'offset',
+      })
     }
 
     close()

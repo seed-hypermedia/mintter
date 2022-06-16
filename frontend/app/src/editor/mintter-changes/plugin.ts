@@ -1,19 +1,19 @@
-import {DocumentChange} from '@app/client'
+import { DocumentChange } from '@app/client'
 import {
   createDeleteChange,
   createMoveChange,
-  createReplaceChange,
+  createReplaceChange
 } from '@app/client/v2/change-creators'
-import {EditorPlugin} from '@app/editor/types'
-import {getEditorBlock} from '@app/editor/utils'
-import {FlowContent, isFlowContent} from '@mintter/mttast'
-import {Editor, Node, Operation, Path} from 'slate'
+import { EditorPlugin } from '@app/editor/types'
+import { getEditorBlock } from '@app/editor/utils'
+import { FlowContent, isFlowContent } from '@mintter/mttast'
+import { Editor, Node, Operation, Path } from 'slate'
 
 export function createMintterChangesPlugin(): EditorPlugin {
   return {
     name: 'mintter',
     configureEditor(editor) {
-      const {apply} = editor
+      const { apply } = editor
       editor.apply = mintterApply(editor, apply)
 
       return editor
@@ -28,7 +28,7 @@ function mintterApply(editor: Editor, cb: (op: Operation) => void) {
     cb(operation)
     // we send the operation AFTER we apply it to the changes to get the new editor state. if we call it before, we will not get the current operation change in the editor value.
 
-    changesService.send({operation, editor})
+    changesService.send({ operation, editor })
   }
 }
 
@@ -36,9 +36,9 @@ type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
 
 export type ChangeOperation = [ChangeType, string]
 
-export type ChangesEvent = {editor?: Editor; operation: Operation}
+export type ChangesEvent = { editor?: Editor; operation: Operation }
 
-type BlocksObject = {[key: string]: {node: FlowContent; path: Path}}
+type BlocksObject = { [key: string]: { node: FlowContent; path: Path } }
 
 export function changesServiceCreator() {
   let changes: Array<ChangeOperation> = []
@@ -55,7 +55,7 @@ export function changesServiceCreator() {
     changes = []
   }
 
-  function send({operation, editor}: ChangesEvent) {
+  function send({ operation, editor }: ChangesEvent) {
     // info('== operation ==')
     // info(JSON.stringify(operation))
 
@@ -134,7 +134,6 @@ export function changesServiceCreator() {
 
   function transformChanges(editor: Editor): Array<DocumentChange> {
     let result: Array<DocumentChange> = []
-
     changes.forEach((change) => {
       let [type, value] = change
       if (type == 'deleteBlock') {
@@ -142,7 +141,8 @@ export function changesServiceCreator() {
       }
 
       if (type == 'moveBlock') {
-        result.push(createMoveChange(editor, value))
+        let change = createMoveChange(editor, value)
+        if (change) result.push(change)
       }
 
       if (type == 'replaceBlock') {
