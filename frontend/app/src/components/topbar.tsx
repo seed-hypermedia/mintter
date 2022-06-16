@@ -69,28 +69,6 @@ export function Topbar({
   return (
     <TopbarStyled data-tauri-drag-region>
       <span style={{display: 'block', flex: 'none', width: 60}} />
-      <Box css={{display: 'flex'}} {...draggableProps}>
-        <TopbarButton
-          color="muted"
-          data-testid="history-back"
-          onClick={(e) => {
-            e.preventDefault()
-            mainSend('GO.BACK')
-          }}
-        >
-          <Icon name="ArrowChevronLeft" color="muted" size="2" />
-        </TopbarButton>
-        <TopbarButton
-          color="muted"
-          data-testid="history-forward"
-          onClick={(e) => {
-            e.preventDefault()
-            mainSend('GO.FORWARD')
-          }}
-        >
-          <Icon name="ArrowChevronRight" color="muted" size="2" />
-        </TopbarButton>
-      </Box>
       {currentFile ? (
         <FilesData
           copy={copy}
@@ -110,11 +88,44 @@ export function Topbar({
             ? 'Drafts'
             : mainState.matches('routes.publicationList')
             ? 'Publications'
+            : mainState.matches('routes.home')
+            ? 'Publications'
             : ''}
         </Text>
       )}
       <Box css={{flex: 1}} />
-      <Box css={{flex: 'none'}}>
+      <Box
+        css={{
+          width: '$library-width',
+          flex: 'none',
+          display: 'flex',
+          justifyContent: 'space-between',
+          paddingLeft: '$4',
+        }}
+      >
+        <Box css={{display: 'flex'}} {...draggableProps}>
+          <TopbarButton
+            color="muted"
+            data-testid="history-back"
+            onClick={(e) => {
+              e.preventDefault()
+              mainSend('GO.BACK')
+            }}
+          >
+            <Icon name="ArrowChevronLeft" color="muted" size="2" />
+          </TopbarButton>
+          <TopbarButton
+            color="muted"
+            data-testid="history-forward"
+            onClick={(e) => {
+              e.preventDefault()
+              mainSend('GO.FORWARD')
+            }}
+          >
+            <Icon name="ArrowChevronRight" color="muted" size="2" />
+          </TopbarButton>
+        </Box>
+
         <TopbarButton
           css={{
             flex: 'none',
