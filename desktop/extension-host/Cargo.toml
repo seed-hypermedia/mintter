@@ -25,5 +25,5 @@ common = { path = "../common" }
 workspace-hack = { version = "0.1", path = "../workspace-hack" }
 
 [dev-dependencies]
-tokio = { version = "1.18.2", features = ["full"] }
+tokio = { version = "1.19.2", features = ["full"] }
 tracing-subscriber = "0.3.11"
