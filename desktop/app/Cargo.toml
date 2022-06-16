@@ -12,10 +12,10 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.0.0-rc.12", features = [] }
+tauri-build = { version = "1.0.0", features = [] }
 
 [dependencies]
-tauri = { version = "1.0.0-rc.14", features = ["ayatana-tray", "cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
+tauri = { version = "1.0.0", features = ["ayatana-tray", "cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
 tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", rev = "0e993f8ded5867772b29ca7aee5bc5594aba6fb9", features = ["colored"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", rev = "5726952177b88d1d10063cdf8e7506bac84772cf" }
 tokio = { version = "1.18.2", features = ["full"] }
