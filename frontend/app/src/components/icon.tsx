@@ -877,16 +877,15 @@ function PencilAdd(props: Stitches.VariantProps<typeof Svg>) {
 
 function Sidenav(props: Stitches.VariantProps<typeof Svg>) {
   return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" {...props}>
+    <Svg width={24} height={24} viewBox="0 0 32 32" {...props}>
+      <circle r="1" transform="matrix(1 0 0 -1 24 16)" fill="currentColor" />
+      <circle r="1" transform="matrix(1 0 0 -1 24 13)" fill="currentColor" />
+      <circle r="1" transform="matrix(1 0 0 -1 24 10)" fill="currentColor" />
       <path
-        d="M2.25 7A3.75 3.75 0 016 3.25h10A3.75 3.75 0 0119.75 7v10A3.75 3.75 0 0116 20.75H6A3.75 3.75 0 012.25 17V7zM6 4.75A2.25 2.25 0 003.75 7v10A2.25 2.25 0 006 19.25h2.75V4.75H6zm4.25 0v14.5H16A2.25 2.25 0 0018.25 17V7A2.25 2.25 0 0016 4.75h-5.75z"
-        fill="currentColor"
-        fillRule="evenodd"
-        clipRule="evenodd"
-      />
-      <path
-        d="M5.2 7.5a.5.5 0 01.5-.5h1a.5.5 0 010 1h-1a.5.5 0 01-.5-.5zM5.2 9.5a.5.5 0 01.5-.5h1a.5.5 0 010 1h-1a.5.5 0 01-.5-.5zM5.2 11.5a.5.5 0 01.5-.5h1a.5.5 0 010 1h-1a.5.5 0 01-.5-.5z"
-        fill="currentColor"
+        d="M20.5 25.5L20.5 6.5M5 26L27 26C27.5523 26 28 25.5523 28 25L28 7C28 6.44772 27.5523 6 27 6L5 6C4.44772 6 4 6.44772 4 7L4 25C4 25.5523 4.44772 26 5 26Z"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
     </Svg>
   )
