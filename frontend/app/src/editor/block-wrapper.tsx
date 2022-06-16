@@ -50,7 +50,6 @@ export function BlockWrapper({
   let fileRef = useFile()
   let [fileState] = useActor(fileRef)
   let citations = useCitations(fileState, element.id)
-  debug('CITATIONS: ', citations)
   async function onCopy() {
     if (fileState.context.version) {
       let {documentId, version} = fileState.context

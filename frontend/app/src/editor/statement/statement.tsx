@@ -1,7 +1,6 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {useHoverBlockId} from '@app/editor/hover-context'
 import {changesService} from '@app/editor/mintter-changes/plugin'
-import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {
   createId,
@@ -43,7 +42,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
     },
   configureEditor(editor) {
     if (editor.readOnly) return
-    const {normalizeNode, insertBreak} = editor
+    const {normalizeNode, insertBreak, deleteBackward} = editor
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
@@ -118,7 +117,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
       normalizeNode(entry)
     }
 
-    editor.insertBreak = () => {
+    editor.insertBreak = function blockInsertBreak() {
       let {selection} = editor
 
       // we need to run this code when the selection starts at the beginning of any node (usually statement or paragraph).
@@ -134,7 +133,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
           let isEnd = Editor.isEnd(editor, selection.focus, path)
           let isStart = Editor.isStart(editor, selection.anchor, path)
           let isEmbedOnly = hasEmbedOnly(currentEntry)
-          debug('=== ISEND: ', {isEnd, isStart})
           if (isEnd) {
             insertBreak()
           } else {
@@ -148,6 +146,34 @@ export const createStatementPlugin = (): EditorPlugin => ({
       } else {
         insertBreak()
       }
+    }
+
+    editor.deleteBackward = function blockDeleteBackwards(unit) {
+      let {selection} = editor
+      console.log('delete backwards!', selection)
+      if (selection?.anchor.offset == 0) {
+        let currentEntry = Editor.above(editor, {
+          match: isFlowContent,
+        })
+
+        if (currentEntry) {
+          let [node, path] = currentEntry
+          if (!isFirstChild(path)) {
+            let prevBlockPath = Path.previous(path)
+            let prevBlockNode = Node.get(editor, prevBlockPath)
+
+            if (
+              !Node.string(prevBlockNode) &&
+              !hasEmbedOnly([prevBlockNode, prevBlockPath])
+            ) {
+              Transforms.removeNodes(editor, {at: prevBlockPath})
+              return
+            }
+          }
+        }
+      }
+
+      deleteBackward(unit)
     }
 
     return editor
@@ -228,12 +254,10 @@ function hasEmbedOnly(entry: NodeEntry<FlowContent>) {
   let result = false
 
   if (!hasContent) {
-    debug('=== hasContent == FALSE')
     for (let childEntry of Node.descendants(node)) {
       let [child] = childEntry
 
       if (isEmbed(child)) {
-        debug('=== theres an EMBED!', child)
         result = true
       }
     }
