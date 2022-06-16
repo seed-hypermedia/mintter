@@ -1,3 +1,4 @@
+import {useFile} from '@app/file-provider'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
@@ -8,6 +9,7 @@ import {
   isParagraph,
   isPhrasingContent,
 } from '@mintter/mttast'
+import {useActor} from '@xstate/react'
 import {useMemo} from 'react'
 import {Editor, Element, Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
@@ -84,6 +86,8 @@ function Paragraph({
   const parentNode = Node.parent(editor, path)
   const hoverService = useHover()
   const parentGroup = useParentGroup(editor, path)
+  let fileRef = useFile()
+  let [fileState] = useActor(fileRef)
   let as =
     mode == EditorMode.Embed || mode == EditorMode.Mention
       ? 'span'
@@ -122,7 +126,9 @@ function Paragraph({
         transition: 'all ease-in-out 0.1s',
         backgroundColor: 'transparent',
         [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
-          backgroundColor: '$primary-component-bg-active',
+          backgroundColor: fileState.matches('editing.debouncing')
+            ? 'transparent'
+            : '$primary-component-bg-active',
         },
       }}
       data-parent-type={(parentNode as FlowContent)?.type}

@@ -59,6 +59,7 @@
     "graphql-request": "3.7.0",
     "hast": "1.0.0",
     "hast-util-sanitize": "4.0.0",
+    "is-hotkey": "0.2.0",
     "is-url": "1.2.4",
     "long": "5.2.0",
     "nanoid": "4.0.0",

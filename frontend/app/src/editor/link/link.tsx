@@ -15,6 +15,7 @@ import type {Embed, Link as LinkType} from '@mintter/mttast'
 import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
+import {isKeyHotkey} from 'is-hotkey'
 import isUrl from 'is-url'
 import {
   FormEvent,
@@ -128,6 +129,31 @@ export const createLinkPlugin = (): EditorPlugin => ({
         )
       }
     },
+  onKeyDown(editor) {
+    return (event) => {
+      const {selection} = editor
+
+      // Default left/right behavior is unit:'character'.
+      // This fails to distinguish between two cursor positions, such as
+      // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
+      // Here we modify the behavior to unit:'offset'.
+      // This lets the user step into and out of the inline without stepping over characters.
+      // You may wish to customize this further to only use unit:'offset' in specific cases.
+      if (selection && Range.isCollapsed(selection)) {
+        const {nativeEvent} = event
+        if (isKeyHotkey('left', nativeEvent)) {
+          event.preventDefault()
+          Transforms.move(editor, {unit: 'offset', reverse: true})
+          return
+        }
+        if (isKeyHotkey('right', nativeEvent)) {
+          event.preventDefault()
+          Transforms.move(editor, {unit: 'offset'})
+          return
+        }
+      }
+    }
+  },
   configureEditor(editor) {
     if (editor.readOnly) return
     /**
@@ -250,13 +276,22 @@ export function wrapLink(
   )
 
   if (isCollapsed(selection!)) {
-    Transforms.insertNodes(editor, newLink, {at: selection ?? undefined})
-  } else {
-    Transforms.wrapNodes(editor, newLink, {
-      split: true,
-      at: selection ?? undefined,
+    Editor.withoutNormalizing(editor, () => {
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.insertNodes(editor, text(''))
+        Transforms.insertNodes(editor, newLink, {at: selection ?? undefined})
+      })
     })
-    Transforms.collapse(editor, {edge: 'end'})
+  } else {
+    Editor.withoutNormalizing(editor, () => {
+      Transforms.wrapNodes(editor, newLink, {
+        split: true,
+        at: selection ?? undefined,
+      })
+
+      Transforms.collapse(editor, {edge: 'end'})
+      Transforms.move(editor, {distance: 1, unit: 'offset'})
+    })
   }
 }
 
@@ -283,6 +318,7 @@ function wrapMintterLink(editor: Editor, url: string) {
   } else {
     debug('wrapMintterLink: NOT COLLAPSED', selection)
     wrapLink(editor, url)
+    // Transforms.move(editor, {distance: 1, unit: 'offset'})
   }
 }
 
