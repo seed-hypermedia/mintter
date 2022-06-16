@@ -12,7 +12,7 @@ require (
 	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/gorilla/mux v1.8.0
 	github.com/improbable-eng/grpc-web v0.15.0
-	github.com/ipfs/go-bitswap v0.6.0
+	github.com/ipfs/go-bitswap v0.7.0
 	github.com/ipfs/go-block-format v0.0.3
 	github.com/ipfs/go-cid v0.2.0
 	github.com/ipfs/go-datastore v0.5.1
