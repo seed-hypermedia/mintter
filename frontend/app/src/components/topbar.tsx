@@ -66,7 +66,7 @@ export function Topbar({
   }
 
   return (
-    <TopbarStyled data-tauri-drag-region>
+    <TopbarStyled {...draggableProps}>
       <span style={{display: 'block', flex: 'none', width: 60}} />
       {currentFile ? (
         <FilesData
@@ -80,7 +80,7 @@ export function Topbar({
           fontWeight="medium"
           aria-label="Document Title"
           data-testid="topbar-title"
-          data-tauri-drag-region
+          {...draggableProps}
           css={{
             flex: 'none',
             '&:hover': {
@@ -97,7 +97,7 @@ export function Topbar({
             : ''}
         </Text>
       )}
-      <Box css={{flex: 1}} />
+      <Box css={{flex: 1}} {...draggableProps} />
       <Box
         css={{
           width: 'auto',
@@ -108,6 +108,7 @@ export function Topbar({
           display: 'flex',
           justifyContent: 'space-between',
         }}
+        {...draggableProps}
       >
         <Box
           css={{display: 'flex', paddingHorizontal: '$4'}}
@@ -202,7 +203,7 @@ function FilesData({
             cursor: 'default',
           },
         }}
-        data-tauri-drag-region
+        {...draggableProps}
       >
         <Box
           css={{
@@ -211,6 +212,7 @@ function FilesData({
             overflow: 'hidden',
             marginRight: '$2',
           }}
+          {...draggableProps}
         >
           <Text
             size={{
@@ -227,6 +229,7 @@ function FilesData({
                 cursor: 'default',
               },
             }}
+            {...draggableProps}
           >
             {state.context.title.length > 50
               ? `${state.context.title.substring(0, 50)}...`
@@ -241,6 +244,7 @@ function FilesData({
               cursor: 'default',
             },
           }}
+          {...draggableProps}
         >
           by
         </Text>
@@ -255,12 +259,13 @@ function FilesData({
             },
           }}
           data-testid="topbar-author"
+          {...draggableProps}
         >
           {state.context?.author?.profile?.alias || 'AUTHOR'}
         </Text>
       </Box>
       {isPublication ? (
-        <Box>
+        <Box {...draggableProps}>
           <Dropdown.Root>
             <Dropdown.Trigger asChild>
               <TopbarButton>
