@@ -1,14 +1,14 @@
-import {DocumentChange} from '@app/client'
-import {blockToApi} from '@app/client/v2/block-to-api'
-import {getEditorBlock} from '@app/editor/utils'
-import {FlowContent} from '@mintter/mttast'
-import {Editor, Node, Path} from 'slate'
+import { DocumentChange } from '@app/client'
+import { blockToApi } from '@app/client/v2/block-to-api'
+import { getEditorBlock } from '@app/editor/utils'
+import { FlowContent } from '@mintter/mttast'
+import { Editor, Node, Path } from 'slate'
 
 export function createMoveChange(
   editor: Editor,
   blockId: string,
-): DocumentChange {
-  let blockEntry = getEditorBlock(editor, {id: blockId})
+): DocumentChange | undefined {
+  let blockEntry = getEditorBlock(editor, { id: blockId })
 
   if (blockEntry) {
     let [, path] = blockEntry
@@ -32,7 +32,7 @@ export function createMoveChange(
       },
     }
   } else {
-    throw new Error('block is not in the editor value')
+    return
   }
 }
 
@@ -40,7 +40,7 @@ export function createReplaceChange(
   editor: Editor,
   blockId: string,
 ): DocumentChange {
-  let blockEntry = getEditorBlock(editor, {id: blockId})
+  let blockEntry = getEditorBlock(editor, { id: blockId })
 
   if (blockEntry) {
     return {
