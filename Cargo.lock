@@ -4443,11 +4443,13 @@ name = "workspace-hack"
 version = "0.1.0"
 dependencies = [
  "cc",
+ "crc32fast",
  "futures-channel",
  "futures-executor",
  "futures-io",
  "futures-util",
  "generic-array",
+ "hashbrown 0.11.2",
  "indexmap",
  "libc",
  "log",
