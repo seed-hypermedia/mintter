@@ -9,4 +9,7 @@ export const EmbedUI = styled('q', {
     borderBottomColor: '$secondary-border-subtle',
     cursor: 'pointer',
   },
+  '&:before, &:after': {
+    display: 'none',
+  },
 })

@@ -10,10 +10,10 @@ import {
   red,
   redDark,
   yellow,
-  yellowDark,
+  yellowDark
 } from '@radix-ui/colors'
 import type * as Stitches from '@stitches/react'
-import {createStitches, defaultThemeMap} from '@stitches/react'
+import { createStitches, defaultThemeMap } from '@stitches/react'
 
 const stitches = createStitches({
   prefix: 'mtt',
@@ -208,7 +208,7 @@ const stitches = createStitches({
   },
 })
 
-export const {styled, css, globalCss, keyframes, config, createTheme} = stitches
+export const { styled, css, globalCss, keyframes, config, createTheme } = stitches
 export type CSS = Stitches.CSS<typeof config> & typeof lightTheme
 export type ThemeColorValue = Stitches.PropertyValue<'backgroundColor'>
 
@@ -398,6 +398,7 @@ export const globalStyles = globalCss({
     transition: 'background-color color 0.25s ease',
     '-webkit-font-smoothing': 'antialiased',
     '-moz-osx-font-smoothing': 'grayscale',
+    height: '100vh',
   },
   '*:focus': {
     boxShadow: '$focus',

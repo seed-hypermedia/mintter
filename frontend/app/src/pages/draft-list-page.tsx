@@ -22,9 +22,13 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
           padding: '$5',
           paddingBottom: 0,
           marginBottom: 200,
+          marginLeft: 30,
+          marginTop: 12,
         }}
       >
-        <Text size="8">Drafts</Text>
+        <Text size="4" fontWeight="bold">
+          Drafts
+        </Text>
         <ol className={pageListStyle()}>
           {drafts.length ? (
             drafts.map((draft) => (

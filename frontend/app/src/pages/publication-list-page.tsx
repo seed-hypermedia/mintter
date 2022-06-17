@@ -18,8 +18,18 @@ export function PublicationList({
   let pubList = mainState.context.publicationList
   return (
     <>
-      <Box css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}>
-        <Text size="8">Publications</Text>
+      <Box
+        css={{
+          padding: '$5',
+          paddingBottom: 0,
+          marginBottom: 200,
+          marginLeft: 30,
+          marginTop: 12,
+        }}
+      >
+        <Text size="4" fontWeight="bold">
+          Publications
+        </Text>
         <ol className={pageListStyle()}>
           {pubList.length ? (
             pubList.map((publication) => (

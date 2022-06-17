@@ -175,16 +175,16 @@ function AccountItem({account}: AccountItemProps) {
           {data && (
             <Box
               css={{
-                width: 12,
-                height: 12,
+                width: 6,
+                height: 6,
                 borderRadius: '$round',
                 flex: 'none',
-                backgroundColor:
-                  data.connectionStatus == ConnectionStatus.CONNECTED
-                    ? '$success-component-normal'
-                    : data.connectionStatus == ConnectionStatus.NOT_CONNECTED
-                    ? '$danger-component-normal'
-                    : '$base-component-normal',
+                backgroundColor: 'red',
+                // data.connectionStatus == ConnectionStatus.CONNECTED
+                //   ? '$success-component-normal'
+                //   : data.connectionStatus == ConnectionStatus.NOT_CONNECTED
+                //   ? '$danger-component-normal'
+                //   : '$base-component-normal',
               }}
             />
           )}
