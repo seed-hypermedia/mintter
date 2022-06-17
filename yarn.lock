@@ -1598,7 +1598,7 @@ __metadata:
     framer-motion: 5.6.0
     google-protobuf: 3.20.1
     graphql: 16.5.0
-    graphql-request: 3.7.0
+    graphql-request: 4.3.0
     hast: 1.0.0
     hast-util-sanitize: 4.0.0
     is-hotkey: 0.2.0
@@ -4788,7 +4788,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-fetch@npm:^3.0.6, cross-fetch@npm:^3.1.5":
+"cross-fetch@npm:^3.1.5":
   version: 3.1.5
   resolution: "cross-fetch@npm:3.1.5"
   dependencies:
@@ -7044,20 +7044,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-request@npm:3.7.0":
-  version: 3.7.0
-  resolution: "graphql-request@npm:3.7.0"
-  dependencies:
-    cross-fetch: ^3.0.6
-    extract-files: ^9.0.0
-    form-data: ^3.0.0
-  peerDependencies:
-    graphql: 14 - 16
-  checksum: db3800cc4ee884cd1514d7d5eafafb9ed27694278fdddd7402345754a7d25e7d713246c72aa510b439b6df2633b74f2cf74fb36864a22a857d5fb2de1cf0b4d8
-  languageName: node
-  linkType: hard
-
-"graphql-request@npm:^4.0.0":
+"graphql-request@npm:4.3.0, graphql-request@npm:^4.0.0":
   version: 4.3.0
   resolution: "graphql-request@npm:4.3.0"
   dependencies:
