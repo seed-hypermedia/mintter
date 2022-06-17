@@ -1,16 +1,16 @@
-import type {Account, Profile} from './.generated/accounts/v1alpha/accounts'
+import type { Account, Profile } from './.generated/accounts/v1alpha/accounts'
 import {
   AccountsClientImpl,
   GetAccountRequest,
-  ListAccountsRequest,
+  ListAccountsRequest
 } from './.generated/accounts/v1alpha/accounts'
 import {
   DaemonClientImpl,
   GenSeedRequest,
-  RegisterRequest,
+  RegisterRequest
 } from './.generated/daemon/v1alpha/daemon'
-import type {GrpcClient} from './grpc-client'
-import {createGrpcClient} from './grpc-client'
+import type { GrpcClient } from './grpc-client'
+import { createGrpcClient } from './grpc-client'
 /**
  *
  * @param aezeedPassphrase
@@ -55,7 +55,7 @@ export function registerAccount(
  * @param rpc
  * @returns
  */
-export function updateAccount(profile: Profile, rpc?: GrpcClient) {
+export function updateProfile(profile: Profile, rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
   return new AccountsClientImpl(rpc).updateProfile(profile)

@@ -9,7 +9,7 @@ beforeEach(() => {
   })
 })
 
-describe('<Settings />', () => {
+describe.skip('<Settings />', () => {
   it('Profile form', () => {
     let newAlias = 'demo2'
     let accountId = 'testaccount'
