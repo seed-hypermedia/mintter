@@ -25,12 +25,21 @@ impl Serialize for Error {
 #[tauri::command]
 async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
   for (_, win) in app_handle.windows() {
+    let win_url = win.url()?;
+
+    let requested_url = {
+      let mut url = win_url.clone();
+      url.set_path(path);
+      url
+    };
+
     debug!(
-      "comparing win url {}  to requested {}",
-      win.url()?.path(),
-      path
+      "comparing win url {}  to requested {}, equal: {}",
+      win_url,
+      requested_url,
+      win_url == requested_url
     );
-    if win.url()?.path() == path {
+    if win_url == requested_url {
       return win.set_focus().map_err(Into::into);
     }
   }
