@@ -1614,7 +1614,7 @@ __metadata:
     react-copy-to-clipboard: 5.1.0
     react-dom: 18.2.0
     react-error-boundary: 3.1.4
-    react-hook-form: 6.15.8
+    react-hook-form: 7.32.1
     react-hot-toast: 2.2.0
     react-qr-barcode-scanner: 1.0.6
     react-qr-code: 2.0.7
@@ -10888,12 +10888,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-hook-form@npm:6.15.8":
-  version: 6.15.8
-  resolution: "react-hook-form@npm:6.15.8"
+"react-hook-form@npm:7.32.1":
+  version: 7.32.1
+  resolution: "react-hook-form@npm:7.32.1"
   peerDependencies:
-    react: ^16.8.0 || ^17
-  checksum: 867d0f8ab1c1a449ebe7027ce56c8b382e7ea516b60c9dcb1484cea1f7e6968b2ad5746e2113fdf5a8454d3759abf34fe65fbbea03babe2baa9eae4a96662b06
+    react: ^16.8.0 || ^17 || ^18
+  checksum: de318ccb608eb9a4d5475ca7b7069dee16a5c2bc99e12a943e760f6739832305a4d71727a53c9fc47d821aec16615afc8a7ea74d2cc5c9fa88398e320cf9ccce
   languageName: node
   linkType: hard
 
