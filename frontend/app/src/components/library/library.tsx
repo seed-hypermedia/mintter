@@ -95,11 +95,6 @@ export function Library({
             </Button>
           </Box>
 
-          <BookmarksSection />
-          <RecentsSection />
-          <Separator />
-          <ContactsSection />
-          <Separator />
           <LibraryButton
             icon="File"
             onClick={() => mainSend('GO.TO.PUBLICATIONLIST')}
@@ -112,6 +107,11 @@ export function Library({
             title="Drafts"
             active={mainState.matches('routes.draftList')}
           />
+          <Separator />
+          <BookmarksSection />
+          <RecentsSection />
+          <Separator />
+          <ContactsSection />
         </Box>
       </ScrollArea>
     </Box>

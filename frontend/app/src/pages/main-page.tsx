@@ -108,7 +108,6 @@ export var rootPageStyle = css({
 let mainWindowStyle = css({
   gridArea: 'main',
   position: 'relative',
-  overflow: 'auto',
   backgroundColor: '$base-background-subtle',
   paddingBottom: 0,
 })

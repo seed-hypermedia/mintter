@@ -4,7 +4,6 @@ import {getEmbedIds} from '@app/editor/embed'
 import {useHover} from '@app/editor/hover-context'
 import {usePublication} from '@app/hooks'
 import {ForwardedRef, forwardRef, memo, useMemo} from 'react'
-import {useQueryClient} from 'react-query'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {Editor} from '../editor'
@@ -25,7 +24,6 @@ function RenderEmbedEditor(
   {embed, children, attributes, ...props}: EmbedEditorProps,
   ref: ForwardedRef<HTMLQuoteElement>,
 ) {
-  let client = useQueryClient()
   let [publicationId, version, blockId] = getEmbedIds(embed)
   let selected = useSelected()
   let focused = useFocused()

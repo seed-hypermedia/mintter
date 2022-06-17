@@ -166,7 +166,9 @@ export function BlockWrapper({
             width: '$full',
             maxWidth: 240,
             marginTop: '-$4',
+            display: 'none',
             '@bp2': {
+              display: 'block',
               transform: 'translateX(100%)',
               position: 'absolute',
               right: -12,
