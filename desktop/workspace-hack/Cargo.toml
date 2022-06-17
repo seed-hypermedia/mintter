@@ -18,7 +18,7 @@ crc32fast = { version = "1", features = ["std"] }
 futures-io = { version = "0.3", features = ["std"] }
 futures-util = { version = "0.3", features = ["alloc", "async-await", "async-await-macro", "channel", "futures-channel", "futures-io", "futures-macro", "futures-sink", "io", "memchr", "sink", "slab", "std"] }
 generic-array = { version = "0.14", default-features = false, features = ["more_lengths"] }
-hashbrown = { version = "0.11", default-features = false, features = ["ahash", "raw"] }
+hashbrown = { version = "0.12", default-features = false, features = ["ahash", "raw"] }
 indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
 log = { version = "0.4", default-features = false, features = ["std"] }
 rand = { version = "0.8", features = ["alloc", "getrandom", "libc", "rand_chacha", "small_rng", "std", "std_rng"] }
