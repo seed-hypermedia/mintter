@@ -205,7 +205,7 @@ export function createMainPageService({
               target: 'routes',
             },
             'REPORT.FILES.ERROR': {
-              actions: ['assignError'],
+              // actions: ['assignError'],
               target: 'errored',
             },
           },
@@ -423,7 +423,7 @@ export function createMainPageService({
         },
       },
       actions: {
-        assignError: (_, event) => {},
+        // assignError: (_, event) => {},
         assignFiles: assign(function assignFilesPredicate(_, event, meta) {
           let draftList = event.draftList.map(function draftListMapper(draft) {
             let editor = buildEditorHook(plugins, EditorMode.Draft)
