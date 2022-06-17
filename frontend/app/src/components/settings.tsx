@@ -1,14 +1,13 @@
+import {useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
-import {queryKeys, useAccount} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {useTheme} from '@app/theme'
+import {debug} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
+import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useActor} from '@xstate/react'
-import {useEffect} from 'react'
-import {useForm} from 'react-hook-form'
-import toast from 'react-hot-toast'
-import {useMutation, useQueryClient} from 'react-query'
+import {FormEvent} from 'react'
 import {Box} from './box'
 import {Button} from './button'
 import {PeerAddrs} from './peer-addrs'
@@ -23,10 +22,10 @@ type ProfileInformationDataType = {
   bio: string
 }
 
-type SettingsPageProp = {updateAccount?: typeof localApi.updateAccount}
+type SettingsPageProp = {updateProfile?: typeof localApi.updateProfile}
 
 export function Settings({
-  updateAccount = localApi.updateAccount,
+  updateProfile = localApi.updateProfile,
 }: SettingsPageProp) {
   return (
     <Box
@@ -51,7 +50,7 @@ export function Settings({
         </StyledTabsList>
         <TabsContent value="profile">
           {/* <ScrollArea> */}
-          <ProfileForm updateAccount={updateAccount} />
+          <ProfileForm updateProfile={updateProfile} />
           {/* </ScrollArea> */}
         </TabsContent>
         <TabsContent value="account">
@@ -116,114 +115,100 @@ var TabsContent = styled(TabsPrimitive.Content, {
 })
 
 function ProfileForm({
-  updateAccount,
+  updateProfile,
 }: {
-  updateAccount: typeof localApi.updateAccount
+  updateProfile: typeof localApi.updateProfile
 }) {
-  const {data, isSuccess} = useAccount('', {
-    useErrorBoundary: true,
-  })
+  let authService = useAuthService()
+  let [state, send] = useActor(authService)
 
-  const queryClient = useQueryClient()
-  const updateProfile = useMutation(updateAccount)
+  function onSubmit(e: FormEvent<HTMLFormElement>) {
+    debug('SUBMIT!!!')
+    let formData = new FormData(e.currentTarget)
+    // @ts-ignore
+    let newProfile: localApi.Profile = Object.fromEntries(formData.entries())
+    e.preventDefault()
+    send({type: 'UPDATE.PROFILE', profile: newProfile})
+  }
 
-  const form = useForm<ProfileInformationDataType>({
-    mode: 'onChange',
-    defaultValues: {
-      alias: '',
-      email: '',
-      bio: '',
-    },
-  })
-
-  useEffect(() => {
-    if (data?.profile && isSuccess) {
-      form.reset({
-        alias: data.profile.alias || '',
-        email: data.profile.email || '',
-        bio: data.profile.bio || '',
-      })
-    }
-  }, [isSuccess])
-
-  const onSubmit = form.handleSubmit(async (data) => {
-    await toast
-      .promise(updateProfile.mutateAsync(data), {
-        loading: 'Updating profile',
-        success: 'Profile updated',
-        error: 'Error updating profile',
-      })
-      .finally(() => {
-        queryClient.invalidateQueries(queryKeys.GET_ACCOUNT)
-      })
-  })
-  return (
-    <Box
-      as="form"
-      onSubmit={onSubmit}
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$7',
-        padding: '$5',
-        marginTop: '$8',
-        marginBottom: '$8',
-      }}
-    >
-      <TextField
-        type="text"
-        label="Alias"
-        data-testid="input-alias"
-        id="alias"
-        name="alias"
-        ref={form.register}
-        placeholder="Readable alias or username. Doesn't have to be unique."
-      />
-      <TextField
-        type="email"
-        status={form.errors.email && 'danger'}
-        label="Email"
-        id="email"
-        name="email"
-        data-testid="input-email"
-        ref={form.register({
-          // pattern: {
-          //   // eslint-disable-next-line no-control-regex
-          //   value: /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/,
-          //   message: 'Please type a valid email.',
-          // },
-        })}
-        placeholder="Real email that could be publically shared"
-        hint={form.errors.email?.message}
-      />
-
-      <TextField
-        textarea
-        id="bio"
-        name="bio"
-        label="Bio"
-        data-testid="input-bio"
-        ref={form.register}
-        rows={4}
-        placeholder="A little bit about yourself..."
-      />
-      <Button
-        type="submit"
-        disabled={form.formState.isSubmitting || !form.formState.isValid}
-        size="2"
-        shape="pill"
-        color="success"
-        data-testid="submit"
-        css={{alignSelf: 'flex-start'}}
+  if (state.matches('loggedIn')) {
+    let {alias, bio, email} = state.context.account?.profile!
+    return (
+      <Box
+        as="form"
+        onSubmit={onSubmit}
+        css={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '$7',
+          padding: '$5',
+          marginTop: '$8',
+          marginBottom: '$8',
+        }}
       >
-        Save
-      </Button>
-    </Box>
-  )
+        <TextField
+          type="text"
+          label="Alias"
+          data-testid="input-alias"
+          id="alias"
+          name="alias"
+          defaultValue={alias}
+          placeholder="Readable alias or username. Doesn't have to be unique."
+        />
+        <TextField
+          type="email"
+          label="Email"
+          id="email"
+          name="email"
+          data-testid="input-email"
+          placeholder="Real email that could be publically shared"
+          defaultValue={email}
+        />
+
+        <TextField
+          textarea
+          id="bio"
+          name="bio"
+          label="Bio"
+          data-testid="input-bio"
+          defaultValue={bio}
+          rows={4}
+          placeholder="A little bit about yourself..."
+        />
+        <Box
+          css={{
+            display: 'flex',
+            gap: '$5',
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            type="submit"
+            disabled={state.hasTag('pending')}
+            size="2"
+            shape="pill"
+            color="success"
+            data-testid="submit"
+            css={{alignSelf: 'flex-start'}}
+          >
+            Save
+          </Button>
+          {state.matches('loggedIn.updateSuccess') && (
+            <Text size="3" color="success">
+              update success!
+            </Text>
+          )}
+        </Box>
+      </Box>
+    )
+  } else {
+    return null
+  }
 }
 
 function AccountInfo() {
-  const {data} = useAccount()
+  let authService = useAuthService()
+  let [state, send] = useActor(authService)
   return (
     <Box
       css={{
@@ -235,7 +220,7 @@ function AccountInfo() {
         marginBottom: '$8',
       }}
     >
-      <Text
+      {/* <Text
         size="2"
         color="primary"
         css={{
@@ -248,21 +233,28 @@ function AccountInfo() {
         }}
       >
         All your Mintter content is located in <code>~/.mtt/</code>
-      </Text>
+      </Text> */}
       <TextField
         readOnly
         type="text"
         label="Account ID"
         name="accountId"
-        value={data?.id}
+        value={state.context.account?.id}
       />
       <PeerAddrs />
-      <Text as="h4" size="6">
-        Devices List
-      </Text>
-      <Box as="ul">
-        {data?.devices && ObjectKeys(data?.devices).length
-          ? Object.entries(data?.devices).map(
+      <Separator data-orientation="horizontal" />
+      <Text size="4">Devices List</Text>
+      <Box
+        as="ul"
+        css={{
+          margin: 0,
+          padding: 0,
+        }}
+      >
+        {state.context.account &&
+        state.context.account.devices &&
+        ObjectKeys(state.context.account.devices).length
+          ? Object.entries(state.context.account.devices).map(
               ([id, device]: [string, localApi.Device], index: number) => (
                 <Text as="li" key={id}>
                   <Text
@@ -278,6 +270,7 @@ function AccountInfo() {
             )
           : null}
       </Box>
+      <Separator data-orientation="horizontal" />
     </Box>
   )
 }

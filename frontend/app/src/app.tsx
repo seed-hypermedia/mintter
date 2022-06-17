@@ -1,5 +1,5 @@
 import {mainService as defaultMainService} from '@app/app-providers'
-import {useAuth} from '@app/auth-context'
+import {useAuthService} from '@app/auth-context'
 import {LibraryShell} from '@components/library'
 import {TopbarStyled} from '@components/topbar'
 import {useActor} from '@xstate/react'
@@ -59,7 +59,7 @@ type AppProps = {
 
 export function App({mainService = defaultMainService}: AppProps) {
   globalStyles()
-  const service = useAuth()
+  const service = useAuthService()
   const [state] = useActor(service)
 
   if (state.matches('checkingAccount')) {
