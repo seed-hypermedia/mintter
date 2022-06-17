@@ -1567,7 +1567,7 @@ __metadata:
     "@radix-ui/react-tooltip": 0.1.7
     "@stitches/core": 1.2.8
     "@stitches/react": 1.2.8
-    "@tauri-apps/api": 1.0.0
+    "@tauri-apps/api": 1.0.1
     "@types/google-protobuf": 3.15.6
     "@types/hast": 2.3.4
     "@types/is-url": 1.2.30
@@ -2500,21 +2500,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tauri-apps/api@npm:1.0.0":
-  version: 1.0.0
-  resolution: "@tauri-apps/api@npm:1.0.0"
-  dependencies:
-    type-fest: 2.13.1
-  checksum: d603f8c743c402bc68b38ce3267799776e59cec778cc2ad62e465d1c52fab73379e7593bf85d57cbd698931689b2ab04feb8da9f31893dd9220faa751fa756eb
-  languageName: node
-  linkType: hard
-
 "@tauri-apps/api@npm:1.0.0-rc.5":
   version: 1.0.0-rc.5
   resolution: "@tauri-apps/api@npm:1.0.0-rc.5"
   dependencies:
     type-fest: 2.12.2
   checksum: fa224d0b09c56186becad886cf9646e72a2f4ac383af5c4a0ca8a453a0a5dc6571d6419f692b22a836dc4539482fc58e3155a79b5f3c0f4d3dc19fd02eb55876
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/api@npm:1.0.1":
+  version: 1.0.1
+  resolution: "@tauri-apps/api@npm:1.0.1"
+  dependencies:
+    type-fest: 2.13.1
+  checksum: 5d0832e57a642649dd2da3e7a1bbfa4fc79215f2092c669ff54e280844cc1f13c3b9737fc4836c6150a0f69278eb09480935a418f212bea71c3ad17f639c5504
   languageName: node
   linkType: hard
 
