@@ -96,7 +96,7 @@
     "xstate": "4.32.1"
   },
   "devDependencies": {
-    "@cypress/react": "5.12.5",
+    "@cypress/react": "6.0.0",
     "@cypress/vite-dev-server": "3.0.0",
     "@types/google-protobuf": "3.15.6",
     "@types/hast": "2.3.4",
