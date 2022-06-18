@@ -3,20 +3,21 @@ import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {PublicationRef} from '@app/main-machine'
-import {getDateFormat} from '@app/utils/get-format-date'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
+import {FileTime} from '@components/file-time'
+import {Icon} from '@components/icon'
 import {
   footerButtonsStyles,
   footerMetadataStyles,
   footerStyles,
-  PageFooterSeparator,
 } from '@components/page-footer'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
+import {Tooltip} from '@components/tooltip'
 import {useActor} from '@xstate/react'
 import {useEffect} from 'react'
 
@@ -51,7 +52,11 @@ export default function Publication({
   if (state.matches('publication.errored')) {
     return (
       <Box
-        css={{padding: '$5', paddingBottom: 0, marginBottom: 200}}
+        css={{
+          padding: '$5',
+          paddingBottom: 0,
+          marginBottom: 200,
+        }}
         data-testid="publication-wrapper"
       >
         <Text>Publication ERROR</Text>
@@ -67,127 +72,151 @@ export default function Publication({
     <>
       {state.matches('publication.ready') && (
         <>
-          <Box
-            css={{padding: '$5', paddingBottom: 0, marginBottom: 50}}
-            data-testid="publication-wrapper"
-          >
-            {state.context.publication?.document?.content && (
-              <FileProvider value={publicationRef}>
-                <Editor
-                  editor={state.context.editor}
-                  mode={EditorMode.Publication}
-                  value={state.context.publication?.document.content}
-                  onChange={() => {
-                    // noop
+          <Box className={footerStyles()}>
+            <Box
+              className={footerMetadataStyles()}
+              css={{
+                flex: 1,
+                overflow: 'hidden',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <FileTime
+                type="pub"
+                document={state.context.publication?.document}
+              />
+            </Box>
+            <Box
+              className={footerButtonsStyles()}
+              css={{
+                flex: 'none',
+              }}
+            >
+              {state.context.canUpdate ? (
+                <>
+                  <Tooltip content="Edit">
+                    <Button
+                      color="success"
+                      size="1"
+                      variant="ghost"
+                      disabled={state.hasTag('pending')}
+                      data-testid="submit-edit"
+                      onClick={() =>
+                        mainService.send({
+                          type: 'COMMIT.EDIT.PUBLICATION',
+                          docId: state.context.documentId,
+                        })
+                      }
+                    >
+                      <Icon size="1" name="PencilAdd" color="muted" />
+                    </Button>
+                  </Tooltip>
+                </>
+              ) : (
+                <>
+                  <TippingModal
+                    publicationId={state.context.documentId}
+                    accountId={state.context.author?.id}
+                    visible={!state.context.canUpdate}
+                  />
+                  <Tooltip content="Review">
+                    <Button
+                      color="success"
+                      size="1"
+                      variant="ghost"
+                      disabled={state.hasTag('pending')}
+                      data-testid="submit-edit"
+                      onClick={() => {
+                        debug('Review: IMPLEMENT ME!')
+                      }}
+                    >
+                      <Icon size="1" name="MessageBubble" color="muted" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip content="Reply">
+                    <Button
+                      color="success"
+                      size="1"
+                      variant="ghost"
+                      disabled={state.hasTag('pending')}
+                      data-testid="submit-edit"
+                      onClick={() => {
+                        debug('Review: IMPLEMENT ME!')
+                      }}
+                    >
+                      <Icon size="1" name="ArrowTurnTopRight" color="muted" />
+                    </Button>
+                  </Tooltip>
+                </>
+              )}
+              <Tooltip content="new Document">
+                <Button
+                  variant="ghost"
+                  size="0"
+                  color="success"
+                  onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
+                  css={{
+                    '&:hover': {
+                      backgroundColor: '$success-component-bg-normal',
+                    },
                   }}
-                />
-              </FileProvider>
-            )}
+                >
+                  <Icon name="File" size="1" />
+                </Button>
+              </Tooltip>
+            </Box>
           </Box>
           <Box
             css={{
-              marginBottom: 200,
-              paddingHorizontal: 32,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              gap: '$4',
+              height: '$full',
             }}
           >
-            <Button
-              variant="ghost"
-              color="primary"
-              size="1"
-              onClick={() => send('DISCUSSION.TOGGLE')}
+            <Box
+              css={{
+                padding: '$5',
+                paddingBottom: 0,
+                marginBottom: 200,
+              }}
+              data-testid="publication-wrapper"
             >
-              {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
-              Discussion/Citations
-            </Button>
-            <Discussion service={publicationRef} mainService={mainService} />
+              {state.context.publication?.document?.content && (
+                <FileProvider value={publicationRef}>
+                  <Editor
+                    editor={state.context.editor}
+                    mode={EditorMode.Publication}
+                    value={state.context.publication?.document.content}
+                    onChange={() => {
+                      // noop
+                    }}
+                  />
+                </FileProvider>
+              )}
+            </Box>
+            <Box
+              css={{
+                marginBottom: 200,
+                paddingHorizontal: 32,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: '$4',
+              }}
+            >
+              <Button
+                variant="ghost"
+                color="primary"
+                size="1"
+                onClick={() => send('DISCUSSION.TOGGLE')}
+              >
+                {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
+                Discussion/Citations
+              </Button>
+              <Discussion service={publicationRef} mainService={mainService} />
+            </Box>
           </Box>
         </>
       )}
-      <Box className={footerStyles()}>
-        <Box
-          className={footerMetadataStyles()}
-          css={{
-            flex: 1,
-            overflow: 'hidden',
-          }}
-        >
-          <Text size="1" color="muted">
-            Created on:{' '}
-            {getDateFormat(state.context.publication?.document, 'createTime')}
-          </Text>
-          <PageFooterSeparator />
-          <Text size="1" color="muted">
-            Last modified:{' '}
-            {getDateFormat(state.context.publication?.document, 'updateTime')}
-          </Text>
-        </Box>
-        <Box
-          className={footerButtonsStyles()}
-          css={{
-            flex: 'none',
-          }}
-        >
-          {state.context.canUpdate ? (
-            <>
-              <Button
-                color="success"
-                size="1"
-                disabled={state.hasTag('pending')}
-                data-testid="submit-edit"
-                onClick={() =>
-                  mainService.send({
-                    type: 'COMMIT.EDIT.PUBLICATION',
-                    docId: state.context.documentId,
-                  })
-                }
-              >
-                Edit
-              </Button>
-            </>
-          ) : (
-            <>
-              <TippingModal
-                publicationId={state.context.documentId}
-                accountId={state.context.author?.id}
-                visible={!state.context.canUpdate}
-              />
-              <Button
-                size="1"
-                variant="outlined"
-                disabled={state.hasTag('pending')}
-                data-testid="submit-review"
-                onClick={() => {
-                  debug('Review: IMPLEMENT ME!')
-                }}
-              >
-                Review
-              </Button>
-              <Button
-                variant="outlined"
-                size="1"
-                disabled={state.hasTag('pending')}
-                data-testid="submit-edit"
-                onClick={() => {
-                  debug('Send: IMPLEMENT ME!')
-                }}
-              >
-                Reply
-              </Button>
-            </>
-          )}
-          <Button
-            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
-            size="1"
-            color="primary"
-          >
-            New Document
-          </Button>
-        </Box>
-      </Box>
     </>
   )
 }

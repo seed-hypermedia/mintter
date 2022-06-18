@@ -4,6 +4,7 @@ import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
+import {Tooltip} from '@components/tooltip'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {useActor, useInterpret} from '@xstate/react'
 import QRCode from 'react-qr-code'
@@ -39,16 +40,20 @@ export function TippingModal({
       }}
     >
       <PopoverPrimitive.Trigger asChild>
-        <Button
-          size="1"
-          variant="outlined"
-          color="success"
-          onClick={() => {
-            send('OPEN')
-          }}
-        >
-          Tip Author
-        </Button>
+        <Tooltip content="Tip Author">
+          <Button
+            color="success"
+            size="1"
+            variant="ghost"
+            disabled={state.hasTag('pending')}
+            data-testid="submit-edit"
+            onClick={() => {
+              send('OPEN')
+            }}
+          >
+            <Icon size="1" name="Star" color="muted" />
+          </Button>
+        </Tooltip>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Content>
         {state.matches('open.setAmount') && (

@@ -6,9 +6,9 @@ import {createDraftMachine} from '@app/draft-machine'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
 import {DraftRef} from '@app/main-machine'
-import {getDateFormat} from '@app/utils/get-format-date'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
+import {FileTime} from '@components/file-time'
 import {
   footerButtonsStyles,
   footerMetadataStyles,
@@ -59,6 +59,27 @@ export default function EditorPage({
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
+        <Box className={footerStyles()}>
+          <Box className={footerMetadataStyles()}>
+            <FileTime type="draft" document={state.context.draft} />
+            <PageFooterSeparator />
+          </Box>
+          <Box className={footerButtonsStyles()}>
+            <EditorStatus state={state} />
+            <Button
+              color="success"
+              variant="ghost"
+              size="1"
+              disabled={!state.can('DRAFT.PUBLISH')}
+              data-testid="submit-publish"
+              onClick={() => {
+                send('DRAFT.PUBLISH')
+              }}
+            >
+              Publish
+            </Button>
+          </Box>
+        </Box>
         <Box
           data-testid="editor-wrapper"
           css={{paddingHorizontal: '$5', paddingTop: '$5'}}
@@ -89,32 +110,6 @@ export default function EditorPage({
             </>
           )}
         </Box>
-        <Box className={footerStyles()}>
-          <Box className={footerMetadataStyles()}>
-            <Text size="1" color="muted">
-              Created on: {getDateFormat(context.draft, 'createTime')}
-            </Text>
-            <PageFooterSeparator />
-            <Text size="1" color="muted">
-              Last modified: {getDateFormat(context.draft, 'updateTime')}
-            </Text>
-            <PageFooterSeparator />
-            <EditorStatus state={state} />
-          </Box>
-          <Box className={footerButtonsStyles()}>
-            <Button
-              color="success"
-              size="1"
-              disabled={!state.can('DRAFT.PUBLISH')}
-              data-testid="submit-publish"
-              onClick={() => {
-                send('DRAFT.PUBLISH')
-              }}
-            >
-              Publish
-            </Button>
-          </Box>
-        </Box>
       </ErrorBoundary>
     )
   }
@@ -131,10 +126,19 @@ function EditorStatus({
     <Box
       css={{
         display: 'flex',
-        gap: '$2',
+        gap: '$3',
         alignItems: 'center',
       }}
     >
+      <Text color="muted" size="1">
+        {state.matches('editing.idle')
+          ? 'saved'
+          : state.matches('editing.debouncing')
+          ? 'unsaved'
+          : state.matches('editing.saving')
+          ? 'saving...'
+          : ''}
+      </Text>
       <Box
         css={{
           $$size: '$space$4',
@@ -150,15 +154,6 @@ function EditorStatus({
             : '$danger-component-bg-active',
         }}
       />
-      <Text color="muted" size="1">
-        {state.matches('editing.idle')
-          ? 'saved'
-          : state.matches('editing.debouncing')
-          ? 'unsaved'
-          : state.matches('editing.saving')
-          ? 'saving...'
-          : ''}
-      </Text>
     </Box>
   )
 }

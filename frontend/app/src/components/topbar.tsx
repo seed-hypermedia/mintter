@@ -111,7 +111,7 @@ export function Topbar({
         {...draggableProps}
       >
         <Box
-          css={{display: 'flex', paddingHorizontal: '$4'}}
+          css={{display: 'flex', paddingHorizontal: '$4', marginLeft: '-$4'}}
           {...draggableProps}
         >
           <TopbarButton
@@ -141,8 +141,9 @@ export function Topbar({
             flex: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '$2',
+            gap: '$3',
             height: '$full',
+            paddingHorizontal: '$3',
           }}
           onClick={toggleLibrary}
           data-tauri-drag-region
