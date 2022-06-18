@@ -178,7 +178,12 @@ export const createLinkPlugin = (): EditorPlugin => ({
       const text = data.getData('text/plain')
 
       if (text && isMintterLink(text)) {
-        wrapMintterLink(editor, text)
+        if (hasBlockId(text)) {
+          wrapMintterLink(editor, text)
+        } else {
+          // TODO: add the document title to this link
+          wrapLink(editor, text)
+        }
       } else if (text && isUrl(text)) {
         wrapLink(editor, text)
       } else {
@@ -301,7 +306,13 @@ export function isValidUrl(entry: string): boolean {
 }
 
 function isMintterLink(text: string) {
-  return text.includes(MINTTER_LINK_PREFIX)
+  return text.startsWith(MINTTER_LINK_PREFIX)
+}
+
+function hasBlockId(text: string) {
+  let [, , blockId] = getIdsfromUrl(text)
+
+  return !!blockId
 }
 
 function wrapMintterLink(editor: Editor, url: string) {
