@@ -6,6 +6,7 @@ import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
+import {Tooltip} from '@components/tooltip'
 import {useActor, useSelector} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import {ScrollArea} from '../scroll-area'
@@ -63,7 +64,6 @@ export function Library({
         <Box
           css={{
             width: isOpen ? '$library-width' : 0,
-            paddingTop: '$3',
             position: 'relative',
             paddingHorizontal: isOpen ? '$3' : 0,
           }}
@@ -71,28 +71,58 @@ export function Library({
           <Box
             css={{
               display: 'flex',
+              gap: '$3',
               alignItems: 'center',
-              justifyContent: 'space-between',
+
+              // background: 'red',
+              // borderRadius: '$2',
               paddingHorizontal: '$3',
-              marginBottom: '$5',
+              paddingVertical: '$3',
+              // borderBottom: '1px solid $colors$base-border-subtle',
             }}
           >
-            <Button
-              variant="ghost"
-              size="1"
-              color="success"
-              onClick={() => mainService.send('CREATE.NEW.DRAFT')}
-              css={{
-                '&:hover': {
-                  backgroundColor: '$success-component-bg-normal',
-                },
-              }}
-            >
-              New Draft
-            </Button>
-            <Button variant="ghost" size="1" color="muted" onClick={handleSync}>
-              <Icon name="Reload" size="1" />
-            </Button>
+            <Box css={{flex: 1, display: 'flex', gap: '$3'}}>
+              <Tooltip content="new Draft">
+                <Button
+                  variant="ghost"
+                  size="0"
+                  color="success"
+                  onClick={() => mainService.send('CREATE.NEW.DRAFT')}
+                  css={{
+                    '&:hover': {
+                      backgroundColor: '$success-component-bg-normal',
+                    },
+                  }}
+                >
+                  <Icon name="AddCircle" size="1" />
+                </Button>
+              </Tooltip>
+              <Tooltip content="new Document">
+                <Button
+                  variant="ghost"
+                  size="0"
+                  color="success"
+                  onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
+                  css={{
+                    '&:hover': {
+                      backgroundColor: '$success-component-bg-normal',
+                    },
+                  }}
+                >
+                  <Icon name="File" size="1" />
+                </Button>
+              </Tooltip>
+            </Box>
+            <Tooltip content="Reload Sync">
+              <Button
+                variant="ghost"
+                size="0"
+                color="muted"
+                onClick={handleSync}
+              >
+                <Icon name="Reload" size="1" />
+              </Button>
+            </Tooltip>
           </Box>
 
           <LibraryButton

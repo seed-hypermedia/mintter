@@ -1,5 +1,5 @@
 import {css} from '@app/stitches.config'
-import {PropsWithChildren} from 'react'
+import {PropsWithChildren, ReactNode} from 'react'
 import {Box} from '../box'
 import {Icon, icons} from '../icon'
 import {Text} from '../text'
@@ -8,8 +8,13 @@ export function Section({
   title,
   icon,
   children,
+  actions,
   ...props
-}: PropsWithChildren<{title: string; icon?: keyof typeof icons}>) {
+}: PropsWithChildren<{
+  title: string
+  icon?: keyof typeof icons
+  actions?: ReactNode
+}>) {
   return (
     <Box {...props}>
       <Box
@@ -31,9 +36,12 @@ export function Section({
         }}
       >
         {icon && <Icon color="primary" name={icon} size="1" />}
-        <Text size="2" fontWeight="medium">
-          {title}
-        </Text>
+        <Box css={{flex: 1}}>
+          <Text size="2" fontWeight="medium">
+            {title}
+          </Text>
+        </Box>
+        {actions}
       </Box>
       <ul className={sectionContentStyle()}>{children}</ul>
     </Box>

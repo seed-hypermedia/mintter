@@ -3,15 +3,17 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import {PropsWithChildren} from 'react'
 
 const StyledContent = styled(TooltipPrimitive.Content, {
-  borderRadius: '$2',
-  paddingVertical: '$3',
-  paddingHorizontal: '$4',
-  fontSize: '$2',
-  backgroundColor: '$base-background-normal',
+  zIndex: '$max',
+  borderRadius: '$1',
+  paddingVertical: '$2',
+  paddingHorizontal: '$3',
+  fontSize: '$1',
+  backgroundColor: '$base-text-high',
   color: '$base-text-opposite',
+  fontFamily: '$base',
 })
 const StyledArrow = styled(TooltipPrimitive.Arrow, {
-  fill: '$base-background-normal',
+  fill: '$base-text-high',
 })
 
 export type TooltipProps = PropsWithChildren<{

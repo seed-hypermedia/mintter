@@ -3,6 +3,7 @@ import {useListAccounts} from '@app/hooks'
 import {CSS, keyframes, styled} from '@app/stitches.config'
 import {error as debugError} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
+import {Icon} from '@components/icon'
 import {StyledItem} from '@components/library/library-item'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {useState} from 'react'
@@ -28,7 +29,20 @@ export function ContactsSection() {
   }
 
   return (
-    <Section title={title} icon="Person">
+    <Section
+      title={title}
+      icon="Person"
+      actions={
+        <Box
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <ContactsPrompt />
+        </Box>
+      }
+    >
       {data.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
@@ -41,7 +55,6 @@ export function ContactsSection() {
           ))}
         </ErrorBoundary>
       ) : null}
-      <ContactsPrompt />
     </Section>
   )
 }
@@ -70,10 +83,22 @@ function ContactsPrompt() {
       <Prompt.Trigger
         variant="ghost"
         color="primary"
+        data-testid="clear-bookmarks"
         size="1"
-        css={{textAlign: 'left'}}
+        css={{
+          all: 'unset',
+          padding: '$1',
+          borderRadius: '$2',
+          backgroundColor: 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          '&:hover': {
+            backgroundColor: '$base-component-bg-hover',
+          },
+        }}
       >
-        + add connection
+        <Icon name="Add" color="muted" size="1" />
       </Prompt.Trigger>
       <Prompt.Content>
         <Prompt.Title>Connect to Peer</Prompt.Title>

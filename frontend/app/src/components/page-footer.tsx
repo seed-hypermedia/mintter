@@ -3,27 +3,28 @@ import {css, styled} from '@app/stitches.config'
 export const footerStyles = css({
   background: '$base-background-subtle',
   width: '$full',
-  position: 'absolute',
-  bottom: 0,
+  // position: 'absolute',
+  // bottom: 0,
   zIndex: '$max',
   display: 'flex',
   justifyContent: 'space-between',
-  paddingHorizontal: '$5',
+  paddingHorizontal: '$4',
 })
 export const footerMetadataStyles = css({
   flex: 1,
-  padding: '$5',
-  display: 'flex',
-  alignItems: 'center',
   overflow: 'hidden',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '$3',
+  display: 'flex',
   width: '$full',
 })
 
 export const footerButtonsStyles = css({
   display: 'flex',
   flex: 'none',
-  gap: '$5',
-  padding: '$5',
+  gap: '$2',
+  padding: '$3',
   paddingRight: 0,
   alignItems: 'center',
 })
