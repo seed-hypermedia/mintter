@@ -176,7 +176,7 @@ export default function Publication({
               css={{
                 padding: '$5',
                 paddingBottom: 0,
-                marginBottom: 200,
+                marginBottom: 50,
               }}
               data-testid="publication-wrapper"
             >
