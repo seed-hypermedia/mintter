@@ -1,4 +1,3 @@
-import {changesService} from '@app/editor/mintter-changes/plugin'
 import type {GroupingContent} from '@mintter/mttast'
 import {isFlowContent, isGroupContent, isParent} from '@mintter/mttast'
 import {Editor, Node, Path, Transforms} from 'slate'
@@ -36,8 +35,6 @@ function moveStatement(editor: Editor, up: boolean) {
   const [parent] = Editor.parent(editor, statementPath)
 
   Editor.withoutNormalizing(editor, () => {
-    changesService.addChange(['moveBlock', statement.id])
-    changesService.addChange(['replaceBlock', statement.id])
     if (!up) {
       const [prev, prevPath] =
         Editor.previous(editor, {
@@ -106,14 +103,6 @@ function moveStatement(editor: Editor, up: boolean) {
             to: [...statementPath, 1, statement?.children[1].children.length],
           })
         }
-
-        siblings.forEach((entry) => {
-          let [node] = entry
-          if (isFlowContent(node)) {
-            changesService.addChange(['moveBlock', node.id])
-            changesService.addChange(['replaceBlock', node.id])
-          }
-        })
       }
 
       doubleLift(editor, statementPath)
