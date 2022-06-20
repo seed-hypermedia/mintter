@@ -4,7 +4,7 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "resolveJsonModule": true,
-    "types": ["vitest/global", "cypress"],
+    "types": ["vitest/globals", "cypress"],
     "baseUrl": "src",
     "paths": {
       "@components/*": ["./components/*"],
