@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import {DocumentChange} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
-import {MintterChangesEditor} from '@app/editor/mintter-changes/plugin'
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {getEditorBlock} from '@app/editor/utils'
 import {Editor} from 'slate'
 import {afterEach, describe, expect, test} from 'vitest'
@@ -37,11 +37,11 @@ describe.skip('Change Transforms', () => {
   ) as any as Editor
 
   afterEach(() => {
-    MintterChangesEditor.resetChanges(editor)
+    changesService.reset()
   })
 
   test('deleteBlock', () => {
-    MintterChangesEditor.addChange(editor, ['deleteBlock', 'block2-2'])
+    changesService.addChange(['deleteBlock', 'block2-2'])
     let expected: Array<DocumentChange> = [
       {
         op: {
@@ -50,11 +50,11 @@ describe.skip('Change Transforms', () => {
         },
       },
     ]
-    expect(MintterChangesEditor.transformChanges(editor)).toEqual(expected)
+    expect(changesService.transformChanges(editor)).toEqual(expected)
   })
 
   test('moveBlock', () => {
-    MintterChangesEditor.addChange(editor, ['moveBlock', 'block2'])
+    changesService.addChange(['moveBlock', 'block2'])
     let expected: Array<DocumentChange> = [
       {
         op: {
@@ -68,11 +68,11 @@ describe.skip('Change Transforms', () => {
       },
     ]
 
-    expect(MintterChangesEditor.transformChanges(editor)).toEqual(expected)
+    expect(changesService.transformChanges(editor)).toEqual(expected)
   })
 
   test('replaceBlock', () => {
-    MintterChangesEditor.addChange(editor, ['replaceBlock', 'block1'])
+    changesService.addChange(['replaceBlock', 'block1'])
     let blockEntry = getEditorBlock(editor, {id: 'block1'})
     let expected: Array<DocumentChange> = [
       {
@@ -83,11 +83,11 @@ describe.skip('Change Transforms', () => {
       },
     ]
 
-    expect(MintterChangesEditor.transformChanges(editor)).toEqual(expected)
+    expect(changesService.transformChanges(editor)).toEqual(expected)
   })
 
   test('setTitle', () => {
-    MintterChangesEditor.addChange(editor, ['setTitle', 'new title'])
+    changesService.addChange(['setTitle', 'new title'])
     let expected: Array<DocumentChange> = [
       {
         op: {
@@ -97,14 +97,14 @@ describe.skip('Change Transforms', () => {
       },
     ]
 
-    expect(MintterChangesEditor.transformChanges(editor)).toEqual(expected)
+    expect(changesService.transformChanges(editor)).toEqual(expected)
   }),
     test('all together', () => {
       let blockEntry = getEditorBlock(editor, {id: 'block1'})
-      MintterChangesEditor.addChange(editor, ['deleteBlock', 'block2-2'])
-      MintterChangesEditor.addChange(editor, ['moveBlock', 'block2'])
-      MintterChangesEditor.addChange(editor, ['replaceBlock', 'block1'])
-      MintterChangesEditor.addChange(editor, ['setTitle', 'new title'])
+      changesService.addChange(['deleteBlock', 'block2-2'])
+      changesService.addChange(['moveBlock', 'block2'])
+      changesService.addChange(['replaceBlock', 'block1'])
+      changesService.addChange(['setTitle', 'new title'])
 
       let expected: Array<DocumentChange> = [
         {
@@ -137,6 +137,6 @@ describe.skip('Change Transforms', () => {
         },
       ]
 
-      expect(MintterChangesEditor.transformChanges(editor)).toEqual(expected)
+      expect(changesService.transformChanges(editor)).toEqual(expected)
     })
 })

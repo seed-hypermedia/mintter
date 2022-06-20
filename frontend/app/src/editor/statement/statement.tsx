@@ -1,5 +1,6 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {useHoverBlockId} from '@app/editor/hover-context'
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {Box} from '@components/box'
 import {
   createId,
@@ -130,11 +131,15 @@ export const createStatementPlugin = (): EditorPlugin => ({
         if (currentEntry) {
           let [, path] = currentEntry
           let isEnd = Editor.isEnd(editor, selection.focus, path)
+          let isStart = Editor.isStart(editor, selection.anchor, path)
+          let isEmbedOnly = hasEmbedOnly(currentEntry)
           if (isEnd) {
             insertBreak()
           } else {
             let newBlock = statement({id: createId()}, [paragraph([text('')])])
             Transforms.insertNodes(editor, newBlock, {at: path})
+            changesService.addChange(['moveBlock', newBlock.id])
+            changesService.addChange(['replaceBlock', newBlock.id])
             return
           }
         }

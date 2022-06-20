@@ -1,4 +1,5 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
+import {changesService} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {statementStyle} from '@app/editor/statement'
 import {css} from '@app/stitches.config'
@@ -92,6 +93,9 @@ export const createHeadingPlugin = (): EditorPlugin => ({
                 },
                 {at},
               )
+              changesService.addChange(['replaceBlock', node.id])
+              changesService.addChange(['moveBlock', newBlock.id])
+              changesService.addChange(['replaceBlock', newBlock.id])
             })
             return
           }
