@@ -7,15 +7,13 @@ import type {
   RenderElementProps,
   RenderLeafProps,
 } from 'slate-react'
-import {MintterEditor} from './mintter-changes/plugin'
 import {EditorMode} from './plugin-utils'
 
 declare module 'slate' {
   export interface CustomTypes {
     Editor: BaseEditor &
       ReactEditor &
-      HistoryEditor &
-      MintterEditor & {mode: EditorMode; readOnly: boolean}
+      HistoryEditor & {mode: EditorMode; readOnly: boolean}
     Element: Exclude<MttastContent, Document | Text | Video | Image>
     Text: Text
   }
