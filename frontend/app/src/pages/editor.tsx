@@ -10,11 +10,10 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {FileTime} from '@components/file-time'
 import {
-  footerButtonsStyles,
-  footerMetadataStyles,
-  footerStyles,
-  PageFooterSeparator,
-} from '@components/page-footer'
+  headerButtonsStyles,
+  headerMetadataStyles,
+  headerStyles,
+} from '@components/page-header'
 import {Text} from '@components/text'
 import {ChildrenOf} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
@@ -59,12 +58,11 @@ export default function EditorPage({
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
-        <Box className={footerStyles()}>
-          <Box className={footerMetadataStyles()}>
+        <Box className={headerStyles()}>
+          <Box className={headerMetadataStyles()}>
             <FileTime type="draft" document={state.context.draft} />
-            <PageFooterSeparator />
           </Box>
-          <Box className={footerButtonsStyles()}>
+          <Box className={headerButtonsStyles()}>
             <EditorStatus state={state} />
             <Button
               color="success"

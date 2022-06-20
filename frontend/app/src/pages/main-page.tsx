@@ -107,6 +107,8 @@ export var rootPageStyle = css({
 
 let mainWindowStyle = css({
   gridArea: 'main',
+  height: '$full',
+  overflow: 'hidden',
   position: 'relative',
   backgroundColor: '$base-background-subtle',
   paddingBottom: 0,

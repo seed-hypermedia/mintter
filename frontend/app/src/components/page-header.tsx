@@ -1,16 +1,16 @@
-import {css, styled} from '@app/stitches.config'
+import {css} from '@app/stitches.config'
 
-export const footerStyles = css({
+export const headerStyles = css({
   background: '$base-background-subtle',
   width: '$full',
   // position: 'absolute',
-  // bottom: 0,
-  zIndex: '$max',
+  // top: 0,
+  // zIndex: '$max',
   display: 'flex',
   justifyContent: 'space-between',
   paddingHorizontal: '$4',
 })
-export const footerMetadataStyles = css({
+export const headerMetadataStyles = css({
   flex: 1,
   overflow: 'hidden',
   alignItems: 'center',
@@ -20,19 +20,11 @@ export const footerMetadataStyles = css({
   width: '$full',
 })
 
-export const footerButtonsStyles = css({
+export const headerButtonsStyles = css({
   display: 'flex',
   flex: 'none',
   gap: '$2',
   padding: '$3',
   paddingRight: 0,
   alignItems: 'center',
-})
-
-export const PageFooterSeparator = styled('div', {
-  width: 1,
-  height: '80%',
-  marginLeft: '$4',
-  marginRight: '$4',
-  background: '$base-component-bg-hover',
 })

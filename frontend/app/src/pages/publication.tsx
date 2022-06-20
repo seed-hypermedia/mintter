@@ -10,10 +10,10 @@ import {Discussion} from '@components/discussion'
 import {FileTime} from '@components/file-time'
 import {Icon} from '@components/icon'
 import {
-  footerButtonsStyles,
-  footerMetadataStyles,
-  footerStyles,
-} from '@components/page-footer'
+  headerButtonsStyles,
+  headerMetadataStyles,
+  headerStyles,
+} from '@components/page-header'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
@@ -72,9 +72,9 @@ export default function Publication({
     <>
       {state.matches('publication.ready') && (
         <>
-          <Box className={footerStyles()}>
+          <Box className={headerStyles()}>
             <Box
-              className={footerMetadataStyles()}
+              className={headerMetadataStyles()}
               css={{
                 flex: 1,
                 overflow: 'hidden',
@@ -88,7 +88,7 @@ export default function Publication({
               />
             </Box>
             <Box
-              className={footerButtonsStyles()}
+              className={headerButtonsStyles()}
               css={{
                 flex: 'none',
               }}
@@ -170,6 +170,7 @@ export default function Publication({
           <Box
             css={{
               height: '$full',
+              marginTop: 44,
             }}
           >
             <Box

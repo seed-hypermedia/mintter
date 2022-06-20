@@ -73,9 +73,6 @@ export function Library({
               display: 'flex',
               gap: '$3',
               alignItems: 'center',
-
-              // background: 'red',
-              // borderRadius: '$2',
               paddingHorizontal: '$3',
               paddingVertical: '$3',
               // borderBottom: '1px solid $colors$base-border-subtle',

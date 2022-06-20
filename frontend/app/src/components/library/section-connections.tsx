@@ -204,7 +204,6 @@ function AccountItem({account}: AccountItemProps) {
                 height: 6,
                 borderRadius: '$round',
                 flex: 'none',
-                backgroundColor: 'red',
                 // data.connectionStatus == ConnectionStatus.CONNECTED
                 //   ? '$success-component-normal'
                 //   : data.connectionStatus == ConnectionStatus.NOT_CONNECTED

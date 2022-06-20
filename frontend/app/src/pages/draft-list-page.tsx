@@ -3,7 +3,7 @@ import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
-import {footerButtonsStyles, footerStyles} from '@components/page-footer'
+import {headerButtonsStyles, headerStyles} from '@components/page-header'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 
@@ -63,8 +63,8 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
           )}
         </ol>
       </Box>
-      <Box className={footerStyles()}>
-        <Box className={footerButtonsStyles()}>
+      <Box className={headerStyles()}>
+        <Box className={headerButtonsStyles()}>
           <Button
             onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
             size="1"

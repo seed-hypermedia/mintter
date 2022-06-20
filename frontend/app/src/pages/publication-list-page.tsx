@@ -27,7 +27,6 @@ export function PublicationList({
     >
       <Box
         css={{
-          // background: 'red',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
