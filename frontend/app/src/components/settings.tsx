@@ -2,7 +2,6 @@ import {useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
 import {styled} from '@app/stitches.config'
 import {useTheme} from '@app/theme'
-import {debug} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
@@ -15,12 +14,6 @@ import {ScrollArea} from './scroll-area'
 import {Text} from './text'
 import {TextField} from './text-field'
 import {WalletList} from './wallet-list'
-
-type ProfileInformationDataType = {
-  alias: string
-  email: string
-  bio: string
-}
 
 type SettingsPageProp = {updateProfile?: typeof localApi.updateProfile}
 
@@ -123,7 +116,6 @@ function ProfileForm({
   let [state, send] = useActor(authService)
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
-    debug('SUBMIT!!!')
     let formData = new FormData(e.currentTarget)
     // @ts-ignore
     let newProfile: localApi.Profile = Object.fromEntries(formData.entries())
