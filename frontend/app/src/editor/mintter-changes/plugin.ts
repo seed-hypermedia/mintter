@@ -1,80 +1,146 @@
-import {DocumentChange} from '@app/client'
+import { DocumentChange } from '@app/client'
 import {
   createDeleteChange,
   createMoveChange,
-  createReplaceChange,
+  createReplaceChange
 } from '@app/client/v2/change-creators'
-import {isFlowContent} from '@mintter/mttast'
-import {Editor, Path} from 'slate'
-import {info} from 'tauri-plugin-log-api'
-import {EditorPlugin} from '../types'
-import {getEditorBlock} from '../utils'
-
-type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
-
-export type ChangeOperation = [ChangeType, string]
+import { EditorPlugin } from '@app/editor/types'
+import { getEditorBlock } from '@app/editor/utils'
+import { info } from '@app/utils/logger'
+import { FlowContent, isFlowContent } from '@mintter/mttast'
+import { Editor, Node, Operation, Path } from 'slate'
 
 export function createMintterChangesPlugin(): EditorPlugin {
   return {
-    name: 'mintter_changes',
+    name: 'mintter',
     configureEditor(editor) {
-      editor.__mtt_changes = []
-
-      const {apply} = editor
-
-      editor.apply = (op) => {
-        info('== operation ==')
-        info(JSON.stringify(op))
-
-        switch (op.type) {
-          case 'insert_node':
-            if (isFlowContent(op.node)) {
-              // TODO: wtf I wanted to do here?
-
-              addOperation(editor, 'moveBlock', op.node)
-              addOperation(editor, 'replaceBlock', op.node)
-            } else {
-              // throw new Error('todo')
-              // insertNode(editor, operation.path)
-            }
-            break
-          case 'insert_text':
-          case 'set_node':
-          case 'split_node':
-          case 'remove_text':
-            replaceText(editor, op.path)
-            break
-          case 'remove_node':
-            if (isFlowContent(op.node)) {
-              addOperation(editor, 'deleteBlock', op.node)
-            } else {
-              replaceText(editor, op.path)
-            }
-            break
-          default:
-            break
-        }
-
-        apply(op)
-      }
+      const { apply } = editor
+      editor.apply = mintterApply(editor, apply)
 
       return editor
     },
   }
 }
 
-export interface MintterEditor {
-  __mtt_changes: ChangeOperation[]
-  resetChanges(editor: Editor): void
-  addChange(editor: Editor, entry: ChangeOperation): void
-  transformChanges(editor: Editor): Array<DocumentChange>
+export let changesService = changesServiceCreator()
+
+function mintterApply(editor: Editor, cb: (op: Operation) => void) {
+  return function apply(operation: Operation) {
+    cb(operation)
+    // we send the operation AFTER we apply it to the changes to get the new editor state. if we call it before, we will not get the current operation change in the editor value.
+
+    changesService.send({ operation, editor })
+  }
 }
 
-export const MintterEditor: MintterEditor = {
-  __mtt_changes: [],
-  transformChanges: function (editor: Editor): DocumentChange[] {
-    const result: Array<DocumentChange> = []
-    editor.__mtt_changes.forEach((change) => {
+type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
+
+export type ChangeOperation = [ChangeType, string]
+
+export type ChangesEvent = { editor?: Editor; operation: Operation }
+
+type BlocksObject = { [key: string]: { node: FlowContent; path: Path } }
+
+export function changesServiceCreator() {
+  let changes: Array<ChangeOperation> = []
+
+  return {
+    getChanges,
+    addChange,
+    send,
+    reset,
+    transformChanges,
+  }
+
+  function reset() {
+    changes = []
+  }
+
+  function send({ operation, editor }: ChangesEvent) {
+    info('== operation ==')
+    info(JSON.stringify(operation))
+
+    switch (operation.type) {
+      case 'insert_node':
+        if (isFlowContent(operation.node)) {
+          let entry = getEditorBlock(editor!, {
+            at: operation.path,
+          })
+
+          // TODO: wtf I wanted to do here?
+
+          addOperation(editor!, 'moveBlock', operation.node)
+          addOperation(editor!, 'replaceBlock', operation.node)
+        } else {
+          insertNode(editor!, operation.path)
+        }
+        break
+      case 'insert_text':
+      case 'set_node':
+      case 'split_node':
+      case 'remove_text':
+        replaceText(editor!, operation.path)
+        break
+      case 'remove_node':
+        if (isFlowContent(operation.node)) {
+          addOperation(editor!, 'deleteBlock', operation.node)
+        } else {
+          replaceText(editor!, operation.path)
+        }
+
+        break
+      default:
+        break
+    }
+  }
+
+  function addChange(entry: ChangeOperation) {
+    if (shouldOverride(entry, changes[changes.length - 1])) {
+      changes.pop()
+    }
+    changes.push(entry)
+  }
+
+  function insertNode(editor: Editor, path: Path) {
+    // TODO: Do I need this?
+    // let entry = getEditorBlock(editor, {
+    //   at: path,
+    //   mode: 'lowest',
+    // })
+    // if (entry) {
+    //   let [block] = entry
+    //   addOperation(editor, 'moveBlock', block)
+    //   addOperation(editor, 'replaceBlock', block)
+    // }
+  }
+
+  function replaceText(editor: Editor, path: Path) {
+    let entry = getEditorBlock(editor, {
+      at: path,
+    })
+
+    if (entry) {
+      let [block] = entry
+      addOperation(editor, 'replaceBlock', block)
+    }
+  }
+
+  function getChanges(): Array<ChangeOperation> {
+    return changes
+  }
+
+  function addOperation(editor: Editor, opType: ChangeType, node: Node) {
+    if (isFlowContent(node)) {
+      let newChange: ChangeOperation = [opType, node.id]
+      if (!shouldOverride(newChange, changes[changes.length - 1])) {
+        changes.push(newChange)
+      }
+    }
+  }
+
+  function transformChanges(editor: Editor): Array<DocumentChange> {
+    let result: Array<DocumentChange> = []
+    changes.forEach((change) => {
       let [type, value] = change
       if (type == 'deleteBlock') {
         result.push(createDeleteChange(value))
@@ -109,46 +175,6 @@ export const MintterEditor: MintterEditor = {
     })
 
     return result
-  },
-  resetChanges: function (editor: Editor) {
-    editor.__mtt_changes = []
-  },
-  addChange: function (editor: Editor, entry: ChangeOperation): void {
-    if (
-      shouldOverride(
-        entry,
-        editor.__mtt_changes[editor.__mtt_changes.length - 1],
-      )
-    ) {
-      editor.__mtt_changes.pop()
-    }
-
-    editor.__mtt_changes.push(entry)
-  },
-}
-
-function replaceText(editor: Editor, path: Path) {
-  let entry = getEditorBlock(editor, {
-    at: path,
-  })
-
-  if (entry) {
-    let [block] = entry
-    addOperation(editor, 'replaceBlock', block)
-  }
-}
-
-function addOperation(editor: Editor, opType: ChangeType, node: Node) {
-  if (isFlowContent(node)) {
-    let newChange: ChangeOperation = [opType, node.id]
-    if (
-      !shouldOverride(
-        newChange,
-        editor.__mtt_changes[editor.__mtt_changes.length - 1],
-      )
-    ) {
-      editor.__mtt_changes.push(newChange)
-    }
   }
 }
 
