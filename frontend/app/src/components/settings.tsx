@@ -123,8 +123,8 @@ function ProfileForm({
     send({type: 'UPDATE.PROFILE', profile: newProfile})
   }
 
-  if (state.matches('loggedIn')) {
-    let {alias, bio, email} = state.context.account?.profile!
+  if (state.context.account?.profile && state.matches('loggedIn')) {
+    let {alias, bio, email} = state.context.account.profile
     return (
       <Box
         as="form"
