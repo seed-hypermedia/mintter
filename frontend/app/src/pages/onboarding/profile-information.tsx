@@ -1,4 +1,4 @@
-import {updateAccount} from '@app/client'
+import {updateProfile} from '@app/client'
 import {TextField} from '@components/text-field'
 import {useCallback} from 'react'
 import {useForm} from 'react-hook-form'
@@ -22,8 +22,8 @@ type ProfileInformationDataType = {
 }
 
 export function ProfileInformation({next}: OnboardingStepPropsType) {
-  const updateProfile = useMutation(updateAccount)
-  const {register, handleSubmit, errors, formState} =
+  const mutate = useMutation(updateProfile)
+  const {register, handleSubmit, formState} =
     useForm<ProfileInformationDataType>({
       mode: 'onChange',
       defaultValues: {
@@ -35,7 +35,7 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
 
   const onSubmit = useCallback(
     async (data: ProfileInformationDataType) => {
-      await toast.promise(updateProfile.mutateAsync(data), {
+      await toast.promise(mutate.mutateAsync(data), {
         loading: 'Updating profile',
         success: 'Profile updated',
         error: 'Error updating profile',
@@ -61,35 +61,32 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
           type="text"
           label="Alias"
           id="alias"
-          name="alias"
-          ref={register}
+          {...register('alias')}
           data-testid="alias-input"
           placeholder="Readable alias or username. Doesn't have to be unique."
         />
         <TextField
           type="email"
-          status={errors.email && 'danger'}
+          status={formState.errors.email && 'danger'}
           label="Email"
           id="email"
-          name="email"
           data-testid="email-input"
-          ref={register({
-            // pattern: {
-            //   // eslint-disable-next-line no-control-regex
-            //   value: /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/,
-            //   message: 'Please type a valid email.',
-            // },
+          {...register('email', {
+            pattern: {
+              // eslint-disable-next-line no-control-regex
+              value: /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/,
+              message: 'Please type a valid email.',
+            },
           })}
           placeholder="Real email that could be publically shared"
-          hint={errors.email?.message}
+          hint={formState.errors.email?.message}
         />
         <TextField
           textarea
           id="bio"
-          name="bio"
           label="Bio"
           data-testid="bio-input"
-          ref={register}
+          {...register('bio')}
           rows={4}
           placeholder="A little bit about yourself..."
         />
