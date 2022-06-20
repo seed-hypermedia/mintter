@@ -1,4 +1,3 @@
-import {changesService} from '@app/editor/mintter-changes/plugin'
 import {findPath} from '@app/editor/utils'
 import {useFile} from '@app/file-provider'
 import {ObjectKeys} from '@app/utils/object-keys'
@@ -11,7 +10,6 @@ import {
   FlowContent,
   group,
   heading,
-  isFlowContent,
   isGroupContent,
   isHeading,
   MttastContent,
@@ -159,7 +157,6 @@ function setType(fn: any) {
     at: Path,
   ) {
     Editor.withoutNormalizing(editor, function () {
-      changesService.addChange(['replaceBlock', element.id])
       const keys = ObjectKeys(element).filter(
         (key) => !['type', 'id', 'children', 'data'].includes(key),
       )
@@ -194,19 +191,6 @@ function setList(fn: any) {
         const {children} = list
         Transforms.removeNodes(editor, {at: Path.parent(at)})
         Transforms.insertNodes(editor, fn(children), {at: Path.parent(at)})
-
-        if (at.length == 2) {
-          // block is at the root level
-        } else {
-          let parentBlockEntry = Editor.above(editor, {
-            match: isFlowContent,
-            at,
-          })
-          if (parentBlockEntry) {
-            let [block] = parentBlockEntry
-            changesService.addChange(['replaceBlock', block.id])
-          }
-        }
       })
     }
   }

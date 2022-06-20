@@ -1,7 +1,5 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import {getEditorBlock} from '@app/editor/utils'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug} from '@app/utils/logger'
@@ -323,22 +321,10 @@ function wrapMintterLink(editor: Editor, url: string) {
     const newEmbed: Embed = embed({url}, [text('')])
     Transforms.insertNodes(editor, newEmbed)
     Transforms.move(editor, {distance: 1, unit: 'offset'})
-    addLinkChange(editor)
   } else {
     debug('wrapMintterLink: NOT COLLAPSED', selection)
     wrapLink(editor, url)
     // Transforms.move(editor, {distance: 1, unit: 'offset'})
-  }
-}
-
-function addLinkChange(editor: Editor, at: Range | null = editor.selection) {
-  let blockEntry = getEditorBlock(editor, {
-    //@ts-ignore
-    at,
-  })
-  if (blockEntry) {
-    let [node] = blockEntry
-    changesService.addChange(['replaceBlock', node.id])
   }
 }
 
