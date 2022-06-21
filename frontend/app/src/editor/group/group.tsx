@@ -1,3 +1,4 @@
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
@@ -61,9 +62,12 @@ export const createGroupPlugin = (): EditorPlugin => ({
           // addParentData(editor, entry)
           if (Element.isElement(child) && !isFlowContent(child)) {
             // inside group and not a flowcontent
-            Transforms.wrapNodes(editor, statement({id: createId()}), {
+            let blockId = createId()
+            Transforms.wrapNodes(editor, statement({id: blockId}), {
               at: childPath,
             })
+            MintterEditor.addChange(editor, ['moveBlock', blockId])
+            MintterEditor.addChange(editor, ['replaceBlock', blockId])
             return
           }
         }

@@ -1,4 +1,4 @@
-import {changesService} from '@app/editor/mintter-changes/plugin'
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {findPath} from '@app/editor/utils'
 import {useFile} from '@app/file-provider'
 import {ObjectKeys} from '@app/utils/object-keys'
@@ -159,7 +159,7 @@ function setType(fn: any) {
     at: Path,
   ) {
     Editor.withoutNormalizing(editor, function () {
-      changesService.addChange(['replaceBlock', element.id])
+      MintterEditor.addChange(editor, ['replaceBlock', element.id])
       const keys = ObjectKeys(element).filter(
         (key) => !['type', 'id', 'children', 'data'].includes(key),
       )
@@ -204,7 +204,7 @@ function setList(fn: any) {
           })
           if (parentBlockEntry) {
             let [block] = parentBlockEntry
-            changesService.addChange(['replaceBlock', block.id])
+            MintterEditor.addChange(editor, ['replaceBlock', block.id])
           }
         }
       })

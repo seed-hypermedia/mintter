@@ -1,8 +1,8 @@
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import type {GroupingContent} from '@mintter/mttast'
-import {isFlowContent, isGroupContent, isParent} from '@mintter/mttast'
-import {Editor, Node, Path, Transforms} from 'slate'
-import type {EditorPlugin} from './types'
+import { MintterEditor } from '@app/editor/mintter-changes/plugin';
+import type { GroupingContent } from '@mintter/mttast';
+import { isFlowContent, isGroupContent, isParent } from '@mintter/mttast';
+import { Editor, Node, Path, Transforms } from 'slate';
+import type { EditorPlugin } from './types';
 
 /**
  * This plugin handles the <Tab> interactions with the editor:
@@ -36,8 +36,8 @@ function moveStatement(editor: Editor, up: boolean) {
   const [parent] = Editor.parent(editor, statementPath)
 
   Editor.withoutNormalizing(editor, () => {
-    changesService.addChange(['moveBlock', statement.id])
-    changesService.addChange(['replaceBlock', statement.id])
+    MintterEditor.addChange(editor, ['moveBlock', statement.id])
+    MintterEditor.addChange(editor, ['replaceBlock', statement.id])
     if (!up) {
       const [prev, prevPath] =
         Editor.previous(editor, {
@@ -49,8 +49,8 @@ function moveStatement(editor: Editor, up: boolean) {
       if (prev.children.length == 1) {
         Transforms.wrapNodes(
           editor,
-          {type: isGroupContent(parent) ? parent.type : 'group', children: []},
-          {at: statementPath},
+          { type: isGroupContent(parent) ? parent.type : 'group', children: [] },
+          { at: statementPath },
         )
 
         Transforms.moveNodes(editor, {
@@ -110,8 +110,8 @@ function moveStatement(editor: Editor, up: boolean) {
         siblings.forEach((entry) => {
           let [node] = entry
           if (isFlowContent(node)) {
-            changesService.addChange(['moveBlock', node.id])
-            changesService.addChange(['replaceBlock', node.id])
+            MintterEditor.addChange(editor, ['moveBlock', node.id])
+            MintterEditor.addChange(editor, ['replaceBlock', node.id])
           }
         })
       }
@@ -133,9 +133,9 @@ function* nextSiblings(editor: Editor, path: Path) {
 function doubleLift(editor: Editor, path: Path) {
   const ref = Editor.pathRef(editor, path)
 
-  Transforms.liftNodes(editor, {at: path})
+  Transforms.liftNodes(editor, { at: path })
   if (!ref.current) throw new Error('couldnt track path')
-  Transforms.liftNodes(editor, {at: ref.current})
+  Transforms.liftNodes(editor, { at: ref.current })
 
   ref.unref()
 }

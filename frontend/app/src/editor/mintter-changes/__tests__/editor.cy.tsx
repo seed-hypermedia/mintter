@@ -2,10 +2,7 @@ import {Document} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {createDraftMachine} from '@app/draft-machine'
 import {Editor} from '@app/editor/editor'
-import {
-  ChangeOperation,
-  changesService,
-} from '@app/editor/mintter-changes/plugin'
+import {ChangeOperation} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {FileProvider} from '@app/file-provider'
@@ -26,10 +23,6 @@ import {QueryClient} from 'react-query'
 import {Editor as EditorType} from 'slate'
 
 describe('Editor', () => {
-  beforeEach(() => {
-    changesService.reset()
-  })
-
   describe('Move Operations', () => {
     it('should add the default content block to changes', () => {
       let draft: Document = {
@@ -52,7 +45,7 @@ describe('Editor', () => {
       render(<TestEditor editor={editor} client={client} draft={draft} />)
 
       cy.get('[data-testid="editor"]').then(() => {
-        expect(changesService.getChanges()).to.have.length(2)
+        expect(editor.__mtt_changes).to.have.length(2)
       })
     })
 
@@ -101,7 +94,7 @@ describe('Editor', () => {
         })
         .type('{enter}')
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           let newBlock: FlowContent = (editor.children[0] as GroupingContent)
             .children[0].children[1]!.children[0]
           expect(changes).to.have.length(6)
@@ -161,7 +154,7 @@ describe('Editor', () => {
         })
         .type('{backspace}')
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(1)
           expect(changes[0]).to.deep.equal(['deleteBlock', block1.id])
         })
@@ -212,7 +205,7 @@ describe('Editor', () => {
         })
         .type('{enter}')
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           let newBlock: FlowContent = (editor.children[0] as GroupingContent)
             .children[1]
           expect(changes).to.have.length(3)
@@ -303,7 +296,7 @@ describe('Editor', () => {
         // .tab({shift: true})
 
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(3)
           let expected: Array<ChangeOperation> = [
             ['moveBlock', block3.id],
@@ -368,7 +361,7 @@ describe('Editor', () => {
         })
         .type('{backspace}')
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(1)
           let expected: ChangeOperation = ['deleteBlock', 'b2']
 
@@ -423,7 +416,7 @@ describe('Editor', () => {
         .type(' ') // need to type this because if not the first letter is not typed ¯\_(ツ)_/¯
         .type('Hello World')
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(1)
 
           let expected: ChangeOperation = ['replaceBlock', 'b1']
@@ -478,7 +471,7 @@ describe('Editor', () => {
         })
         .type('. mote text.') // need to type this because if not the first letter is not typed ¯\_(ツ)_/¯
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(1)
 
           let expected: ChangeOperation = ['replaceBlock', 'b1']
@@ -520,7 +513,7 @@ describe('Editor', () => {
         .get('[data-testid="item-Statement"]')
         .click()
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(1)
           let expected: ChangeOperation = ['replaceBlock', 'b1']
           expect(changes[0]).to.deep.equal(expected)
@@ -580,7 +573,7 @@ describe('Editor', () => {
         .get('[type="submit"]')
         .click()
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(1)
 
           let expected: ChangeOperation = ['replaceBlock', 'b1']
@@ -643,7 +636,7 @@ describe('Editor', () => {
         .get('[data-testid="modal-link-remove-button"]')
         .click()
         .then(() => {
-          let changes = changesService.getChanges()
+          let changes = editor.__mtt_changes
           expect(changes).to.have.length(1)
           let expected: ChangeOperation = ['replaceBlock', 'b1']
           expect(changes[0]).to.deep.equal(expected)
@@ -661,13 +654,6 @@ type TestEditorProps = {
 function TestEditor({editor, client, draft}: TestEditorProps) {
   let service = useInterpret(
     createDraftMachine({editor, client, draft, shouldAutosave: false}),
-    {
-      actions: {
-        updateLibrary: () => {
-          // noop
-        },
-      },
-    },
   )
   let [state, send] = useActor(service)
 
