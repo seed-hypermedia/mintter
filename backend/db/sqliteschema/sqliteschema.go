@@ -42,17 +42,17 @@ var migrations = []string{
 		-- so UNIQUE constraint is needed here.
 		-- We don't use multihash as a primary key to reduce the database size,
 		-- as there're multiple other tables referencing records from this table.
-		multihash BLOB NOT NULL,
+		multihash BLOB UNIQUE NOT NULL,
 		-- Multicodec describing the data stored in the block.
 		codec INTEGER NOT NULL,
 		-- Actual content of the block. Compressed with zstd.
-		data BLOB NOT NULL,
+		data BLOB,
 		-- Byte size of the original uncompressed data.
-		size INTEGER NOT NULL,
-		-- Subjective (locally perceived) time when this block was fetched for the first time.
-		-- Not sure if actually useful, but might become at some point.
-		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-		UNIQUE (multihash)
+		size INTEGER DEFAULT (0) NOT NULL,
+		-- Subjective (locally perceived) time when this block was inserted into the table for the first time.
+		insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+		-- Pending blocks are those for which we know the hash, but we don't have the content yet.
+		pending INTEGER DEFAULT (0) NOT NULL CHECK (pending IN (0, 1))
 	);
 
 	-- Stores data about Mintter Accounts.
@@ -178,13 +178,13 @@ var migrations = []string{
 	) WITHOUT ROWID;
 
 	CREATE TABLE content_links (
-		source_document_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
+		source_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 		source_block_id TEXT NOT NULL,
 		-- In theory this is not needed, because source_change_id will always be the correct version.
 		-- but to simplify the queries we store it here too.
 		source_version TEXT NOT NULL,
 		source_change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-		target_document_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
+		target_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 		target_block_id TEXT NOT NULL,
 		target_version TEXT NOT NULL,
 		PRIMARY KEY (target_document_id, target_block_id, target_version, source_document_id, source_block_id, source_change_id)

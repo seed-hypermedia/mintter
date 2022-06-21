@@ -302,31 +302,6 @@ var (
 		),
 	)
 
-	/*
-		with my_permanodes as (
-			select id from permanodes where account_id = ?
-		),
-
-
-		select
-		from permanode_owners
-		inner join named_versions on named_versions.object_id = permanode_owners.permanode_id
-		inner join devices on devices.id = named_versions
-		where permanode_owners.account_id = ?
-		select * from named_versions
-		inner join permanode_owners
-		on permanode_owners.permanode_id = named_versions.object_id
-		and permanode_owners.account_it = ?
-
-
-		select * from named_versions
-		where object_id in (
-			select id from permanodes
-			where account_id = ?
-		)
-
-	*/
-
 	ipfsBlocks = add(
 		qb.MakeQuery(s.Schema, "IPFSBlocksLookupPK", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
@@ -334,6 +309,67 @@ var (
 			), '\n',
 			"FROM", s.IPFSBlocks, '\n',
 			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash), '\n',
+		),
+		qb.MakeQuery(s.Schema, "IPFSBlocksUpsert", sgen.QueryKindSingle,
+			"INSERT INTO", s.IPFSBlocks, qb.ListColShort(
+				s.IPFSBlocksMultihash,
+				s.IPFSBlocksCodec,
+				s.IPFSBlocksData,
+				s.IPFSBlocksSize,
+				s.IPFSBlocksPending,
+			), '\n',
+			"VALUES", qb.List(
+				qb.VarCol(s.IPFSBlocksMultihash),
+				qb.VarCol(s.IPFSBlocksCodec),
+				qb.VarCol(s.IPFSBlocksData),
+				qb.VarCol(s.IPFSBlocksSize),
+				qb.VarCol(s.IPFSBlocksPending),
+			), '\n',
+			// Update existing record if the existing one was pending, and we're inserting found content to make it non-pending.
+			"ON CONFLICT", qb.ListColShort(s.IPFSBlocksMultihash), '\n',
+			"DO UPDATE SET codec = excluded.codec, data = excluded.data, size = excluded.size, pending = excluded.pending", '\n',
+			"WHERE pending = 1 AND excluded.pending = 0", '\n',
+			"RETURNING", qb.Results(qb.ResultCol(s.IPFSBlocksID)),
+		),
+		qb.MakeQuery(s.Schema, "IPFSBlocksListValid", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.IPFSBlocksID),
+				qb.ResultCol(s.IPFSBlocksMultihash),
+				qb.ResultCol(s.IPFSBlocksCodec),
+			), '\n',
+			"FROM", s.IPFSBlocks, '\n',
+			"WHERE", s.IPFSBlocksPending, "=", "0",
+		),
+		qb.MakeQuery(s.Schema, "IPFSBlocksHas", sgen.QueryKindSingle,
+			"SELECT", qb.Results(qb.ResultExpr("1", "has", sgen.TypeInt)), '\n',
+			"FROM", s.IPFSBlocks, '\n',
+			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash), '\n',
+			"AND", s.IPFSBlocksPending, "=", "0",
+		),
+		qb.MakeQuery(s.Schema, "IPFSBlocksGet", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.IPFSBlocksID),
+				qb.ResultCol(s.IPFSBlocksMultihash),
+				qb.ResultCol(s.IPFSBlocksCodec),
+				qb.ResultCol(s.IPFSBlocksData),
+				qb.ResultCol(s.IPFSBlocksSize),
+			), '\n',
+			"FROM", s.IPFSBlocks, '\n',
+			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
+			"AND", s.IPFSBlocksPending, "=", "0",
+		),
+		qb.MakeQuery(s.Schema, "IPFSBlocksGetSize", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.IPFSBlocksID),
+				qb.ResultCol(s.IPFSBlocksSize),
+			), '\n',
+			"FROM", s.IPFSBlocks, '\n',
+			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
+			"AND", s.IPFSBlocksPending, "=", "0",
+		),
+		qb.MakeQuery(s.Schema, "IPFSBlocksDelete", sgen.QueryKindExec,
+			"DELETE FROM", s.IPFSBlocks, '\n',
+			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
 		),
 	)
 

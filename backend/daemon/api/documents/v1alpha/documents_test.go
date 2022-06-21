@@ -23,6 +23,45 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func TestBug_MissingLinkTarget(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+			Annotations: []*documents.Annotation{
+				{
+					Type: "link",
+					Attributes: map[string]string{
+						"url": "mtt://bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy/baeaxdiheaiqfsiervpfvbohhvjgnkcto3f5p4alwe4k46fr334vlw4n5jaknnqa/MIWneLC1",
+					},
+					Starts: []int32{0},
+					Ends:   []int32{5},
+				},
+			},
+		}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, published)
+
+	linked, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: "bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy"})
+	require.Error(t, err)
+	require.Nil(t, linked)
+}
+
 func TestBug_BrokenPublicationList(t *testing.T) {
 	// See: https://www.notion.so/mintter/Fix-List-of-Publications-Breaks-c5f37e237cca4618bd3296d926958cd6.
 	t.Parallel()

@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"mintter/backend/core"
-	"mintter/backend/db/sqliteschema"
 	"mintter/backend/ipfs"
-	"mintter/backend/ipfs/sqlitebs"
 	"mintter/backend/vcs/vcssql"
 	"sort"
 	"time"
@@ -24,19 +22,12 @@ import (
 // SQLite is a VCS backed by a SQLite database.
 type SQLite struct {
 	db *sqlitex.Pool
-	bs blockstore.Blockstore
+	bs *blkStore
 }
 
 func New(db *sqlitex.Pool) *SQLite {
-	var bs blockstore.Blockstore
 	var err error
-	bs = sqlitebs.New(db, sqlitebs.Config{
-		TableName:       string(sqliteschema.IPFSBlocks),
-		ColumnMultihash: string(sqliteschema.IPFSBlocksMultihash.ShortName()),
-		ColumnCodec:     string(sqliteschema.IPFSBlocksCodec.ShortName()),
-		ColumnData:      string(sqliteschema.IPFSBlocksData.ShortName()),
-		ColumnSize:      string(sqliteschema.IPFSBlocksSize.ShortName()),
-	})
+	bs := newBlockstore(db)
 	// bs, err = blockstore.CachedBlockstore(context.Background(), bs, blockstore.DefaultCacheOpts())
 	// if err != nil {
 	// 	panic(err)
@@ -61,6 +52,11 @@ func (s *SQLite) IterateChanges(ctx context.Context, oid ObjectID, v Version, fn
 
 	visited := make(map[cid.Cid]RecordedChange)
 
+	conn, release, err := s.db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+
 	for len(queue) > 0 {
 		last := len(queue) - 1
 		id := queue[last]
@@ -70,7 +66,7 @@ func (s *SQLite) IterateChanges(ctx context.Context, oid ObjectID, v Version, fn
 			continue
 		}
 
-		blk, err := s.bs.Get(ctx, id)
+		blk, err := s.bs.get(conn, id)
 		if err != nil {
 			return err
 		}
@@ -86,6 +82,8 @@ func (s *SQLite) IterateChanges(ctx context.Context, oid ObjectID, v Version, fn
 			queue = append(queue, p)
 		}
 	}
+
+	release()
 
 	out := make([]RecordedChange, len(visited))
 	var i int
@@ -336,18 +334,18 @@ func (s *SQLite) LoadNamedVersion(ctx context.Context, o ObjectID, account cid.C
 	return ver, nil
 }
 
-func (s *SQLite) StorePermanode(ctx context.Context, blk blocks.Block, p Permanode) error {
-	if err := s.bs.Put(ctx, blk); err != nil {
-		return err
-	}
-
-	// ocodec, ohash := ipfs.DecodeCID(blk.Cid())
-
+func (s *SQLite) StorePermanode(ctx context.Context, blk blocks.Block, p Permanode) (err error) {
 	conn, release, err := s.db.Conn(ctx)
 	if err != nil {
 		return err
 	}
 	defer release()
+
+	defer sqlitex.Save(conn)(&err)
+
+	if err := s.bs.putBlock(conn, blk); err != nil {
+		return err
+	}
 
 	// Ensure account exists.
 	aid, err := s.lookupAccountID(conn, p.PermanodeOwner())

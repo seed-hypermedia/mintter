@@ -92,10 +92,11 @@ const (
 const (
 	IPFSBlocks           sqlitegen.Table  = "ipfs_blocks"
 	IPFSBlocksCodec      sqlitegen.Column = "ipfs_blocks.codec"
-	IPFSBlocksCreateTime sqlitegen.Column = "ipfs_blocks.create_time"
 	IPFSBlocksData       sqlitegen.Column = "ipfs_blocks.data"
 	IPFSBlocksID         sqlitegen.Column = "ipfs_blocks.id"
+	IPFSBlocksInsertTime sqlitegen.Column = "ipfs_blocks.insert_time"
 	IPFSBlocksMultihash  sqlitegen.Column = "ipfs_blocks.multihash"
+	IPFSBlocksPending    sqlitegen.Column = "ipfs_blocks.pending"
 	IPFSBlocksSize       sqlitegen.Column = "ipfs_blocks.size"
 )
 
@@ -197,10 +198,11 @@ var Schema = sqlitegen.Schema{
 		GlobalMetaKey:                {Table: GlobalMeta, SQLType: "TEXT"},
 		GlobalMetaValue:              {Table: GlobalMeta, SQLType: "TEXT"},
 		IPFSBlocksCodec:              {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksCreateTime:         {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksData:               {Table: IPFSBlocks, SQLType: "BLOB"},
 		IPFSBlocksID:                 {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPFSBlocksInsertTime:         {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksMultihash:          {Table: IPFSBlocks, SQLType: "BLOB"},
+		IPFSBlocksPending:            {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksSize:               {Table: IPFSBlocks, SQLType: "INTEGER"},
 		NamedVersionsAccountID:       {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsDeviceID:        {Table: NamedVersions, SQLType: "INTEGER"},

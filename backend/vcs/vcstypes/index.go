@@ -3,9 +3,11 @@ package vcstypes
 import (
 	"context"
 	"fmt"
+	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 )
@@ -106,12 +108,12 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 	}
 	defer release()
 
-	oiddb, err := vcssql.IPFSBlocksLookupPK(conn, c.Object.Hash())
+	srcDoc, err := vcssql.IPFSBlocksLookupPK(conn, c.Object.Hash())
 	if err != nil {
 		return err
 	}
 
-	ciddb, err := vcssql.IPFSBlocksLookupPK(conn, changeID.Hash())
+	srcChange, err := vcssql.IPFSBlocksLookupPK(conn, changeID.Hash())
 	if err != nil {
 		return err
 	}
@@ -153,17 +155,17 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 					continue
 				}
 
-				tdocid, err := vcssql.IPFSBlocksLookupPK(conn, link.TargetDocument.Hash())
+				tdocid, err := ensureIPFSBlock(conn, link.TargetDocument)
 				if err != nil {
 					return err
 				}
 
 				if err := vcssql.ContentLinksInsert(conn,
-					oiddb.IPFSBlocksID,
+					srcDoc.IPFSBlocksID,
 					blk.ID,
-					ciddb.IPFSBlocksID,
+					srcChange.IPFSBlocksID,
 					srcVer,
-					tdocid.IPFSBlocksID,
+					tdocid,
 					link.TargetBlock,
 					link.TargetVersion,
 				); err != nil {
@@ -180,9 +182,32 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 		}
 	}
 
-	if err := vcssql.DocumentsIndex(conn, oiddb.IPFSBlocksID, title, subtitle, ciddb.IPFSBlocksID, int(c.CreateTime.Unix())); err != nil {
+	if err := vcssql.DocumentsIndex(conn, srcDoc.IPFSBlocksID, title, subtitle, srcChange.IPFSBlocksID, int(c.CreateTime.Unix())); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int, error) {
+	codec, hash := ipfs.DecodeCID(c)
+	res, err := vcssql.IPFSBlocksLookupPK(conn, hash)
+	if err != nil {
+		return 0, err
+	}
+
+	if res.IPFSBlocksID != 0 {
+		return res.IPFSBlocksID, nil
+	}
+
+	upsert, err := vcssql.IPFSBlocksUpsert(conn, hash, int(codec), nil, 0, 1)
+	if err != nil {
+		return 0, err
+	}
+
+	if upsert.IPFSBlocksID == 0 {
+		panic("BUG: didn't insert pending IPFS block")
+	}
+
+	return upsert.IPFSBlocksID, nil
 }

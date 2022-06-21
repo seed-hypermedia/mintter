@@ -33,7 +33,7 @@ func MakeCIDWithCodec(t *testing.T, codec uint64, data string) cid.Cid {
 }
 
 // MakeRepoPath for testing..
-func MakeRepoPath(t *testing.T) string {
+func MakeRepoPath(t testing.TB) string {
 	t.Helper()
 
 	dir, err := ioutil.TempDir("", "mintter-repo-*")
@@ -51,7 +51,7 @@ func MakeBlockStore(t *testing.T) blockstore.Blockstore {
 	return blockstore.NewBlockstore(MakeDatastore(t))
 }
 
-// MakeDatastore creates a new in-memory datastore
+// MakeDatastore creates a new in-memory datastore.
 func MakeDatastore(t *testing.T) *FakeTxnDatastore {
 	t.Helper()
 	return &FakeTxnDatastore{sync.MutexWrap(datastore.NewMapDatastore())}

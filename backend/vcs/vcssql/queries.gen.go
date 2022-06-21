@@ -732,6 +732,206 @@ WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
 	return out, err
 }
 
+type IPFSBlocksUpsertResult struct {
+	IPFSBlocksID int
+}
+
+func IPFSBlocksUpsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, ipfsBlocksCodec int, ipfsBlocksData []byte, ipfsBlocksSize int, ipfsBlocksPending int) (IPFSBlocksUpsertResult, error) {
+	const query = `INSERT INTO ipfs_blocks (multihash, codec, data, size, pending)
+VALUES (:ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, :ipfsBlocksSize, :ipfsBlocksPending)
+ON CONFLICT (multihash)
+DO UPDATE SET codec = excluded.codec, data = excluded.data, size = excluded.size, pending = excluded.pending
+WHERE pending = 1 AND excluded.pending = 0
+RETURNING ipfs_blocks.id`
+
+	var out IPFSBlocksUpsertResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+		stmt.SetInt(":ipfsBlocksCodec", ipfsBlocksCodec)
+		stmt.SetBytes(":ipfsBlocksData", ipfsBlocksData)
+		stmt.SetInt(":ipfsBlocksSize", ipfsBlocksSize)
+		stmt.SetInt(":ipfsBlocksPending", ipfsBlocksPending)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksUpsert: more than one result return for a single-kind query")
+		}
+
+		out.IPFSBlocksID = stmt.ColumnInt(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksUpsert: %w", err)
+	}
+
+	return out, err
+}
+
+type IPFSBlocksListValidResult struct {
+	IPFSBlocksID        int
+	IPFSBlocksMultihash []byte
+	IPFSBlocksCodec     int
+}
+
+func IPFSBlocksListValid(conn *sqlite.Conn) ([]IPFSBlocksListValidResult, error) {
+	const query = `SELECT ipfs_blocks.id, ipfs_blocks.multihash, ipfs_blocks.codec
+FROM ipfs_blocks
+WHERE ipfs_blocks.pending = 0`
+
+	var out []IPFSBlocksListValidResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, IPFSBlocksListValidResult{
+			IPFSBlocksID:        stmt.ColumnInt(0),
+			IPFSBlocksMultihash: stmt.ColumnBytes(1),
+			IPFSBlocksCodec:     stmt.ColumnInt(2),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksListValid: %w", err)
+	}
+
+	return out, err
+}
+
+type IPFSBlocksHasResult struct {
+	Has int
+}
+
+func IPFSBlocksHas(conn *sqlite.Conn, ipfsBlocksMultihash []byte) (IPFSBlocksHasResult, error) {
+	const query = `SELECT 1 AS has
+FROM ipfs_blocks
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
+AND ipfs_blocks.pending = 0`
+
+	var out IPFSBlocksHasResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksHas: more than one result return for a single-kind query")
+		}
+
+		out.Has = stmt.ColumnInt(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksHas: %w", err)
+	}
+
+	return out, err
+}
+
+type IPFSBlocksGetResult struct {
+	IPFSBlocksID        int
+	IPFSBlocksMultihash []byte
+	IPFSBlocksCodec     int
+	IPFSBlocksData      []byte
+	IPFSBlocksSize      int
+}
+
+func IPFSBlocksGet(conn *sqlite.Conn, ipfsBlocksMultihash []byte) (IPFSBlocksGetResult, error) {
+	const query = `SELECT ipfs_blocks.id, ipfs_blocks.multihash, ipfs_blocks.codec, ipfs_blocks.data, ipfs_blocks.size
+FROM ipfs_blocks
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash AND ipfs_blocks.pending = 0`
+
+	var out IPFSBlocksGetResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksGet: more than one result return for a single-kind query")
+		}
+
+		out.IPFSBlocksID = stmt.ColumnInt(0)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(1)
+		out.IPFSBlocksCodec = stmt.ColumnInt(2)
+		out.IPFSBlocksData = stmt.ColumnBytes(3)
+		out.IPFSBlocksSize = stmt.ColumnInt(4)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksGet: %w", err)
+	}
+
+	return out, err
+}
+
+type IPFSBlocksGetSizeResult struct {
+	IPFSBlocksID   int
+	IPFSBlocksSize int
+}
+
+func IPFSBlocksGetSize(conn *sqlite.Conn, ipfsBlocksMultihash []byte) (IPFSBlocksGetSizeResult, error) {
+	const query = `SELECT ipfs_blocks.id, ipfs_blocks.size
+FROM ipfs_blocks
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash AND ipfs_blocks.pending = 0`
+
+	var out IPFSBlocksGetSizeResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksGetSize: more than one result return for a single-kind query")
+		}
+
+		out.IPFSBlocksID = stmt.ColumnInt(0)
+		out.IPFSBlocksSize = stmt.ColumnInt(1)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksGetSize: %w", err)
+	}
+
+	return out, err
+}
+
+func IPFSBlocksDelete(conn *sqlite.Conn, ipfsBlocksMultihash []byte) error {
+	const query = `DELETE FROM ipfs_blocks
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksDelete: %w", err)
+	}
+
+	return err
+}
+
 func DraftsInsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, draftsTitle string, draftsSubtitle string, draftsCreateTime int, draftsUpdateTime int) error {
 	const query = `INSERT INTO drafts (id, title, subtitle, create_time, update_time)
 VALUES (COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000), :draftsTitle, :draftsSubtitle, :draftsCreateTime, :draftsUpdateTime)`
