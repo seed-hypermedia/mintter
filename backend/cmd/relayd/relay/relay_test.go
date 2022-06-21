@@ -10,7 +10,6 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
-	"github.com/multiformats/go-multiaddr"
 	ma "github.com/multiformats/go-multiaddr"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -31,8 +30,7 @@ func TestRelay(t *testing.T) {
 // 1->v1 or 2->v2
 func initAndTest(relayVersion uint8) error {
 	// Create the relay
-	log, _ := zap.NewProduction(zap.WithCaller(false))
-	defer log.Sync()
+	log, _ := zap.NewDevelopment(zap.WithCaller(false))
 
 	cfg := defaultConfig()
 	cfg.Network.AnnounceAddrs = []string{
@@ -136,36 +134,4 @@ func initAndTest(relayVersion uint8) error {
 	s.Read(make([]byte, 1)) // block until the handler closes the stream
 
 	return nil
-}
-
-// provideBootstrapRelays hardcodes a list of relays to connect in case
-// a node is not reachable from outside
-func provideBootstrapRelays() ([]peer.AddrInfo, error) {
-	relays := map[string][]string{
-		"12D3KooWDEy9x2MkUtDMLwb38isNhWMap39xeKVqL8Wb9AHYPYM7": {
-			"/ip4/18.158.173.157/tcp/4002",
-			"/ip4/18.158.173.157/udp/4002/quic",
-		},
-	}
-	relaysInfo := []peer.AddrInfo{}
-
-	for ID, Addrs := range relays {
-		newID, err := peer.Decode(ID)
-		if err != nil {
-			return nil, err
-		}
-		newRelay := peer.AddrInfo{
-			ID:    newID,
-			Addrs: []multiaddr.Multiaddr{},
-		}
-		for _, addr := range Addrs {
-			ma, err := multiaddr.NewMultiaddr(addr)
-			if err != nil {
-				return nil, err
-			}
-			newRelay.Addrs = append(newRelay.Addrs, ma)
-		}
-		relaysInfo = append(relaysInfo, newRelay)
-	}
-	return relaysInfo, nil
 }
