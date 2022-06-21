@@ -1,4 +1,4 @@
-import type {GroupingContent} from '@mintter/mttast'
+import type { GroupingContent } from '@mintter/mttast'
 import {
   FlowContent,
   group,
@@ -7,11 +7,11 @@ import {
   isGroupContent,
   isStatement,
   Statement,
-  statement,
+  statement
 } from '@mintter/mttast'
-import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
-import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
-import {ReactEditor} from 'slate-react'
+import type { Ancestor, Descendant, NodeEntry, Point, Span } from 'slate'
+import { Editor, Node, Path, Range, Text, Transforms } from 'slate'
+import { ReactEditor } from 'slate-react'
 
 export const isCollapsed = (range: Range): boolean =>
   !!range && Range.isCollapsed(range)
@@ -64,10 +64,10 @@ export interface UnhangRangeOptions {
  *
  * */
 export function unhangRange(editor: Editor, options: UnhangRangeOptions = {}) {
-  const {at = editor.selection, voids, unhang = true} = options
+  const { at = editor.selection, voids, unhang = true } = options
 
   if (Range.isRange(at) && unhang) {
-    options.at = Editor.unhangRange(editor, at, {voids})
+    options.at = Editor.unhangRange(editor, at, { voids })
   }
 }
 
@@ -162,7 +162,7 @@ export function removeMark(
   editor: Editor,
   key: keyof Omit<Text, 'value'>,
 ): void {
-  const {selection} = editor
+  const { selection } = editor
   if (selection) {
     if (Range.isExpanded(selection)) {
       Transforms.unsetNodes(editor, key, {
@@ -170,7 +170,7 @@ export function removeMark(
         split: true,
       })
     } else {
-      const marks = {...(Editor.marks(editor) || {type: 'text'})}
+      const marks = { ...(Editor.marks(editor) || { type: 'text' }) }
       delete marks[key]
       editor.marks = marks
       editor.onChange()
@@ -179,7 +179,7 @@ export function removeMark(
 }
 
 export function resetFlowContent(editor: Editor): boolean | undefined {
-  const {selection} = editor
+  const { selection } = editor
   if (selection && isCollapsed(selection)) {
     const block = Editor.above<Statement>(editor, {
       match: (n) => isFlowContent(n) && !isStatement(n),
@@ -192,12 +192,12 @@ export function resetFlowContent(editor: Editor): boolean | undefined {
         Editor.withoutNormalizing(editor, () => {
           Transforms.insertNodes(
             editor,
-            statement({id: node.id}, node.children),
+            statement({ id: node.id }, node.children),
             {
               at: Path.next(path),
             },
           )
-          Transforms.removeNodes(editor, {at: path})
+          Transforms.removeNodes(editor, { at: path })
           Transforms.select(editor, path.concat(0))
         })
         return true
@@ -208,7 +208,7 @@ export function resetFlowContent(editor: Editor): boolean | undefined {
 }
 
 export function resetGroupingContent(editor: Editor): boolean {
-  const {selection} = editor
+  const { selection } = editor
   if (selection && isCollapsed(selection)) {
     const list = Editor.above<GroupingContent>(editor, {
       match: (n) => isGroupContent(n) && !isGroup(n),
@@ -220,7 +220,7 @@ export function resetGroupingContent(editor: Editor): boolean {
           Transforms.insertNodes(editor, group(listNode.children), {
             at: Path.next(listPath),
           })
-          Transforms.removeNodes(editor, {at: listPath})
+          Transforms.removeNodes(editor, { at: listPath })
           Transforms.select(editor, listPath.concat(0))
         })
         return true

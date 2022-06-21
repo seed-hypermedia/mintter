@@ -1,7 +1,6 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {changesService} from '@app/editor/mintter-changes/plugin'
-import {getEditorBlock} from '@app/editor/utils'
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug} from '@app/utils/logger'
@@ -37,7 +36,7 @@ import {
 import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
 import type {UseLastSelectionResult} from '../editor-hovering-toolbar'
 import type {EditorPlugin} from '../types'
-import {isCollapsed} from '../utils'
+import {getEditorBlock, isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -338,7 +337,7 @@ function addLinkChange(editor: Editor, at: Range | null = editor.selection) {
   })
   if (blockEntry) {
     let [node] = blockEntry
-    changesService.addChange(['replaceBlock', node.id])
+    MintterEditor.addChange(editor, ['replaceBlock', node.id])
   }
 }
 

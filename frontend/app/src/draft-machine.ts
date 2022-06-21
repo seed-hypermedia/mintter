@@ -6,16 +6,16 @@ import {
   getDraft,
   publishDraft,
   updateDraftV2 as apiUpdateDraft
-} from '@app/client'
-import { blockNodeToSlate } from '@app/client/v2/block-to-slate'
-import { changesService } from '@app/editor/mintter-changes/plugin'
-import { queryKeys } from '@app/hooks'
-import { getTitleFromContent } from '@app/utils/get-document-title'
-import { debug } from '@app/utils/logger'
-import { createId, group, paragraph, statement, text } from '@mintter/mttast'
-import { QueryClient } from 'react-query'
-import { Editor } from 'slate'
-import { assign, createMachine, sendParent } from 'xstate'
+} from '@app/client';
+import { blockNodeToSlate } from '@app/client/v2/block-to-slate';
+import { queryKeys } from '@app/hooks';
+import { getTitleFromContent } from '@app/utils/get-document-title';
+import { debug } from '@app/utils/logger';
+import { createId, group, paragraph, statement, text } from '@mintter/mttast';
+import { QueryClient } from 'react-query';
+import { Editor } from 'slate';
+import { assign, createMachine, sendParent } from 'xstate';
+import { MintterEditor } from './editor/mintter-changes/plugin';
 
 export type EditorDocument = Partial<Document> & {
   id?: string
@@ -248,7 +248,7 @@ export function createDraftMachine({
     {
       actions: {
         //@ts-ignore
-        assignDraftsValue: assign((_, event) => {
+        assignDraftsValue: assign((context, event) => {
           // TODO: fixme types
 
           let newValue: EditorDocument = {
@@ -260,8 +260,8 @@ export function createDraftMachine({
           } else {
             newValue.content = defaultContent
             let entryNode = defaultContent[0].children[0]
-            changesService.addChange(['moveBlock', entryNode.id])
-            changesService.addChange(['replaceBlock', entryNode.id])
+            MintterEditor.addChange(context.editor, ['moveBlock', entryNode.id])
+            MintterEditor.addChange(context.editor, ['replaceBlock', entryNode.id])
           }
 
           return {
@@ -292,8 +292,8 @@ export function createDraftMachine({
             }
           },
         }),
-        resetChanges: () => {
-          changesService.reset()
+        resetChanges: (context) => {
+          MintterEditor.resetChanges(context.editor)
         },
         afterPublish: sendParent((context, event) => ({
           type: 'COMMIT.PUBLISH',
@@ -328,8 +328,8 @@ export function createDraftMachine({
         saveDraft: (context) => (sendBack) => {
           if (shouldAutosave) {
             ; (async function autosave() {
-              let contentChanges = changesService.transformChanges(editor).filter(Boolean)
-              debug("🚀 ~ file: draft-machine.ts ~ line 330 ~ autosave ~ contentChanges", contentChanges)
+              let contentChanges = MintterEditor.transformChanges(context.editor).filter(Boolean)
+              debug('contentChanges', contentChanges)
               let newTitle = context.title
               let changes: Array<DocumentChange> = newTitle
                 ? [
@@ -348,7 +348,7 @@ export function createDraftMachine({
                   documentId: context.draft.id,
                   changes,
                 })
-
+                debug('\n\n=====update SUCCESS')
                 // TODO: update document
                 sendBack('DRAFT.UPDATE.SUCCESS')
               } catch (err: any) {
