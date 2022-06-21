@@ -54,7 +54,7 @@ func TestSQLiteWorkingCopy(t *testing.T) {
 	require.Equal(t, wc.Data(), wc2.Data())
 }
 
-func newTestSQLite(t *testing.T) *sqlitex.Pool {
+func newTestSQLite(t testing.TB) *sqlitex.Pool {
 	path := testutil.MakeRepoPath(t)
 
 	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)

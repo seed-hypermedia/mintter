@@ -1,11 +1,10 @@
-package sqlitebs
+package vcs
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
@@ -16,7 +15,7 @@ import (
 func TestGet(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	data := []byte("some data")
 	c := makeCID(t, data)
@@ -44,7 +43,7 @@ func TestGet(t *testing.T) {
 func TestGet_Missing(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	c := makeCID(t, []byte("missing-data"))
 	got, err := bs.Get(context.Background(), c)
@@ -63,7 +62,7 @@ func TestGet_Missing(t *testing.T) {
 func TestHashOnRead(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	require.Panics(t, func() { bs.HashOnRead(true) })
 }
@@ -71,7 +70,7 @@ func TestHashOnRead(t *testing.T) {
 func TestHas(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	orig := blocks.NewBlock([]byte("some data"))
 	err := bs.Put(context.Background(), orig)
@@ -89,7 +88,7 @@ func TestHas(t *testing.T) {
 func TestCidv0v1(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	orig := blocks.NewBlock([]byte("some data"))
 
@@ -104,7 +103,7 @@ func TestCidv0v1(t *testing.T) {
 func TestAllKeysSimple(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	keys := insertBlocks(t, bs, 100)
 
@@ -119,7 +118,7 @@ func TestAllKeysSimple(t *testing.T) {
 func TestAllKeysRespectsContext(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	keys := insertBlocks(t, bs, 100)
 
@@ -129,11 +128,11 @@ func TestAllKeysRespectsContext(t *testing.T) {
 
 	// consume 2, then cancel context.
 	v, ok := <-ch
-	require.NotEqual(t, keys[0], v)
+	require.Equal(t, keys[0], v)
 	require.True(t, ok)
 
 	v, ok = <-ch
-	require.NotEqual(t, keys[1], v)
+	require.Equal(t, keys[1], v)
 	require.True(t, ok)
 
 	cancel()
@@ -148,7 +147,7 @@ func TestAllKeysRespectsContext(t *testing.T) {
 func TestPutMany(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	blks := []blocks.Block{
 		blocks.NewBlock([]byte("foo1")),
@@ -178,7 +177,7 @@ func TestPutMany(t *testing.T) {
 func TestPut_InlineCID(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	mh, err := multihash.Sum([]byte("this is some data"), multihash.IDENTITY, -1)
 	require.NoError(t, err)
@@ -199,7 +198,7 @@ func TestPut_InlineCID(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
-	bs := newBlockstore(t)
+	bs := makeBlockstore(t)
 
 	blks := []blocks.Block{
 		blocks.NewBlock([]byte("foo1")),
@@ -227,39 +226,12 @@ func TestDelete(t *testing.T) {
 	require.False(t, has)
 }
 
-func TestContext(t *testing.T) {
-	bs := newBlockstore(t)
-	ctx := context.Background()
-
-	conn, release, err := bs.db.Conn(ctx)
-	require.NoError(t, err)
-	defer release()
-
-	cctx := ContextWithConn(ctx, conn)
-
-	blks := []blocks.Block{
-		blocks.NewBlock([]byte("foo1")),
-		blocks.NewBlock([]byte("foo2")),
-		blocks.NewBlock([]byte("foo3")),
-	}
-
-	for _, blk := range blks {
-		require.NoError(t, bs.Put(cctx, blk))
-	}
-}
-
-func newBlockstore(t testing.TB) *Blockstore {
+func makeBlockstore(t testing.TB) *blkStore {
 	t.Helper()
 
-	pool, err := sqlitex.Open("file::memory:?mode=memory", 0, 1)
-	require.NoError(t, err)
+	pool := newTestSQLite(t)
 
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	bs := New(pool, DefaultConfig())
-	require.NoError(t, bs.CreateTables(context.Background()))
+	bs := newBlockstore(pool)
 
 	return bs
 }
@@ -273,7 +245,7 @@ func makeCID(t *testing.T, data []byte) cid.Cid {
 	return cid.NewCidV1(cid.Raw, mh)
 }
 
-func insertBlocks(t *testing.T, bs *Blockstore, count int) []cid.Cid {
+func insertBlocks(t *testing.T, bs *blkStore, count int) []cid.Cid {
 	keys := make([]cid.Cid, count)
 	for i := 0; i < count; i++ {
 		data := []byte(fmt.Sprintf("some data %d", i))
