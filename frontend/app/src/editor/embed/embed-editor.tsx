@@ -89,7 +89,11 @@ export function useEmbed(url: string) {
   let block = useMemo(() => {
     let temp: FlowContent
     if (publicationQuery.data.document.children?.length) {
-      let slateValue = blockNodeToSlate(publicationQuery.data.document.children)
+      // TODO: use the parent list type instead
+      let slateValue = blockNodeToSlate(
+        publicationQuery.data.document.children,
+        'group',
+      )
 
       visit(
         {type: 'root', children: slateValue.children} as any,

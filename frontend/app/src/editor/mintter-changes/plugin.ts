@@ -6,7 +6,6 @@ import {
 } from '@app/client/v2/change-creators'
 import {isFlowContent} from '@mintter/mttast'
 import {Editor, Path} from 'slate'
-import {info} from 'tauri-plugin-log-api'
 import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'
 
@@ -23,8 +22,8 @@ export function createMintterChangesPlugin(): EditorPlugin {
       const {apply} = editor
 
       editor.apply = (op) => {
-        info('== operation ==')
-        info(JSON.stringify(op))
+        // info('== operation ==')
+        // info(JSON.stringify(op))
 
         switch (op.type) {
           case 'insert_node':

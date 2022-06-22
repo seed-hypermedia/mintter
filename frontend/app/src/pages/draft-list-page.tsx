@@ -3,7 +3,6 @@ import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
-import {headerButtonsStyles, headerStyles} from '@components/page-header'
 import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 
@@ -26,9 +25,25 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
           marginTop: 12,
         }}
       >
-        <Text size="4" fontWeight="bold">
-          Drafts
-        </Text>
+        <Box
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Text size="4" fontWeight="bold">
+            Drafts
+          </Text>
+          <Button
+            size="1"
+            variant="ghost"
+            color="muted"
+            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
+          >
+            New Document
+          </Button>
+        </Box>
         <ol className={pageListStyle()}>
           {drafts.length ? (
             drafts.map((draft) => (
@@ -62,17 +77,6 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
             </Box>
           )}
         </ol>
-      </Box>
-      <Box className={headerStyles()}>
-        <Box className={headerButtonsStyles()}>
-          <Button
-            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
-            size="1"
-            color="primary"
-          >
-            New Document
-          </Button>
-        </Box>
       </Box>
     </>
   )
