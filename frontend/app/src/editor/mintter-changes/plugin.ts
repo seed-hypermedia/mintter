@@ -1,14 +1,14 @@
-import { DocumentChange } from '@app/client'
+import {DocumentChange} from '@app/client'
 import {
   createDeleteChange,
   createMoveChange,
-  createReplaceChange
+  createReplaceChange,
 } from '@app/client/v2/change-creators'
-import { isFlowContent } from '@mintter/mttast'
-import { Editor, Path } from 'slate'
-import { info } from 'tauri-plugin-log-api'
-import { EditorPlugin } from '../types'
-import { getEditorBlock } from '../utils'
+import {isFlowContent} from '@mintter/mttast'
+import {Editor, Path} from 'slate'
+import {info} from 'tauri-plugin-log-api'
+import {EditorPlugin} from '../types'
+import {getEditorBlock} from '../utils'
 
 type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
 
@@ -20,7 +20,7 @@ export function createMintterChangesPlugin(): EditorPlugin {
     configureEditor(editor) {
       editor.__mtt_changes = []
 
-      const { apply } = editor
+      const {apply} = editor
 
       editor.apply = (op) => {
         info('== operation ==')
