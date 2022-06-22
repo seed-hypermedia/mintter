@@ -22,7 +22,7 @@ tokio = { version = "1.19.2", features = ["full"] }
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
 log = "0.4.17"
-anyhow = "1.0.57"
+anyhow = "1.0.58"
 env_logger = "0.9.0"
 workspace-hack = { version = "0.1", path = "../workspace-hack" }
 url = "2.2.2"
