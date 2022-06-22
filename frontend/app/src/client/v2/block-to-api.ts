@@ -5,7 +5,10 @@ import {annotationContains, AnnotationSet} from './classes'
 // This example only deals with a single level of leaves.
 // You'd need to think about something for multiple annotations,
 // like `codeblock(text, text, link(text, text))` or something like that.
-export function blockToApi(slateBlock: FlowContent): Block {
+export function blockToApi(
+  slateBlock: FlowContent,
+  childrenType: string = 'group',
+): Block {
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
   let leaves = flattenLeaves(slateBlock.children[0].children)
 
@@ -14,7 +17,9 @@ export function blockToApi(slateBlock: FlowContent): Block {
     id: slateBlock.id,
     type: slateBlock.type,
     annotations: [],
-    attributes: {},
+    attributes: {
+      childrenType,
+    },
     text: '',
   }
 

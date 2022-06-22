@@ -1,3 +1,4 @@
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import type {Document, Image, MttastContent, Text, Video} from '@mintter/mttast'
 import React from 'react'
 import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
@@ -13,7 +14,8 @@ declare module 'slate' {
   export interface CustomTypes {
     Editor: BaseEditor &
       ReactEditor &
-      HistoryEditor & {mode: EditorMode; readOnly: boolean}
+      HistoryEditor &
+      MintterEditor & {mode: EditorMode; readOnly: boolean}
     Element: Exclude<MttastContent, Document | Text | Video | Image>
     Text: Text
   }

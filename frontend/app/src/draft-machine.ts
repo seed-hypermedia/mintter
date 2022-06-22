@@ -212,7 +212,7 @@ export function createDraftMachine({
         publishing: {
           id: 'publishing',
           entry: (context, event) => {
-            debug('IN PUBLISHING!', {context, event})
+            // debug('IN PUBLISHING!', { context, event })
           },
           invoke: {
             src: 'publishDraft',
@@ -256,7 +256,8 @@ export function createDraftMachine({
           }
 
           if (event.data.children?.length) {
-            newValue.content = [blockNodeToSlate(event.data.children)]
+            // TODO: use the parent list type instead
+            newValue.content = [blockNodeToSlate(event.data.children, 'group')]
           } else {
             newValue.content = defaultContent
             let entryNode = defaultContent[0].children[0]
@@ -334,7 +335,7 @@ export function createDraftMachine({
               let contentChanges = MintterEditor.transformChanges(
                 context.editor,
               ).filter(Boolean)
-              debug('contentChanges', contentChanges)
+              // debug('contentChanges', contentChanges)
               let newTitle = context.title
               let changes: Array<DocumentChange> = newTitle
                 ? [
@@ -353,7 +354,6 @@ export function createDraftMachine({
                   documentId: context.draft.id,
                   changes,
                 })
-                debug('\n\n=====update SUCCESS')
                 // TODO: update document
                 sendBack('DRAFT.UPDATE.SUCCESS')
               } catch (err: any) {

@@ -249,7 +249,10 @@ export function createPublicationMachine({
           ])
             .then(([publication, info]) => {
               if (publication.document?.children.length) {
-                let content = [blockNodeToSlate(publication.document.children)]
+                // TODO: use the parent list type instead
+                let content = [
+                  blockNodeToSlate(publication.document.children, 'group'),
+                ]
                 sendBack({
                   type: 'PUBLICATION.REPORT.SUCCESS',
                   publication: Object.assign(publication, {

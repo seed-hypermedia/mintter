@@ -43,10 +43,12 @@ export function createReplaceChange(
   let blockEntry = getEditorBlock(editor, {id: blockId})
 
   if (blockEntry) {
+    let parent = Node.parent(editor, blockEntry[1])
     return {
       op: {
         $case: 'replaceBlock',
-        replaceBlock: blockToApi(blockEntry[0]),
+        //TODO: fix parent types
+        replaceBlock: blockToApi(blockEntry[0], (parent as any).type),
       },
     }
   } else {

@@ -1,7 +1,15 @@
+import {GroupingContent} from './../../../../mttast/src/types'
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
 import {Annotation, Block, BlockNode} from '@app/client'
 import {debug} from '@app/utils/logger'
-import {FlowContent, group, isText, PhrasingContent} from '@mintter/mttast'
+import {
+  FlowContent,
+  group,
+  isText,
+  ol,
+  PhrasingContent,
+  ul,
+} from '@mintter/mttast'
 // import { interpret } from "xstate";
 import {annotationContains} from './classes'
 
@@ -263,12 +271,26 @@ function isSurrogate(s: string, i: number): boolean {
   return 0xd800 <= code && code <= 0xdbff
 }
 
-export function blockNodeToSlate(entry: Array<BlockNode>) {
-  return group(
+export function blockNodeToSlate(
+  entry: Array<BlockNode>,
+  childrenType: string,
+): GroupingContent {
+  // TODO: use the correct group type for the return here
+  let fn =
+    childrenType == 'orderedList'
+      ? ol
+      : childrenType == 'unorderedList'
+      ? ul
+      : group
+  return fn(
     entry.map(({block, children}) => {
       let slateBlock = blockToSlate(block!)
       if (children.length) {
-        slateBlock.children[1] = blockNodeToSlate(children)
+        debug('APPLY CHILDREN LIST', block?.attributes.childrenType)
+        slateBlock.children[1] = blockNodeToSlate(
+          children,
+          block?.attributes.childrenType || 'group',
+        )
       }
 
       return slateBlock

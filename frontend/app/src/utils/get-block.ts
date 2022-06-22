@@ -17,7 +17,8 @@ export async function getBlock(
   let block: FlowContent
 
   if (publication.document) {
-    let content = blockNodeToSlate(publication.document.children)
+    // TODO: use the parent list type instead
+    let content = blockNodeToSlate(publication.document.children, 'group')
     if (content) {
       visit(content, {id: entry.blockId}, (node) => {
         block = node
