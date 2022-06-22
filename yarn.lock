@@ -8892,7 +8892,7 @@ __metadata:
     prettier: 2.7.1
     rollup: 2.75.7
     tiny-glob: 0.2.9
-    ts-proto: 1.115.4
+    ts-proto: 1.115.5
     typescript: 4.7.4
   languageName: unknown
   linkType: soft
@@ -12082,9 +12082,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-proto@npm:1.115.4":
-  version: 1.115.4
-  resolution: "ts-proto@npm:1.115.4"
+"ts-proto@npm:1.115.5":
+  version: 1.115.5
+  resolution: "ts-proto@npm:1.115.5"
   dependencies:
     "@types/object-hash": ^1.3.0
     dataloader: ^1.4.0
@@ -12094,7 +12094,7 @@ __metadata:
     ts-proto-descriptors: 1.6.0
   bin:
     protoc-gen-ts_proto: protoc-gen-ts_proto
-  checksum: 7164bbeb1bdb2bd2cc07baf0e05eba82638dcdc52ef78dca24d8ba02f18adf399e4025cb778ac5183a5fc3a0d70fea83d4f1def7eae5512a71966c579beeba8b
+  checksum: eafe40fd5865d4b47fbbc8e5d67f8c9191f505f164d56d7ccfb793953d3fdf44e0dac3121084914d50179f5940dceee3cf6a32a2e8b501ddba05785aa6a824b0
   languageName: node
   linkType: hard
 
