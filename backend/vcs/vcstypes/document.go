@@ -114,7 +114,8 @@ func (d *Document) ReplaceBlock(blk Block) error {
 
 func (d *Document) DeleteBlock(blockID string) error {
 	if err := d.state.deleteBlock(blockID); err != nil {
-		return err
+		// If block not found, ignore it and don't produce the event.
+		return nil
 	}
 
 	d.events = append(d.events, DocumentEvent{
