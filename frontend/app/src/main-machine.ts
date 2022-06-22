@@ -1,31 +1,31 @@
-import type { Document } from '@app/client'
+import type {Document} from '@app/client'
 import {
   createDraft,
   listDrafts,
   listPublications,
-  Publication
+  Publication,
 } from '@app/client'
-import { createDraftMachine } from '@app/draft-machine'
-import { buildEditorHook, EditorMode } from '@app/editor/plugin-utils'
-import { plugins } from '@app/editor/plugins'
-import { queryKeys } from '@app/hooks'
-import { createPublicationMachine } from '@app/publication-machine'
-import { DeepPartial } from '@app/types'
-import { debug } from '@app/utils/logger'
-import { getRefFromParams } from '@app/utils/machine-utils'
-import { libraryMachine } from '@components/library/library-machine'
-import { invoke as tauriInvoke } from '@tauri-apps/api'
+import {createDraftMachine} from '@app/draft-machine'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
+import {queryKeys} from '@app/hooks'
+import {createPublicationMachine} from '@app/publication-machine'
+import {DeepPartial} from '@app/types'
+import {debug} from '@app/utils/logger'
+import {getRefFromParams} from '@app/utils/machine-utils'
+import {libraryMachine} from '@components/library/library-machine'
+import {invoke as tauriInvoke} from '@tauri-apps/api'
 import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
-import { QueryClient } from 'react-query'
-import { ActorRefFrom, assign, createMachine, send, spawn } from 'xstate'
+import {QueryClient} from 'react-query'
+import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
 
 export type PublicationRef = ActorRefFrom<
   ReturnType<typeof createPublicationMachine>
 >
-export type PublicationWithRef = Publication & { ref: PublicationRef }
+export type PublicationWithRef = Publication & {ref: PublicationRef}
 export type DraftRef = ActorRefFrom<ReturnType<typeof createDraftMachine>>
-export type DraftWithRef = Document & { ref: DraftRef }
+export type DraftWithRef = Document & {ref: DraftRef}
 export type CurrentFile = PublicationRef | DraftRef
 
 export type MainPageContext = {
@@ -45,93 +45,93 @@ export type MainPageContext = {
 
 type MainPageEvent =
   | {
-    type: 'ROUTE.NOT.FOUND'
-  }
+      type: 'ROUTE.NOT.FOUND'
+    }
   | {
-    type: 'GO.TO.DRAFT'
-    docId: string
-    replace?: boolean
-  }
+      type: 'GO.TO.DRAFT'
+      docId: string
+      replace?: boolean
+    }
   | {
-    type: 'GO.TO.PUBLICATION'
-    docId: string
-    version: string
-    blockId?: string
-    replace?: boolean
-  }
+      type: 'GO.TO.PUBLICATION'
+      docId: string
+      version: string
+      blockId?: string
+      replace?: boolean
+    }
   | {
-    type: 'GO.TO.SETTINGS'
-  }
+      type: 'GO.TO.SETTINGS'
+    }
   | {
-    type: 'GO.TO.HOME'
-  }
+      type: 'GO.TO.HOME'
+    }
   | {
-    type: 'GO.TO.PUBLICATIONLIST'
-  }
+      type: 'GO.TO.PUBLICATIONLIST'
+    }
   | {
-    type: 'GO.TO.DRAFTLIST'
-  }
+      type: 'GO.TO.DRAFTLIST'
+    }
   | {
-    type: 'GO.BACK'
-  }
+      type: 'GO.BACK'
+    }
   | {
-    type: 'GO.FORWARD'
-  }
+      type: 'GO.FORWARD'
+    }
   | {
-    type: 'listenRoute'
-  }
+      type: 'listenRoute'
+    }
   | {
-    type: 'CREATE.NEW.DRAFT'
-  }
+      type: 'CREATE.NEW.DRAFT'
+    }
   | {
-    type: 'COMMIT.OPEN.WINDOW'
-    path?: string
-  }
+      type: 'COMMIT.OPEN.WINDOW'
+      path?: string
+    }
   | {
-    type: 'COMMIT.EDIT.PUBLICATION'
-    docId: string
-  }
+      type: 'COMMIT.EDIT.PUBLICATION'
+      docId: string
+    }
   | {
-    type: 'REPORT.FILES.SUCCESS'
-    publicationList: Array<Publication>
-    draftList: Array<Document>
-  }
-  | { type: 'REPORT.FILES.ERROR'; errorMessage: string }
-  | { type: 'COMMIT.PUBLISH'; publication: Publication; documentId: string }
-  | { type: 'COMMIT.DELETE.FILE'; documentId: string; version: string | null }
+      type: 'REPORT.FILES.SUCCESS'
+      publicationList: Array<Publication>
+      draftList: Array<Document>
+    }
+  | {type: 'REPORT.FILES.ERROR'; errorMessage: string}
+  | {type: 'COMMIT.PUBLISH'; publication: Publication; documentId: string}
+  | {type: 'COMMIT.DELETE.FILE'; documentId: string; version: string | null}
 
 type RouterEvent =
   | {
-    type: 'pushHome'
-  }
+      type: 'pushHome'
+    }
   | {
-    type: 'pushPublication'
-    docId: string
-    version: string
-    blockId?: string
-    replace?: boolean
-  }
+      type: 'pushPublication'
+      docId: string
+      version: string
+      blockId?: string
+      replace?: boolean
+    }
   | {
-    type: 'pushDraft'
-    docId: string
-    replace?: boolean
-  }
+      type: 'pushDraft'
+      docId: string
+      replace?: boolean
+    }
   | {
-    type: 'pushSettings'
-  }
+      type: 'pushSettings'
+    }
   | {
-    type: 'pushPublicationList'
-  }
+      type: 'pushPublicationList'
+    }
   | {
-    type: 'pushDraftList'
-  }
+      type: 'pushDraftList'
+    }
   | {
-    type: 'listen'
-  }
+      type: 'listen'
+    }
 
 export function defaultMainPageContext(
   overrides: DeepPartial<MainPageContext> = {
-    params: { docId: '', version: null, blockId: null, replace: false },
+    params: {docId: '', version: null, blockId: null, replace: false},
   },
 ) {
   return {
@@ -158,8 +158,8 @@ export type CreateMainPageServiceParams = {
 
 type MainServices = {
   createNewDraft: {
-    data: Document,
-  },
+    data: Document
+  }
 }
 
 export function createMainPageService({
@@ -218,7 +218,7 @@ export function createMainPageService({
           initial: 'idle',
           states: {
             idle: {
-              entry: send('listen', { to: 'router' }),
+              entry: send('listen', {to: 'router'}),
             },
             home: {
               entry: ['clearCurrentFile', 'clearParams'],
@@ -415,11 +415,11 @@ export function createMainPageService({
     {
       guards: {
         isMetaEventDifferent: (context, _, meta) => {
-          let { type, ...eventParams } = meta.state.event
+          let {type, ...eventParams} = meta.state.event
           return !isEqual(context.params, eventParams)
         },
         isEventDifferent: (context, event) => {
-          let { type, ...eventParams } = event
+          let {type, ...eventParams} = event
           let result = !isEqual(context.params, eventParams)
           return result
         },
@@ -432,7 +432,7 @@ export function createMainPageService({
             return {
               ...draft,
               ref: spawn(
-                createDraftMachine({ client, draft, editor }),
+                createDraftMachine({client, draft, editor}),
                 getRefFromParams('draft', draft.id, null),
               ),
             }
@@ -443,7 +443,7 @@ export function createMainPageService({
               return {
                 ...publication,
                 ref: spawn(
-                  createPublicationMachine({ client, publication, editor }),
+                  createPublicationMachine({client, publication, editor}),
                   getRefFromParams(
                     'pub',
                     publication.document!.id,
@@ -486,7 +486,7 @@ export function createMainPageService({
         openWindow: async (context, event) => {
           openWindow(event.path)
         },
-        pushToRecents: assign(({ currentFile, recents }) => {
+        pushToRecents: assign(({currentFile, recents}) => {
           if (currentFile) {
             let _set = new Set<typeof currentFile>(recents)
             if (_set.has(currentFile)) _set.delete(currentFile)
@@ -503,7 +503,7 @@ export function createMainPageService({
         }),
         setDraftParams: assign({
           params: (_, e, meta) => {
-            let { event } = meta.state
+            let {event} = meta.state
             return {
               docId: event.docId,
               replace: event.replace,
@@ -512,7 +512,7 @@ export function createMainPageService({
         }),
         setPublicationParams: assign({
           params: (c, e, meta) => {
-            let { event } = meta.state
+            let {event} = meta.state
             return {
               docId: event.docId,
               version: event.version,
@@ -531,7 +531,7 @@ export function createMainPageService({
               replace: context.params.replace,
             }
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         pushDraftRoute: send(
           (context) => {
@@ -542,13 +542,13 @@ export function createMainPageService({
               replace: context.params.replace,
             }
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         pushSettings: send(
           {
             type: 'pushSettings',
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         clearParams: assign((_) => ({
           params: {
@@ -570,13 +570,13 @@ export function createMainPageService({
           {
             type: 'pushDraftList',
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         pushPublicationListRoute: send(
           {
             type: 'pushPublicationList',
           },
-          { to: 'router' },
+          {to: 'router'},
         ),
         editPublication: (_, event) => {
           createDraft(event.docId).then((doc) => {
@@ -606,7 +606,7 @@ export function createMainPageService({
         assignNewDraftValues: assign((context, event) => {
           let editor = buildEditorHook(plugins, EditorMode.Draft)
           let draftRef = spawn(
-            createDraftMachine({ client, editor, draft: event.data }),
+            createDraftMachine({client, editor, draft: event.data}),
             getRefFromParams('draft', event.data.id, null),
           )
           return {
@@ -706,9 +706,9 @@ export function createMainPageService({
             .on('/drafts', () => {
               sendBack('GO.TO.DRAFTLIST')
             })
-            .on<{ docId: string }>('/editor/:docId', (params) => {
+            .on<{docId: string}>('/editor/:docId', (params) => {
               return params
-                ? sendBack({ type: 'GO.TO.DRAFT', ...params })
+                ? sendBack({type: 'GO.TO.DRAFT', ...params})
                 : sendBack('ROUTE.NOT.FOUND')
             })
             .on<{
@@ -718,11 +718,11 @@ export function createMainPageService({
             }>('/p/:docId/:version?/:blockId?', (params) => {
               return params
                 ? sendBack({
-                  type: 'GO.TO.PUBLICATION',
-                  docId: params.docId,
-                  version: params.version,
-                  blockId: params.blockId,
-                })
+                    type: 'GO.TO.PUBLICATION',
+                    docId: params.docId,
+                    version: params.version,
+                    blockId: params.blockId,
+                  })
                 : sendBack('ROUTE.NOT.FOUND')
             })
 
@@ -736,17 +736,19 @@ export function createMainPageService({
             if (event.type == 'pushHome') {
               navRouter.route('/')
             } else if (event.type == 'pushPublication') {
-              let { pathname } = window.location
-              let newRoute = `/p/${event.docId}${event.version
-                  ? `/${event.version}${event.blockId ? `/${event.blockId}` : ''
-                  }`
+              let {pathname} = window.location
+              let newRoute = `/p/${event.docId}${
+                event.version
+                  ? `/${event.version}${
+                      event.blockId ? `/${event.blockId}` : ''
+                    }`
                   : ''
-                }`
+              }`
               if (pathname != newRoute) {
                 navRouter.route(newRoute, event.replace)
               }
             } else if (event.type == 'pushDraft') {
-              let { pathname } = window.location
+              let {pathname} = window.location
               let newRoute = `/editor/${event.docId}`
               if (pathname != newRoute) {
                 navRouter.route(newRoute, event.replace)
@@ -776,12 +778,12 @@ export function createMainPageService({
 function openWindow(path?: string) {
   if (path) {
     // Open window with path
-    tauriInvoke('plugin:window|open', { path })
+    tauriInvoke('plugin:window|open', {path})
   } else {
     createDraft().then((doc) => {
       let path = `/editor/${doc.id}`
       // open window with new path
-      tauriInvoke('plugin:window|open', { path })
+      tauriInvoke('plugin:window|open', {path})
     })
   }
 }

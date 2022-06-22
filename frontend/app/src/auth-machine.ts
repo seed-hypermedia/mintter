@@ -1,9 +1,9 @@
-import { Account, getAccount, Profile, updateProfile } from '@app/client';
-import { queryKeys } from '@app/hooks';
-import { error } from '@app/utils/logger';
-import { QueryClient } from 'react-query';
-import { assign, createMachine } from 'xstate';
-import { getInfo, Info } from './client';
+import {Account, getAccount, Profile, updateProfile} from '@app/client'
+import {queryKeys} from '@app/hooks'
+import {error} from '@app/utils/logger'
+import {QueryClient} from 'react-query'
+import {assign, createMachine} from 'xstate'
+import {getInfo, Info} from './client'
 
 type AuthContext = {
   accountInfo?: Info
@@ -14,20 +14,21 @@ type AuthContext = {
 
 type AuthEvent =
   | {
-    type: 'REPORT.DEVICE.INFO.PRESENT'
-    accountInfo: Info
-  }
+      type: 'REPORT.DEVICE.INFO.PRESENT'
+      accountInfo: Info
+    }
   | {
-    type: 'REPORT.DEVICE.INFO.MISSING'
-  } | {
-    type: 'UPDATE.PROFILE',
-    profile: Profile
-  }
+      type: 'REPORT.DEVICE.INFO.MISSING'
+    }
+  | {
+      type: 'UPDATE.PROFILE'
+      profile: Profile
+    }
 
 type AuthService = {
   fetchAccount: {
     data: Account
-  },
+  }
   updateProfile: {
     data: Account
   }
@@ -41,13 +42,13 @@ export function createAuthService(client: QueryClient) {
       schema: {
         context: {} as AuthContext,
         events: {} as AuthEvent,
-        services: {} as AuthService
+        services: {} as AuthService,
       },
       context: {
         accountInfo: undefined,
         retries: 0,
         account: undefined,
-        errorMessage: ''
+        errorMessage: '',
       },
       initial: 'checkingAccount',
       states: {
@@ -86,20 +87,20 @@ export function createAuthService(client: QueryClient) {
             src: 'fetchAccount',
             id: 'fetchAccount',
             onDone: {
-              actions: ['assignAccount']
+              actions: ['assignAccount'],
             },
             onError: {
-              actions: ['assignAccountError']
-            }
+              actions: ['assignAccountError'],
+            },
           },
           initial: 'idle',
           states: {
             idle: {
               on: {
                 'UPDATE.PROFILE': {
-                  target: 'updating'
-                }
-              }
+                  target: 'updating',
+                },
+              },
             },
             updating: {
               tags: ['pending'],
@@ -108,46 +109,50 @@ export function createAuthService(client: QueryClient) {
                 id: 'updateProfile',
                 onDone: {
                   target: 'updateSuccess',
-                  actions: ['assignAccount']
+                  actions: ['assignAccount'],
                 },
                 onError: {
                   target: 'idle',
-                  actions: ['assignErrorFromUpdate']
-                }
-              }
+                  actions: ['assignErrorFromUpdate'],
+                },
+              },
             },
             updateSuccess: {
               tags: ['pending'],
               after: {
-                1000: 'idle'
-              }
-            }
-          }
+                1000: 'idle',
+              },
+            },
+          },
         },
         loggedOut: {},
       },
     },
     {
       services: {
-        fetchInfo: () => function fetchInfoService(sendBack) {
-          client
-            .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
-            .then(function (accountInfo) {
-              sendBack({ type: 'REPORT.DEVICE.INFO.PRESENT', accountInfo })
-            })
-            .catch(function (err) {
-              error('accountInfo: ERROR')
-              sendBack('REPORT.DEVICE.INFO.MISSING')
-            })
-        },
+        fetchInfo: () =>
+          function fetchInfoService(sendBack) {
+            client
+              .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
+              .then(function (accountInfo) {
+                sendBack({type: 'REPORT.DEVICE.INFO.PRESENT', accountInfo})
+              })
+              .catch(function (err) {
+                error('accountInfo: ERROR')
+                sendBack('REPORT.DEVICE.INFO.MISSING')
+              })
+          },
         fetchAccount: function fetchAccountService(context) {
-          return client.fetchQuery([queryKeys.GET_ACCOUNT, ''], function accountQuery({ queryKey }) {
-            return getAccount(queryKey[1])
-          })
+          return client.fetchQuery(
+            [queryKeys.GET_ACCOUNT, ''],
+            function accountQuery({queryKey}) {
+              return getAccount(queryKey[1])
+            },
+          )
         },
         updateProfile: function updateProfileService(_, event) {
           return updateProfile(event.profile)
-        }
+        },
       },
       guards: {
         shouldRetry: (context) => context.retries > 5,
@@ -165,14 +170,14 @@ export function createAuthService(client: QueryClient) {
         assignAccount: assign({
           account: (_, event) => {
             return event.data
-          }
+          },
         }),
         assignAccountError: assign({
-          errorMessage: (_, event) => `Fetch Account Error: ${event.data}`
+          errorMessage: (_, event) => `Fetch Account Error: ${event.data}`,
         }),
         assignErrorFromUpdate: assign({
-          errorMessage: (_, event) => `Update Profile Error: ${event.data}`
-        })
+          errorMessage: (_, event) => `Update Profile Error: ${event.data}`,
+        }),
       },
     },
   )
