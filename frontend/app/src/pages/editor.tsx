@@ -19,7 +19,8 @@ import {ChildrenOf} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {useEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor} from 'slate'
+import {Editor as SlateEditor, Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
 import {StateFrom} from 'xstate'
 
 export type EditorPageProps = {
@@ -40,6 +41,21 @@ export function useDraft(ref: DraftRef) {
   return useActor(ref)
 }
 
+function useInitialFocus(editor: SlateEditor) {
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (editor.children.length == 0) return
+
+      ReactEditor.focus(editor)
+      Transforms.select(editor, SlateEditor.end(editor, []))
+
+      if (ReactEditor.isFocused(editor)) {
+        clearInterval(intervalId)
+      }
+    }, 10)
+  }, [editor])
+}
+
 export default function EditorPage({
   draftRef,
   mainService = defaultMainService,
@@ -47,6 +63,8 @@ export default function EditorPage({
   const [visible, setVisible] = useState(false)
   const [state, send] = useDraft(draftRef)
   const {context} = state
+
+  useInitialFocus(context.editor)
 
   if (state.matches('errored')) {
     return <Text>ERROR: {context.errorMessage}</Text>

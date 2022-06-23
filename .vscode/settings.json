@@ -26,6 +26,7 @@
     ".git/**": true
   },
   "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true,
     "source.organizeImports": true
@@ -37,10 +38,12 @@
   // is willing to chose their preffered width in their local settings without disrupting the file contents.
 
   "[typescript]": {
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "[javascript]": {
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
@@ -63,5 +66,6 @@
   },
   "go.lintTool": "golangci-lint",
 
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "black",
+  "prettier.bracketSpacing": false
 }
