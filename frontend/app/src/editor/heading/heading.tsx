@@ -6,6 +6,7 @@ import {Box} from '@components/box'
 import {FlowContent, Heading as HeadingType, isHeading} from '@mintter/mttast'
 import {Editor, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import {MintterEditor} from '../mintter-changes/plugin'
 import type {EditorPlugin} from '../types'
 import {resetFlowContent} from '../utils'
 
@@ -64,6 +65,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)
               let newBlock = statement({id: createId()})
+
               Transforms.setNodes(editor, {type: 'paragraph'}, {at})
               Transforms.wrapNodes(editor, newBlock, {at})
               Transforms.wrapNodes(

@@ -5,7 +5,7 @@ import {
   createReplaceChange,
 } from '@app/client/v2/change-creators'
 import {isFlowContent} from '@mintter/mttast'
-import {Editor, Path} from 'slate'
+import {Editor, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'
 
@@ -22,8 +22,8 @@ export function createMintterChangesPlugin(): EditorPlugin {
       const {apply} = editor
 
       editor.apply = (op) => {
-        // info('== operation ==')
-        // info(JSON.stringify(op))
+        console.log('== operation ==')
+        console.log(JSON.stringify(op))
 
         switch (op.type) {
           case 'insert_node':
@@ -50,6 +50,10 @@ export function createMintterChangesPlugin(): EditorPlugin {
               replaceText(editor, op.path)
             }
             break
+          case 'move_node':
+            // TODO: @horacioh produce changes for moves
+            break
+
           default:
             break
         }
