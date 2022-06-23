@@ -1,4 +1,3 @@
-import {useFile} from '@app/file-provider'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
@@ -87,9 +86,8 @@ function Paragraph({
   const path = findPath(element)
   const parentNode = Node.parent(editor, path)
   const hoverService = useHover()
+  let [hoverState] = useActor(hoverService)
   const parentGroup = useParentGroup(editor, path)
-  let fileRef = useFile()
-  let [fileState] = useActor(fileRef)
   let as =
     mode == EditorMode.Embed || mode == EditorMode.Mention
       ? 'span'
@@ -128,9 +126,9 @@ function Paragraph({
         transition: 'all ease-in-out 0.1s',
         backgroundColor: 'transparent',
         [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
-          backgroundColor: fileState.matches('editing.debouncing')
-            ? 'transparent'
-            : '$primary-component-bg-active',
+          backgroundColor: hoverState.matches('active')
+            ? '$primary-component-bg-active'
+            : 'transparent',
         },
       }}
       data-parent-type={(parentNode as FlowContent)?.type}

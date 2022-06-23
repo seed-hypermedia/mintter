@@ -86,7 +86,7 @@ type BlockToolsProps = {
 export function BlockTools({element}: BlockToolsProps) {
   const editor = useSlateStatic()
   const hoverService = useHover()
-  const [, hoverSend] = useActor(hoverService)
+  const [hoverState, hoverSend] = useActor(hoverService)
   const path = findPath(element)
   let fileRef = useFile()
   let [fileState] = useActor(fileRef)
@@ -99,7 +99,7 @@ export function BlockTools({element}: BlockToolsProps) {
         opacity: 0,
         // pointerEvents: 'none',
         [`[data-hover-block="${element.id}"] &`]: {
-          opacity: fileState.matches('editing.debouncing') ? 0 : 1,
+          opacity: hoverState.matches('active') ? 1 : 0,
           pointerEvents: 'all',
         },
         '&:hover': {
