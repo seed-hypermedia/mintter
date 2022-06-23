@@ -1,12 +1,6 @@
 import {styled} from '@app/stitches.config'
-import {
-  createId,
-  isFlowContent,
-  isUnorderedList,
-  statement,
-} from '@mintter/mttast'
-import {Element, Node, Transforms} from 'slate'
-import {groupStyle, removeEmptyGroup} from '../group'
+import {isUnorderedList} from '@mintter/mttast'
+import {groupStyle} from '../group'
 import type {EditorPlugin} from '../types'
 import {resetGroupingContent} from '../utils'
 
@@ -29,25 +23,7 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
     },
   configureEditor(editor) {
     if (editor.readOnly) return
-    const {normalizeNode, deleteBackward} = editor
-
-    editor.normalizeNode = (entry) => {
-      const [node, path] = entry
-
-      if (isUnorderedList(node)) {
-        if (removeEmptyGroup(editor, entry)) return
-        for (const [child, childPath] of Node.children(editor, path)) {
-          if (Element.isElement(child) && !isFlowContent(child)) {
-            Transforms.wrapNodes(editor, statement({id: createId()}), {
-              at: childPath,
-            })
-            return
-          }
-        }
-      }
-
-      normalizeNode(entry)
-    }
+    const {deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
       if (resetGroupingContent(editor)) return

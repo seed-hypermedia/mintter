@@ -335,6 +335,9 @@ export function createDraftMachine({
               let contentChanges = MintterEditor.transformChanges(
                 context.editor,
               ).filter(Boolean)
+
+              console.log(contentChanges)
+
               // debug('contentChanges', contentChanges)
               let newTitle = context.title
               let changes: Array<DocumentChange> = newTitle

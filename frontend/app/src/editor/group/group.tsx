@@ -15,7 +15,7 @@ import {RenderElementProps} from 'slate-react'
 import {debug} from 'tauri-plugin-log-api'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {resetGroupingContent} from '../utils'
+import {isFirstChild, resetGroupingContent} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 
@@ -56,14 +56,46 @@ export const createGroupPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
+
       if (Element.isElement(node) && isGroupContent(node)) {
         if (removeEmptyGroup(editor, entry)) return
 
         for (const [child, childPath] of Node.children(editor, path)) {
           // addParentData(editor, entry)
-          if (Element.isElement(child) && !isFlowContent(child)) {
+
+          if (isGroupContent(child)) {
+            if (isFirstChild(childPath)) {
+              Transforms.unwrapNodes(editor, {at: childPath})
+            } else {
+              const [prev, prevPath] =
+                Editor.previous(editor, {
+                  at: childPath,
+                }) || []
+
+              if (prev && prevPath && isFlowContent(prev)) {
+                if (isGroupContent(prev.children[1])) {
+                  // we already have a group
+                  Transforms.unwrapNodes(editor, {at: childPath})
+                } else {
+                  // we don't have a group
+
+                  Transforms.moveNodes(editor, {
+                    at: childPath,
+                    to: prevPath.concat(1),
+                  })
+                }
+              } else {
+                Transforms.unwrapNodes(editor, {at: childPath})
+              }
+            }
+
+            return
+          }
+
+          if (!isFlowContent(child)) {
             // inside group and not a flowcontent
             let blockId = createId()
+
             Transforms.wrapNodes(editor, statement({id: blockId}), {
               at: childPath,
             })

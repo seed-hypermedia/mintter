@@ -48,11 +48,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
       const [node, path] = entry
 
       if (isStatement(node)) {
-        // remove this node if it's empty
-        if (removeEmptyStatement(editor, entry as NodeEntry<StatementType>)) {
-          return
-        }
-
         // if the second child is also a paragraph and the third is a group,
         // move the second paragraph into the group
         if (
@@ -121,6 +116,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
               match: isFlowContent,
             })
             if (prev) {
+              debugger
               let [, pPath] = prev
               Transforms.moveNodes(editor, {at: childPath, to: pPath.concat(1)})
               return
