@@ -11,7 +11,7 @@ import {
 } from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {useMemo} from 'react'
-import {Editor, Element, Node, Path, Transforms} from 'slate'
+import {Editor, Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
@@ -55,19 +55,21 @@ export const createParagraphPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor: (editor) => {
-    if (editor.mode) return
+    if (editor.readOnly) return
     const {normalizeNode} = editor
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (Element.isElement(node) && isParagraph(node)) {
+
+      if (isParagraph(node)) {
         for (const [child, childPath] of Node.children(editor, path)) {
-          if (Element.isElement(child) && !isPhrasingContent(child)) {
+          if (!isPhrasingContent(child)) {
             Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }
         }
       }
+
       normalizeNode(entry)
     }
 

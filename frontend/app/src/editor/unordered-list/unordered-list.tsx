@@ -33,7 +33,8 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (Element.isElement(node) && isUnorderedList(node)) {
+
+      if (isUnorderedList(node)) {
         if (removeEmptyGroup(editor, entry)) return
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child) && !isFlowContent(child)) {
@@ -44,6 +45,7 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
           }
         }
       }
+
       normalizeNode(entry)
     }
 

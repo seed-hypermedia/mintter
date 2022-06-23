@@ -12,6 +12,7 @@ import {
 import {forwardRef} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import {debug} from 'tauri-plugin-log-api'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {resetGroupingContent} from '../utils'
@@ -97,6 +98,8 @@ export function removeEmptyGroup(
     if (node.children.length == 1) {
       const children = Editor.node(editor, path.concat(0))
       if (!isFlowContent(children[0])) {
+        debug(`removeEmptyGroup is about to remove nodes! ${path}`)
+
         Transforms.removeNodes(editor, {
           at: path,
         })

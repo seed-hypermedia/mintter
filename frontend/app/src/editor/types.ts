@@ -8,6 +8,7 @@ import type {
   RenderElementProps,
   RenderLeafProps,
 } from 'slate-react'
+import {MintterEditor} from './mintter-changes/plugin'
 import {EditorMode} from './plugin-utils'
 
 declare module 'slate' {
