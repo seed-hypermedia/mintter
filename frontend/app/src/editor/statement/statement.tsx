@@ -1,5 +1,4 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
-import {useHoverBlockId} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {Box} from '@components/box'
 import {
@@ -9,13 +8,14 @@ import {
   isFlowContent,
   isGroupContent,
   isParagraph,
+  isPhrasingContent,
   isStatement,
   paragraph,
   statement,
   Statement as StatementType,
   text,
 } from '@mintter/mttast'
-import {Editor, Element, Node, NodeEntry, Path, Transforms} from 'slate'
+import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
@@ -46,14 +46,21 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (Element.isElement(node) && isStatement(node)) {
-        if (removeEmptyStatement(editor, entry as NodeEntry<StatementType>))
-          return
 
+      if (isStatement(node)) {
+        // remove this node if it's empty
+        if (removeEmptyStatement(editor, entry as NodeEntry<StatementType>)) {
+          return
+        }
+
+        // if the second child is also a paragraph and the third is a group,
+        // move the second paragraph into the group
         if (
           addParagraphToNestedGroup(editor, entry as NodeEntry<StatementType>)
-        )
+        ) {
           return
+        }
+
         for (const [child, childPath] of Node.children(editor, path, {
           reverse: true,
         })) {
@@ -63,30 +70,33 @@ export const createStatementPlugin = (): EditorPlugin => ({
               return
             }
 
-            if (!isParagraph(child)) {
-              Transforms.setNodes(editor, {type: 'paragraph'}, {at: childPath})
+            if (isPhrasingContent(child)) {
+              Transforms.wrapNodes(editor, paragraph([]), {at: childPath})
               return
             }
           }
 
+          // move any flow content nodes that are children *outside* of this statement as siblings
           if (isFlowContent(child)) {
             Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }
 
+          // if this is the second child & and it's a paragraph
           if (childPath[childPath.length - 1] == 1) {
-            // statement second child
             if (isParagraph(child)) {
               let index = childPath[childPath.length - 1]
               let nextChild = node.children[index + 1]
-              // next child is grupo!
+              // if the next child is a group
+              // move this child into the group
               if (isGroupContent(nextChild)) {
                 Transforms.moveNodes(editor, {
                   at: childPath,
                   to: Path.next(childPath).concat(0),
                 })
                 return
-              } else if (!isGroupContent(child)) {
+              } else {
+                // else we move it outside the statement
                 Transforms.moveNodes(editor, {
                   at: childPath,
                   to: Path.next(path),
@@ -96,11 +106,15 @@ export const createStatementPlugin = (): EditorPlugin => ({
             }
           }
 
+          // if this is the third or higher child
+          // we move it outside the statement
           if (childPath[childPath.length - 1] > 1) {
             Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }
 
+          // if the second child is a group, but the previous is a statement
+          // move the group into the statement
           if (isGroupContent(child)) {
             let prev = Editor.previous(editor, {
               at: childPath,
@@ -114,6 +128,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
           }
         }
       }
+
       normalizeNode(entry)
     }
 
@@ -131,8 +146,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
         if (currentEntry) {
           let [, path] = currentEntry
           let isEnd = Editor.isEnd(editor, selection.focus, path)
-          let isStart = Editor.isStart(editor, selection.anchor, path)
-          let isEmbedOnly = hasEmbedOnly(currentEntry)
           if (isEnd) {
             insertBreak()
           } else {
@@ -150,7 +163,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
     editor.deleteBackward = function blockDeleteBackwards(unit) {
       let {selection} = editor
-      console.log('delete backwards!', selection)
+
       if (selection?.anchor.offset == 0) {
         let currentEntry = Editor.above(editor, {
           match: isFlowContent,
@@ -194,7 +207,6 @@ function addParagraphToNestedGroup(
   entry: NodeEntry<StatementType>,
 ): boolean | undefined {
   let [node, path] = entry
-  //@ts-ignore
   if (
     node.children.length > 2 &&
     isParagraph(node.children[1]) &&
@@ -211,7 +223,6 @@ function Statement({
   element,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
-  const hoverId = useHoverBlockId()
   let blockProps = {
     'data-element-type': element.type,
     'data-element-id': (element as StatementType).id,
@@ -237,14 +248,12 @@ export function removeEmptyStatement(
   entry: NodeEntry<StatementType>,
 ): boolean | undefined {
   const [node, path] = entry
-  if (node.children.length == 1) {
-    const child = Editor.node(editor, path.concat(0))
-    if (!('type' in child[0])) {
-      Transforms.removeNodes(editor, {
-        at: path,
-      })
-      return true
-    }
+
+  if (Node.string(node).length == 0) {
+    Transforms.removeNodes(editor, {
+      at: path,
+    })
+    return true
   }
 }
 

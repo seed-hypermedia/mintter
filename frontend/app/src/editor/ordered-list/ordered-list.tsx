@@ -37,7 +37,8 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
 
     editor.normalizeNode = (entry) => {
       const [node, path] = entry
-      if (Element.isElement(node) && isOrderedList(node)) {
+
+      if (isOrderedList(node)) {
         if (removeEmptyGroup(editor, entry)) return
         for (const [child, childPath] of Node.children(editor, path)) {
           if (Element.isElement(child) && !isFlowContent(child)) {
@@ -48,6 +49,7 @@ export const createOrderedListPlugin = (): EditorPlugin => ({
           }
         }
       }
+
       normalizeNode(entry)
     }
 

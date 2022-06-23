@@ -348,7 +348,6 @@ export function createDraftMachine({
                     },
                   ]
                 : contentChanges
-
               try {
                 await updateDraft({
                   documentId: context.draft.id,
