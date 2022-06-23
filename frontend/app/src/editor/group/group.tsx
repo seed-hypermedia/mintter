@@ -63,6 +63,9 @@ export const createGroupPlugin = (): EditorPlugin => ({
         for (const [child, childPath] of Node.children(editor, path)) {
           // addParentData(editor, entry)
 
+          // This rule is concerned with groups that are children of other groups
+          // this happens when pasting nested lists from html and we want to explicitly handle it
+          // this rule movesa group into the previous statement or unwraps it
           if (isGroupContent(child)) {
             if (isFirstChild(childPath)) {
               Transforms.unwrapNodes(editor, {at: childPath})
