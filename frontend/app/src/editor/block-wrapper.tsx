@@ -46,7 +46,7 @@ export function BlockWrapper({
 }) {
   const bookmarksService = useBookmarksService()
   const hoverService = useHover()
-  const [, hoverSend] = useActor(hoverService)
+  const [hoverState, hoverSend] = useActor(hoverService)
   let fileRef = useFile()
   let [fileState] = useActor(fileRef)
   let citations = useCitations(fileState, element.id)
@@ -136,7 +136,7 @@ export function BlockWrapper({
             css={{
               opacity: 0,
               [`[data-hover-block="${element.id}"] &`]: {
-                opacity: 1,
+                opacity: hoverState.matches('active') ? 1 : 0,
               },
               position: 'absolute',
               right: -20,

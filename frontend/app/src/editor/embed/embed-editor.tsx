@@ -3,6 +3,7 @@ import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {getEmbedIds} from '@app/editor/embed'
 import {useHover} from '@app/editor/hover-context'
 import {usePublication} from '@app/hooks'
+import {useActor} from '@xstate/react'
 import {ForwardedRef, forwardRef, memo, useMemo} from 'react'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
@@ -28,7 +29,7 @@ function RenderEmbedEditor(
   let selected = useSelected()
   let focused = useFocused()
   let hoverService = useHover()
-
+  let [hoverState] = useActor(hoverService)
   let state = useEmbed(embed)
 
   if (state.status == 'error') {
@@ -55,7 +56,9 @@ function RenderEmbedEditor(
               ? '$primary-component-bg-active'
               : 'transparent',
           [`[data-hover-block="${blockId}"] &`]: {
-            backgroundColor: '$primary-component-bg-active',
+            backgroundColor: hoverState.matches('active')
+              ? '$primary-component-bg-active'
+              : 'transparent',
           },
         }}
       >

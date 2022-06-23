@@ -10,6 +10,7 @@ type HoverEvent =
   | {type: 'MOUSE_ENTER'; blockId: string}
   | {type: 'MOUSE_LEAVE'}
   | {type: 'FROM_WINDOWS'; blockId?: string}
+  | {type: 'mousemove'}
 
 export function createHoverService() {
   return createMachine(
@@ -18,23 +19,47 @@ export function createHoverService() {
       schema: {
         events: {} as HoverEvent,
       },
-      invoke: {
-        id: 'windowHoverListener',
-        src: 'windowHoverListener',
-      },
+      invoke: [
+        {
+          id: 'windowHoverListener',
+          src: 'windowHoverListener',
+        },
+        {
+          id: 'windowMouseListener',
+          src: 'windowMouseListener',
+        },
+      ],
       id: 'hover-machine',
-      initial: 'ready',
+      initial: 'inactive',
       states: {
-        ready: {
+        inactive: {
+          id: 'inactive',
           on: {
-            MOUSE_ENTER: {
-              actions: ['updateBody', 'emit'],
+            mousemove: 'active',
+          },
+        },
+        active: {
+          initial: 'idle',
+          states: {
+            idle: {
+              after: {
+                1000: '#inactive',
+              },
+              on: {
+                mousemove: 'moving',
+                MOUSE_ENTER: {
+                  actions: ['updateBody', 'emit'],
+                },
+                MOUSE_LEAVE: {
+                  actions: ['updateBody', 'emit'],
+                },
+                FROM_WINDOWS: {
+                  actions: ['updateBody'],
+                },
+              },
             },
-            MOUSE_LEAVE: {
-              actions: ['updateBody', 'emit'],
-            },
-            FROM_WINDOWS: {
-              actions: ['updateBody'],
+            moving: {
+              always: 'idle',
             },
           },
         },
@@ -69,6 +94,15 @@ export function createHoverService() {
 
           return () => {
             unlisten?.()
+          }
+        },
+        windowMouseListener: () => (sendBack) => {
+          window.addEventListener('mousemove', (e) => sendBack('mousemove'))
+
+          return () => {
+            window.removeEventListener('mousemove', (e) =>
+              sendBack('mousemove'),
+            )
           }
         },
       },

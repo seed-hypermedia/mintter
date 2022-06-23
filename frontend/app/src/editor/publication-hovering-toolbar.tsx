@@ -1,12 +1,6 @@
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import React, {
-  forwardRef,
-  PropsWithChildren,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import {forwardRef, PropsWithChildren, useEffect, useRef, useState} from 'react'
 import ReactDOM from 'react-dom'
 import type {BaseSelection} from 'slate'
 import {Editor, Range, Transforms} from 'slate'
