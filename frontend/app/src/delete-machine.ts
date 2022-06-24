@@ -1,5 +1,5 @@
+import {Empty} from '@mintter/mttast'
 import {assign, createMachine} from 'xstate'
-import {Empty} from './../../../plz-out/gen/frontend/app/src/client/.generated/google/protobuf/empty'
 
 export type DeleteMachineEvent =
   | {

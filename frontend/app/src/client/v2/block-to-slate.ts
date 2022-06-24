@@ -1,4 +1,4 @@
-import {GroupingContent} from './../../../../mttast/src/types'
+import {GroupingContent} from '@mintter/mttast'
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
 import {Annotation, Block, BlockNode} from '@app/client'
 import {debug} from '@app/utils/logger'
