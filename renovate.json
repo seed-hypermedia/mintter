@@ -16,7 +16,8 @@
     },
     {
       "languages": ["golang"],
-      "labels": ["languages::Go"]
+      "labels": ["languages::Go"],
+      "postUpdateOptions": ["gomodTidy"]
     }
   ]
 }
