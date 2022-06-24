@@ -1,5 +1,4 @@
-import {CSS, styled} from '@app/stitches.config'
-import * as AccessibleIcon from '@radix-ui/react-accessible-icon'
+import {css, CSS, styled} from '@app/stitches.config'
 import type * as Stitches from '@stitches/react'
 import React, {useMemo} from 'react'
 
@@ -129,21 +128,12 @@ export type IconProps = Stitches.VariantProps<typeof Svg> & {
   css?: CSS
 }
 
+let preventSelect = css({userSelect: 'none'})
+
 export function Icon({name, ...props}: IconProps) {
   const Component: React.ComponentType<any> = useMemo(() => icons[name], [name])
-  const label = useMemo(
-    () =>
-      `${
-        Component.displayName?.replace(/([A-Z0-9])/g, ' $1').trim() ?? 'Unknown'
-      } Icon`,
-    [Component.displayName],
-  )
 
-  return (
-    <AccessibleIcon.Root label={label}>
-      <Component {...props} />
-    </AccessibleIcon.Root>
-  )
+  return <Component {...props} className={preventSelect()} />
 }
 
 function Mintter(props: Stitches.VariantProps<typeof Svg>) {

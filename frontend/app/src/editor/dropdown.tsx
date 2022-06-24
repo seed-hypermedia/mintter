@@ -27,9 +27,11 @@ export const dropdownContentStyle = css({
   boxShadow: '$menu',
   borderRadius: '$2',
   overflow: 'hidden',
+  userSelect: 'none',
 })
 
 export const dropdownItemStyle = css({
+  userSelect: 'none',
   display: 'flex',
   fontSize: '$2',
   flexDirection: 'row',
@@ -67,6 +69,7 @@ export const Dropdown = {
 }
 
 export var ElementDropdown = styled('button', {
+  userSelect: 'none',
   all: 'unset',
   padding: 0,
   width: 24,

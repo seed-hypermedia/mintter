@@ -98,6 +98,7 @@ export function BlockTools({element}: BlockToolsProps) {
       className="DEBUGME"
       css={{
         opacity: 0,
+        userSelect: 'none',
         // pointerEvents: 'none',
         [`[data-hover-block="${element.id}"] &`]: {
           opacity: hoverState.matches('active') ? 1 : 0,
