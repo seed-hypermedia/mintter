@@ -1,4 +1,5 @@
 import {
+  isFlowContent,
   isGroupContent,
   isOrderedList,
   isParagraph,
@@ -6,7 +7,7 @@ import {
   ol,
   ul,
 } from '@mintter/mttast'
-import {Editor, Path, Range, Transforms} from 'slate'
+import {Editor, Range, Transforms} from 'slate'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_ORDERED_LIST} from './ordered-list'
 import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
@@ -35,13 +36,14 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
         // turn Group into UnorderedList
         if (['-', '*', '+'].includes(beforeText)) {
-          const above = Editor.above(editor, {
-            match: isStatement,
-            mode: 'lowest',
-          })
+          const [above, abovePath] =
+            Editor.above(editor, {
+              match: isFlowContent,
+              // mode: 'lowest',
+            }) || []
 
-          if (above) {
-            if (isFirstChild(above[1])) {
+          if (above && abovePath) {
+            if (isFirstChild(abovePath)) {
               Editor.withoutNormalizing(editor, () => {
                 Transforms.select(editor, range)
                 Transforms.delete(editor)
@@ -56,14 +58,26 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
               Editor.withoutNormalizing(editor, () => {
                 Transforms.select(editor, range)
                 Transforms.delete(editor)
-                Transforms.wrapNodes(editor, ul([]), {
-                  at: above[1],
-                  match: isStatement,
-                })
-                Transforms.moveNodes(editor, {
-                  at: above[1],
-                  to: Path.previous(above[1]).concat(1),
-                })
+
+                const [prev, prevPath] =
+                  Editor.previous(editor, {at: abovePath}) || []
+
+                if (!prev || !prevPath) throw new Error('bug')
+
+                if (isGroupContent(prev.children[1])) {
+                  Transforms.moveNodes(editor, {
+                    at: abovePath,
+                    to: prevPath.concat(1, prev.children[1].children.length),
+                  })
+                } else {
+                  Transforms.wrapNodes(editor, ul([]), {
+                    at: abovePath,
+                  })
+                  Transforms.moveNodes(editor, {
+                    at: abovePath,
+                    to: prevPath.concat(1),
+                  })
+                }
               })
               return
             }
@@ -71,14 +85,15 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
         }
 
         // turn Group into OrderedList
-        if (/^\d\./.test(beforeText)) {
-          const above = Editor.above(editor, {
-            match: isStatement,
-            mode: 'lowest',
-          })
+        if (/^\d+\./.test(beforeText)) {
+          const [above, abovePath] =
+            Editor.above(editor, {
+              match: isStatement,
+              mode: 'lowest',
+            }) || []
 
-          if (above) {
-            if (isFirstChild(above[1])) {
+          if (above && abovePath) {
+            if (isFirstChild(abovePath)) {
               Editor.withoutNormalizing(editor, () => {
                 Transforms.select(editor, range)
                 Transforms.delete(editor)
@@ -99,14 +114,25 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
                 const start = parseInt(beforeText)
 
-                Transforms.wrapNodes(editor, ol({start}, []), {
-                  at: above[1],
-                  match: isStatement,
-                })
-                Transforms.moveNodes(editor, {
-                  at: above[1],
-                  to: Path.previous(above[1]).concat(1),
-                })
+                const [prev, prevPath] =
+                  Editor.previous(editor, {at: abovePath}) || []
+
+                if (!prev || !prevPath) throw new Error('bug')
+
+                if (isGroupContent(prev.children[1])) {
+                  Transforms.moveNodes(editor, {
+                    at: abovePath,
+                    to: prevPath.concat(1, prev.children[1].children.length),
+                  })
+                } else {
+                  Transforms.wrapNodes(editor, ol({start}, []), {
+                    at: abovePath,
+                  })
+                  Transforms.moveNodes(editor, {
+                    at: abovePath,
+                    to: prevPath.concat(1),
+                  })
+                }
               })
               return
             }
