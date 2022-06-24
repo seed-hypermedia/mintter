@@ -3,12 +3,20 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {statementStyle} from '@app/editor/statement'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {FlowContent, Heading as HeadingType, isHeading} from '@mintter/mttast'
+import {
+  createId,
+  FlowContent,
+  Heading as HeadingType,
+  isGroupContent,
+  isHeading,
+  isStaticParagraph,
+  statement,
+} from '@mintter/mttast'
 import {Editor, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {MintterEditor} from '../mintter-changes/plugin'
 import type {EditorPlugin} from '../types'
-import {resetFlowContent} from '../utils'
+import {isFirstChild, resetFlowContent} from '../utils'
 
 export const ELEMENT_HEADING = 'heading'
 
