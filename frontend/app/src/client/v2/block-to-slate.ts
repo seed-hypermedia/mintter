@@ -286,7 +286,6 @@ export function blockNodeToSlate(
     entry.map(({block, children}) => {
       let slateBlock = blockToSlate(block!)
       if (children.length) {
-        debug('APPLY CHILDREN LIST', block?.attributes.childrenType)
         slateBlock.children[1] = blockNodeToSlate(
           children,
           block?.attributes.childrenType || 'group',
