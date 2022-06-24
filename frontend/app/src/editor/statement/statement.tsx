@@ -160,12 +160,12 @@ export const createStatementPlugin = (): EditorPlugin => ({
       let {selection} = editor
 
       if (selection?.anchor.offset == 0) {
-        let currentEntry = Editor.above(editor, {
-          match: isFlowContent,
-        })
+        let [node, path] =
+          Editor.above(editor, {
+            match: isFlowContent,
+          }) || []
 
-        if (currentEntry) {
-          let [node, path] = currentEntry
+        if (node && path) {
           if (!isFirstChild(path)) {
             let prevBlockPath = Path.previous(path)
             let prevBlockNode = Node.get(editor, prevBlockPath)
@@ -177,6 +177,13 @@ export const createStatementPlugin = (): EditorPlugin => ({
               Transforms.removeNodes(editor, {at: prevBlockPath})
               return
             }
+          } else {
+            console.log(
+              'deleteBackward: Statement',
+              node,
+              path,
+              editor.children,
+            )
           }
         }
       }
