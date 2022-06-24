@@ -11,15 +11,13 @@ import {
   isContent,
   isFlowContent,
   isGroupContent,
+  isPhrasingContent,
   isStaticContent,
+  isStaticPhrasingContent,
 } from '@mintter/mttast'
 import {Editor, MoveNodeOperation, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'
-import {
-  isPhrasingContent,
-  isStaticPhrasingContent,
-} from './../../../../../plz-out/gen/frontend/mttast/src/assertions'
 
 type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
 
