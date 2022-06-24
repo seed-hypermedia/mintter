@@ -51,6 +51,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
 
     editor.deleteBackward = (unit) => {
       if (resetGroupingContent(editor)) return
+
       deleteBackward(unit)
     }
 

@@ -208,25 +208,26 @@ export function resetFlowContent(editor: Editor): boolean | undefined {
 }
 
 export function resetGroupingContent(editor: Editor): boolean {
-  const {selection} = editor
-  if (selection && isCollapsed(selection)) {
-    const list = Editor.above<GroupingContent>(editor, {
-      match: (n) => isGroupContent(n) && !isGroup(n),
-    })
-    if (list) {
-      const [listNode, listPath] = list
-      if (!Node.string(listNode)) {
-        Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(editor, group(listNode.children), {
-            at: Path.next(listPath),
-          })
-          Transforms.removeNodes(editor, {at: listPath})
-          Transforms.select(editor, listPath.concat(0))
+  // const {selection} = editor
+  // if (selection && isCollapsed(selection)) {
+  const list = Editor.above<GroupingContent>(editor, {
+    match: (n) => isGroupContent(n) && !isGroup(n),
+  })
+
+  if (list) {
+    const [listNode, listPath] = list
+    if (!Node.string(listNode)) {
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.insertNodes(editor, group(listNode.children), {
+          at: Path.next(listPath),
         })
-        return true
-      }
+        Transforms.removeNodes(editor, {at: listPath})
+        Transforms.select(editor, listPath.concat(0))
+      })
+      return true
     }
   }
+  // }
   return false
 }
 
