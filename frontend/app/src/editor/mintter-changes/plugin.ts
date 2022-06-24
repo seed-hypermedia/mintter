@@ -89,8 +89,10 @@ export const MintterEditor: MintterEditor = {
   __mtt_changes: [],
   transformChanges: function (editor: Editor): DocumentChange[] {
     const result: Array<DocumentChange> = []
-    console.log('NODES: ', [...Editor.nodes(editor, {match: isFlowContent})])
-    editor.__mtt_changes.forEach((change) => {
+
+    let orderedChanges = orderChanges(editor)
+
+    orderedChanges.forEach((change) => {
       let [type, value] = change
       if (type == 'deleteBlock') {
         result.push(createDeleteChange(value))
@@ -219,4 +221,23 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
   } else {
     error('moveNode: We should not end up here', operation, node)
   }
+}
+
+function orderChanges(editor: Editor) {
+  let newList: Array<ChangeOperation> = []
+  let changes = editor.__mtt_changes
+  for (const [node] of Node.elements(editor)) {
+    if (isFlowContent(node)) {
+      let filteredChanges = changes.filter(
+        ([op, blockId]) => blockId == node.id,
+      )
+      console.log({filteredChanges})
+
+      newList.push(...filteredChanges)
+    }
+  }
+
+  console.log({newList})
+
+  return newList
 }
