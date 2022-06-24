@@ -61,6 +61,11 @@ export function createMintterChangesPlugin(): EditorPlugin {
             replaceText(editor, op.path)
             break
           case 'remove_node':
+            if (isGroupContent(op.node)) {
+              op.node.children.forEach((block) => {
+                addOperation(editor, 'deleteBlock', block)
+              })
+            }
             if (isFlowContent(op.node)) {
               addOperation(editor, 'deleteBlock', op.node)
             } else {
@@ -234,6 +239,10 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
 function orderChanges(editor: Editor) {
   let newList: Array<ChangeOperation> = []
   let changes = editor.__mtt_changes
+  console.log(
+    '🚀 ~ file: plugin.ts ~ line 237 ~ orderChanges ~ changes',
+    changes,
+  )
   for (const [node] of Node.elements(editor)) {
     if (isFlowContent(node)) {
       let filteredChanges = changes.filter(([, blockId]) => blockId == node.id)
