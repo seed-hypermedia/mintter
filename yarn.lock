@@ -1601,7 +1601,7 @@ __metadata:
     slate-history: "github:mintterteam/slate#workspace=slate-history&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
     slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
     slate-react: "github:mintterteam/slate#workspace=slate-react&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
-    tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
+    tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=9de1279760f31bc6f71da8555336e10c412387e3"
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
     typedoc: 0.22.17
     typedoc-plugin-markdown: 3.12.1
@@ -2480,21 +2480,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tauri-apps/api@npm:1.0.1":
+"@tauri-apps/api@npm:1.0.1, @tauri-apps/api@npm:^1.0.0":
   version: 1.0.1
   resolution: "@tauri-apps/api@npm:1.0.1"
   dependencies:
     type-fest: 2.13.1
   checksum: 5d0832e57a642649dd2da3e7a1bbfa4fc79215f2092c669ff54e280844cc1f13c3b9737fc4836c6150a0f69278eb09480935a418f212bea71c3ad17f639c5504
-  languageName: node
-  linkType: hard
-
-"@tauri-apps/api@npm:^1.0.0-rc.1":
-  version: 1.0.0-rc.6
-  resolution: "@tauri-apps/api@npm:1.0.0-rc.6"
-  dependencies:
-    type-fest: 2.12.2
-  checksum: 92bbfa9ea0d2fac765f23655e2225280c484d7dea445f3bdf175967c45df02f4ef607708583ce5cbbeacc89556a2950990d9a8235f8308a517b0699f9619337d
   languageName: node
   linkType: hard
 
@@ -11768,13 +11759,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9":
+"tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log#commit=9de1279760f31bc6f71da8555336e10c412387e3":
   version: 0.1.0
-  resolution: "tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log.git#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9"
+  resolution: "tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log.git#commit=9de1279760f31bc6f71da8555336e10c412387e3"
   dependencies:
-    "@tauri-apps/api": ^1.0.0-rc.1
+    "@tauri-apps/api": ^1.0.0
     tslib: ^2.3.1
-  checksum: 420c0c266e820e2f854f19f0eba6fe76c378a96c76795b096c2bb870e5e1ed7239ea1ca0bb424409e6cc959cca3ea7d10355ccca423f46cb1d9c593870aaa20a
+  checksum: dce7cb6e7477745ecd4399a498decf1329a9dbf8f57b9d1398270db0e6e0b8cb449506118875ba74d433247d6e853ee42a7e4e40f688bdc339bd87a7d5ab55ef
   languageName: node
   linkType: hard
 

@@ -4,10 +4,22 @@ import {
   createMoveChange,
   createReplaceChange,
 } from '@app/client/v2/change-creators'
-import {isFlowContent} from '@mintter/mttast'
-import {Editor, Node, Path} from 'slate'
+import {error} from '@app/utils/logger'
+import {
+  FlowContent,
+  GroupingContent,
+  isContent,
+  isFlowContent,
+  isGroupContent,
+  isStaticContent,
+} from '@mintter/mttast'
+import {Editor, MoveNodeOperation, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'
+import {
+  isPhrasingContent,
+  isStaticPhrasingContent,
+} from './../../../../../plz-out/gen/frontend/mttast/src/assertions'
 
 type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
 
@@ -51,7 +63,7 @@ export function createMintterChangesPlugin(): EditorPlugin {
             }
             break
           case 'move_node':
-            // TODO: @horacioh produce changes for moves
+            moveNode(editor, op)
             break
 
           default:
@@ -77,6 +89,7 @@ export const MintterEditor: MintterEditor = {
   __mtt_changes: [],
   transformChanges: function (editor: Editor): DocumentChange[] {
     const result: Array<DocumentChange> = []
+    console.log('NODES: ', [...Editor.nodes(editor, {match: isFlowContent})])
     editor.__mtt_changes.forEach((change) => {
       let [type, value] = change
       if (type == 'deleteBlock') {
@@ -169,4 +182,41 @@ function shouldOverride(
   }
 
   return false
+}
+
+function moveNode(editor: Editor, operation: MoveNodeOperation) {
+  let node = Node.get(editor, operation.path)
+
+  if (isGroupContent(node)) {
+    // TODO: iterate over the children and create operations for each
+    ;(node as GroupingContent).children.forEach((block: FlowContent) => {
+      addOperation(editor, 'moveBlock', block)
+      addOperation(editor, 'replaceBlock', block)
+    })
+  } else if (isContent(node) || isStaticContent(node)) {
+    let parent = Node.parent(editor, operation.path)
+    addOperation(editor, 'moveBlock', parent)
+    addOperation(editor, 'replaceBlock', parent)
+  } else if (isPhrasingContent(node) || isStaticPhrasingContent(node)) {
+    let [block, blockPath] =
+      Editor.above<FlowContent>(editor, {
+        at: operation.path,
+        match: isFlowContent,
+      }) || []
+    if (block && blockPath) {
+      addOperation(editor, 'moveBlock', block)
+      addOperation(editor, 'replaceBlock', block)
+    } else {
+      error(
+        'moveNode: getting the above block should always work',
+        operation,
+        node,
+      )
+    }
+  } else if (isFlowContent(node)) {
+    addOperation(editor, 'moveBlock', node)
+    addOperation(editor, 'replaceBlock', node)
+  } else {
+    error('moveNode: We should not end up here', operation, node)
+  }
 }
