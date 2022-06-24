@@ -699,6 +699,47 @@ WHERE permanode_owners.account_id = :permanodeOwnersAccountID
 	return out, err
 }
 
+type NamedVersionsListAllResult struct {
+	AccountsMultihash    []byte
+	DevicesMultihash     []byte
+	NamedVersionsVersion string
+	PermanodeCodec       int
+	PermanodeMultihash   []byte
+}
+
+func NamedVersionsListAll(conn *sqlite.Conn) ([]NamedVersionsListAllResult, error) {
+	const query = `SELECT accounts.multihash, devices.multihash, named_versions.version, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash
+FROM named_versions
+INNER JOIN devices ON devices.id = named_versions.device_id
+INNER JOIN accounts ON accounts.id = named_versions.account_id
+INNER JOIN ipfs_blocks ON ipfs_blocks.id = named_versions.object_id
+`
+
+	var out []NamedVersionsListAllResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, NamedVersionsListAllResult{
+			AccountsMultihash:    stmt.ColumnBytes(0),
+			DevicesMultihash:     stmt.ColumnBytes(1),
+			NamedVersionsVersion: stmt.ColumnText(2),
+			PermanodeCodec:       stmt.ColumnInt(3),
+			PermanodeMultihash:   stmt.ColumnBytes(4),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: NamedVersionsListAll: %w", err)
+	}
+
+	return out, err
+}
+
 type IPFSBlocksLookupPKResult struct {
 	IPFSBlocksID int
 }

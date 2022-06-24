@@ -11,9 +11,7 @@ import (
 )
 
 func (n *rpcHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
-	me := n.me.AccountID()
-
-	refs, err := n.vcs.ListVersionsByOwner(ctx, me)
+	refs, err := n.vcs.ListAllVersions(ctx)
 	if err != nil {
 		return nil, err
 	}
