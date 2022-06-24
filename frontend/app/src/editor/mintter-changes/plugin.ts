@@ -65,6 +65,7 @@ export function createMintterChangesPlugin(): EditorPlugin {
             break
 
           default:
+            error('Unhandled operation', op)
             break
         }
 
