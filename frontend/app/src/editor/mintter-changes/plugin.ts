@@ -43,12 +43,18 @@ export function createMintterChangesPlugin(): EditorPlugin {
               addOperation(editor, 'moveBlock', op.node)
               addOperation(editor, 'replaceBlock', op.node)
             } else {
-              // throw new Error('todo')
-              // insertNode(editor, operation.path)
+              error('TODO handle non flowcontent insert_node ops')
+            }
+            break
+          case 'set_node':
+            const [node] =
+              Editor.above(editor, {at: op.path, match: isFlowContent}) || []
+
+            if (node) {
+              addOperation(editor, 'replaceBlock', node)
             }
             break
           case 'insert_text':
-          case 'set_node':
           case 'split_node':
           case 'remove_text':
             replaceText(editor, op.path)
@@ -63,7 +69,9 @@ export function createMintterChangesPlugin(): EditorPlugin {
           case 'move_node':
             moveNode(editor, op)
             break
-
+          case 'set_selection':
+            // there is no equivalent change to this operation so we ignore it
+            break
           default:
             error('Unhandled operation', op)
             break
@@ -227,14 +235,14 @@ function orderChanges(editor: Editor) {
   let changes = editor.__mtt_changes
   for (const [node] of Node.elements(editor)) {
     if (isFlowContent(node)) {
-      let filteredChanges = changes.filter(
-        ([op, blockId]) => blockId == node.id,
-      )
+      let filteredChanges = changes.filter(([, blockId]) => blockId == node.id)
       console.log({filteredChanges})
 
       newList.push(...filteredChanges)
     }
   }
+
+  newList.push(...changes.filter(([type]) => type === 'deleteBlock'))
 
   console.log({newList})
 
