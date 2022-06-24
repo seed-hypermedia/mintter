@@ -94,24 +94,24 @@ func (l *fxLogger) Printf(msg string, args ...interface{}) {
 	l.l.Debugf(msg, args...)
 }
 
-func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, cfg config.Config, grpc *grpcServer, srv *httpServer, net *future.ReadOnly[*mttnet.Node]) {
+func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, d Daemon) {
 	log := logging.New("mintter/daemon", "debug")
 
-	if cfg.LetsEncrypt.Domain != "" {
+	if d.Config.LetsEncrypt.Domain != "" {
 		log.Warn("Let's Encrypt is enabled, HTTP-port configuration value is ignored, will listen on the default TLS port (443)")
 	}
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
 			go func() {
-				<-grpc.ready
-				<-srv.ready
+				<-d.GRPC.ready
+				<-d.HTTP.ready
 				log.Info("DaemonStarted",
-					zap.String("grpcListener", grpc.lis.Addr().String()),
-					zap.String("httpListener", srv.lis.Addr().String()),
-					zap.String("repoPath", cfg.RepoPath),
+					zap.String("grpcListener", d.GRPC.lis.Addr().String()),
+					zap.String("httpListener", d.HTTP.lis.Addr().String()),
+					zap.String("repoPath", d.Config.RepoPath),
 				)
-				net, err := net.Await(context.Background())
+				net, err := d.Net.Await(context.Background())
 				if err != nil {
 					panic(err)
 				}

@@ -417,6 +417,40 @@ func (s *SQLite) ListVersionsByOwner(ctx context.Context, owner cid.Cid) (map[ci
 	return refs, nil
 }
 
+func (s *SQLite) ListAllVersions(ctx context.Context) (map[cid.Cid][]Ref, error) {
+	conn, release, err := s.db.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	versions, err := vcssql.NamedVersionsListAll(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	refs := make(map[cid.Cid][]Ref, len(versions))
+
+	for _, ver := range versions {
+		oid := cid.NewCidV1(uint64(ver.PermanodeCodec), ver.PermanodeMultihash)
+		aid := cid.NewCidV1(core.CodecAccountKey, ver.AccountsMultihash)
+		did := cid.NewCidV1(core.CodecDeviceKey, ver.DevicesMultihash)
+
+		v, err := ParseVersion(ver.NamedVersionsVersion)
+		if err != nil {
+			return nil, err
+		}
+
+		refs[oid] = append(refs[oid], Ref{
+			Account: aid,
+			Device:  did,
+			Version: v,
+		})
+	}
+
+	return refs, nil
+}
+
 func (s *SQLite) GetPermanode(ctx context.Context, c cid.Cid, p Permanode) error {
 	blk, err := s.bs.Get(ctx, c)
 	if err != nil {

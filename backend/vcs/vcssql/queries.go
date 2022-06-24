@@ -300,6 +300,19 @@ var (
 			"INNER JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.NamedVersionsObjectID, '\n',
 			"WHERE", s.PermanodeOwnersAccountID, "=", qb.VarCol(s.PermanodeOwnersAccountID), '\n',
 		),
+		qb.MakeQuery(s.Schema, "NamedVersionsListAll", sgen.QueryKindMany,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.AccountsMultihash),
+				qb.ResultCol(s.DevicesMultihash),
+				qb.ResultCol(s.NamedVersionsVersion),
+				qb.ResultColAlias(s.IPFSBlocksCodec, "permanode_codec"),
+				qb.ResultColAlias(s.IPFSBlocksMultihash, "permanode_multihash"),
+			), '\n',
+			"FROM", s.NamedVersions, '\n',
+			"INNER JOIN", s.Devices, "ON", s.DevicesID, "=", s.NamedVersionsDeviceID, '\n',
+			"INNER JOIN", s.Accounts, "ON", s.AccountsID, "=", s.NamedVersionsAccountID, '\n',
+			"INNER JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.NamedVersionsObjectID, '\n',
+		),
 	)
 
 	ipfsBlocks = add(
