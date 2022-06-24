@@ -46,7 +46,6 @@ package sqlite
 // #include <stdlib.h>
 // #include <string.h>
 // #include "wrappers.h"
-// #include "closure.h"
 //
 // // Use a helper function here to avoid the cgo pointer detection
 // // logic treating SQLITE_TRANSIENT as a Go pointer.
@@ -63,9 +62,8 @@ package sqlite
 //   return sqlite3_db_config(db, op, onoff, NULL);
 // }
 //
-// static void load_extensions() {
-//   sqlite3_auto_extension((void(*)(void))sqlite3_closure_init);
-// }
+// // Insert desired loadable SQLite extensions here.
+// static void load_extensions() {}
 import "C"
 import (
 	"bytes"
