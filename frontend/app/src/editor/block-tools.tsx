@@ -11,6 +11,7 @@ import {
   FlowContent,
   group,
   heading,
+  isFlowContent,
   isGroupContent,
   isHeading,
   MttastContent,

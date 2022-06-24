@@ -1,7 +1,7 @@
 import {DocumentChange} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {getEditorBlock} from '@app/editor/utils'
-import {FlowContent} from '@mintter/mttast'
+import {FlowContent, isGroupContent} from '@mintter/mttast'
 import {Editor, Node, Path} from 'slate'
 
 export function createMoveChange(
@@ -44,11 +44,15 @@ export function createReplaceChange(
 
   if (blockEntry) {
     let parent = Node.parent(editor, blockEntry[1])
+    let [block] = blockEntry
+    let childrenType: string | undefined = isGroupContent(block.children[1])
+      ? block.children[1].type
+      : undefined
     return {
       op: {
         $case: 'replaceBlock',
         //TODO: fix parent types
-        replaceBlock: blockToApi(blockEntry[0], (parent as any).type),
+        replaceBlock: blockToApi(blockEntry[0], childrenType),
       },
     }
   } else {
