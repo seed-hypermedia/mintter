@@ -21,7 +21,12 @@ export function createPlainTextPastePlugin(): EditorPlugin {
 
       editor.insertData = customInsertData
 
-      async function customInsertData(data: DataTransfer) {
+      function customInsertData(data: DataTransfer) {
+        /**
+         * TODO:
+         * would be nice to catch the slate-fragment content here
+         */
+
         var html = data.getData('text/html')
 
         if (html) {
