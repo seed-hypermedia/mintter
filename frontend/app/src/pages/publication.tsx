@@ -170,7 +170,6 @@ export default function Publication({
           <Box
             css={{
               height: '$full',
-              marginTop: 44,
             }}
           >
             <Box

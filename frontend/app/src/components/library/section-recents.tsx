@@ -59,7 +59,7 @@ function RecentItem({
 
   function goToDocument(e) {
     e.preventDefault()
-    if (fileRef.id.startsWith('doc-')) {
+    if (fileRef.id.startsWith('draft-')) {
       mainService.send({
         type: 'GO.TO.DRAFT',
         docId: state.context.documentId,
