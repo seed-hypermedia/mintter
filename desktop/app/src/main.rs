@@ -29,28 +29,26 @@ async fn emit_all<R: Runtime>(
     .map_err(|e| e.to_string())
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
   let log_plugin = {
     let targets = [
       LogTarget::LogDir,
       #[cfg(debug_assertions)]
       LogTarget::Stdout,
-      // #[cfg(debug_assertions)]
-      // LogTarget::Webview,
+      #[cfg(debug_assertions)]
+      LogTarget::Webview,
     ];
-
-    let colors = ColoredLevelConfig::default();
 
     let filter = std::env::var("RUST_LOG")
       .map(|ref filter| FilterBuilder::new().parse(filter).build().filter())
       .unwrap_or(LevelFilter::Debug);
 
-    LoggerBuilder::new()
-      .with_colors(colors)
-      .targets(targets)
-      .level(filter)
-      .build()
+    let builder = LoggerBuilder::new().targets(targets).level(filter);
+
+    #[cfg(debug_assertions)]
+    let builder = builder.with_colors(ColoredLevelConfig::default());
+
+    builder.build()
   };
 
   tauri::Builder::default()

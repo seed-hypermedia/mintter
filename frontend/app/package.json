@@ -84,7 +84,7 @@
     "slate-history": "github:mintterteam/slate#workspace=slate-history&commit=4a136b50302aa869e8a8af548400597f5c6b6688",
     "slate-hyperscript": "github:mintterteam/slate#workspace=slate-hyperscript&commit=4a136b50302aa869e8a8af548400597f5c6b6688",
     "slate-react": "github:mintterteam/slate#workspace=slate-react&commit=4a136b50302aa869e8a8af548400597f5c6b6688",
-    "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#commit=0e993f8ded5867772b29ca7aee5bc5594aba6fb9",
+    "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#commit=9de1279760f31bc6f71da8555336e10c412387e3",
     "tauri-plugin-store-api": "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf",
     "unified": "10.1.2",
     "unist-builder": "3.0.0",
