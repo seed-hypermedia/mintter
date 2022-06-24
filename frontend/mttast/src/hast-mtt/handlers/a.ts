@@ -8,9 +8,7 @@ export function a(h: H, node: any) {
 
   if (node.children && node.children.length == 1) {
     if (isHeading(children[0])) {
-      let id = createId()
-      console.log('heading id:', id)
-
+      const id = createId()
       return heading({id}, children[0].children)
     }
   }

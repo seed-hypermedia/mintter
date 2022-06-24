@@ -4,7 +4,7 @@ import {
   createMoveChange,
   createReplaceChange,
 } from '@app/client/v2/change-creators'
-import {error} from '@app/utils/logger'
+import {debug, error} from '@app/utils/logger'
 import {
   FlowContent,
   GroupingContent,
@@ -32,8 +32,8 @@ export function createMintterChangesPlugin(): EditorPlugin {
       const {apply} = editor
 
       editor.apply = (op) => {
-        console.log('== operation ==')
-        console.log(JSON.stringify(op))
+        // console.log('== operation ==')
+        // console.log(JSON.stringify(op))
 
         switch (op.type) {
           case 'insert_node':
@@ -246,15 +246,15 @@ function orderChanges(editor: Editor) {
   for (const [node] of Node.elements(editor)) {
     if (isFlowContent(node)) {
       let filteredChanges = changes.filter(([, blockId]) => blockId == node.id)
-      console.log({filteredChanges})
-
-      newList.push(...filteredChanges)
+      if (filteredChanges.length) {
+        newList.push(...filteredChanges)
+      } else {
+        debug(`orderChanges: no changes for id: ${node.id}`)
+      }
     }
   }
 
-  newList.push(...changes.filter(([type]) => type === 'deleteBlock'))
-
-  console.log({newList})
+  newList.push(...changes.filter(([type]) => type == 'deleteBlock'))
 
   return newList
 }

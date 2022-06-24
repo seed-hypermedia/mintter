@@ -193,7 +193,7 @@ export function createDraftMachine({
                   target: 'debouncing',
                 },
                 'DRAFT.UPDATE.SUCCESS': {
-                  actions: ['resetChanges'],
+                  actions: ['resetChanges', 'resetQueryData'],
                   target: 'idle',
                 },
                 'DRAFT.UPDATE.ERROR': {
@@ -211,15 +211,12 @@ export function createDraftMachine({
         },
         publishing: {
           id: 'publishing',
-          entry: (context, event) => {
-            // debug('IN PUBLISHING!', { context, event })
-          },
           invoke: {
             src: 'publishDraft',
             id: 'publishDraft',
             onDone: {
               target: 'published',
-              actions: ['afterPublish'],
+              actions: ['afterPublish', 'resetQueryData'],
             },
             onError: {
               target: '#errored',
@@ -299,6 +296,10 @@ export function createDraftMachine({
         resetChanges: (context) => {
           MintterEditor.resetChanges(context.editor)
         },
+        resetQueryData: () => {
+          client.invalidateQueries([queryKeys.GET_DRAFT])
+          client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
+        },
         afterPublish: sendParent((context, event) => ({
           type: 'COMMIT.PUBLISH',
           publication: event.data,
@@ -335,8 +336,6 @@ export function createDraftMachine({
               let contentChanges = MintterEditor.transformChanges(
                 context.editor,
               ).filter(Boolean)
-
-              console.log(contentChanges)
 
               // debug('contentChanges', contentChanges)
               let newTitle = context.title
