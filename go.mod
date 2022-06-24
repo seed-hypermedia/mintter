@@ -42,7 +42,7 @@ require (
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
 	github.com/prometheus/client_golang v1.12.2
 	github.com/sanity-io/litter v1.5.5
-	github.com/stretchr/testify v1.7.4
+	github.com/stretchr/testify v1.7.5
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/vektah/gqlparser/v2 v2.4.5
 	go.etcd.io/bbolt v1.3.6
