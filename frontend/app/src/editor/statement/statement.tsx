@@ -178,12 +178,10 @@ export const createStatementPlugin = (): EditorPlugin => ({
               return
             }
           } else {
-            console.log(
-              'deleteBackward: Statement',
-              node,
-              path,
-              editor.children,
-            )
+            /**
+             * TODO:
+             * here we need to make sure we are removing the current block so we are not leaving with orphan statements after we merge the content of both paragraphs (parent block paragraph and current paragraph)
+             */
           }
         }
       }

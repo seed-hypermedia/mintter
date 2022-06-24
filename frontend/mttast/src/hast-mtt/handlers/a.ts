@@ -1,4 +1,4 @@
-import {createId, heading, isHeading} from '../../'
+import {heading, isHeading} from '../../'
 import {all} from '../all'
 import {H} from '../types'
 import {resolve} from '../util/resolve'
@@ -8,7 +8,7 @@ export function a(h: H, node: any) {
 
   if (node.children && node.children.length == 1) {
     if (isHeading(children[0])) {
-      return heading({id: createId()}, children[0].children)
+      return heading(children[0].children)
     }
   }
 
