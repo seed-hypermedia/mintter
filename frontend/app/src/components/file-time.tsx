@@ -8,9 +8,12 @@ import {useMachine} from '@xstate/react'
 type FileTimeProps = {
   type: Pick<FileTimeContext, 'type'>[0]
   document: Document
+  noLabel?: boolean
 }
 
-export function FileTime({type, document}: FileTimeProps) {
+export function FileTime({type, document, noLabel = false}: FileTimeProps) {
+  console.log('DOCUMENT', document)
+
   const [state, send] = useMachine(() =>
     fileTimeMachine.withContext({
       type,
@@ -21,6 +24,8 @@ export function FileTime({type, document}: FileTimeProps) {
       showLabel: false,
     }),
   )
+
+  console.log('TIME STATE', state, state.context.current)
 
   return state.context.current ? (
     <Box
@@ -35,21 +40,23 @@ export function FileTime({type, document}: FileTimeProps) {
         },
       }}
     >
-      <Text
-        size="1"
-        color="muted"
-        css={{
-          opacity: state.context.showLabel ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-        }}
-      >
-        {state.matches('showCreateTime')
-          ? 'Created'
-          : state.matches('showUpdateTime')
-          ? 'Updated'
-          : 'Published'}
-        {' at:'}
-      </Text>
+      {!noLabel ? (
+        <Text
+          size="1"
+          color="muted"
+          css={{
+            opacity: state.context.showLabel ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+          }}
+        >
+          {state.matches('showCreateTime')
+            ? 'Created'
+            : state.matches('showUpdateTime')
+            ? 'Updated'
+            : 'Published'}
+          {' at:'}
+        </Text>
+      ) : null}
       <Text size="1" color="muted">
         {formattedDate(state.context.current)}
       </Text>

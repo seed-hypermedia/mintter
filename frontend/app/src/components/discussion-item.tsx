@@ -4,9 +4,9 @@ import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {PublicationRef} from '@app/main-machine'
-import {getDateFormat} from '@app/utils/get-format-date'
 import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
+import {FileTime} from '@components/file-time'
 import {Text} from '@components/text'
 import {useActor, useSelector} from '@xstate/react'
 import {useEffect} from 'react'
@@ -34,10 +34,16 @@ export function DiscussionItem({
 }: DiscussionItemProps) {
   let fileRef = useDiscussionFileRef(mainService, link.source!)
 
-  return <DiscussionEditor fileRef={fileRef} />
+  return <DiscussionEditor fileRef={fileRef} mainService={mainService} />
 }
 
-function DiscussionEditor({fileRef}: {fileRef: PublicationRef}) {
+function DiscussionEditor({
+  fileRef,
+  mainService,
+}: {
+  fileRef: PublicationRef
+  mainService: typeof defaultMainService
+}) {
   let [state] = useActor(fileRef)
 
   useEffect(() => {
@@ -98,26 +104,32 @@ function DiscussionEditor({fileRef}: {fileRef: PublicationRef}) {
           },
         }}
       >
-        <Text size="1" color="muted">
+        <Text
+          size="1"
+          color="muted"
+          onClick={() =>
+            mainService.send({
+              type: 'COMMIT.OPEN.WINDOW',
+              path: `/p/${state.context.documentId}/${state.context.version}`,
+            })
+          }
+        >
           {state.context.title}
         </Text>
         {state.context.author && (
           <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-            <span>Signed by </span>
+            <span>by </span>
             <span style={{textDecoration: 'underline'}}>
               {state.context.author.profile?.alias}
             </span>
           </Text>
         )}
 
-        <Text size="1" color="muted">
-          Created on:{' '}
-          {getDateFormat(state.context.publication?.document, 'createTime')}
-        </Text>
-        <Text size="1" color="muted">
-          Last modified:{' '}
-          {getDateFormat(state.context.publication?.document, 'updateTime')}
-        </Text>
+        <FileTime
+          type="pub"
+          document={state.context.publication!.document!}
+          noLabel
+        />
       </Box>
     </Box>
   )
