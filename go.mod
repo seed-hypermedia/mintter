@@ -35,7 +35,7 @@ require (
 	github.com/libp2p/go-libp2p-record v0.1.3
 	github.com/lightningnetwork/lnd v0.15.0-beta.rc6
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/multiformats/go-multiaddr v0.5.0
+	github.com/multiformats/go-multiaddr v0.6.0
 	github.com/multiformats/go-multibase v0.1.1
 	github.com/multiformats/go-multihash v0.1.0
 	github.com/planetscale/vtprotobuf v0.3.0
