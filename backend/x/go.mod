@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/sanity-io/litter v1.5.5
-	github.com/stretchr/testify v1.7.4
+	github.com/stretchr/testify v1.7.5
 	github.com/tidwall/gjson v1.14.1
 )
 
