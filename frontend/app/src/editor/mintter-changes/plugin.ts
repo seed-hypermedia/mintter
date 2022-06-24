@@ -62,13 +62,17 @@ export function createMintterChangesPlugin(): EditorPlugin {
             break
           case 'remove_node':
             if (isGroupContent(op.node)) {
-              op.node.children.forEach((block) => {
-                addOperation(editor, 'deleteBlock', block)
-              })
+              /**
+               * Sometimes when we remove the whole list, we are removing blocks without even consider them. this iterates over the children (and the nested children of the groupContent)
+               */
+              addRemoveBlockOperation(editor, op.node)
             }
             if (isFlowContent(op.node)) {
               addOperation(editor, 'deleteBlock', op.node)
             } else {
+              /**
+               * we get into here if we are removing a node that is phrasing content
+               */
               replaceText(editor, op.path)
             }
             break
@@ -239,10 +243,6 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
 function orderChanges(editor: Editor) {
   let newList: Array<ChangeOperation> = []
   let changes = editor.__mtt_changes
-  console.log(
-    '🚀 ~ file: plugin.ts ~ line 237 ~ orderChanges ~ changes',
-    changes,
-  )
   for (const [node] of Node.elements(editor)) {
     if (isFlowContent(node)) {
       let filteredChanges = changes.filter(([, blockId]) => blockId == node.id)
@@ -257,4 +257,13 @@ function orderChanges(editor: Editor) {
   console.log({newList})
 
   return newList
+}
+
+function addRemoveBlockOperation(editor: Editor, node: GroupingContent) {
+  node.children.forEach((block: FlowContent) => {
+    addOperation(editor, 'deleteBlock', block)
+    if (isGroupContent(block.children[1])) {
+      addRemoveBlockOperation(editor, block.children[1])
+    }
+  })
 }
