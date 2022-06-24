@@ -116,7 +116,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
               match: isFlowContent,
             })
             if (prev) {
-              debugger
               let [, pPath] = prev
               Transforms.moveNodes(editor, {at: childPath, to: pPath.concat(1)})
               return
