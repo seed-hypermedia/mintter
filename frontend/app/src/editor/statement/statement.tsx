@@ -1,5 +1,6 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {
   createId,
@@ -10,6 +11,7 @@ import {
   isParagraph,
   isPhrasingContent,
   isStatement,
+  isStaticPhrasingContent,
   paragraph,
   statement,
   Statement as StatementType,
@@ -63,6 +65,17 @@ export const createStatementPlugin = (): EditorPlugin => ({
             if (isFlowContent(child)) {
               Transforms.unwrapNodes(editor, {at: childPath})
               return
+            }
+
+            if (isStaticPhrasingContent(child)) {
+              debug('Es StaticPhrasing content!!!')
+              Editor.withoutNormalizing(editor, () => {
+                let {children} = child
+                Transforms.removeNodes(editor, {at: childPath})
+                Transforms.insertNodes(editor, paragraph(children), {
+                  at: childPath,
+                })
+              })
             }
 
             if (isPhrasingContent(child)) {

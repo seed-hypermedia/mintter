@@ -4,6 +4,7 @@ import {css} from '@app/stitches.config'
 import {Text, TextProps} from '@components/text'
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
+import {useActor} from '@xstate/react'
 import {Editor} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useSlateStatic} from 'slate-react'
@@ -83,6 +84,7 @@ function StaticParagraph({
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()
+  let [hoverState] = useActor(hoverService)
 
   return (
     <Text
@@ -90,7 +92,14 @@ function StaticParagraph({
       className={staticParagraphStyles()}
       size="4"
       css={{
-        display: mode == EditorMode.Embed ? 'inline' : 'inherit',
+        display: mode == EditorMode.Embed ? 'inline-block' : 'inherit',
+        userSelect: 'text',
+        backgroundColor: 'transparent',
+        [`[data-hover-block="${heading?.node.id}"] &`]: {
+          backgroundColor: hoverState.matches('active')
+            ? '$primary-component-bg-active'
+            : 'transparent',
+        },
       }}
       {...sizeProps}
       {...attributes}
