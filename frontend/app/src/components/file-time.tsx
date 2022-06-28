@@ -12,8 +12,6 @@ type FileTimeProps = {
 }
 
 export function FileTime({type, document, noLabel = false}: FileTimeProps) {
-  console.log('DOCUMENT', document)
-
   const [state, send] = useMachine(() =>
     fileTimeMachine.withContext({
       type,
@@ -24,8 +22,6 @@ export function FileTime({type, document, noLabel = false}: FileTimeProps) {
       showLabel: false,
     }),
   )
-
-  console.log('TIME STATE', state, state.context.current)
 
   return state.context.current ? (
     <Box
