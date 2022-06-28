@@ -389,9 +389,9 @@ dependencies = [
 
 [[package]]
 name = "cap-std"
-version = "0.25.0"
+version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9dc3bec032b93533630adb5cd0e05f4eac5475bf3e9edafc562ccbc44fd5db06"
+checksum = "76d08f6062a16b8b627f3b8ca8a93334f57dc1e9ad4d95f80adb270501605ad6"
 dependencies = [
  "cap-primitives 0.25.0",
  "io-extras 0.15.0",
@@ -1054,7 +1054,7 @@ dependencies = [
  "async-trait",
  "bitflags",
  "cached",
- "cap-std 0.25.0",
+ "cap-std 0.25.1",
  "common",
  "env_logger",
  "futures-util",
