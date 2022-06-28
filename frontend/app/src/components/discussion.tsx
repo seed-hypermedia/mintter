@@ -33,7 +33,7 @@ export function Discussion({service, mainService}: DiscussionProps) {
           paddingHorizontal: '$4',
         }}
       >
-        {state.context.links.map((link) => {
+        {state.context.dedupeLinks.map((link) => {
           let {source} = link
           let key = `link-${source?.documentId}-${source?.version}-${source?.blockId}`
           return (
