@@ -14,6 +14,7 @@ import (
 	"net"
 	"net/http"
 	"sort"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -46,7 +47,9 @@ func (s *httpServer) Shutdown(ctx context.Context) error {
 func provideHTTPServer(lc fx.Lifecycle, stop fx.Shutdowner, r *ondisk.OnDisk, cfg config.Config) (*httpServer, *http.Server, error) {
 	wrap := &httpServer{
 		srv: &http.Server{
-			Addr: ":" + cfg.HTTPPort,
+			Addr:         ":" + cfg.HTTPPort,
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 10 * time.Second,
 		},
 		ready: make(chan struct{}),
 	}
@@ -55,7 +58,9 @@ func provideHTTPServer(lc fx.Lifecycle, stop fx.Shutdowner, r *ondisk.OnDisk, cf
 
 	// This gets used if Let's Encrypt is enabled in order to redirect HTTP to HTTPS.
 	redirectSrv := &http.Server{
-		Addr: ":http",
+		Addr:         ":http",
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	errc := make(chan error, 1)
