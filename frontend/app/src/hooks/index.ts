@@ -1,4 +1,5 @@
 import {useAccountInfo} from '@app/auth-context'
+import {debug} from '@app/utils/logger'
 import type {FlowContent} from '@mintter/mttast'
 import {useMemo} from 'react'
 import {useQuery, useQueryClient} from 'react-query'
@@ -255,10 +256,11 @@ export function useListAccounts(
     },
   )
 
-  const data = useMemo(
-    () => listAccountsQuery.data?.accounts || [],
-    [listAccountsQuery],
-  )
+  const data = useMemo(() => {
+    let list = listAccountsQuery.data?.accounts || []
+    debug('ListAccounts response:', list)
+    return list
+  }, [listAccountsQuery])
 
   return {
     ...listAccountsQuery,

@@ -1,15 +1,19 @@
-import {Account, connect, ConnectionStatus, getPeerInfo} from '@app/client'
-import {useListAccounts} from '@app/hooks'
+import {connect, ConnectionStatus} from '@app/client'
 import {CSS, keyframes, styled} from '@app/stitches.config'
-import {error as debugError} from '@app/utils/logger'
+import {debug, error} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Icon} from '@components/icon'
+import {
+  createAccountMachine,
+  listAccountsMachine,
+} from '@components/library/accounts-machine'
 import {StyledItem} from '@components/library/library-item'
 import * as HoverCard from '@radix-ui/react-hover-card'
+import {useActor, useMachine} from '@xstate/react'
 import {useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
-import {useQuery} from 'react-query'
+import {ActorRefFrom} from 'xstate'
 import {Box} from '../box'
 import {Button} from '../button'
 import {Prompt} from '../prompt'
@@ -19,14 +23,9 @@ import {Section} from './section'
 import {SectionError} from './section-error'
 
 export function ContactsSection() {
-  const {status, data = [], error} = useListAccounts()
+  const [state, send] = useMachine(() => listAccountsMachine)
 
-  let title = `Contacts (${data.length})`
-
-  if (status == 'error') {
-    debugError('Contacts error: ', data, JSON.stringify(error))
-    return <Text>Contacts ERROR</Text>
-  }
+  let title = `Contacts (${state.context.listAccounts.length})`
 
   return (
     <Section
@@ -43,15 +42,15 @@ export function ContactsSection() {
         </Box>
       }
     >
-      {data.length ? (
+      {state.context.listAccounts.length ? (
         <ErrorBoundary
           FallbackComponent={SectionError}
           onReset={() => {
             window.location.reload()
           }}
         >
-          {data.map((c: Account) => (
-            <AccountItem key={c.id} account={c} />
+          {state.context.listAccounts.map(({ref}) => (
+            <AccountItem key={ref.id} accountRef={ref} />
           ))}
         </ErrorBoundary>
       ) : null}
@@ -73,7 +72,7 @@ function ContactsPrompt() {
         })
         setPeer('')
       } catch (err: any) {
-        error(err.message)
+        error('Connect Error:', err.message)
       }
     }
   }
@@ -169,22 +168,17 @@ const HoverCardContentStyled = styled(HoverCard.Content, {
 })
 
 export type AccountItemProps = {
-  account: Account
+  accountRef: ActorRefFrom<ReturnType<typeof createAccountMachine>>
 }
 
-function AccountItem({account}: AccountItemProps) {
-  const {data} = useQuery(
-    ['ConnectionStatus', account.devices],
-    () => {
-      let devices = Object.values(account.devices)
-      if (devices.length > 0) {
-        return getPeerInfo(devices[0])
-      }
-    },
-    {
-      refetchInterval: 30000, // 30 seconds
-    },
+function AccountItem({accountRef}: AccountItemProps) {
+  let [state] = useActor(accountRef)
+
+  let accountId = state.context.account.id.slice(
+    state.context.account.id.length - 8,
   )
+
+  debug('Account State', state.context)
 
   return (
     <HoverCard.Root>
@@ -192,30 +186,43 @@ function AccountItem({account}: AccountItemProps) {
         <StyledItem
           color="default"
           css={{
-            gap: '$3',
+            gap: '$4',
             paddingVertical: '$2',
             paddingHorizontal: '$3',
+            marginLeft: '-$6',
           }}
         >
-          {data && (
+          {typeof state.context.status != 'undefined' ? (
             <Box
               css={{
-                width: 6,
-                height: 6,
+                width: 7,
+                height: 7,
                 borderRadius: '$round',
                 flex: 'none',
-                // data.connectionStatus == ConnectionStatus.CONNECTED
-                //   ? '$success-component-normal'
-                //   : data.connectionStatus == ConnectionStatus.NOT_CONNECTED
-                //   ? '$danger-component-normal'
-                //   : '$base-component-normal',
+                backgroundColor:
+                  state.context.status === ConnectionStatus.CONNECTED
+                    ? '$success-normal'
+                    : '$base-component-bg-active',
               }}
             />
-          )}
+          ) : null}
 
-          <Text size="2" data-testid="connection-alias">{`${
-            account.profile?.alias
-          } (${account.id.slice(-8)})`}</Text>
+          <Text
+            size="2"
+            data-testid="connection-alias"
+            css={{
+              userSelect: 'none',
+              letterSpacing: '0.01em',
+              lineHeight: '$2',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              color: '$$foreground',
+              flex: 1,
+            }}
+          >{`(${state.context.account.id.slice(-5)}) ${
+            state.context.account.profile?.alias
+          }`}</Text>
         </StyledItem>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" portalled>
@@ -228,7 +235,7 @@ function AccountItem({account}: AccountItemProps) {
           }}
         />
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
-          <Text fontWeight="bold">{account.profile?.alias}</Text>
+          <Text fontWeight="bold">{state.context.account.profile?.alias}</Text>
           <Text
             color="muted"
             css={{
@@ -237,22 +244,14 @@ function AccountItem({account}: AccountItemProps) {
               overflow: 'hidden',
             }}
           >
-            {account.profile?.bio}
+            {state.context.account.profile?.bio}
           </Text>
-          <Text size="1">{account.profile?.email}</Text>
+          <Text size="1">{state.context.account.profile?.email}</Text>
           <Text size="1" fontWeight="bold">
             (
-            {data?.connectionStatus == ConnectionStatus.CONNECTED
+            {state.context.status == ConnectionStatus.CONNECTED
               ? 'connected'
-              : data?.connectionStatus == ConnectionStatus.NOT_CONNECTED
-              ? 'not_connected'
-              : data?.connectionStatus == ConnectionStatus.CANNOT_CONNECT
-              ? 'cannot_connect'
-              : data?.connectionStatus == ConnectionStatus.UNRECOGNIZED
-              ? 'unrecognized'
-              : data?.connectionStatus == ConnectionStatus.CAN_CONNECT
-              ? 'can_connect'
-              : 'no connection data'}
+              : 'not_connected'}
             )
           </Text>
           <Text
@@ -263,20 +262,25 @@ function AccountItem({account}: AccountItemProps) {
               overflow: 'hidden',
             }}
           >
-            <b>Acc. ID:</b> {account.id}
+            <b>Acc. ID:</b> {accountId}
           </Text>
-          <Text
-            size="1"
-            css={{
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-            }}
-          >
-            <b>device ID:</b> {ObjectKeys(account.devices)[0]}
-          </Text>
+          {ObjectKeys(state.context.account.devices).map((device, index) => (
+            <Text
+              size="1"
+              css={{
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+              }}
+            >
+              <b>device {index + 1} ID:</b>{' '}
+              {String(device).slice(String(device).length - 8)}
+            </Text>
+          ))}
         </Box>
       </HoverCardContentStyled>
     </HoverCard.Root>
   )
 }
+
+function DeviceConnectionStatus({device}: {device: string}) {}

@@ -10,7 +10,6 @@ import {
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {EditorDocument} from '@app/draft-machine'
 import {queryKeys} from '@app/hooks'
-import {debug} from '@app/utils/logger'
 import {QueryClient} from 'react-query'
 import {Editor} from 'slate'
 import {assign, createMachine} from 'xstate'
@@ -344,15 +343,10 @@ export function createPublicationMachine({
         assignCanUpdate: assign({
           canUpdate: (_, event) => Boolean(event.canUpdate),
         }),
-        assignLinks: assign((context, event) => {
-          let dedupeLinks = createDedupeLinks(event.links)
-          debug('dedupeLinks:', context.title, {
-            links: event.links,
-            dedupeLinks,
-          })
+        assignLinks: assign((_, event) => {
           return {
             links: event.links,
-            dedupeLinks,
+            dedupeLinks: createDedupeLinks(event.links),
           }
         }),
         assignError: assign({
