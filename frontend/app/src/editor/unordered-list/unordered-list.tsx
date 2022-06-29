@@ -1,21 +1,27 @@
+import {EditorMode} from '@app/editor/plugin-utils'
 import {styled} from '@app/stitches.config'
 import {isUnorderedList} from '@mintter/mttast'
-import {groupStyle} from '../group'
+import {forwardRef} from 'react'
+import {GroupProps, groupStyle} from '../group'
 import type {EditorPlugin} from '../types'
 import {resetGroupingContent} from '../utils'
 
 export const ELEMENT_UNORDERED_LIST = 'unorderedList'
 
-export const UnorderedList = styled('ul', groupStyle)
+export const StyledUl = styled('ul', groupStyle)
 
 export const createUnorderedListPlugin = (): EditorPlugin => ({
   name: ELEMENT_UNORDERED_LIST,
   renderElement:
-    () =>
+    (editor) =>
     ({attributes, children, element}) => {
       if (isUnorderedList(element)) {
         return (
-          <UnorderedList data-element-type={element.type} {...attributes}>
+          <UnorderedList
+            mode={editor.mode}
+            element={element}
+            attributes={attributes}
+          >
             {children}
           </UnorderedList>
         )
@@ -33,3 +39,20 @@ export const createUnorderedListPlugin = (): EditorPlugin => ({
     return editor
   },
 })
+
+const UnorderedList = forwardRef<GroupProps, any>(
+  ({mode, attributes, element, ...props}, ref) => {
+    if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+      return null
+    }
+
+    return (
+      <StyledUl
+        {...attributes}
+        ref={ref}
+        data-element-type={element.type}
+        {...props}
+      />
+    )
+  },
+)
