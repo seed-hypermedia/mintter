@@ -34,12 +34,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
     ({attributes, children, element}) => {
       if (isGroup(element)) {
         return (
-          <Group
-            mode={editor.mode}
-            element={element}
-            attributes={attributes}
-            css={{}}
-          >
+          <Group mode={editor.mode} element={element} attributes={attributes}>
             {children}
           </Group>
         )
