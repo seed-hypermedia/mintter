@@ -72,12 +72,20 @@ function RenderMintterLink(
   props: LinkProps,
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
+  let mainService = props.mainService ?? defaultMainService
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
+    let isShiftKey = event.shiftKey
     event.preventDefault()
-    // debug('\n\n === MINTTER LINK CLICKED', {docId, version, blockId})
-    // props.mainService.send({type: 'GO.TO.PUBLICATION', docId, version, blockId})
+    if (isShiftKey) {
+      mainService.send({type: 'GO.TO.PUBLICATION', docId, version, blockId})
+    } else {
+      mainService.send({
+        type: 'COMMIT.OPEN.WINDOW',
+        path: `/p/${docId}/${version}/${blockId}`,
+      })
+    }
   }
 
   return <StyledLink ref={ref} {...props} onClick={onClick} />
