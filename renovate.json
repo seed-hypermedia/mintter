@@ -18,6 +18,10 @@
       "languages": ["golang"],
       "labels": ["languages::Go"],
       "postUpdateOptions": ["gomodTidy"]
+    },
+    {
+      "matchPackagePatterns": ["wasmtime", "wasmtime-wasi", "wasi-common"],
+      "groupName": "Wasmtime packages"
     }
   ]
 }
