@@ -14,7 +14,7 @@ import type {EditorPlugin} from '../types'
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
 export const staticParagraphStyles = css({
-  // fontWeight: '$bold',
+  fontWeight: '$medium',
   // marginTop: '1.5em',
   userSelect: 'text',
 })
