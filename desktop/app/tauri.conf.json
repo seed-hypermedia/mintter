@@ -10,8 +10,8 @@
   },
   "tauri": {
     "bundle": {
-      "active": false,
-      "targets": "all",
+      "active": true,
+      "targets": ["app", "msi", "appimage"],
       "identifier": "com.mintter.dev",
       "icon": [
         "icons/32x32.png",
