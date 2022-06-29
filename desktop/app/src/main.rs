@@ -7,9 +7,12 @@
 use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
 use tauri::{AppHandle, Manager, Runtime, WindowEvent};
-use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
+use tauri_plugin_log::{LogTarget, LoggerBuilder};
 use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 use window_ext::WindowExt as _;
+
+#[cfg(debug_assertions)]
+use fern::fern::colors::ColoredLevelConfig;
 
 mod daemon;
 // mod extensions;
