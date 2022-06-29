@@ -12,7 +12,7 @@ use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 use window_ext::WindowExt as _;
 
 #[cfg(debug_assertions)]
-use fern::fern::colors::ColoredLevelConfig;
+use tauri_plugin_log::fern::colors::ColoredLevelConfig;
 
 mod daemon;
 // mod extensions;
