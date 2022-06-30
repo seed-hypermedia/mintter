@@ -162,7 +162,6 @@ export const createLinkPlugin = (): EditorPlugin => ({
     }
   },
   configureEditor(editor) {
-    if (editor.readOnly) return
     /**
      * - when should I create a link:
      *   - paste a link text format

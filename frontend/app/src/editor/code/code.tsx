@@ -64,7 +64,6 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
   return {
     name: ELEMENT_CODE,
     configureEditor(editor) {
-      if (editor.readOnly) return
       /*
        * @todo modify paste so it will add empty lines
        * @body we need to paste code content inside the same paragraph
@@ -89,7 +88,6 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
         }
       },
     onKeyDown: (editor) => {
-      if (editor.readOnly) return
       return (ev) => {
         if (ev.key == 'Enter') {
           const code = Editor.above(editor, {match: isCode})

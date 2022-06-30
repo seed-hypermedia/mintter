@@ -1,32 +1,72 @@
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {forwardRef, PropsWithChildren, useEffect, useRef, useState} from 'react'
-import ReactDOM from 'react-dom'
-import type {BaseSelection} from 'slate'
-import {Editor, Range, Transforms} from 'slate'
+import {icons} from '@components/icon'
+import {Tooltip} from '@components/tooltip'
+import {offset, useFloating} from '@floating-ui/react-dom'
+import type {Text as MTTText} from '@mintter/mttast'
+import {forwardRef, useEffect, useLayoutEffect, useMemo, useState} from 'react'
+import {BaseSelection, Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
+import {isMarkActive, toggleMark} from './utils'
 
-const Portal = ({children}: PropsWithChildren<unknown>) => {
-  return typeof document == 'object'
-    ? ReactDOM.createPortal(children, document.body)
-    : null
+type FormatTypes = keyof Omit<
+  MTTText,
+  'type' | 'text' | 'value' | 'data' | 'position'
+>
+
+function FormatButton({format}: {format: FormatTypes}) {
+  const editor = useSlateStatic()
+  const IconComponent = icons[capitalize(format)]
+  const markActive = useMemo(
+    () => isMarkActive(editor, format),
+    [editor, format],
+  )
+
+  return (
+    <Tooltip content={format}>
+      <Button
+        css={
+          markActive
+            ? {
+                backgroundColor: '$background-opposite',
+                color: '$base-text-hight',
+                '&:hover': {
+                  backgroundColor: '$background-opposite !important',
+                  color: '$base-text-hight !important',
+                },
+              }
+            : {}
+        }
+        onMouseDown={(event) => {
+          event.preventDefault()
+          toggleMark(editor, format)
+        }}
+        variant="ghost"
+        size="1"
+        color="muted"
+      >
+        <IconComponent />
+      </Button>
+    </Tooltip>
+  )
 }
 
-const Menu = forwardRef<HTMLDivElement, Record<string, unknown>>(
+const Menu = forwardRef<HTMLDivElement, Record<string, any>>(
   ({children, ...props}, ref) => (
     <Box
       {...props}
       ref={ref}
-      className="dark-theme"
+      className="dark-theme MENNUU"
       css={{
         boxShadow: '$menu',
         padding: 0,
         position: 'absolute',
         zIndex: '$max',
-        // top: '-1000000000px',
-        // left: '-1000000000px',
         marginTop: '-6px',
-        // opacity: 0,
+        top: 0,
+        left: 0,
+        opacity: 1,
         backgroundColor: '$base-background-normal',
         borderRadius: '4px',
         transition: 'opacity 0.5s',
@@ -48,6 +88,21 @@ Menu.displayName = 'Menu'
 export interface UseLastSelectionResult {
   lastSelection: Range | null
   resetSelection: () => void
+}
+
+const defaultVirtualEl = {
+  getBoundingClientRect() {
+    return {
+      x: 0,
+      y: 0,
+      top: -9999,
+      left: -9999,
+      bottom: 20,
+      right: 20,
+      width: 20,
+      height: 20,
+    }
+  },
 }
 
 export function useLastEditorSelection(): UseLastSelectionResult {
@@ -72,37 +127,29 @@ export function useLastEditorSelection(): UseLastSelectionResult {
  * @todo handle escape key to remove toolbar
  * @body
  */
-export function PublicationHoveringToolbar() {
-  const ref = useRef<HTMLDivElement | null>(null)
-  const editor = useSlateStatic()
-  const [storeFocus] = useState(false)
+export function PublicationHoveringToolbar({editor}: {editor: Editor}) {
+  const {x, y, reference, floating, strategy} = useFloating({
+    placement: 'top',
+    middleware: [offset(8)],
+  })
+  // const [storeFocus, sendStoreFocus] = useState(false)
   const {lastSelection, resetSelection} = useLastEditorSelection()
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) {
-      return
-    }
-
-    let selection = storeFocus ? lastSelection : editor.selection
-
+  useLayoutEffect(() => {
+    // let selection = storeFocus ? lastSelection : editor.selection
+    let selection = editor.selection
+    debug('editor selection!', editor.selection)
     if (
       !selection ||
       Range.isCollapsed(selection) ||
       Editor.string(editor, selection) == ''
     ) {
-      el.removeAttribute('style')
+      reference(defaultVirtualEl)
       return
     }
-
     const domRange = ReactEditor.toDOMRange(editor, selection)
-    const rect = domRange.getBoundingClientRect()
-    el.style.opacity = '1'
-    el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight}px`
-    el.style.left = `${
-      rect.left + window.pageXOffset - el.offsetWidth / 2 + rect.width / 2
-    }px`
-  })
+    reference(domRange)
+  }, [reference, editor.selection])
 
   useEffect(() => {
     const escEvent = (e: KeyboardEvent) => {
@@ -120,21 +167,16 @@ export function PublicationHoveringToolbar() {
   }, [resetSelection])
 
   return (
-    <Portal>
-      <Menu ref={ref}>
-        <Button
-          onMouseDown={(event) => {
-            event.preventDefault()
-            // TODO: IMPLEMENT ME
-          }}
-          variant="ghost"
-          size="1"
-          color="muted"
-        >
-          Copy Selection Reference
-        </Button>
-      </Menu>
-    </Portal>
+    <Menu
+      ref={floating}
+      style={{
+        position: strategy,
+        top: y ?? 0,
+        left: x ?? 0,
+      }}
+    >
+      copy reference
+    </Menu>
   )
 }
 
