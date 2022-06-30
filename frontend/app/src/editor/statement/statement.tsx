@@ -42,7 +42,6 @@ export const createStatementPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor(editor) {
-    if (editor.readOnly) return
     const {normalizeNode, insertBreak, deleteBackward} = editor
 
     editor.normalizeNode = (entry) => {

@@ -25,8 +25,6 @@ export const groupStyle = css({
   userSelect: 'none',
 })
 
-// export const GroupUI = styled('', groupStyle)
-
 export const createGroupPlugin = (): EditorPlugin => ({
   name: ELEMENT_GROUP,
   renderElement:
@@ -41,7 +39,6 @@ export const createGroupPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor(editor) {
-    if (editor.readOnly) return
     const {normalizeNode, deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {

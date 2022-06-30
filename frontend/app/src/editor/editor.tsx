@@ -1,4 +1,5 @@
 import {useHover} from '@app/editor/hover-context'
+import {PublicationHoveringToolbar} from '@app/editor/publication-hovering-toolbar'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
@@ -76,7 +77,7 @@ export function Editor({
             value={value as Array<Descendant>}
             onChange={onChange as any}
           >
-            <EditorHoveringToolbar />
+            <EditorHoveringToolbar editor={editor!} />
             <Editable
               spellCheck={false}
               autoCorrect="false"
@@ -107,6 +108,9 @@ export function Editor({
           value={value as Array<Descendant>}
           onChange={onChange as any}
         >
+          {mode == EditorMode.Publication ? (
+            <PublicationHoveringToolbar editor={editor!} />
+          ) : null}
           <Editable
             as={as}
             data-testid="editor"

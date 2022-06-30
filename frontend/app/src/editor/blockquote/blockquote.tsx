@@ -23,7 +23,6 @@ export const ELEMENT_BLOCKQUOTE = 'blockquote'
 export const createBlockquotePlugin = (): EditorPlugin => ({
   name: ELEMENT_BLOCKQUOTE,
   configureEditor(editor) {
-    if (editor.readOnly) return
     const {deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
@@ -49,7 +48,6 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
       }
     },
   onKeyDown: (editor) => {
-    if (editor.readOnly) return
     return (ev) => {
       if (ev.key == 'Enter') {
         const quote = Editor.above(editor, {match: isBlockquote})

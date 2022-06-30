@@ -36,7 +36,6 @@ export const createHeadingPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor: (editor) => {
-    if (editor.readOnly) return
     const {normalizeNode, deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
