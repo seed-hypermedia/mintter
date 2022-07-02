@@ -976,7 +976,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/react-dom-interactions@npm:^0.6.6":
+"@floating-ui/react-dom-interactions@npm:0.6.6":
   version: 0.6.6
   resolution: "@floating-ui/react-dom-interactions@npm:0.6.6"
   dependencies:
@@ -990,7 +990,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/react-dom@npm:^0.7.2":
+"@floating-ui/react-dom@npm:0.7.2, @floating-ui/react-dom@npm:^0.7.2":
   version: 0.7.2
   resolution: "@floating-ui/react-dom@npm:0.7.2"
   dependencies:
@@ -1556,8 +1556,8 @@ __metadata:
   dependencies:
     "@cypress/react": 6.0.0
     "@cypress/vite-dev-server": 2.2.3
-    "@floating-ui/react-dom": ^0.7.2
-    "@floating-ui/react-dom-interactions": ^0.6.6
+    "@floating-ui/react-dom": 0.7.2
+    "@floating-ui/react-dom-interactions": 0.6.6
     "@improbable-eng/grpc-web": 0.15.0
     "@mintter/mttast": 0.1.0
     "@radix-ui/colors": 0.1.8
