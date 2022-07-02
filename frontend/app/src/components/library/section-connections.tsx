@@ -23,7 +23,7 @@ import {Section} from './section'
 import {SectionError} from './section-error'
 
 export function ContactsSection() {
-  const [state, send] = useMachine(() => listAccountsMachine)
+  const [state] = useMachine(() => listAccountsMachine)
 
   let title = `Contacts (${state.context.listAccounts.length})`
 
@@ -104,7 +104,7 @@ function ContactsPrompt() {
         <Prompt.Description>Enter a peer address to connect</Prompt.Description>
         <TextField
           value={peer}
-          onChange={(event: any) => setPeer(event.currentTarget.value)}
+          onChange={(event) => setPeer(event.currentTarget.value)}
           textarea
           rows={3}
           containerCss={
@@ -267,6 +267,7 @@ function AccountItem({accountRef}: AccountItemProps) {
           {ObjectKeys(state.context.account.devices).map((device, index) => (
             <Text
               size="1"
+              key={index}
               css={{
                 whiteSpace: 'nowrap',
                 textOverflow: 'ellipsis',
@@ -282,5 +283,3 @@ function AccountItem({accountRef}: AccountItemProps) {
     </HoverCard.Root>
   )
 }
-
-function DeviceConnectionStatus({device}: {device: string}) {}
