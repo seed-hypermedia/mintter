@@ -8953,7 +8953,7 @@ __metadata:
     prettier: 2.7.1
     rollup: 2.75.7
     tiny-glob: 0.2.9
-    ts-proto: 1.115.5
+    ts-proto: 1.116.1
     typescript: 4.7.4
   languageName: unknown
   linkType: soft
@@ -12132,39 +12132,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-poet@npm:^4.11.0":
-  version: 4.11.0
-  resolution: "ts-poet@npm:4.11.0"
+"ts-poet@npm:^4.15.0":
+  version: 4.15.0
+  resolution: "ts-poet@npm:4.15.0"
   dependencies:
     lodash: ^4.17.15
     prettier: ^2.5.1
-  checksum: 58141523080aafdce397338c8db435a6055385ed919d77c9c77bed76f2f8f2bbe924f26e69d2681ca27270519ea0ec7e041fbadc765a4a25528fcbf2548822f5
+  checksum: 93490e8b5921e23ac65afdecc00b4dd53f3560d7d9c19778a3f0bd9a300ba7ca71585a989d564508313bc73e8c431413714d513ebca2d5c428f909ec36bcf6e9
   languageName: node
   linkType: hard
 
-"ts-proto-descriptors@npm:1.6.0":
-  version: 1.6.0
-  resolution: "ts-proto-descriptors@npm:1.6.0"
+"ts-proto-descriptors@npm:1.7.0":
+  version: 1.7.0
+  resolution: "ts-proto-descriptors@npm:1.7.0"
   dependencies:
     long: ^4.0.0
     protobufjs: ^6.8.8
-  checksum: 72de9826c2408efb979495c66add49200ea550c6540ebbf05c144cf5d66d21c09722a56cd183e25936196e04a24258e6af2dbdc2ef9e47e8dd19f094de681e89
+  checksum: 29cc6ee5b5d1da6ca296837f440a1116bf45b3bd716e10649428d0d1d1451a71929e30396f1381e883b0bd0ea9baa648cbf6c564146029d3c28fac27ce652507
   languageName: node
   linkType: hard
 
-"ts-proto@npm:1.115.5":
-  version: 1.115.5
-  resolution: "ts-proto@npm:1.115.5"
+"ts-proto@npm:1.116.1":
+  version: 1.116.1
+  resolution: "ts-proto@npm:1.116.1"
   dependencies:
     "@types/object-hash": ^1.3.0
     dataloader: ^1.4.0
     object-hash: ^1.3.1
     protobufjs: ^6.11.3
-    ts-poet: ^4.11.0
-    ts-proto-descriptors: 1.6.0
+    ts-poet: ^4.15.0
+    ts-proto-descriptors: 1.7.0
   bin:
     protoc-gen-ts_proto: protoc-gen-ts_proto
-  checksum: eafe40fd5865d4b47fbbc8e5d67f8c9191f505f164d56d7ccfb793953d3fdf44e0dac3121084914d50179f5940dceee3cf6a32a2e8b501ddba05785aa6a824b0
+  checksum: 2a926bd0530edccb1f66eb92b91c1b8388a64e4398a2fe5b2cdaba69b316b8b60837748ce03e1e8476944e68de8c05be49fa52dc4567298446f00981f5ac4d68
   languageName: node
   linkType: hard
 
