@@ -19,7 +19,7 @@ tauri = { version = "1.0.2", features = ["cli", "shell-execute", "shell-open", "
 tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", rev = "9de1279760f31bc6f71da8555336e10c412387e3", features = ["colored"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", rev = "5726952177b88d1d10063cdf8e7506bac84772cf" }
 tokio = { version = "1.19.2", features = ["full"] }
-serde = { version = "1.0.137", features = ["derive"] }
+serde = { version = "1.0.138", features = ["derive"] }
 serde_json = "1.0.82"
 log = "0.4.17"
 anyhow = "1.0.58"
