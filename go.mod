@@ -44,7 +44,7 @@ require (
 	github.com/sanity-io/litter v1.5.5
 	github.com/stretchr/testify v1.7.5
 	github.com/tidwall/tinyqueue v0.1.1
-	github.com/vektah/gqlparser/v2 v2.4.5
+	github.com/vektah/gqlparser/v2 v2.4.6
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/fx v1.17.1
 	go.uber.org/multierr v1.8.0
