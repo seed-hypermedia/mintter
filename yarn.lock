@@ -9295,7 +9295,7 @@ __metadata:
     prettier: 2.7.1
     rollup: 2.75.7
     tiny-glob: 0.2.9
-    ts-proto: 1.116.1
+    ts-proto: 1.117.0
     typescript: 4.7.4
   languageName: unknown
   linkType: soft
@@ -12510,29 +12510,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-proto-descriptors@npm:1.7.0":
-  version: 1.7.0
-  resolution: "ts-proto-descriptors@npm:1.7.0"
+"ts-proto-descriptors@npm:1.7.1":
+  version: 1.7.1
+  resolution: "ts-proto-descriptors@npm:1.7.1"
   dependencies:
     long: ^4.0.0
     protobufjs: ^6.8.8
-  checksum: 29cc6ee5b5d1da6ca296837f440a1116bf45b3bd716e10649428d0d1d1451a71929e30396f1381e883b0bd0ea9baa648cbf6c564146029d3c28fac27ce652507
+  checksum: 51e6bd7aeb0527f2e5b9cf70611d653fc6b27a2aca20987217acfdd63dfc10de660c7431f378f6f1769d503fd8e4e334ed28d957b777720abc3ef02f50e7460a
   languageName: node
   linkType: hard
 
-"ts-proto@npm:1.116.1":
-  version: 1.116.1
-  resolution: "ts-proto@npm:1.116.1"
+"ts-proto@npm:1.117.0":
+  version: 1.117.0
+  resolution: "ts-proto@npm:1.117.0"
   dependencies:
     "@types/object-hash": ^1.3.0
     dataloader: ^1.4.0
     object-hash: ^1.3.1
     protobufjs: ^6.11.3
     ts-poet: ^4.15.0
-    ts-proto-descriptors: 1.7.0
+    ts-proto-descriptors: 1.7.1
   bin:
     protoc-gen-ts_proto: protoc-gen-ts_proto
-  checksum: 2a926bd0530edccb1f66eb92b91c1b8388a64e4398a2fe5b2cdaba69b316b8b60837748ce03e1e8476944e68de8c05be49fa52dc4567298446f00981f5ac4d68
+  checksum: ea7e3c1951fbd358632ad535016040e77414372fcd4f85fdb1f899d002966f856647e9b7d4f293380570554a4f64226375b005ffdae7353b932419f27e07ad65
   languageName: node
   linkType: hard
 
