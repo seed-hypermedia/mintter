@@ -126,7 +126,7 @@ export function isFirstChild(path: Path): boolean {
 
 export function toggleMark(
   editor: Editor,
-  key: keyof Omit<Text, 'value'>,
+  key: string,
   value = true, // TODO: if key == 'color', value is a string
   // ...clears: Array<keyof Omit<Text, 'value'>>
 ): void {
@@ -146,36 +146,13 @@ export function toggleMark(
   )
 }
 
-export function isMarkActive(
-  editor: Editor,
-  key: keyof Omit<Text, 'value'>,
-): boolean {
+export function isMarkActive(editor: Editor, key: string): boolean {
   const [match] = Editor.nodes(editor, {
     match: (n) => !!n[key],
     mode: 'all',
   })
 
   return !!match
-}
-
-export function removeMark(
-  editor: Editor,
-  key: keyof Omit<Text, 'value'>,
-): void {
-  const {selection} = editor
-  if (selection) {
-    if (Range.isExpanded(selection)) {
-      Transforms.unsetNodes(editor, key, {
-        match: Text.isText,
-        split: true,
-      })
-    } else {
-      const marks = {...(Editor.marks(editor) || {type: 'text'})}
-      delete marks[key]
-      editor.marks = marks
-      editor.onChange()
-    }
-  }
 }
 
 export function resetFlowContent(editor: Editor): boolean | undefined {

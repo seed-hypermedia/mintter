@@ -22,6 +22,7 @@ import {
   forwardRef,
   MouseEvent,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 import {
@@ -36,7 +37,7 @@ import {
 import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
 import type {UseLastSelectionResult} from '../editor-hovering-toolbar'
 import type {EditorPlugin} from '../types'
-import {getEditorBlock, isCollapsed} from '../utils'
+import {getEditorBlock, isCollapsed, isMarkActive} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -349,22 +350,37 @@ function addLinkChange(editor: Editor, at: Range | null = editor.selection) {
 
 export interface ToolbarLinkProps extends UseLastSelectionResult {
   sendStoreFocus: (n: boolean) => void
+  editor: Editor
 }
 
 export function ToolbarLink({
   sendStoreFocus,
   resetSelection,
   lastSelection,
+  editor,
 }: ToolbarLinkProps) {
   const [open, setOpen] = useState(false)
+  const markActive = useMemo(() => isMarkActive(editor, 'link'), [editor])
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>
         <Button
           variant="ghost"
-          size="1"
+          size="0"
           color="muted"
           data-testid="toolbar-link-button"
+          css={
+            markActive
+              ? {
+                  backgroundColor: '$background-opposite',
+                  color: '$base-text-hight',
+                  '&:hover': {
+                    backgroundColor: '$background-opposite !important',
+                    color: '$base-text-hight !important',
+                  },
+                }
+              : {}
+          }
           onClick={() => {
             setOpen((v) => {
               sendStoreFocus(!v)
@@ -373,7 +389,7 @@ export function ToolbarLink({
             resetSelection()
           }}
         >
-          <Icon name="Link" />
+          <Icon size="2" name="Link" />
         </Button>
       </PopoverPrimitive.Trigger>
 

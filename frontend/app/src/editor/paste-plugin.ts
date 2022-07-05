@@ -1,5 +1,5 @@
 import {debug, error} from '@app/utils/logger'
-import {isFlowContent, sanitizeSchema, toMttast} from '@mintter/mttast'
+import {isFlowContent, isImage, sanitizeSchema, toMttast} from '@mintter/mttast'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
 import {Editor, Transforms} from 'slate'
@@ -31,8 +31,12 @@ export function createPlainTextPastePlugin(): EditorPlugin {
 
         if (html) {
           let hast = processor.runSync(processor.parse(html))
-          let mttast = removeEmptyText(toMttast(hast))
-          debug('paste mttast', mttast)
+          debug('HAST:', hast)
+          let mttast = toMttast(hast)
+          debug('MTTAST:', mttast)
+          let fragment = removeEmptyText(mttast)
+
+          debug('paste mttast', fragment)
           let [parentBlock, parentPath] =
             Editor.above(editor, {match: isFlowContent}) || []
           if (parentBlock && parentPath) {
@@ -44,7 +48,7 @@ export function createPlainTextPastePlugin(): EditorPlugin {
 
                * https://slate-explorer.glitch.me/#eyJpbnB1dCI6IjxlZGl0b3I+XG4gIDx1bD5cbiAgICA8bGk+Zm9vPGN1cnNvci8+PC9saT5cbiAgPC91bD5cbjwvZWRpdG9yPiIsInNsYXRlIjpbeyJ0eXBlIjoidWwiLCJjaGlsZHJlbiI6W3sidHlwZSI6ImxpIiwiY2hpbGRyZW4iOlt7InRleHQiOiJmb28ifV19XX1dLCJ0cmFuc2Zvcm0iOiJjb25zdCBub2RlcyA9IFtcbiAgeyB0eXBlOiAndWwnLCBjaGlsZHJlbjogW1xuICAgIHsgdHlwZTogJ2xpJywgY2hpbGRyZW46IFtcbiAgICAgIHsgdGV4dDogJ2JhcicgfVxuICAgIF0gfVxuICBdIH1cbl1cbi8vIFRyYW5zZm9ybXMuaW5zZXJ0RnJhZ21lbnQoZWRpdG9yLCBub2RlcylcblRyYW5zZm9ybXMuaW5zZXJ0Tm9kZXMoZWRpdG9yLCBub2RlcylcbiIsInNob3dIZWxwIjpmYWxzZX0=
                */
-              Transforms.insertNodes(editor, mttast.children, {
+              Transforms.insertNodes(editor, fragment.children, {
                 at: parentPath,
               })
             })
@@ -79,9 +83,13 @@ export function createPlainTextPastePlugin(): EditorPlugin {
 }
 
 function removeEmptyText(tree: any) {
+  console.log('removeEmptyText INIT')
+
   visit(tree, 'text', (node: any, index: any, parent: any) => {
     if (node.value === '') {
-      parent.children.splice(index, 1, ...node.children)
+      if (!isImage(parent)) {
+        parent.children.splice(index, 1, ...node.children)
+      }
     }
   })
 

@@ -6,6 +6,7 @@ import {br} from './br'
 import {code} from './code'
 import {em} from './em'
 import {heading} from './heading'
+import {img} from './img'
 import {inlineCode} from './inline-code'
 import {list} from './list'
 import {listItem} from './list-item'
@@ -143,8 +144,8 @@ export const handlers = {
   // video: media,
   // wbr,
   // iframe,
-  // img,
-  // image: img,
+  img,
+  image: img,
   // input,
   // address: wrapChildren,
   // article: wrapChildren,
@@ -153,8 +154,8 @@ export const handlers = {
   // center: wrapChildren,
   // div: wrapChildren,
   // fieldset: wrapChildren,
-  // figcaption: wrapChildren,
-  // figure: wrapChildren,
+  figcaption: p,
+  // figure,
   // form: wrapChildren,
   // footer: wrapChildren,
   // header: wrapChildren,

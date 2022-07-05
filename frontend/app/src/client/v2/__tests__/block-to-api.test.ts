@@ -3,12 +3,14 @@ import {
   embed,
   heading,
   Heading,
+  image,
   link,
   paragraph,
   Statement,
   statement,
   staticParagraph,
   text,
+  video,
 } from '@mintter/mttast'
 import {describe, expect, test} from 'vitest'
 import {blockToApi} from '../block-to-api'
@@ -211,6 +213,172 @@ describe('Transform: blockToApi', () => {
           ends: [19],
         },
         {type: 'strong', starts: [14], ends: [19], attributes: {}},
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('Images: simple', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([
+        image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
+      ]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: '\uFFFC',
+      attributes: {
+        childrenType: 'group',
+      },
+      annotations: [
+        {
+          type: 'image',
+          attributes: {url: 'https://mintter.com/image', alt: ''},
+          starts: [0],
+          ends: [1],
+        },
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('Images: simple + alt', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([
+        image({url: 'https://mintter.com/image', alt: 'hello alt'}, [text('')]),
+      ]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: '\uFFFC',
+      attributes: {
+        childrenType: 'group',
+      },
+      annotations: [
+        {
+          type: 'image',
+          attributes: {url: 'https://mintter.com/image', alt: 'hello alt'},
+          starts: [0],
+          ends: [1],
+        },
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('Images: with more content', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([
+        text('hello block with '),
+        image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
+        text(' this image in between content'),
+      ]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: 'hello block with \uFFFC this image in between content',
+      attributes: {
+        childrenType: 'group',
+      },
+      annotations: [
+        {
+          type: 'image',
+          attributes: {url: 'https://mintter.com/image', alt: ''},
+          starts: [17],
+          ends: [18],
+        },
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('Videos: simple', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([
+        video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
+      ]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: '\uFFFC',
+      attributes: {
+        childrenType: 'group',
+      },
+      annotations: [
+        {
+          type: 'video',
+          attributes: {url: 'https://mintter.com/video', alt: ''},
+          starts: [0],
+          ends: [1],
+        },
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('Videos: simple + alt', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([
+        video({url: 'https://mintter.com/video', alt: 'hello alt'}, [text('')]),
+      ]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: '\uFFFC',
+      attributes: {
+        childrenType: 'group',
+      },
+      annotations: [
+        {
+          type: 'video',
+          attributes: {url: 'https://mintter.com/video', alt: 'hello alt'},
+          starts: [0],
+          ends: [1],
+        },
+      ],
+    }
+
+    expect(blockToApi(input)).toEqual(output)
+  })
+
+  test('Videos: with more content', () => {
+    let input: Statement = statement({id: 'blockId'}, [
+      paragraph([
+        text('hello block with '),
+        video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
+        text(' this video in between content'),
+      ]),
+    ])
+
+    let output = {
+      id: 'blockId',
+      type: 'statement',
+      text: 'hello block with \uFFFC this video in between content',
+      attributes: {
+        childrenType: 'group',
+      },
+      annotations: [
+        {
+          type: 'video',
+          attributes: {url: 'https://mintter.com/video', alt: ''},
+          starts: [17],
+          ends: [18],
+        },
       ],
     }
 

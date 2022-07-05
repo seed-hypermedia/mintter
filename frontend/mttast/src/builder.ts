@@ -86,9 +86,9 @@ export const link = createParent<Link>('link')
 
 export const embed = createParent<Embed>('embed')
 
-export const image = createNode<Image>('image')
+export const image = createParent<Image>('image')
 
-export const video = createNode<Video>('video')
+export const video = createParent<Video>('video')
 
 export const text = (value: string, options: Omit<Text, 'type' | 'value' | 'text'> = {}): Text => ({
   type: 'text',

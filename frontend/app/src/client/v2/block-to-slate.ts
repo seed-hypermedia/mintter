@@ -48,7 +48,7 @@ export function blockToSlate(blk: Block): FlowContent {
   const leaves = out.children[0].children
   // Current leaf. At the beginning there's nothing.
   let leaf: any = null
-  let linkOrEmbed: any = null
+  let inlineBlockContent: any = null
   // Start UTF-16 offset of the current leaf. It indicates the beginning
   // of the substring in the block text that would correspond to the current leaf.
   // to get the substring of the block text to insert it in the actual leaf.
@@ -101,13 +101,13 @@ export function blockToSlate(blk: Block): FlowContent {
 
       finishLeaf(textStart, i + 1)
 
-      if (linkOrEmbed) {
+      if (inlineBlockContent) {
         if (!isText(leaves[leaves.length - 1])) {
           leaves.push({type: 'text', value: ''})
         }
-        leaves.push(linkOrEmbed)
+        leaves.push(inlineBlockContent)
         leaves.push({type: 'text', value: ''})
-        linkOrEmbed = null
+        inlineBlockContent = null
       }
 
       return out as FlowContent
@@ -155,7 +155,7 @@ export function blockToSlate(blk: Block): FlowContent {
       // to determine how different annotations affect the leaf node.
       // We'd need to check the annotation "identity", but I'm
       // checking only type here for brevity.
-      if (['link', 'embed'].includes(l.type)) {
+      if (['link', 'embed', 'image', 'video'].includes(l.type)) {
         // TODO: modify leaf if is link or embed
         linkAnnotation = l
       }
@@ -175,41 +175,41 @@ export function blockToSlate(blk: Block): FlowContent {
     })
 
     if (linkAnnotation) {
-      if (linkOrEmbed) {
+      if (inlineBlockContent) {
         if (linkChangedIdentity(linkAnnotation)) {
           if (!isText(leaves[leaves.length - 1])) {
             leaves.push({type: 'text', value: ''})
           }
-          leaves.push(linkOrEmbed)
+          leaves.push(inlineBlockContent)
           leaves.push({type: 'text', value: ''})
-          linkOrEmbed = {
+          inlineBlockContent = {
             type: (linkAnnotation as Annotation).type,
             ...(linkAnnotation as Annotation).attributes,
             children: [],
           }
         }
       } else {
-        linkOrEmbed = {
+        inlineBlockContent = {
           type: (linkAnnotation as Annotation).type,
           ...(linkAnnotation as Annotation).attributes,
           children: [],
         }
       }
     } else {
-      if (linkOrEmbed) {
+      if (inlineBlockContent) {
         if (!isText(leaves[leaves.length - 1])) {
           leaves.push({type: 'text', value: ''})
         }
-        leaves.push(linkOrEmbed)
+        leaves.push(inlineBlockContent)
         leaves.push({type: 'text', value: ''})
-        linkOrEmbed = null
+        inlineBlockContent = null
       }
     }
   }
 
   function linkChangedIdentity(annotation: Annotation): boolean {
-    if (!linkOrEmbed) return false
-    let currentLink = linkOrEmbed.url
+    if (!inlineBlockContent) return false
+    let currentLink = inlineBlockContent.url
     return currentLink != annotation.attributes?.url
   }
 
@@ -219,11 +219,11 @@ export function blockToSlate(blk: Block): FlowContent {
 
     textStart = high
 
-    if (linkOrEmbed) {
-      if (linkOrEmbed.type == 'embed') {
-        linkOrEmbed.children.push({...leaf, value: ''})
+    if (inlineBlockContent) {
+      if (inlineBlockContent.type == 'link') {
+        inlineBlockContent.children.push(leaf)
       } else {
-        linkOrEmbed.children.push(leaf)
+        inlineBlockContent.children.push({...leaf, value: ''})
       }
     } else {
       leaves.push(leaf)

@@ -86,11 +86,11 @@ export interface Callout extends Parent {
   children: [Content] | [Content, GroupingContent]
 }
 
-export interface Video extends Alternative, Resource {
+export interface Video extends Alternative, Resource, Parent {
   type: 'video'
 }
 
-export interface Image extends Alternative, Resource {
+export interface Image extends Alternative, Resource, Parent {
   type: 'image'
 }
 

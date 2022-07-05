@@ -43,8 +43,9 @@ function check(name: string) {
       node.id = 'id'
     })
 
-    // if (name == 'ul2') {
-    // }
+    if (name == 'image') {
+      console.log('result', JSON.stringify({expected, result}, null, 3))
+    }
 
     expect(result).toEqual(expected)
   })

@@ -16,7 +16,7 @@
     "format": "prettier --write .",
     "test": "yarn test:unit",
     "test:unit": "vitest --run",
-    "test:unit:watch": "test --watch",
+    "test:unit:watch": "vitest --watch",
     "validate": "yarn format && yarn lint && yarn test"
   },
   "devDependencies": {

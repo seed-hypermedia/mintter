@@ -66,12 +66,22 @@ export function blockToApi(
       annotations.addSpan('code', null, start, end)
     }
 
-    if (leaf.url) {
-      if (leaf.value == '\uFFFC') {
-        annotations.addSpan('embed', {url: leaf.url}, start, end)
-      } else {
-        annotations.addSpan('link', {url: leaf.url}, start, end)
-      }
+    // inline block elements check
+
+    if (leaf.type == 'image') {
+      annotations.addSpan('image', {url: leaf.url, alt: leaf.alt}, start, end)
+    }
+
+    if (leaf.type == 'video') {
+      annotations.addSpan('video', {url: leaf.url, alt: leaf.alt}, start, end)
+    }
+
+    if (leaf.type == 'embed') {
+      annotations.addSpan('embed', {url: leaf.url}, start, end)
+    }
+
+    if (leaf.type == 'link') {
+      annotations.addSpan('link', {url: leaf.url}, start, end)
     }
 
     // Apparently there's no buffer or a string builder option in javascript, and there's nothing better than straight +=.
@@ -282,14 +292,40 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
   for (let i = 0; i < leaves.length; i++) {
     let leaf = leaves[i].children
     if (typeof leaf != 'undefined') {
+      if (leaves[i].type == 'image') {
+        result.push({
+          url: leaves[i].url ?? '',
+          alt: leaves[i].alt ?? '',
+          value: '\uFFFC',
+          type: 'image',
+        })
+      }
+
+      if (leaves[i].type == 'video') {
+        result.push({
+          url: leaves[i].url ?? '',
+          alt: leaves[i].alt ?? '',
+          value: '\uFFFC',
+          type: 'video',
+        })
+      }
+
       if (leaves[i].type == 'embed') {
         // we are 100% sure that if the leave is an embed, there's only one child in the children's array. that's why we can create the only child with the url attribute.
-        result.push({...leaf[0], url: leaves[i].url, value: '\uFFFC'})
-      } else {
+        result.push({
+          ...leaf[0],
+          type: 'embed',
+          url: leaves[i].url,
+          value: '\uFFFC',
+        })
+      }
+
+      if (leaves[i].type == 'link') {
         // add the url attribute to all link's children
         let nestedResult = flattenLeaves(leaf).map((l) => ({
           ...l,
           url: leaves[i].url,
+          type: 'link',
         }))
         result.push(...nestedResult)
       }
