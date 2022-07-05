@@ -1,10 +1,17 @@
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {icons} from '@components/icon'
+import {Icon, icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {offset, shift, useFloating} from '@floating-ui/react-dom'
-import type {Text as MTTText} from '@mintter/mttast'
-import {forwardRef, useEffect, useLayoutEffect, useMemo, useState} from 'react'
+import {image, Text as MTTText, text} from '@mintter/mttast'
+import {
+  forwardRef,
+  MouseEvent,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react'
 import {BaseSelection, Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useSlateStatic} from 'slate-react'
 import {ToolbarLink} from './link'
@@ -15,24 +22,26 @@ type FormatTypes = keyof Omit<
   'type' | 'text' | 'value' | 'data' | 'position'
 >
 
-function FormatButton({format}: {format: FormatTypes}) {
+function FormatButton({
+  name,
+  format,
+}: {
+  format: string
+  name: keyof typeof icons
+}) {
   const editor = useSlateStatic()
-  const IconComponent = icons[capitalize(format)]
-  const markActive = useMemo(
-    () => isMarkActive(editor, format),
-    [editor, format],
-  )
+  const markActive = isMarkActive(editor, format)
 
   return (
-    <Tooltip content={format}>
+    <Tooltip content={<span>{format}</span>}>
       <Button
         css={
           markActive
             ? {
-                backgroundColor: '$background-opposite',
+                backgroundColor: '$base-text-high',
                 color: '$base-text-hight',
                 '&:hover': {
-                  backgroundColor: '$background-opposite !important',
+                  backgroundColor: '$base-text-high !important',
                   color: '$base-text-hight !important',
                 },
               }
@@ -43,10 +52,10 @@ function FormatButton({format}: {format: FormatTypes}) {
           toggleMark(editor, format)
         }}
         variant="ghost"
-        size="1"
+        size="0"
         color="muted"
       >
-        <IconComponent />
+        <Icon name={name} size="2" />
       </Button>
     </Tooltip>
   )
@@ -57,24 +66,26 @@ const Menu = forwardRef<HTMLDivElement, Record<string, any>>(
     <Box
       {...props}
       ref={ref}
-      className="dark-theme MENNUU"
+      className="dark-theme"
       css={{
         boxShadow: '$menu',
-        padding: 0,
+        padding: '$2',
         position: 'absolute',
         zIndex: '$max',
-        marginTop: '-6px',
         top: 0,
         left: 0,
         opacity: 1,
         backgroundColor: '$base-background-normal',
-        borderRadius: '4px',
+        borderRadius: '2px',
         transition: 'opacity 0.5s',
+        display: 'flex',
+        gap: '$2',
+        paddingHorizontal: '$2',
         '& > *': {
           display: 'inline-block',
         },
         '& > * + *': {
-          marginLeft: 4,
+          marginLeft: 2,
         },
       }}
     >
@@ -173,19 +184,43 @@ export function EditorHoveringToolbar({editor}: {editor: Editor}) {
         left: x ?? 0,
       }}
     >
-      <FormatButton format="strong" />
-      <FormatButton format="emphasis" />
-      <FormatButton format="underline" />
-      {/* <FormatButton format="code" /> */}
+      <FormatButton name="Strong" format="strong" />
+      <FormatButton name="Emphasis" format="emphasis" />
+      <FormatButton name="Underline" format="underline" />
+      {/* <FormatButton name="Code" format="code" /> */}
       <ToolbarLink
+        editor={editor}
         lastSelection={lastSelection}
         resetSelection={resetSelection}
         sendStoreFocus={sendStoreFocus}
       />
+      {/* <Tooltip content={<span>Image</span>}>
+        <Button
+          onClick={insertImageHandler(editor)}
+          variant="ghost"
+          size="0"
+          color="muted"
+        >
+          <Icon name="Image" size="2" />
+        </Button>
+      </Tooltip> */}
       {/* <ToggleListButton type="orderedList" />
         <ToggleListButton type="unorderedList" /> */}
     </Menu>
   )
+}
+
+function insertImageHandler(editor: Editor) {
+  return function imageClickEvent(event: MouseEvent) {
+    event.preventDefault()
+    insertImage(editor)
+  }
+}
+
+function insertImage(editor: Editor, url: string = '') {
+  let img = image({url}, [text('')])
+  debug('Insert Image', img)
+  Transforms.insertNodes(editor, [text(''), img, text('')])
 }
 
 function capitalize(word: string) {

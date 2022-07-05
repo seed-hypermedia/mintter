@@ -54,15 +54,13 @@ export function buildEditorHook(
 
   let editor = withMode(mode)(withHistory(withReact(createEditor())))
   for (const {name, configureEditor} of filteredPlugins) {
-    if (editor.mode == EditorMode.Draft) {
-      try {
-        editor = configureEditor(editor) || editor
-      } catch (e) {
-        if (!import.meta.env.SSR) {
-          error(`[${name}] ${e} in configureEditor hook`)
-        }
-        throw e
+    try {
+      editor = configureEditor(editor) || editor
+    } catch (e) {
+      if (!import.meta.env.SSR) {
+        error(`[${name}] ${e} in configureEditor hook`)
       }
+      throw e
     }
   }
   return editor
@@ -156,14 +154,12 @@ export function buildEventHandlerHooks(
 
     handlers[event] = function (ev) {
       for (const {name, [event]: hook} of pluginsWithHook) {
-        if (editor.mode == EditorMode.Draft) {
-          try {
-            // @ts-expect-error ev has incompatible types
-            hook(editor)(ev)
-          } catch (e) {
-            error(`[${name}] ${e} in ${event} hook`)
-            throw error
-          }
+        try {
+          // @ts-expect-error ev has incompatible types
+          hook(editor)(ev)
+        } catch (e) {
+          error(`[${name}] ${e} in ${event} hook`)
+          throw error
         }
       }
     }

@@ -11,13 +11,16 @@ import {
   FlowContent,
   group,
   heading,
+  image,
   isFlowContent,
   isGroupContent,
   isHeading,
   MttastContent,
   ol,
   statement,
+  text,
   ul,
+  video,
 } from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {Fragment} from 'react'
@@ -39,7 +42,19 @@ const items: {
     ) => void
   }>
 } = {
-  statement: [
+  'Insert inline': [
+    {
+      label: 'Image',
+      iconName: 'Image',
+      onSelect: insertInline(image),
+    },
+    {
+      label: 'Video',
+      iconName: 'Video',
+      onSelect: insertInline(video),
+    },
+  ],
+  'Turn Block into': [
     {
       label: 'Heading',
       iconName: 'Heading',
@@ -61,7 +76,7 @@ const items: {
       onSelect: setType(code),
     },
   ],
-  group: [
+  'Turn group into': [
     {
       label: 'Bullet List',
       iconName: 'BulletList',
@@ -127,7 +142,7 @@ export function BlockTools({element}: BlockToolsProps) {
               <Fragment key={key}>
                 <Dropdown.Label>
                   <Text color="muted" size="2" css={{padding: '$3'}}>
-                    Turn {key} into:
+                    {key}
                   </Text>
                 </Dropdown.Label>
                 {value.map((item) => (
@@ -178,6 +193,22 @@ function setType(fn: any) {
 
       Transforms.setNodes(editor, props, {at})
     })
+  }
+}
+
+function insertInline(fn: typeof image | typeof video) {
+  return function insertInlineElement(
+    editor: Editor,
+    element: FlowContent,
+    at: Path,
+    selection: typeof editor.selection,
+  ) {
+    if (selection) {
+      MintterEditor.addChange(editor, ['replaceBlock', element.id])
+      Transforms.insertNodes(editor, fn({url: ''}, [text('')]), {
+        at: selection,
+      })
+    }
   }
 }
 

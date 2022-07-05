@@ -38,12 +38,22 @@ export function createMintterChangesPlugin(): EditorPlugin {
         switch (op.type) {
           case 'insert_node':
             if (isFlowContent(op.node)) {
-              // TODO: wtf I wanted to do here?
-
               addOperation(editor, 'moveBlock', op.node)
               addOperation(editor, 'replaceBlock', op.node)
             } else {
-              error('TODO handle non flowcontent insert_node ops')
+              debug('insert node', op)
+
+              /**
+               * TODO:
+               * this code above breaks the editor because it does not find the node at the correct path
+               * when indenting (tab)
+               */
+              // const [node] =
+              //   Editor.above(editor, {at: op.path, match: isFlowContent}) || []
+
+              // if (node) {
+              //   addOperation(editor, 'replaceBlock', node)
+              // }
             }
             break
           case 'set_node':
@@ -78,6 +88,7 @@ export function createMintterChangesPlugin(): EditorPlugin {
             }
             break
           case 'move_node':
+            debug('move node', op)
             moveNode(editor, op)
             break
           case 'set_selection':
