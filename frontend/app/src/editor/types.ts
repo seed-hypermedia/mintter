@@ -1,5 +1,5 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
-import type {Document, Image, MttastContent, Text, Video} from '@mintter/mttast'
+import type {Document, MttastContent, Text} from '@mintter/mttast'
 import React from 'react'
 import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {HistoryEditor} from 'slate-history'
@@ -8,7 +8,6 @@ import type {
   RenderElementProps,
   RenderLeafProps,
 } from 'slate-react'
-import {MintterEditor} from './mintter-changes/plugin'
 import {EditorMode} from './plugin-utils'
 
 declare module 'slate' {
@@ -17,7 +16,7 @@ declare module 'slate' {
       ReactEditor &
       HistoryEditor &
       MintterEditor & {mode: EditorMode; readOnly: boolean}
-    Element: Exclude<MttastContent, Document | Text | Video | Image>
+    Element: Exclude<MttastContent, Document | Text>
     Text: Text
   }
 }
