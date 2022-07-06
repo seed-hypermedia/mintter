@@ -13,3 +13,15 @@ filegroup(
     ],
     visibility = ["PUBLIC"],
 )
+
+filegroup(
+    name = "libp2p",
+    srcs = glob(
+        ["go-libp2p/**/*.go"],
+        exclude = ["go-libp2p/**/*_test.go"],
+    ) + [
+        "go-libp2p/go.mod",
+        "go-libp2p/go.sum",
+    ],
+    visibility = ["PUBLIC"],
+)

@@ -18,6 +18,7 @@ go_binary(
     package = "./cmd/mintterd",
     visibility = ["PUBLIC"],
     deps = [
+        "//third_party:libp2p",
         "//third_party:sqlite",
     ],
 )
