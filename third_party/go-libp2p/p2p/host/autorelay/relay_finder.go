@@ -141,6 +141,17 @@ func (rf *relayFinder) background(ctx context.Context) {
 			if rf.usingRelay(evt.Peer) { // we were disconnected from a relay
 				log.Debugw("disconnected from relay", "id", evt.Peer)
 				delete(rf.relays, evt.Peer)
+				if cand, ok := rf.candidates[evt.Peer]; ok {
+					rf.candidateMx.Lock()
+					rf.moveCandidateToBackoff(&candidate{
+						added:           cand.added,
+						supportsRelayV2: cand.supportsRelayV2,
+						ai:              cand.ai,
+						numAttempts:     1,
+					})
+					rf.candidateMx.Unlock()
+				}
+
 				push = true
 			}
 			rf.relayMx.Unlock()
@@ -375,6 +386,14 @@ func (rf *relayFinder) handleNewCandidate(ctx context.Context) {
 		rsvp, err := rf.connectToRelay(ctx, cand)
 		if err != nil {
 			log.Debugw("failed to connect to relay", "peer", id, "error", err)
+			rf.candidateMx.Lock()
+			rf.moveCandidateToBackoff(&candidate{
+				added:           cand.added,
+				supportsRelayV2: cand.supportsRelayV2,
+				ai:              cand.ai,
+				numAttempts:     1,
+			})
+			rf.candidateMx.Unlock()
 			continue
 		}
 		log.Debugw("adding new relay", "id", id)
@@ -588,7 +607,7 @@ func (rf *relayFinder) Start() error {
 	if rf.ctxCancel != nil {
 		return errors.New("relayFinder already running")
 	}
-	log.Debug("starting relay finder")
+	log.Debug("starting non official relay finder")
 	ctx, cancel := context.WithCancel(context.Background())
 	rf.ctxCancel = cancel
 	rf.refCount.Add(1)
