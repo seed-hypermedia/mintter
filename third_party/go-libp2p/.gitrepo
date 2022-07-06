@@ -1,0 +1,11 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:libp2p/go-libp2p.git
+	branch = v0.20.1
+	commit = b54bacef92dd04d034cc2608364499d015c80f60
+	parent = 661972ebf511958b071fdcac78632d1c10882423
+	cmdver = 0.1.0
