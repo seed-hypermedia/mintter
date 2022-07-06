@@ -75,7 +75,22 @@
     ],
     "security": {
       "freezePrototype": false,
-      "csp": "default-src 'self' style-src 'self' 'unsafe-inline' connect-src http://localhost:55001"
+      "devCsp": {
+        "default-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "connect-src": "http://localhost:55001",
+        "image-src": "https://*",
+        "media-src": "https://*",
+        "frame-src": "https://*"
+      },
+      "csp": {
+        "default-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "connect-src": "http://localhost:55001",
+        "image-src": "https://*",
+        "media-src": "https://*",
+        "frame-src": "https://*"
+      }
     },
     "systemTray": {
       "iconPath": "./icons/tray_icon_with_transparency.png",
