@@ -72,14 +72,6 @@ func DefaultRelays() []peer.AddrInfo {
 				must.Two(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
 			},
 		},
-		// Julio's personal server
-		{
-			ID: must.Two(peer.Decode("12D3KooWDEy9x2MkUtDMLwb38isNhWMap39xeKVqL8Wb9AHYPYM7")),
-			Addrs: []multiaddr.Multiaddr{
-				must.Two(multiaddr.NewMultiaddr("/ip4/18.158.173.157/tcp/4002")),
-				must.Two(multiaddr.NewMultiaddr("/ip4/18.158.173.157/udp/4002/quic")),
-			},
-		},
 	}
 }
 
@@ -476,7 +468,8 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 			libp2p.NATPortMap(),
 			libp2p.EnableHolePunching(),
 			libp2p.EnableNATService(),
-			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays())),
+			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
+				autorelay.WithBackoff(time.Duration(cfg.RelayBackoffDelay)*time.Minute)),
 		)
 	}
 

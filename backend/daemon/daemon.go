@@ -111,6 +111,7 @@ func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, d Daemon) {
 					zap.String("httpListener", d.HTTP.lis.Addr().String()),
 					zap.String("repoPath", d.Config.RepoPath),
 				)
+				logging.SetLogLevel("autorelay", "debug")
 				net, err := d.Net.Await(context.Background())
 				if err != nil {
 					panic(err)

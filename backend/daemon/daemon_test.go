@@ -217,10 +217,11 @@ func makeTestDaemon(t *testing.T, name string, register bool) *testDaemon {
 		NoOpenBrowser: true,
 		RepoPath:      testutil.MakeRepoPath(t),
 		P2P: config.P2P{
-			Port:        0,
-			NoBootstrap: true,
-			NoRelay:     true,
-			NoMetrics:   true,
+			Port:              0,
+			NoBootstrap:       true,
+			NoRelay:           true,
+			NoMetrics:         true,
+			RelayBackoffDelay: 60,
 		},
 	}
 
