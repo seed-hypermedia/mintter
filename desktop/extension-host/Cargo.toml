@@ -19,7 +19,7 @@ thiserror = "1.0.31"
 futures-util = "0.3.21"
 async-trait = "0.1.56"
 semver = { version = "1.0.12", features = ["serde"] }
-cached = "0.35.0"
+cached = "0.36.0"
 tracing = "0.1.35"
 common = { path = "../common" }
 workspace-hack = { version = "0.1", path = "../workspace-hack" }
