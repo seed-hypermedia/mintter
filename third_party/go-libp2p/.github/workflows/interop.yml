@@ -1,0 +1,47 @@
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+name: Interop Tests
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    name: Js/Go
+    steps:
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.16.x"
+      - name: Go information
+        run: |
+          go version
+          go env
+      - uses: actions/checkout@v2
+        with:
+          path: 'libp2p'
+      - uses: actions/checkout@v2
+        with:
+          repository: 'libp2p/go-libp2p-daemon'
+          path: 'daemon'
+      - uses: actions/checkout@v2
+        with:
+          repository: 'libp2p/interop'
+          path: 'interop'
+      - name: Mod replace go-libp2p in go-libp2p-daemon
+        working-directory: daemon
+        run: |
+          go mod edit -replace "github.com/libp2p/go-libp2p=../libp2p"
+          go mod tidy
+      - name: Build libp2p daemon
+        working-directory: daemon
+        run: |
+          go build -o daemon ./p2pd
+      - name: Setup interop tests
+        working-directory: interop
+        run: npm install
+      - name: Run interop tests
+        working-directory: interop
+        run: LIBP2P_GO_BIN="$(pwd)/../daemon/daemon" npm run test
