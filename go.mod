@@ -213,6 +213,8 @@ require (
 
 replace crawshaw.io/sqlite => ./third_party/sqlite
 
+replace github.com/libp2p/go-libp2p => ./third_party/go-libp2p
+
 // Replace to make LND work ¯\_(ツ)_/¯.
 replace (
 	github.com/btcsuite/btcd => github.com/btcsuite/btcd v0.23.1
