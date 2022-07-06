@@ -1685,7 +1685,7 @@ __metadata:
     "@radix-ui/react-tooltip": 0.1.7
     "@stitches/core": 1.2.8
     "@stitches/react": 1.2.8
-    "@tauri-apps/api": 1.0.1
+    "@tauri-apps/api": 1.0.2
     "@types/google-protobuf": 3.15.6
     "@types/hast": 2.3.4
     "@types/is-url": 1.2.30
@@ -2626,7 +2626,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tauri-apps/api@npm:1.0.1, @tauri-apps/api@npm:^1.0.0":
+"@tauri-apps/api@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@tauri-apps/api@npm:1.0.2"
+  checksum: e0976c8d333327c9dfeca8ca02057d0fb6e9250fe7c207d4c8a15717e0050057d10474fba44d9f8deb8304ddf6497b58d85fb0c783136cd12574d3d77c614e73
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/api@npm:^1.0.0":
   version: 1.0.1
   resolution: "@tauri-apps/api@npm:1.0.1"
   dependencies:
