@@ -89,7 +89,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YYYY.MM.DD
+          format: YYYY.M.D
       - name: Set version in Cargo.toml
         run: node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{ steps.current_time.outputs.formattedTime }}
       - uses: JonasKruckenberg/tauri-build@v1.0.3
@@ -171,7 +171,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YYYY.MM.DD
+          format: YYYY.M.D
       - name: Generate static updater manifest
         run: node scripts/generate-update-manifest.mjs ${{ steps.current_time.outputs.formattedTime }} > ./artifacts/manifest.json
       - name: Configure AWS credentials
