@@ -4,6 +4,14 @@
   windows_subsystem = "windows"
 )]
 
+mod daemon;
+mod error;
+mod exts;
+mod menu;
+mod system_tray;
+mod window;
+mod window_ext;
+
 use env_logger::filter::Builder as FilterBuilder;
 use log::LevelFilter;
 use tauri::{AppHandle, Manager, Runtime, WindowEvent};
@@ -14,22 +22,16 @@ use window_ext::WindowExt as _;
 #[cfg(debug_assertions)]
 use tauri_plugin_log::fern::colors::ColoredLevelConfig;
 
-mod daemon;
-// mod extensions;
-mod menu;
-mod system_tray;
-mod window;
-mod window_ext;
+pub use error::Error;
+pub type Result<T> = std::result::Result<T, error::Error>;
 
 #[tauri::command]
 async fn emit_all<R: Runtime>(
   app_handle: AppHandle<R>,
   event: String,
   payload: Option<String>,
-) -> Result<(), String> {
-  app_handle
-    .emit_all(&event, payload)
-    .map_err(|e| e.to_string())
+) -> Result<()> {
+  app_handle.emit_all(&event, payload).map_err(Into::into)
 }
 
 fn main() {
@@ -59,6 +61,7 @@ fn main() {
     .plugin(StorePluginBuilder::default().build())
     .plugin(daemon::init())
     .plugin(window::init())
+    .plugin(exts::init())
     .menu(menu::get_menu())
     .on_menu_event(menu::event_handler)
     .system_tray(system_tray::get_tray())

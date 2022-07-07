@@ -1,0 +1,82 @@
+;; Type names used by low-level WASI interfaces.
+;;
+;; This is a `witx` file. See [here](https://github.com/WebAssembly/WASI/tree/master/docs/witx.md)
+;; for an explanation of what that means.
+
+;;; An array size.
+;;;
+;;; Note: This is similar to `size_t` in POSIX.
+(typename $size (@witx usize))
+
+;;; Error codes returned by functions.
+(typename $mtt_errno
+  (enum (@witx tag u16)
+    ;;; No error occurred. System call completed successfully.
+    $success
+    ;;; Illegal byte sequence.
+    $ilseq
+    ;;; Invalid argument.
+    $inval
+    ;;; Value too large to be stored in data type.
+    $overflow
+    ;;; I/O error.
+    $io
+    ;;; Bad address.
+    $fault
+  )
+)
+
+;;; User-provided value that may be attached to objects that is retained when
+;;; extracted from the implementation.
+(typename $userdata u64)
+
+;;; Type of a subscription to an event or its occurrence.
+(typename $eventtype
+  (enum (@witx tag u8)
+    $window_event
+  )
+)
+
+(typename $subscription_window_event
+  (record
+    (field $event (@witx const_pointer (@witx char8)))
+    (field $event_len $size)
+  )
+)
+
+;;; The contents of a `subscription`.
+(typename $subscription_u
+  (union (@witx tag $eventtype)
+    $subscription_window_event
+  )
+)
+
+;;; Subscription to an event.
+(typename $subscription
+  (record
+    ;;; User-provided value that is attached to the subscription in the
+    ;;; implementation and returned through `event::userdata`.
+    ;; (field $userdata $userdata)
+    ;;; The type of the event to which to subscribe, and the contents of the subscription.
+    (field $u $subscription_u)
+  )
+)
+
+;;; The contents of an `event`.
+(typename $event_u
+  (variant (@witx tag $eventtype)
+    (case $window_event)
+  )
+)
+
+;;; An event that occurred.
+(typename $event
+  (record
+    ;;; User-provided value that got attached to `subscription::userdata`.
+    ;; (field $userdata $userdata)
+    ;;; If non-zero, an error that occurred while processing the subscription request.
+    (field $error $mtt_errno)
+    ;;; The type of the event that occurred, and the contents of the event
+    (field $u $event_u)
+  )
+)
