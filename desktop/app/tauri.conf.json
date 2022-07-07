@@ -74,22 +74,14 @@
       }
     ],
     "security": {
-      "freezePrototype": false,
-      "devCsp": {
-        "default-src": "'self'",
-        "style-src": "'self' 'unsafe-inline'",
-        "connect-src": "http://localhost:55001",
-        "image-src": "https://*",
-        "media-src": "https://*",
-        "frame-src": "https://*"
-      },
       "csp": {
-        "default-src": "'self'",
-        "style-src": "'self' 'unsafe-inline'",
+        "default-src": "'none'",
+        "style-src": "'unsafe-inline'",
         "connect-src": "http://localhost:55001",
-        "image-src": "https://*",
-        "media-src": "https://*",
-        "frame-src": "https://*"
+        "img-src": "https:",
+        "media-src": "https:",
+        "frame-src": "https:",
+        "object-src": "'none'"
       }
     },
     "systemTray": {
