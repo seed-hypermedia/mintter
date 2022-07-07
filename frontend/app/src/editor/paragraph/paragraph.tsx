@@ -125,9 +125,12 @@ function Paragraph({
         transition: 'all ease-in-out 0.1s',
         backgroundColor: 'transparent',
         [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
-          backgroundColor: hoverState.matches('active')
-            ? '$primary-component-bg-active'
-            : 'transparent',
+          backgroundColor:
+            editor.mode != EditorMode.Draft
+              ? '$primary-component-bg-active'
+              : hoverState.matches('active')
+              ? '$primary-component-bg-active'
+              : 'transparent',
         },
       }}
       data-parent-type={(parentNode as FlowContent)?.type}
