@@ -217,7 +217,7 @@ function ImageForm({service, element}: InnerImageProps) {
           }}
           onSubmit={submitImage}
         >
-          <TextField placeholder="Add an Image URL" name="url" />
+          <TextField type="url" placeholder="Add an Image URL" name="url" />
           <Button type="submit">Save</Button>
         </Box>
       </Box>
@@ -231,13 +231,12 @@ function ImageForm({service, element}: InnerImageProps) {
 }
 
 function isImgUrl(url: string): Promise<string | undefined> {
-  return fetch(url, {method: 'HEAD'}).then((res) => {
-    if (!res.ok) {
-      console.log('RES:', res)
-      throw new Error(`Error! status: ${res.status}`)
+  return new Promise((resolve, reject) => {
+    try {
+      let imageUrl = new URL(url)
+      resolve(imageUrl.toString())
+    } catch (e) {
+      reject(`IMAGE: Error: Invalid Image Url: ${url}`)
     }
-    return res.headers.get('Content-Type')?.startsWith('image')
-      ? url
-      : undefined
   })
 }
