@@ -129,6 +129,13 @@ const inputStyles = css({
         $$activeBorderColor: '$colors$danger-active',
         $$textColor: '$colors$danger-text-low',
       },
+      muted: {
+        $$backgroundColor: 'transparent',
+        $$borderColor: 'transparent',
+        $$hoveredBorderColor: 'transparent',
+        $$activeBorderColor: 'transparent',
+        $$textColor: '$colors$base-text-low',
+      },
     },
   },
 
@@ -237,6 +244,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             localRef,
             ref,
           ])}
+          status={status}
           {...props}
         />
         {hint ? (
