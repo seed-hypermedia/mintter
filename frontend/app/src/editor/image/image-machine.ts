@@ -1,6 +1,6 @@
 import {createMachine} from 'xstate'
 
-type ImageContext = {}
+type ImageContext = Record<string, never>
 type ImageEvent =
   | {type: 'IMAGE.SUBMIT'}
   | {type: 'IMAGE.DISMISS'}

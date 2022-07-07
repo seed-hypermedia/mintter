@@ -68,6 +68,7 @@ function Image({element, attributes, children}: RenderElementProps) {
       updateCaption: (_, event) => {
         Transforms.setNodes(editor, {alt: event.value}, {at: path})
       },
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       assignError: () => {},
       // showCaption: () => {},
     },
