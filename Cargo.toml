@@ -1,10 +1,10 @@
 [workspace]
-members = ["desktop/app", "desktop/extension-host", "desktop/ext-twitter", "desktop/ext-youtube", "desktop/common", "desktop/workspace-hack"]
+members = ["desktop/app", "desktop/wasi-mtt", "desktop/workspace-hack"]
 
 # default to small, optimized workspace release binaries
 [profile.release]
-panic = "abort"
 codegen-units = 1
-lto = true
 incremental = false
+lto = true
 opt-level = "s"
+panic = "abort"
