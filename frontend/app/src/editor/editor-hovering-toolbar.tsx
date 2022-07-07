@@ -1,4 +1,3 @@
-import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -187,14 +186,14 @@ export function EditorHoveringToolbar({editor}: {editor: Editor}) {
       <FormatButton name="Strong" format="strong" />
       <FormatButton name="Emphasis" format="emphasis" />
       <FormatButton name="Underline" format="underline" />
-      {/* <FormatButton name="Code" format="code" /> */}
+      <FormatButton name="Code" format="code" />
       <ToolbarLink
         editor={editor}
         lastSelection={lastSelection}
         resetSelection={resetSelection}
         sendStoreFocus={sendStoreFocus}
       />
-      {/* <Tooltip content={<span>Image</span>}>
+      <Tooltip content={<span>Image</span>}>
         <Button
           onClick={insertImageHandler(editor)}
           variant="ghost"
@@ -203,7 +202,7 @@ export function EditorHoveringToolbar({editor}: {editor: Editor}) {
         >
           <Icon name="Image" size="2" />
         </Button>
-      </Tooltip> */}
+      </Tooltip>
       {/* <ToggleListButton type="orderedList" />
         <ToggleListButton type="unorderedList" /> */}
     </Menu>
@@ -217,12 +216,7 @@ function insertImageHandler(editor: Editor) {
   }
 }
 
-function insertImage(editor: Editor, url: string = '') {
+function insertImage(editor: Editor, url = '') {
   let img = image({url}, [text('')])
-  debug('Insert Image', img)
   Transforms.insertNodes(editor, [text(''), img, text('')])
-}
-
-function capitalize(word: string) {
-  return `${word[0].toUpperCase()}${word.slice(1)}`
 }
