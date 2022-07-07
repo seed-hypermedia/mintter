@@ -1,6 +1,6 @@
-import {gql, request} from 'graphql-request'
-import {EventFrom, Sender, sendParent, spawn} from 'xstate'
-import {createModel} from 'xstate/lib/model'
+import { gql, request } from 'graphql-request'
+import { EventFrom, Sender, sendParent, spawn } from 'xstate'
+import { createModel } from 'xstate/lib/model'
 import {
   DeleteWalletPayload,
   LightningWallet,
@@ -11,7 +11,7 @@ import {
   MutationSetDefaultWalletArgs,
   MutationSetupLndHubWalletArgs,
   SetDefaultWalletPayload,
-  SetupLndHubWalletPayload,
+  SetupLndHubWalletPayload
 } from './client'
 
 export const MINTTER_GRAPHQL_API_URL = `${MINTTER_API_URL_DEFAULT}/graphql`
@@ -296,7 +296,7 @@ export function createWalletMachine({
                   input: {id: context.id},
                 },
               )
-                .then(() => {
+                .then((response: any) => {
                   sendBack(walletModel.events['REPORT.DEFAULT.SUCCESS']())
                 })
                 .catch((err) => {

@@ -1,82 +1,85 @@
-import {createMachine} from 'xstate'
+import {assign, createMachine} from 'xstate'
 
-type ImageContext = Record<string, never>
+type ImageContext = {
+  errorMessage: string
+  url: string
+}
+
 type ImageEvent =
-  | {type: 'IMAGE.SUBMIT'}
-  | {type: 'IMAGE.DISMISS'}
-  | {
-      type: 'IMAGE.REPLACE'
-    }
+  | {type: 'IMAGE.REPLACE'}
+  | {type: 'IMAGE.SUBMIT'; value: string}
+  | {type: 'REPORT.IMAGE.VALID'}
+  | {type: 'REPORT.IMAGE.INVALID'}
   | {type: 'CAPTION.UPDATE'; value: string}
-  | {type: 'CAPTION.BLUR'}
-  | {type: 'CAPTION.EDIT'}
 
-export const imageMachine = createMachine({
-  tsTypes: {} as import('./image-machine.typegen').Typegen0,
-  schema: {
-    context: {} as ImageContext,
-    events: {} as ImageEvent,
-  },
-  id: 'Image Element',
-  initial: 'init',
-  description:
-    'Context: caption, imageURL (the image imput should be uncontrolled)',
-
-  states: {
-    init: {
-      always: [
-        {
-          cond: 'isImageURL',
-          target: 'idle',
-        },
-        {
-          target: 'edit',
-        },
-      ],
+export const imageMachine = createMachine(
+  {
+    tsTypes: {} as import('./image-machine.typegen').Typegen0,
+    schema: {context: {} as ImageContext, events: {} as ImageEvent},
+    id: 'Image Element',
+    description:
+      'Context: caption, imageURL (the image imput should be uncontrolled)',
+    context: {
+      errorMessage: '',
+      url: '',
     },
-    edit: {
-      on: {
-        'IMAGE.SUBMIT': [
+    initial: 'init',
+    states: {
+      init: {
+        always: [
           {
-            cond: 'isImageURL',
-            target: 'idle',
+            cond: 'hasImageUrl',
+            target: 'image',
           },
           {
-            actions: 'assignError',
+            target: 'editImage',
           },
         ],
-        'IMAGE.DISMISS': {
-          target: 'idle',
-        },
       },
-    },
-    idle: {
-      initial: 'captionActive',
-      states: {
-        captionActive: {
-          on: {
-            'CAPTION.UPDATE': {
-              actions: 'updateCaption',
-            },
-            'CAPTION.BLUR': {
-              target: 'captionInactive',
-            },
+      image: {
+        on: {
+          'IMAGE.REPLACE': {
+            target: 'editImage',
           },
-        },
-        captionInactive: {
-          on: {
-            'CAPTION.EDIT': {
-              // actions: 'showCaption',
-              target: 'captionActive',
-            },
+          'CAPTION.UPDATE': {
+            actions: ['updateCaption'],
           },
         },
       },
-      on: {
-        'IMAGE.REPLACE': {
-          target: 'edit',
+      editImage: {
+        on: {
+          'IMAGE.SUBMIT': {
+            target: 'submitting',
+          },
+        },
+      },
+      submitting: {
+        entry: ['clearError'],
+        invoke: {
+          src: 'validateImageUrl',
+          id: 'validateImageUrl',
+          onDone: {
+            target: 'image',
+            actions: ['assignValidUrl'],
+          },
+          onError: {
+            target: 'editImage',
+            actions: [
+              () => {
+                console.log('ERROR!!')
+              },
+              'assignImageNotValidError',
+            ],
+          },
         },
       },
     },
   },
-})
+  {
+    actions: {
+      clearError: assign({
+        errorMessage: (c) => '',
+      }),
+    },
+  },
+)

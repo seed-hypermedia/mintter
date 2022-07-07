@@ -1,8 +1,13 @@
 import {imageMachine} from '@app/editor/image/image-machine'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
 import {Image as ImageType, isImage} from '@mintter/mttast'
-import {useMachine} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
+import {FormEvent} from 'react'
 import {Transforms} from 'slate'
 import {
   ReactEditor,
@@ -11,6 +16,7 @@ import {
   useSelected,
   useSlateStatic,
 } from 'slate-react'
+import {ActorRefFrom, assign} from 'xstate'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_IMAGE = 'image'
@@ -60,60 +66,92 @@ function Image({element, attributes, children}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
 
-  const selected = useSelected()
-  const focused = useFocused()
-
-  const [state, send] = useMachine(() => imageMachine, {
+  const imgService = useInterpret(() => imageMachine, {
     actions: {
-      updateCaption: (_, event) => {
-        Transforms.setNodes(editor, {alt: event.value}, {at: path})
+      assignImageNotValidError: assign({
+        errorMessage: (c) => {
+          console.log('ASSIGN ERROR!!')
+
+          return `Image error: image url is not a valid URL: ${
+            (element as ImageType).url
+          }`
+        },
+      }),
+      assignValidUrl: (_, event) => {
+        Transforms.setNodes<ImageType>(editor, {url: event.data}, {at: path})
       },
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      assignError: () => {},
-      // showCaption: () => {},
+      updateCaption: (_, event) => {
+        Transforms.setNodes<ImageType>(editor, {alt: event.value}, {at: path})
+      },
     },
     guards: {
-      isImageURL: () => element.url,
+      hasImageUrl: () => !!(element as ImageType).url,
+    },
+    services: {
+      validateImageUrl: (_, event) => {
+        console.log('SERVICE CALL', event)
+
+        return isImgUrl(event.value)
+      },
     },
   })
 
-  return state.matches('idle') ? (
+  const [state] = useActor(imgService)
+
+  console.log('STATE', state.value, state.context)
+
+  return (
     <Box {...attributes}>
       {children}
-      <ImgWrapper contentEditable={false}>
-        <Img
-          css={{
-            boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
-          }}
-          src={(element as ImageType).url}
-        />
-      </ImgWrapper>
-
-      <Box
-        as="form"
-        onClick={() => {
-          if (state.matches('idle.captionInactive')) {
-            send({type: 'CAPTION.EDIT'})
-          }
-        }}
-        onBlur={() => send({type: 'CAPTION.BLUR'})}
-        onSubmit={(e) => {
-          console.log('SUBMIT!', e)
-          e.preventDefault()
-          send({type: 'CAPTION.BLUR'})
-        }}
-      >
+      {state.matches('init') ? (
         <Box
-          as="input"
           css={{
-            display: 'block',
-            width: '$full',
-            border: 'none',
-            background: 'transparent',
-            color: '$base-text-high',
+            padding: '$5',
+            borderRadius: '$2',
+            background: '$base-component-bg-normal',
           }}
-          onBlur={() => send({type: 'CAPTION.BLUR'})}
-          disabled={state.matches('idle.captionInactive')}
+        >
+          <Text color="muted" size="3">
+            Loading image...
+          </Text>
+        </Box>
+      ) : null}
+      {state.matches('image') ? (
+        <ImageComponent service={imgService} element={element} />
+      ) : null}
+      {state.matches('editImage') ? (
+        <ImageForm service={imgService} element={element} />
+      ) : null}
+    </Box>
+  )
+}
+
+type InnerImageProps = {
+  service: ActorRefFrom<typeof imageMachine>
+  element: ImageType
+}
+
+function ImageComponent({service, element}: InnerImageProps) {
+  let [, send] = useActor(service)
+  // const editor = useSlateStatic()
+  const selected = useSelected()
+  const focused = useFocused()
+
+  return (
+    <Box>
+      <Img
+        css={{
+          boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
+        }}
+        src={(element as ImageType).url}
+      />
+      <Box>
+        <TextField
+          textarea
+          size={1}
+          rows={1}
+          status="muted"
+          placeholder="Media Caption"
           value={element.alt}
           onChange={(e) =>
             send({type: 'CAPTION.UPDATE', value: e.target.value})
@@ -121,18 +159,85 @@ function Image({element, attributes, children}: RenderElementProps) {
         />
       </Box>
     </Box>
-  ) : (
-    <Box {...attributes}>
-      {children}
-      <ImgWrapper
+  )
+}
+
+function ImageForm({service, element}: InnerImageProps) {
+  const [state, send] = useActor(service)
+  const selected = useSelected()
+  const focused = useFocused()
+
+  function submitImage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    let formData = new FormData(event.currentTarget)
+    let value: string = formData.get('url')?.toString() || ''
+    send({type: 'IMAGE.SUBMIT', value})
+  }
+
+  return (
+    <Box
+      css={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$3',
+      }}
+    >
+      <Box
         contentEditable={false}
         css={{
+          backgroundColor: '$base-component-bg-normal',
           boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
           padding: '$5',
+          display: 'flex',
+          alignItems: 'center',
+          '&:hover': {
+            backgroundColor: '$base-component-bg-hover',
+          },
         }}
       >
-        add image here
-      </ImgWrapper>
+        <Box
+          css={{
+            flex: 'none',
+            marginRight: '$5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name="Image" size="2" />
+        </Box>
+        <Box
+          as="form"
+          css={{
+            width: '$full',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$4',
+          }}
+          onSubmit={submitImage}
+        >
+          <TextField placeholder="Add an Image URL" name="url" />
+          <Button type="submit">Save</Button>
+        </Box>
+      </Box>
+      {state.context.errorMessage ? (
+        <Text color="danger" size={1} css={{userSelect: 'none'}}>
+          {state.context.errorMessage}
+        </Text>
+      ) : null}
     </Box>
   )
+}
+
+function isImgUrl(url: string): Promise<string | undefined> {
+  return fetch(url, {method: 'HEAD'}).then((res) => {
+    if (!res.ok) {
+      console.log('RES:', res)
+      throw new Error(`Error! status: ${res.status}`)
+    }
+    return res.headers.get('Content-Type')?.startsWith('image')
+      ? url
+      : undefined
+  })
 }
