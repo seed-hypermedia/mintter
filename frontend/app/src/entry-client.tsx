@@ -1,10 +1,10 @@
-import { onUpdaterEvent } from '@tauri-apps/api/updater'
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { ReactQueryDevtools } from 'react-query/devtools'
-import { attachConsole, debug } from 'tauri-plugin-log-api'
-import { App } from './app'
-import { AppProviders } from './app-providers'
+import {onUpdaterEvent} from '@tauri-apps/api/updater'
+import {StrictMode} from 'react'
+import {createRoot} from 'react-dom/client'
+import {ReactQueryDevtools} from 'react-query/devtools'
+import {attachConsole, debug} from 'tauri-plugin-log-api'
+import {App} from './app'
+import {AppProviders} from './app-providers'
 
 var container = document.getElementById('root')
 var root = createRoot(container!)
