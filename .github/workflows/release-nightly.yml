@@ -95,6 +95,7 @@ jobs:
       - uses: JonasKruckenberg/tauri-build@v1.0.3
         id: tauri_build
         env:
+          VERSION: ${{ steps.current_time.outputs.formattedTime }}
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           ENABLE_CODE_SIGNING: "${{ secrets.APPLE_CERTIFICATE }}"
           APPLE_API_ISSUER: "${{ secrets.APPLE_API_ISSUER }}"
