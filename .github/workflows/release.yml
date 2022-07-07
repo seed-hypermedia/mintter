@@ -103,6 +103,7 @@ jobs:
           configPath: release.tauri.conf.json
           projectPath: ./desktop/app
           target: ${{ matrix.config.rust_target }}
+          debug: true
           args: --verbose
       - uses: actions/upload-artifact@v3
         with:
