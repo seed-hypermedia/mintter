@@ -44,7 +44,7 @@ jobs:
           target: ${{ matrix.config.rust_target }}
       - uses: Swatinem/rust-cache@v1
         with:
-          sharedKey: ${{ matrix.config.rust_target }}
+          key: ${{ matrix.config.rust_target }}
       - name: "Setup NodeJS"
         uses: actions/setup-node@v3
         with:
