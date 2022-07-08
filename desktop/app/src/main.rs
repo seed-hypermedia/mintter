@@ -6,7 +6,7 @@
 
 mod daemon;
 mod error;
-mod exts;
+// mod exts;
 mod menu;
 mod system_tray;
 mod window;
@@ -61,7 +61,7 @@ fn main() {
     .plugin(StorePluginBuilder::default().build())
     .plugin(daemon::init())
     .plugin(window::init())
-    .plugin(exts::init())
+    // .plugin(exts::init())
     .menu(menu::get_menu())
     .on_menu_event(menu::event_handler)
     .system_tray(system_tray::get_tray())
