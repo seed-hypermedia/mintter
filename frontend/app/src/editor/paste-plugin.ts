@@ -97,6 +97,7 @@ export function createPlainTextPastePlugin(): EditorPlugin {
             Transforms.insertNodes(editor, fragment.children, {
               at: parentPath,
             })
+            return
           } else {
             error('Paste Plugin: No block found above', editor.selection)
           }
