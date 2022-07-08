@@ -114,9 +114,8 @@ export function BlockTools({element}: BlockToolsProps) {
       css={{
         opacity: 0,
         userSelect: 'none',
-        // pointerEvents: 'none',
         [`[data-hover-block="${element.id}"] &`]: {
-          opacity: hoverState.matches('active') ? 1 : 0,
+          opacity: 1,
           pointerEvents: 'all',
         },
         '&:hover': {
