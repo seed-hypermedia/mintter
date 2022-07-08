@@ -3,7 +3,6 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -40,6 +39,85 @@ import type {EditorPlugin} from '../types'
 import {getEditorBlock, isCollapsed, isMarkActive} from '../utils'
 
 export const ELEMENT_LINK = 'link'
+
+export const createLinkPlugin = (): EditorPlugin => ({
+  name: ELEMENT_LINK,
+  renderElement:
+    () =>
+    ({children, attributes, element}) => {
+      if (isLink(element)) {
+        return (
+          <Link attributes={attributes} element={element}>
+            {children}
+          </Link>
+        )
+      }
+    },
+  onKeyDown(editor) {
+    return (event) => {
+      const {selection} = editor
+
+      // Default left/right behavior is unit:'character'.
+      // This fails to distinguish between two cursor positions, such as
+      // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
+      // Here we modify the behavior to unit:'offset'.
+      // This lets the user step into and out of the inline without stepping over characters.
+      // You may wish to customize this further to only use unit:'offset' in specific cases.
+      if (selection && Range.isCollapsed(selection)) {
+        const {nativeEvent} = event
+        if (isKeyHotkey('left', nativeEvent)) {
+          event.preventDefault()
+          Transforms.move(editor, {unit: 'offset', reverse: true})
+          return
+        }
+        if (isKeyHotkey('right', nativeEvent)) {
+          event.preventDefault()
+          Transforms.move(editor, {unit: 'offset'})
+          return
+        }
+      }
+    }
+  },
+  configureEditor(editor) {
+    /**
+     * - when should I create a link:
+     *   - paste a link text format
+     *   - write a link text
+     *   - by selecting and interacting with the toolbar (not in here)
+     */
+    const {isInline, insertText, insertData} = editor
+
+    editor.isInline = (element) => isLink(element) || isInline(element)
+
+    editor.insertText = (text: string) => {
+      if (text && isUrl(text)) {
+        wrapLink(editor, text)
+      } else {
+        insertText(text)
+      }
+    }
+
+    editor.insertData = (data: DataTransfer) => {
+      const text = data.getData('text/plain')
+      if (text) {
+        if (isMintterLink(text)) {
+          if (hasBlockId(text)) {
+            wrapMintterLink(editor, text)
+          } else {
+            // TODO: add the document title to this link
+            wrapLink(editor, text)
+          }
+        } else if (isUrl(text)) {
+          wrapLink(editor, text)
+        }
+      } else {
+        insertData(data)
+      }
+    }
+
+    return editor
+  },
+})
 
 const StyledLink = styled('span', {
   textDecoration: 'underline',
@@ -123,84 +201,6 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
 export const Link = forwardRef(renderLink)
 
 Link.displayName = 'Link'
-
-export const createLinkPlugin = (): EditorPlugin => ({
-  name: ELEMENT_LINK,
-  renderElement:
-    () =>
-    ({children, attributes, element}) => {
-      if (isLink(element)) {
-        return (
-          <Link attributes={attributes} element={element}>
-            {children}
-          </Link>
-        )
-      }
-    },
-  onKeyDown(editor) {
-    return (event) => {
-      const {selection} = editor
-
-      // Default left/right behavior is unit:'character'.
-      // This fails to distinguish between two cursor positions, such as
-      // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
-      // Here we modify the behavior to unit:'offset'.
-      // This lets the user step into and out of the inline without stepping over characters.
-      // You may wish to customize this further to only use unit:'offset' in specific cases.
-      if (selection && Range.isCollapsed(selection)) {
-        const {nativeEvent} = event
-        if (isKeyHotkey('left', nativeEvent)) {
-          event.preventDefault()
-          Transforms.move(editor, {unit: 'offset', reverse: true})
-          return
-        }
-        if (isKeyHotkey('right', nativeEvent)) {
-          event.preventDefault()
-          Transforms.move(editor, {unit: 'offset'})
-          return
-        }
-      }
-    }
-  },
-  configureEditor(editor) {
-    /**
-     * - when should I create a link:
-     *   - paste a link text format
-     *   - write a link text
-     *   - by selecting and interacting with the toolbar (not in here)
-     */
-    const {isInline, insertText, insertData} = editor
-
-    editor.isInline = (element) => isLink(element) || isInline(element)
-
-    editor.insertText = (text: string) => {
-      if (text && isUrl(text)) {
-        wrapLink(editor, text)
-      } else {
-        insertText(text)
-      }
-    }
-
-    editor.insertData = (data: DataTransfer) => {
-      const text = data.getData('text/plain')
-
-      if (text && isMintterLink(text)) {
-        if (hasBlockId(text)) {
-          wrapMintterLink(editor, text)
-        } else {
-          // TODO: add the document title to this link
-          wrapLink(editor, text)
-        }
-      } else if (text && isUrl(text)) {
-        wrapLink(editor, text)
-      } else {
-        insertData(data)
-      }
-    }
-
-    return editor
-  },
-})
 
 export interface InsertLinkOptions {
   url: string
@@ -305,13 +305,6 @@ export function wrapLink(
   }
 }
 
-export function isValidUrl(entry: string): boolean {
-  const urlRegex = new RegExp(
-    /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w\-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[.!/\\\w]*))?)/,
-  )
-  return urlRegex.test(entry)
-}
-
 function isMintterLink(text: string) {
   return text.startsWith(MINTTER_LINK_PREFIX)
 }
@@ -326,14 +319,11 @@ function wrapMintterLink(editor: Editor, url: string) {
   const {selection} = editor
 
   if (isCollapsed(selection!)) {
-    debug('wrapMintterLink: COLLAPSED', selection)
     const newEmbed: Embed = embed({url}, [text('')])
     Transforms.insertNodes(editor, newEmbed)
     Transforms.move(editor, {distance: 1, unit: 'offset'})
   } else {
-    debug('wrapMintterLink: NOT COLLAPSED', selection)
     wrapLink(editor, url)
-    // Transforms.move(editor, {distance: 1, unit: 'offset'})
   }
 }
 
@@ -364,33 +354,35 @@ export function ToolbarLink({
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>
-        <Button
-          variant="ghost"
-          size="0"
-          color="muted"
-          data-testid="toolbar-link-button"
-          css={
-            markActive
-              ? {
-                  backgroundColor: '$background-opposite',
-                  color: '$base-text-hight',
-                  '&:hover': {
-                    backgroundColor: '$background-opposite !important',
-                    color: '$base-text-hight !important',
-                  },
-                }
-              : {}
-          }
-          onClick={() => {
-            setOpen((v) => {
-              sendStoreFocus(!v)
-              return !v
-            })
-            resetSelection()
-          }}
-        >
-          <Icon size="2" name="Link" />
-        </Button>
+        <Tooltip content={<span>Link</span>}>
+          <Button
+            variant="ghost"
+            size="0"
+            color="muted"
+            data-testid="toolbar-link-button"
+            css={
+              markActive
+                ? {
+                    backgroundColor: '$background-opposite',
+                    color: '$base-text-hight',
+                    '&:hover': {
+                      backgroundColor: '$background-opposite !important',
+                      color: '$base-text-hight !important',
+                    },
+                  }
+                : {}
+            }
+            onClick={() => {
+              setOpen((v) => {
+                sendStoreFocus(!v)
+                return !v
+              })
+              resetSelection()
+            }}
+          >
+            <Icon size="2" name="Link" />
+          </Button>
+        </Tooltip>
       </PopoverPrimitive.Trigger>
 
       <PopoverPrimitive.Content>

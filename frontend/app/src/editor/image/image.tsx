@@ -1,5 +1,6 @@
 import {imageMachine} from '@app/editor/image/image-machine'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {isValidUrl} from '@app/editor/utils'
 import {styled} from '@app/stitches.config'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
@@ -62,10 +63,9 @@ const Img = styled('img', {
 function Image({element, attributes, children}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-  debug('IMAGE HERE')
   const imgService = useInterpret(() => imageMachine, {
     actions: {
-      assignImageNotValidError: assign({
+      assignError: assign({
         errorMessage: (c) => {
           console.log('ASSIGN ERROR!!')
 
@@ -98,10 +98,8 @@ function Image({element, attributes, children}: RenderElementProps) {
       hasImageUrl: () => !!(element as ImageType).url,
     },
     services: {
-      validateImageUrl: (_, event) => {
-        console.log('SERVICE CALL', event)
-
-        return isImgUrl(event.value)
+      validateUrlService: (_, event) => {
+        return isValidUrl(event.value)
       },
     },
   })
@@ -125,10 +123,10 @@ function Image({element, attributes, children}: RenderElementProps) {
         </Box>
       ) : null}
       {state.matches('image') ? (
-        <ImageComponent service={imgService} element={element} />
+        <ImageComponent service={imgService} element={element as ImageType} />
       ) : null}
       {state.matches('editImage') ? (
-        <ImageForm service={imgService} element={element} />
+        <ImageForm service={imgService} element={element as ImageType} />
       ) : null}
     </Box>
   )
@@ -144,8 +142,6 @@ function ImageComponent({service, element}: InnerImageProps) {
   const editor = useSlateStatic()
   const selected = useSelected()
   const focused = useFocused()
-
-  debug('IMAGE ALT', editor.mode, element.alt)
 
   return (
     <Box>
@@ -240,15 +236,4 @@ function ImageForm({service, element}: InnerImageProps) {
       ) : null}
     </Box>
   )
-}
-
-function isImgUrl(url: string): Promise<string | undefined> {
-  return new Promise((resolve, reject) => {
-    try {
-      let imageUrl = new URL(url)
-      resolve(imageUrl.toString())
-    } catch (e) {
-      reject(`IMAGE: Error: Invalid Image Url: ${url}`)
-    }
-  })
 }

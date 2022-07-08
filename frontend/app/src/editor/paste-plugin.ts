@@ -81,6 +81,7 @@ export function createPlainTextPastePlugin(): EditorPlugin {
         // }
 
         const html = transfer.getData('text/html')
+
         if (html) {
           const hast = processor.runSync(processor.parse(html))
           const mttast = toMttast(hast)
