@@ -47,7 +47,7 @@ func TestListObjects(t *testing.T) {
 	list, err := c.ListObjects(ctx, &p2p.ListObjectsRequest{})
 	require.NoError(t, err)
 
-	require.Len(t, list.Objects, 2)
+	require.Len(t, list.Objects, 3)
 }
 
 func TestSync(t *testing.T) {
