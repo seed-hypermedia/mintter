@@ -10,6 +10,7 @@ use tauri::{
 };
 use tokio::sync::mpsc::{self, Sender};
 
+#[tracing::instrument]
 pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::State<Flags>) {
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
@@ -48,6 +49,7 @@ pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::S
   *lock = Some(tx);
 }
 
+#[tracing::instrument]
 pub fn stop_daemon(connection: tauri::State<'_, Connection>) {
   let mut lock = connection.0.lock().unwrap();
   *lock = None;
