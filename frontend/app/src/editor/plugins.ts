@@ -37,8 +37,8 @@ export const plugins: EditorPlugin[] = [
 
   createLinkPlugin(),
   createEmbedPlugin(),
-  createImagePlugin(),
   createVideoPlugin(),
+  createImagePlugin(),
 
   createStaticParagraphPlugin(),
   createParagraphPlugin(),

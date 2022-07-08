@@ -75,6 +75,10 @@ export function BlockWrapper({
 
   return mode == EditorMode.Draft ? (
     <Box
+      {...attributes}
+      onMouseEnter={() => {
+        hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+      }}
       css={{
         width: '$full',
         position: 'relative',
@@ -82,10 +86,6 @@ export function BlockWrapper({
         userSelect: 'none',
         paddingTop: '$4',
       }}
-      onMouseEnter={() => {
-        hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
-      }}
-      {...attributes}
     >
       <Box
         as="span"
@@ -112,6 +112,7 @@ export function BlockWrapper({
     </Box>
   ) : (
     <Box
+      {...attributes}
       css={{
         width: '$full',
         position: 'relative',
