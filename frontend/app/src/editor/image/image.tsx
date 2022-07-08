@@ -1,5 +1,7 @@
 import {imageMachine} from '@app/editor/image/image-machine'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {styled} from '@app/stitches.config'
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -57,15 +59,10 @@ const Img = styled('img', {
   width: '$full',
 })
 
-const ImgWrapper = styled(Box, {
-  // position: 'absolute',
-  userSelect: 'none',
-})
-
 function Image({element, attributes, children}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
-
+  debug('IMAGE HERE')
   const imgService = useInterpret(() => imageMachine, {
     actions: {
       assignImageNotValidError: assign({
@@ -83,6 +80,19 @@ function Image({element, attributes, children}: RenderElementProps) {
       updateCaption: (_, event) => {
         Transforms.setNodes<ImageType>(editor, {alt: event.value}, {at: path})
       },
+      assignCaptionVisibility: assign({
+        captionVisibility: () => {
+          debug(
+            '\n\n=== captionVisibility',
+            editor.mode == EditorMode.Draft
+              ? true
+              : !!(element as ImageType).alt,
+          )
+          return editor.mode == EditorMode.Draft
+            ? true
+            : !!(element as ImageType).alt
+        },
+      }),
     },
     guards: {
       hasImageUrl: () => !!(element as ImageType).url,
@@ -97,8 +107,6 @@ function Image({element, attributes, children}: RenderElementProps) {
   })
 
   const [state] = useActor(imgService)
-
-  console.log('STATE', state.value, state.context)
 
   return (
     <Box {...attributes}>
@@ -132,10 +140,12 @@ type InnerImageProps = {
 }
 
 function ImageComponent({service, element}: InnerImageProps) {
-  let [, send] = useActor(service)
-  // const editor = useSlateStatic()
+  let [state, send] = useActor(service)
+  const editor = useSlateStatic()
   const selected = useSelected()
   const focused = useFocused()
+
+  debug('IMAGE ALT', editor.mode, element.alt)
 
   return (
     <Box>
@@ -145,19 +155,21 @@ function ImageComponent({service, element}: InnerImageProps) {
         }}
         src={(element as ImageType).url}
       />
-      <Box>
-        <TextField
-          textarea
-          size={1}
-          rows={1}
-          status="muted"
-          placeholder="Media Caption"
-          value={element.alt}
-          onChange={(e) =>
-            send({type: 'CAPTION.UPDATE', value: e.target.value})
-          }
-        />
-      </Box>
+      {state.context.captionVisibility ? (
+        <Box css={{marginHorizontal: '-$3', marginTop: '$1'}}>
+          <TextField
+            textarea
+            size={1}
+            rows={1}
+            status="muted"
+            placeholder="Media Caption"
+            value={element.alt}
+            onChange={(e) =>
+              send({type: 'CAPTION.UPDATE', value: e.target.value})
+            }
+          />
+        </Box>
+      ) : null}
     </Box>
   )
 }

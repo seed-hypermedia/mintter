@@ -2,7 +2,7 @@ import {assign, createMachine} from 'xstate'
 
 type ImageContext = {
   errorMessage: string
-  url: string
+  captionVisibility: boolean
 }
 
 type ImageEvent =
@@ -12,16 +12,26 @@ type ImageEvent =
   | {type: 'REPORT.IMAGE.INVALID'}
   | {type: 'CAPTION.UPDATE'; value: string}
 
+type ImageServices = {
+  validateImageUrl: {
+    data: string | undefined
+  }
+}
+
 export const imageMachine = createMachine(
   {
     tsTypes: {} as import('./image-machine.typegen').Typegen0,
-    schema: {context: {} as ImageContext, events: {} as ImageEvent},
+    schema: {
+      context: {} as ImageContext,
+      events: {} as ImageEvent,
+      services: {} as ImageServices,
+    },
     id: 'Image Element',
     description:
       'Context: caption, imageURL (the image imput should be uncontrolled)',
     context: {
       errorMessage: '',
-      url: '',
+      captionVisibility: false,
     },
     initial: 'init',
     states: {
@@ -37,6 +47,7 @@ export const imageMachine = createMachine(
         ],
       },
       image: {
+        entry: ['assignCaptionVisibility'],
         on: {
           'IMAGE.REPLACE': {
             target: 'editImage',
@@ -60,7 +71,7 @@ export const imageMachine = createMachine(
           id: 'validateImageUrl',
           onDone: {
             target: 'image',
-            actions: ['assignValidUrl'],
+            actions: ['assignValidUrl', 'enableCaption'],
           },
           onError: {
             target: 'editImage',
@@ -79,6 +90,9 @@ export const imageMachine = createMachine(
     actions: {
       clearError: assign({
         errorMessage: (c) => '',
+      }),
+      enableCaption: assign({
+        captionVisibility: (c) => true,
       }),
     },
   },
