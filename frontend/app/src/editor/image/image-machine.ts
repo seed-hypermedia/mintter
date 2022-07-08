@@ -13,7 +13,7 @@ type ImageEvent =
   | {type: 'CAPTION.UPDATE'; value: string}
 
 type ImageServices = {
-  validateImageUrl: {
+  validateUrlService: {
     data: string | undefined
   }
 }
@@ -67,20 +67,15 @@ export const imageMachine = createMachine(
       submitting: {
         entry: ['clearError'],
         invoke: {
-          src: 'validateImageUrl',
-          id: 'validateImageUrl',
+          src: 'validateUrlService',
+          id: 'validateUrlService',
           onDone: {
             target: 'image',
             actions: ['assignValidUrl', 'enableCaption'],
           },
           onError: {
             target: 'editImage',
-            actions: [
-              () => {
-                console.log('ERROR!!')
-              },
-              'assignImageNotValidError',
-            ],
+            actions: ['assignError'],
           },
         },
       },

@@ -1721,6 +1721,7 @@ __metadata:
     hast-util-sanitize: 4.0.0
     is-hotkey: 0.2.0
     is-url: 1.2.4
+    js-video-url-parser: ^0.5.1
     jsdom: 20.0.0
     long: 5.2.0
     nanoid: 4.0.0
@@ -8179,6 +8180,13 @@ __metadata:
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
   checksum: 8a95213a5a77deb6cbe94d86340e8d9ace2b93bc367790b260101d2f36a2eaf4e4e22d9fa9cf459b38af3a32fb4190e638024cf82ec95ef708680e405ea7cc78
+  languageName: node
+  linkType: hard
+
+"js-video-url-parser@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "js-video-url-parser@npm:0.5.1"
+  checksum: dc8f32fee85f9fd6fbc7ad865eef668aeed2806159b4cc867c4d7ad64e90c20606a264f82f9cf0cddf785f45d74e10255e8f597cd75059620ec18854ffd3a624
   languageName: node
   linkType: hard
 

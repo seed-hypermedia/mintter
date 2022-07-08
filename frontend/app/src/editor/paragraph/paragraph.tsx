@@ -134,12 +134,6 @@ function Paragraph({
         },
       }}
       data-parent-type={(parentNode as FlowContent)?.type}
-      onMouseEnter={() =>
-        hoverService.send({
-          type: 'MOUSE_ENTER',
-          blockId: (parentNode as FlowContent).id,
-        })
-      }
       {...attributes}
     >
       {children}

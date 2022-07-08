@@ -41,8 +41,6 @@ export function createMintterChangesPlugin(): EditorPlugin {
               addOperation(editor, 'moveBlock', op.node)
               addOperation(editor, 'replaceBlock', op.node)
             } else {
-              debug('insert node', op)
-
               /**
                * TODO:
                * this code above breaks the editor because it does not find the node at the correct path
@@ -50,7 +48,6 @@ export function createMintterChangesPlugin(): EditorPlugin {
                */
               // const [node] =
               //   Editor.above(editor, {at: op.path, match: isFlowContent}) || []
-
               // if (node) {
               //   addOperation(editor, 'replaceBlock', node)
               // }
@@ -88,7 +85,6 @@ export function createMintterChangesPlugin(): EditorPlugin {
             }
             break
           case 'move_node':
-            debug('move node', op)
             moveNode(editor, op)
             break
           case 'set_selection':

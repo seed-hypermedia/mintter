@@ -9,6 +9,7 @@ import {
   Statement,
   statement,
 } from '@mintter/mttast'
+import videoParser from 'js-video-url-parser'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -241,5 +242,72 @@ export function getEditorBlock(
     } else {
       return isFlowContent(n)
     }
+  }
+}
+
+export function isValidUrl(url: string): Promise<string | undefined> {
+  return new Promise((resolve, reject) => {
+    try {
+      let imageUrl = new URL(url)
+      resolve(imageUrl.toString())
+    } catch (e) {
+      reject(`IMAGE: Error: Invalid Image Url: ${url}`)
+    }
+  })
+}
+
+// const twitterRegex =
+//   /^https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(?<id>\d+)/
+
+// export const parseTwitterUrl = (url: string): EmbedUrlData | undefined => {
+//   if (url.match(twitterRegex)) {
+//     return {
+//       provider: 'twitter',
+//       id: twitterRegex.exec(url)?.groups?.id,
+//       url,
+//     }
+//   }
+// }
+
+export type EmbedUrlData = {
+  url?: string
+  provider?: 'youtube' | 'vimeo'
+  id?: string
+}
+
+export const parseEmbedUrl = (url: string): EmbedUrlData => {
+  // const twitterData = parseTwitterUrl(url)
+  // if (twitterData) return twitterData
+
+  const videoData = parseVideoUrl(url)
+  if (videoData) return videoData
+
+  return {}
+}
+
+const YOUTUBE_PREFIX = 'https://www.youtube.com/embed/'
+const VIMEO_PREFIX = 'https://player.vimeo.com/video/'
+// const DAILYMOTION_PREFIX = 'https://www.dailymotion.com/embed/video/';
+// const YOUKU_PREFIX = 'https://player.youku.com/embed/';
+// const COUB_PREFIX = 'https://coub.com/embed/';
+
+export const parseVideoUrl = (url: string) => {
+  const videoData = videoParser.parse(url)
+  if (videoData?.provider && videoData.id) {
+    const {id, provider} = videoData
+
+    const providerUrls: Record<string, string> = {
+      youtube: `${YOUTUBE_PREFIX}${id}`,
+      vimeo: `${VIMEO_PREFIX}${id}`,
+      // dailymotion: `${DAILYMOTION_PREFIX}${id}`,
+      // youku: `${YOUKU_PREFIX}${id}`,
+      // coub: `${COUB_PREFIX}${id}`,
+    }
+
+    return {
+      id,
+      provider,
+      url: providerUrls[provider],
+    } as EmbedUrlData
   }
 }
