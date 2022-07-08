@@ -1,7 +1,4 @@
 {
-  "package": {
-    "productName": "Mintter"
-  },
   "build": {
     "distDir": "../../frontend/app/dist/client",
     "devPath": "http://localhost:3000",
@@ -11,36 +8,11 @@
   },
   "tauri": {
     "bundle": {
-      "active": true,
       "targets": "all",
-      "identifier": "com.mintter.dev",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [],
-      "externalBin": ["../../plz-out/bin/backend/mintterd"],
-      "copyright": "",
-      "category": "DeveloperTool",
-      "shortDescription": "",
-      "longDescription": "",
-      "deb": {
-        "depends": []
-      },
       "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "",
         "exceptionDomain": "localhost",
         "signingIdentity": "9903730CF31AB02620CE2478FBC019ECAF50D179",
         "entitlements": "macOS.entitlements"
-      },
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
       }
     },
     "updater": {
@@ -48,61 +20,6 @@
       "dialog": true,
       "endpoints": ["https://mintterreleases.s3.amazonaws.com/manifest.json"],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU0QzY0RUJBQjRDNzQyREEKUldUYVFzZTB1azdHVklXUkN2R2QrbmppTUdhTXFoWEtDcFhEcVdrKzZjanRaSUVHemVNWlFyNWgK"
-    },
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "execute": true,
-        "open": true
-      },
-      "window": {
-        "all": false,
-        "startDragging": true,
-        "maximize": true,
-        "unmaximize": true
-      }
-    },
-    "windows": [
-      {
-        "title": "Mintter",
-        "width": 1000,
-        "height": 800,
-        "minWidth": 500,
-        "minHeight": 500,
-        "resizable": true,
-        "fullscreen": false
-      }
-    ],
-    "security": {
-      "freezePrototype": false,
-      "devCsp": {
-        "default-src": "'self'",
-        "style-src": "'self' 'unsafe-inline'",
-        "connect-src": "http://localhost:55001",
-        "image-src": "https://*",
-        "media-src": "https://*",
-        "frame-src": "https://*"
-      },
-      "csp": {
-        "default-src": "'self'",
-        "style-src": "'self' 'unsafe-inline'",
-        "connect-src": "http://localhost:55001",
-        "image-src": "https://*",
-        "media-src": "https://*",
-        "frame-src": "https://*"
-      }
-    },
-    "systemTray": {
-      "iconPath": "./icons/tray_icon_with_transparency.png",
-      "iconAsTemplate": true
-    },
-    "cli": {
-      "args": [
-        {
-          "name": "daemon-flags",
-          "takesValue": true
-        }
-      ]
     }
   }
 }

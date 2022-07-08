@@ -96,9 +96,7 @@ function StaticParagraph({
         userSelect: 'text',
         backgroundColor: 'transparent',
         [`[data-hover-block="${heading?.node.id}"] &`]: {
-          backgroundColor: hoverState.matches('active')
-            ? '$primary-component-bg-active'
-            : 'transparent',
+          backgroundColor: '$primary-component-bg-active',
         },
       }}
       {...sizeProps}

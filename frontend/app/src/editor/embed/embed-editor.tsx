@@ -56,9 +56,7 @@ function RenderEmbedEditor(
               ? '$primary-component-bg-active'
               : 'transparent',
           [`[data-hover-block="${blockId}"] &`]: {
-            backgroundColor: hoverState.matches('active')
-              ? '$primary-component-bg-active'
-              : 'transparent',
+            backgroundColor: '$primary-component-bg-active',
           },
         }}
       >

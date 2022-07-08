@@ -296,7 +296,7 @@ export function createWalletMachine({
                   input: {id: context.id},
                 },
               )
-                .then(() => {
+                .then((response: any) => {
                   sendBack(walletModel.events['REPORT.DEFAULT.SUCCESS']())
                 })
                 .catch((err) => {

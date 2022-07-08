@@ -23,6 +23,7 @@ impl Serialize for Error {
 }
 
 #[tauri::command]
+#[tracing::instrument(skip(app_handle))]
 async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
   for (_, win) in app_handle.windows() {
     let win_url = win.url()?;

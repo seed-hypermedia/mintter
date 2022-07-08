@@ -16,7 +16,7 @@ const routesToPrerender = ['/']
     const appHtml = await render(url, context)
 
     const filePath = `dist/static${url === '/' ? '/index' : url}.html`
-    fs.writeFileSync(path.resolve(filePath), html)
+    fs.writeFileSync(path.resolve(filePath), appHtml)
   }
   process.exit(0)
 })()
