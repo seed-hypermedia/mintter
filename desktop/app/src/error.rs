@@ -5,8 +5,6 @@ pub enum Error {
   #[error("JSON: {0}")]
   Json(#[from] serde_json::Error),
   #[error(transparent)]
-  Other(#[from] anyhow::Error),
-  #[error(transparent)]
   Utf8(#[from] std::string::FromUtf8Error),
   #[error(transparent)]
   Io(#[from] std::io::Error),
@@ -21,13 +19,15 @@ pub enum Error {
   #[error("Malformed specifier")]
   InvalidSpecifier,
   #[error(transparent)]
-  Version(#[from] semver::Error),
-  #[error("WASM Trap: {0}")]
-  Trap(#[from] wasmtime::Trap),
-  #[error(transparent)]
   Tauri(#[from] tauri::Error),
-  #[error("Worker got terminated")]
-  Aborted(#[from] futures_util::future::Aborted),
+  // #[error(transparent)]
+  // Other(#[from] anyhow::Error),
+  // #[error(transparent)]
+  // Version(#[from] semver::Error),
+  // #[error("WASM Trap: {0}")]
+  // Trap(#[from] wasmtime::Trap),
+  // #[error("Worker got terminated")]
+  // Aborted(#[from] futures_util::future::Aborted),
 }
 
 impl Serialize for Error {
