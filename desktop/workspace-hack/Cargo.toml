@@ -26,7 +26,6 @@ rand = { version = "0.8", features = ["alloc", "getrandom", "libc", "rand_chacha
 semver = { version = "1", features = ["serde", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
 tao = { version = "0.12", default-features = false, features = ["dirs-next", "libappindicator", "serde", "tray"] }
-tauri = { version = "1", features = ["clap", "cli", "compression", "custom-protocol", "objc-exception", "open", "os_pipe", "process-command-api", "regex", "shared_child", "shell-execute", "shell-open", "shell-open-api", "system-tray", "tauri-runtime-wry", "window-maximize", "window-start-dragging", "window-unmaximize", "wry"] }
 tauri-runtime = { version = "0.10", default-features = false, features = ["system-tray"] }
 tauri-runtime-wry = { version = "0.10", default-features = false, features = ["objc-exception", "system-tray"] }
 tauri-utils = { version = "1", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
@@ -51,7 +50,49 @@ semver = { version = "1", features = ["serde", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
 syn = { version = "1", features = ["clone-impls", "derive", "extra-traits", "fold", "full", "parsing", "printing", "proc-macro", "quote", "visit", "visit-mut"] }
 tauri-codegen = { version = "1", default-features = false, features = ["brotli", "compression", "regex", "shell-scope"] }
-tauri-macros = { version = "1", default-features = false, features = ["compression", "custom-protocol", "shell-scope"] }
 tauri-utils = { version = "1", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
+
+[target.x86_64-unknown-linux-gnu.dependencies]
+io-lifetimes = { version = "0.5", features = ["close", "libc", "winapi"] }
+rustix = { version = "0.33", features = ["io-lifetimes", "itoa", "once_cell", "procfs", "std"] }
+
+[target.x86_64-apple-darwin.dependencies]
+indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
+io-lifetimes = { version = "0.5", features = ["close", "libc", "winapi"] }
+libc = { version = "0.2", features = ["extra_traits", "std"] }
+rustix = { version = "0.33", features = ["io-lifetimes", "itoa", "once_cell", "procfs", "std"] }
+scopeguard = { version = "1", features = ["use_std"] }
+
+[target.x86_64-apple-darwin.build-dependencies]
+indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
+libc = { version = "0.2", features = ["extra_traits", "std"] }
+scopeguard = { version = "1", features = ["use_std"] }
+
+[target.aarch64-apple-darwin.dependencies]
+indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
+io-lifetimes = { version = "0.5", features = ["close", "libc", "winapi"] }
+libc = { version = "0.2", features = ["extra_traits", "std"] }
+rustix = { version = "0.33", features = ["io-lifetimes", "itoa", "once_cell", "procfs", "std"] }
+scopeguard = { version = "1", features = ["use_std"] }
+
+[target.aarch64-apple-darwin.build-dependencies]
+indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
+libc = { version = "0.2", features = ["extra_traits", "std"] }
+scopeguard = { version = "1", features = ["use_std"] }
+
+[target.x86_64-pc-windows-msvc.dependencies]
+num-integer = { version = "0.1", default-features = false, features = ["i128"] }
+num-traits = { version = "0.2", features = ["i128"] }
+tokio = { version = "1", default-features = false, features = ["winapi"] }
+winapi = { version = "0.3", default-features = false, features = ["basetsd", "consoleapi", "errhandlingapi", "fibersapi", "fileapi", "handleapi", "impl-default", "ioapiset", "knownfolders", "memoryapi", "minwinbase", "minwindef", "mswsock", "namedpipeapi", "ntdef", "ntstatus", "objbase", "processenv", "processthreadsapi", "profileapi", "shlobj", "std", "synchapi", "sysinfoapi", "threadpoollegacyapiset", "timezoneapi", "winbase", "wincon", "winerror", "winioctl", "winnt", "winsock2", "ws2ipdef", "ws2tcpip"] }
+windows = { version = "0.37", features = ["Win32", "Win32_Devices", "Win32_Devices_HumanInterfaceDevice", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemInformation", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WinRT", "Win32_System_WindowsProgramming", "Win32_UI", "Win32_UI_Accessibility", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Input", "Win32_UI_Input_Ime", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Input_Pointer", "Win32_UI_Input_Touch", "Win32_UI_Shell", "Win32_UI_TextServices", "Win32_UI_WindowsAndMessaging", "alloc", "implement", "windows-implement"] }
+windows-sys = { version = "0.36", features = ["Win32", "Win32_Foundation", "Win32_Networking", "Win32_Networking_WinSock", "Win32_Security", "Win32_Storage", "Win32_Storage_FileSystem", "Win32_System", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_WindowsProgramming", "Win32_UI", "Win32_UI_Shell"] }
+
+[target.x86_64-pc-windows-msvc.build-dependencies]
+num-integer = { version = "0.1", default-features = false, features = ["i128"] }
+num-traits = { version = "0.2", features = ["i128"] }
+winapi = { version = "0.3", default-features = false, features = ["basetsd", "consoleapi", "errhandlingapi", "fibersapi", "fileapi", "handleapi", "impl-default", "ioapiset", "knownfolders", "memoryapi", "minwinbase", "minwindef", "mswsock", "namedpipeapi", "ntdef", "ntstatus", "objbase", "processenv", "processthreadsapi", "profileapi", "shlobj", "std", "synchapi", "sysinfoapi", "threadpoollegacyapiset", "timezoneapi", "winbase", "wincon", "winerror", "winioctl", "winnt", "winsock2", "ws2ipdef", "ws2tcpip"] }
+windows = { version = "0.37", features = ["Win32", "Win32_Devices", "Win32_Devices_HumanInterfaceDevice", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_System", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemInformation", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WinRT", "Win32_System_WindowsProgramming", "Win32_UI", "Win32_UI_Accessibility", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Input", "Win32_UI_Input_Ime", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Input_Pointer", "Win32_UI_Input_Touch", "Win32_UI_Shell", "Win32_UI_TextServices", "Win32_UI_WindowsAndMessaging", "alloc", "implement", "windows-implement"] }
+windows-sys = { version = "0.36", features = ["Win32", "Win32_Foundation", "Win32_Networking", "Win32_Networking_WinSock", "Win32_Security", "Win32_Storage", "Win32_Storage_FileSystem", "Win32_System", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_IO", "Win32_System_LibraryLoader", "Win32_System_Pipes", "Win32_System_SystemServices", "Win32_System_WindowsProgramming", "Win32_UI", "Win32_UI_Shell"] }
 
 ### END HAKARI SECTION
