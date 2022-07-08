@@ -83,6 +83,27 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
         .build()?;
       }
     }
+    "about" => {
+      let app_handle = event.window().app_handle();
+      let package_info = app_handle.package_info();
+      let message = format!(
+        r#"
+        {}
+
+        Version: {}
+        Commit: {}
+
+        Copyright © 2003-2022 {}.
+        All rights reserved.
+      "#,
+        package_info.description,
+        package_info.version,
+        std::option_env!("GITHUB_SHA").unwrap_or("N/A"),
+        package_info.authors,
+      );
+
+      tauri::api::dialog::message(Some(event.window()), &package_info.name, message);
+    }
     id => bail!("Unhandled menu item \"{}\"", id),
   }
 
