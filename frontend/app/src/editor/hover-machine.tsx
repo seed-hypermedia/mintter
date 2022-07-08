@@ -36,6 +36,15 @@ export function createHoverService() {
           id: 'inactive',
           on: {
             mousemove: 'active',
+            MOUSE_ENTER: {
+              actions: ['updateBody'],
+            },
+            MOUSE_LEAVE: {
+              actions: ['updateBody'],
+            },
+            FROM_WINDOWS: {
+              actions: ['updateBody'],
+            },
           },
         },
         active: {
@@ -43,7 +52,10 @@ export function createHoverService() {
           states: {
             idle: {
               after: {
-                1000: '#inactive',
+                500: {
+                  target: '#inactive',
+                  actions: ['clearBlockId'],
+                },
               },
               on: {
                 mousemove: 'moving',
@@ -70,6 +82,9 @@ export function createHoverService() {
         updateBody: (_, event) => {
           var blockId = event.type == 'MOUSE_LEAVE' ? '' : event.blockId
           document.body.dataset.hoverBlock = blockId
+        },
+        clearBlockId: () => {
+          delete document.body.dataset.hoverBlock
         },
         emit: (_, event) => {
           var blockId = event.type == 'MOUSE_LEAVE' ? '' : event.blockId

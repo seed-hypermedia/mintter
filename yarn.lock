@@ -1750,7 +1750,7 @@ __metadata:
     tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=9de1279760f31bc6f71da8555336e10c412387e3"
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
     typedoc: 0.23.5
-    typedoc-plugin-markdown: 3.13.2
+    typedoc-plugin-markdown: 3.13.3
     typescript: 4.7.4
     unified: 10.1.2
     unist-builder: 3.0.0
@@ -1763,7 +1763,7 @@ __metadata:
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
     vite-tsconfig-paths: 3.5.0
-    vitest: 0.17.0
+    vitest: 0.17.1
     xstate: 4.32.1
   peerDependencies:
     typescript: 4.7.4
@@ -1800,7 +1800,7 @@ __metadata:
     unist-builder: 3.0.0
     unist-util-remove-position: 4.0.1
     unist-util-visit: 4.1.0
-    vitest: 0.17.0
+    vitest: 0.17.1
   languageName: unknown
   linkType: soft
 
@@ -12710,14 +12710,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc-plugin-markdown@npm:3.13.2":
-  version: 3.13.2
-  resolution: "typedoc-plugin-markdown@npm:3.13.2"
+"typedoc-plugin-markdown@npm:3.13.3":
+  version: 3.13.3
+  resolution: "typedoc-plugin-markdown@npm:3.13.3"
   dependencies:
     handlebars: ^4.7.7
   peerDependencies:
     typedoc: ">=0.23.0"
-  checksum: 4f3c3cd71c8c1cf582355d2fd9a34a19c689d9a646e00fe180ba53e800d6f1e335a0221ca6d68fe3a9394905a2ec78d4dfbc1d9e4e6678037ddf4b94be45a187
+  checksum: e3e738eade153fc38b557a9526f31dd30fdfbc1e5663636868c1631f28df95df1fb2d39dce711cf4b52649cc9a62866cb632b329a14467b13a9925b30179b3f3
   languageName: node
   linkType: hard
 
@@ -13396,8 +13396,8 @@ __metadata:
   linkType: hard
 
 "vite@npm:^2.9.12 || ^3.0.0-0":
-  version: 3.0.0-beta.5
-  resolution: "vite@npm:3.0.0-beta.5"
+  version: 3.0.0-beta.7
+  resolution: "vite@npm:3.0.0-beta.7"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
@@ -13423,13 +13423,13 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 93a19bae089007236813e2ee95f9fdf342b8abc76a3c39ef2fd08f2bdbe2801bfb3473c7c1812253aad04fd2bda198b5e77bf24b4fb525d72b0003ee15fb4d42
+  checksum: 04e670f1bc332d50a0b7d7a2bc3fc7b01370e2a7e1a706d27f9ed57b681558beca06a8681da45b393eeaa6725fb84457176acad4c7c7bb653167d5eea50425d8
   languageName: node
   linkType: hard
 
-"vitest@npm:0.17.0":
-  version: 0.17.0
-  resolution: "vitest@npm:0.17.0"
+"vitest@npm:0.17.1":
+  version: 0.17.1
+  resolution: "vitest@npm:0.17.1"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-subset": ^1.3.3
@@ -13459,7 +13459,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: 1f664f82551f876a2b2b30deba0f9d6d8f7e4d70cbe96debca1a810d1c8a5b68b8a446495d37c14e5e9e21d7bde13e96a6eef7c8e7c77c502e0058f59be192b4
+  checksum: eae2d024d97a46ba08f3cc7e0703a330c92dc0a6f4c7a9bc20ec8a5129bf787d8ebabd14bf31ae810897c1813e29178af59f63ec8b24b5944cfa62e225cd207c
   languageName: node
   linkType: hard
 

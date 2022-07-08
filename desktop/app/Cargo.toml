@@ -1,35 +1,41 @@
 [package]
-name = "mintter"
+authors = ["The Mintter Team"] 
+build = "build.rs" 
+default-run = "mintter" 
+description = "A publishing platform where other content creators can reuse your content keeping your authorship and royalties." 
+edition = "2021" 
+license = "" 
+name = "mintter" 
+repository = "" 
 version = "0.0.0" # don't touch! This gets overriden with the correct version by CI.
-description = "A publishing platform where other content creators can reuse your content keeping your authorship and royalties."
-authors = ["The mintter team"]
-license = ""
-repository = ""
-default-run = "mintter"
-edition = "2021"
-build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.0.3", features = [] }
+tauri-build = {version = "1.0.3", features = [] }
 
 [dependencies]
-tauri = { version = "1.0.3", features = ["cli", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
-tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", rev = "9de1279760f31bc6f71da8555336e10c412387e3", features = ["colored"] }
-tauri-plugin-store = { git = "https://github.com/tauri-apps/tauri-plugin-store", rev = "5726952177b88d1d10063cdf8e7506bac84772cf" }
-tokio = { version = "1.19.2", features = ["full"] }
-serde = { version = "1.0.138", features = ["derive"] }
-serde_json = "1.0.82"
-log = "0.4.17"
 anyhow = "1.0.58"
+# async-trait = "0.1.56"
 env_logger = "0.9.0"
-workspace-hack = { version = "0.1", path = "../workspace-hack" }
-url = "2.2.2"
+# futures-util = "0.3.21"
+log = "0.4.17"
+# semver = {version = "1.0.12", features = ["serde"] }
+serde = {version = "1.0.138", features = ["derive"] }
+serde_json = "1.0.82"
+tauri = {version = "1.0.3", features = ["cli", "dialog-message", "shell-execute", "shell-open", "system-tray", "window-maximize", "window-start-dragging", "window-unmaximize"] }
+tauri-plugin-log = {git = "https://github.com/tauri-apps/tauri-plugin-log", rev = "9de1279760f31bc6f71da8555336e10c412387e3", features = ["colored"] }
+tauri-plugin-store = {git = "https://github.com/tauri-apps/tauri-plugin-store", rev = "5726952177b88d1d10063cdf8e7506bac84772cf"}
 thiserror = "1.0.31"
-# cap-std = "0.24.3"
-# extension-host = { path = "../extension-host" }
-# common = { path = "../common" }
+tokio = {version = "1.19.2", features = ["full"] }
+tracing = "0.1.35"
+url = "2.2.2"
+# wasi-common = "0.38.1"
+# wasi-mtt = {path = "../wasi-mtt"}
+# wasmparser = "0.87.0"
+# wasmtime = "0.38.1"
+# wasmtime-wasi = "0.38.1"
+workspace-hack = {version = "0.1", path = "../workspace-hack"}
 
 [target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.24.0"
@@ -39,13 +45,13 @@ objc = "0.2.7"
 webkit2gtk = "0.18.0"
 
 [target."cfg(target_os = \"windows\")".dependencies]
+webview2-com = "0.18.0"
 windows = "0.37.0"
-webview2-com = "0.17.0"
 
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = [ "custom-protocol" ]
+default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
-custom-protocol = [ "tauri/custom-protocol" ]
+custom-protocol = ["tauri/custom-protocol"]
