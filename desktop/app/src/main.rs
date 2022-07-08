@@ -26,6 +26,7 @@ pub use error::Error;
 pub type Result<T> = std::result::Result<T, error::Error>;
 
 #[tauri::command]
+#[tracing::instrument(skip(app_handle))]
 async fn emit_all<R: Runtime>(
   app_handle: AppHandle<R>,
   event: String,
