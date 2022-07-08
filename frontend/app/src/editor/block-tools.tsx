@@ -199,7 +199,6 @@ function insertInline(fn: typeof image | typeof video) {
   return function insertInlineElement(
     editor: Editor,
     element: FlowContent,
-    at: Path,
     selection: typeof editor.selection,
   ) {
     if (selection) {

@@ -9,11 +9,14 @@ import {
 import {videoMachine} from '@app/editor/video/video-machine'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
 import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
 import {isVideo, text, video, Video as VideoType} from '@mintter/mttast'
 import {useActor, useInterpret} from '@xstate/react'
 import isUrl from 'is-url'
-import {useMemo} from 'react'
+import {FormEvent, useMemo} from 'react'
 import {Editor, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -33,9 +36,7 @@ export function createVideoPlugin(): EditorPlugin {
     renderElement: () => {
       return (props) => {
         if (isVideo(props.element)) {
-          if (props.element.url) {
-            return <Video {...props} />
-          }
+          return <Video {...props} />
         }
       }
     },
@@ -65,13 +66,6 @@ export function createVideoPlugin(): EditorPlugin {
       return editor
     },
   }
-}
-
-function isYoutubeUrl(url: string) {
-  const regExp =
-    /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/
-
-  return url.match(regExp)
 }
 
 function insertVideo(editor: Editor, url: string) {
@@ -165,9 +159,6 @@ type InnerVideoProps = {
 
 function VideoComponent({service, element}: InnerVideoProps) {
   let [state, send] = useActor(service)
-  const editor = useSlateStatic()
-  const selected = useSelected()
-  const focused = useFocused()
 
   const videoData = useMemo(() => parseVideoUrl(element.url), [element.url])
 
@@ -179,10 +170,6 @@ function VideoComponent({service, element}: InnerVideoProps) {
     return <YoutubeEmbed service={service} videoData={videoData} />
   }
 
-  return null
-}
-
-function VideoForm({service, element}: InnerVideoProps) {
   return null
 }
 
@@ -220,6 +207,74 @@ function YoutubeEmbed({videoData}: VideoEmbedProps) {
         sandbox="allow-scripts allow-popups allow-top-navigation-by-user-activation allow-forms allow-same-origin"
         allowFullScreen
       />
+    </Box>
+  )
+}
+
+function VideoForm({service}: InnerVideoProps) {
+  const [state, send] = useActor(service)
+  const selected = useSelected()
+  const focused = useFocused()
+
+  function submitImage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    let formData = new FormData(event.currentTarget)
+    let value: string = formData.get('url')?.toString() || ''
+    send({type: 'VIDEO.SUBMIT', value})
+  }
+
+  return (
+    <Box
+      css={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$3',
+      }}
+    >
+      <Box
+        contentEditable={false}
+        css={{
+          backgroundColor: '$base-component-bg-normal',
+          boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
+          padding: '$5',
+          display: 'flex',
+          alignItems: 'center',
+          '&:hover': {
+            backgroundColor: '$base-component-bg-hover',
+          },
+        }}
+      >
+        <Box
+          css={{
+            flex: 'none',
+            marginRight: '$5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name="Video" size="2" />
+        </Box>
+        <Box
+          as="form"
+          css={{
+            width: '$full',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$4',
+          }}
+          onSubmit={submitImage}
+        >
+          <TextField type="url" placeholder="Add an Video URL" name="url" />
+          <Button type="submit">Save</Button>
+        </Box>
+      </Box>
+      {state.context.errorMessage ? (
+        <Text color="danger" size={1} css={{userSelect: 'none'}}>
+          {state.context.errorMessage}
+        </Text>
+      ) : null}
     </Box>
   )
 }
