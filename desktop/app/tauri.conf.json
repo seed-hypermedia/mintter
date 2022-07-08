@@ -60,6 +60,10 @@
         "startDragging": true,
         "maximize": true,
         "unmaximize": true
+      },
+      "dialog": {
+        "all": false,
+        "message": true
       }
     },
     "windows": [
