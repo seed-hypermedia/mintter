@@ -48,6 +48,8 @@
     "editorHint.foreground": "#ebcb8b",
     "editorIndentGuide.background": "#434c5eb3",
     "editorIndentGuide.activeBackground": "#4c566a",
+    "editorInlayHint.background": "#434c5e",
+    "editorInlayHint.foreground": "#d8dee9",
     "editorLineNumber.foreground": "#4c566a",
     "editorLineNumber.activeForeground": "#d8dee9",
     "editorWhitespace.foreground": "#4c566ab3",
@@ -77,6 +79,13 @@
     "editorWarning.border": "#ebcb8b00",
     "editorBracketMatch.background": "#2e344000",
     "editorBracketMatch.border": "#88c0d0",
+    "editorBracketHighlight.foreground1": "#8fbcbb",
+    "editorBracketHighlight.foreground2": "#88c0d0",
+    "editorBracketHighlight.foreground3": "#81a1c1",
+    "editorBracketHighlight.foreground4": "#5e81ac",
+    "editorBracketHighlight.foreground5": "#8fbcbb",
+    "editorBracketHighlight.foreground6": "#88c0d0",
+    "editorBracketHighlight.unexpectedBracket.foreground": "#bf616a",
     "editorCodeLens.foreground": "#4c566a",
     "editorGroup.background": "#2e3440",
     "editorGroup.border": "#3b425201",
@@ -242,6 +251,8 @@
     "statusBarItem.prominentHoverBackground": "#434c5e",
     "statusBarItem.errorBackground": "#3b4252",
     "statusBarItem.errorForeground": "#bf616a",
+    "statusBarItem.warningBackground": "#ebcb8b",
+    "statusBarItem.warningForeground": "#2e3440",
     "statusBar.border": "#3b425200",
     "tab.activeBackground": "#3b4252",
     "tab.activeForeground": "#d8dee9",
@@ -277,6 +288,7 @@
     "terminal.ansiBrightMagenta": "#b48ead",
     "terminal.ansiBrightCyan": "#8fbcbb",
     "terminal.ansiBrightWhite": "#eceff4",
+    "terminal.tab.activeBorder": "#88c0d0",
     "textBlockQuote.background": "#3b4252",
     "textBlockQuote.border": "#81a1c1",
     "textCodeBlock.background": "#4c566a",
@@ -1207,6 +1219,46 @@
       ],
       "settings": {
         "foreground": "#81A1C1"
+      }
+    },
+    {
+      "name": "[Rust] Entity types",
+      "scope": "source.rust entity.name.type",
+      "settings": {
+        "foreground": "#8FBCBB"
+      }
+    },
+    {
+      "name": "[Rust] Macro",
+      "scope": "source.rust meta.macro entity.name.function",
+      "settings": {
+        "fontStyle": "bold",
+        "foreground": "#88C0D0"
+      }
+    },
+    {
+      "name": "[Rust] Attributes",
+      "scope": [
+        "source.rust meta.attribute",
+        "source.rust meta.attribute punctuation",
+        "source.rust meta.attribute keyword.operator"
+      ],
+      "settings": {
+        "foreground": "#5E81AC"
+      }
+    },
+    {
+      "name": "[Rust] Traits",
+      "scope": "source.rust entity.name.type.trait",
+      "settings": {
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "[Rust] Interpolation Bracket Curly",
+      "scope": "source.rust punctuation.definition.interpolation",
+      "settings": {
+        "foreground": "#EBCB8B"
       }
     },
     {
