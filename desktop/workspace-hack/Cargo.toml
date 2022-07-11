@@ -21,7 +21,7 @@ log = { version = "0.4", default-features = false, features = ["std"] }
 miniz_oxide = { version = "0.5" }
 num-integer = { version = "0.1", default-features = false, features = ["std"] }
 num-traits = { version = "0.2", default-features = false, features = ["std"] }
-object = { version = "0.28", default-features = false, features = ["archive", "coff", "crc32fast", "elf", "hashbrown", "indexmap", "macho", "pe", "read_core", "std", "unaligned", "write", "write_core", "write_std"] }
+object = { version = "0.29", default-features = false, features = ["archive", "coff", "crc32fast", "elf", "hashbrown", "indexmap", "macho", "pe", "read_core", "std", "unaligned", "write", "write_core", "write_std"] }
 rand = { version = "0.8", features = ["alloc", "getrandom", "libc", "rand_chacha", "small_rng", "std", "std_rng"] }
 semver = { version = "1", features = ["serde", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
