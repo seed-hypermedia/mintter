@@ -11,14 +11,7 @@ import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {queryKeys} from '@app/hooks'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {debug} from '@app/utils/logger'
-import {
-  createId,
-  group,
-  paragraph,
-  statement,
-  text,
-  video,
-} from '@mintter/mttast'
+import {createId, group, paragraph, statement, text} from '@mintter/mttast'
 import {QueryClient} from 'react-query'
 import {Editor} from 'slate'
 import {assign, createMachine, sendParent} from 'xstate'
@@ -77,9 +70,7 @@ export interface CreateDraftMachineProps {
 
 const defaultContent = [
   group({data: {parent: ''}}, [
-    statement({id: createId()}, [
-      paragraph([text(''), video({url: ''}, [text('')]), text('')]),
-    ]),
+    statement({id: createId()}, [paragraph([text('')])]),
   ]),
 ]
 
