@@ -28,7 +28,7 @@ import (
 )
 
 // httpServer is a wrapper for HTTP server which is useful for lazy listener initialization.
-// We can setup the server inside the FX provider function, but start actually listenning only
+// We can setup the server inside the FX provider function, but start actually listening only
 // inside the OnStart hook. The ready channel can be used to wait until the server is actually listening.
 type httpServer struct {
 	srv   *http.Server
