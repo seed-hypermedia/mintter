@@ -31,6 +31,14 @@ import {findPath, resetFlowContent} from '../utils'
 export const ELEMENT_CODE = 'code'
 const HIGHLIGHTER = Symbol('shiki highlighter')
 
+const langs = Object.keys(
+  import.meta.glob('../../../public/shiki/languages/*.json'),
+).map((k) => {
+  return k
+    .replace('../../../public/shiki/languages/', '')
+    .replace('.tmLanguage.json', '')
+})
+
 const SelectorWrapper = styled('div', {
   boxSizing: 'border-box',
   position: 'absolute',
@@ -139,18 +147,21 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
 
           if (!code || !code.data?.[HIGHLIGHTER]) return []
 
-          for (const [text, textPath] of Node.texts(node)) {
-            const tokens = (code.data?.[HIGHLIGHTER] as Highlighter)
-              .codeToThemedTokens(text.value, code.lang)
-              .flatMap((l) => l)
+          const string = Node.string(node)
 
-            let offset = 0
+          const lines = (
+            code.data?.[HIGHLIGHTER] as Highlighter
+          ).codeToThemedTokens(string, code.lang, theme, {
+            includeExplanation: false,
+          })
 
-            for (const token of tokens) {
+          let offset = 0
+          for (const line of lines) {
+            for (const token of line) {
               const range: Range & Record<string, unknown> = {
-                anchor: {path: [...path, ...textPath], offset},
+                anchor: {path, offset},
                 focus: {
-                  path: [...path, ...textPath],
+                  path,
                   offset: offset + token.content.length,
                 },
                 color: token.color,
@@ -161,10 +172,15 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
               if (token.fontStyle == 4) range[MARK_UNDERLINE] = true
 
               ranges.push(range)
+
               offset += token.content.length
             }
+
+            // account for the newline delimiter
+            offset += 1
           }
         }
+
         return ranges
       },
   }
@@ -230,9 +246,11 @@ function Code({
               onChange={setLanguage}
             >
               <option value="">Select a Language</option>
-              <option value="javascript">JavaScript</option>
-              <option value="typescript">TypeScript</option>
-              <option value="go">Golang</option>
+              {langs.map((lang) => (
+                <option value={lang} key={lang}>
+                  {lang}
+                </option>
+              ))}
             </select>
           </SelectorWrapper>
         ) : null}
