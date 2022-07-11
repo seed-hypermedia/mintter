@@ -116,12 +116,19 @@ func (pk PublicKey) MarshalBinary() ([]byte, error) {
 	return crypto.MarshalPublicKey(pk.k)
 }
 
+// KeyPair is a wrapper libp2p crypto package, to provide some convenience function for
+// encoding/decoding and other things, like having the public key pre-generated and cached
+// instead of generating it with every method call like libp2p does. Also, libp2p cryptographic
+// keys are interfaces, which makes unmarshaling into a zero-value variables impossible. E.g.
+// you can't put a public key into a struct and then unmarshal the whole struct, because nil zero-value
+// of the interface doesn't know how to unmarshal to a concrete type.
 type KeyPair struct {
 	k *crypto.Ed25519PrivateKey
 
 	PublicKey
 }
 
+// NewKeyPairRandom creates a new random KeyPair with a given multicodec prefix.
 func NewKeyPairRandom(codec uint64) (kp KeyPair, err error) {
 	priv, _, err := crypto.GenerateEd25519Key(rand.Reader)
 	if err != nil {
@@ -131,6 +138,8 @@ func NewKeyPairRandom(codec uint64) (kp KeyPair, err error) {
 	return NewKeyPair(codec, priv.(*crypto.Ed25519PrivateKey))
 }
 
+// NewKeyPair creates a new KeyPair with a given multicodec prefix from an existing instance
+// of the private key. At the moment only Ed25519 keys are supported.
 func NewKeyPair(codec uint64, priv *crypto.Ed25519PrivateKey) (kp KeyPair, err error) {
 	pub, err := NewPublicKey(codec, priv.GetPublic().(*crypto.Ed25519PublicKey))
 	if err != nil {
