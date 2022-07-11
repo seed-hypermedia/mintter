@@ -58,9 +58,8 @@ export function createVideoPlugin(): EditorPlugin {
           if (isUrl(text) && videoData) {
             insertVideo(editor, text)
           }
-        } else {
-          insertData(data)
         }
+        insertData(data)
       }
 
       return editor

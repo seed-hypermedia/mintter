@@ -103,7 +103,6 @@ export function createPlainTextPastePlugin(): EditorPlugin {
             error('Paste Plugin: No block found above', editor.selection)
           }
         }
-
         insertData(transfer)
       }
 

@@ -1,8 +1,10 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -13,6 +15,7 @@ import type {Embed, Link as LinkType} from '@mintter/mttast'
 import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
+import {useActor} from '@xstate/react'
 import {isKeyHotkey} from 'is-hotkey'
 import isUrl from 'is-url'
 import {
@@ -102,6 +105,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
       if (text) {
         if (isMintterLink(text)) {
           if (hasBlockId(text)) {
+            debug('has a blockID!', text)
             wrapMintterLink(editor, text)
           } else {
             // TODO: add the document title to this link
@@ -119,17 +123,29 @@ export const createLinkPlugin = (): EditorPlugin => ({
   },
 })
 
-const StyledLink = styled('span', {
-  textDecoration: 'underline',
-  appearance: 'none',
-  display: 'inline',
-  color: '$base-text-hight',
-  width: 'auto',
-  wordBreak: 'break-all',
-  '&:hover': {
-    cursor: 'pointer',
+const StyledLink = styled(
+  'span',
+  {
+    textDecoration: 'underline',
+    appearance: 'none',
+    display: 'inline',
+    color: '$base-text-hight',
+    width: 'auto',
+    wordBreak: 'break-all',
+    '&:hover': {
+      cursor: 'pointer',
+    },
   },
-})
+  {
+    variants: {
+      highlight: {
+        true: {
+          backgroundColor: '$primary-component-bg-active',
+        },
+      },
+    },
+  },
+)
 
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
@@ -152,6 +168,8 @@ function RenderMintterLink(
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
   let mainService = props.mainService ?? defaultMainService
+  let hoverService = useHover()
+  let [hoverState, hoverSend] = useActor(hoverService)
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -167,7 +185,23 @@ function RenderMintterLink(
     }
   }
 
-  return <StyledLink ref={ref} {...props} onClick={onClick} />
+  function mouseEnter() {
+    hoverSend({type: 'MOUSE_ENTER', blockId})
+  }
+
+  return (
+    <StyledLink
+      ref={ref}
+      {...props}
+      onClick={onClick}
+      onMouseEnter={mouseEnter}
+      css={{
+        [`[data-hover-block="${blockId}"] &`]: {
+          backgroundColor: '$primary-component-bg-active',
+        },
+      }}
+    />
+  )
 }
 
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
@@ -354,35 +388,35 @@ export function ToolbarLink({
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>
-        <Tooltip content={<span>Link</span>}>
-          <Button
-            variant="ghost"
-            size="0"
-            color="muted"
-            data-testid="toolbar-link-button"
-            css={
-              markActive
-                ? {
-                    backgroundColor: '$background-opposite',
-                    color: '$base-text-hight',
-                    '&:hover': {
-                      backgroundColor: '$background-opposite !important',
-                      color: '$base-text-hight !important',
-                    },
-                  }
-                : {}
-            }
-            onClick={() => {
-              setOpen((v) => {
-                sendStoreFocus(!v)
-                return !v
-              })
-              resetSelection()
-            }}
-          >
-            <Icon size="2" name="Link" />
-          </Button>
-        </Tooltip>
+        {/* <Tooltip content={<span>Link</span>}> */}
+        <Button
+          variant="ghost"
+          size="0"
+          color="muted"
+          data-testid="toolbar-link-button"
+          css={
+            markActive
+              ? {
+                  backgroundColor: '$background-opposite',
+                  color: '$base-text-hight',
+                  '&:hover': {
+                    backgroundColor: '$background-opposite !important',
+                    color: '$base-text-hight !important',
+                  },
+                }
+              : {}
+          }
+          onClick={() => {
+            setOpen((v) => {
+              sendStoreFocus(!v)
+              return !v
+            })
+            resetSelection()
+          }}
+        >
+          <Icon size="2" name="Link" />
+        </Button>
+        {/* </Tooltip> */}
       </PopoverPrimitive.Trigger>
 
       <PopoverPrimitive.Content>
