@@ -14,6 +14,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// provideNetwork is an FX provider which lazily sets up the Mintter P2P Network node after the account registration is completed.
 func provideNetwork(lc fx.Lifecycle, cfg config.Config, vcsh *vcs.SQLite, me *future.ReadOnly[core.Identity]) *future.ReadOnly[*mttnet.Node] {
 	fut := future.New[*mttnet.Node]()
 

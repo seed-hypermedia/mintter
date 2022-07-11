@@ -1,3 +1,18 @@
+// Package daemon assembles everything to boot the mintterd program. It's like main, but made a separate package
+// to be importable and testable by other packages, because package main can't be imported.
+//
+// We're using Uber's FX Dependency Injection framework here to simplify the setup, because during the development
+// it was changing quite a bit, and managing everything manually was a bit of a pain.
+// Some things in FX are not quite simple either, and we had to do a bunch of workarounds to make sure everything works properly
+// and shuts down cleanly.
+//
+// Each file in here provides relevant FX providers and invokers, which are all assembled in an FX Module here (see Module() function).
+//
+// We might want to eventually get rid of FX and manage everything manually when things get a bit more stable.
+//
+// Most of the complexity here is due to the fact that we're doing lazy registration of the Mintter Account, i.e. we have to
+// boot everything up even though the Mintter Account is not yet available until the registration happens in the frontend.
+// Because of this we're using some future-/promise-like structures which resolve after the registration happens.
 package daemon
 
 import (
@@ -15,6 +30,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// Daemon is the main mintterd daemon with all of its dependencies included.
+// It's an fx.In so can be used with fx.Populate option, see makeTestDaemon()
+// function in tests for an example.
 type Daemon struct {
 	fx.In
 
@@ -28,43 +46,8 @@ type Daemon struct {
 	VCS    *vcs.SQLite
 }
 
-// func Boot(cfg config.Config) (d *Daemon, err error) {
-// 	d.Config = cfg
-
-// 	// In case of error during boot, we want to cleanly close the things
-// 	// that were already started. This is optional, but me (@burdiyan) is a graceful shutdown nerd ;)
-// 	defer func() {
-// 		if err != nil {
-// 			err = multierr.Append(err, d.clean.Close())
-// 		}
-// 	}()
-
-// 	d.Repo, err = provideRepo(cfg)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	d.Me, err = provideAccount(d.Repo)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	d.SQLite, err = provideSQLite(nil, d.Repo)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	d.clean.Add(d.SQLite)
-
-// 	d.VCS = provideVCS(d.SQLite)
-
-// 	d.Net = provideNetwork(nil, cfg, d.VCS, d.Me)
-// 	// clean.Add(d.Net)
-
-// 	d.GRPC = provideGRPCServer(nil, d.Net)
-// }
-
-// func startGRPC()
-
+// Module is an FX module option with all the necessary providers and invokers.
+// It needs an already populated Config which will be supplied to all the provider functions.
 func Module(cfg config.Config) fx.Option {
 	return fx.Options(
 		fx.Supply(cfg),
@@ -86,6 +69,8 @@ func Module(cfg config.Config) fx.Option {
 	)
 }
 
+// fxLogger is an implemented for a logger in FX that uses Zap instead of std logger.
+// This way we control all the logging using Zap.
 type fxLogger struct {
 	l *zap.SugaredLogger
 }
@@ -94,6 +79,7 @@ func (l *fxLogger) Printf(msg string, args ...interface{}) {
 	l.l.Debugf(msg, args...)
 }
 
+// logAppLifecycle is an FX invoker, which takes a populated Daemon and logs some lifecycle messages.
 func logAppLifecycle(lc fx.Lifecycle, stop fx.Shutdowner, d Daemon) {
 	log := logging.New("mintter/daemon", "debug")
 
