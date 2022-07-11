@@ -17,8 +17,7 @@ import (
 	rpcpeer "google.golang.org/grpc/peer"
 )
 
-// Connect to a peer using provided addrs. All addrs are expected to belong to the same peer.
-// The node will stop after the first successful connection.
+// Connect to a peer using provided addr info.
 func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 	if info.ID == "" {
 		return fmt.Errorf("must specify peer ID to connect")
