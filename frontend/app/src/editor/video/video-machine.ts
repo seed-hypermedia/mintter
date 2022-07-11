@@ -8,6 +8,7 @@ type VideoContext = {
 type VideoEvent =
   | {type: 'VIDEO.REPLACE'}
   | {type: 'VIDEO.SUBMIT'; value: string}
+  | {type: 'VIDEO.CANCEL'}
   | {type: 'REPORT.VIDEO.VALID'}
   | {type: 'REPORT.VIDEO.INVALID'}
   | {type: 'CAPTION.UPDATE'; value: string}
@@ -24,7 +25,7 @@ export const videoMachine =
     {
       tsTypes: {} as import('./video-machine.typegen').Typegen0,
       schema: {context: {} as VideoContext, events: {} as VideoEvent},
-      id: 'Video Machine',
+      id: 'videoMachine',
       initial: 'init',
       states: {
         init: {
@@ -34,7 +35,7 @@ export const videoMachine =
               target: 'video',
             },
             {
-              target: 'editVideo',
+              target: 'edit.new',
             },
           ],
         },
@@ -42,14 +43,25 @@ export const videoMachine =
           entry: 'assignCaptionVisibility',
           on: {
             'VIDEO.REPLACE': {
-              target: 'editVideo',
+              target: 'edit.update',
             },
             'CAPTION.UPDATE': {
               actions: 'updateCaption',
             },
           },
         },
-        editVideo: {
+        edit: {
+          initial: 'new',
+          states: {
+            new: {},
+            update: {
+              on: {
+                'VIDEO.CANCEL': {
+                  target: '#videoMachine.video',
+                },
+              },
+            },
+          },
           on: {
             'VIDEO.SUBMIT': {
               target: 'submitting',
@@ -70,7 +82,7 @@ export const videoMachine =
             onError: [
               {
                 actions: 'assignError',
-                target: 'editVideo',
+                target: 'edit.update',
               },
             ],
           },
