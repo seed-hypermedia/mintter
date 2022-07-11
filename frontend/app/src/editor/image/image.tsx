@@ -109,25 +109,11 @@ function Image({element, attributes, children}: RenderElementProps) {
   return (
     <Box {...attributes}>
       {children}
-      {state.matches('init') ? (
-        <Box
-          css={{
-            padding: '$5',
-            borderRadius: '$2',
-            background: '$base-component-bg-normal',
-          }}
-        >
-          <Text color="muted" size="3">
-            Loading image...
-          </Text>
-        </Box>
-      ) : null}
       {state.matches('image') ? (
         <ImageComponent service={imgService} element={element as ImageType} />
-      ) : null}
-      {state.matches('editImage') ? (
+      ) : (
         <ImageForm service={imgService} element={element as ImageType} />
-      ) : null}
+      )}
     </Box>
   )
 }
@@ -144,7 +130,40 @@ function ImageComponent({service, element}: InnerImageProps) {
   const focused = useFocused()
 
   return (
-    <Box>
+    <Box
+      css={{
+        position: 'relative',
+        '&:hover .hover-tools': {
+          opacity: 1,
+          visibility: 'visible',
+          pointerEvents: 'inherit',
+        },
+      }}
+    >
+      {editor.mode == EditorMode.Draft ? (
+        <Box
+          className="hover-tools"
+          css={{
+            position: 'absolute',
+            top: 0,
+            right: '$3',
+            transition: 'opacity 0.25s ease',
+            zIndex: '$4',
+            opacity: 0,
+            visibility: 'hidden',
+            pointerEvents: 'none',
+          }}
+        >
+          <Button
+            size="1"
+            color="muted"
+            type="submit"
+            onClick={() => send('IMAGE.REPLACE')}
+          >
+            replace
+          </Button>
+        </Box>
+      ) : null}
       <Img
         css={{
           boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
@@ -227,6 +246,15 @@ function ImageForm({service, element}: InnerImageProps) {
         >
           <TextField type="url" placeholder="Add an Image URL" name="url" />
           <Button type="submit">Save</Button>
+          <Button
+            type="button"
+            size="0"
+            variant="ghost"
+            color="muted"
+            onClick={() => send('IMAGE.CANCEL')}
+          >
+            Cancel
+          </Button>
         </Box>
       </Box>
       {state.context.errorMessage ? (

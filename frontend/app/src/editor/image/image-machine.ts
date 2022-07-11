@@ -8,6 +8,7 @@ type ImageContext = {
 type ImageEvent =
   | {type: 'IMAGE.REPLACE'}
   | {type: 'IMAGE.SUBMIT'; value: string}
+  | {type: 'IMAGE.CANCEL'}
   | {type: 'REPORT.IMAGE.VALID'}
   | {type: 'REPORT.IMAGE.INVALID'}
   | {type: 'CAPTION.UPDATE'; value: string}
@@ -26,23 +27,23 @@ export const imageMachine = createMachine(
       events: {} as ImageEvent,
       services: {} as ImageServices,
     },
-    id: 'Image Element',
+    id: 'imageMachine',
     description:
       'Context: caption, imageURL (the image imput should be uncontrolled)',
     context: {
       errorMessage: '',
       captionVisibility: false,
     },
-    initial: 'init',
+    initial: 'checking',
     states: {
-      init: {
+      checking: {
         always: [
           {
             cond: 'hasImageUrl',
             target: 'image',
           },
           {
-            target: 'editImage',
+            target: 'edit.new',
           },
         ],
       },
@@ -50,14 +51,25 @@ export const imageMachine = createMachine(
         entry: ['assignCaptionVisibility'],
         on: {
           'IMAGE.REPLACE': {
-            target: 'editImage',
+            target: 'edit.update',
           },
           'CAPTION.UPDATE': {
             actions: ['updateCaption'],
           },
         },
       },
-      editImage: {
+      edit: {
+        initial: 'new',
+        states: {
+          new: {},
+          update: {
+            on: {
+              'IMAGE.CANCEL': {
+                target: '#imageMachine.image',
+              },
+            },
+          },
+        },
         on: {
           'IMAGE.SUBMIT': {
             target: 'submitting',
@@ -74,7 +86,7 @@ export const imageMachine = createMachine(
             actions: ['assignValidUrl', 'enableCaption'],
           },
           onError: {
-            target: 'editImage',
+            target: 'edit.update',
             actions: ['assignError'],
           },
         },

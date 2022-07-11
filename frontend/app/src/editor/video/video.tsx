@@ -129,25 +129,11 @@ function Video({element, attributes, children}: RenderElementProps) {
   return (
     <Box {...attributes}>
       {children}
-      {state.matches('init') ? (
-        <Box
-          css={{
-            padding: '$5',
-            borderRadius: '$2',
-            background: '$base-component-bg-normal',
-          }}
-        >
-          <Text color="muted" size="3">
-            Loading image...
-          </Text>
-        </Box>
-      ) : null}
       {state.matches('video') ? (
         <VideoComponent service={videoService} element={element as VideoType} />
-      ) : null}
-      {state.matches('editVideo') ? (
+      ) : (
         <VideoForm service={videoService} element={element as VideoType} />
-      ) : null}
+      )}
     </Box>
   )
 }
@@ -162,12 +148,8 @@ function VideoComponent({service, element}: InnerVideoProps) {
 
   const videoData = useMemo(() => parseVideoUrl(element.url), [element.url])
 
-  if (videoData?.provider == 'youtube') {
-    return <YoutubeEmbed service={service} videoData={videoData} />
-  }
-
-  if (videoData?.provider == 'vimeo') {
-    return <YoutubeEmbed service={service} videoData={videoData} />
+  if (videoData?.provider) {
+    return <VideoEmbed service={service} videoData={videoData} />
   }
 
   return null
@@ -184,8 +166,10 @@ type VideoEmbedProps = {
 //   vimeo: '56.2061%',
 // }
 
-function YoutubeEmbed({videoData}: VideoEmbedProps) {
-  let {url, provider} = videoData
+function VideoEmbed({videoData, service}: VideoEmbedProps) {
+  let {url} = videoData
+  let [, send] = useActor(service)
+  let editor = useSlateStatic()
 
   return (
     <Box
@@ -199,8 +183,37 @@ function YoutubeEmbed({videoData}: VideoEmbedProps) {
           width: '$full',
           height: '$full',
         },
+        '&:hover .hover-tools': {
+          opacity: 1,
+          visibility: 'visible',
+          pointerEvents: 'inherit',
+        },
       }}
     >
+      {editor.mode == EditorMode.Draft ? (
+        <Box
+          className="hover-tools"
+          css={{
+            position: 'absolute',
+            top: 0,
+            right: '$3',
+            transition: 'opacity 0.25s ease',
+            zIndex: '$4',
+            opacity: 0,
+            visibility: 'hidden',
+            pointerEvents: 'none',
+          }}
+        >
+          <Button
+            size="1"
+            color="muted"
+            type="submit"
+            onClick={() => send('VIDEO.REPLACE')}
+          >
+            replace
+          </Button>
+        </Box>
+      ) : null}
       <iframe
         src={url}
         frameBorder="0"
@@ -268,6 +281,15 @@ function VideoForm({service}: InnerVideoProps) {
         >
           <TextField type="url" placeholder="Add an Video URL" name="url" />
           <Button type="submit">Save</Button>
+          <Button
+            type="button"
+            size="0"
+            variant="ghost"
+            color="muted"
+            onClick={() => send('VIDEO.CANCEL')}
+          >
+            Cancel
+          </Button>
         </Box>
       </Box>
       {state.context.errorMessage ? (
