@@ -1,5 +1,3 @@
-import {store} from '@app/client/store'
-import {error} from '@app/utils/logger'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
 import {darkTheme, lightTheme} from './stitches.config'
 import {createInterpreterContext} from './utils/machine-utils'
@@ -46,22 +44,15 @@ export function createThemeService() {
         current: 'light',
       },
       initial: 'loading',
+      invoke: {
+        src: 'colorShemeListener',
+        id: 'colorShemeListener',
+      },
       states: {
         loading: {
           invoke: {
-            id: 'get-persisted-theme',
-            src: () => (sendBack) => {
-              store
-                .get<keys>('theme')
-                .then((theme: keys | null) => {
-                  theme = theme ?? 'light'
-
-                  sendBack({type: 'REPORT.THEME.SUCCESS', theme})
-                })
-                .catch(() => {
-                  sendBack({type: 'CHANGE', theme: 'light'})
-                })
-            },
+            id: 'getPersistedTheme',
+            src: 'getPersistedTheme',
           },
           on: {
             'REPORT.THEME.SUCCESS': {
@@ -73,10 +64,16 @@ export function createThemeService() {
         ready: {
           on: {
             TOGGLE: {
-              actions: ['toggleTheme', 'applyToDom', 'persist'],
+              actions: ['toggleTheme', 'applyToDom'],
             },
             CHANGE: {
-              actions: ['assignTheme', 'applyToDom', 'persist'],
+              actions: [
+                (_, event) => {
+                  console.log('ACTION EVENT', event)
+                },
+                'assignTheme',
+                'applyToDom',
+              ],
             },
           },
         },
@@ -94,13 +91,6 @@ export function createThemeService() {
             window.document.body.classList.add(theme[context.current])
           }
         },
-        persist: (context) => {
-          try {
-            store.set('theme', context.current)
-          } catch (e) {
-            error(e)
-          }
-        },
         assignTheme: assign({
           current: (_, event) => event.theme,
         }),
@@ -108,6 +98,32 @@ export function createThemeService() {
           current: (context, event) =>
             context.current == 'dark' ? 'light' : 'dark',
         }),
+      },
+      services: {
+        colorShemeListener: () => (sendBack) => {
+          const darkModeMediaQuery = window.matchMedia(
+            '(prefers-color-scheme: dark)',
+          )
+
+          darkModeMediaQuery.addEventListener('change', (event) => {
+            console.log('CHANGE!', event.matches)
+
+            sendBack({
+              type: 'CHANGE',
+              theme: event.matches ? 'dark' : 'light',
+            })
+          })
+        },
+        getPersistedTheme: () => (sendBack) => {
+          const darkModeMediaQuery = window.matchMedia(
+            '(prefers-color-scheme: dark)',
+          )
+
+          sendBack({
+            type: 'REPORT.THEME.SUCCESS',
+            theme: darkModeMediaQuery.matches ? 'dark' : 'light',
+          })
+        },
       },
     },
   )
