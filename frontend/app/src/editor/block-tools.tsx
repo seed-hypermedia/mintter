@@ -110,13 +110,17 @@ export function BlockTools({element}: BlockToolsProps) {
   return (
     <Box
       contentEditable={false}
-      className="DEBUGME"
       css={{
         opacity: 0,
         userSelect: 'none',
+        transition: 'all ease-in-out 0.1s',
+        padding: '$2',
+        pointerEvents: 'none',
+        visibility: 'hidden',
         [`[data-hover-block="${element.id}"] &`]: {
           opacity: 1,
           pointerEvents: 'all',
+          visibility: 'visible',
         },
         '&:hover': {
           cursor: 'pointer',

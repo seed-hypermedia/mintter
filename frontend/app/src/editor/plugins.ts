@@ -11,7 +11,6 @@ import {createInlineCodePlugin} from './inline-code'
 import {createLinkPlugin} from './link'
 import {createMarkdownShortcutsPlugin} from './markdown-plugin'
 import {createMintterChangesPlugin} from './mintter-changes/plugin'
-import {createOrderedListPlugin} from './ordered-list'
 import {createParagraphPlugin} from './paragraph'
 import {createPlainTextPastePlugin} from './paste-plugin'
 import {createStatementPlugin} from './statement'
@@ -23,7 +22,6 @@ import {createSuperscriptPlugin} from './superscript'
 import {createTabPlugin} from './tab-plugin'
 import type {EditorPlugin} from './types'
 import {createUnderlinePlugin} from './underline'
-import {createUnorderedListPlugin} from './unordered-list'
 import {createVideoPlugin} from './video/video'
 export const plugins: EditorPlugin[] = [
   createStrongPlugin(),
@@ -50,8 +48,6 @@ export const plugins: EditorPlugin[] = [
   createCodePlugin({theme: 'github-light'}),
 
   createGroupPlugin(),
-  createUnorderedListPlugin(),
-  createOrderedListPlugin(),
 
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),

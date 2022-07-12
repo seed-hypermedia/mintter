@@ -22,7 +22,6 @@ import type {RenderElementProps} from 'slate-react'
 import {useSlateStatic} from 'slate-react'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
-import {statementStyle} from '../statement'
 import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
@@ -50,7 +49,7 @@ const SelectorWrapper = styled('div', {
   transition: 'opacity 0.5s',
 })
 
-export const codeStyle = css(statementStyle, {
+export const codeStyle = css({
   position: 'relative',
   borderRadius: '$2',
   '&:hover': {
@@ -219,9 +218,9 @@ function Code({
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
-      <Box className={codeStyle()} {...blockProps}>
+      <span className={codeStyle()} {...blockProps}>
         {children}
-      </Box>
+      </span>
     )
   }
 
@@ -233,9 +232,9 @@ function Code({
             contentEditable={false}
             css={{
               position: 'absolute',
-              right: 0,
+              left: '$sizes$prose-width',
               top: 0,
-              transform: 'translate(8px, -8px)',
+              transform: 'translate(-100px, -8px)',
               zIndex: 2,
             }}
           >

@@ -1,7 +1,6 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {BlockTools} from '@app/editor/block-tools'
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useFile} from '@app/file-provider'
@@ -10,13 +9,13 @@ import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {debug} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
-import {FlowContent, isCode, isHeading} from '@mintter/mttast'
+import {Button} from '@components/button'
+import {Tooltip} from '@components/tooltip'
+import {FlowContent} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {useMemo} from 'react'
 import toast from 'react-hot-toast'
-import {RenderElementProps} from 'slate-react'
+import {ReactEditor, RenderElementProps} from 'slate-react'
 import {StateFrom} from 'xstate'
 
 function useCitations(
@@ -47,8 +46,10 @@ export function BlockWrapper({
   const bookmarksService = useBookmarksService()
   const hoverService = useHover()
   const [hoverState, hoverSend] = useActor(hoverService)
+
   let fileRef = useFile()
   let [fileState] = useActor(fileRef)
+  let path = ReactEditor.findPath(fileState.context.editor, element)
   let citations = useCitations(fileState, element.id)
   async function onCopy() {
     if (fileState.context.version) {
@@ -76,26 +77,24 @@ export function BlockWrapper({
   return mode == EditorMode.Draft ? (
     <Box
       {...attributes}
-      onMouseEnter={() => {
-        hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
-      }}
       css={{
         width: '$full',
         position: 'relative',
-        maxWidth: '$prose-width',
         userSelect: 'none',
-        paddingTop: '$4',
       }}
     >
       <Box
         as="span"
         contentEditable={false}
+        onMouseEnter={() => {
+          hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+        }}
         css={{
           userSelect: 'none',
           position: 'absolute',
-          height: isHeading(element) ? 'inherit' : '$full',
-          left: -30,
-          top: isCode(element) ? 12 : 16,
+          display: 'block',
+
+          left: `${(path.length - 2) * 16}px`,
         }}
       >
         <BlockTools element={element} />
@@ -103,7 +102,6 @@ export function BlockWrapper({
       <Box
         css={{
           width: '$full',
-          maxWidth: '$prose-width',
           userSelect: 'text',
         }}
       >
@@ -116,68 +114,45 @@ export function BlockWrapper({
       css={{
         width: '$full',
         position: 'relative',
-        maxWidth: '$prose-width',
         userSelect: 'none',
-        paddingTop: '$4',
-      }}
-      onMouseEnter={() => {
-        hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
       }}
     >
-      <Dropdown.Root
-        modal={false}
-        onOpenChange={(value) => {
-          if (!value) {
-            hoverSend('MOUSE_LEAVE')
-          }
+      {children}
+      <Box
+        css={{
+          position: 'absolute',
+          right: '$4',
+          top: 0,
+          padding: '$2',
+          display: 'flex',
+          gap: '$2',
+          alignItems: 'center',
         }}
       >
-        <Dropdown.Trigger asChild>
-          <ElementDropdown
-            css={{
-              opacity: 0,
-              [`[data-hover-block="${element.id}"] &`]: {
-                opacity: hoverState.matches('active') ? 1 : 0,
-              },
-              position: 'absolute',
-              right: -20,
-              top: 4,
-            }}
-          >
-            <Icon name="MoreHorizontal" size="1" color="muted" />
-          </ElementDropdown>
-        </Dropdown.Trigger>
-        <Dropdown.Content alignOffset={-5} align="end">
-          <Dropdown.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Block ID</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={addBookmark}>
-            <Icon size="1" name="ArrowBottomRight" />
-            <Text size="2">Add to Bookmarks</Text>
-          </Dropdown.Item>
-        </Dropdown.Content>
-      </Dropdown.Root>
-      {children}
-      {citations.length ? (
         <Box
-          contentEditable={false}
           css={{
-            padding: '$4',
-            width: '$full',
-            maxWidth: 240,
-            marginTop: '-$4',
-            display: 'none',
-            '@bp2': {
-              display: 'block',
-              transform: 'translateX(100%)',
-              position: 'absolute',
-              right: -12,
-              top: 4,
-              overflow: 'hidden',
+            opacity: 0,
+            userSelect: 'none',
+            transition: 'all ease-in-out 0.1s',
+            [`[data-hover-block="${element.id}"] &`]: {
+              opacity: 1,
+              pointerEvents: 'all',
+            },
+            '&:hover': {
+              cursor: 'pointer',
             },
           }}
         >
+          <Tooltip
+            delayDuration={0}
+            content={<span>{`Copy block reference: ${element.id}`}</span>}
+          >
+            <Button variant="ghost" size="0" color="primary" onClick={onCopy}>
+              {element.id}
+            </Button>
+          </Tooltip>
+        </Box>
+        {citations.length ? (
           <Box
             css={{
               width: 24,
@@ -187,7 +162,6 @@ export function BlockWrapper({
               alignItems: 'center',
               justifyContent: 'center',
               background: '$base-component-bg-normal',
-              // background: 'green',
               fontFamily: '$base',
               fontSize: '$1',
               color: '$base-text-low',
@@ -200,28 +174,29 @@ export function BlockWrapper({
           >
             {citations.length}
           </Box>
-        </Box>
-      ) : null}
+        ) : null}
+      </Box>
     </Box>
   )
 }
 
-export function useOnScreen(ref: MutableRefObject<any>, rootMargin = '0px') {
-  const [isVisible, setState] = useState(false)
+// TODO: to avoid rendering when the block is not visible
+// export function useOnScreen(ref: MutableRefObject<any>, rootMargin = '0px') {
+//   const [isVisible, setState] = useState(false)
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setState(entry.isIntersecting)
-      },
-      {rootMargin},
-    )
-    if (ref && ref.current) {
-      observer.observe(ref.current)
-    }
-    return () => {
-      observer.unobserve(ref.current)
-    }
-  }, [])
-  return isVisible
-}
+//   useEffect(() => {
+//     const observer = new IntersectionObserver(
+//       ([entry]) => {
+//         setState(entry.isIntersecting)
+//       },
+//       {rootMargin},
+//     )
+//     if (ref && ref.current) {
+//       observer.observe(ref.current)
+//     }
+//     return () => {
+//       observer.unobserve(ref.current)
+//     }
+//   }, [])
+//   return isVisible
+// }

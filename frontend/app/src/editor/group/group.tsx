@@ -5,7 +5,6 @@ import {
   createId,
   GroupingContent,
   isFlowContent,
-  isGroup,
   isGroupContent,
   statement,
 } from '@mintter/mttast'
@@ -18,10 +17,12 @@ import type {EditorPlugin} from '../types'
 import {isFirstChild, resetGroupingContent} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
+export const ELEMENT_ORDERED_LIST = 'orderedList'
+export const ELEMENT_UNORDERED_LIST = 'unorderedList'
 
 export const groupStyle = css({
   margin: 0,
-  paddingLeft: 30,
+  padding: 0,
   userSelect: 'none',
 })
 
@@ -30,7 +31,7 @@ export const createGroupPlugin = (): EditorPlugin => ({
   renderElement:
     (editor) =>
     ({attributes, children, element}) => {
-      if (isGroup(element)) {
+      if (isGroupContent(element)) {
         return (
           <Group mode={editor.mode} element={element} attributes={attributes}>
             {children}

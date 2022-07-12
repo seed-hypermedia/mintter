@@ -16,12 +16,18 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
   fill: '$base-text-high',
 })
 
-export type TooltipProps = PropsWithChildren<{
-  content: string | React.ReactNode
-  open?: boolean
-}>
+export type TooltipPropsLocal = TooltipPrimitive.TooltipProps &
+  PropsWithChildren<{
+    content: string | React.ReactNode
+    open?: boolean
+  }>
 
-export function Tooltip({children, content, open, ...props}: TooltipProps) {
+export function Tooltip({
+  children,
+  content,
+  open,
+  ...props
+}: TooltipPropsLocal) {
   return (
     <TooltipPrimitive.Root open={open} {...props}>
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
