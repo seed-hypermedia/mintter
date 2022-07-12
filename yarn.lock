@@ -1817,7 +1817,7 @@ __metadata:
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
     vite-tsconfig-paths: 3.5.0
-    vitest: 0.17.1
+    vitest: 0.18.0
     xstate: 4.32.1
   peerDependencies:
     typescript: 4.7.4
@@ -1854,7 +1854,7 @@ __metadata:
     unist-builder: 3.0.0
     unist-util-remove-position: 4.0.1
     unist-util-visit: 4.1.0
-    vitest: 0.17.1
+    vitest: 0.18.0
   languageName: unknown
   linkType: soft
 
@@ -12914,9 +12914,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:0.17.1":
-  version: 0.17.1
-  resolution: "vitest@npm:0.17.1"
+"vitest@npm:0.18.0":
+  version: 0.18.0
+  resolution: "vitest@npm:0.18.0"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-subset": ^1.3.3
@@ -12946,7 +12946,7 @@ __metadata:
       optional: true
   bin:
     vitest: vitest.mjs
-  checksum: eae2d024d97a46ba08f3cc7e0703a330c92dc0a6f4c7a9bc20ec8a5129bf787d8ebabd14bf31ae810897c1813e29178af59f63ec8b24b5944cfa62e225cd207c
+  checksum: 20e76b0de9f02dd09a412b11e5898d1ec7c5c9f9287da40a79fde98f6bd100db6f777fb5f1370496a2c153277cc5eb6738e176435101332fce1c87a565e62d5f
   languageName: node
   linkType: hard
 
