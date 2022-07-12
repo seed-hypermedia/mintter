@@ -1787,7 +1787,7 @@ __metadata:
     react-dom: 18.2.0
     react-error-boundary: 3.1.4
     react-hook-form: 7.33.1
-    react-hot-toast: 2.2.0
+    react-hot-toast: 2.3.0
     react-qr-barcode-scanner: 1.0.6
     react-qr-code: 2.0.7
     react-query: 3.39.1
@@ -6899,12 +6899,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"goober@npm:^2.1.1":
-  version: 2.1.9
-  resolution: "goober@npm:2.1.9"
+"goober@npm:^2.1.10":
+  version: 2.1.10
+  resolution: "goober@npm:2.1.10"
   peerDependencies:
     csstype: ^3.0.10
-  checksum: bb986e2f9a451e278986f530f3b1a389f2b95f41770fc94ff35338d1f1732998e423c7a858597e37378d97f278ccd1802d0842e5ef809daca62b867cc676c999
+  checksum: 55a353a477665ea3ae748153132a32184a6a0db42b24ec66cdca97d1e046a2b63af29f698e245fe2f51c05d0eaefeda2cce4a106bc2b6293ea67490c39b6b5c8
   languageName: node
   linkType: hard
 
@@ -10262,15 +10262,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-hot-toast@npm:2.2.0":
-  version: 2.2.0
-  resolution: "react-hot-toast@npm:2.2.0"
+"react-hot-toast@npm:2.3.0":
+  version: 2.3.0
+  resolution: "react-hot-toast@npm:2.3.0"
   dependencies:
-    goober: ^2.1.1
+    goober: ^2.1.10
   peerDependencies:
     react: ">=16"
     react-dom: ">=16"
-  checksum: bb34ddc8ada14cbd75a37f14d2563412174e23276eb05e9fb23a031b6d8374ca190cefa1940692f4371529ddafeb2d4b8d3e5023187c2851ec8cb247461553ee
+  checksum: d2526f4bf62d94ca1874de1d618e30537aa8123b5d954cf1ff4e41f063d4ab410fc4f10a0ad134d533c1e0ae3d910af1d21f5a4f37f46dcbdb1710380cbb4bc1
   languageName: node
   linkType: hard
 
