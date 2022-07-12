@@ -53,12 +53,12 @@ tauri-codegen = { version = "1", default-features = false, features = ["brotli",
 tauri-utils = { version = "1", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
-io-lifetimes = { version = "0.5", features = ["close", "libc", "winapi"] }
+io-lifetimes = { version = "0.7", features = ["close", "libc", "winapi"] }
 rustix = { version = "0.33", features = ["io-lifetimes", "itoa", "once_cell", "procfs", "std"] }
 
 [target.x86_64-apple-darwin.dependencies]
 indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
-io-lifetimes = { version = "0.5", features = ["close", "libc", "winapi"] }
+io-lifetimes = { version = "0.7", features = ["close", "libc", "winapi"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
 rustix = { version = "0.33", features = ["io-lifetimes", "itoa", "once_cell", "procfs", "std"] }
 scopeguard = { version = "1", features = ["use_std"] }
@@ -70,7 +70,7 @@ scopeguard = { version = "1", features = ["use_std"] }
 
 [target.aarch64-apple-darwin.dependencies]
 indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
-io-lifetimes = { version = "0.5", features = ["close", "libc", "winapi"] }
+io-lifetimes = { version = "0.7", features = ["close", "libc", "winapi"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
 rustix = { version = "0.33", features = ["io-lifetimes", "itoa", "once_cell", "procfs", "std"] }
 scopeguard = { version = "1", features = ["use_std"] }
