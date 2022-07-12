@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "devDependencies": {
-    "assemblyscript": "^0.19.22",
+    "assemblyscript": "0.20.13",
     "source-map-support": "^0.5.21"
   }
 }
