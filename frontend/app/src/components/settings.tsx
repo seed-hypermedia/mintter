@@ -1,7 +1,6 @@
 import {useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
 import {styled} from '@app/stitches.config'
-import {useTheme} from '@app/theme'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
@@ -36,10 +35,18 @@ export function Settings({
     >
       <StyledTabs defaultValue="profile" orientation="horizontal">
         <StyledTabsList aria-label="Manage your node" data-tauri-drag-region>
-          <TabTrigger value="profile">Profile</TabTrigger>
-          <TabTrigger value="account">Account Info</TabTrigger>
-          <TabTrigger value="wallets">Wallets</TabTrigger>
-          <TabTrigger value="settings">Settings</TabTrigger>
+          <TabTrigger data-tauri-drag-region value="profile">
+            Profile
+          </TabTrigger>
+          <TabTrigger data-tauri-drag-region value="account">
+            Account Info
+          </TabTrigger>
+          <TabTrigger data-tauri-drag-region value="wallets">
+            Wallets
+          </TabTrigger>
+          <TabTrigger data-tauri-drag-region value="settings">
+            Settings
+          </TabTrigger>
         </StyledTabsList>
         <TabsContent value="profile">
           {/* <ScrollArea> */}
@@ -268,8 +275,6 @@ function AccountInfo() {
 }
 
 function AppSettings() {
-  const themeService = useTheme()
-  const [state, send] = useActor(themeService)
   return (
     <Box
       css={{
@@ -281,15 +286,7 @@ function AppSettings() {
         marginBottom: '$8',
       }}
     >
-      <input
-        id="darkMode"
-        type="checkbox"
-        checked={state.context.current == 'dark'}
-        onChange={() => send('TOGGLE')}
-      />
-      <Text as="label" htmlFor="darkMode">
-        Dark Mode
-      </Text>
+      Coming soon!
     </Box>
   )
 }
