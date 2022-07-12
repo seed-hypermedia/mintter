@@ -1,6 +1,7 @@
 {
   "extends": ["config:base"],
   "labels": ["dependencies"],
+  "ignorePaths": ["desktop/workspace-hack/**"],
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
