@@ -7,12 +7,12 @@ import {
   ol,
   ul,
 } from '@mintter/mttast'
+
 import {Editor, Range, Transforms} from 'slate'
+import {ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST} from './group'
 import {ELEMENT_HEADING} from './heading'
-import {ELEMENT_ORDERED_LIST} from './ordered-list'
 import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
 import type {EditorPlugin} from './types'
-import {ELEMENT_UNORDERED_LIST} from './unordered-list'
 import {isFirstChild} from './utils'
 
 export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({

@@ -96,10 +96,7 @@ export default function EditorPage({
             </Button>
           </Box>
         </Box>
-        <Box
-          data-testid="editor-wrapper"
-          css={{paddingHorizontal: '$5', paddingTop: '$5'}}
-        >
+        <Box data-testid="editor-wrapper" css={{paddingTop: '$5'}}>
           {context.localDraft?.content && (
             <>
               <FileProvider value={draftRef}>

@@ -53,8 +53,7 @@ export default function Publication({
     return (
       <Box
         css={{
-          padding: '$5',
-          paddingBottom: 0,
+          paddingTop: '$5',
           marginBottom: 200,
         }}
         data-testid="publication-wrapper"
@@ -174,7 +173,6 @@ export default function Publication({
           >
             <Box
               css={{
-                padding: '$5',
                 paddingBottom: 0,
                 marginBottom: 50,
               }}

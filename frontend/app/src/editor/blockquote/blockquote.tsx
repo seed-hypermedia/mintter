@@ -1,7 +1,6 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
   Blockquote as BlockquoteType,
@@ -14,7 +13,6 @@ import {
 } from '@mintter/mttast'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
-import {statementStyle} from '../statement'
 import type {EditorPlugin} from '../types'
 import {resetFlowContent} from '../utils'
 
@@ -70,11 +68,6 @@ export const createBlockquotePlugin = (): EditorPlugin => ({
   },
 })
 
-export var blockquoteStyle = css(statementStyle, {
-  paddingLeft: '$3',
-  borderLeft: '2px solid $colors$primary-border-normal',
-})
-
 function BlockQuote({
   element,
   attributes,
@@ -97,9 +90,7 @@ function BlockQuote({
       attributes={attributes}
       mode={mode}
     >
-      <Box className={blockquoteStyle()} {...blockProps}>
-        {children}
-      </Box>
+      <Box {...blockProps}>{children}</Box>
     </BlockWrapper>
   )
 }

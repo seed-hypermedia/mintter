@@ -10,6 +10,7 @@ import {
   statement,
 } from '@mintter/mttast'
 import videoParser from 'js-video-url-parser'
+import {useMemo} from 'react'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -310,4 +311,17 @@ export const parseVideoUrl = (url: string) => {
       url: providerUrls[provider],
     } as EmbedUrlData
   }
+}
+
+export function useParentGroup(editor: Editor, path: Path) {
+  return useMemo(() => {
+    const entry = Editor.above(editor, {
+      at: path,
+      match: isGroupContent,
+    })
+
+    if (entry) {
+      return entry[0].type || 'group'
+    }
+  }, [path])
 }

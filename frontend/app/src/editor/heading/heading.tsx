@@ -1,7 +1,5 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {statementStyle} from '@app/editor/statement'
-import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
   createId,
@@ -19,8 +17,6 @@ import type {EditorPlugin} from '../types'
 import {isFirstChild, resetFlowContent} from '../utils'
 
 export const ELEMENT_HEADING = 'heading'
-
-const headingStyle = css(statementStyle, {})
 
 export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
@@ -130,16 +126,14 @@ function Heading({
       attributes={attributes}
       mode={mode}
     >
-      <Box className={headingStyle()} {...blockProps}>
-        {children}
-      </Box>
+      <Box {...blockProps}>{children}</Box>
     </BlockWrapper>
   )
 }
 
 function removeEmptyHeading(
   editor: Editor,
-  entry: NodeEntry<Heading>,
+  entry: NodeEntry<HeadingType>,
 ): boolean | undefined {
   const [node, path] = entry
   if (node.children.length == 1) {

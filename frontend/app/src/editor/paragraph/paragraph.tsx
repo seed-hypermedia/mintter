@@ -4,18 +4,16 @@ import {
   FlowContent,
   isBlockquote,
   isCode,
-  isGroupContent,
   isParagraph,
   isPhrasingContent,
 } from '@mintter/mttast'
 import {useActor} from '@xstate/react'
-import {useMemo} from 'react'
 import {Editor, Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {useHover} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {findPath} from '../utils'
+import {findPath, useParentGroup} from '../utils'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -23,17 +21,20 @@ export const paragraphStyles = css({
   fontFamily: '$alt',
   margin: 0,
   padding: 0,
-  lineHeight: '$3',
-  '&[data-parent-type=blockquote]': {
+  lineHeight: '$4',
+  '[data-parent-type=blockquote] &': {
     fontStyle: 'italic',
     color: '$base-text-low',
+    borderLeft: '2px solid $colors$primary-border-normal',
+    marginVertical: '$4',
   },
-  '&[data-parent-type=code]': {
+  '[data-parent-type=code] &': {
     fontFamily: 'monospace',
     margin: 0,
-    padding: 0,
     backgroundColor: '$base-component-bg-normal',
     paddingHorizontal: '$4',
+    paddingVertical: '$3',
+    marginVertical: '$4',
   },
 })
 export const createParagraphPlugin = (): EditorPlugin => ({
@@ -83,7 +84,7 @@ function Paragraph({
 }: RenderElementProps & {mode: EditorMode}) {
   const editor = useSlateStatic()
   const path = findPath(element)
-  const parentNode = Node.parent(editor, path)
+  const [parentNode, parentPath] = Editor.parent(editor, path)
   const hoverService = useHover()
   let [hoverState] = useActor(hoverService)
   const parentGroup = useParentGroup(editor, path)
@@ -100,30 +101,20 @@ function Paragraph({
 
   return (
     <Box
-      className={paragraphStyles()}
-      as={as}
-      data-element-type={element.type}
+      {...attributes}
+      as={
+        mode !== EditorMode.Draft && mode !== EditorMode.Publication
+          ? 'span'
+          : 'div'
+      }
+      onMouseEnter={() => {
+        hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode.id})
+      }}
       css={{
-        userSelect: 'text',
-        display:
-          mode == EditorMode.Embed
-            ? 'inline'
-            : parentGroup == 'orderedList' || parentGroup == 'unorderedList'
-            ? 'list-item'
-            : 'inherit',
-        marginLeft:
-          mode == EditorMode.Embed
-            ? 0
-            : parentGroup == 'orderedList' || parentGroup == 'unorderedList'
-            ? 16
-            : 0,
-        lineHeight: '$4',
-        '&::marker': {
-          color: '$base-text-low',
-          fontSize: '$2',
-        },
+        paddingLeft: `${parentPath.length * 16}px`,
         transition: 'all ease-in-out 0.1s',
         backgroundColor: 'transparent',
+        userSelect: 'none',
         [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
           backgroundColor:
             editor.mode != EditorMode.Draft
@@ -133,23 +124,38 @@ function Paragraph({
               : 'transparent',
         },
       }}
+      data-element-type={element.type}
       data-parent-type={(parentNode as FlowContent)?.type}
-      {...attributes}
     >
-      {children}
+      <Box
+        as={as}
+        className={paragraphStyles()}
+        css={{
+          width: '$full',
+          maxWidth: '$prose-width',
+          userSelect: 'text',
+          lineHeight: '$4',
+          display:
+            mode == EditorMode.Embed
+              ? 'inline'
+              : parentGroup == 'orderedList' || parentGroup == 'unorderedList'
+              ? 'list-item'
+              : 'inherit',
+          marginLeft:
+            mode == EditorMode.Embed
+              ? 0
+              : parentGroup == 'orderedList' || parentGroup == 'unorderedList'
+              ? 24
+              : 0,
+          paddingLeft: isBlockquote(parentNode) ? 24 : 0,
+          '&::marker': {
+            color: '$base-text-low',
+            fontSize: '$2',
+          },
+        }}
+      >
+        {children}
+      </Box>
     </Box>
   )
-}
-
-function useParentGroup(editor: Editor, path: Path) {
-  return useMemo(() => {
-    const entry = Editor.above(editor, {
-      at: path,
-      match: isGroupContent,
-    })
-
-    if (entry) {
-      return entry[0].type || 'group'
-    }
-  }, [path])
 }

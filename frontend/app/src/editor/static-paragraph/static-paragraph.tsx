@@ -1,10 +1,10 @@
 import {EditorMode} from '@app/editor/plugin-utils'
 import {findPath} from '@app/editor/utils'
 import {css} from '@app/stitches.config'
+import {Box} from '@components/box'
 import {Text, TextProps} from '@components/text'
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
-import {useActor} from '@xstate/react'
 import {Editor} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {useSlateStatic} from 'slate-react'
@@ -15,13 +15,13 @@ export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
 export const staticParagraphStyles = css({
   fontWeight: '$medium',
-  // marginTop: '1.5em',
+  marginTop: '.5em',
   userSelect: 'text',
 })
 
 const headingMap: {
   [key: number | string]: Pick<TextProps, 'size'> & {
-    as: 'h2' | 'h3' | 'h4' | 'h5' | 'p'
+    as: 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p'
   }
 } = {
   2: {
@@ -35,6 +35,9 @@ const headingMap: {
   },
   8: {
     as: 'h5',
+  },
+  10: {
+    as: 'h6',
   },
   default: {
     as: 'p',
@@ -84,7 +87,7 @@ function StaticParagraph({
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()
-  let [hoverState] = useActor(hoverService)
+  // let [hoverState] = useActor(hoverService)
 
   return (
     <Text
@@ -92,8 +95,10 @@ function StaticParagraph({
       className={staticParagraphStyles()}
       size="4"
       css={{
+        lineHeight: '$3',
+        paddingLeft: `${heading?.level * 16}px`,
         display: mode == EditorMode.Embed ? 'inline-block' : 'inherit',
-        userSelect: 'text',
+        userSelect: 'none',
         backgroundColor: 'transparent',
         [`[data-hover-block="${heading?.node.id}"] &`]: {
           backgroundColor: '$primary-component-bg-active',
@@ -107,7 +112,17 @@ function StaticParagraph({
         }
       }}
     >
-      {children}
+      <Box
+        as="span"
+        css={{
+          userSelect: 'text',
+          display: 'inline-block',
+          width: '$full',
+          maxWidth: '$prose-width',
+        }}
+      >
+        {children}
+      </Box>
     </Text>
   )
 }
