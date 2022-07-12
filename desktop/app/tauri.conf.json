@@ -81,7 +81,7 @@
       "csp": {
         "default-src": "'none'",
         "style-src": "'unsafe-inline'",
-        "connect-src": "http://localhost:55001",
+        "connect-src": "'self' http://localhost:55001",
         "img-src": "https:",
         "media-src": "https:",
         "frame-src": "https:",
