@@ -1,4 +1,4 @@
-import {css, CSS, styled} from '@app/stitches.config'
+import {css, styled} from '@app/stitches.config'
 import type * as Stitches from '@stitches/react'
 import React, {useMemo} from 'react'
 
@@ -128,7 +128,6 @@ export const icons = {
 
 export type IconProps = Stitches.VariantProps<typeof Svg> & {
   name: keyof typeof icons
-  css?: CSS
 }
 
 let preventSelect = css({userSelect: 'none'})

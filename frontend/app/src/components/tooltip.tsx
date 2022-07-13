@@ -1,6 +1,5 @@
 import {styled} from '@app/stitches.config'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
-import {PropsWithChildren} from 'react'
 
 const StyledContent = styled(TooltipPrimitive.Content, {
   zIndex: '$max',
@@ -16,20 +15,19 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
   fill: '$base-text-high',
 })
 
-export type TooltipPropsLocal = TooltipPrimitive.TooltipProps &
-  PropsWithChildren<{
-    content: string | React.ReactNode
-    open?: boolean
-  }>
+export type TooltipPropsLocal = TooltipPrimitive.TooltipProps & {
+  content: string | React.ReactNode
+}
 
 export function Tooltip({
   children,
   content,
   open,
+  delayDuration,
   ...props
 }: TooltipPropsLocal) {
   return (
-    <TooltipPrimitive.Root open={open} {...props}>
+    <TooltipPrimitive.Root delayDuration={delayDuration} open={open} {...props}>
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
       <StyledContent side="top" align="center" {...props}>
         {content}

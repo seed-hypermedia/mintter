@@ -33,7 +33,7 @@
   },
   "packageManager": "yarn@3.2.1",
   "dependencies": {
-    "@graphql-codegen/cli": "2.8.0",
+    "@graphql-codegen/cli": "2.8.1",
     "@graphql-codegen/typescript": "2.7.1",
     "ni": "0.0.2"
   }

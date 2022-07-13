@@ -1,3 +1,4 @@
+import {useFile, useFileEditor} from '@app/file-provider'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
@@ -7,10 +8,10 @@ import {
   isParagraph,
   isPhrasingContent,
 } from '@mintter/mttast'
-import {useActor} from '@xstate/react'
+import {useSelector} from '@xstate/react'
 import {Editor, Node, Path, Transforms} from 'slate'
-import {RenderElementProps, useSlateStatic} from 'slate-react'
-import {useHover} from '../hover-context'
+import {RenderElementProps} from 'slate-react'
+import {useHover, useHoverActiveSelector} from '../hover-context'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {findPath, useParentGroup} from '../utils'
@@ -82,12 +83,16 @@ function Paragraph({
   attributes,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
-  const editor = useSlateStatic()
+  const editor = useFileEditor()
+  let fileRef = useFile()
+  let fileEditor = useSelector(fileRef, (state) => state.context.editor)
   const path = findPath(element)
   const [parentNode, parentPath] = Editor.parent(editor, path)
   const hoverService = useHover()
-  let [hoverState] = useActor(hoverService)
+  let isHoverActive = useHoverActiveSelector()
   const parentGroup = useParentGroup(editor, path)
+
+  console.log({editor, fileEditor})
   let as =
     mode == EditorMode.Embed || mode == EditorMode.Mention
       ? 'span'
@@ -103,7 +108,7 @@ function Paragraph({
     <Box
       {...attributes}
       as={
-        mode !== EditorMode.Draft && mode !== EditorMode.Publication
+        mode != EditorMode.Draft && mode != EditorMode.Publication
           ? 'span'
           : 'div'
       }
@@ -111,16 +116,19 @@ function Paragraph({
         hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode.id})
       }}
       css={{
-        paddingLeft: `${parentPath.length * 16}px`,
+        paddingLeft:
+          mode == EditorMode.Draft || mode == EditorMode.Publication
+            ? `${parentPath.length * 16}px`
+            : 0,
         transition: 'all ease-in-out 0.1s',
         backgroundColor: 'transparent',
         userSelect: 'none',
         [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
           backgroundColor:
             editor.mode != EditorMode.Draft
-              ? '$primary-component-bg-active'
-              : hoverState.matches('active')
-              ? '$primary-component-bg-active'
+              ? '$primary-component-bg-normal'
+              : isHoverActive
+              ? '$primary-component-bg-normal'
               : 'transparent',
         },
       }}
@@ -134,7 +142,7 @@ function Paragraph({
           width: '$full',
           maxWidth: '$prose-width',
           userSelect: 'text',
-          lineHeight: '$4',
+          lineHeight: '$3',
           display:
             mode == EditorMode.Embed
               ? 'inline'

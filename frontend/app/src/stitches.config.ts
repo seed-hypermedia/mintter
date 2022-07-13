@@ -17,9 +17,6 @@ import {createStitches, defaultThemeMap} from '@stitches/react'
 
 const stitches = createStitches({
   prefix: 'mtt',
-  media: {
-    dark: '(prefers-color-scheme: dark)',
-  },
   theme: {
     borderStyles: {},
     borderWidths: {},
@@ -183,6 +180,7 @@ const stitches = createStitches({
     bp1: '(min-width: 768px)',
     bp2: '(min-width: 1024px)',
     bp3: '(min-width: 1400px)',
+    dark: '(prefers-color-scheme: dark)',
   },
   utils: {
     marginHorizontal: (val: Stitches.PropertyValue<'margin'>) => ({

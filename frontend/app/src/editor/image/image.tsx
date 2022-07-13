@@ -1,6 +1,7 @@
 import {imageMachine} from '@app/editor/image/image-machine'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {isValidUrl} from '@app/editor/utils'
+import {useFileEditor} from '@app/file-provider'
 import {styled} from '@app/stitches.config'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
@@ -17,7 +18,6 @@ import {
   RenderElementProps,
   useFocused,
   useSelected,
-  useSlateStatic,
 } from 'slate-react'
 import {ActorRefFrom, assign} from 'xstate'
 import type {EditorPlugin} from '../types'
@@ -61,7 +61,7 @@ const Img = styled('img', {
 })
 
 function Image({element, attributes, children}: RenderElementProps) {
-  const editor = useSlateStatic()
+  const editor = useFileEditor()
   const path = ReactEditor.findPath(editor, element)
   const imgService = useInterpret(() => imageMachine, {
     actions: {
@@ -125,7 +125,7 @@ type InnerImageProps = {
 
 function ImageComponent({service, element}: InnerImageProps) {
   let [state, send] = useActor(service)
-  const editor = useSlateStatic()
+  const editor = useFileEditor()
   const selected = useSelected()
   const focused = useFocused()
 
