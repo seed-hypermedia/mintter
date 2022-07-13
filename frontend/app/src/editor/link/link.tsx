@@ -197,7 +197,7 @@ function RenderMintterLink(
       onMouseEnter={mouseEnter}
       css={{
         [`[data-hover-block="${blockId}"] &`]: {
-          backgroundColor: '$primary-component-bg-active',
+          backgroundColor: '$primary-component-bg-normal',
         },
       }}
     />

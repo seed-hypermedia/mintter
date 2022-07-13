@@ -54,7 +54,7 @@ export function createHoverService() {
               after: {
                 500: {
                   target: '#inactive',
-                  actions: ['clearBlockId'],
+                  // actions: ['clearBlockId'],
                 },
               },
               on: {
