@@ -1,5 +1,6 @@
 import {Annotation, Block} from '@app/client'
 import {FlowContent} from '@mintter/mttast'
+import {Node} from 'slate'
 import {annotationContains, AnnotationSet} from './classes'
 
 // This example only deals with a single level of leaves.
@@ -12,13 +13,16 @@ export function blockToApi(
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
   let leaves = flattenLeaves(slateBlock.children[0].children)
 
+  const {data, type, id, ...attributes} = Node.extractProps(slateBlock)
+
   // const out = new Block(slateBlock.id, slateBlock.type);
   const out: Block = {
-    id: slateBlock.id,
-    type: slateBlock.type,
+    id,
+    type,
     annotations: [],
     attributes: {
       childrenType,
+      ...attributes,
     },
     text: '',
   }
