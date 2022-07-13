@@ -2,6 +2,7 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {useFileEditor} from '@app/file-provider'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug} from '@app/utils/logger'
@@ -15,7 +16,6 @@ import type {Embed, Link as LinkType} from '@mintter/mttast'
 import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
-import {useActor} from '@xstate/react'
 import {isKeyHotkey} from 'is-hotkey'
 import isUrl from 'is-url'
 import {
@@ -36,7 +36,7 @@ import {
   Range,
   Transforms,
 } from 'slate'
-import {ReactEditor, RenderElementProps, useSlateStatic} from 'slate-react'
+import {ReactEditor, RenderElementProps} from 'slate-react'
 import type {UseLastSelectionResult} from '../editor-hovering-toolbar'
 import type {EditorPlugin} from '../types'
 import {getEditorBlock, isCollapsed, isMarkActive} from '../utils'
@@ -169,7 +169,6 @@ function RenderMintterLink(
 ) {
   let mainService = props.mainService ?? defaultMainService
   let hoverService = useHover()
-  let [hoverState, hoverSend] = useActor(hoverService)
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -186,7 +185,7 @@ function RenderMintterLink(
   }
 
   function mouseEnter() {
-    hoverSend({type: 'MOUSE_ENTER', blockId})
+    hoverService.send({type: 'MOUSE_ENTER', blockId})
   }
 
   return (
@@ -197,7 +196,7 @@ function RenderMintterLink(
       onMouseEnter={mouseEnter}
       css={{
         [`[data-hover-block="${blockId}"] &`]: {
-          backgroundColor: '$primary-component-bg-active',
+          backgroundColor: '$primary-component-bg-normal',
         },
       }}
     />
@@ -438,7 +437,7 @@ export interface LinkModalProps {
 }
 export function LinkModal({close, lastSelection}: LinkModalProps) {
   const [link, setLink] = useState('')
-  const editor = useSlateStatic()
+  const editor = useFileEditor()
   const isLink = isLinkActive(editor)
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {

@@ -1,14 +1,15 @@
 import {EditorMode} from '@app/editor/plugin-utils'
 import {findPath} from '@app/editor/utils'
+import {useFile, useFileEditor} from '@app/file-provider'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Text, TextProps} from '@components/text'
 import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
 import {isHeading, isStaticParagraph} from '@mintter/mttast'
+import {useActor} from '@xstate/react'
 import {Editor} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {useSlateStatic} from 'slate-react'
-import {useHover} from '../hover-context'
+import {useHover, useHoverActiveSelector} from '../hover-context'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
@@ -64,7 +65,7 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
 })
 
 function useHeading(element: StaticParagraphType) {
-  var editor = useSlateStatic()
+  var editor = useFileEditor()
   var path = findPath(element)
   var parent = Editor.parent(editor, path)
   if (parent) {
@@ -84,10 +85,20 @@ function StaticParagraph({
   attributes,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
+  let fileRef = useFile()
+  let [fileState] = useActor(fileRef)
+
+  let editor = useFileEditor()
+
+  console.log('STATIC PARAHRAPH EDITOR', {
+    editor,
+    fileEditor: fileState.context.editor,
+  })
+
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()
-  // let [hoverState] = useActor(hoverService)
+  let isHoverActive = useHoverActiveSelector()
 
   return (
     <Text
@@ -101,7 +112,12 @@ function StaticParagraph({
         userSelect: 'none',
         backgroundColor: 'transparent',
         [`[data-hover-block="${heading?.node.id}"] &`]: {
-          backgroundColor: '$primary-component-bg-active',
+          backgroundColor:
+            editor.mode != EditorMode.Draft
+              ? '$primary-component-bg-normal'
+              : isHoverActive
+              ? '$primary-component-bg-normal'
+              : 'transparent',
         },
       }}
       {...sizeProps}

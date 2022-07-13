@@ -1010,9 +1010,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/cli@npm:2.8.0":
-  version: 2.8.0
-  resolution: "@graphql-codegen/cli@npm:2.8.0"
+"@graphql-codegen/cli@npm:2.8.1":
+  version: 2.8.1
+  resolution: "@graphql-codegen/cli@npm:2.8.1"
   dependencies:
     "@graphql-codegen/core": 2.6.0
     "@graphql-codegen/plugin-helpers": ^2.5.0
@@ -1042,6 +1042,7 @@ __metadata:
     mkdirp: ^1.0.4
     string-env-interpolation: ^1.0.1
     ts-log: ^2.2.3
+    tslib: ^2.4.0
     yaml: ^1.10.0
     yargs: ^17.0.0
   peerDependencies:
@@ -1051,7 +1052,7 @@ __metadata:
     graphql-code-generator: cjs/bin.js
     graphql-codegen: cjs/bin.js
     graphql-codegen-esm: esm/bin.js
-  checksum: d25aca360110709a2ce023e224d34e2c4466b87951d0b16ca2e73ed0d1fcafd2fc452e47f048fb511294d7811c9bf1c969b1fa2b0e290885573b20ecfa792895
+  checksum: 2d6c146b1cde511767fcec4754a48107c6b706c2340a85ce5fb3eedacc6f79a95d0cd9b8567c8d05cfc57e0cc6c599abb195239d14941b6bafdcdb18fe274dd9
   languageName: node
   linkType: hard
 
@@ -1812,8 +1813,8 @@ __metadata:
     unist-util-to-string-with-nodes: 0.1.1
     unist-util-visit: 4.1.0
     unist-util-visit-parents: 5.1.0
-    vite: 2.9.14
-    vite-plugin-checker: 0.4.8
+    vite: 3.0.0
+    vite-plugin-checker: 0.4.9
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
     vite-tsconfig-paths: 3.5.0
@@ -5591,7 +5592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.14.25, esbuild@npm:^0.14.27":
+"esbuild@npm:^0.14.25":
   version: 0.14.43
   resolution: "esbuild@npm:0.14.43"
   dependencies:
@@ -8961,7 +8962,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mintter@workspace:."
   dependencies:
-    "@graphql-codegen/cli": 2.8.0
+    "@graphql-codegen/cli": 2.8.1
     "@graphql-codegen/typescript": 2.7.1
     "@types/wouter": 2.2.0
     app: 0.1.0
@@ -9983,7 +9984,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.13, postcss@npm:^8.4.14":
+"postcss@npm:^8.4.14":
   version: 8.4.14
   resolution: "postcss@npm:8.4.14"
   dependencies:
@@ -10833,7 +10834,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.59.0, rollup@npm:^2.74.1":
+"rollup@npm:^2.74.1":
   version: 2.75.6
   resolution: "rollup@npm:2.75.6"
   dependencies:
@@ -12785,9 +12786,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-checker@npm:0.4.8":
-  version: 0.4.8
-  resolution: "vite-plugin-checker@npm:0.4.8"
+"vite-plugin-checker@npm:0.4.9":
+  version: 0.4.9
+  resolution: "vite-plugin-checker@npm:0.4.9"
   dependencies:
     "@babel/code-frame": ^7.12.13
     ansi-escapes: ^4.3.0
@@ -12805,10 +12806,10 @@ __metadata:
     vscode-languageserver-textdocument: ^1.0.1
     vscode-uri: ^3.0.2
   peerDependencies:
-    vite: ">=2"
+    vite: ^2.0.0 || ^3.0.0-0
   bin:
     vite-plugin-checker-vls: bin/vls
-  checksum: f7c89eee9a56f7cd4bc8be72cc990ecd9463a3e57e45f675e30cba8b40b7193a2c9478a054ff73bd8dc264e2eb7c72fd912f72aa594db846b1b6c73184a0c730
+  checksum: b3bff686c3a48335869376d01ceb98ec4a5fa961dcdb4968ab2e629ab989a7760f2ea29c3660cf3fa54f3354968c93415fc918f2bebea2ec8a6bb93692eec41a
   languageName: node
   linkType: hard
 
@@ -12853,19 +12854,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:2.9.14":
-  version: 2.9.14
-  resolution: "vite@npm:2.9.14"
+"vite@npm:3.0.0":
+  version: 3.0.0
+  resolution: "vite@npm:3.0.0"
   dependencies:
-    esbuild: ^0.14.27
+    esbuild: ^0.14.47
     fsevents: ~2.3.2
-    postcss: ^8.4.13
-    resolve: ^1.22.0
-    rollup: ^2.59.0
+    postcss: ^8.4.14
+    resolve: ^1.22.1
+    rollup: ^2.75.6
   peerDependencies:
     less: "*"
     sass: "*"
     stylus: "*"
+    terser: ^5.4.0
   dependenciesMeta:
     fsevents:
       optional: true
@@ -12876,9 +12878,11 @@ __metadata:
       optional: true
     stylus:
       optional: true
+    terser:
+      optional: true
   bin:
     vite: bin/vite.js
-  checksum: f78b54f58482ea97d385e36873ae1aa4744c5e467c1d6d4e0835bd55494d2d8f6ce763f17c241c66104be687d5ee535b8e1e96c14210c9ba0c343fe78c58f694
+  checksum: 4920b5b0a4d4bd4a003121b2eb6ed41ac2ab69e6ab055db645e678c14e68d6eef780362d4d482cf439b576c37fb65dc9a7ebbbf90354e7ae362034a28eac9130
   languageName: node
   linkType: hard
 

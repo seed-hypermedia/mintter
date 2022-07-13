@@ -1,36 +1,41 @@
 import {mainService as defaultMainService} from '@app/app-providers'
+import {Link} from '@app/client'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {BlockTools} from '@app/editor/block-tools'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {findPath} from '@app/editor/utils'
 import {useFile} from '@app/file-provider'
-import {createPublicationMachine} from '@app/publication-machine'
+import {PublicationRef} from '@app/main-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {debug} from '@app/utils/logger'
+import {debug, warn} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Tooltip} from '@components/tooltip'
-import {FlowContent} from '@mintter/mttast'
+import {FlowContent, isHeading} from '@mintter/mttast'
 import {useActor} from '@xstate/react'
-import {useMemo} from 'react'
+import {MutableRefObject, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {ReactEditor, RenderElementProps} from 'slate-react'
-import {StateFrom} from 'xstate'
+import {RenderElementProps} from 'slate-react'
 
-function useCitations(
-  state: StateFrom<ReturnType<typeof createPublicationMachine>>,
-  blockId: string,
-) {
+function useCitations(blockId: string) {
+  let fileRef = useFile() as PublicationRef
+  let [fileState] = useActor(fileRef)
   return useMemo(() => {
-    if (state.context.links) {
-      return state.context.links.filter(
+    let links: Array<Link> = []
+    if (fileState.context.links) {
+      links = fileState.context.links.filter(
         (link) => link.target?.blockId == blockId,
       )
     }
 
-    return []
-  }, [state])
+    return {
+      links,
+      fileRef,
+      fileState,
+    }
+  }, [fileState])
 }
 
 export function BlockWrapper({
@@ -45,12 +50,12 @@ export function BlockWrapper({
 }) {
   const bookmarksService = useBookmarksService()
   const hoverService = useHover()
-  const [hoverState, hoverSend] = useActor(hoverService)
 
-  let fileRef = useFile()
-  let [fileState] = useActor(fileRef)
-  let path = ReactEditor.findPath(fileState.context.editor, element)
-  let citations = useCitations(fileState, element.id)
+  let {links: citations, fileState} = useCitations(element.id)
+  let path = findPath(element)
+
+  let show = useOnScreen(attributes.ref)
+
   async function onCopy() {
     if (fileState.context.version) {
       let {documentId, version} = fileState.context
@@ -81,19 +86,20 @@ export function BlockWrapper({
         width: '$full',
         position: 'relative',
         userSelect: 'none',
+        opacity: show ? 1 : 0,
+        marginTop: isHeading(element) ? '$6' : '$4',
       }}
     >
       <Box
         as="span"
         contentEditable={false}
         onMouseEnter={() => {
-          hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+          hoverService.send({type: 'MOUSE_ENTER', blockId: element.id})
         }}
         css={{
           userSelect: 'none',
           position: 'absolute',
           display: 'block',
-
           left: `${(path.length - 2) * 16}px`,
         }}
       >
@@ -115,6 +121,7 @@ export function BlockWrapper({
         width: '$full',
         position: 'relative',
         userSelect: 'none',
+        marginTop: isHeading(element) ? '$6' : '$4',
       }}
     >
       {children}
@@ -133,10 +140,12 @@ export function BlockWrapper({
           css={{
             opacity: 0,
             userSelect: 'none',
+            visibility: 'hidden',
             transition: 'all ease-in-out 0.1s',
             [`[data-hover-block="${element.id}"] &`]: {
               opacity: 1,
               pointerEvents: 'all',
+              visibility: 'visible',
             },
             '&:hover': {
               cursor: 'pointer',
@@ -181,22 +190,33 @@ export function BlockWrapper({
 }
 
 // TODO: to avoid rendering when the block is not visible
-// export function useOnScreen(ref: MutableRefObject<any>, rootMargin = '0px') {
-//   const [isVisible, setState] = useState(false)
+export function useOnScreen(ref: MutableRefObject<any>, rootMargin = '100px') {
+  const [isVisible, setState] = useState(false)
+  useEffect(() => {
+    let observer: IntersectionObserver | undefined = undefined
+    if ('IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            console.log('IS INTERSECTING', ref.current)
+          }
+          setState(entry.isIntersecting)
+        },
+        {rootMargin, threshold: 0.75},
+      )
+      if (ref && ref.current) {
+        observer.observe(ref.current)
+      }
+    } else {
+      warn('Intersection observer is not available in this browser')
+      setState(true)
+    }
 
-//   useEffect(() => {
-//     const observer = new IntersectionObserver(
-//       ([entry]) => {
-//         setState(entry.isIntersecting)
-//       },
-//       {rootMargin},
-//     )
-//     if (ref && ref.current) {
-//       observer.observe(ref.current)
-//     }
-//     return () => {
-//       observer.unobserve(ref.current)
-//     }
-//   }, [])
-//   return isVisible
-// }
+    return () => {
+      if (observer && ref.current) {
+        observer.unobserve(ref.current)
+      }
+    }
+  }, [])
+  return isVisible
+}

@@ -194,7 +194,8 @@ export default function Publication({
             <Box
               css={{
                 marginBottom: 200,
-                paddingHorizontal: 32,
+                marginLeft: '$8',
+                marginRight: '$5',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-start',

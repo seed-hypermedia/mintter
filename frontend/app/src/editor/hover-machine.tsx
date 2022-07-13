@@ -54,7 +54,7 @@ export function createHoverService() {
               after: {
                 500: {
                   target: '#inactive',
-                  actions: ['clearBlockId'],
+                  // actions: ['clearBlockId'],
                 },
               },
               on: {
@@ -83,9 +83,6 @@ export function createHoverService() {
           var blockId = event.type == 'MOUSE_LEAVE' ? '' : event.blockId
           document.body.dataset.hoverBlock = blockId
         },
-        clearBlockId: () => {
-          delete document.body.dataset.hoverBlock
-        },
         emit: (_, event) => {
           var blockId = event.type == 'MOUSE_LEAVE' ? '' : event.blockId
           invoke('emit_all', {event: 'block_hover', payload: blockId})
@@ -112,10 +109,12 @@ export function createHoverService() {
           }
         },
         windowMouseListener: () => (sendBack) => {
-          window.addEventListener('mousemove', (e) => sendBack('mousemove'))
+          document.body.addEventListener('mousemove', (e) =>
+            sendBack('mousemove'),
+          )
 
           return () => {
-            window.removeEventListener('mousemove', (e) =>
+            document.body.removeEventListener('mousemove', (e) =>
               sendBack('mousemove'),
             )
           }
