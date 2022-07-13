@@ -20,9 +20,12 @@ export function createInterpreterContext<
     createRequiredContext<TInterpreter>(displayName)
 
   const createUseSelector =
-    <Data>(selector: (state: TInterpreter['state']) => Data) =>
+    <Data>(
+      selector: (state: TInterpreter['state']) => Data,
+      compare?: (a: Data, b: Data) => boolean,
+    ) =>
     () => {
-      return useSelector(useContext(), selector)
+      return useSelector(useContext(), selector, compare)
     }
 
   return [Provider, useContext, createUseSelector] as const

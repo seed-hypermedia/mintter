@@ -72,14 +72,14 @@ export var ElementDropdown = styled('button', {
   userSelect: 'none',
   all: 'unset',
   padding: 0,
-  width: 24,
-  height: 24,
+  width: 18,
+  height: 18,
   borderRadius: '$2',
-  backgroundColor: '$base-component-bg-normal',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   '&:hover': {
     cursor: 'pointer',
+    backgroundColor: '$base-component-bg-normal',
   },
 })
