@@ -1,10 +1,11 @@
+import {mainService as defaultMainService} from '@app/app-providers'
 import {useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
 import {styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import {useActor} from '@xstate/react'
+import {useActor, useSelector} from '@xstate/react'
 import {FormEvent} from 'react'
 import {Box} from './box'
 import {Button} from './button'
@@ -274,7 +275,15 @@ function AccountInfo() {
   )
 }
 
-function AppSettings() {
+function AppSettings({
+  mainService = defaultMainService,
+}: {
+  mainService: typeof defaultMainService
+}) {
+  let activityService = useSelector(
+    mainService,
+    (state) => state.context.activity,
+  )
   return (
     <Box
       css={{
@@ -286,7 +295,17 @@ function AppSettings() {
         marginBottom: '$8',
       }}
     >
-      Coming soon!
+      <Button
+        color="danger"
+        size="1"
+        variant="outlined"
+        onClick={(e) => {
+          e.preventDefault()
+          activityService.send('RESET')
+        }}
+      >
+        Reset Activity
+      </Button>
     </Box>
   )
 }

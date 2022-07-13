@@ -90,11 +90,6 @@ function StaticParagraph({
 
   let editor = useFileEditor()
 
-  console.log('STATIC PARAHRAPH EDITOR', {
-    editor,
-    fileEditor: fileState.context.editor,
-  })
-
   var heading = useHeading(element as StaticParagraphType)
   var sizeProps = headingMap[heading?.level ?? 'default']
   var hoverService = useHover()

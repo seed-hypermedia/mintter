@@ -10,6 +10,7 @@ import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {debug} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
+import {Box} from '@components/box'
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
@@ -23,6 +24,7 @@ export type LibraryItemProps = {
   deletePublication?: typeof defaultDeletePublication
   copy?: typeof copyTextToClipboard
   mainService?: typeof defaultMainService
+  isNew: boolean
 }
 
 let hoverIconStyle = css({
@@ -35,6 +37,7 @@ export function LibraryItem({
   mainService = defaultMainService,
   deleteDraft = defaultDeleteDraft,
   deletePublication = defaultDeletePublication,
+  isNew = false,
 }: PropsWithChildren<LibraryItemProps>) {
   const [state] = useActor(fileRef)
   const [mainState] = useActor(mainService)
@@ -126,6 +129,28 @@ export function LibraryItem({
 
   return (
     <StyledItem active={match} data-testid="library-item">
+      {isPublication ? (
+        <Box
+          css={{
+            width: 16,
+            flex: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {isNew ? (
+            <Box
+              css={{
+                width: 6,
+                height: 6,
+                borderRadius: '$round',
+                backgroundColor: '$primary-active',
+              }}
+            />
+          ) : null}
+        </Box>
+      ) : null}
       <Text
         size="2"
         className="title"
@@ -208,6 +233,7 @@ export var StyledItem = styled(
     position: 'relative',
     borderRadius: '$1',
     backgroundColor: '$$bg',
+    paddingHorizontal: '$3',
     '&:hover': {
       cursor: 'pointer',
       backgroundColor: '$$bgHover',

@@ -197,9 +197,6 @@ export function useOnScreen(ref: MutableRefObject<any>, rootMargin = '100px') {
     if ('IntersectionObserver' in window) {
       observer = new IntersectionObserver(
         ([entry]) => {
-          if (entry.isIntersecting) {
-            console.log('IS INTERSECTING', ref.current)
-          }
           setState(entry.isIntersecting)
         },
         {rootMargin, threshold: 0.75},

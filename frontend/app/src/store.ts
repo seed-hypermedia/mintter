@@ -1,14 +1,14 @@
-// import {Store as TauriStore} from 'tauri-plugin-store-api'
 import {error} from '@app/utils/logger'
+import {Store as TauriStore} from 'tauri-plugin-store-api'
 
-// export function createStore(path: string): TauriStore | LocalStore {
-export function createStore(path: string): LocalStore {
-  return new LocalStore(path)
-  // if (!import.meta.env.SSR) {
-  //   return new TauriStore(path)
-  // } else {
-  //   return new LocalStore(path)
-  // }
+export function createStore(path: string): TauriStore | LocalStore {
+  // export function createStore(path: string): LocalStore {
+  // return new LocalStore(path)
+  if (!import.meta.env.SSR) {
+    return new TauriStore(path)
+  } else {
+    return new LocalStore(path)
+  }
 }
 
 type LocalStorageStore<T = unknown> = {

@@ -4,7 +4,7 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {Text} from '@components/text'
-import {useActor} from '@xstate/react'
+import {useActor, useSelector} from '@xstate/react'
 
 type PublicationListProps = {
   mainService?: typeof defaultMainService
@@ -14,6 +14,10 @@ export function PublicationList({
   mainService = defaultMainService,
 }: PublicationListProps) {
   let [mainState] = useActor(mainService)
+  let visitList = useSelector(
+    mainState.context.activity,
+    (state) => state.context.visitList,
+  )
   let pubList = mainState.context.publicationList
   return (
     <Box
@@ -44,10 +48,21 @@ export function PublicationList({
           New Document
         </Button>
       </Box>
-      <ol className={pageListStyle()}>
+      <Box
+        as="ol"
+        className={pageListStyle()}
+        css={{
+          marginLeft: '-$8',
+        }}
+      >
         {pubList.length ? (
           pubList.map((publication) => (
             <LibraryItem
+              isNew={
+                !visitList.includes(
+                  `${publication.document.id}/${publication.version}`,
+                )
+              }
               mainService={mainService}
               fileRef={publication.ref}
               key={publication.version}
@@ -76,7 +91,7 @@ export function PublicationList({
             </Button>
           </Box>
         )}
-      </ol>
+      </Box>
     </Box>
   )
 }

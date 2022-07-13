@@ -1,3 +1,4 @@
+import {activityMachine} from '@app/activity-machine'
 import type {Document} from '@app/client'
 import {
   createDraft,
@@ -37,6 +38,7 @@ export type MainPageContext = {
   }
   recents: Array<PublicationRef | DraftRef>
   library: ActorRefFrom<typeof libraryMachine> | null
+  activity: ActorRefFrom<typeof activityMachine> | null
   publicationList: Array<PublicationWithRef>
   draftList: Array<DraftWithRef>
   errorMessage: string
@@ -143,6 +145,7 @@ export function defaultMainPageContext(
     },
     recents: [],
     library: spawn(libraryMachine, 'library'),
+    activity: spawn(activityMachine, 'activity'),
     currentFile: null,
     publicationList: [],
     draftList: [],
@@ -182,6 +185,7 @@ export function createMainPageService({
         publicationList: [],
         draftList: [],
         errorMessage: '',
+        activity: spawn(activityMachine, 'activity'),
       }),
       tsTypes: {} as import('./main-machine.typegen').Typegen0,
       schema: {
@@ -279,12 +283,13 @@ export function createMainPageService({
                 validating: {
                   always: [
                     {
+                      cond: 'isMetaEventDifferent',
                       actions: [
                         'pushToRecents',
+                        'pushToActivity',
                         'setPublicationParams',
                         'setPublicationAsCurrent',
                       ],
-                      cond: 'isMetaEventDifferent',
                       target: 'valid',
                     },
                     {
@@ -299,7 +304,6 @@ export function createMainPageService({
                     'GO.TO.PUBLICATION': [
                       {
                         cond: 'isEventDifferent',
-                        actions: ['pushToRecents'],
                         target: 'validating',
                       },
                       {},
@@ -485,6 +489,15 @@ export function createMainPageService({
         }),
         openWindow: async (context, event) => {
           openWindow(event.path)
+        },
+        pushToActivity: (context, e, meta) => {
+          let {event} = meta.state
+          console.log('pushToActivity', event)
+
+          context.activity.send({
+            type: 'VISIT.PUBLICATION',
+            url: `${event.docId}/${event.version}`,
+          })
         },
         pushToRecents: assign(({currentFile, recents}) => {
           if (currentFile) {
@@ -678,8 +691,22 @@ export function createMainPageService({
             .then(function filesResponse([pubList, draftList]) {
               sendBack({
                 type: 'REPORT.FILES.SUCCESS',
-                publicationList: pubList.publications,
-                draftList: draftList.documents,
+                publicationList: pubList.publications.sort((a, b) => {
+                  if (a.document?.updateTime && b.document?.updateTime) {
+                    return (
+                      b.document?.updateTime.getSeconds() -
+                      a.document?.updateTime.getSeconds()
+                    )
+                  } else {
+                    return (
+                      b.document?.createTime!.getSeconds() -
+                      a.document?.createTime!.getSeconds()
+                    )
+                  }
+                }),
+                draftList: draftList.documents.sort((a, b) => {
+                  return b.createTime!.getSeconds() - a.createTime!.getSeconds()
+                }),
               })
             })
             .catch((error) => {

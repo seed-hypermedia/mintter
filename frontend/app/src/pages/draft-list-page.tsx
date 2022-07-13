@@ -44,10 +44,17 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
             New Document
           </Button>
         </Box>
-        <ol className={pageListStyle()}>
+        <Box
+          as="ol"
+          className={pageListStyle()}
+          css={{
+            marginLeft: '-$5',
+          }}
+        >
           {drafts.length ? (
             drafts.map((draft) => (
               <LibraryItem
+                isNew={false}
                 key={draft.id}
                 fileRef={draft.ref}
                 mainService={mainService}
@@ -76,7 +83,7 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
               </Button>
             </Box>
           )}
-        </ol>
+        </Box>
       </Box>
     </>
   )
