@@ -1,6 +1,7 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {findPath} from '@app/editor/utils'
+import {useFileEditor} from '@app/file-provider'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Box} from '@components/box'
 import {Icon, icons} from '@components/icon'
@@ -22,12 +23,10 @@ import {
   ul,
   video,
 } from '@mintter/mttast'
-import {useActor} from '@xstate/react'
 import {Fragment} from 'react'
 import {BaseRange, Editor, Node, Path, Transforms} from 'slate'
-import {useSlateStatic} from 'slate-react'
 import {Dropdown, ElementDropdown} from './dropdown'
-import {useHover} from './hover-context'
+import {useHover, useHoverActiveSelector} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
 const items: {
@@ -100,9 +99,9 @@ type BlockToolsProps = {
 }
 
 export function BlockTools({element}: BlockToolsProps) {
-  const editor = useSlateStatic()
+  let editor = useFileEditor()
   const hoverService = useHover()
-  const [hoverState, hoverSend] = useActor(hoverService)
+  let isHoverActive = useHoverActiveSelector()
   const path = findPath(element)
 
   return (
@@ -113,8 +112,10 @@ export function BlockTools({element}: BlockToolsProps) {
         userSelect: 'none',
         transition: 'all ease-in-out 0.1s',
         padding: '$2',
+        paddingLeft: '$3',
         pointerEvents: 'none',
         visibility: 'hidden',
+        marginTop: isHeading(element) ? '$2' : 0,
         [`[data-hover-block="${element.id}"] &`]:
           editor.mode != EditorMode.Draft
             ? {
@@ -122,7 +123,7 @@ export function BlockTools({element}: BlockToolsProps) {
                 pointerEvents: 'all',
                 visibility: 'visible',
               }
-            : hoverState.matches('active')
+            : isHoverActive
             ? {
                 opacity: 1,
                 pointerEvents: 'all',
@@ -136,14 +137,14 @@ export function BlockTools({element}: BlockToolsProps) {
     >
       <Box
         onMouseEnter={() => {
-          hoverSend({type: 'MOUSE_ENTER', blockId: element.id})
+          hoverService.send({type: 'MOUSE_ENTER', blockId: element.id})
         }}
       />
 
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger asChild>
           <ElementDropdown data-trigger contentEditable={false}>
-            <Icon name="Grid4" size="2" color="muted" />
+            <Icon name="Grid4" color="muted" css={{width: 18, height: 18}} />
           </ElementDropdown>
         </Dropdown.Trigger>
         <Dropdown.Content portalled align="start" side="bottom">

@@ -58,6 +58,8 @@ function DiscussionEditor({
     <Box
       css={{
         borderBottom: '1px solid rgba(0,0,0,0.1)',
+        width: '$full',
+        // maxWidth: '$prose-width',
         '&:hover': {
           cursor: 'pointer',
         },

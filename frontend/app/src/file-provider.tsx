@@ -1,7 +1,8 @@
 import {DraftRef, PublicationRef} from '@app/main-machine'
+import {useSelector} from '@xstate/react'
 import {createContext, useContext} from 'react'
 
-type FileContext = PublicationRef | DraftRef
+export type FileContext = PublicationRef | DraftRef
 
 const fileContext = createContext<FileContext | null>(null)
 
@@ -17,4 +18,9 @@ export function useFile() {
   }
 
   return context
+}
+
+export function useFileEditor() {
+  let context = useFile()
+  return useSelector(context, (state) => state.context.editor)
 }

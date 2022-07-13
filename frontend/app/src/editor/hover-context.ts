@@ -9,6 +9,6 @@ const [HoverProvider, useHover, createHoverSelector] =
 
 export {HoverProvider, useHover}
 
-export const useHoverBlockId = createHoverSelector(
-  (state) => state.context.blockId,
+export const useHoverActiveSelector = createHoverSelector((state) =>
+  state.matches('active'),
 )

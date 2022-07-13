@@ -1,4 +1,5 @@
 import {BlockWrapper} from '@app/editor/block-wrapper'
+import {useFileEditor} from '@app/file-provider'
 import {css, styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import type {Code as CodeType} from '@mintter/mttast'
@@ -19,7 +20,6 @@ import {
 } from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
-import {useSlateStatic} from 'slate-react'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
 import {MARK_STRONG} from '../strong'
@@ -208,7 +208,7 @@ function Code({
   element: CodeType
   mode: EditorMode
 }) {
-  const editor = useSlateStatic()
+  const editor = useFileEditor()
   const path = findPath(element)
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {

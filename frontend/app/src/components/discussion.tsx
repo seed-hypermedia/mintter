@@ -28,6 +28,7 @@ export function Discussion({service, mainService}: DiscussionProps) {
       <Box
         css={{
           display: 'flex',
+          width: '$full',
           flexDirection: 'column',
           gap: '$4',
           paddingHorizontal: '$4',
