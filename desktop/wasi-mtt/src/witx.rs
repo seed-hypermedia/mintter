@@ -1,5 +1,3 @@
-#![allow(clippy::derive_partial_eq_without_eq)]
-
 use crate::{
   error::{Error, ErrorKind},
   MttCtx,
