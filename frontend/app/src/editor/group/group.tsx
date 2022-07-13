@@ -158,6 +158,7 @@ export const Group = forwardRef<GroupProps, any>(
             ? 'ol'
             : 'div'
         }
+        start={element.start}
         className={groupStyle()}
         data-element-type={element.type}
         {...attributes}
