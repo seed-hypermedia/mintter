@@ -28,6 +28,7 @@ import {MARK_UNDERLINE} from '../underline'
 import {findPath, resetFlowContent} from '../utils'
 
 export const ELEMENT_CODE = 'code'
+const LEAF_TOKEN = 'codeToken'
 const HIGHLIGHTER = Symbol('shiki highlighter')
 
 const langs = Object.keys(
@@ -91,6 +92,19 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
             <Code mode={editor.mode} element={element} attributes={attributes}>
               {children}
             </Code>
+          )
+        }
+      },
+    // This implementation is the same as the color plugin
+    // but we chose a different mark name, to prevent syntax highlighting results from being persistet
+    renderLeaf:
+      () =>
+      ({attributes, children, leaf}) => {
+        if (leaf[LEAF_TOKEN] && leaf.value) {
+          return (
+            <span style={{color: leaf[LEAF_TOKEN]}} {...attributes}>
+              {children}
+            </span>
           )
         }
       },
@@ -163,7 +177,7 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
                   path,
                   offset: offset + token.content.length,
                 },
-                color: token.color,
+                [LEAF_TOKEN]: token.color,
               }
 
               if (token.fontStyle == 1) range[MARK_EMPHASIS] = true
