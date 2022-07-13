@@ -93,7 +93,6 @@ export function BlockWrapper({
           userSelect: 'none',
           position: 'absolute',
           display: 'block',
-
           left: `${(path.length - 2) * 16}px`,
         }}
       >
@@ -133,10 +132,12 @@ export function BlockWrapper({
           css={{
             opacity: 0,
             userSelect: 'none',
+            visibility: 'hidden',
             transition: 'all ease-in-out 0.1s',
             [`[data-hover-block="${element.id}"] &`]: {
               opacity: 1,
               pointerEvents: 'all',
+              visibility: 'visible',
             },
             '&:hover': {
               cursor: 'pointer',

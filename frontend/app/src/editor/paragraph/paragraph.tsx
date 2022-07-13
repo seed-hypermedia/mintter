@@ -118,9 +118,9 @@ function Paragraph({
         [`[data-hover-block="${(parentNode as FlowContent).id}"] &`]: {
           backgroundColor:
             editor.mode != EditorMode.Draft
-              ? '$primary-component-bg-active'
+              ? '$primary-component-bg-normal'
               : hoverState.matches('active')
-              ? '$primary-component-bg-active'
+              ? '$primary-component-bg-normal'
               : 'transparent',
         },
       }}

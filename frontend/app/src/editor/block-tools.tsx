@@ -1,6 +1,6 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {findPath} from '@app/editor/utils'
-import {useFile} from '@app/file-provider'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Box} from '@components/box'
 import {Icon, icons} from '@components/icon'
@@ -104,8 +104,6 @@ export function BlockTools({element}: BlockToolsProps) {
   const hoverService = useHover()
   const [hoverState, hoverSend] = useActor(hoverService)
   const path = findPath(element)
-  let fileRef = useFile()
-  let [fileState] = useActor(fileRef)
 
   return (
     <Box
@@ -117,11 +115,20 @@ export function BlockTools({element}: BlockToolsProps) {
         padding: '$2',
         pointerEvents: 'none',
         visibility: 'hidden',
-        [`[data-hover-block="${element.id}"] &`]: {
-          opacity: 1,
-          pointerEvents: 'all',
-          visibility: 'visible',
-        },
+        [`[data-hover-block="${element.id}"] &`]:
+          editor.mode != EditorMode.Draft
+            ? {
+                opacity: 1,
+                pointerEvents: 'all',
+                visibility: 'visible',
+              }
+            : hoverState.matches('active')
+            ? {
+                opacity: 1,
+                pointerEvents: 'all',
+                visibility: 'visible',
+              }
+            : {},
         '&:hover': {
           cursor: 'pointer',
         },
