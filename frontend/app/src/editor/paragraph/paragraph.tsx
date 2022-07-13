@@ -92,7 +92,6 @@ function Paragraph({
   let isHoverActive = useHoverActiveSelector()
   const parentGroup = useParentGroup(editor, path)
 
-  console.log({editor, fileEditor})
   let as =
     mode == EditorMode.Embed || mode == EditorMode.Mention
       ? 'span'

@@ -8,7 +8,6 @@ import {
 } from '@app/editor/utils'
 import {videoMachine} from '@app/editor/video/video-machine'
 import {useFileEditor} from '@app/file-provider'
-import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -101,12 +100,6 @@ function Video({element, attributes, children}: RenderElementProps) {
       },
       assignCaptionVisibility: assign({
         captionVisibility: () => {
-          debug(
-            '\n\n=== captionVisibility',
-            editor.mode == EditorMode.Draft
-              ? true
-              : !!(element as VideoType).alt,
-          )
           return editor.mode == EditorMode.Draft
             ? true
             : !!(element as VideoType).alt

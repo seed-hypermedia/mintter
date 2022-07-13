@@ -3,7 +3,6 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {isValidUrl} from '@app/editor/utils'
 import {useFileEditor} from '@app/file-provider'
 import {styled} from '@app/stitches.config'
-import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -82,12 +81,6 @@ function Image({element, attributes, children}: RenderElementProps) {
       },
       assignCaptionVisibility: assign({
         captionVisibility: () => {
-          debug(
-            '\n\n=== captionVisibility',
-            editor.mode == EditorMode.Draft
-              ? true
-              : !!(element as ImageType).alt,
-          )
           return editor.mode == EditorMode.Draft
             ? true
             : !!(element as ImageType).alt
