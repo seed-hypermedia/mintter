@@ -1010,9 +1010,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/cli@npm:2.8.0":
-  version: 2.8.0
-  resolution: "@graphql-codegen/cli@npm:2.8.0"
+"@graphql-codegen/cli@npm:2.8.1":
+  version: 2.8.1
+  resolution: "@graphql-codegen/cli@npm:2.8.1"
   dependencies:
     "@graphql-codegen/core": 2.6.0
     "@graphql-codegen/plugin-helpers": ^2.5.0
@@ -1042,6 +1042,7 @@ __metadata:
     mkdirp: ^1.0.4
     string-env-interpolation: ^1.0.1
     ts-log: ^2.2.3
+    tslib: ^2.4.0
     yaml: ^1.10.0
     yargs: ^17.0.0
   peerDependencies:
@@ -1051,7 +1052,7 @@ __metadata:
     graphql-code-generator: cjs/bin.js
     graphql-codegen: cjs/bin.js
     graphql-codegen-esm: esm/bin.js
-  checksum: d25aca360110709a2ce023e224d34e2c4466b87951d0b16ca2e73ed0d1fcafd2fc452e47f048fb511294d7811c9bf1c969b1fa2b0e290885573b20ecfa792895
+  checksum: 2d6c146b1cde511767fcec4754a48107c6b706c2340a85ce5fb3eedacc6f79a95d0cd9b8567c8d05cfc57e0cc6c599abb195239d14941b6bafdcdb18fe274dd9
   languageName: node
   linkType: hard
 
@@ -8961,7 +8962,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mintter@workspace:."
   dependencies:
-    "@graphql-codegen/cli": 2.8.0
+    "@graphql-codegen/cli": 2.8.1
     "@graphql-codegen/typescript": 2.7.1
     "@types/wouter": 2.2.0
     app: 0.1.0
