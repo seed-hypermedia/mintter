@@ -13,16 +13,13 @@ import {
 // import { interpret } from "xstate";
 import {annotationContains} from './classes'
 
-// function main() {
-//   let service = interpret(toSlateMachine).start()
-// }
-
-// main()
-
 export function blockToSlate(blk: Block): FlowContent {
+  const {childrenType: _, ...attributes} = blk.attributes
+
   const out = {
     id: blk.id,
     type: blk.type,
+    ...attributes,
     // TODO: handle block attributes too. I guess we've lost
     // the "paragraph" type of the content node during the conversion ¯\_(ツ)_/¯.
     // Let's pretend it's there though.
