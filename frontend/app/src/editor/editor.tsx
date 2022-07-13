@@ -67,7 +67,7 @@ export function Editor({
   if (mode == EditorMode.Draft) {
     return (
       <Suspense fallback={'loading'}>
-        <Box className={className} css={{position: 'relative'}}>
+        <Box className={className} css={{position: 'relative'}} id="editor">
           <Slate
             editor={_editor}
             value={value as Array<Descendant>}
@@ -97,6 +97,8 @@ export function Editor({
       <Box
         as="span"
         className={className}
+        id="editor"
+        css={{position: 'relative'}}
         onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
       >
         <Slate
