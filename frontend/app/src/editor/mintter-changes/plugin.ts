@@ -55,12 +55,18 @@ export function createMintterChangesPlugin(): EditorPlugin {
             break
           case 'set_node':
           case 'merge_node': {
-            const [node] =
-              Editor.above(editor, {
-                // at or above the current node
-                at: [...op.path, 0],
-                match: isFlowContent,
-              }) || []
+            let node = Node.get(editor, op.path)
+
+            if (!isFlowContent(node)) {
+              const [_node] =
+                Editor.above(editor, {
+                  // at or above the current node
+                  at: op.path,
+                  match: isFlowContent,
+                }) || []
+
+              node = _node
+            }
 
             if (node) {
               addOperation(editor, 'replaceBlock', node)
