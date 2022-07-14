@@ -215,10 +215,17 @@ export const listAccountsMachine = createMachine(
     actions: {
       assignData: assign({
         listAccounts: (_, event) =>
-          event.data.map((account) => ({
-            account,
-            ref: spawn(createAccountMachine(account), `account-${account.id}`),
-          })),
+          event.data
+            .sort((a, b) => {
+              return b.id.localeCompare(a.id)
+            })
+            .map((account) => ({
+              account,
+              ref: spawn(
+                createAccountMachine(account),
+                `account-${account.id}`,
+              ),
+            })),
       }),
       assignError: assign({
         errorMessage: (_, event) => event.errorMessage,
