@@ -56,7 +56,7 @@ func TestBug_MissingBacklinks(t *testing.T) {
 	}
 
 	var i int
-	blk.ForEachLink(func(l mintterLink) bool {
+	blk.ForEachLink(func(l MintterLink) bool {
 		i++
 		return true
 	})

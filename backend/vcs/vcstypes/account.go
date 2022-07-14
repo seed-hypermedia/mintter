@@ -2,7 +2,6 @@ package vcstypes
 
 import (
 	"context"
-	"encoding"
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs"
@@ -132,7 +131,7 @@ func (a *Account) RegisterDevice(device core.PublicKey, accountKey core.KeyPair)
 		return nil
 	}
 
-	proof, err := makeInviteProof(accountKey, device)
+	proof, err := NewRegistrationProof(accountKey, did)
 	if err != nil {
 		return err
 	}
@@ -208,8 +207,45 @@ type Profile struct {
 // DeviceRegistration delegates capabilities to mutate an Account to a Device.
 type DeviceRegistration struct {
 	Device cid.Cid
-	Proof  []byte
+	Proof  RegistrationProof
 }
+
+// RegistrationProof is a cryptographic proof certifying that
+// one child key belongs to another parent key.
+type RegistrationProof []byte
+
+// NewRegistrationProof creates a new registration proof.
+// It's deterministic, i.e. calling multiple times with
+// the same arguments produces the same result.
+func NewRegistrationProof(parent core.Signer, child cid.Cid) (RegistrationProof, error) {
+	idBytes, err := child.MarshalBinary()
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal id: %w", err)
+	}
+
+	sig, err := parent.Sign(append([]byte(registrationProofPrefix), idBytes...))
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign id with private key: %w", err)
+	}
+
+	return RegistrationProof(sig), nil
+}
+
+// Verify registration proof.
+func (p RegistrationProof) Verify(parent core.Verifier, child cid.Cid) error {
+	if p == nil || len(p) == 0 {
+		return fmt.Errorf("empty registration proof")
+	}
+
+	data, err := child.MarshalBinary()
+	if err != nil {
+		return err
+	}
+
+	return parent.Verify(append([]byte(registrationProofPrefix), data...), core.Signature(p))
+}
+
+const registrationProofPrefix = "mintter-registration-proof:"
 
 type AccountEvent struct {
 	// One of.
@@ -240,11 +276,16 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 		return cid.Undef, err
 	}
 
-	id := core.NewIdentity(aid, device)
+	id := core.NewIdentity(account.PublicKey, device)
 
 	evts := accmodel.Events()
 	if len(evts) <= 0 {
 		panic("BUG: no events after account register")
+	}
+
+	proof := evts[0].DeviceRegistered.Proof
+	if proof == nil {
+		panic("BUG: nil registration proof")
 	}
 
 	data, err := cbornode.DumpObject(evts)
@@ -287,43 +328,9 @@ func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) 
 		return cid.Undef, fmt.Errorf("no account in the database")
 	}
 
-	blkdb, err := vcssql.IPFSBlocksLookupPK(conn, recorded.ID.Hash())
-	if err != nil {
-		return cid.Undef, fmt.Errorf("failed to lookup database id of the recorded change: %w", err)
-	}
-
-	if err := vcssql.AccountDevicesInsertOrIgnore(conn, accdb.AccountsID, devicedb.DevicesID, blkdb.IPFSBlocksID); err != nil {
+	if err := vcssql.AccountDevicesInsertOrIgnore(conn, accdb.AccountsID, devicedb.DevicesID, proof); err != nil {
 		return cid.Undef, err
 	}
 
 	return blk.Cid(), nil
-}
-
-const accBindingPrefix = "account-binding:"
-
-func makeInviteProof(k core.Signer, id encoding.BinaryMarshaler) ([]byte, error) {
-	idBytes, err := id.MarshalBinary()
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal id: %w", err)
-	}
-
-	sig, err := k.Sign(append([]byte(accBindingPrefix), idBytes...))
-	if err != nil {
-		return nil, fmt.Errorf("failed to sign id with private key: %w", err)
-	}
-
-	return sig, nil
-}
-
-func verifyInviteProof(k core.Verifier, id encoding.BinaryMarshaler, signature []byte) error {
-	idBytes, err := id.MarshalBinary()
-	if err != nil {
-		return err
-	}
-
-	if err := k.Verify(append([]byte(accBindingPrefix), idBytes...), signature); err != nil {
-		return fmt.Errorf("failed to verify invite proof: %w", err)
-	}
-
-	return nil
 }

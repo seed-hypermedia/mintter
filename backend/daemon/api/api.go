@@ -9,13 +9,10 @@ import (
 	documents "mintter/backend/daemon/api/documents/v1alpha"
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/ondisk"
-	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
+	"mintter/backend/syncing"
 	"mintter/backend/vcs"
-	"time"
-
-	"go.uber.org/zap"
 )
 
 // Server combines all the daemon API services into one thing.
@@ -32,29 +29,20 @@ func New(
 	repo *ondisk.OnDisk,
 	v *vcs.SQLite,
 	node *future.ReadOnly[*mttnet.Node],
+	sync *future.ReadOnly[*syncing.Service],
 ) Server {
-	log := logging.New("mintter/api", "debug")
-
 	return Server{
 		Accounts: accounts.NewServer(id, v),
 		Daemon: daemon.NewServer(repo, v, func() error {
-			net, ok := node.Get()
+			s, ok := sync.Get()
 			if !ok {
 				return fmt.Errorf("account is not initialized yet")
 			}
 
-			<-net.Ready()
-
-			log := log.With(zap.Int64("traceID", time.Now().Unix()))
-
 			go func() {
-				log.Debug("ForceSyncStarted")
-				res, err := net.Sync(context.Background())
-				log.Debug("ForceSyncFinished",
-					zap.Error(err),
-					zap.Int("successes", res.NumSyncOK),
-					zap.Int("failures", res.NumSyncFailed),
-				)
+				if err := s.SyncAndLog(context.Background()); err != nil {
+					panic("bug or fatal error during sync " + err.Error())
+				}
 			}()
 
 			return nil

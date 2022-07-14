@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"time"
+	"errors"
 
 	_ "expvar"
 	_ "net/http/pprof"
@@ -13,7 +13,6 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/burdiyan/go/kongcli"
 	"github.com/burdiyan/go/mainutil"
-	"go.uber.org/fx"
 )
 
 // Version could be replaced by passing linker flags.
@@ -29,19 +28,18 @@ func main() {
 	)
 
 	mainutil.Run(func() error {
-		app := fx.New(
-			daemon.Module(cfg),
-			fx.StopTimeout(1*time.Minute),
-		)
-
 		ctx := mainutil.TrapSignals()
 
-		if err := app.Start(ctx); err != nil {
+		app, err := daemon.Load(ctx, cfg)
+		if err != nil {
 			return err
 		}
 
-		<-ctx.Done()
+		err = app.Wait()
+		if errors.Is(err, context.Canceled) {
+			return nil
+		}
 
-		return app.Stop(context.Background())
+		return err
 	})
 }

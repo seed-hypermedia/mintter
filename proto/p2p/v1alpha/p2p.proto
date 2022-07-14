@@ -15,22 +15,16 @@ service P2P {
   // use this call to pull the latest objects from the remote peer.
   rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
 
-  // Get basic information about the peer.
-  rpc GetPeerInfo(GetPeerInfoRequest) returns (PeerInfo);
-
   // Request a peer to issue a lightning BOLT-11 invoice
   rpc RequestInvoice(RequestInvoiceRequest) returns (RequestInvoiceResponse);
 }
 
 message HandshakeInfo {
-  // Account ID this peer belongs to.
-  string account_id = 1;
+  // Public key of the Account the peer claims to represent.
+  bytes account_public_key = 4;
 
-  // Account Mintter Object ID.
-  string account_object_id = 2;
-
-  // Version of the Account Object this peer belongs to.
-  string version = 3;
+  // Cryptographic proof certifying that Device belongs to an Account.
+  bytes account_device_proof = 5;
 }
 
 message ListObjectsRequest {
@@ -60,13 +54,6 @@ message Version {
   string version = 3;
 
   // TODO: implement signed versions to allow clients to distinguish between first-party and third-party state.
-}
-
-message GetPeerInfoRequest {}
-
-message PeerInfo {
-  // Account ID this peer belongs to.
-  string account_id = 1;
 }
 
 // List of wanted and unwanted object IDs. Can be used as a snapshot or deltas.

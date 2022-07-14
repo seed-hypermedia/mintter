@@ -1,6 +1,8 @@
 // Package config provides global configuration.
 package config
 
+import "time"
+
 // Config for Mintter daemon.
 type Config struct {
 	HTTPPort      string `help:"Port to expose HTTP server (including grpc-web)" default:"55001"`
@@ -10,6 +12,13 @@ type Config struct {
 
 	P2P         P2P         `prefix:"p2p." embed:""`
 	LetsEncrypt LetsEncrypt `prefix:"lets-encrypt." embed:""`
+	Syncing     Syncing     `prefix:"syncing." embed:""`
+}
+
+type Syncing struct {
+	WarmupDuration time.Duration `help:"Time to wait before the first sync loop iteration" default:"1m"`
+	Interval       time.Duration `help:"How often sync loop is triggered" default:"1m"`
+	TimeoutPerPeer time.Duration `help:"Maximum duration for syncing with a single peer" default:"5m"`
 }
 
 type LetsEncrypt struct {

@@ -10,8 +10,8 @@ import (
 const (
 	AccountDevices          sqlitegen.Table  = "account_devices"
 	AccountDevicesAccountID sqlitegen.Column = "account_devices.account_id"
-	AccountDevicesChangeID  sqlitegen.Column = "account_devices.change_id"
 	AccountDevicesDeviceID  sqlitegen.Column = "account_devices.device_id"
+	AccountDevicesProof     sqlitegen.Column = "account_devices.proof"
 )
 
 // Table accounts.
@@ -20,6 +20,7 @@ const (
 	AccountsCreateTime sqlitegen.Column = "accounts.create_time"
 	AccountsID         sqlitegen.Column = "accounts.id"
 	AccountsMultihash  sqlitegen.Column = "accounts.multihash"
+	AccountsPublicKey  sqlitegen.Column = "accounts.public_key"
 )
 
 // Table change_authors.
@@ -161,11 +162,12 @@ const (
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
 		AccountDevicesAccountID:      {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountDevicesChangeID:       {Table: AccountDevices, SQLType: "INTEGER"},
 		AccountDevicesDeviceID:       {Table: AccountDevices, SQLType: "INTEGER"},
+		AccountDevicesProof:          {Table: AccountDevices, SQLType: "BLOB"},
 		AccountsCreateTime:           {Table: Accounts, SQLType: "INTEGER"},
 		AccountsID:                   {Table: Accounts, SQLType: "INTEGER"},
 		AccountsMultihash:            {Table: Accounts, SQLType: "BLOB"},
+		AccountsPublicKey:            {Table: Accounts, SQLType: "BLOB"},
 		ChangeAuthorsAccountID:       {Table: ChangeAuthors, SQLType: "INTEGER"},
 		ChangeAuthorsChangeID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
 		ChangesCreateTime:            {Table: Changes, SQLType: "INTEGER"},

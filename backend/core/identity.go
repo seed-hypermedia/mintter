@@ -96,12 +96,12 @@ func (did DeviceID) PeerID() peer.ID {
 }
 
 type Identity struct {
-	account       cid.Cid
+	acc           PublicKey
 	deviceKeyPair KeyPair
 }
 
-func NewIdentity(acc cid.Cid, device KeyPair) Identity {
-	if acc.Prefix().Codec != CodecAccountKey {
+func NewIdentity(account PublicKey, device KeyPair) Identity {
+	if account.Codec() != CodecAccountKey {
 		panic("not account key")
 	}
 
@@ -110,12 +110,18 @@ func NewIdentity(acc cid.Cid, device KeyPair) Identity {
 	}
 
 	return Identity{
-		account:       acc,
+		acc:           account,
 		deviceKeyPair: device,
 	}
 }
 
-func (i Identity) AccountID() cid.Cid { return i.account }
+func (i Identity) Account() PublicKey {
+	return i.acc
+}
+
+func (i Identity) AccountID() cid.Cid {
+	return i.acc.CID()
+}
 
 func (i Identity) DeviceKey() KeyPair { return i.deviceKeyPair }
 

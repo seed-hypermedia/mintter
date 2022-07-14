@@ -76,6 +76,6 @@ func NewTester(name string) Tester {
 		Device:  dev,
 		Account: acc,
 
-		Identity: core.NewIdentity(acc.CID(), dev),
+		Identity: core.NewIdentity(acc.PublicKey, dev),
 	}
 }

@@ -76,7 +76,7 @@ func (srv *Service) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 
 	if devices, found := all[account]; found {
 		for _, deviceID := range devices {
-			p2pc, err := net.RPCClient(ctx, deviceID)
+			p2pc, err := net.Client(ctx, deviceID)
 			if err != nil {
 				continue
 			}
