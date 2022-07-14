@@ -70,8 +70,6 @@ const defaultVirtualEl = {
 }
 
 function HoveringToolbar({children}: PropsWithChildren) {
-  // const ref = useRef<HTMLDivElement | null>(null)
-
   const editor = useSlate()
   const inFocus = useFocused()
 
@@ -89,29 +87,8 @@ function HoveringToolbar({children}: PropsWithChildren) {
       Range.isCollapsed(selection) ||
       Editor.string(editor, selection) === ''
     ) {
-      // el.style.opacity = '0'
-      // el.style.top = '-10000px'
-      // el.style.left = '-10000px'
       return reference(defaultVirtualEl)
     }
-
-    // const domSelection = window.getSelection()
-    // const domRange =
-    //   domSelection && domSelection?.rangeCount > 0
-    //     ? domSelection?.getRangeAt(0)
-    //     : null
-    // const rect = domRange?.getBoundingClientRect()
-
-    // if (!rect) {
-    //   return
-    // }
-
-    // el.style.opacity = '1'
-    // el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight - 110}px`
-    // el.style.left = `${
-    //   rect.left + window.pageXOffset - el.offsetWidth / 2 + rect.width / 2
-    // }px`
-
     const domRange = ReactEditor.toDOMRange(editor, selection)
     reference(domRange)
   }, [reference, editor.selection, inFocus])
@@ -125,13 +102,6 @@ function HoveringToolbar({children}: PropsWithChildren) {
         left: x ?? 0,
         zIndex: '1',
       }}
-      // style={{
-      //   position: 'absolute',
-      //
-      //   top: '-10000px',
-      //   left: '-10000px',
-      //   opacity: 0,
-      // }}
       onMouseDown={(e) => {
         // prevent toolbar from taking focus away from editor
         e.preventDefault()
