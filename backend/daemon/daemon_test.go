@@ -65,6 +65,12 @@ func TestDaemonSmoke(t *testing.T) {
 	require.NotNil(t, reg)
 	require.NotEqual(t, "", reg.AccountId, "account ID must be generated after registration")
 
+	_, err = dmn.Me.Await(ctx)
+	require.NoError(t, err)
+
+	_, err = dmn.Net.Await(ctx)
+	require.NoError(t, err)
+
 	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
 	require.NoError(t, err)
 	require.Equal(t, reg.AccountId, acc.Id, "must return account after registration")
@@ -157,6 +163,12 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 		})
 		require.NoError(t, err)
 
+		_, err = app.Net.Await(ctx)
+		require.NoError(t, err)
+
+		_, err = app.Me.Await(ctx)
+		require.NoError(t, err)
+
 		prof := &accounts.Profile{
 			Alias: name,
 			Bio:   name + " bio",
@@ -165,9 +177,6 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 		acc, err := app.RPC.Accounts.UpdateProfile(ctx, prof)
 		require.NoError(t, err)
 		testutil.ProtoEqual(t, prof, acc.Profile, "profile update must return full profile")
-
-		_, err = app.Net.Await(ctx)
-		require.NoError(t, err)
 	}
 
 	return app

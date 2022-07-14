@@ -114,7 +114,7 @@ func TestAPICreateDraft(t *testing.T) {
 	c, err := cid.Decode(doc.Id)
 	require.Equal(t, int(cid.DagCBOR), int(c.Prefix().Codec))
 	require.NoError(t, err)
-	require.Equal(t, api.me.MustGet().AccountID().String(), doc.Author)
+	require.Equal(t, api.repo.MustGet().me.AccountID().String(), doc.Author)
 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 }
@@ -533,7 +533,7 @@ func TestAPIPublishDraft(t *testing.T) {
 	docid, err := cid.Decode(published.Document.Id)
 	require.NoError(t, err)
 
-	version, err := api.vcs.LoadNamedVersion(ctx, docid, api.me.MustGet().AccountID(), api.me.MustGet().DeviceKey().CID(), "main")
+	version, err := api.vcs.LoadNamedVersion(ctx, docid, api.repo.MustGet().me.AccountID(), api.repo.MustGet().me.DeviceKey().CID(), "main")
 	require.NoError(t, err)
 
 	require.Equal(t, published.Version, version.String(), "published version must match the database")
@@ -691,7 +691,12 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	return NewServer(fut.ReadOnly, db, v)
+	srv := NewServer(fut.ReadOnly, db, v)
+
+	_, err := srv.repo.Await(context.Background())
+	require.NoError(t, err)
+
+	return srv
 }
 
 func newTestSQLite(t *testing.T) *sqlitex.Pool {
