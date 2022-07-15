@@ -9110,7 +9110,7 @@ __metadata:
     ni: 0.0.2
     npm-run-all: 4.1.5
     prettier: 2.7.1
-    rollup: 2.76.0
+    rollup: 2.77.0
     tiny-glob: 0.2.9
     ts-proto: 1.117.0
     typescript: 4.7.4
@@ -11006,9 +11006,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:2.76.0":
-  version: 2.76.0
-  resolution: "rollup@npm:2.76.0"
+"rollup@npm:2.77.0":
+  version: 2.77.0
+  resolution: "rollup@npm:2.77.0"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -11016,7 +11016,7 @@ __metadata:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: 58293e1c63c11d4afcfcf619601d5c5136dd3d0c9d3bd6a0b6141fede32027edc1eb53873bbb9a9c1e95e86c67f6ad66185720031b6eadf325972174d1d8fbcb
+  checksum: 74ccc98429709984a89af636250833e7502d87f1d9c6d96ebfe4b52030ebf94b9f6b84b8ab476670329a61d54b681d35eecdc601bac5b5396b099b1ea69970ef
   languageName: node
   linkType: hard
 
