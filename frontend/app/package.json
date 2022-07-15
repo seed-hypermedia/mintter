@@ -124,6 +124,7 @@
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-react": "7.30.1",
     "eslint-plugin-react-hooks": "4.6.0",
+    "happy-dom": "^6.0.3",
     "jsdom": "20.0.0",
     "prettier": "2.7.1",
     "react-async-ssr": "0.7.2",
