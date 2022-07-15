@@ -1590,7 +1590,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@happy-dom/global-registrator@npm:^6.0.3":
+"@happy-dom/global-registrator@npm:6.0.3":
   version: 6.0.3
   resolution: "@happy-dom/global-registrator@npm:6.0.3"
   dependencies:
@@ -1728,7 +1728,7 @@ __metadata:
     "@cypress/vite-dev-server": 2.2.3
     "@floating-ui/react-dom": 0.7.2
     "@floating-ui/react-dom-interactions": 0.6.6
-    "@happy-dom/global-registrator": ^6.0.3
+    "@happy-dom/global-registrator": 6.0.3
     "@improbable-eng/grpc-web": 0.15.0
     "@mintter/mttast": 0.1.0
     "@radix-ui/colors": 0.1.8
@@ -1781,12 +1781,12 @@ __metadata:
     google-protobuf: 3.20.1
     graphql: 16.5.0
     graphql-request: 4.3.0
-    happy-dom: ^6.0.3
+    happy-dom: 6.0.3
     hast: 1.0.0
     hast-util-sanitize: 4.0.0
     is-hotkey: 0.2.0
     is-url: 1.2.4
-    js-video-url-parser: ^0.5.1
+    js-video-url-parser: 0.5.1
     jsdom: 20.0.0
     long: 5.2.0
     nanoid: 4.0.0
@@ -7098,7 +7098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"happy-dom@npm:^6.0.3":
+"happy-dom@npm:6.0.3, happy-dom@npm:^6.0.3":
   version: 6.0.3
   resolution: "happy-dom@npm:6.0.3"
   dependencies:
@@ -8091,7 +8091,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-video-url-parser@npm:^0.5.1":
+"js-video-url-parser@npm:0.5.1":
   version: 0.5.1
   resolution: "js-video-url-parser@npm:0.5.1"
   checksum: dc8f32fee85f9fd6fbc7ad865eef668aeed2806159b4cc867c4d7ad64e90c20606a264f82f9cf0cddf785f45d74e10255e8f597cd75059620ec18854ffd3a624

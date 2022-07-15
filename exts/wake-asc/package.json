@@ -4,6 +4,6 @@
   "description": "",
   "devDependencies": {
     "assemblyscript": "0.20.13",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "0.5.21"
   }
 }
