@@ -11,7 +11,14 @@ import {
   statement,
   text,
 } from '@mintter/mttast'
-import {getHighlighter, Highlighter, Lang, setCDN} from 'shiki'
+import {
+  BUNDLED_LANGUAGES,
+  getHighlighter,
+  Highlighter,
+  Lang,
+  setCDN,
+  Theme,
+} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {MARK_EMPHASIS} from '../emphasis'
@@ -24,14 +31,6 @@ import {findPath, resetFlowContent} from '../utils'
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
 const HIGHLIGHTER = Symbol('shiki highlighter')
-
-// const langs = Object.keys(
-//   import.meta.glob('../../../public/shiki/languages/*.json'),
-// ).map((k) => {
-//   return k
-//     .replace('../../../public/shiki/languages/', '')
-//     .replace('.tmLanguage.json', '')
-// })
 
 const SelectorWrapper = styled('div', {
   boxSizing: 'border-box',
@@ -55,7 +54,7 @@ export const codeStyle = css({
 })
 
 interface CodePluginProps {
-  theme?: Lang
+  theme?: Theme
 }
 
 export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
@@ -253,9 +252,9 @@ function Code({
               onChange={setLanguage}
             >
               <option value="">Select a Language</option>
-              {langs.map((lang) => (
-                <option value={lang} key={lang}>
-                  {lang}
+              {BUNDLED_LANGUAGES.map((lang) => (
+                <option value={lang.id} key={lang.id}>
+                  {lang.id}
                 </option>
               ))}
             </select>
