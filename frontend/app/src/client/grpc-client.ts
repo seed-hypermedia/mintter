@@ -1,22 +1,24 @@
-import {grpc} from '@improbable-eng/grpc-web'
+import type {grpc as grpct} from '@improbable-eng/grpc-web'
+import pkg from '@improbable-eng/grpc-web'
 import {BrowserHeaders} from 'browser-headers'
+const {grpc} = pkg
 
 /* eslint-disable */
 export const MINTTER_API_URL_DEFAULT =
   (import.meta as any).env.VITE_MINTTER_API_URL || 'http://localhost:55001'
 
 export interface GrpcClient {
-  unary<T extends grpc.UnaryMethodDefinition<any, any>>(
+  unary<T extends grpct.UnaryMethodDefinition<any, any>>(
     methodDesc: T,
     _request: any,
-    _metadata?: grpc.Metadata,
+    _metadata?: grpct.Metadata,
   ): Promise<unknown>
 }
 
 interface createGrpcClientOptions {
   host?: string
-  transport?: grpc.TransportFactory
-  metadata?: grpc.Metadata
+  transport?: grpct.TransportFactory
+  metadata?: grpct.Metadata
   debug?: boolean
 }
 

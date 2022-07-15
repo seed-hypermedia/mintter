@@ -1,9 +1,10 @@
 import react from '@vitejs/plugin-react'
+import {defineConfig} from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 let isTest = process.env.NODE_ENV == 'test'
 
-export default {
+export default defineConfig({
   cacheDir: '.vite',
   // prevent vite from obscuring rust errors
   clearScreen: false,
@@ -21,6 +22,9 @@ export default {
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
   },
+  ssr: {
+    noExternal: ['@mintter/mttast', 'protobufjs/minimal.js'],
+  },
   plugins: [
     tsconfigPaths(),
     // checker({
@@ -34,8 +38,9 @@ export default {
       jsxRuntime: isTest ? 'classic' : 'automatic',
     }),
   ],
+  // @ts-ignore
   test: {
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
   },
-}
+})
