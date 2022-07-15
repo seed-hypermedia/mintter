@@ -9,7 +9,7 @@ import {setLogger} from 'react-query'
 import 'show-keys'
 import {error, info, warn} from 'tauri-plugin-log-api'
 import {MainPage, MainPageShell, MainWindowShell} from './pages/main-page'
-import {globalCss} from './stitches.config'
+import {globalStyles} from './stitches.config'
 
 setLogger({
   log: (...args) => info(args.toString()),
@@ -45,13 +45,6 @@ if (window.Cypress) {
 }
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
-
-const globalStyles = globalCss({
-  body: {
-    backgroundColor: '$base-background-subtle',
-    color: '$base-text-hight',
-  },
-})
 
 type AppProps = {
   mainService?: typeof defaultMainService
