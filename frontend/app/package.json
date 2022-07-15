@@ -101,6 +101,7 @@
   "devDependencies": {
     "@cypress/react": "6.0.0",
     "@cypress/vite-dev-server": "2.2.3",
+    "@happy-dom/global-registrator": "^6.0.3",
     "@types/google-protobuf": "3.15.6",
     "@types/hast": "2.3.4",
     "@types/is-url": "1.2.30",

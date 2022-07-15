@@ -11,13 +11,7 @@ import {
   statement,
   text,
 } from '@mintter/mttast'
-import {
-  getHighlighter,
-  Highlighter,
-  IThemeRegistration,
-  Lang,
-  setCDN,
-} from 'shiki'
+import {getHighlighter, Highlighter, Lang, setCDN} from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
 import {MARK_EMPHASIS} from '../emphasis'
@@ -31,13 +25,13 @@ export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
 const HIGHLIGHTER = Symbol('shiki highlighter')
 
-const langs = Object.keys(
-  import.meta.glob('../../../public/shiki/languages/*.json'),
-).map((k) => {
-  return k
-    .replace('../../../public/shiki/languages/', '')
-    .replace('.tmLanguage.json', '')
-})
+// const langs = Object.keys(
+//   import.meta.glob('../../../public/shiki/languages/*.json'),
+// ).map((k) => {
+//   return k
+//     .replace('../../../public/shiki/languages/', '')
+//     .replace('.tmLanguage.json', '')
+// })
 
 const SelectorWrapper = styled('div', {
   boxSizing: 'border-box',
@@ -61,7 +55,7 @@ export const codeStyle = css({
 })
 
 interface CodePluginProps {
-  theme?: IThemeRegistration
+  theme?: Lang
 }
 
 export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
