@@ -126,31 +126,23 @@ export function isFirstChild(path: Path): boolean {
   return path[path.length - 1] == 0
 }
 
-export function toggleMark(
+export function toggleFormat(
   editor: Editor,
-  key: string,
-  value = true, // TODO: if key == 'color', value is a string
-  // ...clears: Array<keyof Omit<Text, 'value'>>
-): void {
-  if (!editor.selection) return
-
-  const isActive = isMarkActive(editor, key)
+  format: string,
+  data: unknown = true,
+) {
+  const isActive = isFormatActive(editor, format)
 
   Transforms.setNodes(
     editor,
-    {
-      [key]: isActive ? null : value,
-    },
-    {
-      match: Text.isText,
-      split: true,
-    },
+    {[format]: isActive ? null : data},
+    {match: Text.isText, split: true, mode: 'highest'},
   )
 }
 
-export function isMarkActive(editor: Editor, key: string): boolean {
+export function isFormatActive(editor: Editor, format: string) {
   const [match] = Editor.nodes(editor, {
-    match: (n) => !!n[key],
+    match: (n) => !!n[format],
     mode: 'all',
   })
 
@@ -256,19 +248,6 @@ export function isValidUrl(url: string): Promise<string | undefined> {
     }
   })
 }
-
-// const twitterRegex =
-//   /^https?:\/\/twitter\.com\/(?:#!\/)?(\w+)\/status(es)?\/(?<id>\d+)/
-
-// export const parseTwitterUrl = (url: string): EmbedUrlData | undefined => {
-//   if (url.match(twitterRegex)) {
-//     return {
-//       provider: 'twitter',
-//       id: twitterRegex.exec(url)?.groups?.id,
-//       url,
-//     }
-//   }
-// }
 
 export type EmbedUrlData = {
   url?: string

@@ -1,6 +1,6 @@
 import {styled} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
-import {toggleMark} from '../utils'
+import {toggleFormat} from '../utils'
 
 export const MARK_UNDERLINE = 'underline'
 
@@ -20,7 +20,7 @@ export const createUnderlinePlugin = (): EditorPlugin => ({
   onDOMBeforeInput: (editor) => (ev) => {
     if (ev.inputType == 'formatUnderline') {
       ev.preventDefault()
-      toggleMark(editor, MARK_UNDERLINE)
+      toggleFormat(editor, MARK_UNDERLINE)
     }
   },
 })

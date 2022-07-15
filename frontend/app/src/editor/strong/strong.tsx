@@ -1,6 +1,6 @@
 import {styled} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
-import {toggleMark} from '../utils'
+import {toggleFormat} from '../utils'
 
 export const MARK_STRONG = 'strong'
 
@@ -20,7 +20,7 @@ export const createStrongPlugin = (): EditorPlugin => ({
   onDOMBeforeInput: (editor) => (ev) => {
     if (ev.inputType == 'formatBold') {
       ev.preventDefault()
-      toggleMark(editor, MARK_STRONG)
+      toggleFormat(editor, MARK_STRONG)
     }
   },
 })

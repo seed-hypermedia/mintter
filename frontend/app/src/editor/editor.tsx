@@ -1,12 +1,12 @@
 import {useHover} from '@app/editor/hover-context'
-import {PublicationHoveringToolbar} from '@app/editor/publication-hovering-toolbar'
+import {PublicationHoveringToolbar} from '@app/editor/hovering-toolbar'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'
-import {EditorHoveringToolbar} from './editor-hovering-toolbar'
+import {EditorHoveringToolbar} from './hovering-toolbar'
 import {
   buildDecorateHook,
   buildEditorHook,
@@ -67,7 +67,7 @@ export function Editor({
   if (mode == EditorMode.Draft) {
     return (
       <Suspense fallback={'loading'}>
-        <Box className={className} css={{position: 'relative'}}>
+        <Box className={className} css={{position: 'relative'}} id="editor">
           <Slate
             editor={_editor}
             value={value as Array<Descendant>}
@@ -97,6 +97,8 @@ export function Editor({
       <Box
         as="span"
         className={className}
+        id="editor"
+        css={{position: 'relative'}}
         onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
       >
         <Slate
@@ -105,7 +107,7 @@ export function Editor({
           onChange={onChange as any}
         >
           {mode == EditorMode.Publication ? (
-            <PublicationHoveringToolbar editor={editor!} />
+            <PublicationHoveringToolbar />
           ) : null}
           <Editable
             as={as}
