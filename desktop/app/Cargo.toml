@@ -27,7 +27,7 @@ tauri = {version = "1.0.3", features = ["cli", "dialog-message", "shell-execute"
 tauri-plugin-log = {git = "https://github.com/tauri-apps/tauri-plugin-log", rev = "9de1279760f31bc6f71da8555336e10c412387e3", features = ["colored"] }
 tauri-plugin-store = {git = "https://github.com/tauri-apps/tauri-plugin-store", rev = "5726952177b88d1d10063cdf8e7506bac84772cf"}
 thiserror = "1.0.31"
-tokio = {version = "1.19.2", features = ["full"] }
+tokio = {version = "1.20.0", features = ["full"] }
 tracing = "0.1.35"
 url = "2.2.2"
 # wasi-common = "0.38.1"
