@@ -23,6 +23,7 @@ import {createTabPlugin} from './tab-plugin'
 import type {EditorPlugin} from './types'
 import {createUnderlinePlugin} from './underline'
 import {createVideoPlugin} from './video/video'
+
 export const plugins: EditorPlugin[] = [
   createStrongPlugin(),
   createEmphasisPlugin(),

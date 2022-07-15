@@ -1,6 +1,6 @@
 import {styled} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
-import {toggleMark} from '../utils'
+import {toggleFormat} from '../utils'
 
 export const MARK_EMPHASIS = 'emphasis'
 
@@ -20,7 +20,7 @@ export const createEmphasisPlugin = (): EditorPlugin => ({
   onDOMBeforeInput: (editor) => (ev) => {
     if (ev.inputType == 'formatItalic') {
       ev.preventDefault()
-      toggleMark(editor, MARK_EMPHASIS)
+      toggleFormat(editor, MARK_EMPHASIS)
     }
   },
 })

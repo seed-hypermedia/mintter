@@ -37,9 +37,9 @@ import {
   Transforms,
 } from 'slate'
 import {ReactEditor, RenderElementProps} from 'slate-react'
-import type {UseLastSelectionResult} from '../editor-hovering-toolbar'
+import type {UseLastSelectionResult} from '../hovering-toolbar'
 import type {EditorPlugin} from '../types'
-import {getEditorBlock, isCollapsed, isMarkActive} from '../utils'
+import {getEditorBlock, isCollapsed, isFormatActive} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -383,7 +383,7 @@ export function ToolbarLink({
   editor,
 }: ToolbarLinkProps) {
   const [open, setOpen] = useState(false)
-  const markActive = useMemo(() => isMarkActive(editor, 'link'), [editor])
+  const markActive = useMemo(() => isFormatActive(editor, 'link'), [editor])
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>
