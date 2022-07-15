@@ -26,7 +26,7 @@
     "eslint": "8.19.0",
     "npm-run-all": "4.1.5",
     "prettier": "2.7.1",
-    "rollup": "2.76.0",
+    "rollup": "2.77.0",
     "tiny-glob": "0.2.9",
     "ts-proto": "1.117.0",
     "typescript": "4.7.4"
