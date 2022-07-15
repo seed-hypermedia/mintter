@@ -1579,10 +1579,6 @@ name = "io-lifetimes"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec58677acfea8a15352d42fc87d11d63596ade9239e0a7c9352914417515dbe6"
-dependencies = [
- "libc",
- "winapi",
-]
 
 [[package]]
 name = "itertools"
@@ -2742,10 +2738,8 @@ dependencies = [
  "bitflags",
  "errno",
  "io-lifetimes",
- "itoa 1.0.2",
  "libc",
  "linux-raw-sys",
- "once_cell",
  "winapi",
 ]
 
@@ -3564,7 +3558,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a400e31aa60b9d44a52a8ee0343b5b18566b03a8321e0d321f695cf56e940160"
 dependencies = [
  "cfg-if",
- "log",
  "pin-project-lite",
  "tracing-attributes",
  "tracing-core",
@@ -4540,17 +4533,13 @@ dependencies = [
  "cc",
  "futures-util",
  "generic-array",
- "gimli",
  "indexmap",
- "io-lifetimes",
  "libc",
  "log",
  "miniz_oxide",
  "num-integer",
  "num-traits",
- "object",
  "rand 0.8.5",
- "rustix",
  "scopeguard",
  "semver 1.0.12",
  "serde_json",
@@ -4561,12 +4550,6 @@ dependencies = [
  "tauri-runtime-wry",
  "tauri-utils",
  "tokio",
- "tracing",
- "wasmtime",
- "wasmtime-jit",
- "wasmtime-jit-debug",
- "wasmtime-runtime",
- "wiggle",
  "winapi",
  "windows 0.37.0",
  "windows-sys",
