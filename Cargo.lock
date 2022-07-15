@@ -1920,7 +1920,7 @@ dependencies = [
  "url",
  "webkit2gtk",
  "webview2-com 0.18.0",
- "windows 0.37.0",
+ "windows 0.38.0",
  "workspace-hack",
 ]
 

@@ -46,7 +46,7 @@ webkit2gtk = "0.18.0"
 
 [target."cfg(target_os = \"windows\")".dependencies]
 webview2-com = "0.18.0"
-windows = "0.37.0"
+windows = "0.38.0"
 
 [features]
 # by default Tauri runs in production mode
