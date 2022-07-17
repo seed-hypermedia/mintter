@@ -1590,12 +1590,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@happy-dom/global-registrator@npm:6.0.3":
-  version: 6.0.3
-  resolution: "@happy-dom/global-registrator@npm:6.0.3"
+"@happy-dom/global-registrator@npm:6.0.4":
+  version: 6.0.4
+  resolution: "@happy-dom/global-registrator@npm:6.0.4"
   dependencies:
-    happy-dom: ^6.0.3
-  checksum: 6d8389de73e92e4e7ffd602027859b684a6f8c8d3970acae20fa36e7c3b517ea137fd9c6d12f68ca652be2bd98fe5f21ee8c004f9fc652438d05a64cc1e8cbee
+    happy-dom: ^6.0.4
+  checksum: b8cb08084e9cd8fecb98670d746b9edc6f7778e1aaa079f2de99f7535683827be033cc2faf837fe0c193d4ec24adc24bba94ecebe09dc4e1cc85d17a74d7adfb
   languageName: node
   linkType: hard
 
@@ -1728,7 +1728,7 @@ __metadata:
     "@cypress/vite-dev-server": 2.2.3
     "@floating-ui/react-dom": 0.7.2
     "@floating-ui/react-dom-interactions": 0.7.0
-    "@happy-dom/global-registrator": 6.0.3
+    "@happy-dom/global-registrator": 6.0.4
     "@improbable-eng/grpc-web": 0.15.0
     "@mintter/mttast": 0.1.0
     "@radix-ui/colors": 0.1.8
@@ -7098,7 +7098,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"happy-dom@npm:6.0.3, happy-dom@npm:^6.0.3":
+"happy-dom@npm:6.0.3":
   version: 6.0.3
   resolution: "happy-dom@npm:6.0.3"
   dependencies:
@@ -7110,6 +7110,21 @@ __metadata:
     whatwg-encoding: ^2.0.0
     whatwg-mimetype: ^3.0.0
   checksum: ce294526cd12af6b0537e413a19758fd218ab7e28db887f49b97d914f15fefa608a8d94f91dbd137aa4918354af88099685f811e5d31a23c9c0a681ef9367fba
+  languageName: node
+  linkType: hard
+
+"happy-dom@npm:^6.0.4":
+  version: 6.0.4
+  resolution: "happy-dom@npm:6.0.4"
+  dependencies:
+    css.escape: ^1.5.1
+    he: ^1.2.0
+    node-fetch: ^2.x.x
+    sync-request: ^6.1.0
+    webidl-conversions: ^7.0.0
+    whatwg-encoding: ^2.0.0
+    whatwg-mimetype: ^3.0.0
+  checksum: 4bfd97f07ab459fd48fe93f597deb903527f0ffffbc98f2ab1cacc1362ae09d11dfc21d8b166d8e0d19fc49d7c1dcc4b250c1da131d6f70e3cf2e82b39d60657
   languageName: node
   linkType: hard
 
