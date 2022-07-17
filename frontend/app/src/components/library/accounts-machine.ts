@@ -5,7 +5,6 @@ import {
   listAccounts,
   PeerInfo,
 } from '@app/client'
-import {debug} from '@app/utils/logger'
 import {ActorRefFrom, assign, createMachine, spawn} from 'xstate'
 
 type AccountContext = {
@@ -86,8 +85,6 @@ export function createAccountMachine(account: Account) {
       actions: {
         assignConnectionStatus: assign({
           status: (_, event) => {
-            debug('Device Connection Statuses:', event.data)
-
             if (event.data.length == 1) {
               return event.data[0].connectionStatus
             } else {
@@ -116,7 +113,6 @@ export function createAccountMachine(account: Account) {
             ),
           )
             .then((data) => {
-              debug('Devices Status result:', data)
               sendBack({type: 'REPORT.FETCH.SUCCESS', data})
             })
             .catch((error) => {

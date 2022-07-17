@@ -1,6 +1,6 @@
 import {connect, ConnectionStatus} from '@app/client'
 import {CSS, keyframes, styled} from '@app/stitches.config'
-import {debug, error} from '@app/utils/logger'
+import {error} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Icon} from '@components/icon'
 import {
@@ -177,8 +177,6 @@ function AccountItem({accountRef}: AccountItemProps) {
   let accountId = state.context.account.id.slice(
     state.context.account.id.length - 8,
   )
-
-  debug('Account State', state.context)
 
   return (
     <HoverCard.Root>

@@ -72,14 +72,13 @@ export function BlockWrapper({
   }
 
   function addBookmark() {
-    debug('ADD BOOKMARK IN BLOCK')
     bookmarksService.send({
       type: 'BOOKMARK.ADD',
       url: `${MINTTER_LINK_PREFIX}${fileState.context.documentId}/${fileState.context.version}/${element.id}`,
     })
   }
 
-  return mode == EditorMode.Draft ? (
+  return mode == EditorMode.Draft || mode == EditorMode.Embed ? (
     <Box
       {...attributes}
       css={{
@@ -94,6 +93,7 @@ export function BlockWrapper({
         as="span"
         contentEditable={false}
         onMouseEnter={() => {
+          debug('block wrapper mouse enter:', element.id)
           hoverService.send({type: 'MOUSE_ENTER', blockId: element.id})
         }}
         css={{

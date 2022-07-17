@@ -128,12 +128,20 @@ export function LibraryItem({
   let title = state.context.title || 'Untitled Document'
 
   return (
-    <StyledItem active={match} data-testid="library-item">
+    <Box
+      css={{
+        position: 'relative',
+      }}
+    >
       {isPublication ? (
         <Box
           css={{
-            width: 16,
-            flex: 'none',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            transform: 'translateX(-100%)',
+            width: 24,
+            height: '$full',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -151,73 +159,75 @@ export function LibraryItem({
           ) : null}
         </Box>
       ) : null}
-      <Text
-        size="2"
-        className="title"
-        color="primary"
-        onClick={goToItem}
-        data-testid="library-item-title"
-      >
-        {title}
-      </Text>
-
-      <Dropdown.Root modal={false}>
-        <Dropdown.Trigger asChild>
-          <ElementDropdown
-            data-trigger
-            className="dropdown"
-            css={{
-              backgroundColor: 'transparent',
-            }}
-          >
-            <Icon
-              name="MoreHorizontal"
-              size="1"
-              color="muted"
-              className={match ? hoverIconStyle() : ''}
-            />
-          </ElementDropdown>
-        </Dropdown.Trigger>
-        <Dropdown.Content
-          align="start"
-          data-testid="library-item-dropdown-root"
-          hidden={deleteState.matches('open')}
+      <StyledItem active={match} data-testid="library-item">
+        <Text
+          size="2"
+          className="title"
+          color="primary"
+          onClick={goToItem}
+          data-testid="library-item-title"
         >
-          <Dropdown.Item
-            data-testid="copy-item"
-            disabled={!isPublication}
-            onSelect={onCopy}
-          >
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Document ID</Text>
-          </Dropdown.Item>
-          <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
-            <Icon size="1" name="ArrowTopRight" />
-            <Text size="2">Open in main panel</Text>
-          </Dropdown.Item>
-          <Dropdown.Item
-            data-testid="new-window-item"
-            onSelect={onOpenInNewWindow}
-          >
-            <Icon size="1" name="OpenInNewWindow" />
-            <Text size="2">Open in new Window</Text>
-          </Dropdown.Item>
-          <DeleteDialog
-            deleteRef={deleteService}
-            title="Delete document"
-            description="Are you sure you want to delete this document? This action is not reversible."
+          {title}
+        </Text>
+
+        <Dropdown.Root modal={false}>
+          <Dropdown.Trigger asChild>
+            <ElementDropdown
+              data-trigger
+              className="dropdown"
+              css={{
+                backgroundColor: 'transparent',
+              }}
+            >
+              <Icon
+                name="MoreHorizontal"
+                size="1"
+                color="muted"
+                className={match ? hoverIconStyle() : ''}
+              />
+            </ElementDropdown>
+          </Dropdown.Trigger>
+          <Dropdown.Content
+            align="start"
+            data-testid="library-item-dropdown-root"
+            hidden={deleteState.matches('open')}
           >
             <Dropdown.Item
-              data-testid="delete-item"
-              onSelect={(e) => e.preventDefault()}
+              data-testid="copy-item"
+              disabled={!isPublication}
+              onSelect={onCopy}
             >
-              <Icon size="1" name="Close" />
-              <Text size="2">Delete Document</Text>
+              <Icon name="Copy" size="1" />
+              <Text size="2">Copy Document ID</Text>
             </Dropdown.Item>
-          </DeleteDialog>
-        </Dropdown.Content>
-      </Dropdown.Root>
-    </StyledItem>
+            <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
+              <Icon size="1" name="ArrowTopRight" />
+              <Text size="2">Open in main panel</Text>
+            </Dropdown.Item>
+            <Dropdown.Item
+              data-testid="new-window-item"
+              onSelect={onOpenInNewWindow}
+            >
+              <Icon size="1" name="OpenInNewWindow" />
+              <Text size="2">Open in new Window</Text>
+            </Dropdown.Item>
+            <DeleteDialog
+              deleteRef={deleteService}
+              title="Delete document"
+              description="Are you sure you want to delete this document? This action is not reversible."
+            >
+              <Dropdown.Item
+                data-testid="delete-item"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <Icon size="1" name="Close" />
+                <Text size="2">Delete Document</Text>
+              </Dropdown.Item>
+            </DeleteDialog>
+          </Dropdown.Content>
+        </Dropdown.Root>
+      </StyledItem>
+    </Box>
   )
 }
 
@@ -233,10 +243,10 @@ export var StyledItem = styled(
     position: 'relative',
     borderRadius: '$1',
     backgroundColor: '$$bg',
-    paddingHorizontal: '$3',
+    paddingHorizontal: '$2',
     '&:hover': {
       cursor: 'pointer',
-      backgroundColor: '$$bgHover',
+      // backgroundColor: '$$bgHover',
       '.dropdown': {
         opacity: 1,
       },

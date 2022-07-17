@@ -8,7 +8,6 @@ import {
   isParagraph,
   isPhrasingContent,
 } from '@mintter/mttast'
-import {useSelector} from '@xstate/react'
 import {Editor, Node, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {useHover, useHoverActiveSelector} from '../hover-context'
@@ -85,7 +84,6 @@ function Paragraph({
 }: RenderElementProps & {mode: EditorMode}) {
   const editor = useFileEditor()
   let fileRef = useFile()
-  let fileEditor = useSelector(fileRef, (state) => state.context.editor)
   const path = findPath(element)
   const [parentNode, parentPath] = Editor.parent(editor, path)
   const hoverService = useHover()
