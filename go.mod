@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	crawshaw.io/sqlite v0.3.2
-	github.com/99designs/gqlgen v0.17.12
+	github.com/99designs/gqlgen v0.17.13
 	github.com/alecthomas/kong v0.6.1
 	github.com/btcsuite/btcd v0.23.1
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
@@ -155,7 +155,6 @@ require (
 	github.com/marten-seemann/qtls-go1-17 v0.1.1 // indirect
 	github.com/marten-seemann/qtls-go1-18 v0.1.1 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
-	github.com/matryer/moq v0.2.7 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
