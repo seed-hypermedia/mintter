@@ -48,13 +48,7 @@ export function PublicationList({
           New Document
         </Button>
       </Box>
-      <Box
-        as="ol"
-        className={pageListStyle()}
-        css={{
-          marginLeft: '-$8',
-        }}
-      >
+      <Box as="ol" className={pageListStyle()}>
         {pubList.length ? (
           pubList.map((publication) => (
             <LibraryItem

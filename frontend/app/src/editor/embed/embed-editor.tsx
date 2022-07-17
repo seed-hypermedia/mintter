@@ -46,7 +46,10 @@ function RenderEmbedEditor(
         {...props}
         {...attributes}
         contentEditable={false}
-        onMouseEnter={() => hoverService.send({type: 'MOUSE_ENTER', blockId})}
+        // onMouseEnter={() => {
+        //   debug('embed id:', blockId)
+        //   hoverService.send({type: 'MOUSE_ENTER', blockId})
+        // }}
         ref={ref}
         css={{
           backgroundColor:
