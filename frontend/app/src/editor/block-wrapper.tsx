@@ -121,7 +121,7 @@ export function BlockWrapper({
         width: '$full',
         position: 'relative',
         userSelect: 'none',
-        marginTop: isHeading(element) ? '$6' : '$4',
+        marginBlockStart: isHeading(element) ? '$6' : '$4',
       }}
     >
       {children}
@@ -164,8 +164,8 @@ export function BlockWrapper({
         {citations.length ? (
           <Box
             css={{
-              width: 24,
-              height: 24,
+              width: 18,
+              height: 18,
               borderRadius: '$2',
               display: 'flex',
               alignItems: 'center',
@@ -199,7 +199,7 @@ export function useOnScreen(ref: MutableRefObject<any>, rootMargin = '100px') {
         ([entry]) => {
           setState(entry.isIntersecting)
         },
-        {rootMargin, threshold: 0.75},
+        {rootMargin, threshold: 0.1},
       )
       if (ref && ref.current) {
         observer.observe(ref.current)
