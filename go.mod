@@ -9,7 +9,6 @@ require (
 	github.com/btcsuite/btcd v0.23.1
 	github.com/burdiyan/go/kongcli v0.0.0-20200124222818-6f87e0e684b6
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
-	github.com/bxcodec/faker/v3 v3.8.0
 	github.com/gorilla/mux v1.8.0
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/ipfs/go-bitswap v0.7.0
@@ -46,10 +45,8 @@ require (
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/vektah/gqlparser/v2 v2.4.6
 	go.etcd.io/bbolt v1.3.6
-	go.uber.org/fx v1.17.1
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.21.0
-	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	golang.org/x/text v0.3.7
 	google.golang.org/grpc v1.47.0
@@ -195,7 +192,7 @@ require (
 	gitlab.com/yawning/bsaes.git v0.0.0-20190805113838-0a714cd429ec // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/dig v1.14.0 // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/net v0.0.0-20220517181318-183a9ca12b87 // indirect
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect

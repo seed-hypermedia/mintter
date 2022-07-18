@@ -88,6 +88,20 @@ func NewPublicKey(codec uint64, pub *crypto.Ed25519PublicKey) (pk PublicKey, err
 	}, nil
 }
 
+// ParsePublicKey parses existing libp2p-encoded key material.
+func ParsePublicKey(codec uint64, data []byte) (pk PublicKey, err error) {
+	pub, err := crypto.UnmarshalPublicKey(data)
+	if err != nil {
+		return pk, err
+	}
+
+	if pub.Type() != crypto.Ed25519 {
+		return pk, fmt.Errorf("only ed25519 keys are supported")
+	}
+
+	return NewPublicKey(codec, pub.(*crypto.Ed25519PublicKey))
+}
+
 // ID of the public key.
 func (pk PublicKey) ID() KeyID { return pk.id }
 

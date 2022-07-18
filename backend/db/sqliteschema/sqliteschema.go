@@ -61,6 +61,9 @@ var migrations = []string{
 		id INTEGER PRIMARY KEY,
 		-- Multihash part of the Account ID.
 		multihash BLOB UNIQUE NOT NULL,
+		-- Bytes of the public key.
+		-- Mostly NULL because Ed25519 keys can be extracted from the CID.
+		public_key BLOB DEFAULT NULL,
 		-- Subjective (locally perceived) time when the item was created.
 		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 	);
@@ -93,7 +96,7 @@ var migrations = []string{
 	CREATE TABLE account_devices (
 		account_id INTEGER REFERENCES accounts NOT NULL,
 		device_id INTEGER REFERENCES devices NOT NULL,
-		change_id INTEGER REFERENCES ipfs_blocks NOT NULL,
+		proof BLOB NOT NULL,
 		PRIMARY KEY (account_id, device_id)
 	) WITHOUT ROWID;
 

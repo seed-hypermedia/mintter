@@ -174,7 +174,7 @@ type Block struct {
 	Annotations []Annotation      `refmt:"annotations,omitempty"`
 }
 
-func (b Block) ForEachLink(f func(mintterLink) bool) {
+func (b Block) ForEachLink(f func(MintterLink) bool) {
 	for _, a := range b.Annotations {
 		if a.Type != "link" && a.Type != "embed" {
 			continue
@@ -192,7 +192,7 @@ func (b Block) ForEachLink(f func(mintterLink) bool) {
 			continue
 		}
 
-		link, err := parseMintterLink(url)
+		link, err := ParseMintterLink(url)
 		if err != nil {
 			continue
 		}
@@ -302,7 +302,7 @@ func (ds *DocumentState) apply(evt DocumentEvent, updateTime time.Time) error {
 	return nil
 }
 
-type mintterLink struct {
+type MintterLink struct {
 	TargetDocument cid.Cid
 	TargetVersion  string
 	TargetBlock    string
@@ -310,13 +310,13 @@ type mintterLink struct {
 
 var linkRegex = regexp.MustCompile(`^mtt:\/\/([a-z0-9]+)\/([a-z0-9]+)\/?([^\/]+)?$`)
 
-func parseMintterLink(s string) (mintterLink, error) {
+func ParseMintterLink(s string) (MintterLink, error) {
 	match := linkRegex.FindStringSubmatch(s)
 	if l := len(match); l < 3 || l > 4 {
-		return mintterLink{}, fmt.Errorf("malformed mintter link %s", s)
+		return MintterLink{}, fmt.Errorf("malformed mintter link %s", s)
 	}
 
-	var out mintterLink
+	var out MintterLink
 	for i, part := range match {
 		switch i {
 		case 0:
@@ -325,19 +325,19 @@ func parseMintterLink(s string) (mintterLink, error) {
 		case 1:
 			docid, err := cid.Decode(part)
 			if err != nil {
-				return mintterLink{}, fmt.Errorf("failed to parse document id from link %s", s)
+				return MintterLink{}, fmt.Errorf("failed to parse document id from link %s", s)
 			}
 			out.TargetDocument = docid
 		case 2:
 			_, err := vcs.ParseVersion(part)
 			if err != nil {
-				return mintterLink{}, fmt.Errorf("failed to parse version from link %s", s)
+				return MintterLink{}, fmt.Errorf("failed to parse version from link %s", s)
 			}
 			out.TargetVersion = part
 		case 3:
 			out.TargetBlock = part
 		default:
-			return mintterLink{}, fmt.Errorf("unexpected link segment in link %s", s)
+			return MintterLink{}, fmt.Errorf("unexpected link segment in link %s", s)
 		}
 	}
 

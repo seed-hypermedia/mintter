@@ -82,7 +82,7 @@ func (svc *Index) IndexAccountChange(ctx context.Context, changeID cid.Cid, c vc
 
 			// TODO: verify proof, and store in revoked table if it's bad.
 
-			if err := vcssql.AccountDevicesInsertOrIgnore(conn, aiddb.AccountsID, diddb, ciddb.IPFSBlocksID); err != nil {
+			if err := vcssql.AccountDevicesInsertOrIgnore(conn, aiddb.AccountsID, diddb, evt.DeviceRegistered.Proof); err != nil {
 				return err
 			}
 		default:
@@ -150,7 +150,7 @@ func (svc *Index) IndexDocumentChange(ctx context.Context, changeID cid.Cid, c v
 					continue
 				}
 
-				link, err := parseMintterLink(url)
+				link, err := ParseMintterLink(url)
 				if err != nil {
 					continue
 				}

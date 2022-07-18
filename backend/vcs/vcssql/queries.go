@@ -230,11 +230,11 @@ var (
 			"INSERT OR IGNORE INTO", s.AccountDevices, qb.ListColShort(
 				s.AccountDevicesAccountID,
 				s.AccountDevicesDeviceID,
-				s.AccountDevicesChangeID,
+				s.AccountDevicesProof,
 			), "VALUES", qb.List(
 				qb.VarCol(s.AccountDevicesAccountID),
 				qb.VarCol(s.AccountDevicesDeviceID),
-				qb.VarCol(s.AccountDevicesChangeID),
+				qb.VarCol(s.AccountDevicesProof),
 			),
 		),
 		qb.MakeQuery(s.Schema, "AccountDevicesList", sgen.QueryKindMany,
@@ -254,6 +254,20 @@ var (
 			), '\n',
 			"FROM", s.AccountDevices, '\n',
 			"JOIN", s.Devices, "ON", s.DevicesID, "=", s.AccountDevicesDeviceID,
+		),
+		qb.MakeQuery(s.Schema, "AccountDevicesGetProof", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(s.AccountDevicesProof),
+			), '\n',
+			"FROM", s.AccountDevices, '\n',
+			"WHERE", s.AccountDevicesAccountID, "=", qb.LookupSubQuery(
+				s.AccountsID, s.Accounts,
+				"WHERE", s.AccountsMultihash, "=", qb.VarCol(s.AccountsMultihash),
+			),
+			"AND", s.AccountDevicesDeviceID, "=", qb.LookupSubQuery(
+				s.DevicesID, s.Devices,
+				"WHERE", s.DevicesMultihash, "=", qb.VarCol(s.DevicesMultihash),
+			),
 		),
 	)
 

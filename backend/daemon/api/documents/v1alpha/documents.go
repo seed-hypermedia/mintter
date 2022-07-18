@@ -23,31 +23,40 @@ import (
 )
 
 type Server struct {
-	me   *future.ReadOnly[core.Identity]
-	db   *sqlitex.Pool
-	vcs  *vcs.SQLite
-	repo *vcstypes.Repo
+	db  *sqlitex.Pool
+	vcs *vcs.SQLite
 	// TODO: take it as a dependency.
 	index *vcstypes.Index
+	repo  *future.ReadOnly[repo]
+}
+
+type repo struct {
+	*vcstypes.Repo
+	me core.Identity
 }
 
 func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, vcs *vcs.SQLite) *Server {
 	srv := &Server{
-		me:    me,
 		db:    db,
 		vcs:   vcs,
 		index: vcstypes.NewIndex(db),
 	}
 
-	// TODO: this is racy, but should never actually happen.
-	// Get rid of this when it's known to work properly.
+	frepo := future.New[repo]()
+	srv.repo = frepo.ReadOnly
+
 	go func() {
 		id, err := me.Await(context.Background())
 		if err != nil {
 			panic(err)
 		}
 
-		srv.repo = vcstypes.NewRepo(id, vcs)
+		if err := frepo.Resolve(repo{
+			Repo: vcstypes.NewRepo(id, vcs),
+			me:   id,
+		}); err != nil {
+			panic(err)
+		}
 	}()
 
 	return srv
@@ -60,12 +69,12 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, status.Errorf(codes.Unimplemented, "updating publications is not implemented yet")
 	}
 
-	me, ok := api.me.Get()
-	if !ok {
-		return nil, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
+	r, err := api.repo.Await(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	p := vcstypes.NewDocumentPermanode(me.AccountID())
+	p := vcstypes.NewDocumentPermanode(r.me.AccountID())
 
 	permablk, err := vcs.EncodeBlock[vcs.Permanode](p)
 	if err != nil {
@@ -98,7 +107,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 
 	return &documents.Document{
 		Id:         permablk.Cid().String(),
-		Author:     me.AccountID().String(),
+		Author:     r.me.AccountID().String(),
 		CreateTime: timestamppb.New(p.CreateTime),
 		UpdateTime: timestamppb.New(p.CreateTime),
 	}, nil
@@ -217,12 +226,12 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 		Documents: make([]*documents.Document, len(res)),
 	}
 
-	me, ok := api.me.Get()
-	if !ok {
-		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
+	r, err := api.repo.Await(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	aid := me.AccountID().String()
+	aid := r.me.AccountID().String()
 
 	for i, l := range res {
 		out.Documents[i] = &documents.Document{
@@ -249,13 +258,13 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
-	me, ok := api.me.Get()
-	if !ok {
-		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
+	r, err := api.repo.Await(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	// TODO: ensure transactionality here.
-	recorded, err := api.vcs.RecordChange(ctx, oid, me, wc.Version(), "mintter.Document", wc.Data())
+	recorded, err := api.vcs.RecordChange(ctx, oid, r.me, wc.Version(), "mintter.Document", wc.Data())
 	if err != nil {
 		return nil, err
 	}
@@ -267,11 +276,11 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	newVer := vcs.NewVersion(recorded.LamportTime, recorded.ID)
 
 	// TODO: implement optimistic concurrency control here.
-	if err := api.vcs.StoreNamedVersion(ctx, oid, me, "main", newVer); err != nil {
+	if err := api.vcs.StoreNamedVersion(ctx, oid, r.me, "main", newVer); err != nil {
 		return nil, err
 	}
 
-	doc, err := api.repo.LoadPublication(ctx, oid, newVer)
+	doc, err := r.LoadPublication(ctx, oid, newVer)
 	if err != nil {
 		return nil, err
 	}
@@ -342,14 +351,14 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, err
 	}
 
-	me, ok := api.me.Get()
-	if !ok {
-		return nil, status.Error(codes.FailedPrecondition, "account is not initialized yet")
+	r, err := api.repo.Await(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	var ver vcs.Version
 	if in.Version == "" {
-		ver, err = api.vcs.LoadNamedVersion(ctx, oid, me.AccountID(), me.DeviceKey().CID(), "main")
+		ver, err = api.vcs.LoadNamedVersion(ctx, oid, r.me.AccountID(), r.me.DeviceKey().CID(), "main")
 		if err != nil {
 			return nil, err
 		}
@@ -360,7 +369,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		}
 	}
 
-	doc, err := api.repo.LoadPublication(ctx, oid, ver)
+	doc, err := r.LoadPublication(ctx, oid, ver)
 	if err != nil {
 		return nil, err
 	}
@@ -404,9 +413,9 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 }
 
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
-	me, ok := api.me.Get()
-	if !ok {
-		return nil, fmt.Errorf("account is not initialized yet")
+	r, err := api.repo.Await(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	conn, release, err := api.db.Conn(ctx)
@@ -444,7 +453,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		aid := cid.NewCidV1(core.CodecAccountKey, p.AccountsMultihash)
 
 		// TODO: we should be storing versions for each device separately and combine the version set into one on demand.
-		ver, err := api.vcs.LoadNamedVersion(ctx, oid, me.AccountID(), me.DeviceKey().CID(), "main")
+		ver, err := api.vcs.LoadNamedVersion(ctx, oid, r.me.AccountID(), r.me.DeviceKey().CID(), "main")
 		if err != nil {
 			return nil, err
 		}
