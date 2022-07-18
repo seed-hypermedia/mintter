@@ -52,7 +52,7 @@ export function PeerAddrs() {
           size="1"
           type="button"
           css={{
-            marginTop: '$5',
+            marginBlockStart: '$5',
           }}
         >
           Copy Address

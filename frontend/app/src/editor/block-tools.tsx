@@ -188,7 +188,7 @@ function setType(fn: any) {
     Editor.withoutNormalizing(editor, function () {
       MintterEditor.addChange(editor, ['replaceBlock', element.id])
       const keys = ObjectKeys(element).filter(
-        (key) => !['type', 'id', 'children', 'data'].includes(key),
+        (key) => !['type', 'id', 'children', 'data'].includes(key as string),
       )
 
       if (isHeading(element)) {
@@ -234,8 +234,8 @@ function setList(fn: any) {
     if (list && isGroupContent(list)) {
       Editor.withoutNormalizing(editor, () => {
         const {children} = list
-        Transforms.removeNodes(editor, {at: Path.parent(at)})
-        Transforms.insertNodes(editor, fn(children), {at: Path.parent(at)})
+        let newList = fn()
+        Transforms.setNodes(editor, {type: newList.type}, {at: Path.parent(at)})
 
         if (at.length == 2) {
           // block is at the root level

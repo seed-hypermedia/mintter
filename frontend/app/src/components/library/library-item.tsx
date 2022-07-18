@@ -131,16 +131,21 @@ export function LibraryItem({
     <Box
       css={{
         position: 'relative',
+        '&:hover': {
+          cursor: 'pointer',
+          backgroundColor: '$$bgHover',
+        },
       }}
     >
       {isPublication ? (
         <Box
           css={{
             position: 'absolute',
+            zIndex: '$3',
             left: 0,
             top: 0,
-            transform: 'translateX(-100%)',
-            width: 24,
+            transform: 'translateX(-50%)',
+            blockSize: 16,
             height: '$full',
             display: 'flex',
             alignItems: 'center',
@@ -150,8 +155,8 @@ export function LibraryItem({
           {isNew ? (
             <Box
               css={{
-                width: 6,
-                height: 6,
+                inlineSize: 6,
+                blockSize: 6,
                 borderRadius: '$round',
                 backgroundColor: '$primary-active',
               }}
@@ -246,7 +251,7 @@ export var StyledItem = styled(
     paddingHorizontal: '$2',
     '&:hover': {
       cursor: 'pointer',
-      // backgroundColor: '$$bgHover',
+      backgroundColor: '$$bgHover',
       '.dropdown': {
         opacity: 1,
       },

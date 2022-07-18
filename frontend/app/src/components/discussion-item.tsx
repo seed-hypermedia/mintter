@@ -68,7 +68,7 @@ function DiscussionEditor({
       {state.matches('publication.ready') && (
         <Box
           css={{
-            marginLeft: -32,
+            marginInlineStart: '-$8',
           }}
         >
           {state.context.publication?.document?.content && (
@@ -87,9 +87,10 @@ function DiscussionEditor({
       )}
       <Box
         css={{
+          display: 'flex',
+          marginBlockStart: '$5',
           paddingVertical: '$6',
           $$gap: '16px',
-          display: 'flex',
           gap: '$$gap',
           alignItems: 'center',
           '& *': {
@@ -109,24 +110,29 @@ function DiscussionEditor({
         <Text
           size="1"
           color="muted"
+          css={{
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+          }}
           onClick={() =>
             mainService.send({
-              type: 'COMMIT.OPEN.WINDOW',
-              path: `/p/${state.context.documentId}/${state.context.version}`,
+              type: 'GO.TO.PUBLICATION',
+              docId: state.context.documentId,
+              version: state.context.version,
             })
           }
         >
-          {state.context.title}
+          Open as base document
         </Text>
         {state.context.author && (
           <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-            <span>by </span>
+            {/* <span>by </span> */}
             <span style={{textDecoration: 'underline'}}>
               {state.context.author.profile?.alias}
             </span>
           </Text>
         )}
-
         <FileTime
           type="pub"
           document={state.context.publication!.document!}

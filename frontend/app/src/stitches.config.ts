@@ -181,23 +181,20 @@ const stitches = createStitches({
     bp2: '(min-width: 1024px)',
     bp3: '(min-width: 1400px)',
     dark: '(prefers-color-scheme: dark)',
+    light: '(prefers-color-scheme: light)',
   },
   utils: {
     marginHorizontal: (val: Stitches.PropertyValue<'margin'>) => ({
-      marginLeft: val,
-      marginRight: val,
+      marginInline: val,
     }),
     marginVertical: (val: Stitches.PropertyValue<'margin'>) => ({
-      marginTop: val,
-      marginBottom: val,
+      marginBlock: val,
     }),
     paddingHorizontal: (val: Stitches.PropertyValue<'padding'>) => ({
-      paddingLeft: val,
-      paddingRight: val,
+      paddingInline: val,
     }),
     paddingVertical: (val: Stitches.PropertyValue<'padding'>) => ({
-      paddingTop: val,
-      paddingBottom: val,
+      paddingBlock: val,
     }),
   },
   themeMap: {
@@ -390,7 +387,15 @@ export const darkTheme = createTheme('dark-theme', {
 })
 
 export const globalStyles = globalCss({
+  '*': {
+    boxSizing: 'border-box',
+    margin: 0,
+  },
+  html: {
+    blockSize: '100%',
+  },
   body: {
+    minBlockSize: '100%',
     backgroundColor: '$base-background-subtle',
     color: '$base-text-hight',
     position: 'fixed',
@@ -398,31 +403,31 @@ export const globalStyles = globalCss({
     height: '100%',
     overflow: 'hidden',
     // extra
-    // fontFamily: '$base',
-    // fontSize: '$3',
-    // margin: 0,
-    // transition: 'background-color color 0.25s ease',
-    // '-webkit-font-smoothing': 'antialiased',
-    // '-moz-osx-font-smoothing': 'grayscale',
+    fontFamily: '$base',
+    fontSize: '$3',
+    margin: 0,
+    transition: 'background-color color 0.25s ease',
+    '-webkit-font-smoothing': 'antialiased',
+    '-moz-osx-font-smoothing': 'grayscale',
   },
-  // '*:focus': {
-  //   boxShadow: '$focus',
-  // },
-  // '@dark': {
-  //   // notice the `media` definition on the stitches.config.ts file
-  //   ':root:not(.light)': {
-  //     ...Object.keys(darkTheme.colors).reduce((varSet, currentColorKey) => {
-  //       const currentColor = darkTheme.colors[currentColorKey]
-  //       const currentColorValue =
-  //         currentColor.value.substring(0, 1) === '$'
-  //           ? `$colors${currentColor.value}`
-  //           : currentColor.value
+  '*:focus': {
+    boxShadow: '$focus',
+  },
+  '@dark': {
+    // notice the `media` definition on the stitches.config.ts file
+    ':root:not(.light)': {
+      ...Object.keys(darkTheme.colors).reduce((varSet, currentColorKey) => {
+        const currentColor = darkTheme.colors[currentColorKey]
+        const currentColorValue =
+          currentColor.value.substring(0, 1) === '$'
+            ? `$colors${currentColor.value}`
+            : currentColor.value
 
-  //       return {
-  //         [currentColor.variable]: currentColorValue,
-  //         ...varSet,
-  //       }
-  //     }, {}),
-  //   },
-  // },
+        return {
+          [currentColor.variable]: currentColorValue,
+          ...varSet,
+        }
+      }, {}),
+    },
+  },
 })

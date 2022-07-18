@@ -5,6 +5,7 @@ import {
   FlowContent,
   isBlockquote,
   isCode,
+  isFlowContent,
   isParagraph,
   isPhrasingContent,
 } from '@mintter/mttast'
@@ -86,6 +87,9 @@ function Paragraph({
   let fileRef = useFile()
   const path = findPath(element)
   const [parentNode, parentPath] = Editor.parent(editor, path)
+  if (!isFlowContent(parentNode)) {
+    console.log('NOT A BLOCK PARENT!', parentNode, parentPath)
+  }
   const hoverService = useHover()
   let isHoverActive = useHoverActiveSelector()
   const parentGroup = useParentGroup(editor, path)

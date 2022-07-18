@@ -1,3 +1,4 @@
+import {store} from '@app/client/store'
 import {Box} from '@components/box'
 import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
@@ -8,37 +9,62 @@ import {ProfileInformation} from './profile-information'
 import {SecurityPack} from './security-pack'
 import {Welcome} from './welcome'
 
-let onboardingMachine = createMachine({
-  id: 'onboarding',
-  initial: 'welcome',
-  states: {
-    // loading: {
-    //   on: {
-    //     NEXT: 'welcome',
-    //   },
-    // },
-    welcome: {
-      on: {
-        NEXT: 'securityPack',
-      },
+type OnboardingContext = {}
+
+type OnboardingEvent =
+  | {
+      type: 'NEXT'
+    }
+  | {
+      type: 'PREV'
+    }
+
+let onboardingMachine = createMachine(
+  {
+    id: 'onboarding',
+    initial: 'welcome',
+    tsTypes: {} as import('./index.typegen').Typegen0,
+    schema: {
+      context: {} as OnboardingContext,
+      events: {} as OnboardingEvent,
     },
-    securityPack: {
-      on: {
-        PREV: 'welcome',
-        NEXT: 'profileInformation',
+    states: {
+      // loading: {
+      //   on: {
+      //     NEXT: 'welcome',
+      //   },
+      // },
+      welcome: {
+        on: {
+          NEXT: 'securityPack',
+        },
       },
-    },
-    profileInformation: {
-      on: {
-        PREV: 'securityPack',
-        NEXT: 'complete',
+      securityPack: {
+        on: {
+          PREV: 'welcome',
+          NEXT: 'profileInformation',
+        },
       },
-    },
-    complete: {
-      type: 'final',
+      profileInformation: {
+        entry: 'removeStores',
+        on: {
+          PREV: 'securityPack',
+          NEXT: 'complete',
+        },
+      },
+      complete: {
+        type: 'final',
+      },
     },
   },
-})
+  {
+    actions: {
+      removeStores: () => {
+        store.clear()
+      },
+    },
+  },
+)
 
 export default function OnboardingPage({
   machineConfig = {},

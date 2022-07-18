@@ -4,7 +4,7 @@ import {Icon, icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {offset, shift, useFloating} from '@floating-ui/react-dom'
 import {image, text} from '@mintter/mttast'
-import {PropsWithChildren, useEffect} from 'react'
+import {MouseEvent, PropsWithChildren, useEffect} from 'react'
 import {Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useFocused, useSlate} from 'slate-react'
 import {MARK_EMPHASIS} from './emphasis'
@@ -39,7 +39,7 @@ export function EditorHoveringToolbar() {
 }
 
 function insertImageHandler(editor: Editor) {
-  return function imageClickEvent(event: MouseEvent) {
+  return function imageClickEvent(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault()
     insertImage(editor)
   }
