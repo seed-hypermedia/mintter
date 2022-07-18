@@ -397,7 +397,7 @@ export const globalStyles = globalCss({
   body: {
     minBlockSize: '100%',
     backgroundColor: '$base-background-subtle',
-    color: '$base-text-hight',
+    color: '$base-text-high',
     position: 'fixed',
     width: '100%',
     height: '100%',
