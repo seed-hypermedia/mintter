@@ -14,7 +14,6 @@ import (
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
-	"net"
 	"strconv"
 	"sync"
 	"time"
@@ -23,12 +22,10 @@ import (
 	dssync "github.com/ipfs/go-datastore/sync"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/sync/singleflight"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/protocol"
 	gostream "github.com/libp2p/go-libp2p-gostream"
@@ -39,12 +36,11 @@ import (
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 )
 
 // Prototcol values.
 const (
-	ProtocolVersion = "0.0.1"
+	ProtocolVersion = "0.0.2"
 	ProtocolName    = "mintter"
 
 	ProtocolID protocol.ID = "/" + ProtocolName + "/" + ProtocolVersion
@@ -79,27 +75,29 @@ func DefaultRelays() []peer.AddrInfo {
 type Node struct {
 	log             *zap.Logger
 	vcs             *vcs.SQLite
-	syncer          *vcstypes.Syncer
 	repo            *vcstypes.Repo
-	singleflight    singleflight.Group
 	me              core.Identity
 	cfg             config.P2P
 	accountObjectID vcs.ObjectID
 	invoicer        Invoicer
+	client          *Client
 
-	p2p      *ipfs.Libp2p
-	bitswap  *ipfs.Bitswap
-	dialOpts []grpc.DialOption
-	grpc     *grpc.Server
-	quit     io.Closer
-	ready    chan struct{}
+	// Cache for our own account device proof.
+	once                sync.Once
+	accountDeviceProof  []byte
+	accountPublicKeyRaw []byte
+
+	p2p     *ipfs.Libp2p
+	bitswap *ipfs.Bitswap
+	grpc    *grpc.Server
+	quit    io.Closer
+	ready   chan struct{}
 
 	ctx context.Context // will be set after calling Start()
-
-	wg       sync.WaitGroup
-	rpcConns grpcConnections
 }
 
+// New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
+// for when the node is ready to use.
 func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Identity, log *zap.Logger) (*Node, error) {
 	var clean cleanup.Stack
 
@@ -115,29 +113,24 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	}
 	clean.Add(bitswap)
 
+	client := NewClient(me, host)
+	clean.Add(client)
+
 	n := &Node{
 		log:             log,
 		vcs:             vcs,
-		syncer:          vcstypes.NewSyncer(vcstypes.NewIndex(vcs.DB()), me),
 		repo:            vcstypes.NewRepo(me, vcs),
 		me:              me,
 		cfg:             cfg,
 		accountObjectID: accountObj,
+		client:          client,
 
-		p2p:      host,
-		bitswap:  bitswap,
-		dialOpts: makeDialOpts(host.Host),
-		grpc:     grpc.NewServer(),
-		quit:     &clean,
-		ready:    make(chan struct{}),
+		p2p:     host,
+		bitswap: bitswap,
+		grpc:    grpc.NewServer(),
+		quit:    &clean,
+		ready:   make(chan struct{}),
 	}
-
-	// Add the wait group to the cleanup stack. This way we make sure to wait
-	// for any outstanding goroutines running before shutting down the node.
-	clean.AddErrFunc(func() error {
-		n.wg.Wait()
-		return nil
-	})
 
 	// rpc handler is how we respond to remote RPCs over libp2p.
 	{
@@ -151,24 +144,42 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	return n, nil
 }
 
+// VCS returns the underlying VCS. Should not be here at all, but used in tests of other packages.
+//
+// TODO(burdiyan): get rid of this.
+func (n *Node) VCS() *vcs.SQLite {
+	return n.vcs
+}
+
+// Repo returns the underlying vcstypes repo. Should not be here at all, but needed for testing sync.
+//
+// TODO(burdiyan): get rid of this.
+func (n *Node) Repo() *vcstypes.Repo {
+	return n.repo
+}
+
 // ID returns the node's identity.
 func (n *Node) ID() core.Identity {
 	return n.me
 }
 
-// RPCClient dials a remote peer if necessary and returns the RPC client handle.
-func (n *Node) RPCClient(ctx context.Context, device cid.Cid) (p2p.P2PClient, error) {
+// Bitswap returns the underlying Bitswap service.
+func (n *Node) Bitswap() *ipfs.Bitswap {
+	return n.bitswap
+}
+
+// Client dials a remote peer if necessary and returns the RPC client handle.
+func (n *Node) Client(ctx context.Context, device cid.Cid) (p2p.P2PClient, error) {
 	pid, err := peer.FromCid(device)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := n.dialPeer(ctx, pid)
-	if err != nil {
+	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
 		return nil, err
 	}
 
-	return p2p.NewP2PClient(conn), nil
+	return n.client.Dial(ctx, pid)
 }
 
 func (n *Node) AccountForDevice(ctx context.Context, device cid.Cid) (cid.Cid, error) {
@@ -193,12 +204,13 @@ func (n *Node) AccountForDevice(ctx context.Context, device cid.Cid) (cid.Cid, e
 // Libp2p returns the underlying libp2p host.
 func (n *Node) Libp2p() *ipfs.Libp2p { return n.p2p }
 
-// Start the node. It will block while node is running.
+// Start the node. It will block while node is running. To stop gracefully
+// cancel the provided context and wait for Start to return.
 func (n *Node) Start(ctx context.Context) (err error) {
 	n.ctx = ctx
 
-	n.log.Debug("NodeStartStated")
-	defer func() { n.log.Debug("NodeStartFinished", zap.Error(err)) }()
+	n.log.Debug("P2PNodeStarted")
+	defer func() { n.log.Debug("P2PNodeFinished", zap.Error(err)) }()
 
 	if err := n.startLibp2p(ctx); err != nil {
 		return err
@@ -219,7 +231,6 @@ func (n *Node) Start(ctx context.Context) (err error) {
 
 		g.Go(func() error {
 			<-ctx.Done()
-			n.log.Debug("ClosedLibp2pRPC", zap.Error(n.rpcConns.Close()))
 			n.grpc.GracefulStop()
 			return nil
 		})
@@ -227,49 +238,6 @@ func (n *Node) Start(ctx context.Context) (err error) {
 
 	// Indicate that node is ready to work with.
 	close(n.ready)
-
-	// Start the periodic sync.
-	g.Go(func() error {
-		const (
-			warmupDuration = time.Minute
-			syncInterval   = time.Minute
-		)
-
-		t := time.NewTimer(warmupDuration)
-
-		// Sync periodically until context is canceled.
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case <-t.C:
-				log := n.log.With(zap.Int64("traceID", time.Now().Unix()))
-
-				log.Debug("SyncLoopStarted")
-
-				res, err := n.Sync(ctx)
-				if err != nil {
-					return fmt.Errorf("fatal error in the sync background loop: %w", err)
-				}
-
-				for i, err := range res.Errs {
-					if err != nil {
-						log.Debug("SyncLoopError",
-							zap.String("device", res.Devices[i].String()),
-							zap.Error(err),
-						)
-					}
-				}
-
-				log.Debug("SyncLoopFinished",
-					zap.Int("failures", res.NumSyncFailed),
-					zap.Int("successes", res.NumSyncOK),
-				)
-
-				t.Reset(syncInterval)
-			}
-		}
-	})
 
 	werr := g.Wait()
 
@@ -332,76 +300,6 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 
 type rpcHandler struct {
 	*Node
-}
-
-type grpcConnections struct {
-	mu    sync.Mutex
-	conns map[peer.ID]*grpc.ClientConn
-}
-
-// Dial attempts to dial a peer by its ID. Callers must pass a ContextDialer option that would support dialing peer IDs.
-// Clients MUST NOT close the connection manually.
-func (c *grpcConnections) Dial(ctx context.Context, pid peer.ID, opts []grpc.DialOption) (*grpc.ClientConn, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.conns == nil {
-		c.conns = make(map[peer.ID]*grpc.ClientConn)
-	}
-
-	if conn := c.conns[pid]; conn != nil {
-		if conn.GetState() != connectivity.Shutdown {
-			return conn, nil
-		}
-
-		// Best effort closing connection.
-		go conn.Close()
-
-		delete(c.conns, pid)
-	}
-
-	conn, err := grpc.DialContext(ctx, pid.String(), opts...)
-	if err != nil {
-		return nil, fmt.Errorf("failed to establish connection to device %s: %w", peer.ToCid(pid), err)
-	}
-
-	if c.conns[pid] != nil {
-		panic("BUG: adding connection while there's another open")
-	}
-
-	c.conns[pid] = conn
-
-	return conn, nil
-}
-
-func (c *grpcConnections) Close() (err error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.conns == nil {
-		return nil
-	}
-
-	for _, conn := range c.conns {
-		err = multierr.Append(err, conn.Close())
-	}
-
-	return err
-}
-
-func makeDialOpts(host host.Host) []grpc.DialOption {
-	return []grpc.DialOption{
-		grpc.WithContextDialer(func(ctx context.Context, target string) (net.Conn, error) {
-			id, err := peer.Decode(target)
-			if err != nil {
-				return nil, fmt.Errorf("failed to dial peer %s: %w", target, err)
-			}
-
-			return gostream.Dial(ctx, host, id, ProtocolID)
-		}),
-		grpc.WithInsecure(),
-		grpc.WithBlock(),
-	}
 }
 
 func AddrInfoToStrings(info peer.AddrInfo) []string {

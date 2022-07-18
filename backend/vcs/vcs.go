@@ -128,6 +128,14 @@ func ParseChangeBlock(blk blocks.Block) (out SignedCBOR[Change], err error) {
 	return out, nil
 }
 
+func ParseChangeData(data []byte) (out SignedCBOR[Change], err error) {
+	if err := cbornode.DecodeInto(data, &out); err != nil {
+		return out, fmt.Errorf("failed to parse change data: %w", err)
+	}
+
+	return out, nil
+}
+
 // Version defines a version of a Mintter Object.
 // It's a set of leaf nodes of the Time DAG.
 type Version struct {
