@@ -1824,7 +1824,7 @@ __metadata:
     unist-util-to-string-with-nodes: 0.1.1
     unist-util-visit: 4.1.0
     unist-util-visit-parents: 5.1.0
-    vite: 3.0.1
+    vite: 3.0.2
     vite-plugin-checker: 0.4.9
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
@@ -13095,9 +13095,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:3.0.1":
-  version: 3.0.1
-  resolution: "vite@npm:3.0.1"
+"vite@npm:3.0.2":
+  version: 3.0.2
+  resolution: "vite@npm:3.0.2"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
@@ -13123,7 +13123,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 33660b4b116e0c0b730f493f8ab7a3e5fff6d7b7728f25354ab13b32fec587f231748448655334980039951abaac3b6d221a6844c2765d4fe8c0601d7f8420b9
+  checksum: 10aebec0df89bbdba9a0c72dc35ec3ec5be0b50216fc7a1e04b5da11de244033b1cbe83a95b1af67be176fc09e05698387d3cc9dcbee64e009dd43811f8717e9
   languageName: node
   linkType: hard
 
