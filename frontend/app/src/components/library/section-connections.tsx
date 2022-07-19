@@ -149,11 +149,11 @@ const slideLeftAndFade = keyframes({
 const HoverCardContentStyled = styled(HoverCard.Content, {
   minWidth: 130,
   maxWidth: 520,
-  backgroundColor: 'white',
+  border: '1px solid $colors$base-border-normal',
+  backgroundColor: '$base-background-normal',
   borderRadius: 6,
   padding: '$4',
-  boxShadow:
-    'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
+  boxShadow: '$menu',
   '@media (prefers-reduced-motion: no-preference)': {
     animationDuration: '400ms',
     animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -223,7 +223,7 @@ function AccountItem({accountRef}: AccountItemProps) {
           }`}</Text>
         </StyledItem>
       </HoverCard.Trigger>
-      <HoverCardContentStyled align="start" portalled>
+      <HoverCardContentStyled align="start" portalled side="top">
         <Box
           css={{
             width: 32,
