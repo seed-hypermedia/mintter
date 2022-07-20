@@ -28,9 +28,10 @@ type LetsEncrypt struct {
 
 // P2P configuration.
 type P2P struct {
-	Port              int  `help:"Port to listen for incoming P2P connections" default:"55000"`
-	NoRelay           bool `help:"Disable libp2p circuit relay"`
-	NoBootstrap       bool `help:"Disable IPFS bootstrapping"`
-	NoMetrics         bool `help:"Disable Prometheus metrics collection"`
-	RelayBackoffDelay int  `help:"The time in minutes the autorelay will prune a relay if it cannot connect to it" default:"21600"`
+	Port               int  `help:"Port to listen for incoming P2P connections" default:"55000"`
+	NoRelay            bool `help:"Disable libp2p circuit relay"`
+	NoBootstrap        bool `help:"Disable IPFS bootstrapping"`
+	NoMetrics          bool `help:"Disable Prometheus metrics collection"`
+	RelayBackoffDelay  int  `help:"The time in minutes the autorelay will prune a relay if it cannot connect to it" default:"21600"`
+	ReportPrivateAddrs bool `help:"If true the node will report/announce addresses within private IP ranges" default:"false"`
 }

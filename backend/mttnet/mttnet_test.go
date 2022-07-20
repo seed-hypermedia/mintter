@@ -48,11 +48,12 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	require.NoError(t, err)
 
 	n, err := New(config.P2P{
-		Port:              0,
-		NoRelay:           true,
-		NoBootstrap:       true,
-		NoMetrics:         true,
-		RelayBackoffDelay: 60,
+		Port:               0,
+		ReportPrivateAddrs: true,
+		NoRelay:            true,
+		NoBootstrap:        true,
+		NoMetrics:          true,
+		RelayBackoffDelay:  60,
 	}, hvcs, reg, u.Identity, must.Two(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 

@@ -33,6 +33,7 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
+	manet "github.com/multiformats/go-multiaddr/net"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -359,6 +360,24 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 		libp2p.EnableNATService(),
 		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
 		libp2p.Transport(tcp.NewTCPTransport),
+	}
+
+	if !cfg.ReportPrivateAddrs {
+		opts = append(opts,
+			libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+				out := make([]multiaddr.Multiaddr, 0, len(addrs))
+
+				for _, a := range addrs {
+					if manet.IsPrivateAddr(a) {
+						continue
+					}
+
+					out = append(out, a)
+				}
+
+				return out
+			}),
+		)
 	}
 
 	if !cfg.NoRelay {
