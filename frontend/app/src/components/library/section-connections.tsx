@@ -23,7 +23,7 @@ import {Section} from './section'
 import {SectionError} from './section-error'
 
 export function ContactsSection() {
-  const [state] = useMachine(() => listAccountsMachine)
+  const [state, send] = useMachine(() => listAccountsMachine)
 
   let title = `Contacts (${state.context.listAccounts.length})`
 
@@ -38,7 +38,7 @@ export function ContactsSection() {
             alignItems: 'center',
           }}
         >
-          <ContactsPrompt />
+          <ContactsPrompt refetch={() => send('REFETCH')} />
         </Box>
       }
     >
@@ -58,7 +58,7 @@ export function ContactsSection() {
   )
 }
 
-function ContactsPrompt() {
+function ContactsPrompt({refetch}: {refetch: () => void}) {
   const [peer, setPeer] = useState('')
 
   async function handleConnect() {
@@ -70,10 +70,11 @@ function ContactsPrompt() {
           success: 'Connection Succeeded!',
           error: 'Connection Error',
         })
-        setPeer('')
+        refetch()
       } catch (err: any) {
         error('Connect Error:', err.message)
       }
+      setPeer('')
     }
   }
 

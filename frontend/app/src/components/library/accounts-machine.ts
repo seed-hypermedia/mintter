@@ -65,7 +65,7 @@ export function createAccountMachine(account: Account) {
             },
             ready: {
               after: {
-                15000: {
+                10000: {
                   target: 'fetching',
                 },
               },
@@ -147,6 +147,9 @@ type ListAccountEvent =
   | {
       type: 'RETRY'
     }
+  | {
+      type: 'REFETCH'
+    }
 
 export const listAccountsMachine = createMachine(
   {
@@ -191,7 +194,12 @@ export const listAccountsMachine = createMachine(
           },
           ready: {
             after: {
-              15000: {
+              10000: {
+                target: 'fetching',
+              },
+            },
+            on: {
+              REFETCH: {
                 target: 'fetching',
               },
             },
