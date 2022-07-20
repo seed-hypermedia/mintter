@@ -410,9 +410,9 @@ export const globalStyles = globalCss({
     '-webkit-font-smoothing': 'antialiased',
     '-moz-osx-font-smoothing': 'grayscale',
   },
-  '*:focus': {
-    boxShadow: '$focus',
-  },
+  // '*:focus': {
+  //   boxShadow: '$focus',
+  // },
   '@dark': {
     // notice the `media` definition on the stitches.config.ts file
     ':root:not(.light)': {
