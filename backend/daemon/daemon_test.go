@@ -189,11 +189,12 @@ func makeTestConfig(t *testing.T) config.Config {
 		NoOpenBrowser: true,
 		RepoPath:      testutil.MakeRepoPath(t),
 		P2P: config.P2P{
-			Port:              0,
-			NoBootstrap:       true,
-			NoRelay:           true,
-			NoMetrics:         true,
-			RelayBackoffDelay: 60,
+			Port:               0,
+			NoBootstrap:        true,
+			NoRelay:            true,
+			NoMetrics:          true,
+			ReportPrivateAddrs: true,
+			RelayBackoffDelay:  60,
 		},
 	}
 }
