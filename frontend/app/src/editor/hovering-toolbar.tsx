@@ -4,54 +4,110 @@ import {Icon, icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {offset, shift, useFloating} from '@floating-ui/react-dom'
 import {image, text} from '@mintter/mttast'
-import {MouseEvent, PropsWithChildren, useEffect} from 'react'
+import {PropsWithChildren, useEffect} from 'react'
 import {Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useFocused, useSlate} from 'slate-react'
 import {MARK_EMPHASIS} from './emphasis'
 import {MARK_CODE} from './inline-code'
+import {InsertLinkButton} from './link'
 import {MARK_STRONG} from './strong'
 import {MARK_UNDERLINE} from './underline'
 import {isFormatActive, toggleFormat} from './utils'
 
 export function EditorHoveringToolbar() {
-  const editor = useSlate()
-
   return (
     <HoveringToolbar>
-      <Menu>
+      <Box
+        css={{
+          zIndex: '$max',
+          boxShadow: '$menu',
+          padding: '$2',
+          backgroundColor: '$base-background-normal',
+          borderRadius: '2px',
+          transition: 'opacity 0.5s',
+          display: 'flex',
+          gap: '$2',
+          paddingHorizontal: '$2',
+          '& > *': {
+            display: 'inline-block',
+          },
+          '& > * + *': {
+            marginLeft: 2,
+          },
+        }}
+      >
         <FormatButton format={MARK_STRONG} icon="Strong" />
         <FormatButton format={MARK_EMPHASIS} icon="Emphasis" />
         <FormatButton format={MARK_UNDERLINE} icon="Underline" />
         <FormatButton format={MARK_CODE} icon="Code" />
-        <Tooltip content={<span>Image</span>}>
-          <Button
-            onClick={insertImageHandler(editor)}
-            variant="ghost"
-            size="0"
-            color="muted"
-          >
-            <Icon name="Image" size="2" />
-          </Button>
-        </Tooltip>
-      </Menu>
+        <InsertLinkButton />
+        <InsertImageButton />
+      </Box>
     </HoveringToolbar>
   )
 }
 
-function insertImageHandler(editor: Editor) {
-  return function imageClickEvent(event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault()
-    insertImage(editor)
-  }
-}
-
-function insertImage(editor: Editor, url = '') {
-  let img = image({url}, [text('')])
-  Transforms.insertNodes(editor, [text(''), img, text('')])
-}
-
 export function PublicationHoveringToolbar() {
   return <HoveringToolbar>copy reference</HoveringToolbar>
+}
+
+function FormatButton({
+  format,
+  icon,
+}: {
+  format: string
+  icon: keyof typeof icons
+}) {
+  const editor = useSlate()
+
+  return (
+    <Button
+      variant="ghost"
+      size="0"
+      color="muted"
+      css={
+        isFormatActive(editor, format)
+          ? {
+              backgroundColor: '$base-text-high',
+              color: '$base-text-hight',
+              '&:hover': {
+                backgroundColor: '$base-text-high !important',
+                color: '$base-text-hight !important',
+              },
+            }
+          : {}
+      }
+      onClick={() => toggleFormat(editor, format)}
+    >
+      <Icon name={icon} size="2" />
+    </Button>
+  )
+}
+
+function InsertImageButton() {
+  const editor = useSlate()
+
+  function insertImageHandler(
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) {
+    event.preventDefault()
+
+    let img = image({url: ''}, [text('')])
+    Transforms.insertNodes(editor, [text(''), img, text('')])
+  }
+
+  return (
+    <Tooltip content={<span>Insert Image</span>}>
+      <Button
+        onClick={insertImageHandler}
+        variant="ghost"
+        size="0"
+        color="muted"
+      >
+        <Icon name="Image" size="2" />
+      </Button>
+    </Tooltip>
+  )
 }
 
 const defaultVirtualEl = {
@@ -109,64 +165,5 @@ function HoveringToolbar({children}: PropsWithChildren) {
     >
       {children}
     </div>
-  )
-}
-
-function FormatButton({
-  format,
-  icon,
-}: {
-  format: string
-  icon: keyof typeof icons
-}) {
-  const editor = useSlate()
-
-  return (
-    <Button
-      variant="ghost"
-      size="0"
-      color="muted"
-      css={
-        isFormatActive(editor, format)
-          ? {
-              backgroundColor: '$base-text-high',
-              color: '$base-text-hight',
-              '&:hover': {
-                backgroundColor: '$base-text-high !important',
-                color: '$base-text-hight !important',
-              },
-            }
-          : {}
-      }
-      onClick={() => toggleFormat(editor, format)}
-    >
-      <Icon name={icon} size="2" />
-    </Button>
-  )
-}
-
-function Menu({children}: PropsWithChildren) {
-  return (
-    <Box
-      css={{
-        zIndex: '$max',
-        boxShadow: '$menu',
-        padding: '$2',
-        backgroundColor: '$base-background-normal',
-        borderRadius: '2px',
-        transition: 'opacity 0.5s',
-        display: 'flex',
-        gap: '$2',
-        paddingHorizontal: '$2',
-        '& > *': {
-          display: 'inline-block',
-        },
-        '& > * + *': {
-          marginLeft: 2,
-        },
-      }}
-    >
-      {children}
-    </Box>
   )
 }
