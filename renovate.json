@@ -21,7 +21,7 @@
       "postUpdateOptions": ["gomodTidy"]
     },
     {
-      "matchPackagePatterns": ["wasmtime", "wasmtime-wasi", "wasi-common"],
+      "matchPackagePatterns": ["wasmtime", "wasmtime-wasi", "wasi-common", "cranelift-codegen", "wiggle", "wasmparser"],
       "groupName": "Wasmtime packages"
     }
   ]
