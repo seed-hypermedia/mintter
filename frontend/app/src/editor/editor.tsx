@@ -1,6 +1,5 @@
 import {useHover} from '@app/editor/hover-context'
 import {PublicationHoveringToolbar} from '@app/editor/hovering-toolbar'
-import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
@@ -27,10 +26,6 @@ interface EditorProps {
   as?: any
   className?: string
 }
-
-const editorWrapperStyles = css({
-  position: 'relative',
-})
 
 export function Editor({
   value,
@@ -73,7 +68,7 @@ export function Editor({
             value={value as Array<Descendant>}
             onChange={onChange as any}
           >
-            <EditorHoveringToolbar editor={editor!} />
+            <EditorHoveringToolbar />
             <Editable
               spellCheck={false}
               autoCorrect="false"
