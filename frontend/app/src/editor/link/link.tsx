@@ -2,14 +2,12 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
-import {useFileEditor} from '@app/file-provider'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
 import type {Embed, Link as LinkType} from '@mintter/mttast'
@@ -17,16 +15,7 @@ import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
-import isUrl from 'is-url'
-import {
-  FormEvent,
-  ForwardedRef,
-  forwardRef,
-  MouseEvent,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import {ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
 import {
   BaseRange,
   BaseSelection,
@@ -36,10 +25,9 @@ import {
   Range,
   Transforms,
 } from 'slate'
-import {ReactEditor, RenderElementProps} from 'slate-react'
-import type {UseLastSelectionResult} from '../hovering-toolbar'
+import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
 import type {EditorPlugin} from '../types'
-import {getEditorBlock, isCollapsed, isFormatActive} from '../utils'
+import {getEditorBlock, isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -371,81 +359,26 @@ function addLinkChange(editor: Editor, at: Range | null = editor.selection) {
   }
 }
 
-export interface ToolbarLinkProps extends UseLastSelectionResult {
-  sendStoreFocus: (n: boolean) => void
-  editor: Editor
+function isUrl(value: string): boolean {
+  try {
+    new URL(value)
+    return true
+  } catch (_e) {
+    return false
+  }
 }
 
-export function ToolbarLink({
-  sendStoreFocus,
-  resetSelection,
-  lastSelection,
-  editor,
-}: ToolbarLinkProps) {
-  const [open, setOpen] = useState(false)
-  const markActive = useMemo(() => isFormatActive(editor, 'link'), [editor])
-  return (
-    <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
-      <PopoverPrimitive.Trigger asChild>
-        {/* <Tooltip content={<span>Link</span>}> */}
-        <Button
-          variant="ghost"
-          size="0"
-          color="muted"
-          data-testid="toolbar-link-button"
-          css={
-            markActive
-              ? {
-                  backgroundColor: '$background-opposite',
-                  color: '$base-text-hight',
-                  '&:hover': {
-                    backgroundColor: '$background-opposite !important',
-                    color: '$base-text-hight !important',
-                  },
-                }
-              : {}
-          }
-          onClick={() => {
-            setOpen((v) => {
-              sendStoreFocus(!v)
-              return !v
-            })
-            resetSelection()
-          }}
-        >
-          <Icon size="2" name="Link" />
-        </Button>
-        {/* </Tooltip> */}
-      </PopoverPrimitive.Trigger>
-
-      <PopoverPrimitive.Content>
-        <LinkModal
-          lastSelection={lastSelection}
-          close={() => {
-            setOpen(false)
-            resetSelection()
-          }}
-        />
-      </PopoverPrimitive.Content>
-    </PopoverPrimitive.Root>
-  )
-}
-
-export interface LinkModalProps {
-  lastSelection: Range | null
-  close: () => void
-}
-export function LinkModal({close, lastSelection}: LinkModalProps) {
+export function InsertLinkButton() {
   const [link, setLink] = useState('')
-  const editor = useFileEditor()
+  const editor = useSlate()
   const isLink = isLinkActive(editor)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!editor) return
     if (link && (isUrl(link) || isMintterLink(link))) {
       ReactEditor.focus(editor)
-      insertLink(editor, {url: link, selection: lastSelection, wrap: true})
+      insertLink(editor, {url: link, selection: editor.selection, wrap: true})
       Transforms.move(editor, {
         distance: 1,
         unit: 'offset',
@@ -456,8 +389,8 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
   }
 
   function handleRemove() {
-    if (isLinkActive(editor, lastSelection)) {
-      unwrapLink(editor, lastSelection)
+    if (isLinkActive(editor, editor.selection)) {
+      unwrapLink(editor, editor.selection)
     }
     close()
   }
@@ -474,64 +407,82 @@ export function LinkModal({close, lastSelection}: LinkModalProps) {
   }, [editor])
 
   return (
-    <Box
-      css={{
-        padding: '$5',
-        width: '300px',
-        backgroundColor: '$base-component-bg-normal',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$4',
-        boxShadow: '$3',
-      }}
-    >
-      <Box
-        as="form"
-        onSubmit={handleSubmit}
-        css={{
-          width: '$full',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '$5',
-        }}
-      >
-        <Text size="5">Link Information</Text>
-        <TextField
-          type="url"
-          id="address"
-          name="address"
-          label="Link Address"
-          data-testid="modal-link-input"
-          value={link}
-          onChange={(e) => setLink(e.currentTarget.value)}
-          size={1}
-        />
-        <Box
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Button size="1" type="submit">
-            save
+    <Tooltip content={<span>Add Link</span>}>
+      <PopoverPrimitive.Root>
+        <PopoverPrimitive.Trigger asChild>
+          <Button variant="ghost" size="0" color="muted">
+            <Icon name="Link" size="2" />
           </Button>
-          <Button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              handleRemove()
-            }}
-            data-testid="modal-link-remove-button"
-            disabled={!isLink}
-            variant="outlined"
-            color="danger"
-            size="1"
-          >
-            <span>remove link</span>
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+        </PopoverPrimitive.Trigger>
+
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content sideOffset={35}>
+            <Box
+              css={{
+                zIndex: '$max',
+                boxShadow: '$menu',
+                backgroundColor: '$base-background-normal',
+                borderRadius: '2px',
+                transition: 'opacity 0.5s',
+                display: 'flex',
+                gap: '$2',
+                paddingHorizontal: '$2',
+                padding: '$5',
+                width: '300px',
+                flexDirection: 'column',
+              }}
+            >
+              <Box
+                as="form"
+                onSubmit={handleSubmit}
+                css={{
+                  width: '$full',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '$5',
+                }}
+              >
+                <TextField
+                  type="url"
+                  id="address"
+                  name="address"
+                  label="Link Address"
+                  data-testid="modal-link-input"
+                  autoCorrect="off"
+                  size={1}
+                  value={link}
+                  onChange={(e) => setLink(e.currentTarget.value)}
+                />
+                <Box
+                  css={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Button size="1" type="submit">
+                    save
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleRemove()
+                    }}
+                    data-testid="modal-link-remove-button"
+                    disabled={!isLink}
+                    variant="outlined"
+                    color="danger"
+                    size="1"
+                  >
+                    <span>remove link</span>
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
+    </Tooltip>
   )
 }
