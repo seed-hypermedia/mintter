@@ -33,5 +33,6 @@ type P2P struct {
 	NoBootstrap        bool `help:"Disable IPFS bootstrapping"`
 	NoMetrics          bool `help:"Disable Prometheus metrics collection"`
 	RelayBackoffDelay  int  `help:"The time in minutes the autorelay will prune a relay if it cannot connect to it" default:"21600"`
+	StaticRelayRescan  int  `help:"The time in minutes the autorelay will try to reconect to static relays (if disconnected)" default:"10"`
 	ReportPrivateAddrs bool `help:"If true the node will report/announce addresses within private IP ranges" default:"false"`
 }

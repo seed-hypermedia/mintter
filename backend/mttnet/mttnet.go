@@ -386,6 +386,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 			libp2p.EnableHolePunching(),
 			libp2p.EnableNATService(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
+				autorelay.WithStaticRescan(time.Duration(cfg.StaticRelayRescan)*time.Minute),
 				autorelay.WithBackoff(time.Duration(cfg.RelayBackoffDelay)*time.Minute)),
 		)
 	}
