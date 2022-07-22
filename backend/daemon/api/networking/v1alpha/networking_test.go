@@ -53,14 +53,15 @@ func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.Cancel
 	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
 	require.NoError(t, err)
 
-	n, err := mttnet.New(config.P2P{
-		Port:               0,
-		ReportPrivateAddrs: true,
-		NoRelay:            true,
-		NoBootstrap:        true,
-		NoMetrics:          true,
-		RelayBackoffDelay:  60,
-	}, hvcs, reg, u.Identity, zap.NewNop())
+	cfg := config.Default().P2P
+
+	cfg.Port = 0
+	cfg.ReportPrivateAddrs = true
+	cfg.NoRelay = true
+	cfg.NoBootstrap = true
+	cfg.NoMetrics = true
+
+	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, zap.NewNop())
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

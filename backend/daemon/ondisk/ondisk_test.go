@@ -20,7 +20,7 @@ func TestMigrateRepo_OldLayout(t *testing.T) {
 	_, err := NewOnDisk(dir, zap.NewNop())
 
 	require.Error(t, err)
-	require.True(t, errors.Is(err, ErrRepoMigrate))
+	require.Equal(t, ErrRepoMigrate, errors.Unwrap(err))
 }
 
 func TestMigrateRepo_WrongVersion(t *testing.T) {
@@ -31,5 +31,5 @@ func TestMigrateRepo_WrongVersion(t *testing.T) {
 	_, err := NewOnDisk(dir, zap.NewNop())
 
 	require.Error(t, err)
-	require.True(t, errors.Is(err, ErrRepoMigrate))
+	require.Equal(t, ErrRepoMigrate, errors.Unwrap(err))
 }

@@ -9,7 +9,6 @@ import (
 	"mintter/backend/core"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -62,12 +61,8 @@ type OnDisk struct {
 
 // NewOnDisk creates a new OnDisk configuration repo.
 func NewOnDisk(path string, log *zap.Logger) (r *OnDisk, err error) {
-	if strings.HasPrefix(path, "~") {
-		homedir, err := os.UserHomeDir()
-		if err != nil {
-			return nil, fmt.Errorf("failed to detect home directory: %w", err)
-		}
-		path = strings.Replace(path, "~", homedir, 1)
+	if !filepath.IsAbs(path) {
+		return nil, fmt.Errorf("must provide absolute repo path, got = %s", path)
 	}
 
 	r, err = prepareRepo(path, log)

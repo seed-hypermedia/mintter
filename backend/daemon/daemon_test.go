@@ -183,18 +183,16 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 }
 
 func makeTestConfig(t *testing.T) config.Config {
-	return config.Config{
-		HTTPPort:      "",
-		GRPCPort:      "",
-		NoOpenBrowser: true,
-		RepoPath:      testutil.MakeRepoPath(t),
-		P2P: config.P2P{
-			Port:               0,
-			NoBootstrap:        true,
-			NoRelay:            true,
-			NoMetrics:          true,
-			ReportPrivateAddrs: true,
-			RelayBackoffDelay:  60,
-		},
-	}
+	cfg := config.Default()
+
+	cfg.HTTPPort = 0
+	cfg.GRPCPort = 0
+	cfg.RepoPath = testutil.MakeRepoPath(t)
+	cfg.P2P.Port = 0
+	cfg.P2P.NoBootstrap = true
+	cfg.P2P.NoRelay = true
+	cfg.P2P.NoMetrics = true
+	cfg.P2P.ReportPrivateAddrs = true
+
+	return cfg
 }
