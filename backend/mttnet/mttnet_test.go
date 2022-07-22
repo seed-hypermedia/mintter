@@ -47,14 +47,14 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
 	require.NoError(t, err)
 
-	n, err := New(config.P2P{
-		Port:               0,
-		ReportPrivateAddrs: true,
-		NoRelay:            true,
-		NoBootstrap:        true,
-		NoMetrics:          true,
-		RelayBackoffDelay:  60,
-	}, hvcs, reg, u.Identity, must.Two(zap.NewDevelopment()).Named(name))
+	cfg := config.Default().P2P
+	cfg.Port = 0
+	cfg.ReportPrivateAddrs = true
+	cfg.NoRelay = true
+	cfg.NoBootstrap = true
+	cfg.NoMetrics = true
+
+	n, err := New(cfg, hvcs, reg, u.Identity, must.Two(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

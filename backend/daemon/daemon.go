@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -335,7 +336,7 @@ func initSyncing(
 }
 
 func initGRPC(
-	port string,
+	port int,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	id *future.ReadOnly[core.Identity],
@@ -344,7 +345,7 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
-	lis, err = net.Listen("tcp", ":"+port)
+	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
@@ -368,7 +369,7 @@ func initGRPC(
 }
 
 func initHTTP(
-	port string,
+	port int,
 	rpc *grpc.Server,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
@@ -401,7 +402,7 @@ func initHTTP(
 	}
 
 	srv = &http.Server{
-		Addr:         ":" + port,
+		Addr:         ":" + strconv.Itoa(port),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		Handler:      h,

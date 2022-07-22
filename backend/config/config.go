@@ -1,38 +1,125 @@
 // Package config provides global configuration.
 package config
 
-import "time"
+import (
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+)
 
-// Config for Mintter daemon.
+// Config for Mintter daemon. When adding or removing fields,
+// adjust the DefaultConfig() and SetupFlags() accordingly.
 type Config struct {
-	HTTPPort      string `help:"Port to expose HTTP server (including grpc-web)" default:"55001"`
-	GRPCPort      string `help:"Port to expose gRPC server" default:"55002"`
-	RepoPath      string `help:"Path to where to store node data" default:"~/.mtt"`
-	NoOpenBrowser bool   `help:"If true - do not open the browser to access the UI"`
+	HTTPPort int
+	GRPCPort int
+	RepoPath string
 
-	P2P         P2P         `prefix:"p2p." embed:""`
-	LetsEncrypt LetsEncrypt `prefix:"lets-encrypt." embed:""`
-	Syncing     Syncing     `prefix:"syncing." embed:""`
+	P2P     P2P
+	Syncing Syncing
 }
 
+// Default creates a new default config.
+func Default() Config {
+	return Config{
+		HTTPPort: 55001,
+		GRPCPort: 55002,
+		RepoPath: "~/.mtt",
+
+		P2P: P2P{
+			Port:                      55000,
+			RelayBackoffDelay:         21600 * time.Minute,
+			StaticRelayRescanInterval: 10 * time.Minute,
+		},
+
+		Syncing: Syncing{
+			WarmupDuration: time.Minute,
+			Interval:       time.Minute,
+			TimeoutPerPeer: time.Minute * 5,
+		},
+	}
+}
+
+// SetupFlags configures the given FlagSet with the existing values from the given Config
+// and prepares the FlagSet to parse the flags into the Config.
+func SetupFlags(fs *flag.FlagSet, cfg *Config) {
+	fs.IntVar(&cfg.HTTPPort, "http-port", cfg.HTTPPort, "Port to expose HTTP Server (including grpc-web)")
+	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
+	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
+
+	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
+	fs.BoolVar(&cfg.P2P.NoRelay, "p2p.no-relay", cfg.P2P.NoRelay, "Disable libp2p circuit relay")
+	fs.BoolVar(&cfg.P2P.NoBootstrap, "p2p.no-bootstrap", cfg.P2P.NoBootstrap, "Disable IPFS bootstrapping")
+	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
+	fs.DurationVar(&cfg.P2P.RelayBackoffDelay, "p2p.relay-backoff-delay", cfg.P2P.RelayBackoffDelay, "The time in which the autorelay will prune a relay if it cannot connect to it")
+	fs.DurationVar(&cfg.P2P.StaticRelayRescanInterval, "p2p.static-relay-rescan-interval", cfg.P2P.StaticRelayRescanInterval, "Periodic interval at which the autorelay will try to reconnect to static relays (if disconnected)")
+	fs.BoolVar(&cfg.P2P.ReportPrivateAddrs, "p2p.report-private-addrs", cfg.P2P.ReportPrivateAddrs, "If true the node will report/announce addresses within private IP ranges")
+
+	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
+	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
+	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
+}
+
+// ExpandRepoPath is used to expand the home directory in the repo path.
+func (c *Config) ExpandRepoPath() error {
+	// We allow homedir expansion in the repo path.
+	if strings.HasPrefix(c.RepoPath, "~") {
+		homedir, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("failed to detect home directory: %w", err)
+		}
+		c.RepoPath = strings.Replace(c.RepoPath, "~", homedir, 1)
+	}
+	return nil
+}
+
+// Syncing related config. For field descriptions see SetupFlags().
 type Syncing struct {
-	WarmupDuration time.Duration `help:"Time to wait before the first sync loop iteration" default:"1m"`
-	Interval       time.Duration `help:"How often sync loop is triggered" default:"1m"`
-	TimeoutPerPeer time.Duration `help:"Maximum duration for syncing with a single peer" default:"5m"`
+	WarmupDuration time.Duration
+	Interval       time.Duration
+	TimeoutPerPeer time.Duration
 }
 
-type LetsEncrypt struct {
-	Domain string `help:"Domain that Let's Encrypt will generate the certificate for (required for SSL support)"`
-	Email  string `help:"Email that Let's Encrypt will use for notifications (optional)"`
-}
-
-// P2P configuration.
+// P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
-	Port               int  `help:"Port to listen for incoming P2P connections" default:"55000"`
-	NoRelay            bool `help:"Disable libp2p circuit relay"`
-	NoBootstrap        bool `help:"Disable IPFS bootstrapping"`
-	NoMetrics          bool `help:"Disable Prometheus metrics collection"`
-	RelayBackoffDelay  int  `help:"The time in minutes the autorelay will prune a relay if it cannot connect to it" default:"21600"`
-	StaticRelayRescan  int  `help:"The time in minutes the autorelay will try to reconect to static relays (if disconnected)" default:"10"`
-	ReportPrivateAddrs bool `help:"If true the node will report/announce addresses within private IP ranges" default:"false"`
+	Port                      int
+	NoRelay                   bool
+	NoBootstrap               bool
+	NoMetrics                 bool
+	RelayBackoffDelay         time.Duration
+	StaticRelayRescanInterval time.Duration
+	ReportPrivateAddrs        bool
+}
+
+// EnsureConfigFile makes sure a config file exist.
+func EnsureConfigFile(repoPath string) (filename string, err error) {
+	if !filepath.IsAbs(repoPath) {
+		return "", fmt.Errorf("repo path must be an absolute path")
+	}
+
+	if err := os.MkdirAll(repoPath, 0700); err != nil {
+		return "", err
+	}
+
+	filename = filepath.Join(repoPath, "mintterd.conf")
+
+	_, err = os.Lstat(filename)
+	if err == nil {
+		return filename, nil
+	}
+
+	if os.IsNotExist(err) {
+		if err := ioutil.WriteFile(filename, []byte(`# Config file for the mintterd program.
+# You can set any CLI flags here, one per line with a space between key and value.
+`), 0600); err != nil {
+			return "", err
+		}
+
+		return filename, nil
+	}
+
+	return "", err
 }
