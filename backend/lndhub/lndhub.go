@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	createRoute        = "/v2/create" // v2 is the one created by our fork
 	balanceRoute       = "/balance"
 	authRoute          = "/auth"
 	createInvoiceRoute = "/addinvoice"
@@ -28,11 +29,11 @@ const (
 )
 
 var (
-	validCredentials = regexp.MustCompile(`\/\/([0-9a-f]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+)\/?$`)
+	validCredentials = regexp.MustCompile(`\/\/([0-9a-z]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+)\/?$`)
 )
 
 type httpRequest struct {
-	URL     string      //The url endpoint where the rest api is located
+	URL     string      // The url endpoint where the rest api is located
 	Method  string      // POST and GET supported
 	Token   string      // Authorization token to be inserted in the header
 	Payload interface{} // In POST method, the body of the request as a struct
@@ -51,8 +52,15 @@ type Credentials struct {
 	ConnectionURL string `json:"connectionURL"`
 	Login         string `json:"login"`
 	Password      string `json:"password"`
-	Token         string `json:"token"`
-	ID            string `json:"id"`
+	Nickname      string `json:"nickname,omitempty"`
+	Token         string `json:"token,omitempty"`
+	ID            string `json:"id,omitempty"`
+}
+
+type CreateResponse struct {
+	Login    string `mapstructure:"login"`
+	Password string `mapstructure:"password"`
+	Nickname string `mapstructure:"nickname"`
 }
 
 func NewClient(h *http.Client) *Client {
@@ -70,10 +78,10 @@ func ParseCredentials(url string) (Credentials, error) {
 	if res == nil || len(res) != 4 {
 		if res != nil {
 			return credentials, fmt.Errorf("credentials contained more than necessary fields. it shoud be " +
-				"lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io")
+				"lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://ln.mintter.com")
 		}
 		return credentials, fmt.Errorf("couldn't parse credentials, probalby wrong format. it shoud be " +
-			"lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io")
+			"lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://ln.mintter.com")
 
 	}
 	credentials.ConnectionURL = res[3]
@@ -109,6 +117,34 @@ func (c *Client) Auth(ctx context.Context, creds Credentials) (string, error) {
 	}, &resp)
 
 	return resp.AccessToken, err
+}
+
+// Creates an account or changes the nickname on already created one. If the login is a CID, then the password must
+// be the signature of the message 'sign in into mintter lndhub' and the token the pubkey whose private counterpart
+// was used to sign the password. If login is not a CID, then there is no need for the token and password can be
+// anything. Nickname can be anything in both cases as long as it's unique across all mintter lndhub users (it will
+// fail otherwise).
+func (c *Client) Create(ctx context.Context, creds Credentials) (CreateResponse, error) {
+
+	type createRequest struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+		Nickname string `json:"nickname"`
+	}
+	var resp CreateResponse
+
+	err := c.do(ctx, httpRequest{
+		URL:    creds.ConnectionURL + createRoute,
+		Method: http.MethodPost,
+		Payload: createRequest{
+			Login:    creds.Login,    // CID
+			Password: creds.Password, // signed message
+			Nickname: creds.Nickname,
+		},
+		Token: creds.Token, // this token should be in reality the pubkey whose private counterpart was used to sign the password
+	}, &resp)
+
+	return resp, err
 }
 
 // Get the confirmed balance in satoshis of the account
