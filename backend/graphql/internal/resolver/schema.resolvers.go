@@ -35,7 +35,7 @@ func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generate
 }
 
 func (r *mutationResolver) SetupLndHubWallet(ctx context.Context, input generated.SetupLndHubWalletInput) (*generated.SetupLndHubWalletPayload, error) {
-	lndhubWallet, err := r.svc.InsertWallet(ctx, "lndhub", input.URL, input.Name)
+	lndhubWallet, err := r.svc.InsertWallet(ctx, input.URL, input.Name)
 	if err != nil {
 		return nil, err
 	}

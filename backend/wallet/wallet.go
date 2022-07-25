@@ -16,6 +16,9 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 )
+var (
+	supportedWallets = []string{lndhub.LndhubWalletType, lndhub.LndhubGoWalletType}
+)
 
 type AccountID = cid.Cid
 
@@ -108,19 +111,29 @@ func (srv *Service) RemoteInvoiceRequest(ctx context.Context, account AccountID,
 // success, gets the wallet balance and inserts all that information in the database.
 // InsertWallet returns the wallet actually inserted on success. The credentias are stored
 // in plain text at the moment.
-func (srv *Service) InsertWallet(ctx context.Context, walletType, credentialsURL, name string) (wallet.Wallet, error) {
+func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name string) (wallet.Wallet, error) {
 	var err error
 	var ret wallet.Wallet
-	if strings.ToLower(walletType) != lndhub.LndhubWalletType { // TODO: support LND wallets
-		return ret, fmt.Errorf(" wallet typy not supported. currently only %s", lndhub.LndhubWalletType)
-	}
 
-	creds, err := lndhub.ParseCredentials(credentialsURL)
+	creds, err := lndhub.DecodeCredentialsURL(credentialsURL)
 	if err != nil {
 		return ret, err
 	}
+	
+	if !isSupported(creds.WalletType)  {
+		return ret, fmt.Errorf(" wallet type [%s] not supported. Currently supported: [%v]", creds.WalletType, supportedWallets)
+	}
 
+	if creds.WalletType == lndhub.LndhubGoWalletType{
+		// TODO: fill creds.Token with the mintterAccount pub key. This will be overriden by the actual token in Auth, that expires. Make sure We Call Auth again every time it expires
+		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds)
+		if err != nil {
+			return ret, err
+		}
+		creds.Nickname = newWallet.Nickname
+	}
 	// Trying to authenticate with the provided credentials
+	// TODO: this token expires and also the refresh token, make sure we refresh it upon expiration on every call ?¿??¿
 	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx, creds)
 	if err != nil {
 		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Please check provided credentials", name)
@@ -348,4 +361,15 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 
 	return walletToPay.ID, nil
 
+}
+
+func isSupported (walletType string) bool{
+	var supported bool = false 
+	for _, supWalletType := range supportedWallets {
+		if walletType == supWalletType {
+			supported = true
+			break
+		}
+	}
+	return supported
 }

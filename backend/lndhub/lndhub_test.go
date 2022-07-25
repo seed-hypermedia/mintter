@@ -18,14 +18,14 @@ const (
 	syntaxErrorCredentials3  = "c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io"
 	semanticErrorCredentials = "lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io"
 	goodCredentials          = "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
-	mintterCredentials       = "lndhub://bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya:ed5ef5dd87d98b64123125beb594b26a5434be6fc7a088a006d42b5f11323b84ff5417e3fca1643589eb6e617801809b422e31e2d818dae21e10b3f613539d0c@https://ln.testnet.mintter.com"
+	mintterCredentials       = "lndhub.go://bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya:ed5ef5dd87d98b64123125beb594b26a5434be6fc7a088a006d42b5f11323b84ff5417e3fca1643589eb6e617801809b422e31e2d818dae21e10b3f613539d0c@https://ln.testnet.mintter.com"
 )
 
 func TestCreate(t *testing.T) {
 	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
 
 	const token = "eacf5a07bef50d1c0cea8bee269a5236efb99b0c9033418fac30a5c722fe1960"
-	creds, err := ParseCredentials(mintterCredentials)
+	creds, err := DecodeCredentialsURL(mintterCredentials)
 	require.NoError(t, err)
 	creds.Token = token
 	creds.Nickname = randStringRunes(6)
@@ -136,7 +136,7 @@ func lndhubTest(t *testing.T, url string, generateInvoice, payInvoice bool, time
 	defer cancel()
 	memo := "test invoice"
 	amt := 100
-	creds, err := ParseCredentials(url)
+	creds, err := DecodeCredentialsURL(url)
 	lndHubClient := NewClient(&http.Client{})
 	if err != nil {
 		return err

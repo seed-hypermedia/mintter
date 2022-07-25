@@ -3,6 +3,7 @@ package lndhub
 import (
 	"bytes"
 	"context"
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -11,6 +12,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/lightningnetwork/lnd/zpay32"
@@ -26,10 +28,12 @@ const (
 	decodeInvoiceRoute = "/decodeinvoice" // Not used, using internal LND decoder instead
 	getInvoiceRoute    = "/getuserinvoice"
 	LndhubWalletType   = "lndhub"
+	LndhubGoWalletType = "lndhub.go"
+	IDSalt             = "salted URL to ID CeIirxsuTMZz9h1e"
 )
 
 var (
-	validCredentials = regexp.MustCompile(`\/\/([0-9a-z]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+)\/?$`)
+	validCredentials = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+)\/?$`)
 )
 
 type httpRequest struct {
@@ -50,6 +54,7 @@ type Client struct {
 
 type Credentials struct {
 	ConnectionURL string `json:"connectionURL"`
+	WalletType    string `json:"wallettype"`
 	Login         string `json:"login"`
 	Password      string `json:"password"`
 	Nickname      string `json:"nickname,omitempty"`
@@ -69,28 +74,45 @@ func NewClient(h *http.Client) *Client {
 	}
 }
 
-// The constructor takes a credential string of the form desc://user:password@url
+// The constructor takes a credential string of the form
+// <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
 // lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io
-func ParseCredentials(url string) (Credentials, error) {
+func DecodeCredentialsURL(url string) (Credentials, error) {
 	credentials := Credentials{}
 
 	res := validCredentials.FindStringSubmatch(url)
-	if res == nil || len(res) != 4 {
+	if res == nil || len(res) != 5 {
 		if res != nil {
 			return credentials, fmt.Errorf("credentials contained more than necessary fields. it shoud be " +
-				"lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://ln.mintter.com")
+				"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
 		}
 		return credentials, fmt.Errorf("couldn't parse credentials, probalby wrong format. it shoud be " +
-			"lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://ln.mintter.com")
+			"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
 
 	}
-	credentials.ConnectionURL = res[3]
-	credentials.Login = res[1]
-	credentials.Password = res[2]
-	hash := sha256.Sum256([]byte(url))
-	credentials.ID = hex.EncodeToString(hash[:])
+	credentials.WalletType = strings.ToLower(res[1])
+	credentials.Login = res[2]
+	credentials.Password = res[3]
+	credentials.ConnectionURL = res[4]
+	credentials.ID = Url2Id(url)
 	return credentials, nil
 
+}
+
+// Url2Id constructs a unique and collision-free ID out of a credentials URL
+func Url2Id(url string) string {
+	h := hmac.New(sha256.New, []byte(IDSalt))
+	h.Write([]byte(url))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+// EncodeCredentialsURL generates a credential URL out of credential parameters.
+// the resulting url will have this format
+// <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
+func EncodeCredentialsURL(creds Credentials) (string, error) {
+	url := creds.WalletType + "://" + creds.Login + ":" + creds.Password + "@https://" + creds.ConnectionURL
+	_, err := DecodeCredentialsURL(url)
+	return url, err
 }
 
 // Try to get authorized with the provided user and password. Returns
@@ -132,6 +154,10 @@ func (c *Client) Create(ctx context.Context, creds Credentials) (CreateResponse,
 		Nickname string `json:"nickname"`
 	}
 	var resp CreateResponse
+
+	if creds.WalletType != LndhubGoWalletType {
+		return resp, fmt.Errorf("Create only supports %s wallet type", LndhubGoWalletType)
+	}
 
 	err := c.do(ctx, httpRequest{
 		URL:    creds.ConnectionURL + createRoute,
