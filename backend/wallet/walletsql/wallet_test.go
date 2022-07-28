@@ -25,11 +25,18 @@ const (
 	name2    = "my LNDHub wallet"
 	type2    = "LNDHUB"
 	balance2 = 102345
+
+	id3      = "6e703a77440228295fb18cfaf9ca5fcb80a110354d346a6ad8525464d7cd8178"
+	address3 = "https://ln.testnet.mintter.com"
+	name3    = "my LNDHub.go wallet"
+	type3    = "lndhub.go"
+	balance3 = 102345
 )
 
 var (
 	auth1 = []byte("f7b32cb8ae914a1706b94bbe46d304e3")
 	auth2 = []byte("4f671cadcf0e5977559ed7727b2ee2f4f7b32ca8ae914a1703b94bbe4fd304e3")
+	auth3 = []byte("4f671cadcf0e5977559ed7727b2ee2f4f7b32ca8ae914a1703b94bbe4fd304e3")
 )
 
 func TestQueries(t *testing.T) {
@@ -106,6 +113,22 @@ func TestQueries(t *testing.T) {
 		newwallet1, err := UpdateWalletName(conn, id1, name2)
 		require.NoError(t, err)
 		require.Equal(t, newwallet1.Name, name2)
+
+		err = InsertWallet(conn, Wallet{
+			ID:      id3,
+			Name:    name3,
+			Type:    type3,
+			Balance: balance3,
+		}, auth3)
+		require.NoError(t, err)
+
+		newDefaultWallet, err = UpdateDefaultWallet(conn, id3)
+		require.NoError(t, err)
+		require.Equal(t, id3, newDefaultWallet.ID)
+
+		nwallets, err = getWalletCount(conn)
+		require.NoError(t, err)
+		require.Equal(t, 2, nwallets.Count)
 	}
 }
 
@@ -138,7 +161,7 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 		-- URL to connect via rest api. In case LND wallet, this will be the clearnet/onion address.
 		address TEXT NOT NULL,
 		-- The type of the wallet. Either lnd or lndhub
-		type TEXT CHECK( type IN ('lnd','lndhub') ) NOT NULL DEFAULT 'lndhub',
+		type TEXT CHECK( type IN ('lnd','lndhub.go','lndhub') ) NOT NULL DEFAULT 'lndhub',
 		-- The Authentication of the wallet. api token in case lndhub and macaroon
 		-- bytes in case lnd. This blob should be encrypted
 		auth BLOB NOT NULL,

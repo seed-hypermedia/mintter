@@ -41,6 +41,9 @@ func GetWallet(conn *sqlite.Conn, walletID string) (Wallet, error) {
 	if err != nil {
 		return Wallet{}, err
 	}
+	if wallet.WalletsID == "" {
+		return Wallet{}, fmt.Errorf("No wallet found with id %s", walletID)
+	}
 	ret := Wallet{
 		ID:      wallet.WalletsID,
 		Address: wallet.WalletsAddress,
