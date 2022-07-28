@@ -3,7 +3,6 @@ package lndhub
 import (
 	"bytes"
 	"context"
-	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -110,9 +109,8 @@ func DecodeCredentialsURL(url string) (Credentials, error) {
 
 // Url2Id constructs a unique and collision-free ID out of a credentials URL
 func Url2Id(url string) string {
-	h := hmac.New(sha256.New, []byte(IDSalt))
-	h.Write([]byte(url))
-	return hex.EncodeToString(h.Sum(nil))
+	h := sha256.Sum256([]byte(url))
+	return hex.EncodeToString(h[:])
 }
 
 // EncodeCredentialsURL generates a credential URL out of credential parameters.
