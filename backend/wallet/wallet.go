@@ -50,13 +50,13 @@ type InvoiceRequest struct {
 	PreimageHash []byte `help:"Preimage hash of the requested hold invoice. If HoldInvoice flag is set to false this field is skipped" default:""`
 }
 
-// RemoteInvoiceRequest requests a remote account to issue an invoice so we can pay it.
+// P2PInvoiceRequest requests a remote account to issue an invoice so we can pay it.
 // Any of the devices associated with the remote account can issue it. For each
 // associated device we found online ,we ask if it can provide an invoice.
 // If for some reason, that device cannot create the invoice (insufficient
 // inbound liquidity) we ask the next device. We return in the first device that
 // can issue the invoice. If none of them can, then an error is raised.
-func (srv *Service) RemoteInvoiceRequest(ctx context.Context, account AccountID, request InvoiceRequest) (string, error) {
+func (srv *Service) P2PInvoiceRequest(ctx context.Context, account AccountID, request InvoiceRequest) (string, error) {
 	net, ok := srv.net.Get()
 	if !ok {
 		return "", fmt.Errorf("network is not ready yet")
@@ -119,13 +119,22 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	if err != nil {
 		return ret, err
 	}
-	
+
 	if !isSupported(creds.WalletType)  {
 		return ret, fmt.Errorf(" wallet type [%s] not supported. Currently supported: [%v]", creds.WalletType, supportedWallets)
 	}
 
+	conn := srv.pool.Get(ctx)
+	if conn == nil {
+		return ret, fmt.Errorf("couldn't get sqlite connector from the pool before timeout. New wallet %s has not been inserted in database", name)
+	}
+	defer srv.pool.Put(conn)
+	
 	if creds.WalletType == lndhub.LndhubGoWalletType{
-		// TODO: fill creds.Token with the mintterAccount pub key. This will be overriden by the actual token in Auth, that expires. Make sure We Call Auth again every time it expires
+		creds.Token, err = getAccountPubKey()
+		if err != nil {
+			return ret, err
+		}
 		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds)
 		if err != nil {
 			return ret, err
@@ -133,21 +142,15 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		creds.Nickname = newWallet.Nickname
 	}
 	// Trying to authenticate with the provided credentials
-	// TODO: this token expires and also the refresh token, make sure we refresh it upon expiration on every call ?¿??¿
-	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx, creds)
+	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx, creds.ConnectionURL)
 	if err != nil {
 		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Please check provided credentials", name)
 	}
 
-	balanceSats, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds)
+	balanceSats, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds.ConnectionURL)
 	if err != nil {
 		return ret, err
 	}
-	conn := srv.pool.Get(ctx)
-	if conn == nil {
-		return ret, fmt.Errorf("couldn't get sqlite connector from the pool before timeout. New wallet %s has not been inserted in database", name)
-	}
-	defer srv.pool.Put(conn)
 
 	ret.Address = creds.ConnectionURL
 	ret.Balance = int64(balanceSats)
@@ -164,7 +167,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		if strings.Contains(err.Error(), wallet.AlreadyExistsError) {
 			return ret, fmt.Errorf("couldn't insert wallet %s in the database. ID already exists", name)
 		}
-		return ret, fmt.Errorf("couldn't insert wallet %s in the database. Unknown reason", name)
+		return ret, fmt.Errorf("couldn't insert wallet %s in the database. %s", name, err.Error())
 	}
 
 	return ret, err
@@ -183,7 +186,7 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 	}
 	for i, w := range wallets {
 		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
-			token, err := wallet.GetAuth(conn, w.ID)
+			token, err := wallet.GetAuth(conn, w.ID) //TODO: remove this so the token is handled internally (not creating one in every request)
 			if err != nil {
 				return nil, fmt.Errorf("couldn't get auth from wallet %s.", w.Name)
 			}
@@ -192,7 +195,7 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 				Token:         hex.EncodeToString(token),
 				ID:            w.ID,
 			}
-			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds)
+			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds.ConnectionURL)
 			if err != nil {
 				return nil, fmt.Errorf("couldn't get balance from wallet %s", w.Name)
 			}
@@ -216,6 +219,7 @@ func (srv *Service) DeleteWallet(ctx context.Context, walletID string) error {
 	if err := wallet.RemoveWallet(conn, walletID); err != nil {
 		return fmt.Errorf("couldn't remove wallet %s", walletID)
 	}
+	// TODO: remove associated token db entries
 	return nil
 }
 
@@ -288,7 +292,7 @@ func (srv *Service) RequestInvoice(ctx context.Context, accountID string, amount
 		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID.", accountID)
 	}
 
-	payReq, err := srv.RemoteInvoiceRequest(ctx, c,
+	payReq, err := srv.P2PInvoiceRequest(ctx, c,
 		InvoiceRequest{
 			AmountSats:   amountSats,
 			Memo:         invoiceMemo,
@@ -327,8 +331,8 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 		}
 	}
 
-	if walletToPay.Type != lndhub.LndhubWalletType {
-		return "", fmt.Errorf("wallet type [%s] not supported to pay (yet)", walletToPay.Type)
+	if !isSupported(walletToPay.Type)  {
+		return "", fmt.Errorf(" wallet type [%s] not supported to pay. Currently supported: [%v]", walletToPay.Type, supportedWallets)
 	}
 
 	if amountSats == nil || *amountSats == 0 {
@@ -341,22 +345,14 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 		amountToPay = *amountSats
 	}
 
-	binaryToken, err := wallet.GetAuth(conn, walletToPay.ID)
-	if err != nil {
-		return "", fmt.Errorf("couldn't get autorization to pay with wallet ID [%s]", walletToPay.ID)
-	}
-
-	if err = srv.lightningClient.Lndhub.PayInvoice(ctx, lndhub.Credentials{
-		ConnectionURL: walletToPay.Address,
-		Token:         hex.EncodeToString(binaryToken),
-	}, payReq, amountToPay); err != nil {
+	if err = srv.lightningClient.Lndhub.PayInvoice(ctx, walletToPay.Address, payReq, amountToPay); err != nil {
 		if strings.Contains(err.Error(), wallet.NotEnoughBalance) {
 			return "", fmt.Errorf("couldn't pay invoice. Insufficient balance in wallet name %s", walletToPay.Name)
 		}
 		if strings.Contains(err.Error(), wallet.InvoiceQttyMissmatch) {
 			return "", fmt.Errorf("couldn't pay invoice. %s", err.Error())
 		}
-		return "", fmt.Errorf("couldn't pay invoice. Unknown reason")
+		return "", fmt.Errorf("couldn't pay invoice. %s", err.Error())
 	}
 
 	return walletToPay.ID, nil
@@ -372,4 +368,8 @@ func isSupported (walletType string) bool{
 		}
 	}
 	return supported
+}
+
+func getAccountPubKey() (string, error) {
+	return "example", nil
 }

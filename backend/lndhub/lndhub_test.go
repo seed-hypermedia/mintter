@@ -140,17 +140,17 @@ func lndhubTest(t *testing.T, url string, generateInvoice, payInvoice bool, time
 	lndHubClient := NewClient(&http.Client{})
 	if err != nil {
 		return err
-	} else if creds.Token, err = lndHubClient.Auth(ctx, creds); err != nil {
+	} else if creds.Token, err = lndHubClient.Auth(ctx, creds.ConnectionURL); err != nil {
 		return err
 
-	} else if balance, err := lndHubClient.GetBalance(ctx, creds); err != nil {
+	} else if balance, err := lndHubClient.GetBalance(ctx, creds.ConnectionURL); err != nil {
 		return err
 	} else if balance != 0 {
 		return fmt.Errorf("unexpected balance of " + strconv.FormatInt(int64(balance), 10) + " expected 0")
 	}
 
 	if generateInvoice {
-		if payReq, err := lndHubClient.CreateInvoice(ctx, creds, int64(amt), memo); err != nil {
+		if payReq, err := lndHubClient.CreateInvoice(ctx, creds.ConnectionURL, int64(amt), memo); err != nil {
 			return err
 
 		} else if invoice, err := DecodeInvoice(payReq); err != nil {
@@ -166,7 +166,7 @@ func lndhubTest(t *testing.T, url string, generateInvoice, payInvoice bool, time
 			return fmt.Errorf("Decoded invoice amt " + apiInvoice.MilliSat.ToSatoshis().String() + " expected:" + strconv.FormatInt(int64(amt), 10))
 
 		} else if payInvoice {
-			if err := lndHubClient.PayInvoice(ctx, creds, payReq, uint64(invoice.MilliSat.ToSatoshis())); err != nil {
+			if err := lndHubClient.PayInvoice(ctx, creds.ConnectionURL, payReq, uint64(invoice.MilliSat.ToSatoshis())); err != nil {
 				return err
 			}
 			return nil
