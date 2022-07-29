@@ -3,13 +3,10 @@ package lndhub
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -31,10 +28,6 @@ const (
 	IDSalt             = "salted URL to ID CeIirxsuTMZz9h1e"
 )
 
-var (
-	validCredentials = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+)\/?$`)
-)
-
 type httpRequest struct {
 	URL     string      // The url endpoint where the rest api is located
 	Method  string      // POST and GET supported
@@ -49,16 +42,6 @@ type lndhubErrorTemplate struct {
 
 type Client struct {
 	http *http.Client
-}
-
-type Credentials struct {
-	ConnectionURL string `json:"connectionURL"`
-	WalletType    string `json:"wallettype"`
-	Login         string `json:"login"`
-	Password      string `json:"password"`
-	Nickname      string `json:"nickname,omitempty"`
-	Token         string `json:"token,omitempty"`
-	ID            string `json:"id,omitempty"`
 }
 
 type CreateResponse struct {
@@ -82,52 +65,12 @@ func NewClient(h *http.Client) *Client {
 	}
 }
 
-// The constructor takes a credential string of the form
-// <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
-// lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io
-func DecodeCredentialsURL(url string) (Credentials, error) {
-	credentials := Credentials{}
-
-	res := validCredentials.FindStringSubmatch(url)
-	if res == nil || len(res) != 5 {
-		if res != nil {
-			return credentials, fmt.Errorf("credentials contained more than necessary fields. it shoud be " +
-				"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
-		}
-		return credentials, fmt.Errorf("couldn't parse credentials, probalby wrong format. it shoud be " +
-			"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
-
-	}
-	credentials.WalletType = strings.ToLower(res[1])
-	credentials.Login = res[2]
-	credentials.Password = res[3]
-	credentials.ConnectionURL = res[4]
-	credentials.ID = Url2Id(url)
-	return credentials, nil
-
-}
-
-// Url2Id constructs a unique and collision-free ID out of a credentials URL
-func Url2Id(url string) string {
-	h := sha256.Sum256([]byte(url))
-	return hex.EncodeToString(h[:])
-}
-
-// EncodeCredentialsURL generates a credential URL out of credential parameters.
-// the resulting url will have this format
-// <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
-func EncodeCredentialsURL(creds Credentials) (string, error) {
-	url := creds.WalletType + "://" + creds.Login + ":" + creds.Password + "@https://" + creds.ConnectionURL
-	_, err := DecodeCredentialsURL(url)
-	return url, err
-}
-
 // Creates an account or changes the nickname on already created one. If the login is a CID, then the password must
 // be the signature of the message 'sign in into mintter lndhub' and the token the pubkey whose private counterpart
 // was used to sign the password. If login is not a CID, then there is no need for the token and password can be
 // anything. Nickname can be anything in both cases as long as it's unique across all mintter lndhub users (it will
 // fail otherwise).
-func (c *Client) Create(ctx context.Context, creds Credentials) (CreateResponse, error) {
+func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, nickname string) (CreateResponse, error) {
 
 	type createRequest struct {
 		Login    string `json:"login"`
@@ -137,14 +80,14 @@ func (c *Client) Create(ctx context.Context, creds Credentials) (CreateResponse,
 	var resp CreateResponse
 
 	err := c.do(ctx, httpRequest{
-		URL:    creds.ConnectionURL + createRoute,
+		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
-			Login:    creds.Login,    // CID
-			Password: creds.Password, // signed message
-			Nickname: creds.Nickname,
+			Login:    login, // CID
+			Password: pass,  // signed message
+			Nickname: nickname,
 		},
-		Token: creds.Token, // this token should be in reality the pubkey whose private counterpart was used to sign the password
+		Token: token, // this token should be in reality the pubkey whose private counterpart was used to sign the password
 	}, 2, &resp)
 	if err != nil {
 		return resp, err
@@ -169,8 +112,8 @@ func (c *Client) Create(ctx context.Context, creds Credentials) (CreateResponse,
 // The update can fail if the nickname contain special characters or is already taken by another user.
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).
-func (c *Client) UpdateNickname(ctx context.Context, creds Credentials) (CreateResponse, error) {
-	return c.Create(ctx, creds)
+func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass, token, nickname string) (CreateResponse, error) {
+	return c.Create(ctx, connectionURL, login, pass, token, nickname)
 }
 
 // Try to get authorized on the lndhub service pointed by apiBaseUrl.

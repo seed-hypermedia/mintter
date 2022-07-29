@@ -18,27 +18,43 @@ const (
 	syntaxErrorCredentials3  = "c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io"
 	semanticErrorCredentials = "lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io"
 	goodCredentials          = "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
-	mintterCredentials       = "lndhub.go://bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya:ed5ef5dd87d98b64123125beb594b26a5434be6fc7a088a006d42b5f11323b84ff5417e3fca1643589eb6e617801809b422e31e2d818dae21e10b3f613539d0c@https://ln.testnet.mintter.com"
+	connectionURL            = "https://ln.testnet.mintter.com"
 )
 
 func TestCreate(t *testing.T) {
 	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
 
 	const token = "eacf5a07bef50d1c0cea8bee269a5236efb99b0c9033418fac30a5c722fe1960"
-	creds, err := DecodeCredentialsURL(mintterCredentials)
-	require.NoError(t, err)
-	creds.Token = token
-	creds.Nickname = randStringRunes(6)
+	const login = "bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya"
+	const password = "ed5ef5dd87d98b64123125beb594b26a5434be6fc7a088a006d42b5f11323b84ff5417e3fca1643589eb6e617801809b422e31e2d818dae21e10b3f613539d0c"
+
+	var nickname = randStringRunes(6)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
 	defer cancel()
 	lndHubClient := NewClient(&http.Client{})
-	user, err := lndHubClient.Create(ctx, creds)
+	user, err := lndHubClient.Create(ctx, connectionURL, login, password, token, nickname)
 	require.NoError(t, err)
-	require.EqualValues(t, creds.Login, user.Login)
-	require.EqualValues(t, creds.Password, user.Password)
-	require.EqualValues(t, creds.Nickname, user.Nickname)
+	require.EqualValues(t, login, user.Login)
+	require.EqualValues(t, password, user.Password)
+	require.EqualValues(t, nickname, user.Nickname)
+
 }
+
+/*
+func TestGetbalance(t *testing.T) {
+	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
+	defer cancel()
+	lndHubClient := NewClient(&http.Client{})
+	token, err := lndHubClient.Auth(ctx, connectionURL)
+	require.NoError(t, err)
+	balance, err := lndHubClient.GetBalance(ctx, connectionURL)
+	require.NoError(t, err)
+	require.EqualValues(t, 0, balance)
+
+}*/
 func TestLndhub(t *testing.T) {
 	t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
@@ -129,28 +145,25 @@ func TestLndhub(t *testing.T) {
 
 }
 
-func lndhubTest(t *testing.T, url string, generateInvoice, payInvoice bool, timeoutMillisec int) error {
+func lndhubTest(t *testing.T, connectionURL string, generateInvoice, payInvoice bool, timeoutMillisec int) error {
 	t.Helper()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutMillisec)*time.Millisecond)
 	defer cancel()
 	memo := "test invoice"
 	amt := 100
-	creds, err := DecodeCredentialsURL(url)
 	lndHubClient := NewClient(&http.Client{})
-	if err != nil {
-		return err
-	} else if creds.Token, err = lndHubClient.Auth(ctx, creds.ConnectionURL); err != nil {
+	if _, err := lndHubClient.Auth(ctx, connectionURL); err != nil {
 		return err
 
-	} else if balance, err := lndHubClient.GetBalance(ctx, creds.ConnectionURL); err != nil {
+	} else if balance, err := lndHubClient.GetBalance(ctx, connectionURL); err != nil {
 		return err
 	} else if balance != 0 {
 		return fmt.Errorf("unexpected balance of " + strconv.FormatInt(int64(balance), 10) + " expected 0")
 	}
 
 	if generateInvoice {
-		if payReq, err := lndHubClient.CreateInvoice(ctx, creds.ConnectionURL, int64(amt), memo); err != nil {
+		if payReq, err := lndHubClient.CreateInvoice(ctx, connectionURL, int64(amt), memo); err != nil {
 			return err
 
 		} else if invoice, err := DecodeInvoice(payReq); err != nil {
@@ -166,7 +179,7 @@ func lndhubTest(t *testing.T, url string, generateInvoice, payInvoice bool, time
 			return fmt.Errorf("Decoded invoice amt " + apiInvoice.MilliSat.ToSatoshis().String() + " expected:" + strconv.FormatInt(int64(amt), 10))
 
 		} else if payInvoice {
-			if err := lndHubClient.PayInvoice(ctx, creds.ConnectionURL, payReq, uint64(invoice.MilliSat.ToSatoshis())); err != nil {
+			if err := lndHubClient.PayInvoice(ctx, connectionURL, payReq, uint64(invoice.MilliSat.ToSatoshis())); err != nil {
 				return err
 			}
 			return nil

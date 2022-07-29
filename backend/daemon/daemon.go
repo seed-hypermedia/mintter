@@ -4,6 +4,7 @@ package daemon
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"mintter/backend/config"
@@ -106,7 +107,7 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 
 	a.VCS = vcs.New(a.DB)
 
-	a.Me, err = initRegistration(ctx, a.g, a.Repo)
+	a.Me, err = initRegistration(ctx, a.g, a.Repo, a.DB, a.Net)
 	if err != nil {
 		return
 	}
@@ -209,7 +210,7 @@ func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlite
 	return pool, nil
 }
 
-func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDisk) (*future.ReadOnly[core.Identity], error) {
+func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDisk, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node]) (*future.ReadOnly[core.Identity], error) {
 	f := future.New[core.Identity]()
 
 	g.Go(func() error {
@@ -228,7 +229,44 @@ func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDis
 		if err := f.Resolve(id); err != nil {
 			return err
 		}
+		// TODO: wallet goes in a loop and goroutine untill sucess (until online) that loop should look if there is
+		// in the database an already created lndhub.go wallet, Exit only when there is one created.
+		g.Go(func() error {
+			initial_wallet := wallet.New(db, net, id)
+			pubkey, err := id.Account().MarshalBinary()
+			if err != nil {
+				return err
+			}
 
+			credURI, err := wallet.EncodeCredentialsURL(wallet.Credentials{
+				ConnectionURL: "https://ln.testnet.mintter.com",
+				WalletType:    "lndhub.go",
+				Login:         id.AccountID().String(),
+				Password:      "", // TODO: get the signed mesage from meta table
+				Token:         hex.EncodeToString(pubkey),
+			})
+			if err != nil {
+				return err
+			}
+			_, err = initial_wallet.InsertWallet(ctx, credURI, "Mintter Wallet")
+			ticker := time.NewTicker(2 * time.Minute)
+			done := make(chan bool)
+			for {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case <-done:
+					return nil
+				case <-ticker.C:
+					if err == nil {
+						ticker.Stop()
+						done <- true
+					} else {
+						_, err = initial_wallet.InsertWallet(ctx, credURI, "Mintter Wallet")
+					}
+				}
+			}
+		})
 		return nil
 	})
 

@@ -2,8 +2,10 @@ package wallet
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/lndhub"
 	"mintter/backend/mttnet"
@@ -11,13 +13,16 @@ import (
 	"mintter/backend/vcs/vcssql"
 	wallet "mintter/backend/wallet/walletsql"
 	"net/http"
+	"regexp"
 	"strings"
-	"mintter/backend/core"
+
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 )
+
 var (
 	supportedWallets = []string{lndhub.LndhubWalletType, lndhub.LndhubGoWalletType}
+	validCredentials = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+)\/?$`)
 )
 
 type AccountID = cid.Cid
@@ -29,6 +34,16 @@ type Service struct {
 	me              core.Identity
 }
 
+type Credentials struct {
+	ConnectionURL string `json:"connectionURL"`
+	WalletType    string `json:"wallettype"`
+	Login         string `json:"login"`
+	Password      string `json:"password"`
+	Nickname      string `json:"nickname,omitempty"`
+	Token         string `json:"token,omitempty"`
+	ID            string `json:"id,omitempty"`
+}
+
 func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Identity) *Service {
 	return &Service{
 		pool: db,
@@ -36,7 +51,7 @@ func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Ide
 			Lndhub: lndhub.NewClient(&http.Client{}),
 		},
 		net: net,
-		me: identity,
+		me:  identity,
 	}
 }
 
@@ -94,7 +109,7 @@ func (srv *Service) P2PInvoiceRequest(ctx context.Context, account AccountID, re
 			})
 
 			if err != nil {
-				return "", fmt.Errorf("request invoice failed.")
+				return "", fmt.Errorf("request invoice failed")
 			}
 
 			if remoteInvoice.PayReq == "" {
@@ -117,12 +132,12 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	var err error
 	var ret wallet.Wallet
 
-	creds, err := lndhub.DecodeCredentialsURL(credentialsURL)
+	creds, err := DecodeCredentialsURL(credentialsURL)
 	if err != nil {
 		return ret, err
 	}
 
-	if !isSupported(creds.WalletType)  {
+	if !isSupported(creds.WalletType) {
 		return ret, fmt.Errorf(" wallet type [%s] not supported. Currently supported: [%v]", creds.WalletType, supportedWallets)
 	}
 
@@ -131,14 +146,20 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		return ret, fmt.Errorf("couldn't get sqlite connector from the pool before timeout. New wallet %s has not been inserted in database", name)
 	}
 	defer srv.pool.Put(conn)
-	
-	if creds.WalletType == lndhub.LndhubGoWalletType{
-		pubkey, err := srv.me.Account().MarshalBinary()
+
+	if creds.WalletType == lndhub.LndhubGoWalletType {
+		// Only one lndhub.go wallet is allowed
+		wallets, err := srv.ListWallets(ctx)
 		if err != nil {
 			return ret, err
 		}
-		creds.Token = hex.EncodeToString(pubkey)
-		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds)
+		for i := 0; i < len(wallets); i++ {
+			if wallets[i].Type == lndhub.LndhubGoWalletType {
+				return wallets[i], fmt.Errorf("Only one type of %s wallet is allowed. Already existing one", lndhub.LndhubGoWalletType)
+			}
+		}
+
+		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds.ConnectionURL, creds.Login, creds.Password, creds.Token, creds.Nickname)
 		if err != nil {
 			return ret, err
 		}
@@ -154,16 +175,16 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	if err != nil {
 		return ret, err
 	}
-
+	ret.Type = creds.WalletType
 	ret.Address = creds.ConnectionURL
 	ret.Balance = int64(balanceSats)
 	ret.ID = creds.ID
 	ret.Name = name
-	ret.Type = lndhub.LndhubWalletType
+
 	binaryToken, err := hex.DecodeString(creds.Token) // TODO: encrypt the token before storing
 
 	if err != nil {
-		return ret, fmt.Errorf("couldn't decode token before insert the wallet in the database.")
+		return ret, fmt.Errorf("couldn't decode token before insert the wallet in the database")
 	}
 
 	if err = wallet.InsertWallet(conn, ret, binaryToken); err != nil {
@@ -191,9 +212,9 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
 			token, err := wallet.GetAuth(conn, w.ID) //TODO: remove this so the token is handled internally (not creating one in every request)
 			if err != nil {
-				return nil, fmt.Errorf("couldn't get auth from wallet %s.", w.Name)
+				return nil, fmt.Errorf("couldn't get auth from wallet %s", w.Name)
 			}
-			creds := lndhub.Credentials{
+			creds := Credentials{
 				ConnectionURL: w.Address,
 				Token:         hex.EncodeToString(token),
 				ID:            w.ID,
@@ -292,7 +313,7 @@ func (srv *Service) RequestInvoice(ctx context.Context, accountID string, amount
 
 	c, err := cid.Decode(accountID)
 	if err != nil {
-		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID.", accountID)
+		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID", accountID)
 	}
 
 	payReq, err := srv.P2PInvoiceRequest(ctx, c,
@@ -334,7 +355,7 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 		}
 	}
 
-	if !isSupported(walletToPay.Type)  {
+	if !isSupported(walletToPay.Type) {
 		return "", fmt.Errorf(" wallet type [%s] not supported to pay. Currently supported: [%v]", walletToPay.Type, supportedWallets)
 	}
 
@@ -362,8 +383,48 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 
 }
 
-func isSupported (walletType string) bool{
-	var supported bool = false 
+// DecodeCredentialsURL takes a credential string of the form
+// <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
+// lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io
+func DecodeCredentialsURL(url string) (Credentials, error) {
+	credentials := Credentials{}
+
+	res := validCredentials.FindStringSubmatch(url)
+	if res == nil || len(res) != 5 {
+		if res != nil {
+			return credentials, fmt.Errorf("credentials contained more than necessary fields. it shoud be " +
+				"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
+		}
+		return credentials, fmt.Errorf("couldn't parse credentials, probalby wrong format. it shoud be " +
+			"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
+
+	}
+	credentials.WalletType = strings.ToLower(res[1])
+	credentials.Login = res[2]
+	credentials.Password = res[3]
+	credentials.ConnectionURL = res[4]
+	credentials.ID = URL2Id(url)
+	return credentials, nil
+
+}
+
+// URL2Id constructs a unique and collision-free ID out of a credentials URL
+func URL2Id(url string) string {
+	h := sha256.Sum256([]byte(url))
+	return hex.EncodeToString(h[:])
+}
+
+// EncodeCredentialsURL generates a credential URL out of credential parameters.
+// the resulting url will have this format
+// <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
+func EncodeCredentialsURL(creds Credentials) (string, error) {
+	url := creds.WalletType + "://" + creds.Login + ":" + creds.Password + "@https://" + creds.ConnectionURL
+	_, err := DecodeCredentialsURL(url)
+	return url, err
+}
+
+func isSupported(walletType string) bool {
+	var supported bool = false
 	for _, supWalletType := range supportedWallets {
 		if walletType == supWalletType {
 			supported = true
