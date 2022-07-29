@@ -12,7 +12,7 @@ import (
 	wallet "mintter/backend/wallet/walletsql"
 	"net/http"
 	"strings"
-
+	"mintter/backend/core"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 )
@@ -26,15 +26,17 @@ type Service struct {
 	lightningClient lnclient
 	pool            *sqlitex.Pool
 	net             *future.ReadOnly[*mttnet.Node]
+	me              core.Identity
 }
 
-func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node]) *Service {
+func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Identity) *Service {
 	return &Service{
 		pool: db,
 		lightningClient: lnclient{
 			Lndhub: lndhub.NewClient(&http.Client{}),
 		},
 		net: net,
+		me: identity,
 	}
 }
 
@@ -131,10 +133,11 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	defer srv.pool.Put(conn)
 	
 	if creds.WalletType == lndhub.LndhubGoWalletType{
-		creds.Token, err = getAccountPubKey()
+		pubkey, err := srv.me.Account().MarshalBinary()
 		if err != nil {
 			return ret, err
 		}
+		creds.Token = hex.EncodeToString(pubkey)
 		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds)
 		if err != nil {
 			return ret, err
@@ -368,8 +371,4 @@ func isSupported (walletType string) bool{
 		}
 	}
 	return supported
-}
-
-func getAccountPubKey() (string, error) {
-	return "example", nil
 }
