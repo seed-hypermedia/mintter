@@ -25,7 +25,7 @@ const (
 	getInvoiceRoute    = "/getuserinvoice"
 	LndhubWalletType   = "lndhub"
 	LndhubGoWalletType = "lndhub.go"
-	IDSalt             = "salted URL to ID CeIirxsuTMZz9h1e"
+	mintterDomain      = "testnet.mintter.com"
 )
 
 type httpRequest struct {
@@ -114,6 +114,17 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, 
 // the pubkey whose private counterpart created the signature provided in password (like in create).
 func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass, token, nickname string) (CreateResponse, error) {
 	return c.Create(ctx, connectionURL, login, pass, token, nickname)
+}
+
+// GetLnAddress gets the account-wide ln address in the form of <nickname>@<domain> .
+// Since it is a user operation, if the login is a CID, then user must provide a token representing
+// the pubkey whose private counterpart created the signature provided in password (like in create).
+func (c *Client) GetLnAddress(ctx context.Context, connectionURL, login, pass, token string) (string, error) {
+	user, err := c.Create(ctx, connectionURL, login, pass, token, "") // create with valid credentials and blank nickname fills the nickname
+	if err != nil {
+		return "", err
+	}
+	return user.Nickname + "@" + mintterDomain, nil
 }
 
 // Try to get authorized on the lndhub service pointed by apiBaseUrl.
