@@ -36,7 +36,7 @@ function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['child
 function createParent<N extends Parent>(type: N['type'], defaults: Partial<OptionsOf<N>> = {}) {
   //@ts-ignore
 
-  return function createParentType(optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N {
+  return function createblockType(optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N {
     return {
       type,
       ...defaults,

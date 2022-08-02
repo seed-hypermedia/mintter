@@ -1,5 +1,5 @@
 import {useHover} from '@app/editor/hover-context'
-import {PublicationHoveringToolbar} from '@app/editor/hovering-toolbar'
+import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
@@ -27,6 +27,11 @@ interface EditorProps {
   className?: string
 }
 
+const editorWrapperStyles = css({
+  position: 'relative',
+  paddingInline: '4rem',
+})
+
 export function Editor({
   value,
   onChange,
@@ -35,7 +40,6 @@ export function Editor({
   editor,
   plugins = defaultPlugins,
   as = 'div',
-  className,
 }: PropsWithChildren<EditorProps>) {
   const _editor = useMemo(
     () => editor ?? buildEditorHook(plugins, mode),
@@ -62,7 +66,7 @@ export function Editor({
   if (mode == EditorMode.Draft) {
     return (
       <Suspense fallback={'loading'}>
-        <Box className={className} css={{position: 'relative'}} id="editor">
+        <Box className={editorWrapperStyles()} id="editor">
           <Slate
             editor={_editor}
             value={value as Array<Descendant>}
@@ -91,9 +95,8 @@ export function Editor({
     <Suspense fallback={'loading'}>
       <Box
         as="span"
-        className={className}
+        className={editorWrapperStyles()}
         id="editor"
-        css={{position: 'relative'}}
         onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
       >
         <Slate
@@ -101,9 +104,9 @@ export function Editor({
           value={value as Array<Descendant>}
           onChange={onChange as any}
         >
-          {mode == EditorMode.Publication ? (
+          {/* {mode == EditorMode.Publication ? (
             <PublicationHoveringToolbar />
-          ) : null}
+          ) : null} */}
           <Editable
             as={as}
             data-testid="editor"

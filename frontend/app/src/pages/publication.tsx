@@ -3,6 +3,7 @@ import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {PublicationRef} from '@app/main-machine'
+import {MainWindow} from '@app/pages/window-components'
 import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -67,157 +68,157 @@ export default function Publication({
     )
   }
 
-  return (
-    <>
-      {state.matches('publication.ready') && (
-        <>
-          <Box className={headerStyles()}>
-            <Box
-              className={headerMetadataStyles()}
-              css={{
-                flex: 1,
-                overflow: 'hidden',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <FileTime
-                type="pub"
-                document={state.context.publication?.document}
-              />
-            </Box>
-            <Box
-              className={headerButtonsStyles()}
-              css={{
-                flex: 'none',
-              }}
-            >
-              {state.context.canUpdate ? (
-                <>
-                  <Tooltip content="Edit">
-                    <Button
-                      color="success"
-                      size="1"
-                      variant="ghost"
-                      disabled={state.hasTag('pending')}
-                      data-testid="submit-edit"
-                      onClick={() =>
-                        mainService.send({
-                          type: 'COMMIT.EDIT.PUBLICATION',
-                          docId: state.context.documentId,
-                        })
-                      }
-                    >
-                      <Icon size="1" name="PencilAdd" color="muted" />
-                    </Button>
-                  </Tooltip>
-                </>
-              ) : (
-                <>
-                  <TippingModal
-                    publicationId={state.context.documentId}
-                    accountId={state.context.author?.id}
-                    visible={!state.context.canUpdate}
-                  />
-                  <Tooltip content="Review">
-                    <Button
-                      color="success"
-                      size="1"
-                      variant="ghost"
-                      disabled={state.hasTag('pending')}
-                      data-testid="submit-edit"
-                      onClick={() => {
-                        debug('Review: IMPLEMENT ME!')
-                      }}
-                    >
-                      <Icon size="1" name="MessageBubble" color="muted" />
-                    </Button>
-                  </Tooltip>
-                  <Tooltip content="Reply">
-                    <Button
-                      color="success"
-                      size="1"
-                      variant="ghost"
-                      disabled={state.hasTag('pending')}
-                      data-testid="submit-edit"
-                      onClick={() => {
-                        debug('Review: IMPLEMENT ME!')
-                      }}
-                    >
-                      <Icon size="1" name="ArrowTurnTopRight" color="muted" />
-                    </Button>
-                  </Tooltip>
-                </>
-              )}
-              <Tooltip content="new Document">
-                <Button
-                  variant="ghost"
-                  size="0"
-                  color="success"
-                  onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
-                  css={{
-                    '&:hover': {
-                      backgroundColor: '$success-component-bg-normal',
-                    },
+  if (state.matches('publication.ready')) {
+    return (
+      <MainWindow>
+        <Box className={headerStyles()}>
+          <Box
+            className={headerMetadataStyles()}
+            css={{
+              flex: 1,
+              overflow: 'hidden',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <FileTime
+              type="pub"
+              document={state.context.publication?.document}
+            />
+          </Box>
+          <Box
+            className={headerButtonsStyles()}
+            css={{
+              flex: 'none',
+            }}
+          >
+            {state.context.canUpdate ? (
+              <>
+                <Tooltip content="Edit">
+                  <Button
+                    color="success"
+                    size="1"
+                    variant="ghost"
+                    disabled={state.hasTag('pending')}
+                    data-testid="submit-edit"
+                    onClick={() =>
+                      mainService.send({
+                        type: 'COMMIT.EDIT.PUBLICATION',
+                        docId: state.context.documentId,
+                      })
+                    }
+                  >
+                    <Icon size="1" name="PencilAdd" color="muted" />
+                  </Button>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <TippingModal
+                  publicationId={state.context.documentId}
+                  accountId={state.context.author?.id}
+                  visible={!state.context.canUpdate}
+                />
+                <Tooltip content="Review">
+                  <Button
+                    color="success"
+                    size="1"
+                    variant="ghost"
+                    disabled={state.hasTag('pending')}
+                    data-testid="submit-edit"
+                    onClick={() => {
+                      debug('Review: IMPLEMENT ME!')
+                    }}
+                  >
+                    <Icon size="1" name="MessageBubble" color="muted" />
+                  </Button>
+                </Tooltip>
+                <Tooltip content="Reply">
+                  <Button
+                    color="success"
+                    size="1"
+                    variant="ghost"
+                    disabled={state.hasTag('pending')}
+                    data-testid="submit-edit"
+                    onClick={() => {
+                      debug('Review: IMPLEMENT ME!')
+                    }}
+                  >
+                    <Icon size="1" name="ArrowTurnTopRight" color="muted" />
+                  </Button>
+                </Tooltip>
+              </>
+            )}
+            <Tooltip content="new Document">
+              <Button
+                variant="ghost"
+                size="0"
+                color="success"
+                onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
+                css={{
+                  '&:hover': {
+                    backgroundColor: '$success-component-bg-normal',
+                  },
+                }}
+              >
+                <Icon name="File" size="1" />
+              </Button>
+            </Tooltip>
+          </Box>
+        </Box>
+        <Box
+          css={{
+            height: '$full',
+          }}
+        >
+          <Box
+            css={{
+              paddingBottom: 0,
+              marginBottom: 50,
+            }}
+            data-testid="publication-wrapper"
+          >
+            {state.context.publication?.document?.content && (
+              <FileProvider value={publicationRef}>
+                <Editor
+                  editor={state.context.editor}
+                  mode={EditorMode.Publication}
+                  value={state.context.publication?.document.content}
+                  onChange={() => {
+                    // noop
                   }}
-                >
-                  <Icon name="File" size="1" />
-                </Button>
-              </Tooltip>
-            </Box>
+                />
+              </FileProvider>
+            )}
           </Box>
           <Box
             css={{
-              height: '$full',
+              marginBottom: 200,
+              marginLeft: '$8',
+              marginRight: '$5',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '$4',
             }}
           >
-            <Box
-              css={{
-                paddingBottom: 0,
-                marginBottom: 50,
-              }}
-              data-testid="publication-wrapper"
+            <Button
+              variant="ghost"
+              color="primary"
+              size="1"
+              onClick={() => send('DISCUSSION.TOGGLE')}
             >
-              {state.context.publication?.document?.content && (
-                <FileProvider value={publicationRef}>
-                  <Editor
-                    editor={state.context.editor}
-                    mode={EditorMode.Publication}
-                    value={state.context.publication?.document.content}
-                    onChange={() => {
-                      // noop
-                    }}
-                  />
-                </FileProvider>
-              )}
-            </Box>
-            <Box
-              css={{
-                marginBottom: 200,
-                marginLeft: '$8',
-                marginRight: '$5',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: '$4',
-              }}
-            >
-              <Button
-                variant="ghost"
-                color="primary"
-                size="1"
-                onClick={() => send('DISCUSSION.TOGGLE')}
-              >
-                {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
-                Discussion/Citations
-              </Button>
-              <Discussion service={publicationRef} mainService={mainService} />
-            </Box>
+              {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
+              Discussion/Citations
+            </Button>
+            <Discussion service={publicationRef} mainService={mainService} />
           </Box>
-        </>
-      )}
-    </>
-  )
+        </Box>
+      </MainWindow>
+    )
+  }
+
+  return null
 }
 
 function PublicationShell() {

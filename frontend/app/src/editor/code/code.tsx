@@ -1,9 +1,11 @@
-import {BlockWrapper} from '@app/editor/block-wrapper'
+import {BlockToolsTarget} from '@app/editor/block-tools-target'
+import {useBlockProps} from '@app/editor/editor-node-props'
+import {blockStyles} from '@app/editor/styles'
 import {useFileEditor} from '@app/file-provider'
-import {css, styled} from '@app/stitches.config'
+import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
-import type {Code as CodeType} from '@mintter/mttast'
 import {
+  Code as CodeType,
   createId,
   isCode,
   isParagraph,
@@ -41,16 +43,6 @@ const SelectorWrapper = styled('div', {
   zIndex: 2,
   opacity: 0,
   transition: 'opacity 0.5s',
-})
-
-export const codeStyle = css({
-  position: 'relative',
-  borderRadius: '$2',
-  '&:hover': {
-    [`${SelectorWrapper}`]: {
-      opacity: 1,
-    },
-  },
 })
 
 interface CodePluginProps {
@@ -201,11 +193,13 @@ function Code({
   element: CodeType
   mode: EditorMode
 }) {
-  const editor = useFileEditor()
-  const path = findPath(element)
+  let editor = useFileEditor()
+  let path = findPath(element)
+  let {blockProps, parentNode} = useBlockProps(element)
+  let lang = (element as CodeType).lang || ''
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
-    const {...newData} = element.data || {}
+    const {...newData} = (element as CodeType).data || {}
     delete newData[HIGHLIGHTER]
 
     Transforms.setNodes(
@@ -215,53 +209,49 @@ function Code({
     )
   }
 
-  let lang = element.lang || ''
-
-  let blockProps = {
-    'data-element-type': element.type,
-    'data-element-id': (element as CodeType).id,
-    ...attributes,
-  }
-
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
-      <span className={codeStyle()} {...blockProps}>
+      <span {...attributes} {...blockProps}>
         {children}
       </span>
     )
   }
 
   return (
-    <BlockWrapper element={element} attributes={attributes} mode={mode}>
-      <Box className={codeStyle()} {...blockProps}>
-        {mode == EditorMode.Draft ? (
-          <SelectorWrapper
-            contentEditable={false}
-            css={{
-              position: 'absolute',
-              left: '$sizes$prose-width',
-              top: 0,
-              transform: 'translate(-100px, -8px)',
-              zIndex: 2,
-            }}
+    <Box
+      as="li"
+      className={blockStyles({type: 'code', groupType: parentNode?.type})}
+      {...attributes}
+      {...blockProps}
+    >
+      {children}
+      <BlockToolsTarget type="code" />
+      {mode == EditorMode.Draft ? (
+        <SelectorWrapper
+          contentEditable={false}
+          css={{
+            position: 'absolute',
+            left: '$sizes$prose-width',
+            top: 0,
+            transform: 'translate(-100px, -8px)',
+            zIndex: 2,
+          }}
+        >
+          <select
+            id="lang-selection"
+            name="lang-selection"
+            value={lang}
+            onChange={setLanguage}
           >
-            <select
-              id="lang-selection"
-              name="lang-selection"
-              value={lang}
-              onChange={setLanguage}
-            >
-              <option value="">Select a Language</option>
-              {BUNDLED_LANGUAGES.map((lang) => (
-                <option value={lang.id} key={lang.id}>
-                  {lang.id}
-                </option>
-              ))}
-            </select>
-          </SelectorWrapper>
-        ) : null}
-        {children}
-      </Box>
-    </BlockWrapper>
+            <option value="">Select a Language</option>
+            {BUNDLED_LANGUAGES.map((lang) => (
+              <option value={lang.id} key={lang.id}>
+                {lang.id}
+              </option>
+            ))}
+          </select>
+        </SelectorWrapper>
+      ) : null}
+    </Box>
   )
 }

@@ -1,5 +1,6 @@
 import {styled} from '@app/stitches.config'
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
+import {PropsWithChildren} from 'react'
 
 const SCROLLBAR_SIZE = 6
 
@@ -48,10 +49,21 @@ export const ScrollBarThumb = styled(ScrollAreaPrimitive.Thumb, {
   },
 })
 
-export function ScrollArea({children, orientation = 'vertical'}: any) {
+export type ScrollAreaProps = PropsWithChildren<
+  Partial<{
+    orientation: ScrollAreaPrimitive.ScrollAreaScrollbarVisibleProps['orientation']
+    onScroll: ScrollAreaPrimitive.ScrollAreaViewportProps['onScroll']
+  }>
+>
+
+export function ScrollArea({
+  children,
+  orientation = 'vertical',
+  onScroll,
+}: ScrollAreaProps) {
   return (
     <StyledScrollArea type="hover">
-      <ScrollViewport>{children}</ScrollViewport>
+      <ScrollViewport onScroll={onScroll}>{children}</ScrollViewport>
       <ScrollBar orientation={orientation}>
         <ScrollBarThumb />
       </ScrollBar>

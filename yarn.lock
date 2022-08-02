@@ -1010,9 +1010,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/cli@npm:2.9.1":
-  version: 2.9.1
-  resolution: "@graphql-codegen/cli@npm:2.9.1"
+"@graphql-codegen/cli@npm:2.9.0":
+  version: 2.9.0
+  resolution: "@graphql-codegen/cli@npm:2.9.0"
   dependencies:
     "@graphql-codegen/core": 2.6.0
     "@graphql-codegen/plugin-helpers": ^2.6.0
@@ -1052,7 +1052,7 @@ __metadata:
     graphql-code-generator: cjs/bin.js
     graphql-codegen: cjs/bin.js
     graphql-codegen-esm: esm/bin.js
-  checksum: 85d89be650e9c5272a0c833bd8b5db3f0736ea001533b3b129d2d2a738cf8b6417a691f68e0449569f0a5195fd1ec5153f5243b0c077c80c58c978e44d930d90
+  checksum: b6ea00597feeccff39d85fcd13441ef30a6e6a7f839bddc8167f2f515d524c00fbb7edc11aef682711490df86b588b337db687b741c989c8fadeb5ff9987bf1a
   languageName: node
   linkType: hard
 
@@ -9165,7 +9165,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "mintter@workspace:."
   dependencies:
-    "@graphql-codegen/cli": 2.9.1
+    "@graphql-codegen/cli": 2.9.0
     "@graphql-codegen/typescript": 2.7.2
     "@types/wouter": 2.2.0
     app: 0.1.0

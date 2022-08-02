@@ -1,5 +1,7 @@
-import {BlockWrapper} from '@app/editor/block-wrapper'
+import {BlockToolsTarget} from '@app/editor/block-tools-target'
+import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {blockStyles} from '@app/editor/styles'
 import {Box} from '@components/box'
 import {
   createId,
@@ -17,7 +19,7 @@ import {
   text,
 } from '@mintter/mttast'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
-import type {RenderElementProps} from 'slate-react'
+import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {isFirstChild} from '../utils'
@@ -232,23 +234,29 @@ function Statement({
   element,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
-  let blockProps = {
-    'data-element-type': element.type,
-    'data-element-id': (element as StatementType).id,
-    ...attributes,
-  }
+  let {blockProps, parentNode} = useBlockProps(element)
+
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return <span {...blockProps}>{children}</span>
+    return (
+      <span {...attributes} {...blockProps}>
+        {children}
+      </span>
+    )
   }
 
   return (
-    <BlockWrapper
-      element={element as StatementType}
-      mode={mode}
-      attributes={attributes}
+    <Box
+      as="li"
+      className={blockStyles({
+        type: (element as StatementType).type,
+        groupType: parentNode?.type,
+      })}
+      {...attributes}
+      {...blockProps}
     >
-      <Box {...blockProps}>{children}</Box>
-    </BlockWrapper>
+      <BlockToolsTarget type="statement" />
+      {children}
+    </Box>
   )
 }
 

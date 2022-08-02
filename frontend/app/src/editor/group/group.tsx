@@ -1,4 +1,5 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {groupStyles} from '@app/editor/styles'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
@@ -6,9 +7,10 @@ import {
   GroupingContent,
   isFlowContent,
   isGroupContent,
+  isOrderedList,
   statement,
 } from '@mintter/mttast'
-import {forwardRef} from 'react'
+import {useMemo} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {debug} from 'tauri-plugin-log-api'
@@ -143,28 +145,34 @@ export type GroupProps = Omit<RenderElementProps, 'element'> & {
   element: GroupingContent
 }
 
-export const Group = forwardRef<GroupProps, any>(
-  ({mode, attributes, element, ...props}: GroupProps, ref) => {
-    if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-      return null
-    }
+export function Group({
+  element,
+  attributes,
+  children,
+  mode,
+}: RenderElementProps & {mode: EditorMode}) {
+  let elementProps = useMemo(
+    () => ({
+      ...attributes,
+      'data-element-type': (element as GroupingContent).type,
+      start: (element as GroupingContent).start ?? 1,
+    }),
+    [element, attributes],
+  )
 
-    return (
-      <Box
-        as={
-          element.type == 'unorderedList'
-            ? 'ul'
-            : element.type == 'orderedList'
-            ? 'ol'
-            : 'div'
-        }
-        start={element.start}
-        className={groupStyle()}
-        data-element-type={element.type}
-        {...attributes}
-        ref={ref as any}
-        {...props}
-      />
-    )
-  },
-)
+  let as = useMemo(() => (isOrderedList(element) ? 'ol' : 'ul'), [element])
+
+  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+    return null
+  }
+
+  return (
+    <Box
+      as={as}
+      className={groupStyles({type: (element as GroupingContent).type})}
+      {...elementProps}
+    >
+      {children}
+    </Box>
+  )
+}

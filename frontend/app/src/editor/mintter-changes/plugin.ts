@@ -4,7 +4,7 @@ import {
   createMoveChange,
   createReplaceChange,
 } from '@app/client/v2/change-creators'
-import {debug, error} from '@app/utils/logger'
+import {error} from '@app/utils/logger'
 import {
   FlowContent,
   GroupingContent,
@@ -267,7 +267,7 @@ function orderChanges(editor: Editor) {
       if (filteredChanges.length) {
         newList.push(...filteredChanges)
       } else {
-        debug(`orderChanges: no changes for id: ${node.id}`)
+        // debug(`orderChanges: no changes for id: ${node.id}`)
       }
     }
   }

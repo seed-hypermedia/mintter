@@ -1,6 +1,9 @@
+import {
+  useBlockTools,
+  useCurrentBlockToolsId,
+} from '@app/editor/block-tools-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {findPath} from '@app/editor/utils'
+import {getEditorBlock} from '@app/editor/utils'
 import {useFileEditor} from '@app/file-provider'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Box} from '@components/box'
@@ -23,10 +26,10 @@ import {
   ul,
   video,
 } from '@mintter/mttast'
-import {Fragment} from 'react'
+import {useActor} from '@xstate/react'
+import {Fragment, useMemo} from 'react'
 import {BaseRange, Editor, Node, Path, Transforms} from 'slate'
 import {Dropdown, ElementDropdown} from './dropdown'
-import {useHover, useHoverActiveSelector} from './hover-context'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
 const items: {
@@ -98,53 +101,48 @@ type BlockToolsProps = {
   element: FlowContent
 }
 
-export function BlockTools({element}: BlockToolsProps) {
+export function BlockTools() {
+  let btService = useBlockTools()
+  let [state] = useActor(btService)
+  let blockId = useCurrentBlockToolsId()
   let editor = useFileEditor()
-  const hoverService = useHover()
-  let isHoverActive = useHoverActiveSelector()
-  const path = findPath(element)
+  let blockEntry = useMemo(() => {
+    if (blockId) {
+      return getEditorBlock(editor, {id: blockId})
+    }
+  }, [blockId])
 
-  return (
+  let x = state.context.currentPosition
+    ? `${state.context.currentPosition.x}px`
+    : '-9999px'
+  let y = state.context.currentPosition
+    ? `${state.context.currentPosition.y}px`
+    : '-9999px'
+
+  console.log('🚀 ~ file: block-tools.tsx ~ line 109 ~ BlockTools ~ state', {
+    x,
+    y,
+    currentPosition: state.context.currentPosition,
+  })
+
+  return state.matches('active') ? (
     <Box
-      contentEditable={false}
       css={{
-        opacity: 0,
-        userSelect: 'none',
-        transition: 'all ease-in-out 0.1s',
-        padding: '$2',
-        paddingLeft: '$3',
-        pointerEvents: 'none',
-        visibility: 'hidden',
-        marginTop: isHeading(element) ? '$2' : 0,
-        [`[data-hover-block="${element.id}"] &`]:
-          editor.mode != EditorMode.Draft
-            ? {
-                opacity: 1,
-                pointerEvents: 'all',
-                visibility: 'visible',
-              }
-            : isHoverActive
-            ? {
-                opacity: 1,
-                pointerEvents: 'all',
-                visibility: 'visible',
-              }
-            : {},
-        '&:hover': {
-          cursor: 'pointer',
-        },
+        position: 'absolute',
+        zIndex: '$max',
+        insetBlockStart: `calc(${y} - 2.5rem)`,
+        insetInlineStart: `calc(${x})`,
       }}
     >
-      <Box
-        onMouseEnter={() => {
-          hoverService.send({type: 'MOUSE_ENTER', blockId: element.id})
+      <Dropdown.Root
+        modal={false}
+        onOpenChange={(isOpen) => {
+          btService.send(isOpen ? 'DROPDOWN.OPEN' : 'DROPDOWN.CLOSE')
         }}
-      />
-
-      <Dropdown.Root modal={false}>
+      >
         <Dropdown.Trigger asChild>
           <ElementDropdown data-trigger contentEditable={false}>
-            <Icon name="Grid4" color="muted" css={{width: 18, height: 18}} />
+            <Icon name="Grid4" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
         <Dropdown.Content portalled align="start" side="bottom">
@@ -161,7 +159,16 @@ export function BlockTools({element}: BlockToolsProps) {
                     data-testid={`item-${item.label}`}
                     key={item.label}
                     onSelect={() => {
-                      item.onSelect(editor, element, path, editor.selection)
+                      if (blockEntry) {
+                        item.onSelect(
+                          editor,
+                          blockEntry[0],
+                          blockEntry[1],
+                          editor.selection,
+                        )
+                      }
+                      // item.onSelect(editor, block, path)
+                      // item.onSelect(editor, element, path, editor.selection)
                     }}
                   >
                     <Icon size="2" name={item.iconName} />
@@ -175,7 +182,7 @@ export function BlockTools({element}: BlockToolsProps) {
         </Dropdown.Content>
       </Dropdown.Root>
     </Box>
-  )
+  ) : null
 }
 
 /* eslint-disable */
