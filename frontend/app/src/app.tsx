@@ -1,5 +1,6 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {useAuthService} from '@app/auth-context'
+import {MainPage} from '@app/pages/main-page'
 import {LibraryShell} from '@components/library'
 import {TopbarStyled} from '@components/topbar'
 import {useActor} from '@xstate/react'
@@ -8,7 +9,7 @@ import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {setLogger} from 'react-query'
 import 'show-keys'
 import {error, info, warn} from 'tauri-plugin-log-api'
-import {MainPage, MainPageShell, MainWindowShell} from './pages/main-page'
+import {MainPageShell, MainWindowShell} from './pages/window-components'
 import {globalStyles} from './stitches.config'
 
 setLogger({

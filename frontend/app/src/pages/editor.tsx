@@ -3,9 +3,13 @@ import {AppError} from '@app/app'
 import {mainService as defaultMainService} from '@app/app-providers'
 import {Document} from '@app/client'
 import {createDraftMachine} from '@app/draft-machine'
+import {BlockTools} from '@app/editor/block-tools'
+import {BlockToolsProvider} from '@app/editor/block-tools-context'
+import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
 import {DraftRef} from '@app/main-machine'
+import {MainWindow} from '@app/pages/window-components'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {FileTime} from '@components/file-time'
@@ -16,7 +20,7 @@ import {
 } from '@components/page-header'
 import {Text} from '@components/text'
 import {ChildrenOf} from '@mintter/mttast'
-import {useActor} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import {useEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
@@ -56,12 +60,11 @@ function useInitialFocus(editor: SlateEditor) {
   }, [editor])
 }
 
-export default function EditorPage({
-  draftRef,
-  mainService = defaultMainService,
-}: EditorPageProps) {
+export default function EditorPage({draftRef}: EditorPageProps) {
   const [visible, setVisible] = useState(false)
   const [state, send] = useDraft(draftRef)
+  const blockToolsService = useInterpret(() => blockToolsMachine)
+
   const {context} = state
 
   useInitialFocus(context.editor)
@@ -72,58 +75,64 @@ export default function EditorPage({
 
   if (state.matches('editing')) {
     return (
-      <ErrorBoundary
-        FallbackComponent={AppError}
-        onReset={() => window.location.reload()}
-      >
-        <Box className={headerStyles()}>
-          <Box className={headerMetadataStyles()}>
-            <FileTime type="draft" document={state.context.draft} />
+      <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
+        <ErrorBoundary
+          FallbackComponent={AppError}
+          onReset={() => window.location.reload()}
+        >
+          <Box className={headerStyles()}>
+            <Box className={headerMetadataStyles()}>
+              <FileTime type="draft" document={state.context.draft} />
+            </Box>
+            <Box className={headerButtonsStyles()}>
+              <EditorStatus state={state} />
+              <Button
+                color="success"
+                variant="ghost"
+                size="1"
+                disabled={!state.can('DRAFT.PUBLISH')}
+                data-testid="submit-publish"
+                onClick={() => {
+                  send('DRAFT.PUBLISH')
+                }}
+              >
+                Publish
+              </Button>
+            </Box>
           </Box>
-          <Box className={headerButtonsStyles()}>
-            <EditorStatus state={state} />
-            <Button
-              color="success"
-              variant="ghost"
-              size="1"
-              disabled={!state.can('DRAFT.PUBLISH')}
-              data-testid="submit-publish"
-              onClick={() => {
-                send('DRAFT.PUBLISH')
-              }}
-            >
-              Publish
-            </Button>
+          <Box data-testid="editor-wrapper" css={{paddingTop: '$5'}}>
+            {context.localDraft?.content && (
+              <>
+                <FileProvider value={draftRef}>
+                  <BlockToolsProvider value={blockToolsService}>
+                    <BlockTools />
+                    <Editor
+                      editor={state.context.editor}
+                      value={context.localDraft.content}
+                      //@ts-ignore
+                      onChange={(content: ChildrenOf<Document>) => {
+                        if (!content && typeof content == 'string') return
+                        blockToolsService.send('DISABLE')
+                        send({type: 'DRAFT.UPDATE', payload: {content}})
+                      }}
+                    />
+                  </BlockToolsProvider>
+                </FileProvider>
+                <Box css={{margin: '$9', marginLeft: '$7'}}>
+                  <button type="button" onClick={() => setVisible((v) => !v)}>
+                    toggle Value
+                  </button>
+                  {visible && (
+                    <Box as="pre">
+                      {JSON.stringify(context.localDraft.content, null, 2)}
+                    </Box>
+                  )}
+                </Box>
+              </>
+            )}
           </Box>
-        </Box>
-        <Box data-testid="editor-wrapper" css={{paddingTop: '$5'}}>
-          {context.localDraft?.content && (
-            <>
-              <FileProvider value={draftRef}>
-                <Editor
-                  editor={state.context.editor}
-                  value={context.localDraft.content}
-                  //@ts-ignore
-                  onChange={(content: ChildrenOf<Document>) => {
-                    if (!content && typeof content == 'string') return
-                    send({type: 'DRAFT.UPDATE', payload: {content}})
-                  }}
-                />
-              </FileProvider>
-              <Box css={{margin: '$9', marginLeft: '$7'}}>
-                <button type="button" onClick={() => setVisible((v) => !v)}>
-                  toggle Value
-                </button>
-                {visible && (
-                  <Box as="pre">
-                    {JSON.stringify(context.localDraft.content, null, 2)}
-                  </Box>
-                )}
-              </Box>
-            </>
-          )}
-        </Box>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </MainWindow>
     )
   }
 

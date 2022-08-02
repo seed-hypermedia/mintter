@@ -1,5 +1,6 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {pageListStyle} from '@app/pages/list-page'
+import {MainWindow} from '@app/pages/window-components'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
@@ -15,7 +16,7 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
   let drafts = mainState.context.draftList
 
   return (
-    <>
+    <MainWindow>
       <Box
         css={{
           padding: '$5',
@@ -85,6 +86,6 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
           )}
         </Box>
       </Box>
-    </>
+    </MainWindow>
   )
 }

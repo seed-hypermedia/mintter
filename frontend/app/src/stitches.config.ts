@@ -144,6 +144,7 @@ const stitches = createStitches({
       focus: '0 0 0 2px $colors$primary-border-hover',
       menu: '0px 4px 8px $colors$base-component-bg-active',
       3: '0px 4px 8px $colors$base-component-bg-active',
+      debug: '0 0 0 2px $colors$base-active',
     },
     sizes: {
       none: '0px',
@@ -386,10 +387,17 @@ export const darkTheme = createTheme('dark-theme', {
   },
 })
 
+/**
+ * some of the reset styles down here are based on this links:
+ * - https://www.joshwcomeau.com/css/custom-css-reset/
+ *
+ */
+
 export const globalStyles = globalCss({
   '*': {
     boxSizing: 'border-box',
     margin: 0,
+    userSelect: 'none',
   },
   html: {
     blockSize: '100%',
@@ -409,10 +417,33 @@ export const globalStyles = globalCss({
     transition: 'background-color color 0.25s ease',
     '-webkit-font-smoothing': 'antialiased',
     '-moz-osx-font-smoothing': 'grayscale',
+    textRendering: 'optimizeSpeed',
   },
-  // '*:focus': {
-  //   boxShadow: '$focus',
-  // },
+  'input, button, textarea, select': {
+    font: 'inherit',
+  },
+  'p, h1, h2, h3, h4, h5, h6': {
+    overflowWrap: 'break-word',
+  },
+  p: {
+    hyphens: 'auto',
+  },
+  'img, picture, video, canvas': {
+    display: 'block',
+    maxInlineSize: '$full',
+  },
+  '#root': {
+    isolation: 'isolate',
+  },
+  '::selection': {
+    backgroundColor: 'lightblue',
+  },
+  'h1, h2, h3': {
+    fontWeight: '$medium',
+  },
+  'p,h1,h2,h3,h4,h5,h6,blockquote,code,span': {
+    userSelect: 'text',
+  },
   '@dark': {
     // notice the `media` definition on the stitches.config.ts file
     ':root:not(.light)': {

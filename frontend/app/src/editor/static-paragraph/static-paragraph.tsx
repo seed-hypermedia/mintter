@@ -1,48 +1,29 @@
+import {useBlockTools} from '@app/editor/block-tools-context'
+import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {findPath} from '@app/editor/utils'
-import {useFile, useFileEditor} from '@app/file-provider'
+import {phrasingStyles} from '@app/editor/styles'
 import {css} from '@app/stitches.config'
-import {Box} from '@components/box'
-import {Text, TextProps} from '@components/text'
-import type {StaticParagraph as StaticParagraphType} from '@mintter/mttast'
-import {isHeading, isStaticParagraph} from '@mintter/mttast'
-import {useActor} from '@xstate/react'
-import {Editor} from 'slate'
+import {Text} from '@components/text'
+import {isStaticParagraph} from '@mintter/mttast'
+import {useEffect, useMemo} from 'react'
 import type {RenderElementProps} from 'slate-react'
-import {useHover, useHoverActiveSelector} from '../hover-context'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
-export const staticParagraphStyles = css({
+export const staticphrasingStyles = css({
   fontWeight: '$medium',
   marginTop: '.5em',
   userSelect: 'text',
 })
 
-const headingMap: {
-  [key: number | string]: Pick<TextProps, 'size'> & {
-    as: 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p'
-  }
-} = {
-  2: {
-    as: 'h2',
-  },
-  4: {
-    as: 'h3',
-  },
-  6: {
-    as: 'h4',
-  },
-  8: {
-    as: 'h5',
-  },
-  10: {
-    as: 'h6',
-  },
-  default: {
-    as: 'p',
-  },
+const headingMap = {
+  2: 'h2',
+  4: 'h3',
+  6: 'h4',
+  8: 'h5',
+  10: 'h6',
+  default: 'p',
 }
 
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
@@ -64,76 +45,40 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
     },
 })
 
-function useHeading(element: StaticParagraphType) {
-  var editor = useFileEditor()
-  var path = findPath(element)
-  var parent = Editor.parent(editor, path)
-  if (parent) {
-    let [node, path] = parent
-    if (isHeading(node)) {
-      return {
-        node,
-        level: path.length,
-      }
-    }
-  }
-}
-
 function StaticParagraph({
   children,
   element,
   attributes,
   mode,
-}: RenderElementProps & {mode: EditorMode}) {
-  let fileRef = useFile()
-  let [fileState] = useActor(fileRef)
+}: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
+  let {elementProps, parentPath} = usePhrasingProps(element)
+  let btService = useBlockTools()
+  let as = useMemo(
+    () => headingMap[parentPath?.length ?? 'default'],
+    [parentPath],
+  )
 
-  let editor = useFileEditor()
+  useEffect(() => {
+    if (attributes.ref.current) {
+      btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
+    }
+  }, [attributes.ref.current])
 
-  var heading = useHeading(element as StaticParagraphType)
-  var sizeProps = headingMap[heading?.level ?? 'default']
-  var hoverService = useHover()
-  let isHoverActive = useHoverActiveSelector()
+  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+    return <span {...elementProps}>{children}</span>
+  }
 
   return (
     <Text
-      data-element-type={element.type}
-      className={staticParagraphStyles()}
-      size="4"
-      css={{
-        lineHeight: '$3',
-        paddingLeft: `${heading?.level * 16}px`,
-        display: mode == EditorMode.Embed ? 'inline-block' : 'inherit',
-        userSelect: 'none',
-        backgroundColor: 'transparent',
-        [`[data-hover-block="${heading?.node.id}"] &`]: {
-          backgroundColor:
-            editor.mode != EditorMode.Draft
-              ? '$primary-component-bg-normal'
-              : isHoverActive
-              ? '$primary-component-bg-normal'
-              : 'transparent',
-        },
-      }}
-      {...sizeProps}
+      as={as}
       {...attributes}
-      onMouseEnter={() => {
-        if (heading?.node) {
-          hoverService.send({type: 'MOUSE_ENTER', blockId: heading.node.id})
-        }
-      }}
+      {...elementProps}
+      className={phrasingStyles({
+        type: 'staticParagraph',
+        blockType: 'heading',
+      })}
     >
-      <Box
-        as="span"
-        css={{
-          userSelect: 'text',
-          display: 'inline-block',
-          width: '$full',
-          maxWidth: '$prose-width',
-        }}
-      >
-        {children}
-      </Box>
+      {children}
     </Text>
   )
 }

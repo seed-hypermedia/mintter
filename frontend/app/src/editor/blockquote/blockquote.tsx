@@ -1,11 +1,11 @@
-import {BlockWrapper} from '@app/editor/block-wrapper'
+import {BlockToolsTarget} from '@app/editor/block-tools-target'
+import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {blockStyles} from '@app/editor/styles'
 import {Box} from '@components/box'
 import {
-  Blockquote as BlockquoteType,
   createId,
-  FlowContent,
   isBlockquote,
   paragraph,
   statement,
@@ -74,23 +74,28 @@ function BlockQuote({
   children,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
-  let blockProps = {
-    'data-element-type': element.type,
-    'data-element-id': (element as BlockquoteType).id,
-    ...attributes,
-  }
+  let {blockProps, parentNode} = useBlockProps(element)
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return <span {...blockProps}>{children}</span>
+    return (
+      <span {...attributes} {...blockProps}>
+        {children}
+      </span>
+    )
   }
 
   return (
-    <BlockWrapper
-      element={element as FlowContent}
-      attributes={attributes}
-      mode={mode}
+    <Box
+      as="li"
+      className={blockStyles({
+        type: 'blockquote',
+        groupType: parentNode?.type,
+      })}
+      {...attributes}
+      {...blockProps}
     >
-      <Box {...blockProps}>{children}</Box>
-    </BlockWrapper>
+      <BlockToolsTarget type="blockquote" />
+      {children}
+    </Box>
   )
 }
