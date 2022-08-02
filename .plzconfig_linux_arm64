@@ -1,2 +1,0 @@
-[buildconfig]
-gcc-tool = //build/nix:gcc
