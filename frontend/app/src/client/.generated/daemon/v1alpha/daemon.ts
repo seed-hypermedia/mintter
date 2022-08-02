@@ -8,8 +8,10 @@ import { Timestamp } from "../../google/protobuf/timestamp";
 import _m0 from "protobufjs/minimal";
 
 export interface GenSeedRequest {
+  /** Number of mnemonic words to encode the seed */
+  bip39Nummnemonics: number;
   /** Passphrase that will be used to encipher the seed. */
-  aezeedPassphrase: string;
+  bip39Passphrase: string;
 }
 
 export interface GenSeedResponse {
@@ -22,7 +24,7 @@ export interface GenSeedResponse {
 
 export interface RegisterRequest {
   mnemonic: string[];
-  aezeedPassphrase: string;
+  bip39Passphrase: string;
 }
 
 export interface RegisterResponse {
@@ -44,7 +46,7 @@ export interface Info {
 }
 
 function createBaseGenSeedRequest(): GenSeedRequest {
-  return { aezeedPassphrase: "" };
+  return { bip39Nummnemonics: 0, bip39Passphrase: "" };
 }
 
 export const GenSeedRequest = {
@@ -52,8 +54,11 @@ export const GenSeedRequest = {
     message: GenSeedRequest,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
-    if (message.aezeedPassphrase !== "") {
-      writer.uint32(10).string(message.aezeedPassphrase);
+    if (message.bip39Nummnemonics !== 0) {
+      writer.uint32(8).uint32(message.bip39Nummnemonics);
+    }
+    if (message.bip39Passphrase !== "") {
+      writer.uint32(18).string(message.bip39Passphrase);
     }
     return writer;
   },
@@ -66,7 +71,10 @@ export const GenSeedRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.aezeedPassphrase = reader.string();
+          message.bip39Nummnemonics = reader.uint32();
+          break;
+        case 2:
+          message.bip39Passphrase = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -78,16 +86,21 @@ export const GenSeedRequest = {
 
   fromJSON(object: any): GenSeedRequest {
     return {
-      aezeedPassphrase: isSet(object.aezeedPassphrase)
-        ? String(object.aezeedPassphrase)
+      bip39Nummnemonics: isSet(object.bip39Nummnemonics)
+        ? Number(object.bip39Nummnemonics)
+        : 0,
+      bip39Passphrase: isSet(object.bip39Passphrase)
+        ? String(object.bip39Passphrase)
         : "",
     };
   },
 
   toJSON(message: GenSeedRequest): unknown {
     const obj: any = {};
-    message.aezeedPassphrase !== undefined &&
-      (obj.aezeedPassphrase = message.aezeedPassphrase);
+    message.bip39Nummnemonics !== undefined &&
+      (obj.bip39Nummnemonics = Math.round(message.bip39Nummnemonics));
+    message.bip39Passphrase !== undefined &&
+      (obj.bip39Passphrase = message.bip39Passphrase);
     return obj;
   },
 
@@ -95,7 +108,8 @@ export const GenSeedRequest = {
     object: I
   ): GenSeedRequest {
     const message = createBaseGenSeedRequest();
-    message.aezeedPassphrase = object.aezeedPassphrase ?? "";
+    message.bip39Nummnemonics = object.bip39Nummnemonics ?? 0;
+    message.bip39Passphrase = object.bip39Passphrase ?? "";
     return message;
   },
 };
@@ -161,7 +175,7 @@ export const GenSeedResponse = {
 };
 
 function createBaseRegisterRequest(): RegisterRequest {
-  return { mnemonic: [], aezeedPassphrase: "" };
+  return { mnemonic: [], bip39Passphrase: "" };
 }
 
 export const RegisterRequest = {
@@ -172,8 +186,8 @@ export const RegisterRequest = {
     for (const v of message.mnemonic) {
       writer.uint32(10).string(v!);
     }
-    if (message.aezeedPassphrase !== "") {
-      writer.uint32(18).string(message.aezeedPassphrase);
+    if (message.bip39Passphrase !== "") {
+      writer.uint32(18).string(message.bip39Passphrase);
     }
     return writer;
   },
@@ -189,7 +203,7 @@ export const RegisterRequest = {
           message.mnemonic.push(reader.string());
           break;
         case 2:
-          message.aezeedPassphrase = reader.string();
+          message.bip39Passphrase = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -204,8 +218,8 @@ export const RegisterRequest = {
       mnemonic: Array.isArray(object?.mnemonic)
         ? object.mnemonic.map((e: any) => String(e))
         : [],
-      aezeedPassphrase: isSet(object.aezeedPassphrase)
-        ? String(object.aezeedPassphrase)
+      bip39Passphrase: isSet(object.bip39Passphrase)
+        ? String(object.bip39Passphrase)
         : "",
     };
   },
@@ -217,8 +231,8 @@ export const RegisterRequest = {
     } else {
       obj.mnemonic = [];
     }
-    message.aezeedPassphrase !== undefined &&
-      (obj.aezeedPassphrase = message.aezeedPassphrase);
+    message.bip39Passphrase !== undefined &&
+      (obj.bip39Passphrase = message.bip39Passphrase);
     return obj;
   },
 
@@ -227,7 +241,7 @@ export const RegisterRequest = {
   ): RegisterRequest {
     const message = createBaseRegisterRequest();
     message.mnemonic = object.mnemonic?.map((e) => e) || [];
-    message.aezeedPassphrase = object.aezeedPassphrase ?? "";
+    message.bip39Passphrase = object.bip39Passphrase ?? "";
     return message;
   },
 };
@@ -453,11 +467,8 @@ export const Info = {
 export interface Daemon {
   /**
    * Generates cryptographic seed that is used to derive Mintter Account Key.
-   * It's currenly supposed to be using LND's Aezeed implementation, which solves some
-   * of the issues with BIP-39. The seed is encoded as a mnemonic of 24 human-readable words.
+   * It's currenly BIP-39. The seed is encoded as a mnemonic of 12-24 human-readable words.
    * The seed could be reconstructed given these words and the passphrase.
-   *
-   * See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
    */
   genSeed(
     request: DeepPartial<GenSeedRequest>,

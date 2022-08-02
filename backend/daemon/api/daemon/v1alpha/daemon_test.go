@@ -12,7 +12,6 @@ import (
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
-	"github.com/lightningnetwork/lnd/aezeed"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,18 +22,20 @@ func TestGenSeed(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	resp, err := srv.GenSeed(ctx, &daemon.GenSeedRequest{})
+	resp, err := srv.GenSeed(ctx, &daemon.GenSeedRequest{Bip39Nummnemonics: 18})
 	require.NoError(t, err)
-	require.Equal(t, aezeed.NumMnemonicWords, len(resp.Mnemonic))
+	require.Equal(t, 18, len(resp.Mnemonic))
 }
 
 func TestRegister(t *testing.T) {
-	testMnemonic := []string{"abandon", "impact", "blossom", "roast", "early", "turkey", "oblige", "cry", "citizen", "toilet", "prefer", "sudden", "glad", "luxury", "vehicle", "broom", "view", "front", "office", "rain", "machine", "angle", "humor", "acid"}
+	testMnemonic := []string{"satisfy", "quit", "charge", "arrest", "prevent", "credit", "wreck", "amount", "swim", "snow", "system", "cluster", "skull", "slight", "dismiss"}
+	testPassphrase := "testpass"
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
 	resp, err := srv.Register(ctx, &daemon.RegisterRequest{
-		Mnemonic: testMnemonic,
+		Mnemonic:        testMnemonic,
+		Bip39Passphrase: testPassphrase,
 	})
 	require.NoError(t, err)
 	require.NotEqual(t, "", resp.AccountId)

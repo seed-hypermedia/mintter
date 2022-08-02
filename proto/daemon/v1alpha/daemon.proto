@@ -10,11 +10,8 @@ option go_package = "mintter/backend/genproto/daemon/v1alpha;daemon";
 // Daemon API encapsulates main functionality of the Mintter daemon.
 service Daemon {
   // Generates cryptographic seed that is used to derive Mintter Account Key.
-  // It's currenly supposed to be using LND's Aezeed implementation, which solves some
-  // of the issues with BIP-39. The seed is encoded as a mnemonic of 24 human-readable words.
+  // It's currenly BIP-39. The seed is encoded as a mnemonic of 12-24 human-readable words.
   // The seed could be reconstructed given these words and the passphrase.
-  //
-  // See: https://github.com/lightningnetwork/lnd/tree/master/aezeed.
   rpc GenSeed(GenSeedRequest) returns (GenSeedResponse);
 
   // After generating the seed, this call is used to commit the seed and
@@ -29,8 +26,11 @@ service Daemon {
 }
 
 message GenSeedRequest {
+  // Number of mnemonic words to encode the seed
+  uint32 bip39_nummnemonics = 1;
+
   // Passphrase that will be used to encipher the seed.
-  string aezeed_passphrase = 1;
+  string bip39_passphrase = 2;
 }
 
 message GenSeedResponse {
@@ -42,7 +42,7 @@ message GenSeedResponse {
 message RegisterRequest {
   repeated string mnemonic = 1;
 
-  string aezeed_passphrase = 2;
+  string bip39_passphrase = 2;
 }
 
 message RegisterResponse {

@@ -13,7 +13,6 @@ import (
 	sync "sync"
 	"time"
 
-	"github.com/lightningnetwork/lnd/aezeed"
 	"google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -50,7 +49,7 @@ func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func() error) *Server {
 }
 
 func (srv *Server) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*daemon.GenSeedResponse, error) {
-	words, err := core.NewMnemonic(req.AezeedPassphrase)
+	words, err := core.NewMnemonic(req.Bip39Nummnemonics, req.Bip39Passphrase)
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +73,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 		}
 	}
 
-	var m aezeed.Mnemonic
-	copy(m[:], req.Mnemonic)
-
-	acc, err := core.AccountFromMnemonic(m, req.AezeedPassphrase)
+	acc, err := core.AccountFromMnemonic(req.Mnemonic, req.Bip39Passphrase)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to create account: %v", err)
 	}

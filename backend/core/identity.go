@@ -2,16 +2,14 @@ package core
 
 import (
 	"bytes"
-	"crypto/rand"
 	"fmt"
 	"mintter/backend/pkg/slip10"
-	"time"
+	"strings"
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/lightningnetwork/lnd/aezeed"
-	"github.com/lightningnetwork/lnd/keychain"
+	"github.com/tyler-smith/go-bip39"
 )
 
 type AccountID struct {
@@ -129,17 +127,16 @@ func (i Identity) IsWritable() bool {
 	return i.deviceKeyPair.k != nil
 }
 
-func AccountFromMnemonic(m aezeed.Mnemonic, passphrase string) (KeyPair, error) {
-	if len(m) != aezeed.NumMnemonicWords {
-		return KeyPair{}, fmt.Errorf("mnemonic must be %d words", aezeed.NumMnemonicWords)
-	}
-
-	seed, err := m.ToCipherSeed([]byte(passphrase))
+// AccountFromMnemonic returns a key pair (priv + pub) derived
+// from the entropy associated to the given mnemonics. The mnemonics
+// can have a non empty passphrase
+func AccountFromMnemonic(m []string, passphrase string) (KeyPair, error) {
+	seed, err := bip39.NewSeedWithErrorChecking(strings.Join(m[:], " "), passphrase)
 	if err != nil {
-		return KeyPair{}, err
+		return KeyPair{}, fmt.Errorf("unable to set seed password from mnemonics: %w", err)
 	}
 
-	return AccountFromSeed(seed.Entropy[:])
+	return AccountFromSeed(seed)
 }
 
 // AccountDerivationPath value according to SLIP-10 and BIP-44.
@@ -162,22 +159,39 @@ func AccountFromSeed(rand []byte) (KeyPair, error) {
 }
 
 // NewMnemonic creates a new random seed encoded with mnemonic words.
-func NewMnemonic(passphraze string) ([]string, error) {
-	var entropy [aezeed.EntropySize]byte
-
-	if _, err := rand.Read(entropy[:]); err != nil {
+func NewMnemonic(length uint32, passphrase string) ([]string, error) {
+	entropyLen := 0
+	switch length {
+	case 12:
+		entropyLen = 128
+	case 15:
+		entropyLen = 160
+	case 18:
+		entropyLen = 192
+	case 21:
+		entropyLen = 224
+	case 24:
+		entropyLen = 256
+	default:
+		return nil, fmt.Errorf("mnemonic length must be 12 | 15 | 18 | 21 | 24 words")
+	}
+	entropy, err := bip39.NewEntropy(entropyLen)
+	if err != nil {
 		return nil, fmt.Errorf("unable to generate random seed: %w", err)
 	}
-
-	seed, err := aezeed.New(keychain.CurrentKeyDerivationVersion, &entropy, time.Now())
+	mnemonic, err := bip39.NewMnemonic(entropy)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to generate mnemonics from random seed: %w", err)
 	}
 
-	mnem, err := seed.ToMnemonic([]byte(passphraze))
+	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, passphrase)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to set seed password from mnemonics: %w", err)
+	}
+	mnemonic, err = bip39.NewMnemonic(seed)
+	if err != nil {
+		return nil, fmt.Errorf("unable to generate mnemonics from password seed: %w", err)
 	}
 
-	return mnem[:], nil
+	return strings.Fields(mnemonic), nil
 }
