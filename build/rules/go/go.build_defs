@@ -89,7 +89,7 @@ $TOOLS_GO build -o $OUT {package}
         output_is_complete = True,
         tools = {
             "go": [CONFIG.GO_TOOL],
-            "gcc": [CONFIG.GCC_TOOL],
+            "gcc": ["gcc"],
         },
         env = env,
         deps = deps + [gomod],
