@@ -183,7 +183,6 @@ export const blockToolsMachine = createMachine(
     actions: {
       addEntry: assign({
         visibleBlocks: (context, event) => {
-          console.log('ADD ENTRY', context, event)
           let tMap = new Map(context.visibleBlocks)
           tMap.set(event.id, event.entry)
           return [...tMap]
@@ -197,7 +196,6 @@ export const blockToolsMachine = createMachine(
         },
       }),
       observeNode: (context, event) => {
-        console.log('OBSERVE ENTRY', context, event)
         context.observer?.observe(event.entry)
       },
       getBlockBounds: assign({

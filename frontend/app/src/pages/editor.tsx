@@ -7,6 +7,7 @@ import {BlockTools} from '@app/editor/block-tools'
 import {BlockToolsProvider} from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Editor} from '@app/editor/editor'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {DraftRef} from '@app/main-machine'
 import {MainWindow} from '@app/pages/window-components'
@@ -105,7 +106,10 @@ export default function EditorPage({draftRef}: EditorPageProps) {
               <>
                 <FileProvider value={draftRef}>
                   <BlockToolsProvider value={blockToolsService}>
-                    <BlockTools />
+                    <BlockTools
+                      mode={EditorMode.Draft}
+                      service={blockToolsService}
+                    />
                     <Editor
                       editor={state.context.editor}
                       value={context.localDraft.content}
