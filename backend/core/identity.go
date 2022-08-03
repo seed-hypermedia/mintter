@@ -159,7 +159,7 @@ func AccountFromSeed(rand []byte) (KeyPair, error) {
 }
 
 // NewMnemonic creates a new random seed encoded with mnemonic words.
-func NewMnemonic(length uint32, passphrase string) ([]string, error) {
+func NewMnemonic(length uint32) ([]string, error) {
 	entropyLen := 0
 	switch length {
 	case 12:
@@ -182,15 +182,6 @@ func NewMnemonic(length uint32, passphrase string) ([]string, error) {
 	mnemonic, err := bip39.NewMnemonic(entropy)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate mnemonics from random seed: %w", err)
-	}
-
-	seed, err := bip39.NewSeedWithErrorChecking(mnemonic, passphrase)
-	if err != nil {
-		return nil, fmt.Errorf("unable to set seed password from mnemonics: %w", err)
-	}
-	mnemonic, err = bip39.NewMnemonic(seed)
-	if err != nil {
-		return nil, fmt.Errorf("unable to generate mnemonics from password seed: %w", err)
 	}
 
 	return strings.Fields(mnemonic), nil
