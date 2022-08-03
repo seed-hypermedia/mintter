@@ -26,6 +26,11 @@ const (
 	LndhubWalletType   = "lndhub"
 	LndhubGoWalletType = "lndhub.go"
 	mintterDomain      = "testnet.mintter.com"
+	networkType        = lnTestnet
+
+	// Types.
+	lnTestnet = iota
+	lnMainnet
 )
 
 type httpRequest struct {
@@ -209,9 +214,18 @@ func (c *Client) CreateInvoice(ctx context.Context, apiBaseUrl string, amount in
 	return resp.PayReq, err
 }
 
-// This function decodes a BOLT-11 invoice in text format. It uses the lnd functions to do it.
+// DecodeInvoice decodes a BOLT-11 invoice in text format. It uses the lnd functions to do it.
 func DecodeInvoice(payReq string) (*zpay32.Invoice, error) {
-	decodedInvoice, err := zpay32.Decode(payReq, &chaincfg.MainNetParams)
+	var err error
+	var decodedInvoice *zpay32.Invoice
+	if networkType == lnMainnet {
+		decodedInvoice, err = zpay32.Decode(payReq, &chaincfg.MainNetParams)
+	} else if networkType == lnTestnet {
+		decodedInvoice, err = zpay32.Decode(payReq, &chaincfg.TestNet3Params)
+	} else {
+		return nil, fmt.Errorf("Could not decode invoice. Only testnet and meinnet are allowed")
+	}
+
 	if err != nil {
 		return nil, err
 	}
