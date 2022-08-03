@@ -1,8 +1,7 @@
-import {
-  useBlockTools,
-  useCurrentBlockToolsId,
-} from '@app/editor/block-tools-context'
+import {useCurrentBlockToolsId} from '@app/editor/block-tools-context'
+import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {getEditorBlock} from '@app/editor/utils'
 import {useFileEditor} from '@app/file-provider'
 import {ObjectKeys} from '@app/utils/object-keys'
@@ -28,10 +27,11 @@ import {
 } from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {Fragment, useMemo} from 'react'
-import {BaseRange, Editor, Node, Path, Transforms} from 'slate'
+import {BaseRange, Editor, Node, NodeEntry, Path, Transforms} from 'slate'
+import {InterpreterFrom} from 'xstate'
 import {Dropdown, ElementDropdown} from './dropdown'
 import {ELEMENT_PARAGRAPH} from './paragraph'
-
+9
 const items: {
   [key: string]: Array<{
     label: string
@@ -98,46 +98,80 @@ const items: {
 }
 
 type BlockToolsProps = {
-  element: FlowContent
+  mode: EditorMode
+  service: InterpreterFrom<typeof blockToolsMachine>
 }
 
-export function BlockTools() {
-  let btService = useBlockTools()
-  let [state] = useActor(btService)
-  let blockId = useCurrentBlockToolsId()
+export function BlockTools(props: BlockToolsProps) {
   let editor = useFileEditor()
+  let [state] = useActor(props.service)
+  let blockId = useCurrentBlockToolsId()
   let blockEntry = useMemo(() => {
     if (blockId) {
       return getEditorBlock(editor, {id: blockId})
     }
   }, [blockId])
 
-  let x = state.context.currentPosition
+  let x: string = state.context.currentPosition
     ? `${state.context.currentPosition.x}px`
-    : '-9999px'
-  let y = state.context.currentPosition
+    : '0px'
+  let y: string = state.context.currentPosition
     ? `${state.context.currentPosition.y}px`
-    : '-9999px'
+    : '0px'
 
-  console.log('🚀 ~ file: block-tools.tsx ~ line 109 ~ BlockTools ~ state', {
-    x,
-    y,
-    currentPosition: state.context.currentPosition,
-  })
+  if (state.matches('active')) {
+    return props.mode == EditorMode.Draft ? (
+      <DraftBlockTools
+        editor={editor}
+        blockEntry={blockEntry}
+        service={props.service}
+        x={x}
+        y={y}
+      />
+    ) : props.mode == EditorMode.Publication ? (
+      <PublicationBlockTools
+        editor={editor}
+        service={props.service}
+        y={y}
+        blockId={state.context.currentId}
+      />
+    ) : null
+  }
 
-  return state.matches('active') ? (
+  return null
+}
+
+type DraftBlockToolsProps = {
+  editor: Editor
+  service: InterpreterFrom<typeof blockToolsMachine>
+  blockEntry?: NodeEntry<FlowContent>
+  x: string
+  y: string
+}
+
+export function DraftBlockTools({
+  editor,
+  service,
+  blockEntry,
+  x,
+  y,
+}: DraftBlockToolsProps) {
+  return (
     <Box
       css={{
         position: 'absolute',
         zIndex: '$max',
-        insetBlockStart: `calc(${y} - 2.5rem)`,
-        insetInlineStart: `calc(${x})`,
+
+        insetBlockStart: 0,
+        insetInlineStart: 0,
+        transition: 'opacity linear 0s, transform ease 0.1s',
+        transform: `translate(${x}, calc(${y} - 2.5rem))`,
       }}
     >
       <Dropdown.Root
         modal={false}
         onOpenChange={(isOpen) => {
-          btService.send(isOpen ? 'DROPDOWN.OPEN' : 'DROPDOWN.CLOSE')
+          service.send(isOpen ? 'DROPDOWN.OPEN' : 'DROPDOWN.CLOSE')
         }}
       >
         <Dropdown.Trigger asChild>
@@ -182,7 +216,34 @@ export function BlockTools() {
         </Dropdown.Content>
       </Dropdown.Root>
     </Box>
-  ) : null
+  )
+}
+
+type PublicationBlockToolsProps = {
+  editor: Editor
+  service: InterpreterFrom<typeof blockToolsMachine>
+  y: string
+  blockId?: string
+}
+
+export function PublicationBlockTools({
+  y,
+  blockId,
+}: PublicationBlockToolsProps) {
+  return (
+    <Box
+      css={{
+        position: 'absolute',
+        zIndex: '$max',
+        insetBlockStart: 0,
+        insetInlineEnd: 24,
+        transition: 'opacity linear 0s, transform ease 0.1s',
+        transform: `translate(0, calc(${y} - 2.5rem))`,
+      }}
+    >
+      {blockId}
+    </Box>
+  )
 }
 
 /* eslint-disable */

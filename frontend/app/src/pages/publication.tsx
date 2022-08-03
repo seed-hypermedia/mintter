@@ -1,4 +1,7 @@
 import {mainService as defaultMainService} from '@app/app-providers'
+import {BlockTools} from '@app/editor/block-tools'
+import {BlockToolsProvider} from '@app/editor/block-tools-context'
+import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
@@ -19,7 +22,7 @@ import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
 import {Tooltip} from '@components/tooltip'
-import {useActor} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 
 type PublicationProps = {
@@ -44,7 +47,7 @@ export default function Publication({
   mainService = defaultMainService,
 }: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
-
+  const blockToolsService = useInterpret(() => blockToolsMachine)
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
   }
@@ -70,7 +73,7 @@ export default function Publication({
 
   if (state.matches('publication.ready')) {
     return (
-      <MainWindow>
+      <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
         <Box className={headerStyles()}>
           <Box
             className={headerMetadataStyles()}
@@ -174,20 +177,28 @@ export default function Publication({
           <Box
             css={{
               paddingBottom: 0,
-              marginBottom: 50,
+              marginBlockEnd: 50,
+              paddingInline: '2rem',
             }}
             data-testid="publication-wrapper"
           >
             {state.context.publication?.document?.content && (
               <FileProvider value={publicationRef}>
-                <Editor
-                  editor={state.context.editor}
-                  mode={EditorMode.Publication}
-                  value={state.context.publication?.document.content}
-                  onChange={() => {
-                    // noop
-                  }}
-                />
+                <BlockToolsProvider value={blockToolsService}>
+                  <BlockTools
+                    mode={EditorMode.Publication}
+                    service={blockToolsService}
+                  />
+                  <Editor
+                    editor={state.context.editor}
+                    mode={EditorMode.Publication}
+                    value={state.context.publication?.document.content}
+                    onChange={() => {
+                      blockToolsService.send('DISABLE')
+                      // noop
+                    }}
+                  />
+                </BlockToolsProvider>
               </FileProvider>
             )}
           </Box>
