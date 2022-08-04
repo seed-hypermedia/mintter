@@ -370,11 +370,6 @@ func getLndhubPassword() (string, error) {
 	return "example", nil
 }
 
-func getLndhubNickname() (string, error) {
-	// get from global_meta table
-	return "example", nil
-}
-
 func setLndhubLogin(login string) error {
 	return nil
 }
@@ -383,18 +378,15 @@ func setLndhubPassword(pass string) error {
 	return nil
 }
 
-func setLndhubNickname(nickname string) error {
-	// write in the global_meta table
-	return nil
-}
-
 func setlndhubToken(token string) error {
 	return nil
+
 }
 
 func getlndhubToken(id string) (string, error) {
 	if id == "" {
 		id = "selfID from db"
 	}
+	//Do the string(byteArray[:]) conversion
 	return "example", nil
 }

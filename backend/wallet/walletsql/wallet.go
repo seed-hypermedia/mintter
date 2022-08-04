@@ -83,15 +83,15 @@ func ListWallets(conn *sqlite.Conn, limit int) ([]Wallet, error) {
 }
 
 // InsertWallet creates a new wallet record in the database given a
-// valid Wallet with all fields proferly set. If this is the first
+// valid Wallet with all fields properly set. If this is the first
 // wallet, then it becomes default automatically.
-func InsertWallet(conn *sqlite.Conn, wallet Wallet, auth []byte) error {
+func InsertWallet(conn *sqlite.Conn, wallet Wallet, login, password, token []byte) error {
 	if len(wallet.ID) != idcharLength {
 		return fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(wallet.ID))
 	}
 
 	if err := insertWallet(conn, wallet.ID, wallet.Address, strings.ToLower(wallet.Type),
-		auth, wallet.Name, int(wallet.Balance)); err != nil {
+		login, password, token, wallet.Name, int(wallet.Balance)); err != nil {
 		return fmt.Errorf("couldn't insert wallet. %s", err.Error())
 	}
 
@@ -128,17 +128,42 @@ func GetDefaultWallet(conn *sqlite.Conn) (Wallet, error) {
 	}, nil
 }
 
-// GetAuth returns the credentials used to connect to the wallet. In case lndhub, the response is
-// a slice of bytes representing the bearer token used to connect to the rest api. In case of LND
-// wallet, the slice of bytes is the bynary representation of the macaroon used to connect to the node
-func GetAuth(conn *sqlite.Conn, id string) ([]byte, error) {
+// GetLogin returns the login used to connect to the wallet. In case lndhub, the response is
+// a slice of bytes representing the login to authenticate against the server. In case of LND
+// wallet, the slice of bytes is the bynary representation of the macaroon used to connect to the node.
+func GetLogin(conn *sqlite.Conn, id string) ([]byte, error) {
 	if len(id) != idcharLength {
 		return []byte{}, fmt.Errorf("wallet id must be a %d-characters string. Got %d characters", idcharLength, len(id))
 	}
 
-	res, err := getWalletAuth(conn, id)
+	res, err := getWalletLogin(conn, id)
 	// TODO: decrypt token before returning
-	return res.WalletsAuth, err
+	return res.WalletsLogin, err
+}
+
+// GetPassword returns the password used to connect to the wallet. In case lndhub, the response is
+// a slice of bytes representing the password to authenticate against the server. In case of LND
+// wallet, the slice of bytes of the the encrytion key to unlock the internal wallet.
+func GetPassword(conn *sqlite.Conn, id string) ([]byte, error) {
+	if len(id) != idcharLength {
+		return []byte{}, fmt.Errorf("wallet id must be a %d-characters string. Got %d characters", idcharLength, len(id))
+	}
+
+	res, err := getWalletPassword(conn, id)
+	// TODO: decrypt token before returning
+	return res.WalletsPassword, err
+}
+
+// GetToken returns the token used to connect to the wallet. In case lndhub, the response is
+// a slice of bytes representing the token used to connect to the rest api.
+func GetToken(conn *sqlite.Conn, id string) ([]byte, error) {
+	if len(id) != idcharLength {
+		return []byte{}, fmt.Errorf("wallet id must be a %d-characters string. Got %d characters", idcharLength, len(id))
+	}
+
+	res, err := getWalletToken(conn, id)
+	// TODO: decrypt token before returning
+	return res.WalletsToken, err
 }
 
 // UpdateDefaultWallet sets the default wallet to the one that matches newIdx

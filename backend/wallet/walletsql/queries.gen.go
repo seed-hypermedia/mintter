@@ -12,15 +12,17 @@ import (
 
 var _ = errors.New
 
-func insertWallet(conn *sqlite.Conn, walletsID string, walletsAddress string, walletsType string, walletsAuth []byte, walletsName string, walletsBalance int) error {
-	const query = `INSERT INTO wallets (id, address, type, auth, name, balance)
-VALUES (:walletsID, :walletsAddress, :walletsType, :walletsAuth, :walletsName, :walletsBalance)`
+func insertWallet(conn *sqlite.Conn, walletsID string, walletsAddress string, walletsType string, walletsLogin []byte, walletsPassword []byte, walletsToken []byte, walletsName string, walletsBalance int) error {
+	const query = `INSERT INTO wallets (id, address, type, login, password, token, name, balance)
+VALUES (:walletsID, :walletsAddress, :walletsType, :walletsLogin, :walletsPassword, :walletsToken, :walletsName, :walletsBalance)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":walletsID", walletsID)
 		stmt.SetText(":walletsAddress", walletsAddress)
 		stmt.SetText(":walletsType", walletsType)
-		stmt.SetBytes(":walletsAuth", walletsAuth)
+		stmt.SetBytes(":walletsLogin", walletsLogin)
+		stmt.SetBytes(":walletsPassword", walletsPassword)
+		stmt.SetBytes(":walletsToken", walletsToken)
 		stmt.SetText(":walletsName", walletsName)
 		stmt.SetInt(":walletsBalance", walletsBalance)
 	}
@@ -267,14 +269,14 @@ func getWalletCount(conn *sqlite.Conn) (getWalletCountResult, error) {
 	return out, err
 }
 
-type getWalletAuthResult struct {
-	WalletsAuth []byte
+type getWalletLoginResult struct {
+	WalletsLogin []byte
 }
 
-func getWalletAuth(conn *sqlite.Conn, walletsID string) (getWalletAuthResult, error) {
-	const query = `SELECT wallets.auth FROM wallets WHERE wallets.id = :walletsID`
+func getWalletLogin(conn *sqlite.Conn, walletsID string) (getWalletLoginResult, error) {
+	const query = `SELECT wallets.login FROM wallets WHERE wallets.id = :walletsID`
 
-	var out getWalletAuthResult
+	var out getWalletLoginResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":walletsID", walletsID)
@@ -282,16 +284,76 @@ func getWalletAuth(conn *sqlite.Conn, walletsID string) (getWalletAuthResult, er
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getWalletAuth: more than one result return for a single-kind query")
+			return errors.New("getWalletLogin: more than one result return for a single-kind query")
 		}
 
-		out.WalletsAuth = stmt.ColumnBytes(0)
+		out.WalletsLogin = stmt.ColumnBytes(0)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getWalletAuth: %w", err)
+		err = fmt.Errorf("failed query: getWalletLogin: %w", err)
+	}
+
+	return out, err
+}
+
+type getWalletPasswordResult struct {
+	WalletsPassword []byte
+}
+
+func getWalletPassword(conn *sqlite.Conn, walletsID string) (getWalletPasswordResult, error) {
+	const query = `SELECT wallets.password FROM wallets WHERE wallets.id = :walletsID`
+
+	var out getWalletPasswordResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":walletsID", walletsID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("getWalletPassword: more than one result return for a single-kind query")
+		}
+
+		out.WalletsPassword = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWalletPassword: %w", err)
+	}
+
+	return out, err
+}
+
+type getWalletTokenResult struct {
+	WalletsToken []byte
+}
+
+func getWalletToken(conn *sqlite.Conn, walletsID string) (getWalletTokenResult, error) {
+	const query = `SELECT wallets.token FROM wallets WHERE wallets.id = :walletsID`
+
+	var out getWalletTokenResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":walletsID", walletsID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("getWalletToken: more than one result return for a single-kind query")
+		}
+
+		out.WalletsToken = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWalletToken: %w", err)
 	}
 
 	return out, err

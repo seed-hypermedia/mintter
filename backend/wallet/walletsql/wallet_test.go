@@ -155,21 +155,26 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 
 	err = sqlitex.ExecScript(conn, `
 	CREATE TABLE wallets (
-		-- Wallet unique ID. Is the url hash in case of lndhub or the pubkey in case of LND.
-		id TEXT PRIMARY KEY,
-		-- Address of the LND node backing up this wallet. In case lndhub, this will be the
-		-- URL to connect via rest api. In case LND wallet, this will be the clearnet/onion address.
-		address TEXT NOT NULL,
-		-- The type of the wallet. Either lnd or lndhub
-		type TEXT CHECK( type IN ('lnd','lndhub.go','lndhub') ) NOT NULL DEFAULT 'lndhub',
-		-- The Authentication of the wallet. api token in case lndhub and macaroon
-		-- bytes in case lnd. This blob should be encrypted
-		auth BLOB NOT NULL,
-		-- Human readable name to help the user identify each wallet
-		name TEXT NOT NULL,
-		-- The balance in satoshis the wallet had at the moment of creation. For audit purposes
-		balance INTEGER DEFAULT 0
-	);
+        -- Wallet unique ID. Is the connection uri hash.
+        id TEXT PRIMARY KEY,
+        -- The type of the wallet.
+        type TEXT CHECK( type IN ('lnd','lndhub.go','lndhub') ) NOT NULL DEFAULT 'lndhub.go',
+        -- Address of the LND node backing up this wallet. In case lndhub, this will be the 
+        -- URL to connect via rest api. In case LND wallet, this will be the gRPC address.
+        address TEXT NOT NULL,
+        -- The login to access the wallet. Login in case lndhub and the macaroon 
+        -- bytes in case lnd.
+        login BLOB NOT NULL,
+        -- The password to access the wallet. Passphrase in case of lndhub and the encrytion 
+		-- key to unlock the internal wallet in case of LND.
+        password BLOB NOT NULL,
+        -- The Authentication token of the wallet. api token in case of lndhub
+        token BLOB,
+        -- Human readable name to help the user identify each wallet
+        name TEXT NOT NULL,
+        -- The balance in satoshis
+        balance INTEGER DEFAULT 0
+    );
 	-- Stores global metadata/configuration about any other table
 	CREATE TABLE global_meta (
 		key TEXT PRIMARY KEY,

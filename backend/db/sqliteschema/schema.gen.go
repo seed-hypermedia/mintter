@@ -138,13 +138,15 @@ const (
 
 // Table wallets.
 const (
-	Wallets        sqlitegen.Table  = "wallets"
-	WalletsAddress sqlitegen.Column = "wallets.address"
-	WalletsAuth    sqlitegen.Column = "wallets.auth"
-	WalletsBalance sqlitegen.Column = "wallets.balance"
-	WalletsID      sqlitegen.Column = "wallets.id"
-	WalletsName    sqlitegen.Column = "wallets.name"
-	WalletsType    sqlitegen.Column = "wallets.type"
+	Wallets         sqlitegen.Table  = "wallets"
+	WalletsAddress  sqlitegen.Column = "wallets.address"
+	WalletsBalance  sqlitegen.Column = "wallets.balance"
+	WalletsID       sqlitegen.Column = "wallets.id"
+	WalletsLogin    sqlitegen.Column = "wallets.login"
+	WalletsName     sqlitegen.Column = "wallets.name"
+	WalletsPassword sqlitegen.Column = "wallets.password"
+	WalletsToken    sqlitegen.Column = "wallets.token"
+	WalletsType     sqlitegen.Column = "wallets.type"
 )
 
 // Table working_copy.
@@ -222,10 +224,12 @@ var Schema = sqlitegen.Schema{
 		ProfilesChangeID:             {Table: Profiles, SQLType: "INTEGER"},
 		ProfilesEmail:                {Table: Profiles, SQLType: "TEXT"},
 		WalletsAddress:               {Table: Wallets, SQLType: "TEXT"},
-		WalletsAuth:                  {Table: Wallets, SQLType: "BLOB"},
 		WalletsBalance:               {Table: Wallets, SQLType: "INTEGER"},
 		WalletsID:                    {Table: Wallets, SQLType: "TEXT"},
+		WalletsLogin:                 {Table: Wallets, SQLType: "BLOB"},
 		WalletsName:                  {Table: Wallets, SQLType: "TEXT"},
+		WalletsPassword:              {Table: Wallets, SQLType: "BLOB"},
+		WalletsToken:                 {Table: Wallets, SQLType: "BLOB"},
 		WalletsType:                  {Table: Wallets, SQLType: "TEXT"},
 		WorkingCopyCreateTime:        {Table: WorkingCopy, SQLType: "INTEGER"},
 		WorkingCopyData:              {Table: WorkingCopy, SQLType: "BLOB"},

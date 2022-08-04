@@ -182,12 +182,14 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	ret.Name = name
 
 	binaryToken, err := hex.DecodeString(creds.Token) // TODO: encrypt the token before storing
+	binaryLogin, err := hex.DecodeString(creds.Login) // TODO: encrypt the login before storing
+	binaryPassword, err := hex.DecodeString(creds.Password) // TODO: encrypt the password before storing
 
 	if err != nil {
 		return ret, fmt.Errorf("couldn't decode token before insert the wallet in the database")
 	}
 
-	if err = wallet.InsertWallet(conn, ret, binaryToken); err != nil {
+	if err = wallet.InsertWallet(conn, ret, binaryLogin, binaryPassword, binaryToken); err != nil {
 		if strings.Contains(err.Error(), wallet.AlreadyExistsError) {
 			return ret, fmt.Errorf("couldn't insert wallet %s in the database. ID already exists", name)
 		}
@@ -210,7 +212,7 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 	}
 	for i, w := range wallets {
 		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
-			token, err := wallet.GetAuth(conn, w.ID) //TODO: remove this so the token is handled internally (not creating one in every request)
+			token, err := wallet.GetToken(conn, w.ID)
 			if err != nil {
 				return nil, fmt.Errorf("couldn't get auth from wallet %s", w.Name)
 			}
