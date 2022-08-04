@@ -30,7 +30,7 @@ func TestCreate(t *testing.T) {
 
 	var nickname = randStringRunes(6)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(60)*time.Second)
 	defer cancel()
 	lndHubClient := NewClient(&http.Client{})
 	user, err := lndHubClient.Create(ctx, connectionURL, login, password, token, nickname)
@@ -38,6 +38,9 @@ func TestCreate(t *testing.T) {
 	require.EqualValues(t, login, user.Login)
 	require.EqualValues(t, password, user.Password)
 	require.EqualValues(t, nickname, user.Nickname)
+	var newNickname = randStringRunes(6)
+	user, err = lndHubClient.Create(ctx, connectionURL, login, password, token, newNickname)
+	require.NoError(t, err)
 
 }
 

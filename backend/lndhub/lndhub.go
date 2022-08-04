@@ -49,7 +49,12 @@ type Client struct {
 	http *http.Client
 }
 
-type CreateResponse struct {
+type createRequest struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+	Nickname string `json:"nickname"`
+}
+type createResponse struct {
 	Login    string `mapstructure:"login"`
 	Password string `mapstructure:"password"`
 	Nickname string `mapstructure:"nickname"`
@@ -70,19 +75,13 @@ func NewClient(h *http.Client) *Client {
 	}
 }
 
-// Creates an account or changes the nickname on already created one. If the login is a CID, then the password must
+// Create creates an account or changes the nickname on already created one. If the login is a CID, then the password must
 // be the signature of the message 'sign in into mintter lndhub' and the token the pubkey whose private counterpart
 // was used to sign the password. If login is not a CID, then there is no need for the token and password can be
 // anything. Nickname can be anything in both cases as long as it's unique across all mintter lndhub users (it will
 // fail otherwise).
-func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, nickname string) (CreateResponse, error) {
-
-	type createRequest struct {
-		Login    string `json:"login"`
-		Password string `json:"password"`
-		Nickname string `json:"nickname"`
-	}
-	var resp CreateResponse
+func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, nickname string) (createResponse, error) {
+	var resp createResponse
 
 	err := c.do(ctx, httpRequest{
 		URL:    connectionURL + createRoute,
@@ -106,19 +105,35 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, 
 		return resp, err
 	}
 
-	if err := setLndhubNickname(resp.Nickname); err != nil {
-		return resp, err
-	}
-
-	return resp, err
+	return resp, nil
 }
 
 // UpdateNickname takes the nickname field of the Credentials and updates it on the lndhub.go database
 // The update can fail if the nickname contain special characters or is already taken by another user.
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).
-func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass, token, nickname string) (CreateResponse, error) {
-	return c.Create(ctx, connectionURL, login, pass, token, nickname)
+func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass, token, nickname string) error {
+	var resp createResponse
+
+	err := c.do(ctx, httpRequest{
+		URL:    connectionURL + createRoute,
+		Method: http.MethodPost,
+		Payload: createRequest{
+			Login:    login, // CID
+			Password: pass,  // signed message
+			Nickname: nickname,
+		},
+		Token: token, // this token should be in reality the pubkey whose private counterpart was used to sign the password
+	}, 2, &resp)
+	if err != nil {
+		return err
+	}
+
+	if resp.Nickname != nickname {
+		return fmt.Errorf("New nickname was not set properly. Expected %s but got %s", nickname, resp.Nickname)
+	}
+
+	return nil
 }
 
 // GetLnAddress gets the account-wide ln address in the form of <nickname>@<domain> .
@@ -280,7 +295,6 @@ func (c *Client) do(ctx context.Context, request httpRequest, maxAttempts uint, 
 		bodyRaw = buf
 	}
 	for i := 0; i < int(maxAttempts); i++ {
-
 		req, err := http.NewRequestWithContext(ctx, request.Method, request.URL, bodyRaw)
 		if err != nil {
 			return err
