@@ -11,22 +11,30 @@ export var rootPageStyle = css({
   left: 0,
   right: 0,
   bottom: 0,
-  width: '100vw',
-  height: '100vh',
+  inlineSize: '100%',
+  blockSize: '100%',
   display: 'grid',
   overflow: 'hidden',
   gridAutoFlow: 'column',
-  gridAutoColumns: '1fr',
   gridTemplateRows: '40px 1fr',
   gridTemplateColumns: '1fr auto',
   gap: 0,
   gridTemplateAreas: `"topbar topbar"
   "main library"`,
   background: '$base-background-normal',
+
+  '& [data-layout-section="topbar"]': {
+    gridArea: 'topbar',
+  },
+  '& [data-layout-section="main"]': {
+    gridArea: 'main',
+  },
+  '& [data-layout-section="library"]': {
+    gridArea: 'library',
+  },
 })
 
 let mainWindowStyle = css({
-  gridArea: 'main',
   height: '$full',
   overflow: 'hidden',
   position: 'relative',
@@ -36,7 +44,7 @@ let mainWindowStyle = css({
 
 export function MainWindow({children, orientation, onScroll}: ScrollAreaProps) {
   return (
-    <Box className={mainWindowStyle()}>
+    <Box data-layout-section="main" className={mainWindowStyle()}>
       <ScrollArea orientation={orientation} onScroll={onScroll}>
         {children}
       </ScrollArea>
@@ -46,7 +54,7 @@ export function MainWindow({children, orientation, onScroll}: ScrollAreaProps) {
 
 export function MainWindowShell({children, ...props}: PropsWithChildren<any>) {
   return (
-    <Box {...props} className={mainWindowStyle()}>
+    <Box data-layout-section="main" {...props} className={mainWindowStyle()}>
       {children}
     </Box>
   )
@@ -58,6 +66,7 @@ export function MainPageShell(props: PropsWithChildren<any>) {
 export function Placeholder() {
   return (
     <Box
+      data-layout-section="main"
       aria-hidden
       css={{
         width: '$full',
@@ -91,7 +100,7 @@ export function Placeholder() {
 
 export function PageError({error, resetErrorBoundary}: FallbackProps) {
   return (
-    <div role="alert">
+    <div role="alert" data-layout-section="main">
       <p>Publication Error</p>
       <pre>{error.message}</pre>
       <button onClick={resetErrorBoundary}>reload page</button>

@@ -1,30 +1,28 @@
-import {tippingMachine} from '@app/tipping-machine'
+import {PublicationRef} from '@app/main-machine'
+import {createTippingMachine} from '@app/tipping-machine'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
-import {Tooltip} from '@components/tooltip'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {useActor, useInterpret} from '@xstate/react'
 import QRCode from 'react-qr-code'
 import {StateFrom} from 'xstate'
 
-export function TippingModal({
-  visible = false,
-  publicationId,
-  accountId,
-}: {
-  visible: boolean
-  publicationId?: string
-  accountId?: string
-}) {
+export function TippingModal({fileRef}: {fileRef: PublicationRef}) {
   // if (!visible) return null
 
-  const service = useInterpret(tippingMachine)
+  const [fileState] = useActor(fileRef)
+  const service = useInterpret(
+    createTippingMachine({
+      accountID: fileState.context.author?.id!,
+      publicationID: fileState.context.documentId,
+    }),
+  )
   const [state, send] = useActor(service)
 
-  if (typeof publicationId == 'undefined' || typeof accountId == 'undefined') {
+  if (typeof fileRef == 'undefined') {
     return null
   }
 
@@ -40,20 +38,43 @@ export function TippingModal({
       }}
     >
       <PopoverPrimitive.Trigger asChild>
-        <Tooltip content="Tip Author">
-          <Button
-            color="success"
-            size="1"
-            variant="ghost"
-            disabled={state.hasTag('pending')}
-            data-testid="submit-edit"
-            onClick={() => {
-              send('OPEN')
-            }}
-          >
-            <Icon size="1" name="Star" color="muted" />
-          </Button>
-        </Tooltip>
+        <Button
+          color="success"
+          size="1"
+          variant="ghost"
+          disabled={state.hasTag('pending')}
+          data-testid="submit-edit"
+          onClick={() => {
+            send('OPEN')
+          }}
+          css={{
+            display: 'flex',
+            fontSize: '$2',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'start',
+            fontFamily: '$base',
+            gap: '$4',
+            paddingVertical: '$3',
+            paddingHorizontal: '$4',
+            borderRadius: '$2',
+            '&[data-disabled]': {
+              cursor: 'default',
+            },
+            cursor: 'pointer',
+            '&:focus': {
+              outline: 'none',
+              backgroundColor: '$base-component-bg-normal',
+              cursor: 'pointer',
+            },
+            '&:disabled': {
+              opacity: 0.5,
+            },
+          }}
+        >
+          <Icon size="1" name="Star" color="muted" />
+          Tip {fileState.context.author?.profile?.alias}
+        </Button>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Content>
         {state.matches('open.setAmount') && (
@@ -166,7 +187,7 @@ export function SetAmount({
   send,
   state,
 }: {
-  state: StateFrom<typeof tippingMachine>
+  state: StateFrom<ReturnType<typeof createTippingMachine>>
   send: any
 }) {
   return (

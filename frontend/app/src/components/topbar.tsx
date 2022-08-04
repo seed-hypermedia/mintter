@@ -1,53 +1,18 @@
 import {mainService as defaultMainService} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {Dropdown} from '@app/editor/dropdown'
+import {Dropdown, dropdownLabel} from '@app/editor/dropdown'
 import {CurrentFile, DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useBookmarksService} from '@components/bookmarks'
+import {Button} from '@components/button'
 import {Text} from '@components/text'
+import {TippingModal} from '@components/tipping-modal'
+import {Tooltip} from '@components/tooltip'
 import {useActor} from '@xstate/react'
 import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
-
-const draggableProps = {
-  'data-tauri-drag-region': true,
-}
-
-export const TopbarStyled = styled(Box, {
-  gridArea: 'topbar',
-  width: '$full',
-  height: 40,
-  display: 'flex',
-  borderBottom: '1px solid $colors$base-border-subtle',
-  background: '$base-background-subtle',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  paddingHorizontal: '$2',
-  gap: '$4',
-})
-
-let TopbarButton = styled('button', {
-  all: 'unset',
-  padding: '$1',
-  width: '$8',
-  height: '$8',
-  borderRadius: '$2',
-  backgroundColor: 'transparent',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  '&:hover': {
-    backgroundColor: '$base-component-bg-hover',
-  },
-})
-
-export const topbarSection = css({
-  height: '$full',
-  display: 'flex',
-  alignItems: 'center',
-})
 
 type TopbarProps = {
   copy?: typeof copyTextToClipboard
@@ -55,87 +20,119 @@ type TopbarProps = {
   mainService?: typeof defaultMainService
 }
 
-export function Topbar({
-  copy = copyTextToClipboard,
-  currentFile,
-  mainService = defaultMainService,
-}: TopbarProps) {
-  let [mainState, mainSend] = useActor(mainService)
-  function toggleLibrary() {
-    mainState.context.library.send('LIBRARY.TOGGLE')
-  }
+const draggableProps = {
+  'data-tauri-drag-region': true,
+}
+
+export function Topbar({mainService = defaultMainService}: TopbarProps) {
+  let [mainState] = useActor(mainService)
 
   return (
-    <TopbarStyled {...draggableProps}>
-      <span style={{display: 'block', flex: 'none', width: 60}} />
-      {currentFile ? (
-        <FilesData
-          copy={copy}
-          fileRef={currentFile}
-          isPublication={mainState.hasTag('publication')}
+    <Box
+      data-layout-section="topbar"
+      className={wrapperStyles()}
+      {...draggableProps}
+    >
+      <Box
+        data-topbar-section="main"
+        className={topbarSectionStyles({type: 'main'})}
+        {...draggableProps}
+      >
+        {mainState.context.currentFile ? (
+          <FileTitle fileRef={mainState.context.currentFile} />
+        ) : (
+          <TopbarTitle>
+            {mainState.matches('routes.draftList')
+              ? 'Drafts'
+              : mainState.matches('routes.publicationList') ||
+                mainState.matches('routes.home')
+              ? 'Publications'
+              : ''}
+          </TopbarTitle>
+        )}
+      </Box>
+      {mainState.context.currentFile ? (
+        <TopbarFileActions
+          mainService={mainService}
+          fileRef={mainState.context.currentFile}
         />
-      ) : (
+      ) : null}
+
+      <TopbarLibrarySection mainService={mainService} />
+    </Box>
+  )
+}
+
+function FileTitle({fileRef}: {fileRef: CurrentFile}) {
+  let [fileState] = useActor(fileRef)
+
+  return (
+    <>
+      <TopbarTitle {...draggableProps}>{fileState.context.title}</TopbarTitle>
+      {fileRef.id.startsWith('pub-') ? (
         <Text
-          size="3"
-          fontWeight="medium"
-          aria-label="Document Title"
-          data-testid="topbar-title"
-          {...draggableProps}
+          size="1"
+          color="muted"
           css={{
-            flex: 'none',
+            userSelect: 'none',
+            textDecoration: 'underline',
             '&:hover': {
               cursor: 'default',
             },
           }}
+          data-testid="topbar-author"
+          {...draggableProps}
         >
-          {mainState.matches('routes.draftList')
-            ? 'Drafts'
-            : mainState.matches('routes.publicationList')
-            ? 'Publications'
-            : mainState.matches('routes.home')
-            ? 'Publications'
-            : ''}
+          {fileState.context.author?.profile?.alias || 'AUTHOR'}
         </Text>
-      )}
-      <Box css={{flex: 1}} {...draggableProps} />
+      ) : null}
+    </>
+  )
+}
+
+function TopbarLibrarySection({
+  mainService,
+}: {
+  mainService: typeof defaultMainService
+}) {
+  let [state, send] = useActor(mainService)
+
+  function toggleLibrary() {
+    state.context.library.send('LIBRARY.TOGGLE')
+  }
+
+  return (
+    <Box
+      data-topbar-section="library"
+      className={topbarSectionStyles({type: 'library'})}
+      {...draggableProps}
+    >
+      <TopbarButton
+        data-testid="history-back"
+        onClick={(e) => {
+          e.preventDefault()
+          send('GO.BACK')
+        }}
+      >
+        <Icon name="ArrowChevronLeft" color="muted" size="2" />
+      </TopbarButton>
+      <TopbarButton
+        data-testid="history-forward"
+        onClick={(e) => {
+          e.preventDefault()
+          send('GO.FORWARD')
+        }}
+      >
+        <Icon name="ArrowChevronRight" color="muted" size="2" />
+      </TopbarButton>
       <Box
         css={{
-          width: 'auto',
-          '@bp1': {
-            width: '$library-width',
-          },
-          flex: 'none',
           display: 'flex',
-          justifyContent: 'space-between',
+          flex: 1,
+          justifyContent: 'end',
         }}
         {...draggableProps}
       >
-        <Box
-          css={{display: 'flex', paddingHorizontal: '$4', marginLeft: '-$4'}}
-          {...draggableProps}
-        >
-          <TopbarButton
-            color="muted"
-            data-testid="history-back"
-            onClick={(e) => {
-              e.preventDefault()
-              mainSend('GO.BACK')
-            }}
-          >
-            <Icon name="ArrowChevronLeft" color="muted" size="2" />
-          </TopbarButton>
-          <TopbarButton
-            color="muted"
-            data-testid="history-forward"
-            onClick={(e) => {
-              e.preventDefault()
-              mainSend('GO.FORWARD')
-            }}
-          >
-            <Icon name="ArrowChevronRight" color="muted" size="2" />
-          </TopbarButton>
-        </Box>
-
         <TopbarButton
           css={{
             flex: 'none',
@@ -148,144 +145,238 @@ export function Topbar({
           onClick={toggleLibrary}
           data-tauri-drag-region
         >
-          <Text size="2">Local Node</Text>
+          {/* <Text size="2">Local Node</Text> */}
           <Icon name="Sidenav" size="2" />
         </TopbarButton>
       </Box>
-    </TopbarStyled>
+    </Box>
   )
 }
 
-function FilesData({
+function TopbarFileActions({
   fileRef,
-  isPublication = false,
-  copy = copyTextToClipboard,
+  mainService = defaultMainService,
 }: {
-  copy: typeof copyTextToClipboard
-  fileRef: PublicationRef | DraftRef
-  isPublication: boolean
+  fileRef: CurrentFile
+  mainService: typeof defaultMainService
 }) {
+  if (fileRef.id.startsWith('draft-')) {
+    return <DraftActions fileRef={fileRef as DraftRef} />
+  } else {
+    return (
+      <PublicationActions
+        mainService={mainService}
+        fileRef={fileRef as PublicationRef}
+      />
+    )
+  }
+}
+
+function DraftActions({fileRef}: {fileRef: DraftRef}) {
+  let [state, send] = useActor(fileRef)
+  return (
+    <Box
+      data-topbar-section="actions"
+      className={topbarSectionStyles({type: 'actions'})}
+      {...draggableProps}
+    >
+      <Button
+        color="success"
+        variant="ghost"
+        size="1"
+        disabled={!state.can('DRAFT.PUBLISH')}
+        data-testid="submit-publish"
+        onClick={() => {
+          send('DRAFT.PUBLISH')
+        }}
+      >
+        Publish
+      </Button>
+    </Box>
+  )
+}
+
+function PublicationActions({
+  fileRef,
+  copy = copyTextToClipboard,
+  mainService = defaultMainService,
+}: {
+  fileRef: PublicationRef
+  copy?: typeof copyTextToClipboard
+  mainService: typeof defaultMainService
+}) {
+  let [state, send] = useActor(fileRef)
   let bookmarkService = useBookmarksService()
-  const [state] = useActor(fileRef)
 
   async function onCopyReference() {
-    if (isPublication) {
-      await copy(
-        `${MINTTER_LINK_PREFIX}${state.context.publication.document.id}/${state.context.publication.version}`,
-      )
-      toast.success('Document Reference copied successfully', {
-        position: 'top-center',
-      })
-    }
+    await copy(
+      `${MINTTER_LINK_PREFIX}${state.context.publication?.document?.id}/${state.context.publication.version}`,
+    )
+    toast.success('Document Reference copied successfully', {
+      position: 'top-center',
+    })
   }
 
   function onBookmark() {
-    if (isPublication) {
-      bookmarkService.send({
-        type: 'BOOKMARK.ADD',
-        url: `${MINTTER_LINK_PREFIX}${state.context.publication.document.id}/${state.context.publication.version}`,
-      })
-    }
+    bookmarkService.send({
+      type: 'BOOKMARK.ADD',
+      url: `${MINTTER_LINK_PREFIX}${state.context.publication?.document?.id}/${state.context.publication?.version}`,
+    })
   }
-
   return (
-    <>
-      <Box
-        css={{
-          // flex: 'none',
-          overflow: 'hidden',
-          width: '$full',
-          maxWidth: 448,
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'flex-start',
-          gap: '$2',
-          '&:hover': {
-            cursor: 'default',
-          },
-        }}
-        {...draggableProps}
-      >
-        <Box
-          css={{
-            display: 'flex',
-            flex: '0 1 1',
-            overflow: 'hidden',
-            marginRight: '$2',
-          }}
-          {...draggableProps}
-        >
-          <Text
-            size={{
-              '@initial': 2,
-              '@bp2': 3,
-            }}
-            fontWeight="medium"
-            aria-label="Document Title"
-            data-testid="topbar-title"
-            data-tauri-drag-region
-            css={{
-              flex: 'none',
-              '&:hover': {
-                cursor: 'default',
-              },
-            }}
-            {...draggableProps}
-          >
-            {state.context.title.length > 50
-              ? `${state.context.title.substring(0, 50)}...`
-              : state.context.title || 'Untitled Draft'}
-          </Text>
-        </Box>
-        <Text
-          size="1"
-          color="muted"
-          css={{
-            '&:hover': {
-              cursor: 'default',
-            },
-          }}
-          {...draggableProps}
-        >
-          by
-        </Text>
+    <Box
+      data-topbar-section="actions"
+      className={topbarSectionStyles({type: 'actions'})}
+      {...draggableProps}
+    >
+      <Dropdown.Root>
+        <Dropdown.Trigger asChild>
+          <TopbarButton css={{padding: '0.3rem'}}>
+            <Icon size="1" name="MoreHorizontal" color="muted" />
+          </TopbarButton>
+        </Dropdown.Trigger>
+        <Dropdown.Content alignOffset={-5} align="end">
+          {!state.context.canUpdate ? <TippingModal fileRef={fileRef} /> : null}
+          <Dropdown.Item onSelect={onCopyReference}>
+            <Icon size="1" name="Copy" />
+            <span className={dropdownLabel()}>Copy Document Reference</span>
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={onBookmark}>
+            <Icon size="1" name="ArrowBottomRight" />
+            <span className={dropdownLabel()}>Add to Bookmarks</span>
+          </Dropdown.Item>
+        </Dropdown.Content>
+      </Dropdown.Root>
+      <Dropdown.Root>
+        <Tooltip content="Edit Actions">
+          <Dropdown.Trigger asChild>
+            <TopbarButton
+              variant="outlined"
+              css={{
+                padding: '0.3rem',
+              }}
+            >
+              <Icon size="1" name="Pencil" color="muted" />
+              <Icon
+                name="ArrowChevronDown"
+                color="muted"
+                css={{
+                  zoom: 0.5,
+                }}
+              />
+            </TopbarButton>
+          </Dropdown.Trigger>
+        </Tooltip>
+        <Dropdown.Content alignOffset={-5} align="end">
+          {state.context.canUpdate ? (
+            <Dropdown.Item>
+              <Icon size="1" name="Pencil" />
+              <span className={dropdownLabel()}>Edit</span>
+            </Dropdown.Item>
+          ) : null}
 
-        <Text
-          size="1"
-          color="muted"
-          css={{
-            textDecoration: 'underline',
-            '&:hover': {
-              cursor: 'default',
-            },
-          }}
-          data-testid="topbar-author"
-          {...draggableProps}
-        >
-          {state.context?.author?.profile?.alias || 'AUTHOR'}
-        </Text>
-      </Box>
-      {isPublication ? (
-        <Box {...draggableProps}>
-          <Dropdown.Root>
-            <Dropdown.Trigger asChild>
-              <TopbarButton>
-                <Icon size="1" name="MoreHorizontal" />
-              </TopbarButton>
-            </Dropdown.Trigger>
-            <Dropdown.Content alignOffset={-5} align="end">
-              <Dropdown.Item onSelect={onCopyReference}>
-                <Icon size="1" name="Copy" />
-                Copy Document Reference
-              </Dropdown.Item>
-              <Dropdown.Item onSelect={onBookmark}>
-                <Icon size="1" name="ArrowBottomRight" />
-                Add to Bookmarks
-              </Dropdown.Item>
-            </Dropdown.Content>
-          </Dropdown.Root>
-        </Box>
-      ) : null}
-    </>
+          <Dropdown.Item
+            onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
+          >
+            <Icon size="1" name="File" />
+            <span className={dropdownLabel()}>New Document</span>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Icon size="1" name="MessageBubble" />
+            <span className={dropdownLabel()}>Reply</span>
+          </Dropdown.Item>
+          <Dropdown.Item>
+            <Icon size="1" name="PencilAdd" />
+            <span className={dropdownLabel()}>Review</span>
+          </Dropdown.Item>
+          <Dropdown.Separator color="muted" />
+          <Dropdown.Item disabled>
+            <Box
+              css={{
+                paddingBlock: '1rem',
+                userSelect: 'none',
+              }}
+            >
+              pub date here
+            </Box>
+          </Dropdown.Item>
+        </Dropdown.Content>
+      </Dropdown.Root>
+    </Box>
   )
 }
+
+var wrapperStyles = css({
+  display: 'flex',
+  paddingInlineStart: 'calc(64px + 16px)',
+  blockSize: '100%',
+  borderBottom: '1px solid $colors$base-border-subtle',
+  background: '$base-background-subtle',
+  '& > *': {
+    // align items here
+  },
+})
+
+var topbarSectionStyles = css({
+  display: 'flex',
+  alignItems: 'center',
+  '& > *': {
+    '&:hover': {
+      cursor: 'default',
+    },
+  },
+  variants: {
+    type: {
+      main: {
+        flex: 1,
+        gap: '0.5rem',
+      },
+      actions: {
+        paddingInline: '0.5rem',
+        gap: '0.5rem',
+      },
+      library: {
+        flex: 'none',
+        inlineSize: 'var(--library-size)',
+        paddingInline: '0.5rem',
+      },
+    },
+  },
+})
+
+var TopbarTitle = styled('span', {
+  fontFamily: '$base',
+  fontWeight: '$medium',
+  userSelect: 'none',
+  '@initial': {
+    fontSize: '1rem',
+  },
+  '@bp2': {
+    fontSize: '1.1rem',
+  },
+})
+
+var TopbarButton = styled('button', {
+  all: 'unset',
+  padding: '$1',
+  gap: '0.1rem',
+  inlineSize: '$8',
+  blockSize: '$8',
+  borderRadius: '$2',
+  backgroundColor: 'transparent',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '&:hover': {
+    backgroundColor: '$base-component-bg-hover',
+  },
+  variants: {
+    variant: {
+      outlined: {
+        '&:hover': {
+          boxShadow: 'inset 0px 0px 0px 1px $colors$base-border-normal',
+        },
+      },
+    },
+  },
+})

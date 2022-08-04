@@ -29,7 +29,7 @@ interface EditorProps {
 
 const editorWrapperStyles = css({
   position: 'relative',
-  paddingInline: '2rem',
+  paddingInline: '3rem',
 })
 
 export function Editor({

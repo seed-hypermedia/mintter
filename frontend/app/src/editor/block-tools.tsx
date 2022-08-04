@@ -112,27 +112,17 @@ export function BlockTools(props: BlockToolsProps) {
     }
   }, [blockId])
 
-  let x: string = state.context.currentPosition
-    ? `${state.context.currentPosition.x}px`
-    : '0px'
-  let y: string = state.context.currentPosition
-    ? `${state.context.currentPosition.y}px`
-    : '0px'
-
   if (state.matches('active')) {
     return props.mode == EditorMode.Draft ? (
       <DraftBlockTools
         editor={editor}
         blockEntry={blockEntry}
         service={props.service}
-        x={x}
-        y={y}
       />
     ) : props.mode == EditorMode.Publication ? (
       <PublicationBlockTools
         editor={editor}
         service={props.service}
-        y={y}
         blockId={state.context.currentId}
       />
     ) : null
@@ -145,27 +135,20 @@ type DraftBlockToolsProps = {
   editor: Editor
   service: InterpreterFrom<typeof blockToolsMachine>
   blockEntry?: NodeEntry<FlowContent>
-  x: string
-  y: string
 }
 
 export function DraftBlockTools({
   editor,
   service,
   blockEntry,
-  x,
-  y,
 }: DraftBlockToolsProps) {
   return (
     <Box
       css={{
         position: 'absolute',
         zIndex: '$max',
-
-        insetBlockStart: 0,
-        insetInlineStart: 0,
-        transition: 'opacity linear 0s, transform ease 0.1s',
-        transform: `translate(${x}, calc(${y} - 2.5rem))`,
+        insetBlockStart: 'calc(calc(var(--tools-y) * 1px) - 2.5rem)',
+        insetInlineStart: 'calc((var(--tools-x) * 1px))',
       }}
     >
       <Dropdown.Root
@@ -222,23 +205,17 @@ export function DraftBlockTools({
 type PublicationBlockToolsProps = {
   editor: Editor
   service: InterpreterFrom<typeof blockToolsMachine>
-  y: string
   blockId?: string
 }
 
-export function PublicationBlockTools({
-  y,
-  blockId,
-}: PublicationBlockToolsProps) {
+export function PublicationBlockTools({blockId}: PublicationBlockToolsProps) {
   return (
     <Box
       css={{
         position: 'absolute',
         zIndex: '$max',
-        insetBlockStart: 0,
+        insetBlockStart: 'calc(calc(var(--tools-y) * 1px) - 2.5rem)',
         insetInlineEnd: 24,
-        transition: 'opacity linear 0s, transform ease 0.1s',
-        transform: `translate(0, calc(${y} - 2.5rem))`,
       }}
     >
       {blockId}

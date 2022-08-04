@@ -27,11 +27,9 @@ export const dropdownContentStyle = css({
   boxShadow: '$menu',
   borderRadius: '$2',
   overflow: 'hidden',
-  userSelect: 'none',
 })
 
 export const dropdownItemStyle = css({
-  userSelect: 'none',
   display: 'flex',
   fontSize: '$2',
   flexDirection: 'row',
@@ -42,6 +40,9 @@ export const dropdownItemStyle = css({
   paddingVertical: '$3',
   paddingHorizontal: '$4',
   borderRadius: '$2',
+  '&[data-disabled]': {
+    cursor: 'default',
+  },
   cursor: 'pointer',
   '&:focus': {
     outline: 'none',
@@ -53,13 +54,21 @@ export const dropdownItemStyle = css({
   },
 })
 
+export var dropdownLabel = css({
+  userSelect: 'none',
+})
+
 const DropdownContent = styled(
   DropdownMenuPrimitive.Content,
   dropdownContentStyle,
 )
 const DropdownItem = styled(DropdownMenuPrimitive.Item, dropdownItemStyle)
 
-const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {})
+const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {
+  height: 1,
+  backgroundColor: '$base-border-subtle',
+  margin: '0.5rem',
+})
 
 export const Dropdown = {
   ...DropdownMenuPrimitive,

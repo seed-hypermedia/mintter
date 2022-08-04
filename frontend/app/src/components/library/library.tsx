@@ -19,7 +19,6 @@ let libraryStyle = css({
   backgroundColor: '$base-background-normal',
   overflow: 'hidden',
   borderLeft: '1px solid $colors$base-border-subtle',
-  gridArea: 'library',
   position: 'relative',
   height: '$full',
   variants: {
@@ -33,7 +32,7 @@ let libraryStyle = css({
 
 export function LibraryShell({children, ...props}: PropsWithChildren<any>) {
   return (
-    <Box {...props} className={libraryStyle()}>
+    <Box {...props} data-layout-section="library" className={libraryStyle()}>
       {children}
     </Box>
   )
@@ -59,7 +58,11 @@ export function Library({
   }
 
   return (
-    <Box className={libraryStyle()} data-testid="library">
+    <Box
+      className={libraryStyle()}
+      data-layout-section="library"
+      data-testid="library"
+    >
       <ScrollArea>
         <Box
           css={{

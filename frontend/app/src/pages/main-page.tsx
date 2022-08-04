@@ -25,9 +25,7 @@ export function MainPage({mainService = defaultMainService}: MainPageProps) {
 
   return (
     <Box className={rootPageStyle()}>
-      {state.hasTag('topbar') ? (
-        <Topbar currentFile={state.context.currentFile} />
-      ) : null}
+      {state.hasTag('topbar') ? <Topbar mainService={mainService} /> : null}
       {state.hasTag('library') ? <Library /> : null}
 
       <ErrorBoundary

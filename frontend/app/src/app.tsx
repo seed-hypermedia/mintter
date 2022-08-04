@@ -2,7 +2,7 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {useAuthService} from '@app/auth-context'
 import {MainPage} from '@app/pages/main-page'
 import {LibraryShell} from '@components/library'
-import {TopbarStyled} from '@components/topbar'
+
 import {useActor} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
@@ -95,7 +95,6 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
 function AppShell() {
   return (
     <MainPageShell>
-      <TopbarStyled />
       <LibraryShell />
       <MainWindowShell />
     </MainPageShell>
