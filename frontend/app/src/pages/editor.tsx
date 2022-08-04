@@ -12,13 +12,6 @@ import {FileProvider} from '@app/file-provider'
 import {DraftRef} from '@app/main-machine'
 import {MainWindow} from '@app/pages/window-components'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {FileTime} from '@components/file-time'
-import {
-  headerButtonsStyles,
-  headerMetadataStyles,
-  headerStyles,
-} from '@components/page-header'
 import {Text} from '@components/text'
 import {ChildrenOf} from '@mintter/mttast'
 import {useActor, useInterpret} from '@xstate/react'
@@ -76,31 +69,11 @@ export default function EditorPage({draftRef}: EditorPageProps) {
 
   if (state.matches('editing')) {
     return (
-      <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
-        <ErrorBoundary
-          FallbackComponent={AppError}
-          onReset={() => window.location.reload()}
-        >
-          <Box className={headerStyles()}>
-            <Box className={headerMetadataStyles()}>
-              <FileTime type="draft" document={state.context.draft} />
-            </Box>
-            <Box className={headerButtonsStyles()}>
-              <EditorStatus state={state} />
-              <Button
-                color="success"
-                variant="ghost"
-                size="1"
-                disabled={!state.can('DRAFT.PUBLISH')}
-                data-testid="submit-publish"
-                onClick={() => {
-                  send('DRAFT.PUBLISH')
-                }}
-              >
-                Publish
-              </Button>
-            </Box>
-          </Box>
+      <ErrorBoundary
+        FallbackComponent={AppError}
+        onReset={() => window.location.reload()}
+      >
+        <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
           <Box data-testid="editor-wrapper" css={{paddingTop: '$5'}}>
             {context.localDraft?.content && (
               <>
@@ -135,8 +108,8 @@ export default function EditorPage({draftRef}: EditorPageProps) {
               </>
             )}
           </Box>
-        </ErrorBoundary>
-      </MainWindow>
+        </MainWindow>
+      </ErrorBoundary>
     )
   }
 

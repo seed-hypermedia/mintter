@@ -155,7 +155,7 @@ const stitches = createStitches({
       'three-quarters': '75%',
       full: '100%',
       'prose-width': '70ch',
-      'library-width': '232px',
+      'library-width': 'var(--library-size)',
     },
     space: {
       0: 0,
@@ -208,7 +208,7 @@ const stitches = createStitches({
 })
 
 export const {styled, css, globalCss, keyframes, config, createTheme} = stitches
-export type CSS = Stitches.CSS<typeof config> & typeof lightTheme
+export type CSS = Stitches.CSS<typeof config>
 export type ThemeColorValue = Stitches.PropertyValue<'backgroundColor'>
 
 export const lightTheme = createTheme('light-theme', {
@@ -394,10 +394,12 @@ export const darkTheme = createTheme('dark-theme', {
  */
 
 export const globalStyles = globalCss({
+  ':root': {
+    '--library-size': '232px',
+  },
   '*': {
     boxSizing: 'border-box',
     margin: 0,
-    userSelect: 'none',
   },
   html: {
     blockSize: '100%',

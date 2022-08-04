@@ -8,7 +8,7 @@ type BlockToolsMachineContext = {
   mouseY: number
   observer?: IntersectionObserver
   currentId?: string
-  currentPosition?: DOMRect
+  rootElm: HTMLElement | null
 }
 export type BlockToolsMachineEvent =
   | {
@@ -45,16 +45,6 @@ export type BlockToolsMachineEvent =
 export const blockToolsMachine = createMachine(
   {
     id: 'blockToolsMachine',
-    invoke: [
-      {
-        src: 'visibilityObserver',
-        id: 'visibilityObserver',
-      },
-      {
-        src: 'mouseListener',
-        id: 'mouseListener',
-      },
-    ],
     initial: 'inactive',
     tsTypes: {} as import('./block-tools-machine.typegen').Typegen0,
     schema: {
@@ -66,9 +56,19 @@ export const blockToolsMachine = createMachine(
       currentBounds: [],
       mouseY: 0,
       currentId: undefined,
-      currentPosition: undefined,
       observer: undefined,
+      rootElm: document.querySelector(':root') as HTMLElement,
     },
+    invoke: [
+      {
+        src: 'visibilityObserver',
+        id: 'visibilityObserver',
+      },
+      {
+        src: 'mouseListener',
+        id: 'mouseListener',
+      },
+    ],
     states: {
       active: {
         entry: ['getBlockBounds', 'assignCurrentId'],
@@ -148,23 +148,20 @@ export const blockToolsMachine = createMachine(
         }
       },
       visibilityObserver: () => (sendBack) => {
-        function callback(
-          entries: Array<IntersectionObserverEntry>,
-          observer: IntersectionObserver,
-        ) {
+        function callback(entries: Array<IntersectionObserverEntry>) {
           for (const entry of entries) {
             if (entry.isIntersecting) {
               // console.log('IS INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.ADD',
-                id: entry.target.dataset.parentBlock,
+                id: (entry.target as HTMLElement).dataset.parentBlock!,
                 entry: entry.target,
               })
             } else {
               // console.log('NOT INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.DELETE',
-                id: entry.target.dataset.parentBlock,
+                id: (entry.target as HTMLElement).dataset.parentBlock!,
               })
             }
           }
@@ -234,17 +231,17 @@ export const blockToolsMachine = createMachine(
           return match
         },
       }),
-      assignCurrentPosition: assign({
-        currentPosition: (context) => {
-          if (context.currentId) {
-            let target = `[data-block-id="${context.currentId}"] .blocktools-target`
-            let elBlock = document.body.querySelector(target)
-            if (elBlock) {
-              return elBlock.getBoundingClientRect()
-            }
+      assignCurrentPosition: (context) => {
+        if (context.currentId) {
+          let target = `[data-block-id="${context.currentId}"] .blocktools-target`
+          let elBlock = document.body.querySelector(target)
+          if (elBlock) {
+            let rect = elBlock.getBoundingClientRect()
+            context.rootElm?.style.setProperty('--tools-x', `${rect.x}`)
+            context.rootElm?.style.setProperty('--tools-y', `${rect.y}`)
           }
-        },
-      }),
+        }
+      },
     },
   },
 )

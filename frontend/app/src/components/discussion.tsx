@@ -31,7 +31,7 @@ export function Discussion({service, mainService}: DiscussionProps) {
           width: '$full',
           flexDirection: 'column',
           gap: '$4',
-          paddingHorizontal: '$4',
+          paddingInline: '3rem',
         }}
       >
         {state.context.dedupeLinks.map((link) => {

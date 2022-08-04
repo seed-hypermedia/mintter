@@ -117,7 +117,5 @@ function TestTopbar({
   mainService = defaultMainService,
 }: TestTopbarProps) {
   let [mainState] = useActor(mainService)
-  return mainState.hasTag('topbar') ? (
-    <Topbar currentFile={currentFile} />
-  ) : null
+  return mainState.hasTag('topbar') ? <Topbar /> : null
 }

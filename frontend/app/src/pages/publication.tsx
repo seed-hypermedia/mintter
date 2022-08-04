@@ -1,3 +1,4 @@
+import {AppError} from '@app/app'
 import {mainService as defaultMainService} from '@app/app-providers'
 import {BlockTools} from '@app/editor/block-tools'
 import {BlockToolsProvider} from '@app/editor/block-tools-context'
@@ -7,23 +8,14 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {PublicationRef} from '@app/main-machine'
 import {MainWindow} from '@app/pages/window-components'
-import {debug} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
-import {FileTime} from '@components/file-time'
-import {Icon} from '@components/icon'
-import {
-  headerButtonsStyles,
-  headerMetadataStyles,
-  headerStyles,
-} from '@components/page-header'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
-import {TippingModal} from '@components/tipping-modal'
-import {Tooltip} from '@components/tooltip'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 
 type PublicationProps = {
   publicationRef: PublicationRef
@@ -73,112 +65,16 @@ export default function Publication({
 
   if (state.matches('publication.ready')) {
     return (
-      <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
-        <Box className={headerStyles()}>
-          <Box
-            className={headerMetadataStyles()}
-            css={{
-              flex: 1,
-              overflow: 'hidden',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <FileTime
-              type="pub"
-              document={state.context.publication?.document}
-            />
-          </Box>
-          <Box
-            className={headerButtonsStyles()}
-            css={{
-              flex: 'none',
-            }}
-          >
-            {state.context.canUpdate ? (
-              <>
-                <Tooltip content="Edit">
-                  <Button
-                    color="success"
-                    size="1"
-                    variant="ghost"
-                    disabled={state.hasTag('pending')}
-                    data-testid="submit-edit"
-                    onClick={() =>
-                      mainService.send({
-                        type: 'COMMIT.EDIT.PUBLICATION',
-                        docId: state.context.documentId,
-                      })
-                    }
-                  >
-                    <Icon size="1" name="PencilAdd" color="muted" />
-                  </Button>
-                </Tooltip>
-              </>
-            ) : (
-              <>
-                <TippingModal
-                  publicationId={state.context.documentId}
-                  accountId={state.context.author?.id}
-                  visible={!state.context.canUpdate}
-                />
-                <Tooltip content="Review">
-                  <Button
-                    color="success"
-                    size="1"
-                    variant="ghost"
-                    disabled={state.hasTag('pending')}
-                    data-testid="submit-edit"
-                    onClick={() => {
-                      debug('Review: IMPLEMENT ME!')
-                    }}
-                  >
-                    <Icon size="1" name="MessageBubble" color="muted" />
-                  </Button>
-                </Tooltip>
-                <Tooltip content="Reply">
-                  <Button
-                    color="success"
-                    size="1"
-                    variant="ghost"
-                    disabled={state.hasTag('pending')}
-                    data-testid="submit-edit"
-                    onClick={() => {
-                      debug('Review: IMPLEMENT ME!')
-                    }}
-                  >
-                    <Icon size="1" name="ArrowTurnTopRight" color="muted" />
-                  </Button>
-                </Tooltip>
-              </>
-            )}
-            <Tooltip content="new Document">
-              <Button
-                variant="ghost"
-                size="0"
-                color="success"
-                onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
-                css={{
-                  '&:hover': {
-                    backgroundColor: '$success-component-bg-normal',
-                  },
-                }}
-              >
-                <Icon name="File" size="1" />
-              </Button>
-            </Tooltip>
-          </Box>
-        </Box>
-        <Box
-          css={{
-            height: '$full',
-          }}
-        >
+      <ErrorBoundary
+        FallbackComponent={AppError}
+        onReset={() => window.location.reload()}
+      >
+        <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
           <Box
             css={{
               paddingBottom: 0,
               marginBlockEnd: 50,
-              paddingInline: '2rem',
+              paddingInline: '3rem',
             }}
             data-testid="publication-wrapper"
           >
@@ -205,8 +101,7 @@ export default function Publication({
           <Box
             css={{
               marginBottom: 200,
-              marginLeft: '$8',
-              marginRight: '$5',
+              marginInline: '4rem',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
@@ -224,8 +119,8 @@ export default function Publication({
             </Button>
             <Discussion service={publicationRef} mainService={mainService} />
           </Box>
-        </Box>
-      </MainWindow>
+        </MainWindow>
+      </ErrorBoundary>
     )
   }
 
