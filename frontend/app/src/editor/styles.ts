@@ -52,7 +52,6 @@ export var blockStyles = css({
 
 export var phrasingStyles = css({
   position: 'relative',
-
   variants: {
     blockType: {
       code: {

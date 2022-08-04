@@ -443,9 +443,6 @@ export const globalStyles = globalCss({
   'h1, h2, h3': {
     fontWeight: '$medium',
   },
-  'p,h1,h2,h3,h4,h5,h6,blockquote,code,span': {
-    // userSelect: 'text',
-  },
   '@dark': {
     // notice the `media` definition on the stitches.config.ts file
     ':root:not(.light)': {

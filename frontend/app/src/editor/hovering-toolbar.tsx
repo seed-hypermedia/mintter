@@ -150,13 +150,13 @@ function HoveringToolbar({children}: PropsWithChildren) {
   }, [reference, editor.selection, inFocus])
 
   return (
-    <div
+    <Box
       ref={floating}
-      style={{
+      css={{
         position: strategy,
         top: y ?? 0,
         left: x ?? 0,
-        zIndex: '1',
+        zIndex: '$max',
       }}
       onMouseDown={(e) => {
         // prevent toolbar from taking focus away from editor
@@ -164,6 +164,6 @@ function HoveringToolbar({children}: PropsWithChildren) {
       }}
     >
       {children}
-    </div>
+    </Box>
   )
 }

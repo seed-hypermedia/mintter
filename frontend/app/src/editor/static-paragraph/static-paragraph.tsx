@@ -14,7 +14,6 @@ export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 export const staticphrasingStyles = css({
   fontWeight: '$medium',
   marginTop: '.5em',
-  // userSelect: 'text',
 })
 
 const headingMap = {
