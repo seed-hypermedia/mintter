@@ -359,7 +359,7 @@ var TopbarTitle = styled('span', {
 var TopbarButton = styled('button', {
   all: 'unset',
   padding: '$1',
-  gap: '0.1rem',
+  gap: '0.3rem',
   inlineSize: '$8',
   blockSize: '$8',
   borderRadius: '$2',
