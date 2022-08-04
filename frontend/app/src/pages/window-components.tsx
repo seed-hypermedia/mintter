@@ -83,7 +83,6 @@ export function Placeholder() {
         fontWeight="bold"
         css={{
           // userSelect: 'none',
-          WebkitUserSelect: 'none',
           fontSize: 100,
           opacity: 0.5,
           color: 'transparent',

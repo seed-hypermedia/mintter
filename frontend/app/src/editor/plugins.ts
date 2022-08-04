@@ -1,3 +1,4 @@
+import {Transforms} from 'slate'
 import {createBlockquotePlugin} from './blockquote'
 import {createCodePlugin} from './code'
 import {createColorPlugin} from './color'
@@ -54,5 +55,15 @@ export const plugins: EditorPlugin[] = [
   createMarkdownShortcutsPlugin(),
   createPlainTextPastePlugin(),
   createMintterChangesPlugin(),
+  {
+    name: 'selectAllPlugin',
+    onKeyDown: (editor) => (event) => {
+      if (event.metaKey && event.key == 'a') {
+        event.preventDefault()
+        Transforms.select(editor, [])
+        return
+      }
+    },
+  },
   // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
 ]

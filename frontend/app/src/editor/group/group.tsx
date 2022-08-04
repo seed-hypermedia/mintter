@@ -25,7 +25,7 @@ export const ELEMENT_UNORDERED_LIST = 'unorderedList'
 export const groupStyle = css({
   margin: 0,
   padding: 0,
-  userSelect: 'none',
+  // userSelect: 'none',
 })
 
 export const createGroupPlugin = (): EditorPlugin => ({
