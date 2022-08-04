@@ -70,55 +70,60 @@ export default function Publication({
         onReset={() => window.location.reload()}
       >
         <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
-          <Box
-            css={{
-              paddingBottom: 0,
-              marginBlockEnd: 50,
-              paddingInline: '3rem',
-            }}
-            data-testid="publication-wrapper"
-          >
-            {state.context.publication?.document?.content && (
-              <FileProvider value={publicationRef}>
-                <BlockToolsProvider value={blockToolsService}>
-                  <BlockTools
-                    mode={EditorMode.Publication}
-                    service={blockToolsService}
-                  />
-                  <Editor
-                    editor={state.context.editor}
-                    mode={EditorMode.Publication}
-                    value={state.context.publication?.document.content}
-                    onChange={() => {
-                      blockToolsService.send('DISABLE')
-                      // noop
-                    }}
-                  />
-                </BlockToolsProvider>
-              </FileProvider>
-            )}
-          </Box>
-          <Box
-            css={{
-              marginBottom: 200,
-              marginInline: '4rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              gap: '$4',
-            }}
-          >
-            <Button
-              variant="ghost"
-              color="primary"
-              size="1"
-              onClick={() => send('DISCUSSION.TOGGLE')}
-            >
-              {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
-              Discussion/Citations
-            </Button>
-            <Discussion service={publicationRef} mainService={mainService} />
-          </Box>
+          <FileProvider value={publicationRef}>
+            <BlockToolsProvider value={blockToolsService}>
+              <Box
+                css={{
+                  paddingBottom: 0,
+                  marginBlockEnd: 50,
+                  paddingInline: '3rem',
+                }}
+                data-testid="publication-wrapper"
+              >
+                {state.context.publication?.document?.content && (
+                  <>
+                    <BlockTools
+                      mode={EditorMode.Publication}
+                      service={blockToolsService}
+                    />
+                    <Editor
+                      editor={state.context.editor}
+                      mode={EditorMode.Publication}
+                      value={state.context.publication?.document.content}
+                      onChange={() => {
+                        blockToolsService.send('DISABLE')
+                        // noop
+                      }}
+                    />
+                  </>
+                )}
+              </Box>
+              <Box
+                css={{
+                  marginBottom: 200,
+                  marginInline: '4rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: '$4',
+                }}
+              >
+                <Button
+                  variant="ghost"
+                  color="primary"
+                  size="1"
+                  onClick={() => send('DISCUSSION.TOGGLE')}
+                >
+                  {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
+                  Discussion/Citations
+                </Button>
+                <Discussion
+                  service={publicationRef}
+                  mainService={mainService}
+                />
+              </Box>
+            </BlockToolsProvider>
+          </FileProvider>
         </MainWindow>
       </ErrorBoundary>
     )
