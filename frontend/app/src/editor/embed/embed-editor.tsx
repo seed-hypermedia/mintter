@@ -1,6 +1,5 @@
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {getEmbedIds} from '@app/editor/embed'
-import {useHover} from '@app/editor/hover-context'
 import {usePublication} from '@app/hooks'
 import {styled} from '@app/stitches.config'
 import {FlowContent} from '@mintter/mttast'
@@ -38,10 +37,9 @@ function RenderEmbedEditor(
   {embed, children, attributes, ...props}: EmbedEditorProps,
   ref: ForwardedRef<HTMLQuoteElement>,
 ) {
-  let [publicationId, version, blockId] = getEmbedIds(embed)
+  let [_docId, _version, blockId] = getEmbedIds(embed)
   let selected = useSelected()
   let focused = useFocused()
-  let hoverService = useHover()
   let state = useEmbed(embed)
 
   if (state.status == 'error') {

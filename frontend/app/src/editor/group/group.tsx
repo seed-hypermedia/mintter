@@ -1,6 +1,5 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {groupStyles} from '@app/editor/styles'
-import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
   createId,
@@ -21,11 +20,6 @@ import {isFirstChild, resetGroupingContent} from '../utils'
 export const ELEMENT_GROUP = 'group'
 export const ELEMENT_ORDERED_LIST = 'orderedList'
 export const ELEMENT_UNORDERED_LIST = 'unorderedList'
-
-export const groupStyle = css({
-  margin: 0,
-  padding: 0,
-})
 
 export const createGroupPlugin = (): EditorPlugin => ({
   name: ELEMENT_GROUP,

@@ -30,8 +30,8 @@ export function Discussion({service, mainService}: DiscussionProps) {
           display: 'flex',
           width: '$full',
           flexDirection: 'column',
-          gap: '$4',
-          paddingInline: '1rem',
+          // gap: '1.5rem',
+          // paddingInline: '1rem',
         }}
       >
         {state.context.dedupeLinks.map((link) => {

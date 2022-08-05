@@ -2,7 +2,6 @@
 import {AppError} from '@app/app'
 import {mainService as defaultMainService} from '@app/app-providers'
 import {Document} from '@app/client'
-import {createDraftMachine} from '@app/draft-machine'
 import {BlockTools} from '@app/editor/block-tools'
 import {BlockToolsProvider} from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
@@ -19,7 +18,6 @@ import {useEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {StateFrom} from 'xstate'
 
 export type EditorPageProps = {
   editor?: SlateEditor
@@ -74,7 +72,7 @@ export default function EditorPage({draftRef}: EditorPageProps) {
         onReset={() => window.location.reload()}
       >
         <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
-          <Box data-testid="editor-wrapper" css={{paddingTop: '$5'}}>
+          <Box data-testid="editor-wrapper">
             {context.localDraft?.content && (
               <>
                 <FileProvider value={draftRef}>
@@ -114,45 +112,4 @@ export default function EditorPage({draftRef}: EditorPageProps) {
   }
 
   return null
-}
-
-function EditorStatus({
-  state,
-}: {
-  state: StateFrom<ReturnType<typeof createDraftMachine>>
-}) {
-  return (
-    <Box
-      css={{
-        display: 'flex',
-        gap: '$3',
-        alignItems: 'center',
-      }}
-    >
-      <Text color="muted" size="1">
-        {state.matches('editing.idle')
-          ? 'saved'
-          : state.matches('editing.debouncing')
-          ? 'unsaved'
-          : state.matches('editing.saving')
-          ? 'saving...'
-          : ''}
-      </Text>
-      <Box
-        css={{
-          $$size: '$space$4',
-          width: '$$size',
-          height: '$$size',
-          borderRadius: '$round',
-          backgroundColor: state.matches('editing.idle')
-            ? '$success-component-bg-active'
-            : state.matches('editing.debouncing')
-            ? '$base--component-bg-active'
-            : state.matches('editing.saving')
-            ? '$warning-component-bg-active'
-            : '$danger-component-bg-active',
-        }}
-      />
-    </Box>
-  )
 }

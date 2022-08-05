@@ -6,7 +6,7 @@ import {Text} from '@components/text'
 import {useMachine} from '@xstate/react'
 
 type FileTimeProps = {
-  type: Pick<FileTimeContext, 'type'>[0]
+  type: FileTimeContext['type']
   document: Document
   noLabel?: boolean
 }

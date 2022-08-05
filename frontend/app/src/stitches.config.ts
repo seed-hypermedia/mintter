@@ -154,7 +154,7 @@ const stitches = createStitches({
       'two-thirds': '66.6666%',
       'three-quarters': '75%',
       full: '100%',
-      'prose-width': '70ch',
+      'prose-width': '59ch',
       'library-width': 'var(--library-size)',
     },
     space: {

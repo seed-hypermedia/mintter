@@ -9,7 +9,7 @@ import {Button} from '@components/button'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
 import {Tooltip} from '@components/tooltip'
-import {useActor} from '@xstate/react'
+import {useActor, useSelector} from '@xstate/react'
 import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
@@ -96,6 +96,9 @@ function TopbarLibrarySection({
   mainService: typeof defaultMainService
 }) {
   let [state, send] = useActor(mainService)
+  let isLibraryOpen = useSelector(state.context.library, (state) =>
+    state.matches('opened'),
+  )
 
   function toggleLibrary() {
     state.context.library.send('LIBRARY.TOGGLE')
@@ -104,7 +107,9 @@ function TopbarLibrarySection({
   return (
     <Box
       data-topbar-section="library"
-      className={topbarSectionStyles({type: 'library'})}
+      className={topbarSectionStyles({
+        type: isLibraryOpen ? 'library' : undefined,
+      })}
       {...draggableProps}
     >
       <TopbarButton
@@ -145,7 +150,7 @@ function TopbarLibrarySection({
           onClick={toggleLibrary}
           data-tauri-drag-region
         >
-          {/* <Text size="2">Local Node</Text> */}
+          <Text size="2">Local Node</Text>
           <Icon name="Sidenav" size="2" />
         </TopbarButton>
       </Box>
@@ -337,8 +342,11 @@ var topbarSectionStyles = css({
       },
       library: {
         flex: 'none',
-        inlineSize: 'var(--library-size)',
+
         paddingInline: '0.5rem',
+        '@bp2': {
+          inlineSize: 'var(--library-size)',
+        },
       },
     },
   },
