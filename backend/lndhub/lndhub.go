@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	lndhub "mintter/backend/lndhub/lndhubsql"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/lightningnetwork/lnd/zpay32"
@@ -49,6 +51,7 @@ type lndhubErrorTemplate struct {
 type Client struct {
 	http *http.Client
 	db   *sqlitex.Pool
+	ID   string
 }
 
 type createRequest struct {
@@ -71,6 +74,8 @@ type authRequest struct {
 	Password string `json:"password"`
 }
 
+// NewClient returns an instance of an lndhub client. The id is the credentials URI
+// hash that acts as an index in the wallet table.
 func NewClient(h *http.Client, db *sqlitex.Pool) *Client {
 	return &Client{
 		http: h,
@@ -85,8 +90,10 @@ func NewClient(h *http.Client, db *sqlitex.Pool) *Client {
 // fail otherwise).
 func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, nickname string) (createResponse, error) {
 	var resp createResponse
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
 
-	err := c.do(ctx, httpRequest{
+	err := c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
@@ -100,11 +107,11 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, 
 		return resp, err
 	}
 
-	if err := setLndhubLogin(resp.Login); err != nil {
+	if err := lndhub.SetLogin(conn, c.ID, resp.Login); err != nil {
 		return resp, err
 	}
 
-	if err := setLndhubPassword(resp.Password); err != nil {
+	if err := lndhub.SetPassword(conn, c.ID, resp.Password); err != nil {
 		return resp, err
 	}
 
@@ -117,8 +124,10 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, 
 // the pubkey whose private counterpart created the signature provided in password (like in create).
 func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass, token, nickname string) error {
 	var resp createResponse
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
 
-	err := c.do(ctx, httpRequest{
+	err := c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
@@ -154,15 +163,18 @@ func (c *Client) GetLnAddress(ctx context.Context, connectionURL, login, pass, t
 // There must be a credentials stored in the database
 func (c *Client) Auth(ctx context.Context, apiBaseURL string) (string, error) {
 	var resp authResponse
-	login, err := getLndhubLogin()
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
+
+	login, err := lndhub.GetLogin(conn, c.ID)
 	if err != nil {
 		return resp.AccessToken, err
 	}
-	pass, err := getLndhubPassword()
+	pass, err := lndhub.GetPassword(conn, c.ID)
 	if err != nil {
 		return resp.AccessToken, err
 	}
-	err = c.do(ctx, httpRequest{
+	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + authRoute,
 		Method: http.MethodPost,
 		Payload: authRequest{
@@ -173,7 +185,7 @@ func (c *Client) Auth(ctx context.Context, apiBaseURL string) (string, error) {
 	if err != nil {
 		return resp.AccessToken, err
 	}
-	return resp.AccessToken, setlndhubToken(resp.AccessToken)
+	return resp.AccessToken, lndhub.SetToken(conn, c.ID, resp.AccessToken)
 }
 
 // Get the confirmed balance in satoshis of the account
@@ -185,12 +197,15 @@ func (c *Client) GetBalance(ctx context.Context, apiBaseURL string) (uint64, err
 		Btc btcBalance `mapstructure:"BTC"`
 	}
 
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
+
 	var resp balanceResponse
-	token, err := getlndhubToken("")
+	token, err := lndhub.GetToken(conn, c.ID)
 	if err != nil {
 		return resp.Btc.Sats, err
 	}
-	err = c.do(ctx, httpRequest{
+	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + balanceRoute,
 		Method: http.MethodGet,
 		Token:  token,
@@ -214,11 +229,14 @@ func (c *Client) CreateInvoice(ctx context.Context, apiBaseURL string, amount in
 	}
 
 	var resp createInvoiceResponse
-	token, err := getlndhubToken("")
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
+
+	token, err := lndhub.GetToken(conn, c.ID)
 	if err != nil {
 		return resp.PayReq, err
 	}
-	err = c.do(ctx, httpRequest{
+	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + createInvoiceRoute,
 		Method: http.MethodPost,
 		Token:  token,
@@ -265,11 +283,14 @@ func (c *Client) PayInvoice(ctx context.Context, apiBaseURL string, payReq strin
 		Invoice string `json:"invoice"`
 		Amount  uint64 `json:"amount"`
 	}
-	token, err := getlndhubToken("")
+	conn := c.db.Get(context.Background())
+	defer c.db.Put(conn)
+
+	token, err := lndhub.GetToken(conn, c.ID)
 	if err != nil {
 		return err
 	}
-	err = c.do(ctx, httpRequest{
+	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + payInvoiceRoute,
 		Method: http.MethodPost,
 		Token:  token,
@@ -283,7 +304,7 @@ func (c *Client) PayInvoice(ctx context.Context, apiBaseURL string, payReq strin
 
 }
 
-func (c *Client) do(ctx context.Context, request httpRequest, maxAttempts uint, respValue interface{}) error {
+func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest, maxAttempts uint, respValue interface{}) error {
 	var bodyRaw io.Reader
 	var genericResponse map[string]interface{}
 	var errorRes lndhubErrorTemplate
@@ -332,15 +353,15 @@ func (c *Client) do(ctx context.Context, request httpRequest, maxAttempts uint, 
 				var authResp authResponse
 				// Check if token expired and we need to issue one
 				if ok && strings.Contains(errMsg.(string), "bad auth") {
-					login, err := getLndhubLogin()
+					login, err := lndhub.GetLogin(conn, c.ID)
 					if err != nil {
 						return err
 					}
-					pass, err := getLndhubPassword()
+					pass, err := lndhub.GetPassword(conn, c.ID)
 					if err != nil {
 						return err
 					}
-					err = c.do(ctx, httpRequest{
+					err = c.do(ctx, conn, httpRequest{
 						URL:    request.URL,
 						Method: http.MethodPost,
 						Payload: authRequest{
@@ -351,7 +372,7 @@ func (c *Client) do(ctx context.Context, request httpRequest, maxAttempts uint, 
 					if err != nil {
 						return err
 					}
-					if err = setlndhubToken(authResp.AccessToken); err != nil {
+					if err = lndhub.SetToken(conn, c.ID, authResp.AccessToken); err != nil {
 						return err
 					}
 
@@ -375,33 +396,4 @@ func (c *Client) do(ctx context.Context, request httpRequest, maxAttempts uint, 
 	}
 
 	return fmt.Errorf("failed to make a request url=%s method=%s, maxAttempts=%d", request.URL, request.Method, maxAttempts)
-}
-
-func getLndhubLogin() (string, error) {
-	return "example", nil
-}
-
-func getLndhubPassword() (string, error) {
-	return "example", nil
-}
-
-func setLndhubLogin(login string) error {
-	return nil
-}
-
-func setLndhubPassword(pass string) error {
-	return nil
-}
-
-func setlndhubToken(token string) error {
-	return nil
-
-}
-
-func getlndhubToken(id string) (string, error) {
-	if id == "" {
-		id = "selfID from db"
-	}
-	//Do the string(byteArray[:]) conversion
-	return "example", nil
 }

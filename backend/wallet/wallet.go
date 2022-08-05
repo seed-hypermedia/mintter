@@ -8,6 +8,7 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/lndhub"
+	lndhubsql "mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs/vcssql"
@@ -141,6 +142,10 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		return ret, fmt.Errorf(" wallet type [%s] not supported. Currently supported: [%v]", creds.WalletType, supportedWallets)
 	}
 
+	if creds.WalletType == lndhub.LndhubGoWalletType || creds.WalletType == lndhub.LndhubWalletType {
+		srv.lightningClient.Lndhub.ID = URL2Id(credentialsURL)
+	}
+
 	conn := srv.pool.Get(ctx)
 	if conn == nil {
 		return ret, fmt.Errorf("couldn't get sqlite connector from the pool before timeout. New wallet %s has not been inserted in database", name)
@@ -212,13 +217,13 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 	}
 	for i, w := range wallets {
 		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
-			token, err := wallet.GetToken(conn, w.ID)
+			token, err := lndhubsql.GetToken(conn, w.ID)
 			if err != nil {
 				return nil, fmt.Errorf("couldn't get auth from wallet %s", w.Name)
 			}
 			creds := Credentials{
 				ConnectionURL: w.Address,
-				Token:         hex.EncodeToString(token),
+				Token:         token,
 				ID:            w.ID,
 			}
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds.ConnectionURL)

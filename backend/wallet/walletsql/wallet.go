@@ -129,44 +129,6 @@ func GetDefaultWallet(conn *sqlite.Conn) (Wallet, error) {
 	}, nil
 }
 
-// GetLogin returns the login used to connect to the wallet. In case lndhub, the response is
-// a slice of bytes representing the login to authenticate against the server. In case of LND
-// wallet, the slice of bytes is the bynary representation of the macaroon used to connect to the node.
-func GetLogin(conn *sqlite.Conn, id string) ([]byte, error) {
-	if len(id) != idcharLength {
-		return []byte{}, fmt.Errorf("wallet id must be a %d-characters string. Got %d characters", idcharLength, len(id))
-	}
-
-	res, err := getWalletLogin(conn, id)
-	// TODO: decrypt token before returning
-	return res.WalletsLogin, err
-}
-
-// GetPassword returns the password used to connect to the wallet. In case lndhub, the response is
-// a slice of bytes representing the password to authenticate against the server. In case of LND
-// wallet, the slice of bytes of the the encrytion key to unlock the internal wallet.
-func GetPassword(conn *sqlite.Conn, id string) ([]byte, error) {
-	if len(id) != idcharLength {
-		return []byte{}, fmt.Errorf("wallet id must be a %d-characters string. Got %d characters", idcharLength, len(id))
-	}
-
-	res, err := getWalletPassword(conn, id)
-	// TODO: decrypt token before returning
-	return res.WalletsPassword, err
-}
-
-// GetToken returns the token used to connect to the wallet. In case lndhub, the response is
-// a slice of bytes representing the token used to connect to the rest api.
-func GetToken(conn *sqlite.Conn, id string) ([]byte, error) {
-	if len(id) != idcharLength {
-		return []byte{}, fmt.Errorf("wallet id must be a %d-characters string. Got %d characters", idcharLength, len(id))
-	}
-
-	res, err := getWalletToken(conn, id)
-	// TODO: decrypt token before returning
-	return res.WalletsToken, err
-}
-
 // UpdateDefaultWallet sets the default wallet to the one that matches newIdx
 // previous default wallet is replaced by the new one so only one can be
 // the default at any given time. The default wallet is the first wallet ever

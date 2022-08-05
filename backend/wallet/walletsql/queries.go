@@ -18,7 +18,7 @@ const (
 func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("walletsql",
 		qb.MakeQuery(sqliteschema.Schema, "insertWallet", sqlitegen.QueryKindExec,
-			qb.Insert(sqliteschema.WalletsID, sqliteschema.WalletsAddress, sqliteschema.WalletsType, 
+			qb.Insert(sqliteschema.WalletsID, sqliteschema.WalletsAddress, sqliteschema.WalletsType,
 				sqliteschema.WalletsLogin, sqliteschema.WalletsPassword, sqliteschema.WalletsToken,
 				sqliteschema.WalletsName, sqliteschema.WalletsBalance),
 		),
@@ -98,27 +98,6 @@ func generateQueries() error {
 				qb.ResultExpr(qb.SQLFunc("COUNT", sqliteschema.WalletsID.String()), "count", sqlitegen.TypeInt),
 			),
 			"FROM", sqliteschema.Wallets,
-		),
-		qb.MakeQuery(sqliteschema.Schema, "getWalletLogin", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.WalletsLogin),
-			),
-			"FROM", sqliteschema.Wallets,
-			"WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
-		),
-		qb.MakeQuery(sqliteschema.Schema, "getWalletPassword", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.WalletsPassword),
-			),
-			"FROM", sqliteschema.Wallets,
-			"WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
-		),
-		qb.MakeQuery(sqliteschema.Schema, "getWalletToken", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.WalletsToken),
-			),
-			"FROM", sqliteschema.Wallets,
-			"WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
 		),
 	)
 	if err != nil {
