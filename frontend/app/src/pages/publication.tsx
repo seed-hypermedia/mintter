@@ -76,7 +76,7 @@ export default function Publication({
                 css={{
                   paddingBottom: 0,
                   marginBlockEnd: 50,
-                  paddingInline: '3rem',
+                  paddingInline: '0',
                 }}
                 data-testid="publication-wrapper"
               >
@@ -101,7 +101,7 @@ export default function Publication({
               <Box
                 css={{
                   marginBottom: 200,
-                  marginInline: '4rem',
+                  marginInline: '1rem',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
