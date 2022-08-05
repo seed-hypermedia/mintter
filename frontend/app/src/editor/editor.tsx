@@ -30,6 +30,17 @@ interface EditorProps {
 const editorWrapperStyles = css({
   position: 'relative',
   paddingInline: '3rem',
+  variants: {
+    mode: {
+      [EditorMode.Discussion]: {},
+      [EditorMode.Draft]: {},
+      [EditorMode.Embed]: {
+        padding: 0,
+      },
+      [EditorMode.Mention]: {},
+      [EditorMode.Publication]: {},
+    },
+  },
 })
 
 export function Editor({
@@ -66,7 +77,7 @@ export function Editor({
   if (mode == EditorMode.Draft) {
     return (
       <Suspense fallback={'loading'}>
-        <Box className={editorWrapperStyles()} id="editor">
+        <Box className={editorWrapperStyles({mode})} id="editor">
           <Slate
             editor={_editor}
             value={value as Array<Descendant>}
@@ -95,7 +106,7 @@ export function Editor({
     <Suspense fallback={'loading'}>
       <Box
         as="span"
-        className={editorWrapperStyles()}
+        className={editorWrapperStyles({mode})}
         id="editor"
         onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
       >
