@@ -2,13 +2,13 @@ import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {getEmbedIds} from '@app/editor/embed'
 import {useHover} from '@app/editor/hover-context'
 import {usePublication} from '@app/hooks'
+import {styled} from '@app/stitches.config'
 import {FlowContent} from '@mintter/mttast'
 import {ForwardedRef, forwardRef, memo, useMemo} from 'react'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {Editor} from '../editor'
 import {EditorMode} from '../plugin-utils'
-import {EmbedUI} from './embed-ui'
 
 export type EmbedEditorProps = Pick<
   RenderElementProps,
@@ -19,6 +19,20 @@ export type EmbedEditorProps = Pick<
 }
 
 export const EmbedEditor = memo(forwardRef(RenderEmbedEditor))
+
+var EmbedStyled = styled('q', {
+  borderRadius: '$1',
+  transition: 'all ease-in-out 0.1s',
+  borderBottom: '3px solid $colors$base-component-bg-normal',
+
+  '&:hover': {
+    borderBottomColor: '$secondary-border-subtle',
+    cursor: 'pointer',
+  },
+  '&:before, &:after': {
+    display: 'none',
+  },
+})
 
 function RenderEmbedEditor(
   {embed, children, attributes, ...props}: EmbedEditorProps,
@@ -41,7 +55,7 @@ function RenderEmbedEditor(
 
   if (state.status == 'success' && state.data.block) {
     return (
-      <EmbedUI
+      <EmbedStyled
         cite={embed}
         {...props}
         {...attributes}
@@ -70,7 +84,7 @@ function RenderEmbedEditor(
           }}
         />
         {children}
-      </EmbedUI>
+      </EmbedStyled>
     )
   }
 
