@@ -48,7 +48,7 @@ func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Ide
 	return &Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(&http.Client{}),
+			Lndhub: lndhub.NewClient(&http.Client{}, db),
 		},
 		net: net,
 		me:  identity,
@@ -181,8 +181,8 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	ret.ID = creds.ID
 	ret.Name = name
 
-	binaryToken, err := hex.DecodeString(creds.Token) // TODO: encrypt the token before storing
-	binaryLogin, err := hex.DecodeString(creds.Login) // TODO: encrypt the login before storing
+	binaryToken, err := hex.DecodeString(creds.Token)       // TODO: encrypt the token before storing
+	binaryLogin, err := hex.DecodeString(creds.Login)       // TODO: encrypt the login before storing
 	binaryPassword, err := hex.DecodeString(creds.Password) // TODO: encrypt the password before storing
 
 	if err != nil {

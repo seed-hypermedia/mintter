@@ -34,9 +34,9 @@ const (
 )
 
 var (
-	auth1 = []byte("f7b32cb8ae914a1706b94bbe46d304e3")
-	auth2 = []byte("4f671cadcf0e5977559ed7727b2ee2f4f7b32ca8ae914a1703b94bbe4fd304e3")
-	auth3 = []byte("4f671cadcf0e5977559ed7727b2ee2f4f7b32ca8ae914a1703b94bbe4fd304e3")
+	login = []byte("f7b32cb8ae914a1706b94bbe46d304e3")
+	pass  = []byte("4f671cadcf0e5977559ed7727b2ee2f4f")
+	token = []byte("4f671cadcf0e5977559ed7727b2ee2f4f7b32ca8ae914a1703b94bbe4fd304e3")
 )
 
 func TestQueries(t *testing.T) {
@@ -51,7 +51,7 @@ func TestQueries(t *testing.T) {
 			Name:    name1,
 			Type:    type1,
 			Balance: balance1,
-		}, auth1)
+		}, login, pass, nil)
 		require.NoError(t, err)
 
 		got, err := getWallet(conn, id1)
@@ -73,7 +73,7 @@ func TestQueries(t *testing.T) {
 			Name:    name2,
 			Type:    type2,
 			Balance: balance2,
-		}, auth2)
+		}, login, pass, token)
 		require.NoError(t, err)
 
 		defaultWallet, err = GetDefaultWallet(conn)
@@ -94,7 +94,7 @@ func TestQueries(t *testing.T) {
 			Name:    name2,
 			Type:    type2,
 			Balance: balance2,
-		}, auth2)
+		}, login, pass, nil)
 		require.Error(t, err)
 
 		newDefaultWallet, err := UpdateDefaultWallet(conn, id2)
@@ -119,7 +119,7 @@ func TestQueries(t *testing.T) {
 			Name:    name3,
 			Type:    type3,
 			Balance: balance3,
-		}, auth3)
+		}, login, pass, token)
 		require.NoError(t, err)
 
 		newDefaultWallet, err = UpdateDefaultWallet(conn, id3)

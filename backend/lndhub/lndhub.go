@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/lightningnetwork/lnd/zpay32"
 	"github.com/mitchellh/mapstructure"
@@ -47,6 +48,7 @@ type lndhubErrorTemplate struct {
 
 type Client struct {
 	http *http.Client
+	db   *sqlitex.Pool
 }
 
 type createRequest struct {
@@ -69,9 +71,10 @@ type authRequest struct {
 	Password string `json:"password"`
 }
 
-func NewClient(h *http.Client) *Client {
+func NewClient(h *http.Client, db *sqlitex.Pool) *Client {
 	return &Client{
 		http: h,
+		db:   db,
 	}
 }
 
@@ -147,10 +150,9 @@ func (c *Client) GetLnAddress(ctx context.Context, connectionURL, login, pass, t
 	return user.Nickname + "@" + mintterDomain, nil
 }
 
-// Try to get authorized on the lndhub service pointed by apiBaseUrl.
+// Auth tries to get authorized on the lndhub service pointed by apiBaseURL.
 // There must be a credentials stored in the database
-func (c *Client) Auth(ctx context.Context, apiBaseUrl string) (string, error) {
-
+func (c *Client) Auth(ctx context.Context, apiBaseURL string) (string, error) {
 	var resp authResponse
 	login, err := getLndhubLogin()
 	if err != nil {
@@ -161,7 +163,7 @@ func (c *Client) Auth(ctx context.Context, apiBaseUrl string) (string, error) {
 		return resp.AccessToken, err
 	}
 	err = c.do(ctx, httpRequest{
-		URL:    apiBaseUrl + authRoute,
+		URL:    apiBaseURL + authRoute,
 		Method: http.MethodPost,
 		Payload: authRequest{
 			Login:    login,
@@ -175,7 +177,7 @@ func (c *Client) Auth(ctx context.Context, apiBaseUrl string) (string, error) {
 }
 
 // Get the confirmed balance in satoshis of the account
-func (c *Client) GetBalance(ctx context.Context, apiBaseUrl string) (uint64, error) {
+func (c *Client) GetBalance(ctx context.Context, apiBaseURL string) (uint64, error) {
 	type btcBalance struct {
 		Sats uint64 `mapstructure:"AvailableBalance"`
 	}
@@ -189,7 +191,7 @@ func (c *Client) GetBalance(ctx context.Context, apiBaseUrl string) (uint64, err
 		return resp.Btc.Sats, err
 	}
 	err = c.do(ctx, httpRequest{
-		URL:    apiBaseUrl + balanceRoute,
+		URL:    apiBaseURL + balanceRoute,
 		Method: http.MethodGet,
 		Token:  token,
 	}, 2, &resp)
@@ -197,11 +199,11 @@ func (c *Client) GetBalance(ctx context.Context, apiBaseUrl string) (uint64, err
 
 }
 
-// This function creates an invoice of amount sats (in satoshis). zero amount invoices
+// CreateInvoice creates an invoice of amount sats (in satoshis). zero amount invoices
 // are not supported, so make sure amount > 0.We also accept a short memo or description of
 // purpose of payment, to attach along with the invoice. The generated invoice
 // will have an expiration time of 24 hours and a random preimage
-func (c *Client) CreateInvoice(ctx context.Context, apiBaseUrl string, amount int64, memo string) (string, error) {
+func (c *Client) CreateInvoice(ctx context.Context, apiBaseURL string, amount int64, memo string) (string, error) {
 	type createInvoiceRequest struct {
 		Amt  int64  `json:"amt"`
 		Memo string `json:"memo"`
@@ -217,7 +219,7 @@ func (c *Client) CreateInvoice(ctx context.Context, apiBaseUrl string, amount in
 		return resp.PayReq, err
 	}
 	err = c.do(ctx, httpRequest{
-		URL:    apiBaseUrl + createInvoiceRoute,
+		URL:    apiBaseURL + createInvoiceRoute,
 		Method: http.MethodPost,
 		Token:  token,
 		Payload: createInvoiceRequest{
@@ -251,7 +253,7 @@ func DecodeInvoice(payReq string) (*zpay32.Invoice, error) {
 // PayInvoice tries to pay the invoice provided. With the amount provided in satoshis. The
 // enconded amount in the invoice should match the provided amount as a double check in case
 // the amount on the invoice is different than 0.
-func (c *Client) PayInvoice(ctx context.Context, apiBaseUrl string, payReq string, sats uint64) error {
+func (c *Client) PayInvoice(ctx context.Context, apiBaseURL string, payReq string, sats uint64) error {
 	if invoice, err := DecodeInvoice(payReq); err != nil {
 		return nil
 	} else if uint64(invoice.MilliSat.ToSatoshis()) != 0 && uint64(invoice.MilliSat.ToSatoshis()) != sats {
@@ -268,7 +270,7 @@ func (c *Client) PayInvoice(ctx context.Context, apiBaseUrl string, payReq strin
 		return err
 	}
 	err = c.do(ctx, httpRequest{
-		URL:    apiBaseUrl + payInvoiceRoute,
+		URL:    apiBaseURL + payInvoiceRoute,
 		Method: http.MethodPost,
 		Token:  token,
 		Payload: payInvoiceRequest{
@@ -370,7 +372,6 @@ func (c *Client) do(ctx context.Context, request httpRequest, maxAttempts uint, 
 		}
 
 		return nil
-
 	}
 
 	return fmt.Errorf("failed to make a request url=%s method=%s, maxAttempts=%d", request.URL, request.Method, maxAttempts)

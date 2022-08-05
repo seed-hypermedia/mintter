@@ -84,7 +84,8 @@ func ListWallets(conn *sqlite.Conn, limit int) ([]Wallet, error) {
 
 // InsertWallet creates a new wallet record in the database given a
 // valid Wallet with all fields properly set. If this is the first
-// wallet, then it becomes default automatically.
+// wallet, then it becomes default automatically. If token is not known at creation time
+// it can me null. Login and password, however have to ve valid credentials
 func InsertWallet(conn *sqlite.Conn, wallet Wallet, login, password, token []byte) error {
 	if len(wallet.ID) != idcharLength {
 		return fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(wallet.ID))

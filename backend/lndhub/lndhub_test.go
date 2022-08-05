@@ -3,12 +3,17 @@ package lndhub
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"mintter/backend/db/sqliteschema"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,12 +32,14 @@ func TestCreate(t *testing.T) {
 	const token = "eacf5a07bef50d1c0cea8bee269a5236efb99b0c9033418fac30a5c722fe1960"
 	const login = "bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya"
 	const password = "ed5ef5dd87d98b64123125beb594b26a5434be6fc7a088a006d42b5f11323b84ff5417e3fca1643589eb6e617801809b422e31e2d818dae21e10b3f613539d0c"
-
 	var nickname = randStringRunes(6)
+
+	pool, err := makeConn(t)
+	require.NoError(t, err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(60)*time.Second)
 	defer cancel()
-	lndHubClient := NewClient(&http.Client{})
+	lndHubClient := NewClient(&http.Client{}, pool)
 	user, err := lndHubClient.Create(ctx, connectionURL, login, password, token, nickname)
 	require.NoError(t, err)
 	require.EqualValues(t, login, user.Login)
@@ -134,9 +141,11 @@ func TestLndhub(t *testing.T) {
 			mustFail:        true,
 		},
 	}
+	pool, err := makeConn(t)
+	require.NoError(t, err)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := lndhubTest(t, tt.credentials, tt.generateInvoice, tt.payInvoice, tt.timeoutMillisec)
+			err := lndhubTest(t, pool, tt.credentials, tt.generateInvoice, tt.payInvoice, tt.timeoutMillisec)
 			if tt.mustFail {
 				require.Error(t, err, tt.name+". must fail")
 			} else {
@@ -148,14 +157,15 @@ func TestLndhub(t *testing.T) {
 
 }
 
-func lndhubTest(t *testing.T, connectionURL string, generateInvoice, payInvoice bool, timeoutMillisec int) error {
+func lndhubTest(t *testing.T, pool *sqlitex.Pool, connectionURL string, generateInvoice, payInvoice bool, timeoutMillisec int) error {
 	t.Helper()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutMillisec)*time.Millisecond)
 	defer cancel()
 	memo := "test invoice"
 	amt := 100
-	lndHubClient := NewClient(&http.Client{})
+
+	lndHubClient := NewClient(&http.Client{}, pool)
 	if _, err := lndHubClient.Auth(ctx, connectionURL); err != nil {
 		return err
 
@@ -201,4 +211,29 @@ func randStringRunes(n int) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+func makeConn(t *testing.T) (*sqlitex.Pool, error) {
+	dir, err := ioutil.TempDir("", "sqlitegen-")
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			os.RemoveAll(dir)
+		}
+	}()
+
+	pool, err := sqliteschema.Open(filepath.Join(dir, "db.sqlite"), 0, 16)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, pool.Close())
+	})
+
+	conn := pool.Get(context.Background())
+	defer pool.Put(conn)
+	require.NoError(t, sqliteschema.Migrate(conn))
+
+	return pool, nil
+
 }
