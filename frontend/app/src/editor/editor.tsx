@@ -29,7 +29,7 @@ interface EditorProps {
 
 const editorWrapperStyles = css({
   position: 'relative',
-  paddingInline: '3rem',
+  paddingInline: '1rem',
   variants: {
     mode: {
       [EditorMode.Discussion]: {},

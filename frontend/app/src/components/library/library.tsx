@@ -16,6 +16,7 @@ import {ContactsSection} from './section-connections'
 
 let libraryStyle = css({
   transition: 'all 0.1s ease',
+  userSelect: 'none',
   backgroundColor: '$base-background-normal',
   overflow: 'hidden',
   borderLeft: '1px solid $colors$base-border-subtle',
