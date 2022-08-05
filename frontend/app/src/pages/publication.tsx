@@ -47,13 +47,7 @@ export default function Publication({
   // start rendering
   if (state.matches('publication.errored')) {
     return (
-      <Box
-        css={{
-          paddingTop: '$5',
-          marginBottom: 200,
-        }}
-        data-testid="publication-wrapper"
-      >
+      <Box data-testid="publication-wrapper">
         <Text>Publication ERROR</Text>
         <Text>{state.context.errorMessage}</Text>
         <Button onClick={() => send('PUBLICATION.FETCH.DATA')} color="muted">
@@ -72,40 +66,31 @@ export default function Publication({
         <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
           <FileProvider value={publicationRef}>
             <BlockToolsProvider value={blockToolsService}>
+              {state.context.publication?.document?.content && (
+                <>
+                  <BlockTools
+                    mode={EditorMode.Publication}
+                    service={blockToolsService}
+                  />
+                  <Editor
+                    editor={state.context.editor}
+                    mode={EditorMode.Publication}
+                    value={state.context.publication?.document.content}
+                    onChange={() => {
+                      blockToolsService.send('DISABLE')
+                      // noop
+                    }}
+                  />
+                </>
+              )}
               <Box
                 css={{
-                  paddingBottom: 0,
-                  marginBlockEnd: 50,
-                  paddingInline: '0',
-                }}
-                data-testid="publication-wrapper"
-              >
-                {state.context.publication?.document?.content && (
-                  <>
-                    <BlockTools
-                      mode={EditorMode.Publication}
-                      service={blockToolsService}
-                    />
-                    <Editor
-                      editor={state.context.editor}
-                      mode={EditorMode.Publication}
-                      value={state.context.publication?.document.content}
-                      onChange={() => {
-                        blockToolsService.send('DISABLE')
-                        // noop
-                      }}
-                    />
-                  </>
-                )}
-              </Box>
-              <Box
-                css={{
-                  marginBottom: 200,
-                  marginInline: '1rem',
+                  paddingBlock: '2rem',
+                  paddingInlineStart: '1rem',
+                  maxWidth: '$prose-width',
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: '$4',
+                  gap: '1rem',
                 }}
               >
                 <Button
@@ -113,6 +98,16 @@ export default function Publication({
                   color="primary"
                   size="1"
                   onClick={() => send('DISCUSSION.TOGGLE')}
+                  css={{
+                    paddingBlock: '2rem',
+                    paddingInline: '1rem',
+                    display: 'block',
+                    inlineSize: '$full',
+                    textAlign: 'start',
+                    '&:hover': {
+                      backgroundColor: '$base-background-normal',
+                    },
+                  }}
                 >
                   {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
                   Discussion/Citations

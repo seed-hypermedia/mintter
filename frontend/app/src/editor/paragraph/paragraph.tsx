@@ -100,6 +100,7 @@ function Paragraph({
         {...attributes}
         {...elementProps}
         className={phrasingStyles({
+          mode,
           type: 'paragraph',
           blockType: 'blockquote',
         })}

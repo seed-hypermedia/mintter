@@ -1,4 +1,5 @@
 import {mainService as defaultMainService} from '@app/app-providers'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {error} from '@app/utils/logger'
@@ -28,7 +29,7 @@ export const createEmbedPlugin = (): EditorPlugin => ({
     return editor
   },
   renderElement:
-    () =>
+    (editor) =>
     ({attributes, children, element}) => {
       if (isEmbed(element)) {
         if (!element.url) {
@@ -40,7 +41,7 @@ export const createEmbedPlugin = (): EditorPlugin => ({
           return <span {...attributes}>error on embed{children}</span>
         }
         return (
-          <Embed element={element} attributes={attributes}>
+          <Embed element={element} attributes={attributes} mode={editor.mode}>
             {children}
           </Embed>
         )
@@ -51,10 +52,17 @@ export const createEmbedPlugin = (): EditorPlugin => ({
 type EmbedProps = Omit<RenderElementProps, 'element'> & {
   element: EmbedType
   mainService?: typeof defaultMainService
+  mode: EditorMode
 }
 
 function RenderEmbed(
-  {element, attributes, children, mainService = defaultMainService}: EmbedProps,
+  {
+    element,
+    attributes,
+    children,
+    mainService = defaultMainService,
+    mode,
+  }: EmbedProps,
   ref: ForwardedRef<HTMLQuoteElement>,
 ) {
   const bookmarksService = useBookmarksService()
@@ -84,8 +92,12 @@ function RenderEmbed(
   }
 
   async function onOpenInNewWindow() {
-    let path = `p/${pubId}/${version}/${blockId}`
-    mainService.send({type: 'COMMIT.OPEN.WINDOW', path})
+    console.log('IS DISCUSSION?', mode == EditorMode.Discussion, mode)
+
+    if (mode != EditorMode.Discussion) {
+      let path = `p/${pubId}/${version}/${blockId}`
+      mainService.send({type: 'COMMIT.OPEN.WINDOW', path})
+    }
   }
 
   return (

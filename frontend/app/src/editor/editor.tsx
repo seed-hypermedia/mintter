@@ -29,16 +29,20 @@ interface EditorProps {
 
 const editorWrapperStyles = css({
   position: 'relative',
-  paddingInline: '1rem',
   variants: {
     mode: {
       [EditorMode.Discussion]: {},
-      [EditorMode.Draft]: {},
-      [EditorMode.Embed]: {
-        padding: 0,
+      [EditorMode.Draft]: {
+        display: 'block',
+        paddingBlockStart: '1rem',
+        marginInlineStart: '1rem',
       },
+      [EditorMode.Embed]: {},
       [EditorMode.Mention]: {},
-      [EditorMode.Publication]: {},
+      [EditorMode.Publication]: {
+        display: 'block',
+        paddingBlockStart: '1rem',
+      },
     },
   },
 })

@@ -1,3 +1,4 @@
+import {EditorMode} from '@app/editor/plugin-utils'
 import {css} from '@app/stitches.config'
 
 export var groupStyles = css({
@@ -17,7 +18,7 @@ export var groupStyles = css({
 })
 
 export var blockStyles = css({
-  maxInlineSize: '59ch',
+  maxInlineSize: '$prose-width',
   position: 'relative',
   '&::marker': {
     color: '$base-active',
@@ -97,6 +98,15 @@ export var phrasingStyles = css({
         lineHeight: 1.5,
         paddingBlock: '0.5rem',
       },
+    },
+    mode: {
+      [EditorMode.Discussion]: {
+        fontSize: '0.5em',
+      },
+      [EditorMode.Draft]: {},
+      [EditorMode.Embed]: {},
+      [EditorMode.Mention]: {},
+      [EditorMode.Publication]: {},
     },
   },
   defaultVariants: {

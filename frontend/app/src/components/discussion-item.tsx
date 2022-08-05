@@ -57,18 +57,49 @@ function DiscussionEditor({
   return (
     <Box
       css={{
-        borderBottom: '1px solid rgba(0,0,0,0.1)',
         width: '$full',
-        // maxWidth: '$prose-width',
+        paddingBlockEnd: '2rem',
         '&:hover': {
           cursor: 'pointer',
+          backgroundColor: '$base-background-normal',
         },
       }}
+      onClick={() => {
+        mainService.send({
+          type: 'GO.TO.PUBLICATION',
+          docId: state.context.documentId,
+          version: state.context.version,
+        })
+      }}
     >
+      <Box
+        css={{
+          display: 'flex',
+          borderTop: '1px solid rgba(0,0,0,0.1)',
+          paddingBlockStart: '1rem',
+          paddingBlockEnd: '0.6rem',
+          gap: '1ch',
+          paddingInline: '1rem',
+        }}
+      >
+        {state.context.author && (
+          <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
+            {state.context.author.profile?.alias}
+          </Text>
+        )}
+        {state.context.publication?.document?.content && (
+          <FileTime
+            type="pub"
+            document={state.context.publication?.document}
+            noLabel
+          />
+        )}
+      </Box>
       {state.matches('publication.ready') && (
         <Box
           css={{
-            marginInlineStart: '-$8',
+            marginInlineStart: '-1rem',
+            paddingInlineEnd: '1rem',
           }}
         >
           {state.context.publication?.document?.content && (
@@ -85,60 +116,6 @@ function DiscussionEditor({
           )}
         </Box>
       )}
-      <Box
-        css={{
-          display: 'flex',
-          marginBlockStart: '$5',
-          paddingVertical: '$6',
-          $$gap: '16px',
-          gap: '$$gap',
-          alignItems: 'center',
-          '& *': {
-            position: 'relative',
-          },
-          '& *:not(:first-child):before': {
-            content: `"|"`,
-            color: '$base-text-low',
-            opacity: 0.5,
-            position: 'absolute',
-            left: '-10px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-          },
-        }}
-      >
-        <Text
-          size="1"
-          color="muted"
-          css={{
-            '&:hover': {
-              textDecoration: 'underline',
-            },
-          }}
-          onClick={() =>
-            mainService.send({
-              type: 'GO.TO.PUBLICATION',
-              docId: state.context.documentId,
-              version: state.context.version,
-            })
-          }
-        >
-          Open as base document
-        </Text>
-        {state.context.author && (
-          <Text size="1" color="muted" css={{paddingRight: '$3'}}>
-            {/* <span>by </span> */}
-            <span style={{textDecoration: 'underline'}}>
-              {state.context.author.profile?.alias}
-            </span>
-          </Text>
-        )}
-        <FileTime
-          type="pub"
-          document={state.context.publication!.document!}
-          noLabel
-        />
-      </Box>
     </Box>
   )
 }
