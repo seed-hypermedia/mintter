@@ -217,7 +217,7 @@ export const blockToolsMachine = createMachine(
       }),
       assignCurrentId: assign({
         currentId: (context) => {
-          let match: string = ''
+          let match = ''
 
           for (const [key, rect] of context.currentBounds) {
             let top = rect.y
@@ -237,8 +237,8 @@ export const blockToolsMachine = createMachine(
           let elBlock = document.body.querySelector(target)
           if (elBlock) {
             let rect = elBlock.getBoundingClientRect()
-            context.rootElm?.style.setProperty('--tools-x', `${rect.x}`)
-            context.rootElm?.style.setProperty('--tools-y', `${rect.y}`)
+            context.rootElm?.style.setProperty('--tools-x', `${rect.left}`)
+            context.rootElm?.style.setProperty('--tools-y', `${rect.top - 40}`)
           }
         }
       },

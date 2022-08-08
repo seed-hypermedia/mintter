@@ -234,6 +234,7 @@ function ImageForm({service, element}: InnerImageProps) {
             display: 'flex',
             alignItems: 'center',
             gap: '$4',
+            whiteSpace: 'nowrap',
           }}
           onSubmit={submitImage}
         >
