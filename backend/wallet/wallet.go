@@ -8,7 +8,6 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/lndhub"
-	lndhubsql "mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs/vcssql"
@@ -46,10 +45,14 @@ type Credentials struct {
 }
 
 func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Identity) *Service {
+	key, _ := identity.Account().ID().ExtractPublicKey()
+
+	keyRaw, _ := key.Raw()
+
 	return &Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(&http.Client{}, db),
+			Lndhub: lndhub.NewClient(&http.Client{}, db, hex.EncodeToString(keyRaw)),
 		},
 		net: net,
 		me:  identity,
@@ -143,7 +146,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	}
 
 	if creds.WalletType == lndhub.LndhubGoWalletType || creds.WalletType == lndhub.LndhubWalletType {
-		srv.lightningClient.Lndhub.ID = URL2Id(credentialsURL)
+		srv.lightningClient.Lndhub.WalletID = URL2Id(credentialsURL)
 	}
 
 	conn := srv.pool.Get(ctx)
@@ -163,20 +166,19 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 				return wallets[i], fmt.Errorf("Only one type of %s wallet is allowed. Already existing one", lndhub.LndhubGoWalletType)
 			}
 		}
-
-		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds.ConnectionURL, creds.Login, creds.Password, creds.Token, creds.Nickname)
+		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds.ConnectionURL, creds.Login, creds.Password, creds.Nickname)
 		if err != nil {
 			return ret, err
 		}
 		creds.Nickname = newWallet.Nickname
 	}
 	// Trying to authenticate with the provided credentials
-	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx, creds.ConnectionURL)
+	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx)
 	if err != nil {
 		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Please check provided credentials", name)
 	}
 
-	balanceSats, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds.ConnectionURL)
+	balanceSats, err := srv.lightningClient.Lndhub.GetBalance(ctx)
 	if err != nil {
 		return ret, err
 	}
@@ -186,15 +188,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	ret.ID = creds.ID
 	ret.Name = name
 
-	binaryToken, err := hex.DecodeString(creds.Token)       // TODO: encrypt the token before storing
-	binaryLogin, err := hex.DecodeString(creds.Login)       // TODO: encrypt the login before storing
-	binaryPassword, err := hex.DecodeString(creds.Password) // TODO: encrypt the password before storing
-
-	if err != nil {
-		return ret, fmt.Errorf("couldn't decode token before insert the wallet in the database")
-	}
-
-	if err = wallet.InsertWallet(conn, ret, binaryLogin, binaryPassword, binaryToken); err != nil {
+	if err = wallet.InsertWallet(conn, ret, []byte(creds.Login), []byte(creds.Password), []byte(creds.Token)); err != nil {
 		if strings.Contains(err.Error(), wallet.AlreadyExistsError) {
 			return ret, fmt.Errorf("couldn't insert wallet %s in the database. ID already exists", name)
 		}
@@ -217,16 +211,7 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 	}
 	for i, w := range wallets {
 		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
-			token, err := lndhubsql.GetToken(conn, w.ID)
-			if err != nil {
-				return nil, fmt.Errorf("couldn't get auth from wallet %s", w.Name)
-			}
-			creds := Credentials{
-				ConnectionURL: w.Address,
-				Token:         token,
-				ID:            w.ID,
-			}
-			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx, creds.ConnectionURL)
+			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("couldn't get balance from wallet %s", w.Name)
 			}
@@ -376,7 +361,7 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 		amountToPay = *amountSats
 	}
 
-	if err = srv.lightningClient.Lndhub.PayInvoice(ctx, walletToPay.Address, payReq, amountToPay); err != nil {
+	if err = srv.lightningClient.Lndhub.PayInvoice(ctx, payReq, amountToPay); err != nil {
 		if strings.Contains(err.Error(), wallet.NotEnoughBalance) {
 			return "", fmt.Errorf("couldn't pay invoice. Insufficient balance in wallet name %s", walletToPay.Name)
 		}

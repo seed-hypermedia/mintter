@@ -28,7 +28,7 @@ const (
 	getInvoiceRoute    = "/getuserinvoice"
 	LndhubWalletType   = "lndhub"
 	LndhubGoWalletType = "lndhub.go"
-	mintterDomain      = "testnet.mintter.com"
+	MintterDomain      = "ln.testnet.mintter.com"
 	networkType        = lnTestnet
 
 	// Types.
@@ -49,9 +49,10 @@ type lndhubErrorTemplate struct {
 }
 
 type Client struct {
-	http *http.Client
-	db   *sqlitex.Pool
-	ID   string
+	http     *http.Client
+	db       *sqlitex.Pool
+	WalletID string
+	pubkey   string
 }
 
 type createRequest struct {
@@ -76,10 +77,11 @@ type authRequest struct {
 
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
-func NewClient(h *http.Client, db *sqlitex.Pool) *Client {
+func NewClient(h *http.Client, db *sqlitex.Pool, pubkey string) *Client {
 	return &Client{
-		http: h,
-		db:   db,
+		http:   h,
+		db:     db,
+		pubkey: pubkey,
 	}
 }
 
@@ -88,7 +90,7 @@ func NewClient(h *http.Client, db *sqlitex.Pool) *Client {
 // was used to sign the password. If login is not a CID, then there is no need for the token and password can be
 // anything. Nickname can be anything in both cases as long as it's unique across all mintter lndhub users (it will
 // fail otherwise).
-func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, nickname string) (createResponse, error) {
+func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nickname string) (createResponse, error) {
 	var resp createResponse
 	conn := c.db.Get(ctx)
 	defer c.db.Put(conn)
@@ -101,17 +103,9 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, 
 			Password: pass,  // signed message
 			Nickname: nickname,
 		},
-		Token: token, // this token should be in reality the pubkey whose private counterpart was used to sign the password
+		Token: c.pubkey,
 	}, 2, &resp)
 	if err != nil {
-		return resp, err
-	}
-
-	if err := lndhub.SetLogin(conn, c.ID, resp.Login); err != nil {
-		return resp, err
-	}
-
-	if err := lndhub.SetPassword(conn, c.ID, resp.Password); err != nil {
 		return resp, err
 	}
 
@@ -122,12 +116,25 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, token, 
 // The update can fail if the nickname contain special characters or is already taken by another user.
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).
-func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass, token, nickname string) error {
+func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 	var resp createResponse
 	conn := c.db.Get(ctx)
 	defer c.db.Put(conn)
 
-	err := c.do(ctx, conn, httpRequest{
+	login, err := lndhub.GetLogin(conn, c.WalletID)
+	if err != nil {
+		return err
+	}
+	pass, err := lndhub.GetPassword(conn, c.WalletID)
+	if err != nil {
+		return err
+	}
+	connectionURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return err
+	}
+
+	err = c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
@@ -135,7 +142,7 @@ func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass,
 			Password: pass,  // signed message
 			Nickname: nickname,
 		},
-		Token: token, // this token should be in reality the pubkey whose private counterpart was used to sign the password
+		Token: c.pubkey, // this token should be in reality the pubkey whose private counterpart was used to sign the password
 	}, 2, &resp)
 	if err != nil {
 		return err
@@ -151,28 +158,47 @@ func (c *Client) UpdateNickname(ctx context.Context, connectionURL, login, pass,
 // GetLnAddress gets the account-wide ln address in the form of <nickname>@<domain> .
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).
-func (c *Client) GetLnAddress(ctx context.Context, connectionURL, login, pass, token string) (string, error) {
-	user, err := c.Create(ctx, connectionURL, login, pass, token, "") // create with valid credentials and blank nickname fills the nickname
+func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
+	login, err := lndhub.GetLogin(conn, c.WalletID)
 	if err != nil {
 		return "", err
 	}
-	return user.Nickname + "@" + mintterDomain, nil
+	pass, err := lndhub.GetPassword(conn, c.WalletID)
+	if err != nil {
+		return "", err
+	}
+	connectionURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return "", err
+	}
+
+	user, err := c.Create(ctx, connectionURL, login, pass, "") // create with valid credentials and blank nickname fills the nickname
+	if err != nil {
+		return "", err
+	}
+	return user.Nickname + "@" + MintterDomain, nil
 }
 
 // Auth tries to get authorized on the lndhub service pointed by apiBaseURL.
 // There must be a credentials stored in the database
-func (c *Client) Auth(ctx context.Context, apiBaseURL string) (string, error) {
+func (c *Client) Auth(ctx context.Context) (string, error) {
 	var resp authResponse
 	conn := c.db.Get(ctx)
 	defer c.db.Put(conn)
 
-	login, err := lndhub.GetLogin(conn, c.ID)
+	login, err := lndhub.GetLogin(conn, c.WalletID)
 	if err != nil {
 		return resp.AccessToken, err
 	}
-	pass, err := lndhub.GetPassword(conn, c.ID)
+	pass, err := lndhub.GetPassword(conn, c.WalletID)
 	if err != nil {
 		return resp.AccessToken, err
+	}
+	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return "", err
 	}
 	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + authRoute,
@@ -185,11 +211,11 @@ func (c *Client) Auth(ctx context.Context, apiBaseURL string) (string, error) {
 	if err != nil {
 		return resp.AccessToken, err
 	}
-	return resp.AccessToken, lndhub.SetToken(conn, c.ID, resp.AccessToken)
+	return resp.AccessToken, lndhub.SetToken(conn, c.WalletID, resp.AccessToken)
 }
 
 // Get the confirmed balance in satoshis of the account
-func (c *Client) GetBalance(ctx context.Context, apiBaseURL string) (uint64, error) {
+func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 	type btcBalance struct {
 		Sats uint64 `mapstructure:"AvailableBalance"`
 	}
@@ -201,10 +227,15 @@ func (c *Client) GetBalance(ctx context.Context, apiBaseURL string) (uint64, err
 	defer c.db.Put(conn)
 
 	var resp balanceResponse
-	token, err := lndhub.GetToken(conn, c.ID)
+	token, err := lndhub.GetToken(conn, c.WalletID)
 	if err != nil {
 		return resp.Btc.Sats, err
 	}
+	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return resp.Btc.Sats, err
+	}
+
 	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + balanceRoute,
 		Method: http.MethodGet,
@@ -218,7 +249,7 @@ func (c *Client) GetBalance(ctx context.Context, apiBaseURL string) (uint64, err
 // are not supported, so make sure amount > 0.We also accept a short memo or description of
 // purpose of payment, to attach along with the invoice. The generated invoice
 // will have an expiration time of 24 hours and a random preimage
-func (c *Client) CreateInvoice(ctx context.Context, apiBaseURL string, amount int64, memo string) (string, error) {
+func (c *Client) CreateInvoice(ctx context.Context, amount int64, memo string) (string, error) {
 	type createInvoiceRequest struct {
 		Amt  int64  `json:"amt"`
 		Memo string `json:"memo"`
@@ -232,10 +263,15 @@ func (c *Client) CreateInvoice(ctx context.Context, apiBaseURL string, amount in
 	conn := c.db.Get(ctx)
 	defer c.db.Put(conn)
 
-	token, err := lndhub.GetToken(conn, c.ID)
+	token, err := lndhub.GetToken(conn, c.WalletID)
 	if err != nil {
 		return resp.PayReq, err
 	}
+	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return resp.PayReq, err
+	}
+
 	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + createInvoiceRoute,
 		Method: http.MethodPost,
@@ -271,7 +307,7 @@ func DecodeInvoice(payReq string) (*zpay32.Invoice, error) {
 // PayInvoice tries to pay the invoice provided. With the amount provided in satoshis. The
 // enconded amount in the invoice should match the provided amount as a double check in case
 // the amount on the invoice is different than 0.
-func (c *Client) PayInvoice(ctx context.Context, apiBaseURL string, payReq string, sats uint64) error {
+func (c *Client) PayInvoice(ctx context.Context, payReq string, sats uint64) error {
 	if invoice, err := DecodeInvoice(payReq); err != nil {
 		return nil
 	} else if uint64(invoice.MilliSat.ToSatoshis()) != 0 && uint64(invoice.MilliSat.ToSatoshis()) != sats {
@@ -286,10 +322,15 @@ func (c *Client) PayInvoice(ctx context.Context, apiBaseURL string, payReq strin
 	conn := c.db.Get(context.Background())
 	defer c.db.Put(conn)
 
-	token, err := lndhub.GetToken(conn, c.ID)
+	token, err := lndhub.GetToken(conn, c.WalletID)
 	if err != nil {
 		return err
 	}
+	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return err
+	}
+
 	err = c.do(ctx, conn, httpRequest{
 		URL:    apiBaseURL + payInvoiceRoute,
 		Method: http.MethodPost,
@@ -333,8 +374,9 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 		if err != nil {
 			return err
 		}
-
-		defer resp.Body.Close()
+		if i == 0 {
+			defer resp.Body.Close()
+		}
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
@@ -353,11 +395,11 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 				var authResp authResponse
 				// Check if token expired and we need to issue one
 				if ok && strings.Contains(errMsg.(string), "bad auth") {
-					login, err := lndhub.GetLogin(conn, c.ID)
+					login, err := lndhub.GetLogin(conn, c.WalletID)
 					if err != nil {
 						return err
 					}
-					pass, err := lndhub.GetPassword(conn, c.ID)
+					pass, err := lndhub.GetPassword(conn, c.WalletID)
 					if err != nil {
 						return err
 					}
@@ -372,7 +414,7 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 					if err != nil {
 						return err
 					}
-					if err = lndhub.SetToken(conn, c.ID, authResp.AccessToken); err != nil {
+					if err = lndhub.SetToken(conn, c.WalletID, authResp.AccessToken); err != nil {
 						return err
 					}
 

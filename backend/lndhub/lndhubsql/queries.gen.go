@@ -12,6 +12,36 @@ import (
 
 var _ = errors.New
 
+type getApiURLResult struct {
+	WalletsAddress string
+}
+
+func getApiURL(conn *sqlite.Conn, walletsID string) (getApiURLResult, error) {
+	const query = `SELECT wallets.address FROM wallets WHERE wallets.id = :walletsID`
+
+	var out getApiURLResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":walletsID", walletsID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("getApiURL: more than one result return for a single-kind query")
+		}
+
+		out.WalletsAddress = stmt.ColumnText(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getApiURL: %w", err)
+	}
+
+	return out, err
+}
+
 type getLoginResult struct {
 	WalletsLogin []byte
 }
@@ -100,4 +130,25 @@ func getToken(conn *sqlite.Conn, walletsID string) (getTokenResult, error) {
 	}
 
 	return out, err
+}
+
+func setToken(conn *sqlite.Conn, walletsToken []byte, walletsID string) error {
+	const query = `UPDATE wallets SET (token)
+=( :walletsToken ) WHERE wallets.id = :walletsID`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":walletsToken", walletsToken)
+		stmt.SetText(":walletsID", walletsID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: setToken: %w", err)
+	}
+
+	return err
 }

@@ -13,6 +13,7 @@ import (
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/graphql"
+	"mintter/backend/lndhub"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
@@ -239,7 +240,7 @@ func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDis
 			}
 
 			credURI, err := wallet.EncodeCredentialsURL(wallet.Credentials{
-				ConnectionURL: "https://ln.testnet.mintter.com",
+				ConnectionURL: "https://" + lndhub.MintterDomain,
 				WalletType:    "lndhub.go",
 				Login:         id.AccountID().String(),
 				Password:      "", // TODO: get the signed mesage from meta table

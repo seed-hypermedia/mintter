@@ -12,6 +12,13 @@ var _ = generateQueries
 //go:generate gorun -tags codegen generateQueries
 func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("lndhubsql",
+		qb.MakeQuery(sqliteschema.Schema, "getApiURL", sqlitegen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(sqliteschema.WalletsAddress),
+			),
+			"FROM", sqliteschema.Wallets,
+			"WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
+		),
 		qb.MakeQuery(sqliteschema.Schema, "getLogin", sqlitegen.QueryKindSingle,
 			"SELECT", qb.Results(
 				qb.ResultCol(sqliteschema.WalletsLogin),
@@ -32,6 +39,13 @@ func generateQueries() error {
 			),
 			"FROM", sqliteschema.Wallets,
 			"WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
+		),
+		qb.MakeQuery(sqliteschema.Schema, "setToken", sqlitegen.QueryKindExec,
+			"UPDATE", sqliteschema.Wallets, "SET", qb.ListColShort(
+				sqliteschema.WalletsToken,
+			), qb.Line,
+			"=(", qb.VarCol(sqliteschema.WalletsToken),
+			") WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
 		),
 	)
 	if err != nil {
