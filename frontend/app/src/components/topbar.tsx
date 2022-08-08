@@ -1,4 +1,5 @@
 import {mainService as defaultMainService} from '@app/app-providers'
+import {useAccountProfile} from '@app/auth-context'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, dropdownLabel} from '@app/editor/dropdown'
 import {CurrentFile, DraftRef, PublicationRef} from '@app/main-machine'
@@ -9,7 +10,7 @@ import {Button} from '@components/button'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
 import {Tooltip} from '@components/tooltip'
-import {useActor, useSelector} from '@xstate/react'
+import {useActor} from '@xstate/react'
 import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
@@ -41,14 +42,16 @@ export function Topbar({mainService = defaultMainService}: TopbarProps) {
         {mainState.context.currentFile ? (
           <FileTitle fileRef={mainState.context.currentFile} />
         ) : (
-          <TopbarTitle>
-            {mainState.matches('routes.draftList')
-              ? 'Drafts'
-              : mainState.matches('routes.publicationList') ||
-                mainState.matches('routes.home')
-              ? 'Publications'
-              : ''}
-          </TopbarTitle>
+          <TopbarTitle
+            title={
+              mainState.matches('routes.draftList')
+                ? 'Drafts'
+                : mainState.matches('routes.publicationList') ||
+                  mainState.matches('routes.home')
+                ? 'Publications'
+                : ''
+            }
+          />
         )}
       </Box>
       {mainState.context.currentFile ? (
@@ -68,7 +71,7 @@ function FileTitle({fileRef}: {fileRef: CurrentFile}) {
 
   return (
     <>
-      <TopbarTitle {...draggableProps}>{fileState.context.title}</TopbarTitle>
+      <TopbarTitle {...draggableProps} title={fileState.context.title} />
       {fileRef.id.startsWith('pub-') ? (
         <Text
           size="1"
@@ -76,6 +79,7 @@ function FileTitle({fileRef}: {fileRef: CurrentFile}) {
           css={{
             userSelect: 'none',
             textDecoration: 'underline',
+            whiteSpace: 'nowrap',
             '&:hover': {
               cursor: 'default',
             },
@@ -96,9 +100,7 @@ function TopbarLibrarySection({
   mainService: typeof defaultMainService
 }) {
   let [state, send] = useActor(mainService)
-  let isLibraryOpen = useSelector(state.context.library, (state) =>
-    state.matches('opened'),
-  )
+  let profile = useAccountProfile()
 
   function toggleLibrary() {
     state.context.library.send('LIBRARY.TOGGLE')
@@ -107,9 +109,7 @@ function TopbarLibrarySection({
   return (
     <Box
       data-topbar-section="library"
-      className={topbarSectionStyles({
-        type: isLibraryOpen ? 'library' : undefined,
-      })}
+      className={topbarSectionStyles()}
       {...draggableProps}
     >
       <TopbarButton
@@ -135,6 +135,7 @@ function TopbarLibrarySection({
           display: 'flex',
           flex: 1,
           justifyContent: 'end',
+          paddingInlineEnd: '$2',
         }}
         {...draggableProps}
       >
@@ -150,7 +151,7 @@ function TopbarLibrarySection({
           onClick={toggleLibrary}
           data-tauri-drag-region
         >
-          <Text size="2">Local Node</Text>
+          <Text size="2">{profile?.alias}</Text>
           <Icon name="Sidenav" size="2" />
         </TopbarButton>
       </Box>
@@ -352,7 +353,7 @@ var topbarSectionStyles = css({
   },
 })
 
-var TopbarTitle = styled('span', {
+var titleStyles = css({
   fontFamily: '$base',
   fontWeight: '$medium',
   userSelect: 'none',
@@ -362,7 +363,25 @@ var TopbarTitle = styled('span', {
   '@bp2': {
     fontSize: '1.1rem',
   },
+  display: 'table',
+  tableLayout: 'fixed',
+  width: '$full',
+  maxWidth: '40ch',
+  whiteSpace: 'nowrap',
+  '& > *': {
+    display: 'table-cell',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
 })
+
+function TopbarTitle({title}: {title: string}) {
+  return (
+    <span className={titleStyles()}>
+      <span>{title}</span>
+    </span>
+  )
+}
 
 var TopbarButton = styled('button', {
   all: 'unset',

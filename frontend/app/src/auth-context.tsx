@@ -11,3 +11,7 @@ export {AuthProvider, useAuthService}
 export const useAccountInfo = createAuthSelector(
   (state) => state.context.accountInfo,
 )
+
+export const useAccountProfile = createAuthSelector(
+  (state) => state.context.account?.profile,
+)
