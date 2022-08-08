@@ -14,6 +14,7 @@ import (
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/graphql"
 	"mintter/backend/lndhub"
+	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
@@ -230,26 +231,31 @@ func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDis
 		if err := f.Resolve(id); err != nil {
 			return err
 		}
-		// TODO: wallet goes in a loop and goroutine untill sucess (until online) that loop should look if there is
-		// in the database an already created lndhub.go wallet, Exit only when there is one created.
+		// Insertwallet goes in a loop until success (until online)
 		g.Go(func() error {
-			initial_wallet := wallet.New(db, net, id)
+			initialWallet := wallet.New(db, net, id)
 			pubkey, err := id.Account().MarshalBinary()
 			if err != nil {
 				return err
 			}
-
+			conn := db.Get(context.Background())
+			defer db.Put(conn)
+			loginSignature, err := lndhubsql.GetLoginSignature(conn)
+			db.Put(conn)
+			if err != nil {
+				return fmt.Errorf("Could not get the lndhub login signature %s", err.Error())
+			}
 			credURI, err := wallet.EncodeCredentialsURL(wallet.Credentials{
 				ConnectionURL: "https://" + lndhub.MintterDomain,
 				WalletType:    "lndhub.go",
 				Login:         id.AccountID().String(),
-				Password:      "", // TODO: get the signed mesage from meta table
+				Password:      loginSignature,
 				Token:         hex.EncodeToString(pubkey),
 			})
 			if err != nil {
 				return err
 			}
-			_, err = initial_wallet.InsertWallet(ctx, credURI, "Mintter Wallet")
+			_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
 			ticker := time.NewTicker(2 * time.Minute)
 			done := make(chan bool)
 			for {
@@ -263,7 +269,7 @@ func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDis
 						ticker.Stop()
 						done <- true
 					} else {
-						_, err = initial_wallet.InsertWallet(ctx, credURI, "Mintter Wallet")
+						_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
 					}
 				}
 			}

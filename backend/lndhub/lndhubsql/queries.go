@@ -7,6 +7,11 @@ import (
 	"mintter/backend/db/sqliteschema"
 )
 
+const (
+	// DefaultWalletKey is the column name of the meta table where the default wallet id is stored
+	LoginSignatureKey = "lndhub_login_signature"
+)
+
 var _ = generateQueries
 
 //go:generate gorun -tags codegen generateQueries
@@ -46,6 +51,23 @@ func generateQueries() error {
 			), qb.Line,
 			"=(", qb.VarCol(sqliteschema.WalletsToken),
 			") WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
+		),
+		qb.MakeQuery(sqliteschema.Schema, "setLoginSignature", sqlitegen.QueryKindExec,
+			"INSERT OR REPLACE INTO", sqliteschema.GlobalMeta, qb.ListColShort(
+				sqliteschema.GlobalMetaKey,
+				sqliteschema.GlobalMetaValue,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.VarCol(sqliteschema.GlobalMetaKey),
+				qb.VarCol(sqliteschema.GlobalMetaValue),
+			),
+		),
+		qb.MakeQuery(sqliteschema.Schema, "getLoginSignature", sqlitegen.QueryKindSingle,
+			"SELECT", qb.Results(
+				qb.ResultCol(sqliteschema.GlobalMetaValue),
+			),
+			"FROM", sqliteschema.GlobalMeta,
+			"WHERE", sqliteschema.GlobalMetaKey, "=", qb.VarCol(sqliteschema.GlobalMetaKey),
 		),
 	)
 	if err != nil {

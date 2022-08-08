@@ -45,14 +45,12 @@ type Credentials struct {
 }
 
 func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Identity) *Service {
-	key, _ := identity.Account().ID().ExtractPublicKey()
-
-	keyRaw, _ := key.Raw()
+	pubkey, _ := identity.Account().MarshalBinary()
 
 	return &Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(&http.Client{}, db, hex.EncodeToString(keyRaw)),
+			Lndhub: lndhub.NewClient(&http.Client{}, db, hex.EncodeToString(pubkey)),
 		},
 		net: net,
 		me:  identity,

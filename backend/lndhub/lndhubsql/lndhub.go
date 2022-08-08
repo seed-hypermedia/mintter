@@ -44,9 +44,22 @@ func GetToken(conn *sqlite.Conn, id string) (string, error) {
 	return string(res.WalletsToken[:]), err
 }
 
-// SetToken returns the token used to connect to the wallet. The response is
-// a slice of bytes representing the token used to connect to the rest api.
+// SetToken stores the token to authenticate in non account routes
+// in lndhub.go.
 func SetToken(conn *sqlite.Conn, id, token string) error {
 	return setToken(conn, []byte(token), id)
 	// TODO: decrypt token before returning
+}
+
+// SetLoginSignature stores the sigature (hex representation) of the
+// signed login message to access to account settings in lndhub.go.
+func SetLoginSignature(conn *sqlite.Conn, signature string) error {
+	return setLoginSignature(conn, LoginSignatureKey, signature)
+}
+
+// GetLoginSignature returns the sigature (hex representation) of the
+// signed login message to access to account settings in lndhub.go.
+func GetLoginSignature(conn *sqlite.Conn) (string, error) {
+	res, err := getLoginSignature(conn, LoginSignatureKey)
+	return res.GlobalMetaValue, err
 }

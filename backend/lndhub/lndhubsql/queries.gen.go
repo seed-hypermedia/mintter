@@ -152,3 +152,54 @@ func setToken(conn *sqlite.Conn, walletsToken []byte, walletsID string) error {
 
 	return err
 }
+
+func setLoginSignature(conn *sqlite.Conn, globalMetaKey string, globalMetaValue string) error {
+	const query = `INSERT OR REPLACE INTO global_meta (key, value)
+VALUES (:globalMetaKey, :globalMetaValue)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":globalMetaKey", globalMetaKey)
+		stmt.SetText(":globalMetaValue", globalMetaValue)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: setLoginSignature: %w", err)
+	}
+
+	return err
+}
+
+type getLoginSignatureResult struct {
+	GlobalMetaValue string
+}
+
+func getLoginSignature(conn *sqlite.Conn, globalMetaKey string) (getLoginSignatureResult, error) {
+	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key = :globalMetaKey`
+
+	var out getLoginSignatureResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":globalMetaKey", globalMetaKey)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("getLoginSignature: more than one result return for a single-kind query")
+		}
+
+		out.GlobalMetaValue = stmt.ColumnText(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getLoginSignature: %w", err)
+	}
+
+	return out, err
+}
