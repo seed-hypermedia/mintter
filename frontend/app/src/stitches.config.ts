@@ -396,6 +396,8 @@ export const darkTheme = createTheme('dark-theme', {
 export const globalStyles = globalCss({
   ':root': {
     '--library-size': '232px',
+    '--tools-x': '-999px',
+    '--tools-x': '-999px',
   },
   '*': {
     boxSizing: 'border-box',
@@ -414,7 +416,7 @@ export const globalStyles = globalCss({
     overflow: 'hidden',
     // extra
     fontFamily: '$base',
-    fontSize: '$3',
+    fontSize: '100%',
     margin: 0,
     transition: 'background-color color 0.25s ease',
     '-webkit-font-smoothing': 'antialiased',

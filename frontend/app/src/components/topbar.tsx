@@ -377,8 +377,8 @@ var titleStyles = css({
 
 function TopbarTitle({title}: {title: string}) {
   return (
-    <span className={titleStyles()}>
-      <span>{title}</span>
+    <span className={titleStyles()} {...draggableProps}>
+      <span {...draggableProps}>{title}</span>
     </span>
   )
 }
