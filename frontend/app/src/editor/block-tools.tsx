@@ -147,8 +147,8 @@ export function DraftBlockTools({
       css={{
         position: 'absolute',
         zIndex: '$max',
-        insetBlockStart: 'calc(calc(var(--tools-y) * 1px) - 2.5rem)',
-        insetInlineStart: 'calc((var(--tools-x) * 1px))',
+        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) - 2.5rem)',
+        insetInlineStart: 'calc((var(--tools-x, -999) * 1px))',
       }}
     >
       <Dropdown.Root
