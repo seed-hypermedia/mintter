@@ -91,7 +91,6 @@ export var phrasingStyles = css({
         lineHeight: 2,
         paddingBlock: '0rem',
         fontWeight: '$bold',
-        fontFamily: '$alt',
       },
       paragraph: {
         fontSize: '1.1rem',

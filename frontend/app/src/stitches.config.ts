@@ -429,6 +429,7 @@ export const globalStyles = globalCss({
   },
   p: {
     hyphens: 'auto',
+    fontFamily: '$alt',
   },
   'img, picture, video, canvas': {
     display: 'block',
@@ -442,6 +443,7 @@ export const globalStyles = globalCss({
   },
   'h1, h2, h3': {
     fontWeight: '$medium',
+    fontFamily: '$base',
   },
   '@dark': {
     // notice the `media` definition on the stitches.config.ts file
