@@ -397,7 +397,7 @@ export const globalStyles = globalCss({
   ':root': {
     '--library-size': '232px',
     '--tools-x': '-999px',
-    '--tools-x': '-999px',
+    '--tools-y': '-999px',
   },
   '*': {
     boxSizing: 'border-box',

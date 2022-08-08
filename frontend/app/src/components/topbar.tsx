@@ -314,7 +314,7 @@ function PublicationActions({
 
 var wrapperStyles = css({
   display: 'flex',
-  paddingInlineStart: 'calc(64px + 16px)',
+  paddingInlineStart: '80px',
   blockSize: '100%',
   borderBottom: '1px solid $colors$base-border-subtle',
   background: '$base-background-subtle',

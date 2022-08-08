@@ -274,6 +274,7 @@ function VideoForm({service}: InnerVideoProps) {
             display: 'flex',
             alignItems: 'center',
             gap: '$4',
+            whiteSpace: 'nowrap',
           }}
           onSubmit={submitImage}
         >

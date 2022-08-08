@@ -24,6 +24,9 @@ export var blockStyles = css({
     color: '$base-active',
     fontSize: '0.95rem',
   },
+  // '&:hover': {
+  //   boxShadow: '$debug',
+  // },
   variants: {
     groupType: {
       orderedList: {
@@ -62,9 +65,9 @@ export var phrasingStyles = css({
         fontSize: '1rem',
       },
       blockquote: {
-        paddingInlineStart: '2rem',
-        paddingBlock: '1rem',
-        fontSize: '1.5rem',
+        paddingInlineStart: '1rem',
+        paddingBlock: '0.8rem',
+        fontSize: '1.2rem',
         fontFamily: '$alt',
         fontStyle: 'italic',
         color: '$base-active',
@@ -117,7 +120,6 @@ export var phrasingStyles = css({
 export var toolsTargetStyles = css({
   // boxShadow: '$debug',
   position: 'absolute',
-  // background: 'red',
   blockSize: '1rem',
   inlineSize: '1rem',
   insetBlockStart: '0.9rem',
@@ -126,10 +128,12 @@ export var toolsTargetStyles = css({
   variants: {
     type: {
       statement: {},
-      heading: {},
+      heading: {
+        insetBlockStart: '1rem',
+      },
       code: {},
       blockquote: {
-        marginBlock: '1rem',
+        insetBlockStart: '1.3rem',
       },
     },
   },

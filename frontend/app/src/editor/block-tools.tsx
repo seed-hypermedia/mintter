@@ -3,9 +3,11 @@ import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {getEditorBlock} from '@app/editor/utils'
-import {useFileEditor} from '@app/file-provider'
+import {useFile, useFileEditor} from '@app/file-provider'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Box} from '@components/box'
+import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {Text} from '@components/text'
 import {
@@ -27,11 +29,12 @@ import {
 } from '@mintter/mttast'
 import {useActor} from '@xstate/react'
 import {Fragment, useMemo} from 'react'
+import toast from 'react-hot-toast'
 import {BaseRange, Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {InterpreterFrom} from 'xstate'
 import {Dropdown, ElementDropdown} from './dropdown'
 import {ELEMENT_PARAGRAPH} from './paragraph'
-9
+
 const items: {
   [key: string]: Array<{
     label: string
@@ -110,7 +113,7 @@ export function BlockTools(props: BlockToolsProps) {
     if (blockId) {
       return getEditorBlock(editor, {id: blockId})
     }
-  }, [blockId])
+  }, [blockId, editor])
 
   if (state.matches('active')) {
     return props.mode == EditorMode.Draft ? (
@@ -147,8 +150,8 @@ export function DraftBlockTools({
       css={{
         position: 'absolute',
         zIndex: '$max',
-        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) - 2.5rem)',
-        insetInlineStart: 'calc((var(--tools-x, -999) * 1px))',
+        insetBlockStart: 'calc(var(--tools-y, -999) * 1px)',
+        insetInlineStart: 'calc(var(--tools-x, -999) * 1px)',
       }}
     >
       <Dropdown.Root
@@ -206,19 +209,36 @@ type PublicationBlockToolsProps = {
   editor: Editor
   service: InterpreterFrom<typeof blockToolsMachine>
   blockId?: string
+  copy?: typeof copyTextToClipboard
 }
 
-export function PublicationBlockTools({blockId}: PublicationBlockToolsProps) {
+export function PublicationBlockTools({
+  blockId,
+  copy = copyTextToClipboard,
+}: PublicationBlockToolsProps) {
+  let file = useFile()
+  let [fileState] = useActor(file)
+
+  async function onCopy() {
+    await copy(
+      `mtt://${fileState.context.documentId}/${fileState.context.version}/${blockId}`,
+    )
+    toast.success('Block ID copied successfully', {position: 'top-center'})
+  }
+
   return (
     <Box
       css={{
         position: 'absolute',
         zIndex: '$max',
-        insetBlockStart: 'calc(calc(var(--tools-y) * 1px) - 2.5rem)',
+        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px))',
         insetInlineEnd: 24,
+        userSelect: 'none',
       }}
     >
-      {blockId}
+      <Button size="1" color="primary" variant="ghost" onClick={onCopy}>
+        {blockId}
+      </Button>
     </Box>
   )
 }

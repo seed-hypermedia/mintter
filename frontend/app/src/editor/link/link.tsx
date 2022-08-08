@@ -342,6 +342,7 @@ function wrapMintterLink(editor: Editor, url: string) {
   if (isCollapsed(selection!)) {
     const newEmbed: Embed = embed({url}, [text('')])
     Transforms.insertNodes(editor, newEmbed)
+    addLinkChange(editor, selection)
     Transforms.move(editor, {distance: 1, unit: 'offset'})
   } else {
     wrapLink(editor, url)

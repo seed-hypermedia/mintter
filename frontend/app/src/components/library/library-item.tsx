@@ -53,7 +53,7 @@ export function LibraryItem({
     } else {
       return state.context.documentId == params.docId
     }
-  }, [params.docId, params.version])
+  }, [params.docId, params.version, isPublication])
 
   const deleteService = useInterpret(
     () =>
