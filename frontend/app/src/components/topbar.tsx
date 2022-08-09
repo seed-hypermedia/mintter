@@ -336,6 +336,7 @@ var topbarSectionStyles = css({
       main: {
         flex: 1,
         gap: '0.5rem',
+        minWidth: 0,
       },
       actions: {
         paddingInline: '0.5rem',
@@ -363,13 +364,11 @@ var titleStyles = css({
   '@bp2': {
     fontSize: '1.1rem',
   },
-  display: 'table',
-  tableLayout: 'fixed',
-  width: '$full',
   maxWidth: '40ch',
   whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
   '& > *': {
-    display: 'table-cell',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
