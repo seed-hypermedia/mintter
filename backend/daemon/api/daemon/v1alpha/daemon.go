@@ -2,8 +2,12 @@ package daemon
 
 import (
 	context "context"
+	"encoding/hex"
+	"fmt"
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
+	"mintter/backend/lndhub"
+	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
 	sync "sync"
@@ -84,6 +88,16 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 
 	if _, err := vcstypes.Register(ctx, acc, srv.repo.Device(), srv.vcs); err != nil {
 		return nil, err
+	}
+
+	signature, err := acc.Sign([]byte(lndhub.SigninMessage))
+	if err != nil {
+		return nil, err
+	}
+	conn := srv.vcs.DB().Get(context.Background())
+	defer srv.vcs.DB().Put(conn)
+	if err := lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)); err != nil {
+		return nil, fmt.Errorf("Could not store lndhub signature %s", err.Error())
 	}
 
 	return &daemon.RegisterResponse{

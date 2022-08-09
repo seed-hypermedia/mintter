@@ -30,6 +30,7 @@ const (
 	LndhubGoWalletType = "lndhub.go"
 	MintterDomain      = "ln.testnet.mintter.com"
 	networkType        = lnTestnet
+	SigninMessage      = "sign in into mintter lndhub"
 
 	// Types.
 	lnTestnet = iota
