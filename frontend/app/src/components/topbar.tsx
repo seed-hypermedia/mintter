@@ -235,24 +235,57 @@ function PublicationActions({
       className={topbarSectionStyles({type: 'actions'})}
       {...draggableProps}
     >
-      <Dropdown.Root>
-        <Dropdown.Trigger asChild>
-          <TopbarButton css={{padding: '0.3rem'}}>
-            <Icon size="1" name="MoreHorizontal" color="muted" />
+      <Box
+        css={{
+          display: 'none',
+          alignItems: 'center',
+          gap: '$3',
+          '@bp1': {
+            display: 'flex',
+          },
+        }}
+      >
+        <Tooltip content="Copy document reference">
+          <TopbarButton onClick={onCopyReference}>
+            <Icon name="Copy" size="1" />
           </TopbarButton>
-        </Dropdown.Trigger>
-        <Dropdown.Content alignOffset={-5} align="end">
-          {!state.context.canUpdate ? <TippingModal fileRef={fileRef} /> : null}
-          <Dropdown.Item onSelect={onCopyReference}>
-            <Icon size="1" name="Copy" />
-            <span className={dropdownLabel()}>Copy Document Reference</span>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={onBookmark}>
-            <Icon size="1" name="ArrowBottomRight" />
-            <span className={dropdownLabel()}>Add to Bookmarks</span>
-          </Dropdown.Item>
-        </Dropdown.Content>
-      </Dropdown.Root>
+        </Tooltip>
+        <Tooltip content="Add to boomarks">
+          <TopbarButton onClick={onBookmark}>
+            <Icon name="ArrowBottomRight" size="1" />
+          </TopbarButton>
+        </Tooltip>
+      </Box>
+      <Box
+        css={{
+          display: 'flex',
+          alignItems: 'center',
+          '@bp1': {
+            display: 'none',
+          },
+        }}
+      >
+        <Dropdown.Root>
+          <Dropdown.Trigger asChild>
+            <TopbarButton css={{padding: '0.3rem'}}>
+              <Icon size="1" name="MoreHorizontal" color="muted" />
+            </TopbarButton>
+          </Dropdown.Trigger>
+          <Dropdown.Content alignOffset={-5} align="end">
+            {!state.context.canUpdate ? (
+              <TippingModal fileRef={fileRef} />
+            ) : null}
+            <Dropdown.Item onSelect={onCopyReference}>
+              <Icon size="1" name="Copy" />
+              <span className={dropdownLabel()}>Copy Document Reference</span>
+            </Dropdown.Item>
+            <Dropdown.Item onSelect={onBookmark}>
+              <Icon size="1" name="ArrowBottomRight" />
+              <span className={dropdownLabel()}>Add to Bookmarks</span>
+            </Dropdown.Item>
+          </Dropdown.Content>
+        </Dropdown.Root>
+      </Box>
       <Dropdown.Root>
         <Tooltip content="Edit Actions">
           <Dropdown.Trigger asChild>
