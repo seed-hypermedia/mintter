@@ -1,10 +1,14 @@
-import {mainService as defaultMainService} from '@app/app-providers'
+import {
+  mainService as defaultMainService,
+  mainService,
+} from '@app/app-providers'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {PublicationWithRef} from '@app/main-machine'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {debug} from '@app/utils/logger'
+import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
@@ -93,11 +97,9 @@ export const createLinkPlugin = (): EditorPlugin => ({
       if (text) {
         if (isMintterLink(text)) {
           if (hasBlockId(text)) {
-            debug('has a blockID!', text)
             wrapMintterLink(editor, text)
           } else {
-            // TODO: add the document title to this link
-            wrapLink(editor, text)
+            insertDocumentLink(editor, text)
           }
         } else if (isUrl(text)) {
           wrapLink(editor, text)
@@ -110,6 +112,30 @@ export const createLinkPlugin = (): EditorPlugin => ({
     return editor
   },
 })
+
+function insertDocumentLink(editor: Editor, url: string) {
+  let mainContext = mainService.getSnapshot()
+  let publicationList = mainContext.context.publicationList
+
+  let publication: PublicationWithRef = publicationList.find(
+    (pub: PublicationWithRef) => {
+      let [docId, version] = getIdsfromUrl(url)
+
+      return pub.ref.id == getRefFromParams('pub', docId, version)
+    },
+  )
+
+  if (publication) {
+    console.log('PUBB:', publication)
+
+    Transforms.insertNodes(editor, [
+      link({url}, [text(publication.document?.title)]),
+      text(''),
+    ])
+  } else {
+    console.log('NO HAY PUB!', publication)
+  }
+}
 
 const StyledLink = styled(
   'span',
