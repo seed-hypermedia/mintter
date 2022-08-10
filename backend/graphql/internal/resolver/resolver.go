@@ -13,6 +13,7 @@ import (
 // implementing domain business logic inside the resolver. Think if this abstraction is needed at all.
 // But let's be careful, and not make the resolver be very aware of the intricacies of our domain logic.
 type Service interface {
+	GetLnAddress(context.Context) (string, error)
 	InsertWallet(context.Context, string, string) (wallet.Wallet, error)
 	ListWallets(context.Context) ([]wallet.Wallet, error)
 	DeleteWallet(context.Context, string) error

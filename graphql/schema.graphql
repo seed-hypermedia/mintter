@@ -44,6 +44,11 @@ type Me {
   List configured Lightning wallets.
   """
   wallets: [LightningWallet!] @goField(forceResolver: true)
+
+  """
+  Account-wide Lightning addres (lnaddress)
+  """
+  lnaddress: String @goField(forceResolver: true)
 }
 
 """

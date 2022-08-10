@@ -44,6 +44,8 @@ func (LndHubWallet) IsLightningWallet() {}
 type Me struct {
 	// List configured Lightning wallets.
 	Wallets []LightningWallet `json:"wallets"`
+	// Account-wide Lightning addres (lnaddress)
+	Lnaddress *string `json:"lnaddress"`
 }
 
 // Input to pay an invoice.

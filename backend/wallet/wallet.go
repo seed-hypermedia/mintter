@@ -383,6 +383,13 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 
 }
 
+// GetLnAddress gets the account-wide ln address in the form of <nickname>@<domain> .
+// Since it is a user operation, if the login is a CID, then user must provide a token representing
+// the pubkey whose private counterpart created the signature provided in password (like in create).
+func (srv *Service) GetLnAddress(ctx context.Context) (string, error) {
+	return srv.lightningClient.Lndhub.GetLnAddress(ctx)
+}
+
 // DecodeCredentialsURL takes a credential string of the form
 // <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
 // lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io

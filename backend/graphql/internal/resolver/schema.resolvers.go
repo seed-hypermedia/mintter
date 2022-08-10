@@ -9,6 +9,7 @@ import (
 	"mintter/backend/graphql/internal/model"
 )
 
+// Wallets is the resolver for the wallets field.
 func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generated.LightningWallet, error) {
 	wallets, err := r.svc.ListWallets(ctx)
 	ret := []generated.LightningWallet{}
@@ -34,6 +35,16 @@ func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generate
 	return ret, nil
 }
 
+// Lnaddress is the resolver for the lnaddress field.
+func (r *meResolver) Lnaddress(ctx context.Context, obj *generated.Me) (*string, error) {
+	lnaddress, err := r.svc.GetLnAddress(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &lnaddress, nil
+}
+
+// SetupLndHubWallet is the resolver for the setupLndHubWallet field.
 func (r *mutationResolver) SetupLndHubWallet(ctx context.Context, input generated.SetupLndHubWalletInput) (*generated.SetupLndHubWalletPayload, error) {
 	lndhubWallet, err := r.svc.InsertWallet(ctx, input.URL, input.Name)
 	if err != nil {
@@ -50,6 +61,7 @@ func (r *mutationResolver) SetupLndHubWallet(ctx context.Context, input generate
 	}, nil
 }
 
+// SetDefaultWallet is the resolver for the setDefaultWallet field.
 func (r *mutationResolver) SetDefaultWallet(ctx context.Context, input generated.SetDefaultWalletInput) (*generated.SetDefaultWalletPayload, error) {
 	defaultWallet, err := r.svc.SetDefaultWallet(ctx, input.ID)
 	if err != nil {
@@ -66,6 +78,7 @@ func (r *mutationResolver) SetDefaultWallet(ctx context.Context, input generated
 	}, nil
 }
 
+// UpdateWallet is the resolver for the updateWallet field.
 func (r *mutationResolver) UpdateWallet(ctx context.Context, input generated.UpdateWalletInput) (*generated.UpdateWalletPayload, error) {
 	newWallet, err := r.svc.UpdateWalletName(ctx, input.ID, input.Name)
 	if err != nil {
@@ -82,6 +95,7 @@ func (r *mutationResolver) UpdateWallet(ctx context.Context, input generated.Upd
 	}, nil
 }
 
+// DeleteWallet is the resolver for the deleteWallet field.
 func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.DeleteWalletInput) (*generated.DeleteWalletPayload, error) {
 	if err := r.svc.DeleteWallet(ctx, input.ID); err != nil {
 		return nil, err
@@ -90,6 +104,7 @@ func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.Del
 	return &generated.DeleteWalletPayload{ID: input.ID}, nil
 }
 
+// RequestInvoice is the resolver for the requestInvoice field.
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
 	payReq, err := r.svc.RequestInvoice(ctx, input.AccountID, int64(input.AmountSats), input.PublicationID)
 	if err != nil {
@@ -98,6 +113,7 @@ func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.R
 	return &generated.RequestInvoicePayload{PaymentRequest: model.LightningPaymentRequest(payReq)}, nil
 }
 
+// PayInvoice is the resolver for the payInvoice field.
 func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayInvoiceInput) (*generated.PayInvoicePayload, error) {
 	var amount uint64
 	if input.AmountSats != nil {
@@ -116,6 +132,7 @@ func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayIn
 	}, nil
 }
 
+// Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*generated.Me, error) {
 	return &generated.Me{}, nil
 }

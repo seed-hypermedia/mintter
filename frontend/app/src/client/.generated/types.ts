@@ -68,6 +68,8 @@ export type LndHubWallet = LightningWallet & {
 /** Information about the current user. */
 export type Me = {
   __typename?: 'Me';
+  /** Account-wide Lightning addres (lnaddress) */
+  lnaddress?: Maybe<Scalars['String']>;
   /** List configured Lightning wallets. */
   wallets?: Maybe<Array<LightningWallet>>;
 };
