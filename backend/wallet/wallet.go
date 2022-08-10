@@ -20,9 +20,14 @@ import (
 	"github.com/ipfs/go-cid"
 )
 
+const (
+	// to detect a failure that is not really a failure
+	AlreadyLndhubgoWallet = "Already existing one"
+)
+
 var (
 	supportedWallets = []string{lndhub.LndhubWalletType, lndhub.LndhubGoWalletType}
-	validCredentials = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@(https:\/\/[A-Za-z0-9_\-\.]+)\/?$`)
+	validCredentials = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@https:\/\/([A-Za-z0-9_\-\.]+)\/?$`)
 )
 
 type AccountID = cid.Cid
@@ -35,22 +40,29 @@ type Service struct {
 }
 
 type Credentials struct {
-	ConnectionURL string `json:"connectionURL"`
-	WalletType    string `json:"wallettype"`
-	Login         string `json:"login"`
-	Password      string `json:"password"`
-	Nickname      string `json:"nickname,omitempty"`
-	Token         string `json:"token,omitempty"`
-	ID            string `json:"id,omitempty"`
+	Domain     string `json:"domain"`
+	WalletType string `json:"wallettype"`
+	Login      string `json:"login"`
+	Password   string `json:"password"`
+	Nickname   string `json:"nickname,omitempty"`
+	Token      string `json:"token,omitempty"`
+	ID         string `json:"id,omitempty"`
 }
 
 func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Identity) *Service {
-	pubkey, _ := identity.Account().MarshalBinary()
+	pubkeyRaw, err := identity.Account().ID().ExtractPublicKey()
+	if err != nil {
+		panic(err)
+	}
+	pubkeyBytes, err := pubkeyRaw.Raw()
+	if err != nil {
+		panic(err)
+	}
 
 	return &Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(&http.Client{}, db, hex.EncodeToString(pubkey)),
+			Lndhub: lndhub.NewClient(&http.Client{}, db, hex.EncodeToString(pubkeyBytes)),
 		},
 		net: net,
 		me:  identity,
@@ -152,7 +164,10 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		return ret, fmt.Errorf("couldn't get sqlite connector from the pool before timeout. New wallet %s has not been inserted in database", name)
 	}
 	defer srv.pool.Put(conn)
-
+	ret.Type = creds.WalletType
+	ret.Address = "https://" + creds.Domain
+	ret.ID = creds.ID
+	ret.Name = name
 	if creds.WalletType == lndhub.LndhubGoWalletType {
 		// Only one lndhub.go wallet is allowed
 		wallets, err := srv.ListWallets(ctx)
@@ -161,36 +176,31 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		}
 		for i := 0; i < len(wallets); i++ {
 			if wallets[i].Type == lndhub.LndhubGoWalletType {
-				return wallets[i], fmt.Errorf("Only one type of %s wallet is allowed. Already existing one", lndhub.LndhubGoWalletType)
+				return wallets[i], fmt.Errorf("Only one type of %s wallet is allowed. "+AlreadyLndhubgoWallet, lndhub.LndhubGoWalletType)
 			}
 		}
-		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, creds.ConnectionURL, creds.Login, creds.Password, creds.Nickname)
+		if creds.Nickname == "" {
+			creds.Nickname = creds.Login
+		}
+		newWallet, err := srv.lightningClient.Lndhub.Create(ctx, ret.Address, creds.Login, creds.Password, creds.Nickname)
 		if err != nil {
 			return ret, err
 		}
 		creds.Nickname = newWallet.Nickname
 	}
-	// Trying to authenticate with the provided credentials
-	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx)
-	if err != nil {
-		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Please check provided credentials", name)
-	}
-
-	balanceSats, err := srv.lightningClient.Lndhub.GetBalance(ctx)
-	if err != nil {
-		return ret, err
-	}
-	ret.Type = creds.WalletType
-	ret.Address = creds.ConnectionURL
-	ret.Balance = int64(balanceSats)
-	ret.ID = creds.ID
-	ret.Name = name
 
 	if err = wallet.InsertWallet(conn, ret, []byte(creds.Login), []byte(creds.Password), []byte(creds.Token)); err != nil {
 		if strings.Contains(err.Error(), wallet.AlreadyExistsError) {
 			return ret, fmt.Errorf("couldn't insert wallet %s in the database. ID already exists", name)
 		}
 		return ret, fmt.Errorf("couldn't insert wallet %s in the database. %s", name, err.Error())
+	}
+
+	// Trying to authenticate with the provided credentials
+	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx)
+	if err != nil {
+		wallet.RemoveWallet(conn, ret.ID)
+		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Err %s", name, err.Error())
 	}
 
 	return ret, err
@@ -208,7 +218,7 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 		return nil, fmt.Errorf("couldn't list wallets")
 	}
 	for i, w := range wallets {
-		if strings.ToLower(w.Type) == lndhub.LndhubWalletType {
+		if strings.ToLower(w.Type) == lndhub.LndhubWalletType || strings.ToLower(w.Type) == lndhub.LndhubGoWalletType {
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("couldn't get balance from wallet %s", w.Name)
@@ -392,7 +402,7 @@ func DecodeCredentialsURL(url string) (Credentials, error) {
 	credentials.WalletType = strings.ToLower(res[1])
 	credentials.Login = res[2]
 	credentials.Password = res[3]
-	credentials.ConnectionURL = res[4]
+	credentials.Domain = res[4]
 	credentials.ID = URL2Id(url)
 	return credentials, nil
 
@@ -408,7 +418,7 @@ func URL2Id(url string) string {
 // the resulting url will have this format
 // <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
 func EncodeCredentialsURL(creds Credentials) (string, error) {
-	url := creds.WalletType + "://" + creds.Login + ":" + creds.Password + "@https://" + creds.ConnectionURL
+	url := creds.WalletType + "://" + creds.Login + ":" + creds.Password + "@https://" + creds.Domain
 	_, err := DecodeCredentialsURL(url)
 	return url, err
 }

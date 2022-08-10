@@ -4,7 +4,6 @@ package daemon
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"mintter/backend/config"
@@ -28,6 +27,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -58,6 +58,7 @@ type App struct {
 	GRPCListener net.Listener
 	GRPCServer   *grpc.Server
 	RPC          api.Server
+	Wallet       *future.ReadOnly[*wallet.Service]
 	Net          *future.ReadOnly[*mttnet.Node]
 	Me           *future.ReadOnly[core.Identity]
 	Syncing      *future.ReadOnly[*syncing.Service]
@@ -110,6 +111,11 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 	a.VCS = vcs.New(a.DB)
 
 	a.Me, err = initRegistration(ctx, a.g, a.Repo, a.DB, a.Net)
+	if err != nil {
+		return
+	}
+
+	a.Wallet, err = initLndhubWallet(&a.clean, a.g, a.Me, a.DB, a.Net)
 	if err != nil {
 		return
 	}
@@ -231,52 +237,93 @@ func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDis
 		if err := f.Resolve(id); err != nil {
 			return err
 		}
-		// Insertwallet goes in a loop until success (until online)
-		g.Go(func() error {
-			initialWallet := wallet.New(db, net, id)
-			pubkey, err := id.Account().MarshalBinary()
-			if err != nil {
-				return err
-			}
-			conn := db.Get(context.Background())
-			defer db.Put(conn)
-			loginSignature, err := lndhubsql.GetLoginSignature(conn)
-			db.Put(conn)
-			if err != nil {
-				return fmt.Errorf("Could not get the lndhub login signature %s", err.Error())
-			}
-			credURI, err := wallet.EncodeCredentialsURL(wallet.Credentials{
-				ConnectionURL: "https://" + lndhub.MintterDomain,
-				WalletType:    "lndhub.go",
-				Login:         id.AccountID().String(),
-				Password:      loginSignature,
-				Token:         hex.EncodeToString(pubkey),
-			})
-			if err != nil {
-				return err
-			}
-			_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
-			ticker := time.NewTicker(2 * time.Minute)
-			done := make(chan bool)
-			for {
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case <-done:
-					return nil
-				case <-ticker.C:
-					if err == nil {
-						ticker.Stop()
-						done <- true
-					} else {
-						_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
-					}
-				}
-			}
-		})
+
 		return nil
 	})
 
+	return f.ReadOnly, nil
+}
+
+func initLndhubWallet(
+	clean *cleanup.Stack,
+	g *errgroup.Group,
+	me *future.ReadOnly[core.Identity],
+	db *sqlitex.Pool,
+	net *future.ReadOnly[*mttnet.Node],
+) (*future.ReadOnly[*wallet.Service], error) {
+	f := future.New[*wallet.Service]()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	clean.AddErrFunc(func() error {
+		cancel()
+		return nil
+	})
+
+	g.Go(func() error {
+		id, err := me.Await(ctx)
+		if err != nil {
+			return err
+		}
+
+		// We assume registration already happened.
+		initialWallet := wallet.New(db, net, id)
+		tickerAccount := time.NewTicker(15 * time.Second)
+
+		conn := db.Get(context.Background())
+		loginSignature, err := lndhubsql.GetLoginSignature(conn)
+		if err == nil && loginSignature == "" {
+			err = fmt.Errorf("User did not entermnemonics yet")
+		}
+		// we don't know when user will enter mnemonics
+		for err != nil {
+			select {
+			case <-ctx.Done():
+				tickerAccount.Stop()
+				db.Put(conn)
+				return ctx.Err()
+			case <-tickerAccount.C:
+				loginSignature, err = lndhubsql.GetLoginSignature(conn)
+				if err == nil && loginSignature == "" {
+					err = fmt.Errorf("User did not entermnemonics yet")
+				}
+			}
+		}
+		db.Put(conn)
+		tickerAccount.Stop()
+
+		credURI, err := wallet.EncodeCredentialsURL(wallet.Credentials{
+			Domain:     lndhub.MintterDomain,
+			WalletType: "lndhub.go",
+			Login:      id.AccountID().String(),
+			Password:   loginSignature,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
+		if err != nil && strings.Contains(err.Error(), wallet.AlreadyLndhubgoWallet) {
+			err = nil
+		}
+
+		// Insertwallet goes in a loop until success (until online)
+		tickerInsert := time.NewTicker(5 * time.Minute)
+		defer tickerInsert.Stop()
+		for err != nil {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-tickerInsert.C:
+				_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
+				if err != nil && strings.Contains(err.Error(), wallet.AlreadyLndhubgoWallet) {
+					err = nil
+				}
+			}
+		}
+		if err := f.Resolve(initialWallet); err != nil {
+			return err
+		}
+		return nil
+	})
 	return f.ReadOnly, nil
 }
 
