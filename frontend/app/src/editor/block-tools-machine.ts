@@ -41,6 +41,7 @@ export type BlockToolsMachineEvent =
       type: 'ENTRY.DELETE'
       id: string
     }
+  | {type: 'WINDOW.BLUR'}
 
 export const blockToolsMachine = createMachine(
   {
@@ -64,6 +65,11 @@ export const blockToolsMachine = createMachine(
         src: 'visibilityObserver',
         id: 'visibilityObserver',
       },
+      {
+        src: 'windowBlurService',
+        id: 'windowBlurService',
+      },
+
       {
         src: 'mouseListener',
         id: 'mouseListener',
@@ -118,6 +124,7 @@ export const blockToolsMachine = createMachine(
             },
           },
         },
+        on: {},
       },
     },
     on: {
@@ -133,10 +140,25 @@ export const blockToolsMachine = createMachine(
       OBSERVER: {
         actions: 'assignObserver',
       },
+
+      'WINDOW.BLUR': {
+        target: 'inactive',
+        actions: ['clearCurrentId', 'resetPosition'],
+      },
     },
   },
   {
     services: {
+      windowBlurService: () => (sendBack) => {
+        function onBlur() {
+          sendBack('WINDOW.BLUR')
+        }
+        window.addEventListener('blur', onBlur)
+
+        return function detachWindowBlurService() {
+          window.removeEventListener('blur', onBlur)
+        }
+      },
       mouseListener: () => (sendBack) => {
         function mouseCallback(event: MouseEvent) {
           sendBack({type: 'MOUSE.MOVE', mouseY: event.clientY})
@@ -202,8 +224,6 @@ export const blockToolsMachine = createMachine(
             newBounds.set(key, entry.getBoundingClientRect())
           })
 
-          console.log('currentBounds', [...newBounds])
-
           return [...newBounds]
         },
       }),
@@ -222,7 +242,6 @@ export const blockToolsMachine = createMachine(
           for (const [key, rect] of context.currentBounds) {
             let top = rect.y
             let bottom = rect.y + rect.height
-
             if (context.mouseY > top && context.mouseY < bottom) {
               match = key
             }
