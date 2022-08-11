@@ -2,6 +2,7 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {useAccountProfile} from '@app/auth-context'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, dropdownLabel} from '@app/editor/dropdown'
+import {searchTerm} from '@app/editor/search'
 import {CurrentFile, DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -11,9 +12,12 @@ import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
 import {Tooltip} from '@components/tooltip'
 import {useActor} from '@xstate/react'
+import {useContext} from 'react'
 import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
+
+import '../styles/page-search.css'
 
 type TopbarProps = {
   copy?: typeof copyTextToClipboard
@@ -62,6 +66,7 @@ export function Topbar({mainService = defaultMainService}: TopbarProps) {
       ) : null}
 
       <TopbarLibrarySection mainService={mainService} />
+      <Search />
     </Box>
   )
 }
@@ -347,6 +352,7 @@ function PublicationActions({
 
 var wrapperStyles = css({
   display: 'flex',
+  alignItems: 'center',
   paddingInlineStart: '80px',
   blockSize: '100%',
   borderBottom: '1px solid $colors$base-border-subtle',
@@ -439,3 +445,20 @@ var TopbarButton = styled('button', {
     },
   },
 })
+
+function Search() {
+  const {search, setSearch} = useContext(searchTerm)
+
+  return (
+    <label id="search-box">
+      <Icon name="Search" size="2" />
+      <input
+        type="search"
+        autoCorrect="off"
+        id="search"
+        value={search}
+        onInput={(e) => setSearch(e.target.value)}
+      />
+    </label>
+  )
+}
