@@ -6,12 +6,13 @@ import {
   createBookmarkListMachine,
 } from '@components/bookmarks'
 import {useInterpret} from '@xstate/react'
-import {PropsWithChildren, Suspense} from 'react'
+import {PropsWithChildren, Suspense, useState} from 'react'
 import {Toaster} from 'react-hot-toast'
 import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
 import {interpret} from 'xstate'
 import {AuthProvider} from './auth-context'
 import {createAuthService} from './auth-machine'
+import {SearchTermProvider} from './editor/search'
 import {createThemeService, ThemeProvider} from './theme'
 
 export const queryClient = new QueryClient({
@@ -51,6 +52,7 @@ export function AppProviders({
   const authService = useInterpret(() => createAuthService(client))
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   const hoverService = useInterpret(() => createHoverService())
+  const [search, setSearch] = useState('')
 
   return (
     <QueryClientProvider client={client}>
@@ -60,7 +62,9 @@ export function AppProviders({
             <Hydrate state={dehydrateState}>
               <HoverProvider value={hoverService}>
                 <BookmarksProvider value={bookmarksService}>
-                  {children}
+                  <SearchTermProvider value={{search, setSearch}}>
+                    {children}
+                  </SearchTermProvider>
                 </BookmarksProvider>
               </HoverProvider>
               <Toaster position="bottom-right" />

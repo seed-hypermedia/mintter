@@ -14,6 +14,7 @@ import {createMarkdownShortcutsPlugin} from './markdown-plugin'
 import {createMintterChangesPlugin} from './mintter-changes/plugin'
 import {createParagraphPlugin} from './paragraph'
 import {createPlainTextPastePlugin} from './paste-plugin'
+import {createSearchPlugin} from './search'
 import {createStatementPlugin} from './statement'
 import {createStaticParagraphPlugin} from './static-paragraph'
 import {createStrikethroughPlugin} from './strikethrough'
@@ -65,5 +66,7 @@ export const plugins: EditorPlugin[] = [
       }
     },
   },
+
+  createSearchPlugin(),
   // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
 ]
