@@ -12,8 +12,6 @@ import (
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/graphql"
-	"mintter/backend/lndhub"
-	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
@@ -27,7 +25,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -58,7 +55,6 @@ type App struct {
 	GRPCListener net.Listener
 	GRPCServer   *grpc.Server
 	RPC          api.Server
-	Wallet       *future.ReadOnly[*wallet.Service]
 	Net          *future.ReadOnly[*mttnet.Node]
 	Me           *future.ReadOnly[core.Identity]
 	Syncing      *future.ReadOnly[*syncing.Service]
@@ -110,12 +106,7 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 
 	a.VCS = vcs.New(a.DB)
 
-	a.Me, err = initRegistration(ctx, a.g, a.Repo, a.DB, a.Net)
-	if err != nil {
-		return
-	}
-
-	a.Wallet, err = initLndhubWallet(&a.clean, a.g, a.Me, a.DB, a.Net)
+	a.Me, err = initRegistration(ctx, a.g, a.Repo)
 	if err != nil {
 		return
 	}
@@ -218,7 +209,7 @@ func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlite
 	return pool, nil
 }
 
-func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDisk, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node]) (*future.ReadOnly[core.Identity], error) {
+func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDisk) (*future.ReadOnly[core.Identity], error) {
 	f := future.New[core.Identity]()
 
 	g.Go(func() error {
@@ -241,89 +232,6 @@ func initRegistration(ctx context.Context, g *errgroup.Group, repo *ondisk.OnDis
 		return nil
 	})
 
-	return f.ReadOnly, nil
-}
-
-func initLndhubWallet(
-	clean *cleanup.Stack,
-	g *errgroup.Group,
-	me *future.ReadOnly[core.Identity],
-	db *sqlitex.Pool,
-	net *future.ReadOnly[*mttnet.Node],
-) (*future.ReadOnly[*wallet.Service], error) {
-	f := future.New[*wallet.Service]()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	clean.AddErrFunc(func() error {
-		cancel()
-		return nil
-	})
-
-	g.Go(func() error {
-		id, err := me.Await(ctx)
-		if err != nil {
-			return err
-		}
-
-		// We assume registration already happened.
-		initialWallet := wallet.New(db, net, id)
-		tickerAccount := time.NewTicker(15 * time.Second)
-
-		conn := db.Get(context.Background())
-		loginSignature, err := lndhubsql.GetLoginSignature(conn)
-		if err == nil && loginSignature == "" {
-			err = fmt.Errorf("User did not entermnemonics yet")
-		}
-		// we don't know when user will enter mnemonics
-		for err != nil {
-			select {
-			case <-ctx.Done():
-				tickerAccount.Stop()
-				db.Put(conn)
-				return ctx.Err()
-			case <-tickerAccount.C:
-				loginSignature, err = lndhubsql.GetLoginSignature(conn)
-				if err == nil && loginSignature == "" {
-					err = fmt.Errorf("User did not entermnemonics yet")
-				}
-			}
-		}
-		db.Put(conn)
-		tickerAccount.Stop()
-
-		credURI, err := wallet.EncodeCredentialsURL(wallet.Credentials{
-			Domain:     lndhub.MintterDomain,
-			WalletType: "lndhub.go",
-			Login:      id.AccountID().String(),
-			Password:   loginSignature,
-		})
-		if err != nil {
-			return err
-		}
-		_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
-		if err != nil && strings.Contains(err.Error(), wallet.AlreadyLndhubgoWallet) {
-			err = nil
-		}
-
-		// Insertwallet goes in a loop until success (until online)
-		tickerInsert := time.NewTicker(5 * time.Minute)
-		defer tickerInsert.Stop()
-		for err != nil {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case <-tickerInsert.C:
-				_, err = initialWallet.InsertWallet(ctx, credURI, "Mintter Wallet")
-				if err != nil && strings.Contains(err.Error(), wallet.AlreadyLndhubgoWallet) {
-					err = nil
-				}
-			}
-		}
-		if err := f.Resolve(initialWallet); err != nil {
-			return err
-		}
-		return nil
-	})
 	return f.ReadOnly, nil
 }
 
@@ -470,40 +378,32 @@ func initHTTP(
 	me *future.ReadOnly[core.Identity],
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
+	ctx, cancel := context.WithCancel(context.Background())
+	clean.AddErrFunc(func() error {
+		cancel()
+		return nil
+	})
 	{
-		ctx, cancel := context.WithCancel(context.Background())
-		clean.AddErrFunc(func() error {
-			cancel()
-			return nil
-		})
+		grpcWebHandler := grpcweb.WrapServer(rpc, grpcweb.WithOriginFunc(func(origin string) bool {
+			return true
+		}))
 
-		g.Go(func() error {
-			id, err := me.Await(ctx)
-			if err != nil {
-				return err
-			}
-			grpcWebHandler := grpcweb.WrapServer(rpc, grpcweb.WithOriginFunc(func(origin string) bool {
-				return true
-			}))
+		router := mux.NewRouter()
+		router.Handle("/debug/metrics", promhttp.Handler())
+		router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
+		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
+		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet.New(ctx, db, node, me))))
+		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 
-			router := mux.NewRouter()
-			router.Handle("/debug/metrics", promhttp.Handler())
-			router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
-			router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
-			router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet.New(db, node, id))))
-			router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
+		nav := newNavigationHandler(router)
 
-			nav := newNavigationHandler(router)
+		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
+			return grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r)
+		})).Handler(grpcWebHandler)
 
-			router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
-				return grpcWebHandler.IsAcceptableGrpcCorsRequest(r) || grpcWebHandler.IsGrpcWebRequest(r)
-			})).Handler(grpcWebHandler)
+		router.Handle("/", nav)
 
-			router.Handle("/", nav)
-
-			h = router
-			return nil
-		})
+		h = router
 	}
 
 	srv = &http.Server{

@@ -3,10 +3,13 @@ package lndhub
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"mintter/backend/core"
 	lndhub "mintter/backend/lndhub/lndhubsql"
+	"mintter/backend/pkg/future"
 	"net/http"
 	"strconv"
 	"strings"
@@ -29,8 +32,10 @@ const (
 	LndhubWalletType   = "lndhub"
 	LndhubGoWalletType = "lndhub.go"
 	MintterDomain      = "ln.testnet.mintter.com"
+	LnaddressDomain    = "testnet.mintter.com"
 	networkType        = lnTestnet
 	SigninMessage      = "sign in into mintter lndhub"
+	NoPubKeyError      = "No Account information yet"
 
 	// Types.
 	lnTestnet = iota
@@ -78,12 +83,29 @@ type authRequest struct {
 
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
-func NewClient(h *http.Client, db *sqlitex.Pool, pubkey string) *Client {
-	return &Client{
-		http:   h,
-		db:     db,
-		pubkey: pubkey,
+func NewClient(h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity]) *Client {
+	client := Client{
+		http: h,
+		db:   db,
 	}
+	go func() error {
+		id, err := identity.Await(context.Background())
+		if err != nil {
+			return err
+		}
+		pubkeyRaw, err := id.Account().ID().ExtractPublicKey()
+		if err != nil {
+			panic(err)
+		}
+		pubkeyBytes, err := pubkeyRaw.Raw()
+		if err != nil {
+			panic(err)
+		}
+		client.pubkey = hex.EncodeToString(pubkeyBytes)
+		return nil
+	}()
+
+	return &client
 }
 
 // Create creates an account or changes the nickname on already created one. If the login is a CID, then the password must
@@ -179,7 +201,7 @@ func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return user.Nickname + "@" + MintterDomain, nil
+	return user.Nickname + "@" + LnaddressDomain, nil
 }
 
 // Auth tries to get authorized on the lndhub service pointed by apiBaseURL.

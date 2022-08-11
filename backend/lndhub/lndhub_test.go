@@ -6,7 +6,9 @@ import (
 	"encoding/hex"
 	"io/ioutil"
 	"math/rand"
+	"mintter/backend/core"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/pkg/future"
 	"mintter/backend/wallet/walletsql"
 	"net/http"
 	"os"
@@ -16,6 +18,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,14 +29,11 @@ const (
 	semanticErrorCredentials = "lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io"
 	goodCredentials          = "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
 	connectionURL            = "https://" + MintterDomain
-	pubkey                   = "eacf5a07bef50d1c0cea8bee269a5236efb99b0c9033418fac30a5c722fe1960"
 )
 
 func TestCreate(t *testing.T) {
 	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
 
-	const login = "bahezrj4iaqacicabciqovt22a67pkdi4btvix3rgtjjdn35ztmgjam2br6wdbjohel7bsya"
-	const password = "ed5ef5dd87d98b64123125beb594b26a5434be6fc7a088a006d42b5f11323b84ff5417e3fca1643589eb6e617801809b422e31e2d818dae21e10b3f613539d0c"
 	const invoiceAmt = 12543
 	const invoiceMemo = "test invoice go"
 	var nickname = randStringRunes(6)
@@ -43,9 +43,25 @@ func TestCreate(t *testing.T) {
 	conn := pool.Get(context.Background())
 	defer pool.Put(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(60)*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(640)*time.Second)
 	defer cancel()
-	lndHubClient := NewClient(&http.Client{}, pool, pubkey)
+	identity := future.New[core.Identity]()
+	lndHubClient := NewClient(&http.Client{}, pool, identity.ReadOnly)
+	keypair, err := core.NewKeyPairRandom(core.CodecDeviceKey)
+	require.NoError(t, err)
+	priv, pub, err := crypto.GenerateEd25519Key(nil)
+	require.NoError(t, err)
+	pubkeyBytes, err := pub.Raw()
+	require.NoError(t, err)
+
+	pubkey, err := core.NewPublicKey(core.CodecAccountKey, pub.(*crypto.Ed25519PublicKey))
+	require.NoError(t, err)
+
+	login := pubkey.CID().String()
+	passwordBytes, err := priv.Sign([]byte(SigninMessage))
+	password := hex.EncodeToString(passwordBytes)
+	require.NoError(t, err)
+	require.NoError(t, identity.Resolve(core.NewIdentity(pubkey, keypair)))
 	lndHubClient.WalletID = credentials2Id("lndhub.go", login, password, MintterDomain)
 
 	makeTestWallet(t, conn, walletsql.Wallet{
@@ -54,7 +70,7 @@ func TestCreate(t *testing.T) {
 		Name:    nickname,
 		Type:    "lndhub.go",
 		Balance: 0,
-	}, login, password, pubkey)
+	}, login, password, hex.EncodeToString(pubkeyBytes))
 
 	user, err := lndHubClient.Create(ctx, connectionURL, login, password, nickname)
 	require.NoError(t, err)
@@ -69,7 +85,7 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	lnaddress, err := lndHubClient.GetLnAddress(ctx)
 	require.NoError(t, err)
-	require.EqualValues(t, newNickname+"@"+MintterDomain, lnaddress)
+	require.EqualValues(t, newNickname+"@"+LnaddressDomain, lnaddress)
 	balance, err := lndHubClient.GetBalance(ctx)
 	require.NoError(t, err)
 	require.EqualValues(t, 0, balance)

@@ -8,6 +8,7 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/lndhub"
+	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs/vcssql"
@@ -15,6 +16,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -36,7 +38,6 @@ type Service struct {
 	lightningClient lnclient
 	pool            *sqlitex.Pool
 	net             *future.ReadOnly[*mttnet.Node]
-	me              core.Identity
 }
 
 type Credentials struct {
@@ -49,24 +50,73 @@ type Credentials struct {
 	ID         string `json:"id,omitempty"`
 }
 
-func New(db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], identity core.Identity) *Service {
-	pubkeyRaw, err := identity.Account().ID().ExtractPublicKey()
-	if err != nil {
-		panic(err)
-	}
-	pubkeyBytes, err := pubkeyRaw.Raw()
-	if err != nil {
-		panic(err)
-	}
-
-	return &Service{
+func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], me *future.ReadOnly[core.Identity]) *Service {
+	srv := Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(&http.Client{}, db, hex.EncodeToString(pubkeyBytes)),
+			Lndhub: lndhub.NewClient(&http.Client{}, db, me),
 		},
 		net: net,
-		me:  identity,
 	}
+	go func() error {
+		id, err := me.Await(ctx)
+		if err != nil {
+			return err
+		}
+		// We assume registration already happened.
+		tickerAccount := time.NewTicker(10 * time.Second)
+
+		conn := db.Get(context.Background())
+		loginSignature, err := lndhubsql.GetLoginSignature(conn)
+		if err == nil && loginSignature == "" {
+			err = fmt.Errorf("User did not enter mnemonics yet")
+		}
+		// we don't know when user will enter mnemonics
+		for err != nil {
+			select {
+			case <-ctx.Done():
+				tickerAccount.Stop()
+				db.Put(conn)
+				return ctx.Err()
+			case <-tickerAccount.C:
+				loginSignature, err = lndhubsql.GetLoginSignature(conn)
+				if err == nil && loginSignature == "" {
+					err = fmt.Errorf("User did not enter mnemonics yet")
+				}
+			}
+		}
+		db.Put(conn)
+		tickerAccount.Stop()
+		credURI, err := EncodeCredentialsURL(Credentials{
+			Domain:     lndhub.MintterDomain,
+			WalletType: lndhub.LndhubGoWalletType,
+			Login:      id.AccountID().String(),
+			Password:   loginSignature,
+		})
+		if err != nil {
+			return err
+		}
+		_, err = srv.InsertWallet(ctx, credURI, "Mintter Wallet")
+		if err != nil && strings.Contains(err.Error(), AlreadyLndhubgoWallet) {
+			err = nil
+		}
+		// Insertwallet goes in a loop until success (until online)
+		tickerInsert := time.NewTicker(5 * time.Minute)
+		defer tickerInsert.Stop()
+		for err != nil {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-tickerInsert.C:
+				_, err = srv.InsertWallet(ctx, credURI, "Mintter Wallet")
+				if err != nil && strings.Contains(err.Error(), AlreadyLndhubgoWallet) {
+					err = nil
+				}
+			}
+		}
+		return nil
+	}()
+	return &srv
 }
 
 type lnclient struct {
