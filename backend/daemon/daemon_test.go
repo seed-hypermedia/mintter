@@ -35,16 +35,6 @@ func TestDaemonList(t *testing.T) {
 		DocumentId: alice.Me.MustGet().AccountID().String(),
 	})
 	require.Error(t, err, "we must not be able to delete other objects than publications")
-
-	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Second)
-	defer cancel()
-	wallet, err := alice.Wallet.Await(ctx)
-	require.NoError(t, err)
-	wallets, err := wallet.ListWallets(context.Background())
-	require.NoError(t, err)
-	require.Equal(t, 1, len(wallets))
-
 }
 
 func TestDaemonSmoke(t *testing.T) {
