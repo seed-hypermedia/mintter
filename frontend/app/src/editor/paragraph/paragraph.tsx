@@ -110,12 +110,9 @@ function Paragraph({
         {...attributes}
         {...elementProps}
         onMouseEnter={() => {
-          console.log('MOUSE ENTER', parentNode?.id)
-
           hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
         }}
         onMouseLeave={() => {
-          console.log('MOUSE LEAVE', parentNode?.id)
           hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
         }}
       >
@@ -142,12 +139,9 @@ function Paragraph({
           },
         }}
         onMouseEnter={() => {
-          console.log('MOUSE ENTER', parentNode?.id)
-
           hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
         }}
         onMouseLeave={() => {
-          console.log('MOUSE LEAVE', parentNode?.id)
           hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
         }}
       >
@@ -172,12 +166,9 @@ function Paragraph({
       {...attributes}
       {...elementProps}
       onMouseEnter={() => {
-        console.log('MOUSE ENTER', parentNode?.id)
-
         hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
       }}
       onMouseLeave={() => {
-        console.log('MOUSE LEAVE', parentNode?.id)
         hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
       }}
     >

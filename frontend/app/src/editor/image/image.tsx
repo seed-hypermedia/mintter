@@ -65,9 +65,7 @@ function Image({element, attributes, children}: RenderElementProps) {
   const imgService = useInterpret(() => imageMachine, {
     actions: {
       assignError: assign({
-        errorMessage: (c) => {
-          console.log('ASSIGN ERROR!!')
-
+        errorMessage: () => {
           return `Image error: image url is not a valid URL: ${
             (element as ImageType).url
           }`
