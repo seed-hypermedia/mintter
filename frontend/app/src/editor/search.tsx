@@ -36,7 +36,7 @@ export function createSearchPlugin(): EditorPlugin {
 
       const {search} = useContext(searchTerm)
       if (!search) return
-      const re = new RegExp(search, 'g')
+      const re = new RegExp(search, 'gi')
 
       if (isParagraph(node)) {
         const str = Node.string(node)
