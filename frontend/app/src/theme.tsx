@@ -67,13 +67,7 @@ export function createThemeService() {
               actions: ['toggleTheme', 'applyToDom'],
             },
             CHANGE: {
-              actions: [
-                (_, event) => {
-                  console.log('ACTION EVENT', event)
-                },
-                'assignTheme',
-                'applyToDom',
-              ],
+              actions: ['assignTheme', 'applyToDom'],
             },
           },
         },
@@ -106,8 +100,6 @@ export function createThemeService() {
           )
 
           darkModeMediaQuery.addEventListener('change', (event) => {
-            console.log('CHANGE!', event.matches)
-
             sendBack({
               type: 'CHANGE',
               theme: event.matches ? 'dark' : 'light',

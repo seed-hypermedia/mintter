@@ -12,10 +12,6 @@ type PageListItemProps = {
 
 export function PageListItem(props: PageListItemProps) {
   let [state] = useActor(props.fileRef)
-  console.log(
-    '🚀 ~ file: page-list-item.tsx ~ line 15 ~ PageListItem ~ state',
-    state,
-  )
   const isPublication = useMemo(() => props.fileRef.id.startsWith('pub-'), [])
 
   return (

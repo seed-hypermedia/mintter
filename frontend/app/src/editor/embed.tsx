@@ -255,7 +255,6 @@ function createEmbedMachine(
             let [, , blockId] = getIdsfromUrl(context.url)
             context.publication?.ref.subscribe((state) => {
               if (state.matches({publication: 'ready'})) {
-                console.log('==== HERE', state)
                 let temp: FlowContent | undefined
 
                 visit(
@@ -265,7 +264,6 @@ function createEmbedMachine(
                   },
                   {id: blockId},
                   (node) => {
-                    console.log('BLOCK FOUND!', node)
                     temp = node
                   },
                 )
@@ -281,10 +279,7 @@ function createEmbedMachine(
       },
       actions: {
         assignBlock: assign({
-          block: (c, event) => {
-            console.log('assignBlock', event.data)
-            return event.data
-          },
+          block: (c, event) => event.data,
         }),
         assignError: assign({
           errorMessage: (_, event) =>

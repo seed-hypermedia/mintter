@@ -64,8 +64,7 @@ function DiscussionEditor({
           backgroundColor: '$base-background-normal',
         },
       }}
-      onClick={(event) => {
-        console.log('click item!', event)
+      onClick={() => {
         // TODO: make sure we can click in the event and also let the text selection
         // mainService.send({
         //   type: 'GO.TO.PUBLICATION',
