@@ -126,14 +126,10 @@ function insertDocumentLink(editor: Editor, url: string) {
   )
 
   if (publication) {
-    console.log('PUBB:', publication)
-
     Transforms.insertNodes(editor, [
       link({url}, [text(publication.document?.title)]),
       text(''),
     ])
-  } else {
-    console.log('NO HAY PUB!', publication)
   }
 }
 
