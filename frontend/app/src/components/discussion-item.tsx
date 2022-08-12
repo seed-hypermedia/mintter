@@ -76,15 +76,15 @@ function DiscussionEditor({
     >
       <Box
         css={{
-          display: 'flex',
-          borderTop: '1px solid rgba(0,0,0,0.1)',
-          paddingBlock: '1rem',
-          gap: '1ch',
-          paddingInline: '1rem',
           position: 'sticky',
           top: 0,
-          backgroundColor: '$base-background-normal',
-          zIndex: '$4'
+          zIndex: '$4',
+          display: 'flex',
+          borderTop: '1px solid rgba(0,0,0,0.1)',
+          paddingBlockStart: '1rem',
+          gap: '1ch',
+          paddingInline: '1rem',
+          backgroundColor: '$base-background-normal'
         }}
       >
         {state.context.author && (

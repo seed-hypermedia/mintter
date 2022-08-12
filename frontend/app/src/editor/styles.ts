@@ -79,21 +79,14 @@ export var phrasingStyles = css({
     transition: 'opacity 0.35s ease',
     backgroundColor: 'transparent',
   },
-
-  // '&:hover': {
-  //   '&:after': {
-  //     backgroundColor: '$base-component-bg-normal !important',
-  //     opacity: 1,
-  //   },
-  // },
   variants: {
     blockType: {
       code: {
         backgroundColor: '$base-background-normal',
-        paddingInlineStart: '2rem',
+        paddingInline: '2rem',
         paddingBlock: '1rem',
         fontSize: '1rem',
-        whiteSpace: 'pre',
+        whiteSpace: 'normal',
       },
       blockquote: {
         paddingInlineStart: '1rem',
