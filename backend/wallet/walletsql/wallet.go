@@ -2,6 +2,7 @@ package walletsql
 
 import (
 	"fmt"
+	"mintter/backend/lndhub/lndhubsql"
 	"strings"
 
 	"crawshaw.io/sqlite"
@@ -119,7 +120,9 @@ func GetDefaultWallet(conn *sqlite.Conn) (Wallet, error) {
 	if err != nil {
 		return Wallet{}, err
 	}
-
+	if ret.WalletsID == "" {
+		return Wallet{}, fmt.Errorf("No default wallet found")
+	}
 	return Wallet{
 		ID:      ret.WalletsID,
 		Address: ret.WalletsAddress,
@@ -175,11 +178,20 @@ func RemoveWallet(conn *sqlite.Conn, id string) error {
 	if len(id) != idcharLength {
 		return fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(id))
 	}
+	wallet2delete, err := getWallet(conn, id)
+	if err != nil {
+		return fmt.Errorf("Cann't find wallet for deletion, probably already deleted, %s", err.Error())
+	}
 
 	defaultWallet, err := GetDefaultWallet(conn)
 	if err != nil {
 		return fmt.Errorf("couldn't get wallet default wallet. %s", err.Error())
 	}
+
+	if wallet2delete.WalletsType == lndhubsql.LndhubGoWalletType && defaultWallet.ID == wallet2delete.WalletsID {
+		return fmt.Errorf("The internal wallet %s must not be removed", wallet2delete.WalletsName)
+	}
+
 	if err := removeWallet(conn, id); err != nil {
 		return fmt.Errorf("couldn't remove wallet. %s", err.Error())
 	}

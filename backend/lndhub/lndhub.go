@@ -29,8 +29,6 @@ const (
 	payInvoiceRoute    = "/payinvoice"
 	decodeInvoiceRoute = "/decodeinvoice" // Not used, using internal LND decoder instead
 	getInvoiceRoute    = "/getuserinvoice"
-	LndhubWalletType   = "lndhub"
-	LndhubGoWalletType = "lndhub.go"
 	MintterDomain      = "ln.testnet.mintter.com"
 	LnaddressDomain    = "testnet.mintter.com"
 	networkType        = lnTestnet
@@ -83,15 +81,15 @@ type authRequest struct {
 
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
-func NewClient(h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity]) *Client {
+func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity]) *Client {
 	client := Client{
 		http: h,
 		db:   db,
 	}
-	go func() error {
-		id, err := identity.Await(context.Background())
+	go func() {
+		id, err := identity.Await(ctx)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		pubkeyRaw, err := id.Account().ID().ExtractPublicKey()
 		if err != nil {
@@ -102,7 +100,6 @@ func NewClient(h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.
 			panic(err)
 		}
 		client.pubkey = hex.EncodeToString(pubkeyBytes)
-		return nil
 	}()
 
 	return &client

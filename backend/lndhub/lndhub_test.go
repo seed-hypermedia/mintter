@@ -46,7 +46,7 @@ func TestCreate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(640)*time.Second)
 	defer cancel()
 	identity := future.New[core.Identity]()
-	lndHubClient := NewClient(&http.Client{}, pool, identity.ReadOnly)
+	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, identity.ReadOnly)
 	keypair, err := core.NewKeyPairRandom(core.CodecDeviceKey)
 	require.NoError(t, err)
 	priv, pub, err := crypto.GenerateEd25519Key(nil)

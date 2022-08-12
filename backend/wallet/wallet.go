@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	supportedWallets = []string{lndhub.LndhubWalletType, lndhub.LndhubGoWalletType}
+	supportedWallets = []string{lndhubsql.LndhubWalletType, lndhubsql.LndhubGoWalletType}
 	validCredentials = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@https:\/\/([A-Za-z0-9_\-\.]+)\/?$`)
 )
 
@@ -54,7 +54,7 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 	srv := Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(&http.Client{}, db, me),
+			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, me),
 		},
 		net: net,
 	}
@@ -89,7 +89,7 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 		tickerAccount.Stop()
 		credURI, err := EncodeCredentialsURL(Credentials{
 			Domain:     lndhub.MintterDomain,
-			WalletType: lndhub.LndhubGoWalletType,
+			WalletType: lndhubsql.LndhubGoWalletType,
 			Login:      id.AccountID().String(),
 			Password:   loginSignature,
 		})
@@ -205,7 +205,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		return ret, fmt.Errorf(" wallet type [%s] not supported. Currently supported: [%v]", creds.WalletType, supportedWallets)
 	}
 
-	if creds.WalletType == lndhub.LndhubGoWalletType || creds.WalletType == lndhub.LndhubWalletType {
+	if creds.WalletType == lndhubsql.LndhubGoWalletType || creds.WalletType == lndhubsql.LndhubWalletType {
 		srv.lightningClient.Lndhub.WalletID = URL2Id(credentialsURL)
 	}
 
@@ -218,15 +218,15 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	ret.Address = "https://" + creds.Domain
 	ret.ID = creds.ID
 	ret.Name = name
-	if creds.WalletType == lndhub.LndhubGoWalletType {
+	if creds.WalletType == lndhubsql.LndhubGoWalletType {
 		// Only one lndhub.go wallet is allowed
 		wallets, err := srv.ListWallets(ctx)
 		if err != nil {
 			return ret, err
 		}
 		for i := 0; i < len(wallets); i++ {
-			if wallets[i].Type == lndhub.LndhubGoWalletType {
-				return wallets[i], fmt.Errorf("Only one type of %s wallet is allowed. "+AlreadyLndhubgoWallet, lndhub.LndhubGoWalletType)
+			if wallets[i].Type == lndhubsql.LndhubGoWalletType {
+				return wallets[i], fmt.Errorf("Only one type of %s wallet is allowed. "+AlreadyLndhubgoWallet, lndhubsql.LndhubGoWalletType)
 			}
 		}
 		if creds.Nickname == "" {
@@ -265,13 +265,13 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 	defer srv.pool.Put(conn)
 	wallets, err := wallet.ListWallets(conn, -1)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't list wallets")
+		return nil, fmt.Errorf("couldn't list wallets. %s", err.Error())
 	}
 	for i, w := range wallets {
-		if strings.ToLower(w.Type) == lndhub.LndhubWalletType || strings.ToLower(w.Type) == lndhub.LndhubGoWalletType {
+		if strings.ToLower(w.Type) == lndhubsql.LndhubWalletType || strings.ToLower(w.Type) == lndhubsql.LndhubGoWalletType {
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx)
 			if err != nil {
-				return nil, fmt.Errorf("couldn't get balance from wallet %s", w.Name)
+				return nil, fmt.Errorf("couldn't get balance from wallet %s. %s", w.Name, err.Error())
 			}
 			wallets[i].Balance = int64(balance)
 		}
@@ -291,7 +291,7 @@ func (srv *Service) DeleteWallet(ctx context.Context, walletID string) error {
 	}
 	defer srv.pool.Put(conn)
 	if err := wallet.RemoveWallet(conn, walletID); err != nil {
-		return fmt.Errorf("couldn't remove wallet %s", walletID)
+		return fmt.Errorf("couldn't remove wallet %s. %s", walletID, err.Error())
 	}
 	// TODO: remove associated token db entries
 	return nil
@@ -309,7 +309,7 @@ func (srv *Service) UpdateWalletName(ctx context.Context, walletID string, newNa
 	}
 	defer srv.pool.Put(conn)
 	if ret, err = wallet.UpdateWalletName(conn, walletID, newName); err != nil {
-		return ret, fmt.Errorf("couldn't update wallet %s", walletID)
+		return ret, fmt.Errorf("couldn't update wallet %s. %s", walletID, err.Error())
 	}
 
 	return ret, nil
@@ -326,12 +326,7 @@ func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (wall
 	}
 	defer srv.pool.Put(conn)
 
-	defaultWallet, err := wallet.UpdateDefaultWallet(conn, walletID)
-	if err != nil {
-		return wallet.Wallet{}, fmt.Errorf("failed to update default wallet")
-	}
-
-	return defaultWallet, nil
+	return wallet.UpdateDefaultWallet(conn, walletID)
 }
 
 // GetDefaultWallet gets the user's default wallet. If the user didn't manually
@@ -344,12 +339,7 @@ func (srv *Service) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error)
 	}
 	defer srv.pool.Put(conn)
 
-	defaultWallet, err := wallet.GetDefaultWallet(conn)
-	if err != nil {
-		return wallet.Wallet{}, fmt.Errorf("failed to get default wallet")
-	}
-
-	return defaultWallet, nil
+	return wallet.GetDefaultWallet(conn)
 
 }
 
@@ -396,12 +386,12 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 	if walletID != nil {
 		walletToPay, err = wallet.GetWallet(conn, *walletID)
 		if err != nil {
-			return "", fmt.Errorf("couldn't get wallet %s", *walletID)
+			return "", fmt.Errorf("couldn't get wallet %s. %s", *walletID, err.Error())
 		}
 	} else {
 		walletToPay, err = srv.GetDefaultWallet(ctx)
 		if err != nil {
-			return "", fmt.Errorf("couldn't get default wallet")
+			return "", fmt.Errorf("couldn't get default wallet to pay. %s", err.Error())
 		}
 	}
 
@@ -412,7 +402,7 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 	if amountSats == nil || *amountSats == 0 {
 		invoice, err := lndhub.DecodeInvoice(payReq)
 		if err != nil {
-			return "", fmt.Errorf("couldn't decode invoice [%s], please make sure it is a bolt-11 complatible invoice", payReq)
+			return "", fmt.Errorf("couldn't decode invoice [%s], please make sure it is a bolt-11 complatible invoice. %s", payReq, err.Error())
 		}
 		amountToPay = uint64(invoice.MilliSat.ToSatoshis())
 	} else {
@@ -424,7 +414,7 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 			return "", fmt.Errorf("couldn't pay invoice. Insufficient balance in wallet name %s", walletToPay.Name)
 		}
 		if strings.Contains(err.Error(), wallet.InvoiceQttyMissmatch) {
-			return "", fmt.Errorf("couldn't pay invoice. %s", err.Error())
+			return "", fmt.Errorf("couldn't pay invoice due to a quantity missmatch. %s", err.Error())
 		}
 		return "", fmt.Errorf("couldn't pay invoice. %s", err.Error())
 	}

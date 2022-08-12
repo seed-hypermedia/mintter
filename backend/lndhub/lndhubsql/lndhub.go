@@ -6,6 +6,11 @@ import (
 	"crawshaw.io/sqlite"
 )
 
+const (
+	LndhubWalletType   = "lndhub"
+	LndhubGoWalletType = "lndhub.go"
+)
+
 // GetAPIURL returns the lndhub api endpoint used to connect to perform wallet operations.
 func GetAPIURL(conn *sqlite.Conn, id string) (string, error) {
 	res, err := getApiURL(conn, id)
