@@ -1,7 +1,10 @@
+.search-highlight {
+  /* background-color: rgb(244, 229, 178); */
+  background-color: var(--mtt-colors-warning-component-bg-active);
+}
+
 #search-box {
-  /* height: 1.5rem; */
   display: flex;
-  /* margin: 10px; */
   gap: 5px;
   padding: 0 0.5em;
   border-radius: 7px;
@@ -11,7 +14,8 @@
 }
 
 #search-box:focus-within {
-  border: 3px solid rgb(239, 208, 157);
+  border: 3px solid var(--mtt-colors-warning-active);
+  /* border: 3px solid rgb(239, 208, 157); */
 }
 
 #search-box:focus-within svg,
@@ -20,8 +24,7 @@
 }
 
 #search-box:not(:focus-within):has(#search:not([value=''])) {
-  border: 2px solid lightgrey;
-  /* margin: 11px; */
+  border: 2px solid var(--mtt-colors-base-border-subtle);
 }
 
 #search {
