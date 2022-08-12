@@ -74,10 +74,14 @@ function DiscussionEditor({
     >
       <Box
         css={{
+          position: 'sticky',
+          top: 0,
+          zIndex: '$4',
+          backgroundColor: '$base-background-subtle',
           display: 'flex',
           borderTop: '1px solid rgba(0,0,0,0.1)',
-          paddingBlockStart: '1rem',
-          paddingBlockEnd: '0.6rem',
+          paddingBlock: '1rem',
+          // paddingBlockEnd: '0.6rem',
           gap: '1ch',
           paddingInline: '1rem',
         }}
