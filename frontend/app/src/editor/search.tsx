@@ -21,10 +21,7 @@ export function createSearchPlugin(): EditorPlugin {
       ({attributes, children, leaf}) => {
         if (leaf[SEARCH_HIGHLIGHT] && leaf.value) {
           return (
-            <span
-              style={{backgroundColor: 'rgb(244, 229, 178)'}}
-              {...attributes}
-            >
+            <span className="search-highlight" {...attributes}>
               {children}
             </span>
           )
