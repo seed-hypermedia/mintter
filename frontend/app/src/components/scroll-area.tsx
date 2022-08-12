@@ -19,6 +19,7 @@ export const ScrollViewport = styled(ScrollAreaPrimitive.Viewport, {
 export const ScrollBar = styled(ScrollAreaPrimitive.Scrollbar, {
   display: 'flex',
   // ensures no selection
+  zIndex: '$max',
   userSelect: 'none',
   WebkitUserSelect: 'none',
   // disable browser handling of all panning and zooming gestures on touch devices
