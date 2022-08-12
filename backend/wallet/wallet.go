@@ -173,7 +173,7 @@ func (srv *Service) P2PInvoiceRequest(ctx context.Context, account AccountID, re
 			})
 
 			if err != nil {
-				return "", fmt.Errorf("request invoice failed")
+				return "", fmt.Errorf("request invoice failed, %s", err.Error())
 			}
 
 			if remoteInvoice.PayReq == "" {

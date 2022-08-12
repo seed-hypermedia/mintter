@@ -26,7 +26,7 @@ import (
 const (
 	testCredentials   = "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
 	memo              = "include this test memo"
-	timeoutSeconds    = 25
+	timeoutSeconds    = 125
 	invoiceAmountSats = 1000
 )
 
@@ -72,7 +72,7 @@ func TestModifyWallets(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
 	defer cancel()
-	time.Sleep(10 * time.Second) // wait
+	time.Sleep(10 * time.Second) // wait until internal wallet is registered
 	defaultWallet, err := alice.GetDefaultWallet(ctx)
 	require.NoError(t, err)
 	require.EqualValues(t, lndhubsql.LndhubGoWalletType, defaultWallet.Type)
@@ -85,7 +85,27 @@ func TestModifyWallets(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, 1, len(wallets))
 	require.EqualValues(t, newName, wallets[0].Name)
-	//alice.RequestInvoice(ctx) // TODO: modify RequestInvoice so it calls the lndhub.go (if present) wallet if P2P invoice failed
+}
+
+func TestRequestP2PInvoice(t *testing.T) {
+	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+
+	alice := makeTestService(t, "alice")
+	bob := makeTestService(t, "bob")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+	time.Sleep(10 * time.Second) // wait until internal wallet is registered
+	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
+
+	cid := bob.net.MustGet().ID().AccountID()
+	const amt = 0
+	var memo = "zero amt invoice"
+	payreq, err := alice.RequestInvoice(ctx, cid.String(), 10, &memo) // TODO: modify RequestInvoice so it calls the lndhub.go (if present) wallet if P2P invoice failed
+	require.NoError(t, err)
+	invoice, err := lndhub.DecodeInvoice(payreq)
+	require.NoError(t, err)
+	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())
+	require.EqualValues(t, memo, invoice.Description)
 }
 
 func makeTestService(t *testing.T, name string) *Service {
