@@ -60,7 +60,7 @@ Query variables:
 { "input": {
   "accountID": "b3972ae93c1c386769ea6453c7c42cbf936401e439cba129fa8373594eff74ae",
   "amountSats": 0,
-  "publicationID": "memo test"
+  "memo": "memo test"
 }}
 ```
 

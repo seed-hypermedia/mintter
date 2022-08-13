@@ -437,6 +437,10 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 		if resp.StatusCode > 299 || resp.StatusCode < 200 {
 			authErrCount++
 			if authErrCount >= maxAttempts {
+				errMsg, ok := genericResponse["message"]
+				if ok {
+					return fmt.Errorf("failed to make request status=%s error=%s", resp.Status, errMsg)
+				}
 				return fmt.Errorf("failed to make a request url=%s method=%s status=%s", request.URL, request.Method, resp.Status)
 			}
 			if resp.StatusCode == http.StatusUnauthorized {
@@ -472,6 +476,12 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 						return err
 					}
 				}
+			} else {
+				errMsg, ok := genericResponse["message"]
+				if ok {
+					return fmt.Errorf("failed to make request status=%s error=%s", resp.Status, errMsg)
+				}
+				return fmt.Errorf("failed to make a request url=%s method=%s status=%s", request.URL, request.Method, resp.Status)
 			}
 			continue
 		}
