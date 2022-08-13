@@ -77,6 +77,11 @@ type Mutation {
   deleteWallet(input: DeleteWalletInput!): DeleteWalletPayload!
 
   """
+  Export wallet to use it with an external application.
+  """
+  exportWallet(input: ExportWalletInput!): ExportWalletPayload!
+
+  """
   Request an invoice from a user. The user can be either a Mintter Account ID or a ln address.
   """
   requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
@@ -85,6 +90,11 @@ type Mutation {
   Pay invoice with a previously configured wallet.
   """
   payInvoice(input: PayInvoiceInput!): PayInvoicePayload!
+
+  """
+  Update lnaddress' nickname.
+  """
+  updateNickname(input: UpdateNicknameInput!): UpdateNicknamePayload!
 }
 
 """
@@ -177,6 +187,27 @@ type DeleteWalletPayload {
   id: ID!
 }
 
+
+"""
+Input to export a wallet.
+"""
+input ExportWalletInput {
+  """
+  ID of the wallet to be exported.
+  """
+  id: ID!
+}
+
+"""
+Response after exporting a wallet.
+"""
+type ExportWalletPayload {
+  """
+  ID of the deleted wallet.
+  """
+  credentials: String!
+}
+
 """
 Input for requesting an invoice.
 """
@@ -239,6 +270,26 @@ type PayInvoicePayload {
   Wallet ID that was used to pay the invoice.
   """
   walletID: ID!
+}
+
+"""
+Input to update lnaddress' nickname.
+"""
+input UpdateNicknameInput {
+  """
+  New nickname to update.
+  """
+  nickname: String!
+}
+
+"""
+Response after updating the nickname.
+"""
+type UpdateNicknamePayload {
+  """
+  Updated Nickname.
+  """
+  nickname: String!
 }
 
 """

@@ -23,6 +23,7 @@ type Service interface {
 	RequestRemoteInvoice(context.Context, string, int64, *string) (string, error)
 	CreateLocalInvoice(context.Context, int64, *string) (string, error)
 	PayInvoice(context.Context, string, *string, *uint64) (string, error)
+	UpdateLnaddressNickname(context.Context, string) error
 }
 
 // Resolver is the root of the GraphQL API.

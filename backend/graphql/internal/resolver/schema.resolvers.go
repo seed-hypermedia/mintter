@@ -106,6 +106,11 @@ func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.Del
 	return &generated.DeleteWalletPayload{ID: input.ID}, nil
 }
 
+// ExportWallet is the resolver for the exportWallet field.
+func (r *mutationResolver) ExportWallet(ctx context.Context, input generated.ExportWalletInput) (*generated.ExportWalletPayload, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // RequestInvoice is the resolver for the requestInvoice field.
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
 	lnaddress := strings.Split(input.User, "@")
@@ -136,6 +141,11 @@ func (r *mutationResolver) PayInvoice(ctx context.Context, input generated.PayIn
 	return &generated.PayInvoicePayload{
 		WalletID: walletID,
 	}, nil
+}
+
+// UpdateNickname is the resolver for the updateNickname field.
+func (r *mutationResolver) UpdateNickname(ctx context.Context, input generated.UpdateNicknameInput) (*generated.UpdateNicknamePayload, error) {
+	return &generated.UpdateNicknamePayload{Nickname: input.Nickname}, r.svc.UpdateLnaddressNickname(ctx, input.Nickname)
 }
 
 // Me is the resolver for the me field.

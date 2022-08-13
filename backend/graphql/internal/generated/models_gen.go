@@ -23,6 +23,18 @@ type DeleteWalletPayload struct {
 	ID string `json:"id"`
 }
 
+// Input to export a wallet.
+type ExportWalletInput struct {
+	// ID of the wallet to be exported.
+	ID string `json:"id"`
+}
+
+// Response after exporting a wallet.
+type ExportWalletPayload struct {
+	// ID of the deleted wallet.
+	Credentials string `json:"credentials"`
+}
+
 // Lightning wallet compatible with LndHub.
 type LndHubWallet struct {
 	// Globally unique ID of the wallet. Since this type of wallet doesn't have unique addresses
@@ -108,6 +120,18 @@ type SetupLndHubWalletInput struct {
 type SetupLndHubWalletPayload struct {
 	// The newly created wallet.
 	Wallet *LndHubWallet `json:"wallet"`
+}
+
+// Input to update lnaddress' nickname.
+type UpdateNicknameInput struct {
+	// New nickname to update.
+	Nickname string `json:"nickname"`
+}
+
+// Response after updating the nickname.
+type UpdateNicknamePayload struct {
+	// Updated Nickname.
+	Nickname string `json:"nickname"`
 }
 
 // Input to update Lightning wallets.

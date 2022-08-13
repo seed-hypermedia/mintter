@@ -49,6 +49,10 @@ type ComplexityRoot struct {
 		ID func(childComplexity int) int
 	}
 
+	ExportWalletPayload struct {
+		Credentials func(childComplexity int) int
+	}
+
 	LndHubWallet struct {
 		APIURL      func(childComplexity int) int
 		BalanceSats func(childComplexity int) int
@@ -64,10 +68,12 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		DeleteWallet      func(childComplexity int, input DeleteWalletInput) int
+		ExportWallet      func(childComplexity int, input ExportWalletInput) int
 		PayInvoice        func(childComplexity int, input PayInvoiceInput) int
 		RequestInvoice    func(childComplexity int, input RequestInvoiceInput) int
 		SetDefaultWallet  func(childComplexity int, input SetDefaultWalletInput) int
 		SetupLndHubWallet func(childComplexity int, input SetupLndHubWalletInput) int
+		UpdateNickname    func(childComplexity int, input UpdateNicknameInput) int
 		UpdateWallet      func(childComplexity int, input UpdateWalletInput) int
 	}
 
@@ -91,6 +97,10 @@ type ComplexityRoot struct {
 		Wallet func(childComplexity int) int
 	}
 
+	UpdateNicknamePayload struct {
+		Nickname func(childComplexity int) int
+	}
+
 	UpdateWalletPayload struct {
 		Wallet func(childComplexity int) int
 	}
@@ -105,8 +115,10 @@ type MutationResolver interface {
 	SetDefaultWallet(ctx context.Context, input SetDefaultWalletInput) (*SetDefaultWalletPayload, error)
 	UpdateWallet(ctx context.Context, input UpdateWalletInput) (*UpdateWalletPayload, error)
 	DeleteWallet(ctx context.Context, input DeleteWalletInput) (*DeleteWalletPayload, error)
+	ExportWallet(ctx context.Context, input ExportWalletInput) (*ExportWalletPayload, error)
 	RequestInvoice(ctx context.Context, input RequestInvoiceInput) (*RequestInvoicePayload, error)
 	PayInvoice(ctx context.Context, input PayInvoiceInput) (*PayInvoicePayload, error)
+	UpdateNickname(ctx context.Context, input UpdateNicknameInput) (*UpdateNicknamePayload, error)
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*Me, error)
@@ -133,6 +145,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DeleteWalletPayload.ID(childComplexity), true
+
+	case "ExportWalletPayload.credentials":
+		if e.complexity.ExportWalletPayload.Credentials == nil {
+			break
+		}
+
+		return e.complexity.ExportWalletPayload.Credentials(childComplexity), true
 
 	case "LndHubWallet.apiURL":
 		if e.complexity.LndHubWallet.APIURL == nil {
@@ -195,6 +214,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteWallet(childComplexity, args["input"].(DeleteWalletInput)), true
 
+	case "Mutation.exportWallet":
+		if e.complexity.Mutation.ExportWallet == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_exportWallet_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ExportWallet(childComplexity, args["input"].(ExportWalletInput)), true
+
 	case "Mutation.payInvoice":
 		if e.complexity.Mutation.PayInvoice == nil {
 			break
@@ -243,6 +274,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SetupLndHubWallet(childComplexity, args["input"].(SetupLndHubWalletInput)), true
 
+	case "Mutation.updateNickname":
+		if e.complexity.Mutation.UpdateNickname == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateNickname_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateNickname(childComplexity, args["input"].(UpdateNicknameInput)), true
+
 	case "Mutation.updateWallet":
 		if e.complexity.Mutation.UpdateWallet == nil {
 			break
@@ -290,6 +333,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SetupLndHubWalletPayload.Wallet(childComplexity), true
 
+	case "UpdateNicknamePayload.nickname":
+		if e.complexity.UpdateNicknamePayload.Nickname == nil {
+			break
+		}
+
+		return e.complexity.UpdateNicknamePayload.Nickname(childComplexity), true
+
 	case "UpdateWalletPayload.wallet":
 		if e.complexity.UpdateWalletPayload.Wallet == nil {
 			break
@@ -306,10 +356,12 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputDeleteWalletInput,
+		ec.unmarshalInputExportWalletInput,
 		ec.unmarshalInputPayInvoiceInput,
 		ec.unmarshalInputRequestInvoiceInput,
 		ec.unmarshalInputSetDefaultWalletInput,
 		ec.unmarshalInputSetupLndHubWalletInput,
+		ec.unmarshalInputUpdateNicknameInput,
 		ec.unmarshalInputUpdateWalletInput,
 	)
 	first := true
@@ -450,6 +502,11 @@ type Mutation {
   deleteWallet(input: DeleteWalletInput!): DeleteWalletPayload!
 
   """
+  Export wallet to use it with an external application.
+  """
+  exportWallet(input: ExportWalletInput!): ExportWalletPayload!
+
+  """
   Request an invoice from a user. The user can be either a Mintter Account ID or a ln address.
   """
   requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
@@ -458,6 +515,11 @@ type Mutation {
   Pay invoice with a previously configured wallet.
   """
   payInvoice(input: PayInvoiceInput!): PayInvoicePayload!
+
+  """
+  Update lnaddress' nickname.
+  """
+  updateNickname(input: UpdateNicknameInput!): UpdateNicknamePayload!
 }
 
 """
@@ -550,6 +612,27 @@ type DeleteWalletPayload {
   id: ID!
 }
 
+
+"""
+Input to export a wallet.
+"""
+input ExportWalletInput {
+  """
+  ID of the wallet to be exported.
+  """
+  id: ID!
+}
+
+"""
+Response after exporting a wallet.
+"""
+type ExportWalletPayload {
+  """
+  ID of the deleted wallet.
+  """
+  credentials: String!
+}
+
 """
 Input for requesting an invoice.
 """
@@ -612,6 +695,26 @@ type PayInvoicePayload {
   Wallet ID that was used to pay the invoice.
   """
   walletID: ID!
+}
+
+"""
+Input to update lnaddress' nickname.
+"""
+input UpdateNicknameInput {
+  """
+  New nickname to update.
+  """
+  nickname: String!
+}
+
+"""
+Response after updating the nickname.
+"""
+type UpdateNicknamePayload {
+  """
+  Updated Nickname.
+  """
+  nickname: String!
 }
 
 """
@@ -692,6 +795,21 @@ func (ec *executionContext) field_Mutation_deleteWallet_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_exportWallet_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ExportWalletInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNExportWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_payInvoice_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -744,6 +862,21 @@ func (ec *executionContext) field_Mutation_setupLndHubWallet_args(ctx context.Co
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNSetupLndHubWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐSetupLndHubWalletInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateNickname_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdateNicknameInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateNicknameInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknameInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -859,6 +992,50 @@ func (ec *executionContext) fieldContext_DeleteWalletPayload_id(ctx context.Cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ExportWalletPayload_credentials(ctx context.Context, field graphql.CollectedField, obj *ExportWalletPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ExportWalletPayload_credentials(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Credentials, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ExportWalletPayload_credentials(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ExportWalletPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1402,6 +1579,65 @@ func (ec *executionContext) fieldContext_Mutation_deleteWallet(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_exportWallet(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_exportWallet(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ExportWallet(rctx, fc.Args["input"].(ExportWalletInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ExportWalletPayload)
+	fc.Result = res
+	return ec.marshalNExportWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_exportWallet(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "credentials":
+				return ec.fieldContext_ExportWalletPayload_credentials(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ExportWalletPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_exportWallet_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_requestInvoice(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_requestInvoice(ctx, field)
 	if err != nil {
@@ -1514,6 +1750,65 @@ func (ec *executionContext) fieldContext_Mutation_payInvoice(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_payInvoice_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateNickname(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateNickname(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateNickname(rctx, fc.Args["input"].(UpdateNicknameInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*UpdateNicknamePayload)
+	fc.Result = res
+	return ec.marshalNUpdateNicknamePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateNickname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "nickname":
+				return ec.fieldContext_UpdateNicknamePayload_nickname(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UpdateNicknamePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateNickname_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -1882,6 +2177,50 @@ func (ec *executionContext) fieldContext_SetupLndHubWalletPayload_wallet(ctx con
 				return ec.fieldContext_LndHubWallet_isDefault(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type LndHubWallet", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateNicknamePayload_nickname(ctx context.Context, field graphql.CollectedField, obj *UpdateNicknamePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UpdateNicknamePayload_nickname(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Nickname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UpdateNicknamePayload_nickname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateNicknamePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3732,6 +4071,34 @@ func (ec *executionContext) unmarshalInputDeleteWalletInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputExportWalletInput(ctx context.Context, obj interface{}) (ExportWalletInput, error) {
+	var it ExportWalletInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPayInvoiceInput(ctx context.Context, obj interface{}) (PayInvoiceInput, error) {
 	var it PayInvoiceInput
 	asMap := map[string]interface{}{}
@@ -3884,6 +4251,34 @@ func (ec *executionContext) unmarshalInputSetupLndHubWalletInput(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateNicknameInput(ctx context.Context, obj interface{}) (UpdateNicknameInput, error) {
+	var it UpdateNicknameInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"nickname"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "nickname":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nickname"))
+			it.Nickname, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateWalletInput(ctx context.Context, obj interface{}) (UpdateWalletInput, error) {
 	var it UpdateWalletInput
 	asMap := map[string]interface{}{}
@@ -3957,6 +4352,34 @@ func (ec *executionContext) _DeleteWalletPayload(ctx context.Context, sel ast.Se
 		case "id":
 
 			out.Values[i] = ec._DeleteWalletPayload_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var exportWalletPayloadImplementors = []string{"ExportWalletPayload"}
+
+func (ec *executionContext) _ExportWalletPayload(ctx context.Context, sel ast.SelectionSet, obj *ExportWalletPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, exportWalletPayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ExportWalletPayload")
+		case "credentials":
+
+			out.Values[i] = ec._ExportWalletPayload_credentials(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -4138,6 +4561,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "exportWallet":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_exportWallet(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "requestInvoice":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -4151,6 +4583,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_payInvoice(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateNickname":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateNickname(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -4329,6 +4770,34 @@ func (ec *executionContext) _SetupLndHubWalletPayload(ctx context.Context, sel a
 		case "wallet":
 
 			out.Values[i] = ec._SetupLndHubWalletPayload_wallet(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var updateNicknamePayloadImplementors = []string{"UpdateNicknamePayload"}
+
+func (ec *executionContext) _UpdateNicknamePayload(ctx context.Context, sel ast.SelectionSet, obj *UpdateNicknamePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, updateNicknamePayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UpdateNicknamePayload")
+		case "nickname":
+
+			out.Values[i] = ec._UpdateNicknamePayload_nickname(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -4724,6 +5193,25 @@ func (ec *executionContext) marshalNDeleteWalletPayload2ᚖmintterᚋbackendᚋg
 	return ec._DeleteWalletPayload(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNExportWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletInput(ctx context.Context, v interface{}) (ExportWalletInput, error) {
+	res, err := ec.unmarshalInputExportWalletInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNExportWalletPayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx context.Context, sel ast.SelectionSet, v ExportWalletPayload) graphql.Marshaler {
+	return ec._ExportWalletPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNExportWalletPayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐExportWalletPayload(ctx context.Context, sel ast.SelectionSet, v *ExportWalletPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ExportWalletPayload(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4888,6 +5376,25 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateNicknameInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknameInput(ctx context.Context, v interface{}) (UpdateNicknameInput, error) {
+	res, err := ec.unmarshalInputUpdateNicknameInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpdateNicknamePayload2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx context.Context, sel ast.SelectionSet, v UpdateNicknamePayload) graphql.Marshaler {
+	return ec._UpdateNicknamePayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUpdateNicknamePayload2ᚖmintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateNicknamePayload(ctx context.Context, sel ast.SelectionSet, v *UpdateNicknamePayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UpdateNicknamePayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateWalletInput2mintterᚋbackendᚋgraphqlᚋinternalᚋgeneratedᚐUpdateWalletInput(ctx context.Context, v interface{}) (UpdateWalletInput, error) {

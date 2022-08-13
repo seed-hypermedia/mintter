@@ -35,6 +35,19 @@ export type DeleteWalletPayload = {
   id: Scalars['ID'];
 };
 
+/** Input to export a wallet. */
+export type ExportWalletInput = {
+  /** ID of the wallet to be exported. */
+  id: Scalars['ID'];
+};
+
+/** Response after exporting a wallet. */
+export type ExportWalletPayload = {
+  __typename?: 'ExportWalletPayload';
+  /** ID of the deleted wallet. */
+  credentials: Scalars['String'];
+};
+
 /** Common interface for Lightning wallets. We support different types. */
 export type LightningWallet = {
   /** Balance in Satoshis. */
@@ -79,6 +92,8 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** Delete existing wallet. */
   deleteWallet: DeleteWalletPayload;
+  /** Export wallet to use it with an external application. */
+  exportWallet: ExportWalletPayload;
   /** Pay invoice with a previously configured wallet. */
   payInvoice: PayInvoicePayload;
   /** Request an invoice from a user. The user can be either a Mintter Account ID or a ln address. */
@@ -90,6 +105,8 @@ export type Mutation = {
   setDefaultWallet: SetDefaultWalletPayload;
   /** Configure an LndHub compatible Lightning Wallet, e.g. BlueWallet. */
   setupLndHubWallet: SetupLndHubWalletPayload;
+  /** Update lnaddress' nickname. */
+  updateNickname: UpdateNicknamePayload;
   /** Update existing wallet. */
   updateWallet: UpdateWalletPayload;
 };
@@ -98,6 +115,12 @@ export type Mutation = {
 /** Top-level mutations. */
 export type MutationDeleteWalletArgs = {
   input: DeleteWalletInput;
+};
+
+
+/** Top-level mutations. */
+export type MutationExportWalletArgs = {
+  input: ExportWalletInput;
 };
 
 
@@ -122,6 +145,12 @@ export type MutationSetDefaultWalletArgs = {
 /** Top-level mutations. */
 export type MutationSetupLndHubWalletArgs = {
   input: SetupLndHubWalletInput;
+};
+
+
+/** Top-level mutations. */
+export type MutationUpdateNicknameArgs = {
+  input: UpdateNicknameInput;
 };
 
 
@@ -205,6 +234,19 @@ export type SetupLndHubWalletPayload = {
   __typename?: 'SetupLndHubWalletPayload';
   /** The newly created wallet. */
   wallet: LndHubWallet;
+};
+
+/** Input to update lnaddress' nickname. */
+export type UpdateNicknameInput = {
+  /** New nickname to update. */
+  nickname: Scalars['String'];
+};
+
+/** Response after updating the nickname. */
+export type UpdateNicknamePayload = {
+  __typename?: 'UpdateNicknamePayload';
+  /** Updated Nickname. */
+  nickname: Scalars['String'];
 };
 
 /** Input to update Lightning wallets. */

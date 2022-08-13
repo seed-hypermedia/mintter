@@ -334,6 +334,14 @@ func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (wall
 	return wallet.UpdateDefaultWallet(conn, walletID)
 }
 
+// UpdateLnaddressNickname tupdates nickname on the lndhub.go database
+// The update can fail if the nickname contain special characters or is already taken by another user.
+// Since it is a user operation, if the login is a CID, then user must provide a token representing
+// the pubkey whose private counterpart created the signature provided in password (like in create).
+func (srv *Service) UpdateLnaddressNickname(ctx context.Context, nickname string) error {
+	return srv.lightningClient.Lndhub.UpdateNickname(ctx, nickname)
+}
+
 // GetDefaultWallet gets the user's default wallet. If the user didn't manually
 // update the default wallet, then the first wallet ever created is the default
 // wallet. It will remain default until manually changed.
