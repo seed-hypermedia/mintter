@@ -52,7 +52,7 @@ export function BookmarkItem({
 
   async function onCopy() {
     await copyTextToClipboard(state.context.url)
-    toast.success('Bookmark ID copied successfully', {position: 'top-center'})
+    toast.success('ID copied successfully', {position: 'top-center'})
   }
 
   function onMainPanel() {
@@ -99,11 +99,11 @@ export function BookmarkItem({
         <Dropdown.Content
           align="start"
           data-testid="bookmark-item-dropdown-root"
-          hidden={deleteState.matches('opened')}
+          hidden={deleteState.matches('open')}
         >
           <Dropdown.Item onSelect={onCopy}>
             <Icon name="Copy" size="1" />
-            <Text size="2">Copy Bookmark ID</Text>
+            <Text size="2">Copy Document ID</Text>
           </Dropdown.Item>
           <Dropdown.Item onSelect={onMainPanel}>
             <Icon size="1" name="ArrowTopRight" />
