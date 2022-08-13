@@ -81,10 +81,7 @@ export type Mutation = {
   deleteWallet: DeleteWalletPayload;
   /** Pay invoice with a previously configured wallet. */
   payInvoice: PayInvoicePayload;
-  /**
-   * Request an invoice from another user in order to pay them with a separate Lightning Wallet.
-   * The user from which the invoice is requested must be currently connected, otherwise this call will fail.
-   */
+  /** Request an invoice from a user. The user can be either a Mintter Account ID or a ln address. */
   requestInvoice: RequestInvoicePayload;
   /**
    * Set an existing wallet to be the default one. Initially, the first configured wallet
@@ -164,12 +161,12 @@ export type Query = {
 
 /** Input for requesting an invoice. */
 export type RequestInvoiceInput = {
-  /** Mintter Account ID we want the invoice from. Can be self. */
-  accountID: Scalars['ID'];
   /** Amount in Satoshis the invoice should be created for. */
   amountSats: Scalars['Satoshis'];
   /** Optional description for the invoice. */
   memo?: InputMaybe<Scalars['String']>;
+  /** Mintter Account ID or lnaddress we want the invoice from. Can be ourselves. */
+  user: Scalars['String'];
 };
 
 /** Response with the invoice to pay. */

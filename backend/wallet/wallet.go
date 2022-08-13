@@ -358,7 +358,7 @@ func (srv *Service) RequestRemoteInvoice(ctx context.Context, remoteUser string,
 	}
 	var payReq string
 	var err error
-	payReq, err = srv.lightningClient.Lndhub.RequestRemoteInvoice(ctx, remoteUser, amountSats*1000, invoiceMemo)
+	payReq, err = srv.lightningClient.Lndhub.RequestRemoteInvoice(ctx, remoteUser, amountSats, invoiceMemo)
 	//err = fmt.Errorf("force p2p trnasmission")
 	if err != nil {
 		c, err := cid.Decode(remoteUser)

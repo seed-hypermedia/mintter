@@ -5,8 +5,10 @@ package resolver
 
 import (
 	"context"
+	"fmt"
 	"mintter/backend/graphql/internal/generated"
 	"mintter/backend/graphql/internal/model"
+	"strings"
 )
 
 // Wallets is the resolver for the wallets field.
@@ -106,7 +108,11 @@ func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.Del
 
 // RequestInvoice is the resolver for the requestInvoice field.
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
-	payReq, err := r.svc.RequestRemoteInvoice(ctx, input.AccountID, int64(input.AmountSats), input.Memo)
+	lnaddress := strings.Split(input.User, "@")
+	if len(lnaddress) == 2 && !strings.Contains(lnaddress[1], "mintter") {
+		return nil, fmt.Errorf("currently only supported mintter lndaddress")
+	}
+	payReq, err := r.svc.RequestRemoteInvoice(ctx, lnaddress[0], int64(input.AmountSats), input.Memo)
 	if err != nil {
 		return nil, err
 	}

@@ -129,7 +129,7 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 			Nickname: nickname,
 		},
 		Token: c.pubkey,
-	}, 2, &resp)
+	}, 1, &resp)
 	if err != nil {
 		return resp, err
 	}
@@ -168,7 +168,7 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 			Nickname: nickname,
 		},
 		Token: c.pubkey, // this token should be in reality the pubkey whose private counterpart was used to sign the password
-	}, 2, &resp)
+	}, 1, &resp)
 	if err != nil {
 		return err
 	}
@@ -232,7 +232,7 @@ func (c *Client) Auth(ctx context.Context) (string, error) {
 			Login:    login,
 			Password: pass,
 		},
-	}, 2, &resp)
+	}, 1, &resp)
 	if err != nil {
 		return resp.AccessToken, err
 	}
@@ -311,11 +311,11 @@ func (c *Client) CreateLocalInvoice(ctx context.Context, sats int64, memo string
 }
 
 // RequestRemoteInvoice quequest a remote peer via lndhub an invoice of amount
-// sats (in millisatoshis). The remote user can be either a lnaddres user or a
+// sats (in satoshis). The remote user can be either a lnaddres user or a
 // mintter account ID. We accept a short memo or description of purpose of
 // payment, to attach along with the invoice. The generated invoice will have
 // an expirationtime of 24 hours and a random preimage.
-func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, mSats int64, memo string) (string, error) {
+func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, amountSats int64, memo string) (string, error) {
 	type requestRemoteInvoiceResponse struct {
 		PayReq string `mapstructure:"pr"`
 	}
@@ -330,7 +330,7 @@ func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, mS
 	}
 
 	err = c.do(ctx, conn, httpRequest{
-		URL:    apiBaseURL + requestInvoiceRoute + "/" + remoteUser + "?amount=" + strconv.FormatInt(mSats, 10) + "&memo=" + strings.ReplaceAll(memo, " ", "+"),
+		URL:    apiBaseURL + requestInvoiceRoute + "/" + remoteUser + "?amount=" + strconv.FormatInt(amountSats*1000, 10) + "&memo=" + strings.ReplaceAll(memo, " ", "+"),
 		Method: http.MethodGet,
 	}, 2, &resp)
 
@@ -346,7 +346,7 @@ func DecodeInvoice(payReq string) (*zpay32.Invoice, error) {
 	} else if networkType == lnTestnet {
 		decodedInvoice, err = zpay32.Decode(payReq, &chaincfg.TestNet3Params)
 	} else {
-		return nil, fmt.Errorf("Could not decode invoice. Only testnet and meinnet are allowed")
+		return nil, fmt.Errorf("Could not decode invoice. Only testnet and mainnet are allowed")
 	}
 
 	if err != nil {

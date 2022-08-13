@@ -450,8 +450,7 @@ type Mutation {
   deleteWallet(input: DeleteWalletInput!): DeleteWalletPayload!
 
   """
-  Request an invoice from another user in order to pay them with a separate Lightning Wallet.
-  The user from which the invoice is requested must be currently connected, otherwise this call will fail.
+  Request an invoice from a user. The user can be either a Mintter Account ID or a ln address.
   """
   requestInvoice(input: RequestInvoiceInput!): RequestInvoicePayload!
 
@@ -556,9 +555,9 @@ Input for requesting an invoice.
 """
 input RequestInvoiceInput {
   """
-  Mintter Account ID we want the invoice from. Can be self.
+  Mintter Account ID or lnaddress we want the invoice from. Can be ourselves.
   """
-  accountID: ID!
+  user: String!
 
   """
   Amount in Satoshis the invoice should be created for.
@@ -3784,18 +3783,18 @@ func (ec *executionContext) unmarshalInputRequestInvoiceInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"accountID", "amountSats", "memo"}
+	fieldsInOrder := [...]string{"user", "amountSats", "memo"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "accountID":
+		case "user":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accountID"))
-			it.AccountID, err = ec.unmarshalNID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user"))
+			it.User, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
