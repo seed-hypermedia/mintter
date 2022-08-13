@@ -162,14 +162,14 @@ export type Query = {
   me: Me;
 };
 
-/** Input for requesting an invoice for tipping. */
+/** Input for requesting an invoice. */
 export type RequestInvoiceInput = {
-  /** Mintter Account ID we want to tip. */
+  /** Mintter Account ID we want the invoice from. Can be self. */
   accountID: Scalars['ID'];
   /** Amount in Satoshis the invoice should be created for. */
   amountSats: Scalars['Satoshis'];
-  /** Optional ID of the publication we want to tip for. */
-  publicationID?: InputMaybe<Scalars['ID']>;
+  /** Optional description for the invoice. */
+  memo?: InputMaybe<Scalars['String']>;
 };
 
 /** Response with the invoice to pay. */

@@ -106,7 +106,7 @@ func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.Del
 
 // RequestInvoice is the resolver for the requestInvoice field.
 func (r *mutationResolver) RequestInvoice(ctx context.Context, input generated.RequestInvoiceInput) (*generated.RequestInvoicePayload, error) {
-	payReq, err := r.svc.RequestInvoice(ctx, input.AccountID, int64(input.AmountSats), input.PublicationID)
+	payReq, err := r.svc.RequestRemoteInvoice(ctx, input.AccountID, int64(input.AmountSats), input.Memo)
 	if err != nil {
 		return nil, err
 	}

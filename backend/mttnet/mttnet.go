@@ -124,12 +124,11 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 		cfg:             cfg,
 		accountObjectID: accountObj,
 		client:          client,
-
-		p2p:     host,
-		bitswap: bitswap,
-		grpc:    grpc.NewServer(),
-		quit:    &clean,
-		ready:   make(chan struct{}),
+		p2p:             host,
+		bitswap:         bitswap,
+		grpc:            grpc.NewServer(),
+		quit:            &clean,
+		ready:           make(chan struct{}),
 	}
 
 	// rpc handler is how we respond to remote RPCs over libp2p.
@@ -142,6 +141,11 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	}
 
 	return n, nil
+}
+
+// SetInvoicer assign an invoicer service to the node struct
+func (n *Node) SetInvoicer(inv Invoicer) {
+	n.invoicer = inv
 }
 
 // VCS returns the underlying VCS. Should not be here at all, but used in tests of other packages.

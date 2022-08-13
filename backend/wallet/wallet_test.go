@@ -98,14 +98,14 @@ func TestRequestP2PInvoice(t *testing.T) {
 	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
 	cid := bob.net.MustGet().ID().AccountID()
-	const amt = 0
-	var memo = "zero amt invoice"
-	payreq, err := alice.RequestInvoice(ctx, cid.String(), 10, &memo) // TODO: modify RequestInvoice so it calls the lndhub.go (if present) wallet if P2P invoice failed
+	const amt = 23
+	var memo = "test invoice"
+	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), amt, &memo) // TODO: modify RequestInvoice so it calls the lndhub.go (if present) wallet if P2P invoice failed
 	require.NoError(t, err)
 	invoice, err := lndhub.DecodeInvoice(payreq)
 	require.NoError(t, err)
 	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())
-	require.EqualValues(t, memo, invoice.Description)
+	require.EqualValues(t, memo, *invoice.Description)
 }
 
 func makeTestService(t *testing.T, name string) *Service {

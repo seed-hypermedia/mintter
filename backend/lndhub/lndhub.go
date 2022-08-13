@@ -22,18 +22,22 @@ import (
 )
 
 const (
-	createRoute        = "/v2/create" // v2 is the one created by our fork
-	balanceRoute       = "/balance"
-	authRoute          = "/auth"
-	createInvoiceRoute = "/addinvoice"
-	payInvoiceRoute    = "/payinvoice"
-	decodeInvoiceRoute = "/decodeinvoice" // Not used, using internal LND decoder instead
-	getInvoiceRoute    = "/getuserinvoice"
-	MintterDomain      = "ln.testnet.mintter.com"
-	LnaddressDomain    = "testnet.mintter.com"
-	networkType        = lnTestnet
-	SigninMessage      = "sign in into mintter lndhub"
-	NoPubKeyError      = "No Account information yet"
+	createRoute         = "/v2/create" // v2 is the one created by our fork
+	balanceRoute        = "/balance"
+	authRoute           = "/auth"
+	createInvoiceRoute  = "/addinvoice"
+	requestInvoiceRoute = "/v2/invoice"
+	payInvoiceRoute     = "/payinvoice"
+	decodeInvoiceRoute  = "/decodeinvoice" // Not used, using internal LND decoder instead
+	getInvoiceRoute     = "/getuserinvoice"
+
+	//Change these three to mainnet/testnet
+	MintterDomain   = "ln.testnet.mintter.com"
+	LnaddressDomain = "testnet.mintter.com"
+	networkType     = lnTestnet
+
+	SigninMessage = "sign in into mintter lndhub"
+	NoPubKeyError = "No Account information yet"
 
 	// Types.
 	lnTestnet = iota
@@ -52,6 +56,7 @@ type lndhubErrorTemplate struct {
 	Message string `mapstructure:"message"`
 }
 
+// Client stores all thenecessary structs to perform wallet operations
 type Client struct {
 	http     *http.Client
 	db       *sqlitex.Pool
@@ -202,7 +207,7 @@ func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
 }
 
 // Auth tries to get authorized on the lndhub service pointed by apiBaseURL.
-// There must be a credentials stored in the database
+// There must be a credentials stored in the database.
 func (c *Client) Auth(ctx context.Context) (string, error) {
 	var resp authResponse
 	conn := c.db.Get(ctx)
@@ -234,7 +239,7 @@ func (c *Client) Auth(ctx context.Context) (string, error) {
 	return resp.AccessToken, lndhub.SetToken(conn, c.WalletID, resp.AccessToken)
 }
 
-// Get the confirmed balance in satoshis of the account
+// GetBalance gets the confirmed balance in satoshis of the account.
 func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 	type btcBalance struct {
 		Sats uint64 `mapstructure:"AvailableBalance"`
@@ -262,24 +267,24 @@ func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 		Token:  token,
 	}, 2, &resp)
 	return resp.Btc.Sats, err
-
 }
 
-// CreateInvoice creates an invoice of amount sats (in satoshis). zero amount invoices
-// are not supported, so make sure amount > 0.We also accept a short memo or description of
-// purpose of payment, to attach along with the invoice. The generated invoice
-// will have an expiration time of 24 hours and a random preimage
-func (c *Client) CreateInvoice(ctx context.Context, amount int64, memo string) (string, error) {
-	type createInvoiceRequest struct {
+// CreateLocalInvoice creates an invoice of amount sats (in satoshis)
+// for the internal node . We accept a short memo or description of purpose
+// of payment, to attach along with the invoice. The generated invoice will
+// have an expiration time of 24 hours and a random preimage.
+func (c *Client) CreateLocalInvoice(ctx context.Context, sats int64, memo string) (string, error) {
+	type createLocalInvoiceRequest struct {
 		Amt  int64  `json:"amt"`
 		Memo string `json:"memo"`
+		// TODO: Accept payment metadata
 	}
 
-	type createInvoiceResponse struct {
+	type createLocalInvoiceResponse struct {
 		PayReq string `mapstructure:"payment_request"`
 	}
 
-	var resp createInvoiceResponse
+	var resp createLocalInvoiceResponse
 	conn := c.db.Get(ctx)
 	defer c.db.Put(conn)
 
@@ -296,10 +301,37 @@ func (c *Client) CreateInvoice(ctx context.Context, amount int64, memo string) (
 		URL:    apiBaseURL + createInvoiceRoute,
 		Method: http.MethodPost,
 		Token:  token,
-		Payload: createInvoiceRequest{
-			Amt:  amount,
+		Payload: createLocalInvoiceRequest{
+			Amt:  sats,
 			Memo: memo,
 		},
+	}, 2, &resp)
+
+	return resp.PayReq, err
+}
+
+// RequestRemoteInvoice quequest a remote peer via lndhub an invoice of amount
+// sats (in millisatoshis). The remote user can be either a lnaddres user or a
+// mintter account ID. We accept a short memo or description of purpose of
+// payment, to attach along with the invoice. The generated invoice will have
+// an expirationtime of 24 hours and a random preimage.
+func (c *Client) RequestRemoteInvoice(ctx context.Context, remoteUser string, mSats int64, memo string) (string, error) {
+	type requestRemoteInvoiceResponse struct {
+		PayReq string `mapstructure:"pr"`
+	}
+
+	var resp requestRemoteInvoiceResponse
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
+
+	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return resp.PayReq, err
+	}
+
+	err = c.do(ctx, conn, httpRequest{
+		URL:    apiBaseURL + requestInvoiceRoute + "/" + remoteUser + "?amount=" + strconv.FormatInt(mSats, 10) + "&memo=" + strings.ReplaceAll(memo, " ", "+"),
+		Method: http.MethodGet,
 	}, 2, &resp)
 
 	return resp.PayReq, err
@@ -321,7 +353,6 @@ func DecodeInvoice(payReq string) (*zpay32.Invoice, error) {
 		return nil, err
 	}
 	return decodedInvoice, nil
-
 }
 
 // PayInvoice tries to pay the invoice provided. With the amount provided in satoshis. The
@@ -360,9 +391,7 @@ func (c *Client) PayInvoice(ctx context.Context, payReq string, sats uint64) err
 			Amount:  sats,
 		},
 	}, 2, nil)
-
 	return err
-
 }
 
 func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest, maxAttempts uint, respValue interface{}) error {
@@ -437,7 +466,6 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 					if err = lndhub.SetToken(conn, c.WalletID, authResp.AccessToken); err != nil {
 						return err
 					}
-
 				}
 			}
 			continue
@@ -451,7 +479,6 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 			if err := mapstructure.Decode(genericResponse, respValue); err != nil {
 				return err
 			}
-
 		}
 
 		return nil

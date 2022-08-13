@@ -89,12 +89,21 @@ func TestCreate(t *testing.T) {
 	balance, err := lndHubClient.GetBalance(ctx)
 	require.NoError(t, err)
 	require.EqualValues(t, 0, balance)
-	payreq, err := lndHubClient.CreateInvoice(ctx, invoiceAmt, invoiceMemo)
+	payreq, err := lndHubClient.CreateLocalInvoice(ctx, invoiceAmt, invoiceMemo)
 	require.NoError(t, err)
 	decodedInvoice, err := DecodeInvoice(payreq)
 	require.NoError(t, err)
 	require.EqualValues(t, invoiceMemo, *decodedInvoice.Description)
 	require.EqualValues(t, invoiceAmt, uint64(decodedInvoice.MilliSat.ToSatoshis()))
+	const zeroAmt = 0
+	const invoiceMemo2 = "zero invoice test amount"
+	payreq, err = lndHubClient.RequestRemoteInvoice(ctx, newNickname, zeroAmt, invoiceMemo2)
+	require.NoError(t, err)
+	decodedInvoice, err = DecodeInvoice(payreq)
+	require.NoError(t, err)
+	require.EqualValues(t, invoiceMemo2, *decodedInvoice.Description)
+	require.Nil(t, decodedInvoice.MilliSat) // when amt is zero, the result is nil
+	//TODO: test for invoice metadata
 }
 
 func randStringRunes(n int) string {

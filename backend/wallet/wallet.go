@@ -114,6 +114,11 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 				}
 			}
 		}
+		n, err := net.Await(ctx)
+		if err != nil {
+			return err
+		}
+		n.SetInvoicer(&srv)
 		return nil
 	}()
 	return &srv
@@ -343,30 +348,55 @@ func (srv *Service) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error)
 
 }
 
-// RequestInvoice asks a remote peer to issue an invoice. Any of the devices associated with the accountID
-// can issue the invoice. The memo field is optional and can be left nil
-func (srv *Service) RequestInvoice(ctx context.Context, accountID string, amountSats int64, memo *string) (string, error) {
+// RequestRemoteInvoice asks a remote peer to issue an invoice. The remote user can be either a lnaddres or a mintter account ID
+// First an lndhub invoice request is attempted. In it fails, then a P2P its used to transmit the invoice. In that case,
+// Any of the devices associated with the accountID can issue the invoice. The memo field is optional and can be left nil.
+func (srv *Service) RequestRemoteInvoice(ctx context.Context, remoteUser string, amountSats int64, memo *string) (string, error) {
+	invoiceMemo := ""
+	if memo != nil {
+		invoiceMemo = *memo
+	}
+	var payReq string
+	var err error
+	payReq, err = srv.lightningClient.Lndhub.RequestRemoteInvoice(ctx, remoteUser, amountSats*1000, invoiceMemo)
+	//err = fmt.Errorf("force p2p trnasmission")
+	if err != nil {
+		c, err := cid.Decode(remoteUser)
+		if err != nil {
+			return "", fmt.Errorf("couldn't parse accountID string [%s], If using p2p transmission, remoteUser must be a valid accountID", remoteUser)
+		}
+		payReq, err = srv.P2PInvoiceRequest(ctx, c,
+			InvoiceRequest{
+				AmountSats:   amountSats,
+				Memo:         invoiceMemo,
+				HoldInvoice:  false,    // TODO: Add support hold invoices
+				PreimageHash: []byte{}, // Only aplicable to hold invoices
+			})
+		if err != nil {
+			return "", fmt.Errorf("Could not request invoice via P2P. %s", err.Error())
+		}
+	}
+
+	return payReq, nil
+}
+
+// CreateLocalInvoice tries to generate an invoice locally from the default wallet The memo field is optional and can be left nil.
+func (srv *Service) CreateLocalInvoice(ctx context.Context, amountSats int64, memo *string) (string, error) {
 	invoiceMemo := ""
 	if memo != nil {
 		invoiceMemo = *memo
 	}
 
-	c, err := cid.Decode(accountID)
+	defaultWallet, err := srv.GetDefaultWallet(ctx)
 	if err != nil {
-		return "", fmt.Errorf("couldn't parse accountID string [%s], please check it is a proper accountID", accountID)
+		return "", fmt.Errorf("could not get default wallet to ask for a local invoice. %s", err.Error())
 	}
 
-	payReq, err := srv.P2PInvoiceRequest(ctx, c,
-		InvoiceRequest{
-			AmountSats:   amountSats,
-			Memo:         invoiceMemo,
-			HoldInvoice:  false,    // TODO: Add support hold invoices
-			PreimageHash: []byte{}, // Only aplicable to hold invoices
-		})
-	if err != nil {
-		return "", err
+	if defaultWallet.Type != lndhubsql.LndhubWalletType && defaultWallet.Type != lndhubsql.LndhubGoWalletType {
+		return "", fmt.Errorf("Wallet type %s not compatible with local invoice creation", defaultWallet.Type)
 	}
-	return payReq, nil
+
+	return srv.lightningClient.Lndhub.CreateLocalInvoice(ctx, amountSats, invoiceMemo)
 }
 
 // PayInvoice tries to pay the provided invoice. If a walletID is provided, that wallet will be used instead of the default one

@@ -67,14 +67,14 @@ type PayInvoicePayload struct {
 	WalletID string `json:"walletID"`
 }
 
-// Input for requesting an invoice for tipping.
+// Input for requesting an invoice.
 type RequestInvoiceInput struct {
-	// Mintter Account ID we want to tip.
+	// Mintter Account ID we want the invoice from. Can be self.
 	AccountID string `json:"accountID"`
 	// Amount in Satoshis the invoice should be created for.
 	AmountSats model.Satoshis `json:"amountSats"`
-	// Optional ID of the publication we want to tip for.
-	PublicationID *string `json:"publicationID"`
+	// Optional description for the invoice.
+	Memo *string `json:"memo"`
 }
 
 // Response with the invoice to pay.

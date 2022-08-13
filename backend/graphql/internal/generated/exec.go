@@ -552,11 +552,11 @@ type DeleteWalletPayload {
 }
 
 """
-Input for requesting an invoice for tipping.
+Input for requesting an invoice.
 """
 input RequestInvoiceInput {
   """
-  Mintter Account ID we want to tip.
+  Mintter Account ID we want the invoice from. Can be self.
   """
   accountID: ID!
 
@@ -566,9 +566,9 @@ input RequestInvoiceInput {
   amountSats: Satoshis!
 
   """
-  Optional ID of the publication we want to tip for.
+  Optional description for the invoice.
   """
-  publicationID: ID
+  memo: String
 }
 
 """
@@ -3784,7 +3784,7 @@ func (ec *executionContext) unmarshalInputRequestInvoiceInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"accountID", "amountSats", "publicationID"}
+	fieldsInOrder := [...]string{"accountID", "amountSats", "memo"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3807,11 +3807,11 @@ func (ec *executionContext) unmarshalInputRequestInvoiceInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-		case "publicationID":
+		case "memo":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicationID"))
-			it.PublicationID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memo"))
+			it.Memo, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}

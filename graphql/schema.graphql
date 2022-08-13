@@ -179,11 +179,11 @@ type DeleteWalletPayload {
 }
 
 """
-Input for requesting an invoice for tipping.
+Input for requesting an invoice.
 """
 input RequestInvoiceInput {
   """
-  Mintter Account ID we want to tip.
+  Mintter Account ID we want the invoice from. Can be self.
   """
   accountID: ID!
 
@@ -193,9 +193,9 @@ input RequestInvoiceInput {
   amountSats: Satoshis!
 
   """
-  Optional ID of the publication we want to tip for.
+  Optional description for the invoice.
   """
-  publicationID: ID
+  memo: String
 }
 
 """
