@@ -452,8 +452,13 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 					if err != nil {
 						return err
 					}
+					apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+					if err != nil {
+						return err
+					}
+
 					err = c.do(ctx, conn, httpRequest{
-						URL:    request.URL,
+						URL:    apiBaseURL + authRoute,
 						Method: http.MethodPost,
 						Payload: authRequest{
 							Login:    login,
