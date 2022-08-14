@@ -44,7 +44,7 @@ export type ExportWalletInput = {
 /** Response after exporting a wallet. */
 export type ExportWalletPayload = {
   __typename?: 'ExportWalletPayload';
-  /** ID of the deleted wallet. */
+  /** credentials of the exported wallet. */
   credentials: Scalars['String'];
 };
 

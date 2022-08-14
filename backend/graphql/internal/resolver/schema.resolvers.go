@@ -108,7 +108,11 @@ func (r *mutationResolver) DeleteWallet(ctx context.Context, input generated.Del
 
 // ExportWallet is the resolver for the exportWallet field.
 func (r *mutationResolver) ExportWallet(ctx context.Context, input generated.ExportWalletInput) (*generated.ExportWalletPayload, error) {
-	panic(fmt.Errorf("not implemented"))
+	uri, err := r.svc.ExportWallet(ctx, input.ID)
+	if err != nil {
+		return &generated.ExportWalletPayload{}, err
+	}
+	return &generated.ExportWalletPayload{Credentials: uri}, nil
 }
 
 // RequestInvoice is the resolver for the requestInvoice field.

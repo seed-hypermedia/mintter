@@ -39,7 +39,9 @@ query {
     wallets {
       name
       balanceSats
+      id
     }
+    lnaddress
   }
 }
 ```

@@ -334,7 +334,43 @@ func (srv *Service) SetDefaultWallet(ctx context.Context, walletID string) (wall
 	return wallet.UpdateDefaultWallet(conn, walletID)
 }
 
-// UpdateLnaddressNickname tupdates nickname on the lndhub.go database
+// ExportWallet returns the wallet credentials in uri format so the user can import it
+// to an external app. the uri format is:
+// <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
+// lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io
+func (srv *Service) ExportWallet(ctx context.Context, walletID string) (string, error) {
+	conn := srv.pool.Get(ctx)
+	if conn == nil {
+		return "", fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
+	}
+	defer srv.pool.Put(conn)
+	login, err := lndhubsql.GetLogin(conn, walletID)
+	if err != nil {
+		return "", err
+	}
+	password, err := lndhubsql.GetPassword(conn, walletID)
+	if err != nil {
+		return "", err
+	}
+	url, err := lndhubsql.GetAPIURL(conn, walletID)
+	if err != nil {
+		return "", err
+	}
+	splitURL := strings.Split(url, "//")
+	if len(splitURL) != 2 {
+		return "", fmt.Errorf("Could not export wallet, unexpected url format [%s]", url)
+	}
+	//TODO: strip off the https:// part of the apiurl
+	return EncodeCredentialsURL(Credentials{
+		Domain:     splitURL[1],
+		WalletType: lndhubsql.LndhubWalletType,
+		Login:      login,
+		Password:   password,
+		ID:         walletID,
+	})
+}
+
+// UpdateLnaddressNickname updates nickname on the lndhub.go database
 // The update can fail if the nickname contain special characters or is already taken by another user.
 // Since it is a user operation, if the login is a CID, then user must provide a token representing
 // the pubkey whose private counterpart created the signature provided in password (like in create).

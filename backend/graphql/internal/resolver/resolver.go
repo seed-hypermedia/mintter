@@ -20,6 +20,7 @@ type Service interface {
 	UpdateWalletName(context.Context, string, string) (wallet.Wallet, error)
 	SetDefaultWallet(context.Context, string) (wallet.Wallet, error)
 	GetDefaultWallet(context.Context) (wallet.Wallet, error)
+	ExportWallet(context.Context, string) (string, error)
 	RequestRemoteInvoice(context.Context, string, int64, *string) (string, error)
 	CreateLocalInvoice(context.Context, int64, *string) (string, error)
 	PayInvoice(context.Context, string, *string, *uint64) (string, error)

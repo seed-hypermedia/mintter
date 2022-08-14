@@ -31,7 +31,7 @@ type ExportWalletInput struct {
 
 // Response after exporting a wallet.
 type ExportWalletPayload struct {
-	// ID of the deleted wallet.
+	// credentials of the exported wallet.
 	Credentials string `json:"credentials"`
 }
 

@@ -628,7 +628,7 @@ Response after exporting a wallet.
 """
 type ExportWalletPayload {
   """
-  ID of the deleted wallet.
+  credentials of the exported wallet.
   """
   credentials: String!
 }
