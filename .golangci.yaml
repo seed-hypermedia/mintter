@@ -6,6 +6,8 @@ linters:
     - godot
     - misspell
     - bodyclose
+    - errname
+    - errorlint
 issues:
   exclude-rules:
     # For test helpers it's often convenient to pass *testing.T as the first parameter.
