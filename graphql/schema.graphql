@@ -34,6 +34,11 @@ type Query {
   Information about the current user.
   """
   me: Me!
+
+  """
+  Information about payments.
+  """
+  payments(walletID: ID!, excludeUnpaid: Boolean, excludeKeysend: Boolean, excludeExpired: Boolean): Payments!
 }
 
 """
@@ -50,6 +55,22 @@ type Me {
   """
   lnaddress: String @goField(forceResolver: true)
 }
+
+
+"""
+Information about payments
+"""
+type Payments {
+  """
+  Payments made. They can be unconfirmed
+  """
+  sent: [Invoice]
+  """
+  Payments received. They can be unconfirmed
+  """
+  received: [Invoice]
+}
+
 
 """
 Top-level mutations.
@@ -346,4 +367,70 @@ type LndHubWallet implements LightningWallet {
   If this wallet is the default wallet to send/receive automatic payments
   """
   isDefault: Boolean!
+}
+
+"""
+Lightning Invoices
+"""
+type Invoice {
+  """
+  Preimage hash of the payment.
+  """
+	PaymentHash:     String    
+  """
+  Bolt-11 encoded invoice.
+  """        
+	PaymentRequest:  String      
+  """
+  Memo field of the invoice.
+  """      
+	Description:     String    
+  """
+  Memo hash in case its too long 
+  """        
+	DescriptionHash: String  
+  """
+  Invoice secret known at settlement. Proof of payment
+  """          
+	PaymentPreimage: String   
+  """
+  Payee lightning node ID.
+  """         
+	Destination:     String     
+  """
+  Invoice qunatuty in satoshis.
+  """         
+	Amount:          Satoshis!   
+  """
+  Fees incurred by the payer when paying the invoice
+  """          
+	Fee:             Satoshis     
+  """
+  Status of the invoice. (Settled, in-flight, expired, ...)
+  """          
+	Status:          String    
+  """
+  Invoice tyoe
+  """     
+	Type:            String   
+  """
+  Error of the invoice
+  """      
+	ErrorMessage:    String   
+  """
+  Settlement date
+  """      
+	SettledAt:       String 
+  """
+  Expiring date.
+  """        
+	ExpiresAt:       String    
+  """
+  If the invoice has been paid or not.
+  """     
+	IsPaid:          Boolean   
+  """
+  Whether or not this is a made up invoice corrensponding with a keysend payment
+  """             
+	Keysend:         Boolean              
 }

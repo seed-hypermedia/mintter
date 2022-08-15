@@ -35,6 +35,40 @@ type ExportWalletPayload struct {
 	Credentials string `json:"credentials"`
 }
 
+// Lightning Invoices
+type Invoice struct {
+	// Preimage hash of the payment.
+	PaymentHash *string `json:"PaymentHash"`
+	// Bolt-11 encoded invoice.
+	PaymentRequest *string `json:"PaymentRequest"`
+	// Memo field of the invoice.
+	Description *string `json:"Description"`
+	// Memo hash in case its too long
+	DescriptionHash *string `json:"DescriptionHash"`
+	// Invoice secret known at settlement. Proof of payment
+	PaymentPreimage *string `json:"PaymentPreimage"`
+	// Payee lightning node ID.
+	Destination *string `json:"Destination"`
+	// Invoice qunatuty in satoshis.
+	Amount model.Satoshis `json:"Amount"`
+	// Fees incurred by the payer when paying the invoice
+	Fee *model.Satoshis `json:"Fee"`
+	// Status of the invoice. (Settled, in-flight, expired, ...)
+	Status *string `json:"Status"`
+	// Invoice tyoe
+	Type *string `json:"Type"`
+	// Error of the invoice
+	ErrorMessage *string `json:"ErrorMessage"`
+	// Settlement date
+	SettledAt *string `json:"SettledAt"`
+	// Expiring date.
+	ExpiresAt *string `json:"ExpiresAt"`
+	// If the invoice has been paid or not.
+	IsPaid *bool `json:"IsPaid"`
+	// Whether or not this is a made up invoice corrensponding with a keysend payment
+	Keysend *bool `json:"Keysend"`
+}
+
 // Lightning wallet compatible with LndHub.
 type LndHubWallet struct {
 	// Globally unique ID of the wallet. Since this type of wallet doesn't have unique addresses
@@ -77,6 +111,14 @@ type PayInvoiceInput struct {
 type PayInvoicePayload struct {
 	// Wallet ID that was used to pay the invoice.
 	WalletID string `json:"walletID"`
+}
+
+// Information about payments
+type Payments struct {
+	// Payments made. They can be unconfirmed
+	Sent []*Invoice `json:"sent"`
+	// Payments received. They can be unconfirmed
+	Received []*Invoice `json:"received"`
 }
 
 // Input for requesting an invoice.

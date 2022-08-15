@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"mintter/backend/graphql/internal/generated"
 	"mintter/backend/graphql/internal/model"
+	"mintter/backend/lndhub"
 	"strings"
+	"time"
 )
 
 // Wallets is the resolver for the wallets field.
@@ -155,6 +157,86 @@ func (r *mutationResolver) UpdateNickname(ctx context.Context, input generated.U
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*generated.Me, error) {
 	return &generated.Me{}, nil
+}
+
+// Payments is the resolver for the payments field.
+func (r *queryResolver) Payments(ctx context.Context, walletID string, excludeUnpaid *bool, excludeKeysend *bool, excludeExpired *bool) (*generated.Payments, error) {
+	var ret generated.Payments
+	received, err := r.svc.ListReceivednvoices(ctx, walletID)
+	if err != nil {
+		return &ret, err
+	}
+	sent, err := r.svc.ListPaidInvoices(ctx, walletID)
+	if err != nil {
+		return &ret, err
+	}
+	validRxInvoices := make([]lndhub.Invoice, len(received))
+	for i, invoice := range received {
+		incInvoice := false
+		if excludeExpired != nil && *excludeExpired {
+			expiresAt, err := time.Parse(time.RFC3339, invoice.ExpiresAt)
+			if err != nil {
+				return &ret, fmt.Errorf("Can't parse expiration date. %s", err.Error())
+			}
+			incInvoice = time.Until(expiresAt) > 0
+		}
+		if (excludeUnpaid == nil || (excludeUnpaid != nil && !*excludeUnpaid) || (excludeUnpaid != nil && *excludeUnpaid && invoice.IsPaid)) &&
+			(excludeKeysend == nil || (excludeKeysend != nil && !*excludeKeysend) || (excludeKeysend != nil && *excludeKeysend && invoice.Keysend)) &&
+			(excludeExpired == nil || (excludeExpired != nil && !*excludeExpired) || incInvoice) {
+			validRxInvoices[i] = invoice // otherwise the address is always the same
+			ret.Received = append(ret.Received, &generated.Invoice{
+				PaymentHash:     &validRxInvoices[i].PaymentHash,
+				PaymentRequest:  &validRxInvoices[i].PaymentRequest,
+				Description:     &validRxInvoices[i].Description,
+				DescriptionHash: &validRxInvoices[i].Description,
+				PaymentPreimage: &validRxInvoices[i].PaymentHash,
+				Destination:     &validRxInvoices[i].Destination,
+				Amount:          model.Satoshis(validRxInvoices[i].Amount),
+				Fee:             (*model.Satoshis)(&validRxInvoices[i].Fee),
+				Status:          &validRxInvoices[i].Status,
+				Type:            &validRxInvoices[i].Type,
+				ErrorMessage:    &validRxInvoices[i].ErrorMessage,
+				SettledAt:       &validRxInvoices[i].SettledAt,
+				ExpiresAt:       &validRxInvoices[i].ExpiresAt,
+				IsPaid:          &validRxInvoices[i].IsPaid,
+				Keysend:         &validRxInvoices[i].Keysend,
+			})
+		}
+	}
+	validTxInvoices := make([]lndhub.Invoice, len(sent))
+	for i, invoice := range sent {
+		incInvoice := false
+		if excludeExpired != nil && *excludeExpired {
+			expiresAt, err := time.Parse(time.RFC3339, invoice.ExpiresAt)
+			if err != nil {
+				return &ret, fmt.Errorf("Can't parse expiration date. %s", err.Error())
+			}
+			incInvoice = time.Until(expiresAt) > 0
+		}
+		if (excludeUnpaid == nil || (excludeUnpaid != nil && !*excludeUnpaid) || (excludeUnpaid != nil && *excludeUnpaid && invoice.IsPaid)) &&
+			(excludeKeysend == nil || (excludeKeysend != nil && !*excludeKeysend) || (excludeKeysend != nil && *excludeKeysend && invoice.Keysend)) &&
+			(excludeExpired == nil || (excludeExpired != nil && !*excludeExpired) || incInvoice) {
+			validTxInvoices[i] = invoice // otherwise the address is always the same
+			ret.Sent = append(ret.Sent, &generated.Invoice{
+				PaymentHash:     &validTxInvoices[i].PaymentHash,
+				PaymentRequest:  &validTxInvoices[i].PaymentRequest,
+				Description:     &validTxInvoices[i].Description,
+				DescriptionHash: &validTxInvoices[i].Description,
+				PaymentPreimage: &validTxInvoices[i].PaymentHash,
+				Destination:     &validTxInvoices[i].Destination,
+				Amount:          model.Satoshis(validTxInvoices[i].Amount),
+				Fee:             (*model.Satoshis)(&validTxInvoices[i].Fee),
+				Status:          &validTxInvoices[i].Status,
+				Type:            &validTxInvoices[i].Type,
+				ErrorMessage:    &validTxInvoices[i].ErrorMessage,
+				SettledAt:       &validTxInvoices[i].SettledAt,
+				ExpiresAt:       &validTxInvoices[i].ExpiresAt,
+				IsPaid:          &validTxInvoices[i].IsPaid,
+				Keysend:         &validTxInvoices[i].Keysend,
+			})
+		}
+	}
+	return &ret, nil
 }
 
 // Me returns generated.MeResolver implementation.

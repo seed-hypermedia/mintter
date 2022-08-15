@@ -22,14 +22,15 @@ import (
 )
 
 const (
-	createRoute         = "/v2/create" // v2 is the one created by our fork
-	balanceRoute        = "/balance"
-	authRoute           = "/auth"
-	createInvoiceRoute  = "/addinvoice"
-	requestInvoiceRoute = "/v2/invoice"
-	payInvoiceRoute     = "/payinvoice"
-	decodeInvoiceRoute  = "/decodeinvoice" // Not used, using internal LND decoder instead
-	getInvoiceRoute     = "/getuserinvoice"
+	createRoute              = "/v2/create" // v2 is the one created by our fork
+	balanceRoute             = "/balance"
+	authRoute                = "/auth"
+	createInvoiceRoute       = "/addinvoice"
+	requestInvoiceRoute      = "/v2/invoice"
+	payInvoiceRoute          = "/payinvoice"
+	decodeInvoiceRoute       = "/decodeinvoice" // Not used, using internal LND decoder instead
+	getPaidInvoicesRoute     = "/v2/invoices/outgoing"
+	getReceivedInvoicesRoute = "/v2/invoices/incoming"
 
 	//Change these three to mainnet/testnet
 	MintterDomain   = "ln.testnet.mintter.com"
@@ -82,6 +83,24 @@ type authResponse struct {
 type authRequest struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
+}
+
+type Invoice struct {
+	PaymentHash     string `mapstructure:"payment_hash"`
+	PaymentRequest  string `mapstructure:"payment_request"`
+	Description     string `mapstructure:"description"`
+	DescriptionHash string `mapstructure:"description_hash,omitempty"`
+	PaymentPreimage string `mapstructure:"payment_preimage,omitempty"`
+	Destination     string `mapstructure:"destination"`
+	Amount          int64  `mapstructure:"amount"`
+	Fee             int64  `mapstructure:"fee"`
+	Status          string `mapstructure:"status"`
+	Type            string `mapstructure:"type"`
+	ErrorMessage    string `mapstructure:"error_message,omitempty"`
+	SettledAt       string `mapstructure:"settled_at"`
+	ExpiresAt       string `mapstructure:"expires_at"`
+	IsPaid          bool   `mapstructure:"is_paid"`
+	Keysend         bool   `mapstructure:"keysend"`
 }
 
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
@@ -267,6 +286,60 @@ func (c *Client) GetBalance(ctx context.Context) (uint64, error) {
 		Token:  token,
 	}, 2, &resp)
 	return resp.Btc.Sats, err
+}
+
+// ListPaidInvoices returns a list of outgoing invoices.
+func (c *Client) ListPaidInvoices(ctx context.Context) ([]Invoice, error) {
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
+
+	type ListInvoicesResponse struct {
+		Invoices []Invoice `mapstructure:"invoices"`
+	}
+
+	var resp ListInvoicesResponse
+	token, err := lndhub.GetToken(conn, c.WalletID)
+	if err != nil {
+		return resp.Invoices, err
+	}
+	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return resp.Invoices, err
+	}
+
+	err = c.do(ctx, conn, httpRequest{
+		URL:    apiBaseURL + getPaidInvoicesRoute,
+		Method: http.MethodGet,
+		Token:  token,
+	}, 2, &resp)
+	return resp.Invoices, err
+}
+
+// ListReceivedInvoices returns a list of incoming invoices.
+func (c *Client) ListReceivedInvoices(ctx context.Context) ([]Invoice, error) {
+	conn := c.db.Get(ctx)
+	defer c.db.Put(conn)
+
+	type ListInvoicesResponse struct {
+		Invoices []Invoice `mapstructure:"invoices"`
+	}
+
+	var resp ListInvoicesResponse
+	token, err := lndhub.GetToken(conn, c.WalletID)
+	if err != nil {
+		return resp.Invoices, err
+	}
+	apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+	if err != nil {
+		return resp.Invoices, err
+	}
+
+	err = c.do(ctx, conn, httpRequest{
+		URL:    apiBaseURL + getReceivedInvoicesRoute,
+		Method: http.MethodGet,
+		Token:  token,
+	}, 2, &resp)
+	return resp.Invoices, err
 }
 
 // CreateLocalInvoice creates an invoice of amount sats (in satoshis)

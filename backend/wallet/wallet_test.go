@@ -100,7 +100,7 @@ func TestRequestP2PInvoice(t *testing.T) {
 	cid := bob.net.MustGet().ID().AccountID()
 	const amt = 23
 	var memo = "test invoice"
-	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), amt, &memo) // TODO: modify RequestInvoice so it calls the lndhub.go (if present) wallet if P2P invoice failed
+	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), amt, &memo)
 	require.NoError(t, err)
 	invoice, err := lndhub.DecodeInvoice(payreq)
 	require.NoError(t, err)

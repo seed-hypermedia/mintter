@@ -392,6 +392,42 @@ func (srv *Service) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error)
 
 }
 
+// ListPaidInvoices returns the invoices that the wallet represented by walletID has paid
+func (srv *Service) ListPaidInvoices(ctx context.Context, walletID string) ([]lndhub.Invoice, error) {
+	conn := srv.pool.Get(ctx)
+	if conn == nil {
+		return nil, fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
+	}
+	defer srv.pool.Put(conn)
+
+	w, err := wallet.GetWallet(conn, walletID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't list wallets. %s", err.Error())
+	}
+	if strings.ToLower(w.Type) != lndhubsql.LndhubWalletType && strings.ToLower(w.Type) != lndhubsql.LndhubGoWalletType {
+		return nil, fmt.Errorf("Coulnd not get invoices form wallet type %s", w.Type)
+	}
+	return srv.lightningClient.Lndhub.ListPaidInvoices(ctx)
+}
+
+// ListReceivednvoices returns the incoming invoices that the wallet represented by walletID has received
+func (srv *Service) ListReceivednvoices(ctx context.Context, walletID string) ([]lndhub.Invoice, error) {
+	conn := srv.pool.Get(ctx)
+	if conn == nil {
+		return nil, fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
+	}
+	defer srv.pool.Put(conn)
+
+	w, err := wallet.GetWallet(conn, walletID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't list wallets. %s", err.Error())
+	}
+	if strings.ToLower(w.Type) != lndhubsql.LndhubWalletType && strings.ToLower(w.Type) != lndhubsql.LndhubGoWalletType {
+		return nil, fmt.Errorf("Coulnd not get invoices form wallet type %s", w.Type)
+	}
+	return srv.lightningClient.Lndhub.ListReceivedInvoices(ctx)
+}
+
 // RequestRemoteInvoice asks a remote peer to issue an invoice. The remote user can be either a lnaddres or a mintter account ID
 // First an lndhub invoice request is attempted. In it fails, then a P2P its used to transmit the invoice. In that case,
 // Any of the devices associated with the accountID can issue the invoice. The memo field is optional and can be left nil.

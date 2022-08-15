@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"context"
+	"mintter/backend/lndhub"
 	wallet "mintter/backend/wallet/walletsql"
 )
 
@@ -24,6 +25,8 @@ type Service interface {
 	RequestRemoteInvoice(context.Context, string, int64, *string) (string, error)
 	CreateLocalInvoice(context.Context, int64, *string) (string, error)
 	PayInvoice(context.Context, string, *string, *uint64) (string, error)
+	ListPaidInvoices(context.Context, string) ([]lndhub.Invoice, error)
+	ListReceivednvoices(context.Context, string) ([]lndhub.Invoice, error)
 	UpdateLnaddressNickname(context.Context, string) error
 }
 

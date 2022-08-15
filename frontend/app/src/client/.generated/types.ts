@@ -48,6 +48,41 @@ export type ExportWalletPayload = {
   credentials: Scalars['String'];
 };
 
+/** Lightning Invoices */
+export type Invoice = {
+  __typename?: 'Invoice';
+  /** Invoice qunatuty in satoshis. */
+  Amount: Scalars['Satoshis'];
+  /** Memo field of the invoice. */
+  Description?: Maybe<Scalars['String']>;
+  /** Memo hash in case its too long  */
+  DescriptionHash?: Maybe<Scalars['String']>;
+  /** Payee lightning node ID. */
+  Destination?: Maybe<Scalars['String']>;
+  /** Error of the invoice */
+  ErrorMessage?: Maybe<Scalars['String']>;
+  /** Expiring date. */
+  ExpiresAt?: Maybe<Scalars['String']>;
+  /** Fees incurred by the payer when paying the invoice */
+  Fee?: Maybe<Scalars['Satoshis']>;
+  /** If the invoice has been paid or not. */
+  IsPaid?: Maybe<Scalars['Boolean']>;
+  /** Whether or not this is a made up invoice corrensponding with a keysend payment */
+  Keysend?: Maybe<Scalars['Boolean']>;
+  /** Preimage hash of the payment. */
+  PaymentHash?: Maybe<Scalars['String']>;
+  /** Invoice secret known at settlement. Proof of payment */
+  PaymentPreimage?: Maybe<Scalars['String']>;
+  /** Bolt-11 encoded invoice. */
+  PaymentRequest?: Maybe<Scalars['String']>;
+  /** Settlement date */
+  SettledAt?: Maybe<Scalars['String']>;
+  /** Status of the invoice. (Settled, in-flight, expired, ...) */
+  Status?: Maybe<Scalars['String']>;
+  /** Invoice tyoe */
+  Type?: Maybe<Scalars['String']>;
+};
+
 /** Common interface for Lightning wallets. We support different types. */
 export type LightningWallet = {
   /** Balance in Satoshis. */
@@ -181,11 +216,31 @@ export type PayInvoicePayload = {
   walletID: Scalars['ID'];
 };
 
+/** Information about payments */
+export type Payments = {
+  __typename?: 'Payments';
+  /** Payments received. They can be unconfirmed */
+  received?: Maybe<Array<Maybe<Invoice>>>;
+  /** Payments made. They can be unconfirmed */
+  sent?: Maybe<Array<Maybe<Invoice>>>;
+};
+
 /** Top-level queries. */
 export type Query = {
   __typename?: 'Query';
   /** Information about the current user. */
   me: Me;
+  /** Information about payments. */
+  payments: Payments;
+};
+
+
+/** Top-level queries. */
+export type QueryPaymentsArgs = {
+  excludeExpired?: InputMaybe<Scalars['Boolean']>;
+  excludeKeysend?: InputMaybe<Scalars['Boolean']>;
+  excludeUnpaid?: InputMaybe<Scalars['Boolean']>;
+  walletID: Scalars['ID'];
 };
 
 /** Input for requesting an invoice. */
