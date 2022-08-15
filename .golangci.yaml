@@ -13,9 +13,14 @@ issues:
     # For test helpers it's often convenient to pass *testing.T as the first parameter.
     # We don't care if context is not the first argument here.
     - path: _test\.go
-      text: context-as-argument
+      text: "context-as-argument"
       linters:
         - revive
+    # In tests we can use math/rand instead of crypto/rand.
+    - path: _test\.go
+      text: "weak random number generator"
+      linters:
+        - gosec
   include:
     # Include revive rules that check comments on exported identifiers. These rules
     # are excluded by default, and IMHO this doesn't serve well the Go community.
