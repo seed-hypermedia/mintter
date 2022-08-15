@@ -80,7 +80,7 @@ function DiscussionEditor({
           zIndex: '$4',
           display: 'flex',
           borderTop: '1px solid rgba(0,0,0,0.1)',
-          paddingBlockStart: '1rem',
+          paddingBlock: '1rem',
           gap: '1ch',
           paddingInline: '1rem',
           backgroundColor: '$base-background-normal'
