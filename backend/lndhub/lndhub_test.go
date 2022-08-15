@@ -108,7 +108,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestListInvoices(t *testing.T) {
-	//t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
+	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
 	pool, err := makeConn(t)
 	require.NoError(t, err)
 	conn := pool.Get(context.Background())
