@@ -1,5 +1,4 @@
 .search-highlight {
-  /* background-color: rgb(244, 229, 178); */
   background-color: var(--mtt-colors-warning-component-bg-active);
 }
 
@@ -15,7 +14,10 @@
 
 #search-box:focus-within {
   border: 3px solid var(--mtt-colors-warning-active);
-  /* border: 3px solid rgb(239, 208, 157); */
+}
+
+#search-box svg {
+  zoom: 0.75;
 }
 
 #search-box:focus-within svg,
