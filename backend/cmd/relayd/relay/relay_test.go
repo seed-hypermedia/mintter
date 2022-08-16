@@ -10,15 +10,9 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
-	ma "github.com/multiformats/go-multiaddr"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
-
-func isRelayAddr(addr ma.Multiaddr) bool {
-	_, err := addr.ValueForProtocol(ma.P_CIRCUIT)
-	return err == nil
-}
 
 func TestRelay(t *testing.T) {
 	require.NoError(t, initAndTest(2))
@@ -27,7 +21,7 @@ func TestRelay(t *testing.T) {
 
 // initAndTest initialices two nodes and 1 relay and tests connectivity
 // between the nodes through the relay. You can select the relay version
-// 1->v1 or 2->v2
+// 1->v1 or 2->v2.
 func initAndTest(relayVersion uint8) error {
 	// Create the relay
 	log, _ := zap.NewDevelopment(zap.WithCaller(false))
@@ -51,8 +45,9 @@ func initAndTest(relayVersion uint8) error {
 	if err := h2.Start(); err != nil {
 		return err
 	}
-	defer h2.Stop()
-
+	defer func() {
+		_ = h2.Stop()
+	}()
 	h2info := peer.AddrInfo{
 		ID: h2.host.ID(), //We use the internal function since the exported one returns string instead of peer.ID
 		//Addrs: h2.ListeningAddrs(),
@@ -68,7 +63,7 @@ func initAndTest(relayVersion uint8) error {
 		libp2p.EnableAutoRelay(autorelay.WithStaticRelays([]peer.AddrInfo{h2info})),
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to create h1: %v", err)
+		return fmt.Errorf("Failed to create h1: %w", err)
 	}
 	defer h1.Close()
 
@@ -80,7 +75,7 @@ func initAndTest(relayVersion uint8) error {
 	)
 	//h3.Peerstore().AddAddr()
 	if err != nil {
-		return fmt.Errorf("Failed to create h3: %v", err)
+		return fmt.Errorf("Failed to create h3: %w", err)
 	}
 	defer h3.Close()
 
@@ -92,10 +87,10 @@ func initAndTest(relayVersion uint8) error {
 	}
 	// Connect both h1 and h3 to the relay, but not to each other
 	if err := h1.Connect(context.Background(), h2info); err != nil {
-		return fmt.Errorf("Failed to connect h1 and h2: %v", err)
+		return fmt.Errorf("Failed to connect h1 and h2: %w", err)
 	}
 	if err := h3.Connect(context.Background(), h2info); err != nil {
-		return fmt.Errorf("Failed to connect h3 and h2: %v", err)
+		return fmt.Errorf("Failed to connect h3 and h2: %w", err)
 	}
 
 	h3.SetStreamHandler("/cats", func(s network.Stream) {
@@ -121,17 +116,17 @@ func initAndTest(relayVersion uint8) error {
 	err = h1.Connect(context.Background(), h3Info)
 
 	if err != nil {
-		return fmt.Errorf("Failed to connect h1 and h3: %v", err)
+		return fmt.Errorf("Failed to connect h1 and h3: %w", err)
 	}
 
 	// Woohoo! we're connected!
 	fmt.Println("H3 peerstore after connect:", h3.Peerstore().Addrs(h3Info.ID))
 	s, err := h1.NewStream(context.Background(), h3.ID(), "/cats")
 	if err != nil {
-		return fmt.Errorf("huh, this should have worked: %v", err)
+		return fmt.Errorf("huh, this should have worked: %w", err)
 	}
 
-	s.Read(make([]byte, 1)) // block until the handler closes the stream
+	_, _ = s.Read(make([]byte, 1)) // block until the handler closes the stream
 
 	return nil
 }

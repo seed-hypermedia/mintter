@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"mintter/backend/core"
 	"mintter/backend/db/sqliteschema"
-	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/pkg/future"
 	"mintter/backend/wallet/walletsql"
 	"net/http"
@@ -28,7 +27,7 @@ const (
 )
 
 func TestCreate(t *testing.T) {
-	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
+	//t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
 
 	const invoiceAmt = 12543
 	const invoiceMemo = "test invoice go"
@@ -99,38 +98,12 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	require.EqualValues(t, invoiceMemo2, *decodedInvoice.Description)
 	require.Nil(t, decodedInvoice.MilliSat) // when amt is zero, the result is nil
+	invoices, err := lndHubClient.ListReceivedInvoices(ctx)
+	require.NoError(t, err)
+	require.GreaterOrEqual(t, len(invoices), 1)
 	//TODO: test for invoice metadata
 }
 
-func TestListInvoices(t *testing.T) {
-	t.Skip("Uncomment skip to run integration tests with mintter lndhub.go")
-	pool, err := makeConn(t)
-	require.NoError(t, err)
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(640)*time.Second)
-	defer cancel()
-	identity := future.New[core.Identity]()
-	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, identity.ReadOnly)
-	keypair, err := core.NewKeyPairRandom(core.CodecDeviceKey)
-	require.NoError(t, err)
-	_, pub, err := crypto.GenerateEd25519Key(nil)
-	require.NoError(t, err)
-
-	pubkey, err := core.NewPublicKey(core.CodecAccountKey, pub.(*crypto.Ed25519PublicKey))
-	require.NoError(t, err)
-
-	require.NoError(t, identity.Resolve(core.NewIdentity(pubkey, keypair)))
-
-	const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NzEsImlzUmVmcmVzaCI6ZmFsc2UsImV4cCI6MTY2MDY1NzcyN30.2_LCZvV58ARij8KcmEZbIlEyqOKmCc5fMgC75guUwek"
-	const walletID = "97186e34480d6aabcf59ebd37a893a0d02223f6a38822c8e6213c810384f0dc7"
-	lndHubClient.WalletID = walletID
-	require.NoError(t, lndhubsql.SetToken(conn, walletID, token))
-	invoices, err := lndHubClient.ListReceivedInvoices(ctx)
-	require.NoError(t, err)
-	require.Greater(t, len(invoices), 1)
-}
 func randStringRunes(n int) string {
 	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	rand.Seed(time.Now().UnixNano())
@@ -171,7 +144,6 @@ func makeConn(t *testing.T) (*sqlitex.Pool, error) {
 	require.NoError(t, sqliteschema.Migrate(conn))
 
 	return pool, nil
-
 }
 
 func credentials2Id(wType, login, password, domain string) string {

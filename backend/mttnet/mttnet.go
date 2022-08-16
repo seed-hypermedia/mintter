@@ -50,6 +50,7 @@ const (
 
 var userAgent = "mintter/<dev>"
 
+// DefaultRelays bootstrap mintter-owned relays so they can reserveslots to do holepunch.
 func DefaultRelays() []peer.AddrInfo {
 	return []peer.AddrInfo{
 		// Mintter test server
@@ -143,7 +144,7 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	return n, nil
 }
 
-// SetInvoicer assign an invoicer service to the node struct
+// SetInvoicer assign an invoicer service to the node struct.
 func (n *Node) SetInvoicer(inv Invoicer) {
 	n.invoicer = inv
 }
@@ -186,6 +187,7 @@ func (n *Node) Client(ctx context.Context, device cid.Cid) (p2p.P2PClient, error
 	return n.client.Dial(ctx, pid)
 }
 
+// AccountForDevice returns the linked AccountID of a given device.
 func (n *Node) AccountForDevice(ctx context.Context, device cid.Cid) (cid.Cid, error) {
 	conn, release, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
@@ -306,6 +308,7 @@ type rpcHandler struct {
 	*Node
 }
 
+// AddrInfoToStrings returns address as string.
 func AddrInfoToStrings(info peer.AddrInfo) []string {
 	var addrs []string
 	for _, a := range info.Addrs {

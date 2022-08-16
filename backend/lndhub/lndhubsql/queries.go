@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	// DefaultWalletKey is the column name of the meta table where the default wallet id is stored
+	// LoginSignatureKey is the column name of the meta table where the login signatureis stored.
 	LoginSignatureKey = "lndhub_login_signature"
 )
 

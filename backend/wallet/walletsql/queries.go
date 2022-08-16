@@ -10,7 +10,7 @@ import (
 var _ = generateQueries
 
 const (
-	// DefaultWalletKey is the column name of the meta table where the default wallet id is stored
+	// DefaultWalletKey is the column name of the meta table where the default wallet id is stored.
 	DefaultWalletKey = "default_wallet"
 )
 

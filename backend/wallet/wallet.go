@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	// to detect a failure that is not really a failure
+	// AlreadyLndhubgoWallet used to detect a failure that is not really a failure.
 	AlreadyLndhubgoWallet = "Already existing one"
 )
 
@@ -35,7 +35,7 @@ var (
 // AccountID is a handy alias of Cid.
 type AccountID = cid.Cid
 
-// Service wraps everything necessary to deliver a wallet service
+// Service wraps everything necessary to deliver a wallet service.
 type Service struct {
 	lightningClient lnclient
 	pool            *sqlitex.Pool
@@ -294,7 +294,7 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 // the url hash in case of Lndhub-type wallet or the pubkey in case of LND.
 // If the removed wallet was the default wallet, a random wallet will be
 // chosen as new default. Although it is advised that the user manually
-// changes the default wallet after removing the previous default
+// changes the default wallet after removing the previous default.
 func (srv *Service) DeleteWallet(ctx context.Context, walletID string) error {
 	conn := srv.pool.Get(ctx)
 	if conn == nil {
@@ -302,7 +302,7 @@ func (srv *Service) DeleteWallet(ctx context.Context, walletID string) error {
 	}
 	defer srv.pool.Put(conn)
 	if err := wallet.RemoveWallet(conn, walletID); err != nil {
-		return fmt.Errorf("couldn't remove wallet %s. %s", walletID, err.Error())
+		return fmt.Errorf("couldn't remove wallet %s", walletID)
 	}
 	// TODO: remove associated token db entries
 	return nil
@@ -320,7 +320,7 @@ func (srv *Service) UpdateWalletName(ctx context.Context, walletID string, newNa
 	}
 	defer srv.pool.Put(conn)
 	if ret, err = wallet.UpdateWalletName(conn, walletID, newName); err != nil {
-		return ret, fmt.Errorf("couldn't update wallet %s. %s", walletID, err.Error())
+		return ret, fmt.Errorf("couldn't update wallet %s", walletID)
 	}
 
 	return ret, nil
@@ -415,7 +415,7 @@ func (srv *Service) ListPaidInvoices(ctx context.Context, walletID string) ([]ln
 	return srv.lightningClient.Lndhub.ListPaidInvoices(ctx)
 }
 
-// ListReceivednvoices returns the incoming invoices that the wallet represented by walletID has received
+// ListReceivednvoices returns the incoming invoices that the wallet represented by walletID has received.
 func (srv *Service) ListReceivednvoices(ctx context.Context, walletID string) ([]lndhub.Invoice, error) {
 	conn := srv.pool.Get(ctx)
 	if conn == nil {
@@ -567,7 +567,7 @@ func DecodeCredentialsURL(url string) (Credentials, error) {
 	return credentials, nil
 }
 
-// URL2Id constructs a unique and collision-free ID out of a credentials URL
+// URL2Id constructs a unique and collision-free ID out of a credentials URL.
 func URL2Id(url string) string {
 	h := sha256.Sum256([]byte(url))
 	return hex.EncodeToString(h[:])

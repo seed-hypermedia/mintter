@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-// // Satoshis implements the custom GraphQL scalar.
+// Satoshis implements the custom GraphQL scalar.
 type Satoshis int64
 
 // MarshalGQL implements the graphql.Marshaler interface found in
@@ -44,5 +44,5 @@ func (b *Satoshis) UnmarshalGQL(v interface{}) error {
 	return nil
 }
 
-// // LightningPaymentRequest implement the custom GraphQL scalar.
+// LightningPaymentRequest implement the custom GraphQL scalar.
 type LightningPaymentRequest string

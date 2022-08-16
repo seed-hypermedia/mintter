@@ -27,49 +27,14 @@ const (
 	timeoutSeconds = 125
 )
 
-/*
-func TestReqInvoice(t *testing.T) {
-	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
-
-	alice := makeTestService(t, "alice")
-	bob := makeTestService(t, "bob")
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-	defer cancel()
-	connectPeers(ctx, t, alice, bob, true)
-
-	_, err := alice.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred alice wallet")
-	require.NoError(t, err)
-
-	_, err = bob.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred bob wallet")
-	require.NoError(t, err)
-
-	require.NoError(t, alice.SyncAccounts(ctx))
-
-	payReq, err := alice.RemoteInvoiceRequest(ctx, AccID(bob.repo.MustAccount().CID()), InvoiceRequest{
-		AmountSats: invoiceAmountSats,
-		Memo:       memo,
-	})
-	require.NoError(t, err)
-
-	invoice, err := lndhub.DecodeInvoice(payReq)
-	require.NoError(t, err)
-
-	require.NotNil(t, invoice.Description, "returned memo shouldn't be empty")
-	require.Equal(t, memo, *invoice.Description)
-	require.Equal(t, invoiceAmountSats, int(invoice.MilliSat.ToSatoshis()))
-
-	// TODO: pay invoice
-} */
-
 func TestModifyWallets(t *testing.T) {
-	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+	// t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
 	alice := makeTestService(t, "alice")
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
 	defer cancel()
-	time.Sleep(10 * time.Second) // wait until internal wallet is registered
+	time.Sleep(5 * time.Second) // wait until internal wallet is registered
 	defaultWallet, err := alice.GetDefaultWallet(ctx)
 	require.NoError(t, err)
 	require.EqualValues(t, lndhubsql.LndhubGoWalletType, defaultWallet.Type)
@@ -91,7 +56,7 @@ func TestRequestP2PInvoice(t *testing.T) {
 	bob := makeTestService(t, "bob")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
 	defer cancel()
-	time.Sleep(10 * time.Second) // wait until internal wallet is registered
+	time.Sleep(15 * time.Second) // wait until internal wallet is registered
 	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
 	cid := bob.net.MustGet().ID().AccountID()
