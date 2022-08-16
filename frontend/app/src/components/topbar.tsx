@@ -58,15 +58,14 @@ export function Topbar({mainService = defaultMainService}: TopbarProps) {
           />
         )}
       </Box>
+      <Search />
       {mainState.context.currentFile ? (
         <TopbarFileActions
           mainService={mainService}
           fileRef={mainState.context.currentFile}
         />
       ) : null}
-
       <TopbarLibrarySection mainService={mainService} />
-      <Search />
     </Box>
   )
 }
@@ -455,10 +454,6 @@ function Search() {
       e.preventDefault()
       searchInput.current?.focus()
     }
-
-    // if (e.key === 'Escape' && document.activeElement === searchInput.current) {
-    //   searchInput.current?.blur()
-    // }
   }
 
   useEffect(() => {
@@ -469,7 +464,7 @@ function Search() {
 
   return (
     <label id="search-box">
-      <Icon name="Search" size="2" />
+      <Icon name="Search" />
       <input
         ref={searchInput}
         type="search"
