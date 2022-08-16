@@ -1,15 +1,15 @@
-import {mainService as defaultMainService} from '@app/app-providers'
-import {Link, LinkNode} from '@app/client'
-import {Editor} from '@app/editor/editor'
-import {EditorMode} from '@app/editor/plugin-utils'
-import {FileProvider} from '@app/file-provider'
-import {PublicationRef} from '@app/main-machine'
-import {getRefFromParams} from '@app/utils/machine-utils'
-import {Box} from '@components/box'
-import {FileTime} from '@components/file-time'
-import {Text} from '@components/text'
-import {useActor, useSelector} from '@xstate/react'
-import {useEffect} from 'react'
+import { mainService as defaultMainService } from '@app/app-providers'
+import { Link, LinkNode } from '@app/client'
+import { Editor } from '@app/editor/editor'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { FileProvider } from '@app/file-provider'
+import { PublicationRef } from '@app/main-machine'
+import { getRefFromParams } from '@app/utils/machine-utils'
+import { Box } from '@components/box'
+import { FileTime } from '@components/file-time'
+import { Text } from '@components/text'
+import { useActor, useSelector } from '@xstate/react'
+import { useEffect } from 'react'
 
 function useDiscussionFileRef(
   mainService: typeof defaultMainService,
@@ -64,26 +64,31 @@ function DiscussionEditor({
           backgroundColor: '$base-background-normal',
         },
       }}
-      onClick={() => {
-        mainService.send({
-          type: 'GO.TO.PUBLICATION',
-          docId: state.context.documentId,
-          version: state.context.version,
-        })
+      onClick={(event) => {
+        console.log('click item!', event)
+        // TODO: make sure we can click in the event and also let the text selection
+        // mainService.send({
+        //   type: 'GO.TO.PUBLICATION',
+        //   docId: state.context.documentId,
+        //   version: state.context.version,
+        // })
       }}
     >
       <Box
         css={{
           display: 'flex',
           borderTop: '1px solid rgba(0,0,0,0.1)',
-          paddingBlockStart: '1rem',
-          paddingBlockEnd: '0.6rem',
+          paddingBlock: '1rem',
           gap: '1ch',
           paddingInline: '1rem',
+          position: 'sticky',
+          top: 0,
+          backgroundColor: '$base-background-normal',
+          zIndex: '$4'
         }}
       >
         {state.context.author && (
-          <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
+          <Text size="1" color="muted" css={{ textDecoration: 'underline' }}>
             {state.context.author.profile?.alias}
           </Text>
         )}

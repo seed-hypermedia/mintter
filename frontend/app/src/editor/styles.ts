@@ -1,5 +1,5 @@
-import {EditorMode} from '@app/editor/plugin-utils'
-import {css} from '@app/stitches.config'
+import { EditorMode } from '@app/editor/plugin-utils'
+import { css } from '@app/stitches.config'
 
 export var groupStyles = css({
   margin: 0,
