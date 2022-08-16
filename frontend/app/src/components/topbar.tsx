@@ -12,7 +12,7 @@ import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
 import {Tooltip} from '@components/tooltip'
 import {useActor} from '@xstate/react'
-import {useContext} from 'react'
+import {useContext, useEffect, useRef} from 'react'
 import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
@@ -448,11 +448,30 @@ var TopbarButton = styled('button', {
 
 function Search() {
   const {search, setSearch} = useContext(searchTerm)
+  const searchInput = useRef<HTMLInputElement | null>(null)
+
+  const handleKeyboardShortcuts = (e: KeyboardEvent) => {
+    if (e.key === 'f' && e.metaKey) {
+      e.preventDefault()
+      searchInput.current?.focus()
+    }
+
+    // if (e.key === 'Escape' && document.activeElement === searchInput.current) {
+    //   searchInput.current?.blur()
+    // }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keyup', handleKeyboardShortcuts)
+
+    return () => window.removeEventListener('keyup', handleKeyboardShortcuts)
+  })
 
   return (
     <label id="search-box">
       <Icon name="Search" size="2" />
       <input
+        ref={searchInput}
         type="search"
         autoCorrect="off"
         id="search"
