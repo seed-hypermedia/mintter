@@ -100,12 +100,9 @@ function StaticParagraph({
         },
       }}
       onMouseEnter={() => {
-        console.log('MOUSE ENTER', parentNode?.id)
-
         hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
       }}
       onMouseLeave={() => {
-        console.log('MOUSE LEAVE', parentNode?.id)
         hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
       }}
     >

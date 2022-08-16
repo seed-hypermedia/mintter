@@ -114,17 +114,14 @@ function Embed({
       data-block-id={blockId}
       data-parent-block={blockId}
       onMouseEnter={() => {
-        console.log('MOUSE ENTER', blockId)
-
         hoverService.send({type: 'MOUSE_ENTER', blockId})
       }}
       onMouseLeave={() => {
-        console.log('MOUSE LEAVE', blockId)
         hoverService.send({type: 'MOUSE_LEAVE', blockId})
       }}
       css={{
-        [`[data-hover-block="${blockId}"] &:before`]: {
-          backgroundColor: '$primary-component-bg-normal',
+        [`[data-hover-block="${blockId}"] &:after`]: {
+          backgroundColor: '$primary-component-bg-active',
           opacity: 1,
         },
       }}
@@ -141,95 +138,6 @@ function Embed({
       {children}
     </Box>
   )
-}
-
-// type EmbedProps = Omit<RenderElementProps, 'element'> & {
-//   element: EmbedType
-//   mainService?: typeof defaultMainService
-//   mode: EditorMode
-// }
-
-// function RenderEmbed(
-//   {
-//     element,
-//     attributes,
-//     children,
-//     mainService = defaultMainService,
-//     mode,
-//   }: EmbedProps,
-//   ref: ForwardedRef<HTMLQuoteElement>,
-// ) {
-//   const bookmarksService = useBookmarksService()
-//   const [pubId, version, blockId] = getIdsfromUrl(element.url)
-
-//   function addBookmark() {
-//     bookmarksService.send({
-//       type: 'BOOKMARK.ADD',
-//       url: element.url,
-//     })
-//   }
-
-//   async function onCopy() {
-//     await copyTextToClipboard(element.url)
-//     toast.success('Embed Reference copied successfully', {
-//       position: 'top-center',
-//     })
-//   }
-
-//   function onGoToPublication() {
-//     mainService.send({
-//       type: 'GO.TO.PUBLICATION',
-//       docId: pubId,
-//       version,
-//       blockId,
-//     })
-//   }
-
-//   async function onOpenInNewWindow() {
-//     console.log('IS DISCUSSION?', mode == EditorMode.Discussion, mode)
-
-//     if (mode != EditorMode.Discussion) {
-//       let path = `p/${pubId}/${version}/${blockId}`
-//       mainService.send({type: 'COMMIT.OPEN.WINDOW', path})
-//     }
-//   }
-
-//   return (
-//     <ContextMenu.Root>
-//       <ContextMenu.Trigger>
-//         <EmbedEditor
-//           attributes={attributes}
-//           ref={ref}
-//           embed={element.url}
-//           onClick={onOpenInNewWindow}
-//         >
-//           {children}
-//         </EmbedEditor>
-//       </ContextMenu.Trigger>
-//       <ContextMenu.Content>
-//         <ContextMenu.Item onSelect={onCopy}>
-//           <Icon name="Copy" size="1" />
-//           <Text size="2">Copy Embed Reference</Text>
-//         </ContextMenu.Item>
-//         <ContextMenu.Item onSelect={addBookmark}>
-//           <Icon name="ArrowChevronDown" size="1" />
-//           <Text size="2">Add to Bookmarks</Text>
-//         </ContextMenu.Item>
-//         <ContextMenu.Item onSelect={onGoToPublication}>
-//           <Icon name="ArrowTopRight" size="1" />
-//           <Text size="2">Open Embed in main Panel</Text>
-//         </ContextMenu.Item>
-//         <ContextMenu.Item onSelect={onOpenInNewWindow}>
-//           <Icon name="OpenInNewWindow" size="1" />
-//           <Text size="2">Open Embed in new Window</Text>
-//         </ContextMenu.Item>
-//       </ContextMenu.Content>
-//     </ContextMenu.Root>
-//   )
-// }
-
-type EmbedMachineEvent = {
-  type: 'REFETCH'
 }
 
 type EmbedMachineContext = {
