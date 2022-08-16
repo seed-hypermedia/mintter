@@ -81,7 +81,7 @@
       "csp": {
         "default-src": "'none'",
         "script-src": "'unsafe-eval'",
-        "style-src": "'unsafe-inline'",
+        "style-src": "'self' 'unsafe-inline'",
         "connect-src": "'self' http://localhost:55001",
         "img-src": "https:",
         "media-src": "https:",
