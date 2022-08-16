@@ -64,13 +64,19 @@ function DiscussionEditor({
           backgroundColor: '$base-background-normal',
         },
       }}
-      onClick={() => {
+      onClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        console.log('ISCLLAPSED?', !window.getSelection()?.isCollapsed)
+        if (window.getSelection()?.isCollapsed) {
+          mainService.send({
+            type: 'GO.TO.PUBLICATION',
+            docId: state.context.documentId,
+            version: state.context.version,
+          })
+        }
         // TODO: make sure we can click in the event and also let the text selection
-        // mainService.send({
-        //   type: 'GO.TO.PUBLICATION',
-        //   docId: state.context.documentId,
-        //   version: state.context.version,
-        // })
+
       }}
     >
       <Box
