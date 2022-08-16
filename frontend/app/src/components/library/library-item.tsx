@@ -178,27 +178,6 @@ export function LibraryItem({
           onClick={goToItem}
         />
 
-        {/* <Editor
-          className="title"
-          onClick={goToItem}
-          data-testid="library-item-title"
-          as="span"
-          mode={EditorMode.Embed}
-          value={[text(state.context.title || 'Untitled Document')]}
-          onChange={() => {
-            // noop
-          }}
-        /> */}
-        {/* <Text
-          size="2"
-          className="title"
-          color="primary"
-          onClick={goToItem}
-          data-testid="library-item-title"
-        >
-          {title}
-        </Text> */}
-
         <Dropdown.Root modal={false}>
           <Dropdown.Trigger asChild>
             <ElementDropdown
