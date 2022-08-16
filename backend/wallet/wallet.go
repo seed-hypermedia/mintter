@@ -32,14 +32,17 @@ var (
 	validCredentials = regexp.MustCompile(`([A-Za-z0-9_\-\.]+):\/\/([0-9a-z]+):([0-9a-f]+)@https:\/\/([A-Za-z0-9_\-\.]+)\/?$`)
 )
 
+// AccountID is a handy alias of Cid.
 type AccountID = cid.Cid
 
+// Service wraps everything necessary to deliver a wallet service
 type Service struct {
 	lightningClient lnclient
 	pool            *sqlitex.Pool
 	net             *future.ReadOnly[*mttnet.Node]
 }
 
+// Credentials struct holds all we need to connect to different lightning nodes (lndhub, LND, core-lightning, ...).
 type Credentials struct {
 	Domain     string `json:"domain"`
 	WalletType string `json:"wallettype"`
@@ -50,6 +53,9 @@ type Credentials struct {
 	ID         string `json:"id,omitempty"`
 }
 
+// New is the constructor of the wallet service. Since it needs to authenticate to the internal wallet provider (lndhub)
+// it may take time in case node is offline. This is why it's initialyzed in a gorutine and calls to the service functions
+// will fail until the initial wallet is successfully initialized.
 func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], me *future.ReadOnly[core.Identity]) *Service {
 	srv := Service{
 		pool: db,
@@ -58,10 +64,10 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 		},
 		net: net,
 	}
-	go func() error {
+	go func() {
 		id, err := me.Await(ctx)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		// We assume registration already happened.
 		tickerAccount := time.NewTicker(10 * time.Second)
@@ -77,7 +83,7 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 			case <-ctx.Done():
 				tickerAccount.Stop()
 				db.Put(conn)
-				return ctx.Err()
+				return
 			case <-tickerAccount.C:
 				loginSignature, err = lndhubsql.GetLoginSignature(conn)
 				if err == nil && loginSignature == "" {
@@ -94,7 +100,7 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 			Password:   loginSignature,
 		})
 		if err != nil {
-			return err
+			panic(err)
 		}
 		_, err = srv.InsertWallet(ctx, credURI, "Mintter Wallet")
 		if err != nil && strings.Contains(err.Error(), AlreadyLndhubgoWallet) {
@@ -106,7 +112,7 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 		for err != nil {
 			select {
 			case <-ctx.Done():
-				return ctx.Err()
+				return
 			case <-tickerInsert.C:
 				_, err = srv.InsertWallet(ctx, credURI, "Mintter Wallet")
 				if err != nil && strings.Contains(err.Error(), AlreadyLndhubgoWallet) {
@@ -116,10 +122,9 @@ func New(ctx context.Context, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Nod
 		}
 		n, err := net.Await(ctx)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		n.SetInvoicer(&srv)
-		return nil
 	}()
 	return &srv
 }
@@ -129,6 +134,7 @@ type lnclient struct {
 	Lnd    interface{} // TODO: implement LND client
 }
 
+// InvoiceRequest holds the necessary fields for the request. Currently hold invoices are not supported, so they're omitted.
 type InvoiceRequest struct {
 	AmountSats   int64  `help:"The invoice amount in satoshis" default:"0"`
 	Memo         string `help:"Optional requested memo to be attached in the invoice" default:""`
@@ -178,7 +184,7 @@ func (srv *Service) P2PInvoiceRequest(ctx context.Context, account AccountID, re
 			})
 
 			if err != nil {
-				return "", fmt.Errorf("request invoice failed, %s", err.Error())
+				return "", fmt.Errorf("request invoice failed: %w", err)
 			}
 
 			if remoteInvoice.PayReq == "" {
@@ -248,14 +254,14 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 		if strings.Contains(err.Error(), wallet.AlreadyExistsError) {
 			return ret, fmt.Errorf("couldn't insert wallet %s in the database. ID already exists", name)
 		}
-		return ret, fmt.Errorf("couldn't insert wallet %s in the database. %s", name, err.Error())
+		return ret, fmt.Errorf("couldn't insert wallet %s in the database: %w", name, err)
 	}
 
 	// Trying to authenticate with the provided credentials
 	creds.Token, err = srv.lightningClient.Lndhub.Auth(ctx)
 	if err != nil {
-		wallet.RemoveWallet(conn, ret.ID)
-		return ret, fmt.Errorf("couldn't authenticate new wallet %s. Err %s", name, err.Error())
+		_ = wallet.RemoveWallet(conn, ret.ID)
+		return ret, fmt.Errorf("couldn't authenticate new wallet %s: %w", name, err)
 	}
 
 	return ret, err
@@ -270,13 +276,13 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 	defer srv.pool.Put(conn)
 	wallets, err := wallet.ListWallets(conn, -1)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't list wallets. %s", err.Error())
+		return nil, fmt.Errorf("couldn't list wallets: %w", err)
 	}
 	for i, w := range wallets {
 		if strings.ToLower(w.Type) == lndhubsql.LndhubWalletType || strings.ToLower(w.Type) == lndhubsql.LndhubGoWalletType {
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx)
 			if err != nil {
-				return nil, fmt.Errorf("couldn't get balance from wallet %s. %s", w.Name, err.Error())
+				return nil, fmt.Errorf("couldn't get balance from wallet %s: %w", w.Name, err)
 			}
 			wallets[i].Balance = int64(balance)
 		}
@@ -389,10 +395,9 @@ func (srv *Service) GetDefaultWallet(ctx context.Context) (wallet.Wallet, error)
 	defer srv.pool.Put(conn)
 
 	return wallet.GetDefaultWallet(conn)
-
 }
 
-// ListPaidInvoices returns the invoices that the wallet represented by walletID has paid
+// ListPaidInvoices returns the invoices that the wallet represented by walletID has paid.
 func (srv *Service) ListPaidInvoices(ctx context.Context, walletID string) ([]lndhub.Invoice, error) {
 	conn := srv.pool.Get(ctx)
 	if conn == nil {
@@ -402,7 +407,7 @@ func (srv *Service) ListPaidInvoices(ctx context.Context, walletID string) ([]ln
 
 	w, err := wallet.GetWallet(conn, walletID)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't list wallets. %s", err.Error())
+		return nil, fmt.Errorf("couldn't list wallets: %w", err)
 	}
 	if strings.ToLower(w.Type) != lndhubsql.LndhubWalletType && strings.ToLower(w.Type) != lndhubsql.LndhubGoWalletType {
 		return nil, fmt.Errorf("Coulnd not get invoices form wallet type %s", w.Type)
@@ -420,7 +425,7 @@ func (srv *Service) ListReceivednvoices(ctx context.Context, walletID string) ([
 
 	w, err := wallet.GetWallet(conn, walletID)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't list wallets. %s", err.Error())
+		return nil, fmt.Errorf("couldn't list wallets: %w", err)
 	}
 	if strings.ToLower(w.Type) != lndhubsql.LndhubWalletType && strings.ToLower(w.Type) != lndhubsql.LndhubGoWalletType {
 		return nil, fmt.Errorf("Coulnd not get invoices form wallet type %s", w.Type)
@@ -453,7 +458,7 @@ func (srv *Service) RequestRemoteInvoice(ctx context.Context, remoteUser string,
 				PreimageHash: []byte{}, // Only aplicable to hold invoices
 			})
 		if err != nil {
-			return "", fmt.Errorf("Could not request invoice via P2P. %s", err.Error())
+			return "", fmt.Errorf("Could not request invoice via P2P: %w", err)
 		}
 	}
 
@@ -469,7 +474,7 @@ func (srv *Service) CreateLocalInvoice(ctx context.Context, amountSats int64, me
 
 	defaultWallet, err := srv.GetDefaultWallet(ctx)
 	if err != nil {
-		return "", fmt.Errorf("could not get default wallet to ask for a local invoice. %s", err.Error())
+		return "", fmt.Errorf("could not get default wallet to ask for a local invoice: %w", err)
 	}
 
 	if defaultWallet.Type != lndhubsql.LndhubWalletType && defaultWallet.Type != lndhubsql.LndhubGoWalletType {
@@ -496,12 +501,12 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 	if walletID != nil {
 		walletToPay, err = wallet.GetWallet(conn, *walletID)
 		if err != nil {
-			return "", fmt.Errorf("couldn't get wallet %s. %s", *walletID, err.Error())
+			return "", fmt.Errorf("couldn't get wallet %s: %w", *walletID, err)
 		}
 	} else {
 		walletToPay, err = srv.GetDefaultWallet(ctx)
 		if err != nil {
-			return "", fmt.Errorf("couldn't get default wallet to pay. %s", err.Error())
+			return "", fmt.Errorf("couldn't get default wallet to pay: %w", err)
 		}
 	}
 
@@ -512,7 +517,7 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 	if amountSats == nil || *amountSats == 0 {
 		invoice, err := lndhub.DecodeInvoice(payReq)
 		if err != nil {
-			return "", fmt.Errorf("couldn't decode invoice [%s], please make sure it is a bolt-11 complatible invoice. %s", payReq, err.Error())
+			return "", fmt.Errorf("couldn't decode invoice [%s], please make sure it is a bolt-11 complatible invoice: %w", payReq, err)
 		}
 		amountToPay = uint64(invoice.MilliSat.ToSatoshis())
 	} else {
@@ -521,16 +526,15 @@ func (srv *Service) PayInvoice(ctx context.Context, payReq string, walletID *str
 
 	if err = srv.lightningClient.Lndhub.PayInvoice(ctx, payReq, amountToPay); err != nil {
 		if strings.Contains(err.Error(), wallet.NotEnoughBalance) {
-			return "", fmt.Errorf("couldn't pay invoice. Insufficient balance in wallet name %s", walletToPay.Name)
+			return "", fmt.Errorf("couldn't pay invoice. Insufficient balance in wallet %s", walletToPay.Name)
 		}
 		if strings.Contains(err.Error(), wallet.InvoiceQttyMissmatch) {
-			return "", fmt.Errorf("couldn't pay invoice due to a quantity missmatch. %s", err.Error())
+			return "", fmt.Errorf("couldn't pay invoice due to a quantity missmatch: %w", err)
 		}
-		return "", fmt.Errorf("couldn't pay invoice. %s", err.Error())
+		return "", fmt.Errorf("couldn't pay invoice: %w", err)
 	}
 
 	return walletToPay.ID, nil
-
 }
 
 // GetLnAddress gets the account-wide ln address in the form of <nickname>@<domain> .
@@ -554,7 +558,6 @@ func DecodeCredentialsURL(url string) (Credentials, error) {
 		}
 		return credentials, fmt.Errorf("couldn't parse credentials, probalby wrong format. it shoud be " +
 			"<wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>")
-
 	}
 	credentials.WalletType = strings.ToLower(res[1])
 	credentials.Login = res[2]
@@ -562,7 +565,6 @@ func DecodeCredentialsURL(url string) (Credentials, error) {
 	credentials.Domain = res[4]
 	credentials.ID = URL2Id(url)
 	return credentials, nil
-
 }
 
 // URL2Id constructs a unique and collision-free ID out of a credentials URL

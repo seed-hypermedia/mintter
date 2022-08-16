@@ -97,7 +97,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 	conn := srv.vcs.DB().Get(context.Background())
 	defer srv.vcs.DB().Put(conn)
 	if err := lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)); err != nil {
-		return nil, fmt.Errorf("Could not store lndhub signature %s", err.Error())
+		return nil, fmt.Errorf("Could not store lndhub signature: %w", err)
 	}
 
 	return &daemon.RegisterResponse{

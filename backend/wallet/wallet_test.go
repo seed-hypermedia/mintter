@@ -24,10 +24,7 @@ import (
 )
 
 const (
-	testCredentials   = "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
-	memo              = "include this test memo"
-	timeoutSeconds    = 125
-	invoiceAmountSats = 1000
+	timeoutSeconds = 125
 )
 
 /*

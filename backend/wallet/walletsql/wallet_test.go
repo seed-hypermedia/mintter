@@ -2,7 +2,6 @@ package walletsql
 
 import (
 	"io/ioutil"
-	"mintter/backend/lndhub"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +27,6 @@ const (
 	balance2 = 102345
 
 	id3      = "6e703a77440228295fb18cfaf9ca5fcb80a110354d346a6ad8525464d7cd8178"
-	address3 = "https://" + lndhub.MintterDomain
 	name3    = "my LNDHub.go wallet"
 	type3    = "lndhub.go"
 	balance3 = 102345
@@ -193,5 +191,4 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 			conn.Close(),
 		)
 	}, nil
-
 }

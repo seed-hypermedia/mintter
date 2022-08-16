@@ -22,23 +22,24 @@ import (
 )
 
 const (
-	createRoute              = "/v2/create" // v2 is the one created by our fork
-	balanceRoute             = "/balance"
-	authRoute                = "/auth"
-	createInvoiceRoute       = "/addinvoice"
-	requestInvoiceRoute      = "/v2/invoice"
-	payInvoiceRoute          = "/payinvoice"
-	decodeInvoiceRoute       = "/decodeinvoice" // Not used, using internal LND decoder instead
+	createRoute         = "/v2/create" // v2 is the one created by our fork
+	balanceRoute        = "/balance"
+	authRoute           = "/auth"
+	createInvoiceRoute  = "/addinvoice"
+	requestInvoiceRoute = "/v2/invoice"
+	payInvoiceRoute     = "/payinvoice"
+	//decodeInvoiceRoute       = "/decodeinvoice" // Not used, using internal LND decoder instead.
 	getPaidInvoicesRoute     = "/v2/invoices/outgoing"
 	getReceivedInvoicesRoute = "/v2/invoices/incoming"
 
-	//Change these three to mainnet/testnet
-	MintterDomain   = "ln.testnet.mintter.com"
+	//MintterDomain is the domain for internal lndhub calls.
+	MintterDomain = "ln.testnet.mintter.com"
+	//LnaddressDomain is the domain to be appended to nicknames. i.e.: lnaddress.
 	LnaddressDomain = "testnet.mintter.com"
 	networkType     = lnTestnet
 
+	// SigninMessage is the fixed message to sign. The server must have the same message.
 	SigninMessage = "sign in into mintter lndhub"
-	NoPubKeyError = "No Account information yet"
 
 	// Types.
 	lnTestnet = iota
@@ -57,7 +58,7 @@ type lndhubErrorTemplate struct {
 	Message string `mapstructure:"message"`
 }
 
-// Client stores all thenecessary structs to perform wallet operations
+// Client stores all thenecessary structs to perform wallet operations.
 type Client struct {
 	http     *http.Client
 	db       *sqlitex.Pool
@@ -85,6 +86,7 @@ type authRequest struct {
 	Password string `json:"password"`
 }
 
+// Invoice is a subset of bolt-11 invoice.
 type Invoice struct {
 	PaymentHash     string `mapstructure:"payment_hash"`
 	PaymentRequest  string `mapstructure:"payment_request"`

@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	LndhubWalletType   = "lndhub"
+	// LndhubWalletType is a bluewallet-like wallet.
+	LndhubWalletType = "lndhub"
+	// LndhubGoWalletType is bluewallet-like plus enhanced auth + lnurlp +lnaddress.
 	LndhubGoWalletType = "lndhub.go"
 )
 

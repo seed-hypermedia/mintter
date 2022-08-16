@@ -176,7 +176,7 @@ func (r *queryResolver) Payments(ctx context.Context, walletID string, excludeUn
 		if excludeExpired != nil && *excludeExpired {
 			expiresAt, err := time.Parse(time.RFC3339, invoice.ExpiresAt)
 			if err != nil {
-				return &ret, fmt.Errorf("Can't parse expiration date. %s", err.Error())
+				return &ret, fmt.Errorf("can't parse expiration date: %w", err)
 			}
 			incInvoice = time.Until(expiresAt) > 0
 		}
@@ -209,7 +209,7 @@ func (r *queryResolver) Payments(ctx context.Context, walletID string, excludeUn
 		if excludeExpired != nil && *excludeExpired {
 			expiresAt, err := time.Parse(time.RFC3339, invoice.ExpiresAt)
 			if err != nil {
-				return &ret, fmt.Errorf("Can't parse expiration date. %s", err.Error())
+				return &ret, fmt.Errorf("can't parse expiration date: %w", err)
 			}
 			incInvoice = time.Until(expiresAt) > 0
 		}

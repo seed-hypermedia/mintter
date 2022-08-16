@@ -94,18 +94,18 @@ func InsertWallet(conn *sqlite.Conn, wallet Wallet, login, password, token []byt
 
 	if err := insertWallet(conn, wallet.ID, wallet.Address, strings.ToLower(wallet.Type),
 		login, password, token, wallet.Name, int(wallet.Balance)); err != nil {
-		return fmt.Errorf("couldn't insert wallet. %s", err.Error())
+		return fmt.Errorf("couldn't insert wallet: %w", err)
 	}
 
 	//If the previously inserted was the first one, then it should be the default as well
 	nwallets, err := getWalletCount(conn)
 	if err != nil {
-		return fmt.Errorf("couldn't get wallet count. %s", err.Error())
+		return fmt.Errorf("couldn't get wallet count: %w", err)
 	}
 
 	if nwallets.Count == 1 {
 		if err = setDefaultWallet(conn, DefaultWalletKey, wallet.ID); err != nil {
-			return fmt.Errorf("couldn't set newly created wallet to default. %s", err.Error())
+			return fmt.Errorf("couldn't set newly created wallet to default: %w", err)
 		}
 	}
 
@@ -145,11 +145,11 @@ func UpdateDefaultWallet(conn *sqlite.Conn, newID string) (Wallet, error) {
 
 	defaultWallet, err := GetWallet(conn, newID)
 	if err != nil {
-		return Wallet{}, fmt.Errorf("cannot make %s default. %s", newID, err.Error())
+		return Wallet{}, fmt.Errorf("cannot make %s default: %w", newID, err)
 	}
 
 	if err := setDefaultWallet(conn, DefaultWalletKey, newID); err != nil {
-		return Wallet{}, fmt.Errorf("cannot set %s as default wallet. %s", newID, err.Error())
+		return Wallet{}, fmt.Errorf("cannot set %s as default wallet: %w", newID, err)
 	}
 
 	return defaultWallet, nil
@@ -180,12 +180,12 @@ func RemoveWallet(conn *sqlite.Conn, id string) error {
 	}
 	wallet2delete, err := getWallet(conn, id)
 	if err != nil {
-		return fmt.Errorf("Cann't find wallet for deletion, probably already deleted, %s", err.Error())
+		return fmt.Errorf("couldn't find wallet for deletion, probably already deleted: %s", err.Error())
 	}
 
 	defaultWallet, err := GetDefaultWallet(conn)
 	if err != nil {
-		return fmt.Errorf("couldn't get wallet default wallet. %s", err.Error())
+		return fmt.Errorf("couldn't get default wallet. %s", err.Error())
 	}
 
 	if wallet2delete.WalletsType == lndhubsql.LndhubGoWalletType && defaultWallet.ID == wallet2delete.WalletsID {
