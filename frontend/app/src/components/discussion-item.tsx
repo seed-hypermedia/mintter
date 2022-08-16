@@ -46,6 +46,20 @@ function DiscussionEditor({
 }) {
   let [state] = useActor(fileRef)
 
+  function onDiscussionClick() {
+    if (window.getSelection() != 'Range') {
+      console.log('CLICK IS AVAILABLE!')
+    } else {
+      console.log('CLICK IS NOT AVAILABLE')
+    }
+
+    // mainService.send({
+    //   type: 'GO.TO.PUBLICATION',
+    //   docId: state.context.documentId,
+    //   version: state.context.version,
+    // })
+  }
+
   useEffect(() => {
     fileRef.send('LOAD')
     fileRef.send('DISCUSSION.SHOW')
@@ -64,20 +78,18 @@ function DiscussionEditor({
           backgroundColor: '$base-background-normal',
         },
       }}
-      onClick={() => {
-        mainService.send({
-          type: 'GO.TO.PUBLICATION',
-          docId: state.context.documentId,
-          version: state.context.version,
-        })
-      }}
+      onClick={onDiscussionClick}
     >
       <Box
         css={{
+          position: 'sticky',
+          top: 0,
+          zIndex: '$4',
+          backgroundColor: '$base-background-subtle',
           display: 'flex',
           borderTop: '1px solid rgba(0,0,0,0.1)',
-          paddingBlockStart: '1rem',
-          paddingBlockEnd: '0.6rem',
+          paddingBlock: '1rem',
+          // paddingBlockEnd: '0.6rem',
           gap: '1ch',
           paddingInline: '1rem',
         }}

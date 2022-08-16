@@ -492,7 +492,6 @@ export function createMainPageService({
         },
         pushToActivity: (context, e, meta) => {
           let {event} = meta.state
-          console.log('pushToActivity', event)
 
           context.activity.send({
             type: 'VISIT.PUBLICATION',

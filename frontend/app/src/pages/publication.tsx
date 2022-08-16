@@ -44,6 +44,8 @@ export default function Publication({
     return <PublicationShell />
   }
 
+  const [blockState] = useActor(blockToolsService)
+
   // start rendering
   if (state.matches('publication.errored')) {
     return (
@@ -87,7 +89,7 @@ export default function Publication({
                 css={{
                   paddingBlock: '2rem',
                   paddingInlineStart: '1rem',
-                  maxWidth: '$prose-width',
+                  // maxWidth: '$prose-width',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1rem',

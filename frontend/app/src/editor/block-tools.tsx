@@ -231,7 +231,7 @@ export function PublicationBlockTools({
       css={{
         position: 'absolute',
         zIndex: '$max',
-        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px))',
+        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) - 0.5rem)',
         insetInlineEnd: 24,
         userSelect: 'none',
       }}

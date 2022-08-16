@@ -84,13 +84,10 @@ function Video({element, attributes, children}: RenderElementProps) {
   const videoService = useInterpret(() => videoMachine, {
     actions: {
       assignError: assign({
-        errorMessage: (c) => {
-          console.log('ASSIGN ERROR!!')
-
-          return `Image error: image url is not a valid URL: ${
+        errorMessage: () =>
+          `Image error: image url is not a valid URL: ${
             (element as VideoType).url
-          }`
-        },
+          }`,
       }),
       assignValidUrl: (_, event) => {
         Transforms.setNodes<VideoType>(editor, {url: event.data}, {at: path})
