@@ -23,6 +23,8 @@ export var blockStyles = css({
   '&::marker': {
     color: '$base-active',
     fontSize: '0.95rem',
+    zIndex: 10,
+    position: 'relative',
   },
   // '&:hover': {
   //   boxShadow: '$debug',
@@ -32,7 +34,9 @@ export var blockStyles = css({
       orderedList: {
         // background: 'red',
       },
-      unorderedList: {},
+      unorderedList: {
+        listStyleType: 'disc',
+      },
       group: {
         listStyle: 'none',
       },
@@ -56,13 +60,33 @@ export var blockStyles = css({
 
 export var phrasingStyles = css({
   position: 'relative',
+  zIndex: 1,
+  '& > *': {
+    position: 'relative',
+    zIndex: 10,
+  },
+  '&:after': {
+    content: '',
+    position: 'absolute',
+    top: 0,
+    left: '50%',
+    rigth: 0,
+    transform: 'translateX(-50%)',
+    width: '200vw',
+    height: '$full',
+    zIndex: -1,
+    opacity: 0,
+    transition: 'opacity 0.35s ease',
+    backgroundColor: 'transparent',
+  },
   variants: {
     blockType: {
       code: {
         backgroundColor: '$base-background-normal',
-        paddingInlineStart: '2rem',
+        paddingInline: '2rem',
         paddingBlock: '1rem',
         fontSize: '1rem',
+        whiteSpace: 'normal',
       },
       blockquote: {
         paddingInlineStart: '1rem',
@@ -71,7 +95,7 @@ export var phrasingStyles = css({
         fontFamily: '$alt',
         fontStyle: 'italic',
         color: '$base-active',
-        '&:before': {
+        '&:after': {
           content: '',
           position: 'absolute',
           insetBlockStart: 0,
@@ -110,6 +134,14 @@ export var phrasingStyles = css({
       [EditorMode.Mention]: {},
       [EditorMode.Publication]: {},
     },
+    highlight: {
+      true: {
+        '&:after': {
+          backgroundColor: '$primary-component-bg-normal',
+          opacity: 1,
+        },
+      },
+    },
   },
   defaultVariants: {
     type: 'paragraph',
@@ -136,5 +168,37 @@ export var toolsTargetStyles = css({
         insetBlockStart: '1.3rem',
       },
     },
+  },
+})
+
+export var embedStyles = css({
+  borderBottom: '3px solid transparent',
+  fontStyle: 'italic',
+  userSelect: 'none',
+  zIndex: 1,
+  '& > *': {
+    zIndex: 10,
+  },
+  '&:hover': {
+    borderBottomColor: '$primary-border-hover',
+    cursor: 'pointer',
+    color: '$primary-active',
+  },
+  '&:after': {
+    display: 'none',
+  },
+  '&:before': {
+    content: '',
+    position: 'absolute',
+    top: 0,
+    left: '50%',
+    rigth: 0,
+    transform: 'translateX(-50%)',
+    width: '200vw',
+    height: '$full',
+    zIndex: -1,
+    opacity: 0,
+    transition: 'opacity 0.35s ease',
+    backgroundColor: 'transparent',
   },
 })

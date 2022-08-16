@@ -8,9 +8,9 @@ export type HoverContext = {
 
 type HoverEvent =
   | {type: 'MOUSE_ENTER'; blockId: string}
-  | {type: 'MOUSE_LEAVE'}
-  | {type: 'FROM_WINDOWS'; blockId?: string}
-  | {type: 'mousemove'}
+  | {type: 'MOUSE_LEAVE'; blockId: string}
+  | {type: 'FROM_WINDOWS'; blockId: string}
+// | {type: 'mousemove'}
 
 export function createHoverService() {
   return createMachine(
@@ -24,57 +24,31 @@ export function createHoverService() {
           id: 'windowHoverListener',
           src: 'windowHoverListener',
         },
-        {
-          id: 'windowMouseListener',
-          src: 'windowMouseListener',
-        },
+        // {
+        //   id: 'windowMouseListener',
+        //   src: 'windowMouseListener',
+        // },
       ],
       id: 'hover-machine',
-      initial: 'inactive',
+      initial: 'idle',
       states: {
-        inactive: {
-          id: 'inactive',
+        idle: {
           on: {
-            mousemove: 'active',
+            // mousemove: 'moving',
             MOUSE_ENTER: {
-              actions: ['updateBody'],
+              actions: ['updateBody', 'emit'],
             },
             MOUSE_LEAVE: {
-              actions: ['updateBody'],
+              actions: ['updateBody', 'emit'],
             },
             FROM_WINDOWS: {
               actions: ['updateBody'],
             },
           },
         },
-        active: {
-          initial: 'idle',
-          states: {
-            idle: {
-              after: {
-                500: {
-                  target: '#inactive',
-                  // actions: ['clearBlockId'],
-                },
-              },
-              on: {
-                mousemove: 'moving',
-                MOUSE_ENTER: {
-                  actions: ['updateBody', 'emit'],
-                },
-                MOUSE_LEAVE: {
-                  actions: ['updateBody', 'emit'],
-                },
-                FROM_WINDOWS: {
-                  actions: ['updateBody'],
-                },
-              },
-            },
-            moving: {
-              always: 'idle',
-            },
-          },
-        },
+        // moving: {
+        //   always: 'idle',
+        // },
       },
     },
     {
@@ -108,17 +82,17 @@ export function createHoverService() {
             unlisten?.()
           }
         },
-        windowMouseListener: () => (sendBack) => {
-          document.body.addEventListener('mousemove', (e) =>
-            sendBack('mousemove'),
-          )
+        // windowMouseListener: () => (sendBack) => {
+        //   function onMouseMove() {
+        //     sendBack('mousemove')
+        //   }
 
-          return () => {
-            document.body.removeEventListener('mousemove', (e) =>
-              sendBack('mousemove'),
-            )
-          }
-        },
+        //   document.body.addEventListener('mousemove', onMouseMove)
+
+        //   return () => {
+        //     document.body.removeEventListener('mousemove', onMouseMove)
+        //   }
+        // },
       },
     },
   )

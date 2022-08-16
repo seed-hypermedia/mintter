@@ -1,8 +1,10 @@
 import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
+import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {phrasingStyles} from '@app/editor/styles'
 import {css} from '@app/stitches.config'
+import {Box} from '@components/box'
 import {Text} from '@components/text'
 import {isStaticParagraph} from '@mintter/mttast'
 import {useEffect, useMemo} from 'react'
@@ -50,21 +52,36 @@ function StaticParagraph({
   attributes,
   mode,
 }: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
-  let {elementProps, parentPath} = usePhrasingProps(element)
+  let {elementProps, parentNode, parentPath} = usePhrasingProps(element)
   let btService = useBlockTools()
   let as = useMemo(
     () => headingMap[parentPath?.length ?? 'default'],
     [parentPath],
   )
+  let hoverService = useHover()
 
   useEffect(() => {
     if (attributes.ref.current) {
       btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
     }
-  }, [attributes.ref.current])
+  }, [attributes.ref, btService])
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
-    return <span {...elementProps}>{children}</span>
+    return (
+      <Box
+        as="span"
+        {...attributes}
+        // {...elementProps}
+        css={{
+          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+            backgroundColor: '$primary-component-bg-normal',
+            opacity: 1,
+          },
+        }}
+      >
+        {children}
+      </Box>
+    )
   }
 
   return (
@@ -76,6 +93,18 @@ function StaticParagraph({
         type: 'staticParagraph',
         blockType: 'heading',
       })}
+      css={{
+        [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+          backgroundColor: '$primary-component-bg-normal',
+          opacity: 1,
+        },
+      }}
+      onMouseEnter={() => {
+        hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
+      }}
+      onMouseLeave={() => {
+        hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
+      }}
     >
       {children}
     </Text>

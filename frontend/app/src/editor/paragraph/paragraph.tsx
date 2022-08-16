@@ -1,5 +1,6 @@
 import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
+import {useHover} from '@app/editor/hover-context'
 import {phrasingStyles} from '@app/editor/styles'
 import {Box} from '@components/box'
 import {
@@ -63,21 +64,32 @@ function Paragraph({
   mode,
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
   let btService = useBlockTools()
+  const hoverService = useHover()
   let {elementProps, parentNode} = usePhrasingProps(element)
 
   useEffect(() => {
-    if (attributes.ref.current) {
-      console.log('CURRENT IS NEW')
-
-      btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
+    if (mode != EditorMode.Embed && mode != EditorMode.Mention) {
+      if (attributes.ref.current) {
+        btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
+      }
     }
-  }, [attributes.ref.current])
+  }, [attributes.ref, btService, mode])
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
-      <span {...attributes} {...elementProps}>
+      <Box
+        as="span"
+        {...attributes}
+        // {...elementProps}
+        css={{
+          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+            backgroundColor: '$primary-component-bg-normal',
+            opacity: 1,
+          },
+        }}
+      >
         {children}
-      </span>
+      </Box>
     )
   }
 
@@ -85,9 +97,24 @@ function Paragraph({
     return (
       <Box
         as="pre"
-        className={phrasingStyles({blockType: 'code', type: 'paragraph'})}
+        className={phrasingStyles({
+          blockType: 'code',
+          type: 'paragraph',
+        })}
+        css={{
+          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+            backgroundColor: '$primary-component-bg-normal',
+            opacity: 1,
+          },
+        }}
         {...attributes}
         {...elementProps}
+        onMouseEnter={() => {
+          hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
+        }}
+        onMouseLeave={() => {
+          hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
+        }}
       >
         <code>{children}</code>
       </Box>
@@ -96,7 +123,8 @@ function Paragraph({
 
   if (isBlockquote(parentNode)) {
     return (
-      <blockquote
+      <Box
+        as="blockquote"
         {...attributes}
         {...elementProps}
         className={phrasingStyles({
@@ -104,22 +132,47 @@ function Paragraph({
           type: 'paragraph',
           blockType: 'blockquote',
         })}
+        css={{
+          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+            backgroundColor: '$primary-component-bg-normal',
+            opacity: 1,
+          },
+        }}
+        onMouseEnter={() => {
+          hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
+        }}
+        onMouseLeave={() => {
+          hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
+        }}
       >
         {children}
-      </blockquote>
+      </Box>
     )
   }
 
   return (
-    <p
+    <Box
+      as="p"
       className={phrasingStyles({
         type: 'paragraph',
         blockType: parentNode?.type,
       })}
+      css={{
+        [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+          backgroundColor: '$primary-component-bg-normal',
+          opacity: 1,
+        },
+      }}
       {...attributes}
       {...elementProps}
+      onMouseEnter={() => {
+        hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
+      }}
+      onMouseLeave={() => {
+        hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
+      }}
     >
       {children}
-    </p>
+    </Box>
   )
 }

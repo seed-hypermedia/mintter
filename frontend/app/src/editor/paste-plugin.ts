@@ -81,10 +81,6 @@ export function createPlainTextPastePlugin(): EditorPlugin {
         // }
 
         const html = transfer.getData('text/html')
-        console.log(
-          '🚀 ~ file: paste-plugin.ts ~ line 84 ~ configureEditor ~ html',
-          html,
-        )
 
         if (html) {
           const hast = processor.runSync(processor.parse(html))
