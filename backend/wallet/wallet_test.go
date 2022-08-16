@@ -28,7 +28,7 @@ const (
 )
 
 func TestModifyWallets(t *testing.T) {
-	// t.Skip("Uncomment skip to run integration tests with BlueWallet")
+	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
 	alice := makeTestService(t, "alice")
 
@@ -50,13 +50,13 @@ func TestModifyWallets(t *testing.T) {
 }
 
 func TestRequestP2PInvoice(t *testing.T) {
-	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
 	alice := makeTestService(t, "alice")
 	bob := makeTestService(t, "bob")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
 	defer cancel()
-	time.Sleep(15 * time.Second) // wait until internal wallet is registered
+	time.Sleep(5 * time.Second) // wait until internal wallet is registered
 	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
 	cid := bob.net.MustGet().ID().AccountID()

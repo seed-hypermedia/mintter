@@ -63,7 +63,7 @@ type Client struct {
 	http     *http.Client
 	db       *sqlitex.Pool
 	WalletID string
-	pubkey   string
+	pubKey   *future.ReadOnly[string]
 }
 
 type createRequest struct {
@@ -108,9 +108,11 @@ type Invoice struct {
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
 func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity]) *Client {
+	f := future.New[string]()
 	client := Client{
-		http: h,
-		db:   db,
+		http:   h,
+		db:     db,
+		pubKey: f.ReadOnly,
 	}
 	go func() {
 		id, err := identity.Await(ctx)
@@ -125,7 +127,9 @@ func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *
 		if err != nil {
 			panic(err)
 		}
-		client.pubkey = hex.EncodeToString(pubkeyBytes)
+		if err := f.Resolve(hex.EncodeToString(pubkeyBytes)); err != nil {
+			panic(err)
+		}
 	}()
 
 	return &client
@@ -140,8 +144,11 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 	var resp createResponse
 	conn := c.db.Get(ctx)
 	defer c.db.Put(conn)
-
-	err := c.do(ctx, conn, httpRequest{
+	pubKey, err := c.pubKey.Await(ctx)
+	if err != nil {
+		return resp, err
+	}
+	if c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
@@ -149,9 +156,8 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 			Password: pass,  // signed message
 			Nickname: nickname,
 		},
-		Token: c.pubkey,
-	}, 1, &resp)
-	if err != nil {
+		Token: pubKey,
+	}, 1, &resp) != nil {
 		return resp, err
 	}
 
@@ -179,8 +185,11 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 	if err != nil {
 		return err
 	}
-
-	err = c.do(ctx, conn, httpRequest{
+	pubKey, err := c.pubKey.Await(ctx)
+	if err != nil {
+		return err
+	}
+	if c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
@@ -188,9 +197,8 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 			Password: pass,  // signed message
 			Nickname: nickname,
 		},
-		Token: c.pubkey, // this token should be in reality the pubkey whose private counterpart was used to sign the password
-	}, 1, &resp)
-	if err != nil {
+		Token: pubKey, // this token should be in reality the pubkey whose private counterpart was used to sign the password
+	}, 1, &resp) != nil {
 		return err
 	}
 
