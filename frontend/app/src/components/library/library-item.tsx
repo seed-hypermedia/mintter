@@ -5,6 +5,7 @@ import {
 } from '@app/client'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {searchTerm} from '@app/editor/search'
 import {DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -15,7 +16,8 @@ import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {useActor, useInterpret} from '@xstate/react'
-import {PropsWithChildren, useMemo} from 'react'
+import {PropsWithChildren, useContext, useMemo} from 'react'
+import Highlighter from 'react-highlight-words'
 import toast from 'react-hot-toast'
 
 export type LibraryItemProps = {
@@ -127,6 +129,8 @@ export function LibraryItem({
 
   let title = state.context.title || 'Untitled Document'
 
+  const {search} = useContext(searchTerm)
+
   return (
     <Box
       css={{
@@ -165,7 +169,27 @@ export function LibraryItem({
         </Box>
       ) : null}
       <StyledItem active={match} data-testid="library-item">
-        <Text
+        <Highlighter
+          highlightClassName="search-highlight"
+          className="title"
+          searchWords={[search]}
+          autoEscape={true}
+          textToHighlight={title}
+          onClick={goToItem}
+        />
+
+        {/* <Editor
+          className="title"
+          onClick={goToItem}
+          data-testid="library-item-title"
+          as="span"
+          mode={EditorMode.Embed}
+          value={[text(state.context.title || 'Untitled Document')]}
+          onChange={() => {
+            // noop
+          }}
+        /> */}
+        {/* <Text
           size="2"
           className="title"
           color="primary"
@@ -173,7 +197,7 @@ export function LibraryItem({
           data-testid="library-item-title"
         >
           {title}
-        </Text>
+        </Text> */}
 
         <Dropdown.Root modal={false}>
           <Dropdown.Trigger asChild>
