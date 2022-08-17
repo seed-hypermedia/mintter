@@ -11618,7 +11618,7 @@ __metadata:
   dependencies:
     "@tauri-apps/api": ^1.0.0
     tslib: ^2.3.1
-  checksum: dce7cb6e7477745ecd4399a498decf1329a9dbf8f57b9d1398270db0e6e0b8cb449506118875ba74d433247d6e853ee42a7e4e40f688bdc339bd87a7d5ab55ef
+  checksum: dc82a504432a48410de26cf05dc00033d4aa3b83d893ec0198f30fd4edf6f1901a90881ab15f24347caf5b46a16ea2c8a201061202e14c1c11ee288808743189
   languageName: node
   linkType: hard
 
