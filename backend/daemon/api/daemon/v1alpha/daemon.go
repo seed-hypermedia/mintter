@@ -10,11 +10,9 @@ import (
 	"mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcstypes"
-	"strings"
 	sync "sync"
 	"time"
 
-	"github.com/tyler-smith/go-bip39"
 	"google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -50,23 +48,13 @@ func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func() error) *Server {
 	}
 }
 
-func (srv *Server) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*daemon.GenSeedResponse, error) {
+func (srv *Server) GenMnemonic(ctx context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
 	words, err := core.NewMnemonic(req.Bip39Nummnemonics)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = bip39.NewSeedWithErrorChecking(strings.Join(words, " "), req.Bip39Passphrase)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get a seed from mnemonics: %w", err)
-	}
-
-	// TODO GenSeed should return the seed instead of mnemonics. The seed is derived from the mnemonics and the password
-	resp := &daemon.GenSeedResponse{
-		Mnemonic: words, // Should be the above seed
-	}
-
-	return resp, nil
+	return &daemon.GenMnemonicResponse{Mnemonic: words}, nil
 }
 
 func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {

@@ -128,12 +128,13 @@ func (i Identity) IsWritable() bool {
 }
 
 // AccountFromMnemonic returns a key pair (priv + pub) derived
-// from the entropy associated to the given mnemonics. The mnemonics
-// can have a non empty passphrase
+// from the entropy associated to the given mnemonics and a passphrase.
+// Different passphrase (null passphrase is a valid passphrase) lead to
+// different and valid accounts.
 func AccountFromMnemonic(m []string, passphrase string) (KeyPair, error) {
 	seed, err := bip39.NewSeedWithErrorChecking(strings.Join(m[:], " "), passphrase)
 	if err != nil {
-		return KeyPair{}, fmt.Errorf("unable to set seed password from mnemonics: %w", err)
+		return KeyPair{}, fmt.Errorf("unable to derive a seed from mnemonics and password: %w", err)
 	}
 
 	return AccountFromSeed(seed)

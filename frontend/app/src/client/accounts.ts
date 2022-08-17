@@ -6,7 +6,7 @@ import {
 } from './.generated/accounts/v1alpha/accounts'
 import {
   DaemonClientImpl,
-  GenSeedRequest,
+  GenMnemonicRequest,
   RegisterRequest
 } from './.generated/daemon/v1alpha/daemon'
 import type { GrpcClient } from './grpc-client'
@@ -20,8 +20,8 @@ import { createGrpcClient } from './grpc-client'
 export function generateSeed(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
-  const request = GenSeedRequest.fromPartial({})
-  const response = new DaemonClientImpl(rpc).genSeed(request)
+  const request = GenMnemonicRequest.fromPartial({})
+  const response = new DaemonClientImpl(rpc).genMnemonic(request)
   return response
 }
 

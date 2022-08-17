@@ -23,10 +23,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DaemonClient interface {
-	// Generates cryptographic seed that is used to derive Mintter Account Key.
-	// It's currenly BIP-39. The seed is encoded as a mnemonic of 12-24 human-readable words.
+	// Generates a set of mnemonics words used to derive Mintter Account Key, and the underlying
+	// mintter lndhub wallet. The cipher schema is currenly BIP-39.
+	// The entropy is encoded as a mnemonic of 12-24 human-readable english words.
 	// The seed could be reconstructed given these words and the passphrase.
-	GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error)
+	GenMnemonic(ctx context.Context, in *GenMnemonicRequest, opts ...grpc.CallOption) (*GenMnemonicResponse, error)
 	// After generating the seed, this call is used to commit the seed and
 	// create an account binding between the device and account.
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
@@ -44,9 +45,9 @@ func NewDaemonClient(cc grpc.ClientConnInterface) DaemonClient {
 	return &daemonClient{cc}
 }
 
-func (c *daemonClient) GenSeed(ctx context.Context, in *GenSeedRequest, opts ...grpc.CallOption) (*GenSeedResponse, error) {
-	out := new(GenSeedResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.daemon.v1alpha.Daemon/GenSeed", in, out, opts...)
+func (c *daemonClient) GenMnemonic(ctx context.Context, in *GenMnemonicRequest, opts ...grpc.CallOption) (*GenMnemonicResponse, error) {
+	out := new(GenMnemonicResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.daemon.v1alpha.Daemon/GenMnemonic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +85,11 @@ func (c *daemonClient) ForceSync(ctx context.Context, in *ForceSyncRequest, opts
 // All implementations should embed UnimplementedDaemonServer
 // for forward compatibility
 type DaemonServer interface {
-	// Generates cryptographic seed that is used to derive Mintter Account Key.
-	// It's currenly BIP-39. The seed is encoded as a mnemonic of 12-24 human-readable words.
+	// Generates a set of mnemonics words used to derive Mintter Account Key, and the underlying
+	// mintter lndhub wallet. The cipher schema is currenly BIP-39.
+	// The entropy is encoded as a mnemonic of 12-24 human-readable english words.
 	// The seed could be reconstructed given these words and the passphrase.
-	GenSeed(context.Context, *GenSeedRequest) (*GenSeedResponse, error)
+	GenMnemonic(context.Context, *GenMnemonicRequest) (*GenMnemonicResponse, error)
 	// After generating the seed, this call is used to commit the seed and
 	// create an account binding between the device and account.
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
@@ -101,8 +103,8 @@ type DaemonServer interface {
 type UnimplementedDaemonServer struct {
 }
 
-func (UnimplementedDaemonServer) GenSeed(context.Context, *GenSeedRequest) (*GenSeedResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GenSeed not implemented")
+func (UnimplementedDaemonServer) GenMnemonic(context.Context, *GenMnemonicRequest) (*GenMnemonicResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenMnemonic not implemented")
 }
 func (UnimplementedDaemonServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
@@ -125,20 +127,20 @@ func RegisterDaemonServer(s grpc.ServiceRegistrar, srv DaemonServer) {
 	s.RegisterService(&Daemon_ServiceDesc, srv)
 }
 
-func _Daemon_GenSeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GenSeedRequest)
+func _Daemon_GenMnemonic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenMnemonicRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DaemonServer).GenSeed(ctx, in)
+		return srv.(DaemonServer).GenMnemonic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.daemon.v1alpha.Daemon/GenSeed",
+		FullMethod: "/com.mintter.daemon.v1alpha.Daemon/GenMnemonic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DaemonServer).GenSeed(ctx, req.(*GenSeedRequest))
+		return srv.(DaemonServer).GenMnemonic(ctx, req.(*GenMnemonicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -205,8 +207,8 @@ var Daemon_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DaemonServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GenSeed",
-			Handler:    _Daemon_GenSeed_Handler,
+			MethodName: "GenMnemonic",
+			Handler:    _Daemon_GenMnemonic_Handler,
 		},
 		{
 			MethodName: "Register",

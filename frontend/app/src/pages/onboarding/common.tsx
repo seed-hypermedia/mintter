@@ -1,18 +1,18 @@
-import {GenSeedResponse} from '@app/client'
-import type {CSS} from '@app/stitches.config'
-import {styled} from '@app/stitches.config'
-import {Box} from '@components/box'
-import type {ButtonProps} from '@components/button'
-import {Button} from '@components/button'
-import type {TextProps} from '@components/text'
-import {Text, textStyles} from '@components/text'
-import type {Variants} from 'framer-motion'
-import {motion} from 'framer-motion'
-import {PropsWithChildren} from 'react'
+import { GenMnemonicResponse } from '@app/client'
+import type { CSS } from '@app/stitches.config'
+import { styled } from '@app/stitches.config'
+import { Box } from '@components/box'
+import type { ButtonProps } from '@components/button'
+import { Button } from '@components/button'
+import type { TextProps } from '@components/text'
+import { Text, textStyles } from '@components/text'
+import type { Variants } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { PropsWithChildren } from 'react'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void
-  generateSeed?: () => Promise<GenSeedResponse>
+  generateSeed?: () => Promise<GenMnemonicResponse>
 }
 
 const containerAnimationVariants: Variants = {
@@ -108,7 +108,7 @@ export function OnboardingStepTitle({
       {...props}
     >
       {icon}
-      <Text alt as="h1" size="9" css={{textAlign: 'center'}}>
+      <Text alt as="h1" size="9" css={{ textAlign: 'center' }}>
         {children}
       </Text>
     </OnboardingStepTitleStyled>
@@ -136,7 +136,7 @@ const OnboardingStepBodyStyled = styled(motion.main, {
   width: '100%',
   fontFamily: '$base',
 })
-export function OnboardingStepBody(props: PropsWithChildren<{css?: CSS}>) {
+export function OnboardingStepBody(props: PropsWithChildren<{ css?: CSS }>) {
   return (
     <OnboardingStepBodyStyled
       data-testid="onboarding-body"
@@ -158,7 +158,7 @@ const OnboardingStepActionsStyled = styled(motion.footer, {
   },
 })
 
-export function OnboardingStepActions(props: PropsWithChildren<{css?: CSS}>) {
+export function OnboardingStepActions(props: PropsWithChildren<{ css?: CSS }>) {
   return (
     <OnboardingStepActionsStyled
       variants={slideUpAnimationVariants}
@@ -224,7 +224,7 @@ export function ProfileInformationIcon() {
   )
 }
 
-function IconContainer({children}: PropsWithChildren<unknown>) {
+function IconContainer({ children }: PropsWithChildren<unknown>) {
   return (
     <Box
       css={{

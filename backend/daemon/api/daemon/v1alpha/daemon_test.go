@@ -18,11 +18,11 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func TestGenSeed(t *testing.T) {
+func TestGenMnemonic(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	resp, err := srv.GenSeed(ctx, &daemon.GenSeedRequest{Bip39Nummnemonics: 18})
+	resp, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{Bip39Nummnemonics: 18})
 	require.NoError(t, err)
 	require.Equal(t, 18, len(resp.Mnemonic))
 }
@@ -73,7 +73,9 @@ func TestGetInfo_Ready(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	seed, err := srv.GenSeed(ctx, &daemon.GenSeedRequest{})
+	seed, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
+		Bip39Nummnemonics: 15,
+	})
 	require.NoError(t, err)
 
 	reg, err := srv.Register(ctx, &daemon.RegisterRequest{

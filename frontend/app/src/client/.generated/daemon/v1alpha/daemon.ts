@@ -7,14 +7,12 @@ import { BrowserHeaders } from "browser-headers";
 import { Timestamp } from "../../google/protobuf/timestamp";
 import _m0 from "protobufjs/minimal";
 
-export interface GenSeedRequest {
+export interface GenMnemonicRequest {
   /** Number of mnemonic words to encode the seed */
   bip39Nummnemonics: number;
-  /** Passphrase that will be used to encipher the seed. */
-  bip39Passphrase: string;
 }
 
-export interface GenSeedResponse {
+export interface GenMnemonicResponse {
   /**
    * The list of human-friendly words that can be used to backup the seed. These
    * words must be stored in a secret place by the user.
@@ -45,36 +43,30 @@ export interface Info {
   startTime: Date | undefined;
 }
 
-function createBaseGenSeedRequest(): GenSeedRequest {
-  return { bip39Nummnemonics: 0, bip39Passphrase: "" };
+function createBaseGenMnemonicRequest(): GenMnemonicRequest {
+  return { bip39Nummnemonics: 0 };
 }
 
-export const GenSeedRequest = {
+export const GenMnemonicRequest = {
   encode(
-    message: GenSeedRequest,
+    message: GenMnemonicRequest,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     if (message.bip39Nummnemonics !== 0) {
       writer.uint32(8).uint32(message.bip39Nummnemonics);
     }
-    if (message.bip39Passphrase !== "") {
-      writer.uint32(18).string(message.bip39Passphrase);
-    }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): GenSeedRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenMnemonicRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseGenSeedRequest();
+    const message = createBaseGenMnemonicRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
           message.bip39Nummnemonics = reader.uint32();
-          break;
-        case 2:
-          message.bip39Passphrase = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -84,43 +76,37 @@ export const GenSeedRequest = {
     return message;
   },
 
-  fromJSON(object: any): GenSeedRequest {
+  fromJSON(object: any): GenMnemonicRequest {
     return {
       bip39Nummnemonics: isSet(object.bip39Nummnemonics)
         ? Number(object.bip39Nummnemonics)
         : 0,
-      bip39Passphrase: isSet(object.bip39Passphrase)
-        ? String(object.bip39Passphrase)
-        : "",
     };
   },
 
-  toJSON(message: GenSeedRequest): unknown {
+  toJSON(message: GenMnemonicRequest): unknown {
     const obj: any = {};
     message.bip39Nummnemonics !== undefined &&
       (obj.bip39Nummnemonics = Math.round(message.bip39Nummnemonics));
-    message.bip39Passphrase !== undefined &&
-      (obj.bip39Passphrase = message.bip39Passphrase);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GenSeedRequest>, I>>(
+  fromPartial<I extends Exact<DeepPartial<GenMnemonicRequest>, I>>(
     object: I
-  ): GenSeedRequest {
-    const message = createBaseGenSeedRequest();
+  ): GenMnemonicRequest {
+    const message = createBaseGenMnemonicRequest();
     message.bip39Nummnemonics = object.bip39Nummnemonics ?? 0;
-    message.bip39Passphrase = object.bip39Passphrase ?? "";
     return message;
   },
 };
 
-function createBaseGenSeedResponse(): GenSeedResponse {
+function createBaseGenMnemonicResponse(): GenMnemonicResponse {
   return { mnemonic: [] };
 }
 
-export const GenSeedResponse = {
+export const GenMnemonicResponse = {
   encode(
-    message: GenSeedResponse,
+    message: GenMnemonicResponse,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
     for (const v of message.mnemonic) {
@@ -129,10 +115,10 @@ export const GenSeedResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): GenSeedResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): GenMnemonicResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseGenSeedResponse();
+    const message = createBaseGenMnemonicResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -147,7 +133,7 @@ export const GenSeedResponse = {
     return message;
   },
 
-  fromJSON(object: any): GenSeedResponse {
+  fromJSON(object: any): GenMnemonicResponse {
     return {
       mnemonic: Array.isArray(object?.mnemonic)
         ? object.mnemonic.map((e: any) => String(e))
@@ -155,7 +141,7 @@ export const GenSeedResponse = {
     };
   },
 
-  toJSON(message: GenSeedResponse): unknown {
+  toJSON(message: GenMnemonicResponse): unknown {
     const obj: any = {};
     if (message.mnemonic) {
       obj.mnemonic = message.mnemonic.map((e) => e);
@@ -165,10 +151,10 @@ export const GenSeedResponse = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GenSeedResponse>, I>>(
+  fromPartial<I extends Exact<DeepPartial<GenMnemonicResponse>, I>>(
     object: I
-  ): GenSeedResponse {
-    const message = createBaseGenSeedResponse();
+  ): GenMnemonicResponse {
+    const message = createBaseGenMnemonicResponse();
     message.mnemonic = object.mnemonic?.map((e) => e) || [];
     return message;
   },
@@ -466,14 +452,15 @@ export const Info = {
 /** Daemon API encapsulates main functionality of the Mintter daemon. */
 export interface Daemon {
   /**
-   * Generates cryptographic seed that is used to derive Mintter Account Key.
-   * It's currenly BIP-39. The seed is encoded as a mnemonic of 12-24 human-readable words.
+   * Generates a set of mnemonics words used to derive Mintter Account Key, and the underlying
+   * mintter lndhub wallet. The cipher schema is currenly BIP-39.
+   * The entropy is encoded as a mnemonic of 12-24 human-readable english words.
    * The seed could be reconstructed given these words and the passphrase.
    */
-  genSeed(
-    request: DeepPartial<GenSeedRequest>,
+  genMnemonic(
+    request: DeepPartial<GenMnemonicRequest>,
     metadata?: grpc.Metadata
-  ): Promise<GenSeedResponse>;
+  ): Promise<GenMnemonicResponse>;
   /**
    * After generating the seed, this call is used to commit the seed and
    * create an account binding between the device and account.
@@ -499,19 +486,19 @@ export class DaemonClientImpl implements Daemon {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc;
-    this.genSeed = this.genSeed.bind(this);
+    this.genMnemonic = this.genMnemonic.bind(this);
     this.register = this.register.bind(this);
     this.getInfo = this.getInfo.bind(this);
     this.forceSync = this.forceSync.bind(this);
   }
 
-  genSeed(
-    request: DeepPartial<GenSeedRequest>,
+  genMnemonic(
+    request: DeepPartial<GenMnemonicRequest>,
     metadata?: grpc.Metadata
-  ): Promise<GenSeedResponse> {
+  ): Promise<GenMnemonicResponse> {
     return this.rpc.unary(
-      DaemonGenSeedDesc,
-      GenSeedRequest.fromPartial(request),
+      DaemonGenMnemonicDesc,
+      GenMnemonicRequest.fromPartial(request),
       metadata
     );
   }
@@ -554,20 +541,20 @@ export const DaemonDesc = {
   serviceName: "com.mintter.daemon.v1alpha.Daemon",
 };
 
-export const DaemonGenSeedDesc: UnaryMethodDefinitionish = {
-  methodName: "GenSeed",
+export const DaemonGenMnemonicDesc: UnaryMethodDefinitionish = {
+  methodName: "GenMnemonic",
   service: DaemonDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return GenSeedRequest.encode(this).finish();
+      return GenMnemonicRequest.encode(this).finish();
     },
   } as any,
   responseType: {
     deserializeBinary(data: Uint8Array) {
       return {
-        ...GenSeedResponse.decode(data),
+        ...GenMnemonicResponse.decode(data),
         toObject() {
           return this;
         },
