@@ -9,6 +9,7 @@ import (
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/lndhub"
 	"mintter/backend/lndhub/lndhubsql"
+	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
@@ -60,14 +61,19 @@ func TestRequestP2PInvoice(t *testing.T) {
 	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
 	cid := bob.net.MustGet().ID().AccountID()
-	const amt = 23
+	var amt uint64 = 23
+	var wrongAmt uint64 = 24
 	var memo = "test invoice"
-	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), amt, &memo)
+	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
 	require.NoError(t, err)
 	invoice, err := lndhub.DecodeInvoice(payreq)
 	require.NoError(t, err)
 	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())
 	require.EqualValues(t, memo, *invoice.Description)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &wrongAmt)
+	require.ErrorIs(t, err, lndhubsql.ErrQtyMissmatch)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &amt)
+	require.ErrorIs(t, err, lndhubsql.ErrNotEnoughBalance)
 }
 
 func makeTestService(t *testing.T, name string) *Service {
@@ -93,7 +99,7 @@ func makeTestService(t *testing.T, name string) *Service {
 
 	require.NoError(t, lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)))
 
-	srv := New(context.Background(), db, fut.ReadOnly, identity.ReadOnly)
+	srv := New(context.Background(), logging.New("mintter/wallet", "debug"), db, fut.ReadOnly, identity.ReadOnly)
 
 	return srv
 }

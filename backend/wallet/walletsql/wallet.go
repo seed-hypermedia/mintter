@@ -1,6 +1,7 @@
 package walletsql
 
 import (
+	"errors"
 	"fmt"
 	"mintter/backend/lndhub/lndhubsql"
 	"strings"
@@ -11,14 +12,13 @@ import (
 const (
 	idcharLength = 64
 
-	// AlreadyExistsError can be used to check if inserting wallet failed because of al existing wallet.
-	AlreadyExistsError = "UNIQUE constraint failed"
-
-	// NotEnoughBalance can be used to check the typical error of not having enough balance.
+	// NotEnoughBalance can be used to check the typical API error of not having enough balance.
 	NotEnoughBalance = "not enough balance"
+)
 
-	// InvoiceQttyMissmatch can be used to check if the user tried to pay an invoice with the wrong amount.
-	InvoiceQttyMissmatch = "and provided amount is"
+var (
+	// ErrDuplicateIndex is thrown when db identifies a duplicate entry on a unique key.
+	ErrDuplicateIndex = errors.New("duplicate entry")
 )
 
 // Wallet is the representation of a lightning wallet.
@@ -95,6 +95,9 @@ func InsertWallet(conn *sqlite.Conn, wallet Wallet, login, password, token []byt
 
 	if err := insertWallet(conn, wallet.ID, wallet.Address, strings.ToLower(wallet.Type),
 		login, password, token, wallet.Name, int(wallet.Balance)); err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return fmt.Errorf("couldn't insert wallet: %w", ErrDuplicateIndex)
+		}
 		return fmt.Errorf("couldn't insert wallet: %w", err)
 	}
 

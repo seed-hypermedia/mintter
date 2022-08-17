@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -445,8 +446,7 @@ func (c *Client) PayInvoice(ctx context.Context, payReq string, sats uint64) err
 	if invoice, err := DecodeInvoice(payReq); err != nil {
 		return nil
 	} else if uint64(invoice.MilliSat.ToSatoshis()) != 0 && uint64(invoice.MilliSat.ToSatoshis()) != sats {
-		return fmt.Errorf("amount mismatch. Invoice amt is " + invoice.MilliSat.ToSatoshis().String() +
-			" and provided amount is " + strconv.FormatInt(int64(sats), 10) + " sats")
+		return fmt.Errorf("Invoice amt is %s sats and provided amount is %d sats: %w", invoice.MilliSat.ToSatoshis().String(), int64(sats), lndhub.ErrQtyMissmatch)
 	}
 
 	type payInvoiceRequest struct {
@@ -512,10 +512,7 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 
 		// Try to decode the request body into the struct. If there is an error,
 		// respond to the client with the error message and a 400 status code.
-
-		if err := json.NewDecoder(resp.Body).Decode(&genericResponse); err != nil {
-			return err
-		}
+		err = json.NewDecoder(resp.Body).Decode(&genericResponse)
 
 		if resp.StatusCode > 299 || resp.StatusCode < 200 {
 			authErrCount++
@@ -559,6 +556,8 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 						return err
 					}
 				}
+			} else if resp.StatusCode == http.StatusTooManyRequests {
+				time.Sleep(1125 * time.Millisecond)
 			} else {
 				errMsg, ok := genericResponse["message"]
 				if ok {
@@ -567,6 +566,9 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 				return fmt.Errorf("failed to make a request url=%s method=%s status=%s", request.URL, request.Method, resp.Status)
 			}
 			continue
+		}
+		if err != nil {
+			return fmt.Errorf("Couldn't deode received payload: " + err.Error())
 		}
 		if err := mapstructure.Decode(genericResponse, &errorRes); err == nil && errorRes.Error {
 			return fmt.Errorf("failed to make a request url=%s method=%s status=%s error_code=%d error_message=%s",

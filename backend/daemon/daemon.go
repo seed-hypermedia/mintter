@@ -392,7 +392,7 @@ func initHTTP(
 		router.Handle("/debug/metrics", promhttp.Handler())
 		router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
 		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
-		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet.New(ctx, db, node, me))))
+		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet.New(ctx, logging.New("mintter/wallet", "debug"), db, node, me))))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 
 		nav := newNavigationHandler(router)

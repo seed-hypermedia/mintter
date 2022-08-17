@@ -1,6 +1,7 @@
 package lndhubsql
 
 import (
+	"errors"
 	"fmt"
 
 	"crawshaw.io/sqlite"
@@ -13,11 +14,20 @@ const (
 	LndhubGoWalletType = "lndhub.go"
 )
 
+var (
+	// ErrEmptyResult is returned when underliying db does not return any value or empty (and business logic does not allow emptiness).
+	ErrEmptyResult = errors.New("Empty results")
+	// ErrQtyMissmatch is returned when invoice amount and intended paying quantity don't match.
+	ErrQtyMissmatch = errors.New("Quantities don't match")
+	// ErrNotEnoughBalance is used when the user does not have enough outgoing liquidity to perform an operation.
+	ErrNotEnoughBalance = errors.New("Not enough balance")
+)
+
 // GetAPIURL returns the lndhub api endpoint used to connect to perform wallet operations.
 func GetAPIURL(conn *sqlite.Conn, id string) (string, error) {
 	res, err := getApiURL(conn, id)
 	if err == nil && res.WalletsAddress == "" {
-		return "", fmt.Errorf("Could not find any address associated with provided id [%s]", id)
+		return "", fmt.Errorf("Could not find any address associated with provided id [%s]: %w", id, ErrEmptyResult)
 	}
 	// TODO: decrypt address before returning
 	return res.WalletsAddress, err
@@ -27,7 +37,7 @@ func GetAPIURL(conn *sqlite.Conn, id string) (string, error) {
 func GetLogin(conn *sqlite.Conn, id string) (string, error) {
 	res, err := getLogin(conn, id)
 	if err == nil && len(res.WalletsLogin) == 0 {
-		return "", fmt.Errorf("Could not find any login associated with provided id [%s]", id)
+		return "", fmt.Errorf("Could not find any login associated with provided id [%s]: %w", id, ErrEmptyResult)
 	}
 	// TODO: decrypt login before returning
 	return string(res.WalletsLogin[:]), err
@@ -37,7 +47,7 @@ func GetLogin(conn *sqlite.Conn, id string) (string, error) {
 func GetPassword(conn *sqlite.Conn, id string) (string, error) {
 	res, err := getPassword(conn, id)
 	if err == nil && len(res.WalletsPassword) == 0 {
-		return "", fmt.Errorf("Could not find any password associated with provided id [%s]", id)
+		return "", fmt.Errorf("Could not find any password associated with provided id [%s]: %w", id, ErrEmptyResult)
 	}
 	// TODO: decrypt pass before returning
 	return string(res.WalletsPassword[:]), err
@@ -48,6 +58,9 @@ func GetPassword(conn *sqlite.Conn, id string) (string, error) {
 func GetToken(conn *sqlite.Conn, id string) (string, error) {
 	res, err := getToken(conn, id)
 	// TODO: decrypt token before returning
+	if err == nil && len(res.WalletsToken) == 0 {
+		return "", fmt.Errorf("Could not find any password associated with provided id [%s]: %w", id, ErrEmptyResult)
+	}
 	return string(res.WalletsToken[:]), err
 }
 
@@ -68,5 +81,8 @@ func SetLoginSignature(conn *sqlite.Conn, signature string) error {
 // signed login message to access to account settings in lndhub.go.
 func GetLoginSignature(conn *sqlite.Conn) (string, error) {
 	res, err := getLoginSignature(conn, LoginSignatureKey)
+	if err == nil && res.GlobalMetaValue == "" {
+		return "", fmt.Errorf("Could not find any signature associated with self node: %w", ErrEmptyResult)
+	}
 	return res.GlobalMetaValue, err
 }
