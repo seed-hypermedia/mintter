@@ -49,7 +49,7 @@ func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func() error) *Server {
 }
 
 func (srv *Server) GenMnemonic(ctx context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
-	words, err := core.NewMnemonic(req.Bip39Nummnemonics)
+	words, err := core.NewMnemonic(req.MnemonicsLength)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 		}
 	}
 
-	acc, err := core.AccountFromMnemonic(req.Mnemonic, req.Bip39Passphrase)
+	acc, err := core.AccountFromMnemonic(req.Mnemonic, req.Passphrase)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to create account: %v", err)
 	}

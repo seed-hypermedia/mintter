@@ -9,7 +9,7 @@ import _m0 from "protobufjs/minimal";
 
 export interface GenMnemonicRequest {
   /** Number of mnemonic words to encode the seed */
-  bip39Nummnemonics: number;
+  mnemonicsLength: number;
 }
 
 export interface GenMnemonicResponse {
@@ -22,7 +22,7 @@ export interface GenMnemonicResponse {
 
 export interface RegisterRequest {
   mnemonic: string[];
-  bip39Passphrase: string;
+  passphrase: string;
 }
 
 export interface RegisterResponse {
@@ -44,7 +44,7 @@ export interface Info {
 }
 
 function createBaseGenMnemonicRequest(): GenMnemonicRequest {
-  return { bip39Nummnemonics: 0 };
+  return { mnemonicsLength: 0 };
 }
 
 export const GenMnemonicRequest = {
@@ -52,8 +52,8 @@ export const GenMnemonicRequest = {
     message: GenMnemonicRequest,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
-    if (message.bip39Nummnemonics !== 0) {
-      writer.uint32(8).uint32(message.bip39Nummnemonics);
+    if (message.mnemonicsLength !== 0) {
+      writer.uint32(8).uint32(message.mnemonicsLength);
     }
     return writer;
   },
@@ -66,7 +66,7 @@ export const GenMnemonicRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.bip39Nummnemonics = reader.uint32();
+          message.mnemonicsLength = reader.uint32();
           break;
         default:
           reader.skipType(tag & 7);
@@ -78,16 +78,16 @@ export const GenMnemonicRequest = {
 
   fromJSON(object: any): GenMnemonicRequest {
     return {
-      bip39Nummnemonics: isSet(object.bip39Nummnemonics)
-        ? Number(object.bip39Nummnemonics)
+      mnemonicsLength: isSet(object.mnemonicsLength)
+        ? Number(object.mnemonicsLength)
         : 0,
     };
   },
 
   toJSON(message: GenMnemonicRequest): unknown {
     const obj: any = {};
-    message.bip39Nummnemonics !== undefined &&
-      (obj.bip39Nummnemonics = Math.round(message.bip39Nummnemonics));
+    message.mnemonicsLength !== undefined &&
+      (obj.mnemonicsLength = Math.round(message.mnemonicsLength));
     return obj;
   },
 
@@ -95,7 +95,7 @@ export const GenMnemonicRequest = {
     object: I
   ): GenMnemonicRequest {
     const message = createBaseGenMnemonicRequest();
-    message.bip39Nummnemonics = object.bip39Nummnemonics ?? 0;
+    message.mnemonicsLength = object.mnemonicsLength ?? 0;
     return message;
   },
 };
@@ -161,7 +161,7 @@ export const GenMnemonicResponse = {
 };
 
 function createBaseRegisterRequest(): RegisterRequest {
-  return { mnemonic: [], bip39Passphrase: "" };
+  return { mnemonic: [], passphrase: "" };
 }
 
 export const RegisterRequest = {
@@ -172,8 +172,8 @@ export const RegisterRequest = {
     for (const v of message.mnemonic) {
       writer.uint32(10).string(v!);
     }
-    if (message.bip39Passphrase !== "") {
-      writer.uint32(18).string(message.bip39Passphrase);
+    if (message.passphrase !== "") {
+      writer.uint32(18).string(message.passphrase);
     }
     return writer;
   },
@@ -189,7 +189,7 @@ export const RegisterRequest = {
           message.mnemonic.push(reader.string());
           break;
         case 2:
-          message.bip39Passphrase = reader.string();
+          message.passphrase = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -204,9 +204,7 @@ export const RegisterRequest = {
       mnemonic: Array.isArray(object?.mnemonic)
         ? object.mnemonic.map((e: any) => String(e))
         : [],
-      bip39Passphrase: isSet(object.bip39Passphrase)
-        ? String(object.bip39Passphrase)
-        : "",
+      passphrase: isSet(object.passphrase) ? String(object.passphrase) : "",
     };
   },
 
@@ -217,8 +215,7 @@ export const RegisterRequest = {
     } else {
       obj.mnemonic = [];
     }
-    message.bip39Passphrase !== undefined &&
-      (obj.bip39Passphrase = message.bip39Passphrase);
+    message.passphrase !== undefined && (obj.passphrase = message.passphrase);
     return obj;
   },
 
@@ -227,7 +224,7 @@ export const RegisterRequest = {
   ): RegisterRequest {
     const message = createBaseRegisterRequest();
     message.mnemonic = object.mnemonic?.map((e) => e) || [];
-    message.bip39Passphrase = object.bip39Passphrase ?? "";
+    message.passphrase = object.passphrase ?? "";
     return message;
   },
 };
@@ -453,8 +450,8 @@ export const Info = {
 export interface Daemon {
   /**
    * Generates a set of mnemonics words used to derive Mintter Account Key, and the underlying
-   * mintter lndhub wallet. The cipher schema is currenly BIP-39.
-   * The entropy is encoded as a mnemonic of 12-24 human-readable english words.
+   * mintter lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a
+   * mnemonic of 12-24 human-readable english words.
    * The seed could be reconstructed given these words and the passphrase.
    */
   genMnemonic(

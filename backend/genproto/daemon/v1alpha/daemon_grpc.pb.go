@@ -24,8 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DaemonClient interface {
 	// Generates a set of mnemonics words used to derive Mintter Account Key, and the underlying
-	// mintter lndhub wallet. The cipher schema is currenly BIP-39.
-	// The entropy is encoded as a mnemonic of 12-24 human-readable english words.
+	// mintter lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a
+	// mnemonic of 12-24 human-readable english words.
 	// The seed could be reconstructed given these words and the passphrase.
 	GenMnemonic(ctx context.Context, in *GenMnemonicRequest, opts ...grpc.CallOption) (*GenMnemonicResponse, error)
 	// After generating the seed, this call is used to commit the seed and
@@ -86,8 +86,8 @@ func (c *daemonClient) ForceSync(ctx context.Context, in *ForceSyncRequest, opts
 // for forward compatibility
 type DaemonServer interface {
 	// Generates a set of mnemonics words used to derive Mintter Account Key, and the underlying
-	// mintter lndhub wallet. The cipher schema is currenly BIP-39.
-	// The entropy is encoded as a mnemonic of 12-24 human-readable english words.
+	// mintter lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a
+	// mnemonic of 12-24 human-readable english words.
 	// The seed could be reconstructed given these words and the passphrase.
 	GenMnemonic(context.Context, *GenMnemonicRequest) (*GenMnemonicResponse, error)
 	// After generating the seed, this call is used to commit the seed and

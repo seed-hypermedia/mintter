@@ -22,7 +22,7 @@ func TestGenMnemonic(t *testing.T) {
 	srv := newTestServer(t, "alice")
 	ctx := context.Background()
 
-	resp, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{Bip39Nummnemonics: 18})
+	resp, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{MnemonicsLength: 18})
 	require.NoError(t, err)
 	require.Equal(t, 18, len(resp.Mnemonic))
 }
@@ -34,8 +34,8 @@ func TestRegister(t *testing.T) {
 	ctx := context.Background()
 
 	resp, err := srv.Register(ctx, &daemon.RegisterRequest{
-		Mnemonic:        testMnemonic,
-		Bip39Passphrase: testPassphrase,
+		Mnemonic:   testMnemonic,
+		Passphrase: testPassphrase,
 	})
 	require.NoError(t, err)
 	require.NotEqual(t, "", resp.AccountId)
@@ -74,7 +74,7 @@ func TestGetInfo_Ready(t *testing.T) {
 	ctx := context.Background()
 
 	seed, err := srv.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
-		Bip39Nummnemonics: 15,
+		MnemonicsLength: 15,
 	})
 	require.NoError(t, err)
 

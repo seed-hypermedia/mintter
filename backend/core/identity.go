@@ -132,7 +132,7 @@ func (i Identity) IsWritable() bool {
 // Different passphrase (null passphrase is a valid passphrase) lead to
 // different and valid accounts.
 func AccountFromMnemonic(m []string, passphrase string) (KeyPair, error) {
-	seed, err := bip39.NewSeedWithErrorChecking(strings.Join(m[:], " "), passphrase)
+	seed, err := bip39.NewSeedWithErrorChecking(strings.Join(m, " "), passphrase)
 	if err != nil {
 		return KeyPair{}, fmt.Errorf("unable to derive a seed from mnemonics and password: %w", err)
 	}
@@ -185,5 +185,5 @@ func NewMnemonic(length uint32) ([]string, error) {
 		return nil, fmt.Errorf("unable to generate mnemonics from random seed: %w", err)
 	}
 
-	return strings.Fields(mnemonic), nil
+	return strings.Split(mnemonic, " "), nil
 }
