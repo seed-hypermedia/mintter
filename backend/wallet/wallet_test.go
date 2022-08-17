@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	timeoutSeconds = 125
+	timeoutSeconds = 15
 )
 
 func TestModifyWallets(t *testing.T) {
@@ -50,8 +50,33 @@ func TestModifyWallets(t *testing.T) {
 	require.EqualValues(t, newName, wallets[0].Name)
 }
 
-func TestRequestP2PInvoice(t *testing.T) {
+func TestRequestLndHubInvoice(t *testing.T) {
 	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
+
+	alice := makeTestService(t, "alice")
+	bob := makeTestService(t, "bob")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+	time.Sleep(5 * time.Second) // wait until internal wallet is registered
+
+	cid := bob.net.MustGet().ID().AccountID()
+	var amt uint64 = 23
+	var wrongAmt uint64 = 24
+	var memo = "test invoice"
+	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
+	require.NoError(t, err)
+	invoice, err := lndhub.DecodeInvoice(payreq)
+	require.NoError(t, err)
+	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())
+	require.EqualValues(t, memo, *invoice.Description)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &wrongAmt)
+	require.ErrorIs(t, err, lndhubsql.ErrQtyMissmatch)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &amt)
+	require.ErrorIs(t, err, lndhubsql.ErrNotEnoughBalance)
+}
+
+func TestRequestP2PInvoice(t *testing.T) {
+	t.Skip("Uncomment skip to run integration tests")
 
 	alice := makeTestService(t, "alice")
 	bob := makeTestService(t, "bob")
