@@ -60,6 +60,7 @@ export var blockStyles = css({
 
 export var phrasingStyles = css({
   position: 'relative',
+  whiteSpace: 'nowrap',
   zIndex: 1,
   '& > *': {
     position: 'relative',
