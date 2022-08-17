@@ -51,7 +51,7 @@ export type ExportWalletPayload = {
 /** Lightning Invoices */
 export type Invoice = {
   __typename?: 'Invoice';
-  /** Invoice qunatuty in satoshis. */
+  /** Invoice quantity in satoshis. */
   Amount: Scalars['Satoshis'];
   /** Memo field of the invoice. */
   Description?: Maybe<Scalars['String']>;

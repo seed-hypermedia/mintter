@@ -87,7 +87,7 @@ Query variables:
 To list payments
 
 ```graphql
-query listInvoices($wID: ID!, $excExpired: Boolean!, $excUnpaid: Boolean!){
+query listInvoices($wID: ID!, $excExpired: Boolean, $excUnpaid: Boolean){
   payments(walletID: $wID, excludeExpired: $excExpired, excludeUnpaid: $excUnpaid) {
     sent{
       IsPaid

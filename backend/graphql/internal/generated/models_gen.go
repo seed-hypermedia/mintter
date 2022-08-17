@@ -49,7 +49,7 @@ type Invoice struct {
 	PaymentPreimage *string `json:"PaymentPreimage"`
 	// Payee lightning node ID.
 	Destination *string `json:"Destination"`
-	// Invoice qunatuty in satoshis.
+	// Invoice quantity in satoshis.
 	Amount model.Satoshis `json:"Amount"`
 	// Fees incurred by the payer when paying the invoice
 	Fee *model.Satoshis `json:"Fee"`

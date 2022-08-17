@@ -979,7 +979,7 @@ type Invoice {
   """         
 	Destination:     String     
   """
-  Invoice qunatuty in satoshis.
+  Invoice quantity in satoshis.
   """         
 	Amount:          Satoshis!   
   """
