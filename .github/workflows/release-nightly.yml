@@ -148,7 +148,7 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          tag_name: ${{ steps.current_time.outputs.formattedTime }}
+          tag_name: desktop-nightly/${{ steps.current_time.outputs.formattedTime }}
           prerelease: true
           generate_release_notes: true
           files: ./artifacts/**/*
