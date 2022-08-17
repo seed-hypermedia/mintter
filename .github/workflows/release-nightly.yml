@@ -138,11 +138,17 @@ jobs:
           mv ./artifacts/arm64/macos/Mintter.app.tar.gz ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz
           mv ./artifacts/amd64/macos/Mintter.app.tar.gz.sig ./artifacts/amd64/macos/Mintter_x86.app.tar.gz.sig
           mv ./artifacts/arm64/macos/Mintter.app.tar.gz.sig ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz.sig
+      - name: Get current time
+        uses: srfrnk/current-time@master
+        id: current_time
+        with:
+          format: YYYY.M.D
       - name: "create release"
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
+          tag_name: ${{ steps.current_time.outputs.formattedTime }}
           prerelease: true
           generate_release_notes: true
           files: ./artifacts/**/*
