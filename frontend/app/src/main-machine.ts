@@ -169,7 +169,7 @@ export function createMainPageService({
   client,
   initialRoute,
 }: CreateMainPageServiceParams) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWgA6pgDoAnAewFcAXOQydS04wgN1QBt0JVKsoBiRKFylY9dKUyCQAD0QBGAOwBmAEyEFKgGzalChQA45czUoA0IAJ7yALAAYArIWOb7+65rn2F1lfYC+fuZoWHgEYCQU1LC0EPSMLOycfFCkACqkAKKxDMRSwqI8ElKyCIqaCoRK9oq25bZKAJx21uZWpSpVTtqatioa9rbeCgFBGDj4RGRUNHQ5fADKGamEAMIAqgBKGxkAcssAIgDy6wCyu6l5ImJFSDLyyg2EDbVK7q5KcrYtlvK11l0uBr6JQuHyDEYgYLjMIRabRXDkABGHAAxtxxJgEhwuDxMPxLgUMcV5H19IR7M0vPYqV8VK1ECpappCMD6h05B0GuUIVDQpNIjQEcj0GjCpjWNjkmlSAAFJGo9E3IRXMXE0ofJRdam2L7A1T6ez00oGiqspS2ZyfCmaHljPnhKZRQhChVirFJFLpLJxXK3fLXSS3EocgyEeoNORKKoNVxcuRGyMKZndHqfaz6FRufyBSF2iYOgXw+UixWYBZLVabbZ7QhHU7nAkBtUmNQG2wGzQGhoNRoKBPlRwqTxfD76QxGG053n52FRPiOsA7UiUABiFEwEEbqqDJLpPwQXNsT27zwpKme1l0tpCM4XsCl6QAEqRkGAt0Sd+0921jA0KtYT2sJM3E8FQVGvaF+ThB9SHmMBKFxKB4D9FUP1AYMwKNMDrH+ADu2qBR2xwtwIPtWc4BguVhVFDEABl0FgSh3yVO4vwTfQFDkQg8KaQjI0vTRwKnPMYTvGD9mIVAADNKHoxjmMDdDdyNTijwGHUHD49sPFI29Cxg70cgUtUOW-BlNO4wCex6JpfF00T9M9WVixolj-W3JSEB6TV+j0BR7B7VwPATX8nkZPR7HCzQGiE0Ybwc6CVkOE4TgASWWGU1gAIVo1KVgAQVSVLDh2YzP1MhNMy4lMHANAYM2GYT4qgucVm2QqMgAfR2DIAHVOv2DZ8pXC4UMJFiMLMhB9G0Sz8L0YiI30eyWoow4ZV2TretSnYjl6srPM+GNCDAvoVDw4FnjMfcgIqDSdUvALQS+FaC2gjJ9nSzrMpyvLCuK0qxqbcr201bUQL6Z4M2utolH0R4T3wv8vBeprILAKUstQFEAGsDtYoxGTDAw5CaGKh0vKbuzDe7gUu9Tszi9GpTXYgAHdUGITcgY8gmjCPHpqS0WwuSHDNKoCHNMFICA4CkacYU4Ng3x5tDWKAo1VDkV7yOiJWVeVcbFNYqqnjkOxBOBewqn0I0Y3+RGOX0WoIz-HW70IAALF8DZAdy1ZKXxqpjKNahFqNwv7IDj3wnpO0+MD3cLGIfXdHFeHx4NLwqD5fDpxp1PjfdIw4lkI5ms0vCUJO4RTnI08z+RuzJfyFB7VRMzHeoE2sc3Kgj7R6kMDxrBrp1ZniMBiDIX1DeBw7Ip8nsw-NPpXiLn9RzL1Qoeta3q7RsiPYn2e-dQiabEjSoOXeemdQ3+RjDUZx010Nw9F6MfBRc0s0-RPFG7TUIk4dwGZQJdxmlhF4x5CI6i5DFKMB8mZH2Ti6EsboJScEAZ4HC5JOIaFgRmTshp9yMmpt2PiNRajw0asgvStc0GuUxFPGe2CXaEDjgaOwYCwIwybs7SysDzbGF0P5L+RZqKlkAW4Zk5tOxDkihAzQCYDD-DNBaHsvcfC0NzM1N6TpYDwUQshOevNA6zSqloLwHgiHd1IWUGO9sNDaEIrFXR6NdbOh-mKOSTFVYXwQB8I8AExaKCBBGb4P5naakRupD4LhlqH3oU6CAkkZK+MAVoHOXxorWDPNUZ2yj9yaEvDTDSHFSbmkMOIwgKJiBgG4GACS0k-GmIDogVQ-xCIfBwgYDwYEH7TU6Pdfi5tVCfySQlKIgCgRGmpBURGnZegxVRnQsImS+GlDdpLIAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWgA6pgDoAbAe1QiygDF1i4BiAJQFEAFAeSYBVDqBJADIsAyoREBVAMJTRIxKFylY6AC7pSmBSAAeiAMwAmAIyF9AFnOGAbDYCs+gBwB2WwBoQAT0Q3Tju3bOxobOAAyhhibGdgC+MR5oWHgEYCTklJg0dIysnDx8QqKELExMXNpKKuqa2noIRqYWVrbWDi7uXgbmzoT+gcFhEVGx8SCJOPhEAE6kAK6qcIQAFqTIYAxSHACyW-y8ACIswtwsBcIVymoaWki6iN2GhMYuzo7G1gCc5vofH6HWHm8CGMVlMr1Cjj+zgC1mhIwSGAmKUIM3mi0galIU0IADdUMR0BBUOpMgwLlVrrVEMZ9M5HoYPkEIv5Xl9nIDEB87OZCEFzI5Qs5vq4BfCxojktM5gtYIQMaosbj8YSGABxDiEbga-ZMACC1G45KuNVudRBgt6AxCLMh3Q5CCFH15IIFQtp1lFcQRSUmqVRMsIuFmACMCQBjYnXJUEokkqBk26VY03UB1N5O6yZkzmD7+YzGD6Ge0F5xOyHGf7OfTPOzPZxe8U+5H+xZB0PoCPVTDRlXqzUatgSABCgn4Ul13H4HAAckau1SEH0nm9HD9c7Xnh9i299L0PhXYdW8y4G+NJX7pa2Q+HI5oexA1RqtYQdfrDYnLvPTdTuaFCAzq0sBw-hce1Ikif9LFsZw6Rpat61GM9fRRS9ZTbG8u0EdBYFUQhCXoDZtl2A4jhYE4zhYOdKW-epDF3UJugrQwbS+cwAU6RchWdflBWFD1Qn0U8JWQltZQgKZUAAM1ULCcLwiACM2HY9hfUjyIEc4PwpE1Ux8Ol-wE-Q7GYwJbTYsDYUePkXEZaFrG+ISmylNFZTDKYwGJMB9gk6SGAgTRUiwHFSAAa1SNyPIWacwAAd28qTVConS7gQawjN5QzjJY8w7GLODuNdPiBUExDhObVDmA4CRyOnDheGoKrp32JKUxSuwnWieyYOy8yOIZEwCtLGC7Hs-RrEcpFnJlR9+0IAAJbZKK05MF3ap4Ru6V5TNY9igWiD5rDMN5unMCtvm6CbzxQlyZufEQyMnadVXkZav10hA1s6zaet2xBuSdPl93aqDDDYy6RIqvtn0HEcxwnKdp1HER30UT9qPez6Nu67aoPtRxPn-F1rHefdokMMUkPKm6oe1PUDSRlGQCTN62o6rGttZXG+taKyXW+ax-izcGqemmmXzpxnmfR1n1q6jmzN+4F9AiQmeLdEUBOFqbGDFmHR3HScZxa1a2bln6wNOnlrN491HC1i8bqkVgJ1OacWAAdXFt9jZozGzZx3q9rJgqbY1krvUmh3pqU4jCA4NgWGnQh3f4JqOHdn33ppBl1v8WkLDsRxHEie1-sIASDpy7lay5Cmyu12BCOU3gWH2FS9bhw3Z1e6W6n3HpLKcVw2mH+19HHv8+lsSIYJFe3rujoj2+HJG5szmWvuxznA58BkAZdUOPXtmah11KQAGl177nLeSsQZoiH1p7VO3oYS+YnAmVhxj77BqmHd3UTBmo92Sn3dKHwnChGCK0R+uUOLYEsE8SwX8nDNDZHEUYmBSAQDgNoSmRAyAUCoLQeg8AQGtTqMxXozE0rD0fnRCyh0jL9BCOESI+Y65OVSGAKYMx3IQCvvcXcxd8buhHrYfQY8rA8inuBWeR9SpcIXosfCYBBEIHJnYcuEDbLmz6pCP81khp2X5vPUSyxVhqPIQuTRZgKzvFCMZMIQp8bFleKYCBgpGT7i5CeRRkdlGynlIqPEMZIyZHUcEG+VgTDMhxuyDixcyzHSFGdCwVYzGoTlJQBU2JQmEkifZRoIEsrxOLIZEO6t+KcICeY4J2IeF8MiaDHo4QhjyzZPaVwk8UmnQYuk8OjZalZPqc0gaMSmLZQSUCWEPRrLRFLBCVJmSXKBmvB2W83Z8mxioOoz4Vl9zZnXPmLcfUISHTpJYcIrQayGBWQGdCGyuz3kiRCRwvJ2qV2OQWSRZyqxmH3JWI8tY-ERyuuYx5nYoyNKxHsr4ZhPjj1+HmAsYEnCPHLECmsdZ7lXnbFC5KUtQGIEzO80swQQTfNOXtVJe5ghvAcLYb4dz-HgqybAMAqg4xkNRtpChPgxqEDYpCLeCtn7F24kDHaoN7K4rQusglmBZK4VUeoy2-5C4MQEgHRWTFdzWyqcVOVaz8WbOVeove5dGJxO3orWE+9+TQlLAEIwLKwUQ1WeJBKyr5L0HUQXMw3xdE6rAqWXmjrbIbUGfgqOiwvXSXNdYmioN3mGEyiZW1FsYLOlrMBXMERxqso9QGCKnl4rSQtQLQgrR-aZo4vmAaBqiqayLSLXBSb3rpU3h0rmQIfhkspaDBk7ji7mHtmq6hoi6HtEiI4YsThX6BEiIWc04EMExCAA */
   return createMachine(
     {
       context: () => ({
@@ -193,32 +193,30 @@ export function createMainPageService({
         events: {} as MainPageEvent,
         services: {} as MainServices,
       },
-      id: 'main-page',
-      initial: 'loadingFiles',
       invoke: {
         src: 'router',
         id: 'router',
       },
+      id: 'main-page',
+      initial: 'loadingFiles',
       states: {
         loadingFiles: {
           invoke: {
-            id: 'fetchFiles',
             src: 'fetchFiles',
+            id: 'fetchFiles',
           },
           on: {
             'REPORT.FILES.SUCCESS': {
-              actions: ['assignFiles'],
+              actions: 'assignFiles',
               target: 'routes',
             },
             'REPORT.FILES.ERROR': {
-              // actions: ['assignError'],
               target: 'errored',
             },
           },
         },
         errored: {},
         routes: {
-          id: 'routes',
           initial: 'idle',
           states: {
             idle: {
@@ -258,13 +256,13 @@ export function createMainPageService({
                   ],
                 },
                 valid: {
-                  entry: ['pushDraftRoute'],
+                  entry: 'pushDraftRoute',
                   tags: ['documentView', 'draft'],
                   on: {
                     'GO.TO.DRAFT': [
                       {
+                        actions: 'pushToRecents',
                         cond: 'isEventDifferent',
-                        actions: ['pushToRecents'],
                         target: 'validating',
                       },
                       {},
@@ -283,13 +281,13 @@ export function createMainPageService({
                 validating: {
                   always: [
                     {
-                      cond: 'isMetaEventDifferent',
                       actions: [
                         'pushToRecents',
                         'pushToActivity',
                         'setPublicationParams',
                         'setPublicationAsCurrent',
                       ],
+                      cond: 'isMetaEventDifferent',
                       target: 'valid',
                     },
                     {
@@ -298,7 +296,7 @@ export function createMainPageService({
                   ],
                 },
                 valid: {
-                  entry: ['pushPublicationRoute'],
+                  entry: 'pushPublicationRoute',
                   tags: ['documentView', 'publication'],
                   on: {
                     'GO.TO.PUBLICATION': [
@@ -362,10 +360,12 @@ export function createMainPageService({
               invoke: {
                 src: 'createNewDraft',
                 id: 'createNewDraft',
-                onDone: {
-                  actions: ['assignNewDraftValues'],
-                  target: 'editor.valid',
-                },
+                onDone: [
+                  {
+                    actions: 'assignNewDraftValues',
+                    target: '#main-page.routes.editor.valid',
+                  },
+                ],
               },
             },
           },
@@ -402,7 +402,7 @@ export function createMainPageService({
             },
             'COMMIT.PUBLISH': {
               actions: ['removeDraftFromList', 'asssignNewPublicationValues'],
-              target: '#routes.publication.valid',
+              target: '.publication.valid',
             },
           },
         },
