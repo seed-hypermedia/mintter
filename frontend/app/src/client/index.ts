@@ -45,7 +45,7 @@ export type {
 } from './.generated/networking/v1alpha/networking'
 export * from './.generated/types'
 export {
-  generateSeed,
+  generateMnemonic,
   getAccount,
   listAccounts,
   registerAccount,

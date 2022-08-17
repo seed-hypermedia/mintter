@@ -13,14 +13,13 @@ import type { GrpcClient } from './grpc-client'
 import { createGrpcClient } from './grpc-client'
 /**
  *
- * @param bip39Passphrase
  * @param rpc
  * @returns
  */
-export function generateSeed(rpc?: GrpcClient) {
+export function generateMnemonic(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
-  const request = GenMnemonicRequest.fromPartial({})
+  const request = GenMnemonicRequest.fromPartial({mnemonicsLength:12})
   const response = new DaemonClientImpl(rpc).genMnemonic(request)
   return response
 }
@@ -28,14 +27,14 @@ export function generateSeed(rpc?: GrpcClient) {
 /**
  *
  * @param mnemonicList
- * @param bip39Passphrase
+ * @param passphrase
  * @param walletPassword
  * @param rpc
  * @returns
  */
 export function registerAccount(
   mnemonicList: string[],
-  bip39Passphrase?: string,
+  passphrase?: string,
   walletPassword?: any,
   rpc?: GrpcClient,
 ) {
@@ -43,7 +42,7 @@ export function registerAccount(
 
   const request = RegisterRequest.fromPartial({
     mnemonic: mnemonicList,
-    bip39Passphrase,
+    passphrase,
   })
 
   return new DaemonClientImpl(rpc).register(request)

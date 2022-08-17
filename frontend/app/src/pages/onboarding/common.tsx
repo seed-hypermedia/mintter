@@ -12,7 +12,7 @@ import { PropsWithChildren } from 'react'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void
-  generateSeed?: () => Promise<GenMnemonicResponse>
+  generateMnemonic?: () => Promise<GenMnemonicResponse>
 }
 
 const containerAnimationVariants: Variants = {

@@ -1,13 +1,13 @@
-import {generateSeed as defaultGenerateSeed, registerAccount} from '@app/client'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Text} from '@components/text'
-import {TextField} from '@components/text-field'
-import {useCallback, useState} from 'react'
+import { generateMnemonic as defaultGenerateMnemonic, registerAccount } from '@app/client'
+import { Box } from '@components/box'
+import { Button } from '@components/button'
+import { Text } from '@components/text'
+import { TextField } from '@components/text-field'
+import { useCallback, useState } from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
-import {useQuery} from 'react-query'
-import type {OnboardingStepPropsType} from './common'
+import { useQuery } from 'react-query'
+import type { OnboardingStepPropsType } from './common'
 import {
   OnboardingStep,
   OnboardingStepActions,
@@ -15,20 +15,20 @@ import {
   OnboardingStepButton,
   OnboardingStepDescription,
   OnboardingStepTitle,
-  SecurityPackIcon,
+  SecurityPackIcon
 } from './common'
 
 export function SecurityPack({
   prev,
   next,
-  generateSeed = defaultGenerateSeed,
+  generateMnemonic = defaultGenerateMnemonic,
 }: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
     async () => {
-      const resp = await generateSeed()
+      const resp = await generateMnemonic()
       return resp.mnemonic
     },
     {
@@ -75,7 +75,7 @@ export function SecurityPack({
         />
       ) : mnemonics.isError ? (
         <OnboardingStepBody>
-          <Text color="danger" css={{textAlign: 'center'}}>
+          <Text color="danger" css={{ textAlign: 'center' }}>
             {mnemonics.error.message}
           </Text>
         </OnboardingStepBody>
@@ -90,7 +90,7 @@ export function SecurityPack({
         data-testid="button-toogle-custom-seed"
       >
         Setting up a new device?{' '}
-        <Text css={{textDecoration: 'underline', display: 'inline-block'}}>
+        <Text css={{ textDecoration: 'underline', display: 'inline-block' }}>
           provide your own seed
         </Text>
       </Button>
@@ -114,7 +114,7 @@ export function SecurityPack({
   )
 }
 
-function MnemonicList({words}: {words: string[]}) {
+function MnemonicList({ words }: { words: string[] }) {
   return (
     <OnboardingStepBody
       css={{
