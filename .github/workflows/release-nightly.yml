@@ -89,7 +89,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YYYY.M.D
+          format: YY.M.D
       - name: Set version in Cargo.toml
         run: node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{ steps.current_time.outputs.formattedTime }}
       - uses: JonasKruckenberg/tauri-build@v1.0.4
@@ -114,7 +114,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.goarch }}
-          path: "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\n') }}"
+          path:
+            "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\n') }}"
 
   publish-to-github:
     needs: build-binaries
