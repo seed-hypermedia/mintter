@@ -2,6 +2,7 @@ import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useHover} from '@app/editor/hover-context'
 import {phrasingStyles} from '@app/editor/styles'
+import {CSS} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {
   isBlockquote,
@@ -57,6 +58,15 @@ export const createParagraphPlugin = (): EditorPlugin => ({
   },
 })
 
+function hoverStyles(id: string): CSS {
+  return {
+    [`[data-hover-block="${id}"] &:after`]: {
+      backgroundColor: '$primary-component-bg-normal',
+      opacity: 1,
+    },
+  }
+}
+
 function Paragraph({
   children,
   element,
@@ -81,12 +91,7 @@ function Paragraph({
         as="span"
         {...attributes}
         // {...elementProps}
-        css={{
-          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
-            backgroundColor: '$primary-component-bg-normal',
-            opacity: 1,
-          },
-        }}
+        css={hoverStyles(parentNode?.id)}
       >
         {children}
       </Box>
@@ -101,12 +106,7 @@ function Paragraph({
           blockType: 'code',
           type: 'paragraph',
         })}
-        css={{
-          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
-            backgroundColor: '$primary-component-bg-normal',
-            opacity: 1,
-          },
-        }}
+        css={hoverStyles(parentNode?.id)}
         {...attributes}
         {...elementProps}
         onMouseEnter={() => {
@@ -132,12 +132,7 @@ function Paragraph({
           type: 'paragraph',
           blockType: 'blockquote',
         })}
-        css={{
-          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
-            backgroundColor: '$primary-component-bg-normal',
-            opacity: 1,
-          },
-        }}
+        css={hoverStyles(parentNode?.id)}
         onMouseEnter={() => {
           hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
         }}
@@ -157,12 +152,7 @@ function Paragraph({
         type: 'paragraph',
         blockType: parentNode?.type,
       })}
-      css={{
-        [`[data-hover-block="${parentNode?.id}"] &:after`]: {
-          backgroundColor: '$primary-component-bg-normal',
-          opacity: 1,
-        },
-      }}
+      css={hoverStyles(parentNode?.id)}
       {...attributes}
       {...elementProps}
       onMouseEnter={() => {

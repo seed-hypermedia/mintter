@@ -52,7 +52,7 @@ export function BookmarkItem({
 
   async function onCopy() {
     await copyTextToClipboard(state.context.url)
-    toast.success('Bookmark ID copied successfully', {position: 'top-center'})
+    toast.success('ID copied successfully', {position: 'top-center'})
   }
 
   function onMainPanel() {

@@ -44,8 +44,6 @@ export default function Publication({
     return <PublicationShell />
   }
 
-  const [blockState] = useActor(blockToolsService)
-
   // start rendering
   if (state.matches('publication.errored')) {
     return (
