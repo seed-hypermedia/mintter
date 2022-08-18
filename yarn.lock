@@ -1641,7 +1641,7 @@ __metadata:
     "@radix-ui/react-dropdown-menu": 0.1.6
     "@radix-ui/react-hover-card": 0.1.5
     "@radix-ui/react-label": 0.1.5
-    "@radix-ui/react-popover": ^1.0.0
+    "@radix-ui/react-popover": 1.0.0
     "@radix-ui/react-portal": 0.1.4
     "@radix-ui/react-scroll-area": 0.1.4
     "@radix-ui/react-separator": 0.1.4
@@ -1659,7 +1659,7 @@ __metadata:
     "@types/react": 18.0.15
     "@types/react-copy-to-clipboard": 5.0.3
     "@types/react-dom": 18.0.6
-    "@types/react-highlight-words": ^0.16.4
+    "@types/react-highlight-words": 0.16.4
     "@types/unist": 2.0.6
     "@typescript-eslint/eslint-plugin": 5.30.6
     "@typescript-eslint/parser": 5.30.6
@@ -1699,7 +1699,7 @@ __metadata:
     react-copy-to-clipboard: 5.1.0
     react-dom: 18.2.0
     react-error-boundary: 3.1.4
-    react-highlight-words: ^0.18.0
+    react-highlight-words: 0.18.0
     react-hook-form: 7.33.1
     react-hot-toast: 2.3.0
     react-qr-barcode-scanner: 1.0.6
@@ -2347,7 +2347,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-popover@npm:^1.0.0":
+"@radix-ui/react-popover@npm:1.0.0":
   version: 1.0.0
   resolution: "@radix-ui/react-popover@npm:1.0.0"
   dependencies:
@@ -3110,7 +3110,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-highlight-words@npm:^0.16.4":
+"@types/react-highlight-words@npm:0.16.4":
   version: 0.16.4
   resolution: "@types/react-highlight-words@npm:0.16.4"
   dependencies:
@@ -10145,7 +10145,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-highlight-words@npm:^0.18.0":
+"react-highlight-words@npm:0.18.0":
   version: 0.18.0
   resolution: "react-highlight-words@npm:0.18.0"
   dependencies:
