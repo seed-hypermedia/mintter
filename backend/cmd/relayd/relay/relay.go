@@ -16,7 +16,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Relay is the may struct to hold all the relay operations
+// Relay is the may struct to hold all the relay operations.
 type Relay struct {
 	log  *zap.Logger // The logger to write messages
 	cfg  Config      // The configuration struct. Congifured via file only
@@ -25,7 +25,7 @@ type Relay struct {
 
 // NewRelay is used to create a new relay based on both
 // configuration cfg and private key priv_k. A logger must be provided
-// as well
+// as well.
 func NewRelay(log *zap.Logger, cfg Config) (*Relay, error) {
 	return &Relay{
 		log: log,
@@ -33,7 +33,7 @@ func NewRelay(log *zap.Logger, cfg Config) (*Relay, error) {
 	}, nil
 }
 
-// ID returns the p2p id of the relay in string format
+// ID returns the p2p id of the relay in string format.
 func (r *Relay) ID() string {
 	return r.host.ID().Pretty()
 }
@@ -49,14 +49,14 @@ func (r *Relay) Stop() error {
 }
 
 // Start starts the relay non blocking. Returns nil on success an
-// non empty error on error
+// non empty error on error.
 func (r *Relay) Start() error {
-	key_bytes, err := hex.DecodeString(r.cfg.PrivKey)
+	keyBytes, err := hex.DecodeString(r.cfg.PrivKey)
 
 	if err != nil {
 		return err
 	}
-	key, err := crypto.UnmarshalPrivateKey(key_bytes)
+	key, err := crypto.UnmarshalPrivateKey(keyBytes)
 	if err != nil {
 		return err
 	}

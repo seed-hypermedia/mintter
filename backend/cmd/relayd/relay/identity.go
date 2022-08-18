@@ -10,7 +10,7 @@ import (
 
 // LoadIdentity tries to load an identity (private key from file)
 // if there is no key in that file, then LoadIdentity creates a
-// fresh new key and stores it in the provided path
+// fresh new key and stores it in the provided path.
 func LoadIdentity(idPath string) (crypto.PrivKey, error) {
 	if _, err := os.Stat(idPath); err == nil {
 		return readIdentity(idPath)

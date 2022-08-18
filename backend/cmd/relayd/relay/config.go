@@ -9,6 +9,7 @@ import (
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 )
 
+// Config holds relay configuration.
 type Config struct {
 	PrivKey string
 	Network networkConfig
@@ -71,6 +72,7 @@ func defaultConfig() Config {
 	}
 }
 
+// LoadConfig reads configuration from json file in cfgPath.
 func LoadConfig(cfgPath string) (Config, error) {
 	cfg := defaultConfig()
 
