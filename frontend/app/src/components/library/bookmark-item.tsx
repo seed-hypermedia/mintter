@@ -33,7 +33,7 @@ export function BookmarkItem({
           version: context.version,
         })
       },
-      persistDelete: (context) => {
+      persistDelete: () => {
         bookmarks.send({
           type: 'BOOKMARK.REMOVE',
           url: state.context.url,
@@ -131,11 +131,9 @@ export function BookmarkItem({
 function toString(node: FlowContent): string {
   let result = ''
 
-  visit(node, 'text', extractText)
-
-  function extractText(node: any) {
+  visit(node, 'text', function extraxtText(node) {
     result += node.value
-  }
+  })
 
   return result
 }

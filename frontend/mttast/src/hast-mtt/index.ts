@@ -1,3 +1,4 @@
+/* eslint-disable */
 import deepmerge from 'deepmerge'
 import minifyWhiteSpace from 'rehype-minify-whitespace'
 import {defaultSchema} from 'rehype-sanitize'

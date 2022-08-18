@@ -1,20 +1,15 @@
 import {styled} from '@app/stitches.config'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 import type {PropsWithChildren} from 'react'
+import React from 'react'
 import {Box} from './box'
 import type {ButtonProps} from './button'
 import {Button} from './button'
-import {
-  dialogContentStyles,
-  dialogFooterStyles,
-  overlayStyles,
-} from './dialog-styles'
+import {dialogContentStyles, dialogFooterStyles} from './dialog-styles'
 import type {TextProps} from './text'
 import {Text} from './text'
 
-const StyledOverlay = styled(AlertDialogPrimitive.Overlay, overlayStyles)
-
-function Root({children, ...props}: any) {
+function Root({children, ...props}: AlertDialogPrimitive.AlertDialogProps) {
   return (
     <AlertDialogPrimitive.Root {...props}>{children}</AlertDialogPrimitive.Root>
   )
@@ -63,7 +58,9 @@ function Action({
   disabled = false,
   ...props
 }: PropsWithChildren<
-  Omit<ButtonProps, 'size'> & {disabled?: boolean} & {onClick: any}
+  Omit<ButtonProps, 'size'> & {disabled?: boolean} & {
+    onClick: React.MouseEventHandler<HTMLButtonElement>
+  }
 >) {
   return (
     <AlertDialogPrimitive.Action asChild>

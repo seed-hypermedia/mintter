@@ -13,7 +13,7 @@ function loggerFactory(cb: FnType) {
     ? tauriLog[cb]
     : (m: string) => Promise.resolve(console[cb](m))
 
-  return function actualLogger(...args: Array<any>): Promise<void> {
+  return function actualLogger(...args: Array<unknown>): Promise<void> {
     if (args.length == 1) {
       return fn(args[0])
     } else {

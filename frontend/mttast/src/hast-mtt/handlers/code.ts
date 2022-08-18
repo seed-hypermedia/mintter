@@ -37,11 +37,13 @@ export function code(h: H, node: HastNode) {
     }
   }
 
+  // eslint-disable-next-line
   const props: any = {
     id: createId(),
   }
 
   if (lang) {
+    // eslint-disable-next-line
     props.lang = lang as any
   }
 

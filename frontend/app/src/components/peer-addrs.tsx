@@ -1,4 +1,3 @@
-import {useAccountInfo} from '@app/auth-context'
 import {usePeerAddrs} from '@app/hooks'
 import {CSS} from '@app/stitches.config'
 import {useMemo} from 'react'
@@ -10,8 +9,6 @@ import {Text} from './text'
 import {TextField} from './text-field'
 
 export function PeerAddrs() {
-  const info = useAccountInfo()
-
   const peerAddrs = usePeerAddrs()
 
   const copyText = useMemo(() => peerAddrs.data?.join(','), [peerAddrs.data])

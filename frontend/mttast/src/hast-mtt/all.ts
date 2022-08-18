@@ -1,7 +1,7 @@
 import {one} from './one'
 import {H, HastNode} from './types'
 
-export function all(h: H, parent: HastNode): Array<any> {
+export function all(h: H, parent: HastNode): Array<unknown> {
   const nodes = parent.children || []
   const values = []
   let index = -1
@@ -25,8 +25,15 @@ export function all(h: H, parent: HastNode): Array<any> {
   while (++index < length) {
     const result = one(h, nodes[index], parent)
     if (Array.isArray(result)) {
-      values.push(...result.map(({position, ...n}) => n))
+      values.push(
+        ...result.map((val) => {
+          // eslint-disable-next-line
+          let {position, ...props} = val
+          return props
+        }),
+      )
     } else if (result) {
+      // eslint-disable-next-line
       const {position, ...node} = result
       values.push(node)
     }

@@ -2,12 +2,7 @@
 
 export interface Typegen0 {
   '@@xstate/typegen': true
-  eventsCausingActions: {
-    assignDocument: 'REPORT.PUBLICATION.SUCCESS'
-    assignError: 'REPORT.PUBLICATION.ERROR'
-  }
   internalEvents: {
-    'xstate.init': {type: 'xstate.init'}
     'done.invoke.fetchDocument': {
       type: 'done.invoke.fetchDocument'
       data: unknown
@@ -17,6 +12,7 @@ export interface Typegen0 {
       type: 'error.platform.fetchDocument'
       data: unknown
     }
+    'xstate.init': {type: 'xstate.init'}
   }
   invokeSrcNameMap: {
     fetchDocument: 'done.invoke.fetchDocument'
@@ -27,11 +23,15 @@ export interface Typegen0 {
     guards: never
     delays: never
   }
+  eventsCausingActions: {
+    assignDocument: 'REPORT.PUBLICATION.SUCCESS'
+    assignError: 'REPORT.PUBLICATION.ERROR'
+  }
   eventsCausingServices: {
-    fetchDocument: 'RETRY'
+    fetchDocument: 'RETRY' | 'xstate.init'
   }
   eventsCausingGuards: {}
   eventsCausingDelays: {}
-  matchesStates: 'fetching' | 'ready' | 'error'
+  matchesStates: 'error' | 'fetching' | 'ready'
   tags: 'loading'
 }

@@ -11,7 +11,6 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import {createPublicationMachine} from '@app/publication-machine'
-import {DeepPartial} from '@app/types'
 import {debug} from '@app/utils/logger'
 import {getRefFromParams} from '@app/utils/machine-utils'
 import {libraryMachine} from '@components/library/library-machine'
@@ -36,13 +35,13 @@ export type MainPageContext = {
     blockId: string | null
     replace: boolean
   }
-  recents: Array<PublicationRef | DraftRef>
+  recents: Array<CurrentFile>
   library: ActorRefFrom<typeof libraryMachine> | null
   activity: ActorRefFrom<typeof activityMachine> | null
   publicationList: Array<PublicationWithRef>
   draftList: Array<DraftWithRef>
   errorMessage: string
-  currentFile: PublicationRef | DraftRef | null
+  currentFile: CurrentFile | null
 }
 
 type MainPageEvent =
@@ -131,29 +130,6 @@ type RouterEvent =
       type: 'listen'
     }
 
-export function defaultMainPageContext(
-  overrides: DeepPartial<MainPageContext> = {
-    params: {docId: '', version: null, blockId: null, replace: false},
-  },
-) {
-  return {
-    params: {
-      docId: '',
-      version: null,
-      blockId: null,
-      ...overrides.params,
-    },
-    recents: [],
-    library: spawn(libraryMachine, 'library'),
-    activity: spawn(activityMachine, 'activity'),
-    currentFile: null,
-    publicationList: [],
-    draftList: [],
-    errorMessage: '',
-    ...overrides,
-  } as MainPageContext
-}
-
 export type CreateMainPageServiceParams = {
   client: QueryClient
   initialRoute?: string
@@ -172,7 +148,7 @@ export function createMainPageService({
   /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWgA6pgDoAbAe1QiygDF1i4BiAJQFEAFAeSYBVDqBJADIsAyoREBVAMJTRIxKFylY6AC7pSmBSAAeiAMwAmAIyF9AFnOGAbDYCs+gBwB2WwBoQAT0Q3Tju3bOxobOAAyhhibGdgC+MR5oWHgEYCTklJg0dIysnDx8QqKELExMXNpKKuqa2noIRqYWVrbWDi7uXgbmzoT+gcFhEVGx8SCJOPhEAE6kAK6qcIQAFqTIYAxSHACyW-y8ACIswtwsBcIVymoaWki6iN2GhMYuzo7G1gCc5vofH6HWHm8CGMVlMr1Cjj+zgC1mhIwSGAmKUIM3mi0galIU0IADdUMR0BBUOpMgwLlVrrVEMZ9M5HoYPkEIv5Xl9nIDEB87OZCEFzI5Qs5vq4BfCxojktM5gtYIQMaosbj8YSGABxDiEbga-ZMACC1G45KuNVudRBgt6AxCLMh3Q5CCFH15IIFQtp1lFcQRSUmqVRMsIuFmACMCQBjYnXJUEokkqBk26VY03UB1N5O6yZkzmD7+YzGD6Ge0F5xOyHGf7OfTPOzPZxe8U+5H+xZB0PoCPVTDRlXqzUatgSABCgn4Ul13H4HAAckau1SEH0nm9HD9c7Xnh9i299L0PhXYdW8y4G+NJX7pa2Q+HI5oexA1RqtYQdfrDYnLvPTdTuaFCAzq0sBw-hce1Ikif9LFsZw6Rpat61GM9fRRS9ZTbG8u0EdBYFUQhCXoDZtl2A4jhYE4zhYOdKW-epDF3UJugrQwbS+cwAU6RchWdflBWFD1Qn0U8JWQltZQgKZUAAM1ULCcLwiACM2HY9hfUjyIEc4PwpE1Ux8Ol-wE-Q7GYwJbTYsDYUePkXEZaFrG+ISmylNFZTDKYwGJMB9gk6SGAgTRUiwHFSAAa1SNyPIWacwAAd28qTVConS7gQawjN5QzjJY8w7GLODuNdPiBUExDhObVDmA4CRyOnDheGoKrp32JKUxSuwnWieyYOy8yOIZEwCtLGC7Hs-RrEcpFnJlR9+0IAAJbZKK05MF3ap4Ru6V5TNY9igWiD5rDMN5unMCtvm6CbzxQlyZufEQyMnadVXkZav10hA1s6zaet2xBuSdPl93aqDDDYy6RIqvtn0HEcxwnKdp1HER30UT9qPez6Nu67aoPtRxPn-F1rHefdokMMUkPKm6oe1PUDSRlGQCTN62o6rGttZXG+taKyXW+ax-izcGqemmmXzpxnmfR1n1q6jmzN+4F9AiQmeLdEUBOFqbGDFmHR3HScZxa1a2bln6wNOnlrN491HC1i8bqkVgJ1OacWAAdXFt9jZozGzZx3q9rJgqbY1krvUmh3pqU4jCA4NgWGnQh3f4JqOHdn33ppBl1v8WkLDsRxHEie1-sIASDpy7lay5Cmyu12BCOU3gWH2FS9bhw3Z1e6W6n3HpLKcVw2mH+19HHv8+lsSIYJFe3rujoj2+HJG5szmWvuxznA58BkAZdUOPXtmah11KQAGl177nLeSsQZoiH1p7VO3oYS+YnAmVhxj77BqmHd3UTBmo92Sn3dKHwnChGCK0R+uUOLYEsE8SwX8nDNDZHEUYmBSAQDgNoSmRAyAUCoLQeg8AQGtTqMxXozE0rD0fnRCyh0jL9BCOESI+Y65OVSGAKYMx3IQCvvcXcxd8buhHrYfQY8rA8inuBWeR9SpcIXosfCYBBEIHJnYcuEDbLmz6pCP81khp2X5vPUSyxVhqPIQuTRZgKzvFCMZMIQp8bFleKYCBgpGT7i5CeRRkdlGynlIqPEMZIyZHUcEG+VgTDMhxuyDixcyzHSFGdCwVYzGoTlJQBU2JQmEkifZRoIEsrxOLIZEO6t+KcICeY4J2IeF8MiaDHo4QhjyzZPaVwk8UmnQYuk8OjZalZPqc0gaMSmLZQSUCWEPRrLRFLBCVJmSXKBmvB2W83Z8mxioOoz4Vl9zZnXPmLcfUISHTpJYcIrQayGBWQGdCGyuz3kiRCRwvJ2qV2OQWSRZyqxmH3JWI8tY-ERyuuYx5nYoyNKxHsr4ZhPjj1+HmAsYEnCPHLECmsdZ7lXnbFC5KUtQGIEzO80swQQTfNOXtVJe5ghvAcLYb4dz-HgqybAMAqg4xkNRtpChPgxqEDYpCLeCtn7F24kDHaoN7K4rQusglmBZK4VUeoy2-5C4MQEgHRWTFdzWyqcVOVaz8WbOVeove5dGJxO3orWE+9+TQlLAEIwLKwUQ1WeJBKyr5L0HUQXMw3xdE6rAqWXmjrbIbUGfgqOiwvXSXNdYmioN3mGEyiZW1FsYLOlrMBXMERxqso9QGCKnl4rSQtQLQgrR-aZo4vmAaBqiqayLSLXBSb3rpU3h0rmQIfhkspaDBk7ji7mHtmq6hoi6HtEiI4YsThX6BEiIWc04EMExCAA */
   return createMachine(
     {
-      context: () => ({
+      context: {
         params: {
           docId: '',
           version: null,
@@ -180,13 +156,14 @@ export function createMainPageService({
           replace: false,
         },
         recents: [],
-        library: spawn(libraryMachine, 'library'),
+        library: null,
         currentFile: null,
         publicationList: [],
         draftList: [],
         errorMessage: '',
-        activity: spawn(activityMachine, 'activity'),
-      }),
+        activity: null,
+      },
+      entry: ['spawnUIMachines'],
       tsTypes: {} as import('./main-machine.typegen').Typegen0,
       schema: {
         context: {} as MainPageContext,
@@ -419,18 +396,28 @@ export function createMainPageService({
     {
       guards: {
         isMetaEventDifferent: (context, _, meta) => {
+          // eslint-disable-next-line
           let {type, ...eventParams} = meta.state.event
           return !isEqual(context.params, eventParams)
         },
         isEventDifferent: (context, event) => {
+          // eslint-disable-next-line
           let {type, ...eventParams} = event
           let result = !isEqual(context.params, eventParams)
           return result
         },
       },
       actions: {
+        // @ts-ignore
+        spawnUIMachines: assign({
+          library: () => spawn(libraryMachine, 'library'),
+          activity: () => spawn(activityMachine, 'activity'),
+        }),
+        removePublicationFromCitations: () => {
+          // TODO.
+        },
         // assignError: (_, event) => {},
-        assignFiles: assign(function assignFilesPredicate(_, event, meta) {
+        assignFiles: assign(function assignFilesPredicate(_, event) {
           let draftList = event.draftList.map(function draftListMapper(draft) {
             let editor = buildEditorHook(plugins, EditorMode.Draft)
             return {
@@ -450,7 +437,7 @@ export function createMainPageService({
                   createPublicationMachine({client, publication, editor}),
                   getRefFromParams(
                     'pub',
-                    publication.document!.id,
+                    publication.document.id,
                     publication.version,
                   ),
                 ),
@@ -493,7 +480,7 @@ export function createMainPageService({
         pushToActivity: (context, e, meta) => {
           let {event} = meta.state
 
-          context.activity.send({
+          context.activity?.send({
             type: 'VISIT.PUBLICATION',
             url: `${event.docId}/${event.version}`,
           })
@@ -510,13 +497,16 @@ export function createMainPageService({
             return {}
           }
         }),
+        // @ts-ignore
         clearCurrentFile: assign({
-          currentFile: (c) => null,
+          currentFile: null,
         }),
         setDraftParams: assign({
-          params: (_, e, meta) => {
+          params: (context, e, meta) => {
+            // @ts-ignore
             let {event} = meta.state
             return {
+              ...context.params,
               docId: event.docId,
               replace: event.replace,
             }
@@ -562,7 +552,7 @@ export function createMainPageService({
           },
           {to: 'router'},
         ),
-        clearParams: assign((_) => ({
+        clearParams: assign(() => ({
           params: {
             docId: '',
             version: null,
@@ -638,8 +628,8 @@ export function createMainPageService({
             ],
           }
         }),
+        // eslint-disable-next-line
         asssignNewPublicationValues: assign((context, event) => {
-          debug('asssignNewPublicationValues', event)
           let editor = buildEditorHook(plugins, EditorMode.Publication)
           let publicationRef = spawn(
             createPublicationMachine({
@@ -649,7 +639,7 @@ export function createMainPageService({
             }),
             getRefFromParams(
               'pub',
-              event.publication.document!.id,
+              event.publication.document.id,
               event.publication.version,
             ),
           )
@@ -680,7 +670,7 @@ export function createMainPageService({
         }),
       },
       services: {
-        fetchFiles: () => (sendBack, receive) => {
+        fetchFiles: () => (sendBack) => {
           Promise.all([
             client.fetchQuery([queryKeys.GET_PUBLICATION_LIST], () =>
               listPublications(),
@@ -698,13 +688,13 @@ export function createMainPageService({
                     )
                   } else {
                     return (
-                      b.document?.createTime!.getSeconds() -
-                      a.document?.createTime!.getSeconds()
+                      b?.document?.createTime?.getSeconds() -
+                      a?.document?.createTime?.getSeconds()
                     )
                   }
                 }),
                 draftList: draftList.documents.sort((a, b) => {
-                  return b.createTime!.getSeconds() - a.createTime!.getSeconds()
+                  return b.createTime.getSeconds() - a.createTime.getSeconds()
                 }),
               })
             })

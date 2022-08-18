@@ -12,6 +12,7 @@ import {queryKeys} from '@app/hooks'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {debug} from '@app/utils/logger'
 import {createId, group, paragraph, statement, text} from '@mintter/mttast'
+import {GroupingContent} from '@mintter/mttast/src'
 import {QueryClient} from 'react-query'
 import {Editor} from 'slate'
 import {assign, createMachine, sendParent} from 'xstate'
@@ -19,7 +20,7 @@ import {MintterEditor} from './editor/mintter-changes/plugin'
 
 export type EditorDocument = Partial<Document> & {
   id?: string
-  content: any
+  content?: [GroupingContent]
 }
 
 export type DraftContext = {
@@ -68,7 +69,7 @@ export interface CreateDraftMachineProps {
   editor: Editor
 }
 
-const defaultContent = [
+const defaultContent: [GroupingContent] = [
   group({data: {parent: ''}}, [
     statement({id: createId()}, [paragraph([text('')])]),
   ]),
@@ -272,7 +273,10 @@ export function createDraftMachine({
         }),
         updateTitle: assign({
           title: (_, event) => {
-            return getTitleFromContent({children: event.payload.content})
+            if (event.payload.content) {
+              return getTitleFromContent({children: event.payload.content})
+            }
+            return ''
           },
         }),
         assignTitle: assign({
@@ -282,7 +286,15 @@ export function createDraftMachine({
           author: (_, event) => event.author,
         }),
         assignError: assign({
-          errorMessage: (_, event) => event.errorMessage,
+          errorMessage: (_, event) => {
+            if (event.type == 'DRAFT.REPORT.FETCH.ERROR') {
+              return event.errorMessage
+            } else {
+              return JSON.stringify(
+                `Draft machine error: ${JSON.stringify(event)}`,
+              )
+            }
+          },
         }),
         updateValueToContext: assign({
           localDraft: (context, event) => {
@@ -311,21 +323,17 @@ export function createDraftMachine({
           ;(async () => {
             try {
               client
-                .fetchQuery(
-                  [queryKeys.GET_DRAFT, context.draft.id],
-                  ({queryKey}) => {
-                    let [_, draftId] = queryKey
-                    return getDraft(draftId)
-                  },
+                .fetchQuery([queryKeys.GET_DRAFT, context.draft.id], () =>
+                  getDraft(context.draft.id),
                 )
                 .then((data) => {
                   debug('DRAFT DATA', data.children)
                   sendBack({type: 'DRAFT.REPORT.FETCH.SUCCESS', data})
                 })
-            } catch (err: any) {
+            } catch (err) {
               sendBack({
                 type: 'DRAFT.REPORT.FETCH.ERROR',
-                errorMessage: err.message,
+                errorMessage: `[DRAFT ERROR]: ${JSON.stringify(err)}`,
               })
             }
           })()
@@ -357,10 +365,10 @@ export function createDraftMachine({
                 })
                 // TODO: update document
                 sendBack('DRAFT.UPDATE.SUCCESS')
-              } catch (err: any) {
+              } catch (err: unknown) {
                 sendBack({
                   type: 'DRAFT.UPDATE.ERROR',
-                  errorMessage: err.message,
+                  errorMessage: JSON.stringify(err),
                 })
               }
             })()

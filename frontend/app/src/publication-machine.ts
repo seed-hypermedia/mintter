@@ -69,8 +69,8 @@ export function createPublicationMachine({
   return createMachine(
     {
       context: {
-        title: publication.document!.title,
-        documentId: publication.document!.id,
+        title: publication.document?.title ?? '',
+        documentId: publication.document?.id ?? '',
         version: publication.version,
         editor,
         publication,
@@ -244,8 +244,8 @@ export function createPublicationMachine({
               ],
               () =>
                 getPublication(
-                  context.publication!.document!.id!,
-                  context.publication!.version,
+                  context.publication?.document?.id,
+                  context.publication?.version,
                 ),
             ),
             client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
@@ -297,31 +297,39 @@ export function createPublicationMachine({
                   context.publication.version,
                 ],
                 () => {
-                  return listCitations(context.publication!.document!.id!)
+                  if (context.publication?.document?.id) {
+                    return listCitations(context.publication?.document?.id)
+                  }
+
+                  return null
                 },
               )
               .then((response) => {
-                let links = response.links.filter(
-                  (link) =>
-                    typeof link.source != 'undefined' &&
-                    typeof link.target != 'undefined',
-                )
+                let links = response
+                  ? response.links.filter(
+                      (link) =>
+                        typeof link.source != 'undefined' &&
+                        typeof link.target != 'undefined',
+                    )
+                  : []
 
                 sendBack({
                   type: 'DISCUSSION.REPORT.SUCCESS',
                   links,
                 })
               })
-              .catch((error: any) => {
+              .catch((error: unknown) => {
                 sendBack({
                   type: 'DISCUSSION.REPORT.ERROR',
-                  errorMessage: `Error fetching Discussion: ${error.message}`,
+                  errorMessage: `Error fetching Discussion: ${JSON.stringify(
+                    error,
+                  )}`,
                 })
               })
           } else {
             sendBack({
               type: 'DISCUSSION.REPORT.ERROR',
-              errorMessage: `Error fetching Discussion: No docId found: ${pub}`,
+              errorMessage: `Error fetching Discussion: No docId found: ${context.publication?.document?.id}`,
             })
           }
         },
@@ -352,11 +360,13 @@ export function createPublicationMachine({
         assignError: assign({
           errorMessage: (_, event) => event.errorMessage,
         }),
+        // @ts-ignore
         clearLinks: assign({
-          links: (context) => [],
+          links: [],
         }),
+        // @ts-ignore
         clearError: assign({
-          errorMessage: (context) => '',
+          errorMessage: '',
         }),
       },
     },

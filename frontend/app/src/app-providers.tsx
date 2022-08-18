@@ -46,7 +46,6 @@ type AppProvidersProps = {
 export function AppProviders({
   children,
   client = queryClient,
-  mainService = initMainService,
 }: PropsWithChildren<AppProvidersProps>) {
   const themeService = useInterpret(() => createThemeService())
   const authService = useInterpret(() => createAuthService(client))
@@ -62,6 +61,9 @@ export function AppProviders({
             <Hydrate state={dehydrateState}>
               <HoverProvider value={hoverService}>
                 <BookmarksProvider value={bookmarksService}>
+                  {
+                    // TODO: @jonas check types on SearchTearmProvider
+                  }
                   <SearchTermProvider value={{search, setSearch}}>
                     {children}
                   </SearchTermProvider>

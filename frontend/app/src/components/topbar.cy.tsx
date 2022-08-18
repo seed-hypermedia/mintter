@@ -11,7 +11,7 @@ import {interpret, spawn} from 'xstate'
 
 describe('Topbar', () => {
   it('default render', () => {
-    let {render, client} = mountProviders()
+    let {render} = mountProviders()
     render(<Topbar />)
   })
 
@@ -71,7 +71,7 @@ describe('Topbar', () => {
       .get('[data-testid="topbar-title"]')
       .contains(draft.title)
       .get('[data-testid="topbar-author"]')
-      .contains(account.profile!.alias)
+      .contains(account.profile?.alias ?? '')
   })
 
   it('navigation button should work', () => {
@@ -112,10 +112,7 @@ type TestTopbarProps = {
   mainService?: typeof defaultMainService
 }
 
-function TestTopbar({
-  currentFile,
-  mainService = defaultMainService,
-}: TestTopbarProps) {
+function TestTopbar({mainService = defaultMainService}: TestTopbarProps) {
   let [mainState] = useActor(mainService)
   return mainState.hasTag('topbar') ? <Topbar /> : null
 }

@@ -69,7 +69,7 @@ export function createVideoPlugin(): EditorPlugin {
 function insertVideo(editor: Editor, url: string) {
   const {selection} = editor
 
-  if (isCollapsed(selection!)) {
+  if (isCollapsed(selection)) {
     const newVideo = video({url}, [text('')])
     Transforms.insertNodes(editor, newVideo)
     Transforms.move(editor, {distance: 1, unit: 'offset'})

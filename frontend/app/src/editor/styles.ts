@@ -1,5 +1,5 @@
-import { EditorMode } from '@app/editor/plugin-utils'
-import { css } from '@app/stitches.config'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {css} from '@app/stitches.config'
 
 export var groupStyles = css({
   margin: 0,
@@ -60,7 +60,7 @@ export var blockStyles = css({
 
 export var phrasingStyles = css({
   position: 'relative',
-  whiteSpace: 'nowrap',
+  inlineSize: '$full',
   zIndex: 1,
   '& > *': {
     position: 'relative',

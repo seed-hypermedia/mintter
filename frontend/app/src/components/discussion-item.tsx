@@ -1,25 +1,32 @@
-import { mainService as defaultMainService } from '@app/app-providers'
-import { Link, LinkNode } from '@app/client'
-import { Editor } from '@app/editor/editor'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { FileProvider } from '@app/file-provider'
-import { PublicationRef } from '@app/main-machine'
-import { getRefFromParams } from '@app/utils/machine-utils'
-import { Box } from '@components/box'
-import { FileTime } from '@components/file-time'
-import { Text } from '@components/text'
-import { useActor, useSelector } from '@xstate/react'
-import { useEffect } from 'react'
+import {mainService as defaultMainService} from '@app/app-providers'
+import {Link} from '@app/client'
+import {Editor} from '@app/editor/editor'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {FileProvider} from '@app/file-provider'
+import {PublicationRef, PublicationWithRef} from '@app/main-machine'
+import {getRefFromParams} from '@app/utils/machine-utils'
+import {Box} from '@components/box'
+import {FileTime} from '@components/file-time'
+import {Text} from '@components/text'
+import {useActor, useSelector} from '@xstate/react'
+import {useEffect} from 'react'
 
 function useDiscussionFileRef(
   mainService: typeof defaultMainService,
-  source: LinkNode,
+  link: Link,
 ) {
   return useSelector(mainService, (state) => {
-    let linkRef = getRefFromParams('pub', source.documentId, source.version)
-    let pubList = state.context.publicationList
-    let pubRef = pubList.find((p) => p.ref.id == linkRef)!.ref
-    return pubRef
+    if (!link.source) return undefined
+    let linkRef = getRefFromParams(
+      'pub',
+      link.source.documentId,
+      link.source.version,
+    )
+    let pubList: Array<PublicationWithRef> = state.context.publicationList
+    let selectedPublication = pubList.find((p) => p.ref.id == linkRef)
+    if (selectedPublication) {
+      return selectedPublication.ref
+    }
   })
 }
 
@@ -32,9 +39,13 @@ export function DiscussionItem({
   link,
   mainService = defaultMainService,
 }: DiscussionItemProps) {
-  let fileRef = useDiscussionFileRef(mainService, link.source!)
+  let fileRef = useDiscussionFileRef(mainService, link)
 
-  return <DiscussionEditor fileRef={fileRef} mainService={mainService} />
+  if (fileRef) {
+    return <DiscussionEditor fileRef={fileRef} mainService={mainService} />
+  }
+
+  return null
 }
 
 function DiscussionEditor({
@@ -76,7 +87,6 @@ function DiscussionEditor({
           })
         }
         // TODO: make sure we can click in the event and also let the text selection
-
       }}
     >
       <Box
@@ -89,14 +99,15 @@ function DiscussionEditor({
           paddingBlock: '1rem',
           gap: '1ch',
           paddingInline: '1rem',
-          backgroundColor: '$base-background-normal'
+          backgroundColor: '$base-background-normal',
         }}
       >
         {state.context.author && (
-          <Text size="1" color="muted" css={{ textDecoration: 'underline' }}>
+          <Text size="1" color="muted" css={{textDecoration: 'underline'}}>
             {state.context.author.profile?.alias}
           </Text>
         )}
+        {/* @ts-ignore */}
         {state.context.publication?.document?.content && (
           <FileTime
             type="pub"
@@ -116,7 +127,7 @@ function DiscussionEditor({
             <FileProvider value={fileRef}>
               <Editor
                 mode={EditorMode.Discussion}
-                value={state.context.publication!.document!.content}
+                value={state.context.publication.document.content}
                 editor={state.context.editor}
                 onChange={() => {
                   // noop

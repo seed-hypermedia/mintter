@@ -6,7 +6,7 @@ import {
   updateListBookmarks,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {ClientPublication} from '@app/pages/publication'
+import {ClientPublication} from '@app/publication-machine'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug, error} from '@app/utils/logger'
 import {createInterpreterContext} from '@app/utils/machine-utils'
@@ -135,9 +135,10 @@ export function createBookmarkListMachine(client: QueryClient) {
           bookmarks: (context, event) =>
             context.bookmarks.filter((bookmark) => bookmark.url != event.url),
         }),
-        clearBookmarkList: assign((context) => ({
+        // @ts-ignore
+        clearBookmarkList: assign({
           bookmarks: [],
-        })),
+        }),
         cleanBookmarks: assign({
           bookmarks: (context, event) => {
             return context.bookmarks.filter(
@@ -250,14 +251,16 @@ export function createBookmarkMachine(client: QueryClient, url: string) {
         assignError: assign({
           errorMessage: (_, event) => event.errorMessage,
         }),
+        // @ts-ignore
         clearError: assign({
-          errorMessage: (context) => '',
+          errorMessage: '',
         }),
         removeBookmark: (_, event) => {
           sendParent({type: 'BOOKMARK.REMOVE', url: event.url})
         },
       },
       services: {
+        // TODO: @horacio refactor this to use the files machines
         fetchItemData: (context) => (sendBack) => {
           try {
             ;(async () => {
