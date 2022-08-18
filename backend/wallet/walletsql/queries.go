@@ -10,7 +10,7 @@ import (
 var _ = generateQueries
 
 const (
-	// DefaultWalletKey is the column name of the meta table where the default wallet id is stored
+	// DefaultWalletKey is the column name of the meta table where the default wallet id is stored.
 	DefaultWalletKey = "default_wallet"
 )
 
@@ -18,7 +18,8 @@ const (
 func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("walletsql",
 		qb.MakeQuery(sqliteschema.Schema, "insertWallet", sqlitegen.QueryKindExec,
-			qb.Insert(sqliteschema.WalletsID, sqliteschema.WalletsAddress, sqliteschema.WalletsType, sqliteschema.WalletsAuth,
+			qb.Insert(sqliteschema.WalletsID, sqliteschema.WalletsAddress, sqliteschema.WalletsType,
+				sqliteschema.WalletsLogin, sqliteschema.WalletsPassword, sqliteschema.WalletsToken,
 				sqliteschema.WalletsName, sqliteschema.WalletsBalance),
 		),
 
@@ -97,13 +98,6 @@ func generateQueries() error {
 				qb.ResultExpr(qb.SQLFunc("COUNT", sqliteschema.WalletsID.String()), "count", sqlitegen.TypeInt),
 			),
 			"FROM", sqliteschema.Wallets,
-		),
-		qb.MakeQuery(sqliteschema.Schema, "getWalletAuth", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.WalletsAuth),
-			),
-			"FROM", sqliteschema.Wallets,
-			"WHERE", sqliteschema.WalletsID, "=", qb.VarCol(sqliteschema.WalletsID),
 		),
 	)
 	if err != nil {

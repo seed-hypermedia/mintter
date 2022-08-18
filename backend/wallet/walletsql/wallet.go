@@ -1,7 +1,9 @@
 package walletsql
 
 import (
+	"errors"
 	"fmt"
+	"mintter/backend/lndhub/lndhubsql"
 	"strings"
 
 	"crawshaw.io/sqlite"
@@ -10,16 +12,16 @@ import (
 const (
 	idcharLength = 64
 
-	// AlreadyExistsError can be used to check if inserting wallet failed because of al existing wallet.
-	AlreadyExistsError = "UNIQUE constraint failed"
-
-	// NotEnoughBalance can be used to check the typical error of not having enough balance.
+	// NotEnoughBalance can be used to check the typical API error of not having enough balance.
 	NotEnoughBalance = "not enough balance"
-
-	// InvoiceQttyMissmatch can be used to check if the user tried to pay an invoice with the wrong amount
-	InvoiceQttyMissmatch = "and provided amount is"
 )
 
+var (
+	// ErrDuplicateIndex is thrown when db identifies a duplicate entry on a unique key.
+	ErrDuplicateIndex = errors.New("duplicate entry")
+)
+
+// Wallet is the representation of a lightning wallet.
 type Wallet struct {
 	ID      string `mapstructure:"id"`
 	Address string `marstructure:"address"`
@@ -40,6 +42,9 @@ func GetWallet(conn *sqlite.Conn, walletID string) (Wallet, error) {
 	wallet, err := getWallet(conn, walletID)
 	if err != nil {
 		return Wallet{}, err
+	}
+	if wallet.WalletsID == "" {
+		return Wallet{}, fmt.Errorf("No wallet found with id %s", walletID)
 	}
 	ret := Wallet{
 		ID:      wallet.WalletsID,
@@ -80,27 +85,31 @@ func ListWallets(conn *sqlite.Conn, limit int) ([]Wallet, error) {
 }
 
 // InsertWallet creates a new wallet record in the database given a
-// valid Wallet with all fields proferly set. If this is the first
-// wallet, then it becomes default automatically.
-func InsertWallet(conn *sqlite.Conn, wallet Wallet, auth []byte) error {
+// valid Wallet with all fields properly set. If this is the first
+// wallet, then it becomes default automatically. If token is not known at creation time
+// it can me null. Login and password, however have to ve valid credentials.
+func InsertWallet(conn *sqlite.Conn, wallet Wallet, login, password, token []byte) error {
 	if len(wallet.ID) != idcharLength {
 		return fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(wallet.ID))
 	}
 
 	if err := insertWallet(conn, wallet.ID, wallet.Address, strings.ToLower(wallet.Type),
-		auth, wallet.Name, int(wallet.Balance)); err != nil {
-		return fmt.Errorf("couldn't insert wallet. %s", err.Error())
+		login, password, token, wallet.Name, int(wallet.Balance)); err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return fmt.Errorf("couldn't insert wallet: %w", ErrDuplicateIndex)
+		}
+		return fmt.Errorf("couldn't insert wallet: %w", err)
 	}
 
 	//If the previously inserted was the first one, then it should be the default as well
 	nwallets, err := getWalletCount(conn)
 	if err != nil {
-		return fmt.Errorf("couldn't get wallet count. %s", err.Error())
+		return fmt.Errorf("couldn't get wallet count: %w", err)
 	}
 
 	if nwallets.Count == 1 {
 		if err = setDefaultWallet(conn, DefaultWalletKey, wallet.ID); err != nil {
-			return fmt.Errorf("couldn't set newly created wallet to default. %s", err.Error())
+			return fmt.Errorf("couldn't set newly created wallet to default: %w", err)
 		}
 	}
 
@@ -115,7 +124,9 @@ func GetDefaultWallet(conn *sqlite.Conn) (Wallet, error) {
 	if err != nil {
 		return Wallet{}, err
 	}
-
+	if ret.WalletsID == "" {
+		return Wallet{}, fmt.Errorf("No default wallet found")
+	}
 	return Wallet{
 		ID:      ret.WalletsID,
 		Address: ret.WalletsAddress,
@@ -123,19 +134,6 @@ func GetDefaultWallet(conn *sqlite.Conn) (Wallet, error) {
 		Type:    ret.WalletsType,
 		Balance: int64(ret.WalletsBalance),
 	}, nil
-}
-
-// GetAuth returns the credentials used to connect to the wallet. In case lndhub, the response is
-// a slice of bytes representing the bearer token used to connect to the rest api. In case of LND
-// wallet, the slice of bytes is the bynary representation of the macaroon used to connect to the node
-func GetAuth(conn *sqlite.Conn, id string) ([]byte, error) {
-	if len(id) != idcharLength {
-		return []byte{}, fmt.Errorf("wallet id must be a %d-characters string. Got %d characters", idcharLength, len(id))
-	}
-
-	res, err := getWalletAuth(conn, id)
-	// TODO: decrypt token before returning
-	return res.WalletsAuth, err
 }
 
 // UpdateDefaultWallet sets the default wallet to the one that matches newIdx
@@ -151,11 +149,11 @@ func UpdateDefaultWallet(conn *sqlite.Conn, newID string) (Wallet, error) {
 
 	defaultWallet, err := GetWallet(conn, newID)
 	if err != nil {
-		return Wallet{}, fmt.Errorf("cannot make %s default. %s", newID, err.Error())
+		return Wallet{}, fmt.Errorf("cannot make %s default: %w", newID, err)
 	}
 
 	if err := setDefaultWallet(conn, DefaultWalletKey, newID); err != nil {
-		return Wallet{}, fmt.Errorf("cannot set %s as default wallet. %s", newID, err.Error())
+		return Wallet{}, fmt.Errorf("cannot set %s as default wallet: %w", newID, err)
 	}
 
 	return defaultWallet, nil
@@ -179,18 +177,27 @@ func UpdateWalletName(conn *sqlite.Conn, walletID string, newName string) (Walle
 // RemoveWallet deletes the wallet with index id. If that wallet was the default
 // wallet, a random wallet will be chosen as new default. Although it is advised
 // that the user manually changes the default wallet after removing the previous
-// default
+// default.
 func RemoveWallet(conn *sqlite.Conn, id string) error {
 	if len(id) != idcharLength {
 		return fmt.Errorf("wallet id must be a %d character string. Got %d", idcharLength, len(id))
 	}
+	wallet2delete, err := getWallet(conn, id)
+	if err != nil {
+		return fmt.Errorf("couldn't find wallet for deletion, probably already deleted")
+	}
 
 	defaultWallet, err := GetDefaultWallet(conn)
 	if err != nil {
-		return fmt.Errorf("couldn't get wallet default wallet. %s", err.Error())
+		return fmt.Errorf("couldn't get default wallet while deleting walletID %s", id)
 	}
+
+	if wallet2delete.WalletsType == lndhubsql.LndhubGoWalletType && defaultWallet.ID == wallet2delete.WalletsID {
+		return fmt.Errorf("The internal wallet %s must not be removed", wallet2delete.WalletsName)
+	}
+
 	if err := removeWallet(conn, id); err != nil {
-		return fmt.Errorf("couldn't remove wallet. %s", err.Error())
+		return fmt.Errorf("couldn't remove wallet. Unknown reason")
 	}
 
 	//If the previously inserted was the default, then we should set a new default
@@ -198,22 +205,20 @@ func RemoveWallet(conn *sqlite.Conn, id string) error {
 		nwallets, err := getWalletCount(conn)
 
 		if err != nil {
-			return fmt.Errorf("couldn't get wallet count. %s", err.Error())
+			return fmt.Errorf("couldn't get wallet count")
 		}
 
 		if nwallets.Count != 0 {
 			newDefaultWallet, err := ListWallets(conn, 1)
 			if err != nil {
-				return fmt.Errorf("couldn't list wallets. %s", err.Error())
+				return fmt.Errorf("couldn't list wallets")
 			}
 			if err = setDefaultWallet(conn, DefaultWalletKey, newDefaultWallet[0].ID); err != nil {
-				return fmt.Errorf("couldn't pick a wallet to be the new default after deleting the old one. %s", err.Error())
+				return fmt.Errorf("couldn't pick a wallet to be the new default after deleting the old one")
 			}
-
 		} else if err = removeDefaultWallet(conn, DefaultWalletKey); err != nil {
-			return fmt.Errorf("couldn't remove default wallet after deleting the last one. %s", err.Error())
+			return fmt.Errorf("couldn't remove default wallet after deleting the last one")
 		}
-
 	}
 
 	return nil
