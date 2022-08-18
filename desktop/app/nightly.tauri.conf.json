@@ -13,7 +13,14 @@
         "exceptionDomain": "localhost",
         "signingIdentity": "9903730CF31AB02620CE2478FBC019ECAF50D179",
         "entitlements": "macOS.entitlements"
-      }
+      },
+      "icon": [
+        "icons-nightly/32x32.png",
+        "icons-nightly/128x128.png",
+        "icons-nightly/128x128@2x.png",
+        "icons-nightly/icon.icns",
+        "icons-nightly/icon.ico"
+      ]
     },
     "updater": {
       "active": true,
