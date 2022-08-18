@@ -35,6 +35,54 @@ export type DeleteWalletPayload = {
   id: Scalars['ID'];
 };
 
+/** Input to export a wallet. */
+export type ExportWalletInput = {
+  /** ID of the wallet to be exported. */
+  id: Scalars['ID'];
+};
+
+/** Response after exporting a wallet. */
+export type ExportWalletPayload = {
+  __typename?: 'ExportWalletPayload';
+  /** credentials of the exported wallet. */
+  credentials: Scalars['String'];
+};
+
+/** Lightning Invoices */
+export type Invoice = {
+  __typename?: 'Invoice';
+  /** Invoice quantity in satoshis. */
+  Amount: Scalars['Satoshis'];
+  /** Memo field of the invoice. */
+  Description?: Maybe<Scalars['String']>;
+  /** Memo hash in case its too long  */
+  DescriptionHash?: Maybe<Scalars['String']>;
+  /** Payee lightning node ID. */
+  Destination?: Maybe<Scalars['String']>;
+  /** Error of the invoice */
+  ErrorMessage?: Maybe<Scalars['String']>;
+  /** Expiring date. */
+  ExpiresAt?: Maybe<Scalars['String']>;
+  /** Fees incurred by the payer when paying the invoice */
+  Fee?: Maybe<Scalars['Satoshis']>;
+  /** If the invoice has been paid or not. */
+  IsPaid?: Maybe<Scalars['Boolean']>;
+  /** Whether or not this is a made up invoice corrensponding with a keysend payment */
+  Keysend?: Maybe<Scalars['Boolean']>;
+  /** Preimage hash of the payment. */
+  PaymentHash?: Maybe<Scalars['String']>;
+  /** Invoice secret known at settlement. Proof of payment */
+  PaymentPreimage?: Maybe<Scalars['String']>;
+  /** Bolt-11 encoded invoice. */
+  PaymentRequest?: Maybe<Scalars['String']>;
+  /** Settlement date */
+  SettledAt?: Maybe<Scalars['String']>;
+  /** Status of the invoice. (Settled, in-flight, expired, ...) */
+  Status?: Maybe<Scalars['String']>;
+  /** Invoice tyoe */
+  Type?: Maybe<Scalars['String']>;
+};
+
 /** Common interface for Lightning wallets. We support different types. */
 export type LightningWallet = {
   /** Balance in Satoshis. */
@@ -68,6 +116,8 @@ export type LndHubWallet = LightningWallet & {
 /** Information about the current user. */
 export type Me = {
   __typename?: 'Me';
+  /** Account-wide Lightning addres (lnaddress) */
+  lnaddress?: Maybe<Scalars['String']>;
   /** List configured Lightning wallets. */
   wallets?: Maybe<Array<LightningWallet>>;
 };
@@ -77,12 +127,11 @@ export type Mutation = {
   __typename?: 'Mutation';
   /** Delete existing wallet. */
   deleteWallet: DeleteWalletPayload;
+  /** Export wallet to use it with an external application. */
+  exportWallet: ExportWalletPayload;
   /** Pay invoice with a previously configured wallet. */
   payInvoice: PayInvoicePayload;
-  /**
-   * Request an invoice from another user in order to pay them with a separate Lightning Wallet.
-   * The user from which the invoice is requested must be currently connected, otherwise this call will fail.
-   */
+  /** Request an invoice from a user. The user can be either a Mintter Account ID or a ln address. */
   requestInvoice: RequestInvoicePayload;
   /**
    * Set an existing wallet to be the default one. Initially, the first configured wallet
@@ -91,6 +140,8 @@ export type Mutation = {
   setDefaultWallet: SetDefaultWalletPayload;
   /** Configure an LndHub compatible Lightning Wallet, e.g. BlueWallet. */
   setupLndHubWallet: SetupLndHubWalletPayload;
+  /** Update lnaddress' nickname. */
+  updateNickname: UpdateNicknamePayload;
   /** Update existing wallet. */
   updateWallet: UpdateWalletPayload;
 };
@@ -99,6 +150,12 @@ export type Mutation = {
 /** Top-level mutations. */
 export type MutationDeleteWalletArgs = {
   input: DeleteWalletInput;
+};
+
+
+/** Top-level mutations. */
+export type MutationExportWalletArgs = {
+  input: ExportWalletInput;
 };
 
 
@@ -123,6 +180,12 @@ export type MutationSetDefaultWalletArgs = {
 /** Top-level mutations. */
 export type MutationSetupLndHubWalletArgs = {
   input: SetupLndHubWalletInput;
+};
+
+
+/** Top-level mutations. */
+export type MutationUpdateNicknameArgs = {
+  input: UpdateNicknameInput;
 };
 
 
@@ -153,21 +216,41 @@ export type PayInvoicePayload = {
   walletID: Scalars['ID'];
 };
 
+/** Information about payments */
+export type Payments = {
+  __typename?: 'Payments';
+  /** Payments received. They can be unconfirmed */
+  received?: Maybe<Array<Maybe<Invoice>>>;
+  /** Payments made. They can be unconfirmed */
+  sent?: Maybe<Array<Maybe<Invoice>>>;
+};
+
 /** Top-level queries. */
 export type Query = {
   __typename?: 'Query';
   /** Information about the current user. */
   me: Me;
+  /** Information about payments. */
+  payments: Payments;
 };
 
-/** Input for requesting an invoice for tipping. */
+
+/** Top-level queries. */
+export type QueryPaymentsArgs = {
+  excludeExpired?: InputMaybe<Scalars['Boolean']>;
+  excludeKeysend?: InputMaybe<Scalars['Boolean']>;
+  excludeUnpaid?: InputMaybe<Scalars['Boolean']>;
+  walletID: Scalars['ID'];
+};
+
+/** Input for requesting an invoice. */
 export type RequestInvoiceInput = {
-  /** Mintter Account ID we want to tip. */
-  accountID: Scalars['ID'];
   /** Amount in Satoshis the invoice should be created for. */
   amountSats: Scalars['Satoshis'];
-  /** Optional ID of the publication we want to tip for. */
-  publicationID?: InputMaybe<Scalars['ID']>;
+  /** Optional description for the invoice. */
+  memo?: InputMaybe<Scalars['String']>;
+  /** Mintter Account ID or lnaddress we want the invoice from. Can be ourselves. */
+  user: Scalars['String'];
 };
 
 /** Response with the invoice to pay. */
@@ -206,6 +289,19 @@ export type SetupLndHubWalletPayload = {
   __typename?: 'SetupLndHubWalletPayload';
   /** The newly created wallet. */
   wallet: LndHubWallet;
+};
+
+/** Input to update lnaddress' nickname. */
+export type UpdateNicknameInput = {
+  /** New nickname to update. */
+  nickname: Scalars['String'];
+};
+
+/** Response after updating the nickname. */
+export type UpdateNicknamePayload = {
+  __typename?: 'UpdateNicknamePayload';
+  /** Updated Nickname. */
+  nickname: Scalars['String'];
 };
 
 /** Input to update Lightning wallets. */

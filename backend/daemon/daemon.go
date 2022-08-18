@@ -126,7 +126,7 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 		return
 	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me)
 	if err != nil {
 		return
 	}
@@ -375,19 +375,24 @@ func initHTTP(
 	g *errgroup.Group,
 	db *sqlitex.Pool,
 	node *future.ReadOnly[*mttnet.Node],
+	me *future.ReadOnly[core.Identity],
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
+	ctx, cancel := context.WithCancel(context.Background())
+	clean.AddErrFunc(func() error {
+		cancel()
+		return nil
+	})
 	{
 		grpcWebHandler := grpcweb.WrapServer(rpc, grpcweb.WithOriginFunc(func(origin string) bool {
 			return true
 		}))
 
 		router := mux.NewRouter()
-
 		router.Handle("/debug/metrics", promhttp.Handler())
 		router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
 		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
-		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet.New(db, node))))
+		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet.New(ctx, logging.New("mintter/wallet", "debug"), db, node, me))))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 
 		nav := newNavigationHandler(router)

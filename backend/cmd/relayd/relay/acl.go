@@ -16,6 +16,8 @@ import (
 	manet "github.com/multiformats/go-multiaddr/net"
 )
 
+// ACLFilter can be populated to define Access Control List Filters so to only allow
+// Peers that are in the allowlist.
 type ACLFilter struct {
 	allowPeers   map[peer.ID]struct{}
 	allowSubnets []*net.IPNet
@@ -28,6 +30,7 @@ type ACLFilter struct {
 var _ relayv1.ACLFilter = (*ACLFilter)(nil)
 var _ relayv2.ACLFilter = (*ACLFilter)(nil)
 
+// NewACL implements Allow Control Lists on the host h, based on the configuration in cfg.
 func NewACL(h host.Host, cfg aclConfig) (*ACLFilter, error) {
 	acl := &ACLFilter{}
 
@@ -63,7 +66,7 @@ func NewACL(h host.Host, cfg aclConfig) (*ACLFilter, error) {
 	return acl, nil
 }
 
-// relayv2 ACL
+// AllowReserve allows slot reservations for peer p on a given addr.
 func (a *ACLFilter) AllowReserve(p peer.ID, addr ma.Multiaddr) bool {
 	if len(a.allowPeers) > 0 {
 		_, ok := a.allowPeers[p]
@@ -90,11 +93,12 @@ func (a *ACLFilter) AllowReserve(p peer.ID, addr ma.Multiaddr) bool {
 	return true
 }
 
+// AllowConnect if we allow incoming peers to connect to therelay.
 func (a *ACLFilter) AllowConnect(src peer.ID, srcAddr ma.Multiaddr, dest peer.ID) bool {
 	return true
 }
 
-// relayv1 ACL
+// AllowHop allows using the relay to hop from src, to dst.
 func (a *ACLFilter) AllowHop(src, dest peer.ID) bool {
 	if len(a.allowPeers) > 0 {
 		_, ok := a.allowPeers[dest]
@@ -127,7 +131,7 @@ func (a *ACLFilter) AllowHop(src, dest peer.ID) bool {
 	return true
 }
 
-// notifications
+// Connected connects to a network.
 func (a *ACLFilter) Connected(n network.Network, c network.Conn) {
 	p := c.RemotePeer()
 	addr := c.RemoteMultiaddr()
@@ -144,6 +148,7 @@ func (a *ACLFilter) Connected(n network.Network, c network.Conn) {
 	addrs[addr] = struct{}{}
 }
 
+// Disconnected disconnects from a network.
 func (a *ACLFilter) Disconnected(n network.Network, c network.Conn) {
 	p := c.RemotePeer()
 	addr := c.RemoteMultiaddr()
