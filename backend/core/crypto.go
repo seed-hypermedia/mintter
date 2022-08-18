@@ -172,6 +172,6 @@ func (kp KeyPair) Sign(data []byte) (Signature, error) {
 }
 
 // Wrapped returns the wrapped libp2p key.
-func (pk KeyPair) Wrapped() crypto.PrivKey {
-	return pk.k
+func (kp KeyPair) Wrapped() crypto.PrivKey {
+	return kp.k
 }

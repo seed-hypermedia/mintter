@@ -11,15 +11,15 @@ import (
 // Invoicer is a subset of a Lightning node that allows to issue invoices.
 // It is used when a remote peer wants to pay our node.
 type Invoicer interface {
-	CreateInvoice(ctx context.Context, amount uint64, memo string, preimage []byte, holdInvoice bool) (string, error)
+	CreateLocalInvoice(ctx context.Context, amountSats int64, memo *string) (string, error)
 }
 
 func (n *rpcHandler) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {
 	if n.invoicer == nil {
-		return nil, status.Errorf(codes.Unimplemented, "method RequestInvoice not implemented")
+		return nil, status.Errorf(codes.Unimplemented, "method RequestInvoice not ready yet")
 	}
 
-	invoice, err := n.invoicer.CreateInvoice(ctx, uint64(in.AmountSats), in.Memo, in.PreimageHash, in.HoldInvoice)
+	invoice, err := n.invoicer.CreateLocalInvoice(ctx, in.AmountSats, &in.Memo)
 	if err != nil {
 		return nil, err
 	}

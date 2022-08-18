@@ -1,125 +1,179 @@
 package wallet
 
-const (
-	testCredentials   = "lndhub://c02fa7989240c12194fc:7d06cfd829af4790116f@https://lndhub.io"
-	memo              = "include this test memo"
-	timeoutSeconds    = 25
-	invoiceAmountSats = 1000
+import (
+	"context"
+	"encoding/hex"
+	"mintter/backend/config"
+	"mintter/backend/core"
+	"mintter/backend/core/coretest"
+	"mintter/backend/db/sqliteschema"
+	"mintter/backend/lndhub"
+	"mintter/backend/lndhub/lndhubsql"
+	"mintter/backend/logging"
+	"mintter/backend/mttnet"
+	"mintter/backend/pkg/future"
+	"mintter/backend/testutil"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcstypes"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"crawshaw.io/sqlite/sqlitex"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 )
 
-// func TestReqInvoice(t *testing.T) {
-// 	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+const (
+	timeoutSeconds = 15
+)
 
-// 	alice := makeTestService(t, "alice")
-// 	bob := makeTestService(t, "bob")
+func TestModifyWallets(t *testing.T) {
+	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
-// 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-// 	defer cancel()
-// 	connectPeers(ctx, t, alice, bob, true)
+	alice := makeTestService(t, "alice")
 
-// 	_, err := alice.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred alice wallet")
-// 	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+	time.Sleep(5 * time.Second) // wait until internal wallet is registered
+	defaultWallet, err := alice.GetDefaultWallet(ctx)
+	require.NoError(t, err)
+	require.EqualValues(t, lndhubsql.LndhubGoWalletType, defaultWallet.Type)
+	err = alice.DeleteWallet(ctx, defaultWallet.ID)
+	require.Error(t, err)
+	const newName = "new wallet name"
+	_, err = alice.UpdateWalletName(ctx, defaultWallet.ID, newName)
+	require.NoError(t, err)
+	wallets, err := alice.ListWallets(ctx)
+	require.NoError(t, err)
+	require.EqualValues(t, 1, len(wallets))
+	require.EqualValues(t, newName, wallets[0].Name)
+}
 
-// 	_, err = bob.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred bob wallet")
-// 	require.NoError(t, err)
+func TestRequestLndHubInvoice(t *testing.T) {
+	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
-// 	require.NoError(t, alice.SyncAccounts(ctx))
+	alice := makeTestService(t, "alice")
+	bob := makeTestService(t, "bob")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+	time.Sleep(5 * time.Second) // wait until internal wallet is registered
 
-// 	payReq, err := alice.RemoteInvoiceRequest(ctx, AccID(bob.repo.MustAccount().CID()), InvoiceRequest{
-// 		AmountSats: invoiceAmountSats,
-// 		Memo:       memo,
-// 	})
-// 	require.NoError(t, err)
+	cid := bob.net.MustGet().ID().AccountID()
+	var amt uint64 = 23
+	var wrongAmt uint64 = 24
+	var memo = "test invoice"
+	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
+	require.NoError(t, err)
+	invoice, err := lndhub.DecodeInvoice(payreq)
+	require.NoError(t, err)
+	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())
+	require.EqualValues(t, memo, *invoice.Description)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &wrongAmt)
+	require.ErrorIs(t, err, lndhubsql.ErrQtyMissmatch)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &amt)
+	require.ErrorIs(t, err, lndhubsql.ErrNotEnoughBalance)
+}
 
-// 	invoice, err := lndhub.DecodeInvoice(payReq)
-// 	require.NoError(t, err)
+func TestRequestP2PInvoice(t *testing.T) {
+	t.Skip("Uncomment skip to run integration tests")
 
-// 	require.NotNil(t, invoice.Description, "returned memo shouldn't be empty")
-// 	require.Equal(t, memo, *invoice.Description)
-// 	require.Equal(t, invoiceAmountSats, int(invoice.MilliSat.ToSatoshis()))
+	alice := makeTestService(t, "alice")
+	bob := makeTestService(t, "bob")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+	time.Sleep(5 * time.Second) // wait until internal wallet is registered
+	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
-// 	// TODO: pay invoice
-// }
+	cid := bob.net.MustGet().ID().AccountID()
+	var amt uint64 = 23
+	var wrongAmt uint64 = 24
+	var memo = "test invoice"
+	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
+	require.NoError(t, err)
+	invoice, err := lndhub.DecodeInvoice(payreq)
+	require.NoError(t, err)
+	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())
+	require.EqualValues(t, memo, *invoice.Description)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &wrongAmt)
+	require.ErrorIs(t, err, lndhubsql.ErrQtyMissmatch)
+	_, err = alice.PayInvoice(ctx, payreq, nil, &amt)
+	require.ErrorIs(t, err, lndhubsql.ErrNotEnoughBalance)
+}
 
-// func TestModifyWallets(t *testing.T) {
-// 	t.Skip("Uncomment skip to run integration tests with BlueWallet")
+func makeTestService(t *testing.T, name string) *Service {
+	u := coretest.NewTester(name)
 
-// 	alice := makeTestService(t, "alice")
+	db := makeTestSQLite(t)
 
-// 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-// 	defer cancel()
+	node, closenode := makeTestPeer(t, u, db)
+	t.Cleanup(closenode)
 
-// 	firstWallet, err := alice.InsertWallet(ctx, lndhub.LndhubWalletType, testCredentials, "preferred alice wallet")
-// 	require.NoError(t, err)
-// 	defaultWallet, err := alice.GetDefaultWallet(ctx)
-// 	require.NoError(t, err)
-// 	require.Equal(t, firstWallet, defaultWallet)
-// 	err = alice.DeleteWallet(ctx, defaultWallet.ID)
-// 	require.NoError(t, err)
-// 	_, err = alice.GetDefaultWallet(ctx)
-// 	require.NoError(t, err)
-// }
+	fut := future.New[*mttnet.Node]()
+	require.NoError(t, fut.Resolve(node))
 
-// func makeTestService(t *testing.T, name string) *Service {
-// 	u := coretest.NewTester(name)
+	identity := future.New[core.Identity]()
 
-// 	db := makeTestSQLite(t)
+	require.NoError(t, identity.Resolve(u.Identity))
 
-// 	node, closenode := makeTestPeer(t, u, db)
-// 	t.Cleanup(closenode)
+	conn := db.Get(context.Background())
+	defer db.Put(conn)
 
-// 	fut := future.New[*mttnet.Node]()
-// 	require.NoError(t, fut.Resolve(node))
+	signature, err := u.Account.Sign([]byte(lndhub.SigninMessage))
+	require.NoError(t, err)
 
-// 	return New(db, fut.ReadOnly)
-// }
+	require.NoError(t, lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)))
 
-// func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.Node, context.CancelFunc) {
-// 	hvcs := vcs.New(db)
+	srv := New(context.Background(), logging.New("mintter/wallet", "debug"), db, fut.ReadOnly, identity.ReadOnly)
 
-// 	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
-// 	require.NoError(t, err)
+	return srv
+}
 
-// 	n, err := mttnet.New(config.P2P{
-// 		Addr:        "/ip4/0.0.0.0/tcp/0",
-// 		NoRelay:     true,
-// 		NoBootstrap: true,
-// 		NoMetrics:   true,
-// 	}, hvcs, reg, u.Identity, zap.NewNop())
-// 	require.NoError(t, err)
+func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.Node, context.CancelFunc) {
+	hvcs := vcs.New(db)
 
-// 	errc := make(chan error, 1)
-// 	ctx, cancel := context.WithCancel(context.Background())
-// 	go func() {
-// 		errc <- n.Start(ctx)
-// 	}()
+	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
+	require.NoError(t, err)
 
-// 	t.Cleanup(func() {
-// 		require.NoError(t, <-errc)
-// 	})
+	n, err := mttnet.New(config.P2P{
+		NoRelay:     true,
+		NoBootstrap: true,
+		NoMetrics:   true,
+	}, hvcs, reg, u.Identity, zap.NewNop())
+	require.NoError(t, err)
 
-// 	select {
-// 	case <-n.Ready():
-// 	case err := <-errc:
-// 		require.NoError(t, err)
-// 	}
+	errc := make(chan error, 1)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		errc <- n.Start(ctx)
+	}()
 
-// 	return n, cancel
-// }
+	t.Cleanup(func() {
+		require.NoError(t, <-errc)
+	})
 
-// func makeTestSQLite(t *testing.T) *sqlitex.Pool {
-// 	path := testutil.MakeRepoPath(t)
+	select {
+	case <-n.Ready():
+	case err := <-errc:
+		require.NoError(t, err)
+	}
 
-// 	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
-// 	require.NoError(t, err)
-// 	t.Cleanup(func() {
-// 		require.NoError(t, pool.Close())
-// 	})
+	return n, cancel
+}
 
-// 	conn := pool.Get(context.Background())
-// 	defer pool.Put(conn)
+func makeTestSQLite(t *testing.T) *sqlitex.Pool {
+	path := testutil.MakeRepoPath(t)
 
-// 	require.NoError(t, sqliteschema.Migrate(conn))
+	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, pool.Close())
+	})
 
-// 	return pool
-// }
+	conn := pool.Get(context.Background())
+	defer pool.Put(conn)
+
+	require.NoError(t, sqliteschema.Migrate(conn))
+
+	return pool
+}
