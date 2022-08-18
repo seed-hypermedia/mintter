@@ -1,12 +1,11 @@
 import {mainService as defaultMainService} from '@app/app-providers'
-import {Document} from '@app/client'
 import {DraftRef, PublicationRef} from '@app/main-machine'
 import {createPublicationMachine} from '@app/publication-machine'
 import {css} from '@app/stitches.config'
 import {StyledItem} from '@components/library/library-item'
 import {Section} from '@components/library/section'
 import {useActor} from '@xstate/react'
-import {createMachine, StateFrom} from 'xstate'
+import {StateFrom} from 'xstate'
 
 export function RecentsSection({
   mainService = defaultMainService,
@@ -57,8 +56,8 @@ function RecentItem({
 }: RecentItemProps) {
   let [state] = useActor(fileRef)
 
-  function goToDocument(e) {
-    e.preventDefault()
+  function goToDocument(event: MouseEvent) {
+    event.preventDefault()
     if (fileRef.id.startsWith('draft-')) {
       mainService.send({
         type: 'GO.TO.DRAFT',
@@ -84,57 +83,3 @@ function RecentItem({
     </StyledItem>
   )
 }
-
-type RecentItemContext = {
-  document?: Document
-  errorMessage: string
-}
-
-type RecentItemEvent =
-  | {
-      type: 'REPORT.PUBLICATION.SUCCESS'
-      document: Document
-    }
-  | {
-      type: 'REPORT.PUBLICATION.ERROR'
-      errorMessage: string
-    }
-  | {type: 'RETRY'}
-
-var recentItemMachine = createMachine({
-  initial: 'fetching',
-  tsTypes: {} as import('./section-recents.typegen').Typegen0,
-  schema: {
-    context: {} as RecentItemContext,
-    events: {} as RecentItemEvent,
-  },
-  context: {
-    document: undefined,
-    errorMessage: '',
-  },
-  states: {
-    fetching: {
-      tags: ['loading'],
-      invoke: {
-        id: 'fetchDocument',
-        src: 'fetchDocument',
-      },
-      on: {
-        'REPORT.PUBLICATION.SUCCESS': {
-          target: 'ready',
-          actions: ['assignDocument'],
-        },
-        'REPORT.PUBLICATION.ERROR': {
-          target: 'error',
-          actions: ['assignError'],
-        },
-      },
-    },
-    ready: {},
-    error: {
-      on: {
-        RETRY: 'fetching',
-      },
-    },
-  },
-})

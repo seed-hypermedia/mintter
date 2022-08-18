@@ -2,10 +2,8 @@ import {App} from '@app/app'
 import {Link, Publication} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {queryKeys} from '@app/hooks'
-import {createMainPageService} from '@app/main-machine'
 import {mountProviders} from '@app/test/utils'
 import {embed, FlowContent, paragraph, statement, text} from '@mintter/mttast'
-import {interpret} from 'xstate'
 
 describe('<DiscussionItem />', () => {
   let p1b1: FlowContent = statement({id: 'p1b1'}, [
@@ -88,7 +86,7 @@ describe('<DiscussionItem />', () => {
   let links: Array<Link> = [
     {
       source: {
-        documentId: p2.document!.id,
+        documentId: p2.document?.id ?? '',
         version: p2.version,
         blockId: p2b1.id,
       },
@@ -100,7 +98,7 @@ describe('<DiscussionItem />', () => {
     },
     {
       source: {
-        documentId: p3.document!.id,
+        documentId: p3.document?.id ?? '',
         version: p3.version,
         blockId: p3b1.id,
       },
@@ -123,8 +121,6 @@ describe('<DiscussionItem />', () => {
       [queryKeys.GET_PUBLICATION_DISCUSSION, p1.document.id, p1.version],
       links,
     )
-
-    let mainService = interpret(createMainPageService({client})).start()
 
     render(<App />)
   })

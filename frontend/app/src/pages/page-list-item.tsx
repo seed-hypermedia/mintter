@@ -1,4 +1,5 @@
 import {DraftRef, PublicationRef} from '@app/main-machine'
+import {PublicationContext} from '@app/publication-machine'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Text} from '@components/text'
@@ -12,7 +13,17 @@ type PageListItemProps = {
 
 export function PageListItem(props: PageListItemProps) {
   let [state] = useActor(props.fileRef)
-  const isPublication = useMemo(() => props.fileRef.id.startsWith('pub-'), [])
+  const isPublication = useMemo(
+    () => props.fileRef.id.startsWith('pub-'),
+    [props.fileRef.id],
+  )
+
+  let date =
+    isPublication && state.context
+      ? (
+          state.context as PublicationContext
+        ).publication?.document?.createTime?.toISOString()
+      : null
 
   return (
     <Box className={listItemRoot()}>
@@ -23,11 +34,9 @@ export function PageListItem(props: PageListItemProps) {
         <Text size="2" color="muted">
           {state.context.author?.profile?.alias}
         </Text>
-        {isPublication && (
+        {date && (
           <Text size="2" color="muted">
-            {(
-              state.context.publication.document.createTime as Date
-            ).toISOString()}
+            {date}
           </Text>
         )}
       </Box>

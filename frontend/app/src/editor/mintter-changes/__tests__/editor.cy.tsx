@@ -96,7 +96,7 @@ describe('Editor', () => {
         .then(() => {
           let changes = editor.__mtt_changes
           let newBlock: FlowContent = (editor.children[0] as GroupingContent)
-            .children[0].children[1]!.children[0]
+            .children[0].children[1].children[0]
           expect(changes).to.have.length(6)
           expect(changes[4]).to.deep.equal(['moveBlock', newBlock.id])
         })
@@ -663,7 +663,7 @@ function TestEditor({editor, client, draft}: TestEditorProps) {
     return () => {
       send('UNLOAD')
     }
-  }, [])
+  }, [send])
 
   if (state.matches('editing') && state.context.localDraft?.content) {
     return (

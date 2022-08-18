@@ -52,14 +52,17 @@ export function MainWindow({children, orientation, onScroll}: ScrollAreaProps) {
   )
 }
 
-export function MainWindowShell({children, ...props}: PropsWithChildren<any>) {
+export function MainWindowShell({
+  children,
+  ...props
+}: PropsWithChildren<unknown>) {
   return (
     <Box data-layout-section="main" {...props} className={mainWindowStyle()}>
       {children}
     </Box>
   )
 }
-export function MainPageShell(props: PropsWithChildren<any>) {
+export function MainPageShell(props: PropsWithChildren<unknown>) {
   return <Box {...props} className={rootPageStyle()} />
 }
 

@@ -1,6 +1,5 @@
 import {Account, getAccount, Profile, updateProfile} from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {error} from '@app/utils/logger'
 import {QueryClient} from 'react-query'
 import {assign, createMachine} from 'xstate'
 import {getInfo, Info} from './client'
@@ -137,12 +136,11 @@ export function createAuthService(client: QueryClient) {
               .then(function (accountInfo) {
                 sendBack({type: 'REPORT.DEVICE.INFO.PRESENT', accountInfo})
               })
-              .catch(function (err) {
-                error('accountInfo: ERROR')
+              .catch(function () {
                 sendBack('REPORT.DEVICE.INFO.MISSING')
               })
           },
-        fetchAccount: function fetchAccountService(context) {
+        fetchAccount: function fetchAccountService() {
           return client.fetchQuery(
             [queryKeys.GET_ACCOUNT, ''],
             function accountQuery({queryKey}) {
@@ -164,8 +162,9 @@ export function createAuthService(client: QueryClient) {
         assignAccountInfo: assign((_, event) => ({
           accountInfo: event.accountInfo,
         })),
+        /* @ts-ignore */
         removeAccountInfo: assign({
-          accountInfo: (context) => undefined,
+          accountInfo: undefined,
         }),
         assignAccount: assign({
           account: (_, event) => {

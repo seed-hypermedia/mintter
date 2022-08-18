@@ -15,11 +15,7 @@ import {Text} from './text'
 import {TextField} from './text-field'
 import {WalletList} from './wallet-list'
 
-type SettingsPageProp = {updateProfile?: typeof localApi.updateProfile}
-
-export function Settings({
-  updateProfile = localApi.updateProfile,
-}: SettingsPageProp) {
+export function Settings() {
   return (
     <Box
       css={{
@@ -51,7 +47,7 @@ export function Settings({
         </StyledTabsList>
         <TabsContent value="profile">
           {/* <ScrollArea> */}
-          <ProfileForm updateProfile={updateProfile} />
+          <ProfileForm />
           {/* </ScrollArea> */}
         </TabsContent>
         <TabsContent value="account">
@@ -115,11 +111,7 @@ var TabsContent = styled(TabsPrimitive.Content, {
   background: '$base-component-bg-normal',
 })
 
-function ProfileForm({
-  updateProfile,
-}: {
-  updateProfile: typeof localApi.updateProfile
-}) {
+function ProfileForm() {
   let authService = useAuthService()
   let [state, send] = useActor(authService)
 
@@ -208,7 +200,7 @@ function ProfileForm({
 
 function AccountInfo() {
   let authService = useAuthService()
-  let [state, send] = useActor(authService)
+  let [state] = useActor(authService)
   return (
     <Box
       css={{
@@ -278,7 +270,7 @@ function AccountInfo() {
 function AppSettings({
   mainService = defaultMainService,
 }: {
-  mainService: typeof defaultMainService
+  mainService?: typeof defaultMainService
 }) {
   let activityService = useSelector(
     mainService,
@@ -301,7 +293,7 @@ function AppSettings({
         variant="outlined"
         onClick={(e) => {
           e.preventDefault()
-          activityService.send('RESET')
+          activityService?.send('RESET')
         }}
       >
         Reset Activity

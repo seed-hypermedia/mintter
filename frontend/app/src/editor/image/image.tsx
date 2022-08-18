@@ -27,7 +27,7 @@ export function createImagePlugin(): EditorPlugin {
   return {
     name: ELEMENT_IMAGE,
     renderElement:
-      (editor) =>
+      () =>
       ({element, children, attributes}) => {
         if (isImage(element)) {
           return (
@@ -180,7 +180,7 @@ function ImageComponent({service, element}: InnerImageProps) {
   )
 }
 
-function ImageForm({service, element}: InnerImageProps) {
+function ImageForm({service}: InnerImageProps) {
   const [state, send] = useActor(service)
   const selected = useSelected()
   const focused = useFocused()

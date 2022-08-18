@@ -2,14 +2,12 @@ import {store} from '@app/client/store'
 import {Box} from '@components/box'
 import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
-import {createMachine} from 'xstate'
+import {createMachine, MachineOptionsFrom} from 'xstate'
 import type {OnboardingStepPropsType} from './common'
 import {Complete} from './complete'
 import {ProfileInformation} from './profile-information'
 import {SecurityPack} from './security-pack'
 import {Welcome} from './welcome'
-
-type OnboardingContext = {}
 
 type OnboardingEvent =
   | {
@@ -25,7 +23,7 @@ let onboardingMachine = createMachine(
     initial: 'welcome',
     tsTypes: {} as import('./index.typegen').Typegen0,
     schema: {
-      context: {} as OnboardingContext,
+      context: {} as unknown,
       events: {} as OnboardingEvent,
     },
     states: {
@@ -69,7 +67,7 @@ let onboardingMachine = createMachine(
 export default function OnboardingPage({
   machineConfig = {},
 }: {
-  machineConfig?: any
+  machineConfig?: MachineOptionsFrom<typeof onboardingMachine>
 }) {
   const [onboardingMachineState, send] = useMachine(() =>
     onboardingMachine.withConfig(machineConfig),

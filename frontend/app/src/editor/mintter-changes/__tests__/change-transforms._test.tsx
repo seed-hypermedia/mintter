@@ -1,4 +1,5 @@
 /** @jsx jsx */
+/* eslint-disable */
 import {DocumentChange} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'

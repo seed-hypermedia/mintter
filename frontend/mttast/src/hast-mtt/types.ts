@@ -3,7 +3,7 @@ import {MttastNode, Text} from '../'
 export type HastElememtChild = HastElement
 export type HastNode = HastRoot | HastElememtChild
 
-export type Handle = (h: H, node: any, parent?: HastParent) => MttastNode | Array<MttastNode> | void
+export type Handle = (h: H, node: MttastNode, parent?: HastParent) => MttastNode | Array<MttastNode> | void
 
 export type Properties = Record<string, unknown>
 

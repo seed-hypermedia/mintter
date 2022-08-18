@@ -234,8 +234,9 @@ export const listAccountsMachine = createMachine(
       assignError: assign({
         errorMessage: (_, event) => event.errorMessage,
       }),
+      // @ts-ignore
       clearError: assign({
-        errorMessage: (c) => '',
+        errorMessage: '',
       }),
     },
     services: {

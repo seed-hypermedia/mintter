@@ -46,15 +46,6 @@ function createParent<N extends Parent>(type: N['type'], defaults: Partial<Optio
   }
 }
 
-function createNode<N extends Node>(type: N['type'], defaults: Partial<OptionsOf<N>> = {}) {
-  return (options: OptionsOf<N>): N =>
-    ({
-      type,
-      ...defaults,
-      ...options,
-    } as N)
-}
-
 export function createId() {
   const id = nanoid(8)
   return id
@@ -94,10 +85,4 @@ export const text = (value: string, options: Omit<Text, 'type' | 'value' | 'text
   type: 'text',
   value,
   ...options,
-  // get text() {
-  //   return this.value
-  // },
-  // set text(v: string) {
-  //   this.value = v
-  // },
 })

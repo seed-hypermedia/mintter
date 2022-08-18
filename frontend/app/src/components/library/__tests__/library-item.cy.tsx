@@ -34,6 +34,7 @@ describe('<LibraryItem />', () => {
     let editor = buildEditorHook(plugins, EditorMode.Publication)
     render(
       <LibraryItem
+        isNew={false}
         fileRef={spawn(
           createPublicationMachine({client, publication, editor}),
           'pub-d1-v1',
@@ -43,7 +44,9 @@ describe('<LibraryItem />', () => {
     )
   })
   it('default item', () => {
-    cy.get('[data-testid="library-item"]').contains(publication.document!.title)
+    cy.get('[data-testid="library-item"]').contains(
+      publication.document?.title ?? '',
+    )
   })
 
   it('should open dropdown element', () => {
@@ -96,11 +99,11 @@ describe('<LibraryItem /> with Draft', () => {
 
     render(
       <LibraryItem
+        isNew={false}
         fileRef={spawn(
           createDraftMachine({draft, client, editor, shouldAutosave: false}),
           `draft-${draft.id}`,
         )}
-        deleteDraft={deleteDraft}
         copy={copyTextToClipboard}
       />,
     )

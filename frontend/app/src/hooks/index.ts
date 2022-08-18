@@ -1,14 +1,12 @@
 import {useAccountInfo} from '@app/auth-context'
 import {debug} from '@app/utils/logger'
-import type {FlowContent} from '@mintter/mttast'
 import {useMemo} from 'react'
-import {useQuery, useQueryClient} from 'react-query'
+import {useQuery} from 'react-query'
 import {
   Account,
   Document,
   getAccount,
   getInfo,
-  getPublication,
   Info,
   listAccounts,
   ListAccountsResponse,
@@ -103,8 +101,6 @@ export function usePeerAddrs(
   peerId?: string,
   options: HookOptions<PeerInfo['addrs']> = {},
 ) {
-  const queryClient = useQueryClient()
-
   let requestId: string
   const info = useAccountInfo()
   if (!peerId) {
@@ -115,7 +111,7 @@ export function usePeerAddrs(
 
   const peerAddrsQuery = useQuery(
     [queryKeys.GET_PEER_ADDRS, requestId],
-    () => listPeerAddrs(requestId, options.rpc as any),
+    () => listPeerAddrs(requestId, options.rpc),
     {
       enabled: !!requestId,
       ...options,
@@ -127,49 +123,6 @@ export function usePeerAddrs(
   return {
     ...peerAddrsQuery,
     data,
-  }
-}
-
-/**
- *
- * @param publicationId
- * @param options
- * @returns
- */
-export function usePublication(
-  publicationId: string,
-  version?: string,
-  options: HookOptions<Publication> = {},
-) {
-  const publicationQuery = useQuery(
-    [queryKeys.GET_PUBLICATION, publicationId],
-    async ({queryKey}) => {
-      const [, publicationId] = queryKey as [string, string]
-      return getPublication(publicationId, version, options.rpc)
-    },
-    {
-      refetchOnWindowFocus: false,
-      ...options,
-    },
-  )
-
-  const content: Array<FlowContent> = useMemo(
-    () =>
-      publicationQuery.data?.document?.content
-        ? JSON.parse(publicationQuery.data?.document?.content)
-        : null,
-    [publicationQuery],
-  )
-
-  return {
-    ...publicationQuery,
-    data: {
-      ...publicationQuery.data,
-      document: {
-        ...publicationQuery.data?.document,
-        content,
-      },
-    },
   }
 }
 
@@ -209,7 +162,7 @@ export function useOthersPublicationsList(
         if (!info) return false
         return current.document?.author != info.accountId
       }) || [],
-    [myPubsListQuery.data, info?.accountId],
+    [myPubsListQuery.data, info],
   )
 
   return {

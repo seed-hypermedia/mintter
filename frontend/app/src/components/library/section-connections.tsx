@@ -71,7 +71,7 @@ function ContactsPrompt({refetch}: {refetch: () => void}) {
           error: 'Connection Error',
         })
         refetch()
-      } catch (err: any) {
+      } catch (err) {
         error('Connect Error:', err.message)
       }
       setPeer('')

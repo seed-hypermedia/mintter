@@ -89,8 +89,7 @@ export function createThemeService() {
           current: (_, event) => event.theme,
         }),
         toggleTheme: assign({
-          current: (context, event) =>
-            context.current == 'dark' ? 'light' : 'dark',
+          current: (context) => (context.current == 'dark' ? 'light' : 'dark'),
         }),
       },
       services: {

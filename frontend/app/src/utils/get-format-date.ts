@@ -28,7 +28,7 @@ export function getDateFormat(
 ) {
   if (!document) return ''
 
-  var date = new Date(document[key]!)
+  var date = new Date(document[key])
 
   return `${
     months[date.getMonth()]

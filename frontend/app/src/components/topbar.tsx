@@ -215,7 +215,7 @@ function PublicationActions({
   copy?: typeof copyTextToClipboard
   mainService: typeof defaultMainService
 }) {
-  let [state, send] = useActor(fileRef)
+  let [state] = useActor(fileRef)
   let bookmarkService = useBookmarksService()
 
   async function onCopyReference() {

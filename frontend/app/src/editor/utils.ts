@@ -302,5 +302,5 @@ export function useParentGroup(editor: Editor, path: Path) {
     if (entry) {
       return entry[0].type || 'group'
     }
-  }, [path])
+  }, [path, editor])
 }

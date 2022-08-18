@@ -253,7 +253,7 @@ export interface InsertLinkOptions {
 
 export function insertLink(
   editor: Editor,
-  {url, selection = editor.selection, wrap = false}: InsertLinkOptions,
+  {url, selection = editor.selection}: InsertLinkOptions,
 ): void {
   if (isLinkActive(editor)) {
     unwrapLink(editor)
@@ -327,10 +327,10 @@ export function wrapLink(
 
   const newLink: LinkType = link(
     {url},
-    isCollapsed(selection!) ? [text(url)] : [],
+    isCollapsed(selection) ? [text(url)] : [],
   )
 
-  if (isCollapsed(selection!)) {
+  if (isCollapsed(selection)) {
     // Editor.withoutNormalizing(editor, () => {
     Transforms.insertNodes(editor, [newLink, text('')])
     // Transforms.insertNodes(editor, , {at: selection ?? undefined})
@@ -361,7 +361,7 @@ function hasBlockId(text: string) {
 function wrapMintterLink(editor: Editor, url: string) {
   const {selection} = editor
 
-  if (isCollapsed(selection!)) {
+  if (isCollapsed(selection)) {
     const newEmbed: Embed = embed({url}, [text('')])
     Transforms.insertNodes(editor, newEmbed)
     addLinkChange(editor, selection)
@@ -421,7 +421,7 @@ export function InsertLinkButton() {
   useEffect(() => {
     if (!editor) return
     const linkEntry = Editor.above<LinkType>(editor, {
-      /* eslint-disable */
+      // eslint-disable-next-line
       match: (n: any) => n.type == ELEMENT_LINK,
     })
     if (!linkEntry) return

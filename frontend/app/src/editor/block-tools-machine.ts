@@ -176,14 +176,14 @@ export const blockToolsMachine = createMachine(
               // console.log('IS INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.ADD',
-                id: (entry.target as HTMLElement).dataset.parentBlock!,
+                id: (entry.target as HTMLElement).dataset.parentBlock,
                 entry: entry.target,
               })
             } else {
               // console.log('NOT INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.DELETE',
-                id: (entry.target as HTMLElement).dataset.parentBlock!,
+                id: (entry.target as HTMLElement).dataset.parentBlock,
               })
             }
           }
