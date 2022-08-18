@@ -17,7 +17,7 @@ import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
 
-import '../styles/page-search.css'
+import '../styles/page-search.scss'
 
 type TopbarProps = {
   copy?: typeof copyTextToClipboard

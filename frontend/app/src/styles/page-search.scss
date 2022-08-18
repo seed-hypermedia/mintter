@@ -9,7 +9,8 @@
   border-radius: 7px;
   box-sizing: border-box;
   align-items: center;
-  color: rgb(115, 115, 115);
+  color: unset;
+  /* color: rgb(115, 115, 115); */
 }
 
 #search-box:focus-within {
@@ -36,6 +37,7 @@
   font-size: 0.8rem;
   background-color: transparent;
   border: none;
+  color: unset;
 }
 
 #search:focus,
