@@ -3,6 +3,7 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useActor} from '@xstate/react'
 import {Command} from 'cmdk'
 import {useEffect, useState} from 'react'
+import {getIdsfromUrl} from '../utils/get-ids-from-url'
 
 type QuickSwitcherProps = {
   mainService?: typeof defaultMainService
@@ -38,7 +39,22 @@ export function QuickSwitcher({
           <Command.Empty>No results found.</Command.Empty>
 
           {isMintterLink(search) && (
-            <Command.Item key="mtt-link" value={search}>
+            <Command.Item
+              key="mtt-link"
+              value={search}
+              onSelect={() => {
+                const [docId, version, blockId] = getIdsfromUrl(search)
+
+                mainService.send({
+                  type: 'GO.TO.PUBLICATION',
+                  docId,
+                  version,
+                  blockId,
+                })
+
+                setOpen(false)
+              }}
+            >
               Jump to {search}
             </Command.Item>
           )}
@@ -46,7 +62,18 @@ export function QuickSwitcher({
           <Command.Group heading="Drafts">
             {drafts.map((draft) => {
               return (
-                <Command.Item key={`draft-${draft.id}`} value={draft.title}>
+                <Command.Item
+                  key={draft.id}
+                  value={draft.title}
+                  onSelect={() => {
+                    setOpen(false)
+
+                    mainService.send({
+                      type: 'GO.TO.DRAFT',
+                      docId: draft.id,
+                    })
+                  }}
+                >
                   {draft.title}
                 </Command.Item>
               )
@@ -57,8 +84,17 @@ export function QuickSwitcher({
             {publications.map((publication) => {
               return (
                 <Command.Item
-                  key={`draft-${publication.document?.id}`}
-                  value={publication.document?.title}
+                  key={publication.document!.id}
+                  value={publication.document!.title}
+                  onSelect={() => {
+                    setOpen(false)
+
+                    mainService.send({
+                      type: 'GO.TO.PUBLICATION',
+                      docId: publication.document!.id,
+                      version: publication.version,
+                    })
+                  }}
                 >
                   {publication.document?.title}
                 </Command.Item>
