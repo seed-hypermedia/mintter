@@ -12,7 +12,6 @@ import {
   Publication,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {mount} from '@cypress/react'
 import {ReactNode} from 'react'
 import {QueryClient} from 'react-query'
 ;(function mockTauriIpc() {
@@ -136,7 +135,7 @@ export function mountProviders({
   client.invalidateQueries = cy.spy()
 
   function render(ui: ReactNode) {
-    return mount(
+    return cy.mount(
       <AppProviders client={client} initialRoute={initialRoute}>
         {ui}
       </AppProviders>,
