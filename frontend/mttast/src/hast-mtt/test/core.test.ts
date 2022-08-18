@@ -62,7 +62,7 @@ describe('core', () => {
       ]),
     ])
 
-    const allWithIds: Array<any> = []
+    const allWithIds: Array<unknown> = []
     const result = toMttast(hast)
     visit(result, 'statement', (node: Statement) => {
       allWithIds.push({id: node.id})

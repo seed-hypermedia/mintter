@@ -1,4 +1,4 @@
-import {GroupingContent} from '@mintter/mttast'
+import {GroupingContent, Text} from '@mintter/mttast'
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
 import {Annotation, Block, BlockNode} from '@app/client'
 import {debug} from '@app/utils/logger'
@@ -14,7 +14,9 @@ import {
 import {annotationContains} from './classes'
 
 export function blockToSlate(blk: Block): FlowContent {
-  const {childrenType: _, ...attributes} = blk.attributes
+  // we dont need to pass `childrenType to `out`, but we don't need it for anything for now.
+  // eslint-disable-next-line
+  const {childrenType, ...attributes} = blk.attributes
 
   const out = {
     id: blk.id,
@@ -44,7 +46,8 @@ export function blockToSlate(blk: Block): FlowContent {
   // Just for convenience.
   const leaves = out.children[0].children
   // Current leaf. At the beginning there's nothing.
-  let leaf: any = null
+  let leaf: Text | null = null
+  // eslint-disable-next-line
   let inlineBlockContent: any = null
   // Start UTF-16 offset of the current leaf. It indicates the beginning
   // of the substring in the block text that would correspond to the current leaf.
@@ -142,6 +145,7 @@ export function blockToSlate(blk: Block): FlowContent {
   function startLeaf(posAnnotations: Set<Annotation>) {
     leaf = {
       type: 'text',
+      value: '',
     }
 
     // this var keeps track if in the current annotations there's a link or embed annotation or not. this is important to make sure we are adding items to the correct array
@@ -167,6 +171,7 @@ export function blockToSlate(blk: Block): FlowContent {
           'code',
         ].includes(l.type)
       ) {
+        // @ts-ignore
         leaf[l.type] = true
       }
     })
@@ -212,7 +217,7 @@ export function blockToSlate(blk: Block): FlowContent {
 
   function finishLeaf(low: number, high: number) {
     let newValue = blk.text.substring(low, high)
-    leaf.value = newValue
+    if (leaf) leaf.value = newValue
 
     textStart = high
 
@@ -223,7 +228,9 @@ export function blockToSlate(blk: Block): FlowContent {
         inlineBlockContent.children.push({...leaf, value: ''})
       }
     } else {
-      leaves.push(leaf)
+      if (leaf) {
+        leaves.push(leaf)
+      }
     }
   }
 
@@ -281,7 +288,7 @@ export function blockNodeToSlate(
       : group
   return fn(
     entry.map(({block, children}) => {
-      let slateBlock = blockToSlate(block!)
+      let slateBlock = blockToSlate(block)
       if (children.length) {
         slateBlock.children[1] = blockNodeToSlate(
           children,

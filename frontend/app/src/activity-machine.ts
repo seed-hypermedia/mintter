@@ -81,7 +81,8 @@ export const activityMachine = createMachine(
         },
       }),
       resetList: assign({
-        visitList: (c) => {
+        /*eslint-disable */
+        visitList: function (): Array<string> {
           store.set(ACTIVITY, [])
           return []
         },

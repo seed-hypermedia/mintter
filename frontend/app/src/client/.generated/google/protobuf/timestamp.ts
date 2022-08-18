@@ -1,6 +1,6 @@
-/* eslint-disable */
-import Long from "long";
-import * as _m0 from "protobufjs/minimal";
+// eslint-disable-next-line
+import Long from 'long'
+import * as _m0 from 'protobufjs/minimal'
 
 /**
  * A Timestamp represents a point in time independent of any time zone or local
@@ -101,90 +101,89 @@ export interface Timestamp {
    * 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
    * 9999-12-31T23:59:59Z inclusive.
    */
-  seconds: number;
+  seconds: number
   /**
    * Non-negative fractions of a second at nanosecond resolution. Negative
    * second values with fractions must still have non-negative nanos values
    * that count forward in time. Must be from 0 to 999,999,999
    * inclusive.
    */
-  nanos: number;
+  nanos: number
 }
 
 function createBaseTimestamp(): Timestamp {
-  return { seconds: 0, nanos: 0 };
+  return {seconds: 0, nanos: 0}
 }
 
 export const Timestamp = {
   encode(
     message: Timestamp,
-    writer: _m0.Writer = _m0.Writer.create()
+    writer: _m0.Writer = _m0.Writer.create(),
   ): _m0.Writer {
     if (message.seconds !== 0) {
-      writer.uint32(8).int64(message.seconds);
+      writer.uint32(8).int64(message.seconds)
     }
     if (message.nanos !== 0) {
-      writer.uint32(16).int32(message.nanos);
+      writer.uint32(16).int32(message.nanos)
     }
-    return writer;
+    return writer
   },
 
   decode(input: _m0.Reader | Uint8Array, length?: number): Timestamp {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseTimestamp();
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input)
+    let end = length === undefined ? reader.len : reader.pos + length
+    const message = createBaseTimestamp()
     while (reader.pos < end) {
-      const tag = reader.uint32();
+      const tag = reader.uint32()
       switch (tag >>> 3) {
         case 1:
-          message.seconds = longToNumber(reader.int64() as Long);
-          break;
+          message.seconds = longToNumber(reader.int64() as Long)
+          break
         case 2:
-          message.nanos = reader.int32();
-          break;
+          message.nanos = reader.int32()
+          break
         default:
-          reader.skipType(tag & 7);
-          break;
+          reader.skipType(tag & 7)
+          break
       }
     }
-    return message;
+    return message
   },
 
   fromJSON(object: any): Timestamp {
     return {
       seconds: isSet(object.seconds) ? Number(object.seconds) : 0,
       nanos: isSet(object.nanos) ? Number(object.nanos) : 0,
-    };
+    }
   },
 
   toJSON(message: Timestamp): unknown {
-    const obj: any = {};
-    message.seconds !== undefined &&
-      (obj.seconds = Math.round(message.seconds));
-    message.nanos !== undefined && (obj.nanos = Math.round(message.nanos));
-    return obj;
+    const obj: any = {}
+    message.seconds !== undefined && (obj.seconds = Math.round(message.seconds))
+    message.nanos !== undefined && (obj.nanos = Math.round(message.nanos))
+    return obj
   },
 
   fromPartial<I extends Exact<DeepPartial<Timestamp>, I>>(
-    object: I
+    object: I,
   ): Timestamp {
-    const message = createBaseTimestamp();
-    message.seconds = object.seconds ?? 0;
-    message.nanos = object.nanos ?? 0;
-    return message;
+    const message = createBaseTimestamp()
+    message.seconds = object.seconds ?? 0
+    message.nanos = object.nanos ?? 0
+    return message
   },
-};
+}
 
-declare var self: any | undefined;
-declare var window: any | undefined;
-declare var global: any | undefined;
+declare var self: any | undefined
+declare var window: any | undefined
+declare var global: any | undefined
 var globalThis: any = (() => {
-  if (typeof globalThis !== "undefined") return globalThis;
-  if (typeof self !== "undefined") return self;
-  if (typeof window !== "undefined") return window;
-  if (typeof global !== "undefined") return global;
-  throw "Unable to locate global object";
-})();
+  if (typeof globalThis !== 'undefined') return globalThis
+  if (typeof self !== 'undefined') return self
+  if (typeof window !== 'undefined') return window
+  if (typeof global !== 'undefined') return global
+  throw 'Unable to locate global object'
+})()
 
 type Builtin =
   | Date
@@ -193,7 +192,7 @@ type Builtin =
   | string
   | number
   | boolean
-  | undefined;
+  | undefined
 
 type DeepPartial<T> = T extends Builtin
   ? T
@@ -201,34 +200,34 @@ type DeepPartial<T> = T extends Builtin
   ? Array<DeepPartial<U>>
   : T extends ReadonlyArray<infer U>
   ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string }
-  ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & {
-      $case: T["$case"];
+  : T extends {$case: string}
+  ? {[K in keyof Omit<T, '$case'>]?: DeepPartial<T[K]>} & {
+      $case: T['$case']
     }
   : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
+  ? {[K in keyof T]?: DeepPartial<T[K]>}
+  : Partial<T>
 
-type KeysOfUnion<T> = T extends T ? keyof T : never;
+type KeysOfUnion<T> = T extends T ? keyof T : never
 type Exact<P, I extends P> = P extends Builtin
   ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
+  : P & {[K in keyof P]: Exact<P[K], I[K]>} & Record<
         Exclude<keyof I, KeysOfUnion<P>>,
         never
-      >;
+      >
 
 function longToNumber(long: Long): number {
   if (long.gt(Number.MAX_SAFE_INTEGER)) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+    throw new globalThis.Error('Value is larger than Number.MAX_SAFE_INTEGER')
   }
-  return long.toNumber();
+  return long.toNumber()
 }
 
 if (_m0.util.Long !== Long) {
-  _m0.util.Long = Long as any;
-  _m0.configure();
+  _m0.util.Long = Long as any
+  _m0.configure()
 }
 
 function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
+  return value !== null && value !== undefined
 }

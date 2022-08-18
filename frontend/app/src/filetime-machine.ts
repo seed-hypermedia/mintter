@@ -78,11 +78,13 @@ export const fileTimeMachine = createMachine(
       assignPublishTimeToCurrent: assign({
         current: (context) => context.publishTime,
       }),
+      // @ts-ignore
       hideLabel: assign({
-        showLabel: (context) => false,
+        showLabel: false,
       }),
+      // @ts-ignore
       showLabel: assign({
-        showLabel: (context) => true,
+        showLabel: true,
       }),
     },
   },

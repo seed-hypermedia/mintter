@@ -39,13 +39,9 @@ function check(name: string) {
     const result = toMttast(tree, config)
 
     // mock node id for testing
-    visit(result, isFlowContent, (node: any) => {
+    visit(result, isFlowContent, (node: unknown) => {
       node.id = 'id'
     })
-
-    if (name == 'image') {
-      console.log('result', JSON.stringify({expected, result}, null, 3))
-    }
 
     expect(result).toEqual(expected)
   })

@@ -71,7 +71,7 @@ const OnboardingStepStyled = styled(motion.form, {
   justifyContent: 'center',
 })
 
-export function OnboardingStep(props: PropsWithChildren<{onSubmit?: any}>) {
+export function OnboardingStep(props: PropsWithChildren<unknown>) {
   return (
     <OnboardingStepStyled
       variants={containerAnimationVariants}
@@ -224,7 +224,7 @@ export function ProfileInformationIcon() {
   )
 }
 
-function IconContainer({children}: PropsWithChildren<any>) {
+function IconContainer({children}: PropsWithChildren<unknown>) {
   return (
     <Box
       css={{

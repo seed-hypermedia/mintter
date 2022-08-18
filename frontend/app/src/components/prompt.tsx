@@ -13,7 +13,7 @@ import {Text} from './text'
 
 export const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
-function Root({children, ...props}: any) {
+function Root({children, ...props}: DialogPrimitive.DialogProps) {
   return (
     <DialogPrimitive.Root {...props}>
       <StyledOverlay />

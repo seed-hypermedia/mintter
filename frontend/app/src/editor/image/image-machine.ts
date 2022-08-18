@@ -95,11 +95,13 @@ export const imageMachine = createMachine(
   },
   {
     actions: {
+      // @ts-ignore
       clearError: assign({
-        errorMessage: (c) => '',
+        errorMessage: '',
       }),
+      // @ts-ignore
       enableCaption: assign({
-        captionVisibility: (c) => true,
+        captionVisibility: true,
       }),
     },
   },

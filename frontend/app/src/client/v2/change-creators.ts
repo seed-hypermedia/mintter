@@ -43,7 +43,6 @@ export function createReplaceChange(
   let blockEntry = getEditorBlock(editor, {id: blockId})
 
   if (blockEntry) {
-    let parent = Node.parent(editor, blockEntry[1])
     let [block] = blockEntry
     let childrenType: string | undefined = isGroupContent(block.children[1])
       ? block.children[1].type

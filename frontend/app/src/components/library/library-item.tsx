@@ -45,7 +45,7 @@ export function LibraryItem({
   const [mainState] = useActor(mainService)
   let bookmarksService = useBookmarksService()
   let {params} = mainState.context
-  let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [])
+  let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [fileRef.id])
   let match = useMemo(() => {
     if (isPublication) {
       return (
@@ -55,7 +55,7 @@ export function LibraryItem({
     } else {
       return state.context.documentId == params.docId
     }
-  }, [params.docId, params.version, isPublication])
+  }, [params.docId, params.version, isPublication, state.context])
 
   const deleteService = useInterpret(
     () =>
@@ -76,7 +76,6 @@ export function LibraryItem({
       },
       actions: {
         persistDelete: (context) => {
-          debug('persistDelete!!!!', mainService.getSnapshot().value)
           mainService.send({
             type: 'COMMIT.DELETE.FILE',
             documentId: context.documentId,
@@ -110,8 +109,8 @@ export function LibraryItem({
       mainService.send({
         type: 'GO.TO.PUBLICATION',
         docId: state.context.documentId,
-        version: state.context.version,
-        blockId: undefined,
+        version: state.context.version as string,
+        blockId: '',
       })
     } else {
       mainService.send({type: 'GO.TO.DRAFT', docId: state.context.documentId})

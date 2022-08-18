@@ -1,15 +1,15 @@
-import { useCurrentBlockToolsId } from '@app/editor/block-tools-context'
-import { blockToolsMachine } from '@app/editor/block-tools-machine'
-import { MintterEditor } from '@app/editor/mintter-changes/plugin'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { getEditorBlock } from '@app/editor/utils'
-import { useFile, useFileEditor } from '@app/file-provider'
-import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
-import { ObjectKeys } from '@app/utils/object-keys'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Icon, icons } from '@components/icon'
-import { Text } from '@components/text'
+import {useCurrentBlockToolsId} from '@app/editor/block-tools-context'
+import {blockToolsMachine} from '@app/editor/block-tools-machine'
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {getEditorBlock} from '@app/editor/utils'
+import {useFile, useFileEditor} from '@app/file-provider'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {ObjectKeys} from '@app/utils/object-keys'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon, icons} from '@components/icon'
+import {Text} from '@components/text'
 import {
   blockquote,
   code,
@@ -25,15 +25,15 @@ import {
   statement,
   text,
   ul,
-  video
+  video,
 } from '@mintter/mttast'
-import { useActor } from '@xstate/react'
-import { Fragment, useMemo } from 'react'
+import {useActor} from '@xstate/react'
+import {Fragment, useMemo} from 'react'
 import toast from 'react-hot-toast'
-import { BaseRange, Editor, Node, NodeEntry, Path, Transforms } from 'slate'
-import { InterpreterFrom } from 'xstate'
-import { Dropdown, ElementDropdown } from './dropdown'
-import { ELEMENT_PARAGRAPH } from './paragraph'
+import {BaseRange, Editor, Node, NodeEntry, Path, Transforms} from 'slate'
+import {InterpreterFrom} from 'xstate'
+import {Dropdown, ElementDropdown} from './dropdown'
+import {ELEMENT_PARAGRAPH} from './paragraph'
 
 const items: {
   [key: string]: Array<{
@@ -111,7 +111,7 @@ export function BlockTools(props: BlockToolsProps) {
   let blockId = useCurrentBlockToolsId()
   let blockEntry = useMemo(() => {
     if (blockId) {
-      return getEditorBlock(editor, { id: blockId })
+      return getEditorBlock(editor, {id: blockId})
     }
   }, [blockId, editor])
 
@@ -170,7 +170,7 @@ export function DraftBlockTools({
             return (
               <Fragment key={key}>
                 <Dropdown.Label>
-                  <Text color="muted" size="2" css={{ padding: '$3' }}>
+                  <Text color="muted" size="2" css={{padding: '$3'}}>
                     {key}
                   </Text>
                 </Dropdown.Label>
@@ -223,7 +223,7 @@ export function PublicationBlockTools({
     await copy(
       `mtt://${fileState.context.documentId}/${fileState.context.version}/${blockId}`,
     )
-    toast.success('Block ID copied successfully', { position: 'top-center' })
+    toast.success('Block ID copied successfully', {position: 'top-center'})
   }
 
   return (
@@ -244,7 +244,7 @@ export function PublicationBlockTools({
   )
 }
 
-/* eslint-disable */
+// eslint-disable-next-line
 function setType(fn: any) {
   return function setToStatementType(
     editor: Editor,
@@ -258,17 +258,18 @@ function setType(fn: any) {
       )
 
       if (isHeading(element)) {
-        Transforms.setNodes(editor, { type: ELEMENT_PARAGRAPH }, { at: [...at, 0] })
+        Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: [...at, 0]})
       }
 
       if (keys.length) {
-        Transforms.unsetNodes(editor, keys, { at })
+        Transforms.unsetNodes(editor, keys, {at})
       }
 
       // IDs are meant to be stable, so we shouldn't obverride it
-      const { id, ...props } = fn()
+      // eslint-disable-next-line
+      const {id, ...props} = fn()
 
-      Transforms.setNodes(editor, props, { at })
+      Transforms.setNodes(editor, props, {at})
     })
   }
 }
@@ -281,14 +282,14 @@ function insertInline(fn: typeof image | typeof video) {
   ) {
     if (selection) {
       MintterEditor.addChange(editor, ['replaceBlock', element.id])
-      Transforms.insertNodes(editor, fn({ url: '' }, [text('')]), {
+      Transforms.insertNodes(editor, fn({url: ''}, [text('')]), {
         at: selection,
       })
     }
   }
 }
 
-/* eslint-disable */
+// eslint-disable-next-line
 function setList(fn: any) {
   return function wrapWithListType(
     editor: Editor,
@@ -299,9 +300,8 @@ function setList(fn: any) {
 
     if (list && isGroupContent(list)) {
       Editor.withoutNormalizing(editor, () => {
-        const { children } = list
         let newList = fn()
-        Transforms.setNodes(editor, { type: newList.type }, { at: Path.parent(at) })
+        Transforms.setNodes(editor, {type: newList.type}, {at: Path.parent(at)})
 
         if (at.length == 2) {
           // block is at the root level

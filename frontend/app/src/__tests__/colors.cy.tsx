@@ -33,10 +33,10 @@ describe('Colors', () => {
   })
 })
 
-function Colors({theme}: any) {
+function Colors({theme}: {theme: typeof lightTheme | typeof darkTheme}) {
   return (
     <ColorWrapper>
-      {Object.values(theme.colors).map(({value}: any) => (
+      {Object.values(theme.colors).map(({value}) => (
         <Color key={value} css={{backgroundColor: value}} />
       ))}
     </ColorWrapper>

@@ -1,13 +1,14 @@
-import {EditorDocument} from '@app/editor/use-editor-draft'
+import {EditorDocument} from '@app/draft-machine'
+import {GroupingContent} from '@mintter/mttast'
 import {Node} from 'slate'
 
 export function getTitleFromContent(entry: {
-  children: Array<EditorDocument['children']>
+  children: [GroupingContent]
 }): string {
   return Node.string(Node.get(entry, [0, 0, 0])) || ''
 }
 
-export function getDocumentTitle(document: any) {
+export function getDocumentTitle(document?: EditorDocument) {
   let titleText = document?.content
     ? getTitleFromContent({
         children: document.content,

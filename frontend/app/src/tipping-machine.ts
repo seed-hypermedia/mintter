@@ -4,7 +4,7 @@ import {MINTTER_GRAPHQL_API_URL} from './wallet-machine'
 
 type TippingContextType = {
   amount: number
-  accountID: string
+  accountID?: string
   publicationID: string
   invoice: string
   errorMessage: string
@@ -28,7 +28,7 @@ export function createTippingMachine({
   accountID,
 }: {
   publicationID: string
-  accountID: string
+  accountID?: string
 }) {
   return createMachine(
     {
@@ -120,7 +120,7 @@ export function createTippingMachine({
                       sendBack({
                         type: 'REPORT.TIPPING.REQUEST.INVOICE.ERROR',
                         errorMessage: err.response.errors
-                          .map((e: any) => e.message)
+                          .map((err: unknown) => JSON.stringify(err))
                           .join(' | '),
                       })
                     })
@@ -163,14 +163,14 @@ export function createTippingMachine({
                       },
                     },
                   )
-                    .then((response) => {
+                    .then(() => {
                       sendBack('REPORT.TIPPING.PAYMENT.SUCCESS')
                     })
                     .catch((err) => {
                       sendBack({
                         type: 'REPORT.TIPPING.PAYMENT.ERROR',
                         errorMessage: err.response.errors
-                          .map((e: any) => e.message)
+                          .map((err: unknown) => JSON.stringify(err))
                           .join(' | '),
                       })
                     })
@@ -200,9 +200,6 @@ export function createTippingMachine({
     },
     {
       actions: {
-        assignAccountID: assign({
-          accountID: (_, event) => event.accountID,
-        }),
         assignAmount: assign({
           amount: (_, event) => event.amount,
         }),
@@ -212,11 +209,9 @@ export function createTippingMachine({
         assignInvoice: assign({
           invoice: (_, event) => event.invoice,
         }),
-        assignPublicationID: assign({
-          publicationID: (_, event) => event.publicationID,
-        }),
+        // @ts-ignore
         clearError: assign({
-          errorMessage: (context) => '',
+          errorMessage: '',
         }),
       },
     },

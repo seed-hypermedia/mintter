@@ -1,6 +1,6 @@
 import {isLink, isPhrasingContent, isText, MttastNode, paragraph, PhrasingContent} from '../..'
 
-export function wrap(nodes: Array<any>) {
+export function wrap(nodes: Array<MttastNode>) {
   return runs(nodes, onphrasing)
 
   function onphrasing(nodes: Array<PhrasingContent>) {
@@ -14,8 +14,8 @@ export function wrap(nodes: Array<any>) {
   }
 }
 
-function flatten(nodes: Array<any>): Array<any> {
-  let flattened: Array<any> = []
+function flatten(nodes: Array<MttastNode>): Array<MttastNode> {
+  let flattened: Array<MttastNode> = []
   let index = -1
   let node: MttastNode
 
@@ -37,10 +37,10 @@ function runs(
   nodes: Array<MttastNode>,
   onphrasing: (nodes: Array<PhrasingContent>) => MttastNode | Array<MttastNode>,
   onnonphrasing?: (node: MttastNode) => MttastNode,
-): Array<any> {
+): Array<MttastNode> {
   const nonphrasing = onnonphrasing || identity
   const flattened = flatten(nodes)
-  let result: Array<any> = []
+  let result: Array<MttastNode> = []
   let index = -1
   let queue: Array<PhrasingContent> | undefined
   let node: MttastNode
@@ -80,6 +80,7 @@ function split(node: MttastNode) {
    */
   function onnonphrasing(child: MttastNode): MttastNode {
     if ('children' in child && 'children' in node) {
+      // eslint-disable-next-line
       const {children, ...rest} = node
       return {
         ...child,
@@ -108,6 +109,6 @@ export function wrapNeeded(nodes: Array<MttastNode>): boolean {
   return false
 }
 
-function identity(n: any) {
+function identity(n: unknown) {
   return n
 }

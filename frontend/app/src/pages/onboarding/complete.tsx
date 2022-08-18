@@ -8,12 +8,9 @@ import {
 } from './common'
 
 export const Complete: React.FC = () => {
-  const handleSubmit = useCallback(
-    function reloadOnComplete() {
-      window.location.reload()
-    },
-    [history, location],
-  )
+  const handleSubmit = useCallback(function reloadOnComplete() {
+    window.location.reload()
+  }, [])
 
   return (
     <OnboardingStep>
