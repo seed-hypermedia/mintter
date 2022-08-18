@@ -3,6 +3,7 @@ import {all} from '../all'
 import {H} from '../types'
 import {resolve} from '../util/resolve'
 
+// eslint-disable-next-line
 export function a(h: H, node: any) {
   const children = all(h, node)
 

@@ -42,7 +42,7 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
       })
       next()
     },
-    [next, updateProfile],
+    [next, mutate],
   )
 
   return (

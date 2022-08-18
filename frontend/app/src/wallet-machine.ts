@@ -1,5 +1,7 @@
+/* eslint-disable */
+
 import {gql, request} from 'graphql-request'
-import {EventFrom, Sender, sendParent, spawn} from 'xstate'
+import {sendParent, spawn} from 'xstate'
 import {createModel} from 'xstate/lib/model'
 import {
   DeleteWalletPayload,
@@ -72,30 +74,6 @@ var addWalletListToContext = listModel.assign(
   'REPORT.LIST.SUCCESS',
 )
 
-const fetchWallets =
-  (_: any, event: EventFrom<typeof listMachine>) =>
-  (sendBack: Sender<EventFrom<typeof listMachine>>) => {
-    let query = gql`
-      {
-        me {
-          wallets {
-            id
-            name
-            balanceSats
-            isDefault
-          }
-        }
-      }
-    `
-    request<MePayload>(MINTTER_GRAPHQL_API_URL, query)
-      .then(({me: {wallets}}) => {
-        sendBack(listModel.events['REPORT.LIST.SUCCESS'](wallets))
-      })
-      .catch((err: any) => {
-        sendBack(listModel.events['REPORT.LIST.ERROR'](err))
-      })
-  }
-
 export const listMachine = listModel.createMachine(
   {
     context: listModel.initialContext,
@@ -104,7 +82,8 @@ export const listMachine = listModel.createMachine(
       loading: {
         tags: ['pending'],
         invoke: {
-          src: 'fetchWallets',
+          src: 'fetchWalletList',
+          id: 'fetchWalletList',
         },
         on: {
           'REPORT.LIST.SUCCESS': {
@@ -223,7 +202,27 @@ export const listMachine = listModel.createMachine(
   },
   {
     services: {
-      fetchWallets,
+      fetchWalletList: () => (sendBack) => {
+        let query = gql`
+          {
+            me {
+              wallets {
+                id
+                name
+                balanceSats
+                isDefault
+              }
+            }
+          }
+        `
+        request<MePayload>(MINTTER_GRAPHQL_API_URL, query)
+          .then(({me: {wallets}}) => {
+            sendBack(listModel.events['REPORT.LIST.SUCCESS'](wallets))
+          })
+          .catch((err: any) => {
+            sendBack(listModel.events['REPORT.LIST.ERROR'](err))
+          })
+      },
     },
   },
 )

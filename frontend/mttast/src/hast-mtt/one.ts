@@ -5,6 +5,7 @@ import {wrapText} from './util/wrap-text'
 
 const own = {}.hasOwnProperty
 
+// eslint-disable-next-line
 export function one(h: H, node: any, parent?: HastNode) {
   let fn: Handle | undefined
 
@@ -27,6 +28,7 @@ export function one(h: H, node: any, parent?: HastNode) {
   return unknown(h, node)
 }
 
+// eslint-disable-next-line
 function unknown(h: H, node: any): any {
   if (typeof node.value == 'string') {
     // get all textProps that are true in `h`

@@ -56,7 +56,7 @@ describe.skip('Editor Page', () => {
       publishTime: date,
       children: [],
     }
-    const {client, render} = mountProviders({
+    const {render} = mountProviders({
       initialRoute: '/editor/foo',
       publication,
       draft,

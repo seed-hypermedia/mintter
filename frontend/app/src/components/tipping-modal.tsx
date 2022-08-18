@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import {PublicationRef} from '@app/main-machine'
 import {createTippingMachine} from '@app/tipping-machine'
 import {Box} from '@components/box'
@@ -16,7 +17,7 @@ export function TippingModal({fileRef}: {fileRef: PublicationRef}) {
   const [fileState] = useActor(fileRef)
   const service = useInterpret(
     createTippingMachine({
-      accountID: fileState.context.author?.id!,
+      accountID: fileState.context.author?.id,
       publicationID: fileState.context.documentId,
     }),
   )
@@ -188,7 +189,7 @@ export function SetAmount({
   state,
 }: {
   state: StateFrom<ReturnType<typeof createTippingMachine>>
-  send: any
+  send
 }) {
   return (
     <Box

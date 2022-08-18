@@ -21,7 +21,6 @@ describe.skip('<BookmarkItem />', () => {
     },
   }
 
-  let copyTextToClipboard: any
   beforeEach(() => {
     let {client, render} = mountProviders({
       publication: pub,
@@ -49,7 +48,7 @@ describe.skip('<BookmarkItem />', () => {
   })
 
   it.only('default item', () => {
-    cy.get('[data-testid="bookmark-item"]').contains(pub.document!.title)
+    cy.get('[data-testid="bookmark-item"]').contains(pub.document?.title ?? '')
   })
 
   it.only('should open boomark in main panel', () => {

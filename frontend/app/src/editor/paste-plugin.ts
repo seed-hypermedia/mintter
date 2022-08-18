@@ -112,7 +112,7 @@ export function createPlainTextPastePlugin(): EditorPlugin {
 }
 
 function removeEmptyText(tree: Parent) {
-  visit(tree, 'text', (node: any, index: any, parent: any) => {
+  visit(tree, 'text', (node: unknown, index: number, parent: unknown) => {
     if (node.value === '') {
       if (!isImage(parent)) {
         parent.children.splice(index, 1, ...node.children)

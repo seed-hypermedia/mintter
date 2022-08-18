@@ -54,7 +54,6 @@ export function deleteDraft(documentId: string, rpc?: GrpcClient) {
 export function listDrafts(
   pageSize?: number,
   pageToken?: string,
-  view?: any,
   rpc?: GrpcClient,
 ): Promise<ListDraftsResponse> {
   rpc ||= createGrpcClient()

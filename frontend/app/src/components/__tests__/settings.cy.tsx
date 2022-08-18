@@ -18,7 +18,7 @@ describe.skip('<Settings />', () => {
       email: 'test@demo.com',
       bio: 'demo bio',
     }
-    let updateAccount: any = cy.stub().resolves({
+    let updateAccount = cy.stub().resolves({
       id: accountId,
       profile: {
         ...profile,
@@ -43,6 +43,7 @@ describe.skip('<Settings />', () => {
       },
     })
 
+    // @ts-ignore
     render(<Settings updateAccount={updateAccount} />)
       .get('[data-testid="input-alias"]')
       .should('have.value', account.profile?.alias)

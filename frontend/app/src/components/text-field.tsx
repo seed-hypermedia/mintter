@@ -220,8 +220,8 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const localRef = useRef<HTMLInputElement>(null)
 
     useLayoutEffect(() => {
-      if (textarea) {
-        autosize(localRef.current!)
+      if (textarea && localRef.current) {
+        autosize(localRef.current)
       }
     }, [textarea])
 
@@ -261,7 +261,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 )
 TextField.displayName = 'TextField'
 
-function mergeRefs<T = any>(
+function mergeRefs<T = unknown>(
   refs: Array<MutableRefObject<T> | LegacyRef<T>>,
 ): RefCallback<T> {
   return (value: T | null) => {

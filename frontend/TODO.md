@@ -17,3 +17,4 @@
   - show lnaddress
   - show invoices status per document?
   - add block metadata to invoices so we can overlay all the payment info on each document
+- when clicking nested transclusions it opens both documents?

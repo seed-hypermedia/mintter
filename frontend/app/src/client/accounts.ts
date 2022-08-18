@@ -36,7 +36,7 @@ export function generateSeed(rpc?: GrpcClient) {
 export function registerAccount(
   mnemonicList: string[],
   aezeedPassphrase?: string,
-  walletPassword?: any,
+  walletPassword?: string,
   rpc?: GrpcClient,
 ) {
   rpc ||= createGrpcClient()

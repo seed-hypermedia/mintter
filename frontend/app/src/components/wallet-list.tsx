@@ -19,7 +19,7 @@ import {TextField} from './text-field'
 
 export function WalletList() {
   // const [data, setData] = useState('Not Found')
-  const service = useInterpret(() => listMachine, {devTools: true})
+  const service = useInterpret(() => listMachine)
   const [state, send] = useActor(service)
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -160,9 +160,11 @@ export function WalletList() {
               onError={error}
               width={340}
               height={340}
-              onUpdate={(err, result: any) => {
+              onUpdate={(err, result) => {
                 if (result) {
-                  send(listModel.events['REPORT.CAMERA.SUCCESS'](result.text))
+                  send(
+                    listModel.events['REPORT.CAMERA.SUCCESS'](result.getText()),
+                  )
                 }
               }}
             />

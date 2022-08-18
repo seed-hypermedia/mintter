@@ -53,4 +53,5 @@ export const ul = u('root', [
       buildUl([statement({id: 'id'}, [paragraph([text('Charlie')])])]),
     ]),
   ]),
+  // eslint-disable-next-line
 ] as any)

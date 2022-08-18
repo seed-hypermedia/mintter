@@ -7,7 +7,7 @@ import {App} from './app'
 import {AppProviders} from './app-providers'
 
 var container = document.getElementById('root')
-var root = createRoot(container!)
+var root = createRoot(container)
 
 attachConsole()
 
