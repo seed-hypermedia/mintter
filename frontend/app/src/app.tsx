@@ -2,7 +2,7 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {useAuthService} from '@app/auth-context'
 import {MainPage} from '@app/pages/main-page'
 import {LibraryShell} from '@components/library'
-
+import {QuickSwitcher} from '@components/quick-switcher'
 import {useActor} from '@xstate/react'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
@@ -11,6 +11,7 @@ import 'show-keys'
 import {error, info, warn} from 'tauri-plugin-log-api'
 import {MainPageShell, MainWindowShell} from './pages/window-components'
 import {globalStyles} from './stitches.config'
+import './styles/quick-switcher.scss'
 
 setLogger({
   log: (...args) => info(args.toString()),
@@ -73,6 +74,7 @@ export function App({mainService = defaultMainService}: AppProps) {
         }}
       >
         <MainPage mainService={mainService} />
+        <QuickSwitcher />
       </ErrorBoundary>
     )
   }
