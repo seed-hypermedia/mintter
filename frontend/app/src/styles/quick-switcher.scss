@@ -1,6 +1,6 @@
 [cmdk-dialog] {
   z-index: 1000;
-  height: var(--mtt-sizes-two-thirds);
+  height: var(--mtt-sizes-full);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,7 +97,7 @@
   }
 
   [cmdk-list] {
-    height: min(330px, calc(var(--cmdk-list-height)));
+    height: 393px;
     max-height: 400px;
     overflow: auto;
     overscroll-behavior: contain;
