@@ -1,5 +1,5 @@
 import {mainService as defaultMainService} from '@app/app-providers'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {isMintterLink} from '@app/utils/is-mintter-link'
 import {listen} from '@tauri-apps/api/event'
 import {useActor} from '@xstate/react'
 import {Command} from 'cmdk'
@@ -22,7 +22,7 @@ export function QuickSwitcher({
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
-    const down = (e) => {
+    const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && e.metaKey) {
         setOpen((open) => !open)
       }
@@ -114,8 +114,4 @@ export function QuickSwitcher({
       </Command.List>
     </Command.Dialog>
   )
-}
-
-function isMintterLink(text: string) {
-  return text.startsWith(MINTTER_LINK_PREFIX)
 }
