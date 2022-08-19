@@ -108,7 +108,7 @@ export function wrapNeeded(nodes: Array<MttastNode>): boolean {
 
   return false
 }
-
-function identity(n: unknown) {
+// eslint-disable-next-line
+function identity(n: any) {
   return n
 }

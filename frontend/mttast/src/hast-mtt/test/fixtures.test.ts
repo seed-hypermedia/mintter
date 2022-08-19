@@ -39,7 +39,8 @@ function check(name: string) {
     const result = toMttast(tree, config)
 
     // mock node id for testing
-    visit(result, isFlowContent, (node: unknown) => {
+    // eslint-disable-next-line
+    visit(result, isFlowContent, (node: any) => {
       node.id = 'id'
     })
 

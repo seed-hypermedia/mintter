@@ -19,8 +19,12 @@ import './commands'
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-import {mount} from 'cypress/react'
-import {CustomMountOptions, TestProvider} from './test-provider'
+import {mount, MountOptions, MountReturn} from 'cypress/react'
+import {
+  createTestQueryClient,
+  CustomMountOptions,
+  TestProvider,
+} from './test-provider'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -30,14 +34,25 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
-      mount: typeof mount
+      /**
+       * Mounts a React node
+       * @param component React Node to mount
+       * @param options Additional options to pass into mount
+       */
+      mount(
+        component: React.ReactNode,
+        options?: MountOptions & CustomMountOptions,
+      ): Cypress.Chainable<MountReturn>
     }
   }
 }
 
 Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
-  let {client, ...mountOptions} = options
+  let {client: customClient, account, ...mountOptions} = options
+  let client = customClient ?? createTestQueryClient({account}).client
+
   const wrapped = <TestProvider client={client}>{component}</TestProvider>
+  // const wrapped = <div>{component}</div>
 
   return mount(wrapped, mountOptions)
 })

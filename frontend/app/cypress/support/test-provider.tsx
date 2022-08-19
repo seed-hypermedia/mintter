@@ -1,10 +1,25 @@
-import {Account, Info} from '@app/client'
+import {AuthProvider} from '@app/auth-context'
+import {createAuthService} from '@app/auth-machine'
+import {Account, Document, Info} from '@app/client'
+import {HoverProvider} from '@app/editor/hover-context'
+import {createHoverService} from '@app/editor/hover-machine'
 import {queryKeys} from '@app/hooks'
-import {PropsWithChildren} from 'react'
+import {createThemeService, ThemeProvider} from '@app/theme'
+import {
+  BookmarksProvider,
+  createBookmarkListMachine,
+} from '@components/bookmarks'
+import {useInterpret} from '@xstate/react'
+import deepmerge from 'deepmerge'
+import {Suspense} from 'react'
 import {QueryClient, QueryClientProvider} from 'react-query'
 
-export function createTestQueryClient() {
-  return new QueryClient({
+type TestMockData = {
+  account?: Partial<Account>
+  draft?: Document
+}
+export function createTestQueryClient(mocks: TestMockData = {}) {
+  let client = new QueryClient({
     defaultOptions: {
       queries: {
         refetchOnMount: false,
@@ -15,14 +30,9 @@ export function createTestQueryClient() {
       },
     },
   })
-}
 
-export function TestProvider({client, account, children}: TestProviderProps) {
-  let peerId = 'testipeerID'
-
-  client ||= createTestQueryClient()
-
-  account ||= {
+  let peerId = 'testPeerID'
+  let defaultAccount = {
     id: 'testAccountId',
     profile: {
       alias: 'demo',
@@ -36,6 +46,10 @@ export function TestProvider({client, account, children}: TestProviderProps) {
     },
   }
 
+  let account: Account = mocks.account
+    ? deepmerge(defaultAccount, mocks.account)
+    : defaultAccount
+
   client?.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], {
     peerId,
     accountId: account.id,
@@ -44,14 +58,52 @@ export function TestProvider({client, account, children}: TestProviderProps) {
 
   client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
 
+  if (mocks.draft) {
+    console.log('DRAFT: received a draft')
+
+    client.setQueryData([queryKeys.GET_DRAFT, mocks.draft.id], mocks.draft)
+  }
   client.invalidateQueries = cy.spy()
 
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+  return {
+    client,
+    account,
+  }
 }
 
-export type TestProviderProps = PropsWithChildren<CustomMountOptions>
+export function TestProvider({client, children}: TestProviderProps) {
+  let authService = useInterpret(() => createAuthService(client))
+  let themeService = useInterpret(() => createThemeService())
+  let hoverService = useInterpret(() => createHoverService())
+  let bookmarksService = useInterpret(() => createBookmarkListMachine(client))
 
+  // return null
+  return (
+    <QueryClientProvider client={client}>
+      <AuthProvider value={authService}>
+        <ThemeProvider value={themeService}>
+          <Suspense fallback={<p>Loading...</p>}>
+            <HoverProvider value={hoverService}>
+              <BookmarksProvider value={bookmarksService}>
+                {
+                  // TODO: @jonas why SearchTermProvider breaks tests?
+                }
+                {children}
+              </BookmarksProvider>
+            </HoverProvider>
+            {/* // <Toaster position="bottom-right" /> */}
+          </Suspense>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  )
+}
 export type CustomMountOptions = {
-  client?: QueryClient
   account?: Account
+  client?: QueryClient
+}
+
+export type TestProviderProps = CustomMountOptions & {
+  children: React.ReactNode
+  client: QueryClient
 }

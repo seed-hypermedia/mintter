@@ -3,7 +3,8 @@ import {H, HastNode} from '../types'
 import {wrapChildren} from '../util/wrap-children'
 
 export function listItem(h: H, node: HastNode): MttastNode | Array<MttastNode> {
-  const children = wrapChildren(h, node) as unknown
+  // eslint-disable-next-line
+  const children = wrapChildren(h, node) as any
   // if (children.length == 1) {
   //   let node = children[0]
   //   if (isParagraph(node)) {

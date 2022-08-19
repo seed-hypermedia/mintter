@@ -3,8 +3,8 @@
 - make sure the main machine is not invoked before the auth check account
 - add new mintter app logo passed from jonas
 - lndhub
-  - fetch the wallets from the authg machine
-  - add pasphrase to the nboarding
+  - fetch the wallets from the auth machine
+  - add pasphrase to the onboarding
   - now we can get different amounts of mnemonics: 12 (default), 15, 18, 24
   - change wallet nickname flow
   - topup flow

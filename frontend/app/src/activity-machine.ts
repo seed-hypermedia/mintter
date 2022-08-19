@@ -18,6 +18,7 @@ type ActivityContext = {
 export const activityMachine = createMachine(
   {
     id: 'activityMachine',
+    predictableActionArguments: true,
     tsTypes: {} as import('./activity-machine.typegen').Typegen0,
     schema: {
       context: {} as ActivityContext,

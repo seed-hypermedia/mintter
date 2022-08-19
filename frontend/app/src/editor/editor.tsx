@@ -32,7 +32,7 @@ const editorWrapperStyles = css({
   variants: {
     mode: {
       [EditorMode.Discussion]: {
-        fontSize: '0.9em',
+        fontSize: '0.9rem',
       },
       [EditorMode.Draft]: {
         display: 'block',

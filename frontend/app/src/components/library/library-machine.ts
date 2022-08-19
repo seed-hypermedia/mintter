@@ -8,6 +8,7 @@ type LibraryEvent =
 
 export var libraryMachine = createMachine(
   {
+    predictableActionArguments: true,
     initial: 'opened',
     tsTypes: {} as import('./library-machine.typegen').Typegen0,
     schema: {

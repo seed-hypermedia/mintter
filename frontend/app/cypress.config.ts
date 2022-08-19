@@ -4,6 +4,8 @@ export default defineConfig({
   component: {
     supportFile: './cypress/support/component.tsx',
     fixturesFolder: '.',
+    viewportWidth: 1280,
+    viewportHeight: 800,
     projectId: 'd3nyda',
     // specPattern: '**/*.cy.tsx',
     devServer: {

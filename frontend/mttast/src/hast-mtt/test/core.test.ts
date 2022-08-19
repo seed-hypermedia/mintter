@@ -62,7 +62,8 @@ describe('core', () => {
       ]),
     ])
 
-    const allWithIds: Array<unknown> = []
+    // eslint-disable-next-line
+    const allWithIds: Array<any> = []
     const result = toMttast(hast)
     visit(result, 'statement', (node: Statement) => {
       allWithIds.push({id: node.id})

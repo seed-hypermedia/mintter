@@ -15,6 +15,7 @@ export type FileTimeContext = {
 export const fileTimeMachine = createMachine(
   {
     initial: 'showCreateTime',
+    predictableActionArguments: true,
     tsTypes: {} as import('./filetime-machine.typegen').Typegen0,
     schema: {
       context: {} as FileTimeContext,

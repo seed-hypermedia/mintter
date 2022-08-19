@@ -46,6 +46,7 @@ export type BlockToolsMachineEvent =
 export const blockToolsMachine = createMachine(
   {
     id: 'blockToolsMachine',
+    predictableActionArguments: true,
     initial: 'inactive',
     tsTypes: {} as import('./block-tools-machine.typegen').Typegen0,
     schema: {

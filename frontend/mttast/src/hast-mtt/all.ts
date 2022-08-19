@@ -1,7 +1,8 @@
 import {one} from './one'
 import {H, HastNode} from './types'
 
-export function all(h: H, parent: HastNode): Array<unknown> {
+// eslint-disable-next-line
+export function all(h: H, parent: HastNode): Array<any> {
   const nodes = parent.children || []
   const values = []
   let index = -1

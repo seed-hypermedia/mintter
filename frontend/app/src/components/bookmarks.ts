@@ -44,6 +44,7 @@ type BookmarkListEvent =
 export function createBookmarkListMachine(client: QueryClient) {
   return createMachine(
     {
+      predictableActionArguments: true,
       initial: 'loading',
       tsTypes: {} as import('./bookmarks.typegen').Typegen0,
       schema: {
@@ -194,6 +195,7 @@ type BookmarkEvent =
 export function createBookmarkMachine(client: QueryClient, url: string) {
   return createMachine(
     {
+      predictableActionArguments: true,
       tsTypes: {} as import('./bookmarks.typegen').Typegen1,
       schema: {
         context: {} as BookmarkContext,
@@ -324,7 +326,6 @@ const [BookmarksProvider, useBookmarksService, createBookmarksSelector] =
   createInterpreterContext<
     InterpreterFrom<ReturnType<typeof createBookmarkListMachine>>
   >('Bookmarks')
-
 export {BookmarksProvider, useBookmarksService}
 
 export const useBookmarks = createBookmarksSelector(

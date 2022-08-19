@@ -37,6 +37,7 @@ export function createAuthService(client: QueryClient) {
   return createMachine(
     {
       id: 'authStateMachine',
+      predictableActionArguments: true,
       tsTypes: {} as import('./auth-machine.typegen').Typegen0,
       schema: {
         context: {} as AuthContext,

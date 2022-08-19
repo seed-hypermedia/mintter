@@ -1,61 +1,42 @@
-import {Box} from '@components/box'
-import {mockIPC} from '@tauri-apps/api/mocks'
-
-beforeEach(() => {
-  mockIPC(() => {
-    // noop
+describe('Settings', () => {
+  it('Profile', () => {
+    /**
+     * - it should render account details
+     * - it should update alias
+     * - it should update email
+     * - it should update bio
+     */
   })
-})
 
-// describe.skip('<Settings />', () => {
-//   it('Profile form', () => {
-//     let newAlias = 'demo2'
-//     let accountId = 'testaccount'
-//     let profile = {
-//       alias: 'demo',
-//       email: 'test@demo.com',
-//       bio: 'demo bio',
-//     }
-//     let updateAccount = cy.stub().resolves({
-//       id: accountId,
-//       profile: {
-//         ...profile,
-//         alias: newAlias,
-//       },
-//       devices: {
-//         foo: {
-//           peerId: 'foopeerid',
-//         },
-//       },
-//     } as Account)
+  it('Account Info', () => {
+    /**
+     * - it should render all account info data\
+     * - it should copy device address to the clipboard
+     */
+  })
 
-//     let account = {
-//       id: accountId,
-//       profile,
-//       devices: {
-//         foo: {
-//           peerId: 'foo',
-//         },
-//       },
-//     }
+  it('Payments', () => {
+    /**
+     * - it should render all payments info: lnaddress
+     * - it should render all available wallets
+     * - it should create a new wallet
+     * - it should update a wallet as default
+     * - it should update wallet alias
+     * - it should topup a specific wallet
+     * - it should topup the default wallet
+     * - it should list invoices
+     * - it should filter invoices by state
+     */
+  })
 
-//     // @ts-ignore
-//     cy.mount(<Settings updateAccount={updateAccount} />, {
-//       account,
-//     })
-//       .get('[data-testid="input-alias"]')
-//       .should('have.value', account.profile?.alias)
-//       .get('[data-testid="input-email"]')
-//       .should('have.value', account.profile?.email)
-//       .get('[data-testid="input-bio"]')
-//       .should('have.value', account.profile?.bio)
-//       .get('[data-testid="input-alias"]')
-//       .type('2')
-//       .get('[data-testid="submit"]')
-//       .click()
-//   })
-// })
-
-it('testing again', () => {
-  cy.mount(<Box css={{background: 'red', width: 30, height: 30}} />)
+  it('App Settings', () => {
+    /**
+     * - it should reset activity
+     * - library position?
+     * - theme selection?
+     * - editor element styles (font size, font family, variants...)
+     * - default page?
+     * - clear bookmarks?
+     */
+  })
 })

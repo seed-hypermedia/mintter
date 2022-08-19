@@ -7,7 +7,6 @@ import {
 } from '@components/bookmarks'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, Suspense, useState} from 'react'
-import {Toaster} from 'react-hot-toast'
 import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
 import {interpret} from 'xstate'
 import {AuthProvider} from './auth-context'
@@ -69,7 +68,6 @@ export function AppProviders({
                   </FindContextProvider>
                 </BookmarksProvider>
               </HoverProvider>
-              <Toaster position="bottom-right" />
             </Hydrate>
           </Suspense>
         </ThemeProvider>

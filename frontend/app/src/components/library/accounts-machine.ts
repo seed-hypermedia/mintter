@@ -30,6 +30,7 @@ export function createAccountMachine(account: Account) {
   return createMachine(
     {
       id: 'Account',
+      predictableActionArguments: true,
       type: 'parallel',
       tsTypes: {} as import('./accounts-machine.typegen').Typegen0,
       schema: {
@@ -154,6 +155,7 @@ type ListAccountEvent =
 export const listAccountsMachine = createMachine(
   {
     id: 'ListAccounts',
+    predictableActionArguments: true,
     type: 'parallel',
     tsTypes: {} as import('./accounts-machine.typegen').Typegen1,
     context: {
