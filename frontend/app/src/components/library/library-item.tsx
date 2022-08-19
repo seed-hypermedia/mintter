@@ -5,7 +5,7 @@ import {
 } from '@app/client'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {searchTerm} from '@app/editor/search'
+import {findContext} from '@app/editor/find'
 import {DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -128,7 +128,7 @@ export function LibraryItem({
 
   let title = state.context.title || 'Untitled Document'
 
-  const {search} = useContext(searchTerm)
+  const {search} = useContext(findContext)
 
   return (
     <Box

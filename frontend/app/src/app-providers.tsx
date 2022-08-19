@@ -12,7 +12,7 @@ import {dehydrate, Hydrate, QueryClient, QueryClientProvider} from 'react-query'
 import {interpret} from 'xstate'
 import {AuthProvider} from './auth-context'
 import {createAuthService} from './auth-machine'
-import {SearchTermProvider} from './editor/search'
+import {FindContextProvider} from './editor/find'
 import {createThemeService, ThemeProvider} from './theme'
 
 export const queryClient = new QueryClient({
@@ -64,9 +64,9 @@ export function AppProviders({
                   {
                     // TODO: @jonas check types on SearchTearmProvider
                   }
-                  <SearchTermProvider value={{search, setSearch}}>
+                  <FindContextProvider value={{search, setSearch}}>
                     {children}
-                  </SearchTermProvider>
+                  </FindContextProvider>
                 </BookmarksProvider>
               </HoverProvider>
               <Toaster position="bottom-right" />

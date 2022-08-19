@@ -3,25 +3,24 @@ import {createContext, useContext} from 'react'
 import {Node, Point, Range} from 'slate'
 import {EditorPlugin} from './types'
 
-const SEARCH_HIGHLIGHT = 'search-highlight'
+const FIND_HIGHLIGHT = 'find-highlight'
 
-export const searchTerm = createContext({
+export const findContext = createContext({
   search: '',
-  setSearch:
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    () => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setSearch: () => {},
 })
-export const SearchTermProvider = searchTerm.Provider
+export const FindContextProvider = findContext.Provider
 
-export function createSearchPlugin(): EditorPlugin {
+export function createFindPlugin(): EditorPlugin {
   return {
-    name: 'search',
+    name: 'find',
     renderLeaf:
       () =>
       ({attributes, children, leaf}) => {
-        if (leaf[SEARCH_HIGHLIGHT] && leaf.value) {
+        if (leaf[FIND_HIGHLIGHT] && leaf.value) {
           return (
-            <span className="search-highlight" {...attributes}>
+            <span className={FIND_HIGHLIGHT} {...attributes}>
               {children}
             </span>
           )
@@ -31,7 +30,7 @@ export function createSearchPlugin(): EditorPlugin {
       const [node, path] = entry
       let ranges: Range[] = []
 
-      const {search} = useContext(searchTerm)
+      const {search} = useContext(findContext)
       if (!search) return
       const re = new RegExp(search, 'gi')
 
@@ -50,7 +49,7 @@ export function createSearchPlugin(): EditorPlugin {
           ranges.push({
             anchor,
             focus,
-            [SEARCH_HIGHLIGHT]: true,
+            [FIND_HIGHLIGHT]: true,
           })
         }
       }
