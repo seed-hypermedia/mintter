@@ -451,7 +451,7 @@ function Find() {
   const searchInput = useRef<HTMLInputElement | null>(null)
 
   const handleKeyboardShortcuts = (e: KeyboardEvent) => {
-    if (e.key === 'f' && e.metaKey) {
+    if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault()
       searchInput.current?.focus()
     }
