@@ -4,12 +4,6 @@ import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {getEditorBlock} from '@app/editor/utils'
 import {useFile, useFileEditor} from '@app/file-provider'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {ObjectKeys} from '@app/utils/object-keys'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon, icons} from '@components/icon'
-import {Text} from '@components/text'
 import {
   blockquote,
   code,
@@ -26,7 +20,13 @@ import {
   text,
   ul,
   video,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {ObjectKeys} from '@app/utils/object-keys'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon, icons} from '@components/icon'
+import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 import {Fragment, useMemo} from 'react'
 import toast from 'react-hot-toast'

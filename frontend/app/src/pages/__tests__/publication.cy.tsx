@@ -3,8 +3,8 @@ import {Publication} from '@app/client'
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {queryKeys} from '@app/hooks'
+import {paragraph, statement, text} from '@app/mttast'
 import {mountProviders} from '@app/test/utils'
-import {paragraph, statement, text} from '@mintter/mttast'
 
 // TODO: FIXME
 describe.skip('Publication Page', () => {

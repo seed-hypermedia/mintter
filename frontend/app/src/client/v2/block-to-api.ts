@@ -1,5 +1,5 @@
 import {Block} from '@app/client'
-import {FlowContent} from '@mintter/mttast'
+import {FlowContent} from '@app/mttast'
 import {AnnotationSet} from './classes'
 
 // This example only deals with a single level of leaves.

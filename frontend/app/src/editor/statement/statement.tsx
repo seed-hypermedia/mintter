@@ -2,7 +2,6 @@ import {BlockToolsTarget} from '@app/editor/block-tools-target'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {blockStyles} from '@app/editor/styles'
-import {Box} from '@components/box'
 import {
   createId,
   FlowContent,
@@ -17,7 +16,8 @@ import {
   statement,
   Statement as StatementType,
   text,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {Box} from '@components/box'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'

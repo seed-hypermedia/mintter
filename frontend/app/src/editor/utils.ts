@@ -1,4 +1,4 @@
-import type {GroupingContent} from '@mintter/mttast'
+import type {GroupingContent} from '@app/mttast'
 import {
   FlowContent,
   group,
@@ -8,7 +8,7 @@ import {
   isStatement,
   Statement,
   statement,
-} from '@mintter/mttast'
+} from '@app/mttast'
 import videoParser from 'js-video-url-parser'
 import {useMemo} from 'react'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'

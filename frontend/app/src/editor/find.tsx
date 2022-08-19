@@ -1,4 +1,4 @@
-import {isParagraph} from '@mintter/mttast'
+import {isParagraph} from '@app/mttast'
 import {createContext, useContext} from 'react'
 import {Node, Point, Range} from 'slate'
 import {EditorPlugin} from './types'

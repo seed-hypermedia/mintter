@@ -1,7 +1,7 @@
 import {useHover} from '@app/editor/hover-context'
+import {ChildrenOf, Document, FlowContent} from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {ChildrenOf, Document, FlowContent} from '@mintter/mttast'
 import {PropsWithChildren, Suspense, useMemo} from 'react'
 import type {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'

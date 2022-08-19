@@ -16,15 +16,20 @@ import {Document} from '@app/client'
 //   statement,
 //   staticParagraph,
 //   text,
-// } from '@mintter/mttast'
+// } from '@app/mttast'
 // import {useActor, useInterpret} from '@xstate/react'
 // import {useEffect} from 'react'
 // import {QueryClient} from 'react-query'
 import {Editor as EditorType} from 'slate'
 
 import {createTestQueryClient} from '@app/../cypress/support/test-provider'
-import {buildEditorHook} from '@app/editor/plugin-utils'
-import {LibraryShell} from '@components/library'
+import {createDraftMachine} from '@app/draft-machine'
+import {Editor} from '@app/editor/editor'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
+import {FileProvider} from '@app/file-provider'
+import {useActor, useInterpret} from '@xstate/react'
+import {useEffect} from 'react'
 import {QueryClient} from 'react-query'
 
 before(() => {
@@ -47,7 +52,7 @@ describe('Editor', () => {
         publishTime: undefined,
       }
 
-      let editor = buildEditorHook([], 1)
+      let editor = buildEditorHook(plugins, EditorMode.Draft)
       let {client} = createTestQueryClient({
         draft,
       })
@@ -65,37 +70,34 @@ type TestEditorProps = {
 
 function TestEditor({editor, client, draft}: TestEditorProps) {
   console.log('DRAFT: TestEditor', {editor, client, draft})
-  // console.log('DRAFT:', createDraftMachine({client, draft, editor}))
-  // let service = useInterpret(
-  //   () => createDraftMachine({draft, client, editor}),
-  //   {
-  //     id: getRefFromParams('draft', draft.id, null),
-  //   },
-  // )
-  // useEffect(() => {
-  //   send('LOAD')
+  let service = useInterpret(() => createDraftMachine({draft, client, editor}))
 
-  //   return () => {
-  //     send('UNLOAD')
-  //   }
-  // }, [send])
+  let [state, send] = useActor(service)
+  useEffect(() => {
+    send('LOAD')
 
-  // if (state.matches('editing') && state.context.localDraft?.content) {
-  //   return (
-  //     <FileProvider value={service}>
-  //       <Editor
-  //         value={state.context.localDraft.content}
-  //         editor={state.context.editor}
-  //         onChange={(content) => {
-  //           if (!content && typeof content == 'string') return
-  //           send({type: 'DRAFT.UPDATE', payload: {content}})
-  //         }}
-  //       />
-  //     </FileProvider>
-  //   )
-  // }
+    return () => {
+      send('UNLOAD')
+    }
+  }, [send])
 
-  return <LibraryShell />
+  if (state.matches('editing') && state.context.localDraft?.content) {
+    return (
+      <FileProvider value={service}>
+        <Editor
+          plugins={plugins}
+          value={state.context.localDraft.content}
+          editor={state.context.editor}
+          onChange={(content) => {
+            if (!content && typeof content == 'string') return
+            send({type: 'DRAFT.UPDATE', payload: {content}})
+          }}
+        />
+      </FileProvider>
+    )
+  }
+
+  return null
 }
 
 // describe('Editor', () => {

@@ -6,11 +6,11 @@ import {
   updateListBookmarks,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
+import {FlowContent, GroupingContent} from '@app/mttast'
 import {ClientPublication} from '@app/publication-machine'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug, error} from '@app/utils/logger'
 import {createInterpreterContext} from '@app/utils/machine-utils'
-import {FlowContent, GroupingContent} from '@mintter/mttast'
 import {QueryClient} from 'react-query'
 import {visit} from 'unist-util-visit'
 import {

@@ -1,4 +1,4 @@
-import {Empty} from '@mintter/mttast'
+import {Empty} from '@app/mttast'
 import {assign, createMachine} from 'xstate'
 
 export type DeleteMachineEvent =

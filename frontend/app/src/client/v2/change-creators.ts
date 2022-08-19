@@ -1,7 +1,7 @@
 import {DocumentChange} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {getEditorBlock} from '@app/editor/utils'
-import {FlowContent, isGroupContent} from '@mintter/mttast'
+import {FlowContent, isGroupContent} from '@app/mttast'
 import {Editor, Node, Path} from 'slate'
 
 export function createMoveChange(

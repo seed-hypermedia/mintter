@@ -16,7 +16,7 @@ it('Discussion Item', () => {
 // import {blockToApi} from '@app/client/v2/block-to-api'
 // import {queryKeys} from '@app/hooks'
 // import {mountProviders} from '@app/test/utils'
-// import {embed, FlowContent, paragraph, statement, text} from '@mintter/mttast'
+// import {embed, FlowContent, paragraph, statement, text} from '@app/mttast'
 
 // describe('<DiscussionItem />', () => {
 //   let p1b1: FlowContent = statement({id: 'p1b1'}, [
