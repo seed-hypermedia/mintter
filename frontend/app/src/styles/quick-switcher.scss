@@ -1,54 +1,37 @@
 [cmdk-dialog] {
-  $gray4: hsl(0, 0%, 93%);
-  $gray5: hsl(0, 0%, 90.9%);
-  $gray6: hsl(0, 0%, 88.7%);
-  $gray8: hsl(0, 0%, 78%);
-  $gray9: hsl(0, 0%, 56.1%);
-  $gray11: hsl(0, 0%, 43.5%);
-  $gray12: hsl(0, 0%, 9%);
-
-  $grayA1: hsla(0, 0%, 0%, 0.012);
-  $grayA3: hsla(0, 0%, 0%, 0.047);
-  $grayA11: hsla(0, 0%, 0%, 0.565);
-
   z-index: 1000;
-  height: 60vh;
+  height: var(--mtt-sizes-two-thirds);
   display: flex;
   align-items: center;
   justify-content: center;
 
   [cmdk-root] {
-    max-width: 640px;
+    max-width: var(--mtt-sizes-two-thirds);
     width: 100%;
-    padding: 8px;
-    background: #ffffff;
-    border-radius: 12px;
+    padding: var(--mtt-space-3);
+    background: var(--mtt-colors-base-background-normal);
+    border-radius: var(--mtt-radii-3);
     overflow: hidden;
-    // font-family: var(--font-sans);
-    border: 1px solid $gray6;
+    border: 1px solid var(--mtt-colors-base-border-subtle);
     box-shadow: var(--mtt-shadows-menu);
     transition: transform 100ms ease;
-
-    .dark & {
-      background: rgba(22, 22, 22, 0.7);
-    }
   }
 
   [cmdk-input] {
-    // font-family: var(--font-sans);
     border: none;
-    width: 100%;
-    font-size: 17px;
-    padding: 8px 8px 16px 8px;
+    width: var(--mtt-sizes-full);
+    font-size: var(--mtt-fontSizes-3);
+    padding: var(--mtt-space-3) var(--mtt-space-3) var(--mtt-space-5)
+      var(--mtt-space-3);
     outline: none;
-    background: var(--bg);
-    color: $gray12;
-    border-bottom: 1px solid $gray6;
-    margin-bottom: 16px;
+    background: transparent;
+    color: var(--mtt-colors-base-text-high);
+    border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
+    margin-bottom: var(--mtt-space-5);
     border-radius: 0;
 
     &::placeholder {
-      color: $gray9;
+      color: var(--mtt-colors-base-normal);
     }
   }
 
@@ -57,13 +40,13 @@
 
     cursor: pointer;
     height: 48px;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--mtt-radii-3);
+    font-size: var(--mtt-fontSizes-2);
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 16px;
-    color: $gray11;
+    gap: var(--mtt-space-3);
+    padding: 0 var(--mtt-space-5);
+    color: var(--mtt-colors-base-text-low);
     user-select: none;
     will-change: background, color;
     transition: all 150ms ease;
@@ -71,27 +54,27 @@
 
     overflow: hidden;
     letter-spacing: 0.01em;
-    line-height: 1.4;
+    line-height: var(--mtt-lineHeights-2);
     text-overflow: ellipsis;
     white-space: nowrap;
 
     &[aria-selected='true'] {
-      background: $grayA3;
-      color: $gray12;
+      background: var(--mtt-colors-base-component-bg-normal);
+      color: var(--mtt-colors-base-text-high);
     }
 
     &[aria-disabled='true'] {
-      color: $gray8;
+      color: var(--mtt-colors-base-border-hover);
       cursor: not-allowed;
     }
 
     &:active {
       transition-property: background;
-      background: $gray4;
+      background: var(--mtt-colors-base-component-bg-hover);
     }
 
     & + [cmdk-item] {
-      margin-top: 4px;
+      margin-top: var(--mtt-space-2);
     }
 
     svg {
@@ -110,33 +93,33 @@
   }
 
   [cmdk-separator] {
-    height: 1px;
+    height: var(--mtt-space-1);
     width: 100%;
-    background: $gray5;
-    margin: 4px 0;
+    background: var(--mtt-colors-base-component-bg-active);
+    margin: var(--mtt-space-2) 0;
   }
 
   *:not([hidden]) + [cmdk-group] {
-    margin-top: 8px;
+    margin-top: var(--mtt-space-3);
   }
 
   [cmdk-group-heading] {
     user-select: none;
-    font-size: 12px;
-    color: $gray11;
-    padding: 0 8px;
+    font-size: var(--mtt-fontSizes-1);
+    color: var(--mtt-colors-base-text-low);
+    padding: 0 var(--mtt-space-3);
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: var(--mtt-space-3);
   }
 
   [cmdk-empty] {
-    font-size: 14px;
+    font-size: var(--mtt-fontSizes-2);
     display: flex;
     align-items: center;
     justify-content: center;
     height: 48px;
     white-space: pre-wrap;
-    color: $gray11;
+    color: var(--mtt-colors-base-text-low);
   }
 }
