@@ -22,22 +22,13 @@ export function QuickSwitcher({
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
-        setOpen((open) => !open)
-      }
-    }
-
     let unlisten: () => void | undefined
+
     listen('open_quick_switcher', () => {
       setOpen(true)
     }).then((f) => (unlisten = f))
 
-    document.addEventListener('keydown', down)
-    return () => {
-      document.removeEventListener('keydown', down)
-      unlisten?.()
-    }
+    return () => unlisten?.()
   }, [])
 
   return (
