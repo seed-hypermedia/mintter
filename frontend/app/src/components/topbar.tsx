@@ -447,28 +447,17 @@ var TopbarButton = styled('button', {
 })
 
 function Find() {
-  const {searchTerm, setSearchTerm} = useContext(findContext)
+  const {search, setSearch} = useContext(findContext)
   const searchInput = useRef<HTMLInputElement | null>(null)
 
-  const handleKeyboardShortcuts = (e: KeyboardEvent) => {
-    if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault()
-      searchInput.current?.focus()
-    }
-  }
-
   useEffect(() => {
-    window.addEventListener('keyup', handleKeyboardShortcuts)
-
     let unlisten: () => void | undefined
+
     listen('open_find', () => {
       searchInput.current?.focus()
     }).then((f) => (unlisten = f))
 
-    return () => {
-      window.removeEventListener('keyup', handleKeyboardShortcuts)
-      unlisten?.()
-    }
+    return () => unlisten?.()
   })
 
   return (
@@ -480,8 +469,8 @@ function Find() {
         autoCorrect="off"
         id="find-input"
         placeholder="Search"
-        value={searchTerm}
-        onInput={(e) => setSearchTerm(e.target.value)}
+        value={search}
+        onInput={(e) => setSearch(e.target.value)}
       />
     </label>
   )
