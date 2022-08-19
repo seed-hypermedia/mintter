@@ -467,7 +467,6 @@ function Find() {
         ref={searchInput}
         type="search"
         autoCorrect="off"
-        id="find-input"
         placeholder="Search"
         value={search}
         onInput={(e) => setSearch(e.target.value)}
