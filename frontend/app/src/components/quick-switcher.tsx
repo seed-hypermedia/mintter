@@ -42,7 +42,11 @@ export function QuickSwitcher({
 
   return (
     <Command.Dialog open={open} onOpenChange={setOpen} label="Quick Switcher">
-      <Command.Input value={search} onValueChange={setSearch} />
+      <Command.Input
+        value={search}
+        onValueChange={setSearch}
+        placeholder="Search Drafts and Publications..."
+      />
       <Command.List>
         <Command.Empty>No results found.</Command.Empty>
 
@@ -67,48 +71,46 @@ export function QuickSwitcher({
           </Command.Item>
         )}
 
-        <Command.Group heading="Drafts">
-          {drafts.map((draft) => {
-            return (
-              <Command.Item
-                key={draft.id}
-                value={draft.title}
-                onSelect={() => {
-                  setOpen(false)
+        {drafts.map((draft) => {
+          return (
+            <Command.Item
+              key={draft.id}
+              value={draft.title}
+              onSelect={() => {
+                setOpen(false)
 
-                  mainService.send({
-                    type: 'GO.TO.DRAFT',
-                    docId: draft.id,
-                  })
-                }}
-              >
-                {draft.title}
-              </Command.Item>
-            )
-          })}
-        </Command.Group>
+                mainService.send({
+                  type: 'GO.TO.DRAFT',
+                  docId: draft.id,
+                })
+              }}
+            >
+              <span cmdk-mtt-text="">{draft.title}</span>
+              <span cmdk-mtt-type="">Draft</span>
+            </Command.Item>
+          )
+        })}
 
-        <Command.Group heading="Publications">
-          {publications.map((publication) => {
-            return (
-              <Command.Item
-                key={publication.document!.id}
-                value={publication.document!.title}
-                onSelect={() => {
-                  setOpen(false)
+        {publications.map((publication) => {
+          return (
+            <Command.Item
+              key={publication.document!.id}
+              value={publication.document!.title}
+              onSelect={() => {
+                setOpen(false)
 
-                  mainService.send({
-                    type: 'GO.TO.PUBLICATION',
-                    docId: publication.document!.id,
-                    version: publication.version,
-                  })
-                }}
-              >
-                {publication.document?.title}
-              </Command.Item>
-            )
-          })}
-        </Command.Group>
+                mainService.send({
+                  type: 'GO.TO.PUBLICATION',
+                  docId: publication.document!.id,
+                  version: publication.version,
+                })
+              }}
+            >
+              <span cmdk-mtt-text="">{publication.document?.title}</span>
+              <span cmdk-mtt-type="">Publication</span>
+            </Command.Item>
+          )
+        })}
       </Command.List>
     </Command.Dialog>
   )
