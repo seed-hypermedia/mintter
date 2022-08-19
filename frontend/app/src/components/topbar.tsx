@@ -17,6 +17,7 @@ import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
 
+import {listen} from '@tauri-apps/api/event'
 import '../styles/page-search.scss'
 
 type TopbarProps = {
@@ -459,7 +460,15 @@ function Search() {
   useEffect(() => {
     window.addEventListener('keyup', handleKeyboardShortcuts)
 
-    return () => window.removeEventListener('keyup', handleKeyboardShortcuts)
+    let unlisten: () => void | undefined
+    listen('open_search', () => {
+      searchInput.current?.focus()
+    }).then((f) => (unlisten = f))
+
+    return () => {
+      window.removeEventListener('keyup', handleKeyboardShortcuts)
+      unlisten?.()
+    }
   })
 
   return (
