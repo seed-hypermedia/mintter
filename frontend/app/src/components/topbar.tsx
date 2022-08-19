@@ -2,7 +2,7 @@ import {mainService as defaultMainService} from '@app/app-providers'
 import {useAccountProfile} from '@app/auth-context'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, dropdownLabel} from '@app/editor/dropdown'
-import {searchTerm} from '@app/editor/search'
+import {findContext} from '@app/editor/find'
 import {CurrentFile, DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -18,7 +18,7 @@ import {Box} from './box'
 import {Icon} from './icon'
 
 import {listen} from '@tauri-apps/api/event'
-import '../styles/page-search.scss'
+import '../styles/find.scss'
 
 type TopbarProps = {
   copy?: typeof copyTextToClipboard
@@ -59,7 +59,7 @@ export function Topbar({mainService = defaultMainService}: TopbarProps) {
           />
         )}
       </Box>
-      <Search />
+      <Find />
       {mainState.context.currentFile ? (
         <TopbarFileActions
           mainService={mainService}
@@ -446,8 +446,8 @@ var TopbarButton = styled('button', {
   },
 })
 
-function Search() {
-  const {search, setSearch} = useContext(searchTerm)
+function Find() {
+  const {searchTerm, setSearchTerm} = useContext(findContext)
   const searchInput = useRef<HTMLInputElement | null>(null)
 
   const handleKeyboardShortcuts = (e: KeyboardEvent) => {
@@ -461,7 +461,7 @@ function Search() {
     window.addEventListener('keyup', handleKeyboardShortcuts)
 
     let unlisten: () => void | undefined
-    listen('open_search', () => {
+    listen('open_find', () => {
       searchInput.current?.focus()
     }).then((f) => (unlisten = f))
 
@@ -472,15 +472,16 @@ function Search() {
   })
 
   return (
-    <label id="search-box">
+    <label id="find">
       <Icon name="Search" />
       <input
         ref={searchInput}
         type="search"
         autoCorrect="off"
-        id="search"
-        value={search}
-        onInput={(e) => setSearch(e.target.value)}
+        id="find-input"
+        placeholder="Search"
+        value={searchTerm}
+        onInput={(e) => setSearchTerm(e.target.value)}
       />
     </label>
   )

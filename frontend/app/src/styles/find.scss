@@ -1,0 +1,55 @@
+.find-highlight {
+  background-color: var(--mtt-colors-warning-component-bg-active);
+}
+
+#find {
+  display: flex;
+  gap: var(--mtt-space-2);
+  padding-inline: var(--mtt-space-3);
+  border-radius: var(--mtt-radii-3);
+  box-sizing: border-box;
+  align-items: center;
+  border: var(--mtt-space-1) solid transparent;
+  color: var(--mtt-colors-primary-text-high);
+
+  // show an orange border around the input when it is focused
+  &:focus-within {
+    border: var(--mtt-space-1) solid var(--mtt-colors-warning-active);
+  }
+
+  // when the input lost focus, but there is still content inside it, we show a grey border instead of an orange one
+  &:not(:focus-within):has(input[type='search']:not(:placeholder-shown)) {
+    border: var(--mtt-space-1) solid var(--mtt-colors-base-border-subtle);
+  }
+
+  svg {
+    zoom: 0.75;
+  }
+
+  // downscale the search icon when the input is expanded
+  &:focus-within,
+  &:has(input[type='search']:not(:placeholder-shown)) {
+    svg {
+      zoom: 0.667;
+    }
+  }
+
+  input[type='search'] {
+    width: 0;
+    outline: none;
+    transition: width 150ms;
+    font-size: 0.8rem;
+    background-color: transparent;
+    border: none;
+    color: var(--mtt-colors-primary-text-high);
+
+    // the input is collapsed to an icon by default
+    // expad it to full size when focused or there is text inside it
+    &:focus,
+    &:not(:placeholder-shown) {
+      min-width: 20ch;
+      width: 20vw;
+      outline: none;
+    }
+  }
+}
