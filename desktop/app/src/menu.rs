@@ -33,7 +33,8 @@ pub fn get_menu() -> Menu {
     .add_native_item(MenuItem::Cut)
     .add_native_item(MenuItem::Copy)
     .add_native_item(MenuItem::Paste)
-    .add_native_item(MenuItem::SelectAll);
+    .add_native_item(MenuItem::SelectAll)
+    .add_item(CustomMenuItem::new("find", "Find...").accelerator("CmdOrControl+F"));
 
   let view_menu =
     Menu::new().add_item(CustomMenuItem::new("reload", "Reload").accelerator("CmdOrControl+R"));
@@ -103,6 +104,9 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
       );
 
       tauri::api::dialog::message(Some(event.window()), &package_info.name, message);
+    }
+    "find" => {
+      event.window().emit("open_search", ())?;
     }
     id => bail!("Unhandled menu item \"{}\"", id),
   }
