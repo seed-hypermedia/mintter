@@ -106,7 +106,7 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
       tauri::api::dialog::message(Some(event.window()), &package_info.name, message);
     }
     "find" => {
-      event.window().emit("open_search", ())?;
+      event.window().emit("open_find", ())?;
     }
     id => bail!("Unhandled menu item \"{}\"", id),
   }
