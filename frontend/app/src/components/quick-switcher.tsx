@@ -23,7 +23,7 @@ export function QuickSwitcher({
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && e.metaKey) {
+      if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
         setOpen((open) => !open)
       }
     }
