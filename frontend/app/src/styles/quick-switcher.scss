@@ -26,8 +26,8 @@
     outline: none;
     background: transparent;
     color: var(--mtt-colors-base-text-high);
-    border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
-    margin-bottom: var(--mtt-space-5);
+    border-block-end: 1px solid var(--mtt-colors-base-border-subtle);
+    margin-block-end: var(--mtt-space-5);
     border-radius: 0;
 
     &::placeholder {
