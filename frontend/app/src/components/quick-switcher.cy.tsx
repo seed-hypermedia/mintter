@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+
 // TODO: implement once e2e tests work again
 describe.skip('QuickSwitcher', () => {
   it('lists all drafts and publications', () => {})

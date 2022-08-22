@@ -83,16 +83,21 @@ export function QuickSwitcher({
         })}
 
         {publications.map((publication) => {
+          const docId = publication.document?.id
+          const title = publication.document?.tile
+
+          if (!docId || !title) return null
+
           return (
             <Command.Item
-              key={publication.document!.id}
-              value={publication.document!.title}
+              key={docId}
+              value={title}
               onSelect={() => {
                 setOpen(false)
 
                 mainService.send({
                   type: 'GO.TO.PUBLICATION',
-                  docId: publication.document!.id,
+                  docId,
                   version: publication.version,
                 })
               }}
