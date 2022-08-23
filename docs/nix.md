@@ -21,7 +21,7 @@ Install Nix following the [official instructions](https://nixos.org/download.htm
 
 - If you are on macOS Catalina or above you'll have to create a separate APFS volume that should be mounted at `/nix`.
 The installer should guide you through the process. Don't be scared.
-
+- Check if `$HOME/.nix-profile` exists. if not, you need to execute `nix-env -i nix`. This will install nix using Nix, and you need to do it because of some issues when installing new versions of the system. after this command finish executing, you should have this path available.
 - Check your shell profile. The installer should've added a new line that would source Nix profile into your shell. If it doesn't happen, just add it yourself:
 
 ```
