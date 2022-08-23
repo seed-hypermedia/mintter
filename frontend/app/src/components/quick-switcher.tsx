@@ -66,7 +66,7 @@ export function QuickSwitcher({
           return (
             <Command.Item
               key={draft.id}
-              value={draft.title}
+              value={draft.title || 'Untitled Draft'}
               onSelect={() => {
                 setOpen(false)
 
@@ -76,7 +76,7 @@ export function QuickSwitcher({
                 })
               }}
             >
-              <span cmdk-mtt-text="">{draft.title}</span>
+              <span cmdk-mtt-text="">{draft.title || 'Untitled Draft'}</span>
               <span cmdk-mtt-type="">Draft</span>
             </Command.Item>
           )
@@ -84,7 +84,7 @@ export function QuickSwitcher({
 
         {publications.map((publication) => {
           const docId = publication.document?.id
-          const title = publication.document?.tile
+          const title = publication.document?.title || 'Untitled Publication'
 
           if (!docId || !title) return null
 
