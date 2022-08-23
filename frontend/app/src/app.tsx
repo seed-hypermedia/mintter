@@ -11,7 +11,6 @@ import 'show-keys'
 import {error, info, warn} from 'tauri-plugin-log-api'
 import {MainPageShell, MainWindowShell} from './pages/window-components'
 import {globalStyles} from './stitches.config'
-import './styles/quick-switcher.scss'
 
 setLogger({
   log: (...args) => info(args.toString()),
