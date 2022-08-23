@@ -2,12 +2,12 @@ import {
   mainService as defaultMainService,
   mainService,
 } from '@app/app-providers'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {PublicationWithRef} from '@app/main-machine'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {isMintterLink} from '@app/utils/is-mintter-link'
 import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -346,10 +346,6 @@ export function wrapLink(
       Transforms.move(editor, {distance: 1, unit: 'offset'})
     })
   }
-}
-
-function isMintterLink(text: string) {
-  return text.startsWith(MINTTER_LINK_PREFIX)
 }
 
 function hasBlockId(text: string) {

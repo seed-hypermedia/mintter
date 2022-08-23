@@ -1669,6 +1669,7 @@ __metadata:
     "@xstate/test": 0.5.1
     autosize: 5.0.1
     browser-headers: 0.4.1
+    cmdk: ^0.1.19
     cypress: 9.7.0
     eslint: 8.20.0
     eslint-config-preact: 1.3.0
@@ -4629,6 +4630,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cmdk@npm:^0.1.19":
+  version: 0.1.19
+  resolution: "cmdk@npm:0.1.19"
+  dependencies:
+    "@radix-ui/react-dialog": 0.1.7
+    command-score: 0.1.2
+  peerDependencies:
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: eaf6552247e586d591d4fb81759b5dc434e70c0f30f59004a4d962d89f29cb40b9c9a9c0a9c36f588423a780cacf4e63846d91e621c702a76220f3c423e2a021
+  languageName: node
+  linkType: hard
+
 "co@npm:3.1.0":
   version: 3.1.0
   resolution: "co@npm:3.1.0"
@@ -4730,6 +4744,13 @@ __metadata:
     table-layout: ^1.0.2
     typical: ^5.2.0
   checksum: 8261d4e5536eb0bcddee0ec5e89c05bb2abd18e5760785c8078ede5020bc1c612cbe28eb6586f5ed4a3660689748e5aaad4a72f21566f4ef39393694e2fa1a0b
+  languageName: node
+  linkType: hard
+
+"command-score@npm:0.1.2":
+  version: 0.1.2
+  resolution: "command-score@npm:0.1.2"
+  checksum: b733fd552d7e569070da3d474b1ed5f54785fdf3dd61670002e0a00b2eff1a547c2b6d3af3683c012f4f39c6455f9e7ee5e9997a79c08048ec37ec2195d3df08
   languageName: node
   linkType: hard
 

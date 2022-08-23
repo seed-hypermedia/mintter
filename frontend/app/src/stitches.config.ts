@@ -437,9 +437,6 @@ export const globalStyles = globalCss({
     display: 'block',
     maxInlineSize: '$full',
   },
-  '#root': {
-    isolation: 'isolate',
-  },
   '::selection': {
     backgroundColor: 'lightblue',
   },
