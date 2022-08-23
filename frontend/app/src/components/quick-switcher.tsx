@@ -4,8 +4,8 @@ import {listen} from '@tauri-apps/api/event'
 import {useActor} from '@xstate/react'
 import {Command} from 'cmdk'
 import {useEffect, useState} from 'react'
+import '../styles/quick-switcher.scss'
 import {getIdsfromUrl} from '../utils/get-ids-from-url'
-import './styles/quick-switcher.scss'
 
 type QuickSwitcherProps = {
   mainService?: typeof defaultMainService
