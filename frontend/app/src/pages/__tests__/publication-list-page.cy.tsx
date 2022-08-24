@@ -1,4 +1,4 @@
-import {App} from '@app/app'
+import {Root} from '@app/root'
 import {mountProviders} from '@app/test/utils'
 
 // TODO: FIXME
@@ -8,6 +8,6 @@ describe.skip('PublicationList', () => {
       initialRoute: '/publications',
     })
 
-    render(<App />)
+    render(<Root />)
   })
 })

@@ -1,19 +1,14 @@
-import {mainService as defaultMainService} from '@app/app-providers'
+import {useDraftList, useMain} from '@app/main-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {MainWindow} from '@app/pages/window-components'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {Text} from '@components/text'
-import {useActor} from '@xstate/react'
 
-type DraftListProps = {
-  mainService?: typeof defaultMainService
-}
-
-export function DraftList({mainService = defaultMainService}: DraftListProps) {
-  let [mainState] = useActor(mainService)
-  let drafts = mainState.context.draftList
+export function DraftList() {
+  const mainService = useMain()
+  let drafts = useDraftList()
 
   return (
     <MainWindow>
@@ -54,12 +49,7 @@ export function DraftList({mainService = defaultMainService}: DraftListProps) {
         >
           {drafts.length ? (
             drafts.map((draft) => (
-              <LibraryItem
-                isNew={false}
-                key={draft.id}
-                fileRef={draft.ref}
-                mainService={mainService}
-              />
+              <LibraryItem isNew={false} key={draft.id} fileRef={draft.ref} />
             ))
           ) : (
             <Box

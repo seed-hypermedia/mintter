@@ -12,7 +12,8 @@ export function blockToApi(
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
   let leaves = flattenLeaves(slateBlock.children[0].children)
 
-  const {type, id, ...attributes} = slateBlock
+  // eslint-disable-next-line
+  const {type, id, children, ...attributes} = slateBlock
 
   // const out = new Block(slateBlock.id, slateBlock.type);
   const out: Block = {

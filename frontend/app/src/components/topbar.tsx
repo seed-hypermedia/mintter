@@ -1,4 +1,3 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {useAccountProfile} from '@app/auth-context'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, dropdownLabel} from '@app/editor/dropdown'
@@ -17,20 +16,21 @@ import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
 
+import {useLibrary, useMain} from '@app/main-context'
 import {listen} from '@tauri-apps/api/event'
 import '../styles/find.scss'
 
-type TopbarProps = {
-  copy?: typeof copyTextToClipboard
-  currentFile?: CurrentFile | null
-  mainService?: typeof defaultMainService
-}
+// type TopbarProps = {
+//   copy?: typeof copyTextToClipboard
+//   currentFile?: CurrentFile | null
+// }
 
 const draggableProps = {
   'data-tauri-drag-region': true,
 }
 
-export function Topbar({mainService = defaultMainService}: TopbarProps) {
+export function Topbar() {
+  const mainService = useMain()
   let [mainState] = useActor(mainService)
 
   return (
@@ -61,12 +61,9 @@ export function Topbar({mainService = defaultMainService}: TopbarProps) {
       </Box>
       <Find />
       {mainState.context.currentFile ? (
-        <TopbarFileActions
-          mainService={mainService}
-          fileRef={mainState.context.currentFile}
-        />
+        <TopbarFileActions fileRef={mainState.context.currentFile} />
       ) : null}
-      <TopbarLibrarySection mainService={mainService} />
+      <TopbarLibrarySection />
     </Box>
   )
 }
@@ -99,17 +96,10 @@ function FileTitle({fileRef}: {fileRef: CurrentFile}) {
   )
 }
 
-function TopbarLibrarySection({
-  mainService,
-}: {
-  mainService: typeof defaultMainService
-}) {
-  let [state, send] = useActor(mainService)
+function TopbarLibrarySection() {
+  const mainService = useMain()
+  const library = useLibrary()
   let profile = useAccountProfile()
-
-  function toggleLibrary() {
-    state.context.library.send('LIBRARY.TOGGLE')
-  }
 
   return (
     <Box
@@ -121,7 +111,7 @@ function TopbarLibrarySection({
         data-testid="history-back"
         onClick={(e) => {
           e.preventDefault()
-          send('GO.BACK')
+          mainService.send('GO.BACK')
         }}
       >
         <Icon name="ArrowChevronLeft" color="muted" size="2" />
@@ -130,7 +120,7 @@ function TopbarLibrarySection({
         data-testid="history-forward"
         onClick={(e) => {
           e.preventDefault()
-          send('GO.FORWARD')
+          mainService.send('GO.FORWARD')
         }}
       >
         <Icon name="ArrowChevronRight" color="muted" size="2" />
@@ -153,7 +143,10 @@ function TopbarLibrarySection({
             height: '$full',
             paddingHorizontal: '$3',
           }}
-          onClick={toggleLibrary}
+          onClick={(e) => {
+            e.preventDefault()
+            library?.send('LIBRARY.TOGGLE')
+          }}
           data-tauri-drag-region
         >
           <Text size="2">{profile?.alias}</Text>
@@ -164,22 +157,11 @@ function TopbarLibrarySection({
   )
 }
 
-function TopbarFileActions({
-  fileRef,
-  mainService = defaultMainService,
-}: {
-  fileRef: CurrentFile
-  mainService: typeof defaultMainService
-}) {
+function TopbarFileActions({fileRef}: {fileRef: CurrentFile}) {
   if (fileRef.id.startsWith('draft-')) {
     return <DraftActions fileRef={fileRef as DraftRef} />
   } else {
-    return (
-      <PublicationActions
-        mainService={mainService}
-        fileRef={fileRef as PublicationRef}
-      />
-    )
+    return <PublicationActions fileRef={fileRef as PublicationRef} />
   }
 }
 
@@ -210,18 +192,16 @@ function DraftActions({fileRef}: {fileRef: DraftRef}) {
 function PublicationActions({
   fileRef,
   copy = copyTextToClipboard,
-  mainService = defaultMainService,
 }: {
   fileRef: PublicationRef
   copy?: typeof copyTextToClipboard
-  mainService: typeof defaultMainService
 }) {
   let [state] = useActor(fileRef)
-  let bookmarkService = useBookmarksService()
-
+  const bookmarkService = useBookmarksService()
+  const mainService = useMain()
   async function onCopyReference() {
     await copy(
-      `${MINTTER_LINK_PREFIX}${state.context.publication?.document?.id}/${state.context.publication.version}`,
+      `${MINTTER_LINK_PREFIX}${state.context.publication?.document?.id}/${state.context.publication?.version}`,
     )
     toast.success('Document Reference copied successfully', {
       position: 'top-center',

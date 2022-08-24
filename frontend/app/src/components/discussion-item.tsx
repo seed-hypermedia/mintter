@@ -1,60 +1,50 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {Link} from '@app/client'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
-import {PublicationRef, PublicationWithRef} from '@app/main-machine'
+import {useMain, usePublicationList} from '@app/main-context'
+import {PublicationRef} from '@app/main-machine'
 import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
 import {FileTime} from '@components/file-time'
 import {Text} from '@components/text'
-import {useActor, useSelector} from '@xstate/react'
-import {useEffect} from 'react'
+import {useActor} from '@xstate/react'
+import {useEffect, useMemo} from 'react'
 
-function useDiscussionFileRef(
-  mainService: typeof defaultMainService,
-  link: Link,
-) {
-  return useSelector(mainService, (state) => {
+function useDiscussionFileRef(link: Link) {
+  let pubList = usePublicationList()
+  return useMemo(memoFileRef, [link, pubList])
+
+  function memoFileRef() {
     if (!link.source) return undefined
     let linkRef = getRefFromParams(
       'pub',
       link.source.documentId,
       link.source.version,
     )
-    let pubList: Array<PublicationWithRef> = state.context.publicationList
     let selectedPublication = pubList.find((p) => p.ref.id == linkRef)
     if (selectedPublication) {
       return selectedPublication.ref
     }
-  })
+  }
 }
 
 type DiscussionItemProps = {
   link: Link
-  mainService?: typeof defaultMainService
 }
 
-export function DiscussionItem({
-  link,
-  mainService = defaultMainService,
-}: DiscussionItemProps) {
-  let fileRef = useDiscussionFileRef(mainService, link)
+export function DiscussionItem({link}: DiscussionItemProps) {
+  let fileRef = useDiscussionFileRef(link)
 
   if (fileRef) {
-    return <DiscussionEditor fileRef={fileRef} mainService={mainService} />
+    return <DiscussionEditor fileRef={fileRef} />
   }
 
   return null
 }
 
-function DiscussionEditor({
-  fileRef,
-  mainService,
-}: {
-  fileRef: PublicationRef
-  mainService: typeof defaultMainService
-}) {
+function DiscussionEditor({fileRef}: {fileRef: PublicationRef}) {
+  const mainService = useMain()
   let [state] = useActor(fileRef)
 
   useEffect(() => {

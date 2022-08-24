@@ -1,4 +1,3 @@
-import {App} from '@app/app'
 import {Document, Publication} from '@app/client'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'

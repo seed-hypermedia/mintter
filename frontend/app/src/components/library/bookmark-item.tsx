@@ -1,6 +1,6 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {useMain} from '@app/main-context'
 import {FlowContent} from '@app/mttast'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
@@ -16,13 +16,12 @@ import {ActorRefFrom} from 'xstate'
 
 export function BookmarkItem({
   itemRef,
-  mainService = defaultMainService,
 }: {
   itemRef: ActorRefFrom<ReturnType<typeof createBookmarkMachine>>
-  mainService?: typeof defaultMainService
 }) {
   const [state] = useActor(itemRef)
   const bookmarks = useBookmarksService()
+  const mainService = useMain()
 
   const deleteService = useInterpret(() => deleteFileMachine, {
     actions: {

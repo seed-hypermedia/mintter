@@ -1,7 +1,4 @@
-import {
-  AppProviders,
-  mainService as defaultMainService,
-} from '@app/app-providers'
+import {AppProvider} from '@app/app-providers'
 import {
   Account,
   Document,
@@ -12,6 +9,7 @@ import {
   Publication,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
+import {RootProvider} from '@app/root'
 import {ReactNode} from 'react'
 import {QueryClient} from 'react-query'
 ;(function mockTauriIpc() {
@@ -45,7 +43,6 @@ type MountProvidersProps = {
   publication?: Publication
   publicationList?: Array<Publication>
   initialRoute?: string
-  mainService?: typeof defaultMainService
 }
 
 export function mountProviders({
@@ -136,9 +133,9 @@ export function mountProviders({
 
   function render(ui: ReactNode) {
     return cy.mount(
-      <AppProviders client={client} initialRoute={initialRoute}>
-        {ui}
-      </AppProviders>,
+      <RootProvider client={client}>
+        <AppProvider initialRoute={initialRoute}>{ui}</AppProvider>
+      </RootProvider>,
     )
   }
 

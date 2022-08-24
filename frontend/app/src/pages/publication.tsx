@@ -1,5 +1,3 @@
-import {AppError} from '@app/app'
-import {mainService as defaultMainService} from '@app/app-providers'
 import {BlockTools} from '@app/editor/block-tools'
 import {BlockToolsProvider} from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
@@ -8,6 +6,7 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {PublicationRef} from '@app/main-machine'
 import {MainWindow} from '@app/pages/window-components'
+import {AppError} from '@app/root'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
@@ -19,7 +18,6 @@ import {ErrorBoundary} from 'react-error-boundary'
 
 type PublicationProps = {
   publicationRef: PublicationRef
-  mainService?: typeof defaultMainService
 }
 
 function usePublication(ref: PublicationRef) {
@@ -34,10 +32,7 @@ function usePublication(ref: PublicationRef) {
   return useActor(ref)
 }
 
-export default function Publication({
-  publicationRef,
-  mainService = defaultMainService,
-}: PublicationProps) {
+export default function Publication({publicationRef}: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
   const blockToolsService = useInterpret(() => blockToolsMachine)
   if (state.matches('publication.fetching')) {
@@ -112,10 +107,7 @@ export default function Publication({
                   {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
                   Discussion/Citations
                 </Button>
-                <Discussion
-                  service={publicationRef}
-                  mainService={mainService}
-                />
+                <Discussion service={publicationRef} />
               </Box>
             </BlockToolsProvider>
           </FileProvider>

@@ -1,9 +1,9 @@
-import {App} from '@app/app'
 import {Publication} from '@app/client'
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {queryKeys} from '@app/hooks'
 import {paragraph, statement, text} from '@app/mttast'
+import {Root} from '@app/root'
 import {mountProviders} from '@app/test/utils'
 
 // TODO: FIXME
@@ -48,6 +48,6 @@ describe.skip('Publication Page', () => {
       },
     )
 
-    render(<App />)
+    render(<Root />)
   })
 })

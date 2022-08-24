@@ -11,7 +11,7 @@ import {sanitizeSchema, toMttast} from '..'
 import {isFlowContent} from '../..'
 import * as expectations from './expectations'
 
-const fixtures = path.join('src', 'hast-mtt', 'test', 'fixtures')
+const fixtures = path.join('src', 'mttast', 'hast-mtt', 'test', 'fixtures')
 
 describe('Fixtures', () => {
   fs.readdirSync(fixtures)
@@ -19,14 +19,21 @@ describe('Fixtures', () => {
     .forEach(check)
 })
 
-const processor = unified().use(rehypeParse).use(sanitize, sanitizeSchema).freeze()
+const processor = unified()
+  .use(rehypeParse)
+  .use(sanitize, sanitizeSchema)
+  .freeze()
 
 function check(name: string) {
   test(`<${name} />`, () => {
-    const input = String(fs.readFileSync(path.join(fixtures, name, 'index.html')))
+    const input = String(
+      fs.readFileSync(path.join(fixtures, name, 'index.html')),
+    )
     let config
     try {
-      config = JSON.parse(String(fs.readFileSync(path.join(fixtures, name, 'index.json'))))
+      config = JSON.parse(
+        String(fs.readFileSync(path.join(fixtures, name, 'index.json'))),
+      )
     } catch {
       // TODO: implement error
     }

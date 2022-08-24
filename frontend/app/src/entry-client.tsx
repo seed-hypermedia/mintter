@@ -3,8 +3,8 @@ import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import {ReactQueryDevtools} from 'react-query/devtools'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
-import {App} from './app'
-import {AppProviders} from './app-providers'
+
+import {Root, RootProvider} from './root'
 
 var container = document.getElementById('root')
 var root = createRoot(container)
@@ -17,9 +17,9 @@ onUpdaterEvent(({error, status}) => {
 
 root.render(
   <StrictMode>
-    <AppProviders>
-      <App />
+    <RootProvider>
+      <Root />
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
-    </AppProviders>
+    </RootProvider>
   </StrictMode>,
 )

@@ -1,0 +1,25 @@
+import {createMainPageService} from '@app/main-machine'
+import {InterpreterFrom} from 'xstate'
+import {createInterpreterContext} from './utils/machine-utils'
+
+export type MainMachine = ReturnType<typeof createMainPageService>
+export type MainService = InterpreterFrom<MainMachine>
+
+var [MainProvider, useMain, createMainSelector] =
+  createInterpreterContext<InterpreterFrom<MainMachine>>('Main')
+
+export {MainProvider, useMain}
+
+export var useLibrary = createMainSelector((state) => state.context.library)
+export var useActivity = createMainSelector((state) => state.context.activity)
+export var useCurrentFile = createMainSelector(
+  (state) => state.context.currentFile,
+)
+export var usePublicationList = createMainSelector(
+  (state) => state.context.publicationList,
+)
+export var useDraftList = createMainSelector((state) => state.context.draftList)
+
+export var useRecents = createMainSelector((state) => state.context.recents)
+export var useMainChildren = createMainSelector((state) => state.children)
+export var useParams = createMainSelector((state) => state.context.params)

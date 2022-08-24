@@ -23,6 +23,9 @@ type AuthEvent =
       type: 'UPDATE.PROFILE'
       profile: Profile
     }
+  | {
+      type: 'RETRY'
+    }
 
 type AuthService = {
   fetchAccount: {
@@ -56,11 +59,12 @@ export function createAuthService(client: QueryClient) {
           invoke: {
             id: 'authMachine-fetch',
             src: 'fetchInfo',
+            onError: 'errored',
           },
           on: {
             'REPORT.DEVICE.INFO.PRESENT': {
               target: 'loggedIn',
-              actions: 'assignAccountInfo',
+              actions: ['assignAccountInfo', 'clearRetries', 'clearError'],
             },
             'REPORT.DEVICE.INFO.MISSING': [
               {
@@ -68,8 +72,12 @@ export function createAuthService(client: QueryClient) {
                 target: 'retry',
               },
               {
-                target: 'loggedOut',
-                actions: 'removeAccountInfo',
+                target: 'errored',
+                actions: [
+                  'removeAccountInfo',
+                  'clearRetries',
+                  'assignRetryError',
+                ],
               },
             ],
           },
@@ -77,7 +85,7 @@ export function createAuthService(client: QueryClient) {
         retry: {
           entry: ['incrementRetry'],
           after: {
-            200: {
+            RETRY_DELAY: {
               target: 'checkingAccount',
             },
           },
@@ -126,6 +134,14 @@ export function createAuthService(client: QueryClient) {
           },
         },
         loggedOut: {},
+        errored: {
+          on: {
+            RETRY: {
+              target: 'checkingAccount',
+              actions: ['clearRetries', 'clearError'],
+            },
+          },
+        },
       },
     },
     {
@@ -173,11 +189,32 @@ export function createAuthService(client: QueryClient) {
           },
         }),
         assignAccountError: assign({
-          errorMessage: (_, event) => `Fetch Account Error: ${event.data}`,
+          errorMessage: (_, event) =>
+            `[Auth]: Fetch Account Error: ${event.data}`,
         }),
         assignErrorFromUpdate: assign({
-          errorMessage: (_, event) => `Update Profile Error: ${event.data}`,
+          errorMessage: (_, event) =>
+            `[Auth]: Update Profile Error: ${event.data}`,
         }),
+        assignRetryError: assign({
+          // eslint-disable-next-line
+          errorMessage: (_) =>
+            '[Auth]: Limit retries exceeded. Please check yout account',
+        }),
+        clearError: assign({
+          // eslint-disable-next-line
+          errorMessage: (_) => '',
+        }),
+        clearRetries: assign({
+          // eslint-disable-next-line
+          retries: (_) => 0,
+        }),
+      },
+      delays: {
+        RETRY_DELAY: (context) => {
+          const exponent = context.retries ** 2
+          return exponent * 200
+        },
       },
     },
   )

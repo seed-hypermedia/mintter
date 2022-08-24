@@ -1,4 +1,4 @@
-import {mainService as defaultMainService} from '@app/app-providers'
+import {useMain, useRecents} from '@app/main-context'
 import {DraftRef, PublicationRef} from '@app/main-machine'
 import {createPublicationMachine} from '@app/publication-machine'
 import {css} from '@app/stitches.config'
@@ -7,23 +7,14 @@ import {Section} from '@components/library/section'
 import {useActor} from '@xstate/react'
 import {StateFrom} from 'xstate'
 
-export function RecentsSection({
-  mainService = defaultMainService,
-}: {
-  mainService?: typeof defaultMainService
-}) {
-  let [mainState] = useActor(mainService)
-  let {recents} = mainState.context
+export function RecentsSection() {
+  let recents = useRecents()
 
   return (
     <Section title="Recents" icon="Clock">
       {recents.length
         ? recents.map((fileRef) => (
-            <RecentItem
-              key={fileRef.id}
-              fileRef={fileRef}
-              mainService={mainService}
-            />
+            <RecentItem key={fileRef.id} fileRef={fileRef} />
           ))
         : null}
     </Section>
@@ -47,13 +38,10 @@ var listItemStyle = css({
 
 type RecentItemProps = {
   fileRef: PublicationRef | DraftRef
-  mainService?: typeof defaultMainService
 }
 
-function RecentItem({
-  fileRef,
-  mainService = defaultMainService,
-}: RecentItemProps) {
+function RecentItem({fileRef}: RecentItemProps) {
+  const mainService = useMain()
   let [state] = useActor(fileRef)
 
   function goToDocument(event: MouseEvent) {

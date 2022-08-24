@@ -1,5 +1,5 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {forceSync} from '@app/client/daemon'
+import {useMain} from '@app/main-context'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -7,7 +7,7 @@ import {Icon, icons} from '@components/icon'
 import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
 import {Tooltip} from '@components/tooltip'
-import {useActor, useSelector} from '@xstate/react'
+import {useActor} from '@xstate/react'
 import {PropsWithChildren} from 'react'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
@@ -39,20 +39,11 @@ export function LibraryShell({children, ...props}: PropsWithChildren<unknown>) {
   )
 }
 
-function useIsLibraryOpen(
-  mainService: typeof defaultMainService = defaultMainService,
-) {
-  let library = useSelector(mainService, (state) => state.context.library)
-  return useSelector(library, (state) => state.matches('opened'))
-}
+export function Library() {
+  const mainService = useMain()
+  var [mainState] = useActor(mainService)
 
-export function Library({
-  mainService = defaultMainService,
-}: {
-  mainService?: typeof defaultMainService
-}) {
-  const isOpen = useIsLibraryOpen(mainService)
-  var [mainState, mainSend] = useActor(mainService)
+  let isOpen = mainState.context.library?.getSnapshot()?.can('LIBRARY.CLOSE')
 
   async function handleSync() {
     await forceSync()
@@ -128,13 +119,13 @@ export function Library({
 
           <LibraryButton
             icon="File"
-            onClick={() => mainSend('GO.TO.PUBLICATIONLIST')}
+            onClick={() => mainService.send('GO.TO.PUBLICATIONLIST')}
             title="Files"
             active={mainState.matches('routes.publicationList')}
           />
           <LibraryButton
             icon="PencilAdd"
-            onClick={() => mainSend('GO.TO.DRAFTLIST')}
+            onClick={() => mainService.send('GO.TO.DRAFTLIST')}
             title="Drafts"
             active={mainState.matches('routes.draftList')}
           />

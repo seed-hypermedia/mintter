@@ -1,25 +1,21 @@
-import {mainService as defaultMainService} from '@app/app-providers'
+import {useActivity, useMain, usePublicationList} from '@app/main-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {MainWindow} from '@app/pages/window-components'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {Text} from '@components/text'
-import {useActor, useSelector} from '@xstate/react'
+import {useMemo} from 'react'
 
-type PublicationListProps = {
-  mainService?: typeof defaultMainService
-}
+export function PublicationList() {
+  const mainService = useMain()
+  let activityService = useActivity()
+  let visitList = useMemo<Array<string>>(() => {
+    if (!activityService) return []
+    return activityService.getSnapshot()?.context.visitList
+  }, [activityService])
 
-export function PublicationList({
-  mainService = defaultMainService,
-}: PublicationListProps) {
-  let [mainState] = useActor(mainService)
-  let visitList = useSelector(
-    mainState.context.activity,
-    (state) => state.context.visitList,
-  )
-  let pubList = mainState.context.publicationList
+  let pubList = usePublicationList()
   return (
     <MainWindow>
       <Box
@@ -56,10 +52,9 @@ export function PublicationList({
               <LibraryItem
                 isNew={
                   !visitList.includes(
-                    `${publication.document.id}/${publication.version}`,
+                    `${publication.document?.id}/${publication.version}`,
                   )
                 }
-                mainService={mainService}
                 fileRef={publication.ref}
                 key={publication.version}
               />

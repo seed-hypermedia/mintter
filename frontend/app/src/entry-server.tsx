@@ -1,12 +1,12 @@
 import {renderToStringAsync} from 'react-async-ssr'
-import {App} from './app'
-import {AppProviders} from './app-providers'
+import {RootProvider} from './app-providers'
+import {Root} from './root'
 
 // eslint-disable-next-line
 export function render(url: string, context: any) {
   return renderToStringAsync(
-    <AppProviders>
-      <App />
-    </AppProviders>,
+    <RootProvider>
+      <Root />
+    </RootProvider>,
   )
 }

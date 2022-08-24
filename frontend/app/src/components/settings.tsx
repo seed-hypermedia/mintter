@@ -1,11 +1,11 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
+import {useActivity} from '@app/main-context'
 import {styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import {useActor, useSelector} from '@xstate/react'
+import {useActor} from '@xstate/react'
 import {FormEvent} from 'react'
 import {Box} from './box'
 import {Button} from './button'
@@ -267,15 +267,9 @@ function AccountInfo() {
   )
 }
 
-function AppSettings({
-  mainService = defaultMainService,
-}: {
-  mainService?: typeof defaultMainService
-}) {
-  let activityService = useSelector(
-    mainService,
-    (state) => state.context.activity,
-  )
+function AppSettings() {
+  let activityService = useActivity()
+
   return (
     <Box
       css={{

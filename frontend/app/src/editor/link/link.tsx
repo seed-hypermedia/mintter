@@ -1,9 +1,6 @@
-import {
-  mainService as defaultMainService,
-  mainService,
-} from '@app/app-providers'
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {useMain, usePublicationList} from '@app/main-context'
 import {PublicationWithRef} from '@app/main-machine'
 import type {Embed, Link as LinkType} from '@app/mttast'
 import {embed, isLink, link, text} from '@app/mttast'
@@ -114,8 +111,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
 })
 
 function insertDocumentLink(editor: Editor, url: string) {
-  let mainContext = mainService.getSnapshot()
-  let publicationList = mainContext.context.publicationList
+  let publicationList = usePublicationList()
 
   let publication: PublicationWithRef = publicationList.find(
     (pub: PublicationWithRef) => {
@@ -159,7 +155,6 @@ const StyledLink = styled(
 
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
-  mainService?: typeof defaultMainService
 }
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
@@ -177,7 +172,7 @@ function RenderMintterLink(
   props: LinkProps,
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
-  let mainService = props.mainService ?? defaultMainService
+  const mainService = useMain()
   let hoverService = useHover()
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 

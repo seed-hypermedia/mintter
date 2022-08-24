@@ -1,9 +1,9 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {useBlockTools} from '@app/editor/block-tools-context'
 import {Editor} from '@app/editor/editor'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {embedStyles} from '@app/editor/styles'
+import {MainService, useMain} from '@app/main-context'
 import {PublicationWithRef} from '@app/main-machine'
 import {Embed as EmbedType, FlowContent, isEmbed} from '@app/mttast'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
@@ -58,16 +58,15 @@ function Embed({
   element,
   attributes,
   children,
-  mainService = defaultMainService,
   mode,
 }: RenderElementProps & {
   mode: EditorMode
   element: EmbedType
-  mainService: typeof defaultMainService
 }) {
+  const mainService = useMain()
   let btService = useBlockTools()
   let [docId, version, blockId] = getIdsfromUrl(element.url)
-  let [state] = useMachine(() => createEmbedMachine(element.url))
+  let [state] = useMachine(() => createEmbedMachine(element.url, mainService))
   let hoverService = useHover()
 
   useEffect(() => {
@@ -156,10 +155,7 @@ type EmbedMachineServices = {
   }
 }
 
-function createEmbedMachine(
-  url: string,
-  mainService: typeof defaultMainService = defaultMainService,
-) {
+function createEmbedMachine(url: string, mainService: MainService) {
   /** @xstate-layout N4IgpgJg5mDOIC5RgLYCNIFoUEMDGAFgJYB2YAdAGZgAuhpUACgK5oA2ReONRA9iQGII-CqQBuvANYUYNAKLpILdp258SiUAAdesIj36aQAD0SYArAGZyANgCMAFgDsAJgAcATks2fHgAzmADQgAJ5mdnZO5Ob2Ng4eHnaWfn6ebgC+6cGoGBDY+MRkVLT0JEysHFwGgmAATrW8teRabNyUjSjksgq5ypVqhkggOnrVRqYImHZ+duRudi52MX4JDi42lkGhiBGzLs5+my6Wlm4O8y6Z2Yp5uKUUlKQQAEJsvHiSQiLk4lIytD1IK93pIjCN9OpxohLB5zOQHJs3G44pYHGtzPtgmEEFE3N4bE41sknJZCV5zFdwDd8vcqE9gR8BHUGk0Wm0Ol0ATcGaChuCxkMJnZ-OQXDFEjMxYs4ljELj8YTjn4SU5zDNMlkQCReBA4EYclg7oUHiVCuUVFVIXzdBDBqAJpgHFZbI5FWcnPNzG5ZZMFrM-LEnV61R4fE5KQbbgVSA96W8PmCbQL7YgXH4HORCQ44o51u5Fj6pi4PNFA363OY1usI9SjTGfhA2GBE6MrSmEPY-OREmiSZWvG5UoWIjY5jYXE5YV4bMGzjXcjTjeRmY1IC3bRpBamTuQ7BWSe5nASvT6Fhn9k5Dql3DO7AT54bo2R18mTGZnFF7M41u7Pd7tpMUqlneuwrE6CyWBq6RAA */
   return createMachine(
     {

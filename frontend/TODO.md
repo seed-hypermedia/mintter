@@ -1,6 +1,5 @@
 # TODOs
 
-- make sure the main machine is not invoked before the auth check account
 - add new mintter app logo passed from jonas
 - lndhub
   - fetch the wallets from the auth machine
@@ -18,3 +17,4 @@
   - show invoices status per document?
   - add block metadata to invoices so we can overlay all the payment info on each document
 - when clicking nested transclusions it opens both documents?
+- profile search provider re-renders
