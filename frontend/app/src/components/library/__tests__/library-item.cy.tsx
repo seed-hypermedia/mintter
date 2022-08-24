@@ -1,3 +1,4 @@
+import {createTestQueryClient} from '@app/../cypress/support/test-provider'
 import {Document, Publication} from '@app/client'
 import {createDraftMachine} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
@@ -26,13 +27,13 @@ describe('<LibraryItem />', () => {
   let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
 
   beforeEach(() => {
-    let {client, render} = mountProviders({
+    let {client} = createTestQueryClient({
       publication,
     })
     copyTextToClipboard = cy.stub()
 
     let editor = buildEditorHook(plugins, EditorMode.Publication)
-    render(
+    cy.mount(
       <LibraryItem
         isNew={false}
         fileRef={spawn(
@@ -41,6 +42,9 @@ describe('<LibraryItem />', () => {
         )}
         copy={copyTextToClipboard}
       />,
+      {
+        client,
+      },
     )
   })
   it('default item', () => {
@@ -105,6 +109,7 @@ describe('<LibraryItem /> with Draft', () => {
           `draft-${draft.id}`,
         )}
         copy={copyTextToClipboard}
+        deleteDraft={deleteDraft}
       />,
     )
   })
