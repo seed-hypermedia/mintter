@@ -1,18 +1,16 @@
-import {MainPage} from '@app/pages/main-page'
-import {mountProviders} from '@app/test/utils'
+import {createTestQueryClient} from '@app/../cypress/support/test-provider'
+import {DraftList} from '@app/pages/draft-list-page'
 
 // TODO: FIXME
-describe.skip('DraftList', () => {
+describe('DraftList', () => {
   // TODO: maybe there are two mainServices started here, I'm getting DraftList and PubList queryClient errors (hitting the )
   it('Should show an empty list', () => {
-    const {render, mainService} = mountProviders({
-      initialRoute: '/drafts',
+    let {client} = createTestQueryClient({
       draftList: [],
-      publicationList: [],
     })
 
-    render(<MainPage mainService={mainService} />).get(
-      '[data-testid="topbar-title"]',
-    )
+    cy.mount(<DraftList />, {
+      client,
+    }).get('[data-testid="draft-list-page-title"]')
   })
 })

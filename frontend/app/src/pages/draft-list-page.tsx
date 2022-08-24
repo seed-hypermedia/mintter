@@ -28,7 +28,7 @@ export function DraftList() {
             justifyContent: 'space-between',
           }}
         >
-          <Text size="4" fontWeight="bold">
+          <Text size="4" fontWeight="bold" data-testid="draft-list-page-title">
             Drafts
           </Text>
           <Button

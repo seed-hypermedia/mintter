@@ -20,7 +20,13 @@ type TestMockData = {
   account?: Partial<Account>
   draft?: Document
   publication?: Publication
+  draftList?: Array<Document>
 }
+
+type TestClientReturn = TestMockData & {
+  client: QueryClient
+}
+
 export function createTestQueryClient(mocks: TestMockData = {}) {
   let client = new QueryClient({
     defaultOptions: {
@@ -33,6 +39,10 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
       },
     },
   })
+
+  let values: TestClientReturn = {
+    client,
+  }
 
   let peerId = 'testPeerID'
   let defaultAccount = {
@@ -53,6 +63,8 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     ? deepmerge(defaultAccount, mocks.account)
     : defaultAccount
 
+  values.account = account
+
   client?.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], {
     peerId,
     accountId: account.id,
@@ -63,6 +75,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   if (mocks.draft) {
     client.setQueryData([queryKeys.GET_DRAFT, mocks.draft.id], mocks.draft)
+    values.draft = mocks.draft
   }
 
   if (mocks.publication) {
@@ -74,14 +87,17 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
       ],
       mocks.publication,
     )
+    values.publication = mocks.publication
+  }
+
+  if (mocks.draftList?.length) {
+    client.setQueryData([queryKeys.GET_DRAFT_LIST], mocks.draftList)
+    values.draftList = mocks.draftList
   }
 
   client.invalidateQueries = cy.spy()
 
-  return {
-    client,
-    account,
-  }
+  return values
 }
 
 export function TestProvider({client, children}: TestProviderProps) {
@@ -122,4 +138,21 @@ export type CustomMountOptions = {
 export type TestProviderProps = CustomMountOptions & {
   children: React.ReactNode
   client: QueryClient
+}
+
+window.TAURI_IPC = function () {
+  // noop
+}
+window.__TAURI_IPC__ = function TauriIPCMock() {
+  // noop
+}
+window.__TAURI_METADATA__ = {
+  __currentWindow: {
+    label: 'test',
+  },
+  __windows: [
+    {
+      label: 'test',
+    },
+  ],
 }
