@@ -12,7 +12,7 @@ import EditorPage from './editor'
 import Publication from './publication'
 import {PublicationList} from './publication-list-page'
 
-export function MainPage() {
+export default function MainPage() {
   const mainService = useMain()
   const [state] = useActor(mainService)
 

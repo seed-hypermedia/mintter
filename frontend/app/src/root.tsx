@@ -1,4 +1,3 @@
-import {App} from '@app/app'
 import {AuthProvider, useAuthService} from '@app/auth-context'
 import {createAuthService} from '@app/auth-machine'
 import {createThemeService, ThemeProvider} from '@app/theme'
@@ -21,6 +20,8 @@ import {MainPageShell, MainWindowShell} from './pages/window-components'
 import {globalStyles} from './stitches.config'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
+const AppProvider = lazy(() => import('./app-provider'))
+const MainPage = lazy(() => import('./pages/main-page'))
 // app component lazy
 
 export function Root() {
@@ -40,7 +41,9 @@ export function Root() {
           location.reload()
         }}
       >
-        <App />
+        <AppProvider>
+          <MainPage />
+        </AppProvider>
       </ErrorBoundary>
     )
   }

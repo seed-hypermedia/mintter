@@ -1,4 +1,4 @@
-import {AppProvider} from '@app/app-providers'
+import AppProvider from '@app/app-provider'
 import {
   Account,
   Document,

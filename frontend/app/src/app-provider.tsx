@@ -15,7 +15,7 @@ type AppProviderProps = {
   initialRoute?: string
 }
 
-export function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
+function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
   const client = useQueryClient()
   const mainService = useInterpret(() => createMainPageService({client}))
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
@@ -37,3 +37,5 @@ export function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
     </MainProvider>
   )
 }
+
+export default AppProvider

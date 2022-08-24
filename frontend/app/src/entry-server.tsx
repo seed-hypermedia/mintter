@@ -1,12 +1,14 @@
+import {StrictMode} from 'react'
 import {renderToStringAsync} from 'react-async-ssr'
-import {RootProvider} from './app-providers'
-import {Root} from './root'
+import {Root, RootProvider} from './root'
 
 // eslint-disable-next-line
 export function render(url: string, context: any) {
   return renderToStringAsync(
-    <RootProvider>
-      <Root />
-    </RootProvider>,
+    <StrictMode>
+      <RootProvider>
+        <Root />
+      </RootProvider>
+    </StrictMode>,
   )
 }
