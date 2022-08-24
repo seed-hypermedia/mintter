@@ -1,3 +1,4 @@
+import {activityMachine} from '@app/activity-machine'
 import {useActivity, useMain, usePublicationList} from '@app/main-context'
 import {pageListStyle} from '@app/pages/list-page'
 import {MainWindow} from '@app/pages/window-components'
@@ -5,15 +6,16 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {Text} from '@components/text'
-import {useMemo} from 'react'
+import {useSelector} from '@xstate/react'
+import {ActorRefFrom} from 'xstate'
 
 export function PublicationList() {
   const mainService = useMain()
   let activityService = useActivity()
-  let visitList = useMemo<Array<string>>(() => {
-    if (!activityService) return []
-    return activityService.getSnapshot()?.context.visitList
-  }, [activityService])
+  let visitList = useSelector(
+    activityService as ActorRefFrom<typeof activityMachine>,
+    (state) => state.context.visitList,
+  )
 
   let pubList = usePublicationList()
   return (

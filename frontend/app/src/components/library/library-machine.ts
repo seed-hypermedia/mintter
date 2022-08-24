@@ -1,4 +1,3 @@
-import {info} from '@app/utils/logger'
 import {createMachine} from 'xstate'
 
 type LibraryEvent =
@@ -6,37 +5,33 @@ type LibraryEvent =
   | {type: 'LIBRARY.CLOSE'}
   | {type: 'LIBRARY.TOGGLE'}
 
-export var libraryMachine = createMachine(
-  {
-    predictableActionArguments: true,
-    initial: 'opened',
-    tsTypes: {} as import('./library-machine.typegen').Typegen0,
-    schema: {
-      events: {} as LibraryEvent,
-    },
-    states: {
-      opened: {
-        on: {
-          'LIBRARY.CLOSE': {
-            target: 'closed',
-            actions: 'closing',
-          },
-          'LIBRARY.TOGGLE': 'closed',
+export var libraryMachine = createMachine({
+  predictableActionArguments: true,
+  tsTypes: {} as import('./library-machine.typegen').Typegen0,
+  schema: {
+    events: {} as LibraryEvent,
+  },
+  initial: 'opened',
+  states: {
+    opened: {
+      on: {
+        'LIBRARY.CLOSE': {
+          target: 'closed',
+        },
+        'LIBRARY.TOGGLE': {
+          target: 'closed',
         },
       },
-      closed: {
-        on: {
-          'LIBRARY.OPEN': 'opened',
-          'LIBRARY.TOGGLE': 'opened',
+    },
+    closed: {
+      on: {
+        'LIBRARY.OPEN': {
+          target: 'opened',
+        },
+        'LIBRARY.TOGGLE': {
+          target: 'opened',
         },
       },
     },
   },
-  {
-    actions: {
-      closing: (context, event) => {
-        info(`CLOSING LIBRARY! - ${JSON.stringify({context, event})}`)
-      },
-    },
-  },
-)
+})

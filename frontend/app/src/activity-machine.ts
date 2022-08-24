@@ -27,67 +27,73 @@ export const activityMachine = createMachine(
     context: {
       visitList: [],
     },
-    invoke: {
-      id: 'getActivityList',
-      src: 'getActivityList',
-      onDone: {
-        actions: ['assignList'],
-      },
-      onError: {
-        actions: (_, event) => {
-          error('Activity Error: no list found', event.data)
-        },
-      },
-    },
     initial: 'idle',
     states: {
-      idle: {},
+      idle: {
+        invoke: {
+          id: 'getActivityList',
+          src: 'getActivityList',
+          onDone: {
+            actions: ['assignList'],
+          },
+          onError: {
+            actions: (_, event) => {
+              error('Activity Error: no list found', event.data)
+            },
+          },
+        },
+      },
+      ready: {},
     },
     on: {
-      'VISIT.PUBLICATION': [
-        {
-          cond: 'hasVisited',
-        },
-        {
-          actions: ['updateList', 'persist'],
-        },
-      ],
+      'VISIT.PUBLICATION': {
+        actions: ['updateList', 'persist'],
+      },
+
       RESET: {
-        actions: ['resetList'],
+        actions: ['resetList', 'persist'],
       },
     },
   },
   {
     guards: {
-      hasVisited: (context, event) => {
-        return context.visitList.includes(event.url)
-      },
+      // hasVisited: (context, event) => {
+      //   console.log('hasVisited', context, event)
+      //   return context.visitList.includes(event.url)
+      // },
     },
     services: {
-      getActivityList: () =>
-        store.get<Array<string>>(ACTIVITY).then((res) => {
+      getActivityList: () => {
+        return store.get<Array<string>>(ACTIVITY).then((res) => {
+          console.log('getActivityList', res)
           if (!res) return []
           return res
-        }),
+        })
+      },
     },
     actions: {
       assignList: assign({
-        visitList: (_, event) => event.data as Array<string>,
+        visitList: (_, event) => {
+          console.log('assignList', event)
+          return event.data as Array<string>
+        },
       }),
       updateList: assign({
         visitList: (context, event) => {
+          console.log('visitList', context.visitList)
           let newList = [...context.visitList, event.url]
-          store.set(ACTIVITY, newList)
           return newList
         },
       }),
       resetList: assign({
         /*eslint-disable */
         visitList: function (): Array<string> {
-          store.set(ACTIVITY, [])
           return []
         },
       }),
+      persist: (context) => {
+        store.set(ACTIVITY, context.visitList)
+      },
     },
   },
 )

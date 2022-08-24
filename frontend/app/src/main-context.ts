@@ -1,5 +1,11 @@
-import {createMainPageService} from '@app/main-machine'
-import {InterpreterFrom} from 'xstate'
+import {createDraftMachine} from '@app/draft-machine'
+import {
+  createMainPageService,
+  DraftRef,
+  PublicationRef,
+} from '@app/main-machine'
+import {createPublicationMachine} from '@app/publication-machine'
+import {ActorRefFrom, InterpreterFrom} from 'xstate'
 import {createInterpreterContext} from './utils/machine-utils'
 
 export type MainMachine = ReturnType<typeof createMainPageService>
@@ -23,3 +29,16 @@ export var useDraftList = createMainSelector((state) => state.context.draftList)
 export var useRecents = createMainSelector((state) => state.context.recents)
 export var useMainChildren = createMainSelector((state) => state.children)
 export var useParams = createMainSelector((state) => state.context.params)
+
+type FileActor = ActorRefFrom<
+  ReturnType<typeof createPublicationMachine | typeof createDraftMachine>
+>
+
+export function useFileFromRef(id: string): PublicationRef | DraftRef {
+  let file = createMainSelector((state) => {
+    if (id.startsWith('pub') || id.startsWith('draft'))
+      return state.children[id] as FileActor
+  })() as FileActor
+
+  return file
+}

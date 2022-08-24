@@ -11,11 +11,9 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import {createPublicationMachine} from '@app/publication-machine'
-import {debug} from '@app/utils/logger'
 import {getRefFromParams} from '@app/utils/machine-utils'
 import {libraryMachine} from '@components/library/library-machine'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
-import isEqual from 'fast-deep-equal'
 import Navaid from 'navaid'
 import {QueryClient} from 'react-query'
 import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
@@ -30,12 +28,12 @@ export type CurrentFile = PublicationRef | DraftRef
 
 export type MainPageContext = {
   params: {
-    docId: string
-    version: string | null
-    blockId: string | null
+    docId?: string
+    version?: string
+    blockId?: string
     replace: boolean
   }
-  recents: Array<CurrentFile>
+  recents: Array<string>
   library: ActorRefFrom<typeof libraryMachine> | null
   activity: ActorRefFrom<typeof activityMachine> | null
   publicationList: Array<PublicationWithRef>
@@ -149,22 +147,20 @@ export function createMainPageService({
   return createMachine(
     {
       predictableActionArguments: true,
-      context: {
-        params: {
-          docId: '',
-          version: null,
-          blockId: null,
-          replace: false,
-        },
-        recents: [],
-        library: null,
-        currentFile: null,
-        publicationList: [],
-        draftList: [],
-        errorMessage: '',
-        activity: null,
-      },
-      entry: ['spawnUIMachines'],
+      context: () =>
+        ({
+          params: {
+            replace: false,
+          },
+          recents: [],
+
+          currentFile: null,
+          publicationList: [],
+          draftList: [],
+          errorMessage: '',
+          library: null,
+          activity: null,
+        } as MainPageContext),
       tsTypes: {} as import('./main-machine.typegen').Typegen0,
       schema: {
         context: {} as MainPageContext,
@@ -195,6 +191,7 @@ export function createMainPageService({
         },
         errored: {},
         routes: {
+          entry: ['spawnUIMachines'],
           initial: 'idle',
           states: {
             idle: {
@@ -215,36 +212,27 @@ export function createMainPageService({
             },
             editor: {
               tags: ['topbar', 'library'],
-              initial: 'validating',
+              initial: 'idle',
               states: {
-                validating: {
-                  always: [
-                    {
-                      actions: [
-                        'pushToRecents',
-                        'setDraftParams',
-                        'setDraftAsCurrent',
-                      ],
-                      cond: 'isMetaEventDifferent',
-                      target: 'valid',
-                    },
-                    {
-                      target: 'error',
-                    },
-                  ],
-                },
-                valid: {
+                idle: {
                   entry: 'pushDraftRoute',
                   tags: ['documentView', 'draft'],
                   on: {
-                    'GO.TO.DRAFT': [
-                      {
-                        actions: 'pushToRecents',
-                        cond: 'isEventDifferent',
-                        target: 'validating',
-                      },
-                      {},
-                    ],
+                    // 'GO.TO.DRAFT': [
+                    //   {
+                    //     cond: 'isEventDifferent',
+                    //     target: 'validating',
+                    //   },
+                    //   {},
+                    // ],
+                    'COMMIT.PUBLISH': {
+                      actions: [
+                        'removeDraftFromList',
+                        'asssignNewPublicationValues',
+                        'removeDraftFromRecents',
+                      ],
+                      target: '#main-page.routes.publication.idle',
+                    },
                   },
                 },
                 error: {
@@ -254,39 +242,25 @@ export function createMainPageService({
             },
             publication: {
               tags: ['topbar', 'library'],
-              initial: 'validating',
+              initial: 'idle',
+              exit: [],
               states: {
-                validating: {
-                  always: [
-                    {
-                      actions: [
-                        'pushToRecents',
-                        'pushToActivity',
-                        'setPublicationParams',
-                        'setPublicationAsCurrent',
-                      ],
-                      cond: 'isMetaEventDifferent',
-                      target: 'valid',
-                    },
-                    {
-                      target: 'error',
-                    },
-                  ],
-                },
-                valid: {
+                idle: {
                   entry: 'pushPublicationRoute',
                   tags: ['documentView', 'publication'],
                   on: {
-                    'GO.TO.PUBLICATION': [
-                      {
-                        cond: 'isEventDifferent',
-                        target: 'validating',
-                      },
-                      {},
-                    ],
-                    'GO.TO.DRAFT': {
-                      target: '#main-page.routes.editor',
-                    },
+                    // 'GO.TO.PUBLICATION': [
+                    //   {
+                    //     target: 'validating',
+                    //   },
+                    //   {},
+                    // ],
+                    // 'GO.TO.DRAFT': {
+                    //   target: '#main-page.routes.editor',
+                    //   actions: [
+                    //     ''
+                    //   ]
+                    // },
                   },
                 },
                 error: {
@@ -341,7 +315,7 @@ export function createMainPageService({
                 onDone: [
                   {
                     actions: 'assignNewDraftValues',
-                    target: '#main-page.routes.editor.valid',
+                    target: '#main-page.routes.editor.idle',
                   },
                 ],
               },
@@ -365,9 +339,20 @@ export function createMainPageService({
             },
             'GO.TO.DRAFT': {
               target: '.editor',
+              actions: [
+                'assignDraftParams',
+                'assignCurrentDraft',
+                'pushDraftToRecents',
+              ],
             },
             'GO.TO.PUBLICATION': {
               target: '.publication',
+              actions: [
+                'assignPublicationParams',
+                'assignCurrentPublication',
+                'pushPublicationToRecents',
+                'pushToActivity',
+              ],
             },
             'CREATE.NEW.DRAFT': {
               target: '.createDraft',
@@ -377,10 +362,6 @@ export function createMainPageService({
             },
             'COMMIT.EDIT.PUBLICATION': {
               actions: 'editPublication',
-            },
-            'COMMIT.PUBLISH': {
-              actions: ['removeDraftFromList', 'asssignNewPublicationValues'],
-              target: '.publication.valid',
             },
           },
         },
@@ -395,19 +376,7 @@ export function createMainPageService({
       },
     },
     {
-      guards: {
-        isMetaEventDifferent: (context, _, meta) => {
-          // eslint-disable-next-line
-          let {type, ...eventParams} = meta.state.event
-          return !isEqual(context.params, eventParams)
-        },
-        isEventDifferent: (context, event) => {
-          // eslint-disable-next-line
-          let {type, ...eventParams} = event
-          let result = !isEqual(context.params, eventParams)
-          return result
-        },
-      },
+      guards: {},
       actions: {
         // @ts-ignore
         spawnUIMachines: assign({
@@ -450,79 +419,79 @@ export function createMainPageService({
             draftList,
           }
         }),
-
-        setDraftAsCurrent: assign({
-          currentFile: (context) => {
-            let draft = context.draftList.find(
-              (d) =>
-                d.ref.id ==
-                getRefFromParams('draft', context.params.docId, null),
+        assignCurrentPublication: assign({
+          currentFile: (context, event) => {
+            return (
+              context.publicationList.find(
+                (p) =>
+                  p.ref.id ==
+                  getRefFromParams('pub', event.docId, event.version),
+              )?.ref ?? null
             )
-            return draft?.ref ?? null
           },
         }),
-        setPublicationAsCurrent: assign({
-          currentFile: (context) => {
-            let publication = context.publicationList.find(
-              (p) =>
-                p.ref.id ==
-                getRefFromParams(
-                  'pub',
-                  context.params.docId,
-                  context.params.version,
-                ),
+        assignCurrentDraft: assign({
+          currentFile: (context, event) => {
+            return (
+              context.draftList.find(
+                (d) => d.ref.id == getRefFromParams('draft', event.docId, null),
+              )?.ref ?? null
             )
-            return publication?.ref ?? null
           },
+        }),
+        pushPublicationToRecents: assign({
+          recents: (context, event) => {
+            let set = new Set<string>(context.recents)
+            let fileRef = getRefFromParams('pub', event.docId, event.version)
+            if (set.has(fileRef)) {
+              set.delete(fileRef)
+            }
+            set.add(fileRef)
+
+            return [...set]
+          },
+        }),
+        pushDraftToRecents: assign({
+          recents: (context, event) => {
+            let set = new Set<string>(context.recents)
+            let fileRef = getRefFromParams('draft', event.docId, null)
+            if (set.has(fileRef)) {
+              set.delete(fileRef)
+            }
+            set.add(fileRef)
+
+            return [...set]
+          },
+        }),
+        assignPublicationParams: assign({
+          params: (_, event) => ({
+            docId: event.docId,
+            version: event.version,
+            blockId: event.blockId,
+            replace: !!event.replace,
+          }),
+        }),
+        assignDraftParams: assign({
+          params: (_, event) => ({
+            docId: event.docId,
+            version: undefined,
+            blockId: undefined,
+            replace: !!event.replace,
+          }),
         }),
         openWindow: async (context, event) => {
           openWindow(event.path)
         },
-        pushToActivity: (context, e, meta) => {
-          let {event} = meta.state
-
+        pushToActivity: (context, event) => {
+          let url = `${event.docId}/${event.version}`
           context.activity?.send({
             type: 'VISIT.PUBLICATION',
-            url: `${event.docId}/${event.version}`,
+            url,
           })
         },
-        pushToRecents: assign(({currentFile, recents}) => {
-          if (currentFile) {
-            let _set = new Set<typeof currentFile>(recents)
-            if (_set.has(currentFile)) _set.delete(currentFile)
-            _set.add(currentFile)
-            return {
-              recents: [..._set].reverse(),
-            }
-          } else {
-            return {}
-          }
-        }),
-        // @ts-ignore
         clearCurrentFile: assign({
-          currentFile: null,
-        }),
-        setDraftParams: assign({
-          params: (context, e, meta) => {
-            // @ts-ignore
-            let {event} = meta.state
-            return {
-              ...context.params,
-              docId: event.docId,
-              replace: event.replace,
-            }
-          },
-        }),
-        setPublicationParams: assign({
-          params: (c, e, meta) => {
-            let {event} = meta.state
-            return {
-              docId: event.docId,
-              version: event.version,
-              blockId: event.blockId,
-              replace: event.replace,
-            }
-          },
+          // eslint-disable-next-line
+          currentFile: (c) => null,
         }),
         pushPublicationRoute: send(
           (context) => {
@@ -553,11 +522,12 @@ export function createMainPageService({
           },
           {to: 'router'},
         ),
-        clearParams: assign(() => ({
+        // eslint-disable-next-line
+        clearParams: assign((x) => ({
           params: {
-            docId: '',
-            version: null,
-            blockId: null,
+            docId: undefined,
+            version: undefined,
+            blockId: undefined,
             replace: false,
           },
         })),
@@ -588,14 +558,12 @@ export function createMainPageService({
         },
         updateDraftList: assign((context, event) => {
           let draftId = getRefFromParams('draft', event.documentId, null)
-          debug('UPDATE DRAFTLIST', draftId)
           return {
             draftList: context.draftList.filter((d) => d.ref.id != draftId),
           }
         }),
         updatePublicationList: assign((context, event) => {
           let pubId = getRefFromParams('pub', event.documentId, event.version)
-          debug('UPDATE PUBLIST', pubId)
           return {
             publicationList: context.publicationList.filter(
               (p) => p.ref.id != pubId,
@@ -604,7 +572,7 @@ export function createMainPageService({
         }),
         removeFileFromRecentList: assign({
           recents: (context, event) =>
-            context.recents.filter((ref) => !ref.id.includes(event.documentId)),
+            context.recents.filter((ref) => !ref.includes(event.documentId)),
         }),
         assignNewDraftValues: assign((context, event) => {
           let editor = buildEditorHook(plugins, EditorMode.Draft)
@@ -616,8 +584,8 @@ export function createMainPageService({
             params: {
               docId: event.data.id,
               replace: true,
-              version: null,
-              blockId: null,
+              version: undefined,
+              blockId: undefined,
             },
             currentFile: draftRef,
             draftList: [
@@ -640,7 +608,7 @@ export function createMainPageService({
             }),
             getRefFromParams(
               'pub',
-              event.publication.document.id,
+              event.documentId,
               event.publication.version,
             ),
           )
@@ -649,7 +617,7 @@ export function createMainPageService({
             params: {
               docId: event.publication.document?.id,
               version: event.publication.version,
-              blockId: null,
+              blockId: undefined,
               replace: true,
             },
             currentFile: publicationRef,
@@ -665,8 +633,15 @@ export function createMainPageService({
         removeDraftFromList: assign({
           draftList: (context, event) => {
             let ref = getRefFromParams('draft', event.documentId, null)
-            debug('REMOVE DRAFT:', ref)
             return context.draftList.filter((d) => d.ref.id != ref)
+          },
+        }),
+        removeDraftFromRecents: assign({
+          recents: (context, event) => {
+            let ref = getRefFromParams('draft', event.documentId, null)
+            let _set = new Set(context.recents)
+            _set.delete(ref)
+            return [..._set]
           },
         }),
       },
@@ -737,7 +712,7 @@ export function createMainPageService({
                 ? sendBack({
                     type: 'GO.TO.PUBLICATION',
                     docId: params.docId,
-                    version: params.version,
+                    version: params.version as string,
                     blockId: params.blockId,
                   })
                 : sendBack('ROUTE.NOT.FOUND')

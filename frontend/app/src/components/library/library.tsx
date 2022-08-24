@@ -1,14 +1,16 @@
 import {forceSync} from '@app/client/daemon'
-import {useMain} from '@app/main-context'
+import {useLibrary, useMain} from '@app/main-context'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
+import {libraryMachine} from '@components/library/library-machine'
 import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
 import {Tooltip} from '@components/tooltip'
-import {useActor} from '@xstate/react'
+import {useActor, useSelector} from '@xstate/react'
 import {PropsWithChildren} from 'react'
+import {ActorRefFrom} from 'xstate'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
@@ -42,8 +44,11 @@ export function LibraryShell({children, ...props}: PropsWithChildren<unknown>) {
 export function Library() {
   const mainService = useMain()
   var [mainState] = useActor(mainService)
-
-  let isOpen = mainState.context.library?.getSnapshot()?.can('LIBRARY.CLOSE')
+  const library = useLibrary()
+  const isOpen = useSelector(
+    library as ActorRefFrom<typeof libraryMachine>,
+    (state) => state.matches('opened'),
+  )
 
   async function handleSync() {
     await forceSync()
@@ -61,6 +66,8 @@ export function Library() {
             width: isOpen ? '$library-width' : 0,
             position: 'relative',
             paddingHorizontal: isOpen ? '$3' : 0,
+            transition: 'width 0.15s ease',
+            willChange: 'width',
           }}
         >
           <Box

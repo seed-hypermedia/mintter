@@ -7,7 +7,7 @@ type BlockToolsMachineContext = {
   currentBounds: Array<[key: string, rect: DOMRect]>
   mouseY: number
   observer?: IntersectionObserver
-  currentId?: string
+  currentId: string
   rootElm: HTMLElement | null
 }
 export type BlockToolsMachineEvent =
@@ -57,7 +57,7 @@ export const blockToolsMachine = createMachine(
       visibleBlocks: [],
       currentBounds: [],
       mouseY: 0,
-      currentId: undefined,
+      currentId: '',
       observer: undefined,
       rootElm: document.querySelector(':root') as HTMLElement,
     },
@@ -201,6 +201,9 @@ export const blockToolsMachine = createMachine(
       },
     },
     actions: {
+      clearCurrentId: assign({
+        currentId: () => '',
+      }),
       addEntry: assign({
         visibleBlocks: (context, event) => {
           let tMap = new Map(context.visibleBlocks)

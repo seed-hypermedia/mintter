@@ -99,6 +99,7 @@ function FileTitle({fileRef}: {fileRef: CurrentFile}) {
 function TopbarLibrarySection() {
   const mainService = useMain()
   const library = useLibrary()
+  console.log('library', library)
   let profile = useAccountProfile()
 
   return (
