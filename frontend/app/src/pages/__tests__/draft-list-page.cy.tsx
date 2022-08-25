@@ -9,31 +9,16 @@ describe('DraftList', () => {
       draftList: [],
     })
 
-    let createNewDraft = cy.stub()
-
-    cy.mount(
-      <DraftList
-        createNewDraft={createNewDraft}
-        createDraftInNewWindow={createNewDraft}
-      />,
-      {
-        client,
-      },
-    )
-      .get('[data-testid="draft-list-page-title"]')
+    cy.mount(<DraftList />, {
+      client,
+    })
+      .get('[data-testid="filelist-title"]')
       .contains('Drafts')
-      .get('[data-testid="empty-list-box"]')
-      .contains('No Publications yet.')
-      .get('[data-testid="create-draft-button"]')
-      .click()
-      .get('[data-testid="create-draft-button-in-window"]')
-      .click()
-      .then(() => {
-        expect(createNewDraft).callCount(2)
-      })
+      .get('[data-testid="filelist-empty-label"]')
+      .contains('You have no Drafts yet.')
   })
 
-  it.only('should render the draft list returned', () => {
+  it('should render the draft list returned', () => {
     let {client} = createTestQueryClient({
       draftList: [
         {
@@ -59,10 +44,11 @@ describe('DraftList', () => {
       ],
     })
 
-    console.log('client', client)
-
     cy.mount(<DraftList />, {
       client,
     })
+      .get('[data-testid="filelist-list"]')
+      .children()
+      .should('have.length', 2)
   })
 })
