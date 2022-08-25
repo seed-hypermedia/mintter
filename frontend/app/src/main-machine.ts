@@ -185,6 +185,7 @@ export function createMainPageService({
               target: 'routes',
             },
             'REPORT.FILES.ERROR': {
+              actions: ['assignError'],
               target: 'errored',
             },
           },
@@ -386,8 +387,11 @@ export function createMainPageService({
         removePublicationFromCitations: () => {
           // TODO.
         },
-        // assignError: (_, event) => {},
+        assignError: (_, event) => {
+          console.log('error: ', JSON.stringify(event))
+        },
         assignFiles: assign(function assignFilesPredicate(_, event) {
+          console.log('assignFiles', event)
           let draftList = event.draftList.map(function draftListMapper(draft) {
             let editor = buildEditorHook(plugins, EditorMode.Draft)
             return {
@@ -654,6 +658,7 @@ export function createMainPageService({
             client.fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts()),
           ])
             .then(function filesResponse([pubList, draftList]) {
+              console.log('filesResponse', pubList, draftList)
               sendBack({
                 type: 'REPORT.FILES.SUCCESS',
                 publicationList: pubList.publications.sort((a, b) => {
@@ -662,15 +667,20 @@ export function createMainPageService({
                       b.document?.updateTime.getSeconds() -
                       a.document?.updateTime.getSeconds()
                     )
-                  } else {
+                  } else if (a.document?.createTime && b.document?.createTime) {
                     return (
-                      b?.document?.createTime?.getSeconds() -
-                      a?.document?.createTime?.getSeconds()
+                      b?.document.createTime.getSeconds() -
+                      a?.document.createTime.getSeconds()
                     )
+                  } else {
+                    return true
                   }
                 }),
                 draftList: draftList.documents.sort((a, b) => {
-                  return b.createTime.getSeconds() - a.createTime.getSeconds()
+                  if (a.createTime && b.createTime) {
+                    return b.createTime.getSeconds() - a.createTime.getSeconds()
+                  }
+                  return true
                 }),
               })
             })

@@ -19,6 +19,7 @@ import './commands'
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
+import {globalStyles} from '@app/stitches.config'
 import {mount, MountOptions, MountReturn} from 'cypress/react'
 import {
   createTestQueryClient,
@@ -50,7 +51,7 @@ declare global {
 Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
   let {client: customClient, account, ...mountOptions} = options
   let client = customClient ?? createTestQueryClient({account}).client
-
+  globalStyles()
   const wrapped = <TestProvider client={client}>{component}</TestProvider>
   // const wrapped = <div>{component}</div>
 

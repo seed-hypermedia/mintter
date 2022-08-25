@@ -5,10 +5,22 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 
-export function DraftList() {
+export function DraftList({
+  createNewDraft,
+  createDraftInNewWindow,
+}: {
+  createNewDraft?: () => void
+  createDraftInNewWindow?: () => void
+}) {
   const mainService = useMain()
+  const [state] = useActor(mainService)
+  console.log('state', state.value)
   let drafts = useDraftList()
+
+  createDraftInNewWindow ||= () => mainService.send('COMMIT.OPEN.WINDOW')
+  createNewDraft ||= () => mainService.send('CREATE.NEW.DRAFT')
 
   return (
     <MainWindow>
@@ -35,7 +47,8 @@ export function DraftList() {
             size="1"
             variant="ghost"
             color="muted"
-            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
+            onClick={createDraftInNewWindow}
+            data-testid="create-draft-button-in-window"
           >
             New Document
           </Button>
@@ -63,10 +76,12 @@ export function DraftList() {
                 margin: '$4',
                 marginLeft: '-$6',
               }}
+              data-testid="empty-list-box"
             >
               <Text>No Publications yet.</Text>
               <Button
-                onClick={() => mainService.send('CREATE.NEW.DRAFT')}
+                data-testid="create-draft-button"
+                onClick={createNewDraft}
                 size="1"
                 variant="outlined"
               >

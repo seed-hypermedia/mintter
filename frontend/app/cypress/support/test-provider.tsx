@@ -1,6 +1,13 @@
 import {AuthProvider} from '@app/auth-context'
 import {createAuthService} from '@app/auth-machine'
-import {Account, Document, Info, Publication} from '@app/client'
+import {
+  Account,
+  Document,
+  Info,
+  ListDraftsResponse,
+  ListPublicationsResponse,
+  Publication,
+} from '@app/client'
 import {HoverProvider} from '@app/editor/hover-context'
 import {createHoverService} from '@app/editor/hover-machine'
 import {queryKeys} from '@app/hooks'
@@ -21,6 +28,8 @@ type TestMockData = {
   draft?: Document
   publication?: Publication
   draftList?: Array<Document>
+  publicationList?: Array<Publication>
+  bookmarks?: Array<string>
 }
 
 type TestClientReturn = TestMockData & {
@@ -90,9 +99,33 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     values.publication = mocks.publication
   }
 
+  mocks.draftList ||= []
+  client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
+    documents: mocks.draftList,
+    nextPageToken: '',
+  })
   if (mocks.draftList?.length) {
-    client.setQueryData([queryKeys.GET_DRAFT_LIST], mocks.draftList)
     values.draftList = mocks.draftList
+  }
+
+  mocks.publicationList ||= []
+  client.setQueryData<ListPublicationsResponse>(
+    [queryKeys.GET_PUBLICATION_LIST],
+    {
+      nextPageToken: '',
+      publications: mocks.publicationList,
+    },
+  )
+
+  if (mocks.publicationList?.length) {
+    values.publicationList = mocks.publicationList
+  }
+
+  mocks.bookmarks ||= []
+  client.setQueryData([queryKeys.GET_BOOKMARK_LIST], mocks.bookmarks)
+
+  if (mocks.bookmarks) {
+    values.bookmarks = mocks.bookmarks
   }
 
   client.invalidateQueries = cy.spy()
