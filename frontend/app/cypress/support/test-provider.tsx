@@ -31,6 +31,7 @@ type TestMockData = {
   publicationList?: Array<Publication>
   bookmarks?: Array<string>
   info?: Partial<Info>
+  authors?: Array<Partial<Account>>
 }
 
 type TestClientReturn = TestMockData & {
@@ -134,6 +135,33 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
       publications: mocks.publicationList,
     },
   )
+
+  let authors = mocks.authors
+    ? mocks.authors.map((a, idx) =>
+        deepmerge(
+          {
+            id: `authorId-${idx + 1}`,
+            profile: {
+              alias: `alias-${idx + 1}`,
+              email: `user-${idx + 1}@user.com`,
+              bio: `bio for user ${idx + 1}`,
+            },
+            devices: {
+              d1: {
+                peerId: 'd1',
+              },
+            },
+          },
+          a,
+        ),
+      )
+    : []
+
+  authors.forEach((a) => {
+    client.setQueryData<Account>([queryKeys.GET_ACCOUNT, a.id], a)
+  })
+
+  values.authors = authors
 
   if (mocks.publicationList?.length) {
     values.publicationList = mocks.publicationList

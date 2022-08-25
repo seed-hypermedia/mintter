@@ -56,7 +56,7 @@ export const blockToolsMachine = createMachine(
     context: {
       visibleBlocks: [],
       currentBounds: [],
-      mouseY: 0,
+      mouseY: -999,
       currentId: '',
       observer: undefined,
       rootElm: document.querySelector(':root') as HTMLElement,
@@ -177,7 +177,7 @@ export const blockToolsMachine = createMachine(
               // console.log('IS INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.ADD',
-                id: (entry.target as HTMLElement).dataset.parentBlock,
+                id: (entry.target as HTMLElement).dataset.parentBlock || '',
                 entry: entry.target,
               })
             } else {
@@ -202,7 +202,12 @@ export const blockToolsMachine = createMachine(
     },
     actions: {
       clearCurrentId: assign({
-        currentId: () => '',
+        // eslint-disable-next-line
+        currentId: (c) => '',
+      }),
+      resetPosition: assign({
+        // eslint-disable-next-line
+        mouseY: (c) => -999,
       }),
       addEntry: assign({
         visibleBlocks: (context, event) => {

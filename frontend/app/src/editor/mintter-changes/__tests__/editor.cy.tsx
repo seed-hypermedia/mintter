@@ -38,7 +38,7 @@ before(() => {
   }
 })
 
-describe('Editor', () => {
+describe.skip('Editor', () => {
   describe('Move Operations', () => {
     it('should add the default block', () => {
       let draft: Document = {
