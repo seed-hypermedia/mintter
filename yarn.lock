@@ -829,23 +829,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cypress/react@npm:6.0.0":
-  version: 6.0.0
-  resolution: "@cypress/react@npm:6.0.0"
-  dependencies:
-    debug: ^4.3.2
-  peerDependencies:
-    "@types/react": ^16.9.16 || ^17.0.0
-    cypress: "*"
-    react: ^=16.x || ^=17.x
-    react-dom: ^=16.x || ^=17.x
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 8793504200a1bdd654a9668ffd19d4c6a5731216afe2f2d9c0a402382f31cea0fcf24147c36e1c687e4e743467b311d1a6091ba508b45a2fda695bda24273885
-  languageName: node
-  linkType: hard
-
 "@cypress/request@npm:^2.88.10":
   version: 2.88.10
   resolution: "@cypress/request@npm:2.88.10"
@@ -1623,7 +1606,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/app@workspace:frontend/app"
   dependencies:
-    "@cypress/react": 6.0.0
     "@cypress/vite-dev-server": 2.2.3
     "@floating-ui/react-dom": 0.7.2
     "@floating-ui/react-dom-interactions": 0.7.0
@@ -1653,6 +1635,7 @@ __metadata:
     "@types/is-url": 1.2.30
     "@types/long": 4.0.2
     "@types/mdast": 3.0.10
+    "@types/node": 16.11.45
     "@types/react": 18.0.15
     "@types/react-copy-to-clipboard": 5.0.3
     "@types/react-dom": 18.0.6
@@ -1670,6 +1653,7 @@ __metadata:
     browser-headers: 0.4.1
     cmdk: ^0.1.19
     cypress: ^10.6.0
+    deepmerge: 4.2.2
     eslint: 8.20.0
     eslint-config-preact: 1.3.0
     eslint-config-prettier: 8.5.0
@@ -1683,8 +1667,14 @@ __metadata:
     graphql-request: 4.3.0
     happy-dom: 6.0.4
     hast: 1.0.0
+    hast-util-has-property: 2.0.0
+    hast-util-is-element: 2.1.2
     hast-util-sanitize: 4.0.0
+    hast-util-to-text: 3.1.1
+    hastscript: 7.0.2
+    is-hidden: 2.0.0
     is-hotkey: 0.2.0
+    is-plain-object: 5.0.0
     is-url: 1.2.4
     js-video-url-parser: 0.5.1
     long: 5.2.0
@@ -1704,6 +1694,7 @@ __metadata:
     react-qr-code: 2.0.7
     react-query: 3.39.2
     rehype: 12.0.1
+    rehype-minify-whitespace: 5.0.1
     rehype-parse: 8.0.4
     rehype-sanitize: 5.0.1
     rehype-stringify: 9.0.3
@@ -1716,12 +1707,14 @@ __metadata:
     slate-react: "github:mintterteam/slate#workspace=slate-react&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
     tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=9de1279760f31bc6f71da8555336e10c412387e3"
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
+    trim-trailing-lines: 2.0.0
     typedoc: 0.23.8
     typedoc-plugin-markdown: 3.13.3
     typescript: 4.7.4
     unified: 10.1.2
     unist-builder: 3.0.0
     unist-util-is: 5.1.1
+    unist-util-remove-position: 4.0.1
     unist-util-to-string-with-nodes: 0.1.1
     unist-util-visit: 4.1.0
     unist-util-visit-parents: 5.1.0
@@ -1734,40 +1727,6 @@ __metadata:
     xstate: 4.33.2
   peerDependencies:
     typescript: 4.7.4
-  languageName: unknown
-  linkType: soft
-
-"@mintter/mttast@workspace:frontend/mttast":
-  version: 0.0.0-use.local
-  resolution: "@mintter/mttast@workspace:frontend/mttast"
-  dependencies:
-    "@types/node": 16.11.45
-    "@types/unist": 2.0.6
-    "@typescript-eslint/eslint-plugin": 5.30.6
-    "@typescript-eslint/parser": 5.30.6
-    "@typescript-eslint/typescript-estree": 5.30.6
-    deepmerge: 4.2.2
-    eslint: 8.20.0
-    eslint-config-prettier: 8.5.0
-    hast-util-has-property: 2.0.0
-    hast-util-is-element: 2.1.2
-    hast-util-to-text: 3.1.1
-    hastscript: 7.0.2
-    is-hidden: 2.0.0
-    is-plain-object: 5.0.0
-    nanoid: 4.0.0
-    prettier: 2.7.1
-    rehype-minify-whitespace: 5.0.1
-    rehype-parse: 8.0.4
-    rehype-sanitize: 5.0.1
-    shiki: 0.10.1
-    trim-trailing-lines: 2.0.0
-    typescript: 4.7.4
-    unified: 10.1.2
-    unist-builder: 3.0.0
-    unist-util-remove-position: 4.0.1
-    unist-util-visit: 4.1.0
-    vitest: 0.18.1
   languageName: unknown
   linkType: soft
 
@@ -12455,7 +12414,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unist-util-visit@npm:4.1.0, unist-util-visit@npm:^4.0.0":
+"unist-util-visit-parents@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "unist-util-visit-parents@npm:5.1.1"
+  dependencies:
+    "@types/unist": ^2.0.0
+    unist-util-is: ^5.0.0
+  checksum: c699d18f5b26461dee37612b84c243fd5457c98f4c0540d9ba8bee05062aece5f3b4fb1af6b07423ce6750d8926e8c01fc2b1a4de1e54925ef6795c177ed8e18
+  languageName: node
+  linkType: hard
+
+"unist-util-visit@npm:4.1.0":
   version: 4.1.0
   resolution: "unist-util-visit@npm:4.1.0"
   dependencies:
@@ -12472,6 +12441,17 @@ __metadata:
   dependencies:
     unist-util-visit-parents: ^2.0.0
   checksum: e9395205b6908c8d0fe71bc44e65d89d4781d1bb2d453a33cb67ed4124bad0b89d6b1d526ebaecb82a7c48e211bdf6f24351449b8cc115327b345f4617c18728
+  languageName: node
+  linkType: hard
+
+"unist-util-visit@npm:^4.0.0":
+  version: 4.1.1
+  resolution: "unist-util-visit@npm:4.1.1"
+  dependencies:
+    "@types/unist": ^2.0.0
+    unist-util-is: ^5.0.0
+    unist-util-visit-parents: ^5.1.1
+  checksum: c4a63734b0a5b439c62d20901bb472bdafdbbcd80c383e254aedeb98b23d0bae815a331e776ce7d63ea3c8018a54318abb8709d07cdf7dd094f79b2f07bb39f0
   languageName: node
   linkType: hard
 

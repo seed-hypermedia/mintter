@@ -18,7 +18,12 @@ export function all(h: H, parent: HastNode): Array<any> {
 
   child = nodes[length - 1]
 
-  while (length - 1 > index && child && child.type == 'element' && child.tagName == 'br') {
+  while (
+    length - 1 > index &&
+    child &&
+    child.type == 'element' &&
+    child.tagName == 'br'
+  ) {
     length--
     child = nodes[length - 1]
   }

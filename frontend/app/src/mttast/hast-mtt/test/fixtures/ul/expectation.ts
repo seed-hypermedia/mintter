@@ -40,7 +40,9 @@ export const ul = u('root', [
     statement({id: 'id'}, [paragraph([text(' Delta')])]),
     statement({id: 'id'}, [paragraph([text('Echo')])]),
     statement({id: 'id'}, [paragraph([text('Foxtrot', {strong: true})])]),
-    statement({id: 'id'}, [paragraph([text(' '), text('Golf', {strong: true})])]),
+    statement({id: 'id'}, [
+      paragraph([text(' '), text('Golf', {strong: true})]),
+    ]),
   ]),
 
   paragraph([text('Nested.')]),

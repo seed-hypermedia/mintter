@@ -111,6 +111,8 @@ export const createLinkPlugin = (): EditorPlugin => ({
 })
 
 function insertDocumentLink(editor: Editor, url: string) {
+  // TODO: remove this hook from here. not a component so this will blowu at some point
+  // eslint-disable-next-line
   let publicationList = usePublicationList()
 
   let publication: PublicationWithRef = publicationList.find(

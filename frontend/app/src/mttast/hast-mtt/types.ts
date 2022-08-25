@@ -1,9 +1,17 @@
-import {Element as HastElement, Parent as HastParent, Root as HastRoot} from 'hast'
+import {
+  Element as HastElement,
+  Parent as HastParent,
+  Root as HastRoot,
+} from 'hast'
 import {MttastNode, Text} from '../'
 export type HastElememtChild = HastElement
 export type HastNode = HastRoot | HastElememtChild
 
-export type Handle = (h: H, node: MttastNode, parent?: HastParent) => MttastNode | Array<MttastNode> | void
+export type Handle = (
+  h: H,
+  node: MttastNode,
+  parent?: HastParent,
+) => MttastNode | Array<MttastNode> | void
 
 export type Properties = Record<string, unknown>
 
@@ -34,6 +42,10 @@ export type HWithProps = (
   children?: string | Array<MttastNode>,
 ) => MttastNode
 
-export type HWithoutProps = (node: HastNode, type: string, children?: string | Array<MttastNode>) => MttastNode
+export type HWithoutProps = (
+  node: HastNode,
+  type: string,
+  children?: string | Array<MttastNode>,
+) => MttastNode
 
 export type H = HWithProps & HWithoutProps & Context

@@ -38,9 +38,6 @@ backend/ui/rice-box.go-e
 # Terraform
 .terraform
 
-# Storybook
-storybook-static
-
 # Cargo
 target
 

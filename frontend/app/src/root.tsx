@@ -3,6 +3,7 @@ import {createAuthService} from '@app/auth-machine'
 import {createThemeService, ThemeProvider} from '@app/theme'
 import {error} from '@app/utils/logger'
 import {LibraryShell} from '@components/library'
+import {QuickSwitcher} from '@components/quick-switcher'
 
 import {useActor, useInterpret} from '@xstate/react'
 import React, {lazy, Suspense} from 'react'
@@ -43,6 +44,7 @@ export function Root() {
       >
         <AppProvider>
           <MainPage />
+          <QuickSwitcher />
         </AppProvider>
       </ErrorBoundary>
     )

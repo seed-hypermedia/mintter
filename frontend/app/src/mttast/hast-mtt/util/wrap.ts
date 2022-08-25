@@ -1,4 +1,11 @@
-import {isLink, isPhrasingContent, isText, MttastNode, paragraph, PhrasingContent} from '../..'
+import {
+  isLink,
+  isPhrasingContent,
+  isText,
+  MttastNode,
+  paragraph,
+  PhrasingContent,
+} from '../..'
 
 export function wrap(nodes: Array<MttastNode>) {
   return runs(nodes, onphrasing)
@@ -6,7 +13,11 @@ export function wrap(nodes: Array<MttastNode>) {
   function onphrasing(nodes: Array<PhrasingContent>) {
     const head = nodes[0]
 
-    if (nodes.length === 1 && isText(head) && (head.value === ' ' || head.value === '\n')) {
+    if (
+      nodes.length === 1 &&
+      isText(head) &&
+      (head.value === ' ' || head.value === '\n')
+    ) {
       return []
     }
 
@@ -101,7 +112,10 @@ export function wrapNeeded(nodes: Array<MttastNode>): boolean {
     node = nodes[index]
 
     // @ts-ignore
-    if (!isPhrasingContent(node) || ('children' in node && wrapNeeded(node.children))) {
+    if (
+      !isPhrasingContent(node) ||
+      ('children' in node && wrapNeeded(node.children))
+    ) {
       return true
     }
   }

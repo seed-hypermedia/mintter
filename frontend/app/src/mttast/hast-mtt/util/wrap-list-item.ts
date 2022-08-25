@@ -1,8 +1,18 @@
-import {createId, FlowContent, isFlowContent, isPhrasingContent, paragraph, statement} from '../..'
+import {
+  createId,
+  FlowContent,
+  isFlowContent,
+  isPhrasingContent,
+  paragraph,
+  statement,
+} from '../..'
 import {all} from '../all'
 import {H, HastElememtChild} from '../types'
 
-export function wrapListItems(h: H, node: HastElememtChild): Array<FlowContent> {
+export function wrapListItems(
+  h: H,
+  node: HastElememtChild,
+): Array<FlowContent> {
   const children = all(h, node)
   let index = -1
 

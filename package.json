@@ -6,15 +6,14 @@
   "author": "Mintter Team",
   "private": true,
   "scripts": {
-    "build": "yarn mttast build && yarn app build",
-    "lint": "yarn mttast lint && yarn app lint",
-    "format": "yarn mttast format && yarn app format",
-    "test": "yarn app test && yarn mttast test",
-    "test:unit": "yarn mttast test:unit && yarn app test:unit",
+    "build": "yarn app build",
+    "lint": "yarn app lint",
+    "format": "yarn app format",
+    "test": "yarn app test",
+    "test:unit": "yarn app test:unit",
     "app": "yarn workspace @mintter/app",
-    "mttast": "yarn workspace @mintter/mttast",
     "codegen": "graphql-codegen",
-    "validate": "yarn mttast validate && yarn app validate"
+    "validate": "yarn app validate"
   },
   "workspaces": [
     "frontend/*"

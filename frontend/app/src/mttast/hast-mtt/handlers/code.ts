@@ -19,7 +19,11 @@ export function code(h: H, node: HastNode) {
     while (++index < children.length) {
       const child = children[index]
 
-      if (isCode(child) && child.properties?.className && Array.isArray(child.properties.className)) {
+      if (
+        isCode(child) &&
+        child.properties?.className &&
+        Array.isArray(child.properties.className)
+      ) {
         classList = child.properties.className
         break
       }
@@ -47,5 +51,7 @@ export function code(h: H, node: HastNode) {
     props.lang = lang as any
   }
 
-  return buildCode(props, [paragraph([text(trimTrailingLines(wrapText(h, toText(node))))])])
+  return buildCode(props, [
+    paragraph([text(trimTrailingLines(wrapText(h, toText(node))))]),
+  ])
 }

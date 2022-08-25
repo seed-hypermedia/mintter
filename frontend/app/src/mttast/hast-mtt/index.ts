@@ -11,7 +11,10 @@ import {handlers} from './handlers'
 import {one} from './one'
 import {Context, HastNode, Properties} from './types'
 
-export const sanitizeSchema: typeof defaultSchema = deepmerge(defaultSchema, {strip: ['title'], tagNames: ['u']})
+export const sanitizeSchema: typeof defaultSchema = deepmerge(defaultSchema, {
+  strip: ['title'],
+  tagNames: ['u'],
+})
 
 type Destination = Processor
 export type Options = Partial<Context>
@@ -126,7 +129,9 @@ function hasSameProps(one: Text, two: Text): boolean {
 }
 
 export function rehypeMtt(destination?: Destination, options: Options = {}) {
-  return destination && 'run' in destination ? bridge(destination, options) : mutate(destination || options)
+  return destination && 'run' in destination
+    ? bridge(destination, options)
+    : mutate(destination || options)
 }
 
 function bridge(destination: Destination, options: Options = {}) {

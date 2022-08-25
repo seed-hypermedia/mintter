@@ -128,7 +128,13 @@ export interface Resource {
 
 // Content Model
 
-export type MttastContent = FlowContent | GroupingContent | Content | StaticContent | PhrasingContent | Document
+export type MttastContent =
+  | FlowContent
+  | GroupingContent
+  | Content
+  | StaticContent
+  | PhrasingContent
+  | Document
 
 export type MttastNode = Parent | Literal
 export type Content = Paragraph

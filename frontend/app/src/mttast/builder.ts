@@ -22,7 +22,9 @@ import type {
 export type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])
 export type OptionsOf<N extends Node> = Omit<N, 'type' | 'children'>
 
-function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['children'] {
+function normalizeChildren<P extends Parent>(
+  children?: ChildrenOf<P>,
+): P['children'] {
   if (Array.isArray(children)) {
     return children.filter((c) => !!c)
   } else if (typeof children == 'function') {
@@ -33,15 +35,23 @@ function normalizeChildren<P extends Parent>(children?: ChildrenOf<P>): P['child
   }
 }
 
-function createParent<N extends Parent>(type: N['type'], defaults: Partial<OptionsOf<N>> = {}) {
+function createParent<N extends Parent>(
+  type: N['type'],
+  defaults: Partial<OptionsOf<N>> = {},
+) {
   //@ts-ignore
 
-  return function createblockType(optsOrKids: OptionsOf<N> | ChildrenOf<N>, kids?: ChildrenOf<N>): N {
+  return function createblockType(
+    optsOrKids: OptionsOf<N> | ChildrenOf<N>,
+    kids?: ChildrenOf<N>,
+  ): N {
     return {
       type,
       ...defaults,
       ...(Array.isArray(optsOrKids) ? {} : optsOrKids),
-      children: normalizeChildren(Array.isArray(optsOrKids) ? optsOrKids : kids),
+      children: normalizeChildren(
+        Array.isArray(optsOrKids) ? optsOrKids : kids,
+      ),
     } as N
   }
 }
@@ -51,13 +61,18 @@ export function createId() {
   return id
 }
 
-export const document = createParent<Document>('document', {title: '', subtitle: ''})
+export const document = createParent<Document>('document', {
+  title: '',
+  subtitle: '',
+})
 
 export const statement = createParent<Statement>('statement', {id: createId()})
 
 export const heading = createParent<Heading>('heading', {id: createId()})
 
-export const blockquote = createParent<Blockquote>('blockquote', {id: createId()})
+export const blockquote = createParent<Blockquote>('blockquote', {
+  id: createId(),
+})
 
 export const code = createParent<Code>('code', {id: createId()})
 
@@ -81,7 +96,10 @@ export const image = createParent<Image>('image')
 
 export const video = createParent<Video>('video')
 
-export const text = (value: string, options: Omit<Text, 'type' | 'value' | 'text'> = {}): Text => ({
+export const text = (
+  value: string,
+  options: Omit<Text, 'type' | 'value' | 'text'> = {},
+): Text => ({
   type: 'text',
   value,
   ...options,
