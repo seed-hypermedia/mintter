@@ -391,7 +391,6 @@ export function createMainPageService({
           console.log('error: ', JSON.stringify(event))
         },
         assignFiles: assign(function assignFilesPredicate(_, event) {
-          console.log('assignFiles', event)
           let draftList = event.draftList.map(function draftListMapper(draft) {
             let editor = buildEditorHook(plugins, EditorMode.Draft)
             return {
@@ -658,7 +657,6 @@ export function createMainPageService({
             client.fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts()),
           ])
             .then(function filesResponse([pubList, draftList]) {
-              console.log('filesResponse', pubList, draftList)
               sendBack({
                 type: 'REPORT.FILES.SUCCESS',
                 publicationList: pubList.publications.sort((a, b) => {

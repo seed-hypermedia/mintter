@@ -5,13 +5,7 @@ import {PublicationList} from '../publication-list-page'
 describe('Publicationlist', () => {
   // TODO: maybe there are two mainServices started here, I'm getting DraftList and PubList queryClient errors (hitting the )
   it('Should show an empty list', () => {
-    let {client} = createTestQueryClient({
-      publicationList: [],
-    })
-
-    cy.mount(<PublicationList />, {
-      client,
-    })
+    cy.mount(<PublicationList />)
       .get('[data-testid="filelist-title"]')
       .contains('Publications')
       .get('[data-testid="filelist-empty-label"]')

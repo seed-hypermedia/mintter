@@ -30,6 +30,7 @@ type TestMockData = {
   draftList?: Array<Document>
   publicationList?: Array<Publication>
   bookmarks?: Array<string>
+  info?: Partial<Info>
 }
 
 type TestClientReturn = TestMockData & {
@@ -68,19 +69,36 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     },
   }
 
+  let defaultInfo: Partial<Info> = {
+    peerId,
+    startTime: undefined,
+  }
+
   let account: Account = mocks.account
     ? deepmerge(defaultAccount, mocks.account)
     : defaultAccount
 
-  values.account = account
+  let info = mocks.info
+    ? (deepmerge(defaultInfo, {
+        ...mocks.info,
+        accountId: account.id,
+      }) as Info)
+    : (defaultInfo as Info)
 
-  client?.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], {
-    peerId,
-    accountId: account.id,
-    startTime: undefined,
-  })
+  values.account = account
+  values.info = info
 
   client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
+  client.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], info)
+  client.setQueryData<Array<string>>(
+    [queryKeys.GET_PEER_ADDRS, peerId],
+    ['foo', 'bar'],
+  )
+
+  client.setQueryData<Array<string>>(
+    [queryKeys.GET_PEER_ADDRS, info.accountId],
+    ['foo', 'bar'],
+  )
 
   if (mocks.draft) {
     client.setQueryData([queryKeys.GET_DRAFT, mocks.draft.id], mocks.draft)

@@ -1,12 +1,9 @@
-import {createTestQueryClient} from '@app/../cypress/support/test-provider'
 import {FileList} from '@components/file-list'
 
 // TODO: FIXME
 describe('<FileList />', () => {
   // TODO: maybe there are two mainServices started here, I'm getting DraftList and PubList queryClient errors (hitting the )
   it('create new draft buttons work', () => {
-    let {client} = createTestQueryClient({})
-
     let newBtn = cy.stub()
 
     cy.mount(
@@ -17,9 +14,6 @@ describe('<FileList />', () => {
         handleNewDraft={newBtn}
         handleNewWindow={newBtn}
       />,
-      {
-        client,
-      },
     )
       .get('[data-testid="filelist-title"]')
       .contains('test title')

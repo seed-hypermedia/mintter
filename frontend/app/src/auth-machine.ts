@@ -1,4 +1,10 @@
-import {Account, getAccount, Profile, updateProfile} from '@app/client'
+import {
+  Account,
+  getAccount,
+  listPeerAddrs,
+  Profile,
+  updateProfile,
+} from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {QueryClient} from 'react-query'
 import {assign, createMachine} from 'xstate'
@@ -9,6 +15,7 @@ type AuthContext = {
   retries: number
   account?: Account
   errorMessage: string
+  peerAddrs: Array<string>
 }
 
 type AuthEvent =
@@ -33,6 +40,9 @@ type AuthService = {
   }
   updateProfile: {
     data: Account
+  }
+  fetchPeerData: {
+    data: Array<string>
   }
 }
 
@@ -91,16 +101,28 @@ export function createAuthService(client: QueryClient) {
           },
         },
         loggedIn: {
-          invoke: {
-            src: 'fetchAccount',
-            id: 'fetchAccount',
-            onDone: {
-              actions: ['assignAccount'],
+          invoke: [
+            {
+              src: 'fetchAccount',
+              id: 'fetchAccount',
+              onDone: {
+                actions: ['assignAccount'],
+              },
+              onError: {
+                actions: ['assignAccountError'],
+              },
             },
-            onError: {
-              actions: ['assignAccountError'],
+            {
+              id: 'fetchPeerData',
+              src: 'fetchPeerData',
+              onDone: {
+                actions: ['assignPeerData'],
+              },
+              onError: {
+                actions: ['assignPeerDataError'],
+              },
             },
-          },
+          ],
           initial: 'idle',
           states: {
             idle: {
@@ -168,6 +190,12 @@ export function createAuthService(client: QueryClient) {
         updateProfile: function updateProfileService(_, event) {
           return updateProfile(event.profile)
         },
+        fetchPeerData: function fetchPeerDataService(context: AuthContext) {
+          return client.fetchQuery(
+            [queryKeys.GET_PEER_ADDRS, context.accountInfo?.peerId],
+            () => listPeerAddrs(context.accountInfo.peerId),
+          )
+        },
       },
       guards: {
         shouldRetry: (context) => context.retries > 5,
@@ -196,10 +224,17 @@ export function createAuthService(client: QueryClient) {
           errorMessage: (_, event) =>
             `[Auth]: Update Profile Error: ${event.data}`,
         }),
+        assignPeerData: assign({
+          peerAddrs: (_, event) => event.data,
+        }),
         assignRetryError: assign({
           // eslint-disable-next-line
           errorMessage: (_) =>
             '[Auth]: Limit retries exceeded. Please check yout account',
+        }),
+        assignPeerDataError: assign({
+          // eslint-disable-next-line
+          errorMessage: (_) => '[Auth]: Error fetching Peer Address',
         }),
         clearError: assign({
           // eslint-disable-next-line

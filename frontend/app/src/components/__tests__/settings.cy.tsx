@@ -1,3 +1,8 @@
+import {createTestQueryClient} from '@app/../cypress/support/test-provider'
+import {Profile} from '@app/client'
+import {PeerAddrs} from '@components/peer-addrs'
+import {AccountInfo, ProfileForm} from '@components/settings'
+
 describe('Settings', () => {
   it('Profile', () => {
     /**
@@ -6,13 +11,58 @@ describe('Settings', () => {
      * - it should update email
      * - it should update bio
      */
+
+    let {account} = createTestQueryClient()
+
+    let updateMock = cy.stub()
+
+    let newProfile: Profile = {
+      alias: 'new alias',
+      email: 'new@email.com',
+      bio: 'new bio',
+    }
+
+    cy.mount(
+      <ProfileForm profile={account?.profile} handleUpdate={updateMock} />,
+    )
+      .get('[data-testid="input-alias"]')
+      .should('have.value', account?.profile?.alias)
+      .clear()
+      .type(newProfile.alias)
+      .get('[data-testid="input-email"]')
+      .should('have.value', account?.profile?.email)
+      .clear()
+      .type(newProfile.email)
+      .get('[data-testid="input-bio"]')
+      .should('have.value', account?.profile?.bio)
+      .clear()
+      .type(newProfile.bio)
+      .get('[data-testid="submit"]')
+      .click()
+      .then(() => {
+        expect(updateMock).to.has.been.calledOnceWith(newProfile)
+      })
   })
 
-  it('Account Info', () => {
-    /**
-     * - it should render all account info data\
-     * - it should copy device address to the clipboard
-     */
+  it.only('Account Info', () => {
+    let {account} = createTestQueryClient()
+
+    cy.mount(<AccountInfo />)
+      .get('[data-testid="account-id"]')
+      .should('have.value', account?.id)
+      .get('[data-testid="account-device-list"]')
+      .children()
+      .should('have.length', 1)
+
+    let copyMock = cy.stub()
+
+    cy.mount(<PeerAddrs handleCopy={copyMock} />)
+      .get('[data-testid="copy-addrs-button"]')
+      .click()
+      .then(() => {
+        expect(copyMock).callCount(1)
+        expect(copyMock).to.be.calledWith('foo,bar', true)
+      })
   })
 
   it('Payments', () => {
