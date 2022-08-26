@@ -44,7 +44,7 @@ describe('Settings', () => {
       })
   })
 
-  it.only('Account Info', () => {
+  it('Account Info', () => {
     let {account} = createTestQueryClient()
 
     cy.mount(<AccountInfo />)
