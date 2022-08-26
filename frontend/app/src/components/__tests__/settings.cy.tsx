@@ -45,9 +45,11 @@ describe('Settings', () => {
   })
 
   it('Account Info', () => {
-    let {account} = createTestQueryClient()
+    let {account, client} = createTestQueryClient()
 
-    cy.mount(<AccountInfo />)
+    cy.mount(<AccountInfo />, {
+      client,
+    })
       .get('[data-testid="account-id"]')
       .should('have.value', account?.id)
       .get('[data-testid="account-device-list"]')
