@@ -1,4 +1,4 @@
-import {createTestQueryClient} from '@app/../cypress/support/test-provider'
+import {createTestQueryClient} from '@app/test/utils'
 import {PublicationList} from '../publication-list-page'
 
 // TODO: FIXME

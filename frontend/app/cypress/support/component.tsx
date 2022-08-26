@@ -20,12 +20,12 @@ import './commands'
 // require('./commands')
 
 import {globalStyles} from '@app/stitches.config'
-import {mount, MountOptions, MountReturn} from 'cypress/react'
 import {
   createTestQueryClient,
   CustomMountOptions,
   TestProvider,
-} from './test-provider'
+} from '@app/test/utils'
+import {mount, MountOptions, MountReturn} from 'cypress/react'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.

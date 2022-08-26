@@ -1,5 +1,5 @@
-import {createTestQueryClient} from '@app/../cypress/support/test-provider'
 import {DraftList} from '@app/pages/draft-list-page'
+import {createTestQueryClient} from '@app/test/utils'
 
 // TODO: FIXME
 describe('DraftList', () => {

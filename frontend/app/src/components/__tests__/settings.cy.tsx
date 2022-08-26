@@ -1,5 +1,5 @@
-import {createTestQueryClient} from '@app/../cypress/support/test-provider'
 import {Profile} from '@app/client'
+import {createTestQueryClient} from '@app/test/utils'
 import {PeerAddrs} from '@components/peer-addrs'
 import {AccountInfo, ProfileForm} from '@components/settings'
 
