@@ -26,6 +26,7 @@ import {
   TestProvider,
 } from '@app/test/utils'
 import {mount, MountOptions, MountReturn} from 'cypress/react'
+import Navaid from 'navaid'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -49,9 +50,16 @@ declare global {
 }
 
 Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
-  let {client: customClient, account, ...mountOptions} = options
+  let {client: customClient, account, path, ...mountOptions} = options
   let client = customClient ?? createTestQueryClient({account}).client
   globalStyles()
+
+  let router = Navaid('/').listen()
+
+  if (path) {
+    router.route(path)
+  }
+
   const wrapped = <TestProvider client={client}>{component}</TestProvider>
   // const wrapped = <div>{component}</div>
 

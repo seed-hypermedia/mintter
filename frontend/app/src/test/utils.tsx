@@ -1,27 +1,29 @@
-import {AuthProvider} from '@app/auth-context'
-import {createAuthService} from '@app/auth-machine'
+import { AuthProvider } from '@app/auth-context'
+import { createAuthService } from '@app/auth-machine'
 import {
   Account,
   Document,
   Info,
   ListDraftsResponse,
   ListPublicationsResponse,
-  Publication,
+  Publication
 } from '@app/client'
-import {HoverProvider} from '@app/editor/hover-context'
-import {createHoverService} from '@app/editor/hover-machine'
-import {queryKeys} from '@app/hooks'
-import {MainProvider} from '@app/main-context'
-import {createMainPageService} from '@app/main-machine'
-import {createThemeService, ThemeProvider} from '@app/theme'
+import { BlockToolsProvider } from '@app/editor/block-tools-context'
+import { blockToolsMachine } from '@app/editor/block-tools-machine'
+import { HoverProvider } from '@app/editor/hover-context'
+import { createHoverService } from '@app/editor/hover-machine'
+import { queryKeys } from '@app/hooks'
+import { MainProvider } from '@app/main-context'
+import { createMainPageService } from '@app/main-machine'
+import { createThemeService, ThemeProvider } from '@app/theme'
 import {
   BookmarksProvider,
-  createBookmarkListMachine,
+  createBookmarkListMachine
 } from '@components/bookmarks'
-import {useInterpret} from '@xstate/react'
+import { useInterpret } from '@xstate/react'
 import deepmerge from 'deepmerge'
-import {Suspense} from 'react'
-import {QueryClient, QueryClientProvider} from 'react-query'
+import { Suspense } from 'react'
+import { QueryClient, QueryClientProvider } from 'react-query'
 
 type TestMockData = {
   account?: Partial<Account>
@@ -32,6 +34,7 @@ type TestMockData = {
   bookmarks?: Array<string>
   info?: Partial<Info>
   authors?: Array<Partial<Account>>
+  url?: string
 }
 
 type TestClientReturn = TestMockData & {
@@ -209,8 +212,10 @@ export function TestProvider({client, children}: TestProviderProps) {
     </QueryClientProvider>
   )
 }
+
 export type CustomMountOptions = {
   account?: Account
+  path?: string
   client?: QueryClient
 }
 
@@ -218,6 +223,16 @@ export type TestProviderProps = CustomMountOptions & {
   children: React.ReactNode
   client: QueryClient
 }
+
+export function TestPublicationProvider({children}) {
+  const blockToolsService = useInterpret(() => blockToolsMachine)
+  return (
+    <BlockToolsProvider value={blockToolsService}>
+      {children}
+    </BlockToolsProvider>
+  )
+}
+
 ;(function mockTauriIpc() {
   if (window) {
     window.TAURI_IPC = function () {

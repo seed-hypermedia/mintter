@@ -1,4 +1,3 @@
-import {useAccountProfile} from '@app/auth-context'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, dropdownLabel} from '@app/editor/dropdown'
 import {findContext} from '@app/editor/find'
@@ -16,7 +15,8 @@ import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
 
-import {useLibrary, useMain} from '@app/main-context'
+import {useAccountProfile} from '@app/auth-context'
+import {useMain} from '@app/main-context'
 import {listen} from '@tauri-apps/api/event'
 import '../styles/find.scss'
 
@@ -32,6 +32,13 @@ const draggableProps = {
 export function Topbar() {
   const mainService = useMain()
   let [mainState] = useActor(mainService)
+  let profile = useAccountProfile()
+
+  console.log('main state', mainState.value)
+
+  function handleLinbraryToggle() {
+    mainState.context.library?.send('LIBRARY.TOGGLE')
+  }
 
   return (
     <Box
@@ -63,7 +70,12 @@ export function Topbar() {
       {mainState.context.currentFile ? (
         <TopbarFileActions fileRef={mainState.context.currentFile} />
       ) : null}
-      <TopbarLibrarySection />
+      <TopbarLibrarySection
+        handleLibraryToggle={handleLinbraryToggle}
+        handleBack={() => mainService.send('GO.BACK')}
+        handleForward={() => mainService.send('GO.BACK')}
+        libraryLabel={profile?.alias ?? ''}
+      />
     </Box>
   )
 }
@@ -96,12 +108,17 @@ function FileTitle({fileRef}: {fileRef: CurrentFile}) {
   )
 }
 
-function TopbarLibrarySection() {
-  const mainService = useMain()
-  const library = useLibrary()
-  console.log('library', library)
-  let profile = useAccountProfile()
-
+export function TopbarLibrarySection({
+  handleLibraryToggle,
+  handleBack,
+  handleForward,
+  libraryLabel,
+}: {
+  libraryLabel: string
+  handleLibraryToggle: () => void
+  handleBack: () => void
+  handleForward: () => void
+}) {
   return (
     <Box
       data-topbar-section="library"
@@ -112,7 +129,7 @@ function TopbarLibrarySection() {
         data-testid="history-back"
         onClick={(e) => {
           e.preventDefault()
-          mainService.send('GO.BACK')
+          handleBack()
         }}
       >
         <Icon name="ArrowChevronLeft" color="muted" size="2" />
@@ -121,7 +138,7 @@ function TopbarLibrarySection() {
         data-testid="history-forward"
         onClick={(e) => {
           e.preventDefault()
-          mainService.send('GO.FORWARD')
+          handleForward()
         }}
       >
         <Icon name="ArrowChevronRight" color="muted" size="2" />
@@ -136,6 +153,7 @@ function TopbarLibrarySection() {
         {...draggableProps}
       >
         <TopbarButton
+          data-testid="library-toggle-button"
           css={{
             flex: 'none',
             display: 'flex',
@@ -146,11 +164,11 @@ function TopbarLibrarySection() {
           }}
           onClick={(e) => {
             e.preventDefault()
-            library?.send('LIBRARY.TOGGLE')
+            handleLibraryToggle()
           }}
           data-tauri-drag-region
         >
-          <Text size="2">{profile?.alias}</Text>
+          <Text size="2">{libraryLabel}</Text>
           <Icon name="Sidenav" size="2" />
         </TopbarButton>
       </Box>
@@ -396,7 +414,11 @@ var titleStyles = css({
 
 function TopbarTitle({title}: {title: string}) {
   return (
-    <span className={titleStyles()} {...draggableProps}>
+    <span
+      data-testid="topbar-title"
+      className={titleStyles()}
+      {...draggableProps}
+    >
       <span {...draggableProps}>{title}</span>
     </span>
   )
