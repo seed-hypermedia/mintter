@@ -4,7 +4,6 @@ import {createDraftMachine} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {createPublicationMachine} from '@app/publication-machine'
-import {mountProviders} from '@app/test/utils'
 import {LibraryItem} from '@components/library/library-item'
 import Sinon from 'cypress/types/sinon'
 import {spawn} from 'xstate'
@@ -92,7 +91,7 @@ describe('<LibraryItem /> with Draft', () => {
   let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
 
   beforeEach(() => {
-    let {client, render} = mountProviders({
+    let {client} = createTestQueryClient({
       draft,
     })
 
@@ -101,7 +100,7 @@ describe('<LibraryItem /> with Draft', () => {
 
     let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-    render(
+    cy.mount(
       <LibraryItem
         isNew={false}
         fileRef={spawn(
@@ -139,11 +138,11 @@ describe('<LibraryItem /> with Draft', () => {
       })
   })
 
-  it.skip('should Copy to Clipboard be disabled on drafts', async () => {
+  it('should Copy to Clipboard be disabled on drafts', async () => {
     cy.get('[data-testid="library-item"]')
       .get('[data-trigger]')
       .click()
       .get('[data-testid="copy-item"]')
-      .should('be.disabled')
+      .should('have.attr', 'data-disabled')
   })
 })
