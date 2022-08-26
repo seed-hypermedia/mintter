@@ -190,6 +190,7 @@ function DraftActions({fileRef}: {fileRef: DraftRef}) {
     <Box
       data-topbar-section="actions"
       className={topbarSectionStyles({type: 'actions'})}
+      data-testid="topbar-draft-actions"
       {...draggableProps}
     >
       <Button
@@ -237,6 +238,7 @@ function PublicationActions({
     <Box
       data-topbar-section="actions"
       className={topbarSectionStyles({type: 'actions'})}
+      data-testid="topbar-publication-actions"
       {...draggableProps}
     >
       <Box
