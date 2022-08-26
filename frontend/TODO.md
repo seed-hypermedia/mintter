@@ -1,7 +1,5 @@
 # TODOs
 
-- implement resetPosition (blocktools machine)
-- add new mintter app logo passed from jonas
 - lndhub
   - fetch the wallets from the auth machine
   - add pasphrase to the onboarding
@@ -18,4 +16,3 @@
   - show invoices status per document?
   - add block metadata to invoices so we can overlay all the payment info on each document
 - when clicking nested transclusions it opens both documents?
-- profiling search provider re-renders
