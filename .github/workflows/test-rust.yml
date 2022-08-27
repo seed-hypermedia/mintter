@@ -13,6 +13,8 @@ on:
       - ".github/workflows/lint-rust.yml"
       - "Cargo.toml"
       - "desktop/**"
+    branches-ignore:
+      - "renovate/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

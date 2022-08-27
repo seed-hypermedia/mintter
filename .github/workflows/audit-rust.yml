@@ -9,6 +9,8 @@ on:
       - ".github/workflows/audit-rust.yml"
       - "**/Cargo.lock"
       - "**/Cargo.toml"
+    branches-ignore:
+      - "renovate/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

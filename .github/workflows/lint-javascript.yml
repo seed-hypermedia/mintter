@@ -11,6 +11,8 @@ on:
     paths:
       - ".github/workflows/lint-javascript.yml"
       - "frontend/**"
+    branches-ignore:
+      - "renovate/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
