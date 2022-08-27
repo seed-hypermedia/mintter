@@ -5,6 +5,8 @@ on:
     paths:
       - ".github/workflows/lint-go.yml"
       - "backend/**/*.go"
+    branches-ignore:
+      - "renovate/**"
 
 # Based on https://github.com/golangci/golangci-lint-action readme.
 permissions:
