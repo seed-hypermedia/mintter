@@ -145,4 +145,12 @@ describe('<LibraryItem /> with Draft', () => {
       .get('[data-testid="copy-item"]')
       .should('have.attr', 'data-disabled')
   })
+
+  it('should show the author label', () => {
+    // noop
+  })
+
+  it('should show the date label', () => {
+    // noop
+  })
 })
