@@ -1,0 +1,10 @@
+.item-date,
+.item-author {
+  --text-color-dimmed: var(--mtt-colors-base-text-low);
+  color: var(--text-color-dimmed);
+  text-align: end;
+}
+
+.item-date {
+  min-width: 180px;
+}

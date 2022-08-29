@@ -98,6 +98,11 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     [queryKeys.GET_PEER_ADDRS, peerId],
     ['foo', 'bar'],
   )
+  client.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], info)
+  client.setQueryData<Array<string>>(
+    [queryKeys.GET_PEER_ADDRS, peerId],
+    ['foo', 'bar'],
+  )
 
   client.setQueryData<Array<string>>(
     [queryKeys.GET_PEER_ADDRS, info.accountId],

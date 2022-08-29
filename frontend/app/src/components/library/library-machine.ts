@@ -6,6 +6,7 @@ type LibraryEvent =
   | {type: 'LIBRARY.TOGGLE'}
 
 export var libraryMachine = createMachine({
+  id: 'library-machine',
   predictableActionArguments: true,
   tsTypes: {} as import('./library-machine.typegen').Typegen0,
   schema: {

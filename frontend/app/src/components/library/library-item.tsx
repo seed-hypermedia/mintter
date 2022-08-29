@@ -3,12 +3,15 @@ import {
   deletePublication as defaultDeletePublication,
 } from '@app/client'
 import {deleteFileMachine} from '@app/delete-machine'
+import {DraftContext} from '@app/draft-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {findContext} from '@app/editor/find'
 import {useMain, useParams} from '@app/main-context'
 import {DraftRef, PublicationRef} from '@app/main-machine'
+import {PublicationContext} from '@app/publication-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {formattedDate} from '@app/utils/get-format-date'
 import {debug} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {Box} from '@components/box'
@@ -19,6 +22,7 @@ import {useActor, useInterpret} from '@xstate/react'
 import {PropsWithChildren, useContext, useMemo} from 'react'
 import Highlighter from 'react-highlight-words'
 import toast from 'react-hot-toast'
+import './library-item.scss'
 
 export type LibraryItemProps = {
   fileRef: PublicationRef | DraftRef
@@ -126,6 +130,13 @@ export function LibraryItem({
 
   let title = state.context.title || 'Untitled Document'
 
+  // console.log(
+  //   isPublication
+  //     ? state.context.publication.document.publishTime
+  //     : state.context.draft.updateTime,
+  // )
+
+  console.log(state.context)
   const {search} = useContext(findContext)
 
   return (
@@ -174,6 +185,27 @@ export function LibraryItem({
           textToHighlight={title}
           onClick={goToItem}
         />
+
+        {isPublication ? (
+          <>
+            <span className="item-author">
+              {state.context.author?.profile?.alias}
+            </span>
+            {(state.context as PublicationContext).publication?.document
+              ?.updateTime ? (
+              <span className="item-date">
+                {formattedDate(
+                  (state.context as PublicationContext).publication.document
+                    .updateTime as Date,
+                )}
+              </span>
+            ) : null}
+          </>
+        ) : (
+          <span className="item-date">
+            {formattedDate((state.context as DraftContext).draft.updateTime)}
+          </span>
+        )}
 
         <Dropdown.Root modal={false}>
           <Dropdown.Trigger asChild>
@@ -244,6 +276,7 @@ export var StyledItem = styled(
     $$foreground: '$colors$base-text-high',
     display: 'flex',
     minHeight: 28,
+    gap: '1rem',
     alignItems: 'center',
     position: 'relative',
     borderRadius: '$1',
