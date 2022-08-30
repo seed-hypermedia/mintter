@@ -3,7 +3,7 @@ import {createDraftMachine} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {createPublicationMachine} from '@app/publication-machine'
-import {mountProviders} from '@app/test/utils'
+import {createTestQueryClient} from '@app/test/utils'
 import {LibraryItem} from '@components/library/library-item'
 import Sinon from 'cypress/types/sinon'
 import {spawn} from 'xstate'
@@ -26,13 +26,13 @@ describe('<LibraryItem />', () => {
   let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
 
   beforeEach(() => {
-    let {client, render} = mountProviders({
+    let {client} = createTestQueryClient({
       publication,
     })
     copyTextToClipboard = cy.stub()
 
     let editor = buildEditorHook(plugins, EditorMode.Publication)
-    render(
+    cy.mount(
       <LibraryItem
         isNew={false}
         fileRef={spawn(
@@ -41,6 +41,9 @@ describe('<LibraryItem />', () => {
         )}
         copy={copyTextToClipboard}
       />,
+      {
+        client,
+      },
     )
   })
   it('default item', () => {
@@ -88,7 +91,7 @@ describe('<LibraryItem /> with Draft', () => {
   let copyTextToClipboard: Cypress.Agent<Sinon.SinonStub>
 
   beforeEach(() => {
-    let {client, render} = mountProviders({
+    let {client} = createTestQueryClient({
       draft,
     })
 
@@ -97,7 +100,7 @@ describe('<LibraryItem /> with Draft', () => {
 
     let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-    render(
+    cy.mount(
       <LibraryItem
         isNew={false}
         fileRef={spawn(
@@ -105,6 +108,7 @@ describe('<LibraryItem /> with Draft', () => {
           `draft-${draft.id}`,
         )}
         copy={copyTextToClipboard}
+        deleteDraft={deleteDraft}
       />,
     )
   })
@@ -134,11 +138,19 @@ describe('<LibraryItem /> with Draft', () => {
       })
   })
 
-  it.skip('should Copy to Clipboard be disabled on drafts', async () => {
+  it('should Copy to Clipboard be disabled on drafts', async () => {
     cy.get('[data-testid="library-item"]')
       .get('[data-trigger]')
       .click()
       .get('[data-testid="copy-item"]')
-      .should('be.disabled')
+      .should('have.attr', 'data-disabled')
+  })
+
+  it('should show the author label', () => {
+    // noop
+  })
+
+  it('should show the date label', () => {
+    // noop
   })
 })

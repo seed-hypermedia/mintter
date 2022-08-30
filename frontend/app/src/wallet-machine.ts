@@ -77,6 +77,7 @@ var addWalletListToContext = listModel.assign(
 export const listMachine = listModel.createMachine(
   {
     context: listModel.initialContext,
+    predictableActionArguments: true,
     initial: 'loading',
     states: {
       loading: {
@@ -257,6 +258,7 @@ export function createWalletMachine({
 }: Wallet) {
   return walletModel.createMachine(
     {
+      predictableActionArguments: true,
       context: {
         id,
         name,

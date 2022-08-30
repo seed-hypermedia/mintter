@@ -1,12 +1,12 @@
 import {Publication} from '@app/client'
 import {ListBookmarksResponse} from '@app/client/bookmarks'
 import {queryKeys} from '@app/hooks'
-import {mountProviders} from '@app/test/utils'
+import {createTestQueryClient} from '@app/test/utils'
 import {BookmarksSection} from '@components/library/section-bookmarks'
 
 // TODO: fixMe bookmark tests
 
-describe.skip('<BookmarkItem />', () => {
+describe('<BookmarkItem />', () => {
   let pub: Publication = {
     version: 'v1',
     document: {
@@ -22,21 +22,13 @@ describe.skip('<BookmarkItem />', () => {
   }
 
   beforeEach(() => {
-    let {client, render} = mountProviders({
+    let {client} = createTestQueryClient({
       publication: pub,
-      account: {
-        id: 'author',
-        profile: {
-          alias: 'demo',
-          bio: 'demo',
-          email: 'demo@d.com',
+      authors: [
+        {
+          id: 'author',
         },
-        devices: {
-          foo: {
-            peerId: 'foo',
-          },
-        },
-      },
+      ],
     })
 
     client.setQueryData<ListBookmarksResponse>(
@@ -44,14 +36,16 @@ describe.skip('<BookmarkItem />', () => {
       ['mtt://doc1/v1/b1'],
     )
 
-    render(<BookmarksSection />)
+    cy.mount(<BookmarksSection />, {
+      client,
+    })
   })
 
-  it.only('default item', () => {
+  it('default item', () => {
     cy.get('[data-testid="bookmark-item"]').contains(pub.document?.title ?? '')
   })
 
-  it.only('should open boomark in main panel', () => {
+  it('should open boomark in main panel', () => {
     cy.get('[data-testid="bookmark-item"]')
       .get('[data-testid="bookmark-item-title"]')
       .click()

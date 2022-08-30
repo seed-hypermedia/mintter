@@ -1,11 +1,11 @@
-import {error} from '@app/utils/logger'
 import {
   isFlowContent,
   isImage,
   isPhrasingContent,
   sanitizeSchema,
   toMttast,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {error} from '@app/utils/logger'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
 import {Editor, Transforms} from 'slate'

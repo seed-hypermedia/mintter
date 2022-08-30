@@ -1,24 +1,17 @@
-import { mainService as defaultMainService } from '@app/app-providers'
-import { isMintterLink } from '@app/utils/is-mintter-link'
-import { listen } from '@tauri-apps/api/event'
-import { useSelector } from '@xstate/react'
-import { Command } from 'cmdk'
-import { useEffect, useState } from 'react'
+import {useDraftList, useMain, usePublicationList} from '@app/main-context'
+import {isMintterLink} from '@app/utils/is-mintter-link'
+import {listen} from '@tauri-apps/api/event'
+import {Command} from 'cmdk'
+import {useEffect, useState} from 'react'
 import '../styles/quick-switcher.scss'
-import { getIdsfromUrl } from '../utils/get-ids-from-url'
+import {getIdsfromUrl} from '../utils/get-ids-from-url'
 
-type QuickSwitcherProps = {
-  mainService?: typeof defaultMainService
-}
-
-export function QuickSwitcher({
-  mainService = defaultMainService,
-}: QuickSwitcherProps) {
+export function QuickSwitcher() {
+  const mainService = useMain()
+  const publications = usePublicationList()
+  const drafts = useDraftList()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
-
-  const drafts = useSelector(mainService, state => state.context.draftList)
-  const publications = useSelector(mainService, state => state.context.publicationList)
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {

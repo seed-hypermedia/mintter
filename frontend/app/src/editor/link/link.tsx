@@ -1,10 +1,9 @@
-import {
-  mainService as defaultMainService,
-  mainService,
-} from '@app/app-providers'
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {useMain, usePublicationList} from '@app/main-context'
 import {PublicationWithRef} from '@app/main-machine'
+import type {Embed, Link as LinkType} from '@app/mttast'
+import {embed, isLink, link, text} from '@app/mttast'
 import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {isMintterLink} from '@app/utils/is-mintter-link'
@@ -14,8 +13,6 @@ import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
-import type {Embed, Link as LinkType} from '@mintter/mttast'
-import {embed, isLink, link, text} from '@mintter/mttast'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
@@ -114,8 +111,9 @@ export const createLinkPlugin = (): EditorPlugin => ({
 })
 
 function insertDocumentLink(editor: Editor, url: string) {
-  let mainContext = mainService.getSnapshot()
-  let publicationList = mainContext.context.publicationList
+  // TODO: remove this hook from here. not a component so this will blowu at some point
+  // eslint-disable-next-line
+  let publicationList = usePublicationList()
 
   let publication: PublicationWithRef = publicationList.find(
     (pub: PublicationWithRef) => {
@@ -159,7 +157,6 @@ const StyledLink = styled(
 
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
-  mainService?: typeof defaultMainService
 }
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
@@ -177,7 +174,7 @@ function RenderMintterLink(
   props: LinkProps,
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
-  let mainService = props.mainService ?? defaultMainService
+  const mainService = useMain()
   let hoverService = useHover()
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 

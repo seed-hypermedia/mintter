@@ -11,7 +11,12 @@ type FileTimeProps = {
   noLabel?: boolean
 }
 
-export function FileTime({type, document, noLabel = false}: FileTimeProps) {
+export function FileTime({
+  type,
+  document,
+  noLabel = false,
+  ...props
+}: FileTimeProps) {
   const [state, send] = useMachine(() =>
     fileTimeMachine.withContext({
       type,
@@ -35,6 +40,7 @@ export function FileTime({type, document, noLabel = false}: FileTimeProps) {
           gap: '$2',
         },
       }}
+      {...{...props}}
     >
       {!noLabel ? (
         <Text

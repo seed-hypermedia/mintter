@@ -4,7 +4,6 @@ import {
   createMoveChange,
   createReplaceChange,
 } from '@app/client/v2/change-creators'
-import {error} from '@app/utils/logger'
 import {
   FlowContent,
   GroupingContent,
@@ -14,7 +13,8 @@ import {
   isPhrasingContent,
   isStaticContent,
   isStaticPhrasingContent,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {error} from '@app/utils/logger'
 import {Editor, MoveNodeOperation, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'

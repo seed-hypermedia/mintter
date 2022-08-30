@@ -10,7 +10,7 @@ import {
   staticParagraph,
   text,
   video,
-} from '@mintter/mttast'
+} from '@app/mttast'
 import {describe, expect, test} from 'vitest'
 import {blockToSlate} from '../block-to-slate'
 

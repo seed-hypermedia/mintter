@@ -1,4 +1,3 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {createPublicationMachine} from '@app/publication-machine'
 import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
@@ -8,10 +7,9 @@ import {ActorRefFrom} from 'xstate'
 
 export type DiscussionProps = {
   service: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
-  mainService?: typeof defaultMainService
 }
 
-export function Discussion({service, mainService}: DiscussionProps) {
+export function Discussion({service}: DiscussionProps) {
   const [state] = useActor(service)
 
   if (state.matches('discussion.fetching')) {
@@ -37,9 +35,7 @@ export function Discussion({service, mainService}: DiscussionProps) {
         {state.context.dedupeLinks.map((link) => {
           let {source} = link
           let key = `link-${source?.documentId}-${source?.version}-${source?.blockId}`
-          return (
-            <DiscussionItem key={key} link={link} mainService={mainService} />
-          )
+          return <DiscussionItem key={key} link={link} />
         })}
       </Box>
     )

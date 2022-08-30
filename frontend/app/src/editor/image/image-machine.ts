@@ -21,6 +21,7 @@ type ImageServices = {
 
 export const imageMachine = createMachine(
   {
+    predictableActionArguments: true,
     tsTypes: {} as import('./image-machine.typegen').Typegen0,
     schema: {
       context: {} as ImageContext,

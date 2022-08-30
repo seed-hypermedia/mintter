@@ -20,16 +20,16 @@ export const dropdownItemStyle = css({
   paddingVertical: '$3',
   paddingHorizontal: '$4',
   borderRadius: '$2',
-  '&[data-disabled]': {
-    cursor: 'default',
-  },
   cursor: 'pointer',
+
   '&:focus': {
     outline: 'none',
     backgroundColor: '$base-component-bg-normal',
     cursor: 'pointer',
   },
-  '&:disabled': {
+
+  '&[data-disabled]': {
+    cursor: 'default',
     opacity: 0.5,
   },
 })

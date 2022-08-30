@@ -1,5 +1,4 @@
 import {styled} from '@app/stitches.config'
-import {mountProviders} from '@app/test/utils'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 
@@ -12,9 +11,7 @@ let Wrapper = styled(Box, {
 
 describe('Buttons', () => {
   it('Full Overview', () => {
-    let {render} = mountProviders()
-
-    render(
+    cy.mount(
       <Box>
         <Wrapper>
           <Button color="primary">Primary</Button>

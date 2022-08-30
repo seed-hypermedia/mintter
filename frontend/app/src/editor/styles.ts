@@ -185,21 +185,37 @@ export var embedStyles = css({
     cursor: 'pointer',
     color: '$primary-active',
   },
-  '&:after': {
+  '&:before': {
     display: 'none',
   },
-  '&:before': {
+  '&:after': {
     content: '',
     position: 'absolute',
     top: 0,
     left: '50%',
-    rigth: 0,
-    transform: 'translateX(-50%)',
+    right: 0,
+    transform: 'translateX(-50%) scaleY(1.3)',
     width: '200vw',
     height: '$full',
     zIndex: -1,
     opacity: 0,
     transition: 'opacity 0.35s ease',
     backgroundColor: 'transparent',
+  },
+  variants: {
+    highlight: {
+      true: {
+        borderBottomColor: '$primary-border-hover',
+        cursor: 'pointer',
+        color: '$primary-active',
+      },
+    },
+    selected: {
+      true: {
+        borderBottomColor: '$primary-border-hover',
+        cursor: 'pointer',
+        color: '$primary-active',
+      },
+    },
   },
 })

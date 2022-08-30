@@ -2,15 +2,15 @@ import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useHover} from '@app/editor/hover-context'
 import {phrasingStyles} from '@app/editor/styles'
-import {CSS} from '@app/stitches.config'
-import {Box} from '@components/box'
 import {
   isBlockquote,
   isCode,
   isParagraph,
   isPhrasingContent,
   Paragraph as ParagraphType,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {CSS} from '@app/stitches.config'
+import {Box} from '@components/box'
 import {useEffect} from 'react'
 import {Node, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'

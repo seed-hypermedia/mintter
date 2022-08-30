@@ -1,14 +1,16 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {forceSync} from '@app/client/daemon'
+import {useLibrary, useMain} from '@app/main-context'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
+import {libraryMachine} from '@components/library/library-machine'
 import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
 import {Tooltip} from '@components/tooltip'
 import {useActor, useSelector} from '@xstate/react'
 import {PropsWithChildren} from 'react'
+import {ActorRefFrom} from 'xstate'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
@@ -39,20 +41,14 @@ export function LibraryShell({children, ...props}: PropsWithChildren<unknown>) {
   )
 }
 
-function useIsLibraryOpen(
-  mainService: typeof defaultMainService = defaultMainService,
-) {
-  let library = useSelector(mainService, (state) => state.context.library)
-  return useSelector(library, (state) => state.matches('opened'))
-}
-
-export function Library({
-  mainService = defaultMainService,
-}: {
-  mainService?: typeof defaultMainService
-}) {
-  const isOpen = useIsLibraryOpen(mainService)
-  var [mainState, mainSend] = useActor(mainService)
+export function Library() {
+  const mainService = useMain()
+  var [mainState] = useActor(mainService)
+  const library = useLibrary()
+  const isOpen = useSelector(
+    library as ActorRefFrom<typeof libraryMachine>,
+    (state) => state.matches('opened'),
+  )
 
   async function handleSync() {
     await forceSync()
@@ -70,6 +66,8 @@ export function Library({
             width: isOpen ? '$library-width' : 0,
             position: 'relative',
             paddingHorizontal: isOpen ? '$3' : 0,
+            transition: 'width 0.15s ease',
+            willChange: 'width',
           }}
         >
           <Box
@@ -128,13 +126,13 @@ export function Library({
 
           <LibraryButton
             icon="File"
-            onClick={() => mainSend('GO.TO.PUBLICATIONLIST')}
+            onClick={() => mainService.send('GO.TO.PUBLICATIONLIST')}
             title="Files"
             active={mainState.matches('routes.publicationList')}
           />
           <LibraryButton
             icon="PencilAdd"
-            onClick={() => mainSend('GO.TO.DRAFTLIST')}
+            onClick={() => mainService.send('GO.TO.DRAFTLIST')}
             title="Drafts"
             active={mainState.matches('routes.draftList')}
           />

@@ -1,29 +1,19 @@
-import {mainService as defaultMainService} from '@app/app-providers'
-import {DraftRef, PublicationRef} from '@app/main-machine'
+import {useFileFromRef, useMain, useRecents} from '@app/main-context'
 import {createPublicationMachine} from '@app/publication-machine'
 import {css} from '@app/stitches.config'
 import {StyledItem} from '@components/library/library-item'
 import {Section} from '@components/library/section'
 import {useActor} from '@xstate/react'
+import {MouseEvent, useMemo} from 'react'
 import {StateFrom} from 'xstate'
 
-export function RecentsSection({
-  mainService = defaultMainService,
-}: {
-  mainService?: typeof defaultMainService
-}) {
-  let [mainState] = useActor(mainService)
-  let {recents} = mainState.context
-
+export function RecentsSection() {
+  let recents = useRecents()
   return (
     <Section title="Recents" icon="Clock">
       {recents.length
         ? recents.map((fileRef) => (
-            <RecentItem
-              key={fileRef.id}
-              fileRef={fileRef}
-              mainService={mainService}
-            />
+            <RecentItem key={fileRef} fileRef={fileRef} />
           ))
         : null}
     </Section>
@@ -46,19 +36,19 @@ var listItemStyle = css({
 })
 
 type RecentItemProps = {
-  fileRef: PublicationRef | DraftRef
-  mainService?: typeof defaultMainService
+  fileRef: string
 }
 
-function RecentItem({
-  fileRef,
-  mainService = defaultMainService,
-}: RecentItemProps) {
-  let [state] = useActor(fileRef)
+function RecentItem({fileRef}: RecentItemProps) {
+  const mainService = useMain()
+  const file = useFileFromRef(fileRef)
+  let [state] = useActor(file)
+
+  let isDraft = useMemo(() => fileRef.startsWith('draft'), [fileRef])
 
   function goToDocument(event: MouseEvent) {
     event.preventDefault()
-    if (fileRef.id.startsWith('draft-')) {
+    if (isDraft) {
       mainService.send({
         type: 'GO.TO.DRAFT',
         docId: state.context.documentId,

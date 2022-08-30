@@ -2,7 +2,6 @@ import {BlockToolsTarget} from '@app/editor/block-tools-target'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {blockStyles} from '@app/editor/styles'
-import {Box} from '@components/box'
 import {
   createId,
   Heading as HeadingType,
@@ -10,7 +9,8 @@ import {
   isHeading,
   isStaticParagraph,
   statement,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {Box} from '@components/box'
 import {Editor, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {MintterEditor} from '../mintter-changes/plugin'

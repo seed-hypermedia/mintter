@@ -1,4 +1,4 @@
-import {mainService as defaultMainService} from '@app/app-providers'
+import {useMain} from '@app/main-context'
 import {DraftRef, PublicationRef} from '@app/main-machine'
 import {PageError, rootPageStyle} from '@app/pages/window-components'
 import {Box} from '@components/box'
@@ -12,11 +12,8 @@ import EditorPage from './editor'
 import Publication from './publication'
 import {PublicationList} from './publication-list-page'
 
-type MainPageProps = {
-  mainService?: typeof defaultMainService
-}
-
-export function MainPage({mainService = defaultMainService}: MainPageProps) {
+export default function MainPage() {
+  const mainService = useMain()
   const [state] = useActor(mainService)
 
   if (state.matches('routes.settings')) {
@@ -25,7 +22,7 @@ export function MainPage({mainService = defaultMainService}: MainPageProps) {
 
   return (
     <Box className={rootPageStyle()}>
-      {state.hasTag('topbar') ? <Topbar mainService={mainService} /> : null}
+      {state.hasTag('topbar') ? <Topbar /> : null}
       {state.hasTag('library') ? <Library /> : null}
 
       <ErrorBoundary
@@ -47,15 +44,9 @@ export function MainPage({mainService = defaultMainService}: MainPageProps) {
             />
           ) : null
         ) : null}
-        {state.matches('routes.home') ? (
-          <PublicationList mainService={mainService} />
-        ) : null}
-        {state.matches('routes.draftList') ? (
-          <DraftList mainService={mainService} />
-        ) : null}
-        {state.matches('routes.publicationList') ? (
-          <PublicationList mainService={mainService} />
-        ) : null}
+        {state.matches('routes.home') ? <PublicationList /> : null}
+        {state.matches('routes.draftList') ? <DraftList /> : null}
+        {state.matches('routes.publicationList') ? <PublicationList /> : null}
       </ErrorBoundary>
     </Box>
   )

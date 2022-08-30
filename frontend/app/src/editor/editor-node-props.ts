@@ -7,7 +7,7 @@ import {
   isGroupContent,
   Paragraph,
   StaticParagraph,
-} from '@mintter/mttast'
+} from '@app/mttast'
 import {useMemo} from 'react'
 import {Editor} from 'slate'
 
