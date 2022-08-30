@@ -65,10 +65,9 @@ export function createPublicationMachine({
   publication,
   editor,
 }: CreatePublicationProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiRChI9i5MSAAeiAIwBOAGzMADJvUKAzAFYFCvUqV6ANCACeiACw2AHBq0KVO9QHYF6gEz2Avn4WaFh4RLzUtAxMrOyc3LzMAGZghPSMUMIAIgCSAMoAwgCqubnZAPIAcswASgCiAApl1QAqzLXV1U0yyBLYUmQy8gje3grMSjruNsYThgr27vYW1gg6uk6augZGJnoBQRg4BP0RadFsHFw85EkpZxk5BcWllTUNTa25hfn5tSXdvX6g0QC2WIOUzD0mwU3gMSk0Sm8+xAwSOYXIpyiLAucWufAATmB8BBLMwGBAIGAyFk8kUSuUqrkABJlADqAMkvGBCD0ejU8JU3hsOhs7k8ensSjBCHsOiUG3UJk0U0V7mRqNCJxoZ2xsSuCUJxNJ5Mp1MedJeVWaZQA4jaADK1Dl9LlIOSIXn89SC4Wi8WS6X2BYbGFQpQLKZIwIow6a8LarExS7xG6GknMABu7GwWBE5ueDOYTOymSdbp6nOkbqGEu8kKMKhcjZFUqsiAmehD23hugW6tjx3jkUYuuTeOYadJWZ4uZpT3pr2tdsdzqB1Y9fPG3qFIrFRgDbYQ7iUYy0Hm8J5U6mmOn7IUHGITI6TuISYHx+JIhIgc4thYAYrUzT5EyzCZAAgs04Grq6oBDN4ioaKYjYqDYqFyqh7jSnoaHMG4EpXiox58vYUYHPe6KUE+0Qag+fACEIwj2mU4GZDBVZwbYJ7jCYSoqPYLi8uYh5GL4CqSvxAp8neaJasONEDpRzDvp+37CPUhQAEL2tk+SQQBQEgWBkHQeWgKwe6PI6Do9Z8uoazaJK17SoYOh1s4iqwu4Ep9tGtGUZiz7+f0typFEGQadpun6a8dSNC0zBfD8fy5OxAzrggNjcbxfECSoQkudZnZnj2OHht4ap+Ypck6swwUJMkYXpOpWk6XpzSFnFHxtB0XRmZW6WcZl2U5d6eUFSJQqOM4ujTOo9jCkoMlxo+8ksPVqZEiSwiFBUzGsWl3IqFeGgNt4OhXiMDjeC5DjqAqrjGGK2jLXRgVMC1UXtZ17wJeBhTNCy1SJd8vz-P1LocZZRXMJ4CxCSemhES5UbRmQJCUvA5bVUOtU4vqNwMWAh0ZWK0p2O5WgikKWX7q9AXUaOr43I19wk0NejnRoNizcYV5rDC0oXe4sMqPCor2FeQbzXsVUUTVib4ymBJbcaAimuz0MTMw-FTBMSjCh4jbSse8oIcqgruN6WW3nLsm44rerKxOquZtmuaa0MYo2LDWXhm53hi0sh6yvKNjQnzRGqCo9MK8+SvjpOnuIBd8q6zbBtuO4xuHnDCo04ROEKLHDvx0744qV+kDJ0eWGHtZNmyg3C0SjYIzZyXq14+XFkVpDg2WXoOjSud8o5fl6h8ghpGy+R9td4mG30YIxMQ2uQ36CLOV7lbk8qLdAl4dZPNuToAmTGRMby6XCnXzclffjXYqdqoCwjAY82ynXKyGGLzBN3YY8DglBW0vkvd660cYszuOFJ+39FCiWYLCbQk9rYNyWnbFaVE1p1SgSrI0cCX663fl4IMkxbpTBDF4fKQ9w6VTnlgiBuC74Dz7uvQew8RKT3lM4MUvgjD2Vtgwt6jMa4XhckYHiJhs5WxPmQgIAQgA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiRChI9i5MSAAeiAIwBOAGzMADJvUKAzAFYFCvUqV6ANCACeiACw2AHBq0KVO9QHYF6gEz2Avn4WaFh4RLzUtAxMrOyc3LzMAGZghPSMUMIAIgCSAMoAwgCqubnZAPIAcswASgCiAApl1QAqzLXV1U0yyBLYUmQy8gje3grMSjruNsYThgr27vYW1gg6uk6augZGJnoBQRg4BP0RadFsHFw85EkpZxk5BcWllTUNTa25hfn5tSXdvX6g0QC2WIOUzD0mwU3gMSk0Sm8+xAwSOYXIpyiLAucWufAATmB8BBLMwGBAIGAyFk8kUSuUqrkABJlADqAMkvGBCD0ejU8JU3hsOhs7k8ensSjBCHsOiUG3UJk0U0V7mRqNCJxoZ2xsSuCUJxNJ5Mp1MedJeVWaZQA4jaADK1Dl9LlIOSIXn89SC4Wi8WS6X2BYbGFQpQLKZIwIow6a8LarExS7xG6GknMABu7GwWBE5ueDOYTOymSdbp6nOkbqGEu8kKMKhcjZFUqsiAmehD23hugW6tjx3jkUYuuTeOYadJWZ4uZpT3pr2tdsdzqB1Y9fPG3qFIrFRgDbYQ7iUYy0Hm8J5U6mmOn7IUHGITI6TuISYHx+JIhIgc4thYAYrUzT5EyzCZAAgs04Grq6oBDN4ioaKYjYqDYqFyqh7jSnoaHMG4EpXiox58vYUYHPe6KUE+0Qag+fACEIwj2mU4GZDBVZwbYJ7jCYSoqPYLi8uYh5GL4CqSvxAp8neaJasONEDpRzDvp+37CPUhQAEL2tk+SQQBQEgWBkHQeWgKwe6PI6Do9Z8uoazaJK17SoYOh1s4iqwu4Ep9tGtGUZiz7+f0typFEGQadpun6a8dSNC0zBfD8fy5OxAzrggNjcbxfECSoQkudZnZnj2OHht4ap+Ypck6swwUJMkYXpOpWk6XpzSFnFHxtB0XRmZW6WcZl2U5d6eUFSJQqOM4ujTOo9jCkoMlxo+8ksPVqZEiSwiFBUzGsWl3IqFeGgNt4OhXiMDjeC5DjqAqrjGGK2jLXRgVMC1UXtZ17wJeBhTNCy1SJd8vz-P1LocZZRXMJ4CxCSemhES5UbRmQJCUvA5bVUOtU4vqNwMWAh0ZWK0p2O5WgikKWX7q9AXUaOr43I19wk0NejnRoNizcYV5rDC0oXe4sMqPCor2FeQbzXsVUUTVib4ymBJbcaAimuz0MTMw-FTBMSjCh4jbSse8oIcqgruN6WW3nLsm44rerKxOquZtmuaa0MYo2LDWXhm53hi0sh6yvKNjQnzRGqCo9MK8+SvjpOnuIBd8q6zbBtuO4xuHp48raL47g6PYMyyrL5H26teNO+OKlfpAydHlhh7WTZsqtwtEo2CM2exw78c1xZFaQ4Nll6Do0pCqeMICXYQmTIsfdV4mG30YIxMQ2uQ36CLOV7lb6h8rdAl4dZPNucXujuGRMby-3Cl3zcdffo3YqdqoCwjAY82ys3KyGGLZg7c7DHgcEoK2N9V7vXWjjFmdxwqvz-ooUSzBYTaEPtbVuS07YrSomtOqsCVZGkQe-XWX8vBBkmLdKYIYvD5XHuHSqFdcHQIIY-Uew8t5jwniJb090C6IwQqJJht9K54J1I3C8Ll5jcxwjhFUIo9DHgCAEIAA */
   return createMachine(
     {
-      predictableActionArguments: true,
       context: {
         title: publication.document?.title ?? '',
         documentId: publication.document?.id ?? '',
@@ -86,6 +85,7 @@ export function createPublicationMachine({
         context: {} as PublicationContext,
         events: {} as PublicationEvent,
       },
+      predictableActionArguments: true,
       invoke: {
         src: 'fetchAuthor',
         id: 'fetchAuthor',
@@ -123,7 +123,7 @@ export function createPublicationMachine({
               },
             },
             ready: {
-              initial: 'hidden',
+              initial: 'visible',
               states: {
                 hidden: {
                   on: {
