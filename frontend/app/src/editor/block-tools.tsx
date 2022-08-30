@@ -226,7 +226,7 @@ export function PublicationBlockTools({
     toast.success('Block ID copied successfully', {position: 'top-center'})
   }
 
-  return (
+  return blockId ? (
     <Box
       css={{
         position: 'absolute',
@@ -248,7 +248,7 @@ export function PublicationBlockTools({
         {blockId}
       </Button>
     </Box>
-  )
+  ) : null
 }
 
 // eslint-disable-next-line
