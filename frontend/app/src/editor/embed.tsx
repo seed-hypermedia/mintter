@@ -12,7 +12,7 @@ import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
 import {useMachine} from '@xstate/react'
 import {useEffect} from 'react'
-import {RenderElementProps} from 'slate-react'
+import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
@@ -68,6 +68,8 @@ function Embed({
   let [docId, version, blockId] = getIdsfromUrl(element.url)
   let [state] = useMachine(() => createEmbedMachine(element.url, mainService))
   let hoverService = useHover()
+  let selected = useSelected()
+  let focused = useFocused()
 
   useEffect(() => {
     if (attributes.ref.current) {
@@ -108,6 +110,7 @@ function Embed({
       contentEditable={false}
       className={embedStyles({
         highlight: document.body.dataset.hoverBlock == blockId,
+        selected: selected && focused,
       })}
       data-element-type="embed"
       data-block-id={blockId}
@@ -284,12 +287,15 @@ function createEmbedMachine(url: string, mainService: MainService) {
         assignPublication: assign({
           publication: (_, event) => event.data,
         }),
+        // @ts-ignore
         clearError: assign({
           errorMessage: '',
         }),
+        // @ts-ignore
         clearBlock: assign({
           block: undefined,
         }),
+        // @ts-ignore
         clearPublication: assign({
           publication: undefined,
         }),
