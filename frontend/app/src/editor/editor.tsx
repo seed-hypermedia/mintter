@@ -29,6 +29,10 @@ interface EditorProps {
 
 const editorWrapperStyles = css({
   position: 'relative',
+  '& [data-slate-placeholder="true"]': {
+    // this is needed to make sure the placeholder does not wrap the text.
+    whiteSpace: 'nowrap',
+  },
   variants: {
     mode: {
       [EditorMode.Discussion]: {
