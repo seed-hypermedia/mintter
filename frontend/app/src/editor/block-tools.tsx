@@ -237,7 +237,14 @@ export function PublicationBlockTools({
         userSelect: 'none',
       }}
     >
-      <Button size="1" color="primary" variant="ghost" onClick={onCopy}>
+      <Button
+        size="1"
+        color="primary"
+        variant="ghost"
+        onClick={onCopy}
+        css={{display: 'flex', alignItems: 'center', gap: '$3'}}
+      >
+        <Icon name="Copy" size="1" />
         {blockId}
       </Button>
     </Box>
