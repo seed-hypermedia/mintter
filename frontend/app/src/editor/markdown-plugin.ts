@@ -6,7 +6,7 @@ import {
   isStatement,
   ol,
   ul,
-} from '@mintter/mttast'
+} from '@app/mttast'
 
 import {Editor, Range, Transforms} from 'slate'
 import {ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST} from './group'

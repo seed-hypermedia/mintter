@@ -32,6 +32,7 @@ export function createTippingMachine({
 }) {
   return createMachine(
     {
+      predictableActionArguments: true,
       tsTypes: {} as import('./tipping-machine.typegen').Typegen0,
       schema: {
         context: {} as TippingContextType,

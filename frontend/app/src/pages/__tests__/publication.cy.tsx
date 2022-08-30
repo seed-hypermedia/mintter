@@ -1,10 +1,7 @@
-import {App} from '@app/app'
 import {Publication} from '@app/client'
-import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {blockToApi} from '@app/client/v2/block-to-api'
-import {queryKeys} from '@app/hooks'
-import {mountProviders} from '@app/test/utils'
-import {paragraph, statement, text} from '@mintter/mttast'
+import {paragraph, statement, text} from '@app/mttast'
+import {createTestQueryClient} from '@app/test/utils'
 
 // TODO: FIXME
 describe.skip('Publication Page', () => {
@@ -17,7 +14,6 @@ describe.skip('Publication Page', () => {
         title: 'test demo',
         subtitle: 'test subtitle',
         author: '',
-        content: '',
         updateTime: date,
         createTime: date,
         publishTime: date,
@@ -32,22 +28,13 @@ describe.skip('Publication Page', () => {
       },
     }
 
-    const {render, client} = mountProviders({
-      initialRoute: '/p/foo/1',
+    let {client} = createTestQueryClient({
       publication,
     })
 
-    client.setQueryData<ListCitationsResponse>(
-      [
-        queryKeys.GET_PUBLICATION_DISCUSSION,
-        publication.document?.id,
-        publication.version,
-      ],
-      {
-        links: [],
-      },
-    )
-
-    render(<App />)
+    cy.mount(<div>hello publication</div>, {
+      path: '/p/d1/v1',
+      client,
+    })
   })
 })

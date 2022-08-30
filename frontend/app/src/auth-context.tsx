@@ -12,6 +12,12 @@ export const useAccountInfo = createAuthSelector(
   (state) => state.context.accountInfo,
 )
 
+export const useAccount = createAuthSelector((state) => state.context.account)
+
 export const useAccountProfile = createAuthSelector(
   (state) => state.context.account?.profile,
+)
+
+export const usePeerAddrs = createAuthSelector(
+  (state) => state.context.peerAddrs,
 )

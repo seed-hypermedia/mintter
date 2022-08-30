@@ -14,7 +14,8 @@ export function isInternalEvent(eventName: string) {
 }
 
 export function createInterpreterContext<
-  TInterpreter extends Interpreter<unknown, unknown, unknown, unknown, unknown>,
+  // eslint-disable-next-line
+  TInterpreter extends Interpreter<any, any, any, any, any>,
 >(displayName: string) {
   const [Provider, useContext] =
     createRequiredContext<TInterpreter>(displayName)

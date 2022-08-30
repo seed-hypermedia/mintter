@@ -11,9 +11,6 @@ filegroup(
         "app/src",
         "app/tsconfig.json",
         "app/vite.config.ts",
-        "mttast/package.json",
-        "mttast/src",
-        "mttast/tsconfig.json",
     ],
 )
 

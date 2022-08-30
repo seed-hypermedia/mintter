@@ -1,5 +1,3 @@
-import {mainService as defaultMainService} from '@app/app-providers'
-import {useAccountProfile} from '@app/auth-context'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, dropdownLabel} from '@app/editor/dropdown'
 import {findContext} from '@app/editor/find'
@@ -17,21 +15,30 @@ import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Icon} from './icon'
 
+import {useAccountProfile} from '@app/auth-context'
+import {useMain} from '@app/main-context'
 import {listen} from '@tauri-apps/api/event'
 import '../styles/find.scss'
 
-type TopbarProps = {
-  copy?: typeof copyTextToClipboard
-  currentFile?: CurrentFile | null
-  mainService?: typeof defaultMainService
-}
+// type TopbarProps = {
+//   copy?: typeof copyTextToClipboard
+//   currentFile?: CurrentFile | null
+// }
 
 const draggableProps = {
   'data-tauri-drag-region': true,
 }
 
-export function Topbar({mainService = defaultMainService}: TopbarProps) {
+export function Topbar() {
+  const mainService = useMain()
   let [mainState] = useActor(mainService)
+  let profile = useAccountProfile()
+
+  console.log('main state', mainState.value)
+
+  function handleLinbraryToggle() {
+    mainState.context.library?.send('LIBRARY.TOGGLE')
+  }
 
   return (
     <Box
@@ -61,12 +68,14 @@ export function Topbar({mainService = defaultMainService}: TopbarProps) {
       </Box>
       <Find />
       {mainState.context.currentFile ? (
-        <TopbarFileActions
-          mainService={mainService}
-          fileRef={mainState.context.currentFile}
-        />
+        <TopbarFileActions fileRef={mainState.context.currentFile} />
       ) : null}
-      <TopbarLibrarySection mainService={mainService} />
+      <TopbarLibrarySection
+        handleLibraryToggle={handleLinbraryToggle}
+        handleBack={() => mainService.send('GO.BACK')}
+        handleForward={() => mainService.send('GO.BACK')}
+        libraryLabel={profile?.alias ?? ''}
+      />
     </Box>
   )
 }
@@ -99,18 +108,17 @@ function FileTitle({fileRef}: {fileRef: CurrentFile}) {
   )
 }
 
-function TopbarLibrarySection({
-  mainService,
+export function TopbarLibrarySection({
+  handleLibraryToggle,
+  handleBack,
+  handleForward,
+  libraryLabel,
 }: {
-  mainService: typeof defaultMainService
+  libraryLabel: string
+  handleLibraryToggle: () => void
+  handleBack: () => void
+  handleForward: () => void
 }) {
-  let [state, send] = useActor(mainService)
-  let profile = useAccountProfile()
-
-  function toggleLibrary() {
-    state.context.library.send('LIBRARY.TOGGLE')
-  }
-
   return (
     <Box
       data-topbar-section="library"
@@ -121,7 +129,7 @@ function TopbarLibrarySection({
         data-testid="history-back"
         onClick={(e) => {
           e.preventDefault()
-          send('GO.BACK')
+          handleBack()
         }}
       >
         <Icon name="ArrowChevronLeft" color="muted" size="2" />
@@ -130,7 +138,7 @@ function TopbarLibrarySection({
         data-testid="history-forward"
         onClick={(e) => {
           e.preventDefault()
-          send('GO.FORWARD')
+          handleForward()
         }}
       >
         <Icon name="ArrowChevronRight" color="muted" size="2" />
@@ -145,6 +153,7 @@ function TopbarLibrarySection({
         {...draggableProps}
       >
         <TopbarButton
+          data-testid="library-toggle-button"
           css={{
             flex: 'none',
             display: 'flex',
@@ -153,10 +162,13 @@ function TopbarLibrarySection({
             height: '$full',
             paddingHorizontal: '$3',
           }}
-          onClick={toggleLibrary}
+          onClick={(e) => {
+            e.preventDefault()
+            handleLibraryToggle()
+          }}
           data-tauri-drag-region
         >
-          <Text size="2">{profile?.alias}</Text>
+          <Text size="2">{libraryLabel}</Text>
           <Icon name="Sidenav" size="2" />
         </TopbarButton>
       </Box>
@@ -164,22 +176,11 @@ function TopbarLibrarySection({
   )
 }
 
-function TopbarFileActions({
-  fileRef,
-  mainService = defaultMainService,
-}: {
-  fileRef: CurrentFile
-  mainService: typeof defaultMainService
-}) {
+function TopbarFileActions({fileRef}: {fileRef: CurrentFile}) {
   if (fileRef.id.startsWith('draft-')) {
     return <DraftActions fileRef={fileRef as DraftRef} />
   } else {
-    return (
-      <PublicationActions
-        mainService={mainService}
-        fileRef={fileRef as PublicationRef}
-      />
-    )
+    return <PublicationActions fileRef={fileRef as PublicationRef} />
   }
 }
 
@@ -189,6 +190,7 @@ function DraftActions({fileRef}: {fileRef: DraftRef}) {
     <Box
       data-topbar-section="actions"
       className={topbarSectionStyles({type: 'actions'})}
+      data-testid="topbar-draft-actions"
       {...draggableProps}
     >
       <Button
@@ -210,18 +212,16 @@ function DraftActions({fileRef}: {fileRef: DraftRef}) {
 function PublicationActions({
   fileRef,
   copy = copyTextToClipboard,
-  mainService = defaultMainService,
 }: {
   fileRef: PublicationRef
   copy?: typeof copyTextToClipboard
-  mainService: typeof defaultMainService
 }) {
   let [state] = useActor(fileRef)
-  let bookmarkService = useBookmarksService()
-
+  const bookmarkService = useBookmarksService()
+  const mainService = useMain()
   async function onCopyReference() {
     await copy(
-      `${MINTTER_LINK_PREFIX}${state.context.publication?.document?.id}/${state.context.publication.version}`,
+      `${MINTTER_LINK_PREFIX}${state.context.publication?.document?.id}/${state.context.publication?.version}`,
     )
     toast.success('Document Reference copied successfully', {
       position: 'top-center',
@@ -238,6 +238,7 @@ function PublicationActions({
     <Box
       data-topbar-section="actions"
       className={topbarSectionStyles({type: 'actions'})}
+      data-testid="topbar-publication-actions"
       {...draggableProps}
     >
       <Box
@@ -415,7 +416,11 @@ var titleStyles = css({
 
 function TopbarTitle({title}: {title: string}) {
   return (
-    <span className={titleStyles()} {...draggableProps}>
+    <span
+      data-testid="topbar-title"
+      className={titleStyles()}
+      {...draggableProps}
+    >
       <span {...draggableProps}>{title}</span>
     </span>
   )

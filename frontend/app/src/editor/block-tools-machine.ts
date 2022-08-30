@@ -7,7 +7,7 @@ type BlockToolsMachineContext = {
   currentBounds: Array<[key: string, rect: DOMRect]>
   mouseY: number
   observer?: IntersectionObserver
-  currentId?: string
+  currentId: string
   rootElm: HTMLElement | null
 }
 export type BlockToolsMachineEvent =
@@ -46,6 +46,7 @@ export type BlockToolsMachineEvent =
 export const blockToolsMachine = createMachine(
   {
     id: 'blockToolsMachine',
+    predictableActionArguments: true,
     initial: 'inactive',
     tsTypes: {} as import('./block-tools-machine.typegen').Typegen0,
     schema: {
@@ -55,8 +56,8 @@ export const blockToolsMachine = createMachine(
     context: {
       visibleBlocks: [],
       currentBounds: [],
-      mouseY: 0,
-      currentId: undefined,
+      mouseY: -999,
+      currentId: '',
       observer: undefined,
       rootElm: document.querySelector(':root') as HTMLElement,
     },
@@ -77,7 +78,7 @@ export const blockToolsMachine = createMachine(
     ],
     states: {
       active: {
-        entry: ['getBlockBounds', 'assignCurrentId'],
+        entry: ['initToolsPosition', 'getBlockBounds', 'assignCurrentId'],
         initial: 'close',
         states: {
           close: {
@@ -176,14 +177,14 @@ export const blockToolsMachine = createMachine(
               // console.log('IS INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.ADD',
-                id: (entry.target as HTMLElement).dataset.parentBlock,
+                id: (entry.target as HTMLElement).dataset.parentBlock || '',
                 entry: entry.target,
               })
             } else {
               // console.log('NOT INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.DELETE',
-                id: (entry.target as HTMLElement).dataset.parentBlock,
+                id: (entry.target as HTMLElement).dataset.parentBlock || '',
               })
             }
           }
@@ -200,6 +201,18 @@ export const blockToolsMachine = createMachine(
       },
     },
     actions: {
+      initToolsPosition: (context) => {
+        context.rootElm?.style.setProperty('--tools-x', '-999')
+        context.rootElm?.style.setProperty('--tools-y', '-999')
+      },
+      clearCurrentId: assign({
+        // eslint-disable-next-line
+        currentId: (c) => '',
+      }),
+      resetPosition: assign({
+        // eslint-disable-next-line
+        mouseY: (c) => -999,
+      }),
       addEntry: assign({
         visibleBlocks: (context, event) => {
           let tMap = new Map(context.visibleBlocks)

@@ -1,6 +1,4 @@
 // import 'show-keys'
-import {AppError} from '@app/app'
-import {mainService as defaultMainService} from '@app/app-providers'
 import {Document} from '@app/client'
 import {BlockTools} from '@app/editor/block-tools'
 import {BlockToolsProvider} from '@app/editor/block-tools-context'
@@ -9,10 +7,11 @@ import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {DraftRef} from '@app/main-machine'
+import {ChildrenOf} from '@app/mttast'
 import {MainWindow} from '@app/pages/window-components'
+import {AppError} from '@app/root'
 import {Box} from '@components/box'
 import {Text} from '@components/text'
-import {ChildrenOf} from '@mintter/mttast'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -23,7 +22,6 @@ export type EditorPageProps = {
   editor?: SlateEditor
   shouldAutosave?: boolean
   draftRef: DraftRef
-  mainService?: typeof defaultMainService
 }
 
 export function useDraft(ref: DraftRef) {

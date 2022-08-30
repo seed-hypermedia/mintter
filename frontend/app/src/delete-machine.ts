@@ -1,4 +1,4 @@
-import {Empty} from '@mintter/mttast'
+import {Empty} from '@app/mttast'
 import {assign, createMachine} from 'xstate'
 
 export type DeleteMachineEvent =
@@ -28,6 +28,7 @@ export type DeleteMachineServices = {
 }
 export const deleteFileMachine = createMachine(
   {
+    predictableActionArguments: true,
     tsTypes: {} as import('./delete-machine.typegen').Typegen0,
     schema: {
       context: {} as DeleteMachineContext,

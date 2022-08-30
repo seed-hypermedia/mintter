@@ -1,11 +1,11 @@
-import {mainService as defaultMainService} from '@app/app-providers'
-import {useAuthService} from '@app/auth-context'
+import {useAccount, useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
+import {useActivity} from '@app/main-context'
 import {styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import {useActor, useSelector} from '@xstate/react'
+import {useActor} from '@xstate/react'
 import {FormEvent} from 'react'
 import {Box} from './box'
 import {Button} from './button'
@@ -16,6 +16,8 @@ import {TextField} from './text-field'
 import {WalletList} from './wallet-list'
 
 export function Settings() {
+  let authService = useAuthService()
+  let [state, send] = useActor(authService)
   return (
     <Box
       css={{
@@ -47,7 +49,12 @@ export function Settings() {
         </StyledTabsList>
         <TabsContent value="profile">
           {/* <ScrollArea> */}
-          <ProfileForm />
+          <ProfileForm
+            profile={
+              state.matches('loggedIn') && state.context.account?.profile
+            }
+            handleUpdate={(profile) => send({type: 'UPDATE.PROFILE', profile})}
+          />
           {/* </ScrollArea> */}
         </TabsContent>
         <TabsContent value="account">
@@ -68,63 +75,29 @@ export function Settings() {
   )
 }
 
-var StyledTabs = styled(TabsPrimitive.Root, {
-  width: '$full',
-  height: '$full',
-})
+type ProfileFormProps = {
+  profile?: localApi.Profile
+  handleUpdate: (p: localApi.Profile) => void
+  isPending?: boolean
+  updateSuccess?: boolean
+}
 
-var StyledTabsList = styled(TabsPrimitive.List, {
-  borderRight: '1px solid rgba(0,0,0,0.1)',
-
-  display: 'flex',
-  justifyContent: 'center',
-})
-
-var TabTrigger = styled(TabsPrimitive.Trigger, {
-  all: 'unset',
-  // padding: '0 $6',
-  height: 45,
-  textAlign: 'center',
-
-  display: 'flex',
-  alignItems: 'center',
-  flex: 1,
-  justifyContent: 'center',
-  fontSize: '$3',
-  fontFamily: '$base',
-  lineHeight: '1',
-  color: '$base-text-hight',
-  '&:hover': {
-    background: '$primary-component-bg-hover',
-  },
-  '&[data-state="active"]': {
-    color: '$primary-normal',
-    fontWeight: '$bold',
-    // boxShadow: 'inset 0 -2px 0 0 currentColor, 0 2px 0 0 currentColor',
-  },
-  '&:focus': {position: 'relative', background: '$primary-component-bg-active'},
-})
-
-var TabsContent = styled(TabsPrimitive.Content, {
-  flex: 1,
-  position: 'relative',
-  background: '$base-component-bg-normal',
-})
-
-function ProfileForm() {
-  let authService = useAuthService()
-  let [state, send] = useActor(authService)
-
+export function ProfileForm({
+  profile,
+  handleUpdate,
+  isPending = false,
+  updateSuccess = false,
+}: ProfileFormProps) {
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     let formData = new FormData(e.currentTarget)
     // @ts-ignore
     let newProfile: localApi.Profile = Object.fromEntries(formData.entries())
     e.preventDefault()
-    send({type: 'UPDATE.PROFILE', profile: newProfile})
+    handleUpdate(newProfile)
   }
 
-  if (state.context.account?.profile && state.matches('loggedIn')) {
-    let {alias, bio, email} = state.context.account.profile
+  if (profile) {
+    let {alias, bio, email} = profile
     return (
       <Box
         as="form"
@@ -176,7 +149,7 @@ function ProfileForm() {
         >
           <Button
             type="submit"
-            disabled={state.hasTag('pending')}
+            disabled={isPending}
             size="2"
             shape="pill"
             color="success"
@@ -185,7 +158,7 @@ function ProfileForm() {
           >
             Save
           </Button>
-          {state.matches('loggedIn.updateSuccess') && (
+          {updateSuccess && (
             <Text size="3" color="success">
               update success!
             </Text>
@@ -198,10 +171,10 @@ function ProfileForm() {
   }
 }
 
-function AccountInfo() {
-  let authService = useAuthService()
-  let [state] = useActor(authService)
-  return (
+export function AccountInfo() {
+  let account = useAccount()
+
+  return account ? (
     <Box
       css={{
         display: 'flex',
@@ -231,7 +204,8 @@ function AccountInfo() {
         type="text"
         label="Account ID"
         name="accountId"
-        value={state.context.account?.id}
+        value={account.id}
+        data-testid="account-id"
       />
       <PeerAddrs />
       <Separator data-orientation="horizontal" />
@@ -242,11 +216,10 @@ function AccountInfo() {
           margin: 0,
           padding: 0,
         }}
+        data-testid="account-device-list"
       >
-        {state.context.account &&
-        state.context.account.devices &&
-        ObjectKeys(state.context.account.devices).length
-          ? Object.entries(state.context.account.devices).map(
+        {account.devices && ObjectKeys(account.devices).length
+          ? Object.entries(account.devices).map(
               ([id, device]: [string, localApi.Device], index: number) => (
                 <Text as="li" key={id}>
                   <Text
@@ -264,18 +237,12 @@ function AccountInfo() {
       </Box>
       <Separator data-orientation="horizontal" />
     </Box>
-  )
+  ) : null
 }
 
-function AppSettings({
-  mainService = defaultMainService,
-}: {
-  mainService?: typeof defaultMainService
-}) {
-  let activityService = useSelector(
-    mainService,
-    (state) => state.context.activity,
-  )
+function AppSettings() {
+  let activityService = useActivity()
+
   return (
     <Box
       css={{
@@ -318,3 +285,46 @@ function WalletsInfo() {
     </Box>
   )
 }
+
+var StyledTabs = styled(TabsPrimitive.Root, {
+  width: '$full',
+  height: '$full',
+})
+
+var StyledTabsList = styled(TabsPrimitive.List, {
+  borderRight: '1px solid rgba(0,0,0,0.1)',
+
+  display: 'flex',
+  justifyContent: 'center',
+})
+
+var TabTrigger = styled(TabsPrimitive.Trigger, {
+  all: 'unset',
+  // padding: '0 $6',
+  height: 45,
+  textAlign: 'center',
+
+  display: 'flex',
+  alignItems: 'center',
+  flex: 1,
+  justifyContent: 'center',
+  fontSize: '$3',
+  fontFamily: '$base',
+  lineHeight: '1',
+  color: '$base-text-hight',
+  '&:hover': {
+    background: '$primary-component-bg-hover',
+  },
+  '&[data-state="active"]': {
+    color: '$primary-normal',
+    fontWeight: '$bold',
+    // boxShadow: 'inset 0 -2px 0 0 currentColor, 0 2px 0 0 currentColor',
+  },
+  '&:focus': {position: 'relative', background: '$primary-component-bg-active'},
+})
+
+var TabsContent = styled(TabsPrimitive.Content, {
+  flex: 1,
+  position: 'relative',
+  background: '$base-component-bg-normal',
+})

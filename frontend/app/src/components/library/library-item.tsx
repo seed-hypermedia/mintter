@@ -1,4 +1,3 @@
-import {mainService as defaultMainService} from '@app/app-providers'
 import {
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
@@ -6,6 +5,7 @@ import {
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {findContext} from '@app/editor/find'
+import {useMain, useParams} from '@app/main-context'
 import {DraftRef, PublicationRef} from '@app/main-machine'
 import {css, styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -25,7 +25,6 @@ export type LibraryItemProps = {
   deleteDraft?: typeof defaultDeleteDraft
   deletePublication?: typeof defaultDeletePublication
   copy?: typeof copyTextToClipboard
-  mainService?: typeof defaultMainService
   isNew: boolean
 }
 
@@ -36,15 +35,14 @@ let hoverIconStyle = css({
 export function LibraryItem({
   fileRef,
   copy = copyTextToClipboard,
-  mainService = defaultMainService,
   deleteDraft = defaultDeleteDraft,
   deletePublication = defaultDeletePublication,
   isNew = false,
 }: PropsWithChildren<LibraryItemProps>) {
   const [state] = useActor(fileRef)
-  const [mainState] = useActor(mainService)
   let bookmarksService = useBookmarksService()
-  let {params} = mainState.context
+  let params = useParams()
+  const mainService = useMain()
   let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [fileRef.id])
   let match = useMemo(() => {
     if (isPublication) {

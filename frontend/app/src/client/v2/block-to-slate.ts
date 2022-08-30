@@ -1,15 +1,8 @@
-import {GroupingContent, Text} from '@mintter/mttast'
+import {GroupingContent, Text} from '@app/mttast'
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
 import {Annotation, Block, BlockNode} from '@app/client'
+import {FlowContent, group, isText, ol, PhrasingContent, ul} from '@app/mttast'
 import {debug} from '@app/utils/logger'
-import {
-  FlowContent,
-  group,
-  isText,
-  ol,
-  PhrasingContent,
-  ul,
-} from '@mintter/mttast'
 // import { interpret } from "xstate";
 import {annotationContains} from './classes'
 

@@ -2,8 +2,6 @@ import {BlockToolsTarget} from '@app/editor/block-tools-target'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {blockStyles} from '@app/editor/styles'
 import {useFileEditor} from '@app/file-provider'
-import {styled} from '@app/stitches.config'
-import {Box} from '@components/box'
 import {
   Code as CodeType,
   createId,
@@ -12,7 +10,9 @@ import {
   paragraph,
   statement,
   text,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {styled} from '@app/stitches.config'
+import {Box} from '@components/box'
 import {
   BUNDLED_LANGUAGES,
   getHighlighter,

@@ -1,6 +1,5 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {groupStyles} from '@app/editor/styles'
-import {Box} from '@components/box'
 import {
   createId,
   GroupingContent,
@@ -8,7 +7,8 @@ import {
   isGroupContent,
   isOrderedList,
   statement,
-} from '@mintter/mttast'
+} from '@app/mttast'
+import {Box} from '@components/box'
 import {useMemo} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
