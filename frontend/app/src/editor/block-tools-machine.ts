@@ -78,7 +78,7 @@ export const blockToolsMachine = createMachine(
     ],
     states: {
       active: {
-        entry: ['getBlockBounds', 'assignCurrentId'],
+        entry: ['initToolsPosition', 'getBlockBounds', 'assignCurrentId'],
         initial: 'close',
         states: {
           close: {
@@ -184,7 +184,7 @@ export const blockToolsMachine = createMachine(
               // console.log('NOT INTERSECTING!', entry.target.dataset)
               sendBack({
                 type: 'ENTRY.DELETE',
-                id: (entry.target as HTMLElement).dataset.parentBlock,
+                id: (entry.target as HTMLElement).dataset.parentBlock || '',
               })
             }
           }
@@ -201,6 +201,10 @@ export const blockToolsMachine = createMachine(
       },
     },
     actions: {
+      initToolsPosition: (context) => {
+        context.rootElm?.style.setProperty('--tools-x', '-999')
+        context.rootElm?.style.setProperty('--tools-y', '-999')
+      },
       clearCurrentId: assign({
         // eslint-disable-next-line
         currentId: (c) => '',
