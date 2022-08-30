@@ -660,25 +660,15 @@ export function createMainPageService({
               sendBack({
                 type: 'REPORT.FILES.SUCCESS',
                 publicationList: pubList.publications.sort((a, b) => {
-                  if (a.document?.updateTime && b.document?.updateTime) {
-                    return (
-                      b.document?.updateTime.getSeconds() -
-                      a.document?.updateTime.getSeconds()
-                    )
-                  } else if (a.document?.createTime && b.document?.createTime) {
-                    return (
-                      b?.document.createTime.getSeconds() -
-                      a?.document.createTime.getSeconds()
-                    )
-                  } else {
-                    return true
-                  }
+                  // @ts-ignore
+                  return (
+                    new Date(b.document?.createTime) -
+                    new Date(a.document?.createTime)
+                  )
                 }),
                 draftList: draftList.documents.sort((a, b) => {
-                  if (a.createTime && b.createTime) {
-                    return b.createTime.getSeconds() - a.createTime.getSeconds()
-                  }
-                  return true
+                  // @ts-ignore
+                  return new Date(b.createTime) - new Date(a.createTime)
                 }),
               })
             })

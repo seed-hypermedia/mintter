@@ -1,8 +1,10 @@
 # TODOs
 
+- make sure the main machine is not invoked before the auth check account
+- add new mintter app logo passed from jonas
 - lndhub
-  - fetch the wallets from the auth machine
-  - add pasphrase to the onboarding
+  - fetch the wallets from the authg machine
+  - add pasphrase to the nboarding
   - now we can get different amounts of mnemonics: 12 (default), 15, 18, 24
   - change wallet nickname flow
   - topup flow
@@ -16,3 +18,39 @@
   - show invoices status per document?
   - add block metadata to invoices so we can overlay all the payment info on each document
 - when clicking nested transclusions it opens both documents?
+
+## Todos
+
+- [bug]: mintter publications shuld be orderd by date
+- [feat]: discussions should be open by default
+- [bug]: editor placeholder wrong css
+- [bug]: add selected state to transclusions (editor selected state)
+- [feat]: test different default transclusion states visual design
+- [bug]: transclusions does not higlight when original block is hovered
+- [test]: cannot add content after an tranclusion
+- [bug]: blocktools initial position is visible in the top left corner
+- [bug]: bullets and numbers dissapear when hover (after hover issue)
+- [bug]: blocktools should be visible only when moving the mouse and dissappear when you start editing
+- [bug]: update the blocktools position when changing the document, to avoid wrong positioning (example: when pressing tab and changing hierarchy)
+- [bug]: when hovering the block ID, the block hover box dissappear
+- [feat]: add the copy icon to the blockId
+- [bug]: position of the blocktools needs to listen to the editor changes in order to reconstruct the block positions
+- [bug]: when changing the blocklist type, to ol or ul, it does not update the sibling blocks with the marker.=
+- [feat]: add the three dots dropdown to files. in the dropdown:
+  - add to bookmarks (in drafts?)
+  - open in a new window
+  - delete document
+- [feat]: change bookmark icon to the normal bookmark
+- [feat]: what should we do when the first document is a transclusion
+  - the title of the document should be the text of the first block with content
+    - if the first (or current) block has just a transclusion, take the text of the next block
+- [nice-to-have]: when navigating in the editor with the arrow keys, and I'm in the beginnign of a multi-line transclusion, I can't move to the next line below the transclusion. I does happen correctly when there's a one-line transclusion but not multi-line.
+- [bug]: selection styling is fucking ugly
+- [feat]: delete contacts
+- [nice-to-have]: add shorcuts explanation to the blobktools items
+- no language selector in code block @jonas
+- cannot create breaklines on codeblocks @jonas
+- add codeblock markdown shortcut (```) @jonas
+- markdown shortcuts does not work @jonas
+- bubble is not showing when text is selected @jonas
+- codeblock select should not be selected @jonas
