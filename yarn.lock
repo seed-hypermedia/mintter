@@ -1636,7 +1636,7 @@ __metadata:
     "@types/long": 4.0.2
     "@types/mdast": 3.0.10
     "@types/node": 16.11.56
-    "@types/react": 18.0.15
+    "@types/react": 18.0.18
     "@types/react-copy-to-clipboard": 5.0.3
     "@types/react-dom": 18.0.6
     "@types/react-highlight-words": 0.16.4
@@ -3088,14 +3088,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:18.0.15":
-  version: 18.0.15
-  resolution: "@types/react@npm:18.0.15"
+"@types/react@npm:18.0.18":
+  version: 18.0.18
+  resolution: "@types/react@npm:18.0.18"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: e22cc388d1c145aa184787e44dc28db4789976c704cd5db475c170bb76a560eb81def5f346cfe750949bb3d43ad88822b8cbb9f19b1286e3795892a8263e7715
+  checksum: 6d72d35ab3eecf382a5e0f225923f5a2c753045fce02e4e29713f36c99a24f0f770666a49dde96167f37c86271f93339d1b7e2b8969d011b137a9ebd24ee6806
   languageName: node
   linkType: hard
 
