@@ -388,7 +388,7 @@ export function createMainPageService({
           // TODO.
         },
         assignError: (_, event) => {
-          console.log('error: ', JSON.stringify(event))
+          // error
         },
         assignFiles: assign(function assignFilesPredicate(_, event) {
           let draftList = event.draftList.map(function draftListMapper(draft) {

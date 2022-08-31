@@ -179,6 +179,8 @@ export function DraftBlockTools({
                     data-testid={`item-${item.label}`}
                     key={item.label}
                     onSelect={() => {
+                      console.log('BLOCKENTRY:', blockEntry)
+
                       if (blockEntry) {
                         item.onSelect(
                           editor,

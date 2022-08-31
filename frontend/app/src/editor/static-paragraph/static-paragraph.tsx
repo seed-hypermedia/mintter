@@ -103,7 +103,6 @@ function StaticParagraph({
         },
       }}
       onMouseEnter={() => {
-        console.log('parentNode: ', element)
         hoverService.send({
           type: 'MOUSE_ENTER',
           ref: `${docId}/${parentNode?.id}`,
