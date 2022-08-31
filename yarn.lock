@@ -1698,7 +1698,7 @@ __metadata:
     rehype-parse: 8.0.4
     rehype-sanitize: 5.0.1
     rehype-stringify: 9.0.3
-    sass: 1.54.4
+    sass: 1.54.7
     shiki: 0.10.1
     show-keys: 1.1.2
     slate: "github:mintterteam/slate#workspace=slate&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
@@ -10822,16 +10822,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.54.4":
-  version: 1.54.4
-  resolution: "sass@npm:1.54.4"
+"sass@npm:1.54.7":
+  version: 1.54.7
+  resolution: "sass@npm:1.54.7"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: bb6aead09764de450a02b9a66e4ee538f0ba6bc8f2fc3905c71b2c302b5f47e089b510b86cfa7ef2d4139c210c8abf99fe157e7a5bd356c057f10d29e6c4b44c
+  checksum: 4b6a10e93387e65dcbad2683d46b4249453ab8777c1bafab7a73ac3900a21fa91fa31d68df7a1b982c7e332a99b5574b1adc6168eb1ac6d7ebb28e18a65c4198
   languageName: node
   linkType: hard
 
