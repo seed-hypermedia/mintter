@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@floating-ui/react-dom": "0.7.2",
-    "@floating-ui/react-dom-interactions": "0.7.0",
+    "@floating-ui/react-dom-interactions": "0.9.3",
     "@improbable-eng/grpc-web": "0.15.0",
     "@radix-ui/colors": "0.1.8",
     "@radix-ui/react-accessible-icon": "0.1.4",
