@@ -34,8 +34,6 @@ export function Topbar() {
   let [mainState] = useActor(mainService)
   let profile = useAccountProfile()
 
-  console.log('main state', mainState.value)
-
   function handleLinbraryToggle() {
     mainState.context.library?.send('LIBRARY.TOGGLE')
   }

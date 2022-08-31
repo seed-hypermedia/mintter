@@ -58,14 +58,12 @@ export const activityMachine = createMachine(
   {
     guards: {
       // hasVisited: (context, event) => {
-      //   console.log('hasVisited', context, event)
       //   return context.visitList.includes(event.url)
       // },
     },
     services: {
       getActivityList: () => {
         return store.get<Array<string>>(ACTIVITY).then((res) => {
-          console.log('getActivityList', res)
           if (!res) return []
           return res
         })
@@ -74,13 +72,11 @@ export const activityMachine = createMachine(
     actions: {
       assignList: assign({
         visitList: (_, event) => {
-          console.log('assignList', event)
           return event.data as Array<string>
         },
       }),
       updateList: assign({
         visitList: (context, event) => {
-          console.log('visitList', context.visitList)
           let newList = [...context.visitList, event.url]
           return newList
         },

@@ -136,7 +136,6 @@ function HoveringToolbar({children}: PropsWithChildren) {
 
   useEffect(() => {
     const {selection} = editor
-
     if (
       !selection ||
       !inFocus ||

@@ -387,9 +387,11 @@ export function createMainPageService({
         removePublicationFromCitations: () => {
           // TODO.
         },
-        assignError: (_, event) => {
-          console.log('error: ', JSON.stringify(event))
-        },
+
+        assignError: assign({
+          errorMessage: (_, event) =>
+            `[Main Machine]: Error => ${JSON.stringify(event)}`,
+        }),
         assignFiles: assign(function assignFilesPredicate(_, event) {
           let draftList = event.draftList.map(function draftListMapper(draft) {
             let editor = buildEditorHook(plugins, EditorMode.Draft)

@@ -116,13 +116,13 @@ function Embed({
       data-block-id={blockId}
       data-parent-block={blockId}
       onMouseEnter={() => {
-        hoverService.send({type: 'MOUSE_ENTER', blockId})
+        hoverService.send({type: 'MOUSE_ENTER', ref: `${docId}/${blockId}`})
       }}
       onMouseLeave={() => {
-        hoverService.send({type: 'MOUSE_LEAVE', blockId})
+        hoverService.send({type: 'MOUSE_LEAVE', ref: `${docId}/${blockId}`})
       }}
       css={{
-        [`[data-hover-block="${blockId}"] &:after`]: {
+        [`[data-hover-ref="${docId}/${blockId}"] &:after`]: {
           backgroundColor: '$primary-component-bg-active',
           opacity: 1,
         },
