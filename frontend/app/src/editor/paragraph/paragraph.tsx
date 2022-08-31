@@ -2,6 +2,7 @@ import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useHover} from '@app/editor/hover-context'
 import {phrasingStyles} from '@app/editor/styles'
+import {useFileIds} from '@app/file-provider'
 import {
   isBlockquote,
   isCode,
@@ -60,7 +61,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
 
 function hoverStyles(id: string): CSS {
   return {
-    [`[data-hover-block="${id}"] &:after`]: {
+    [`[data-hover-ref="${id}"] &:after`]: {
       backgroundColor: '$primary-component-bg-normal',
       opacity: 1,
     },
@@ -76,6 +77,7 @@ function Paragraph({
   let btService = useBlockTools()
   const hoverService = useHover()
   let {elementProps, parentNode} = usePhrasingProps(element)
+  let [docId] = useFileIds()
 
   useEffect(() => {
     if (mode != EditorMode.Embed && mode != EditorMode.Mention) {
@@ -85,13 +87,28 @@ function Paragraph({
     }
   }, [attributes.ref, btService, mode])
 
+  let hoverProps = {
+    css: hoverStyles(`${docId}/${parentNode?.id}`),
+    onMouseEnter: () => {
+      hoverService.send({
+        type: 'MOUSE_ENTER',
+        ref: `${docId}/${parentNode?.id}`,
+      })
+    },
+    onMouseLeave: () => {
+      hoverService.send({
+        type: 'MOUSE_LEAVE',
+        ref: `${docId}/${parentNode?.id}`,
+      })
+    },
+  }
+
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
       <Box
         as="span"
         {...attributes}
         // {...elementProps}
-        css={hoverStyles(parentNode?.id)}
       >
         {children}
       </Box>
@@ -106,15 +123,9 @@ function Paragraph({
           blockType: 'code',
           type: 'paragraph',
         })}
-        css={hoverStyles(parentNode?.id)}
         {...attributes}
         {...elementProps}
-        onMouseEnter={() => {
-          hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
-        }}
-        onMouseLeave={() => {
-          hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
-        }}
+        {...hoverProps}
       >
         <code>{children}</code>
       </Box>
@@ -132,13 +143,7 @@ function Paragraph({
           type: 'paragraph',
           blockType: 'blockquote',
         })}
-        css={hoverStyles(parentNode?.id)}
-        onMouseEnter={() => {
-          hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
-        }}
-        onMouseLeave={() => {
-          hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
-        }}
+        {...hoverProps}
       >
         {children}
       </Box>
@@ -152,15 +157,9 @@ function Paragraph({
         type: 'paragraph',
         blockType: parentNode?.type,
       })}
-      css={hoverStyles(parentNode?.id)}
       {...attributes}
       {...elementProps}
-      onMouseEnter={() => {
-        hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
-      }}
-      onMouseLeave={() => {
-        hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
-      }}
+      {...hoverProps}
     >
       {children}
     </Box>

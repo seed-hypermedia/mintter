@@ -24,3 +24,11 @@ export function useFileEditor() {
   let context = useFile()
   return useSelector(context, (state) => state.context.editor)
 }
+
+export function useFileIds() {
+  let context = useFile()
+  return useSelector(context, (state) => [
+    state.context.documentId,
+    state.context.version,
+  ])
+}
