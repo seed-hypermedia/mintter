@@ -28,7 +28,7 @@ jobs:
           node-version: "16.x"
           cache: "yarn"
       - name: Install Dependencies
-        run: yarn
+        run: YARN_CHECKSUM_BEHAVIOR=update yarn
       - name: Lint packages
         run: yarn lint
       - name: Format files (Prettier)
