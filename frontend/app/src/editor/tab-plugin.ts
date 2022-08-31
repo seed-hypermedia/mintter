@@ -49,8 +49,6 @@ function moveStatement(editor: Editor, up: boolean) {
         if (!prev || !prevPath || !isParent(prev)) return
 
         if (prev.children.length == 1) {
-          console.log('prev.children.length == 1', statementPath, prevPath)
-
           Transforms.wrapNodes(
             editor,
             {type: parent.type, children: []},

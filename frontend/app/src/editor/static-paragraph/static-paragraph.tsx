@@ -3,6 +3,7 @@ import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {phrasingStyles} from '@app/editor/styles'
+import {useFileIds} from '@app/file-provider'
 import {isStaticParagraph} from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
@@ -58,7 +59,9 @@ function StaticParagraph({
     () => headingMap[parentPath?.length ?? 'default'],
     [parentPath],
   )
+
   let hoverService = useHover()
+  let [docId] = useFileIds()
 
   useEffect(() => {
     if (attributes.ref.current) {
@@ -73,7 +76,7 @@ function StaticParagraph({
         {...attributes}
         // {...elementProps}
         css={{
-          [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+          [`[data-hover-ref="${docId}/${parentNode?.id}"] &:after`]: {
             backgroundColor: '$primary-component-bg-normal',
             opacity: 1,
           },
@@ -94,16 +97,22 @@ function StaticParagraph({
         blockType: 'heading',
       })}
       css={{
-        [`[data-hover-block="${parentNode?.id}"] &:after`]: {
+        [`[data-hover-ref="${docId}/${parentNode?.id}"] &:after`]: {
           backgroundColor: '$primary-component-bg-normal',
           opacity: 1,
         },
       }}
       onMouseEnter={() => {
-        hoverService.send({type: 'MOUSE_ENTER', blockId: parentNode?.id})
+        hoverService.send({
+          type: 'MOUSE_ENTER',
+          ref: `${docId}/${parentNode?.id}`,
+        })
       }}
       onMouseLeave={() => {
-        hoverService.send({type: 'MOUSE_LEAVE', blockId: parentNode?.id})
+        hoverService.send({
+          type: 'MOUSE_LEAVE',
+          ref: `${docId}/${parentNode?.id}`,
+        })
       }}
     >
       {children}

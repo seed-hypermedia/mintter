@@ -192,7 +192,7 @@ function RenderMintterLink(
   }
 
   function mouseEnter() {
-    hoverService.send({type: 'MOUSE_ENTER', blockId})
+    hoverService.send({type: 'MOUSE_ENTER', ref: `${docId}/${blockId}`})
   }
 
   return (
@@ -202,7 +202,7 @@ function RenderMintterLink(
       onClick={onClick}
       onMouseEnter={mouseEnter}
       css={{
-        [`[data-hover-block="${blockId}"] &`]: {
+        [`[data-hover-ref="${docId}/${blockId}"] &`]: {
           backgroundColor: '$primary-component-bg-normal',
         },
       }}
@@ -426,7 +426,12 @@ export function InsertLinkButton() {
     <Tooltip content={<span>Add Link</span>}>
       <PopoverPrimitive.Root>
         <PopoverPrimitive.Trigger asChild>
-          <Button variant="ghost" size="0" color="muted">
+          <Button
+            variant="ghost"
+            size="0"
+            color="muted"
+            data-testid="toolbar-link-button"
+          >
             <Icon name="Link" size="2" />
           </Button>
         </PopoverPrimitive.Trigger>

@@ -1,6 +1,6 @@
 import {assign, createMachine} from 'xstate'
 
-type BlockToolsMachineContext = {
+export type BlockToolsMachineContext = {
   visibleBlocks: Array<
     [key: string, entry: IntersectionObserverEntry['target']]
   >

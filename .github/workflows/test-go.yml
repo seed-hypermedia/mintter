@@ -8,6 +8,7 @@ on:
       - ".github/workflows/test-go.yml"
       - "go.mod"
       - "backend/**"
+  
   pull_request:
     paths:
       - ".github/workflows/test-go.yml"

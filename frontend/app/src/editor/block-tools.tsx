@@ -161,7 +161,10 @@ export function DraftBlockTools({
         }}
       >
         <Dropdown.Trigger asChild>
-          <ElementDropdown data-trigger contentEditable={false}>
+          <ElementDropdown
+            data-testid="blocktools-trigger"
+            contentEditable={false}
+          >
             <Icon name="Grid4" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>

@@ -185,7 +185,11 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 export function TestProvider({client, children}: TestProviderProps) {
   let authService = useInterpret(() => createAuthService(client))
   let themeService = useInterpret(() => createThemeService())
-  let hoverService = useInterpret(() => createHoverService())
+  let hoverService = useInterpret(() => createHoverService()).onTransition(
+    (...args) => {
+      console.log('args:', args)
+    },
+  )
   let bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   let mainService = useInterpret(() => createMainPageService({client}))
 

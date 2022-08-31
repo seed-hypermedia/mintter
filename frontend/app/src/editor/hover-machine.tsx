@@ -3,13 +3,13 @@ import {listen, UnlistenFn} from '@tauri-apps/api/event'
 import {createMachine} from 'xstate'
 
 export type HoverContext = {
-  blockId: string | null
+  ref: string | null
 }
 
 type HoverEvent =
-  | {type: 'MOUSE_ENTER'; blockId: string}
-  | {type: 'MOUSE_LEAVE'; blockId: string}
-  | {type: 'FROM_WINDOWS'; blockId: string}
+  | {type: 'MOUSE_ENTER'; ref: string}
+  | {type: 'MOUSE_LEAVE'; ref: string}
+  | {type: 'FROM_WINDOWS'; ref: string}
 // | {type: 'mousemove'}
 
 export function createHoverService() {
@@ -54,12 +54,17 @@ export function createHoverService() {
     {
       actions: {
         updateBody: (_, event) => {
-          var blockId = event.type == 'MOUSE_LEAVE' ? '' : event.blockId
-          document.body.dataset.hoverBlock = blockId
+          var ref = event.type == 'MOUSE_LEAVE' ? undefined : event.ref
+          if (ref) {
+            document.body.dataset.hoverRef = ref
+          } else {
+            document.body.removeAttribute('data-hover-ref')
+          }
         },
         emit: (_, event) => {
-          var blockId = event.type == 'MOUSE_LEAVE' ? '' : event.blockId
-          invoke('emit_all', {event: 'block_hover', payload: blockId})
+          var ref = event.type == 'MOUSE_LEAVE' ? undefined : event.ref
+
+          invoke('emit_all', {event: 'hover_ref', payload: ref})
         },
       },
       services: {
@@ -69,11 +74,11 @@ export function createHoverService() {
           bootListener()
 
           async function bootListener() {
-            unlisten = await listen<string>('block_hover', (event) => {
-              let blockId = event.payload ?? undefined
-              let currentBlockId = document.body.dataset.hoverBlock
-              if (blockId != currentBlockId) {
-                sendBack({type: 'FROM_WINDOWS', blockId})
+            unlisten = await listen<string>('hover_ref', (event) => {
+              let ref = event.payload ?? undefined
+              let currentRef = document.body.dataset.hoverRef
+              if (ref != currentRef) {
+                sendBack({type: 'FROM_WINDOWS', ref})
               }
             })
           }
