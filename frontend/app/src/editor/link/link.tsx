@@ -426,7 +426,12 @@ export function InsertLinkButton() {
     <Tooltip content={<span>Add Link</span>}>
       <PopoverPrimitive.Root>
         <PopoverPrimitive.Trigger asChild>
-          <Button variant="ghost" size="0" color="muted">
+          <Button
+            variant="ghost"
+            size="0"
+            color="muted"
+            data-testid="toolbar-link-button"
+          >
             <Icon name="Link" size="2" />
           </Button>
         </PopoverPrimitive.Trigger>
