@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - desktop/*.*.*
-    branches-ignore:
-      - "renovate/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
