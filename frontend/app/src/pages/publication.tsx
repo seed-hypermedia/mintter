@@ -15,9 +15,11 @@ import {Text} from '@components/text'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {InterpreterFrom} from 'xstate'
 
 type PublicationProps = {
   publicationRef: PublicationRef
+  blockToolsService?: InterpreterFrom<typeof blockToolsMachine>
 }
 
 function usePublication(ref: PublicationRef) {
@@ -32,9 +34,13 @@ function usePublication(ref: PublicationRef) {
   return useActor(ref)
 }
 
-export default function Publication({publicationRef}: PublicationProps) {
+export default function Publication({
+  publicationRef,
+  blockToolsService,
+}: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
-  const blockToolsService = useInterpret(() => blockToolsMachine)
+  const localBlockToolsService = useInterpret(() => blockToolsMachine)
+  blockToolsService ||= localBlockToolsService
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
   }

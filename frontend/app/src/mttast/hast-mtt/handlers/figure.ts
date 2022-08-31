@@ -1,5 +1,5 @@
-import {H, HastNode} from '../types'
+// export function figure(h: H, node: HastNode) {
 
-export function figure(h: H, node: HastNode) {
+export function figure() {
   return
 }
