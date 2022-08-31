@@ -26,6 +26,7 @@ import {BlockTools} from '@app/editor/block-tools'
 import {BlockToolsProvider} from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Group} from '@app/mttast'
+import {InterpreterFrom} from 'xstate'
 
 before(() => {
   window.__TAURI_IPC__ = function () {
@@ -485,7 +486,7 @@ describe('Editor', () => {
         })
     })
 
-    it.skip('should add when block type changes', () => {
+    it('should add when block type changes', () => {
       let block = heading({id: 'b1'}, [staticParagraph([text('Hello World')])])
 
       let draft: Document = {
@@ -512,14 +513,23 @@ describe('Editor', () => {
 
       cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
 
-      cy.get('[data-testid="editor"]')
-        .get('[data-trigger]')
+      cy.get('[data-block-id="b1"]')
+        .wait(500)
+        .then(() => {
+          ;(
+            window.blockToolsService as InterpreterFrom<
+              typeof blockToolsMachine
+            >
+          ).send({type: 'MOUSE.MOVE', mouseY: 40})
+        })
+        .get('[data-testid="blocktools-trigger"]')
+        .should('be.visible')
         .click()
         .get('[data-testid="item-Statement"]')
         .click()
         .then(() => {
           let changes = editor.__mtt_changes
-          expect(changes).to.have.lengthOf.greaterThan(1)
+          expect(changes).to.have.length(1)
           let expected: ChangeOperation = ['replaceBlock', 'b1']
           expect(changes).to.deep.include(expected)
         })
@@ -661,7 +671,20 @@ function TestEditor({editor, client, draft}: TestEditorProps) {
   let service = useInterpret(() =>
     createDraftMachine({draft, client, editor, shouldAutosave: false}),
   )
-  let blockToolsService = useInterpret(() => blockToolsMachine)
+  let blockToolsService = useInterpret(() =>
+    blockToolsMachine.withConfig({
+      services: {
+        /**
+         * We are overriding the mouseListener here because Cypress restores the mouse
+         * every time we trigger any mouse move, so we cannot use the builtin system.
+         * This in conjunction with the window assignment below
+         * (`window.blockToolsService = blockToolsService`), we can trigger
+         * mouse move events to the machine without any side effects from Cypress
+         */
+        mouseListener: () => Promise.resolve(),
+      },
+    }),
+  )
   let [state, send] = useActor(service)
 
   useEffect(() => {
@@ -671,6 +694,9 @@ function TestEditor({editor, client, draft}: TestEditorProps) {
       send('UNLOAD')
     }
   }, [send])
+
+  // @ts-ignore
+  window.blockToolsService = blockToolsService
 
   if (state.matches('editing') && state.context.localDraft?.content) {
     return (
