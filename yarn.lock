@@ -1637,7 +1637,7 @@ __metadata:
     "@types/mdast": 3.0.10
     "@types/node": 16.11.56
     "@types/react": 18.0.18
-    "@types/react-copy-to-clipboard": 5.0.3
+    "@types/react-copy-to-clipboard": 5.0.4
     "@types/react-dom": 18.0.6
     "@types/react-highlight-words": 0.16.4
     "@types/unist": 2.0.6
@@ -3050,12 +3050,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-copy-to-clipboard@npm:5.0.3":
-  version: 5.0.3
-  resolution: "@types/react-copy-to-clipboard@npm:5.0.3"
+"@types/react-copy-to-clipboard@npm:5.0.4":
+  version: 5.0.4
+  resolution: "@types/react-copy-to-clipboard@npm:5.0.4"
   dependencies:
     "@types/react": "*"
-  checksum: db592fb26cecaa46672e6dd2a6b667c7fe8ecc4eb6ad326fd6027a8fe2ecde6163963f91427e95029e7aac8b740f63b882b0692610cd9dc1f6ffcda338e3d1d7
+  checksum: c0fe51b79a393d4c1fa5f8a288793c03f791e0d979abaa6ae587de53b8e3bc1f05e3379e7539077a21c9d66c12c3fad3ab6684f836f2ba7a55b9589de8500738
   languageName: node
   linkType: hard
 
