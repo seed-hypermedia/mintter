@@ -1635,7 +1635,7 @@ __metadata:
     "@types/is-url": 1.2.30
     "@types/long": 4.0.2
     "@types/mdast": 3.0.10
-    "@types/node": 16.11.45
+    "@types/node": 16.11.56
     "@types/react": 18.0.15
     "@types/react-copy-to-clipboard": 5.0.3
     "@types/react-dom": 18.0.6
@@ -2987,10 +2987,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.11.45":
-  version: 16.11.45
-  resolution: "@types/node@npm:16.11.45"
-  checksum: 57d61c951024f66d796e71e4a972faef266007398cd4e93a195822fea2d5deb41d0615f394a99ece89772b145ff057321d138c7e3442455dc7d785ff67cebde3
+"@types/node@npm:16.11.56":
+  version: 16.11.56
+  resolution: "@types/node@npm:16.11.56"
+  checksum: b4efade16eb08a39810921c54a1637e69c8f3184a20d87e8fe74d557d9bda73f0829ac318e2a30a32b1903e4b099812defd1dfe438be70b98dbfbea5b0d99a53
   languageName: node
   linkType: hard
 
