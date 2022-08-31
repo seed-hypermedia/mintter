@@ -969,6 +969,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@floating-ui/core@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@floating-ui/core@npm:1.0.1"
+  checksum: c8a5f1a491788e5bebfe747e9372df2c7cbee0d8790ddf95e25149ac91ccf1a2cca8f768029826cfd3d687617c1d0f3241b97f1648bdf2a28d421f39e79c2eee
+  languageName: node
+  linkType: hard
+
 "@floating-ui/dom@npm:^0.5.3":
   version: 0.5.4
   resolution: "@floating-ui/dom@npm:0.5.4"
@@ -978,21 +985,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/react-dom-interactions@npm:0.7.0":
-  version: 0.7.0
-  resolution: "@floating-ui/react-dom-interactions@npm:0.7.0"
+"@floating-ui/dom@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "@floating-ui/dom@npm:1.0.1"
   dependencies:
-    "@floating-ui/react-dom": ^0.7.2
-    aria-hidden: ^1.1.3
-    use-isomorphic-layout-effect: ^1.1.1
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 7cf0875a65c55c06a0d0cc91e07d725cb0be8cccf61d6c08ab91f24c80c9dce370d6a47e6b7c4d49c3d9456136d840a57ca548b0bc2316f3ff869ac8e1797424
+    "@floating-ui/core": ^1.0.1
+  checksum: 617d5b45d6454e9f2b5bba26d0181d1c5863c92960b8e867b9539763291dee0506077d338df805c116ea73330900e657da65af411df85b8ba99e8d4e5fc4e745
   languageName: node
   linkType: hard
 
-"@floating-ui/react-dom@npm:0.7.2, @floating-ui/react-dom@npm:^0.7.2":
+"@floating-ui/react-dom-interactions@npm:0.9.3":
+  version: 0.9.3
+  resolution: "@floating-ui/react-dom-interactions@npm:0.9.3"
+  dependencies:
+    "@floating-ui/react-dom": ^1.0.0
+    aria-hidden: ^1.1.3
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 0c58bada5011357b850ccab9b7e6061fa7dcc83455f72f2afa3ae4c71ad180faa343175f43ad020059a3adfca57fbaf342ae01724f234832bd86a34009adc240
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react-dom@npm:0.7.2":
   version: 0.7.2
   resolution: "@floating-ui/react-dom@npm:0.7.2"
   dependencies:
@@ -1002,6 +1017,18 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
   checksum: bc3f2b5557f87f6f4bbccfe3e8d097abafad61a41083d3b79f3499f27590e273bcb3dc7136c2444841ee7a8c0d2a70cc1385458c16103fa8b70eade80c24af52
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react-dom@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@floating-ui/react-dom@npm:1.0.0"
+  dependencies:
+    "@floating-ui/dom": ^1.0.0
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: d79e3c8570b0eaef5e968cd9c69de2c6bb372a5316e4e69a1cd12dae81771863ef430e81b74a0c21cefba663a2f971d8540c7294d7fb3b9807e32ba2a00c1e76
   languageName: node
   linkType: hard
 
@@ -1608,7 +1635,7 @@ __metadata:
   dependencies:
     "@cypress/vite-dev-server": 2.2.3
     "@floating-ui/react-dom": 0.7.2
-    "@floating-ui/react-dom-interactions": 0.7.0
+    "@floating-ui/react-dom-interactions": 0.9.3
     "@happy-dom/global-registrator": 6.0.4
     "@improbable-eng/grpc-web": 0.15.0
     "@radix-ui/colors": 0.1.8
