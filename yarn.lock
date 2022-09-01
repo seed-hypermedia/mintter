@@ -1020,7 +1020,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/react-dom@npm:^1.0.0":
+"@floating-ui/react-dom@npm:1.0.0, @floating-ui/react-dom@npm:^1.0.0":
   version: 1.0.0
   resolution: "@floating-ui/react-dom@npm:1.0.0"
   dependencies:
@@ -1636,7 +1636,7 @@ __metadata:
   resolution: "@mintter/app@workspace:frontend/app"
   dependencies:
     "@cypress/vite-dev-server": 2.2.3
-    "@floating-ui/react-dom": 0.7.2
+    "@floating-ui/react-dom": 1.0.0
     "@floating-ui/react-dom-interactions": 0.9.3
     "@happy-dom/global-registrator": 6.0.4
     "@improbable-eng/grpc-web": 0.15.0
