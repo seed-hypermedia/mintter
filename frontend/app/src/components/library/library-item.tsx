@@ -136,7 +136,6 @@ export function LibraryItem({
   //     : state.context.draft.updateTime,
   // )
 
-  console.log(state.context)
   const {search} = useContext(findContext)
 
   return (
@@ -145,9 +144,8 @@ export function LibraryItem({
       className={classnames('list-item', {
         new: isNew,
       })}
-      onClick={goToItem}
     >
-      <span className="item-title">
+      <span className="item-title" onClick={goToItem}>
         <Highlighter
           highlightClassName="search-highlight"
           className="title"
@@ -156,11 +154,11 @@ export function LibraryItem({
           textToHighlight={title}
         />
       </span>
-      <span className="item-author">
+      <span className="item-author" onClick={goToItem}>
         {state.context.author?.profile?.alias}
       </span>
 
-      <span className="item-date">
+      <span className="item-date" onClick={goToItem}>
         {isPublication
           ? formattedDate(
               (state.context as PublicationContext).publication?.document

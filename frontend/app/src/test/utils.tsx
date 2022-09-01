@@ -20,6 +20,7 @@ import {
   BookmarksProvider,
   createBookmarkListMachine,
 } from '@components/bookmarks'
+import {TooltipProvider} from '@components/tooltip'
 import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {Suspense} from 'react'
@@ -190,11 +191,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 export function TestProvider({client, children}: TestProviderProps) {
   let authService = useInterpret(() => createAuthService(client))
   let themeService = useInterpret(() => createThemeService())
-  let hoverService = useInterpret(() => createHoverService()).onTransition(
-    (...args) => {
-      console.log('args:', args)
-    },
-  )
+  let hoverService = useInterpret(() => createHoverService())
   let bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   let mainService = useInterpret(() => createMainPageService({client}))
 
@@ -210,7 +207,7 @@ export function TestProvider({client, children}: TestProviderProps) {
                   {
                     // TODO: @jonas why SearchTermProvider breaks tests?
                   }
-                  {children}
+                  <TooltipProvider>{children}</TooltipProvider>
                 </BookmarksProvider>
               </HoverProvider>
               {/* // <Toaster position="bottom-right" /> */}

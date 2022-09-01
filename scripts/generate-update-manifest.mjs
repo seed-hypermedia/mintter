@@ -1,6 +1,6 @@
-import { exec } from "child_process";
-import { readFile } from "fs/promises";
-import { join } from "path";
+import {exec} from "child_process";
+import {readFile} from "fs/promises";
+import {join} from "path";
 import glob from "tiny-glob";
 
 const BASE_URL = "https://mintterreleases.s3.amazonaws.com/";
@@ -30,8 +30,6 @@ async function main() {
       "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
     },
   };
-
-  console.log(JSON.stringify(obj, null, 2));
 }
 main();
 
@@ -58,7 +56,7 @@ async function execCmd(cmd, args, options = {}) {
   return new Promise((resolve, reject) => {
     exec(
       `${cmd} ${args.join(" ")}`,
-      { ...options, encoding: "utf-8" },
+      {...options, encoding: "utf-8"},
       (error, stdout, stderr) => {
         if (error) {
           console.error(

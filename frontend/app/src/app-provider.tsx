@@ -6,6 +6,7 @@ import {
   BookmarksProvider,
   createBookmarkListMachine,
 } from '@components/bookmarks'
+import {TooltipProvider} from '@components/tooltip'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, useState} from 'react'
 import {useQueryClient} from 'react-query'
@@ -30,7 +31,7 @@ function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
             // TODO: @jonas check types on SearchTearmProvider
           }
           <FindContextProvider value={{search, setSearch}}>
-            {children}
+            <TooltipProvider>{children}</TooltipProvider>
           </FindContextProvider>
         </BookmarksProvider>
       </HoverProvider>
