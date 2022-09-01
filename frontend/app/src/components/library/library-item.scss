@@ -1,10 +1,81 @@
+$new-color: var(--mtt-colors-primary-active);
+$foreground: var(--mtt-colors-base-text-high);
+$bg: transparent;
+.list-item {
+  position: relative;
+  display: grid;
+  gap: 0 1rem;
+  grid-auto-flow: row;
+  padding-inline: 0.5rem;
+  padding-block: 0.25rem;
+  user-select: none;
+  background-color: $bg;
+  grid-template-columns: 1fr 1fr auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'item-title item-title item-controls'
+    'item-author item-date .';
+
+  &:hover {
+    $bg: var(--mtt-colors-base-component-bg-hover);
+    cursor: pointer;
+    background-color: $bg;
+
+    & .item-controls {
+      opacity: 1;
+    }
+  }
+
+  @media (min-width: 768px) {
+    grid-template-areas: 'item-title item-author item-date item-controls';
+    grid-template-columns: 1fr auto auto auto;
+    grid-template-rows: 1fr;
+  }
+
+  &.new::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -1rem;
+    transform: translateY(-50%);
+    background: $new-color;
+    block-size: 0.4rem;
+    inline-size: 0.4rem;
+    border-radius: 100%;
+  }
+}
+
+.item-title {
+  grid-area: item-title;
+  letter-spacing: 0.01rem;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  color: $foreground;
+}
+.item-controls {
+  opacity: 0;
+  grid-area: item-controls;
+}
+.item-author {
+  grid-area: item-author;
+}
+.item-date {
+  grid-area: item-date;
+}
+
 .item-date,
 .item-author {
   --text-color-dimmed: var(--mtt-colors-base-text-low);
   color: var(--text-color-dimmed);
-  text-align: end;
-}
+  text-align: start;
+  font-size: 0.8rem;
+  opacity: 0.7;
 
-.item-date {
-  min-width: 180px;
+  @media (min-width: 768px) {
+    text-align: end;
+    font-size: 1rem;
+    opacity: 1;
+  }
 }

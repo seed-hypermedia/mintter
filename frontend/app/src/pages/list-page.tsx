@@ -6,4 +6,7 @@ export var pageListStyle = css({
   padding: 0,
   marginBlockStart: '$5',
   marginInlineStart: '-$3',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '$5',
 })
