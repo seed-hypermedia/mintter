@@ -146,7 +146,7 @@
     "typedoc-plugin-markdown": "3.13.5",
     "typescript": "4.7.4",
     "unified": "10.1.2",
-    "vite": "3.0.2",
+    "vite": "3.0.9",
     "vite-plugin-checker": "0.4.9",
     "vite-react-jsx": "1.1.2",
     "vite-tsconfig-paths": "3.5.0",
