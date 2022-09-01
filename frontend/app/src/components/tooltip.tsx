@@ -15,6 +15,8 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
   fill: '$base-text-high',
 })
 
+export var TooltipProvider = TooltipPrimitive.Provider
+
 export type TooltipPropsLocal = TooltipPrimitive.TooltipProps & {
   content: string | React.ReactNode
 }
