@@ -1745,7 +1745,7 @@ __metadata:
     unist-util-to-string-with-nodes: 0.1.1
     unist-util-visit: 4.1.0
     unist-util-visit-parents: 5.1.0
-    vite: 3.0.2
+    vite: 3.0.9
     vite-plugin-checker: 0.4.9
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
@@ -9863,7 +9863,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.14, postcss@npm:^8.4.16":
+"postcss@npm:^8.4.16":
   version: 8.4.16
   resolution: "postcss@npm:8.4.16"
   dependencies:
@@ -10772,7 +10772,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.74.1, rollup@npm:^2.75.6":
+"rollup@npm:^2.74.1":
   version: 2.78.0
   resolution: "rollup@npm:2.78.0"
   dependencies:
@@ -12835,15 +12835,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:3.0.2":
-  version: 3.0.2
-  resolution: "vite@npm:3.0.2"
+"vite@npm:3.0.9":
+  version: 3.0.9
+  resolution: "vite@npm:3.0.9"
   dependencies:
     esbuild: ^0.14.47
     fsevents: ~2.3.2
-    postcss: ^8.4.14
+    postcss: ^8.4.16
     resolve: ^1.22.1
-    rollup: ^2.75.6
+    rollup: ">=2.75.6 <2.77.0 || ~2.77.0"
   peerDependencies:
     less: "*"
     sass: "*"
@@ -12863,7 +12863,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10aebec0df89bbdba9a0c72dc35ec3ec5be0b50216fc7a1e04b5da11de244033b1cbe83a95b1af67be176fc09e05698387d3cc9dcbee64e009dd43811f8717e9
+  checksum: 6341aa43579ae45f8a383bdc0c5041dea3dff98f14e0a546d6d884a864134b00082246a28d1de8adff0ce0dd92b468c7ade8f972ffe1ed97258671d63e0f16f7
   languageName: node
   linkType: hard
 
