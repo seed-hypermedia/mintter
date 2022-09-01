@@ -1744,7 +1744,7 @@ __metadata:
     unist-util-remove-position: 4.0.1
     unist-util-to-string-with-nodes: 0.1.1
     unist-util-visit: 4.1.1
-    unist-util-visit-parents: 5.1.0
+    unist-util-visit-parents: 5.1.1
     vite: 3.0.9
     vite-plugin-checker: 0.4.9
     vite-plugin-worker: 1.0.5
@@ -12434,13 +12434,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unist-util-visit-parents@npm:5.1.0":
-  version: 5.1.0
-  resolution: "unist-util-visit-parents@npm:5.1.0"
+"unist-util-visit-parents@npm:5.1.1, unist-util-visit-parents@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "unist-util-visit-parents@npm:5.1.1"
   dependencies:
     "@types/unist": ^2.0.0
     unist-util-is: ^5.0.0
-  checksum: 7c413dbb3dfcb679109fa8f0965d9abf117c3c53fa7b8823f68cac0ea53adbe98c1ce954d36c034e086c966b48b1d44d42c85f7bf6b42a032f728ac338929513
+  checksum: c699d18f5b26461dee37612b84c243fd5457c98f4c0540d9ba8bee05062aece5f3b4fb1af6b07423ce6750d8926e8c01fc2b1a4de1e54925ef6795c177ed8e18
   languageName: node
   linkType: hard
 
@@ -12450,16 +12450,6 @@ __metadata:
   dependencies:
     unist-util-is: ^3.0.0
   checksum: 048edbb590a8c4bc0043eec9f50d3fe76faa58f1ac663a7e6dee5e895ddd0ce8bc52f2cfe2e633849fa93671e8de021070667acb1518e3d40220768c7f70a3d3
-  languageName: node
-  linkType: hard
-
-"unist-util-visit-parents@npm:^5.1.1":
-  version: 5.1.1
-  resolution: "unist-util-visit-parents@npm:5.1.1"
-  dependencies:
-    "@types/unist": ^2.0.0
-    unist-util-is: ^5.0.0
-  checksum: c699d18f5b26461dee37612b84c243fd5457c98f4c0540d9ba8bee05062aece5f3b4fb1af6b07423ce6750d8926e8c01fc2b1a4de1e54925ef6795c177ed8e18
   languageName: node
   linkType: hard
 
