@@ -143,7 +143,7 @@
     "sass": "1.54.8",
     "shiki": "0.10.1",
     "typedoc": "0.23.13",
-    "typedoc-plugin-markdown": "3.13.3",
+    "typedoc-plugin-markdown": "3.13.5",
     "typescript": "4.7.4",
     "unified": "10.1.2",
     "vite": "3.0.2",
