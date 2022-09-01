@@ -45,9 +45,8 @@ export type BlockToolsMachineEvent =
 
 export const blockToolsMachine = createMachine(
   {
-    id: 'blockToolsMachine',
+    id: 'blocktools-machine',
     predictableActionArguments: true,
-    initial: 'inactive',
     tsTypes: {} as import('./block-tools-machine.typegen').Typegen0,
     schema: {
       events: {} as BlockToolsMachineEvent,
@@ -61,6 +60,7 @@ export const blockToolsMachine = createMachine(
       observer: undefined,
       rootElm: document.querySelector(':root') as HTMLElement,
     },
+    initial: 'inactive',
     invoke: [
       {
         src: 'visibilityObserver',
@@ -84,7 +84,7 @@ export const blockToolsMachine = createMachine(
           close: {
             on: {
               DISABLE: {
-                target: '#blockToolsMachine.inactive',
+                target: '#blocktools-machine.inactive',
               },
               'MOUSE.MOVE': {
                 actions: [
@@ -110,7 +110,7 @@ export const blockToolsMachine = createMachine(
             after: {
               '500': {
                 // actions: 'assignMousePosition',
-                target: '#blockToolsMachine.active.close',
+                target: '#blocktools-machine.active.close',
               },
             },
             on: {

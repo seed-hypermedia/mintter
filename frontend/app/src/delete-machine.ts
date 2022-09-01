@@ -28,6 +28,7 @@ export type DeleteMachineServices = {
 }
 export const deleteFileMachine = createMachine(
   {
+    id: 'deleteFileMachine',
     predictableActionArguments: true,
     tsTypes: {} as import('./delete-machine.typegen').Typegen0,
     schema: {

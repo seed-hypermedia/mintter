@@ -14,13 +14,14 @@ export type FileTimeContext = {
 
 export const fileTimeMachine = createMachine(
   {
-    initial: 'showCreateTime',
+    id: 'fileTimeMachine',
     predictableActionArguments: true,
     tsTypes: {} as import('./filetime-machine.typegen').Typegen0,
     schema: {
       context: {} as FileTimeContext,
       events: {} as FileTimeEvent,
     },
+    initial: 'showCreateTime',
     states: {
       showCreateTime: {
         entry: ['assignCreateTimeToCurrent', 'showLabel'],

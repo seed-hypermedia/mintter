@@ -162,23 +162,23 @@ function createEmbedMachine(url: string, mainService: MainService) {
   /** @xstate-layout N4IgpgJg5mDOIC5RgLYCNIFoUEMDGAFgJYB2YAdAGZgAuhpUACgK5oA2ReONRA9iQGII-CqQBuvANYUYNAKLpILdp258SiUAAdesIj36aQAD0SYArAGZyANgCMAFgDsAJgAcATks2fHgAzmADQgAJ5mdnZO5Ob2Ng4eHnaWfn6ebgC+6cGoGBDY+MRkVLT0JEysHFwGgmAATrW8teRabNyUjSjksgq5ypVqhkggOnrVRqYImHZ+duRudi52MX4JDi42lkGhiBGzLs5+my6Wlm4O8y6Z2Yp5uKUUlKQQAEJsvHiSQiLk4lIytD1IK93pIjCN9OpxohLB5zOQHJs3G44pYHGtzPtgmEEFE3N4bE41sknJZCV5zFdwDd8vcqE9gR8BHUGk0Wm0Ol0ATcGaChuCxkMJnZ-OQXDFEjMxYs4ljELj8YTjn4SU5zDNMlkQCReBA4EYclg7oUHiVCuUVFVIXzdBDBqAJpgHFZbI5FWcnPNzG5ZZMFrM-LEnV61R4fE5KQbbgVSA96W8PmCbQL7YgXH4HORCQ44o51u5Fj6pi4PNFA363OY1usI9SjTGfhA2GBE6MrSmEPY-OREmiSZWvG5UoWIjY5jYXE5YV4bMGzjXcjTjeRmY1IC3bRpBamTuQ7BWSe5nASvT6Fhn9k5Dql3DO7AT54bo2R18mTGZnFF7M41u7Pd7tpMUqlneuwrE6CyWBq6RAA */
   return createMachine(
     {
+      id: 'transclusion-machine',
+      tsTypes: {} as import('./embed.typegen').Typegen0,
+      schema: {
+        context: {} as EmbedMachineContext,
+        services: {} as EmbedMachineServices,
+      },
       context: {
         url,
         publication: undefined,
         block: undefined,
         errorMessage: '',
       },
-      tsTypes: {} as import('./embed.typegen').Typegen0,
-      schema: {
-        context: {} as EmbedMachineContext,
-        services: {} as EmbedMachineServices,
-      },
+      initial: 'fetchingPublication',
       invoke: {
         src: 'getEmbedBlock',
         id: 'getEmbedBlock',
       },
-      id: 'embed-machine',
-      initial: 'fetchingPublication',
       states: {
         fetchingPublication: {
           invoke: {

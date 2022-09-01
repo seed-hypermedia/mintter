@@ -85,7 +85,10 @@ export function createDraftMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMQAyA8gIIAiioADhrOihgHZ0gAeiAjAGwBmfjgCsABgDsk8QCYAHIMkBOQUoA0IAJ58ALLME5Fa0b137+-UboC+Nzaky4wWLNkjEAYgFEAKgGEACU5GZjRWDiRuRF1+XRw48StZXWVVUX4pTR0EXklBcSM1JVllcVFRaX47Bwh0bBwAMzA0AGMACxQ2KGJvagBJX3IAJRx-SgA5f29SEKYWdk4eXKERCWk5RRU1SWy9SV4itX5ZPN1eU9Ea8DqnJpaOrp6+wZGcYe8ABRHfHB8AwI4ADKAFV-NMgUC5mEIktEKJZHsEGUcGk0aJlJJKuJbPYbvVcM02p1ur0BkNRh9vsNfv8gjhvMNhiNoQtIqBlgikbx5LxDsVBJVBHzdAUrnjHA1HE88IQSC8KTgQZ9qJRfN5WeFFlFlvxlPJUaUTvqefpBPIkSdZDhxLbxIL5MYktdJc5bjL8EQya9Rp8QQAhUj9IHBKKhNlwhDyXSiMSSeT5ITlOSmbniFEJvImE0Y+Qu25S93dWVeumhhjzLXs6IrYRiKQyBRKVQabR8UrWiS2gy8QSYuT5gk4aXFiBgABGGAArmxWjKOgBDboeTWwnV8XsiMqyBTiBP2yTmJEI5Q4UqSWRCHk8-hmQd3EdQHBjyczufFz0kLiwNALtBgHAF0af8sAACl4O0AEpiFdYciyfF9p1nD05VXbUOUQNR4mUUQCjKGNeVkUQEyRQVTztFNhRw0peHvQsWFHCckPfZ5yTeZVVXVNDq2WQ9DDiFQcPKU5ZCxJFYgNA8pAqcRr1SOi3QYp9YAXAA3J4YNcBp6AIP9GmwABbOCh0fHAVPU7oEC6VSMFaP8IgAbXEABdbjIwKbDcPTHFiIuYjdjbBBJH4A1ZDtWIUmIkLcVqEz4LMtSNIVdiVTVDUw0rNcMIQLDUS8-DfKIkjAokTs7TFPJKl5BTjPCYtzKStjRg4tLgTBCEoQymF0JrYVPLwnzCP8y0ETPcr5Fwy9BHMGrTIa0lkua1L1QZJkWS6iN1xylI8oGgi-OKnIZPrW1zhSMpptkWb4voKdxwIFBYBJVifRwP1A2DQFQXBbxITcra+QCnI+Wmm07TCi4zDzCUC0Uuqn1u+7Hue71FXeoMQ1W5lhn+7KrBEPcsVvcwyggwQkXkUSzwgiRHTSfIFGupTiAgdgAJ-P8ANgx9cZrAQ63WRsthbIG+Fk2Mu1k3QsUqBEmfh4gPiBPwxkCSYAHFft55Y+WUQ5KfkdNYgkCD025YRDElhQJGsAorphgliBBCYKBobWYkRQKzDiE65BwvkJH0Ow8TYDAx3gKJYM-d3ckqVEY2FA4hIuORuQI33hDp80Bwdh8tKwSAY8EHaZGFNQcQm5RPeByn4mMC3TAqXDqlzhoiUeboY55Pcz1SR1RSl+RlH4c3DaOYQQr1XtpvllCiBjiSjF4BEiOX1JiMxJFVGtZRUkyVQ9VKe1Z8Y19kOLRdlwgGP9VjXfp9FZeZHkEeSoMM9MR3F++31C8T4Qpib455gC7hcNYJxRR62LivUQ4lhSojiDGXQhtdC2hOP-Z8gDz5QBjknBI0s0g2xEmJQK00tyINMNbXeh4MHzRwRtKskZN6kIxDgAQ-AZBSysPkaGsUHw3Tug9J6Twb5ERtI2Q8mQkHESRNIQwApzApxCgYDBiMhHtELgwrKvUTg2gMKKXkMgDiv2BmYSQvsppEUyIIf+uDyaBR3DvChokpC8lkjVRoXRkbeHgl3Q8p4X5GPMNGQUrYcj6niBRa25RRQeIXCgIg18tE9V4jtCB9Nf4TV4Mobktdx5CEbhUYQCku4WkCgTCilSKKSGDjYIAA */
   return createMachine(
     {
+      id: 'editor',
       predictableActionArguments: true,
+      tsTypes: {} as import('./draft-machine.typegen').Typegen0,
+      schema: {context: {} as DraftContext, events: {} as DraftEvent},
       context: {
         documentId: draft.id,
         version: null,
@@ -96,9 +99,6 @@ export function createDraftMachine({
         author: null,
         title: draft.title,
       },
-      tsTypes: {} as import('./draft-machine.typegen').Typegen0,
-      schema: {context: {} as DraftContext, events: {} as DraftEvent},
-      id: 'editor',
       initial: 'idle',
       invoke: {
         src: 'fetchAuthor',
