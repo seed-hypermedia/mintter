@@ -15,10 +15,12 @@ type HoverEvent =
 export function createHoverService() {
   return createMachine(
     {
+      id: 'hover-machine',
       tsTypes: {} as import('./hover-machine.typegen').Typegen0,
       schema: {
         events: {} as HoverEvent,
       },
+      initial: 'idle',
       invoke: [
         {
           id: 'windowHoverListener',
@@ -29,8 +31,6 @@ export function createHoverService() {
         //   src: 'windowMouseListener',
         // },
       ],
-      id: 'hover-machine',
-      initial: 'idle',
       states: {
         idle: {
           on: {

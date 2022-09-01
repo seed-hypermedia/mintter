@@ -62,6 +62,7 @@ export function createAuthService(client: QueryClient) {
         retries: 0,
         account: undefined,
         errorMessage: '',
+        peerAddrs: [],
       },
       initial: 'checkingAccount',
       states: {

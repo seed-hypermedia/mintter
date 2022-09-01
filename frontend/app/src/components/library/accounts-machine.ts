@@ -29,9 +29,8 @@ type AccountEvent =
 export function createAccountMachine(account: Account) {
   return createMachine(
     {
-      id: 'Account',
+      id: 'account-machine',
       predictableActionArguments: true,
-      type: 'parallel',
       tsTypes: {} as import('./accounts-machine.typegen').Typegen0,
       schema: {
         context: {} as AccountContext,
@@ -43,6 +42,7 @@ export function createAccountMachine(account: Account) {
         peers: [],
         status: undefined,
       },
+      type: 'parallel',
       states: {
         data: {
           initial: 'fetching',

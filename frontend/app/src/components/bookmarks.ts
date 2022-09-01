@@ -44,8 +44,8 @@ type BookmarkListEvent =
 export function createBookmarkListMachine(client: QueryClient) {
   return createMachine(
     {
+      id: 'bookmarklist-machine',
       predictableActionArguments: true,
-      initial: 'loading',
       tsTypes: {} as import('./bookmarks.typegen').Typegen0,
       schema: {
         context: {} as BookmarkListContext,
@@ -55,6 +55,7 @@ export function createBookmarkListMachine(client: QueryClient) {
         bookmarks: [],
         errorMessage: '',
       },
+      initial: 'loading',
       on: {
         'BOOKMARK.CLEARALL': {
           actions: ['clearBookmarkList', 'persist'],
@@ -195,6 +196,7 @@ type BookmarkEvent =
 export function createBookmarkMachine(client: QueryClient, url: string) {
   return createMachine(
     {
+      id: 'bookmark-machine',
       predictableActionArguments: true,
       tsTypes: {} as import('./bookmarks.typegen').Typegen1,
       schema: {

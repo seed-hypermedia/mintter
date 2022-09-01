@@ -17,7 +17,7 @@ type ActivityContext = {
 
 export const activityMachine = createMachine(
   {
-    id: 'activityMachine',
+    id: 'activity-machine',
     predictableActionArguments: true,
     tsTypes: {} as import('./activity-machine.typegen').Typegen0,
     schema: {
@@ -56,19 +56,6 @@ export const activityMachine = createMachine(
     },
   },
   {
-    guards: {
-      // hasVisited: (context, event) => {
-      //   return context.visitList.includes(event.url)
-      // },
-    },
-    services: {
-      getActivityList: () => {
-        return store.get<Array<string>>(ACTIVITY).then((res) => {
-          if (!res) return []
-          return res
-        })
-      },
-    },
     actions: {
       assignList: assign({
         visitList: (_, event) => {
@@ -89,6 +76,19 @@ export const activityMachine = createMachine(
       }),
       persist: (context) => {
         store.set(ACTIVITY, context.visitList)
+      },
+    },
+    guards: {
+      // hasVisited: (context, event) => {
+      //   return context.visitList.includes(event.url)
+      // },
+    },
+    services: {
+      getActivityList: () => {
+        return store.get<Array<string>>(ACTIVITY).then((res) => {
+          if (!res) return []
+          return res
+        })
       },
     },
   },
