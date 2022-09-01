@@ -1781,7 +1781,7 @@ __metadata:
     nanoid: 4.0.0
     navaid: 1.2.0
     prettier: 2.7.1
-    protobufjs: 6.11.3
+    protobufjs: 7.1.0
     react: 18.2.0
     react-async-ssr: 0.7.2
     react-copy-to-clipboard: 5.1.0
@@ -8423,7 +8423,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:5.2.0":
+"long@npm:5.2.0, long@npm:^5.0.0":
   version: 5.2.0
   resolution: "long@npm:5.2.0"
   checksum: 37aa4e67b9c3eebc6d9d675adcc9d06f06059ca268922a71273de389746bf07f0ff282f9e604d17fdf84c4149099b44e936ea2b621a6c4759a216621afa97efd
@@ -9982,7 +9982,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:6.11.3, protobufjs@npm:^6.11.3, protobufjs@npm:^6.8.8":
+"protobufjs@npm:7.1.0":
+  version: 7.1.0
+  resolution: "protobufjs@npm:7.1.0"
+  dependencies:
+    "@protobufjs/aspromise": ^1.1.2
+    "@protobufjs/base64": ^1.1.2
+    "@protobufjs/codegen": ^2.0.4
+    "@protobufjs/eventemitter": ^1.1.0
+    "@protobufjs/fetch": ^1.1.0
+    "@protobufjs/float": ^1.0.2
+    "@protobufjs/inquire": ^1.1.0
+    "@protobufjs/path": ^1.1.2
+    "@protobufjs/pool": ^1.1.0
+    "@protobufjs/utf8": ^1.1.0
+    "@types/node": ">=13.7.0"
+    long: ^5.0.0
+  checksum: 11946cef7002cd28837abdfe6294841763dfaad9d4176260c98ccee092ae1afed8a626910f1c2d28177b2e654a838a9cb71710fe52650dc5fc8543229693dbb6
+  languageName: node
+  linkType: hard
+
+"protobufjs@npm:^6.11.3, protobufjs@npm:^6.8.8":
   version: 6.11.3
   resolution: "protobufjs@npm:6.11.3"
   dependencies:
