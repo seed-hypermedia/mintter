@@ -19,13 +19,14 @@ type OnboardingEvent =
 
 let onboardingMachine = createMachine(
   {
-    id: 'onboarding',
-    initial: 'welcome',
+    id: 'onboarding-machine',
+    predictableActionArguments: true,
     tsTypes: {} as import('./index.typegen').Typegen0,
     schema: {
       context: {} as unknown,
       events: {} as OnboardingEvent,
     },
+    initial: 'welcome',
     states: {
       // loading: {
       //   on: {

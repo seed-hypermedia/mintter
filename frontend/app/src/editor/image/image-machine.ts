@@ -21,6 +21,7 @@ type ImageServices = {
 
 export const imageMachine = createMachine(
   {
+    id: 'image-machine',
     predictableActionArguments: true,
     tsTypes: {} as import('./image-machine.typegen').Typegen0,
     schema: {
@@ -28,7 +29,6 @@ export const imageMachine = createMachine(
       events: {} as ImageEvent,
       services: {} as ImageServices,
     },
-    id: 'imageMachine',
     description:
       'Context: caption, imageURL (the image imput should be uncontrolled)',
     context: {
@@ -66,7 +66,7 @@ export const imageMachine = createMachine(
           update: {
             on: {
               'IMAGE.CANCEL': {
-                target: '#imageMachine.image',
+                target: '#image-machine.image',
               },
             },
           },

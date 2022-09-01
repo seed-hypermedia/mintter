@@ -35,6 +35,8 @@ type ThemeEvent =
 export function createThemeService() {
   return createMachine(
     {
+      id: 'theme-machine',
+      predictableActionArguments: true,
       tsTypes: {} as import('./theme.typegen').Typegen0,
       schema: {
         context: {} as ThemeContextType,

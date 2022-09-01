@@ -32,13 +32,13 @@ export function createTippingMachine({
 }) {
   return createMachine(
     {
+      id: 'tipping-machine',
       predictableActionArguments: true,
       tsTypes: {} as import('./tipping-machine.typegen').Typegen0,
       schema: {
         context: {} as TippingContextType,
         events: {} as TippingEvent,
       },
-      initial: 'close',
       context: {
         amount: 0,
         invoice: '',
@@ -46,6 +46,7 @@ export function createTippingMachine({
         publicationID,
         errorMessage: '',
       },
+      initial: 'close',
       states: {
         close: {
           id: 'close',
