@@ -1745,15 +1745,15 @@ __metadata:
     unist-util-is: 5.1.1
     unist-util-remove-position: 4.0.1
     unist-util-to-string-with-nodes: 0.1.1
-    unist-util-visit: 4.1.0
-    unist-util-visit-parents: 5.1.0
+    unist-util-visit: 4.1.1
+    unist-util-visit-parents: 5.1.1
     vite: 3.0.9
     vite-plugin-checker: 0.4.9
     vite-plugin-worker: 1.0.5
     vite-react-jsx: 1.1.2
     vite-tsconfig-paths: 3.5.0
     vitest: 0.18.1
-    xstate: 4.33.2
+    xstate: 4.33.4
   peerDependencies:
     typescript: 4.7.4
   languageName: unknown
@@ -12395,13 +12395,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+
 "unist-util-visit-parents@npm:5.1.0":
   version: 5.1.0
   resolution: "unist-util-visit-parents@npm:5.1.0"
   dependencies:
     "@types/unist": ^2.0.0
     unist-util-is: ^5.0.0
-  checksum: 7c413dbb3dfcb679109fa8f0965d9abf117c3c53fa7b8823f68cac0ea53adbe98c1ce954d36c034e086c966b48b1d44d42c85f7bf6b42a032f728ac338929513
+  checksum: c699d18f5b26461dee37612b84c243fd5457c98f4c0540d9ba8bee05062aece5f3b4fb1af6b07423ce6750d8926e8c01fc2b1a4de1e54925ef6795c177ed8e18
   languageName: node
   linkType: hard
 
@@ -12430,8 +12431,8 @@ __metadata:
   dependencies:
     "@types/unist": ^2.0.0
     unist-util-is: ^5.0.0
-    unist-util-visit-parents: ^5.0.0
-  checksum: 3521abee2ed4535092aac073d05f46255475c89781b8e9d8c951a473d91b5d6e4d5912ae4a68a4c1cf17a42ed0108cb93103c7f5c736977529969997451363fb
+    unist-util-visit-parents: ^5.1.1
+  checksum: c4a63734b0a5b439c62d20901bb472bdafdbbcd80c383e254aedeb98b23d0bae815a331e776ce7d63ea3c8018a54318abb8709d07cdf7dd094f79b2f07bb39f0
   languageName: node
   linkType: hard
 
@@ -12441,17 +12442,6 @@ __metadata:
   dependencies:
     unist-util-visit-parents: ^2.0.0
   checksum: e9395205b6908c8d0fe71bc44e65d89d4781d1bb2d453a33cb67ed4124bad0b89d6b1d526ebaecb82a7c48e211bdf6f24351449b8cc115327b345f4617c18728
-  languageName: node
-  linkType: hard
-
-"unist-util-visit@npm:^4.0.0":
-  version: 4.1.1
-  resolution: "unist-util-visit@npm:4.1.1"
-  dependencies:
-    "@types/unist": ^2.0.0
-    unist-util-is: ^5.0.0
-    unist-util-visit-parents: ^5.1.1
-  checksum: c4a63734b0a5b439c62d20901bb472bdafdbbcd80c383e254aedeb98b23d0bae815a331e776ce7d63ea3c8018a54318abb8709d07cdf7dd094f79b2f07bb39f0
   languageName: node
   linkType: hard
 
@@ -13230,7 +13220,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xstate@npm:4.33.2":
+
+"xstate@npm:4.33.4":
+  version: 4.33.4
+  resolution: "xstate@npm:4.33.4"
+  checksum: 41b5c7f5c5d255493a2ee8414a2bf6a2268ff8b13fae063ce686d1ac52192f90ebe95a1fe490a63531e781a4db74f2c3b2d51d65ca1c44d7a4125076c7662429
+  languageName: node
+  linkType: hard
+
+"xstate@npm:^4.29.0":
   version: 4.33.2
   resolution: "xstate@npm:4.33.2"
   checksum: 6e10bcfe66594b3903d34635f7db34388878ab5314c94aa1ece4def97f605f61f8f70fd4ca00de0fd124b465bf8dd7796661d9fdd29a602e144dd31906ee2e26

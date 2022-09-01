@@ -103,10 +103,10 @@
     "unist-util-is": "5.1.1",
     "unist-util-remove-position": "4.0.1",
     "unist-util-to-string-with-nodes": "0.1.1",
-    "unist-util-visit": "4.1.0",
-    "unist-util-visit-parents": "5.1.0",
+    "unist-util-visit": "4.1.1",
+    "unist-util-visit-parents": "5.1.1",
     "vite-plugin-worker": "1.0.5",
-    "xstate": "4.33.2"
+    "xstate": "4.33.4"
   },
   "devDependencies": {
     "@cypress/vite-dev-server": "2.2.3",
