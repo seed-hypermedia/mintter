@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	crawshaw.io/sqlite v0.3.2
-	github.com/99designs/gqlgen v0.17.13
+	github.com/99designs/gqlgen v0.17.16
 	github.com/btcsuite/btcd v0.23.1
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
 	github.com/gorilla/mux v1.8.0
@@ -42,7 +42,7 @@ require (
 	github.com/sanity-io/litter v1.5.5
 	github.com/stretchr/testify v1.8.0
 	github.com/tidwall/tinyqueue v0.1.1
-	github.com/vektah/gqlparser/v2 v2.4.6
+	github.com/vektah/gqlparser/v2 v2.5.0
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.21.0
@@ -200,7 +200,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	google.golang.org/genproto v0.0.0-20210617175327-b9e0b3197ced // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 	nhooyr.io/websocket v1.8.6 // indirect
