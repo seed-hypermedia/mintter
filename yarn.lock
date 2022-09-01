@@ -1824,7 +1824,7 @@ __metadata:
     vite-react-jsx: 1.1.2
     vite-tsconfig-paths: 3.5.0
     vitest: 0.18.1
-    xstate: 4.33.4
+    xstate: 4.33.5
   peerDependencies:
     typescript: 4.7.4
   languageName: unknown
@@ -12479,10 +12479,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-
-"unist-util-visit-parents@npm:5.1.0":
-  version: 5.1.0
-  resolution: "unist-util-visit-parents@npm:5.1.0"
+"unist-util-visit-parents@npm:5.1.1, unist-util-visit-parents@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "unist-util-visit-parents@npm:5.1.1"
   dependencies:
     "@types/unist": ^2.0.0
     unist-util-is: ^5.0.0
@@ -12499,19 +12498,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unist-util-visit-parents@npm:^5.0.0, unist-util-visit-parents@npm:^5.1.1":
-  version: 5.1.1
-  resolution: "unist-util-visit-parents@npm:5.1.1"
-  dependencies:
-    "@types/unist": ^2.0.0
-    unist-util-is: ^5.0.0
-  checksum: c699d18f5b26461dee37612b84c243fd5457c98f4c0540d9ba8bee05062aece5f3b4fb1af6b07423ce6750d8926e8c01fc2b1a4de1e54925ef6795c177ed8e18
-  languageName: node
-  linkType: hard
-
-"unist-util-visit@npm:4.1.0":
-  version: 4.1.0
-  resolution: "unist-util-visit@npm:4.1.0"
+"unist-util-visit@npm:4.1.1, unist-util-visit@npm:^4.0.0":
+  version: 4.1.1
+  resolution: "unist-util-visit@npm:4.1.1"
   dependencies:
     "@types/unist": ^2.0.0
     unist-util-is: ^5.0.0
@@ -13304,18 +13293,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-
-"xstate@npm:4.33.4":
-  version: 4.33.4
-  resolution: "xstate@npm:4.33.4"
-  checksum: 41b5c7f5c5d255493a2ee8414a2bf6a2268ff8b13fae063ce686d1ac52192f90ebe95a1fe490a63531e781a4db74f2c3b2d51d65ca1c44d7a4125076c7662429
-  languageName: node
-  linkType: hard
-
-"xstate@npm:^4.29.0":
-  version: 4.33.2
-  resolution: "xstate@npm:4.33.2"
-  checksum: 6e10bcfe66594b3903d34635f7db34388878ab5314c94aa1ece4def97f605f61f8f70fd4ca00de0fd124b465bf8dd7796661d9fdd29a602e144dd31906ee2e26
+"xstate@npm:4.33.5":
+  version: 4.33.5
+  resolution: "xstate@npm:4.33.5"
+  checksum: 124898d48547cdf46e9d26460fccd0632bd59505f5f1d968a9b21b04580eaa210ac289bb2dcd61a64f837fc4fba15ee20c3dc16b899dd637949c912b25fd0821
   languageName: node
   linkType: hard
 
