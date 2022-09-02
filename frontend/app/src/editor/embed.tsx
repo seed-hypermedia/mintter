@@ -122,7 +122,7 @@ function Embed({
         hoverService.send({type: 'MOUSE_LEAVE', ref: `${docId}/${blockId}`})
       }}
       css={{
-        [`[data-hover-ref="${docId}/${blockId}"] &:after`]: {
+        [`[data-hover-ref="${docId}/${blockId}"] &:before`]: {
           backgroundColor: '$primary-component-bg-active',
           opacity: 1,
         },

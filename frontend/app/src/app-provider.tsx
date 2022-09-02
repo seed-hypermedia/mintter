@@ -9,6 +9,7 @@ import {
 import {TooltipProvider} from '@components/tooltip'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, useState} from 'react'
+import {Toaster} from 'react-hot-toast'
 import {useQueryClient} from 'react-query'
 import {FindContextProvider} from './editor/find'
 
@@ -32,6 +33,7 @@ function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
           }
           <FindContextProvider value={{search, setSearch}}>
             <TooltipProvider>{children}</TooltipProvider>
+            <Toaster position="bottom-right" />
           </FindContextProvider>
         </BookmarksProvider>
       </HoverProvider>
