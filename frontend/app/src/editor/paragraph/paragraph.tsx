@@ -61,7 +61,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
 
 function hoverStyles(id: string): CSS {
   return {
-    [`[data-hover-ref="${id}"] &:after`]: {
+    [`[data-hover-ref="${id}"] &:before`]: {
       backgroundColor: '$primary-component-bg-normal',
       opacity: 1,
     },

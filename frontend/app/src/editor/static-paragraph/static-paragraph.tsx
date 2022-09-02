@@ -76,7 +76,7 @@ function StaticParagraph({
         {...attributes}
         // {...elementProps}
         css={{
-          [`[data-hover-ref="${docId}/${parentNode?.id}"] &:after`]: {
+          [`[data-hover-ref="${docId}/${parentNode?.id}"] &:before`]: {
             backgroundColor: '$primary-component-bg-normal',
             opacity: 1,
           },
@@ -97,7 +97,7 @@ function StaticParagraph({
         blockType: 'heading',
       })}
       css={{
-        [`[data-hover-ref="${docId}/${parentNode?.id}"] &:after`]: {
+        [`[data-hover-ref="${docId}/${parentNode?.id}"] &:before`]: {
           backgroundColor: '$primary-component-bg-normal',
           opacity: 1,
         },

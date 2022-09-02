@@ -66,7 +66,7 @@ export var phrasingStyles = css({
     position: 'relative',
     zIndex: 10,
   },
-  '&:after': {
+  '&:before': {
     content: '',
     position: 'absolute',
     top: 0,
@@ -137,7 +137,7 @@ export var phrasingStyles = css({
     },
     highlight: {
       true: {
-        '&:after': {
+        '&:before': {
           backgroundColor: '$primary-component-bg-normal',
           opacity: 1,
         },
@@ -185,10 +185,10 @@ export var embedStyles = css({
     cursor: 'pointer',
     color: '$primary-active',
   },
-  '&:before': {
+  '&:after': {
     display: 'none',
   },
-  '&:after': {
+  '&:before': {
     content: '',
     position: 'absolute',
     top: 0,
@@ -197,7 +197,7 @@ export var embedStyles = css({
     transform: 'translateX(-50%) scaleY(1.3)',
     width: '200vw',
     height: '$full',
-    zIndex: -1,
+    zIndex: 0,
     opacity: 0,
     transition: 'opacity 0.35s ease',
     backgroundColor: 'transparent',

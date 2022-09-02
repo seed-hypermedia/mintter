@@ -1,4 +1,5 @@
 import {toolsTargetStyles} from '@app/editor/styles'
+import {classnames} from '@app/utils/classnames'
 import {VariantProps} from '@stitches/react'
 
 export function BlockToolsTarget(
@@ -7,7 +8,7 @@ export function BlockToolsTarget(
   return (
     <span
       contentEditable={false}
-      className={[toolsTargetStyles(props), 'blocktools-target'].join(' ')}
+      className={classnames(toolsTargetStyles(props), 'blocktools-target')}
     />
   )
 }

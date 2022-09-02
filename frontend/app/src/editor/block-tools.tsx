@@ -234,10 +234,15 @@ export function PublicationBlockTools({
       css={{
         position: 'absolute',
         zIndex: '$max',
-        // background: 'red',/
+
         insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) - 0.5rem)',
         insetInlineEnd: 24,
         userSelect: 'none',
+        zoom: 0.8,
+        backgroundColor: '$base-background-normal',
+        '@bp1': {
+          zoom: 1,
+        },
       }}
     >
       <Button
