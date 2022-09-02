@@ -1,0 +1,10 @@
+node_modules
+.DS_Store
+dist
+build
+dist-ssr
+*.local
+cypress/plugins/index.js
+frontend/app/src/client/.generated
+frontend/app/src/**/*.typegen.*
+exts/wake-asc/mtt_ephemeral_poll.ts

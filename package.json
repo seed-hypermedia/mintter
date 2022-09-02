@@ -8,11 +8,24 @@
   "packageManager": "pnpm@7.11.0",
   "scripts": {
     "build": "cd frontend/app && pnpm run build",
-    "lint": "cd frontend/app && pnpm run lint",
-    "format": "cd frontend/app && pnpm run format",
+    "lint": "prettier --check --plugin-search-dir=. . && eslint .",
+    "format": "prettier --write --plugin-search-dir=. .",
     "test": "cd frontend/app && pnpm run test",
     "test:unit": "cd frontend/app && pnpm run test:unit",
     "codegen": "graphql-codegen",
     "validate": "cd frontend/app && pnpm run validate"
+  },
+  "devDependencies": {
+    "@mintter/app": "0.3.0",
+    "eslint": "8.20.0",
+    "@typescript-eslint/eslint-plugin": "5.36.1",
+    "@typescript-eslint/parser": "5.36.1",
+    "@typescript-eslint/typescript-estree": "5.36.1",
+    "eslint-config-preact": "1.3.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-react": "7.31.1",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "prettier": "2.7.1"
   }
 }
