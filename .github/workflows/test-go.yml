@@ -5,17 +5,17 @@ on:
     branches:
       - master
     paths:
-      - ".github/workflows/test-go.yml"
-      - "go.mod"
-      - "backend/**"
-  
+      - '.github/workflows/test-go.yml'
+      - 'go.mod'
+      - 'backend/**'
+
   pull_request:
     paths:
-      - ".github/workflows/test-go.yml"
-      - "go.mod"
-      - "backend/**"
+      - '.github/workflows/test-go.yml'
+      - 'go.mod'
+      - 'backend/**'
     branches-ignore:
-      - "renovate/**"
+      - 'renovate/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
