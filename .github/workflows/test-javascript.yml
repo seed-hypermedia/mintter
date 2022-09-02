@@ -31,4 +31,4 @@ jobs:
           cache: "yarn"
       - name: Install Dependencies
         run: YARN_CHECKSUM_BEHAVIOR=update yarn
-      - run: yarn test:unit
+      - run: pnpm test:unit

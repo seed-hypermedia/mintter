@@ -20,12 +20,12 @@ Based on the [GraphQL Schema](./schema.graphql) we generate all the Typescript T
 
 ```bash
 cd <PROJECT_ROOT>
-yarn codegen
+pnpm codegen
 ```
 
 The above command generates a `types.d.ts` file in `frontend/app/src/client/.generated` (checkout [codegen.yml](../codegen.yml) for more info about the config.)
 
 ### Additional Resources
 
-- https://egghead.io/lessons/graphql-generate-typescript-types-from-a-graphql-schema
-- https://github.com/dotansimha/graphql-code-generator
+-   https://egghead.io/lessons/graphql-generate-typescript-types-from-a-graphql-schema
+-   https://github.com/dotansimha/graphql-code-generator

@@ -61,6 +61,11 @@ nixpkgs_binary(
 )
 
 nixpkgs_binary(
+    name = "pnpm",
+    nix_attribute = "nodePackages.pnpm",
+)
+
+nixpkgs_binary(
     name = "protoc",
     nix_attribute = "protobuf",
 )

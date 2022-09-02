@@ -5,18 +5,14 @@
   "repository": "https://github.com/mintterteam/mintter",
   "author": "Mintter Team",
   "private": true,
+  "packageManager": "pnpm@7.11.0",
   "scripts": {
-    "build": "yarn app build",
-    "lint": "yarn app lint",
-    "format": "yarn app format",
-    "test": "yarn app test",
-    "test:unit": "yarn app test:unit",
-    "app": "yarn workspace @mintter/app",
+    "build": "cd frontend/app && pnpm run build",
+    "lint": "cd frontend/app && pnpm run lint",
+    "format": "cd frontend/app && pnpm run format",
+    "test": "cd frontend/app && pnpm run test",
+    "test:unit": "cd frontend/app && pnpm run test:unit",
     "codegen": "graphql-codegen",
-    "validate": "yarn app validate"
-  },
-  "workspaces": [
-    "frontend/*"
-  ],
-  "packageManager": "yarn@3.2.3"
+    "validate": "cd frontend/app && pnpm run validate"
+  }
 }

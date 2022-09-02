@@ -30,9 +30,9 @@ jobs:
       - name: Install Dependencies
         run: YARN_CHECKSUM_BEHAVIOR=update yarn
       - name: Lint packages
-        run: yarn lint
+        run: pnpm lint
       - name: Format files (Prettier)
-        run: yarn format
+        run: pnpm format
 
   # lint-go:
   #   runs-on: ubuntu-latest

@@ -14,14 +14,14 @@ filegroup(
     ],
 )
 
-yarn_script(
+pnpm_script(
     name = "app",
     srcs = [
         ":srcs",
         "//:tsconfig",
     ],
     outs = ["dist"],
+    pnpm_deps = "//:pnpm",
     script_name = "build:client",
     workdir = "./app",
-    yarn_deps = "//:yarn",
 )
