@@ -1,10 +1,11 @@
-import {useVisitList} from '@app/main-context'
+import {useActivity} from '@app/main-context'
 import {DraftWithRef, PublicationWithRef} from '@app/main-machine'
 import {pageListStyle} from '@app/pages/list-page'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {LibraryItem} from '@components/library/library-item'
 import {Text} from '@components/text'
+import {useActor} from '@xstate/react'
 
 type FileListProps = {
   items: Array<PublicationWithRef | DraftWithRef>
@@ -21,7 +22,8 @@ export function FileList({
   emptyLabel,
   title,
 }: FileListProps) {
-  let visitList = useVisitList()
+  let activity = useActivity()
+  let [state] = useActor(activity)
 
   return (
     <Box
@@ -61,7 +63,7 @@ export function FileList({
             <LibraryItem
               isNew={
                 (file as PublicationWithRef).document
-                  ? !visitList.includes(
+                  ? !state.context.visitList.includes(
                       `${(file as PublicationWithRef).document?.id}/${
                         (file as PublicationWithRef).version
                       }`,

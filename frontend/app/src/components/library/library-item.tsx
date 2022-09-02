@@ -48,6 +48,7 @@ export function LibraryItem({
   let params = useParams()
   const mainService = useMain()
   let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [fileRef.id])
+
   let match = useMemo(() => {
     if (isPublication) {
       return (
