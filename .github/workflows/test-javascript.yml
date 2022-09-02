@@ -5,16 +5,16 @@ on:
     branches:
       - master
     paths:
-      - ".github/workflows/test-javascript.yml"
-      - "frontend/**"
-      - "package.json"
+      - '.github/workflows/test-javascript.yml'
+      - 'frontend/**'
+      - 'package.json'
   pull_request:
     paths:
-      - ".github/workflows/test-javascript.yml"
-      - "frontend/**"
-      - "package.json"
+      - '.github/workflows/test-javascript.yml'
+      - 'frontend/**'
+      - 'package.json'
     branches-ignore:
-      - "renovate/**"
+      - 'renovate/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -25,10 +25,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
-          cache: "yarn"
-      - name: Install Dependencies
-        run: YARN_CHECKSUM_BEHAVIOR=update yarn
+          node-version: 16
+
+      - uses: pnpm/action-setup@v2.2.2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          run_install: true
+
       - run: pnpm test:unit
