@@ -20,7 +20,7 @@ export function BookmarksSection() {
   return (
     <Section
       title="Bookmarks"
-      icon="Star"
+      icon="Bookmark"
       actions={
         <Box
           css={{

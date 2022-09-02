@@ -13,7 +13,6 @@ import {css, styled} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {formattedDate} from '@app/utils/get-format-date'
-import {debug} from '@app/utils/logger'
 import {useBookmarksService} from '@components/bookmarks'
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
@@ -86,7 +85,6 @@ export function LibraryItem({
           })
         },
         removeFileFromBookmarks: (context) => {
-          debug('removeFileFromBookmarks!!')
           bookmarksService.send({
             type: 'BOOKMARK.FILE.DELETE',
             documentId: context.documentId,
