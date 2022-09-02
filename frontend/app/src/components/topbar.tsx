@@ -256,7 +256,7 @@ function PublicationActions({
         </Tooltip>
         <Tooltip content="Add to boomarks">
           <TopbarButton onClick={onBookmark}>
-            <Icon name="ArrowBottomRight" size="1" />
+            <Icon name="Bookmark" size="1" />
           </TopbarButton>
         </Tooltip>
       </Box>
