@@ -149,7 +149,7 @@ export function DraftBlockTools({
     <Box
       css={{
         position: 'absolute',
-        zIndex: '$max',
+        // zIndex: '$1',
         insetBlockStart: 'calc(var(--tools-y, -999) * 1px)',
         insetInlineStart: 'calc(var(--tools-x, -999) * 1px)',
       }}
@@ -233,7 +233,7 @@ export function PublicationBlockTools({
     <Box
       css={{
         position: 'absolute',
-        zIndex: '$max',
+        // zIndex: '$1',
 
         insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) - 0.5rem)',
         insetInlineEnd: 24,

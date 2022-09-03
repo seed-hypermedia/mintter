@@ -12,7 +12,8 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "rust-lang.rust-analyzer",
-    "bazelbuild.vscode-bazel"
+    "bazelbuild.vscode-bazel",
+    "zxh404.vscode-proto3"
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": [

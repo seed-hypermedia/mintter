@@ -58,7 +58,7 @@ export default function Publication({
     )
   }
 
-  if (state.matches('publication.ready')) {
+  if (state.hasTag('ready')) {
     return (
       <ErrorBoundary
         FallbackComponent={AppError}

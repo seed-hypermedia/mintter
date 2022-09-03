@@ -1,3 +1,4 @@
+import {activityMachine} from '@app/activity-machine'
 import {AuthProvider} from '@app/auth-context'
 import {createAuthService} from '@app/auth-machine'
 import {
@@ -20,11 +21,13 @@ import {
   BookmarksProvider,
   createBookmarkListMachine,
 } from '@components/bookmarks'
+import {libraryMachine} from '@components/library/library-machine'
 import {TooltipProvider} from '@components/tooltip'
 import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {Suspense} from 'react'
 import {QueryClient, QueryClientProvider} from 'react-query'
+import {spawn} from 'xstate'
 
 type TestMockData = {
   account?: Partial<Account>
@@ -193,7 +196,21 @@ export function TestProvider({client, children}: TestProviderProps) {
   let themeService = useInterpret(() => createThemeService())
   let hoverService = useInterpret(() => createHoverService())
   let bookmarksService = useInterpret(() => createBookmarkListMachine(client))
-  let mainService = useInterpret(() => createMainPageService({client}))
+  let mainService = useInterpret(() =>
+    createMainPageService({client}).withContext({
+      activity: spawn(activityMachine, 'activity'),
+      library: spawn(libraryMachine, 'library'),
+      params: {
+        replace: false,
+      },
+      recents: [],
+
+      currentFile: null,
+      publicationList: [],
+      draftList: [],
+      errorMessage: '',
+    }),
+  )
 
   // return null
   return (
