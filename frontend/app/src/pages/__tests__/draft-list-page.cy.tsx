@@ -36,6 +36,8 @@ describe('DraftList', () => {
           children: [],
         },
       ],
+
+      authors: [{id: 'testauthor'}],
     })
 
     cy.mount(<DraftList />, {

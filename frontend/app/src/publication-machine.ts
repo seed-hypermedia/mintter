@@ -41,8 +41,6 @@ export type PublicationEvent =
       canUpdate?: boolean
     }
   | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
-  | {type: 'PUBLICATION.REPORT.AUTHOR.ERROR'; errorMessage: string}
-  | {type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS'; author: Account}
   | {type: 'DISCUSSION.FETCH.DATA'}
   | {type: 'DISCUSSION.SHOW'}
   | {type: 'DISCUSSION.HIDE'}
@@ -53,6 +51,7 @@ export type PublicationEvent =
   | {type: 'FILE.DELETE.CLOSE'}
   | {type: 'FILE.DELETE.CANCEL'}
   | {type: 'FILE.DELETE.CONFIRM'}
+  | {type: 'PUBLICATION.REPLY.TO'}
 
 type CreatePublicationProps = {
   client: QueryClient
@@ -65,16 +64,25 @@ export function createPublicationMachine({
   publication,
   editor,
 }: CreatePublicationProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiRChI9i5MSAAeiAIwBOAGzMADJvUKAzAFYFCvUqV6ANCACeiACw2AHBq0KVO9QHYF6gEz2Avn4WaFh4RLzUtAxMrOyc3LzMAGZghPSMUMIAIgCSAMoAwgCqubnZAPIAcswASgCiAApl1QAqzLXV1U0yyBLYUmQy8gje3grMSjruNsYThgr27vYW1gg6uk6augZGJnoBQRg4BP0RadFsHFw85EkpZxk5BcWllTUNTa25hfn5tSXdvX6g0QC2WIOUzD0mwU3gMSk0Sm8+xAwSOYXIpyiLAucWufAATmB8BBLMwGBAIGAyFk8kUSuUqrkABJlADqAMkvGBCD0ejU8JU3hsOhs7k8ensSjBCHsOiUG3UJk0U0V7mRqNCJxoZ2xsSuCUJxNJ5Mp1MedJeVWaZQA4jaADK1Dl9LlIOSIXn89SC4Wi8WS6X2BYbGFQpQLKZIwIow6a8LarExS7xG6GknMABu7GwWBE5ueDOYTOymSdbp6nOkbqGEu8kKMKhcjZFUqsiAmehD23hugW6tjx3jkUYuuTeOYadJWZ4uZpT3pr2tdsdzqB1Y9fPG3qFIrFRgDbYQ7iUYy0Hm8J5U6mmOn7IUHGITI6TuISYHx+JIhIgc4thYAYrUzT5EyzCZAAgs04Grq6oBDN4ioaKYjYqDYqFyqh7jSnoaHMG4EpXiox58vYUYHPe6KUE+0Qag+fACEIwj2mU4GZDBVZwbYJ7jCYSoqPYLi8uYh5GL4CqSvxAp8neaJasONEDpRzDvp+37CPUhQAEL2tk+SQQBQEgWBkHQeWgKwe6PI6Do9Z8uoazaJK17SoYOh1s4iqwu4Ep9tGtGUZiz7+f0typFEGQadpun6a8dSNC0zBfD8fy5OxAzrggNjcbxfECSoQkudZnZnj2OHht4ap+Ypck6swwUJMkYXpOpWk6XpzSFnFHxtB0XRmZW6WcZl2U5d6eUFSJQqOM4ujTOo9jCkoMlxo+8ksPVqZEiSwiFBUzGsWl3IqFeGgNt4OhXiMDjeC5DjqAqrjGGK2jLXRgVMC1UXtZ17wJeBhTNCy1SJd8vz-P1LocZZRXMJ4CxCSemhES5UbRmQJCUvA5bVUOtU4vqNwMWAh0ZWK0p2O5WgikKWX7q9AXUaOr43I19wk0NejnRoNizcYV5rDC0oXe4sMqPCor2FeQbzXsVUUTVib4ymBJbcaAimuz0MTMw-FTBMSjCh4jbSse8oIcqgruN6WW3nLsm44rerKxOquZtmuaa0MYo2LDWXhm53hi0sh6yvKNjQnzRGqCo9MK8+SvjpOnuIBd8q6zbBtuO4xuHp48raL47g6PYMyyrL5H26teNO+OKlfpAydHlhh7WTZsqtwtEo2CM2exw78c1xZFaQ4Nll6Do0pCqeMICXYQmTIsfdV4mG30YIxMQ2uQ36CLOV7lb6h8rdAl4dZPNucXujuGRMby-3Cl3zcdffo3YqdqoCwjAY82ys3KyGGLZg7c7DHgcEoK2N9V7vXWjjFmdxwqvz-ooUSzBYTaEPtbVuS07YrSomtOqsCVZGkQe-XWX8vBBkmLdKYIYvD5XHuHSqFdcHQIIY-Uew8t5jwniJb090C6IwQqJJht9K54J1I3C8Ll5jcxwjhFUIo9DHgCAEIAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBZfXAC2zLADoJtZdVZZSzHsJMwAYkQoSXYuREgAHogCMANgAMjBQBYArAA4ATHoCccuRv16ANCACeiNWoDMquwHZ9+p1oXa9TtQF9fFmhYeETcVLT0TCxsHFzkjABmYIQRZFCCACIAkgDKAMIAqjk5WQDyAHKMAEoAogAKpVUAKow1VVWNUshi2BJkUrIIclpOjBpOOqZ2ikpaw1oaFtYIdkr6jC5qOiNy+kp2agr6Gv6BGDgEfeF0DMys7Jzcicmp6dn5RSUV1fWNLTkFPJ5GrFLo9PoDRAjJZQuRqRhqNzOLT6BQeOx2E4BEBBC6hcjXSJ3GKPeIAJzA+AglkYdAgEDAZEyuUKxTKlRyAAlSgB1MHibiQhAaOwKMbTPRyHRrVGimEIUxaRgjHR2DwzBZqOSnHHnEJXag3KL3WJPClUml0hlM96sr6VJqlADiToAMjV+b1BUgZIgNDo5IwDiiDlLVoi7PL3BpGEoTLppZ41E5xjrcfqwoaidEHnEeObqYwAG6sbBYIS2z7sxicrIZD0+7oCyQ+wb+wPBvZKHROJzh-TyrR2HSMVx9+z2JTKXZpvWXTOpY0kvOMAs0ktccvMj5s76Ol3uz0Q1t+gNBtQopTd3v9wdaFT6YPqFzjbaz4LzglZ24503xMBkmSJAUhA252tWABiNRNHknKMBkACCTQIUe3qgIMwyjK+UwavMixWIgdjHBsV4isYV77EYCjvniBqLow6afjwfACIIrqlAhGSoS26HyNMQaYnshwpiY-rysYhiqL2ChokRChyL2WJnB++KUN+TCMapjAAUBIGCHUBQAEKulkeRIZB0GwfBSEoY24Job6woYqOcJXo+mJ9voajiVK8K9uiF5OEoF4aNq2KaXRRoMXOWlJCkNzpAZxmmeZ3y1A0zSMACQIgjk3H9CeCCIoGSLHKKaKogoTjicOMbjBoIVyNMopNTRGZfvREVPHFrz6UZJlmU01bpX8rTtJ0dnNgVvFFZJpUijJKIydVBFDKq6wyaYaizAGVVOG1TGErcXXkpS1KCAU5TsZx+VCjJDh9gpcYybYchKHI4mHOsmjBfJwwNUiB2qUdGkxX0q5nZYfXJYNw31K6ACajCOrdhXaDG22hYob3qNMH2rU9gZuQtqoKXMQORZE0MDallQjZlCEFE03JVFlgLAqCk1ejxjmrKMsyHDoCiJqYqriTo-jYmQJAMvAjZgwuUW-qSzH8GAqMzb28r2EqUqqlVzjqDJU4U4r2YmirzzxfQUAa45tjrKKbieG4GgKBK+HLJiMYBj4BsLHseh+OFCsdUrFsrmutJ8NaduDD4I5rG9qISVqoWDkcjB62qexOMYWjkyHKmUz+EdmpDxaluWceEfoSqzFOKb3V5CwrcsezfTJiiIlVcwYqbYfm8u5cWjXKw+LG95VW77st+MUZNbGhhrGqwvBamRe0WbpfD-+gHAZAY9a6tGIqFsP3dqsmJagPan0creZjyK8qqqMugaCTEw9lowfKVvg-HVDqrAQY9dgODjHCJw8kLxxlCt5Am21wFEVlFqPsqwlK6mLtvUGWC966UPlzY8mt7xSWGAcGUIoMQ+WFgid6dCiJ900LfEG0VcE8B6glI+bd5Bwj8jAoiuwm4jGYepVh-98yQyfsRfYSh-LTl9twoY8k6pCW-hVHsIjOpAIhsgTAlgmgkCflAhERxtDu2NjoLU4lezwkOBRWR8Zha-0weIlhJ1po4nsjzNskYCZxhHPeVwU5lqwIlpvdqd8jRj0mD5eEexhZBVbrYNU+1JZAA */
   return createMachine(
     {
-      id: 'publicationMachine',
-      predictableActionArguments: true,
+      id: 'publication-machine',
       tsTypes: {} as import('./publication-machine.typegen').Typegen0,
       schema: {
         context: {} as PublicationContext,
         events: {} as PublicationEvent,
       },
+      predictableActionArguments: true,
+      invoke: {
+        src: 'fetchAuthor',
+        id: 'fetchAuthor',
+        onDone: {
+          actions: 'assignAuthor',
+        },
+        onError: {},
+      },
+      type: 'parallel',
       context: {
         title: publication.document?.title ?? '',
         documentId: publication.document?.id ?? '',
@@ -86,16 +94,6 @@ export function createPublicationMachine({
         dedupeLinks: [],
         errorMessage: '',
         canUpdate: false,
-      },
-      type: 'parallel',
-      invoke: {
-        src: 'fetchAuthor',
-        id: 'fetchAuthor',
-      },
-      on: {
-        'PUBLICATION.REPORT.AUTHOR.SUCCESS': {
-          actions: 'assignAuthor',
-        },
       },
       states: {
         discussion: {
@@ -123,6 +121,7 @@ export function createPublicationMachine({
               },
             },
             ready: {
+              tags: ['ready'],
               initial: 'visible',
               states: {
                 hidden: {
@@ -214,26 +213,11 @@ export function createPublicationMachine({
     },
     {
       services: {
-        fetchAuthor: (context) => (sendBack) => {
+        fetchAuthor: (context) => {
           let author = context.publication?.document?.author || ''
-          if (author) {
-            client
-              .fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
-                getAccount(author),
-              )
-              .then((author) => {
-                sendBack({
-                  type: 'PUBLICATION.REPORT.AUTHOR.SUCCESS',
-                  author,
-                })
-              })
-              .catch((err) => {
-                sendBack({
-                  type: 'PUBLICATION.REPORT.AUTHOR.ERROR',
-                  errorMessage: `fetchAuthor ERROR: ${JSON.stringify(err)}`,
-                })
-              })
-          }
+          return client.fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
+            getAccount(author),
+          )
         },
         fetchPublicationData: (context) => (sendBack) => {
           Promise.all([
@@ -344,7 +328,7 @@ export function createPublicationMachine({
             event.publication.document.title || 'Untitled Document',
         }),
         assignAuthor: assign({
-          author: (_, event) => event.author,
+          author: (_, event) => event.data as Account,
         }),
         assignPublication: assign({
           publication: (_, event) => event.publication,

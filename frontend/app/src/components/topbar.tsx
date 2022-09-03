@@ -217,6 +217,7 @@ function PublicationActions({
   let [state] = useActor(fileRef)
   const bookmarkService = useBookmarksService()
   const mainService = useMain()
+  const [mainState] = useActor(mainService)
   async function onCopyReference() {
     await copy(
       `${MINTTER_LINK_PREFIX}${state.context.publication?.document?.id}/${state.context.publication?.version}`,
@@ -244,6 +245,7 @@ function PublicationActions({
           display: 'none',
           alignItems: 'center',
           gap: '$3',
+          zIndex: '$max',
           '@bp1': {
             display: 'flex',
           },
@@ -324,7 +326,10 @@ function PublicationActions({
             <Icon size="1" name="File" />
             <span className={dropdownLabel()}>New Document</span>
           </Dropdown.Item>
-          <Dropdown.Item>
+          <Dropdown.Item
+            disabled={mainState.matches('routes.publication.replying')}
+            onSelect={() => mainService.send('COMMIT.CREATE.REPLY')}
+          >
             <Icon size="1" name="MessageBubble" />
             <span className={dropdownLabel()}>Reply</span>
           </Dropdown.Item>

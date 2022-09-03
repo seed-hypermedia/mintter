@@ -1,3 +1,5 @@
+import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
+import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
 import {PublicationList} from '../publication-list-page'
 
@@ -16,9 +18,9 @@ describe('Publicationlist', () => {
     let {client} = createTestQueryClient({
       publicationList: [
         {
-          version: '1',
+          version: 'v1',
           document: {
-            id: '1',
+            id: 'd1',
             title: 'document 1',
             subtitle: '',
             author: 'testauthor',
@@ -29,9 +31,9 @@ describe('Publicationlist', () => {
           },
         },
         {
-          version: '2',
+          version: 'v1',
           document: {
-            id: '2',
+            id: 'd2',
             title: 'document 2',
             subtitle: '',
             author: 'testauthor',
@@ -42,7 +44,22 @@ describe('Publicationlist', () => {
           },
         },
       ],
+      authors: [{id: 'testauthor'}],
     })
+
+    client.setQueryData<ListCitationsResponse>(
+      [queryKeys.GET_PUBLICATION_DISCUSSION, 'd1', 'v1'],
+      {
+        links: [],
+      },
+    )
+
+    client.setQueryData<ListCitationsResponse>(
+      [queryKeys.GET_PUBLICATION_DISCUSSION, 'd2', 'v1'],
+      {
+        links: [],
+      },
+    )
 
     cy.mount(<PublicationList />, {
       client,

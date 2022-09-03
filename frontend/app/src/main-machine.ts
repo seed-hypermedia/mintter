@@ -1,15 +1,19 @@
 import {activityMachine} from '@app/activity-machine'
-import type {Document} from '@app/client'
 import {
   createDraft,
+  Document,
+  getDraft,
   listDrafts,
   listPublications,
   Publication,
+  updateDraftV2 as updateDraft,
 } from '@app/client'
+import {blockToApi} from '@app/client/v2/block-to-api'
 import {createDraftMachine} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
+import {link, paragraph, statement, text} from '@app/mttast'
 import {createPublicationMachine} from '@app/publication-machine'
 import {getRefFromParams} from '@app/utils/machine-utils'
 import {libraryMachine} from '@components/library/library-machine'
@@ -43,9 +47,21 @@ export type MainPageContext = {
 }
 
 type MainPageEvent =
-  | {
-      type: 'ROUTE.NOT.FOUND'
-    }
+  | {type: 'ROUTE.NOT.FOUND'}
+  | {type: 'GO.TO.SETTINGS'}
+  | {type: 'GO.TO.HOME'}
+  | {type: 'GO.TO.PUBLICATIONLIST'}
+  | {type: 'GO.TO.DRAFTLIST'}
+  | {type: 'GO.BACK'}
+  | {type: 'GO.FORWARD'}
+  | {type: 'listenRoute'}
+  | {type: 'CREATE.NEW.DRAFT'}
+  | {type: 'COMMIT.OPEN.WINDOW'; path?: string}
+  | {type: 'COMMIT.EDIT.PUBLICATION'; docId: string}
+  | {type: 'REPORT.FILES.ERROR'; errorMessage: string}
+  | {type: 'COMMIT.PUBLISH'; publication: Publication; documentId: string}
+  | {type: 'COMMIT.DELETE.FILE'; documentId: string; version: string | null}
+  | {type: 'COMMIT.CREATE.REPLY'; url: string}
   | {
       type: 'GO.TO.DRAFT'
       docId: string
@@ -59,50 +75,17 @@ type MainPageEvent =
       replace?: boolean
     }
   | {
-      type: 'GO.TO.SETTINGS'
-    }
-  | {
-      type: 'GO.TO.HOME'
-    }
-  | {
-      type: 'GO.TO.PUBLICATIONLIST'
-    }
-  | {
-      type: 'GO.TO.DRAFTLIST'
-    }
-  | {
-      type: 'GO.BACK'
-    }
-  | {
-      type: 'GO.FORWARD'
-    }
-  | {
-      type: 'listenRoute'
-    }
-  | {
-      type: 'CREATE.NEW.DRAFT'
-    }
-  | {
-      type: 'COMMIT.OPEN.WINDOW'
-      path?: string
-    }
-  | {
-      type: 'COMMIT.EDIT.PUBLICATION'
-      docId: string
-    }
-  | {
       type: 'REPORT.FILES.SUCCESS'
       publicationList: Array<Publication>
       draftList: Array<Document>
     }
-  | {type: 'REPORT.FILES.ERROR'; errorMessage: string}
-  | {type: 'COMMIT.PUBLISH'; publication: Publication; documentId: string}
-  | {type: 'COMMIT.DELETE.FILE'; documentId: string; version: string | null}
 
 type RouterEvent =
-  | {
-      type: 'pushHome'
-    }
+  | {type: 'pushHome'}
+  | {type: 'pushSettings'}
+  | {type: 'pushPublicationList'}
+  | {type: 'pushDraftList'}
+  | {type: 'listen'}
   | {
       type: 'pushPublication'
       docId: string
@@ -115,18 +98,6 @@ type RouterEvent =
       docId: string
       replace?: boolean
     }
-  | {
-      type: 'pushSettings'
-    }
-  | {
-      type: 'pushPublicationList'
-    }
-  | {
-      type: 'pushDraftList'
-    }
-  | {
-      type: 'listen'
-    }
 
 export type CreateMainPageServiceParams = {
   client: QueryClient
@@ -135,6 +106,9 @@ export type CreateMainPageServiceParams = {
 
 type MainServices = {
   createNewDraft: {
+    data: Document
+  }
+  createReply: {
     data: Document
   }
 }
@@ -250,6 +224,9 @@ export function createMainPageService({
                   entry: 'pushPublicationRoute',
                   tags: ['documentView', 'publication'],
                   on: {
+                    'COMMIT.CREATE.REPLY': {
+                      target: 'replying',
+                    },
                     // 'GO.TO.PUBLICATION': [
                     //   {
                     //     target: 'validating',
@@ -262,6 +239,20 @@ export function createMainPageService({
                     //     ''
                     //   ]
                     // },
+                  },
+                },
+                replying: {
+                  tags: ['documentView', 'publication'],
+                  invoke: {
+                    src: 'createReply',
+                    id: 'createReply',
+                    onDone: {
+                      actions: 'assignNewDraftValues',
+                      target: '#main-machine.routes.editor.idle',
+                    },
+                    onError: {
+                      actions: 'assignError',
+                    },
                   },
                 },
                 error: {
@@ -761,6 +752,64 @@ export function createMainPageService({
         createNewDraft: async () => {
           let doc = await createDraft()
           return doc
+        },
+        createReply: async (context) => {
+          /**
+           * - create draft
+           * - create block with link
+           * - update draft
+           * - return draft
+           */
+          let currentPub = context.currentFile?.getSnapshot()
+          let currentUrl = `mtt://${currentPub?.context.documentId}/${currentPub?.context.version}`
+          let doc = await createDraft()
+          let block = statement([
+            paragraph([
+              text('Reply to '),
+              link(
+                {
+                  url: currentUrl,
+                },
+                [text(currentPub?.context.title || currentUrl)],
+              ),
+              text(': '),
+            ]),
+          ])
+          console.log('replying...', {doc})
+          try {
+            await updateDraft({
+              documentId: doc.id,
+              changes: [
+                {
+                  op: {
+                    $case: 'setTitle',
+                    setTitle: `Reply to ${
+                      currentPub?.context.title || currentUrl
+                    }`,
+                  },
+                },
+                {
+                  op: {
+                    $case: 'moveBlock',
+                    moveBlock: {
+                      parent: '',
+                      leftSibling: '',
+                      blockId: block.id,
+                    },
+                  },
+                },
+                {
+                  op: {
+                    $case: 'replaceBlock',
+                    replaceBlock: blockToApi(block),
+                  },
+                },
+              ],
+            })
+            return getDraft(doc.id)
+          } catch (err) {
+            throw Error(`[REPLYTO ERROR]: ${JSON.stringify(err)}`)
+          }
         },
       },
     },

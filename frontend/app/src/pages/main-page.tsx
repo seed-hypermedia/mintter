@@ -22,9 +22,6 @@ export default function MainPage() {
 
   return (
     <Box className={rootPageStyle()}>
-      {state.hasTag('topbar') ? <Topbar /> : null}
-      {state.hasTag('library') ? <Library /> : null}
-
       <ErrorBoundary
         FallbackComponent={PageError}
         onReset={() => {
@@ -48,6 +45,8 @@ export default function MainPage() {
         {state.matches('routes.draftList') ? <DraftList /> : null}
         {state.matches('routes.publicationList') ? <PublicationList /> : null}
       </ErrorBoundary>
+      {state.hasTag('library') ? <Library /> : null}
+      {state.hasTag('topbar') ? <Topbar /> : null}
     </Box>
   )
 }
