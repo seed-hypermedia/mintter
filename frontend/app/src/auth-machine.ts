@@ -70,7 +70,9 @@ export function createAuthService(client: QueryClient) {
           invoke: {
             id: 'authMachine-fetch',
             src: 'fetchInfo',
-            onError: 'errored',
+            onError: {
+              target: 'loggedOut',
+            },
           },
           on: {
             'REPORT.DEVICE.INFO.PRESENT': {
@@ -83,7 +85,7 @@ export function createAuthService(client: QueryClient) {
                 target: 'retry',
               },
               {
-                target: 'errored',
+                target: 'loggedOut',
                 actions: [
                   'removeAccountInfo',
                   'clearRetries',
