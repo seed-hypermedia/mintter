@@ -161,38 +161,6 @@ CREATE TABLE named_versions (
     PRIMARY KEY (object_id, name, account_id, device_id)
 ) WITHOUT ROWID;
 
-CREATE TABLE working_copy (
-    object_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-    name TEXT NOT NULL,
-    data BLOB,
-    version TEXT DEFAULT ('') NOT NULL,
-    create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-    update_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-    PRIMARY KEY (object_id, name)
-) WITHOUT ROWID;
-
--- Stores draft-related attributes of an Object.
-CREATE TABLE drafts (
-    id INTEGER PRIMARY KEY,
-    title TEXT NOT NULL,
-    subtitle TEXT NOT NULL,
-    content BLOB,
-    create_time INTEGER NOT NULL CHECK (create_time > 500),
-    update_time INTEGER NOT NULL CHECK (update_time > 500),
-    FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
-);
-
--- Stores document-related indexed attributes.
-CREATE TABLE document_changes (
-    id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-    title TEXT NOT NULL,
-    subtitle TEXT NOT NULL,
-    change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-    change_time INTEGER NOT NULL,
-    PRIMARY KEY (id, change_id),
-    CHECK (id != change_id)
-) WITHOUT ROWID;
-
 CREATE TABLE content_links (
     source_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
     source_block_id TEXT NOT NULL,

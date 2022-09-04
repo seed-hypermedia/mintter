@@ -25,44 +25,6 @@ func add(qq ...sgen.QueryTemplate) int {
 }
 
 var (
-	workingCopy = add(
-		qb.MakeQuery(s.Schema, "WorkingCopyReplace", sgen.QueryKindExec,
-			"INSERT OR REPLACE INTO", s.WorkingCopy, qb.ListColShort(
-				s.WorkingCopyObjectID,
-				s.WorkingCopyName,
-				s.WorkingCopyVersion,
-				s.WorkingCopyData,
-				s.WorkingCopyCreateTime,
-				s.WorkingCopyUpdateTime,
-			), '\n',
-			"VALUES", qb.List(
-				qb.VarCol(s.WorkingCopyObjectID),
-				qb.VarCol(s.WorkingCopyName),
-				qb.VarCol(s.WorkingCopyVersion),
-				qb.VarCol(s.WorkingCopyData),
-				qb.VarCol(s.WorkingCopyCreateTime),
-				qb.VarCol(s.WorkingCopyUpdateTime),
-			),
-		),
-		qb.MakeQuery(s.Schema, "WorkingCopyGet", sgen.QueryKindSingle,
-			"SELECT", qb.Results(
-				s.WorkingCopyData,
-				s.WorkingCopyCreateTime,
-				s.WorkingCopyUpdateTime,
-				s.WorkingCopyVersion,
-			), '\n',
-			"FROM", s.WorkingCopy, '\n',
-			"WHERE", s.WorkingCopyObjectID, "=", qb.VarCol(s.WorkingCopyObjectID), '\n',
-			"AND", s.WorkingCopyName, "=", qb.VarCol(s.WorkingCopyName), '\n',
-			"LIMIT 1",
-		),
-		qb.MakeQuery(s.Schema, "WorkingCopyDelete", sgen.QueryKindExec,
-			"DELETE FROM", s.WorkingCopy, '\n',
-			"WHERE", s.WorkingCopyObjectID, "=", qb.VarCol(s.WorkingCopyObjectID), '\n',
-			"AND", s.WorkingCopyName, "=", qb.VarCol(s.WorkingCopyName),
-		),
-	)
-
 	accounts = add(
 		qb.MakeQuery(s.Schema, "AccountsLookupPK", sgen.QueryKindSingle,
 			"SELECT", qb.Results(
@@ -124,35 +86,6 @@ var (
 				s.ProfilesChangeID,
 			), '\n',
 			"FROM", s.Profiles, '\n',
-		),
-	)
-
-	documents = add(
-		qb.MakeQuery(s.Schema, "DocumentsIndex", sgen.QueryKindExec,
-			"INSERT OR IGNORE INTO", s.DocumentChanges, qb.ListColShort(
-				s.DocumentChangesID,
-				s.DocumentChangesTitle,
-				s.DocumentChangesSubtitle,
-				s.DocumentChangesChangeID,
-				s.DocumentChangesChangeTime,
-			), '\n',
-			"VALUES", qb.List(
-				qb.VarCol(s.DocumentChangesID),
-				qb.VarCol(s.DocumentChangesTitle),
-				qb.VarCol(s.DocumentChangesSubtitle),
-				qb.VarCol(s.DocumentChangesChangeID),
-				qb.VarCol(s.DocumentChangesChangeTime),
-			),
-		),
-		qb.MakeQuery(s.Schema, "DocumentsListIndexed", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				s.DocumentChangesID,
-				s.DocumentChangesTitle,
-				s.DocumentChangesSubtitle,
-				s.DocumentChangesChangeID,
-				s.DocumentChangesChangeTime,
-			), '\n',
-			"FROM", s.DocumentChanges,
 		),
 	)
 
@@ -436,60 +369,6 @@ var (
 			"FROM", s.IPFSBlocks, '\n',
 			"WHERE", s.IPFSBlocksID, "=", qb.VarCol(s.IPFSBlocksID), '\n',
 			"LIMIT 1",
-		),
-	)
-
-	drafts = add(
-		qb.MakeQuery(s.Schema, "DraftsInsert", sgen.QueryKindExec,
-			"INSERT INTO", s.Drafts, qb.ListColShort(
-				s.DraftsID,
-				s.DraftsTitle,
-				s.DraftsSubtitle,
-				s.DraftsCreateTime,
-				s.DraftsUpdateTime,
-			), '\n',
-			"VALUES", qb.List(
-				qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
-					"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
-				),
-				qb.VarCol(s.DraftsTitle),
-				qb.VarCol(s.DraftsSubtitle),
-				qb.VarCol(s.DraftsCreateTime),
-				qb.VarCol(s.DraftsUpdateTime),
-			),
-		),
-		qb.MakeQuery(s.Schema, "DraftsUpdate", sgen.QueryKindExec,
-			"UPDATE", s.Drafts, '\n',
-			"SET", qb.ListColShort(
-				s.DraftsTitle,
-				s.DraftsSubtitle,
-				s.DraftsUpdateTime,
-			), "=", qb.List(
-				qb.VarCol(s.DraftsTitle),
-				qb.VarCol(s.DraftsSubtitle),
-				qb.VarCol(s.DraftsUpdateTime),
-			), '\n',
-			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
-				"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
-			),
-		),
-		qb.MakeQuery(s.Schema, "DraftsList", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				s.IPFSBlocksMultihash,
-				s.IPFSBlocksCodec,
-				s.DraftsTitle,
-				s.DraftsSubtitle,
-				s.DraftsCreateTime,
-				s.DraftsUpdateTime,
-			), '\n',
-			"FROM", s.Drafts, '\n',
-			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.DraftsID, '\n',
-		),
-		qb.MakeQuery(s.Schema, "DraftsDelete", sgen.QueryKindExec,
-			"DELETE FROM", s.Drafts, '\n',
-			"WHERE", s.DraftsID, "=", qb.LookupSubQuery(s.IPFSBlocksID, s.IPFSBlocks,
-				"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
-			),
 		),
 	)
 

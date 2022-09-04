@@ -88,27 +88,6 @@ const (
 	DevicesPublicKey  sqlitegen.Column = "devices.public_key"
 )
 
-// Table document_changes.
-const (
-	DocumentChanges           sqlitegen.Table  = "document_changes"
-	DocumentChangesChangeID   sqlitegen.Column = "document_changes.change_id"
-	DocumentChangesChangeTime sqlitegen.Column = "document_changes.change_time"
-	DocumentChangesID         sqlitegen.Column = "document_changes.id"
-	DocumentChangesSubtitle   sqlitegen.Column = "document_changes.subtitle"
-	DocumentChangesTitle      sqlitegen.Column = "document_changes.title"
-)
-
-// Table drafts.
-const (
-	Drafts           sqlitegen.Table  = "drafts"
-	DraftsContent    sqlitegen.Column = "drafts.content"
-	DraftsCreateTime sqlitegen.Column = "drafts.create_time"
-	DraftsID         sqlitegen.Column = "drafts.id"
-	DraftsSubtitle   sqlitegen.Column = "drafts.subtitle"
-	DraftsTitle      sqlitegen.Column = "drafts.title"
-	DraftsUpdateTime sqlitegen.Column = "drafts.update_time"
-)
-
 // Table global_meta.
 const (
 	GlobalMeta      sqlitegen.Table  = "global_meta"
@@ -183,17 +162,6 @@ const (
 	WalletsType     sqlitegen.Column = "wallets.type"
 )
 
-// Table working_copy.
-const (
-	WorkingCopy           sqlitegen.Table  = "working_copy"
-	WorkingCopyCreateTime sqlitegen.Column = "working_copy.create_time"
-	WorkingCopyData       sqlitegen.Column = "working_copy.data"
-	WorkingCopyName       sqlitegen.Column = "working_copy.name"
-	WorkingCopyObjectID   sqlitegen.Column = "working_copy.object_id"
-	WorkingCopyUpdateTime sqlitegen.Column = "working_copy.update_time"
-	WorkingCopyVersion    sqlitegen.Column = "working_copy.version"
-)
-
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
@@ -234,17 +202,6 @@ var Schema = sqlitegen.Schema{
 		DevicesID:                    {Table: Devices, SQLType: "INTEGER"},
 		DevicesMultihash:             {Table: Devices, SQLType: "BLOB"},
 		DevicesPublicKey:             {Table: Devices, SQLType: "BLOB"},
-		DocumentChangesChangeID:      {Table: DocumentChanges, SQLType: "INTEGER"},
-		DocumentChangesChangeTime:    {Table: DocumentChanges, SQLType: "INTEGER"},
-		DocumentChangesID:            {Table: DocumentChanges, SQLType: "INTEGER"},
-		DocumentChangesSubtitle:      {Table: DocumentChanges, SQLType: "TEXT"},
-		DocumentChangesTitle:         {Table: DocumentChanges, SQLType: "TEXT"},
-		DraftsContent:                {Table: Drafts, SQLType: "BLOB"},
-		DraftsCreateTime:             {Table: Drafts, SQLType: "INTEGER"},
-		DraftsID:                     {Table: Drafts, SQLType: "INTEGER"},
-		DraftsSubtitle:               {Table: Drafts, SQLType: "TEXT"},
-		DraftsTitle:                  {Table: Drafts, SQLType: "TEXT"},
-		DraftsUpdateTime:             {Table: Drafts, SQLType: "INTEGER"},
 		GlobalMetaKey:                {Table: GlobalMeta, SQLType: "TEXT"},
 		GlobalMetaValue:              {Table: GlobalMeta, SQLType: "TEXT"},
 		IPFSBlocksCodec:              {Table: IPFSBlocks, SQLType: "INTEGER"},
@@ -279,11 +236,5 @@ var Schema = sqlitegen.Schema{
 		WalletsPassword:              {Table: Wallets, SQLType: "BLOB"},
 		WalletsToken:                 {Table: Wallets, SQLType: "BLOB"},
 		WalletsType:                  {Table: Wallets, SQLType: "TEXT"},
-		WorkingCopyCreateTime:        {Table: WorkingCopy, SQLType: "INTEGER"},
-		WorkingCopyData:              {Table: WorkingCopy, SQLType: "BLOB"},
-		WorkingCopyName:              {Table: WorkingCopy, SQLType: "TEXT"},
-		WorkingCopyObjectID:          {Table: WorkingCopy, SQLType: "INTEGER"},
-		WorkingCopyUpdateTime:        {Table: WorkingCopy, SQLType: "INTEGER"},
-		WorkingCopyVersion:           {Table: WorkingCopy, SQLType: "TEXT"},
 	},
 }
