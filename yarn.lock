@@ -5102,9 +5102,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.202":
-  version: 1.4.240
-  resolution: "electron-to-chromium@npm:1.4.240"
-  checksum: 6590e2cddd2e6a564cc491fb1ece5719c35dcbbeed34fc66e878b1659753653d0e344908b36b11741968dfc47a0141759e3780546384bb5308d38bc5232e0cb5
+  version: 1.4.241
+  resolution: "electron-to-chromium@npm:1.4.241"
+  checksum: a3d77207f4c46b64633eab3dcb46b4dcbd3e7e03f12ab81928a20ac4f585a9f04968176094318995f376645436325ddc8085f99bc985bc53b04d6c2016f1f9b0
   languageName: node
   linkType: hard
 
@@ -5577,7 +5577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react@npm:7.31.1, eslint-plugin-react@npm:^7.27.0":
+"eslint-plugin-react@npm:7.31.1":
   version: 7.31.1
   resolution: "eslint-plugin-react@npm:7.31.1"
   dependencies:
@@ -5598,6 +5598,30 @@ __metadata:
   peerDependencies:
     eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
   checksum: 6217d4c4e36c8fea24facd0cdcf22b2fd38a3603db94ec7c0a6f430046c8564b6c6884e0a9d4a4b8766201f66e8b18af594002210421bf9b6623b1fc32e15a3a
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-react@npm:^7.27.0":
+  version: 7.31.6
+  resolution: "eslint-plugin-react@npm:7.31.6"
+  dependencies:
+    array-includes: ^3.1.5
+    array.prototype.flatmap: ^1.3.0
+    doctrine: ^2.1.0
+    estraverse: ^5.3.0
+    jsx-ast-utils: ^2.4.1 || ^3.0.0
+    minimatch: ^3.1.2
+    object.entries: ^1.1.5
+    object.fromentries: ^2.0.5
+    object.hasown: ^1.1.1
+    object.values: ^1.1.5
+    prop-types: ^15.8.1
+    resolve: ^2.0.0-next.3
+    semver: ^6.3.0
+    string.prototype.matchall: ^4.0.7
+  peerDependencies:
+    eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
+  checksum: fdcee460db2e01398b31dd75bb0597d6dfa2f29beda9c5ef641e6e3c72c8c2191cbaa952f7469a5e091bc2be959a1abc09761bdca70f12aa4a73090f48a98f6b
   languageName: node
   linkType: hard
 
@@ -10737,7 +10761,7 @@ __metadata:
   dependencies:
     "@tauri-apps/api": ^1.0.0
     tslib: ^2.3.1
-  checksum: dce7cb6e7477745ecd4399a498decf1329a9dbf8f57b9d1398270db0e6e0b8cb449506118875ba74d433247d6e853ee42a7e4e40f688bdc339bd87a7d5ab55ef
+  checksum: dc82a504432a48410de26cf05dc00033d4aa3b83d893ec0198f30fd4edf6f1901a90881ab15f24347caf5b46a16ea2c8a201061202e14c1c11ee288808743189
   languageName: node
   linkType: hard
 

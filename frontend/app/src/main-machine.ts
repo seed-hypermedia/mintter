@@ -19,6 +19,7 @@ import {getRefFromParams} from '@app/utils/machine-utils'
 import {libraryMachine} from '@components/library/library-machine'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import Navaid from 'navaid'
+import toast from 'react-hot-toast'
 import {QueryClient} from 'react-query'
 import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
 
@@ -57,7 +58,7 @@ type MainPageEvent =
   | {type: 'listenRoute'}
   | {type: 'CREATE.NEW.DRAFT'}
   | {type: 'COMMIT.OPEN.WINDOW'; path?: string}
-  | {type: 'COMMIT.EDIT.PUBLICATION'; docId: string}
+  | {type: 'COMMIT.EDIT.PUBLICATION'}
   | {type: 'REPORT.FILES.ERROR'; errorMessage: string}
   | {type: 'COMMIT.PUBLISH'; publication: Publication; documentId: string}
   | {type: 'COMMIT.DELETE.FILE'; documentId: string; version: string | null}
@@ -547,10 +548,17 @@ export function createMainPageService({
           },
           {to: 'router'},
         ),
-        editPublication: (_, event) => {
-          createDraft(event.docId).then((doc) => {
-            openWindow(`/editor/${doc.id}`)
-          })
+        editPublication: (context) => {
+          createDraft(context.params.docId)
+            .then((doc) => {
+              openWindow(`/editor/${doc.id}`)
+            })
+            .catch((err) => {
+              toast.error(
+                `[CREATE.EDIT.ERROR]: Something went wrong when creating a new Edit. chec the console.`,
+              )
+              console.error('[CREATE.EDIT.ERROR]:', err)
+            })
         },
         updateDraftList: assign((context, event) => {
           let draftId = getRefFromParams('draft', event.documentId, null)
@@ -775,7 +783,6 @@ export function createMainPageService({
               text(': '),
             ]),
           ])
-          console.log('replying...', {doc})
           try {
             await updateDraft({
               documentId: doc.id,

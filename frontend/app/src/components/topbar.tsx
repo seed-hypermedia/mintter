@@ -314,7 +314,11 @@ function PublicationActions({
         </Tooltip>
         <Dropdown.Content alignOffset={-5} align="end">
           {state.context.canUpdate ? (
-            <Dropdown.Item>
+            <Dropdown.Item
+              onSelect={() =>
+                mainService.send({type: 'COMMIT.EDIT.PUBLICATION'})
+              }
+            >
               <Icon size="1" name="Pencil" />
               <span className={dropdownLabel()}>Edit</span>
             </Dropdown.Item>
