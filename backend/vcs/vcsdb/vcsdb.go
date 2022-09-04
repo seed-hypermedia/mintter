@@ -389,7 +389,8 @@ func init() {
 	cbornode.RegisterCborType(changeBody{})
 }
 
-// EncodeChange encodes a change into its canonical representation as an IPFS block.
+// EncodeChange encodes a change into its canonical representation as an IPFS block,
+// and stores it in the internal block store.
 func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 	if conn.err != nil {
 		return nil

@@ -373,8 +373,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		change := version[0]
 
 		conn.TouchChange(change, time.Now())
-		blk := conn.EncodeChange(change, me.DeviceKey())
-		conn.PutBlock(blk)
+		conn.EncodeChange(change, me.DeviceKey())
 
 		conn.DeleteVersion(obj, "draft", meLocal)
 		conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
