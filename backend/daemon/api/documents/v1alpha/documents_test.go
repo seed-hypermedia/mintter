@@ -18,6 +18,70 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestCreateDraftFromPublication(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+			Annotations: []*documents.Annotation{
+				{
+					Type: "link",
+					Attributes: map[string]string{
+						"url": "mtt://bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy/baeaxdiheaiqfsiervpfvbohhvjgnkcto3f5p4alwe4k46fr334vlw4n5jaknnqa/MIWneLC1",
+					},
+					Starts: []int32{0},
+					Ends:   []int32{5},
+				},
+			},
+		}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.NotNil(t, published)
+
+	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: published.Document.Id,
+	})
+	require.NoError(t, err)
+	draft2.PublishTime = published.Document.PublishTime
+	testutil.ProtoEqual(t, published.Document, draft2, "draft from publication must be same as published")
+	updated = updateDraft(ctx, t, api, draft2.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_DeleteBlock{DeleteBlock: "b1"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b2",
+			Type: "statement",
+			Text: "Hello updated!",
+		}}},
+	})
+
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: updated.Id})
+	require.NoError(t, err)
+	require.NotNil(t, pub2)
+
+	drafts, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	require.Len(t, drafts.Documents, 0)
+
+	pubs, err := api.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, pubs.Publications, 1)
+	testutil.ProtoEqual(t, pub2, pubs.Publications[0], "publication in the list must be the same as published")
+}
+
 func TestBug_MissingLinkTarget(t *testing.T) {
 	t.Parallel()
 

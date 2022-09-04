@@ -122,7 +122,40 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 }
 
 func (api *Server) createDraftWithBase(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
-	panic("TODO(burdiyan)")
+	me, err := api.me(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	oid, err := cid.Decode(in.ExistingDocumentId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode document id: %w", err)
+	}
+
+	conn, release, err := api.vcsdb.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	if err := conn.WithTx(true, func() error {
+		obj := conn.LookupPermanode(oid)
+		meLocal := conn.EnsureIdentity(me)
+
+		main := conn.GetVersion(obj, "main", meLocal)
+
+		change := conn.NewChange(obj, meLocal, main, time.Now())
+
+		conn.SaveVersion(obj, "draft", meLocal, vcsdb.LocalVersion{change})
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return api.GetDraft(ctx, &documents.GetDraftRequest{
+		DocumentId: in.ExistingDocumentId,
+	})
 }
 
 func (api *Server) me(ctx context.Context) (core.Identity, error) {
