@@ -963,6 +963,8 @@ func (stmt *Stmt) ColumnBytes(col int) []byte {
 // ColumnBytesUnsafe returns C-managed memory directly.
 // The caller must not mutate the returned slice, and must use all of it before
 // the statement will be reset.
+//
+// Column indices start at 0.
 func (stmt *Stmt) ColumnBytesUnsafe(col int) []byte {
 	return stmt.columnBytes(col)
 }
@@ -971,10 +973,32 @@ func (stmt *Stmt) ColumnBytesUnsafe(col int) []byte {
 //
 // The reader directly references C-managed memory that stops
 // being valid as soon as the statement row resets.
+//
+// Column indices start at 0.
 func (stmt *Stmt) ColumnReader(col int) *bytes.Reader {
 	// Load the C memory directly into the Reader.
 	// There is no exported method that lets it escape.
 	return bytes.NewReader(stmt.columnBytes(col))
+}
+
+// ColumnAny returns column as an empty interface.
+//
+// Column indices start at 0.
+func (stmt *Stmt) ColumnAny(col int) interface{} {
+	switch stmt.ColumnType(col) {
+	case SQLITE_INTEGER:
+		return stmt.ColumnInt(col)
+	case SQLITE_FLOAT:
+		return stmt.ColumnFloat(col)
+	case SQLITE_TEXT:
+		return stmt.ColumnText(col)
+	case SQLITE_BLOB:
+		return stmt.ColumnBytes(col)
+	case SQLITE_NULL:
+		return nil
+	default:
+		panic("unknown column type")
+	}
 }
 
 func (stmt *Stmt) columnBytes(col int) []byte {

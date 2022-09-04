@@ -167,7 +167,7 @@ type BlockMovedEvent struct {
 }
 
 type Block struct {
-	ID          string            `refmt:"id,omitempty""`
+	ID          string            `refmt:"id,omitempty"`
 	Type        string            `refmt:"type,omitempty"`
 	Attributes  map[string]string `refmt:"attributes,omitempty"`
 	Text        string            `refmt:"text,omitempty"`

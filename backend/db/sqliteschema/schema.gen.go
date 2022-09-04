@@ -28,6 +28,14 @@ const (
 	ChangeAuthors          sqlitegen.Table  = "change_authors"
 	ChangeAuthorsAccountID sqlitegen.Column = "change_authors.account_id"
 	ChangeAuthorsChangeID  sqlitegen.Column = "change_authors.change_id"
+	ChangeAuthorsDeviceID  sqlitegen.Column = "change_authors.device_id"
+)
+
+// Table change_deps.
+const (
+	ChangeDeps       sqlitegen.Table  = "change_deps"
+	ChangeDepsChild  sqlitegen.Column = "change_deps.child"
+	ChangeDepsParent sqlitegen.Column = "change_deps.parent"
 )
 
 // Table changes.
@@ -50,6 +58,25 @@ const (
 	ContentLinksTargetBlockID    sqlitegen.Column = "content_links.target_block_id"
 	ContentLinksTargetDocumentID sqlitegen.Column = "content_links.target_document_id"
 	ContentLinksTargetVersion    sqlitegen.Column = "content_links.target_version"
+)
+
+// Table datom_attrs.
+const (
+	DatomAttrs     sqlitegen.Table  = "datom_attrs"
+	DatomAttrsAttr sqlitegen.Column = "datom_attrs.attr"
+	DatomAttrsID   sqlitegen.Column = "datom_attrs.id"
+)
+
+// Table datoms.
+const (
+	Datoms          sqlitegen.Table  = "datoms"
+	DatomsAttr      sqlitegen.Column = "datoms.attr"
+	DatomsChange    sqlitegen.Column = "datoms.change"
+	DatomsEntity    sqlitegen.Column = "datoms.entity"
+	DatomsPermanode sqlitegen.Column = "datoms.permanode"
+	DatomsSeq       sqlitegen.Column = "datoms.seq"
+	DatomsValue     sqlitegen.Column = "datoms.value"
+	DatomsValueType sqlitegen.Column = "datoms.value_type"
 )
 
 // Table devices.
@@ -136,6 +163,13 @@ const (
 	ProfilesEmail     sqlitegen.Column = "profiles.email"
 )
 
+// Table sqlite_sequence.
+const (
+	SqliteSequence     sqlitegen.Table  = "sqlite_sequence"
+	SqliteSequenceName sqlitegen.Column = "sqlite_sequence.name"
+	SqliteSequenceSeq  sqlitegen.Column = "sqlite_sequence.seq"
+)
+
 // Table wallets.
 const (
 	Wallets         sqlitegen.Table  = "wallets"
@@ -172,6 +206,9 @@ var Schema = sqlitegen.Schema{
 		AccountsPublicKey:            {Table: Accounts, SQLType: "BLOB"},
 		ChangeAuthorsAccountID:       {Table: ChangeAuthors, SQLType: "INTEGER"},
 		ChangeAuthorsChangeID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
+		ChangeAuthorsDeviceID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
+		ChangeDepsChild:              {Table: ChangeDeps, SQLType: "INTEGER"},
+		ChangeDepsParent:             {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangesCreateTime:            {Table: Changes, SQLType: "INTEGER"},
 		ChangesID:                    {Table: Changes, SQLType: "INTEGER"},
 		ChangesKind:                  {Table: Changes, SQLType: "TEXT"},
@@ -184,6 +221,15 @@ var Schema = sqlitegen.Schema{
 		ContentLinksTargetBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
 		ContentLinksTargetDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
 		ContentLinksTargetVersion:    {Table: ContentLinks, SQLType: "TEXT"},
+		DatomAttrsAttr:               {Table: DatomAttrs, SQLType: "TEXT"},
+		DatomAttrsID:                 {Table: DatomAttrs, SQLType: "INTEGER"},
+		DatomsAttr:                   {Table: Datoms, SQLType: "INTEGER"},
+		DatomsChange:                 {Table: Datoms, SQLType: "INTEGER"},
+		DatomsEntity:                 {Table: Datoms, SQLType: "BLOB"},
+		DatomsPermanode:              {Table: Datoms, SQLType: "INTEGER"},
+		DatomsSeq:                    {Table: Datoms, SQLType: "INTEGER"},
+		DatomsValue:                  {Table: Datoms, SQLType: "BLOB"},
+		DatomsValueType:              {Table: Datoms, SQLType: "INTEGER"},
 		DevicesCreateTime:            {Table: Devices, SQLType: "INTEGER"},
 		DevicesID:                    {Table: Devices, SQLType: "INTEGER"},
 		DevicesMultihash:             {Table: Devices, SQLType: "BLOB"},
@@ -223,6 +269,8 @@ var Schema = sqlitegen.Schema{
 		ProfilesBio:                  {Table: Profiles, SQLType: "TEXT"},
 		ProfilesChangeID:             {Table: Profiles, SQLType: "INTEGER"},
 		ProfilesEmail:                {Table: Profiles, SQLType: "TEXT"},
+		SqliteSequenceName:           {Table: SqliteSequence, SQLType: ""},
+		SqliteSequenceSeq:            {Table: SqliteSequence, SQLType: ""},
 		WalletsAddress:               {Table: Wallets, SQLType: "TEXT"},
 		WalletsBalance:               {Table: Wallets, SQLType: "INTEGER"},
 		WalletsID:                    {Table: Wallets, SQLType: "TEXT"},

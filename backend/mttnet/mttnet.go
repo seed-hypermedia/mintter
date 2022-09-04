@@ -55,18 +55,18 @@ func DefaultRelays() []peer.AddrInfo {
 	return []peer.AddrInfo{
 		// Mintter test server
 		{
-			ID: must.Two(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
+			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
 			Addrs: []multiaddr.Multiaddr{
-				must.Two(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
-				must.Two(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
 			},
 		},
 		// Mintter prod server
 		{
-			ID: must.Two(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
+			ID: must.Do2(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
 			Addrs: []multiaddr.Multiaddr{
-				must.Two(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
-				must.Two(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
 			},
 		},
 	}
@@ -269,8 +269,8 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	port := strconv.Itoa(n.cfg.Port)
 
 	addrs := []multiaddr.Multiaddr{
-		must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/" + port)),
-		must.Two(multiaddr.NewMultiaddr("/ip6/::/tcp/" + port)),
+		must.Do2(multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/" + port)),
+		must.Do2(multiaddr.NewMultiaddr("/ip6/::/tcp/" + port)),
 		// TODO(burdiyan): uncomment this when quic is known to work. Find other places for `quic-support`.
 		// must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/udp/" + port + "/quic")),
 		// must.Two(multiaddr.NewMultiaddr("/ip6/::/udp/" + port + "/quic")),
@@ -312,7 +312,7 @@ type rpcHandler struct {
 func AddrInfoToStrings(info peer.AddrInfo) []string {
 	var addrs []string
 	for _, a := range info.Addrs {
-		addrs = append(addrs, a.Encapsulate(must.Two(multiaddr.NewComponent("p2p", info.ID.String()))).String())
+		addrs = append(addrs, a.Encapsulate(must.Do2(multiaddr.NewComponent("p2p", info.ID.String()))).String())
 	}
 
 	return addrs

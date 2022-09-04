@@ -218,12 +218,43 @@ func (s *SQLite) RecordChange(ctx context.Context, oid ObjectID, id core.Identit
 	}
 
 	blk := ipfs.NewBlock(cid.DagCBOR, data)
-	if err != nil {
-		return RecordedChange{}, err
-	}
 
 	if err := s.bs.Put(ctx, blk); err != nil {
 		return RecordedChange{}, fmt.Errorf("failed to store change IPLD block: %w", err)
+	}
+
+	return RecordedChange{ID: blk.Cid(), Change: c}, nil
+}
+
+func (s *SQLite) RecordChangeV2(ctx context.Context, oid ObjectID, id core.Identity, deps []cid.Cid, lamportTime uint64, body []byte) (rc RecordedChange, err error) {
+	c := Change{
+		Type:        ChangeType,
+		Object:      oid,
+		Author:      id.AccountID(),
+		Parents:     deps,
+		LamportTime: lamportTime,
+		Body:        body,
+		Kind:        "mintter.crdt", // TODO(burdiyan): build10: is this necessary?
+		CreateTime:  time.Now().UTC().Round(time.Second),
+	}
+
+	signed, err := NewSignedCBOR(c, id.DeviceKey())
+	if err != nil {
+		return rc, err
+	}
+
+	data, err := cbornode.DumpObject(signed)
+	if err != nil {
+		return rc, fmt.Errorf("failed to encode signed change: %w", err)
+	}
+
+	blk := ipfs.NewBlock(cid.DagCBOR, data)
+	if err != nil {
+		return rc, err
+	}
+
+	if err := s.bs.Put(ctx, blk); err != nil {
+		return rc, fmt.Errorf("failed to store change IPLD block: %w", err)
 	}
 
 	return RecordedChange{ID: blk.Cid(), Change: c}, nil

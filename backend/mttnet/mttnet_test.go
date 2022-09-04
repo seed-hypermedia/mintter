@@ -54,7 +54,7 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	cfg.NoBootstrap = true
 	cfg.NoMetrics = true
 
-	n, err := New(cfg, hvcs, reg, u.Identity, must.Two(zap.NewDevelopment()).Named(name))
+	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

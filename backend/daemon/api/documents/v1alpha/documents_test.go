@@ -6,21 +6,16 @@ import (
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/ipfs"
 	"mintter/backend/pkg/future"
-	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcstypes"
 	"path/filepath"
 	"testing"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	multihash "github.com/multiformats/go-multihash/core"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestBug_MissingLinkTarget(t *testing.T) {
@@ -144,6 +139,36 @@ func TestAPIGetDraft(t *testing.T) {
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 }
 
+func TestUpdateDraftSmoke(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	resp, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		DocumentId: draft.Id,
+		Changes: []*documents.DocumentChange{
+			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+			{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+				Id:   "b1",
+				Type: "statement",
+				Text: "Hello world!",
+			}}},
+			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
+			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+				Id:   "b2",
+				Type: "statement",
+				Text: "Appended Block",
+			}}},
+		},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, resp)
+}
+
 func TestAPIUpdateDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
@@ -161,10 +186,6 @@ func TestAPIUpdateDraft(t *testing.T) {
 			Text: "Hello world!",
 		}}},
 	})
-
-	wc, err := api.vcs.LoadWorkingCopy(ctx, must.Two(cid.Decode(draft.Id)), "main")
-	require.NoError(t, err)
-	require.NotNil(t, wc.Data())
 
 	want := &documents.Document{
 		Id:       draft.Id,
@@ -530,15 +551,6 @@ func TestAPIPublishDraft(t *testing.T) {
 	require.NotEqual(t, "", published.Version, "publication must have version")
 	require.Equal(t, draft.Id, published.Document.Id)
 
-	docid, err := cid.Decode(published.Document.Id)
-	require.NoError(t, err)
-
-	version, err := api.vcs.LoadNamedVersion(ctx, docid, api.repo.MustGet().me.AccountID(), api.repo.MustGet().me.DeviceKey().CID(), "main")
-	require.NoError(t, err)
-
-	require.Equal(t, published.Version, version.String(), "published version must match the database")
-	require.Len(t, version.CIDs(), 1, "published version must have one CID")
-
 	require.True(t, start.Before(published.Document.CreateTime.AsTime()), "create time must be after test start")
 	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
 	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
@@ -596,77 +608,6 @@ func TestAPIDeletePublication(t *testing.T) {
 	// require.True(t, ok)
 	// require.Nil(t, pub)
 	// require.Equal(t, codes.NotFound, s.Code())
-}
-
-func TestDocumentToProto(t *testing.T) {
-	t.Parallel()
-
-	docid := ipfs.MustNewCID(cid.Raw, multihash.IDENTITY, []byte("doc-id"))
-	author := ipfs.MustNewCID(cid.Raw, multihash.IDENTITY, []byte("doc-author"))
-
-	doc := vcstypes.NewDocument(docid, author, time.Now().UTC().Round(time.Second))
-
-	doc.ChangeTitle("My new document title")
-	doc.ChangeSubtitle("This is my document's abstract")
-	require.NoError(t, doc.MoveBlock("b1", "", ""))
-	require.NoError(t, doc.ReplaceBlock(vcstypes.Block{
-		ID:   "b1",
-		Type: "statement",
-		Text: "Hello world",
-	}))
-
-	want := &documents.Document{
-		Id:       docid.String(),
-		Title:    "My new document title",
-		Subtitle: "This is my document's abstract",
-		Author:   author.String(),
-		Children: []*documents.BlockNode{
-			{
-				Block: &documents.Block{
-					Id:          "b1",
-					Type:        "statement",
-					Text:        "Hello world",
-					Attributes:  map[string]string{},
-					Annotations: nil,
-				},
-				Children: nil,
-			},
-		},
-		CreateTime: timestamppb.New(doc.State().CreateTime),
-		UpdateTime: timestamppb.New(doc.State().CreateTime),
-	}
-
-	docpb, err := docToProto(doc)
-	require.NoError(t, err)
-	testutil.ProtoEqual(t, want, docpb, "must convert document to proto")
-}
-
-func TestBlockProtoTransform(t *testing.T) {
-	b := vcstypes.Block{
-		ID:   "b1",
-		Type: "statement",
-		Attributes: map[string]string{
-			"childrenListType": "bullet",
-		},
-		Text: "Hello world",
-		Annotations: []vcstypes.Annotation{
-			{
-				Type: "link",
-				Attributes: map[string]string{
-					"url": "https://example.com",
-				},
-				Starts: []int32{0},
-				Ends:   []int32{5},
-			},
-		},
-	}
-
-	bpb := blockToProto(b)
-
-	b2, err := blockFromProto(bpb)
-	require.NoError(t, err)
-
-	require.Equal(t, b, b2)
 }
 
 func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*documents.DocumentChange) *documents.Document {

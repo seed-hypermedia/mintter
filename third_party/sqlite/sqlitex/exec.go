@@ -111,7 +111,8 @@ func exec(stmt *sqlite.Stmt, resultFn func(stmt *sqlite.Stmt) error, args []inte
 	for i, arg := range args {
 		i++ // parameters are 1-indexed
 		v := reflect.ValueOf(arg)
-		switch v.Kind() {
+		k := v.Kind()
+		switch k {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			stmt.BindInt64(i, v.Int())
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
@@ -124,12 +125,14 @@ func exec(stmt *sqlite.Stmt, resultFn func(stmt *sqlite.Stmt) error, args []inte
 			stmt.BindBool(i, v.Bool())
 		case reflect.Invalid:
 			stmt.BindNull(i)
-		default:
-			if v.Kind() == reflect.Slice && v.Type().Elem().Kind() == reflect.Uint8 {
+		case reflect.Slice:
+			if k == reflect.Slice && v.Type().Elem().Kind() == reflect.Uint8 {
 				stmt.BindBytes(i, v.Bytes())
 			} else {
 				stmt.BindText(i, fmt.Sprintf("%v", arg))
 			}
+		default:
+			panic("invalid bind parameter type " + k.String())
 		}
 	}
 	for {
