@@ -466,6 +466,7 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 	body.Attrs = attrLookup.cache
 	body.Entities = entityLookup.cache
 	body.Strings = stringLookup.cache
+	body.Bytes = bytesLookup.cache
 
 	data, err := cbornode.DumpObject(body)
 	if err != nil {

@@ -99,7 +99,7 @@ func TestSmoke(t *testing.T) {
 
 		// Canonical encoding must be deterministic.
 		// Hash is generated out of band.
-		checkSum(t, "9ca53707ef0965fde233d180221ecbb90340cab0", data)
+		checkSum(t, "6ed9460baa77e8680d5ad46499d0bc5fbdce2b7e", data)
 	}
 
 	// Create a new change with base.
