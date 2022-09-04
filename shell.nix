@@ -9,7 +9,8 @@ let
       go
       nodejs
       yarn
-      golangci-lint
+      # Removing from nix-shell because it was breaking with Go 1.18 because of generics.
+      # golangci-lint
       please
       python3
       bazel-buildtools
