@@ -4092,9 +4092,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001304, caniuse-lite@npm:^1.0.30001370":
-  version: 1.0.30001387
-  resolution: "caniuse-lite@npm:1.0.30001387"
-  checksum: 57b894aa54da582f867018cdbc3c8956f894962988233cd4ace8710ab0e3405dd928926e35f46e5a9b4068e5cea7e36c6e14f930c9c40972885f329df7e8119e
+  version: 1.0.30001388
+  resolution: "caniuse-lite@npm:1.0.30001388"
+  checksum: 4934f99bf99521484d4048023f57046812fbc9218924dbe30bb8379cd7b0315d9489b7de4d226a9921b0a9fd5d05b12023930ad6b4104854fb03dcbf999784db
   languageName: node
   linkType: hard
 
@@ -10737,7 +10737,7 @@ __metadata:
   dependencies:
     "@tauri-apps/api": ^1.0.0
     tslib: ^2.3.1
-  checksum: dc82a504432a48410de26cf05dc00033d4aa3b83d893ec0198f30fd4edf6f1901a90881ab15f24347caf5b46a16ea2c8a201061202e14c1c11ee288808743189
+  checksum: dce7cb6e7477745ecd4399a498decf1329a9dbf8f57b9d1398270db0e6e0b8cb449506118875ba74d433247d6e853ee42a7e4e40f688bdc339bd87a7d5ab55ef
   languageName: node
   linkType: hard
 
@@ -11543,8 +11543,8 @@ __metadata:
   linkType: hard
 
 "update-browserslist-db@npm:^1.0.5":
-  version: 1.0.6
-  resolution: "update-browserslist-db@npm:1.0.6"
+  version: 1.0.7
+  resolution: "update-browserslist-db@npm:1.0.7"
   dependencies:
     escalade: ^3.1.1
     picocolors: ^1.0.0
@@ -11552,7 +11552,7 @@ __metadata:
     browserslist: ">= 4.21.0"
   bin:
     browserslist-lint: cli.js
-  checksum: 156043a3c2fbbd64d16394c521751d173673e1e922df668c416df5cb08b1fa51a6bc0fe83b13938353b616ac34b7950ba66f01d2c9fe803d08d98c0fdfaba445
+  checksum: 443ed6e77d4607b8bdf12710fe1c0b570fcbb992ebcafaa0c647811e5646fa51e0b5a17641637e10044e4b770bfc3a9ce2a9350a646477545aed882a1fcff8ce
   languageName: node
   linkType: hard
 
