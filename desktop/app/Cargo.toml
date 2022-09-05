@@ -28,7 +28,7 @@ tauri-plugin-log = {git = "https://github.com/tauri-apps/tauri-plugin-log", rev 
 tauri-plugin-store = {git = "https://github.com/tauri-apps/tauri-plugin-store", rev = "5726952177b88d1d10063cdf8e7506bac84772cf"}
 thiserror = "1.0.34"
 tokio = {version = "1.21.0", features = ["full"] }
-tracing = "0.1.35"
+tracing = "0.1.36"
 url = "2.2.2"
 workspace-hack = {version = "0.1", path = "../workspace-hack"}
 # wasi-common = "0.38.1"
