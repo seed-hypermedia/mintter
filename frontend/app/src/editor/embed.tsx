@@ -118,9 +118,9 @@ function Embed({
       onMouseEnter={() => {
         hoverService.send({type: 'MOUSE_ENTER', ref: `${docId}/${blockId}`})
       }}
-      onMouseLeave={() => {
-        hoverService.send({type: 'MOUSE_LEAVE', ref: `${docId}/${blockId}`})
-      }}
+      // onMouseLeave={() => {
+      //   hoverService.send({type: 'MOUSE_LEAVE', ref: `${docId}/${blockId}`})
+      // }}
       css={{
         [`[data-hover-ref="${docId}/${blockId}"] &:before`]: {
           backgroundColor: '$primary-component-bg-active',

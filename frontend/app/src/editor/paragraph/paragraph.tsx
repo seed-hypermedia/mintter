@@ -87,12 +87,12 @@ function Paragraph({
         ref: `${docId}/${parentNode?.id}`,
       })
     },
-    onMouseLeave: () => {
-      hoverService.send({
-        type: 'MOUSE_LEAVE',
-        ref: `${docId}/${parentNode?.id}`,
-      })
-    },
+    // onMouseLeave: () => {
+    //   hoverService.send({
+    //     type: 'MOUSE_LEAVE',
+    //     ref: `${docId}/${parentNode?.id}`,
+    //   })
+    // },
   }
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {

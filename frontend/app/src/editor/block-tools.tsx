@@ -3,10 +3,11 @@ import {
   useCurrentBlockToolsId,
 } from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
+import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {getEditorBlock} from '@app/editor/utils'
-import {useFile, useFileEditor} from '@app/file-provider'
+import {useFile, useFileEditor, useFileIds} from '@app/file-provider'
 import {
   blockquote,
   code,
@@ -224,7 +225,9 @@ export function PublicationBlockTools({
   copy = copyTextToClipboard,
 }: PublicationBlockToolsProps) {
   let file = useFile()
+  let [docId] = useFileIds()
   let [fileState] = useActor(file)
+  let hoverService = useHover()
 
   async function onCopy() {
     await copy(
@@ -238,7 +241,6 @@ export function PublicationBlockTools({
       css={{
         position: 'absolute',
         zIndex: '$2',
-
         insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) + 0.5rem)',
         insetInlineEnd: 24,
         userSelect: 'none',
@@ -247,6 +249,12 @@ export function PublicationBlockTools({
         '@bp1': {
           zoom: 1,
         },
+      }}
+      onMouseOver={() => {
+        hoverService.send({
+          type: 'MOUSE_ENTER',
+          ref: `${docId}/${blockId}`,
+        })
       }}
     >
       <Button
