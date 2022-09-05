@@ -304,3 +304,16 @@ export function useParentGroup(editor: Editor, path: Path) {
     }
   }, [path, editor])
 }
+
+export function lowerPoint(root: Node, point: Point): Point | null {
+  let offset = 0
+  for (const [text, path] of Node.texts(root)) {
+    if (offset <= point.offset && point.offset <= offset + text.value.length) {
+      return {path: [...point.path, ...path], offset: point.offset - offset}
+    }
+
+    offset += text.value.length
+  }
+
+  return null
+}

@@ -28,7 +28,7 @@ import {EditorMode} from '../plugin-utils'
 import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
-import {findPath, resetFlowContent} from '../utils'
+import {findPath, lowerPoint, resetFlowContent} from '../utils'
 
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
@@ -156,12 +156,19 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
           let offset = 0
           for (const line of lines) {
             for (const token of line) {
+              const anchor = lowerPoint(node, {path, offset})
+              const focus = lowerPoint(node, {
+                path,
+                offset: offset + token.content.length,
+              })
+
+              if (!anchor || !focus) {
+                throw new Error('failed to lower point')
+              }
+
               const range: Range & Record<string, unknown> = {
-                anchor: {path, offset},
-                focus: {
-                  path,
-                  offset: offset + token.content.length,
-                },
+                anchor,
+                focus,
                 [LEAF_TOKEN]: token.color,
               }
 

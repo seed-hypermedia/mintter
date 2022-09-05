@@ -66,20 +66,6 @@ export function createPlainTextPastePlugin(): EditorPlugin {
         //   return
         // }
 
-        // var text = data.getData('text/plain')
-
-        // if (text) {
-        //   var lines = text
-        //     .split(/\r\n|\r|\n/)
-        //     .filter((l) => l != '')
-        //     .join('\n')
-
-        //   var newData = new DataTransfer()
-        //   newData.setData('text/plain', lines)
-        //   insertData(newData)
-        //   return
-        // }
-
         const html = transfer.getData('text/html')
 
         if (html) {
@@ -103,6 +89,16 @@ export function createPlainTextPastePlugin(): EditorPlugin {
             error('Paste Plugin: No block found above', editor.selection)
           }
         }
+
+        const text = transfer.getData('text/plain')
+
+        if (text) {
+          const normalized = text.split(/\r\n|\r|\n/).join('\n')
+
+          editor.insertText(normalized)
+          return
+        }
+
         insertData(transfer)
       }
 
