@@ -1,6 +1,6 @@
 module mintter/backend/x
 
-go 1.18
+go 1.19
 
 require (
 	github.com/sanity-io/litter v1.5.5
