@@ -95,7 +95,7 @@ jobs:
           format: YY.M.D
       - name: Set version in Cargo.toml
         run: node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{ steps.current_time.outputs.formattedTime }}
-      - uses: JonasKruckenberg/tauri-build@v1.0.4
+      - uses: JonasKruckenberg/tauri-build@v1.0.5
         id: tauri_build
         env:
           VERSION: ${{ steps.current_time.outputs.formattedTime }}
