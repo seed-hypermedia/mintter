@@ -6,44 +6,43 @@ import {
 } from './.generated/accounts/v1alpha/accounts'
 import {
   DaemonClientImpl,
-  GenSeedRequest,
+  GenMnemonicRequest,
   RegisterRequest,
 } from './.generated/daemon/v1alpha/daemon'
 import type {GrpcClient} from './grpc-client'
 import {createGrpcClient} from './grpc-client'
 /**
  *
- * @param aezeedPassphrase
  * @param rpc
  * @returns
  */
-export function generateSeed(rpc?: GrpcClient) {
+export function generateMnemonic(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
-  const request = GenSeedRequest.fromPartial({})
-  const response = new DaemonClientImpl(rpc).genSeed(request)
+  const request = GenMnemonicRequest.fromPartial({mnemonicsLength: 12})
+  const response = new DaemonClientImpl(rpc).genMnemonic(request)
   return response
 }
 
 /**
  *
  * @param mnemonicList
- * @param aezeedPassphrase
+ * @param passphrase
  * @param walletPassword
  * @param rpc
  * @returns
  */
 export function registerAccount(
   mnemonicList: string[],
-  aezeedPassphrase?: string,
-  walletPassword?: string,
+  passphrase?: string,
+  walletPassword?: any,
   rpc?: GrpcClient,
 ) {
   rpc ||= createGrpcClient()
 
   const request = RegisterRequest.fromPartial({
     mnemonic: mnemonicList,
-    aezeedPassphrase,
+    passphrase,
   })
 
   return new DaemonClientImpl(rpc).register(request)

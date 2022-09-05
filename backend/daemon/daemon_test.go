@@ -55,7 +55,9 @@ func TestDaemonSmoke(t *testing.T) {
 	require.Error(t, err)
 	require.Nil(t, acc)
 
-	seed, err := dc.GenSeed(ctx, &daemon.GenSeedRequest{})
+	seed, err := dc.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
+		MnemonicsLength: 12,
+	})
 	require.NoError(t, err)
 
 	reg, err := dc.Register(ctx, &daemon.RegisterRequest{
@@ -155,7 +157,9 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 	})
 
 	if register {
-		seed, err := app.RPC.Daemon.GenSeed(ctx, &daemon.GenSeedRequest{})
+		seed, err := app.RPC.Daemon.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
+			MnemonicsLength: 21,
+		})
 		require.NoError(t, err)
 
 		_, err = app.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{

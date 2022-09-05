@@ -8,8 +8,8 @@ export type {
   Profile,
 } from './.generated/accounts/v1alpha/accounts'
 export type {
-  GenSeedRequest,
-  GenSeedResponse,
+  GenMnemonicRequest,
+  GenMnemonicResponse,
   GetInfoRequest,
   Info,
   RegisterRequest,
@@ -45,7 +45,7 @@ export type {
 } from './.generated/networking/v1alpha/networking'
 export * from './.generated/types'
 export {
-  generateSeed,
+  generateMnemonic,
   getAccount,
   listAccounts,
   registerAccount,
