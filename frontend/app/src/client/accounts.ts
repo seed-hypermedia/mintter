@@ -35,7 +35,7 @@ export function generateMnemonic(rpc?: GrpcClient) {
 export function registerAccount(
   mnemonicList: string[],
   passphrase?: string,
-  walletPassword?: any,
+  walletPassword?: string,
   rpc?: GrpcClient,
 ) {
   rpc ||= createGrpcClient()
