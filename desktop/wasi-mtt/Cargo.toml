@@ -13,8 +13,8 @@ tauri = "1.0.5"
 thiserror = "1.0.34"
 tokio = "1.21.0"
 tracing = "0.1.36"
-wasmtime = "0.39.1"
-wiggle = "0.39.1"
+wasmtime = "0.40.1"
+wiggle = "0.40.1"
 workspace-hack = {version = "0.1", path = "../workspace-hack"}
 
 [build-dependencies]
