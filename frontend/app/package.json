@@ -151,7 +151,7 @@
     "ts-proto": "1.125.0",
     "typedoc": "0.23.14",
     "typedoc-plugin-markdown": "3.13.6",
-    "typescript": "4.7.4",
+    "typescript": "4.8.2",
     "unified": "10.1.2",
     "vite": "3.1.0",
     "vite-plugin-checker": "0.5.1",
@@ -160,6 +160,6 @@
     "vitest": "0.22.1"
   },
   "peerDependencies": {
-    "typescript": "4.7.4"
+    "typescript": "4.8.2"
   }
 }
