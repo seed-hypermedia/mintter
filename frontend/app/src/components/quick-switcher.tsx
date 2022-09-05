@@ -69,8 +69,10 @@ export function QuickSwitcher() {
                 })
               }}
             >
-              <span cmdk-mtt-text="">{draft.title || 'Untitled Draft'}</span>
-              <span cmdk-mtt-type="">Draft</span>
+              <span className="cmdk-mtt-text">
+                {draft.title || 'Untitled Draft'}
+              </span>
+              <span className="cmdk-mtt-type">Draft</span>
             </Command.Item>
           )
         })}
