@@ -1,16 +1,16 @@
-import type { Account, Profile } from './.generated/accounts/v1alpha/accounts'
+import type {Account, Profile} from './.generated/accounts/v1alpha/accounts'
 import {
   AccountsClientImpl,
   GetAccountRequest,
-  ListAccountsRequest
+  ListAccountsRequest,
 } from './.generated/accounts/v1alpha/accounts'
 import {
   DaemonClientImpl,
   GenMnemonicRequest,
-  RegisterRequest
+  RegisterRequest,
 } from './.generated/daemon/v1alpha/daemon'
-import type { GrpcClient } from './grpc-client'
-import { createGrpcClient } from './grpc-client'
+import type {GrpcClient} from './grpc-client'
+import {createGrpcClient} from './grpc-client'
 /**
  *
  * @param rpc
@@ -19,7 +19,7 @@ import { createGrpcClient } from './grpc-client'
 export function generateMnemonic(rpc?: GrpcClient) {
   rpc ||= createGrpcClient()
 
-  const request = GenMnemonicRequest.fromPartial({mnemonicsLength:12})
+  const request = GenMnemonicRequest.fromPartial({mnemonicsLength: 12})
   const response = new DaemonClientImpl(rpc).genMnemonic(request)
   return response
 }
