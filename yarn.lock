@@ -5885,7 +5885,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react@npm:7.31.7":
+"eslint-plugin-react@npm:7.31.7, eslint-plugin-react@npm:^7.27.0":
   version: 7.31.7
   resolution: "eslint-plugin-react@npm:7.31.7"
   dependencies:
@@ -5906,30 +5906,6 @@ __metadata:
   peerDependencies:
     eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
   checksum: 582d422f531d7d3894fc09ac941ef8b6ad595782cfca5e1d52af5895ce117def7a0ff8afeea0166bff7b6ceae8baec2313614b1571754f539575cfa9351cd2da
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-react@npm:^7.27.0":
-  version: 7.31.6
-  resolution: "eslint-plugin-react@npm:7.31.6"
-  dependencies:
-    array-includes: ^3.1.5
-    array.prototype.flatmap: ^1.3.0
-    doctrine: ^2.1.0
-    estraverse: ^5.3.0
-    jsx-ast-utils: ^2.4.1 || ^3.0.0
-    minimatch: ^3.1.2
-    object.entries: ^1.1.5
-    object.fromentries: ^2.0.5
-    object.hasown: ^1.1.1
-    object.values: ^1.1.5
-    prop-types: ^15.8.1
-    resolve: ^2.0.0-next.3
-    semver: ^6.3.0
-    string.prototype.matchall: ^4.0.7
-  peerDependencies:
-    eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
-  checksum: fdcee460db2e01398b31dd75bb0597d6dfa2f29beda9c5ef641e6e3c72c8c2191cbaa952f7469a5e091bc2be959a1abc09761bdca70f12aa4a73090f48a98f6b
   languageName: node
   linkType: hard
 
@@ -12187,7 +12163,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:3.1.0":
+"vite@npm:3.1.0, vite@npm:^2.9.12 || ^3.0.0-0":
   version: 3.1.0
   resolution: "vite@npm:3.1.0"
   dependencies:
@@ -12216,38 +12192,6 @@ __metadata:
   bin:
     vite: bin/vite.js
   checksum: 1a343e3d46450181f79f34ff49cca5ff59bb7472de51ea2c4a042aa076f597d27d25c49f48405e82f607af7d8c1c13a9e789402ccb1b23570132382132ec3903
-  languageName: node
-  linkType: hard
-
-"vite@npm:^2.9.12 || ^3.0.0-0":
-  version: 3.0.9
-  resolution: "vite@npm:3.0.9"
-  dependencies:
-    esbuild: ^0.14.47
-    fsevents: ~2.3.2
-    postcss: ^8.4.16
-    resolve: ^1.22.1
-    rollup: ">=2.75.6 <2.77.0 || ~2.77.0"
-  peerDependencies:
-    less: "*"
-    sass: "*"
-    stylus: "*"
-    terser: ^5.4.0
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  peerDependenciesMeta:
-    less:
-      optional: true
-    sass:
-      optional: true
-    stylus:
-      optional: true
-    terser:
-      optional: true
-  bin:
-    vite: bin/vite.js
-  checksum: 6341aa43579ae45f8a383bdc0c5041dea3dff98f14e0a546d6d884a864134b00082246a28d1de8adff0ce0dd92b468c7ade8f972ffe1ed97258671d63e0f16f7
   languageName: node
   linkType: hard
 
