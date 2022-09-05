@@ -48,6 +48,7 @@ func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func() error) *Server {
 	}
 }
 
+// GenMnemonic returns a set of mnemonic words based on bip39 schema. Word count should be 12 or 15 or 18 or 21 or 24.
 func (srv *Server) GenMnemonic(ctx context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
 	words, err := core.NewMnemonic(req.MnemonicsLength)
 	if err != nil {
