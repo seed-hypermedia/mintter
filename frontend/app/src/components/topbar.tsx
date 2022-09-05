@@ -16,7 +16,7 @@ import {Box} from './box'
 import {Icon} from './icon'
 
 import {useAccountProfile} from '@app/auth-context'
-import {useMain} from '@app/main-context'
+import {useIsEditing, useMain} from '@app/main-context'
 import {listen} from '@tauri-apps/api/event'
 import '../styles/find.scss'
 
@@ -33,6 +33,7 @@ export function Topbar() {
   const mainService = useMain()
   let [mainState] = useActor(mainService)
   let profile = useAccountProfile()
+  let isEditing = useIsEditing()
 
   function handleLinbraryToggle() {
     mainState.context.library?.send('LIBRARY.TOGGLE')
@@ -41,7 +42,9 @@ export function Topbar() {
   return (
     <Box
       data-layout-section="topbar"
-      className={wrapperStyles()}
+      className={wrapperStyles({
+        visible: !isEditing,
+      })}
       {...draggableProps}
     >
       <Box
@@ -365,8 +368,19 @@ var wrapperStyles = css({
   blockSize: '100%',
   borderBottom: '1px solid $colors$base-border-subtle',
   background: '$base-background-subtle',
+  transition: 'all 0.25s ease',
   '& > *': {
     // align items here
+  },
+  variants: {
+    visible: {
+      false: {
+        opacity: 0,
+      },
+      true: {
+        opacity: 1,
+      },
+    },
   },
 })
 

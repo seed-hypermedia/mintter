@@ -1,8 +1,9 @@
 import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useHover} from '@app/editor/hover-context'
-import {phrasingStyles} from '@app/editor/styles'
+import {hoverStyles, phrasingStyles} from '@app/editor/styles'
 import {useFileIds} from '@app/file-provider'
+import {useIsEditing} from '@app/main-context'
 import {
   isBlockquote,
   isCode,
@@ -10,7 +11,6 @@ import {
   isPhrasingContent,
   Paragraph as ParagraphType,
 } from '@app/mttast'
-import {CSS} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {useEffect} from 'react'
 import {Node, Path, Transforms} from 'slate'
@@ -59,15 +59,6 @@ export const createParagraphPlugin = (): EditorPlugin => ({
   },
 })
 
-function hoverStyles(id: string): CSS {
-  return {
-    [`[data-hover-ref="${id}"] &:before`]: {
-      backgroundColor: '$primary-component-bg-normal',
-      opacity: 1,
-    },
-  }
-}
-
 function Paragraph({
   children,
   element,
@@ -78,6 +69,7 @@ function Paragraph({
   const hoverService = useHover()
   let {elementProps, parentNode} = usePhrasingProps(element)
   let [docId] = useFileIds()
+  let isEditing = useIsEditing()
 
   useEffect(() => {
     if (mode != EditorMode.Embed && mode != EditorMode.Mention) {
@@ -88,19 +80,19 @@ function Paragraph({
   }, [attributes.ref, btService, mode])
 
   let hoverProps = {
-    css: hoverStyles(`${docId}/${parentNode?.id}`),
+    css: !isEditing ? hoverStyles(`${docId}/${parentNode?.id}`) : undefined,
     onMouseEnter: () => {
       hoverService.send({
         type: 'MOUSE_ENTER',
         ref: `${docId}/${parentNode?.id}`,
       })
     },
-    onMouseLeave: () => {
-      hoverService.send({
-        type: 'MOUSE_LEAVE',
-        ref: `${docId}/${parentNode?.id}`,
-      })
-    },
+    // onMouseLeave: () => {
+    //   hoverService.send({
+    //     type: 'MOUSE_LEAVE',
+    //     ref: `${docId}/${parentNode?.id}`,
+    //   })
+    // },
   }
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {

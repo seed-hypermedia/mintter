@@ -22,7 +22,7 @@ export var rootPageStyle = css({
   zIndex: -1,
   gridTemplateAreas: `"topbar topbar"
   "main library"`,
-  background: '$base-background-normal',
+  background: '$base-background-subtle',
 
   '& [data-layout-section="topbar"]': {
     gridArea: 'topbar',
