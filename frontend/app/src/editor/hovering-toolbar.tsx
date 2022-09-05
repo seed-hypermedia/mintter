@@ -146,7 +146,7 @@ function HoveringToolbar({children}: PropsWithChildren) {
     }
     const domRange = ReactEditor.toDOMRange(editor, selection)
     reference(domRange)
-  }, [reference, editor, inFocus])
+  }, [reference, editor, inFocus, editor.selection])
 
   return (
     <Box
