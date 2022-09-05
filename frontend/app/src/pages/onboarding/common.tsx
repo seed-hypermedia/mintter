@@ -1,4 +1,4 @@
-import {GenSeedResponse} from '@app/client'
+import {GenMnemonicResponse} from '@app/client'
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
@@ -12,7 +12,7 @@ import {PropsWithChildren} from 'react'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void
-  generateSeed?: () => Promise<GenSeedResponse>
+  generateMnemonic?: () => Promise<GenMnemonicResponse>
 }
 
 const containerAnimationVariants: Variants = {

@@ -1,4 +1,7 @@
-import {generateSeed as defaultGenerateSeed, registerAccount} from '@app/client'
+import {
+  generateMnemonic as defaultGenerateMnemonic,
+  registerAccount,
+} from '@app/client'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
@@ -21,14 +24,14 @@ import {
 export function SecurityPack({
   prev,
   next,
-  generateSeed = defaultGenerateSeed,
+  generateMnemonic = defaultGenerateMnemonic,
 }: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery<string[], Error>(
     ['onboarding', 'mnemonics'],
     async () => {
-      const resp = await generateSeed()
+      const resp = await generateMnemonic()
       return resp.mnemonic
     },
     {
@@ -57,15 +60,15 @@ export function SecurityPack({
         Security Pack
       </OnboardingStepTitle>
       <OnboardingStepDescription>
-        Please save these 24 words securely! This will allow you to recreate
-        your account:
+        Please save these words securely! This will allow you to recreate your
+        account and recover associated funds:
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
           textarea
           id="ownSeed"
           name="ownSeed"
-          label="Your Seed"
+          label="Your bip39 mnemonic words"
           rows={5}
           placeholder="foo bar baz ..."
           hint="all words separated by ONE SPACE"

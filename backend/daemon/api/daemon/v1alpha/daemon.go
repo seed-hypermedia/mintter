@@ -13,7 +13,6 @@ import (
 	sync "sync"
 	"time"
 
-	"github.com/lightningnetwork/lnd/aezeed"
 	"google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -49,17 +48,14 @@ func NewServer(r Repo, vcs *vcs.SQLite, syncFunc func() error) *Server {
 	}
 }
 
-func (srv *Server) GenSeed(ctx context.Context, req *daemon.GenSeedRequest) (*daemon.GenSeedResponse, error) {
-	words, err := core.NewMnemonic(req.AezeedPassphrase)
+// GenMnemonic returns a set of mnemonic words based on bip39 schema. Word count should be 12 or 15 or 18 or 21 or 24.
+func (srv *Server) GenMnemonic(ctx context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
+	words, err := core.NewMnemonic(req.MnemonicsLength)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := &daemon.GenSeedResponse{
-		Mnemonic: words,
-	}
-
-	return resp, nil
+	return &daemon.GenMnemonicResponse{Mnemonic: words}, nil
 }
 
 func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {
@@ -74,10 +70,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 		}
 	}
 
-	var m aezeed.Mnemonic
-	copy(m[:], req.Mnemonic)
-
-	acc, err := core.AccountFromMnemonic(m, req.AezeedPassphrase)
+	acc, err := core.AccountFromMnemonic(req.Mnemonic, req.Passphrase)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to create account: %v", err)
 	}
