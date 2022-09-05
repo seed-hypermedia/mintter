@@ -1,27 +1,28 @@
 lockfileVersion: 5.4
 
 specifiers:
-  assemblyscript: 0.20.13
+  assemblyscript: 0.21.3
   source-map-support: 0.5.21
 
 dependencies:
   source-map-support: 0.5.21
 
 devDependencies:
-  assemblyscript: 0.20.13
+  assemblyscript: 0.21.3
 
 packages:
 
-  /assemblyscript/0.20.13:
-    resolution: {integrity: sha512-F4ACXdBdXCBnPEzRCl/ovFFPGmKXQPvWW4cM6U21eRezaCoREqxA0hjSUOYTz7txY3MJclyBfjwMSEJ5e9HKsw==}
+  /assemblyscript/0.21.3:
+    resolution: {integrity: sha512-DqA9/3uJeL/YceLu5yNT9nIk+6NOPqQDEgZFNrgLgYBpCapUDd3lSyz//566K1jcMHtH+e+NHyS6XBYrQE73nQ==}
+    engines: {node: '>=16.0.0', npm: '>=7.0.0'}
     hasBin: true
     dependencies:
-      binaryen: 108.0.0-nightly.20220528
+      binaryen: 109.0.0-nightly.20220831
       long: 5.2.0
     dev: true
 
-  /binaryen/108.0.0-nightly.20220528:
-    resolution: {integrity: sha512-9biG357fx3NXmJNotIuY9agZBcCNHP7d1mgOGaTlPYVHZE7/61lt1IyHCXAL+W5jUOYgmFZ260PR4IbD19RKuA==}
+  /binaryen/109.0.0-nightly.20220831:
+    resolution: {integrity: sha512-fy3zefoIq9tsZ00wlk2VcyYnJg2WQXi4IPH9LddUcFpxQXagzMvijkgCUX37MhmTP48WdLJ5jpZ9h/58HijovA==}
     hasBin: true
     dev: true
 
