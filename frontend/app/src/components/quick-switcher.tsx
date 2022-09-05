@@ -97,8 +97,10 @@ export function QuickSwitcher() {
                 })
               }}
             >
-              <span cmdk-mtt-text="">{publication.document?.title}</span>
-              <span cmdk-mtt-type="">Publication</span>
+              <span className="cmdk-mtt-text">
+                {publication.document?.title}
+              </span>
+              <span className="cmdk-mtt-type">Publication</span>
             </Command.Item>
           )
         })}
