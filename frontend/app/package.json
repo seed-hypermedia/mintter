@@ -132,7 +132,7 @@
     "@xstate/test": "0.5.1",
     "covector": "0.7.3",
     "cypress": "10.7.0",
-    "eslint": "8.20.0",
+    "eslint": "8.23.0",
     "eslint-config-preact": "1.3.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.26.0",
