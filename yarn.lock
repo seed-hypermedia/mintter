@@ -1721,10 +1721,10 @@ __metadata:
     sass: 1.54.8
     shiki: 0.10.1
     show-keys: 1.1.2
-    slate: "github:mintterteam/slate#workspace=slate&commit=791831570f795c1310eca18621ae605f845d3a37"
-    slate-history: "github:mintterteam/slate#workspace=slate-history&commit=791831570f795c1310eca18621ae605f845d3a37"
-    slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&commit=791831570f795c1310eca18621ae605f845d3a37"
-    slate-react: "github:mintterteam/slate#workspace=slate-react&commit=791831570f795c1310eca18621ae605f845d3a37"
+    slate: "github:mintterteam/slate#workspace=slate&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
+    slate-history: "github:mintterteam/slate#workspace=slate-history&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
+    slate-hyperscript: "github:mintterteam/slate#workspace=slate-hyperscript&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
+    slate-react: "github:mintterteam/slate#workspace=slate-react&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
     tauri-plugin-log-api: "https://github.com/tauri-apps/tauri-plugin-log#commit=9de1279760f31bc6f71da8555336e10c412387e3"
     tauri-plugin-store-api: "https://github.com/tauri-apps/tauri-plugin-store#commit=5726952177b88d1d10063cdf8e7506bac84772cf"
     tiny-glob: 0.2.9
@@ -10288,31 +10288,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate-history@github:mintterteam/slate#workspace=slate-history&commit=791831570f795c1310eca18621ae605f845d3a37":
-  version: 0.81.3
-  resolution: "slate-history@https://github.com/mintterteam/slate.git#workspace=slate-history&commit=791831570f795c1310eca18621ae605f845d3a37"
+"slate-history@github:mintterteam/slate#workspace=slate-history&commit=4a136b50302aa869e8a8af548400597f5c6b6688":
+  version: 0.66.0
+  resolution: "slate-history@https://github.com/mintterteam/slate.git#workspace=slate-history&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
   dependencies:
     is-plain-object: ^5.0.0
   peerDependencies:
     slate: ">=0.65.3"
-  checksum: ffec88dd740012f52605c3b5694c5fe753d0e2b664090de5d8a28992c95f76aecdbf99619710fff22dbcc97de36b9ae1c9fea90c5979abbdb228c9ff93d8ae05
+  checksum: dcec61f5ffe72218c7a368608ea5da492a2a7d605b7a560590d1363a3e5e4199be53412d98a5fd082edaf079c417f313686a007811edc61c7f559d818b2b120a
   languageName: node
   linkType: hard
 
-"slate-hyperscript@github:mintterteam/slate#workspace=slate-hyperscript&commit=791831570f795c1310eca18621ae605f845d3a37":
-  version: 0.81.3
-  resolution: "slate-hyperscript@https://github.com/mintterteam/slate.git#workspace=slate-hyperscript&commit=791831570f795c1310eca18621ae605f845d3a37"
+"slate-hyperscript@github:mintterteam/slate#workspace=slate-hyperscript&commit=4a136b50302aa869e8a8af548400597f5c6b6688":
+  version: 0.77.0
+  resolution: "slate-hyperscript@https://github.com/mintterteam/slate.git#workspace=slate-hyperscript&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
   dependencies:
     is-plain-object: ^5.0.0
   peerDependencies:
     slate: ">=0.65.3"
-  checksum: 7ee3942b7f0a66a733d6eb6802a0f2443c909233b664ebdc30b7df84490b0ac4393bc6d95b924cd2558b5285a95ca1dac70bf6084970dc923df571e7236f9831
+  checksum: 8891bdf1ddca16f38546d7a71110d414fc8a35dbf7de46fb21e7a86f90c752e46fb219cc5bb3fe198ddf594ae07623c0a3b0d8c4385611b1fa80614332e3eb9c
   languageName: node
   linkType: hard
 
-"slate-react@github:mintterteam/slate#workspace=slate-react&commit=791831570f795c1310eca18621ae605f845d3a37":
-  version: 0.82.1
-  resolution: "slate-react@https://github.com/mintterteam/slate.git#workspace=slate-react&commit=791831570f795c1310eca18621ae605f845d3a37"
+"slate-react@github:mintterteam/slate#workspace=slate-react&commit=4a136b50302aa869e8a8af548400597f5c6b6688":
+  version: 0.80.0
+  resolution: "slate-react@https://github.com/mintterteam/slate.git#workspace=slate-react&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
   dependencies:
     "@types/is-hotkey": ^0.1.1
     "@types/lodash": ^4.14.149
@@ -10326,18 +10326,18 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
     slate: ">=0.65.3"
-  checksum: 01a743921b8e634d670fa5893512e01f3b08673170484bc5981e6c13ea736d9028fc007adacfd6087a65e2757d04cf1e06988dc06790dae19c3d39ddab848420
+  checksum: d0bb4ddeda192c8c1019c3cb26a1541757489af6c05e8b7dec25efef910a7e009fbad4f27679bd6cbd3ba2f69fb72689e749ff0d3a0c3a00c4bede04001ec24e
   languageName: node
   linkType: hard
 
-"slate@github:mintterteam/slate#workspace=slate&commit=791831570f795c1310eca18621ae605f845d3a37":
-  version: 0.82.1
-  resolution: "slate@https://github.com/mintterteam/slate.git#workspace=slate&commit=791831570f795c1310eca18621ae605f845d3a37"
+"slate@github:mintterteam/slate#workspace=slate&commit=4a136b50302aa869e8a8af548400597f5c6b6688":
+  version: 0.80.0
+  resolution: "slate@https://github.com/mintterteam/slate.git#workspace=slate&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
   dependencies:
     immer: ^9.0.6
     is-plain-object: ^5.0.0
     tiny-warning: ^1.0.3
-  checksum: 1b8c54b3290ab02a90f9649cc1ea113baedb1d06d86bf1d2ee917e4a4e57892aea7fac6056a6e3e953d2cc1c303da382dce83782790124865acdeb716c33d3fa
+  checksum: 3c9330cab3de05a50479b58542e4f46c9fc417d14d37f314989f2ce8e9dee1ec349daac095468929eeb1760d09928a854a09f8d2e01067dddf82e4e85c23bd0b
   languageName: node
   linkType: hard
 
