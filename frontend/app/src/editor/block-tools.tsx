@@ -15,6 +15,7 @@ import {
   group,
   heading,
   image,
+  isBlockquote,
   isFlowContent,
   isGroupContent,
   isHeading,
@@ -150,12 +151,26 @@ export function DraftBlockTools({
   service,
   blockEntry,
 }: DraftBlockToolsProps) {
+  let blockOffset = useMemo(() => {
+    if (blockEntry) {
+      let [block] = blockEntry
+
+      return isHeading(block)
+        ? '1rem'
+        : isBlockquote(block)
+        ? '1.3rem'
+        : '0.7rem'
+    } else {
+      return '-999rem'
+    }
+  }, [blockEntry])
+
   return (
     <Box
       css={{
         position: 'absolute',
         zIndex: '$max',
-        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) + 0.9rem)',
+        insetBlockStart: `calc(calc(var(--tools-y, -999) * 1px) + ${blockOffset})`,
         insetInlineStart: 'calc(calc(var(--tools-x, -999) * 1px) - 1.5rem)',
       }}
     >
