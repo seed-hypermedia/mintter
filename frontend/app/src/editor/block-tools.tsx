@@ -1,9 +1,13 @@
-import {useCurrentBlockToolsId} from '@app/editor/block-tools-context'
+import {
+  useBlockTools,
+  useCurrentBlockToolsId,
+} from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
+import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {getEditorBlock} from '@app/editor/utils'
-import {useFile, useFileEditor} from '@app/file-provider'
+import {useFile, useFileEditor, useFileIds} from '@app/file-provider'
 import {
   blockquote,
   code,
@@ -11,6 +15,7 @@ import {
   group,
   heading,
   image,
+  isBlockquote,
   isFlowContent,
   isGroupContent,
   isHeading,
@@ -102,12 +107,13 @@ const items: {
 
 type BlockToolsProps = {
   mode: EditorMode
-  service: InterpreterFrom<typeof blockToolsMachine>
+  isEditing: boolean
 }
 
 export function BlockTools(props: BlockToolsProps) {
   let editor = useFileEditor()
-  let [state] = useActor(props.service)
+  let blocktoolsService = useBlockTools()
+  let [state] = useActor(blocktoolsService)
   let blockId = useCurrentBlockToolsId()
   let blockEntry = useMemo(() => {
     if (blockId) {
@@ -116,16 +122,16 @@ export function BlockTools(props: BlockToolsProps) {
   }, [blockId, editor])
 
   if (state.matches('active')) {
-    return props.mode == EditorMode.Draft ? (
+    return !props.isEditing && props.mode == EditorMode.Draft ? (
       <DraftBlockTools
         editor={editor}
         blockEntry={blockEntry}
-        service={props.service}
+        service={blocktoolsService}
       />
     ) : props.mode == EditorMode.Publication ? (
       <PublicationBlockTools
         editor={editor}
-        service={props.service}
+        service={blocktoolsService}
         blockId={state.context.currentId}
       />
     ) : null
@@ -145,13 +151,27 @@ export function DraftBlockTools({
   service,
   blockEntry,
 }: DraftBlockToolsProps) {
+  let blockOffset = useMemo(() => {
+    if (blockEntry) {
+      let [block] = blockEntry
+
+      return isHeading(block)
+        ? '1rem'
+        : isBlockquote(block)
+        ? '1.3rem'
+        : '0.7rem'
+    } else {
+      return '-999rem'
+    }
+  }, [blockEntry])
+
   return (
     <Box
       css={{
         position: 'absolute',
-        // zIndex: '$1',
-        insetBlockStart: 'calc(var(--tools-y, -999) * 1px)',
-        insetInlineStart: 'calc(var(--tools-x, -999) * 1px)',
+        zIndex: '$max',
+        insetBlockStart: `calc(calc(var(--tools-y, -999) * 1px) + ${blockOffset})`,
+        insetInlineStart: 'calc(calc(var(--tools-x, -999) * 1px) - 1.5rem)',
       }}
     >
       <Dropdown.Root
@@ -220,7 +240,9 @@ export function PublicationBlockTools({
   copy = copyTextToClipboard,
 }: PublicationBlockToolsProps) {
   let file = useFile()
+  let [docId] = useFileIds()
   let [fileState] = useActor(file)
+  let hoverService = useHover()
 
   async function onCopy() {
     await copy(
@@ -233,9 +255,8 @@ export function PublicationBlockTools({
     <Box
       css={{
         position: 'absolute',
-        // zIndex: '$1',
-
-        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) - 0.5rem)',
+        zIndex: '$2',
+        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) + 0.5rem)',
         insetInlineEnd: 24,
         userSelect: 'none',
         zoom: 0.8,
@@ -243,6 +264,12 @@ export function PublicationBlockTools({
         '@bp1': {
           zoom: 1,
         },
+      }}
+      onMouseOver={() => {
+        hoverService.send({
+          type: 'MOUSE_ENTER',
+          ref: `${docId}/${blockId}`,
+        })
       }}
     >
       <Button

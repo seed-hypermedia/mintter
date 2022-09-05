@@ -12,7 +12,6 @@ import {queryKeys} from '@app/hooks'
 import {createId, group, paragraph, statement, text} from '@app/mttast'
 import {GroupingContent} from '@app/mttast/src'
 import {getTitleFromContent} from '@app/utils/get-document-title'
-import {debug} from '@app/utils/logger'
 import {QueryClient} from 'react-query'
 import {Editor} from 'slate'
 import {assign, createMachine, sendParent} from 'xstate'
@@ -328,7 +327,6 @@ export function createDraftMachine({
                   getDraft(context.draft.id),
                 )
                 .then((data) => {
-                  debug('DRAFT DATA', data.children)
                   sendBack({type: 'DRAFT.REPORT.FETCH.SUCCESS', data})
                 })
             } catch (err) {

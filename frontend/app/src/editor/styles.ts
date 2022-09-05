@@ -1,5 +1,5 @@
 import {EditorMode} from '@app/editor/plugin-utils'
-import {css} from '@app/stitches.config'
+import {CSS, css} from '@app/stitches.config'
 
 export var groupStyles = css({
   margin: 0,
@@ -61,7 +61,7 @@ export var blockStyles = css({
 export var phrasingStyles = css({
   position: 'relative',
   inlineSize: '$full',
-  zIndex: 1,
+  zIndex: 0,
   '& > *': {
     position: 'relative',
     zIndex: 10,
@@ -219,3 +219,12 @@ export var embedStyles = css({
     },
   },
 })
+
+export function hoverStyles(id: string): CSS {
+  return {
+    [`[data-hover-ref="${id}"] &:before`]: {
+      backgroundColor: '$primary-component-bg-normal',
+      opacity: 1,
+    },
+  }
+}

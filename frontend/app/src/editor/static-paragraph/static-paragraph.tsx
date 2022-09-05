@@ -2,8 +2,9 @@ import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {phrasingStyles} from '@app/editor/styles'
+import {hoverStyles, phrasingStyles} from '@app/editor/styles'
 import {useFileIds} from '@app/file-provider'
+import {useIsEditing} from '@app/main-context'
 import {isStaticParagraph} from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
@@ -55,6 +56,8 @@ function StaticParagraph({
 }: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
   let {elementProps, parentNode, parentPath} = usePhrasingProps(element)
   let btService = useBlockTools()
+  let isEditing = useIsEditing()
+
   let as = useMemo(
     () => headingMap[parentPath?.length ?? 'default'],
     [parentPath],
@@ -68,6 +71,22 @@ function StaticParagraph({
       btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
     }
   }, [attributes.ref, btService])
+
+  let hoverProps = {
+    css: !isEditing ? hoverStyles(`${docId}/${parentNode?.id}`) : undefined,
+    onMouseEnter: () => {
+      hoverService.send({
+        type: 'MOUSE_ENTER',
+        ref: `${docId}/${parentNode?.id}`,
+      })
+    },
+    // onMouseLeave: () => {
+    //   hoverService.send({
+    //     type: 'MOUSE_LEAVE',
+    //     ref: `${docId}/${parentNode?.id}`,
+    //   })
+    // },
+  }
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
@@ -96,24 +115,7 @@ function StaticParagraph({
         type: 'staticParagraph',
         blockType: 'heading',
       })}
-      css={{
-        [`[data-hover-ref="${docId}/${parentNode?.id}"] &:before`]: {
-          backgroundColor: '$primary-component-bg-normal',
-          opacity: 1,
-        },
-      }}
-      onMouseEnter={() => {
-        hoverService.send({
-          type: 'MOUSE_ENTER',
-          ref: `${docId}/${parentNode?.id}`,
-        })
-      }}
-      onMouseLeave={() => {
-        hoverService.send({
-          type: 'MOUSE_LEAVE',
-          ref: `${docId}/${parentNode?.id}`,
-        })
-      }}
+      {...hoverProps}
     >
       {children}
     </Text>
