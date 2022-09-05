@@ -87,7 +87,7 @@ export var phrasingStyles = css({
         paddingInline: '2rem',
         paddingBlock: '1rem',
         fontSize: '1rem',
-        whiteSpace: 'normal',
+        whiteSpace: 'pre',
       },
       blockquote: {
         paddingInlineStart: '1rem',

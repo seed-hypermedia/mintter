@@ -1,7 +1,8 @@
 import {isParagraph} from '@app/mttast'
 import {createContext, useContext} from 'react'
-import {Node, Point, Range} from 'slate'
+import {Node, Range} from 'slate'
 import {EditorPlugin} from './types'
+import {lowerPoint} from './utils'
 
 const FIND_HIGHLIGHT = 'find-highlight'
 
@@ -57,17 +58,4 @@ export function createFindPlugin(): EditorPlugin {
       return ranges
     },
   }
-}
-
-function lowerPoint(root: Node, point: Point): Point | null {
-  let offset = 0
-  for (const [text, path] of Node.texts(root)) {
-    if (offset <= point.offset && point.offset <= offset + text.value.length) {
-      return {path: [...point.path, ...path], offset: point.offset - offset}
-    }
-
-    offset += text.value.length
-  }
-
-  return null
 }
