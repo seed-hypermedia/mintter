@@ -6,6 +6,7 @@ import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
+import {useIsEditing, useMain} from '@app/main-context'
 import {DraftRef} from '@app/main-machine'
 import {ChildrenOf} from '@app/mttast'
 import {MainWindow} from '@app/pages/window-components'
@@ -53,9 +54,10 @@ function useInitialFocus(editor: SlateEditor) {
 export default function EditorPage({draftRef}: EditorPageProps) {
   const [visible, setVisible] = useState(false)
   const [state, send] = useDraft(draftRef)
-  const blockToolsService = useInterpret(() => blockToolsMachine)
-
+  const blocktoolsService = useInterpret(() => blockToolsMachine)
   const {context} = state
+  const mainService = useMain()
+  const isEditing = useIsEditing()
 
   useInitialFocus(context.editor)
 
@@ -69,24 +71,25 @@ export default function EditorPage({draftRef}: EditorPageProps) {
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
-        <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
-          <Box data-testid="editor-wrapper">
+        <MainWindow onScroll={() => blocktoolsService.send('DISABLE')}>
+          <Box
+            data-testid="editor-wrapper"
+            onMouseMove={() => mainService.send('MOUSE.MOVE')}
+          >
             {context.localDraft?.content && (
               <>
                 <FileProvider value={draftRef}>
-                  <BlockToolsProvider value={blockToolsService}>
-                    <BlockTools
-                      mode={EditorMode.Draft}
-                      service={blockToolsService}
-                    />
+                  <BlockToolsProvider value={blocktoolsService}>
+                    <BlockTools isEditing={isEditing} mode={EditorMode.Draft} />
                     <Editor
                       editor={state.context.editor}
                       value={context.localDraft.content}
                       //@ts-ignore
                       onChange={(content: ChildrenOf<Document>) => {
                         if (!content && typeof content == 'string') return
-                        blockToolsService.send('DISABLE')
+                        blocktoolsService.send('DISABLE')
                         send({type: 'DRAFT.UPDATE', payload: {content}})
+                        mainService.send('EDITING')
                       }}
                     />
                   </BlockToolsProvider>

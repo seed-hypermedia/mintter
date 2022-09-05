@@ -11,36 +11,14 @@ export type BlockToolsMachineContext = {
   rootElm: HTMLElement | null
 }
 export type BlockToolsMachineEvent =
-  | {
-      type: 'DISABLE'
-    }
-  | {
-      type: 'DROPDOWN.OPEN'
-    }
-  | {
-      type: 'DROPDOWN.CLOSE'
-    }
-  | {
-      type: 'OBSERVER'
-      observer: IntersectionObserver
-    }
-  | {
-      type: 'MOUSE.MOVE'
-      mouseY: number
-    }
-  | {
-      type: 'ENTRY.OBSERVE'
-      entry: HTMLElement
-    }
-  | {
-      type: 'ENTRY.ADD'
-      id: string
-      entry: IntersectionObserverEntry['target']
-    }
-  | {
-      type: 'ENTRY.DELETE'
-      id: string
-    }
+  | {type: 'DISABLE'}
+  | {type: 'DROPDOWN.OPEN'}
+  | {type: 'DROPDOWN.CLOSE'}
+  | {type: 'OBSERVER'; observer: IntersectionObserver}
+  | {type: 'MOUSE.MOVE'; mouseY: number}
+  | {type: 'ENTRY.OBSERVE'; entry: HTMLElement}
+  | {type: 'ENTRY.ADD'; id: string; entry: IntersectionObserverEntry['target']}
+  | {type: 'ENTRY.DELETE'; id: string}
   | {type: 'WINDOW.BLUR'}
 
 export const blockToolsMachine = createMachine(

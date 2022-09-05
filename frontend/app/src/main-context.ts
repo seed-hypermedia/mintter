@@ -45,3 +45,16 @@ export function useFileFromRef(id: string): PublicationRef | DraftRef {
 
   return file
 }
+
+export var useIsEditing = createMainSelector((state) => {
+  /**
+   * This hook controls the visibility of some parts of the UI like the topbar, the library and the hover effects.
+   * We want to hide those **only** when the user is typing in the editor.
+   * If the user is in another state (publication), we should show those no matter what (thats why else returns always false)
+   */
+  if (state.matches('routes.editor')) {
+    return state.matches('routes.editor.editing')
+  } else {
+    return false
+  }
+})

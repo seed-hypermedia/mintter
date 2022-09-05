@@ -1,5 +1,5 @@
 import {forceSync} from '@app/client/daemon'
-import {useLibrary, useMain} from '@app/main-context'
+import {useIsEditing, useLibrary, useMain} from '@app/main-context'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -17,17 +17,26 @@ import {BookmarksSection} from './section-bookmarks'
 import {ContactsSection} from './section-connections'
 
 let libraryStyle = css({
-  transition: 'all 0.1s ease',
+  transition: 'all 0.25s ease',
   userSelect: 'none',
   backgroundColor: '$base-background-normal',
   overflow: 'hidden',
   borderLeft: '1px solid $colors$base-border-subtle',
   position: 'relative',
   height: '$full',
+
   variants: {
     variant: {
       shell: {
         width: 232,
+      },
+    },
+    visible: {
+      false: {
+        opacity: 0,
+      },
+      true: {
+        opacity: 1,
       },
     },
   },
@@ -50,13 +59,17 @@ export function Library() {
     (state) => state.matches('opened'),
   )
 
+  let isEditing = useIsEditing()
+
   async function handleSync() {
     await forceSync()
   }
 
   return (
     <Box
-      className={libraryStyle()}
+      className={libraryStyle({
+        visible: !isEditing,
+      })}
       data-layout-section="library"
       data-testid="library"
     >

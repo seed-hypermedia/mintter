@@ -1,4 +1,7 @@
-import {useCurrentBlockToolsId} from '@app/editor/block-tools-context'
+import {
+  useBlockTools,
+  useCurrentBlockToolsId,
+} from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -102,12 +105,13 @@ const items: {
 
 type BlockToolsProps = {
   mode: EditorMode
-  service: InterpreterFrom<typeof blockToolsMachine>
+  isEditing: boolean
 }
 
 export function BlockTools(props: BlockToolsProps) {
   let editor = useFileEditor()
-  let [state] = useActor(props.service)
+  let blocktoolsService = useBlockTools()
+  let [state] = useActor(blocktoolsService)
   let blockId = useCurrentBlockToolsId()
   let blockEntry = useMemo(() => {
     if (blockId) {
@@ -116,16 +120,16 @@ export function BlockTools(props: BlockToolsProps) {
   }, [blockId, editor])
 
   if (state.matches('active')) {
-    return props.mode == EditorMode.Draft ? (
+    return !props.isEditing && props.mode == EditorMode.Draft ? (
       <DraftBlockTools
         editor={editor}
         blockEntry={blockEntry}
-        service={props.service}
+        service={blocktoolsService}
       />
     ) : props.mode == EditorMode.Publication ? (
       <PublicationBlockTools
         editor={editor}
-        service={props.service}
+        service={blocktoolsService}
         blockId={state.context.currentId}
       />
     ) : null
@@ -149,9 +153,9 @@ export function DraftBlockTools({
     <Box
       css={{
         position: 'absolute',
-        // zIndex: '$1',
-        insetBlockStart: 'calc(var(--tools-y, -999) * 1px)',
-        insetInlineStart: 'calc(var(--tools-x, -999) * 1px)',
+        zIndex: '$max',
+        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) + 0.9rem)',
+        insetInlineStart: 'calc(calc(var(--tools-x, -999) * 1px) - 1.5rem)',
       }}
     >
       <Dropdown.Root
@@ -233,9 +237,9 @@ export function PublicationBlockTools({
     <Box
       css={{
         position: 'absolute',
-        // zIndex: '$1',
+        zIndex: '$2',
 
-        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) - 0.5rem)',
+        insetBlockStart: 'calc(calc(var(--tools-y, -999) * 1px) + 0.5rem)',
         insetInlineEnd: 24,
         userSelect: 'none',
         zoom: 0.8,
