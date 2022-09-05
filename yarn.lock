@@ -1733,7 +1733,7 @@ __metadata:
     rehype-stringify: 9.0.3
     rollup: 2.79.0
     sass: 1.54.8
-    shiki: 0.10.1
+    shiki: 0.11.1
     show-keys: 1.1.2
     slate: "github:mintterteam/slate#workspace=slate&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
     slate-history: "github:mintterteam/slate#workspace=slate-history&commit=4a136b50302aa869e8a8af548400597f5c6b6688"
@@ -10228,18 +10228,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shiki@npm:0.10.1":
-  version: 0.10.1
-  resolution: "shiki@npm:0.10.1"
-  dependencies:
-    jsonc-parser: ^3.0.0
-    vscode-oniguruma: ^1.6.1
-    vscode-textmate: 5.2.0
-  checksum: fb746f3cb3de7e545e3b10a6cb658d3938f840e4ccc9a3c90ceb7e69a8f89dbb432171faac1e9f02a03f103684dad88ee5e54b5c4964fa6b579fca6e8e26424d
-  languageName: node
-  linkType: hard
-
-"shiki@npm:^0.11.1":
+"shiki@npm:0.11.1, shiki@npm:^0.11.1":
   version: 0.11.1
   resolution: "shiki@npm:0.11.1"
   dependencies:
@@ -11990,13 +11979,6 @@ __metadata:
   version: 1.6.2
   resolution: "vscode-oniguruma@npm:1.6.2"
   checksum: 6b754acdafd5b68242ea5938bb00a32effc16c77f471d4f0f337d879d0e8e592622998e2441f42d9a7ff799c1593f31c11f26ca8d9bf9917e3ca881d3c1f3e19
-  languageName: node
-  linkType: hard
-
-"vscode-textmate@npm:5.2.0":
-  version: 5.2.0
-  resolution: "vscode-textmate@npm:5.2.0"
-  checksum: 5449b42d451080f6f3649b66948f4b5ee4643c4e88cfe3558a3b31c84c78060cfdd288c4958c1690eaa5cd65d09992fa6b7c3bef9d4aa72b3651054a04624d20
   languageName: node
   linkType: hard
 
