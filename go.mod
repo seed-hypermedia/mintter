@@ -34,7 +34,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/multiformats/go-multiaddr v0.5.0
 	github.com/multiformats/go-multibase v0.1.1
-	github.com/multiformats/go-multihash v0.1.0
+	github.com/multiformats/go-multihash v0.2.1
 	github.com/peterbourgon/ff/v3 v3.3.0
 	github.com/planetscale/vtprotobuf v0.3.0
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
@@ -156,7 +156,6 @@ require (
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mikioh/tcpinfo v0.0.0-20190314235526-30a79bb1804b // indirect
 	github.com/mikioh/tcpopt v0.0.0-20190314235656-172688c1accc // indirect
-	github.com/minio/blake2b-simd v0.0.0-20160723061019-3f5f724cb5b1 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
