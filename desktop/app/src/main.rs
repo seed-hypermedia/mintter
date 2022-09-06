@@ -36,6 +36,9 @@ async fn emit_all<R: Runtime>(
 }
 
 fn main() {
+  #[cfg(not(debug_assertions))]
+  secmem_proc::harden_process().expect("could not harden process");
+
   let log_plugin = {
     let targets = [
       LogTarget::LogDir,
