@@ -1627,7 +1627,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mintter/app@0.3.0, @mintter/app@workspace:frontend/app":
+"@mintter/app@workspace:frontend/app":
   version: 0.0.0-use.local
   resolution: "@mintter/app@workspace:frontend/app"
   dependencies:
@@ -8665,8 +8665,6 @@ __metadata:
 "mintter@workspace:.":
   version: 0.0.0-use.local
   resolution: "mintter@workspace:."
-  dependencies:
-    "@mintter/app": 0.3.0
   languageName: unknown
   linkType: soft
 
