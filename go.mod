@@ -23,7 +23,7 @@ require (
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/ipfs/go-merkledag v0.7.0
 	github.com/klauspost/compress v1.15.9
-	github.com/libp2p/go-libp2p v0.20.3
+	github.com/libp2p/go-libp2p v0.22.0
 	github.com/libp2p/go-libp2p-core v0.17.0
 	github.com/libp2p/go-libp2p-gostream v0.4.0
 	github.com/libp2p/go-libp2p-kad-dht v0.16.0
