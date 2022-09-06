@@ -24,8 +24,7 @@
     "test:unit:watch": "pnpm run test:unit watch",
     "test:ui": "cypress",
     "test:ui:run": "pnpm run test:ui run --component",
-    "test:ui:open": "pnpm run test:ui open --component",
-    "validate": "pnpm run format && pnpm run lint && pnpm run test"
+    "test:ui:open": "pnpm run test:ui open --component"
   },
   "dependencies": {
     "@floating-ui/react-dom": "1.0.0",

@@ -7,13 +7,13 @@
   "private": true,
   "packageManager": "pnpm@7.11.0",
   "scripts": {
-    "build": "cd frontend/app && pnpm run build",
+    "build": "pnpm run --recursive build",
     "lint": "prettier --check --plugin-search-dir=. . && eslint .",
     "format": "prettier --write --plugin-search-dir=. .",
-    "test": "cd frontend/app && pnpm run test",
-    "test:unit": "cd frontend/app && pnpm run test:unit",
+    "test": "pnpm run --recursive test",
+    "test:unit": "pnpm run --recursive test:unit",
     "codegen": "graphql-codegen",
-    "validate": "cd frontend/app && pnpm run validate"
+    "validate": "pnpm run lint && pnpm run test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "5.36.1",
