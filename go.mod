@@ -1,6 +1,6 @@
 module mintter
 
-go 1.19
+go 1.18
 
 require (
 	crawshaw.io/sqlite v0.3.2
