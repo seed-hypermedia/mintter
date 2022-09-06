@@ -130,6 +130,7 @@
     "@xstate/cli": "0.3.2",
     "@xstate/inspect": "0.7.0",
     "@xstate/test": "0.5.1",
+    "copy-text-to-clipboard": "3.0.1",
     "covector": "0.7.3",
     "cypress": "10.7.0",
     "eslint": "8.23.0",

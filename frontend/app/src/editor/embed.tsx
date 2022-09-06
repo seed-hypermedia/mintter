@@ -163,6 +163,7 @@ function createEmbedMachine(url: string, mainService: MainService) {
   return createMachine(
     {
       id: 'transclusion-machine',
+      predictableActionArguments: true,
       tsTypes: {} as import('./embed.typegen').Typegen0,
       schema: {
         context: {} as EmbedMachineContext,

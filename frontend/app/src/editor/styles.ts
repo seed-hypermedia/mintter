@@ -201,6 +201,7 @@ export var embedStyles = css({
     opacity: 0,
     transition: 'opacity 0.35s ease',
     backgroundColor: 'transparent',
+    pointerEvents: 'none',
   },
   variants: {
     highlight: {

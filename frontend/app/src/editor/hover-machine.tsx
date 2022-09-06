@@ -16,6 +16,7 @@ export function createHoverService() {
   return createMachine(
     {
       id: 'hover-machine',
+      predictableActionArguments: true,
       tsTypes: {} as import('./hover-machine.typegen').Typegen0,
       schema: {
         events: {} as HoverEvent,
