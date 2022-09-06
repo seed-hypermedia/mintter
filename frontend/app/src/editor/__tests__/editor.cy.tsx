@@ -22,9 +22,11 @@ import {useEffect} from 'react'
 import {QueryClient} from 'react-query'
 import {Editor as EditorType} from 'slate'
 
+import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {BlockTools} from '@app/editor/block-tools'
 import {BlockToolsProvider} from '@app/editor/block-tools-context'
 import {blockToolsMachine} from '@app/editor/block-tools-machine'
+import {queryKeys} from '@app/hooks'
 import {Group} from '@app/mttast'
 import {InterpreterFrom} from 'xstate'
 
@@ -662,8 +664,9 @@ describe('Editor', () => {
 })
 
 describe('Transclusions', () => {
-  it.skip('should paste a transclusion into the editor', () => {
-    let block = statement({id: 'b1'}, [paragraph([text('Hello b1')])])
+  it.only('should paste a transclusion into the editor', () => {
+    let blockContent = 'Hello b1'
+    let block = statement({id: 'b1'}, [paragraph([text(blockContent)])])
     let publication: Publication = {
       version: 'v1',
       document: {
@@ -699,12 +702,22 @@ describe('Transclusions', () => {
       publication,
       draftList: [draft],
       draft,
-      authors: [{id: 'testauthor'}],
+      authors: [{id: 'testauthor'}, {id: 'authorid'}],
+      url: `/p/d1/v1`,
     })
+
+    client.setQueryData<ListCitationsResponse>(
+      [queryKeys.GET_PUBLICATION_DISCUSSION, 'd1', 'v1'],
+      {
+        links: [],
+      },
+    )
 
     let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-    cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
+    cy.mount(<TestEditor editor={editor} client={client} draft={draft} />, {
+      client,
+    })
       .get('[data-testid="editor"]')
       .then(() => {
         editor.apply({
@@ -721,13 +734,9 @@ describe('Transclusions', () => {
             },
           },
         })
-        // let data = new DataTransfer()
-        // data.setData('text', 'mtt://d1/v1/b1')
-        // editor.insertData(data)
       })
-      // .setClipboard('mtt://d1/v1/b1')
-
       .paste({pastePayload: 'mtt://d1/v1/b1', pasteType: 'text'})
+      .contains(blockContent)
   })
 })
 
