@@ -1937,6 +1937,7 @@ dependencies = [
  "env_logger",
  "log",
  "objc",
+ "secmem-proc",
  "serde",
  "serde_json",
  "tauri",
@@ -2773,6 +2774,18 @@ name = "scopeguard"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
+
+[[package]]
+name = "secmem-proc"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5b291669c8562407a90242395b35409c070f748c64268ed7c837bd0550c4dec5"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "thiserror",
+ "winapi",
+]
 
 [[package]]
 name = "selectors"
