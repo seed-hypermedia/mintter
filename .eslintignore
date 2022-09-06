@@ -5,7 +5,7 @@ build
 dist-ssr
 *.local
 cypress/plugins/index.js
-frontend/app/src/client/.generated
-frontend/app/src/**/*.typegen.*
+.generated
+*.typegen.*
 exts/wake-asc/mtt_ephemeral_poll.ts
 .vite
