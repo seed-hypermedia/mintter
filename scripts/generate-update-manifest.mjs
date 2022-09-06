@@ -30,6 +30,8 @@ async function main() {
       "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
     },
   };
+
+  console.log(JSON.stringify(obj, null, 2));
 }
 main();
 
