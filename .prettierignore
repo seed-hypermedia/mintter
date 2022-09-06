@@ -21,3 +21,4 @@ frontend/app/src/client/.generated
 frontend/app/.vite
 /target
 exts/wake-asc/mtt_ephemeral_poll.ts
+pnpm-lock.yaml

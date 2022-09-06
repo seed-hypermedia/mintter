@@ -119,8 +119,10 @@ jobs:
           APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
 
       - name: Set version in Cargo.toml
-        run: node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{ github.ref_name }}
-        
+        run:
+          node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{
+          github.ref_name }}
+
       - uses: JonasKruckenberg/tauri-build@v1.0.5
         id: tauri_build
         env:
