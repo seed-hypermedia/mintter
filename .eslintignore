@@ -4,7 +4,8 @@ dist
 build
 dist-ssr
 *.local
-jest.config.js
 cypress/plugins/index.js
-src/client/.generated
-src/**/*.typegen.*
+.generated
+*.typegen.*
+exts/wake-asc/mtt_ephemeral_poll.ts
+.vite

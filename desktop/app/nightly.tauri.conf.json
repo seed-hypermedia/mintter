@@ -2,8 +2,8 @@
   "build": {
     "distDir": "../../frontend/app/dist/client",
     "devPath": "http://localhost:3000",
-    "beforeDevCommand": "cd ../frontend/app && yarn typegen && yarn dev",
-    "beforeBuildCommand": "cd ../frontend/app && yarn typegen && yarn build:client",
+    "beforeDevCommand": "cd ../frontend/app && pnpm typegen && pnpm dev",
+    "beforeBuildCommand": "cd ../frontend/app && pnpm typegen && pnpm build:client",
     "withGlobalTauri": false
   },
   "tauri": {

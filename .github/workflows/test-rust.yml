@@ -5,16 +5,16 @@ on:
     branches:
       - master
     paths:
-      - ".github/workflows/lint-rust.yml"
-      - "Cargo.toml"
-      - "desktop/**"
+      - '.github/workflows/lint-rust.yml'
+      - 'Cargo.toml'
+      - 'desktop/**'
   pull_request:
     paths:
-      - ".github/workflows/lint-rust.yml"
-      - "Cargo.toml"
-      - "desktop/**"
+      - '.github/workflows/lint-rust.yml'
+      - 'Cargo.toml'
+      - 'desktop/**'
     branches-ignore:
-      - "renovate/**"
+      - 'renovate/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,7 +37,7 @@ jobs:
       - uses: Swatinem/rust-cache@v1
         with:
           cache-on-failure: true
-      - name: "Install native packages"
+      - name: 'Install native packages'
         if: "matrix.os == 'ubuntu-latest'"
         run: |
           sudo apt-get update

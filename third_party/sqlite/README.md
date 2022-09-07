@@ -1,20 +1,35 @@
 # Go interface to SQLite.
 
-[![GoDoc](https://godoc.org/crawshaw.io/sqlite?status.svg)](https://godoc.org/crawshaw.io/sqlite) [![Build Status](https://travis-ci.org/crawshaw/sqlite.svg?branch=master)](https://travis-ci.org/crawshaw/sqlite) (linux and macOS) [![Build status](https://ci.appveyor.com/api/projects/status/jh9xx6cut73ufkl8?svg=true)](https://ci.appveyor.com/project/crawshaw/sqlite) (windows)
+[![GoDoc](https://godoc.org/crawshaw.io/sqlite?status.svg)](https://godoc.org/crawshaw.io/sqlite)
+[![Build Status](https://travis-ci.org/crawshaw/sqlite.svg?branch=master)](https://travis-ci.org/crawshaw/sqlite)
+(linux and macOS)
+[![Build status](https://ci.appveyor.com/api/projects/status/jh9xx6cut73ufkl8?svg=true)](https://ci.appveyor.com/project/crawshaw/sqlite)
+(windows)
 
-This package provides a low-level Go interface to SQLite 3. Connections are [pooled](https://godoc.org/crawshaw.io/sqlite#Pool) and if the SQLite [shared cache](https://www.sqlite.org/sharedcache.html) mode is enabled the package takes advantage of the [unlock-notify API](https://www.sqlite.org/unlock_notify.html) to minimize the amount of handling user code needs for dealing with database lock contention.
+This package provides a low-level Go interface to SQLite 3. Connections are
+[pooled](https://godoc.org/crawshaw.io/sqlite#Pool) and if the SQLite
+[shared cache](https://www.sqlite.org/sharedcache.html) mode is enabled the
+package takes advantage of the
+[unlock-notify API](https://www.sqlite.org/unlock_notify.html) to minimize the
+amount of handling user code needs for dealing with database lock contention.
 
-It has interfaces for some of SQLite's more interesting extensions, such as [incremental BLOB I/O](https://www.sqlite.org/c3ref/blob_open.html) and the [session extension](https://www.sqlite.org/sessionintro.html).
+It has interfaces for some of SQLite's more interesting extensions, such as
+[incremental BLOB I/O](https://www.sqlite.org/c3ref/blob_open.html) and the
+[session extension](https://www.sqlite.org/sessionintro.html).
 
-A utility package, [sqlitex](https://godoc.org/crawshaw.io/sqlite/sqlitex), provides some higher-level tools for making it easier to perform common tasks with SQLite. In particular it provides support to make nested transactions easy to use via [sqlitex.Save](https://godoc.org/crawshaw.io/sqlite/sqlitex#Save).
+A utility package, [sqlitex](https://godoc.org/crawshaw.io/sqlite/sqlitex),
+provides some higher-level tools for making it easier to perform common tasks
+with SQLite. In particular it provides support to make nested transactions easy
+to use via [sqlitex.Save](https://godoc.org/crawshaw.io/sqlite/sqlitex#Save).
 
 This is not a database/sql driver.
 
-```go get -u crawshaw.io/sqlite```
+`go get -u crawshaw.io/sqlite`
 
 ## Example
 
-A HTTP handler that uses a multi-threaded pool of SQLite connections via a shared cache.
+A HTTP handler that uses a multi-threaded pool of SQLite connections via a
+shared cache.
 
 ```go
 var dbpool *sqlitex.Pool

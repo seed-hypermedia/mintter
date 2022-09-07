@@ -15,8 +15,11 @@
   - filter list of invoices by: wallet, payment status, expiration...
   - show lnaddress
   - show invoices status per document?
-  - add block metadata to invoices so we can overlay all the payment info on each document
+  - add block metadata to invoices so we can overlay all the payment info on
+    each document
 - [bug]: when clicking nested transclusions it opens both documents?
-- [fix]: move the editing event on the onchange machine to filter the set_selection events to trigger it
-- [fix]: add a service to publication and editor so that after clicking `cmd+A`, it will select the editor content, and not the whole UI
+- [fix]: move the editing event on the onchange machine to filter the
+  set_selection events to trigger it
+- [fix]: add a service to publication and editor so that after clicking `cmd+A`,
+  it will select the editor content, and not the whole UI
 - [fix]: change react-copy-to-clipboard to copy-text-to-clipboard

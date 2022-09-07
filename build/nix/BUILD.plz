@@ -57,7 +57,8 @@ nixpkgs_binary(
 )
 
 nixpkgs_binary(
-    name = "yarn",
+    name = "pnpm",
+    nix_attribute = "nodePackages.pnpm",
 )
 
 nixpkgs_binary(

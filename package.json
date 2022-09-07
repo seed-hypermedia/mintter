@@ -5,18 +5,27 @@
   "repository": "https://github.com/mintterteam/mintter",
   "author": "Mintter Team",
   "private": true,
+  "packageManager": "pnpm@7.11.0",
   "scripts": {
-    "build": "yarn app build",
-    "lint": "yarn app lint",
-    "format": "yarn app format",
-    "test": "yarn app test",
-    "test:unit": "yarn app test:unit",
-    "app": "yarn workspace @mintter/app",
+    "build": "pnpm run --recursive build",
+    "lint": "prettier --check --plugin-search-dir=. . && eslint .",
+    "format": "prettier --write --plugin-search-dir=. .",
+    "test": "pnpm run --recursive test",
+    "test:unit": "pnpm run --recursive test:unit",
     "codegen": "graphql-codegen",
-    "validate": "yarn app validate"
+    "validate": "pnpm run lint && pnpm run test"
   },
-  "workspaces": [
-    "frontend/*"
-  ],
-  "packageManager": "yarn@3.2.3"
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "5.36.1",
+    "@typescript-eslint/parser": "5.36.1",
+    "@typescript-eslint/typescript-estree": "5.36.1",
+    "eslint": "8.20.0",
+    "eslint-config-preact": "1.3.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-react": "7.31.1",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "prettier": "2.7.1",
+    "typescript": "4.7.4"
+  }
 }

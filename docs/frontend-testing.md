@@ -9,11 +9,11 @@ In mintter we have currently 3 types of testing:
 ## Run tests locally
 
 ```bash
-yarn test                   # will run all unit and ui testing (CI and `headless` mode)
-yarn app test:unit:run      # run unit tests in CI mode (vitest)
-yarn app test:unit:watch    # run unit tests in watch mode
-yarn app test:ui:run        # run ui tests in `headless` mode
-yarn app test:ui:open       # run ui tests opening the Cypress dashboard
+pnpm test                   # will run all unit and ui testing (CI and `headless` mode)
+pnpm app test:unit:run      # run unit tests in CI mode (vitest)
+pnpm app test:unit:watch    # run unit tests in watch mode
+pnpm app test:ui:run        # run ui tests in `headless` mode
+pnpm app test:ui:open       # run ui tests opening the Cypress dashboard
 ```
 
 ## Testing conventions
@@ -91,17 +91,17 @@ describe('Transform: blockToApi', () => {
 ```tsx
 // draft-list-page.cy.tsx
 
-import {DraftList} from "@app/pages/draft-list-page";
+import { DraftList } from "@app/pages/draft-list-page";
 
 // TODO: FIXME
 describe("DraftList", () => {
-  it("Should show an empty list", () => {
-    cy.mount(<DraftList />)
-      .get('[data-testid="filelist-title"]')
-      .contains("Drafts")
-      .get('[data-testid="filelist-empty-label"]')
-      .contains("You have no Drafts yet.");
-  });
+    it("Should show an empty list", () => {
+        cy.mount(<DraftList />)
+            .get('[data-testid="filelist-title"]')
+            .contains("Drafts")
+            .get('[data-testid="filelist-empty-label"]')
+            .contains("You have no Drafts yet.");
+    });
 });
 ```
 
@@ -110,43 +110,43 @@ describe("DraftList", () => {
 ```tsx
 // draft-list-page.cy.tsx
 
-import {DraftList} from "@app/pages/draft-list-page";
-import {createTestQueryClient} from "@app/test/utils";
+import { DraftList } from "@app/pages/draft-list-page";
+import { createTestQueryClient } from "@app/test/utils";
 
 // TODO: FIXME
 describe("DraftList", () => {
-  it("should render the draft list returned", () => {
-    let {client} = createTestQueryClient({
-      draftList: [
-        {
-          id: "1",
-          title: "document 1",
-          subtitle: "",
-          author: "testauthor",
-          createTime: new Date(),
-          updateTime: new Date(),
-          publishTime: new Date(),
-          children: [],
-        },
-        {
-          id: "2",
-          title: "document 2",
-          subtitle: "",
-          author: "testauthor",
-          createTime: new Date(),
-          updateTime: new Date(),
-          publishTime: new Date(),
-          children: [],
-        },
-      ],
-    });
+    it("should render the draft list returned", () => {
+        let { client } = createTestQueryClient({
+            draftList: [
+                {
+                    id: "1",
+                    title: "document 1",
+                    subtitle: "",
+                    author: "testauthor",
+                    createTime: new Date(),
+                    updateTime: new Date(),
+                    publishTime: new Date(),
+                    children: [],
+                },
+                {
+                    id: "2",
+                    title: "document 2",
+                    subtitle: "",
+                    author: "testauthor",
+                    createTime: new Date(),
+                    updateTime: new Date(),
+                    publishTime: new Date(),
+                    children: [],
+                },
+            ],
+        });
 
-    cy.mount(<DraftList />, {
-      client,
-    })
-      .get('[data-testid="filelist-list"]')
-      .children()
-      .should("have.length", 2);
-  });
+        cy.mount(<DraftList />, {
+            client,
+        })
+            .get('[data-testid="filelist-list"]')
+            .children()
+            .should("have.length", 2);
+    });
 });
 ```

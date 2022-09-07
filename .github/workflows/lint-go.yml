@@ -3,10 +3,10 @@ name: Lint Go
 on:
   pull_request:
     paths:
-      - ".github/workflows/lint-go.yml"
-      - "backend/**/*.go"
+      - '.github/workflows/lint-go.yml'
+      - 'backend/**/*.go'
     branches-ignore:
-      - "renovate/**"
+      - 'renovate/**'
 
 # Based on https://github.com/golangci/golangci-lint-action readme.
 permissions:
