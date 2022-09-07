@@ -5,6 +5,7 @@ import {
   sanitizeSchema,
   toMttast,
 } from '@app/mttast'
+import {isMintterLink} from '@app/utils/is-mintter-link'
 import {error} from '@app/utils/logger'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
@@ -93,10 +94,12 @@ export function createPlainTextPastePlugin(): EditorPlugin {
         const text = transfer.getData('text/plain')
 
         if (text) {
-          const normalized = text.split(/\r\n|\r|\n/).join('\n')
+          if (!isMintterLink(text)) {
+            const normalized = text.split(/\r\n|\r|\n/).join('\n')
 
-          editor.insertText(normalized)
-          return
+            editor.insertText(normalized)
+            return
+          }
         }
 
         insertData(transfer)

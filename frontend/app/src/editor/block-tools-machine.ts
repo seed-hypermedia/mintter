@@ -214,7 +214,6 @@ export const blockToolsMachine =
         },
         getBlockBounds: assign({
           currentBounds: (context) => {
-            console.log('currentBounds!')
             let newBounds = new Map()
             context.visibleBlocks.forEach(([key, entry]) => {
               newBounds.set(key, entry.getBoundingClientRect())

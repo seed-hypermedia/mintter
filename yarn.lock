@@ -1678,6 +1678,7 @@ __metadata:
     autosize: 5.0.1
     browser-headers: 0.4.1
     cmdk: 0.1.19
+    copy-text-to-clipboard: 3.0.1
     covector: 0.7.3
     cypress: 10.7.0
     deepmerge: 4.2.2
@@ -4588,6 +4589,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"copy-text-to-clipboard@npm:3.0.1":
+  version: 3.0.1
+  resolution: "copy-text-to-clipboard@npm:3.0.1"
+  checksum: 4c301b9a65c8bf337e26a74d28849096651697fac829a364c463df81ba5ddfeea0741214f9f1232832fffd229ebd5659d3abcccea3fe54d7010a22e515cc38bc
+  languageName: node
+  linkType: hard
+
 "copy-to-clipboard@npm:^3.3.1":
   version: 3.3.2
   resolution: "copy-to-clipboard@npm:3.3.2"
@@ -5135,9 +5143,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.202":
-  version: 1.4.241
-  resolution: "electron-to-chromium@npm:1.4.241"
-  checksum: a3d77207f4c46b64633eab3dcb46b4dcbd3e7e03f12ab81928a20ac4f585a9f04968176094318995f376645436325ddc8085f99bc985bc53b04d6c2016f1f9b0
+  version: 1.4.242
+  resolution: "electron-to-chromium@npm:1.4.242"
+  checksum: 8936942ddacb7406bef360110301741f7ab54012406b0b38ed2d36bf28440b3903d927399dfcb3bb059d2904f32a2bdd12353f46563ff08f5da472f3359ed862
   languageName: node
   linkType: hard
 
@@ -11106,9 +11114,9 @@ __metadata:
   linkType: hard
 
 "tinybench@npm:^2.1.3":
-  version: 2.1.4
-  resolution: "tinybench@npm:2.1.4"
-  checksum: 36b32b494afb379e4cd3fa1c040ca429ac8c1c064770801c9c4c6313053a1314946eb02028d62ab7d2c8f5dd743f9447c739b56516cdb9914d12c5f1021e8d41
+  version: 2.1.5
+  resolution: "tinybench@npm:2.1.5"
+  checksum: 5a6d378271a00ace6fa6970404eb1efd539d3e9b9908a9cb6d66ad78acfd873762734f3fc69fe10d86217318871367997d2a8b9566039fd224c518493466aa96
   languageName: node
   linkType: hard
 
