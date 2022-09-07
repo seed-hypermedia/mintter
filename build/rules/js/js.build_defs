@@ -1,18 +1,19 @@
-def yarn_install(
+def pnpm_install(
         name: str,
         srcs = [
             "package.json",
-            "yarn.lock",
+            "pnpm-workspace.yaml",
+            "pnpm-lock.yaml",
         ],
         deps = [],
         labels = [],
         visibility: list = None):
     """
-    Installs yarn dependencies inside the workspace tree.
+    Installs pnpm dependencies inside the workspace tree.
 
     If node_modules are deleted manually, the build system won't be aware of that,
     and builds will start failing in a weird way. The way to solve it is to run this rule with --rebuild flag
-    or install the node_modules back using yarn.
+    or install the node_modules manually using pnpm.
     """
 
     fg = filegroup(
@@ -26,47 +27,47 @@ def yarn_install(
         srcs = [fg],
         exported_deps = [fg],
         output_is_complete = False,
-        building_description = "Installing Yarn dependencies...",
-        outs = ["yarn.state"],
+        building_description = "Installing pnpm dependencies...",
+        outs = ["pnpm.state"],
         cmd = """
 HOME=$(eval echo ~$(whoami))
 TMPDIR="/tmp"
 cd $WORKSPACE
-$TOOLS_YARN install
-cp node_modules/.yarn-state.yml $OUT
+$TOOLS_PNPM install
+cp node_modules/.modules.yaml $OUT
 """,
         tools = {
-            "yarn": [CONFIG.YARN_TOOL],
+            "pnpm": [CONFIG.PNPM_TOOL],
         },
         deps = deps,
-        labels = labels + ["yarn_install"],
+        labels = labels + ["pnpm_install"],
         visibility = visibility,
     )
 
-def yarn_script(
+def pnpm_script(
         name: str,
         srcs: list,
         script_name: str,
-        yarn_deps: str,  # Label to of of the yarn_install target.
+        pnpm_deps: str,  # Label to of of the pnpm_install target.
         outs: list,
         workdir = "./",
         deps = [],
         labels = [],
         visibility: list = None):
     """
-    Bundles a ViteJS app.
+    Runs a script defined in package.json.
     """
 
     def pre_build(label):
-        if not has_label(yarn_deps, "yarn_install"):
-            log.fatal("Attribute yarn_deps must point to a yarn_install rule")
+        if not has_label(pnpm_deps, "pnpm_install"):
+            log.fatal("Attribute pnpm_deps must point to a pnpm_install rule")
 
     return build_rule(
         name = name,
         srcs = srcs,
         pre_build = pre_build,
         outs = outs,
-        building_description = "Running Yarn script...",
+        building_description = "Running pnpm script...",
         env = {
             "workdir": workdir,
             "script_name": script_name,
@@ -75,20 +76,20 @@ def yarn_script(
 EXECROOT="$(pwd)"
 ln -s $WORKSPACE/node_modules node_modules
 cd $PKG/$workdir
-$TOOLS_YARN run $script_name
+$TOOLS_PNPM run $script_name
 mv $OUTS $EXECROOT
 """,
         tools = {
-            "yarn": [CONFIG.YARN_TOOL],
+            "pnpm": [CONFIG.PNPM_TOOL],
         },
-        deps = deps + [yarn_deps],
+        deps = deps + [pnpm_deps],
         labels = labels,
         visibility = visibility,
     )
 
-def yarn_binary(
+def pnpm_binary(
         name: str,
-        yarn_deps: str,
+        pnpm_deps: str,
         command: str = None,
         deps = [],
         visibility = None):
@@ -97,7 +98,7 @@ def yarn_binary(
         outs = [command or name],
         binary = True,
         cmd = """
-TOOL="${TOOLS_YARN:${#WORKSPACE}+1}"
+TOOL="${TOOLS_PNPM:${#WORKSPACE}+1}"
 cat > $OUT <<EOF
 #!/bin/sh
 exec $(echo '$WORKSPACE')/$TOOL {command} $(echo '$@')
@@ -105,8 +106,8 @@ EOF
 chmod +x $OUT
 """.format(command = command or name),
         tools = {
-            "yarn": [CONFIG.YARN_TOOL],
+            "pnpm": [CONFIG.PNPM_TOOL],
         },
         visibility = visibility,
-        deps = deps + [yarn_deps],
+        deps = deps + [pnpm_deps],
     )

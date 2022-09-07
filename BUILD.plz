@@ -13,9 +13,9 @@ gomod(
     ],
 )
 
-# Installs yarn dependencies.
-yarn_install(
-    name = "yarn",
+# Installs JS dependencies.
+pnpm_install(
+    name = "pnpm",
     visibility = [
         "//build/tools/...",
         "//frontend/...",

@@ -1,35 +1,33 @@
-name: Unit Test JavaScript
+name: Audit JavaScript
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
   push:
     branches:
-      - master
+      - main
     paths:
-      - '.github/workflows/test-javascript.yml'
-      - 'frontend/**'
-      - 'package.json'
+      - '.github/workflows/audit-javascript.yml'
+      - '**/pnpm-lock.yaml'
+      - '**/package.json'
   pull_request:
+    branches:
+      - main
     paths:
-      - '.github/workflows/test-javascript.yml'
-      - 'frontend/**'
-      - 'package.json'
-    branches-ignore:
-      - 'renovate/**'
+      - '.github/workflows/audit-javascript.yml'
+      - '**/pnpm-lock.yaml'
+      - '**/package.json'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test-javascript:
+  audit-js:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
 
       - uses: pnpm/action-setup@v2.2.2
         name: Install pnpm
@@ -55,4 +53,5 @@ jobs:
         with:
           run_install: true
 
-      - run: pnpm test
+      - name: audit
+        run: pnpm audit

@@ -664,7 +664,7 @@ describe('Editor', () => {
 })
 
 describe('Transclusions', () => {
-  it.only('should paste a transclusion into the editor', () => {
+  it('should paste a transclusion into the editor', () => {
     let blockContent = 'Hello b1'
     let block = statement({id: 'b1'}, [paragraph([text(blockContent)])])
     let publication: Publication = {

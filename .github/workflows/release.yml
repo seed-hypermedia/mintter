@@ -37,7 +37,8 @@ jobs:
           #   rust_target: aarch64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v3
-      - name: "Setup Rust"
+
+      - name: 'Setup Rust'
         uses: actions-rs/toolchain@v1
         with:
           default: true
@@ -45,25 +46,51 @@ jobs:
           profile: minimal
           toolchain: stable
           target: ${{ matrix.config.rust_target }}
+
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.config.rust_target }}
-      - name: "Setup NodeJS"
-        uses: actions/setup-node@v3
-        with:
-          cache: yarn
-          node-version: 16.x
-      - name: "Setup Go"
+
+      - name: 'Setup Go'
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
-      - name: "Install native packages"
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - uses: pnpm/action-setup@v2.2.2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          run_install: true
+
+      - name: 'Install native packages'
         if: "matrix.config.os == 'ubuntu-latest'"
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libayatana-appindicator3-dev librsvg2-dev patchelf
-      - name: "Install JavaScript dependencies"
-        run: yarn
+
       - name: Build Backend (Unix)
         if: "matrix.config.os != 'windows-latest'"
         run: |
@@ -72,6 +99,7 @@ jobs:
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
+
       - name: Build Backend (Windows)
         if: "matrix.config.os == 'windows-latest'"
         run: |
@@ -80,34 +108,41 @@ jobs:
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
+
       - name: create apple private key file
         if: "matrix.config.os == 'macos-latest'"
         run: |
           mkdir ./desktop/app/private_keys
           echo "$APPLE_API_PRIVKEY" > ./desktop/app/private_keys/AuthKey_$APPLE_API_KEY.p8
         env:
-          APPLE_API_PRIVKEY: "${{ secrets.APPLE_API_PRIVKEY }}"
-          APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
+          APPLE_API_PRIVKEY: '${{ secrets.APPLE_API_PRIVKEY }}'
+          APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
+
       - name: Set version in Cargo.toml
-        run: node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{ github.ref_name }}
+        run:
+          node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{
+          github.ref_name }}
+
       - uses: JonasKruckenberg/tauri-build@v1.0.5
         id: tauri_build
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          ENABLE_CODE_SIGNING: "${{ secrets.APPLE_CERTIFICATE }}"
-          APPLE_API_ISSUER: "${{ secrets.APPLE_API_ISSUER }}"
-          APPLE_API_KEY: "${{ secrets.APPLE_API_KEY }}"
-          APPLE_CERTIFICATE: "${{ secrets.APPLE_CERTIFICATE }}"
-          APPLE_CERTIFICATE_PASSWORD: "${{ secrets.APPLE_CERTIFICATE_PASSWORD }}"
-          APPLE_SIGNING_IDENTITY: "${{ secrets.APPLE_SIGNING_IDENTITY }}"
-          TAURI_KEY_PASSWORD: "${{ secrets.TAURI_KEY_PASSWORD }}"
-          TAURI_PRIVATE_KEY: "${{ secrets.TAURI_PRIVATE_KEY }}"
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          ENABLE_CODE_SIGNING: '${{ secrets.APPLE_CERTIFICATE }}'
+          APPLE_API_ISSUER: '${{ secrets.APPLE_API_ISSUER }}'
+          APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
+          APPLE_CERTIFICATE: '${{ secrets.APPLE_CERTIFICATE }}'
+          APPLE_CERTIFICATE_PASSWORD:
+            '${{ secrets.APPLE_CERTIFICATE_PASSWORD }}'
+          APPLE_SIGNING_IDENTITY: '${{ secrets.APPLE_SIGNING_IDENTITY }}'
+          TAURI_KEY_PASSWORD: '${{ secrets.TAURI_KEY_PASSWORD }}'
+          TAURI_PRIVATE_KEY: '${{ secrets.TAURI_PRIVATE_KEY }}'
         with:
           configPath: release.tauri.conf.json
           projectPath: ./desktop/app
           target: ${{ matrix.config.rust_target }}
           debug: true
           args: --verbose
+
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.goarch }}
@@ -119,26 +154,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
         with:
           name: artifacts-amd64
           path: artifacts/amd64
+
       - name: Download arm64 artifacts
         uses: actions/download-artifact@v3
         with:
           name: artifacts-arm64
           path: artifacts/arm64
+
       - name: Rename .app artifacts
         run: |
           mv ./artifacts/amd64/macos/Mintter.app.tar.gz ./artifacts/amd64/macos/Mintter_x86.app.tar.gz
           mv ./artifacts/arm64/macos/Mintter.app.tar.gz ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz
           mv ./artifacts/amd64/macos/Mintter.app.tar.gz.sig ./artifacts/amd64/macos/Mintter_x86.app.tar.gz.sig
           mv ./artifacts/arm64/macos/Mintter.app.tar.gz.sig ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz.sig
-      - name: "create release"
+
+      - name: 'create release'
         uses: softprops/action-gh-release@master
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
           draft: false
           files: ./artifacts/**/*
@@ -148,30 +187,59 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
         with:
           name: artifacts-amd64
           path: artifacts/amd64
+
       - name: Download arm64 artifacts
         uses: actions/download-artifact@v3
         with:
           name: artifacts-arm64
           path: artifacts/arm64
-      - name: "Setup NodeJS"
+
+      - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          cache: yarn
-          node-version: 16.x
-      - name: "Install JavaScript dependencies"
-        run: yarn
+          node-version: 16
+
+      - uses: pnpm/action-setup@v2.2.2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 7
+          run_install: false
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: |
+          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          run_install: true
+
       - name: Generate static updater manifest
-        run: node scripts/generate-update-manifest.mjs ${{ github.ref_name }} > ./artifacts/manifest.json
+        run:
+          node scripts/generate-update-manifest.mjs ${{ github.ref_name }} >
+          ./artifacts/manifest.json
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Upload artifacts to S3
         run: aws s3 sync ./artifacts s3://mintterreleases/ --delete
