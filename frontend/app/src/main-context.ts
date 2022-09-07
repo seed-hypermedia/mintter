@@ -30,9 +30,6 @@ export var useRecents = createMainSelector((state) => state.context.recents)
 export var useMainChildren = createMainSelector((state) => state.children)
 export var useParams = createMainSelector((state) => state.context.params)
 
-export var useVisitList = createMainSelector(
-  (state) => state.context.activity?.getSnapshot()?.context.visitList || [],
-)
 type FileActor = ActorRefFrom<
   ReturnType<typeof createPublicationMachine | typeof createDraftMachine>
 >

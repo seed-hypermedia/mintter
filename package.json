@@ -12,6 +12,7 @@
     "format": "prettier --write --plugin-search-dir=. .",
     "test": "pnpm run --recursive test",
     "test:unit": "pnpm run --recursive test:unit",
+    "test:ui": "pnpm run --recursive test:ui",
     "codegen": "graphql-codegen",
     "validate": "pnpm run lint && pnpm run test"
   },
