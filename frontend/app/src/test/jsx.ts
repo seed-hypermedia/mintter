@@ -1,5 +1,6 @@
 /* eslint-disable */
 
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import type {
   Blockquote,
   Callout,
@@ -34,6 +35,7 @@ import {
   ul,
   video,
 } from '@app/mttast'
+import {createEditor} from 'slate'
 import {createHyperscript} from 'slate-hyperscript'
 import type {Parent} from 'unist'
 
@@ -45,10 +47,10 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      [elemName: string]: any
+      [key: string]: any
       anchor: any
       cursor: any
-      editor: any
+      editor: MintterEditor
       element: any
       focus: any
       fragment: any
@@ -74,6 +76,7 @@ declare global {
 
 export const jsx = createHyperscript({
   elements: {
+    editor: {...createEditor(), __mtt_changes: []},
     group: group([]),
     unorderedList: ul([]),
     orderedList: ol([]),

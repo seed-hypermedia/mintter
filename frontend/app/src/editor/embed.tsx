@@ -4,8 +4,9 @@ import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {embedStyles} from '@app/editor/styles'
 import {MainService, useMain} from '@app/main-context'
-import {PublicationWithRef} from '@app/main-machine'
+import {PublicationRef} from '@app/main-machine'
 import {Embed as EmbedType, FlowContent, isEmbed} from '@app/mttast'
+import {createPublicationMachine} from '@app/publication-machine'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {error} from '@app/utils/logger'
 import {getRefFromParams} from '@app/utils/machine-utils'
@@ -14,7 +15,7 @@ import {useMachine} from '@xstate/react'
 import {useEffect} from 'react'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
-import {assign, createMachine} from 'xstate'
+import {ActorRefFrom, assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
 
 export const ELEMENT_EMBED = 'embed'
@@ -144,14 +145,14 @@ function Embed({
 
 type EmbedMachineContext = {
   url: string
-  publication?: PublicationWithRef
+  publication?: PublicationRef
   block?: FlowContent
   errorMessage: string
 }
 
 type EmbedMachineServices = {
   getEmbedPublication: {
-    data: PublicationWithRef
+    data: PublicationRef
   }
   getEmbedBlock: {
     data: FlowContent
@@ -176,10 +177,6 @@ function createEmbedMachine(url: string, mainService: MainService) {
         errorMessage: '',
       },
       initial: 'fetchingPublication',
-      invoke: {
-        src: 'getEmbedBlock',
-        id: 'getEmbedBlock',
-      },
       states: {
         fetchingPublication: {
           invoke: {
@@ -231,20 +228,14 @@ function createEmbedMachine(url: string, mainService: MainService) {
     {
       services: {
         getEmbedPublication: (context) => {
-          let mainState = mainService.getSnapshot()
           return new Promise((resolve, reject) => {
             let [docId, version] = getIdsfromUrl(context.url)
-            let pub = (
-              mainState.context.publicationList as Array<PublicationWithRef>
-            ).find<PublicationWithRef>(
-              (p: PublicationWithRef) =>
-                p.ref.id == getRefFromParams('pub', docId, version),
-            )
-
-            if (pub) {
-              // let pubState = pub.ref.getSnapshot()
-              pub.ref.send('LOAD')
-              resolve(pub)
+            let machine = mainService.children.get(
+              getRefFromParams('pub', docId, version),
+            ) as ActorRefFrom<ReturnType<typeof createPublicationMachine>>
+            if (machine) {
+              machine.send('LOAD')
+              resolve(machine)
             } else {
               reject('getEmbedPublication Error')
             }
@@ -253,7 +244,7 @@ function createEmbedMachine(url: string, mainService: MainService) {
         getEmbedBlock: (context) =>
           new Promise((resolve, reject) => {
             let [, , blockId] = getIdsfromUrl(context.url)
-            context.publication?.ref.subscribe((state) => {
+            context.publication?.subscribe((state) => {
               if (state.matches({publication: 'ready'})) {
                 let temp: FlowContent | undefined
 
@@ -271,7 +262,7 @@ function createEmbedMachine(url: string, mainService: MainService) {
                 if (temp) {
                   resolve(temp as FlowContent)
                 } else {
-                  reject(`getEmbedBlock Error`)
+                  reject(`getEmbedBlock Error: no block was found`)
                 }
               }
             })

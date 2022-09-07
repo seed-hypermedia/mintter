@@ -124,7 +124,6 @@ export const MintterEditor: MintterEditor = {
   __mtt_changes: [],
   transformChanges: function (editor: Editor): DocumentChange[] {
     const result: Array<DocumentChange> = []
-
     let orderedChanges = orderChanges(editor)
 
     orderedChanges.forEach((change) => {
@@ -143,6 +142,8 @@ export const MintterEditor: MintterEditor = {
       }
 
       if (type == 'setTitle') {
+        console.log('IS TITLE!', change)
+
         result.push({
           op: {
             $case: type,
@@ -175,7 +176,6 @@ export const MintterEditor: MintterEditor = {
     ) {
       editor.__mtt_changes.pop()
     }
-
     editor.__mtt_changes.push(entry)
   },
 }
@@ -272,7 +272,8 @@ function orderChanges(editor: Editor) {
     }
   }
 
-  newList.push(...changes.filter(([type]) => type == 'deleteBlock'))
+  let pushItems = changes.filter(([type]) => type == 'deleteBlock')
+  newList.push(...pushItems)
 
   return newList
 }
