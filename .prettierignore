@@ -8,6 +8,7 @@ dist
 src-tauri
 public
 out
+plz-out
 
 # Project files
 docs
