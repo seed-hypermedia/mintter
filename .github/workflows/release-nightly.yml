@@ -2,6 +2,11 @@ name: Release Nightly
 
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch'
+        default: 'master'
+        type: string
   schedule:
     - cron: '0 0 * * *'
 
@@ -37,6 +42,8 @@ jobs:
           #   rust_target: aarch64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: 'Setup Rust'
         uses: actions-rs/toolchain@v1
@@ -122,7 +129,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YY.M.D
+          format: YY.M.DHm
 
       - name: Set version in Cargo.toml
         run:
@@ -161,6 +168,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
@@ -185,7 +194,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YYYY.M.D
+          format: YYYY.M.DHm
 
       - name: 'create release'
         uses: softprops/action-gh-release@master
@@ -203,6 +212,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch }}
 
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
