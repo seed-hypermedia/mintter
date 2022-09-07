@@ -876,6 +876,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fern"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bdd7b0849075e79ee9a1836df22c717d1eba30451796fdc631b04565dd11e2a"
+dependencies = [
+ "log",
+]
+
+[[package]]
 name = "field-offset"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1849,7 +1858,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "cocoa",
- "env_logger",
+ "fern",
  "log",
  "objc",
  "secmem-proc",
@@ -4450,9 +4459,7 @@ dependencies = [
  "serde_json",
  "syn",
  "tao",
- "tauri",
  "tauri-codegen",
- "tauri-macros",
  "tauri-runtime",
  "tauri-runtime-wry",
  "tauri-utils",

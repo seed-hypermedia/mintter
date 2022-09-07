@@ -39,7 +39,16 @@ fn main() {
   #[cfg(not(debug_assertions))]
   secmem_proc::harden_process().expect("could not harden process");
 
-  env_logger::init();
+  fern::Dispatch::default()
+    .level(log::LevelFilter::Debug)
+    .chain(std::io::stdout())
+    .chain(
+      fern::log_file("/Users/jonaskruckenberg/Library/Logs/com.mintter.dev/Mintter.log").unwrap(),
+    )
+    .apply()
+    .unwrap();
+
+  // env_logger::init();
 
   // let log_plugin = {
   //   let targets = [
