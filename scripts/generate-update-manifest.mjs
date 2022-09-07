@@ -1,6 +1,6 @@
-import {exec} from "child_process";
-import {readFile} from "fs/promises";
-import {join} from "path";
+import { exec } from "child_process";
+import { readFile } from "fs/promises";
+import { join } from "path";
 import glob from "tiny-glob";
 
 const BASE_URL = "https://mintterreleases.s3.amazonaws.com/";
@@ -27,7 +27,7 @@ async function main() {
         "AppImage.tar.gz",
         "AppImage.tar.gz.sig",
       ]),
-      "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
+      // "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
     },
   };
 
