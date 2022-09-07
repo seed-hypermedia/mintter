@@ -1678,7 +1678,7 @@ __metadata:
     autosize: 5.0.1
     browser-headers: 0.4.1
     cmdk: 0.1.19
-    copy-text-to-clipboard: ^3.0.1
+    copy-text-to-clipboard: 3.0.1
     covector: 0.7.3
     cypress: 10.7.0
     deepmerge: 4.2.2
@@ -4589,7 +4589,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"copy-text-to-clipboard@npm:^3.0.1":
+"copy-text-to-clipboard@npm:3.0.1":
   version: 3.0.1
   resolution: "copy-text-to-clipboard@npm:3.0.1"
   checksum: 4c301b9a65c8bf337e26a74d28849096651697fac829a364c463df81ba5ddfeea0741214f9f1232832fffd229ebd5659d3abcccea3fe54d7010a22e515cc38bc
