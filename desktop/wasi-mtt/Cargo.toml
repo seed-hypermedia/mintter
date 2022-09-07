@@ -9,7 +9,7 @@ version = "0.1.0"
 # These dependencies are necessary for the witx-generation macros to work:
 anyhow = "1.0.64"
 futures-util = "0.3.24"
-tauri = "1.0.5"
+tauri = {git = "https://github.com/tauri-apps/tauri", branch = "test/signature"}
 thiserror = "1.0.34"
 tokio = "1.21.0"
 tracing = "0.1.36"
