@@ -940,11 +940,10 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "form_urlencoded"
-version = "1.0.1"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fc25a87fa4fd2094bffb06925852034d90a17f0d1e05197d4956d3555752191"
+checksum = "a9c384f161156f5260c24a097c56119f9be8c798586aecc13afbcbe7b7e26bf8"
 dependencies = [
- "matches",
  "percent-encoding",
 ]
 
@@ -1447,11 +1446,10 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "idna"
-version = "0.2.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "418a0a6fab821475f634efe3ccc45c013f742efe03d853e8d3355d5cb850ecf8"
+checksum = "e14ddfc70884202db2244c223200c204c2bda1bc6e0998d11b5e024d657209e6"
 dependencies = [
- "matches",
  "unicode-bidi",
  "unicode-normalization",
 ]
@@ -2156,9 +2154,9 @@ checksum = "8835116a5c179084a830efb3adc117ab007512b535bc1a21c991d3b32a6b44dd"
 
 [[package]]
 name = "percent-encoding"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
+checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
 name = "pest"
@@ -3119,7 +3117,7 @@ checksum = "c02424087780c9b71cc96799eaeddff35af2bc513278cda5c99fc1f5d026d3c1"
 [[package]]
 name = "tauri"
 version = "1.0.5"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#b6d52ee458b3f8814c4f3569f4d96cc9f51226b3"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
 dependencies = [
  "anyhow",
  "clap",
@@ -3171,7 +3169,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "1.0.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#b6d52ee458b3f8814c4f3569f4d96cc9f51226b3"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -3186,7 +3184,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "1.0.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#b6d52ee458b3f8814c4f3569f4d96cc9f51226b3"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
 dependencies = [
  "base64",
  "brotli",
@@ -3211,7 +3209,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "1.0.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#b6d52ee458b3f8814c4f3569f4d96cc9f51226b3"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
 dependencies = [
  "heck 0.4.0",
  "proc-macro2",
@@ -3224,7 +3222,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.10.2"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#b6d52ee458b3f8814c4f3569f4d96cc9f51226b3"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
 dependencies = [
  "gtk",
  "http",
@@ -3244,7 +3242,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.10.2"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#b6d52ee458b3f8814c4f3569f4d96cc9f51226b3"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
 dependencies = [
  "cocoa",
  "gtk",
@@ -3263,7 +3261,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "1.0.3"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#b6d52ee458b3f8814c4f3569f4d96cc9f51226b3"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
 dependencies = [
  "brotli",
  "ctor",
@@ -3546,9 +3544,9 @@ checksum = "3ed742d4ea2bd1176e236172c8429aaf54486e7ac098db29ffe6529e0ce50973"
 
 [[package]]
 name = "url"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22fe195a4f217c25b25cb5058ced57059824a678474874038dc88d211bf508d3"
+checksum = "0d68c799ae75762b8c3fe375feb6600ef5602c883c5d21eb51c09f22b83c4643"
 dependencies = [
  "form_urlencoded",
  "idna",
@@ -4006,18 +4004,6 @@ dependencies = [
 
 [[package]]
 name = "webview2-com"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a489a9420acabb3c2ed0434b6f71f6b56b9485ec32665a28dec1ee186d716e0f"
-dependencies = [
- "webview2-com-macros",
- "webview2-com-sys 0.16.0",
- "windows 0.37.0",
- "windows-implement 0.37.0",
-]
-
-[[package]]
-name = "webview2-com"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfe57a1668c29149ad9ea9cb794811d5bb83a1dd993d65cfa11cfa34305606d2"
@@ -4049,20 +4035,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "webview2-com-sys"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0258c53ee9adc0a4f8ba1c8c317588f7a58c7048a55b621d469ba75ab3709ca1"
-dependencies = [
- "regex",
- "serde",
- "serde_json",
- "thiserror",
- "windows 0.37.0",
- "windows-bindgen 0.37.0",
 ]
 
 [[package]]
@@ -4430,9 +4402,9 @@ dependencies = [
 [[package]]
 name = "wry"
 version = "0.20.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ea48fb3b68ab76f62837bfcea63baed9a185dbec9c14d4e5d70033e22fefffd2"
+source = "git+https://github.com/tauri-apps/wry#2bfc6c3d2e0cc6c3922d125f678ab30c00b89483"
 dependencies = [
+ "base64",
  "block",
  "cocoa",
  "core-graphics",
@@ -4441,7 +4413,9 @@ dependencies = [
  "gio",
  "glib",
  "gtk",
+ "html5ever",
  "http",
+ "kuchiki",
  "libc",
  "log",
  "objc",
@@ -4449,14 +4423,15 @@ dependencies = [
  "once_cell",
  "serde",
  "serde_json",
+ "sha2 0.10.5",
  "tao",
  "thiserror",
  "url",
  "webkit2gtk",
  "webkit2gtk-sys",
- "webview2-com 0.16.0",
- "windows 0.37.0",
- "windows-implement 0.37.0",
+ "webview2-com 0.19.1",
+ "windows 0.39.0",
+ "windows-implement 0.39.0",
 ]
 
 [[package]]
