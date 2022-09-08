@@ -67,7 +67,10 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 	}
 	go func() {
 		id, err := me.Await(ctx)
-		if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return
+		}
+		if err != nil{
 			panic(err)
 		}
 		// We assume registration already happened.
