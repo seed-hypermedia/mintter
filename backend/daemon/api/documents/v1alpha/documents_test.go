@@ -8,7 +8,6 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs"
 	"path/filepath"
 	"testing"
 	"time"
@@ -173,7 +172,7 @@ func TestAPICreateDraft(t *testing.T) {
 	c, err := cid.Decode(doc.Id)
 	require.Equal(t, int(cid.DagCBOR), int(c.Prefix().Codec))
 	require.NoError(t, err)
-	require.Equal(t, api.repo.MustGet().me.AccountID().String(), doc.Author)
+	require.Equal(t, api.me.MustGet().AccountID().String(), doc.Author)
 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 }
@@ -691,14 +690,13 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	u := coretest.NewTester("alice")
 
 	db := newTestSQLite(t)
-	v := vcs.New(db)
 
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	srv := NewServer(fut.ReadOnly, db, v)
+	srv := NewServer(fut.ReadOnly, db)
 
-	_, err := srv.repo.Await(context.Background())
+	_, err := srv.me.Await(context.Background())
 	require.NoError(t, err)
 
 	return srv

@@ -7,7 +7,6 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/mttdoc"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
@@ -27,51 +26,29 @@ type Server struct {
 	db *sqlitex.Pool
 	// TODO: take it as a dependency.
 	index *vcstypes.Index
-	repo  *future.ReadOnly[repo]
 	vcsdb *vcsdb.DB
-}
-
-type repo struct {
-	*vcstypes.Repo
-	me core.Identity
+	me    *future.ReadOnly[core.Identity]
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, vcs *vcs.SQLite) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool) *Server {
 	srv := &Server{
 		db:    db,
 		index: vcstypes.NewIndex(db),
-
 		vcsdb: vcsdb.New(db),
+		me:    me,
 	}
-
-	frepo := future.New[repo]()
-	srv.repo = frepo.ReadOnly
-
-	go func() {
-		id, err := me.Await(context.Background())
-		if err != nil {
-			panic(err)
-		}
-
-		if err := frepo.Resolve(repo{
-			Repo: vcstypes.NewRepo(id, vcs),
-			me:   id,
-		}); err != nil {
-			panic(err)
-		}
-	}()
 
 	return srv
 }
 
-// CreateDraft implements a corresponding gRPC method.
+// CreateDraft implements the corresponding gRPC method.
 func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (out *documents.Document, err error) {
 	if in.ExistingDocumentId != "" {
 		return api.createDraftWithBase(ctx, in)
 	}
 
-	me, err := api.me(ctx)
+	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +99,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 }
 
 func (api *Server) createDraftWithBase(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
-	me, err := api.me(ctx)
+	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -158,16 +135,7 @@ func (api *Server) createDraftWithBase(ctx context.Context, in *documents.Create
 	})
 }
 
-func (api *Server) me(ctx context.Context) (core.Identity, error) {
-	r, err := api.repo.Await(ctx)
-	if err != nil {
-		return core.Identity{}, err
-	}
-
-	return r.me, nil
-}
-
-// UpdateDraftV2 implements a corresponding gRPC method.
+// UpdateDraftV2 implements the corresponding gRPC method.
 func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftRequestV2) (*emptypb.Empty, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
@@ -178,7 +146,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		return nil, status.Errorf(codes.InvalidArgument, "must send some changes to apply to the document")
 	}
 
-	me, err := api.me(ctx)
+	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -254,14 +222,14 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 	return &emptypb.Empty{}, nil
 }
 
-// GetDraft implements a corresponding gRPC method.
+// GetDraft implements the corresponding gRPC method.
 func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
 	}
 
-	me, err := api.me(ctx)
+	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +280,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 	return docpb, nil
 }
 
-// ListDrafts implements a corresponding gRPC method.
+// ListDrafts implements the corresponding gRPC method.
 func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsRequest) (*documents.ListDraftsResponse, error) {
 	conn, release, err := api.db.Conn(ctx)
 	if err != nil {
@@ -343,14 +311,14 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 	return out, nil
 }
 
-// PublishDraft implements a corresponding gRPC method.
+// PublishDraft implements the corresponding gRPC method.
 func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftRequest) (*documents.Publication, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
 	}
 
-	me, err := api.me(ctx)
+	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -387,7 +355,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	})
 }
 
-// DeleteDraft implements a corresponding gRPC method.
+// DeleteDraft implements the corresponding gRPC method.
 func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftRequest) (*emptypb.Empty, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
@@ -400,7 +368,7 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 	}
 	defer release()
 
-	me, err := api.me(ctx)
+	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -437,14 +405,14 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 	return &emptypb.Empty{}, nil
 }
 
-// GetPublication implements a corresponding gRPC method.
+// GetPublication implements the corresponding gRPC method.
 func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicationRequest) (*documents.Publication, error) {
 	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
 	}
 
-	me, err := api.me(ctx)
+	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -494,7 +462,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	return out, nil
 }
 
-// DeletePublication implements a corresponding gRPC method.
+// DeletePublication implements the corresponding gRPC method.
 func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePublicationRequest) (*emptypb.Empty, error) {
 	c, err := cid.Decode(in.DocumentId)
 	if err != nil {
@@ -520,7 +488,7 @@ func (api *Server) DeletePublication(ctx context.Context, in *documents.DeletePu
 	return &emptypb.Empty{}, nil
 }
 
-// ListPublications implements a corresponding gRPC method.
+// ListPublications implements the corresponding gRPC method.
 func (api *Server) ListPublications(ctx context.Context, in *documents.ListPublicationsRequest) (*documents.ListPublicationsResponse, error) {
 	conn, release, err := api.db.Conn(ctx)
 	if err != nil {

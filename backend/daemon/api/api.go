@@ -47,7 +47,7 @@ func New(
 
 			return nil
 		}),
-		Documents:  documents.NewServer(id, v.DB(), v),
+		Documents:  documents.NewServer(id, v.DB()),
 		Networking: networking.NewServer(node),
 	}
 }
