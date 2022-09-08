@@ -40,7 +40,7 @@ fn main() {
   secmem_proc::harden_process().expect("could not harden process");
 
   fern::Dispatch::default()
-    .level(log::LevelFilter::Debug)
+    .level(log::LevelFilter::Trace)
     .chain(std::io::stdout())
     .chain(
       fern::log_file("/Users/jonaskruckenberg/Library/Logs/com.mintter.dev/Mintter.log").unwrap(),
