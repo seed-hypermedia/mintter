@@ -3117,7 +3117,7 @@ checksum = "c02424087780c9b71cc96799eaeddff35af2bc513278cda5c99fc1f5d026d3c1"
 [[package]]
 name = "tauri"
 version = "1.0.5"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#6918219337cc1bd81cc4c8ebca6ed0228dea1ae0"
 dependencies = [
  "anyhow",
  "clap",
@@ -3169,7 +3169,7 @@ dependencies = [
 [[package]]
 name = "tauri-build"
 version = "1.0.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#6918219337cc1bd81cc4c8ebca6ed0228dea1ae0"
 dependencies = [
  "anyhow",
  "cargo_toml",
@@ -3184,7 +3184,7 @@ dependencies = [
 [[package]]
 name = "tauri-codegen"
 version = "1.0.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#6918219337cc1bd81cc4c8ebca6ed0228dea1ae0"
 dependencies = [
  "base64",
  "brotli",
@@ -3209,7 +3209,7 @@ dependencies = [
 [[package]]
 name = "tauri-macros"
 version = "1.0.4"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#6918219337cc1bd81cc4c8ebca6ed0228dea1ae0"
 dependencies = [
  "heck 0.4.0",
  "proc-macro2",
@@ -3222,7 +3222,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime"
 version = "0.10.2"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#6918219337cc1bd81cc4c8ebca6ed0228dea1ae0"
 dependencies = [
  "gtk",
  "http",
@@ -3242,7 +3242,7 @@ dependencies = [
 [[package]]
 name = "tauri-runtime-wry"
 version = "0.10.2"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#6918219337cc1bd81cc4c8ebca6ed0228dea1ae0"
 dependencies = [
  "cocoa",
  "gtk",
@@ -3261,7 +3261,7 @@ dependencies = [
 [[package]]
 name = "tauri-utils"
 version = "1.0.3"
-source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#40b2e0faa9077c575bd492e1862a8fe118e1990a"
+source = "git+https://github.com/tauri-apps/tauri?branch=test/signature#6918219337cc1bd81cc4c8ebca6ed0228dea1ae0"
 dependencies = [
  "brotli",
  "ctor",
