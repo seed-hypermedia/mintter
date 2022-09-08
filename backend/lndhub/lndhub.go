@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"errors"
 	"mintter/backend/core"
 	lndhub "mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/pkg/future"
@@ -117,7 +118,10 @@ func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *
 	}
 	go func() {
 		id, err := identity.Await(ctx)
-		if err != nil {
+		if errors.Is(err, context.Canceled){
+			return
+		}
+		if err != nil{
 			panic(err)
 		}
 		pubkeyRaw, err := id.Account().ID().ExtractPublicKey()
