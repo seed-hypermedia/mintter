@@ -12,15 +12,15 @@ mod system_tray;
 mod window;
 mod window_ext;
 
-// use env_logger::filter::Builder as FilterBuilder;
-// use log::LevelFilter;
+use env_logger::filter::Builder as FilterBuilder;
+use log::LevelFilter;
 use tauri::{AppHandle, Manager, Runtime, WindowEvent};
-// use tauri_plugin_log::{LogTarget, LoggerBuilder};
-// use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
+use tauri_plugin_log::{LogTarget, LoggerBuilder};
+use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
 use window_ext::WindowExt as _;
 
-// #[cfg(debug_assertions)]
-// use tauri_plugin_log::fern::colors::ColoredLevelConfig;
+#[cfg(debug_assertions)]
+use tauri_plugin_log::fern::colors::ColoredLevelConfig;
 
 pub use error::Error;
 pub type Result<T> = std::result::Result<T, error::Error>;
@@ -39,41 +39,30 @@ fn main() {
   #[cfg(not(debug_assertions))]
   secmem_proc::harden_process().expect("could not harden process");
 
-  fern::Dispatch::default()
-    .level(log::LevelFilter::Trace)
-    .chain(std::io::stdout())
-    .chain(
-      fern::log_file("/Users/jonaskruckenberg/Library/Logs/com.mintter.dev/Mintter.log").unwrap(),
-    )
-    .apply()
-    .unwrap();
+  let log_plugin = {
+    let targets = [
+      LogTarget::LogDir,
+      #[cfg(debug_assertions)]
+      LogTarget::Stdout,
+      #[cfg(debug_assertions)]
+      LogTarget::Webview,
+    ];
 
-  // env_logger::init();
+    let filter = std::env::var("RUST_LOG")
+      .map(|ref filter| FilterBuilder::new().parse(filter).build().filter())
+      .unwrap_or(LevelFilter::Debug);
 
-  // let log_plugin = {
-  //   let targets = [
-  //     LogTarget::LogDir,
-  //     #[cfg(debug_assertions)]
-  //     LogTarget::Stdout,
-  //     #[cfg(debug_assertions)]
-  //     LogTarget::Webview,
-  //   ];
+    let builder = LoggerBuilder::new().targets(targets).level(filter);
 
-  //   let filter = std::env::var("RUST_LOG")
-  //     .map(|ref filter| FilterBuilder::new().parse(filter).build().filter())
-  //     .unwrap_or(LevelFilter::Debug);
+    #[cfg(debug_assertions)]
+    let builder = builder.with_colors(ColoredLevelConfig::default());
 
-  //   let builder = LoggerBuilder::new().targets(targets).level(filter);
-
-  //   #[cfg(debug_assertions)]
-  //   let builder = builder.with_colors(ColoredLevelConfig::default());
-
-  //   builder.build()
-  // };
+    builder.build()
+  };
 
   tauri::Builder::default()
-    // .plugin(log_plugin)
-    // .plugin(StorePluginBuilder::default().build())
+    .plugin(log_plugin)
+    .plugin(StorePluginBuilder::default().build())
     .plugin(daemon::init())
     .plugin(window::init())
     // .plugin(exts::init())

@@ -9,13 +9,13 @@ version = "0.1.0"
 # These dependencies are necessary for the witx-generation macros to work:
 anyhow = "1.0.64"
 futures-util = "0.3.24"
-tauri = {git = "https://github.com/tauri-apps/tauri", branch = "test/signature"}
+tauri = "1.0.5"
 thiserror = "1.0.34"
 tokio = "1.21.0"
 tracing = "0.1.36"
 wasmtime = "0.40.1"
 wiggle = "0.40.1"
-# workspace-hack = {version = "0.1", path = "../workspace-hack"}
+workspace-hack = {version = "0.1", path = "../workspace-hack"}
 
 [build-dependencies]
 walkdir = "2.3.2"
