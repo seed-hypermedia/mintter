@@ -290,7 +290,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YYYY.M.D
+          format: YY.M.DHm
 
       - name: Generate static updater manifest
         run:

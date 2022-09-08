@@ -2,7 +2,7 @@ import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import {ReactQueryDevtools} from 'react-query/devtools'
-import {attachConsole, debug} from 'tauri-plugin-log-api'
+import {attachConsole} from 'tauri-plugin-log-api'
 
 import {Root, RootProvider} from './root'
 
@@ -12,7 +12,7 @@ var root = createRoot(container)
 attachConsole()
 
 onUpdaterEvent(({error, status}) => {
-  debug(`Updater event. error: ${error} status: ${status}`)
+  console.log(`Updater event. error: ${error} status: ${status}`)
 })
 
 root.render(
