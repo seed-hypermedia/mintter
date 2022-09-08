@@ -485,7 +485,7 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 	var bodyRaw io.Reader
 	var genericResponse map[string]interface{}
 	var errorRes lndhubErrorTemplate
-	var authErrCount uint = 0
+	var authErrCount uint
 	if request.Payload != nil && request.Method != http.MethodGet {
 		buf := &bytes.Buffer{}
 
@@ -494,89 +494,95 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 		}
 		bodyRaw = buf
 	}
+	var errContinue = errors.New("continue")
 	for i := 0; i < int(maxAttempts); i++ {
-		req, err := http.NewRequestWithContext(ctx, request.Method, request.URL, bodyRaw)
-		if err != nil {
-			return err
-		}
-
-		// add authorization header to the request
-		if request.Token != "" {
-			req.Header.Add("Authorization", "Bearer "+request.Token)
-		}
-		req.Header.Add("Content-Type", `application/json`)
-
-		resp, err := c.http.Do(req)
-		if err != nil {
-			return err
-		}
-		if i == 0 {
-			defer resp.Body.Close()
-		}
-
-		// Try to decode the request body into the struct. If there is an error,
-		// respond to the client with the error message and a 400 status code.
-		err = json.NewDecoder(resp.Body).Decode(&genericResponse)
-
-		if resp.StatusCode > 299 || resp.StatusCode < 200 {
-			authErrCount++
-			if authErrCount >= maxAttempts {
-				errMsg, ok := genericResponse["message"]
-				if ok {
-					return fmt.Errorf("failed to make request status=%s error=%s", resp.Status, errMsg)
-				}
-				return fmt.Errorf("failed to make a request url=%s method=%s status=%s", request.URL, request.Method, resp.Status)
+		err := func() error { // Needed for releasing memory (defer close) on every loop and not waiting for the for to break
+			req, err := http.NewRequestWithContext(ctx, request.Method, request.URL, bodyRaw)
+			if err != nil {
+				return err
 			}
-			if resp.StatusCode == http.StatusUnauthorized {
-				errMsg, ok := genericResponse["message"]
-				var authResp authResponse
-				// Check if token expired and we need to issue one
-				if ok && strings.Contains(errMsg.(string), "bad auth") {
-					login, err := lndhub.GetLogin(conn, c.WalletID)
-					if err != nil {
-						return err
-					}
-					pass, err := lndhub.GetPassword(conn, c.WalletID)
-					if err != nil {
-						return err
-					}
-					apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
-					if err != nil {
-						return err
-					}
 
-					err = c.do(ctx, conn, httpRequest{
-						URL:    apiBaseURL + authRoute,
-						Method: http.MethodPost,
-						Payload: authRequest{
-							Login:    login,
-							Password: pass,
-						},
-					}, 1, &authResp)
-					if err != nil {
-						return err
-					}
-					if err = lndhub.SetToken(conn, c.WalletID, authResp.AccessToken); err != nil {
-						return err
-					}
-				}
-			} else if resp.StatusCode == http.StatusTooManyRequests {
-				time.Sleep(1125 * time.Millisecond)
-			} else {
-				errMsg, ok := genericResponse["message"]
-				if ok {
-					return fmt.Errorf("failed to make request status=%s error=%s", resp.Status, errMsg)
-				}
-				return fmt.Errorf("failed to make a request url=%s method=%s status=%s", request.URL, request.Method, resp.Status)
+			// add authorization header to the request
+			if request.Token != "" {
+				req.Header.Add("Authorization", "Bearer "+request.Token)
 			}
+			req.Header.Add("Content-Type", `application/json`)
+
+			resp, err := c.http.Do(req)
+			if err != nil {
+				return err
+			}
+
+			defer resp.Body.Close() // this will close at the end of every loop.
+
+			// Try to decode the request body into the struct. If there is an error,
+			// respond to the client with the error message and a 400 status code.
+			err = json.NewDecoder(resp.Body).Decode(&genericResponse)
+
+			if resp.StatusCode > 299 || resp.StatusCode < 200 {
+				authErrCount++
+				if authErrCount >= maxAttempts {
+					errMsg, ok := genericResponse["message"]
+					if ok {
+						return fmt.Errorf("failed to make request status=%s error=%s", resp.Status, errMsg)
+					}
+					return fmt.Errorf("failed to make a request url=%s method=%s status=%s", request.URL, request.Method, resp.Status)
+				}
+				if resp.StatusCode == http.StatusUnauthorized {
+					errMsg, ok := genericResponse["message"]
+					var authResp authResponse
+					// Check if token expired and we need to issue one
+					if ok && strings.Contains(errMsg.(string), "bad auth") {
+						login, err := lndhub.GetLogin(conn, c.WalletID)
+						if err != nil {
+							return err
+						}
+						pass, err := lndhub.GetPassword(conn, c.WalletID)
+						if err != nil {
+							return err
+						}
+						apiBaseURL, err := lndhub.GetAPIURL(conn, c.WalletID)
+						if err != nil {
+							return err
+						}
+
+						err = c.do(ctx, conn, httpRequest{
+							URL:    apiBaseURL + authRoute,
+							Method: http.MethodPost,
+							Payload: authRequest{
+								Login:    login,
+								Password: pass,
+							},
+						}, 1, &authResp)
+						if err != nil {
+							return err
+						}
+						if err = lndhub.SetToken(conn, c.WalletID, authResp.AccessToken); err != nil {
+							return err
+						}
+					}
+				} else if resp.StatusCode == http.StatusTooManyRequests {
+					time.Sleep(1125 * time.Millisecond)
+				} else {
+					errMsg, ok := genericResponse["message"]
+					if ok {
+						return fmt.Errorf("failed to make request status=%s error=%s", resp.Status, errMsg)
+					}
+					return fmt.Errorf("failed to make a request url=%s method=%s status=%s", request.URL, request.Method, resp.Status)
+				}
+				return errContinue
+			}
+			return err
+		}()
+		if errors.Is(err,errContinue){
 			continue
 		}
 		if err != nil {
-			return fmt.Errorf("Couldn't deode received payload: " + err.Error())
+			return fmt.Errorf("Couldn't decode received payload: " + err.Error())
 		}
 		if err := mapstructure.Decode(genericResponse, &errorRes); err == nil && errorRes.Error {
-			return fmt.Errorf("failed to make a request url=%s method=%s status=%s error_code=%d error_message=%s",
-				request.URL, request.Method, resp.Status, errorRes.Code, errorRes.Message)
+			return fmt.Errorf("failed to make a request url=%s method=%s error_code=%d error_message=%s",
+				request.URL, request.Method, errorRes.Code, errorRes.Message)
 		}
 
 		if respValue != nil {
