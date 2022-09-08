@@ -2,11 +2,6 @@ name: Release Nightly
 
 on:
   workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch'
-        default: 'master'
-        type: string
   schedule:
     - cron: '0 0 * * *'
 
@@ -27,7 +22,7 @@ jobs:
         uses: srfrnk/current-time@master
         id: current_time
         with:
-          format: YY.M.DHm
+          format: YY.M.D
 
   build-binaries:
     runs-on: ${{ matrix.config.os }}
