@@ -73,10 +73,22 @@ def pnpm_script(
             "script_name": script_name,
         },
         cmd = """
+set -x
+export HOME=$(eval echo ~$(whoami))
+export PATH="$(pwd)/node_modules/.bin:$PATH"
+
+# This is a bit of a workaround which is needed,
+# because pnpm doesn't have its own binary in path
+# when executing script, unlike yarn.
+mkdir -p bin
+cp $TOOLS_PNPM bin
+export PATH="$(pwd)/bin:$PATH"
+
 EXECROOT="$(pwd)"
 ln -s $WORKSPACE/node_modules node_modules
+ln -s $WORKSPACE/$PKG/$workdir/node_modules $PKG/$workdir/node_modules
 cd $PKG/$workdir
-$TOOLS_PNPM run $script_name
+pnpm run $script_name
 mv $OUTS $EXECROOT
 """,
         tools = {
