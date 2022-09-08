@@ -1,9 +1,9 @@
-import {exec} from "child_process";
-import {readFile} from "fs/promises";
-import {join} from "path";
+import { exec } from "child_process";
+import { readFile } from "fs/promises";
+import { join } from "path";
 import glob from "tiny-glob";
 
-const BASE_URL = "https://mintterreleases.s3.amazonaws.com/";
+const BASE_URL = "https://mintternightlies.s3.amazonaws.com/";
 
 async function main() {
   process.chdir(join(process.cwd(), "./artifacts"));
