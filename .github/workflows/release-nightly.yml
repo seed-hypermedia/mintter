@@ -200,7 +200,7 @@ jobs:
             "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\n') }}"
 
   publish-to-github:
-    needs: get-version, build-binaries
+    needs: [get-version, build-binaries]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -237,7 +237,7 @@ jobs:
           files: ./artifacts/**/*
 
   publish-to-aws:
-    needs: get-version, build-binaries
+    needs: [get-version, build-binaries]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
