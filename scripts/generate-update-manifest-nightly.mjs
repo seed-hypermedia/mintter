@@ -27,7 +27,7 @@ async function main() {
         "AppImage.tar.gz",
         "AppImage.tar.gz.sig",
       ]),
-      // "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
+      "windows-x86_64": await getPlatform("amd64", ["msi.zip", "msi.zip.sig"]),
     },
   };
 
