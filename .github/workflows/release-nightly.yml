@@ -18,9 +18,21 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.current_time.outputs.formattedTime }}
+    steps:
+      - name: Get current time
+        uses: srfrnk/current-time@master
+        id: current_time
+        with:
+          format: YY.M.DHm
+
   build-binaries:
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 30
+    needs: get-version
     strategy:
       fail-fast: false
       matrix:
@@ -155,21 +167,15 @@ jobs:
           APPLE_API_PRIVKEY: '${{ secrets.APPLE_API_PRIVKEY }}'
           APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
 
-      - name: Get current time
-        uses: srfrnk/current-time@master
-        id: current_time
-        with:
-          format: YY.M.DHm
-
       - name: Set version in Cargo.toml
         run:
-          node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml
-          ${{steps.current_time.outputs.formattedTime }}
+          node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{
+          needs.get-version.outputs.version }}
 
-      - uses: JonasKruckenberg/tauri-build@v1.0.4
+      - uses: JonasKruckenberg/tauri-build@v1.0.5
         id: tauri_build
         env:
-          VERSION: ${{ steps.current_time.outputs.formattedTime }}
+          VERSION: ${{ needs.get-version.outputs.version }}
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
           ENABLE_CODE_SIGNING: '${{ secrets.APPLE_CERTIFICATE }}'
           APPLE_API_ISSUER: '${{ secrets.APPLE_API_ISSUER }}'
@@ -194,7 +200,7 @@ jobs:
             "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\n') }}"
 
   publish-to-github:
-    needs: build-binaries
+    needs: get-version, build-binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -220,25 +226,18 @@ jobs:
           mv ./artifacts/amd64/macos/Mintter.app.tar.gz.sig ./artifacts/amd64/macos/Mintter_x86.app.tar.gz.sig
           mv ./artifacts/arm64/macos/Mintter.app.tar.gz.sig ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz.sig
 
-      - name: Get current time
-        uses: srfrnk/current-time@master
-        id: current_time
-        with:
-          format: YYYY.M.DHm
-
       - name: 'create release'
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
-          tag_name:
-            desktop-nightly/${{ steps.current_time.outputs.formattedTime }}
+          tag_name: desktop-nightly/${{ needs.get-version.outputs.version }}
           prerelease: true
           generate_release_notes: true
           files: ./artifacts/**/*
 
   publish-to-aws:
-    needs: build-binaries
+    needs: get-version, build-binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -286,17 +285,10 @@ jobs:
         with:
           run_install: true
 
-      - name: Get current time
-        uses: srfrnk/current-time@master
-        id: current_time
-        with:
-          format: YY.M.DHm
-
       - name: Generate static updater manifest
         run:
           node scripts/generate-update-manifest.mjs ${{
-          steps.current_time.outputs.formattedTime }} >
-          ./artifacts/manifest.json
+          needs.get-version.outputs.version }} > ./artifacts/manifest.json
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
