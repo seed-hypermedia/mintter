@@ -1,4 +1,4 @@
-// Package mttdoc provides a model for the Mintter Document.
+// Package mttdoc provides a model for retrieving and manipulating the Mintter Document Objects.
 package mttdoc
 
 import (
