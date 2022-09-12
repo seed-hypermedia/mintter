@@ -1,46 +1,39 @@
 package accounts
 
 import (
-	context "context"
-	"fmt"
+	"context"
+	"errors"
+	"time"
+
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
-	"mintter/backend/vcs"
+	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
 
 	"crawshaw.io/sqlite"
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 )
 
-type (
-	AccountsServer       = accounts.AccountsServer
-	ListAccountsRequest  = accounts.ListAccountsRequest
-	ListAccountsResponse = accounts.ListAccountsResponse
-	Account              = accounts.Account
-	Device               = accounts.Device
-	Profile              = accounts.Profile
-)
-
+// Server implement the accounts gRPC server.
 type Server struct {
-	me  *future.ReadOnly[core.Identity]
-	vcs *vcs.SQLite
-	db  *sqlitex.Pool
+	me    *future.ReadOnly[core.Identity]
+	vcsdb *vcsdb.DB
 }
 
-func NewServer(id *future.ReadOnly[core.Identity], v *vcs.SQLite) *Server {
+// NewServer creates a new Server.
+func NewServer(id *future.ReadOnly[core.Identity], vcs *vcsdb.DB) *Server {
 	return &Server{
-		me:  id,
-		vcs: v,
-		db:  v.DB(),
+		me:    id,
+		vcsdb: vcs,
 	}
 }
 
+// GetAccount implements the corresponding gRPC method.
 func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountRequest) (*accounts.Account, error) {
 	if srv == nil {
 		return nil, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
@@ -61,14 +54,77 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		aid = acc
 	}
 
-	acc, err := srv.getAccount(ctx, aid)
+	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
 
-	return accountToProto(acc.Account), nil
+	oid := perma.ID
+
+	me, err := srv.me.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, release, err := srv.vcsdb.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	var acc *accounts.Account
+
+	if err := conn.WithTx(false, func() error {
+		obj := conn.LookupPermanode(oid)
+		meLocal := conn.EnsureIdentity(me)
+		version := conn.GetVersion(obj, "main", meLocal)
+		cs := conn.ResolveChangeSet(obj, version)
+
+		acc = srv.getAccount(conn, obj, cs)
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return acc, nil
 }
 
+func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.ChangeSet) *accounts.Account {
+	acc := &accounts.Account{
+		Id:      conn.GetObjectOwner(obj).String(),
+		Profile: &accounts.Profile{},
+		Devices: make(map[string]*accounts.Device),
+	}
+
+	if alias := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrAlias); !alias.IsZero() {
+		acc.Profile.Alias = alias.Value.(string)
+	}
+	if bio := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrBio); !bio.IsZero() {
+		acc.Profile.Bio = bio.Value.(string)
+	}
+	if email := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrEmail); !email.IsZero() {
+		acc.Profile.Email = email.Value.(string)
+	}
+
+	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, mttacc.AttrRegistration)
+	for _, reg := range regs {
+		d := conn.QueryLastValue(obj, cs, reg.Value.(vcsdb.NodeID), mttacc.AttrDevice)
+		if d.IsZero() {
+			continue
+		}
+
+		did := d.Value.(cid.Cid).String()
+
+		acc.Devices[did] = &accounts.Device{
+			PeerId: did,
+		}
+	}
+
+	return acc
+}
+
+// UpdateProfile implements the corresponding gRPC method.
 func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*accounts.Account, error) {
 	me, err := srv.getMe()
 	if err != nil {
@@ -76,114 +132,107 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	}
 	aid := me.AccountID()
 
-	acc, err := srv.getAccount(ctx, aid)
+	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
 
-	acc.SetAlias(in.Alias)
-	acc.SetBio(in.Bio)
-	acc.SetEmail(in.Email)
-
-	evts := acc.Events()
-
-	if len(evts) > 0 {
-		data, err := cbornode.DumpObject(evts)
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode account update events: %w", err)
-		}
-
-		recorded, err := srv.vcs.RecordChange(ctx, acc.ObjectID(), me, acc.ver, "mintter.Account", data)
-		if err != nil {
-			return nil, fmt.Errorf("failed to record account change: %w", err)
-		}
-
-		ver := vcs.NewVersion(recorded.LamportTime, recorded.ID)
-
-		if err := srv.vcs.StoreNamedVersion(ctx, recorded.Object, me, "main", ver); err != nil {
-			return nil, fmt.Errorf("failed to store new account version: %w", err)
-		}
-
-		// TODO: index account table
-	}
-
-	return accountToProto(acc.Account), nil
-}
-
-func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
-	conn, release, err := srv.db.Conn(ctx)
+	conn, release, err := srv.vcsdb.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer release()
 
-	// list accounts
-	accs, err := srv.listAccounts(conn)
+	errNoUpdate := errors.New("nothing to update")
+
+	if err := conn.WithTx(true, func() error {
+		obj := conn.LookupPermanode(perma.ID)
+		meLocal := conn.EnsureIdentity(me)
+		version := conn.GetVersion(obj, "main", meLocal)
+		cs := conn.ResolveChangeSet(obj, version)
+		change := conn.NewChange(obj, meLocal, version, time.Now().UTC())
+		newDatom := vcsdb.MakeDatomFactory(change, conn.GetChangeLamportTime(change), 0)
+
+		email := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrEmail)
+		alias := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrAlias)
+		bio := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrBio)
+
+		var dirty bool
+
+		if email.IsZero() || email.Value.(string) != in.Email {
+			dirty = true
+			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrEmail, in.Email))
+		}
+
+		if alias.IsZero() || alias.Value.(string) != in.Alias {
+			dirty = true
+			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrAlias, in.Alias))
+		}
+
+		if bio.IsZero() || bio.Value.(string) != in.Bio {
+			dirty = true
+			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrBio, in.Bio))
+		}
+
+		if !dirty {
+			return errNoUpdate
+		}
+
+		conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
+		conn.EncodeChange(change, me.DeviceKey())
+
+		return nil
+	}); err != nil && !errors.Is(err, errNoUpdate) {
+		return nil, err
+	}
+
+	return srv.GetAccount(ctx, &accounts.GetAccountRequest{
+		Id: me.AccountID().String(),
+	})
+}
+
+// ListAccounts implements the corresponding gRPC method.
+func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRequest) (*accounts.ListAccountsResponse, error) {
+	me, err := srv.getMe()
 	if err != nil {
 		return nil, err
 	}
 
-	// list devices with their accounts
-	devices, err := vcssql.DevicesList(conn)
+	conn, release, err := srv.vcsdb.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	resp := &accounts.ListAccountsResponse{}
+
+	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(me.AccountID()))
 	if err != nil {
 		return nil, err
 	}
 
-	// list profiles
-	profiles, err := vcssql.AccountsListProfiles(conn)
-	if err != nil {
+	if err := conn.WithTx(false, func() error {
+		accs := conn.ListObjectsByType(vcstypes.AccountType)
+		meLocal := conn.EnsureIdentity(me)
+		myAcc := conn.LookupPermanode(perma.ID)
+
+		resp.Accounts = make([]*accounts.Account, 0, len(accs))
+
+		for _, a := range accs {
+			if a == myAcc {
+				continue
+			}
+			v := conn.GetVersion(a, "main", meLocal)
+			cs := conn.ResolveChangeSet(a, v)
+			resp.Accounts = append(resp.Accounts, srv.getAccount(conn, a, cs))
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
-	// combine all together
-	combined := map[int]*accounts.Account{}
-
-	for _, a := range accs {
-		combined[a.AccountsID] = &accounts.Account{
-			Id:      cid.NewCidV1(core.CodecAccountKey, a.AccountsMultihash).String(),
-			Profile: &accounts.Profile{},
-			Devices: make(map[string]*accounts.Device),
-		}
-	}
-
-	for _, d := range devices {
-		acc, ok := combined[d.AccountDevicesAccountID]
-		if !ok {
-			continue
-		}
-		did := cid.NewCidV1(core.CodecDeviceKey, d.DevicesMultihash).String()
-		acc.Devices[did] = &accounts.Device{
-			PeerId: did,
-		}
-	}
-
-	for _, p := range profiles {
-		acc, ok := combined[p.ProfilesAccountID]
-		if !ok {
-			panic("BUG: unknown account id when filling profiles")
-		}
-
-		if p.ProfilesAlias != "" {
-			acc.Profile.Alias = p.ProfilesAlias
-		}
-
-		if p.ProfilesEmail != "" {
-			acc.Profile.Email = p.ProfilesEmail
-		}
-
-		if p.ProfilesBio != "" {
-			acc.Profile.Bio = p.ProfilesBio
-		}
-	}
-
-	out := make([]*accounts.Account, 0, len(combined))
-	for _, acc := range combined {
-		out = append(out, acc)
-	}
-
-	return &accounts.ListAccountsResponse{
-		Accounts: out,
-	}, nil
+	return resp, nil
 }
 
 func (srv *Server) listAccounts(conn *sqlite.Conn) ([]vcssql.AccountsListResult, error) {
@@ -195,64 +244,10 @@ func (srv *Server) listAccounts(conn *sqlite.Conn) ([]vcssql.AccountsListResult,
 	return vcssql.AccountsList(conn, me.AccountID().Hash())
 }
 
-type account struct {
-	*vcstypes.Account
-	ver vcs.Version
-}
-
 func (srv *Server) getMe() (core.Identity, error) {
 	me, ok := srv.me.Get()
 	if !ok {
 		return core.Identity{}, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
 	}
 	return me, nil
-}
-
-func (srv *Server) getAccount(ctx context.Context, aid cid.Cid) (*account, error) {
-	me, err := srv.getMe()
-	if err != nil {
-		return nil, err
-	}
-
-	ap := vcstypes.NewAccountPermanode(aid)
-
-	blk, err := vcs.EncodeBlock(ap)
-	if err != nil {
-		return nil, err
-	}
-
-	ver, err := srv.vcs.LoadNamedVersion(ctx, blk.Cid(), me.AccountID(), me.DeviceKey().CID(), "main")
-	if err != nil {
-		return nil, err
-	}
-
-	acc := vcstypes.NewAccount(blk.Cid(), aid)
-
-	if err := srv.vcs.IterateChanges(ctx, blk.Cid(), ver, func(rc vcs.RecordedChange) error {
-		return acc.ApplyChange(rc.ID, rc.Change)
-	}); err != nil {
-		return nil, err
-	}
-
-	return &account{Account: acc, ver: ver}, nil
-}
-
-func accountToProto(acc *vcstypes.Account) *accounts.Account {
-	accpb := &accounts.Account{
-		Id: acc.State().ID.String(),
-		Profile: &accounts.Profile{
-			Alias: acc.State().Profile.Alias,
-			Bio:   acc.State().Profile.Bio,
-			Email: acc.State().Profile.Email,
-		},
-		Devices: make(map[string]*accounts.Device),
-	}
-
-	for did := range acc.State().Devices {
-		accpb.Devices[did.String()] = &accounts.Device{
-			PeerId: did.String(),
-		}
-	}
-
-	return accpb
 }

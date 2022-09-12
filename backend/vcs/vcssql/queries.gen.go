@@ -1008,6 +1008,40 @@ VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
 	return err
 }
 
+type PermanodeOwnersGetOneResult struct {
+	AccountsMultihash []byte
+}
+
+func PermanodeOwnersGetOne(conn *sqlite.Conn, permanodeOwnersPermanodeID int) (PermanodeOwnersGetOneResult, error) {
+	const query = `SELECT accounts.multihash
+FROM permanode_owners
+JOIN accounts ON permanode_owners.account_id = accounts.id
+WHERE permanode_owners.permanode_id = :permanodeOwnersPermanodeID
+LIMIT 1`
+
+	var out PermanodeOwnersGetOneResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":permanodeOwnersPermanodeID", permanodeOwnersPermanodeID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("PermanodeOwnersGetOne: more than one result return for a single-kind query")
+		}
+
+		out.AccountsMultihash = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PermanodeOwnersGetOne: %w", err)
+	}
+
+	return out, err
+}
+
 type PermanodesListWithVersionsByTypeResult struct {
 	PermanodesID             int
 	PermanodeOwnersAccountID int

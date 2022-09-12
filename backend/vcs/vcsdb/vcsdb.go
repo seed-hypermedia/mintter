@@ -121,39 +121,71 @@ func (conn *Conn) Attr(s Attribute) LocalID {
 }
 
 // NewObject creates a new object and returns it internal ID.
-func (conn *Conn) NewObject(p EncodedPermanode) LocalID {
+func (conn *Conn) NewObject(p EncodedPermanode) (lid LocalID) {
+	must.Maybe(&conn.err, func() error {
+		defer sqlitex.Save(conn.conn)(&conn.err)
+
+		aid := conn.ensureAccountID(p.PermanodeOwner())
+
+		if err := conn.bs.putBlock(conn.conn, p.ID, p.Data); err != nil {
+			return err
+		}
+
+		ohash := p.ID.Hash()
+
+		res, err := vcssql.IPFSBlocksLookupPK(conn.conn, ohash)
+		if err != nil {
+			return err
+		}
+
+		if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int(p.PermanodeCreateTime().Unix())); err != nil {
+			return err
+		}
+
+		if err := vcssql.PermanodeOwnersInsertOrIgnore(conn.conn, aid, res.IPFSBlocksID); err != nil {
+			return err
+		}
+
+		lid = LocalID(res.IPFSBlocksID)
+
+		return nil
+	})
+	return lid
+}
+
+// LookupPermanode find an internal ID for a given permanode CID.
+func (conn *Conn) LookupPermanode(c cid.Cid) LocalID {
 	if conn.err != nil {
 		return 0
 	}
 
-	defer sqlitex.Save(conn.conn)(&conn.err)
+	return LocalID(conn.lookupObjectID(c))
+}
 
-	aid := conn.ensureAccountID(p.PermanodeOwner())
+// GetObjectOwner returns the owner for the Mintter Object.
+func (conn *Conn) GetObjectOwner(id LocalID) (c cid.Cid) {
+	must.Maybe(&conn.err, func() error {
+		res, err := vcssql.PermanodeOwnersGetOne(conn.conn, int(id))
+		if err != nil {
+			return err
+		}
 
-	if err := conn.bs.putBlock(conn.conn, p.ID, p.Data); err != nil {
-		conn.err = err
-		return 0
-	}
+		c = cid.NewCidV1(core.CodecAccountKey, res.AccountsMultihash)
+		return nil
+	})
+	return c
+}
 
-	ohash := p.ID.Hash()
-
-	res, err := vcssql.IPFSBlocksLookupPK(conn.conn, ohash)
-	if err != nil {
-		conn.err = err
-		return 0
-	}
-
-	if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int(p.PermanodeCreateTime().Unix())); err != nil {
-		conn.err = err
-		return 0
-	}
-
-	if err := vcssql.PermanodeOwnersInsertOrIgnore(conn.conn, aid, res.IPFSBlocksID); err != nil {
-		conn.err = err
-		return 0
-	}
-
-	return LocalID(res.IPFSBlocksID)
+// EnsurePermanode ensures a permanode exist and returns it's local ID.
+func (conn *Conn) EnsurePermanode(p EncodedPermanode) (lid LocalID) {
+	must.Maybe(&conn.err, func() error {
+		lid = conn.LookupPermanode(p.ID)
+		if lid == 0 {
+			lid = conn.NewObject(p)
+		}
+		return nil
+	})
+	return lid
 }
 
 // LocalIdentity is a database-internal identity of a Mintter peer.
@@ -382,6 +414,7 @@ type changeBody struct {
 	Strings  []string    `refmt:"s,omitempty"`
 	Bytes    [][]byte    `refmt:"b,omitempty"`
 	Attrs    []Attribute `refmt:"a,omitempty"`
+	CIDs     []cid.Cid   `refmt:"c,omitempty"`
 	Datoms   [][5]int    `refmt:"d"` // seq, entity, attrIdx, valueType, stringIdx | entityIdx | bool | int
 }
 
@@ -402,6 +435,7 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		stringLookup lookup[string, string]
 		entityLookup lookup[NodeID, NodeID]
 		bytesLookup  lookup[[20]byte, []byte] // using SHA1 as a key because []byte can't be key of the map
+		cidsLookup   lookup[cid.Cid, cid.Cid]
 	)
 
 	var prevSeq int
@@ -444,6 +478,8 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 			data := v.([]byte)
 			sum := sha1.Sum(data) //nolint:gosec
 			val = bytesLookup.Put(sum, data)
+		case ValueTypeCID:
+			val = cidsLookup.Put(v.(cid.Cid), v.(cid.Cid))
 		default:
 			return fmt.Errorf("BUG: invalid value type to encode")
 		}
@@ -468,6 +504,7 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 	body.Entities = entityLookup.cache
 	body.Strings = stringLookup.cache
 	body.Bytes = bytesLookup.cache
+	body.CIDs = cidsLookup.cache
 
 	data, err := cbornode.DumpObject(body)
 	if err != nil {
@@ -700,6 +737,7 @@ const (
 	ValueTypeInt    ValueType = 2
 	ValueTypeBool   ValueType = 3
 	ValueTypeBytes  ValueType = 4
+	ValueTypeCID    ValueType = 5
 )
 
 // GetValueType returns value type for v.
@@ -715,6 +753,8 @@ func GetValueType(v any) ValueType {
 		return ValueTypeBool
 	case []byte:
 		return ValueTypeBytes
+	case cid.Cid:
+		return ValueTypeCID
 	default:
 		panic("BUG: unknown value type")
 	}
@@ -747,6 +787,9 @@ func (conn *Conn) AddDatom(object LocalID, d Datom) (nextSeq int) {
 	if d.ValueType == ValueTypeRef {
 		nid := d.Value.(NodeID)
 		value = nid.Bytes()
+	}
+	if d.ValueType == ValueTypeCID {
+		value = d.Value.(cid.Cid).Bytes()
 	}
 
 	e := d.Entity.Bytes()
@@ -906,6 +949,12 @@ func (dr DatomRow) Value() (ValueType, any) {
 		}
 	case ValueTypeBytes:
 		return vt, dr.stmt.ColumnBytes(colValue)
+	case ValueTypeCID:
+		c, err := cid.Cast(dr.stmt.ColumnBytes(colValue))
+		if err != nil {
+			panic("BUG: bad CID " + err.Error())
+		}
+		return vt, c
 	default:
 		panic("BUG: invalid value type")
 	}
@@ -1175,15 +1224,6 @@ func (conn *Conn) LookupIdentity(id core.Identity) (lid LocalIdentity) {
 	return lid
 }
 
-// LookupPermanode find an internal ID for a given permanode CID.
-func (conn *Conn) LookupPermanode(c cid.Cid) LocalID {
-	if conn.err != nil {
-		return 0
-	}
-
-	return LocalID(conn.lookupObjectID(c))
-}
-
 // GetPermanodeCreateTime returns create time of a permanode.
 func (conn *Conn) GetPermanodeCreateTime(obj LocalID) (t time.Time) {
 	if conn.err != nil {
@@ -1238,6 +1278,26 @@ func (conn *Conn) TouchChange(change LocalID, now time.Time) {
 		conn.err = err
 		return
 	}
+}
+
+// ListObjectsByType returns a list of all the known objects of a given type.
+func (conn *Conn) ListObjectsByType(otype vcs.ObjectType) (out []LocalID) {
+	must.Maybe(&conn.err, func() error {
+		res, err := vcssql.PermanodesListByType(conn.conn, string(otype))
+		if err != nil {
+			return err
+		}
+
+		out = make([]LocalID, len(res))
+
+		for i, r := range res {
+			out[i] = LocalID(r.PermanodesID)
+		}
+
+		return nil
+	})
+
+	return out
 }
 
 func (conn *Conn) lookupAccount(c cid.Cid) LocalID {

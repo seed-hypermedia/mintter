@@ -395,6 +395,15 @@ var (
 				qb.VarCol(s.PermanodeOwnersPermanodeID),
 			),
 		),
+		qb.MakeQuery(s.Schema, "PermanodeOwnersGetOne", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				s.AccountsMultihash,
+			), '\n',
+			"FROM", s.PermanodeOwners, '\n',
+			"JOIN", s.Accounts, "ON", s.PermanodeOwnersAccountID, "=", s.AccountsID, '\n',
+			"WHERE", s.PermanodeOwnersPermanodeID, "=", qb.VarCol(s.PermanodeOwnersPermanodeID), '\n',
+			"LIMIT 1",
+		),
 		qb.MakeQuery(s.Schema, "PermanodesListWithVersionsByType", sgen.QueryKindMany,
 			"SELECT", qb.Results(
 				s.PermanodesID,

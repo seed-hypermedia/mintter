@@ -70,7 +70,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		if errors.Is(err, context.Canceled) {
 			return
 		}
-		if err != nil{
+		if err != nil {
 			panic(err)
 		}
 		// We assume registration already happened.
@@ -639,6 +639,26 @@ func (srv *Service) GetLnAddress(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("couldn't get lnaddress")
 	}
 	return lnaddress, nil
+}
+
+// ConfigureLNDHub uses the account private key to generate credentials for the default
+// Mintter custodial LNDHub wallet.
+func (srv *Service) ConfigureMintterLNDHub(ctx context.Context, acc core.KeyPair) error {
+	signature, err := acc.Sign([]byte(lndhub.SigninMessage))
+	if err != nil {
+		return err
+	}
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	if err := lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // DecodeCredentialsURL takes a credential string of the form

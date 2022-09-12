@@ -12,7 +12,10 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/syncing"
-	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcsdb"
+	"mintter/backend/wallet"
+
+	"crawshaw.io/sqlite/sqlitex"
 )
 
 // Server combines all the daemon API services into one thing.
@@ -27,27 +30,31 @@ type Server struct {
 func New(
 	id *future.ReadOnly[core.Identity],
 	repo *ondisk.OnDisk,
-	v *vcs.SQLite,
+	db *sqlitex.Pool,
+	v *vcsdb.DB,
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
+	wallet *wallet.Service,
 ) Server {
-	return Server{
-		Accounts: accounts.NewServer(id, v),
-		Daemon: daemon.NewServer(repo, v, func() error {
-			s, ok := sync.Get()
-			if !ok {
-				return fmt.Errorf("account is not initialized yet")
+	doSync := func() error {
+		s, ok := sync.Get()
+		if !ok {
+			return fmt.Errorf("account is not initialized yet")
+		}
+
+		go func() {
+			if err := s.SyncAndLog(context.Background()); err != nil {
+				panic("bug or fatal error during sync " + err.Error())
 			}
+		}()
 
-			go func() {
-				if err := s.SyncAndLog(context.Background()); err != nil {
-					panic("bug or fatal error during sync " + err.Error())
-				}
-			}()
+		return nil
+	}
 
-			return nil
-		}),
-		Documents:  documents.NewServer(id, v.DB()),
+	return Server{
+		Accounts:   accounts.NewServer(id, v),
+		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
+		Documents:  documents.NewServer(id, db),
 		Networking: networking.NewServer(node),
 	}
 }
