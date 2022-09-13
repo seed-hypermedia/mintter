@@ -35,7 +35,6 @@ func Exec(conn *sqlite.Conn, w io.Writer, query string) {
 			} else {
 				fmt.Fprintf(w, "\t")
 			}
-
 		}
 
 		return nil

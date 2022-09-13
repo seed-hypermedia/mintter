@@ -330,7 +330,6 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 
 		change := version[0]
 
-		conn.TouchChange(change, time.Now())
 		conn.EncodeChange(change, me.DeviceKey())
 
 		conn.DeleteVersion(obj, "draft", meLocal)

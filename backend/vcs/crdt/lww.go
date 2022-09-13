@@ -14,7 +14,7 @@ func NewLWW[T any](less LessFunc) *LWW[T] {
 	}
 }
 
-// Set the value
+// Set the value.
 func (l *LWW[T]) Set(op OpID, v T) (ok bool) {
 	if l.isLess(l.op, op) {
 		l.v = v

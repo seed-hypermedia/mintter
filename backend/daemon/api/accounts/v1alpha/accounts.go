@@ -10,10 +10,8 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/vcsdb"
-	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
 
-	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -233,15 +231,6 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 	}
 
 	return resp, nil
-}
-
-func (srv *Server) listAccounts(conn *sqlite.Conn) ([]vcssql.AccountsListResult, error) {
-	me, err := srv.getMe()
-	if err != nil {
-		return nil, err
-	}
-
-	return vcssql.AccountsList(conn, me.AccountID().Hash())
 }
 
 func (srv *Server) getMe() (core.Identity, error) {

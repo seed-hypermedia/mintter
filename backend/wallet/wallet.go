@@ -641,7 +641,7 @@ func (srv *Service) GetLnAddress(ctx context.Context) (string, error) {
 	return lnaddress, nil
 }
 
-// ConfigureLNDHub uses the account private key to generate credentials for the default
+// ConfigureMintterLNDHub uses the account private key to generate credentials for the default
 // Mintter custodial LNDHub wallet.
 func (srv *Service) ConfigureMintterLNDHub(ctx context.Context, acc core.KeyPair) error {
 	signature, err := acc.Sign([]byte(lndhub.SigninMessage))
@@ -700,7 +700,7 @@ func EncodeCredentialsURL(creds Credentials) (string, error) {
 }
 
 func isSupported(walletType string) bool {
-	var supported bool = false
+	var supported bool
 	for _, supWalletType := range supportedWallets {
 		if walletType == supWalletType {
 			supported = true

@@ -1,9 +1,11 @@
+// Package vcsdb provides version-control-system-related functionality.
+// It's mostly a wrapper around SQLite with specific functions around
+// our graph/triple-store mode for Mintter Objects.
 package vcsdb
 
 import (
 	"context"
 	"crypto/rand"
-	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -20,6 +22,7 @@ import (
 	"strings"
 	"text/template"
 	"time"
+	"unsafe"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -564,7 +567,7 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		attrLookup   lookup[Attribute, Attribute]
 		stringLookup lookup[string, string]
 		entityLookup lookup[NodeID, NodeID]
-		bytesLookup  lookup[[20]byte, []byte] // using SHA1 as a key because []byte can't be key of the map
+		bytesLookup  lookup[string, []byte]
 		cidsLookup   lookup[cid.Cid, cid.Cid]
 	)
 
@@ -606,8 +609,9 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 			}
 		case ValueTypeBytes:
 			data := v.([]byte)
-			sum := sha1.Sum(data) //nolint:gosec
-			val = bytesLookup.Put(sum, data)
+			// Can't use []byte as map's key, so doing zero-copy
+			// conversion to string to be used as a map key.
+			val = bytesLookup.Put(*(*string)(unsafe.Pointer(&data)), data)
 		case ValueTypeCID:
 			val = cidsLookup.Put(v.(cid.Cid), v.(cid.Cid))
 		default:
@@ -929,7 +933,6 @@ func (conn *Conn) AddDatom(object LocalID, d Datom) (nextSeq int) {
 		return nil
 	})
 	return nextSeq
-
 }
 
 // DeleteDatoms removes all datoms with a given entity and attribute belonging to the given change.

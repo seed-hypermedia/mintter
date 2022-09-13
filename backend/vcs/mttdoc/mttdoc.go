@@ -433,7 +433,7 @@ func (doc *Document) moveBlock(blockID, parentID, leftID string) (moved bool, er
 	return moved, err
 }
 
-// DeletedDatoms returns the set of datoms to be deleted
+// DeletedDatoms returns the set of datoms to be deleted.
 func (doc *Document) DeletedDatoms() map[vcsdb.OpID]struct{} {
 	return doc.deletedDatoms
 }
@@ -499,13 +499,4 @@ type BlockPosition struct {
 	// When blocks are moved their position are still there,
 	// although their RGA list elements are marked as deleted.
 	Block vcsdb.NodeID
-}
-
-func movesFromDatoms(in []vcsdb.Datom) []moveOp {
-	var m moves
-	for _, d := range in {
-		m.handle(d)
-	}
-
-	return m.Log()
 }

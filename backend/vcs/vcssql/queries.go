@@ -88,6 +88,7 @@ var (
 			"FROM", s.Profiles, '\n',
 		),
 	)
+	_ = accounts
 
 	contentLinks = add(
 		qb.MakeQuery(s.Schema, "ContentLinksInsert", sgen.QueryKindExec,
@@ -141,6 +142,7 @@ var (
 			"AND", s.ContentLinksSourceBlockID, "=", qb.VarCol(s.ContentLinksSourceBlockID),
 		),
 	)
+	_ = contentLinks
 
 	devices = add(
 		qb.MakeQuery(s.Schema, "DevicesLookupPK", sgen.QueryKindSingle,
@@ -187,6 +189,7 @@ var (
 			"JOIN", s.Devices, "ON", s.DevicesID, "=", s.AccountDevicesDeviceID,
 		),
 	)
+	_ = devices
 
 	namedVersions = add(
 		qb.MakeQuery(s.Schema, "NamedVersionsDelete", sgen.QueryKindExec,
@@ -253,6 +256,7 @@ var (
 			"INNER JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.NamedVersionsObjectID, '\n',
 		),
 	)
+	_ = namedVersions
 
 	ipfsBlocks = add(
 		qb.MakeQuery(s.Schema, "IPFSBlocksLookupPK", sgen.QueryKindSingle,
@@ -364,6 +368,7 @@ var (
 			"LIMIT 1",
 		),
 	)
+	_ = ipfsBlocks
 
 	permanodes = add(
 		qb.MakeQuery(s.Schema, "PermanodesInsertOrIgnore", sgen.QueryKindExec,
@@ -432,6 +437,7 @@ var (
 			"WHERE", s.PermanodesType, "=", qb.VarCol(s.PermanodesType),
 		),
 	)
+	_ = permanodes
 
 	changes = add(
 		qb.MakeQuery(s.Schema, "ChangesInsertOrIgnore", sgen.QueryKindExec,
@@ -527,6 +533,7 @@ var (
 			"WHERE", s.ChangesID, "=", qb.VarCol(s.ChangesID),
 		),
 	)
+	_ = changes
 
 	datoms = add(
 		qb.MakeQuery(s.Schema, "DatomsAttrInsert", sgen.QueryKindSingle,
@@ -565,6 +572,7 @@ var (
 			"AND", s.DatomsAttr, "=", qb.VarCol(s.DatomsAttr),
 		),
 	)
+	_ = datoms
 )
 
 //go:generate gorun generateQueries

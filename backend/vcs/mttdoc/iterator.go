@@ -5,6 +5,7 @@ import (
 	"mintter/backend/vcs/vcsdb"
 )
 
+// Iterator walks the document hierarchy in depth-first order.
 type Iterator struct {
 	doc   *Document
 	stack []*crdt.ListElement[BlockPosition]

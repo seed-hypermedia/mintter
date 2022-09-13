@@ -212,12 +212,6 @@ func (b *blockStore) HashOnRead(bool) {
 	panic("hash on read is not implemented for sqlite blockstore")
 }
 
-func (b *blockStore) exec(ctx context.Context, query string, fn func(*sqlite.Stmt) error, args ...interface{}) error {
-	return b.withConn(ctx, func(conn *sqlite.Conn) error {
-		return sqlitex.Exec(conn, query, fn, args...)
-	})
-}
-
 func (b *blockStore) withConn(ctx context.Context, fn func(*sqlite.Conn) error) error {
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
