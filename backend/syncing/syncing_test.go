@@ -9,9 +9,12 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcstypes"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -78,32 +81,64 @@ func TestSync(t *testing.T) {
 
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
-	doc, err := alice.Repo().CreateDocument(ctx)
-	require.NoError(t, err)
+	var alicePerma vcsdb.EncodedPermanode
+	var wantDatoms []vcsdb.Datom
+	{
+		conn, release, err := alice.VCS().Conn(ctx)
+		require.NoError(t, err)
 
-	doc.ChangeTitle("Hello world")
-	require.NoError(t, doc.MoveBlock("b1", "", ""))
-	require.NoError(t, doc.ReplaceBlock(vcstypes.Block{
-		ID:   "b1",
-		Text: "Hello world",
-	}))
+		err = conn.WithTx(true, func() error {
+			perma, err := vcsdb.NewPermanode(vcstypes.NewDocumentPermanode(alice.ID().AccountID()))
+			alicePerma = perma
+			require.NoError(t, err)
+			obj := conn.NewObject(perma)
+			idLocal := conn.EnsureIdentity(alice.ID())
+			change := conn.NewChange(obj, idLocal, nil, time.Time{})
+			newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
 
-	_, err = alice.Repo().CommitPublication(ctx, doc, vcs.Version{})
-	require.NoError(t, err)
+			wantDatoms = []vcsdb.Datom{
+				newDatom(vcsdb.RootNode, "title", "This is a title"),
+			}
+
+			for _, d := range wantDatoms {
+				conn.AddDatom(obj, d)
+			}
+
+			conn.SaveVersion(obj, "main", idLocal, vcsdb.LocalVersion{change})
+			conn.EncodeChange(change, alice.ID().DeviceKey())
+
+			return nil
+		})
+		release()
+		require.NoError(t, err)
+	}
 
 	res, err := bob.Syncer.Sync(ctx)
 	require.NoError(t, err)
-	require.Equal(t, int64(0), res.NumSyncFailed)
-	require.Equal(t, int64(1), res.NumSyncOK)
+	require.Equal(t, int64(0), res.NumSyncFailed, "unexpected number of sync failures")
+	require.Equal(t, int64(1), res.NumSyncOK, "unexpected number of successful syncs")
 
-	bobdoc, err := bob.Repo().LoadPublication(ctx, doc.State().ID, vcs.Version{})
-	require.NoError(t, err)
+	{
+		conn, release, err := bob.VCS().Conn(ctx)
+		require.NoError(t, err)
 
-	require.Equal(t, doc.State(), bobdoc.State())
+		err = conn.WithTx(false, func() error {
+			obj := conn.LookupPermanode(alicePerma.ID)
+			idLocal := conn.EnsureIdentity(bob.ID())
+			version := conn.GetVersion(obj, "main", idLocal)
 
-	bobalice, err := bob.Repo().LoadAccount(ctx, alice.ID().AccountID(), vcs.Version{})
-	require.NoError(t, err)
-	require.NotNil(t, bobalice)
+			var i int
+			conn.IterateObjectDatoms(obj, version, func(dr vcsdb.DatomRow) error {
+				i++
+				return nil
+			})
+			require.Equal(t, len(wantDatoms), i, "must get the same number of datoms as in the original object")
+
+			return nil
+		})
+		release()
+		require.NoError(t, err)
+	}
 }
 
 func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) {
@@ -111,9 +146,12 @@ func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) 
 
 	db := makeTestSQLite(t)
 
-	hvcs := vcs.New(db)
+	hvcs := vcsdb.New(db)
 
-	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
+	conn, release, err := hvcs.Conn(context.Background())
+	require.NoError(t, err)
+	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	release()
 	require.NoError(t, err)
 
 	cfg := config.Default().P2P

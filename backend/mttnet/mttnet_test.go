@@ -8,8 +8,8 @@ import (
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcstypes"
+	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/vcsdb"
 	"path/filepath"
 	"testing"
 
@@ -42,9 +42,12 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 
 	db := makeTestSQLite(t)
 
-	hvcs := vcs.New(db)
+	hvcs := vcsdb.New(db)
 
-	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
+	conn, release, err := hvcs.Conn(context.Background())
+	require.NoError(t, err)
+	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	release()
 	require.NoError(t, err)
 
 	cfg := config.Default().P2P

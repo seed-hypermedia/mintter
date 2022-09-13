@@ -11,7 +11,6 @@ const (
 	AccountDevices          sqlitegen.Table  = "account_devices"
 	AccountDevicesAccountID sqlitegen.Column = "account_devices.account_id"
 	AccountDevicesDeviceID  sqlitegen.Column = "account_devices.device_id"
-	AccountDevicesProof     sqlitegen.Column = "account_devices.proof"
 )
 
 // Table accounts.
@@ -167,7 +166,6 @@ var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
 		AccountDevicesAccountID:      {Table: AccountDevices, SQLType: "INTEGER"},
 		AccountDevicesDeviceID:       {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountDevicesProof:          {Table: AccountDevices, SQLType: "BLOB"},
 		AccountsCreateTime:           {Table: Accounts, SQLType: "INTEGER"},
 		AccountsID:                   {Table: Accounts, SQLType: "INTEGER"},
 		AccountsMultihash:            {Table: Accounts, SQLType: "BLOB"},

@@ -13,8 +13,8 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcstypes"
+	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/vcsdb"
 	"path/filepath"
 	"testing"
 	"time"
@@ -130,9 +130,12 @@ func makeTestService(t *testing.T, name string) *Service {
 }
 
 func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.Node, context.CancelFunc) {
-	hvcs := vcs.New(db)
+	hvcs := vcsdb.New(db)
 
-	reg, err := vcstypes.Register(context.Background(), u.Account, u.Device, hvcs)
+	conn, release, err := hvcs.Conn(context.Background())
+	require.NoError(t, err)
+	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	release()
 	require.NoError(t, err)
 
 	n, err := mttnet.New(config.P2P{

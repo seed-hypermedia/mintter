@@ -25,6 +25,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"go.uber.org/multierr"
 )
@@ -67,6 +68,19 @@ func NewPermanode(p Permanode) (ep EncodedPermanode, err error) {
 // New creates a new DB.
 func New(pool *sqlitex.Pool) *DB {
 	return &DB{pool: pool, bs: newBlockstore(pool)}
+}
+
+// Blockstore returns the blockstore interface wrapped by this database.
+func (db *DB) Blockstore() blockstore.Blockstore {
+	return db.bs
+}
+
+// DB returns the underlying SQLite connection pool.
+// This is used for compatibility with the old code, but it should not be exposed.
+//
+// TODO(burdiyan): get rid of this. Should not be exposed.
+func (db *DB) DB() *sqlitex.Pool {
+	return db.pool
 }
 
 // Conn provides a new database connection.
@@ -253,13 +267,19 @@ func (conn *Conn) WithTx(immediate bool, fn func() error) error {
 
 // EnsureIdentity ensures LocalID for the identity.
 func (conn *Conn) EnsureIdentity(id core.Identity) (li LocalIdentity) {
-	if conn.err != nil {
-		return li
-	}
+	return conn.EnsureAccountDevice(id.AccountID(), id.DeviceKey().CID())
+}
 
-	li.Account = LocalID(conn.ensureAccountID(id.AccountID()))
-	li.Device = LocalID(conn.ensureDeviceID(id.DeviceKey().CID()))
+// EnsureAccountDevice is the same as EnsureIdentity but uses plain CIDs.
+//
+// TODO(burdiyan): probably only one way should exist to do that.
+func (conn *Conn) EnsureAccountDevice(acc, device cid.Cid) (li LocalIdentity) {
+	must.Maybe(&conn.err, func() error {
+		li.Account = LocalID(conn.ensureAccountID(acc))
+		li.Device = LocalID(conn.ensureDeviceID(device))
 
+		return vcssql.AccountDevicesInsertOrIgnore(conn.conn, int(li.Account), int(li.Device))
+	})
 	return li
 }
 
@@ -419,8 +439,117 @@ type changeBody struct {
 	Datoms   [][5]int    `refmt:"d"` // seq, entity, attrIdx, valueType, stringIdx | entityIdx | bool | int
 }
 
+func datomsFromChange(changeLocal LocalID, ch vcs.Change) ([]Datom, error) {
+	if ch.Kind != changeKindV1 {
+		return nil, fmt.Errorf("change kind %q is invalid", ch.Kind)
+	}
+
+	var cb changeBody
+	if err := cbornode.DecodeInto(ch.Body, &cb); err != nil {
+		return nil, fmt.Errorf("failed to decode datoms from change body: %w", err)
+	}
+
+	out := make([]Datom, len(cb.Datoms))
+
+	for i, d := range cb.Datoms {
+		out[i] = Datom{
+			OpID: OpID{
+				LamportTime: int(ch.LamportTime),
+				Change:      changeLocal,
+				Seq:         d[0],
+			},
+			Entity:    cb.Entities[d[1]],
+			Attr:      cb.Attrs[d[2]],
+			ValueType: ValueType(d[3]),
+		}
+
+		switch out[i].ValueType {
+		case ValueTypeRef:
+			out[i].Value = cb.Entities[d[4]]
+		case ValueTypeString:
+			out[i].Value = cb.Strings[d[4]]
+		case ValueTypeInt:
+			out[i].Value = d[4]
+		case ValueTypeBool:
+			switch d[4] {
+			case 0:
+				out[i].Value = false
+			case 1:
+				out[i].Value = true
+			default:
+				return nil, fmt.Errorf("bad boolean value: %v", d[4])
+			}
+		case ValueTypeBytes:
+			out[i].Value = cb.Bytes[d[4]]
+		case ValueTypeCID:
+			out[i].Value = cb.CIDs[d[4]]
+		default:
+			return nil, fmt.Errorf("unsupported value type: %v", out[i].ValueType)
+		}
+	}
+
+	return out, nil
+}
+
 func init() {
 	cbornode.RegisterCborType(changeBody{})
+}
+
+// SignedChange is a type for Change with signature and signer information.
+type SignedChange = vcs.SignedCBOR[vcs.Change]
+
+// StoreRemoteChange stores the changes fetched from the remote peer,
+// and indexes its datoms. It assumes that the change signature was already
+// validated elsewhere. It also assumes that change parents already exist in the database.
+func (conn *Conn) StoreRemoteChange(obj LocalID, sc SignedChange) (change LocalID) {
+	must.Maybe(&conn.err, func() error {
+		if sc.Payload.Kind != changeKindV1 {
+			panic("BUG: change kind is invalid: " + sc.Payload.Kind)
+		}
+
+		// TODO(burdiyan): validate lamport timestamp of the incoming change here, or elsewhere?
+
+		res, err := vcssql.ChangesAllocateID(conn.conn)
+		if err != nil {
+			return err
+		}
+		change = LocalID(res.Seq)
+
+		ch := sc.Payload
+
+		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), ch.Kind, int(ch.LamportTime), int(ch.CreateTime.Unix())); err != nil {
+			return err
+		}
+
+		idLocal := conn.EnsureAccountDevice(ch.Author, sc.Signer)
+
+		if err := vcssql.ChangeAuthorsInsertOrIgnore(conn.conn, int(change), int(idLocal.Account), int(idLocal.Device)); err != nil {
+			return err
+		}
+
+		for _, dep := range ch.Parents {
+			res, err := vcssql.IPFSBlocksLookupPK(conn.conn, dep.Hash())
+			if err != nil {
+				return err
+			}
+
+			if err := vcssql.ChangesInsertParent(conn.conn, int(change), res.IPFSBlocksID); err != nil {
+				return err
+			}
+		}
+
+		datoms, err := datomsFromChange(change, ch)
+		if err != nil {
+			return err
+		}
+
+		for _, d := range datoms {
+			conn.AddDatom(obj, d)
+		}
+
+		return nil
+	})
+	return change
 }
 
 // EncodeChange encodes a change into its canonical representation as an IPFS block,
@@ -778,29 +907,29 @@ func NewDatom(change LocalID, seq int, entity NodeID, a Attribute, value any, la
 
 // AddDatom adds a triple into the database.
 func (conn *Conn) AddDatom(object LocalID, d Datom) (nextSeq int) {
-	if conn.err != nil {
-		return 0
-	}
+	must.Maybe(&conn.err, func() error {
+		// sqlitex.Exec doesn't support array bind parameters.
+		// We convert array into slice here. Need to do better.
+		value := d.Value
+		if d.ValueType == ValueTypeRef {
+			nid := d.Value.(NodeID)
+			value = nid.Bytes()
+		}
+		if d.ValueType == ValueTypeCID {
+			value = d.Value.(cid.Cid).Bytes()
+		}
 
-	// sqlitex.Exec doesn't support array bind parameters.
-	// We convert array into slice here. Need to do better.
-	value := d.Value
-	if d.ValueType == ValueTypeRef {
-		nid := d.Value.(NodeID)
-		value = nid.Bytes()
-	}
-	if d.ValueType == ValueTypeCID {
-		value = d.Value.(cid.Cid).Bytes()
-	}
+		e := d.Entity.Bytes()
 
-	e := d.Entity.Bytes()
+		if err := sqlitex.Exec(conn.conn, addDatomQuery.SQL, nil, object, d.Change, d.Seq, e, conn.Attr(d.Attr), d.ValueType, value); err != nil {
+			return err
+		}
 
-	if err := sqlitex.Exec(conn.conn, addDatomQuery.SQL, nil, object, d.Change, d.Seq, e, conn.Attr(d.Attr), d.ValueType, value); err != nil {
-		conn.err = err
-		return 0
-	}
+		nextSeq = d.Seq + 1
+		return nil
+	})
+	return nextSeq
 
-	return d.Seq + 1
 }
 
 // DeleteDatoms removes all datoms with a given entity and attribute belonging to the given change.
@@ -1441,6 +1570,50 @@ func (conn *Conn) ensureDeviceID(c cid.Cid) int {
 	}
 
 	return insert.DevicesID
+}
+
+type Ref = vcs.Ref
+
+// ListAllVersions collects all the known objects with all their versions,
+// and returns all the public information about them.
+//
+// TODO(burdiyan): this is for compatibility with the old code. It's not a good solution.
+func (conn *Conn) ListAllVersions(nameFilter string) (refs map[cid.Cid][]Ref) {
+	must.Maybe(&conn.err, func() error {
+		versions, err := vcssql.NamedVersionsListAll(conn.conn)
+		if err != nil {
+			return err
+		}
+
+		refs = make(map[cid.Cid][]Ref, len(versions))
+
+		for _, ver := range versions {
+			if nameFilter != "" && nameFilter != ver.NamedVersionsName {
+				continue
+			}
+
+			oid := cid.NewCidV1(uint64(ver.PermanodeCodec), ver.PermanodeMultihash)
+			aid := cid.NewCidV1(core.CodecAccountKey, ver.AccountsMultihash)
+			did := cid.NewCidV1(core.CodecDeviceKey, ver.DevicesMultihash)
+
+			var lv LocalVersion
+			if err := json.Unmarshal([]byte(ver.NamedVersionsVersion), &lv); err != nil {
+				return err
+			}
+
+			v := conn.LocalVersionToPublic(lv)
+
+			refs[oid] = append(refs[oid], Ref{
+				Account: aid,
+				Device:  did,
+				Version: v,
+			})
+		}
+
+		return nil
+	})
+
+	return refs
 }
 
 var errNotFound = errors.New("not found")

@@ -68,7 +68,6 @@ CREATE TABLE devices (
 CREATE TABLE account_devices (
     account_id INTEGER REFERENCES accounts NOT NULL,
     device_id INTEGER REFERENCES devices NOT NULL,
-    proof BLOB NOT NULL,
     PRIMARY KEY (account_id, device_id)
 ) WITHOUT ROWID;
 

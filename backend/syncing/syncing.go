@@ -7,8 +7,8 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
-	"mintter/backend/vcs/vcstypes"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -17,6 +17,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"go.uber.org/multierr"
@@ -48,11 +49,10 @@ type Service struct {
 	onSync func(SyncResult) error
 
 	log     *zap.Logger
-	vcs     *vcs.SQLite
+	vcs     *vcsdb.DB
 	me      core.Identity
 	bitswap FetcherFunc
 	client  NetDialFunc
-	index   *vcstypes.Index
 
 	mu sync.Mutex // Ensures only one sync loop is running at a time.
 }
@@ -64,9 +64,7 @@ const (
 )
 
 // NewService creates a new syncing service. Users must call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, vcs *vcs.SQLite, bitswap FetcherFunc, client NetDialFunc) *Service {
-	idx := vcstypes.NewIndex(db)
-
+func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, vcs *vcsdb.DB, bitswap FetcherFunc, client NetDialFunc) *Service {
 	svc := &Service{
 		warmupDuration:  defaultWarmupDuration,
 		syncInterval:    defaultSyncInterval,
@@ -77,7 +75,6 @@ func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, vcs *vcs.SQ
 		me:      me,
 		bitswap: bitswap,
 		client:  client,
-		index:   idx,
 	}
 
 	return svc
@@ -180,7 +177,7 @@ func (s *Service) SyncAndLog(ctx context.Context) error {
 
 	res, err := s.Sync(ctx)
 	if err != nil {
-		if err == ErrSyncAlreadyRunning {
+		if errors.Is(err, ErrSyncAlreadyRunning) {
 			log.Debug("SyncLoopIsAlreadyRunning")
 			return nil
 		}
@@ -276,20 +273,22 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	return res, nil
 }
 
-func (s *Service) syncFromVersion(ctx context.Context, acc, device, obj cid.Cid, sess exchange.Fetcher, remoteVer vcs.Version) error {
+func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid, sess exchange.Fetcher, remoteVer vcs.Version) error {
 	bs := s.vcs.Blockstore()
 
 	var permanode vcs.Permanode
+	var shouldStorePermanode bool
+	var ep vcsdb.EncodedPermanode
 	{
 		// Important to check before using bitswap, because it would add the fetched block into out blockstore,
 		// without any mintter-specific indexing.
-		has, err := bs.Has(ctx, obj)
+		has, err := bs.Has(ctx, oid)
 		if err != nil {
 			return err
 		}
 
 		// Indicate to the bitswap session to prefer peers who have the permanode block.
-		perma, err := sess.GetBlock(ctx, obj)
+		perma, err := sess.GetBlock(ctx, oid)
 		if err != nil {
 			return err
 		}
@@ -310,13 +309,16 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, obj cid.Cid,
 		permanode = p
 
 		if !has {
-			if err := s.vcs.StorePermanode(ctx, perma, p); err != nil {
-				return err
+			shouldStorePermanode = true
+			ep = vcsdb.EncodedPermanode{
+				ID:        perma.Cid(),
+				Data:      perma.RawData(),
+				Permanode: permanode,
 			}
 		}
 	}
 
-	remoteChanges, err := fetchMissingChanges(ctx, s.vcs, obj, sess, remoteVer)
+	remoteChanges, err := fetchMissingChanges(ctx, bs, oid, sess, remoteVer)
 	if err != nil {
 		return fmt.Errorf("failed to fetch missing changes: %w", err)
 	}
@@ -325,74 +327,42 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, obj cid.Cid,
 		return nil
 	}
 
-	localVer, err := s.vcs.LoadNamedVersion(ctx, obj, s.me.AccountID(), s.me.DeviceKey().CID(), "main")
+	conn, release, err := s.vcs.Conn(ctx)
 	if err != nil {
-		if !vcs.IsErrNotFound(err) {
-			return err
-		}
+		return err
 	}
+	defer release()
 
-	// TODO: DRY this up when it's known to work.
-	switch permanode.PermanodeType() {
-	case vcstypes.AccountType:
-		acc := vcstypes.NewAccount(obj, permanode.PermanodeOwner())
-
-		if err := s.vcs.IterateChanges(ctx, obj, localVer, func(rc vcs.RecordedChange) error {
-			return acc.ApplyChange(rc.ID, rc.Change)
-		}); err != nil {
-			return err
+	if err := conn.WithTx(true, func() error {
+		var obj vcsdb.LocalID
+		if shouldStorePermanode {
+			obj = conn.NewObject(ep)
+		} else {
+			obj = conn.LookupPermanode(oid)
 		}
 
-		for _, f := range remoteChanges {
-			var evts []vcstypes.AccountEvent
-			if err := cbornode.DecodeInto(f.sc.Payload.Body, &evts); err != nil {
-				return err
-			}
-
-			for _, evt := range evts {
-				if err := acc.Apply(evt, f.sc.Payload.CreateTime); err != nil {
-					return err
+		newHeads := remoteVer.CIDs()
+		newLocalVersion := make(vcsdb.LocalVersion, len(newHeads))
+		trackHead := func(c cid.Cid, lid vcsdb.LocalID) {
+			for i, h := range newHeads {
+				if h.Equals(c) {
+					newLocalVersion[i] = lid
 				}
 			}
-
-			if err := s.index.IndexAccountChange(ctx, f.Cid(), f.sc.Payload, evts); err != nil {
-				return err
-			}
 		}
 
-		if err := s.vcs.StoreNamedVersion(ctx, obj, s.me, "main", remoteVer); err != nil {
-			return err
-		}
-	case vcstypes.DocumentType:
-		doc := vcstypes.NewDocument(obj, permanode.PermanodeOwner(), permanode.PermanodeCreateTime())
-		if err := s.vcs.IterateChanges(ctx, obj, localVer, func(rc vcs.RecordedChange) error {
-			return doc.ApplyChange(rc.ID, rc.Change)
-		}); err != nil {
-			return err
+		for _, remote := range remoteChanges {
+			local := conn.StoreRemoteChange(obj, remote.sc)
+			trackHead(remote.Cid(), local)
 		}
 
-		for _, f := range remoteChanges {
-			var evts []vcstypes.DocumentEvent
-			if err := cbornode.DecodeInto(f.sc.Payload.Body, &evts); err != nil {
-				return err
-			}
+		idLocal := conn.EnsureAccountDevice(acc, device)
 
-			for _, evt := range evts {
-				if err := doc.Apply(evt, f.sc.Payload.CreateTime); err != nil {
-					return err
-				}
-			}
+		conn.SaveVersion(obj, "main", idLocal, newLocalVersion)
 
-			if err := s.index.IndexDocumentChange(ctx, f.Cid(), f.sc.Payload, evts); err != nil {
-				return err
-			}
-		}
-
-		if err := s.vcs.StoreNamedVersion(ctx, obj, s.me, "main", remoteVer); err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("unsupported permanode type %s", permanode.PermanodeType())
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	return nil
@@ -458,7 +428,7 @@ type verifiedChange struct {
 	sc vcs.SignedCBOR[vcs.Change]
 }
 
-func fetchMissingChanges(ctx context.Context, v *vcs.SQLite, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]verifiedChange, error) {
+func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]verifiedChange, error) {
 	queue := ver.CIDs()
 
 	visited := make(map[cid.Cid]struct{}, ver.TotalCount())
@@ -470,7 +440,7 @@ func fetchMissingChanges(ctx context.Context, v *vcs.SQLite, obj cid.Cid, sess e
 		id := queue[last]
 		queue = queue[:last]
 
-		has, err := v.Blockstore().Has(ctx, id)
+		has, err := bs.Has(ctx, id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to check if change %s is present: %w", id, err)
 		}

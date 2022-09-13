@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/vcstypes"
 
 	"github.com/ipfs/go-cid"
@@ -101,11 +102,15 @@ func (n *Node) verifyHandshake(ctx context.Context, device cid.Cid, pb *p2p.Hand
 		return fmt.Errorf("failed to verify account device registration proof: %w", err)
 	}
 
-	if err := n.repo.StoreAccountDeviceRegistration(ctx, pubKey.CID(), device, pb.AccountDeviceProof); err != nil {
+	conn, release, err := n.vcs.Conn(ctx)
+	if err != nil {
 		return err
 	}
+	defer release()
 
-	return nil
+	conn.EnsureAccountDevice(pubKey.CID(), device)
+
+	return conn.Err()
 }
 
 var errDialSelf = errors.New("can't dial self")
@@ -139,7 +144,7 @@ func (n *rpcHandler) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p
 	}
 
 	if err := n.verifyHandshake(ctx, device, in); err != nil {
-		// TODO(burdiyan): implement blocking bad peers.
+		// TODO(burdiyan): implement blocking and disconnecting from bad peers.
 		log.Warn("FailedToVerifyIncomingMintterHandshake", zap.Error(err))
 		return nil, fmt.Errorf("you gave me a bad handshake")
 	}
@@ -151,17 +156,32 @@ func (n *rpcHandler) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p
 
 func (n *Node) handshakeInfo(ctx context.Context) (*p2p.HandshakeInfo, error) {
 	n.once.Do(func() {
-		proof, err := n.repo.GetAccountDeviceProof(ctx, n.me.AccountID(), n.me.DeviceKey().CID())
-		if err != nil {
-			panic("BUG: failed to get own account device proof " + err.Error())
+		// TODO(burdiyan): all of this is bad!
+		// Needs a better way to do that.
+		// Search for other places where we have to convert account ID
+		// to account object ID and try to get rid of them.
+
+		conn, release, err := n.vcs.Conn(ctx)
+		if err != nil && !errors.Is(err, context.Canceled) {
+			panic(err)
+		}
+		defer release()
+
+		if err := conn.WithTx(false, func() error {
+			proof, err := mttacc.GetDeviceProof(conn, n.me, n.me.AccountID(), n.me.DeviceKey().CID())
+			if err != nil {
+				return err
+			}
+			n.accountDeviceProof = proof
+			return nil
+		}); err != nil && !errors.Is(err, context.Canceled) {
+			panic(err)
 		}
 
 		n.accountPublicKeyRaw, err = n.me.Account().MarshalBinary()
 		if err != nil {
 			panic(err)
 		}
-
-		n.accountDeviceProof = proof
 	})
 
 	hinfo := &p2p.HandshakeInfo{

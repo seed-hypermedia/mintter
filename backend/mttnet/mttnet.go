@@ -12,8 +12,8 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
-	"mintter/backend/vcs/vcstypes"
 	"strconv"
 	"sync"
 
@@ -75,8 +75,7 @@ func DefaultRelays() []peer.AddrInfo {
 // Node is a Mintter P2P node.
 type Node struct {
 	log             *zap.Logger
-	vcs             *vcs.SQLite
-	repo            *vcstypes.Repo
+	vcs             *vcsdb.DB
 	me              core.Identity
 	cfg             config.P2P
 	accountObjectID vcs.ObjectID
@@ -99,7 +98,7 @@ type Node struct {
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, vcs *vcsdb.DB, accountObj vcs.ObjectID, me core.Identity, log *zap.Logger) (*Node, error) {
 	var clean cleanup.Stack
 
 	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped())
@@ -120,7 +119,6 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	n := &Node{
 		log:             log,
 		vcs:             vcs,
-		repo:            vcstypes.NewRepo(me, vcs),
 		me:              me,
 		cfg:             cfg,
 		accountObjectID: accountObj,
@@ -152,15 +150,8 @@ func (n *Node) SetInvoicer(inv Invoicer) {
 // VCS returns the underlying VCS. Should not be here at all, but used in tests of other packages.
 //
 // TODO(burdiyan): get rid of this.
-func (n *Node) VCS() *vcs.SQLite {
+func (n *Node) VCS() *vcsdb.DB {
 	return n.vcs
-}
-
-// Repo returns the underlying vcstypes repo. Should not be here at all, but needed for testing sync.
-//
-// TODO(burdiyan): get rid of this.
-func (n *Node) Repo() *vcstypes.Repo {
-	return n.repo
 }
 
 // ID returns the node's identity.

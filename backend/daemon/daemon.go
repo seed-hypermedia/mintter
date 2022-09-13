@@ -49,7 +49,6 @@ type App struct {
 	log *zap.Logger
 
 	Repo         *ondisk.OnDisk
-	VCS          *vcs.SQLite
 	DB           *sqlitex.Pool
 	HTTPListener net.Listener
 	HTTPServer   *http.Server
@@ -107,8 +106,6 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 		return
 	}
 
-	a.VCS = vcs.New(a.DB)
-
 	a.VCSDB = vcsdb.New(a.DB)
 
 	a.Me, err = initRegistration(ctx, a.g, a.Repo)
@@ -116,12 +113,12 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 		return
 	}
 
-	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCS)
+	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB)
 	if err != nil {
 		return
 	}
 
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCS, a.Me, a.Net)
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCSDB, a.Me, a.Net)
 	if err != nil {
 		return
 	}
@@ -247,7 +244,7 @@ func initNetwork(
 	g *errgroup.Group,
 	me *future.ReadOnly[core.Identity],
 	cfg config.P2P,
-	vcsh *vcs.SQLite,
+	vcsh *vcsdb.DB,
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
 
@@ -300,7 +297,7 @@ func initSyncing(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	db *sqlitex.Pool,
-	vcsh *vcs.SQLite,
+	vcs *vcsdb.DB,
 	me *future.ReadOnly[core.Identity],
 	net *future.ReadOnly[*mttnet.Node],
 ) (*future.ReadOnly[*syncing.Service], error) {
@@ -323,7 +320,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, vcsh, node.Bitswap().NewSession, node.Client)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, vcs, node.Bitswap().NewSession, node.Client)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)

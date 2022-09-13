@@ -356,13 +356,12 @@ VALUES (:devicesMultihash) RETURNING devices.id`
 	return out, err
 }
 
-func AccountDevicesInsertOrIgnore(conn *sqlite.Conn, accountDevicesAccountID int, accountDevicesDeviceID int, accountDevicesProof []byte) error {
-	const query = `INSERT OR IGNORE INTO account_devices (account_id, device_id, proof) VALUES (:accountDevicesAccountID, :accountDevicesDeviceID, :accountDevicesProof)`
+func AccountDevicesInsertOrIgnore(conn *sqlite.Conn, accountDevicesAccountID int, accountDevicesDeviceID int) error {
+	const query = `INSERT OR IGNORE INTO account_devices (account_id, device_id) VALUES (:accountDevicesAccountID, :accountDevicesDeviceID)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":accountDevicesAccountID", accountDevicesAccountID)
 		stmt.SetInt(":accountDevicesDeviceID", accountDevicesDeviceID)
-		stmt.SetBytes(":accountDevicesProof", accountDevicesProof)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -438,39 +437,6 @@ JOIN devices ON devices.id = account_devices.device_id`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: DevicesList: %w", err)
-	}
-
-	return out, err
-}
-
-type AccountDevicesGetProofResult struct {
-	AccountDevicesProof []byte
-}
-
-func AccountDevicesGetProof(conn *sqlite.Conn, accountsMultihash []byte, devicesMultihash []byte) (AccountDevicesGetProofResult, error) {
-	const query = `SELECT account_devices.proof
-FROM account_devices
-WHERE account_devices.account_id = COALESCE((SELECT accounts.id FROM accounts WHERE accounts.multihash = :accountsMultihash LIMIT 1), -1000) AND account_devices.device_id = COALESCE((SELECT devices.id FROM devices WHERE devices.multihash = :devicesMultihash LIMIT 1), -1000)`
-
-	var out AccountDevicesGetProofResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":accountsMultihash", accountsMultihash)
-		stmt.SetBytes(":devicesMultihash", devicesMultihash)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("AccountDevicesGetProof: more than one result return for a single-kind query")
-		}
-
-		out.AccountDevicesProof = stmt.ColumnBytes(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: AccountDevicesGetProof: %w", err)
 	}
 
 	return out, err

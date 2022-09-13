@@ -3,6 +3,7 @@ package mttacc
 
 import (
 	"context"
+	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcstypes"
@@ -49,4 +50,29 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 	conn.EncodeChange(change, device)
 
 	return perma.ID, nil
+}
+
+// GetDeviceProof searches for a registration proof of a device under an account.
+func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid) (proof []byte, err error) {
+	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(account))
+	if err != nil {
+		return nil, err
+	}
+
+	obj := conn.LookupPermanode(perma.ID)
+	localMe := conn.EnsureIdentity(me)
+	ver := conn.GetVersion(obj, "main", localMe)
+	cs := conn.ResolveChangeSet(obj, ver)
+
+	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, AttrRegistration)
+	for _, reg := range regs {
+		dd := conn.QueryLastValue(obj, cs, reg.Value.(vcsdb.NodeID), AttrDevice)
+		if !dd.Value.(cid.Cid).Equals(device) {
+			continue
+		}
+		proof := conn.QueryLastValue(obj, cs, reg.Value.(vcsdb.NodeID), AttrProof)
+		return proof.Value.([]byte), nil
+	}
+
+	return nil, fmt.Errorf("proof not found")
 }
