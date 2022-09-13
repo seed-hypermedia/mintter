@@ -8,12 +8,10 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcstypes"
-	"path/filepath"
+	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/vcsdb"
 	"testing"
 
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,31 +64,22 @@ func TestAPIUpdateProfile(t *testing.T) {
 func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
 
-	db := newTestSQLite(t)
-	v := vcs.New(db)
+	pool := sqliteschema.MakeTestDB(t)
+	db := vcsdb.New(pool)
+	ctx := context.Background()
 
-	_, err := vcstypes.Register(context.Background(), u.Account, u.Device, v)
+	conn, release, err := db.Conn(ctx)
+	require.NoError(t, err)
+	defer release()
+
+	err = conn.WithTx(true, func() error {
+		_, err := mttacc.Register(ctx, u.Account, u.Device, conn)
+		return err
+	})
 	require.NoError(t, err)
 
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	return NewServer(fut.ReadOnly, v)
-}
-
-func newTestSQLite(t *testing.T) *sqlitex.Pool {
-	path := testutil.MakeRepoPath(t)
-
-	pool, err := sqliteschema.Open(filepath.Join(path, "db.sqlite"), 0, 16)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, pool.Close())
-	})
-
-	conn := pool.Get(context.Background())
-	defer pool.Put(conn)
-
-	require.NoError(t, sqliteschema.Migrate(conn))
-
-	return pool
+	return NewServer(fut.ReadOnly, db)
 }

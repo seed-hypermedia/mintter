@@ -70,7 +70,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		if errors.Is(err, context.Canceled) {
 			return
 		}
-		if err != nil{
+		if err != nil {
 			panic(err)
 		}
 		// We assume registration already happened.
@@ -641,6 +641,26 @@ func (srv *Service) GetLnAddress(ctx context.Context) (string, error) {
 	return lnaddress, nil
 }
 
+// ConfigureMintterLNDHub uses the account private key to generate credentials for the default
+// Mintter custodial LNDHub wallet.
+func (srv *Service) ConfigureMintterLNDHub(ctx context.Context, acc core.KeyPair) error {
+	signature, err := acc.Sign([]byte(lndhub.SigninMessage))
+	if err != nil {
+		return err
+	}
+	conn, release, err := srv.pool.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	if err := lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // DecodeCredentialsURL takes a credential string of the form
 // <wallet_type>://<alphanumeric_login>:<alphanumeric_password>@https://<domain>
 // lndhub://c227a7fb5c71a22fac33:d2a48ab779aa1b02e858@https://lndhub.io
@@ -680,7 +700,7 @@ func EncodeCredentialsURL(creds Credentials) (string, error) {
 }
 
 func isSupported(walletType string) bool {
-	var supported bool = false
+	var supported bool
 	for _, supWalletType := range supportedWallets {
 		if walletType == supWalletType {
 			supported = true

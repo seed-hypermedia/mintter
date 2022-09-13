@@ -11,7 +11,6 @@ const (
 	AccountDevices          sqlitegen.Table  = "account_devices"
 	AccountDevicesAccountID sqlitegen.Column = "account_devices.account_id"
 	AccountDevicesDeviceID  sqlitegen.Column = "account_devices.device_id"
-	AccountDevicesProof     sqlitegen.Column = "account_devices.proof"
 )
 
 // Table accounts.
@@ -28,6 +27,14 @@ const (
 	ChangeAuthors          sqlitegen.Table  = "change_authors"
 	ChangeAuthorsAccountID sqlitegen.Column = "change_authors.account_id"
 	ChangeAuthorsChangeID  sqlitegen.Column = "change_authors.change_id"
+	ChangeAuthorsDeviceID  sqlitegen.Column = "change_authors.device_id"
+)
+
+// Table change_deps.
+const (
+	ChangeDeps       sqlitegen.Table  = "change_deps"
+	ChangeDepsChild  sqlitegen.Column = "change_deps.child"
+	ChangeDepsParent sqlitegen.Column = "change_deps.parent"
 )
 
 // Table changes.
@@ -52,6 +59,25 @@ const (
 	ContentLinksTargetVersion    sqlitegen.Column = "content_links.target_version"
 )
 
+// Table datom_attrs.
+const (
+	DatomAttrs     sqlitegen.Table  = "datom_attrs"
+	DatomAttrsAttr sqlitegen.Column = "datom_attrs.attr"
+	DatomAttrsID   sqlitegen.Column = "datom_attrs.id"
+)
+
+// Table datoms.
+const (
+	Datoms          sqlitegen.Table  = "datoms"
+	DatomsAttr      sqlitegen.Column = "datoms.attr"
+	DatomsChange    sqlitegen.Column = "datoms.change"
+	DatomsEntity    sqlitegen.Column = "datoms.entity"
+	DatomsPermanode sqlitegen.Column = "datoms.permanode"
+	DatomsSeq       sqlitegen.Column = "datoms.seq"
+	DatomsValue     sqlitegen.Column = "datoms.value"
+	DatomsValueType sqlitegen.Column = "datoms.value_type"
+)
+
 // Table devices.
 const (
 	Devices           sqlitegen.Table  = "devices"
@@ -59,27 +85,6 @@ const (
 	DevicesID         sqlitegen.Column = "devices.id"
 	DevicesMultihash  sqlitegen.Column = "devices.multihash"
 	DevicesPublicKey  sqlitegen.Column = "devices.public_key"
-)
-
-// Table document_changes.
-const (
-	DocumentChanges           sqlitegen.Table  = "document_changes"
-	DocumentChangesChangeID   sqlitegen.Column = "document_changes.change_id"
-	DocumentChangesChangeTime sqlitegen.Column = "document_changes.change_time"
-	DocumentChangesID         sqlitegen.Column = "document_changes.id"
-	DocumentChangesSubtitle   sqlitegen.Column = "document_changes.subtitle"
-	DocumentChangesTitle      sqlitegen.Column = "document_changes.title"
-)
-
-// Table drafts.
-const (
-	Drafts           sqlitegen.Table  = "drafts"
-	DraftsContent    sqlitegen.Column = "drafts.content"
-	DraftsCreateTime sqlitegen.Column = "drafts.create_time"
-	DraftsID         sqlitegen.Column = "drafts.id"
-	DraftsSubtitle   sqlitegen.Column = "drafts.subtitle"
-	DraftsTitle      sqlitegen.Column = "drafts.title"
-	DraftsUpdateTime sqlitegen.Column = "drafts.update_time"
 )
 
 // Table global_meta.
@@ -136,6 +141,13 @@ const (
 	ProfilesEmail     sqlitegen.Column = "profiles.email"
 )
 
+// Table sqlite_sequence.
+const (
+	SqliteSequence     sqlitegen.Table  = "sqlite_sequence"
+	SqliteSequenceName sqlitegen.Column = "sqlite_sequence.name"
+	SqliteSequenceSeq  sqlitegen.Column = "sqlite_sequence.seq"
+)
+
 // Table wallets.
 const (
 	Wallets         sqlitegen.Table  = "wallets"
@@ -149,29 +161,20 @@ const (
 	WalletsType     sqlitegen.Column = "wallets.type"
 )
 
-// Table working_copy.
-const (
-	WorkingCopy           sqlitegen.Table  = "working_copy"
-	WorkingCopyCreateTime sqlitegen.Column = "working_copy.create_time"
-	WorkingCopyData       sqlitegen.Column = "working_copy.data"
-	WorkingCopyName       sqlitegen.Column = "working_copy.name"
-	WorkingCopyObjectID   sqlitegen.Column = "working_copy.object_id"
-	WorkingCopyUpdateTime sqlitegen.Column = "working_copy.update_time"
-	WorkingCopyVersion    sqlitegen.Column = "working_copy.version"
-)
-
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
 		AccountDevicesAccountID:      {Table: AccountDevices, SQLType: "INTEGER"},
 		AccountDevicesDeviceID:       {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountDevicesProof:          {Table: AccountDevices, SQLType: "BLOB"},
 		AccountsCreateTime:           {Table: Accounts, SQLType: "INTEGER"},
 		AccountsID:                   {Table: Accounts, SQLType: "INTEGER"},
 		AccountsMultihash:            {Table: Accounts, SQLType: "BLOB"},
 		AccountsPublicKey:            {Table: Accounts, SQLType: "BLOB"},
 		ChangeAuthorsAccountID:       {Table: ChangeAuthors, SQLType: "INTEGER"},
 		ChangeAuthorsChangeID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
+		ChangeAuthorsDeviceID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
+		ChangeDepsChild:              {Table: ChangeDeps, SQLType: "INTEGER"},
+		ChangeDepsParent:             {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangesCreateTime:            {Table: Changes, SQLType: "INTEGER"},
 		ChangesID:                    {Table: Changes, SQLType: "INTEGER"},
 		ChangesKind:                  {Table: Changes, SQLType: "TEXT"},
@@ -184,21 +187,19 @@ var Schema = sqlitegen.Schema{
 		ContentLinksTargetBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
 		ContentLinksTargetDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
 		ContentLinksTargetVersion:    {Table: ContentLinks, SQLType: "TEXT"},
+		DatomAttrsAttr:               {Table: DatomAttrs, SQLType: "TEXT"},
+		DatomAttrsID:                 {Table: DatomAttrs, SQLType: "INTEGER"},
+		DatomsAttr:                   {Table: Datoms, SQLType: "INTEGER"},
+		DatomsChange:                 {Table: Datoms, SQLType: "INTEGER"},
+		DatomsEntity:                 {Table: Datoms, SQLType: "BLOB"},
+		DatomsPermanode:              {Table: Datoms, SQLType: "INTEGER"},
+		DatomsSeq:                    {Table: Datoms, SQLType: "INTEGER"},
+		DatomsValue:                  {Table: Datoms, SQLType: "BLOB"},
+		DatomsValueType:              {Table: Datoms, SQLType: "INTEGER"},
 		DevicesCreateTime:            {Table: Devices, SQLType: "INTEGER"},
 		DevicesID:                    {Table: Devices, SQLType: "INTEGER"},
 		DevicesMultihash:             {Table: Devices, SQLType: "BLOB"},
 		DevicesPublicKey:             {Table: Devices, SQLType: "BLOB"},
-		DocumentChangesChangeID:      {Table: DocumentChanges, SQLType: "INTEGER"},
-		DocumentChangesChangeTime:    {Table: DocumentChanges, SQLType: "INTEGER"},
-		DocumentChangesID:            {Table: DocumentChanges, SQLType: "INTEGER"},
-		DocumentChangesSubtitle:      {Table: DocumentChanges, SQLType: "TEXT"},
-		DocumentChangesTitle:         {Table: DocumentChanges, SQLType: "TEXT"},
-		DraftsContent:                {Table: Drafts, SQLType: "BLOB"},
-		DraftsCreateTime:             {Table: Drafts, SQLType: "INTEGER"},
-		DraftsID:                     {Table: Drafts, SQLType: "INTEGER"},
-		DraftsSubtitle:               {Table: Drafts, SQLType: "TEXT"},
-		DraftsTitle:                  {Table: Drafts, SQLType: "TEXT"},
-		DraftsUpdateTime:             {Table: Drafts, SQLType: "INTEGER"},
 		GlobalMetaKey:                {Table: GlobalMeta, SQLType: "TEXT"},
 		GlobalMetaValue:              {Table: GlobalMeta, SQLType: "TEXT"},
 		IPFSBlocksCodec:              {Table: IPFSBlocks, SQLType: "INTEGER"},
@@ -223,6 +224,8 @@ var Schema = sqlitegen.Schema{
 		ProfilesBio:                  {Table: Profiles, SQLType: "TEXT"},
 		ProfilesChangeID:             {Table: Profiles, SQLType: "INTEGER"},
 		ProfilesEmail:                {Table: Profiles, SQLType: "TEXT"},
+		SqliteSequenceName:           {Table: SqliteSequence, SQLType: ""},
+		SqliteSequenceSeq:            {Table: SqliteSequence, SQLType: ""},
 		WalletsAddress:               {Table: Wallets, SQLType: "TEXT"},
 		WalletsBalance:               {Table: Wallets, SQLType: "INTEGER"},
 		WalletsID:                    {Table: Wallets, SQLType: "TEXT"},
@@ -231,11 +234,5 @@ var Schema = sqlitegen.Schema{
 		WalletsPassword:              {Table: Wallets, SQLType: "BLOB"},
 		WalletsToken:                 {Table: Wallets, SQLType: "BLOB"},
 		WalletsType:                  {Table: Wallets, SQLType: "TEXT"},
-		WorkingCopyCreateTime:        {Table: WorkingCopy, SQLType: "INTEGER"},
-		WorkingCopyData:              {Table: WorkingCopy, SQLType: "BLOB"},
-		WorkingCopyName:              {Table: WorkingCopy, SQLType: "TEXT"},
-		WorkingCopyObjectID:          {Table: WorkingCopy, SQLType: "INTEGER"},
-		WorkingCopyUpdateTime:        {Table: WorkingCopy, SQLType: "INTEGER"},
-		WorkingCopyVersion:           {Table: WorkingCopy, SQLType: "TEXT"},
 	},
 }

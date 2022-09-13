@@ -6,10 +6,17 @@ import (
 )
 
 func (n *rpcHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
-	refs, err := n.vcs.ListAllVersions(ctx)
+	conn, release, err := n.vcs.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer release()
+
+	if err := conn.BeginTx(false); err != nil {
+		return nil, err
+	}
+
+	refs := conn.ListAllVersions("main")
 
 	out := &p2p.ListObjectsResponse{
 		Objects: make([]*p2p.Object, 0, len(refs)),
@@ -30,6 +37,10 @@ func (n *rpcHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest
 		}
 
 		out.Objects = append(out.Objects, objpb)
+	}
+
+	if err := conn.Commit(); err != nil {
+		return nil, err
 	}
 
 	return out, nil

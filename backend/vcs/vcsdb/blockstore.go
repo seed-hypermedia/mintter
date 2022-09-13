@@ -1,4 +1,4 @@
-package vcs
+package vcsdb
 
 import (
 	"context"
@@ -12,18 +12,12 @@ import (
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/klauspost/compress/zstd"
-	"go.uber.org/zap"
 )
 
-var _ blockstore.Blockstore = (*blkStore)(nil)
+var _ blockstore.Blockstore = (*blockStore)(nil)
 
-// blkStore is an implementation of IPFS Blockstore.
-type blkStore struct {
-	// Log is set to no-op by default. Replace it if you want to see logs.
-	// Log is only used in the AllKeysChan method, because there's no way to bubble up
-	// the errors to the caller otherwise.
-	Log *zap.Logger
-
+// blockStore is an implementation of IPFS Blockstore.
+type blockStore struct {
 	db      *sqlitex.Pool
 	encoder *zstd.Encoder
 	decoder *zstd.Decoder
@@ -32,7 +26,7 @@ type blkStore struct {
 // newBlockstore creates a new block store from a given connection pool.
 // The corresponding table and columns must be created beforehand.
 // Use DefaultConfig() for default table and column names.
-func newBlockstore(db *sqlitex.Pool) *blkStore {
+func newBlockstore(db *sqlitex.Pool) *blockStore {
 	enc, err := zstd.NewWriter(nil)
 	if err != nil {
 		panic(err)
@@ -43,9 +37,7 @@ func newBlockstore(db *sqlitex.Pool) *blkStore {
 		panic(err)
 	}
 
-	return &blkStore{
-		Log: zap.NewNop(),
-
+	return &blockStore{
 		db:      db,
 		encoder: enc,
 		decoder: dec,
@@ -53,7 +45,7 @@ func newBlockstore(db *sqlitex.Pool) *blkStore {
 }
 
 // Has implements blockstore.Blockstore interface.
-func (b *blkStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
+func (b *blockStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return false, err
@@ -63,7 +55,7 @@ func (b *blkStore) Has(ctx context.Context, c cid.Cid) (bool, error) {
 	return b.has(conn, c)
 }
 
-func (b *blkStore) has(conn *sqlite.Conn, c cid.Cid) (bool, error) {
+func (b *blockStore) has(conn *sqlite.Conn, c cid.Cid) (bool, error) {
 	res, err := vcssql.IPFSBlocksHas(conn, c.Hash())
 	if err != nil {
 		return false, err
@@ -77,7 +69,7 @@ func (b *blkStore) has(conn *sqlite.Conn, c cid.Cid) (bool, error) {
 }
 
 // Get implements blockstore.Blockstore interface.
-func (b *blkStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+func (b *blockStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -87,7 +79,7 @@ func (b *blkStore) Get(ctx context.Context, c cid.Cid) (blocks.Block, error) {
 	return b.get(conn, c)
 }
 
-func (b *blkStore) get(conn *sqlite.Conn, c cid.Cid) (blocks.Block, error) {
+func (b *blockStore) get(conn *sqlite.Conn, c cid.Cid) (blocks.Block, error) {
 	res, err := vcssql.IPFSBlocksGet(conn, c.Hash())
 	if err != nil {
 		return nil, err
@@ -111,7 +103,7 @@ func (b *blkStore) get(conn *sqlite.Conn, c cid.Cid) (blocks.Block, error) {
 }
 
 // GetSize implements blockstore.Blockstore interface.
-func (b *blkStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
+func (b *blockStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return 0, err
@@ -121,7 +113,7 @@ func (b *blkStore) GetSize(ctx context.Context, c cid.Cid) (int, error) {
 	return b.getSize(conn, c)
 }
 
-func (b *blkStore) getSize(conn *sqlite.Conn, c cid.Cid) (int, error) {
+func (b *blockStore) getSize(conn *sqlite.Conn, c cid.Cid) (int, error) {
 	res, err := vcssql.IPFSBlocksGetSize(conn, c.Hash())
 	if err != nil {
 		return 0, err
@@ -135,17 +127,17 @@ func (b *blkStore) getSize(conn *sqlite.Conn, c cid.Cid) (int, error) {
 }
 
 // Put implements blockstore.Blockstore interface.
-func (b *blkStore) Put(ctx context.Context, block blocks.Block) error {
+func (b *blockStore) Put(ctx context.Context, block blocks.Block) error {
 	return b.withConn(ctx, func(conn *sqlite.Conn) error {
-		return b.putBlock(conn, block)
+		return b.putBlock(conn, block.Cid(), block.RawData())
 	})
 }
 
 // PutMany implements blockstore.Blockstore interface.
-func (b *blkStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
+func (b *blockStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
 	return b.withConn(ctx, func(conn *sqlite.Conn) error {
 		for _, blk := range blocks {
-			if err := b.putBlock(conn, blk); err != nil {
+			if err := b.putBlock(conn, blk.Cid(), blk.RawData()); err != nil {
 				return err
 			}
 		}
@@ -153,22 +145,23 @@ func (b *blkStore) PutMany(ctx context.Context, blocks []blocks.Block) error {
 	})
 }
 
-func (b *blkStore) putBlock(conn *sqlite.Conn, block blocks.Block) error {
-	var (
-		cid   = block.Cid()
-		codec = block.Cid().Prefix().Codec
-		data  = block.RawData()
-	)
-
+func (b *blockStore) putBlockWithID(conn *sqlite.Conn, id LocalID, c cid.Cid, data []byte) error {
 	out := make([]byte, 0, len(data))
 	out = b.encoder.EncodeAll(data, out)
 
-	_, err := vcssql.IPFSBlocksUpsert(conn, cid.Hash(), int(codec), out, len(data), 0)
+	return vcssql.IPFSBlocksInsert(conn, int(id), c.Hash(), int(c.Prefix().Codec), out, len(data), 0)
+}
+
+func (b *blockStore) putBlock(conn *sqlite.Conn, c cid.Cid, data []byte) error {
+	out := make([]byte, 0, len(data))
+	out = b.encoder.EncodeAll(data, out)
+
+	_, err := vcssql.IPFSBlocksUpsert(conn, c.Hash(), int(c.Prefix().Codec), out, len(data), 0)
 	return err
 }
 
 // DeleteBlock implements blockstore.Blockstore interface.
-func (b *blkStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
+func (b *blockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return err
@@ -178,12 +171,12 @@ func (b *blkStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
 	return b.deleteBlock(conn, c)
 }
 
-func (b *blkStore) deleteBlock(conn *sqlite.Conn, c cid.Cid) error {
+func (b *blockStore) deleteBlock(conn *sqlite.Conn, c cid.Cid) error {
 	return vcssql.IPFSBlocksDelete(conn, c.Hash())
 }
 
 // AllKeysChan implements. blockstore.Blockstore interface.
-func (b *blkStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
+func (b *blockStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
 	c := make(chan cid.Cid, 10) // The buffer is arbitrary.
 
 	conn, release, err := b.db.Conn(ctx)
@@ -215,17 +208,11 @@ func (b *blkStore) AllKeysChan(ctx context.Context) (<-chan cid.Cid, error) {
 }
 
 // HashOnRead satisfies blockstore.Blockstore interface, but is not actually implemented.
-func (b *blkStore) HashOnRead(bool) {
+func (b *blockStore) HashOnRead(bool) {
 	panic("hash on read is not implemented for sqlite blockstore")
 }
 
-func (b *blkStore) exec(ctx context.Context, query string, fn func(*sqlite.Stmt) error, args ...interface{}) error {
-	return b.withConn(ctx, func(conn *sqlite.Conn) error {
-		return sqlitex.Exec(conn, query, fn, args...)
-	})
-}
-
-func (b *blkStore) withConn(ctx context.Context, fn func(*sqlite.Conn) error) error {
+func (b *blockStore) withConn(ctx context.Context, fn func(*sqlite.Conn) error) error {
 	conn, release, err := b.db.Conn(ctx)
 	if err != nil {
 		return err

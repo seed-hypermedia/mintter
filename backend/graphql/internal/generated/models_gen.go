@@ -9,6 +9,14 @@ import (
 // Common interface for Lightning wallets. We support different types.
 type LightningWallet interface {
 	IsLightningWallet()
+	// Globally unique ID of the wallet. Public key.
+	GetID() string
+	// Local-only name of the wallet. For user's convenience.
+	GetName() string
+	// Balance in Satoshis.
+	GetBalanceSats() model.Satoshis
+	// If this wallet is the default wallet to send/receive automatic payments
+	GetIsDefault() bool
 }
 
 // Input to delete a wallet.
@@ -85,6 +93,18 @@ type LndHubWallet struct {
 }
 
 func (LndHubWallet) IsLightningWallet() {}
+
+// Globally unique ID of the wallet. Public key.
+func (this LndHubWallet) GetID() string { return this.ID }
+
+// Local-only name of the wallet. For user's convenience.
+func (this LndHubWallet) GetName() string { return this.Name }
+
+// Balance in Satoshis.
+func (this LndHubWallet) GetBalanceSats() model.Satoshis { return this.BalanceSats }
+
+// If this wallet is the default wallet to send/receive automatic payments
+func (this LndHubWallet) GetIsDefault() bool { return this.IsDefault }
 
 // Information about the current user.
 type Me struct {

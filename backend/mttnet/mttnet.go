@@ -12,8 +12,8 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
-	"mintter/backend/vcs/vcstypes"
 	"strconv"
 	"sync"
 
@@ -55,18 +55,18 @@ func DefaultRelays() []peer.AddrInfo {
 	return []peer.AddrInfo{
 		// Mintter test server
 		{
-			ID: must.Two(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
+			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
 			Addrs: []multiaddr.Multiaddr{
-				must.Two(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
-				must.Two(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
 			},
 		},
 		// Mintter prod server
 		{
-			ID: must.Two(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
+			ID: must.Do2(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
 			Addrs: []multiaddr.Multiaddr{
-				must.Two(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
-				must.Two(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
+				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
 			},
 		},
 	}
@@ -75,8 +75,7 @@ func DefaultRelays() []peer.AddrInfo {
 // Node is a Mintter P2P node.
 type Node struct {
 	log             *zap.Logger
-	vcs             *vcs.SQLite
-	repo            *vcstypes.Repo
+	vcs             *vcsdb.DB
 	me              core.Identity
 	cfg             config.P2P
 	accountObjectID vcs.ObjectID
@@ -99,7 +98,7 @@ type Node struct {
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, vcs *vcsdb.DB, accountObj vcs.ObjectID, me core.Identity, log *zap.Logger) (*Node, error) {
 	var clean cleanup.Stack
 
 	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped())
@@ -120,7 +119,6 @@ func New(cfg config.P2P, vcs *vcs.SQLite, accountObj vcs.ObjectID, me core.Ident
 	n := &Node{
 		log:             log,
 		vcs:             vcs,
-		repo:            vcstypes.NewRepo(me, vcs),
 		me:              me,
 		cfg:             cfg,
 		accountObjectID: accountObj,
@@ -152,15 +150,8 @@ func (n *Node) SetInvoicer(inv Invoicer) {
 // VCS returns the underlying VCS. Should not be here at all, but used in tests of other packages.
 //
 // TODO(burdiyan): get rid of this.
-func (n *Node) VCS() *vcs.SQLite {
+func (n *Node) VCS() *vcsdb.DB {
 	return n.vcs
-}
-
-// Repo returns the underlying vcstypes repo. Should not be here at all, but needed for testing sync.
-//
-// TODO(burdiyan): get rid of this.
-func (n *Node) Repo() *vcstypes.Repo {
-	return n.repo
 }
 
 // ID returns the node's identity.
@@ -269,8 +260,8 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	port := strconv.Itoa(n.cfg.Port)
 
 	addrs := []multiaddr.Multiaddr{
-		must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/" + port)),
-		must.Two(multiaddr.NewMultiaddr("/ip6/::/tcp/" + port)),
+		must.Do2(multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/" + port)),
+		must.Do2(multiaddr.NewMultiaddr("/ip6/::/tcp/" + port)),
 		// TODO(burdiyan): uncomment this when quic is known to work. Find other places for `quic-support`.
 		// must.Two(multiaddr.NewMultiaddr("/ip4/0.0.0.0/udp/" + port + "/quic")),
 		// must.Two(multiaddr.NewMultiaddr("/ip6/::/udp/" + port + "/quic")),
@@ -312,7 +303,7 @@ type rpcHandler struct {
 func AddrInfoToStrings(info peer.AddrInfo) []string {
 	var addrs []string
 	for _, a := range info.Addrs {
-		addrs = append(addrs, a.Encapsulate(must.Two(multiaddr.NewComponent("p2p", info.ID.String()))).String())
+		addrs = append(addrs, a.Encapsulate(must.Do2(multiaddr.NewComponent("p2p", info.ID.String()))).String())
 	}
 
 	return addrs

@@ -144,10 +144,6 @@ type Version struct {
 }
 
 func NewVersion(totalCount uint64, cc ...cid.Cid) Version {
-	if len(cc) > 0 && totalCount == 0 {
-		panic("BUG: invalid version")
-	}
-
 	// TODO: sort and maybe copy the slice?
 
 	return Version{

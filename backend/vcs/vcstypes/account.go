@@ -1,11 +1,9 @@
 package vcstypes
 
 import (
-	"context"
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcssql"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -253,84 +251,4 @@ type AccountEvent struct {
 	BioChanged       string             `refmt:"bioChanged,omitempty"`
 	EmailChanged     string             `refmt:"emailChanged,omitempty"`
 	DeviceRegistered DeviceRegistration `refmt:"deviceRegistered,omitempty"`
-}
-
-// Register account with the device and return the created account object ID.
-func Register(ctx context.Context, account, device core.KeyPair, v *vcs.SQLite) (cid.Cid, error) {
-	aid := account.CID()
-
-	ap := NewAccountPermanode(aid)
-
-	blk, err := vcs.EncodeBlock[vcs.Permanode](ap)
-	if err != nil {
-		return cid.Undef, err
-	}
-
-	if err := v.StorePermanode(ctx, blk.Block, blk.Value); err != nil {
-		return cid.Undef, err
-	}
-
-	accmodel := NewAccount(blk.Cid(), aid)
-
-	if err := accmodel.RegisterDevice(device.PublicKey, account); err != nil {
-		return cid.Undef, err
-	}
-
-	id := core.NewIdentity(account.PublicKey, device)
-
-	evts := accmodel.Events()
-	if len(evts) <= 0 {
-		panic("BUG: no events after account register")
-	}
-
-	proof := evts[0].DeviceRegistered.Proof
-	if proof == nil {
-		panic("BUG: nil registration proof")
-	}
-
-	data, err := cbornode.DumpObject(evts)
-	if err != nil {
-		return cid.Undef, fmt.Errorf("failed to encode account events: %w", err)
-	}
-
-	recorded, err := v.RecordChange(ctx, blk.Cid(), id, vcs.Version{}, "mintter.Account", data)
-	if err != nil {
-		return cid.Undef, err
-	}
-
-	ver := vcs.NewVersion(recorded.LamportTime, recorded.ID)
-
-	if err := v.StoreNamedVersion(ctx, blk.Cid(), id, "main", ver); err != nil {
-		return cid.Undef, fmt.Errorf("failed to store named version for account: %w", err)
-	}
-
-	conn, release, err := v.DB().Conn(ctx)
-	if err != nil {
-		return cid.Undef, err
-	}
-	defer release()
-
-	dhash := device.CID().Hash()
-	devicedb, err := vcssql.DevicesLookupPK(conn, dhash)
-	if err != nil {
-		return cid.Undef, err
-	}
-	if devicedb.DevicesID == 0 {
-		return cid.Undef, fmt.Errorf("no device in the database")
-	}
-
-	ahash := account.CID().Hash()
-	accdb, err := vcssql.AccountsLookupPK(conn, ahash)
-	if err != nil {
-		return cid.Undef, err
-	}
-	if accdb.AccountsID == 0 {
-		return cid.Undef, fmt.Errorf("no account in the database")
-	}
-
-	if err := vcssql.AccountDevicesInsertOrIgnore(conn, accdb.AccountsID, devicedb.DevicesID, proof); err != nil {
-		return cid.Undef, err
-	}
-
-	return blk.Cid(), nil
 }

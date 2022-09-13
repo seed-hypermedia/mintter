@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// ListCitations implements the corresponding gRPC method.
 func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitationsRequest) (*documents.ListCitationsResponse, error) {
 	c, err := cid.Decode(in.DocumentId)
 	if err != nil {

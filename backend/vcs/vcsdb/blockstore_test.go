@@ -1,10 +1,12 @@
-package vcs
+package vcsdb
 
 import (
 	"context"
 	"fmt"
+	"mintter/backend/db/sqliteschema"
 	"testing"
 
+	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	format "github.com/ipfs/go-ipld-format"
@@ -226,7 +228,7 @@ func TestDelete(t *testing.T) {
 	require.False(t, has)
 }
 
-func makeBlockstore(t testing.TB) *blkStore {
+func makeBlockstore(t testing.TB) *blockStore {
 	t.Helper()
 
 	pool := newTestSQLite(t)
@@ -245,7 +247,7 @@ func makeCID(t *testing.T, data []byte) cid.Cid {
 	return cid.NewCidV1(cid.Raw, mh)
 }
 
-func insertBlocks(t *testing.T, bs *blkStore, count int) []cid.Cid {
+func insertBlocks(t *testing.T, bs *blockStore, count int) []cid.Cid {
 	keys := make([]cid.Cid, count)
 	for i := 0; i < count; i++ {
 		data := []byte(fmt.Sprintf("some data %d", i))
@@ -265,4 +267,8 @@ func collect(ch <-chan cid.Cid) []cid.Cid {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+func newTestSQLite(t testing.TB) *sqlitex.Pool {
+	return sqliteschema.MakeTestDB(t)
 }
