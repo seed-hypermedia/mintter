@@ -685,6 +685,43 @@ WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
 	return out, err
 }
 
+type IPFSBlocksLookupCIDResult struct {
+	IPFSBlocksID        int
+	IPFSBlocksCodec     int
+	IPFSBlocksMultihash []byte
+}
+
+func IPFSBlocksLookupCID(conn *sqlite.Conn, ipfsBlocksID int) (IPFSBlocksLookupCIDResult, error) {
+	const query = `SELECT ipfs_blocks.id, ipfs_blocks.codec, ipfs_blocks.multihash
+FROM ipfs_blocks
+WHERE ipfs_blocks.id = :ipfsBlocksID
+`
+
+	var out IPFSBlocksLookupCIDResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":ipfsBlocksID", ipfsBlocksID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksLookupCID: more than one result return for a single-kind query")
+		}
+
+		out.IPFSBlocksID = stmt.ColumnInt(0)
+		out.IPFSBlocksCodec = stmt.ColumnInt(1)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(2)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksLookupCID: %w", err)
+	}
+
+	return out, err
+}
+
 func IPFSBlocksInsert(conn *sqlite.Conn, ipfsBlocksID int, ipfsBlocksMultihash []byte, ipfsBlocksCodec int, ipfsBlocksData []byte, ipfsBlocksSize int, ipfsBlocksPending int) error {
 	const query = `INSERT INTO ipfs_blocks (id, multihash, codec, data, size, pending)
 VALUES (:ipfsBlocksID, :ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, :ipfsBlocksSize, :ipfsBlocksPending)`

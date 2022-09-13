@@ -278,6 +278,15 @@ var (
 			"FROM", s.IPFSBlocks, '\n',
 			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash), '\n',
 		),
+		qb.MakeQuery(s.Schema, "IPFSBlocksLookupCID", sgen.QueryKindSingle,
+			"SELECT", qb.Results(
+				s.IPFSBlocksID,
+				s.IPFSBlocksCodec,
+				s.IPFSBlocksMultihash,
+			), '\n',
+			"FROM", s.IPFSBlocks, '\n',
+			"WHERE", s.IPFSBlocksID, "=", qb.VarCol(s.IPFSBlocksID), '\n',
+		),
 		qb.MakeQuery(s.Schema, "IPFSBlocksInsert", sgen.QueryKindExec,
 			"INSERT INTO", s.IPFSBlocks, qb.ListColShort(
 				s.IPFSBlocksID,

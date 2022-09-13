@@ -23,9 +23,7 @@ import (
 
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db *sqlitex.Pool
-	// TODO: take it as a dependency.
-	index *vcstypes.Index
+	db    *sqlitex.Pool
 	vcsdb *vcsdb.DB
 	me    *future.ReadOnly[core.Identity]
 }
@@ -34,7 +32,6 @@ type Server struct {
 func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool) *Server {
 	srv := &Server{
 		db:    db,
-		index: vcstypes.NewIndex(db),
 		vcsdb: vcsdb.New(db),
 		me:    me,
 	}
@@ -245,39 +242,32 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 	if err := conn.WithTx(false, func() error {
 		meLocal := conn.EnsureIdentity(me)
 		obj := conn.LookupPermanode(oid)
-
 		version := conn.GetVersion(obj, "draft", meLocal)
 		if len(version) != 1 {
 			return fmt.Errorf("draft version must have only 1 leaf change, got: %d", len(version))
 		}
 
-		change := version[0]
-		seq := conn.NextChangeSeq(obj, change)
-		if seq != 0 {
-			seq-- // datom factory increments seq before creating datom
-		}
-		lamport := conn.GetChangeLamportTime(change)
-
-		doc := mttdoc.New(vcsdb.MakeDatomFactory(change, lamport, seq))
-		if err := doc.Replay(conn.LoadObjectDatoms(obj, version)); err != nil {
-			return err
-		}
-
-		objctime := conn.GetPermanodeCreateTime(obj)
-		changectime := conn.GetChangeCreateTime(change)
-
-		pb, err := mttdocToProto(in.DocumentId, me.AccountID().String(), objctime, changectime, doc)
-		if err != nil {
-			return err
-		}
-		docpb = pb
-
-		return nil
+		docpb, err = api.getDocument(conn, obj, version)
+		return err
 	}); err != nil {
 		return nil, err
 	}
 
 	return docpb, nil
+}
+
+func (api *Server) getDocument(conn *vcsdb.Conn, obj vcsdb.LocalID, version vcsdb.LocalVersion) (*documents.Document, error) {
+	doc := mttdoc.New(nil)
+	datoms := conn.LoadObjectDatoms(obj, version)
+	objctime := conn.GetPermanodeCreateTime(obj)
+	changectime := conn.GetChangeCreateTime(datoms[len(datoms)-1].Change)
+	did := conn.GetObjectCID(obj)
+	author := conn.GetObjectOwner(obj)
+	if err := doc.Replay(datoms); err != nil {
+		return nil, err
+	}
+
+	return mttdocToProto(did.String(), author.String(), objctime, changectime, doc)
 }
 
 // ListDrafts implements the corresponding gRPC method.
@@ -427,30 +417,15 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	if err := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
 		meLocal := conn.EnsureIdentity(me)
-
 		version := conn.GetVersion(obj, "main", meLocal)
 		if len(version) != 1 {
 			return fmt.Errorf("TODO(burdiyan): implement publication versions with more than one change")
 		}
-
-		datoms := conn.LoadObjectDatoms(obj, version)
-
-		doc := mttdoc.New(vcsdb.MakeDatomFactory(-1, -1, 0))
-		if err := doc.Replay(datoms); err != nil {
-			return err
-		}
-
-		objctime := conn.GetPermanodeCreateTime(obj)
-
-		// TODO(burdiyan): when we have more than one change in the version, we need to thing what to use
-		// as update time for the publication.
-		changectime := conn.GetChangeCreateTime(version[0])
-
-		pb, err := mttdocToProto(in.DocumentId, me.AccountID().String(), objctime, changectime, doc)
+		out.Document, err = api.getDocument(conn, obj, version)
 		if err != nil {
 			return err
 		}
-		out.Document = pb
+
 		out.Version = conn.LocalVersionToPublic(version).String()
 		return nil
 	}); err != nil {

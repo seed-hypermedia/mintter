@@ -16,6 +16,7 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
@@ -1176,6 +1177,10 @@ func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
 		return nil
 	})
 
+	sort.Slice(cids, func(i, j int) bool {
+		return cids[i].String() < cids[j].String()
+	})
+
 	return vcs.NewVersion(uint64(len(cids)), cids...)
 }
 
@@ -1298,6 +1303,21 @@ func (conn *Conn) ListObjectsByType(otype vcs.ObjectType) (out []LocalID) {
 	})
 
 	return out
+}
+
+// GetObjectCID returns the CID of a Mintter Object given its local ID.
+func (conn *Conn) GetObjectCID(obj LocalID) (c cid.Cid) {
+	must.Maybe(&conn.err, func() error {
+		res, err := vcssql.IPFSBlocksLookupCID(conn.conn, int(obj))
+		if err != nil {
+			return err
+		}
+
+		c = cid.NewCidV1(uint64(res.IPFSBlocksCodec), res.IPFSBlocksMultihash)
+		return nil
+	})
+
+	return c
 }
 
 func (conn *Conn) lookupAccount(c cid.Cid) LocalID {
