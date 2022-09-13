@@ -12,94 +12,6 @@ import (
 
 var _ = errors.New
 
-func WorkingCopyReplace(conn *sqlite.Conn, workingCopyObjectID int, workingCopyName string, workingCopyVersion string, workingCopyData []byte, workingCopyCreateTime int, workingCopyUpdateTime int) error {
-	const query = `INSERT OR REPLACE INTO working_copy (object_id, name, version, data, create_time, update_time)
-VALUES (:workingCopyObjectID, :workingCopyName, :workingCopyVersion, :workingCopyData, :workingCopyCreateTime, :workingCopyUpdateTime)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":workingCopyObjectID", workingCopyObjectID)
-		stmt.SetText(":workingCopyName", workingCopyName)
-		stmt.SetText(":workingCopyVersion", workingCopyVersion)
-		stmt.SetBytes(":workingCopyData", workingCopyData)
-		stmt.SetInt(":workingCopyCreateTime", workingCopyCreateTime)
-		stmt.SetInt(":workingCopyUpdateTime", workingCopyUpdateTime)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: WorkingCopyReplace: %w", err)
-	}
-
-	return err
-}
-
-type WorkingCopyGetResult struct {
-	WorkingCopyData       []byte
-	WorkingCopyCreateTime int
-	WorkingCopyUpdateTime int
-	WorkingCopyVersion    string
-}
-
-func WorkingCopyGet(conn *sqlite.Conn, workingCopyObjectID int, workingCopyName string) (WorkingCopyGetResult, error) {
-	const query = `SELECT working_copy.data, working_copy.create_time, working_copy.update_time, working_copy.version
-FROM working_copy
-WHERE working_copy.object_id = :workingCopyObjectID
-AND working_copy.name = :workingCopyName
-LIMIT 1`
-
-	var out WorkingCopyGetResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":workingCopyObjectID", workingCopyObjectID)
-		stmt.SetText(":workingCopyName", workingCopyName)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("WorkingCopyGet: more than one result return for a single-kind query")
-		}
-
-		out.WorkingCopyData = stmt.ColumnBytes(0)
-		out.WorkingCopyCreateTime = stmt.ColumnInt(1)
-		out.WorkingCopyUpdateTime = stmt.ColumnInt(2)
-		out.WorkingCopyVersion = stmt.ColumnText(3)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: WorkingCopyGet: %w", err)
-	}
-
-	return out, err
-}
-
-func WorkingCopyDelete(conn *sqlite.Conn, workingCopyObjectID int, workingCopyName string) error {
-	const query = `DELETE FROM working_copy
-WHERE working_copy.object_id = :workingCopyObjectID
-AND working_copy.name = :workingCopyName`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":workingCopyObjectID", workingCopyObjectID)
-		stmt.SetText(":workingCopyName", workingCopyName)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: WorkingCopyDelete: %w", err)
-	}
-
-	return err
-}
-
 type AccountsLookupPKResult struct {
 	AccountsID int
 }
@@ -293,67 +205,6 @@ FROM profiles
 	return out, err
 }
 
-func DocumentsIndex(conn *sqlite.Conn, documentChangesID int, documentChangesTitle string, documentChangesSubtitle string, documentChangesChangeID int, documentChangesChangeTime int) error {
-	const query = `INSERT OR IGNORE INTO document_changes (id, title, subtitle, change_id, change_time)
-VALUES (:documentChangesID, :documentChangesTitle, :documentChangesSubtitle, :documentChangesChangeID, :documentChangesChangeTime)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":documentChangesID", documentChangesID)
-		stmt.SetText(":documentChangesTitle", documentChangesTitle)
-		stmt.SetText(":documentChangesSubtitle", documentChangesSubtitle)
-		stmt.SetInt(":documentChangesChangeID", documentChangesChangeID)
-		stmt.SetInt(":documentChangesChangeTime", documentChangesChangeTime)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: DocumentsIndex: %w", err)
-	}
-
-	return err
-}
-
-type DocumentsListIndexedResult struct {
-	DocumentChangesID         int
-	DocumentChangesTitle      string
-	DocumentChangesSubtitle   string
-	DocumentChangesChangeID   int
-	DocumentChangesChangeTime int
-}
-
-func DocumentsListIndexed(conn *sqlite.Conn) ([]DocumentsListIndexedResult, error) {
-	const query = `SELECT document_changes.id, document_changes.title, document_changes.subtitle, document_changes.change_id, document_changes.change_time
-FROM document_changes`
-
-	var out []DocumentsListIndexedResult
-
-	before := func(stmt *sqlite.Stmt) {
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, DocumentsListIndexedResult{
-			DocumentChangesID:         stmt.ColumnInt(0),
-			DocumentChangesTitle:      stmt.ColumnText(1),
-			DocumentChangesSubtitle:   stmt.ColumnText(2),
-			DocumentChangesChangeID:   stmt.ColumnInt(3),
-			DocumentChangesChangeTime: stmt.ColumnInt(4),
-		})
-
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: DocumentsListIndexed: %w", err)
-	}
-
-	return out, err
-}
-
 func ContentLinksInsert(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string, contentLinksSourceChangeID int, contentLinksSourceVersion string, contentLinksTargetDocumentID int, contentLinksTargetBlockID string, contentLinksTargetVersion string) error {
 	const query = `INSERT OR IGNORE INTO content_links (source_document_id, source_block_id, source_change_id, source_version, target_document_id, target_block_id, target_version)
 VALUES (:contentLinksSourceDocumentID, :contentLinksSourceBlockID, :contentLinksSourceChangeID, :contentLinksSourceVersion, :contentLinksTargetDocumentID, :contentLinksTargetBlockID, :contentLinksTargetVersion)`
@@ -420,14 +271,16 @@ func BacklinksListByTargetDocument(conn *sqlite.Conn, targetDocumentID int, dept
 	return out, err
 }
 
-func ContentLinksDelete(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string) error {
+func ContentLinksDelete(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string, contentLinksSourceChangeID int) error {
 	const query = `DELETE FROM content_links
 WHERE content_links.source_document_id = :contentLinksSourceDocumentID
-AND content_links.source_block_id = :contentLinksSourceBlockID`
+AND content_links.source_block_id = :contentLinksSourceBlockID
+AND content_links.source_change_id = :contentLinksSourceChangeID`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":contentLinksSourceDocumentID", contentLinksSourceDocumentID)
 		stmt.SetText(":contentLinksSourceBlockID", contentLinksSourceBlockID)
+		stmt.SetInt(":contentLinksSourceChangeID", contentLinksSourceChangeID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -505,13 +358,12 @@ VALUES (:devicesMultihash) RETURNING devices.id`
 	return out, err
 }
 
-func AccountDevicesInsertOrIgnore(conn *sqlite.Conn, accountDevicesAccountID int, accountDevicesDeviceID int, accountDevicesProof []byte) error {
-	const query = `INSERT OR IGNORE INTO account_devices (account_id, device_id, proof) VALUES (:accountDevicesAccountID, :accountDevicesDeviceID, :accountDevicesProof)`
+func AccountDevicesInsertOrIgnore(conn *sqlite.Conn, accountDevicesAccountID int, accountDevicesDeviceID int) error {
+	const query = `INSERT OR IGNORE INTO account_devices (account_id, device_id) VALUES (:accountDevicesAccountID, :accountDevicesDeviceID)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":accountDevicesAccountID", accountDevicesAccountID)
 		stmt.SetInt(":accountDevicesDeviceID", accountDevicesDeviceID)
-		stmt.SetBytes(":accountDevicesProof", accountDevicesProof)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -592,37 +444,30 @@ JOIN devices ON devices.id = account_devices.device_id`
 	return out, err
 }
 
-type AccountDevicesGetProofResult struct {
-	AccountDevicesProof []byte
-}
-
-func AccountDevicesGetProof(conn *sqlite.Conn, accountsMultihash []byte, devicesMultihash []byte) (AccountDevicesGetProofResult, error) {
-	const query = `SELECT account_devices.proof
-FROM account_devices
-WHERE account_devices.account_id = COALESCE((SELECT accounts.id FROM accounts WHERE accounts.multihash = :accountsMultihash LIMIT 1), -1000) AND account_devices.device_id = COALESCE((SELECT devices.id FROM devices WHERE devices.multihash = :devicesMultihash LIMIT 1), -1000)`
-
-	var out AccountDevicesGetProofResult
+func NamedVersionsDelete(conn *sqlite.Conn, namedVersionsObjectID int, namedVersionsAccountID int, namedVersionsDeviceID int, namedVersionsName string) error {
+	const query = `DELETE FROM named_versions
+WHERE named_versions.object_id = :namedVersionsObjectID
+AND named_versions.account_id = :namedVersionsAccountID
+AND named_versions.device_id = :namedVersionsDeviceID
+AND named_versions.name = :namedVersionsName`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":accountsMultihash", accountsMultihash)
-		stmt.SetBytes(":devicesMultihash", devicesMultihash)
+		stmt.SetInt(":namedVersionsObjectID", namedVersionsObjectID)
+		stmt.SetInt(":namedVersionsAccountID", namedVersionsAccountID)
+		stmt.SetInt(":namedVersionsDeviceID", namedVersionsDeviceID)
+		stmt.SetText(":namedVersionsName", namedVersionsName)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("AccountDevicesGetProof: more than one result return for a single-kind query")
-		}
-
-		out.AccountDevicesProof = stmt.ColumnBytes(0)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: AccountDevicesGetProof: %w", err)
+		err = fmt.Errorf("failed query: NamedVersionsDelete: %w", err)
 	}
 
-	return out, err
+	return err
 }
 
 func NamedVersionsReplace(conn *sqlite.Conn, namedVersionsObjectID int, namedVersionsAccountID int, namedVersionsDeviceID int, namedVersionsName string, namedVersionsVersion string) error {
@@ -736,12 +581,13 @@ type NamedVersionsListAllResult struct {
 	AccountsMultihash    []byte
 	DevicesMultihash     []byte
 	NamedVersionsVersion string
+	NamedVersionsName    string
 	PermanodeCodec       int
 	PermanodeMultihash   []byte
 }
 
 func NamedVersionsListAll(conn *sqlite.Conn) ([]NamedVersionsListAllResult, error) {
-	const query = `SELECT accounts.multihash, devices.multihash, named_versions.version, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash
+	const query = `SELECT accounts.multihash, devices.multihash, named_versions.version, named_versions.name, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash
 FROM named_versions
 INNER JOIN devices ON devices.id = named_versions.device_id
 INNER JOIN accounts ON accounts.id = named_versions.account_id
@@ -758,8 +604,9 @@ INNER JOIN ipfs_blocks ON ipfs_blocks.id = named_versions.object_id
 			AccountsMultihash:    stmt.ColumnBytes(0),
 			DevicesMultihash:     stmt.ColumnBytes(1),
 			NamedVersionsVersion: stmt.ColumnText(2),
-			PermanodeCodec:       stmt.ColumnInt(3),
-			PermanodeMultihash:   stmt.ColumnBytes(4),
+			NamedVersionsName:    stmt.ColumnText(3),
+			PermanodeCodec:       stmt.ColumnInt(4),
+			PermanodeMultihash:   stmt.ColumnBytes(5),
 		})
 
 		return nil
@@ -804,6 +651,68 @@ WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
 	}
 
 	return out, err
+}
+
+type IPFSBlocksLookupCIDResult struct {
+	IPFSBlocksID        int
+	IPFSBlocksCodec     int
+	IPFSBlocksMultihash []byte
+}
+
+func IPFSBlocksLookupCID(conn *sqlite.Conn, ipfsBlocksID int) (IPFSBlocksLookupCIDResult, error) {
+	const query = `SELECT ipfs_blocks.id, ipfs_blocks.codec, ipfs_blocks.multihash
+FROM ipfs_blocks
+WHERE ipfs_blocks.id = :ipfsBlocksID
+`
+
+	var out IPFSBlocksLookupCIDResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":ipfsBlocksID", ipfsBlocksID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksLookupCID: more than one result return for a single-kind query")
+		}
+
+		out.IPFSBlocksID = stmt.ColumnInt(0)
+		out.IPFSBlocksCodec = stmt.ColumnInt(1)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(2)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksLookupCID: %w", err)
+	}
+
+	return out, err
+}
+
+func IPFSBlocksInsert(conn *sqlite.Conn, ipfsBlocksID int, ipfsBlocksMultihash []byte, ipfsBlocksCodec int, ipfsBlocksData []byte, ipfsBlocksSize int, ipfsBlocksPending int) error {
+	const query = `INSERT INTO ipfs_blocks (id, multihash, codec, data, size, pending)
+VALUES (:ipfsBlocksID, :ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, :ipfsBlocksSize, :ipfsBlocksPending)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":ipfsBlocksID", ipfsBlocksID)
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+		stmt.SetInt(":ipfsBlocksCodec", ipfsBlocksCodec)
+		stmt.SetBytes(":ipfsBlocksData", ipfsBlocksData)
+		stmt.SetInt(":ipfsBlocksSize", ipfsBlocksSize)
+		stmt.SetInt(":ipfsBlocksPending", ipfsBlocksPending)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksInsert: %w", err)
+	}
+
+	return err
 }
 
 type IPFSBlocksUpsertResult struct {
@@ -1006,16 +915,12 @@ WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash`
 	return err
 }
 
-func DraftsInsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, draftsTitle string, draftsSubtitle string, draftsCreateTime int, draftsUpdateTime int) error {
-	const query = `INSERT INTO drafts (id, title, subtitle, create_time, update_time)
-VALUES (COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000), :draftsTitle, :draftsSubtitle, :draftsCreateTime, :draftsUpdateTime)`
+func IPFSBlocksDeleteByID(conn *sqlite.Conn, ipfsBlocksID int) error {
+	const query = `DELETE FROM ipfs_blocks
+WHERE ipfs_blocks.id = :ipfsBlocksID`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
-		stmt.SetText(":draftsTitle", draftsTitle)
-		stmt.SetText(":draftsSubtitle", draftsSubtitle)
-		stmt.SetInt(":draftsCreateTime", draftsCreateTime)
-		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
+		stmt.SetInt(":ipfsBlocksID", ipfsBlocksID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1024,95 +929,45 @@ VALUES (COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multi
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: DraftsInsert: %w", err)
+		err = fmt.Errorf("failed query: IPFSBlocksDeleteByID: %w", err)
 	}
 
 	return err
 }
 
-func DraftsUpdate(conn *sqlite.Conn, draftsTitle string, draftsSubtitle string, draftsUpdateTime int, ipfsBlocksMultihash []byte) error {
-	const query = `UPDATE drafts
-SET (title, subtitle, update_time) = (:draftsTitle, :draftsSubtitle, :draftsUpdateTime)
-WHERE drafts.id = COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":draftsTitle", draftsTitle)
-		stmt.SetText(":draftsSubtitle", draftsSubtitle)
-		stmt.SetInt(":draftsUpdateTime", draftsUpdateTime)
-		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: DraftsUpdate: %w", err)
-	}
-
-	return err
-}
-
-type DraftsListResult struct {
-	IPFSBlocksMultihash []byte
+type IPFSBlocksGetHashResult struct {
 	IPFSBlocksCodec     int
-	DraftsTitle         string
-	DraftsSubtitle      string
-	DraftsCreateTime    int
-	DraftsUpdateTime    int
+	IPFSBlocksMultihash []byte
 }
 
-func DraftsList(conn *sqlite.Conn) ([]DraftsListResult, error) {
-	const query = `SELECT ipfs_blocks.multihash, ipfs_blocks.codec, drafts.title, drafts.subtitle, drafts.create_time, drafts.update_time
-FROM drafts
-JOIN ipfs_blocks ON ipfs_blocks.id = drafts.id
-`
+func IPFSBlocksGetHash(conn *sqlite.Conn, ipfsBlocksID int) (IPFSBlocksGetHashResult, error) {
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash
+FROM ipfs_blocks
+WHERE ipfs_blocks.id = :ipfsBlocksID
+LIMIT 1`
 
-	var out []DraftsListResult
+	var out IPFSBlocksGetHashResult
 
 	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":ipfsBlocksID", ipfsBlocksID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, DraftsListResult{
-			IPFSBlocksMultihash: stmt.ColumnBytes(0),
-			IPFSBlocksCodec:     stmt.ColumnInt(1),
-			DraftsTitle:         stmt.ColumnText(2),
-			DraftsSubtitle:      stmt.ColumnText(3),
-			DraftsCreateTime:    stmt.ColumnInt(4),
-			DraftsUpdateTime:    stmt.ColumnInt(5),
-		})
+		if i > 1 {
+			return errors.New("IPFSBlocksGetHash: more than one result return for a single-kind query")
+		}
 
+		out.IPFSBlocksCodec = stmt.ColumnInt(0)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(1)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: DraftsList: %w", err)
+		err = fmt.Errorf("failed query: IPFSBlocksGetHash: %w", err)
 	}
 
 	return out, err
-}
-
-func DraftsDelete(conn *sqlite.Conn, ipfsBlocksMultihash []byte) error {
-	const query = `DELETE FROM drafts
-WHERE drafts.id = COALESCE((SELECT ipfs_blocks.id FROM ipfs_blocks WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash LIMIT 1), -1000)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: DraftsDelete: %w", err)
-	}
-
-	return err
 }
 
 func PermanodesInsertOrIgnore(conn *sqlite.Conn, permanodesType string, permanodesID int, permanodesCreateTime int) error {
@@ -1156,6 +1011,40 @@ VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
 	}
 
 	return err
+}
+
+type PermanodeOwnersGetOneResult struct {
+	AccountsMultihash []byte
+}
+
+func PermanodeOwnersGetOne(conn *sqlite.Conn, permanodeOwnersPermanodeID int) (PermanodeOwnersGetOneResult, error) {
+	const query = `SELECT accounts.multihash
+FROM permanode_owners
+JOIN accounts ON permanode_owners.account_id = accounts.id
+WHERE permanode_owners.permanode_id = :permanodeOwnersPermanodeID
+LIMIT 1`
+
+	var out PermanodeOwnersGetOneResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":permanodeOwnersPermanodeID", permanodeOwnersPermanodeID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("PermanodeOwnersGetOne: more than one result return for a single-kind query")
+		}
+
+		out.AccountsMultihash = stmt.ColumnBytes(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: PermanodeOwnersGetOne: %w", err)
+	}
+
+	return out, err
 }
 
 type PermanodesListWithVersionsByTypeResult struct {
@@ -1269,13 +1158,165 @@ VALUES (:changesID, :changesPermanodeID, :changesKind, :changesLamportTime, :cha
 	return err
 }
 
-func ChangeAuthorsInsertOrIgnore(conn *sqlite.Conn, changeAuthorsAccountID int, changeAuthorsChangeID int) error {
-	const query = `INSERT OR IGNORE INTO change_authors (account_id, change_id)
-VALUES (:changeAuthorsAccountID, :changeAuthorsChangeID)`
+type ChangesGetBaseResult struct {
+	Count    int
+	MaxClock int
+}
+
+func ChangesGetBase(conn *sqlite.Conn, jsonHeads string, changesPermanodeID int) (ChangesGetBaseResult, error) {
+	const query = `SELECT COUNT(id) AS count, MAX(lamport_time) AS max_clock
+FROM changes
+WHERE changes.id IN (SELECT value FROM json_each( :jsonHeads ))
+AND changes.permanode_id = :changesPermanodeID`
+
+	var out ChangesGetBaseResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":changeAuthorsAccountID", changeAuthorsAccountID)
+		stmt.SetText(":jsonHeads", jsonHeads)
+		stmt.SetInt(":changesPermanodeID", changesPermanodeID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("ChangesGetBase: more than one result return for a single-kind query")
+		}
+
+		out.Count = stmt.ColumnInt(0)
+		out.MaxClock = stmt.ColumnInt(1)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesGetBase: %w", err)
+	}
+
+	return out, err
+}
+
+type ChangesGetWithAuthorsResult struct {
+	ChangesID              int
+	IPFSBlocksCodec        int
+	IPFSBlocksMultihash    []byte
+	ChangesPermanodeID     int
+	ChangesKind            string
+	ChangesLamportTime     int
+	ChangesCreateTime      int
+	AccountsMultihash      []byte
+	DevicesMultihash       []byte
+	ChangeAuthorsAccountID int
+	ChangeAuthorsDeviceID  int
+}
+
+func ChangesGetWithAuthors(conn *sqlite.Conn, changesID int) ([]ChangesGetWithAuthorsResult, error) {
+	const query = `SELECT changes.id, ipfs_blocks.codec, ipfs_blocks.multihash, changes.permanode_id, changes.kind, changes.lamport_time, changes.create_time, accounts.multihash, devices.multihash, change_authors.account_id, change_authors.device_id
+FROM changes
+JOIN change_authors ON change_authors.change_id = changes.id
+JOIN accounts ON accounts.id = change_authors.account_id
+JOIN devices ON devices.id = change_authors.device_id
+JOIN ipfs_blocks ON ipfs_blocks.id = changes.permanode_id
+WHERE changes.id = :changesID`
+
+	var out []ChangesGetWithAuthorsResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":changesID", changesID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, ChangesGetWithAuthorsResult{
+			ChangesID:              stmt.ColumnInt(0),
+			IPFSBlocksCodec:        stmt.ColumnInt(1),
+			IPFSBlocksMultihash:    stmt.ColumnBytes(2),
+			ChangesPermanodeID:     stmt.ColumnInt(3),
+			ChangesKind:            stmt.ColumnText(4),
+			ChangesLamportTime:     stmt.ColumnInt(5),
+			ChangesCreateTime:      stmt.ColumnInt(6),
+			AccountsMultihash:      stmt.ColumnBytes(7),
+			DevicesMultihash:       stmt.ColumnBytes(8),
+			ChangeAuthorsAccountID: stmt.ColumnInt(9),
+			ChangeAuthorsDeviceID:  stmt.ColumnInt(10),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesGetWithAuthors: %w", err)
+	}
+
+	return out, err
+}
+
+type ChangesGetParentsResult struct {
+	ChangeDepsParent    int
+	ChangeDepsChild     int
+	IPFSBlocksCodec     int
+	IPFSBlocksMultihash []byte
+}
+
+func ChangesGetParents(conn *sqlite.Conn, changeDepsChild int) ([]ChangesGetParentsResult, error) {
+	const query = `SELECT change_deps.parent, change_deps.child, ipfs_blocks.codec, ipfs_blocks.multihash
+FROM change_deps
+LEFT OUTER JOIN ipfs_blocks ON ipfs_blocks.id = change_deps.parent
+WHERE change_deps.child = :changeDepsChild
+ORDER BY ipfs_blocks.multihash`
+
+	var out []ChangesGetParentsResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":changeDepsChild", changeDepsChild)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, ChangesGetParentsResult{
+			ChangeDepsParent:    stmt.ColumnInt(0),
+			ChangeDepsChild:     stmt.ColumnInt(1),
+			IPFSBlocksCodec:     stmt.ColumnInt(2),
+			IPFSBlocksMultihash: stmt.ColumnBytes(3),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesGetParents: %w", err)
+	}
+
+	return out, err
+}
+
+func ChangesInsertParent(conn *sqlite.Conn, changeDepsChild int, changeDepsParent int) error {
+	const query = `INSERT INTO change_deps (child, parent)
+VALUES (:changeDepsChild, :changeDepsParent)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":changeDepsChild", changeDepsChild)
+		stmt.SetInt(":changeDepsParent", changeDepsParent)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesInsertParent: %w", err)
+	}
+
+	return err
+}
+
+func ChangeAuthorsInsertOrIgnore(conn *sqlite.Conn, changeAuthorsChangeID int, changeAuthorsAccountID int, changeAuthorsDeviceID int) error {
+	const query = `INSERT OR IGNORE INTO change_authors (change_id, account_id, device_id)
+VALUES (:changeAuthorsChangeID, :changeAuthorsAccountID, :changeAuthorsDeviceID)`
+
+	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":changeAuthorsChangeID", changeAuthorsChangeID)
+		stmt.SetInt(":changeAuthorsAccountID", changeAuthorsAccountID)
+		stmt.SetInt(":changeAuthorsDeviceID", changeAuthorsDeviceID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1285,6 +1326,183 @@ VALUES (:changeAuthorsAccountID, :changeAuthorsChangeID)`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: ChangeAuthorsInsertOrIgnore: %w", err)
+	}
+
+	return err
+}
+
+type ChangesAllocateIDResult struct {
+	Seq int
+}
+
+func ChangesAllocateID(conn *sqlite.Conn) (ChangesAllocateIDResult, error) {
+	const query = `UPDATE sqlite_sequence
+SET seq = seq + 1
+WHERE name = 'ipfs_blocks'
+RETURNING seq`
+
+	var out ChangesAllocateIDResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("ChangesAllocateID: more than one result return for a single-kind query")
+		}
+
+		out.Seq = stmt.ColumnInt(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesAllocateID: %w", err)
+	}
+
+	return out, err
+}
+
+func ChangesDeleteByID(conn *sqlite.Conn, changesID int) error {
+	const query = `DELETE FROM changes
+WHERE changes.id = :changesID`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":changesID", changesID)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: ChangesDeleteByID: %w", err)
+	}
+
+	return err
+}
+
+type DatomsAttrInsertResult struct {
+	DatomAttrsID int
+}
+
+func DatomsAttrInsert(conn *sqlite.Conn, datomAttrsAttr string) (DatomsAttrInsertResult, error) {
+	const query = `INSERT INTO datom_attrs (attr)
+VALUES (:datomAttrsAttr)
+RETURNING datom_attrs.id`
+
+	var out DatomsAttrInsertResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":datomAttrsAttr", datomAttrsAttr)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("DatomsAttrInsert: more than one result return for a single-kind query")
+		}
+
+		out.DatomAttrsID = stmt.ColumnInt(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DatomsAttrInsert: %w", err)
+	}
+
+	return out, err
+}
+
+type DatomsAttrLookupResult struct {
+	DatomAttrsID int
+}
+
+func DatomsAttrLookup(conn *sqlite.Conn, datomAttrsAttr string) (DatomsAttrLookupResult, error) {
+	const query = `SELECT datom_attrs.id
+FROM datom_attrs
+WHERE datom_attrs.attr = :datomAttrsAttr LIMIT 1`
+
+	var out DatomsAttrLookupResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":datomAttrsAttr", datomAttrsAttr)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("DatomsAttrLookup: more than one result return for a single-kind query")
+		}
+
+		out.DatomAttrsID = stmt.ColumnInt(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DatomsAttrLookup: %w", err)
+	}
+
+	return out, err
+}
+
+type DatomsMaxSeqResult struct {
+	Max int
+}
+
+func DatomsMaxSeq(conn *sqlite.Conn, datomsPermanode int, datomsChange int) (DatomsMaxSeqResult, error) {
+	const query = `SELECT MAX(datoms.seq) AS max
+FROM datoms
+WHERE datoms.permanode = :datomsPermanode
+AND datoms.change = :datomsChange
+LIMIT 1`
+
+	var out DatomsMaxSeqResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":datomsPermanode", datomsPermanode)
+		stmt.SetInt(":datomsChange", datomsChange)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("DatomsMaxSeq: more than one result return for a single-kind query")
+		}
+
+		out.Max = stmt.ColumnInt(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DatomsMaxSeq: %w", err)
+	}
+
+	return out, err
+}
+
+func DatomsDelete(conn *sqlite.Conn, datomsPermanode int, datomsEntity []byte, datomsChange int, datomsAttr int) error {
+	const query = `DELETE FROM datoms
+WHERE datoms.permanode = :datomsPermanode
+AND datoms.entity = :datomsEntity
+AND datoms.change = :datomsChange
+AND datoms.attr = :datomsAttr`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":datomsPermanode", datomsPermanode)
+		stmt.SetBytes(":datomsEntity", datomsEntity)
+		stmt.SetInt(":datomsChange", datomsChange)
+		stmt.SetInt(":datomsAttr", datomsAttr)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: DatomsDelete: %w", err)
 	}
 
 	return err

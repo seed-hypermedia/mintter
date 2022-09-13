@@ -220,9 +220,21 @@ func Insert(cols ...sqlitegen.Column) Opt {
 }
 
 // Results annotates SQL expressions or concrete columns to become outputs of a SQL query.
-func Results(rr ...ResultOpt) Opt {
+// The argument must be ResultOpt or Column.
+func Results(rr ...any) Opt {
 	return func(qb *queryBuilder) {
-		for i, r := range rr {
+		for i, rv := range rr {
+			var r ResultOpt
+
+			switch rt := rv.(type) {
+			case sqlitegen.Column:
+				r = ResultCol(rt)
+			case ResultOpt:
+				r = rt
+			default:
+				panic("BUG: invalid result type")
+			}
+
 			res := r(qb.schema)
 			qb.WriteString(res.SQL)
 			if i < len(rr)-1 {
@@ -310,6 +322,15 @@ func Var(name string, goType sqlitegen.Type) Opt {
 		}
 		qb.AddInput(sym)
 		qb.WriteString(":" + sym.Name)
+	}
+}
+
+// Quote wraps string in single quotes.
+func Quote(s string) Opt {
+	return func(qb *queryBuilder) {
+		qb.WriteRune('\'')
+		qb.WriteString(s)
+		qb.WriteRune('\'')
 	}
 }
 

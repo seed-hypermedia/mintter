@@ -2,13 +2,14 @@ package daemon
 
 import (
 	context "context"
+	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	"mintter/backend/daemon/daemontest"
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcsdb"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -38,7 +39,7 @@ func TestRegister(t *testing.T) {
 		Passphrase: testPassphrase,
 	})
 	require.NoError(t, err)
-	require.NotEqual(t, "", resp.AccountId)
+	require.Equal(t, "bahezrj4iaqacicabciqk67kw6ulutlggvvnxtqxz3zmwxmiyexrxenuuron3uekqu5cvp7q", resp.AccountId)
 
 	_, err = srv.Register(ctx, &daemon.RegisterRequest{
 		Mnemonic: testMnemonic,
@@ -48,12 +49,6 @@ func TestRegister(t *testing.T) {
 	stat, ok := status.FromError(err)
 	require.True(t, ok)
 	require.Equal(t, codes.AlreadyExists, stat.Code())
-
-	// back.GetAccountState(ctx, back.repo.MustAccount().id)
-
-	// acc, err := srv.backend.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
-	// require.NoError(t, err, "must get account after registration")
-	// require.NotNil(t, acc)
 }
 
 func TestGetInfo_NonReady(t *testing.T) {
@@ -96,13 +91,11 @@ func TestGetInfo_Ready(t *testing.T) {
 
 func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
-
 	repo := daemontest.MakeTestRepo(t, u)
-
 	db := newTestSQLite(t, repo)
-	v := vcs.New(db)
+	wallet := new(mockedWallet)
 
-	return NewServer(repo, v, nil)
+	return NewServer(repo, vcsdb.New(db), wallet, nil)
 }
 
 func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {
@@ -118,4 +111,11 @@ func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {
 	require.NoError(t, sqliteschema.Migrate(conn))
 
 	return pool
+}
+
+type mockedWallet struct {
+}
+
+func (w *mockedWallet) ConfigureMintterLNDHub(ctx context.Context, acc core.KeyPair) error {
+	return nil
 }

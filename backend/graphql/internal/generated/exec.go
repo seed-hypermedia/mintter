@@ -619,7 +619,12 @@ type Query {
   """
   Information about payments.
   """
-  payments(walletID: ID!, excludeUnpaid: Boolean, excludeKeysend: Boolean, excludeExpired: Boolean): Payments!
+  payments(
+    walletID: ID!
+    excludeUnpaid: Boolean
+    excludeKeysend: Boolean
+    excludeExpired: Boolean
+  ): Payments!
 }
 
 """
@@ -637,7 +642,6 @@ type Me {
   lnaddress: String @goField(forceResolver: true)
 }
 
-
 """
 Information about payments
 """
@@ -651,7 +655,6 @@ type Payments {
   """
   received: [Invoice]
 }
-
 
 """
 Top-level mutations.
@@ -788,7 +791,6 @@ type DeleteWalletPayload {
   """
   id: ID!
 }
-
 
 """
 Input to export a wallet.
@@ -957,64 +959,65 @@ type Invoice {
   """
   Preimage hash of the payment.
   """
-	PaymentHash:     String    
+  PaymentHash: String
   """
   Bolt-11 encoded invoice.
-  """        
-	PaymentRequest:  String      
+  """
+  PaymentRequest: String
   """
   Memo field of the invoice.
-  """      
-	Description:     String    
   """
-  Memo hash in case its too long 
-  """        
-	DescriptionHash: String  
+  Description: String
+  """
+  Memo hash in case its too long
+  """
+  DescriptionHash: String
   """
   Invoice secret known at settlement. Proof of payment
-  """          
-	PaymentPreimage: String   
+  """
+  PaymentPreimage: String
   """
   Payee lightning node ID.
-  """         
-	Destination:     String     
+  """
+  Destination: String
   """
   Invoice quantity in satoshis.
-  """         
-	Amount:          Satoshis!   
+  """
+  Amount: Satoshis!
   """
   Fees incurred by the payer when paying the invoice
-  """          
-	Fee:             Satoshis     
+  """
+  Fee: Satoshis
   """
   Status of the invoice. (Settled, in-flight, expired, ...)
-  """          
-	Status:          String    
+  """
+  Status: String
   """
   Invoice tyoe
-  """     
-	Type:            String   
+  """
+  Type: String
   """
   Error of the invoice
-  """      
-	ErrorMessage:    String   
+  """
+  ErrorMessage: String
   """
   Settlement date
-  """      
-	SettledAt:       String 
+  """
+  SettledAt: String
   """
   Expiring date.
-  """        
-	ExpiresAt:       String    
+  """
+  ExpiresAt: String
   """
   If the invoice has been paid or not.
-  """     
-	IsPaid:          Boolean   
+  """
+  IsPaid: Boolean
   """
   Whether or not this is a made up invoice corrensponding with a keysend payment
-  """             
-	Keysend:         Boolean              
-}`, BuiltIn: false},
+  """
+  Keysend: Boolean
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 

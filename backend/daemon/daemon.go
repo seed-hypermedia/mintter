@@ -18,6 +18,7 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/syncing"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcstypes"
 	"mintter/backend/wallet"
 	"net"
@@ -48,7 +49,6 @@ type App struct {
 	log *zap.Logger
 
 	Repo         *ondisk.OnDisk
-	VCS          *vcs.SQLite
 	DB           *sqlitex.Pool
 	HTTPListener net.Listener
 	HTTPServer   *http.Server
@@ -58,6 +58,8 @@ type App struct {
 	Net          *future.ReadOnly[*mttnet.Node]
 	Me           *future.ReadOnly[core.Identity]
 	Syncing      *future.ReadOnly[*syncing.Service]
+	VCSDB        *vcsdb.DB
+	Wallet       *wallet.Service
 }
 
 // Load all of the dependencies for the app, and start
@@ -104,29 +106,31 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 		return
 	}
 
-	a.VCS = vcs.New(a.DB)
+	a.VCSDB = vcsdb.New(a.DB)
 
 	a.Me, err = initRegistration(ctx, a.g, a.Repo)
 	if err != nil {
 		return
 	}
 
-	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCS)
+	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB)
 	if err != nil {
 		return
 	}
 
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCS, a.Me, a.Net)
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCSDB, a.Me, a.Net)
 	if err != nil {
 		return
 	}
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.VCS, a.Net, a.Syncing)
+	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me)
+
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet)
 	if err != nil {
 		return
 	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet)
 	if err != nil {
 		return
 	}
@@ -240,7 +244,7 @@ func initNetwork(
 	g *errgroup.Group,
 	me *future.ReadOnly[core.Identity],
 	cfg config.P2P,
-	vcsh *vcs.SQLite,
+	vcsh *vcsdb.DB,
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
 
@@ -293,7 +297,7 @@ func initSyncing(
 	clean *cleanup.Stack,
 	g *errgroup.Group,
 	db *sqlitex.Pool,
-	vcsh *vcs.SQLite,
+	vcs *vcsdb.DB,
 	me *future.ReadOnly[core.Identity],
 	net *future.ReadOnly[*mttnet.Node],
 ) (*future.ReadOnly[*syncing.Service], error) {
@@ -316,7 +320,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, vcsh, node.Bitswap().NewSession, node.Client)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, vcs, node.Bitswap().NewSession, node.Client)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
@@ -341,9 +345,11 @@ func initGRPC(
 	g *errgroup.Group,
 	id *future.ReadOnly[core.Identity],
 	repo *ondisk.OnDisk,
-	v *vcs.SQLite,
+	pool *sqlitex.Pool,
+	v *vcsdb.DB,
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
+	wallet *wallet.Service,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
@@ -352,7 +358,7 @@ func initGRPC(
 
 	srv = grpc.NewServer()
 
-	rpc = api.New(id, repo, v, node, sync)
+	rpc = api.New(id, repo, pool, v, node, sync, wallet)
 	rpc.Register(srv)
 	reflection.Register(srv)
 
@@ -376,13 +382,9 @@ func initHTTP(
 	db *sqlitex.Pool,
 	node *future.ReadOnly[*mttnet.Node],
 	me *future.ReadOnly[core.Identity],
+	wallet *wallet.Service,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
-	ctx, cancel := context.WithCancel(context.Background())
-	clean.AddErrFunc(func() error {
-		cancel()
-		return nil
-	})
 	{
 		grpcWebHandler := grpcweb.WrapServer(rpc, grpcweb.WithOriginFunc(func(origin string) bool {
 			return true
@@ -392,7 +394,7 @@ func initHTTP(
 		router.Handle("/debug/metrics", promhttp.Handler())
 		router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
 		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
-		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet.New(ctx, logging.New("mintter/wallet", "debug"), db, node, me))))
+		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 
 		nav := newNavigationHandler(router)

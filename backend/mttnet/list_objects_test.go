@@ -3,9 +3,10 @@ package mttnet
 import (
 	"context"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
-	"mintter/backend/vcs"
+	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcstypes"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -17,24 +18,32 @@ func TestListObjects(t *testing.T) {
 	defer stopalice()
 	ctx := context.Background()
 
-	doc, err := alice.repo.CreateDocument(ctx)
-	require.NoError(t, err)
+	{
+		conn, release, err := alice.vcs.Conn(ctx)
+		require.NoError(t, err)
 
-	doc.ChangeTitle("Hello world")
-	require.NoError(t, doc.MoveBlock("b1", "", ""))
-	require.NoError(t, doc.ReplaceBlock(vcstypes.Block{
-		ID:   "b1",
-		Text: "Hello world",
-	}))
+		err = conn.WithTx(true, func() error {
+			perma, err := vcsdb.NewPermanode(vcstypes.NewDocumentPermanode(alice.me.AccountID()))
+			if err != nil {
+				return err
+			}
+			obj := conn.NewObject(perma)
+			meLocal := conn.EnsureIdentity(alice.me)
+			change := conn.NewChange(obj, meLocal, nil, time.Time{})
+			newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
 
-	recorded, err := alice.repo.CommitPublication(ctx, doc, vcs.Version{})
-	require.NoError(t, err)
-	_ = recorded
+			conn.AddDatom(obj, newDatom(vcsdb.RootNode, "title", "This is a title"))
+			conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
+			conn.EncodeChange(change, alice.me.DeviceKey())
 
-	refs, err := alice.vcs.ListVersionsByOwner(ctx, alice.me.AccountID())
-	require.NoError(t, err)
+			refs := conn.ListAllVersions("main")
+			require.Len(t, refs, 2)
 
-	require.Len(t, refs, 2)
+			return nil
+		})
+		release()
+		require.NoError(t, err)
+	}
 
 	bob, stopbob := makeTestPeer(t, "bob")
 	defer stopbob()
