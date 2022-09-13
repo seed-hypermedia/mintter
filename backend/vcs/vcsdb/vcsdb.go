@@ -1572,7 +1572,12 @@ func (conn *Conn) ensureDeviceID(c cid.Cid) int {
 	return insert.DevicesID
 }
 
-type Ref = vcs.Ref
+// Ref is a named reference/version.
+type Ref struct {
+	Account cid.Cid
+	Device  cid.Cid
+	Version vcs.Version
+}
 
 // ListAllVersions collects all the known objects with all their versions,
 // and returns all the public information about them.
