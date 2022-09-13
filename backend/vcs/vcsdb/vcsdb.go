@@ -81,7 +81,7 @@ func (db *DB) Blockstore() blockstore.Blockstore {
 // DB returns the underlying SQLite connection pool.
 // This is used for compatibility with the old code, but it should not be exposed.
 //
-// TODO(burdiyan): get rid of this. Should not be exposed.
+// TODO(burdiyan): get rid of this. Should not be exposed. Search for other places with build11.
 func (db *DB) DB() *sqlitex.Pool {
 	return db.pool
 }
@@ -103,6 +103,16 @@ type Conn struct {
 	err error
 
 	lastLamport int
+}
+
+// InternalConn should not exist. It returns the underlying
+// SQLite connection. It's here for compatibility with the old
+// code. It will be removed in Build 11 when we implement more
+// granular block CRDT.
+//
+// TODO(burdiyan): remove this. Search for other places with build11.
+func (conn *Conn) InternalConn() *sqlite.Conn {
+	return conn.conn
 }
 
 // Attribute is a type for predicate attributes.
@@ -504,7 +514,7 @@ type SignedChange = vcs.SignedCBOR[vcs.Change]
 // StoreRemoteChange stores the changes fetched from the remote peer,
 // and indexes its datoms. It assumes that the change signature was already
 // validated elsewhere. It also assumes that change parents already exist in the database.
-func (conn *Conn) StoreRemoteChange(obj LocalID, sc SignedChange) (change LocalID) {
+func (conn *Conn) StoreRemoteChange(obj LocalID, sc SignedChange, onDatom func(conn *Conn, obj LocalID, d Datom) error) (change LocalID) {
 	must.Maybe(&conn.err, func() error {
 		if sc.Payload.Kind != changeKindV1 {
 			panic("BUG: change kind is invalid: " + sc.Payload.Kind)
@@ -548,6 +558,9 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, sc SignedChange) (change LocalI
 
 		for _, d := range datoms {
 			conn.AddDatom(obj, d)
+			if err := onDatom(conn, obj, d); err != nil {
+				return err
+			}
 		}
 
 		return nil

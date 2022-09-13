@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 	"errors"
+	"sort"
 	"time"
 
 	"mintter/backend/core"
@@ -10,6 +11,7 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/vcsdb"
+	"mintter/backend/vcs/vcssql"
 	"mintter/backend/vcs/vcstypes"
 
 	"github.com/ipfs/go-cid"
@@ -229,6 +231,60 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 	}); err != nil {
 		return nil, err
 	}
+
+	// This is a hack to make tests pass. When we first connect to a peer,
+	// we won't immediately sync their account object, but we want them in the list
+	// of accounts here. So we do the additional scan using another database table
+	// to stick those pending accounts into the response.
+	//
+	// TODO(burdiyan): this is ugly as hell. Remove this in build11.
+	res, err := vcssql.AccountDevicesList(conn.InternalConn())
+	if err != nil {
+		return nil, err
+	}
+
+	meacc := me.Account().CID().String()
+
+	for _, r := range res {
+		acc := cid.NewCidV1(core.CodecAccountKey, r.AccountsMultihash).String()
+		did := cid.NewCidV1(core.CodecDeviceKey, r.DevicesMultihash).String()
+
+		if acc == meacc {
+			continue
+		}
+
+		idx := -1
+		for i, ra := range resp.Accounts {
+			if ra.Id == acc {
+				idx = i
+				break
+			}
+		}
+
+		if idx == -1 {
+			resp.Accounts = append(resp.Accounts, &accounts.Account{
+				Id:      acc,
+				Profile: &accounts.Profile{},
+				Devices: map[string]*accounts.Device{
+					did: {
+						PeerId: did,
+					},
+				},
+			})
+		} else {
+			ra := resp.Accounts[idx]
+			if _, ok := ra.Devices[did]; ok {
+				continue
+			}
+			ra.Devices[did] = &accounts.Device{
+				PeerId: did,
+			}
+		}
+	}
+
+	sort.Slice(resp.Accounts, func(i, j int) bool {
+		return resp.Accounts[i].Id < resp.Accounts[j].Id
+	})
 
 	return resp, nil
 }

@@ -3,6 +3,7 @@ package documents
 import (
 	"context"
 	"fmt"
+	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/future"
@@ -331,9 +332,18 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		change := version[0]
 
 		conn.EncodeChange(change, me.DeviceKey())
-
 		conn.DeleteVersion(obj, "draft", meLocal)
-		conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
+
+		newVersion := vcsdb.LocalVersion{change}
+		conn.SaveVersion(obj, "main", meLocal, newVersion)
+
+		// TODO(burdiyan): build11: this should be gone.
+		for _, d := range conn.LoadObjectDatoms(obj, newVersion) {
+			if err := backlinks.IndexDatom(conn, obj, d); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}); err != nil {
 		return nil, err

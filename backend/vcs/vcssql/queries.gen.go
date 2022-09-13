@@ -271,14 +271,16 @@ func BacklinksListByTargetDocument(conn *sqlite.Conn, targetDocumentID int, dept
 	return out, err
 }
 
-func ContentLinksDelete(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string) error {
+func ContentLinksDelete(conn *sqlite.Conn, contentLinksSourceDocumentID int, contentLinksSourceBlockID string, contentLinksSourceChangeID int) error {
 	const query = `DELETE FROM content_links
 WHERE content_links.source_document_id = :contentLinksSourceDocumentID
-AND content_links.source_block_id = :contentLinksSourceBlockID`
+AND content_links.source_block_id = :contentLinksSourceBlockID
+AND content_links.source_change_id = :contentLinksSourceChangeID`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":contentLinksSourceDocumentID", contentLinksSourceDocumentID)
 		stmt.SetText(":contentLinksSourceBlockID", contentLinksSourceBlockID)
+		stmt.SetInt(":contentLinksSourceChangeID", contentLinksSourceChangeID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {

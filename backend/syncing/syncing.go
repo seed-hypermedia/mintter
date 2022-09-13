@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
@@ -352,7 +353,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 		}
 
 		for _, remote := range remoteChanges {
-			local := conn.StoreRemoteChange(obj, remote.sc)
+			local := conn.StoreRemoteChange(obj, remote.sc, backlinks.IndexDatom)
 			trackHead(remote.Cid(), local)
 		}
 

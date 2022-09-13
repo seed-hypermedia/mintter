@@ -139,7 +139,8 @@ var (
 		qb.MakeQuery(s.Schema, "ContentLinksDelete", sgen.QueryKindExec,
 			"DELETE FROM", s.ContentLinks, '\n',
 			"WHERE", s.ContentLinksSourceDocumentID, "=", qb.VarCol(s.ContentLinksSourceDocumentID), '\n',
-			"AND", s.ContentLinksSourceBlockID, "=", qb.VarCol(s.ContentLinksSourceBlockID),
+			"AND", s.ContentLinksSourceBlockID, "=", qb.VarCol(s.ContentLinksSourceBlockID), '\n',
+			"AND", s.ContentLinksSourceChangeID, "=", qb.VarCol(s.ContentLinksSourceChangeID),
 		),
 	)
 	_ = contentLinks

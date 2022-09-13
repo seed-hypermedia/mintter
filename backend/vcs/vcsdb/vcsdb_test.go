@@ -134,12 +134,7 @@ func checkSum(t *testing.T, want string, data []byte) {
 }
 
 func TestIterateObjectDatoms(t *testing.T) {
-	// os.RemoveAll("test.db")
-
 	db := New(sqliteschema.MakeTestDB(t))
-	// db := New(must.Two(sqliteschema.Open("test.db", 0, 16)))
-	// require.NoError(t, sqliteschema.MigratePool(context.Background(), db.pool))
-	// defer db.pool.Close()
 
 	ctx := context.Background()
 	alice := coretest.NewTester("alice")
@@ -216,7 +211,7 @@ func TestIterateObjectDatoms(t *testing.T) {
 			}
 			defer release()
 
-			return conn.WithTx(false, func() error {
+			return conn.WithTx(true, func() error {
 				obj := conn.LookupPermanode(perma.ID)
 				aliceLocal := conn.EnsureIdentity(alice.Identity)
 				ver := conn.GetVersion(obj, versions[i], aliceLocal)

@@ -69,11 +69,17 @@ func (conn *Conn) QueryLastValue(object LocalID, cs ChangeSet, entity NodeID, a 
 }
 
 // QueryValuesByAttr returns all the possible values for a given (entity, attribute) at a given point in time.
+// Entity can be zero so all attributes will be returned for all the known entities.
 func (conn *Conn) QueryValuesByAttr(object LocalID, cs ChangeSet, entity NodeID, a Attribute) (out []Datom) {
 	must.Maybe(&conn.err, func() error {
-		q := newQuery(cs, false).
-			Where(sqliteschema.DatomsEntity.String()+" = ?", entity.Bytes()).
-			Where(sqliteschema.DatomAttrsAttr.String()+" = ?", a)
+		q := newQuery(cs, false)
+
+		if !entity.IsZero() {
+			q.Where(sqliteschema.DatomsEntity.String()+" = ?", entity.Bytes())
+		}
+
+		q.Where(sqliteschema.DatomAttrsAttr.String()+" = ?", a)
+
 		defer q.Close()
 
 		return sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
