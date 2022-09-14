@@ -511,22 +511,45 @@ func init() {
 // SignedChange is a type for Change with signature and signer information.
 type SignedChange = vcs.SignedCBOR[vcs.Change]
 
+type VerifiedChange struct {
+	blocks.Block
+
+	Decoded vcs.SignedCBOR[vcs.Change]
+}
+
+func VerifyChangeBlock(blk blocks.Block) (vc VerifiedChange, err error) {
+	sc, err := vcs.ParseChangeBlock(blk)
+	if err != nil {
+		return vc, err
+	}
+
+	if err := sc.Verify(); err != nil {
+		return vc, fmt.Errorf("failed to verify change %s: %w", blk.Cid(), err)
+	}
+
+	return VerifiedChange{Block: blk, Decoded: sc}, nil
+}
+
 // StoreRemoteChange stores the changes fetched from the remote peer,
 // and indexes its datoms. It assumes that the change signature was already
 // validated elsewhere. It also assumes that change parents already exist in the database.
-func (conn *Conn) StoreRemoteChange(obj LocalID, sc SignedChange, onDatom func(conn *Conn, obj LocalID, d Datom) error) (change LocalID) {
+// It also expects that IPFS block of the incoming change is already in the blockstore, placed there
+// by the BitSwap session.
+func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func(conn *Conn, obj LocalID, d Datom) error) (change LocalID) {
 	must.Maybe(&conn.err, func() error {
+		sc := vc.Decoded
+
 		if sc.Payload.Kind != changeKindV1 {
 			panic("BUG: change kind is invalid: " + sc.Payload.Kind)
 		}
 
 		// TODO(burdiyan): validate lamport timestamp of the incoming change here, or elsewhere?
 
-		res, err := vcssql.ChangesAllocateID(conn.conn)
-		if err != nil {
-			return err
+		res, err := vcssql.IPFSBlocksLookupPK(conn.conn, vc.Cid().Hash())
+		if err != nil || res.IPFSBlocksID == 0 {
+			return fmt.Errorf("ipfs block for the remote change must exist before indexing: %w", err)
 		}
-		change = LocalID(res.Seq)
+		change = LocalID(res.IPFSBlocksID)
 
 		ch := sc.Payload
 
@@ -1254,20 +1277,28 @@ type LocalVersion []LocalID
 
 // SaveVersion saves a named version for a given peer identity.
 func (conn *Conn) SaveVersion(object LocalID, name string, id LocalIdentity, heads LocalVersion) {
-	if conn.err != nil {
-		return
-	}
+	must.Maybe(&conn.err, func() error {
+		if len(heads) == 0 {
+			return fmt.Errorf("version to save must have changes")
+		}
 
-	data, err := json.Marshal(heads)
-	if err != nil {
-		conn.err = err
-		return
-	}
+		for _, h := range heads {
+			if h == 0 {
+				return fmt.Errorf("version to save must have non-zero changes")
+			}
+		}
 
-	if err := vcssql.NamedVersionsReplace(conn.conn, int(object), int(id.Account), int(id.Device), name, string(data)); err != nil {
-		conn.err = err
-		return
-	}
+		data, err := json.Marshal(heads)
+		if err != nil {
+			return err
+		}
+
+		if err := vcssql.NamedVersionsReplace(conn.conn, int(object), int(id.Account), int(id.Device), name, string(data)); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 // GetVersion loads a named version.
