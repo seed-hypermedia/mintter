@@ -124,7 +124,7 @@
     "@types/react-highlight-words": "0.16.4",
     "@types/unist": "2.0.6",
     "@vitejs/plugin-react": "2.0.1",
-    "@xstate/cli": "0.3.2",
+    "@xstate/cli": "0.3.3",
     "@xstate/inspect": "0.7.0",
     "@xstate/test": "0.5.1",
     "copy-text-to-clipboard": "3.0.1",
