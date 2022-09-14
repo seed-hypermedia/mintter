@@ -500,3 +500,13 @@ function Find() {
     </label>
   )
 }
+
+var shellStyles = css({
+  blockSize: '100%',
+  borderBottom: '1px solid $colors$base-border-subtle',
+  background: '$base-background-subtle',
+})
+
+export function TopbarShell() {
+  return <div className={shellStyles()} data-layout-section="topbar" />
+}

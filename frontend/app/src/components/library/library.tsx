@@ -9,12 +9,11 @@ import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
 import {Tooltip} from '@components/tooltip'
 import {useActor, useSelector} from '@xstate/react'
-import {PropsWithChildren} from 'react'
 import {ActorRefFrom} from 'xstate'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
-import {ContactsSection} from './section-connections'
+import {ContactsSection} from './section-contacts'
 
 let libraryStyle = css({
   transition: 'all 0.25s ease',
@@ -40,14 +39,6 @@ let libraryStyle = css({
     },
   },
 })
-
-export function LibraryShell({children, ...props}: PropsWithChildren<unknown>) {
-  return (
-    <Box {...props} data-layout-section="library" className={libraryStyle()}>
-      {children}
-    </Box>
-  )
-}
 
 export function Library() {
   const mainService = useMain()
@@ -202,5 +193,14 @@ function LibraryButton({title, icon, onClick, active}: LibraryButtonProps) {
         {title}
       </Text>
     </Box>
+  )
+}
+
+export function LibraryShell() {
+  return (
+    <Box
+      data-layout-section="library"
+      className={libraryStyle({variant: 'shell'})}
+    />
   )
 }

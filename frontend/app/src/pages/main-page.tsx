@@ -1,10 +1,16 @@
 import {useMain} from '@app/main-context'
 import {DraftRef, PublicationRef} from '@app/main-machine'
-import {PageError, rootPageStyle} from '@app/pages/window-components'
+import {
+  MainPageShell,
+  MainWindowShell,
+  PageError,
+  rootPageStyle,
+} from '@app/pages/window-components'
+import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {Library} from '@components/library'
+import {Library, LibraryShell} from '@components/library'
 import {Settings} from '@components/settings'
-import {Topbar} from '@components/topbar'
+import {Topbar, TopbarShell} from '@components/topbar'
 import {useActor} from '@xstate/react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {DraftList} from './draft-list-page'
@@ -18,6 +24,15 @@ export default function MainPage() {
 
   if (state.matches('routes.settings')) {
     return <Settings />
+  }
+  if (state.hasTag('loading')) {
+    return (
+      <MainPageShell>
+        <MainWindowShell />
+        <LibraryShell />
+        <TopbarShell />
+      </MainPageShell>
+    )
   }
 
   return (
@@ -50,3 +65,9 @@ export default function MainPage() {
     </Box>
   )
 }
+
+var libraryShell = css({
+  backgroundColor: '$base-background-normal',
+  blockSize: 232,
+  inlineSize: '$full',
+})

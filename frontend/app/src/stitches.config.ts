@@ -444,6 +444,10 @@ export const globalStyles = globalCss({
     fontWeight: '$medium',
     fontFamily: '$base',
   },
+  ul: {
+    margin: 0,
+    padding: 0,
+  },
   '@dark': {
     // notice the `media` definition on the stitches.config.ts file
     ':root:not(.light)': {

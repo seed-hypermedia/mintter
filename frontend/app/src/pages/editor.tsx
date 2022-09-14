@@ -88,8 +88,8 @@ export default function EditorPage({draftRef}: EditorPageProps) {
                       onChange={(content: ChildrenOf<Document>) => {
                         if (!content && typeof content == 'string') return
                         blocktoolsService.send('EDITING')
-                        send({type: 'DRAFT.UPDATE', payload: {content}})
                         mainService.send('EDITING')
+                        send({type: 'DRAFT.UPDATE', payload: {content}})
                       }}
                     />
                   </BlockToolsProvider>

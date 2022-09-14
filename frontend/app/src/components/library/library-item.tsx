@@ -42,7 +42,7 @@ export function LibraryItem({
   deletePublication = defaultDeletePublication,
   isNew = false,
 }: PropsWithChildren<LibraryItemProps>) {
-  const [state] = useActor(fileRef)
+  const [state, send] = useActor(fileRef)
   let bookmarksService = useBookmarksService()
   let params = useParams()
   const mainService = useMain()
@@ -143,6 +143,7 @@ export function LibraryItem({
       className={classnames('list-item', {
         new: isNew,
       })}
+      onMouseEnter={() => send('PREFETCH')}
     >
       <span className="item-title" onClick={goToItem}>
         <Highlighter

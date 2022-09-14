@@ -36,14 +36,16 @@ export function Section({
         }}
       >
         {icon && <Icon color="primary" name={icon} size="1" />}
-        <Box css={{flex: 1}}>
+        <Box css={{flex: 1}} data-testid="section-title">
           <Text size="2" fontWeight="medium">
             {title}
           </Text>
         </Box>
         {actions}
       </Box>
-      <ul className={sectionContentStyle()}>{children}</ul>
+      <ul className={sectionContentStyle()} data-testid="section-list">
+        {children}
+      </ul>
     </Box>
   )
 }
