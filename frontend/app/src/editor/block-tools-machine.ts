@@ -11,6 +11,7 @@ export type BlockToolsMachineContext = {
   rootElm: HTMLElement | null
 }
 export type BlockToolsMachineEvent =
+  | {type: 'DISABLE'}
   | {type: 'EDITING'}
   | {type: 'DROPDOWN.OPEN'}
   | {type: 'DROPDOWN.CLOSE'}
@@ -86,6 +87,7 @@ export const blockToolsMachine =
             EDITING: {
               target: 'inactive',
             },
+            DISABLE: 'inactive',
           },
         },
         inactive: {

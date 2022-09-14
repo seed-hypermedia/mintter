@@ -1,7 +1,6 @@
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
-import {ReactQueryDevtools} from 'react-query/devtools'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
 
 import {Root, RootProvider} from './root'
@@ -19,7 +18,6 @@ root.render(
   <StrictMode>
     <RootProvider>
       <Root />
-      <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </RootProvider>
   </StrictMode>,
 )

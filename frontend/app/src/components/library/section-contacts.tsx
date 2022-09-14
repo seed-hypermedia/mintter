@@ -1,31 +1,53 @@
-import {connect, ConnectionStatus} from '@app/client'
+import {
+  Account,
+  connect as apiConnect,
+  ConnectionStatus,
+  listAccounts,
+  ListAccountsResponse,
+} from '@app/client'
+import {queryKeys} from '@app/hooks'
 import {CSS, keyframes, styled} from '@app/stitches.config'
 import {error} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Icon} from '@components/icon'
-import {
-  createAccountMachine,
-  listAccountsMachine,
-} from '@components/library/accounts-machine'
+import {createContactMachine} from '@components/library/contact-machine'
 import {StyledItem} from '@components/library/library-item'
+import {Placeholder} from '@components/placeholder-box'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import {useActor, useMachine} from '@xstate/react'
-import {useState} from 'react'
+import {useMachine} from '@xstate/react'
+import {useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
-import {ActorRefFrom} from 'xstate'
+import {useQuery} from 'react-query'
 import {Box} from '../box'
 import {Button} from '../button'
 import {Prompt} from '../prompt'
 import {Text} from '../text'
 import {TextField} from '../text-field'
 import {Section} from './section'
+import './section-contacts.scss'
 import {SectionError} from './section-error'
 
-export function ContactsSection() {
-  const [state, send] = useMachine(() => listAccountsMachine)
+/**
+ *
+ * Contacts Section
+ * - fetch the contacts list
+ * - create a machine for each contact
+ */
 
-  let title = `Contacts (${state.context.listAccounts.length})`
+function ContactListLoading() {
+  return (
+    <>
+      <Placeholder css={{height: 20, width: '90%'}} />
+      <Placeholder css={{height: 20, width: '$full'}} />
+      <Placeholder css={{height: 20, width: '85%'}} />
+    </>
+  )
+}
+
+export function ContactsSection() {
+  const {status, data, refetch} = useContacts()
+  let title = `Contacts (${data?.accounts?.length || 0})`
 
   return (
     <Section
@@ -38,27 +60,41 @@ export function ContactsSection() {
             alignItems: 'center',
           }}
         >
-          <ContactsPrompt refetch={() => send('REFETCH')} />
+          <ContactsPrompt refetch={refetch} />
         </Box>
       }
     >
-      {state.context.listAccounts.length ? (
-        <ErrorBoundary
-          FallbackComponent={SectionError}
-          onReset={() => {
-            window.location.reload()
-          }}
-        >
-          {state.context.listAccounts.map(({ref}) => (
-            <AccountItem key={ref.id} accountRef={ref} />
-          ))}
-        </ErrorBoundary>
-      ) : null}
+      <ErrorBoundary
+        FallbackComponent={SectionError}
+        onReset={() => {
+          window.location.reload()
+        }}
+      >
+        {status == 'loading' || status == 'idle' ? (
+          <ContactListLoading />
+        ) : status == 'error' ? (
+          <Text color="danger">Contact List error</Text>
+        ) : data.accounts?.length == 0 ? (
+          <Text>NO Accounts</Text>
+        ) : (
+          data.accounts?.map((contact) => (
+            <ContactItem key={contact.id} contact={contact} />
+          ))
+        )}
+      </ErrorBoundary>
     </Section>
   )
 }
 
-function ContactsPrompt({refetch}: {refetch: () => void}) {
+type ContactsPromptProps = {
+  refetch: () => void
+  connect?: typeof apiConnect
+}
+
+export function ContactsPrompt({
+  refetch,
+  connect = apiConnect,
+}: ContactsPromptProps) {
   const [peer, setPeer] = useState('')
 
   async function handleConnect() {
@@ -83,7 +119,7 @@ function ContactsPrompt({refetch}: {refetch: () => void}) {
       <Prompt.Trigger
         variant="ghost"
         color="primary"
-        data-testid="clear-bookmarks"
+        data-testid="add-contact-button"
         size="1"
         css={{
           all: 'unset',
@@ -108,6 +144,7 @@ function ContactsPrompt({refetch}: {refetch: () => void}) {
           onChange={(event) => setPeer(event.currentTarget.value)}
           textarea
           rows={3}
+          data-testid="add-contact-input"
           containerCss={
             {
               minHeight: 150,
@@ -118,7 +155,12 @@ function ContactsPrompt({refetch}: {refetch: () => void}) {
         />
         <Prompt.Actions>
           <Prompt.Close asChild>
-            <Button size="2" onClick={handleConnect} disabled={!peer}>
+            <Button
+              data-testid="add-contact-submit"
+              size="2"
+              onClick={handleConnect}
+              disabled={!peer}
+            >
               Connect
             </Button>
           </Prompt.Close>
@@ -168,21 +210,23 @@ const HoverCardContentStyled = styled(HoverCard.Content, {
   },
 })
 
-export type AccountItemProps = {
-  accountRef: ActorRefFrom<ReturnType<typeof createAccountMachine>>
+export type ContactItemProps = {
+  contact: Account
 }
 
-function AccountItem({accountRef}: AccountItemProps) {
-  let [state] = useActor(accountRef)
+function ContactItem({contact}: ContactItemProps) {
+  let [state] = useMachine(() => createContactMachine(contact))
 
-  let accountId = state.context.account.id.slice(
-    state.context.account.id.length - 8,
+  let accountId = useMemo(
+    () => contact.id.slice(contact.id.length - 8),
+    [contact.id],
   )
 
   return (
     <HoverCard.Root>
       <HoverCard.Trigger asChild>
         <StyledItem
+          data-testid={`contact-item-${accountId}`}
           color="default"
           css={{
             gap: '$4',
@@ -208,7 +252,6 @@ function AccountItem({accountRef}: AccountItemProps) {
 
           <Text
             size="2"
-            data-testid="connection-alias"
             css={{
               userSelect: 'none',
               letterSpacing: '0.01em',
@@ -280,5 +323,12 @@ function AccountItem({accountRef}: AccountItemProps) {
         </Box>
       </HoverCardContentStyled>
     </HoverCard.Root>
+  )
+}
+
+function useContacts() {
+  return useQuery<any, any, ListAccountsResponse>(
+    [queryKeys.GET_CONTACTS_LIST],
+    () => listAccounts,
   )
 }

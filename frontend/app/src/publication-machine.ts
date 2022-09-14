@@ -34,6 +34,7 @@ export type PublicationContext = {
 export type PublicationEvent =
   | {type: 'LOAD'}
   | {type: 'UNLOAD'}
+  | {type: 'PREFETCH'}
   | {type: 'PUBLICATION.FETCH.DATA'}
   | {
       type: 'PUBLICATION.REPORT.SUCCESS'
@@ -64,25 +65,9 @@ export function createPublicationMachine({
   publication,
   editor,
 }: CreatePublicationProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBZfXAC2zLADoJtZdVZZSzHsJMwAYkQoSXYuREgAHogCMANgAMjBQBYArAA4ATHoCccuRv16ANCACeiNWoDMquwHZ9+p1oXa9TtQF9fFmhYeETcVLT0TCxsHFzkjABmYIQRZFCCACIAkgDKAMIAqjk5WQDyAHKMAEoAogAKpVUAKow1VVWNUshi2BJkUrIIclpOjBpOOqZ2ikpaw1oaFtYIdkr6jC5qOiNy+kp2agr6Gv6BGDgEfeF0DMys7Jzcicmp6dn5RSUV1fWNLTkFPJ5GrFLo9PoDRAjJZQuRqRhqNzOLT6BQeOx2E4BEBBC6hcjXSJ3GKPeIAJzA+AglkYdAgEDAZEyuUKxTKlRyAAlSgB1MHibiQhAaOwKMbTPRyHRrVGimEIUxaRgjHR2DwzBZqOSnHHnEJXag3KL3WJPClUml0hlM96sr6VJqlADiToAMjV+b1BUgZIgNDo5IwDiiDlLVoi7PL3BpGEoTLppZ41E5xjrcfqwoaidEHnEeObqYwAG6sbBYIS2z7sxicrIZD0+7oCyQ+wb+wPBvZKHROJzh-TyrR2HSMVx9+z2JTKXZpvWXTOpY0kvOMAs0ktccvMj5s76Ol3uz0Q1t+gNBtQopTd3v9wdaFT6YPqFzjbaz4LzglZ24503xMBkmSJAUhA252tWABiNRNHknKMBkACCTQIUe3qgIMwyjK+UwavMixWIgdjHBsV4isYV77EYCjvniBqLow6afjwfACIIrqlAhGSoS26HyNMQaYnshwpiY-rysYhiqL2ChokRChyL2WJnB++KUN+TCMapjAAUBIGCHUBQAEKulkeRIZB0GwfBSEoY24Job6woYqOcJXo+mJ9voajiVK8K9uiF5OEoF4aNq2KaXRRoMXOWlJCkNzpAZxmmeZ3y1A0zSMACQIgjk3H9CeCCIoGSLHKKaKogoTjicOMbjBoIVyNMopNTRGZfvREVPHFrz6UZJlmU01bpX8rTtJ0dnNgVvFFZJpUijJKIydVBFDKq6wyaYaizAGVVOG1TGErcXXkpS1KCAU5TsZx+VCjJDh9gpcYybYchKHI4mHOsmjBfJwwNUiB2qUdGkxX0q5nZYfXJYNw31K6ACajCOrdhXaDG22hYob3qNMH2rU9gZuQtqoKXMQORZE0MDallQjZlCEFE03JVFlgLAqCk1ejxjmrKMsyHDoCiJqYqriTo-jYmQJAMvAjZgwuUW-qSzH8GAqMzb28r2EqUqqlVzjqDJU4U4r2YmirzzxfQUAa45tjrKKbieG4GgKBK+HLJiMYBj4BsLHseh+OFCsdUrFsrmutJ8NaduDD4I5rG9qISVqoWDkcjB62qexOMYWjkyHKmUz+EdmpDxaluWceEfoSqzFOKb3V5CwrcsezfTJiiIlVcwYqbYfm8u5cWjXKw+LG95VW77st+MUZNbGhhrGqwvBamRe0WbpfD-+gHAZAY9a6tGIqFsP3dqsmJagPan0creZjyK8qqqMugaCTEw9lowfKVvg-HVDqrAQY9dgODjHCJw8kLxxlCt5Am21wFEVlFqPsqwlK6mLtvUGWC966UPlzY8mt7xSWGAcGUIoMQ+WFgid6dCiJ900LfEG0VcE8B6glI+bd5Bwj8jAoiuwm4jGYepVh-98yQyfsRfYSh-LTl9twoY8k6pCW-hVHsIjOpAIhsgTAlgmgkCflAhERxtDu2NjoLU4lezwkOBRWR8Zha-0weIlhJ1po4nsjzNskYCZxhHPeVwU5lqwIlpvdqd8jRj0mD5eEexhZBVbrYNU+1JZAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiADIB5AIIARRChI9i5OSAAeiAIwA2AKzMtAFh0AOAEw6txjQGZTATmsGANCACeiazoDszL9Y1eWgAMdjrWdhqmGgC+0S5oWHhEvNS0DEys7JzcvMwAZmCE9IxQwtIAkgDKAMIAqpWV5eIAcswASgCiAAribQAqzB1tbb0qyArYSmQq6gg6QVrMdn4Rxo4adqaezm6IXl56wVoHBkamxjo6MXEgCTgEU6nFGWwcXDzk+YXPpRU19Y0Wu1ur0BpVatVqh0GmMJlMZoh5otluENGsDBstjodu4EMYtBpmFdrEENEFTF4ySZTLF4hh7slyE90ixXtkPnwAE5gfAQVzMBgQCBgMhlKp1BpNVqVAAS4gA6rDFLwEQhQot5ld5kEDKZTEYXLiyVtmOsNAZHBcNBsvLTbvSko8aM9WVl3rlubz+YLhaK-hLAa0+uIAOIh0QdJWTFVINSIOwY016i744xBEnaQ2IYxeOxE866WzWY5BHQ0m53R0pZ0szJvHKfT185gAN3Y2CwIn9AKlzBl5Wkkdj42VyljswThNs5xMlnTpK0WbVFOYBi0BIMdjs+ICxztlYe1bSjFd9Y5zCb-LbPE7Yv+kqBwbDEaj8PH8cT05Tc4zi92aoOVd00MY5PEMMx9wdQ8mRrE863ZD0eT5YRamaCQZFfGNQFmHMl2WHw7GArRzACUs9UgxJoMoWCXjdBs+DATlORIbkIDvANewAMQ6PpqhlZhpEkPpJEwsdsMRBYlhWNF1k2bYly8Fd102bwvHTaw1ltCsoMZajjwyA9dP4QQRHQ2RhzhLC4wQTdCRRVZZKxHFNAJQkLmU45ziCKwdAohknX0lhDKmYyhGELpOm43iZVE6Z3wQWwk2I0lCK8Wy7D-I15h8Uwji2LYFlJa46Uo3TmTg4LckY5jWPC2oACFRHKaohK4ni+IEoSRIs0c4vEuZrGsJZzQWNLjhMLwl0iDZmH1NKFn8NYyy0kr-KPF1mEqz4CiKdJSi6Bqmpavpe06Hp+mYcFIWhSpYtVWypNRdFMXk-9zVMIJmB1XVDAMSlwnOPyqxgwLNp0kKdp+OrGua1qgTO0FBmGUYeujMTrIe+yZIxOTsSmwaDGYGw028ws0WWIGqPKgzwcQr0ULQqRzPkXrVXXIa-ACXL01y-FrCmiwhoiYWty8fEQjsSmypokQIHIFhGBbEgAGsWEhuhJFQQg6BYu74p0Bwkw0bx7ATYs8f-A2lmsNKMttv7zWMKWApdYRqpYzbMCIPIWKoL5ds17XddRt9+oNwnggxS5Qg++xjCm8sbjIEhhXgYdaZBja2XdT4BCEPX+v2Jdizc-YJpJIJFLSgxnfW2ts-o-2fgL6zjQUzcie80tjGMP7vA2WvM-rujz0vAUBF9FvZmtYivt0dMVg0j6NDw85Zr+3VcwsYwHGsQe9Kzke6eba8O3zkOrJwtEvuxLRBu0avAiXHuCOAgw1gTSx8X36nTwQxskK4hZmjPq1lcyE1LGue+xxThP3-GmHw0cHBmHCCSSkP8ZbwRzgxJiLFIBTz2JYXwalczuRzMEeO-5ObMB8iEC4CwN4YNBg3DkBCBpLhnL4Yi25NwUgcNaGu2lSou1rFtPgecwBsMxElZeqV0qZU0PMQkFJiK6E5oRciQi1pDwqhnHBNV8EX3RrMMWn1jhojCGWHUGx+ZvXMIsfEywLhGDFkiJhG0xFNz2mwoudjwizQfhcRS6Ye6+S0cDA+oi9EXkAT4tM+hKQXE8B9HGtisomCAsk8kY1vLFXtMIuuuiCnoxHCA1UxgZEpUrvI5yCABE5VcYYCwmwUHuJZGwigxsEk223CEcwXdixTVnr3YsakPo9PJLEWIQA */
   return createMachine(
     {
-      id: 'publication-machine',
-      tsTypes: {} as import('./publication-machine.typegen').Typegen0,
-      schema: {
-        context: {} as PublicationContext,
-        events: {} as PublicationEvent,
-      },
-      predictableActionArguments: true,
-      invoke: {
-        src: 'fetchAuthor',
-        id: 'fetchAuthor',
-        onDone: {
-          actions: 'assignAuthor',
-        },
-        onError: {},
-      },
-      type: 'parallel',
       context: {
         title: publication.document?.title ?? '',
         documentId: publication.document?.id ?? '',
@@ -95,13 +80,33 @@ export function createPublicationMachine({
         errorMessage: '',
         canUpdate: false,
       },
+      tsTypes: {} as import('./publication-machine.typegen').Typegen0,
+      schema: {
+        context: {} as PublicationContext,
+        events: {} as PublicationEvent,
+      },
+      predictableActionArguments: true,
+      invoke: {
+        src: 'fetchAuthor',
+        id: 'fetchAuthor',
+        onDone: [
+          {
+            actions: 'assignAuthor',
+          },
+        ],
+        onError: [{}],
+      },
+      id: 'publication-machine',
+      type: 'parallel',
       states: {
         discussion: {
           initial: 'idle',
           states: {
             idle: {
-              always: {
-                target: 'fetching',
+              on: {
+                LOAD: {
+                  target: 'fetching',
+                },
               },
             },
             fetching: {
@@ -121,7 +126,7 @@ export function createPublicationMachine({
               },
             },
             ready: {
-              tags: ['ready'],
+              tags: 'ready',
               initial: 'visible',
               states: {
                 hidden: {
@@ -143,6 +148,11 @@ export function createPublicationMachine({
                       target: 'hidden',
                     },
                   },
+                },
+              },
+              on: {
+                UNLOAD: {
+                  target: 'idle',
                 },
               },
             },
@@ -169,6 +179,9 @@ export function createPublicationMachine({
                     target: 'fetching',
                   },
                 ],
+                PREFETCH: {
+                  actions: ['prefetchPublication'],
+                },
               },
             },
             errored: {
@@ -353,6 +366,23 @@ export function createPublicationMachine({
         clearError: assign({
           errorMessage: '',
         }),
+        prefetchPublication: (context) => {
+          client.prefetchQuery(
+            [
+              queryKeys.GET_PUBLICATION,
+              context.publication?.document?.id,
+              context.publication?.version,
+            ],
+            () =>
+              getPublication(
+                context.publication?.document?.id,
+                context.publication?.version,
+              ),
+            {
+              staleTime: 10 * 1000, // only prefetch if older than 10 seconds
+            },
+          )
+        },
       },
     },
   )

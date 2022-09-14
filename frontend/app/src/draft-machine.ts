@@ -44,18 +44,11 @@ export type DraftEvent =
   | {type: 'DRAFT.UPDATE.SUCCESS'}
   | {type: 'DRAFT.UPDATE.ERROR'; errorMessage: Error['message']}
   | {type: 'DRAFT.CANCEL'}
-  | {
-      type: 'DRAFT.MIGRATE'
-    }
-  | {
-      type: 'LOAD'
-    }
-  | {
-      type: 'UNLOAD'
-    }
-  | {
-      type: 'RESET.CHANGES'
-    }
+  | {type: 'DRAFT.MIGRATE'}
+  | {type: 'LOAD'}
+  | {type: 'UNLOAD'}
+  | {type: 'PREFETCH'}
+  | {type: 'RESET.CHANGES'}
   | {type: 'DRAFT.REPORT.AUTHOR.ERROR'; errorMessage: string}
   | {type: 'DRAFT.REPORT.AUTHOR.SUCCESS'; author: Account}
   | {type: 'DRAFT.PUBLISH'}
@@ -81,13 +74,9 @@ export function createDraftMachine({
   updateDraft = apiUpdateDraft,
   shouldAutosave = true,
 }: CreateDraftMachineProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMQAyA8gIIAiioADhrOihgHZ0gAeiAjAGwBmfjgCsABgDsk8QCYAHIMkBOQUoA0IAJ58ALLME5Fa0b137+-UboC+Nzaky4wWLNkjEAYgFEAKgGEACU5GZjRWDiRuRF1+XRw48StZXWVVUX4pTR0EXklBcSM1JVllcVFRaX47Bwh0bBwAMzA0AGMACxQ2KGJvagBJX3IAJRx-SgA5f29SEKYWdk4eXKERCWk5RRU1SWy9SV4itX5ZPN1eU9Ea8DqnJpaOrp6+wZGcYe8ABRHfHB8AwI4ADKAFV-NMgUC5mEIktEKJZHsEGUcGk0aJlJJKuJbPYbvVcM02p1ur0BkNRh9vsNfv8gjhvMNhiNoQtIqBlgikbx5LxDsVBJVBHzdAUrnjHA1HE88IQSC8KTgQZ9qJRfN5WeFFlFlvxlPJUaUTvqefpBPIkSdZDhxLbxIL5MYktdJc5bjL8EQya9Rp8QQAhUj9IHBKKhNlwhDyXSiMSSeT5ITlOSmbniFEJvImE0Y+Qu25S93dWVeumhhjzLXs6IrYRiKQyBRKVQabR8UrWiS2gy8QSYuT5gk4aXFiBgABGGAArmxWjKOgBDboeTWwnV8XsiMqyBTiBP2yTmJEI5Q4UqSWRCHk8-hmQd3EdQHBjyczufFz0kLiwNALtBgHAF0af8sAACl4O0AEpiFdYciyfF9p1nD05VXbUOUQNR4mUUQCjKGNeVkUQEyRQVTztFNhRw0peHvQsWFHCckPfZ5yTeZVVXVNDq2WQ9DDiFQcPKU5ZCxJFYgNA8pAqcRr1SOi3QYp9YAXAA3J4YNcBp6AIP9GmwABbOCh0fHAVPU7oEC6VSMFaP8IgAbXEABdbjIwKbDcPTHFiIuYjdjbBBJH4A1ZDtWIUmIkLcVqEz4LMtSNIVdiVTVDUw0rNcMIQLDUS8-DfKIkjAokTs7TFPJKl5BTjPCYtzKStjRg4tLgTBCEoQymF0JrYVPLwnzCP8y0ETPcr5Fwy9BHMGrTIa0lkua1L1QZJkWS6iN1xylI8oGgi-OKnIZPrW1zhSMpptkWb4voKdxwIFBYBJVifRwP1A2DQFQXBbxITcra+QCnI+Wmm07TCi4zDzCUC0Uuqn1u+7Hue71FXeoMQ1W5lhn+7KrBEPcsVvcwyggwQkXkUSzwgiRHTSfIFGupTiAgdgAJ-P8ANgx9cZrAQ63WRsthbIG+Fk2Mu1k3QsUqBEmfh4gPiBPwxkCSYAHFft55Y+WUQ5KfkdNYgkCD025YRDElhQJGsAorphgliBBCYKBobWYkRQKzDiE65BwvkJH0Ow8TYDAx3gKJYM-d3ckqVEY2FA4hIuORuQI33hDp80Bwdh8tKwSAY8EHaZGFNQcQm5RPeByn4mMC3TAqXDqlzhoiUeboY55Pcz1SR1RSl+RlH4c3DaOYQQr1XtpvllCiBjiSjF4BEiOX1JiMxJFVGtZRUkyVQ9VKe1Z8Y19kOLRdlwgGP9VjXfp9FZeZHkEeSoMM9MR3F++31C8T4Qpib455gC7hcNYJxRR62LivUQ4lhSojiDGXQhtdC2hOP-Z8gDz5QBjknBI0s0g2xEmJQK00tyINMNbXeh4MHzRwRtKskZN6kIxDgAQ-AZBSysPkaGsUHw3Tug9J6Twb5ERtI2Q8mQkHESRNIQwApzApxCgYDBiMhHtELgwrKvUTg2gMKKXkMgDiv2BmYSQvsppEUyIIf+uDyaBR3DvChokpC8lkjVRoXRkbeHgl3Q8p4X5GPMNGQUrYcj6niBRa25RRQeIXCgIg18tE9V4jtCB9Nf4TV4Mobktdx5CEbhUYQCku4WkCgTCilSKKSGDjYIAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMQAyA8gIIAiioADhrOihgHZ0gAeiATAGy8cAVgAcwgJyiADMP4BmACy9pAgDQgAnogCMq6TgDshpTvnyJS3qMUBfWxtSZc+IsQAKAJQCiAMW8AKgDCABKcjMxorBxI3IiKOkKG-KKihnLp-Ir8wooa2gjiEjiWUhKG0pX8OqIS9o4Q6Ng4AGZgaADGABYobFDE1J6UvgE4QZQAckHepOFMLOycPAj80ooi8rKGisJr-CbC+bo6OsWGevKpa9bZ9eCNzq3t3b39g8OjPu7knqP+wSEcABlACqQWmQKBc0i0SWiH2R0KhiE5Qson4Eks5wk-DuTmabU6PT6AyGIxwXx+f0CoRw3k8nh+0IWMVAy14iSEqkkKgUp2Ehy0iAk2RwqmMCQkwhOpzqDnuTVwTleeEIJHe5JB7molAC3mZUUWsWW6XkRnkOn41UMoiUyIkiMUoiEgl4dpUkgtuPl+KVDxVrhI-1CBthxt01RRCmEvDdhnKOjyQoQ534JVENWk8dqEizojxD2ayr6qrcGtG7hBACFSABJIFhWIRFlwhCWxIlaOx+Tx85JgpW4prBLO+Rd8wFxU4YtQHAQMAAIwwAFc2B0Vd0AIZ9SDEUNGtm6eS8dZOjE2ZJmZGIy6iHC8Co2XaKaQYk52H2Fv0sEvzper9cS0DYguFgNBNzQMAcE3FpIKwAAKXZpAASmIX1p39X9FxXNcAzVfdWTiBBFEUM05BPbYFBtYRzEMREOTvVIZGlaREjSEjJ0eGc52wgDXlJD4cC1HU9QI1tMWEEodl4HFpGY2ib1yIwRWsK4THjMxOKLTDZ1gTcADd+LALAsGaegCAglpsAAWxwPT9LAagsBgtAxPDYizBEQRFEontxAU5NVmKXYY0TMKnQ-Bop24+z+PLITtV1fUm3mQ1COWEiyO83zqICgoxwMYw5J2NZXwkRItO-KIS1ikl4uEpLgTBCEoRSmEDyI5Qsoo7I-JontHRFHBqh2K0dAqCpWPkSqMJ-XSDLislRgavU6QZJk2pbdzSO6nzetygbkxfO9HxkntVjPHyZpnYgfCBQIxhCSYAHFvFahhUrDQ9CgkIQLV4XIahIkjBQKdIdDFRIJPG-YdAFGb6GXBcCBQWBiX6CB2Cg3p9IwABrKDEeR1Guicly3O+jksxwJ1xuSIqgtB+FTjFDMzGUPQUgtBGkZRtGjJMsyLLQKysFsom+dJ5zYIpoiqcMGmM2MfYKkZxETDNBMbQYxN9muwWsF3YNGw+9r0r4Y9ihxDlLRPUq3URGQkjdZRfqlORnUq4gQQmCgaFl5ZhDo5MLgMUjFCkE45A94QvfiylfhwSgQQCEIfia8E3vekBmzS1sTmsYafMSaUslI4OChOeMcCUHsLVzWN0XseU2Awed4FidDAwDxAg6SFI0gyORsiZwoaJKAVpTOzEVZmwkXj6Hu23OBXZBtrJLmqURHe2Iwg-pyMUhMa6dNLMAl6tAw5LEG05JqcxeERGMhCD3Jn4ESedBPuaeP-XCSy3DuCAS9EhyRwHDVIY5yrpGkOUG8zo96hUxCeJQWRv7VVnH+HCgFZzd02nndyiYZI1zppvW+2x+yIEuEkAUHJkHhzQZ+aKp8sF8UXvgr6REExSRjLJeSh0CgPgMM6Whr50RZitNNJhXFT61SgCA2M9EWYqHkEHcaANsgR3Qa8JeUhES6xKKcaw1hypqLlFFR4EsSY6I4R1ZY40Mw11gZYViGYLBmERAoO8shzA2BdvGBIPNiZo0gEvWMmJhoYljNkXM5RR5ZDTLkOSWZ77vn1qZQ2wDbHmwQG6cqOAbBjgosg18FdEC1BfpRFI75yiYjnpuFARAsmmy2t9IO+i5J3h7CeGSaQFAKHMQqZwS9zD6K5JUbkt4pSWjkM3WwQA */
   return createMachine(
     {
-      id: 'editor',
-      predictableActionArguments: true,
-      tsTypes: {} as import('./draft-machine.typegen').Typegen0,
-      schema: {context: {} as DraftContext, events: {} as DraftEvent},
       context: {
         documentId: draft.id,
         version: null,
@@ -98,18 +87,21 @@ export function createDraftMachine({
         author: null,
         title: draft.title,
       },
-      initial: 'idle',
+      tsTypes: {} as import('./draft-machine.typegen').Typegen0,
+      schema: {context: {} as DraftContext, events: {} as DraftEvent},
+      predictableActionArguments: true,
       invoke: {
         src: 'fetchAuthor',
         id: 'fetchAuthor',
       },
+      id: 'editor',
+      initial: 'idle',
       on: {
         UNLOAD: {
           target: '.idle',
-          internal: false,
         },
         'DRAFT.REPORT.AUTHOR.SUCCESS': {
-          actions: ['assignAuthor'],
+          actions: 'assignAuthor',
         },
       },
       states: {
@@ -117,6 +109,9 @@ export function createDraftMachine({
           on: {
             LOAD: {
               target: 'fetching',
+            },
+            PREFETCH: {
+              actions: 'prefetchDraft',
             },
           },
         },
@@ -151,7 +146,9 @@ export function createDraftMachine({
                 FETCH: {
                   target: '#editor.fetching',
                 },
-                'DRAFT.PUBLISH': '#publishing',
+                'DRAFT.PUBLISH': {
+                  target: '#editor.publishing',
+                },
               },
             },
             debouncing: {
@@ -164,7 +161,7 @@ export function createDraftMachine({
                 },
                 idle: {
                   after: {
-                    500: {
+                    '500': {
                       target: '#editor.editing.saving',
                     },
                   },
@@ -211,31 +208,31 @@ export function createDraftMachine({
           },
         },
         publishing: {
-          id: 'publishing',
           invoke: {
             src: 'publishDraft',
             id: 'publishDraft',
-            onDone: {
-              target: 'published',
-              actions: ['afterPublish', 'resetQueryData'],
-            },
-            onError: {
-              target: '#errored',
-              actions: ['assignError'],
-            },
+            onDone: [
+              {
+                actions: ['afterPublish', 'resetQueryData'],
+                target: 'published',
+              },
+            ],
+            onError: [
+              {
+                actions: 'assignError',
+                target: 'errored',
+              },
+            ],
           },
         },
         published: {
           type: 'final',
         },
         errored: {
-          id: 'errored',
           on: {
-            FETCH: [
-              {
-                target: 'fetching',
-              },
-            ],
+            FETCH: {
+              target: 'fetching',
+            },
           },
         },
         failed: {
@@ -317,6 +314,15 @@ export function createDraftMachine({
           publication: event.data,
           documentId: context.documentId,
         })),
+        prefetchDraft: (context) => {
+          client.prefetchQuery(
+            [queryKeys.GET_DRAFT, context.draft.id],
+            () => getDraft(context.draft.id),
+            {
+              staleTime: 10 * 1000,
+            },
+          )
+        },
       },
       services: {
         fetchDraftContent: (context) => (sendBack) => {
