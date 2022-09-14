@@ -36,7 +36,7 @@ describe('Change Transforms', () => {
           </group>
         </statement>
       </group>
-    </editor>
+    </editor> /* eslint-disable-next-line */
   ) as any as Editor
 
   beforeEach(() => {

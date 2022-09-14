@@ -11,8 +11,8 @@ import {
   PublishDraftRequest,
   UpdateDraftRequestV2,
 } from './.generated/documents/v1alpha/documents'
+import {client} from './client'
 import type {GrpcClient} from './grpc-client'
-import {createGrpcClient} from './grpc-client'
 
 /**
  *
@@ -21,10 +21,8 @@ import {createGrpcClient} from './grpc-client'
  */
 export async function createDraft(
   publicationId = '',
-  rpc?: GrpcClient,
+  rpc: GrpcClient = client,
 ): Promise<Document> {
-  rpc ||= createGrpcClient()
-
   const request = CreateDraftRequest.fromPartial({
     existingDocumentId: publicationId,
   })
@@ -36,8 +34,7 @@ export async function createDraft(
  * @param draftId
  * @param rpc
  */
-export function deleteDraft(documentId: string, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient()
+export function deleteDraft(documentId: string, rpc: GrpcClient = client) {
   debug('\n=== deleteDraft', documentId)
   const request = DeleteDraftRequest.fromPartial({documentId})
   return new DraftsClientImpl(rpc).deleteDraft(request)
@@ -54,9 +51,8 @@ export function deleteDraft(documentId: string, rpc?: GrpcClient) {
 export function listDrafts(
   pageSize?: number,
   pageToken?: string,
-  rpc?: GrpcClient,
+  rpc: GrpcClient = client,
 ): Promise<ListDraftsResponse> {
-  rpc ||= createGrpcClient()
   const request = ListDraftsRequest.fromPartial({
     pageSize,
     pageToken,
@@ -71,8 +67,7 @@ export function listDrafts(
  * @param rpc
  * @returns
  */
-export function publishDraft(documentId: string, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient()
+export function publishDraft(documentId: string, rpc: GrpcClient = client) {
   const request = PublishDraftRequest.fromPartial({documentId})
   return new DraftsClientImpl(rpc).publishDraft(request)
 }
@@ -85,9 +80,8 @@ export function publishDraft(documentId: string, rpc?: GrpcClient) {
  */
 export async function getDraft(
   documentId: string,
-  rpc?: GrpcClient,
+  rpc: GrpcClient = client,
 ): Promise<Document> {
-  rpc ||= createGrpcClient()
   const request = GetDraftRequest.fromPartial({documentId})
   const doc = await new DraftsClientImpl(rpc).getDraft(request)
   return doc
@@ -100,9 +94,8 @@ export type DocumentChanges = {
 
 export async function updateDraftV2(
   documentChanges: DocumentChanges,
-  rpc?: GrpcClient,
+  rpc: GrpcClient = client,
 ) {
-  rpc ||= createGrpcClient()
   const request = UpdateDraftRequestV2.fromPartial(documentChanges)
   return await new DraftsClientImpl(rpc).updateDraftV2(request)
 }
