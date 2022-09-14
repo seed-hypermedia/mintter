@@ -2,7 +2,10 @@ package daemon
 
 import (
 	"context"
+	"fmt"
 	"mintter/backend/config"
+	"mintter/backend/core/coretest"
+	"mintter/backend/db/sqlitedbg"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
@@ -10,11 +13,14 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestDaemonList(t *testing.T) {
@@ -146,13 +152,70 @@ func TestPeriodicSync(t *testing.T) {
 	checkListAccounts(t, bob, alice, "bob to alice")
 }
 
+func TestMultiDevice(t *testing.T) {
+	t.Skip()
+
+	t.Parallel()
+
+	alice1 := makeTestApp(t, "alice", makeTestConfig(t), true)
+	alice2 := makeTestApp(t, "alice-2", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	_, err := alice1.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+		Addrs: getAddrs(t, alice2),
+	})
+	require.NoError(t, err)
+
+	acc1 := must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+	acc2 := must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+	require.False(t, proto.Equal(acc1, acc2), "accounts must not match before syncing")
+
+	{
+		sr := must.Do2(alice1.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []cid.Cid{alice1.Repo.Device().CID(), alice2.Repo.Device().CID()}, sr.Devices)
+	}
+
+	// TODO(burdiyan): build11: here it must handle the concurrency properly. See: https://github.com/mintterteam/mintter/issues/687.
+	sqlitedbg.ExecPool(alice1.DB, os.Stdout, "select * from named_versions")
+	return
+	{
+		sr := must.Do2(alice2.Syncing.MustGet().Sync(ctx))
+		require.Equal(t, int64(1), sr.NumSyncOK)
+		require.Equal(t, int64(0), sr.NumSyncFailed)
+		require.Equal(t, []cid.Cid{alice2.Repo.Device().CID(), alice1.Repo.Device().CID()}, sr.Devices)
+	}
+
+	time.Sleep(2 * time.Second)
+
+	fmt.Println("alice1")
+	sqlitedbg.ExecPool(alice1.DB, os.Stdout, "SELECT multihash, id FROM ipfs_blocks ORDER BY multihash")
+	fmt.Println("alice2")
+	sqlitedbg.ExecPool(alice2.DB, os.Stdout, "SELECT multihash, id FROM ipfs_blocks ORDER BY multihash")
+
+	return
+
+	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
+	testutil.ProtoEqual(t, acc1, acc2, "accounts must match after sync")
+
+	require.Len(t, acc2.Devices, 2, "must have two devices after syncing")
+}
+
 func getAddrs(t *testing.T, a *App) []string {
 	return mttnet.AddrInfoToStrings(a.Net.MustGet().AddrInfo())
 }
 
 func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *App {
 	ctx, cancel := context.WithCancel(context.Background())
-	app, err := Load(ctx, cfg)
+
+	u := coretest.NewTester(name)
+
+	repo, err := initRepo(cfg, u.Device.Wrapped())
+	require.NoError(t, err)
+
+	app, err := loadApp(ctx, cfg, repo)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		cancel()
@@ -160,14 +223,7 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 	})
 
 	if register {
-		seed, err := app.RPC.Daemon.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
-			MnemonicsLength: 21,
-		})
-		require.NoError(t, err)
-
-		_, err = app.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{
-			Mnemonic: seed.Mnemonic,
-		})
+		err = app.RPC.Daemon.RegisterAccount(ctx, u.Account)
 		require.NoError(t, err)
 
 		_, err = app.Net.Await(ctx)

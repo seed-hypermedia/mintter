@@ -581,8 +581,10 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 
 		for _, d := range datoms {
 			conn.AddDatom(obj, d)
-			if err := onDatom(conn, obj, d); err != nil {
-				return err
+			if onDatom != nil {
+				if err := onDatom(conn, obj, d); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -943,6 +945,16 @@ func NewDatom(change LocalID, seq int, entity NodeID, a Attribute, value any, la
 		ValueType: GetValueType(value),
 		Value:     value,
 	}
+}
+
+// AddDatoms is like add datom but allows adding more than one.
+func (conn *Conn) AddDatoms(object LocalID, dd ...Datom) {
+	must.Maybe(&conn.err, func() error {
+		for _, d := range dd {
+			conn.AddDatom(object, d)
+		}
+		return nil
+	})
 }
 
 // AddDatom adds a triple into the database.

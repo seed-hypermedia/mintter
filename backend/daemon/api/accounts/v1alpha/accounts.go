@@ -111,7 +111,7 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.Chan
 	for _, reg := range regs {
 		d := conn.QueryLastValue(obj, cs, reg.Value.(vcsdb.NodeID), mttacc.AttrDevice)
 		if d.IsZero() {
-			continue
+			panic("BUG: registration without a device")
 		}
 
 		did := d.Value.(cid.Cid).String()

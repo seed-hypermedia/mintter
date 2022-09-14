@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/pkg/must"
 	"mintter/backend/vcs/vcstypes"
 	"testing"
 	"time"
@@ -242,4 +243,54 @@ func TestNodeID2String(t *testing.T) {
 
 	require.Equal(t, TrashNode, NodeIDFromString("$TRASH"))
 	require.Equal(t, RootNode, NodeIDFromString("$ROOT"))
+}
+
+func TestChangeEncoding(t *testing.T) {
+	db := New(sqliteschema.MakeTestDB(t))
+
+	ctx := context.Background()
+	alice := coretest.NewTester("alice")
+
+	conn, release, err := db.Conn(ctx)
+	require.NoError(t, err)
+	defer release()
+
+	perma, err := NewPermanode(vcstypes.NewAccountPermanode(alice.AccountID))
+	require.NoError(t, err)
+
+	now := time.Time{}
+
+	require.NoError(t, conn.BeginTx(true))
+
+	obj := conn.NewObject(perma)
+	me := conn.EnsureIdentity(alice.Identity)
+	c1 := conn.NewChange(obj, me, nil, now)
+	newDatom := MakeDatomFactory(c1, conn.GetChangeLamportTime(c1), 0)
+	person1 := NewNodeID()
+	person2 := NewNodeID()
+
+	datoms := []Datom{
+		newDatom(RootNode, "person", person1),
+		newDatom(person1, "name", "Alice"),
+		newDatom(person1, "email", "alice@example.com"),
+
+		newDatom(RootNode, "person", person2),
+		newDatom(person2, "name", "Bob"),
+		newDatom(person2, "email", "bob@example.com"),
+	}
+
+	conn.AddDatoms(obj, datoms...)
+
+	conn.SaveVersion(obj, "main", me, LocalVersion{c1})
+
+	blk := conn.EncodeChange(c1, alice.Device)
+
+	require.NoError(t, conn.Commit())
+
+	vc := must.Do2(VerifyChangeBlock(blk))
+	c2 := conn.StoreRemoteChange(obj, vc, nil)
+	require.Equal(t, c1, c2)
+
+	got := must.Do2(datomsFromChange(c1, vc.Decoded.Payload))
+	require.Equal(t, datoms, got)
 }

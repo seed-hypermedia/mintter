@@ -6,6 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"sort"
+	"strconv"
+	"time"
+
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/daemon/api"
@@ -21,17 +28,12 @@ import (
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcstypes"
 	"mintter/backend/wallet"
-	"net"
-	"net/http"
-	"os"
-	"sort"
-	"strconv"
-	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -76,8 +78,18 @@ type App struct {
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
 func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
+	r, err := initRepo(cfg, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return loadApp(ctx, cfg, r)
+}
+
+func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, err error) {
 	a = &App{
-		log: logging.New("mintter/daemon", "debug"),
+		log:  logging.New("mintter/daemon", "debug"),
+		Repo: r,
 	}
 	a.g, ctx = errgroup.WithContext(ctx)
 
@@ -96,43 +108,38 @@ func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
 		}
 	}()
 
-	a.Repo, err = initRepo(cfg)
-	if err != nil {
-		return
-	}
-
 	a.DB, err = initSQLite(ctx, &a.clean, a.Repo.SQLitePath())
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	a.VCSDB = vcsdb.New(a.DB)
 
 	a.Me, err = initRegistration(ctx, a.g, a.Repo)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCSDB, a.Me, a.Net)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me)
 
 	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	a.setupLogging(ctx, cfg)
@@ -183,16 +190,27 @@ func (a *App) Wait() error {
 	return a.g.Wait()
 }
 
-func initRepo(cfg config.Config) (*ondisk.OnDisk, error) {
-	r, err := ondisk.NewOnDisk(cfg.RepoPath, logging.New("mintter/repo", "debug"))
+func initRepo(cfg config.Config, device crypto.PrivKey) (r *ondisk.OnDisk, err error) {
+	log := logging.New("mintter/repo", "debug")
+
+	if device == nil {
+		r, err = ondisk.NewOnDisk(cfg.RepoPath, log)
+	} else {
+		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, device)
+	}
+
+	if err == nil {
+		return r, nil
+	}
+
 	if errors.Is(err, ondisk.ErrRepoMigrate) {
 		fmt.Fprintf(os.Stderr, `This version of the software has a backward-incompatible database change!
 Please remove data inside %s or use a different repo path.
 
 `, cfg.RepoPath)
-		return nil, err
 	}
-	return r, nil
+
+	return nil, err
 }
 
 func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlitex.Pool, error) {
