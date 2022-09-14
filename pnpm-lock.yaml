@@ -149,7 +149,7 @@ importers:
       vite-tsconfig-paths: 3.5.0
       vitest: 0.22.1
       ws: 8.8.1
-      xstate: 4.33.5
+      xstate: 4.33.6
     dependencies:
       '@floating-ui/react-dom': 1.0.0_biqbaboplfbrettd7655fr4n2y
       '@floating-ui/react-dom-interactions': 0.9.3_63dfw6rfgd64rl77ptfma4cvt4
@@ -173,7 +173,7 @@ importers:
       '@stitches/core': 1.2.8
       '@stitches/react': 1.2.8_react@18.2.0
       '@tauri-apps/api': 1.0.2
-      '@xstate/react': 3.0.1_rq32lkiy6e3qvfqnk7z2r4e3pe
+      '@xstate/react': 3.0.1_wuh36jwbrf5hemtqgozb23tawi
       autosize: 5.0.1
       browser-headers: 0.4.1
       cmdk: 0.1.20_63dfw6rfgd64rl77ptfma4cvt4
@@ -230,7 +230,7 @@ importers:
       unist-util-to-string-with-nodes: 0.1.1
       unist-util-visit: 4.1.1
       unist-util-visit-parents: 5.1.1
-      xstate: 4.33.5
+      xstate: 4.33.6
     devDependencies:
       '@cypress/vite-dev-server': 3.1.1
       '@graphql-codegen/cli': 2.12.0_stbmfwvmrsqr5uqdhy3yoe4abm
@@ -248,8 +248,8 @@ importers:
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.0.1_vite@3.0.9
       '@xstate/cli': 0.3.3_prettier@2.7.1
-      '@xstate/inspect': 0.7.0_ws@8.8.1+xstate@4.33.5
-      '@xstate/test': 0.5.1_xstate@4.33.5
+      '@xstate/inspect': 0.7.0_ws@8.8.1+xstate@4.33.6
+      '@xstate/test': 0.5.1_xstate@4.33.6
       copy-text-to-clipboard: 3.0.1
       covector: 0.7.3
       cypress: 10.7.0
@@ -2777,25 +2777,25 @@ packages:
     hasBin: true
     dependencies:
       '@babel/core': 7.18.13
-      '@xstate/machine-extractor': 0.7.1_otmc7h7mgofybku5ktofmgscg4
-      '@xstate/tools-shared': 1.2.3_l5aiw3i4upuixrpokivst5hsku
+      '@xstate/machine-extractor': 0.7.1_gnzgvbmyllkko4m3evkbuqdxgu
+      '@xstate/tools-shared': 1.2.3_bfsmgy4dyvrvzvlfi3bvkvowzi
       chokidar: 3.5.3
       commander: 8.3.0
-      xstate: 4.33.5
+      xstate: 4.33.6
     transitivePeerDependencies:
       - prettier
       - supports-color
     dev: true
 
-  /@xstate/graph/1.4.2_xstate@4.33.5:
+  /@xstate/graph/1.4.2_xstate@4.33.6:
     resolution: {integrity: sha512-XIh6opCf9ukXRj4dXe2fv2kwFFUl15B5Ob8ELNOOqDXB2BPyNwp6TaLe5KJn/na3gzC9B7LyOo+2d0dPkC8PWQ==}
     peerDependencies:
       xstate: ^4.30.3
     dependencies:
-      xstate: 4.33.5
+      xstate: 4.33.6
     dev: true
 
-  /@xstate/inspect/0.7.0_ws@8.8.1+xstate@4.33.5:
+  /@xstate/inspect/0.7.0_ws@8.8.1+xstate@4.33.6:
     resolution: {integrity: sha512-3wrTf8TfBYprH1gBFdxmOQUBDpBazlICWvGdFzr8IHFL4MbiexEZdAsL2QC/WAmW9BqNYTWTwgfbvKHKg+FrlA==}
     peerDependencies:
       '@types/ws': ^8.0.0
@@ -2807,20 +2807,20 @@ packages:
     dependencies:
       fast-safe-stringify: 2.1.1
       ws: 8.8.1
-      xstate: 4.33.5
+      xstate: 4.33.6
     dev: true
 
-  /@xstate/machine-extractor/0.7.1_otmc7h7mgofybku5ktofmgscg4:
+  /@xstate/machine-extractor/0.7.1_gnzgvbmyllkko4m3evkbuqdxgu:
     resolution: {integrity: sha512-dQEt6enmHXtD93vDcMefhb5bh1zh0mLCRT8CvYJjCpTjaTth7sXqlU6ri1qP0HDR6IbU9s2/WVNw7Oy7O/Sqfg==}
     peerDependencies:
       '@babel/core': ^7
       xstate: ^4
     dependencies:
       '@babel/core': 7.18.13
-      xstate: 4.33.5
+      xstate: 4.33.6
     dev: true
 
-  /@xstate/react/3.0.1_rq32lkiy6e3qvfqnk7z2r4e3pe:
+  /@xstate/react/3.0.1_wuh36jwbrf5hemtqgozb23tawi:
     resolution: {integrity: sha512-/tq/gg92P9ke8J+yDNDBv5/PAxBvXJf2cYyGDByzgtl5wKaxKxzDT82Gj3eWlCJXkrBg4J5/V47//gRJuVH2fA==}
     peerDependencies:
       '@xstate/fsm': ^2.0.0
@@ -2835,30 +2835,30 @@ packages:
       react: 18.2.0
       use-isomorphic-layout-effect: 1.1.2_7v64pk2mkrohwh22gx7lrz5ive
       use-sync-external-store: 1.2.0_react@18.2.0
-      xstate: 4.33.5
+      xstate: 4.33.6
     transitivePeerDependencies:
       - '@types/react'
     dev: false
 
-  /@xstate/test/0.5.1_xstate@4.33.5:
+  /@xstate/test/0.5.1_xstate@4.33.6:
     resolution: {integrity: sha512-Ltz46QR9QvEuhlNy+zvs+5ylfpGXzDBh+jVC1/WL8w88uEbN+Wf1bJ/Bi5OWVWWEgXJxfcmlavN4hJOqtQuqgQ==}
     peerDependencies:
       xstate: ^4.29.0
     dependencies:
-      '@xstate/graph': 1.4.2_xstate@4.33.5
+      '@xstate/graph': 1.4.2_xstate@4.33.6
       chalk: 2.4.2
-      xstate: 4.33.5
+      xstate: 4.33.6
     dev: true
 
-  /@xstate/tools-shared/1.2.3_l5aiw3i4upuixrpokivst5hsku:
+  /@xstate/tools-shared/1.2.3_bfsmgy4dyvrvzvlfi3bvkvowzi:
     resolution: {integrity: sha512-6CL2Tz2S0+FSSP+940G9glMHG8g326amsVoU+b5wkY2KsbPrGga53r25PjiiP7bGrNtf4SCSsbYW/NClrHmZGQ==}
     peerDependencies:
       prettier: ^2.3.1
       xstate: ^4
     dependencies:
-      '@xstate/machine-extractor': 0.7.1_otmc7h7mgofybku5ktofmgscg4
+      '@xstate/machine-extractor': 0.7.1_gnzgvbmyllkko4m3evkbuqdxgu
       prettier: 2.7.1
-      xstate: 4.33.5
+      xstate: 4.33.6
     transitivePeerDependencies:
       - '@babel/core'
     dev: true
@@ -8869,8 +8869,8 @@ packages:
         optional: true
     dev: true
 
-  /xstate/4.33.5:
-    resolution: {integrity: sha512-C8WGBeQC+dNMp4MmQX359BUkJCv2VPAH/CGRnhtgri5JZ7wVEX7fsbfcqznAgnKyD0m9Hd3cGhg/wuzIjnfT4A==}
+  /xstate/4.33.6:
+    resolution: {integrity: sha512-A5R4fsVKADWogK2a43ssu8Fz1AF077SfrKP1ZNyDBD8lNa/l4zfR//Luofp5GSWehOQr36Jp0k2z7b+sH2ivyg==}
 
   /y18n/4.0.3:
     resolution: {integrity: sha512-JKhqTOwSrqNA1NY5lSztJ1GrBiUodLMmIZuLiDaMRJ+itFd+ABVE8XBjOvIWL+rSqNDC74LCSFmlb/U4UZ4hJQ==}
