@@ -137,7 +137,7 @@
     "react": "18.2.0",
     "react-async-ssr": "0.7.2",
     "rollup": "2.79.0",
-    "sass": "1.54.8",
+    "sass": "1.54.9",
     "tiny-glob": "0.2.9",
     "ts-node": "10.9.1",
     "ts-proto": "1.123.1",
