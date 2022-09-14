@@ -52,7 +52,7 @@
     "@xstate/react": "3.0.1",
     "autosize": "5.0.1",
     "browser-headers": "0.4.1",
-    "cmdk": "0.1.19",
+    "cmdk": "0.1.20",
     "csstype": "3.1.0",
     "deepmerge": "4.2.2",
     "fast-deep-equal": "3.1.3",
