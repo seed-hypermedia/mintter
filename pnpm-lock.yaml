@@ -69,7 +69,7 @@ importers:
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.0.1
-      '@xstate/cli': 0.3.2
+      '@xstate/cli': 0.3.3
       '@xstate/inspect': 0.7.0
       '@xstate/react': 3.0.1
       '@xstate/test': 0.5.1
@@ -128,8 +128,8 @@ importers:
       slate-history: https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-hyperscript: https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-react: https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688
-      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#9de1279760f31bc6f71da8555336e10c412387e3
-      tauri-plugin-store-api: https://github.com/tauri-apps/tauri-plugin-store#5726952177b88d1d10063cdf8e7506bac84772cf
+      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#01374ddaa7327eb3fb1f714ee0c46519a16400d5
+      tauri-plugin-store-api: https://github.com/tauri-apps/tauri-plugin-store#6163c041d7d7ab2dc50e01ba5161da4f3d1d548e
       tiny-glob: 0.2.9
       trim-trailing-lines: 2.0.0
       ts-node: 10.9.1
@@ -220,8 +220,8 @@ importers:
       slate-history: '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-hyperscript: '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-react: '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688_2hwyydqlvvkbaegiievw3yx7se'
-      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/9de1279760f31bc6f71da8555336e10c412387e3
-      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/5726952177b88d1d10063cdf8e7506bac84772cf
+      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/01374ddaa7327eb3fb1f714ee0c46519a16400d5
+      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/6163c041d7d7ab2dc50e01ba5161da4f3d1d548e
       trim-trailing-lines: 2.0.0
       unified: 10.1.2
       unist-builder: 3.0.0
@@ -247,7 +247,7 @@ importers:
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.0.1_vite@3.0.9
-      '@xstate/cli': 0.3.2_prettier@2.7.1
+      '@xstate/cli': 0.3.3_prettier@2.7.1
       '@xstate/inspect': 0.7.0_ws@8.8.1+xstate@4.33.5
       '@xstate/test': 0.5.1_xstate@4.33.5
       copy-text-to-clipboard: 3.0.1
@@ -326,11 +326,6 @@ packages:
       '@babel/highlight': 7.18.6
     dev: true
 
-  /@babel/compat-data/7.18.13:
-    resolution: {integrity: sha512-5yUzC5LqyTFp2HLmDoxGQelcdYgSpP9xsnMWBphAscOdFrHSAVbLNzWiy32sVNDqJRDiJK6klfDnAgu6PAGSHw==}
-    engines: {node: '>=6.9.0'}
-    dev: true
-
   /@babel/compat-data/7.19.0:
     resolution: {integrity: sha512-y5rqgTTPTmaF5e2nVhOxw+Ur9HDJLsWb6U/KpgUzRZEdPfE6VOubXBKLdbcUTijzRptednSBDQbYZBOSqJxpJw==}
     engines: {node: '>=6.9.0'}
@@ -343,13 +338,13 @@ packages:
       '@ampproject/remapping': 2.2.0
       '@babel/code-frame': 7.18.6
       '@babel/generator': 7.18.13
-      '@babel/helper-compilation-targets': 7.18.9_@babel+core@7.18.13
+      '@babel/helper-compilation-targets': 7.19.0_@babel+core@7.18.13
       '@babel/helper-module-transforms': 7.18.9
       '@babel/helpers': 7.18.9
       '@babel/parser': 7.18.13
       '@babel/template': 7.18.10
       '@babel/traverse': 7.18.13
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
       convert-source-map: 1.8.0
       debug: 4.3.4
       gensync: 1.0.0-beta.2
@@ -377,7 +372,7 @@ packages:
     resolution: {integrity: sha512-CkPg8ySSPuHTYPJYo7IRALdqyjM9HCbt/3uOBEFbzyGVP6Mn8bwFPB0jX6982JVNBlYzM1nnPkfjuXSOPtQeEQ==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
       '@jridgewell/gen-mapping': 0.3.2
       jsesc: 2.5.2
     dev: true
@@ -387,19 +382,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/types': 7.19.0
-    dev: true
-
-  /@babel/helper-compilation-targets/7.18.9_@babel+core@7.18.13:
-    resolution: {integrity: sha512-tzLCyVmqUiFlcFoAPLA/gL9TeYrF61VLNtb+hvkuVaB5SUjW7jcfrglBIX1vUIoT7CLP3bBlIMeyEsIl2eFQNg==}
-    engines: {node: '>=6.9.0'}
-    peerDependencies:
-      '@babel/core': ^7.0.0
-    dependencies:
-      '@babel/compat-data': 7.18.13
-      '@babel/core': 7.18.13
-      '@babel/helper-validator-option': 7.18.6
-      browserslist: 4.21.3
-      semver: 6.3.0
     dev: true
 
   /@babel/helper-compilation-targets/7.19.0_@babel+core@7.18.13:
@@ -438,14 +420,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dev: true
 
-  /@babel/helper-function-name/7.18.9:
-    resolution: {integrity: sha512-fJgWlZt7nxGksJS9a0XdSaI4XvpExnNIgRP+rVefWh5U7BL8pPuir6SJUmFKRfjWQ51OtWSzwOxhaH/EBWWc0A==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      '@babel/template': 7.18.10
-      '@babel/types': 7.18.13
-    dev: true
-
   /@babel/helper-function-name/7.19.0:
     resolution: {integrity: sha512-WAwHBINyrpqywkUH0nTnNgI5ina5TFn85HKS0pbPDfxFfhyR/aNQEn4hGi1P1JyT//I0t4OgXUlofzWILRvS5w==}
     engines: {node: '>=6.9.0'}
@@ -458,7 +432,7 @@ packages:
     resolution: {integrity: sha512-UlJQPkFqFULIcyW5sbzgbkxn2FKRgwWiRexcuaR8RNJRy8+LLveqPjwZV/bwrLZCN0eUHD/x8D0heK1ozuoo6Q==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     dev: true
 
   /@babel/helper-member-expression-to-functions/7.18.9:
@@ -472,7 +446,7 @@ packages:
     resolution: {integrity: sha512-0NFvs3VkuSYbFi1x2Vd6tKrywq+z/cLeYC/RJNFrIX/30Bf5aiGYbtvGXolEktzJH8o5E5KJ3tT+nkxuuZFVlA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     dev: true
 
   /@babel/helper-module-transforms/7.18.9:
@@ -486,7 +460,7 @@ packages:
       '@babel/helper-validator-identifier': 7.18.6
       '@babel/template': 7.18.10
       '@babel/traverse': 7.18.13
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -525,7 +499,7 @@ packages:
     resolution: {integrity: sha512-iNpIgTgyAvDQpDj76POqg+YEt8fPxx3yaNBg3S30dxNKm2SWfYhD0TGrK/Eu9wHpUW63VQU894TsTg+GLbUa1g==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     dev: true
 
   /@babel/helper-skip-transparent-expression-wrappers/7.18.9:
@@ -539,7 +513,7 @@ packages:
     resolution: {integrity: sha512-bde1etTx6ZyTmobl9LLMMQsaizFVZrquTEHOqKeQESMKo4PlObf+8+JA25ZsIpZhT/WEd39+vOdLXAFG/nELpA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     dev: true
 
   /@babel/helper-string-parser/7.18.10:
@@ -563,7 +537,7 @@ packages:
     dependencies:
       '@babel/template': 7.18.10
       '@babel/traverse': 7.18.13
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -582,7 +556,7 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
     dependencies:
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     dev: true
 
   /@babel/plugin-proposal-class-properties/7.18.6_@babel+core@7.18.13:
@@ -604,9 +578,9 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
     dependencies:
-      '@babel/compat-data': 7.18.13
+      '@babel/compat-data': 7.19.0
       '@babel/core': 7.18.13
-      '@babel/helper-compilation-targets': 7.18.9_@babel+core@7.18.13
+      '@babel/helper-compilation-targets': 7.19.0_@babel+core@7.18.13
       '@babel/helper-plugin-utils': 7.19.0
       '@babel/plugin-syntax-object-rest-spread': 7.8.3_@babel+core@7.18.13
       '@babel/plugin-transform-parameters': 7.18.8_@babel+core@7.18.13
@@ -768,8 +742,8 @@ packages:
       '@babel/core': ^7.0.0-0
     dependencies:
       '@babel/core': 7.18.13
-      '@babel/helper-compilation-targets': 7.18.9_@babel+core@7.18.13
-      '@babel/helper-function-name': 7.18.9
+      '@babel/helper-compilation-targets': 7.19.0_@babel+core@7.18.13
+      '@babel/helper-function-name': 7.19.0
       '@babel/helper-plugin-utils': 7.19.0
     dev: true
 
@@ -938,7 +912,7 @@ packages:
     dependencies:
       '@babel/code-frame': 7.18.6
       '@babel/parser': 7.18.13
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
     dev: true
 
   /@babel/traverse/7.18.13:
@@ -948,24 +922,15 @@ packages:
       '@babel/code-frame': 7.18.6
       '@babel/generator': 7.18.13
       '@babel/helper-environment-visitor': 7.18.9
-      '@babel/helper-function-name': 7.18.9
+      '@babel/helper-function-name': 7.19.0
       '@babel/helper-hoist-variables': 7.18.6
       '@babel/helper-split-export-declaration': 7.18.6
       '@babel/parser': 7.18.13
-      '@babel/types': 7.18.13
+      '@babel/types': 7.19.0
       debug: 4.3.4
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
-    dev: true
-
-  /@babel/types/7.18.13:
-    resolution: {integrity: sha512-ePqfTihzW0W6XAU+aMw2ykilisStJfDnsejDCXRchCcMJ4O0+8DhPXf2YUbZ6wjBlsEmZwLK/sPweWtu8hcJYQ==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      '@babel/helper-string-parser': 7.18.10
-      '@babel/helper-validator-identifier': 7.18.6
-      to-fast-properties: 2.0.0
     dev: true
 
   /@babel/types/7.19.0:
@@ -1073,7 +1038,7 @@ packages:
       mime-types: 2.1.35
       performance-now: 2.1.0
       qs: 6.5.3
-      safe-buffer: 5.1.2
+      safe-buffer: 5.2.1
       tough-cookie: 2.5.0
       tunnel-agent: 0.6.0
       uuid: 8.3.2
@@ -2622,13 +2587,6 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@tauri-apps/api/1.0.0-rc.5:
-    resolution: {integrity: sha512-IiQg7pLByl/W3KRx9Whn1EWh9ZrBojkl9FAgCRJ4//e58var1WmNPHA92YC0i0DLSIF0JLLp0EQKRHJa+aaqlQ==}
-    engines: {node: '>= 12.13.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
-    dependencies:
-      type-fest: 2.12.2
-    dev: false
-
   /@tauri-apps/api/1.0.2:
     resolution: {integrity: sha512-yuNW0oeJ1/ZA7wNF1KgxhHrSu5viPVzY/UgUczzN5ptLM8dH15Juy5rEGkoHfeXGju90Y/l22hi3BtIrp/za+w==}
     engines: {node: '>= 12.22.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
@@ -3003,13 +2961,13 @@ packages:
       - encoding
     dev: true
 
-  /@xstate/cli/0.3.2_prettier@2.7.1:
-    resolution: {integrity: sha512-IAToG5cVLkGG9XCnFVbnt2bQ3QYce4vDmA3NYpqqx34/wiWf6AimbWy+X7PF1ivLBXVN5xiwcB0YyGiI3jbkQw==}
+  /@xstate/cli/0.3.3_prettier@2.7.1:
+    resolution: {integrity: sha512-yY0CyUP+ipeSKiklNAYfY51CZObVQ0y48TJHVPfxnfGbsqwj+6rZkC1mAg9yF/Zu56DCDZTtUBKmY4BsOVDLVw==}
     hasBin: true
     dependencies:
       '@babel/core': 7.18.13
-      '@xstate/machine-extractor': 0.7.0_otmc7h7mgofybku5ktofmgscg4
-      '@xstate/tools-shared': 1.2.2_l5aiw3i4upuixrpokivst5hsku
+      '@xstate/machine-extractor': 0.7.1_otmc7h7mgofybku5ktofmgscg4
+      '@xstate/tools-shared': 1.2.3_l5aiw3i4upuixrpokivst5hsku
       chokidar: 3.5.3
       commander: 8.3.0
       xstate: 4.33.5
@@ -3041,8 +2999,8 @@ packages:
       xstate: 4.33.5
     dev: true
 
-  /@xstate/machine-extractor/0.7.0_otmc7h7mgofybku5ktofmgscg4:
-    resolution: {integrity: sha512-dXHI/sWWWouN/yG687ZuRCP7Cm6XggFWSK1qWj3NohBTyhaYWSR7ojwP6OUK6e1cbiJqxmM9EDnE2Auf+Xlp+A==}
+  /@xstate/machine-extractor/0.7.1_otmc7h7mgofybku5ktofmgscg4:
+    resolution: {integrity: sha512-dQEt6enmHXtD93vDcMefhb5bh1zh0mLCRT8CvYJjCpTjaTth7sXqlU6ri1qP0HDR6IbU9s2/WVNw7Oy7O/Sqfg==}
     peerDependencies:
       '@babel/core': ^7
       xstate: ^4
@@ -3081,13 +3039,13 @@ packages:
       xstate: 4.33.5
     dev: true
 
-  /@xstate/tools-shared/1.2.2_l5aiw3i4upuixrpokivst5hsku:
-    resolution: {integrity: sha512-L99yPl8C0UcU/3VggLjPUExlLRkF4KmEh+mjFNF8m73IPUtEOxOp6tTAPl18k2Xu5F2EA3GzLKJpTlBOGQyOug==}
+  /@xstate/tools-shared/1.2.3_l5aiw3i4upuixrpokivst5hsku:
+    resolution: {integrity: sha512-6CL2Tz2S0+FSSP+940G9glMHG8g326amsVoU+b5wkY2KsbPrGga53r25PjiiP7bGrNtf4SCSsbYW/NClrHmZGQ==}
     peerDependencies:
       prettier: ^2.3.1
       xstate: ^4
     dependencies:
-      '@xstate/machine-extractor': 0.7.0_otmc7h7mgofybku5ktofmgscg4
+      '@xstate/machine-extractor': 0.7.1_otmc7h7mgofybku5ktofmgscg4
       prettier: 2.7.1
       xstate: 4.33.5
     transitivePeerDependencies:
@@ -6313,14 +6271,14 @@ packages:
     dependencies:
       buffer-equal-constant-time: 1.0.1
       ecdsa-sig-formatter: 1.0.11
-      safe-buffer: 5.1.2
+      safe-buffer: 5.2.1
     dev: true
 
   /jws/3.2.2:
     resolution: {integrity: sha512-YHlZCB6lMTllWDtSPHz/ZXTsi8S00usEV6v1tjq8tOUZzw7DpSDWVXjXDre6ed1w/pd495ODpHZYSdkRTsa0HA==}
     dependencies:
       jwa: 1.4.1
-      safe-buffer: 5.1.2
+      safe-buffer: 5.2.1
     dev: true
 
   /lazy-ass/1.6.0:
@@ -8459,7 +8417,7 @@ packages:
   /tunnel-agent/0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
     dependencies:
-      safe-buffer: 5.1.2
+      safe-buffer: 5.2.1
     dev: true
 
   /tweetnacl/0.14.5:
@@ -8487,11 +8445,6 @@ packages:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
     dev: true
-
-  /type-fest/2.12.2:
-    resolution: {integrity: sha512-qt6ylCGpLjZ7AaODxbpyBZSs9fCI9SkL3Z9q2oxMBQhs/uyY+VD8jHA8ULCGmWQJlBgqvO3EJeAngOHD8zQCrQ==}
-    engines: {node: '>=12.20'}
-    dev: false
 
   /typedarray/0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
@@ -9275,8 +9228,8 @@ packages:
       tiny-warning: 1.0.3
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-log/9de1279760f31bc6f71da8555336e10c412387e3:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/9de1279760f31bc6f71da8555336e10c412387e3}
+  github.com/tauri-apps/tauri-plugin-log/01374ddaa7327eb3fb1f714ee0c46519a16400d5:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/01374ddaa7327eb3fb1f714ee0c46519a16400d5}
     name: tauri-plugin-log-api
     version: 0.1.0
     dependencies:
@@ -9284,11 +9237,11 @@ packages:
       tslib: 2.4.0
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-store/5726952177b88d1d10063cdf8e7506bac84772cf:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/5726952177b88d1d10063cdf8e7506bac84772cf}
+  github.com/tauri-apps/tauri-plugin-store/6163c041d7d7ab2dc50e01ba5161da4f3d1d548e:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/6163c041d7d7ab2dc50e01ba5161da4f3d1d548e}
     name: tauri-plugin-store-api
     version: 0.1.0
     dependencies:
-      '@tauri-apps/api': 1.0.0-rc.5
+      '@tauri-apps/api': 1.0.2
       tslib: 2.4.0
     dev: false
