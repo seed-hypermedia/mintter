@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
-	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
@@ -342,6 +341,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 			obj = conn.LookupPermanode(oid)
 		}
 
+		idLocal := conn.EnsureAccountDevice(acc, device)
 		newHeads := remoteVer.CIDs()
 		newLocalVersion := make(vcsdb.LocalVersion, len(newHeads))
 		trackHead := func(c cid.Cid, lid vcsdb.LocalID) {
@@ -353,11 +353,9 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 		}
 
 		for _, remote := range remoteChanges {
-			local := conn.StoreRemoteChange(obj, remote.sc, backlinks.IndexDatom)
+			local := conn.StoreRemoteChange(obj, remote, backlinks.IndexDatom)
 			trackHead(remote.Cid(), local)
 		}
-
-		idLocal := conn.EnsureAccountDevice(acc, device)
 
 		conn.SaveVersion(obj, "main", idLocal, newLocalVersion)
 
@@ -424,10 +422,7 @@ func permanodeFromMap(v interface{}) (p vcs.Permanode, err error) {
 	return base, nil
 }
 
-type verifiedChange struct {
-	blocks.Block
-	sc vcs.SignedCBOR[vcs.Change]
-}
+type verifiedChange = vcsdb.VerifiedChange
 
 func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]verifiedChange, error) {
 	queue := ver.CIDs()
@@ -456,24 +451,20 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 			return nil, fmt.Errorf("failed to fetch change %s: %w", id, err)
 		}
 
-		sc, err := vcs.ParseChangeBlock(blk)
+		vc, err := vcsdb.VerifyChangeBlock(blk)
 		if err != nil {
 			return nil, err
 		}
 
-		if !sc.Payload.Object.Equals(obj) {
-			return nil, fmt.Errorf("change for unrelated object: got = %s, want = %s", sc.Payload.Object, obj)
+		if !vc.Decoded.Payload.Object.Equals(obj) {
+			return nil, fmt.Errorf("change for unrelated object: got = %s, want = %s", vc.Decoded.Payload.Object, obj)
 		}
 
-		if err := sc.Verify(); err != nil {
-			return nil, fmt.Errorf("failed to verify change %s: %w", id, err)
-		}
-
-		fetched = append(fetched, verifiedChange{Block: blk, sc: sc})
+		fetched = append(fetched, vc)
 
 		visited[id] = struct{}{}
 
-		for _, p := range sc.Payload.Parents {
+		for _, p := range vc.Decoded.Payload.Parents {
 			queue = append(queue, p)
 		}
 	}
@@ -484,7 +475,7 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 	}
 
 	sort.Slice(fetched, func(i, j int) bool {
-		return fetched[i].sc.Payload.LamportTime < fetched[j].sc.Payload.LamportTime
+		return fetched[i].Decoded.Payload.LamportTime < fetched[j].Decoded.Payload.LamportTime
 	})
 
 	return fetched, nil

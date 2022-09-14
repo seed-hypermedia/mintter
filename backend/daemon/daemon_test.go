@@ -8,6 +8,7 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"testing"
 	"time"
@@ -117,8 +118,8 @@ func TestPeriodicSync(t *testing.T) {
 	acfg.Syncing.WarmupDuration = 1 * time.Millisecond
 	bcfg.Syncing.WarmupDuration = 1 * time.Millisecond
 
-	acfg.Syncing.Interval = 300 * time.Millisecond
-	bcfg.Syncing.Interval = 300 * time.Millisecond
+	acfg.Syncing.Interval = 150 * time.Millisecond
+	bcfg.Syncing.Interval = 150 * time.Millisecond
 
 	alice := makeTestApp(t, "alice", acfg, true)
 	bob := makeTestApp(t, "bob", bcfg, true)
@@ -129,14 +130,16 @@ func TestPeriodicSync(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	time.Sleep(200 * time.Millisecond)
+
 	checkListAccounts := func(t *testing.T, a, b *App, msg string) {
 		accs, err := a.RPC.Accounts.ListAccounts(ctx, &accounts.ListAccountsRequest{})
 		require.NoError(t, err)
 
-		bid := b.Net.MustGet().ID().AccountID().String()
+		bacc := must.Do2(b.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 
 		require.Len(t, accs.Accounts, 1, msg)
-		require.Equal(t, bid, accs.Accounts[0].Id, msg)
+		testutil.ProtoEqual(t, bacc, accs.Accounts[0], "a must fetch b's account fully")
 	}
 
 	checkListAccounts(t, alice, bob, "alice to bob")
