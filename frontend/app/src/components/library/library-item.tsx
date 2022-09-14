@@ -70,7 +70,7 @@ export function LibraryItem({
       services: {
         performDelete: (context) => {
           if (context.version) {
-            return deletePublication(context.documentId, context.version)
+            return deletePublication(context.documentId)
           } else {
             return deleteDraft(context.documentId)
           }

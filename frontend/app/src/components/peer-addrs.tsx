@@ -16,13 +16,15 @@ export function PeerAddrs({
   const peerAddrs = usePeerAddrs()
   const copyText = useMemo(() => peerAddrs?.join(','), [peerAddrs])
 
-  handleCopy ||= (txt: string, result: boolean) => {
+  function localHandleCopy(txt: string, result: boolean) {
     if (result) {
       toast.success('Address copied to your clipboard!')
     } else {
       toast.error('Error while copying to clipboard')
     }
   }
+
+  handleCopy = handleCopy || localHandleCopy
 
   if (peerAddrs) {
     return (

@@ -40,7 +40,7 @@ export default function Publication({
 }: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
   const localBlockToolsService = useInterpret(() => blockToolsMachine)
-  blockToolsService ||= localBlockToolsService
+  blockToolsService = blockToolsService || localBlockToolsService
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
   }

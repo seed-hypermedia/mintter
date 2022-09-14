@@ -130,7 +130,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     values.publication = mocks.publication
   }
 
-  mocks.draftList ||= []
+  mocks.draftList = mocks.draftList || []
   client.setQueryData<ListDraftsResponse>([queryKeys.GET_DRAFT_LIST], {
     documents: mocks.draftList,
     nextPageToken: '',
@@ -139,7 +139,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     values.draftList = mocks.draftList
   }
 
-  mocks.publicationList ||= []
+  mocks.publicationList = mocks.publicationList || []
   client.setQueryData<ListPublicationsResponse>(
     [queryKeys.GET_PUBLICATION_LIST],
     {
@@ -179,7 +179,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     values.publicationList = mocks.publicationList
   }
 
-  mocks.bookmarks ||= []
+  mocks.bookmarks = mocks.bookmarks || []
   client.setQueryData([queryKeys.GET_BOOKMARK_LIST], mocks.bookmarks)
 
   if (mocks.bookmarks) {

@@ -9,16 +9,14 @@ import {
   GenMnemonicRequest,
   RegisterRequest,
 } from './.generated/daemon/v1alpha/daemon'
+import {client} from './client'
 import type {GrpcClient} from './grpc-client'
-import {createGrpcClient} from './grpc-client'
 /**
  *
  * @param rpc
  * @returns
  */
-export function generateMnemonic(rpc?: GrpcClient) {
-  rpc ||= createGrpcClient()
-
+export function generateMnemonic(rpc: GrpcClient = client) {
   const request = GenMnemonicRequest.fromPartial({mnemonicsLength: 12})
   const response = new DaemonClientImpl(rpc).genMnemonic(request)
   return response
@@ -36,10 +34,8 @@ export function registerAccount(
   mnemonicList: string[],
   passphrase?: string,
   walletPassword?: string,
-  rpc?: GrpcClient,
+  rpc: GrpcClient = client,
 ) {
-  rpc ||= createGrpcClient()
-
   const request = RegisterRequest.fromPartial({
     mnemonic: mnemonicList,
     passphrase,
@@ -54,9 +50,7 @@ export function registerAccount(
  * @param rpc
  * @returns
  */
-export function updateProfile(profile: Profile, rpc?: GrpcClient) {
-  rpc ||= createGrpcClient()
-
+export function updateProfile(profile: Profile, rpc: GrpcClient = client) {
   return new AccountsClientImpl(rpc).updateProfile(profile)
 }
 
@@ -70,10 +64,8 @@ export function updateProfile(profile: Profile, rpc?: GrpcClient) {
 export function listAccounts(
   pageSize?: number,
   pageToken?: string,
-  rpc?: GrpcClient,
+  rpc: GrpcClient = client,
 ) {
-  rpc ||= createGrpcClient()
-
   const request = ListAccountsRequest.fromPartial({
     pageSize,
     pageToken,
@@ -89,9 +81,8 @@ export function listAccounts(
  */
 export async function getAccount(
   id: string,
-  rpc?: GrpcClient,
+  rpc: GrpcClient = client,
 ): Promise<Account> {
-  rpc ||= createGrpcClient()
   const request = GetAccountRequest.fromPartial({
     id,
   })
