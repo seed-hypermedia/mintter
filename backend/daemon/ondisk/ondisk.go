@@ -61,10 +61,6 @@ type OnDisk struct {
 
 // NewOnDisk creates a new OnDisk configuration repo.
 func NewOnDisk(path string, log *zap.Logger) (r *OnDisk, err error) {
-	if !filepath.IsAbs(path) {
-		return nil, fmt.Errorf("must provide absolute repo path, got = %s", path)
-	}
-
 	r, err = prepareRepo(path, log)
 	if err != nil {
 		return nil, err
@@ -104,6 +100,10 @@ func NewOnDiskWithDeviceKey(path string, log *zap.Logger, key crypto.PrivKey) (r
 }
 
 func prepareRepo(path string, log *zap.Logger) (r *OnDisk, err error) {
+	if !filepath.IsAbs(path) {
+		return nil, fmt.Errorf("must provide absolute repo path, got = %s", path)
+	}
+
 	dirs := [...]string{
 		path,
 		filepath.Join(path, keysDir),

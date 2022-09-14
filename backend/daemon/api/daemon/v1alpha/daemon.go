@@ -78,13 +78,24 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, "failed to create account: %v", err)
 	}
 
-	if err := srv.repo.CommitAccount(acc.PublicKey); err != nil {
+	if err := srv.RegisterAccount(ctx, acc); err != nil {
 		return nil, err
+	}
+
+	return &daemon.RegisterResponse{
+		AccountId: acc.CID().String(),
+	}, nil
+}
+
+// RegisterAccount performs registration given an existing account key pair.
+func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error {
+	if err := srv.repo.CommitAccount(acc.PublicKey); err != nil {
+		return err
 	}
 
 	conn, release, err := srv.vcs.Conn(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer release()
 
@@ -92,16 +103,14 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 		_, err := mttacc.Register(ctx, acc, srv.repo.Device(), conn)
 		return err
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := srv.wallet.ConfigureMintterLNDHub(ctx, acc); err != nil {
-		return nil, err
+		return err
 	}
 
-	return &daemon.RegisterResponse{
-		AccountId: acc.CID().String(),
-	}, nil
+	return nil
 }
 
 // GetInfo implements the corresponding gRPC method.
