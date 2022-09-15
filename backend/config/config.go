@@ -38,7 +38,7 @@ func Default() Config {
 		Syncing: Syncing{
 			WarmupDuration: time.Minute,
 			Interval:       time.Minute,
-			TimeoutPerPeer: time.Minute * 5,
+			TimeoutPerPeer: time.Minute * 2,
 		},
 	}
 }
