@@ -240,7 +240,7 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 		go func(i int, dev vcssql.DevicesListResult) {
 			defer wg.Done()
 
-			ctx, cancel := context.WithTimeout(ctx, time.Minute*5)
+			ctx, cancel := context.WithTimeout(ctx, s.peerSyncTimeout)
 			defer cancel()
 
 			did := cid.NewCidV1(core.CodecDeviceKey, dev.DevicesMultihash)
