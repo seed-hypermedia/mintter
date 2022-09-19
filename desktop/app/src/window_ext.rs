@@ -115,7 +115,7 @@ impl WindowExt for Window<Wry> {
 
       #[cfg(windows)]
       {
-        let mut pwstr = PWSTR::default();
+        let mut pwstr = PWSTR::null();
 
         let webview = unsafe { webview.controller().CoreWebView2().unwrap() };
         unsafe { webview.Source(&mut pwstr).unwrap() };
