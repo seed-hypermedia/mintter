@@ -167,7 +167,7 @@ jobs:
           node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{
           needs.get-version.outputs.version }}
 
-      - uses: JonasKruckenberg/tauri-build@v1.0.5
+      - uses: JonasKruckenberg/tauri-build@v1.1.0
         id: tauri_build
         env:
           VERSION: ${{ needs.get-version.outputs.version }}
