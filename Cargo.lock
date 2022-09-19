@@ -1904,8 +1904,8 @@ dependencies = [
  "tracing",
  "url",
  "webkit2gtk",
- "webview2-com 0.17.0",
- "windows 0.37.0",
+ "webview2-com 0.19.1",
+ "windows 0.39.0",
  "workspace-hack",
 ]
 
@@ -4202,18 +4202,6 @@ dependencies = [
 
 [[package]]
 name = "webview2-com"
-version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfe57a1668c29149ad9ea9cb794811d5bb83a1dd993d65cfa11cfa34305606d2"
-dependencies = [
- "webview2-com-macros",
- "webview2-com-sys 0.17.0",
- "windows 0.37.0",
- "windows-implement 0.37.0",
-]
-
-[[package]]
-name = "webview2-com"
 version = "0.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4a769c9f1a64a8734bde70caafac2b96cada12cd4aefa49196b3a386b8b4178"
@@ -4240,20 +4228,6 @@ name = "webview2-com-sys"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0258c53ee9adc0a4f8ba1c8c317588f7a58c7048a55b621d469ba75ab3709ca1"
-dependencies = [
- "regex",
- "serde",
- "serde_json",
- "thiserror",
- "windows 0.37.0",
- "windows-bindgen 0.37.0",
-]
-
-[[package]]
-name = "webview2-com-sys"
-version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a2132d881aa2cc60262d17f85f470f72779dc033ad57fc69dff85e316f1d5c0"
 dependencies = [
  "regex",
  "serde",
