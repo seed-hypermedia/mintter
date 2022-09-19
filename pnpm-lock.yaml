@@ -111,7 +111,7 @@ importers:
       react-error-boundary: 3.1.4
       react-highlight-words: 0.18.0
       react-hook-form: 7.34.2
-      react-hot-toast: 2.3.0
+      react-hot-toast: 2.4.0
       react-qr-barcode-scanner: 1.0.6
       react-qr-code: 2.0.7
       react-query: 3.39.2
@@ -205,7 +205,7 @@ importers:
       react-error-boundary: 3.1.4_react@18.2.0
       react-highlight-words: 0.18.0_react@18.2.0
       react-hook-form: 7.34.2_react@18.2.0
-      react-hot-toast: 2.3.0_owo25xnefcwdq3zjgtohz6dbju
+      react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
       react-qr-barcode-scanner: 1.0.6_biqbaboplfbrettd7655fr4n2y
       react-qr-code: 2.0.7_react@18.2.0
       react-query: 3.39.2_biqbaboplfbrettd7655fr4n2y
@@ -7237,8 +7237,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /react-hot-toast/2.3.0_owo25xnefcwdq3zjgtohz6dbju:
-    resolution: {integrity: sha512-/RxV+bfjld7tSJR1SCLzMAXgFuNW7fCpK6+vbYqfmbGSWcqTMz2rizrvfWKvtcPH5HK0NqxmBaC5SrAy1F42zA==}
+  /react-hot-toast/2.4.0_owo25xnefcwdq3zjgtohz6dbju:
+    resolution: {integrity: sha512-qnnVbXropKuwUpriVVosgo8QrB+IaPJCpL8oBI6Ov84uvHZ5QQcTp2qg6ku2wNfgJl6rlQXJIQU5q+5lmPOutA==}
     engines: {node: '>=10'}
     peerDependencies:
       react: '>=16'
