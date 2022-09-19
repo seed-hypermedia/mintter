@@ -15,7 +15,7 @@ version = "0.0.0" # don't touch! This gets overriden with the correct version by
 tauri-build = {version = "1.0.4", features = [] }
 
 [dependencies]
-anyhow = "1.0.64"
+anyhow = "1.0.65"
 # async-trait = "0.1.56"
 env_logger = "0.9.0"
 # futures-util = "0.3.21"
