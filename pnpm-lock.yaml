@@ -113,7 +113,7 @@ importers:
       react-hook-form: 7.34.2
       react-hot-toast: 2.3.0
       react-qr-barcode-scanner: 1.0.6
-      react-qr-code: 2.0.7
+      react-qr-code: 2.0.8
       react-query: 3.39.2
       rehype: 12.0.1
       rehype-minify-whitespace: 5.0.1
@@ -207,7 +207,7 @@ importers:
       react-hook-form: 7.34.2_react@18.2.0
       react-hot-toast: 2.3.0_owo25xnefcwdq3zjgtohz6dbju
       react-qr-barcode-scanner: 1.0.6_biqbaboplfbrettd7655fr4n2y
-      react-qr-code: 2.0.7_react@18.2.0
+      react-qr-code: 2.0.8_react@18.2.0
       react-query: 3.39.2_biqbaboplfbrettd7655fr4n2y
       rehype: 12.0.1
       rehype-minify-whitespace: 5.0.1
@@ -7271,8 +7271,8 @@ packages:
       react-webcam: 5.2.4_biqbaboplfbrettd7655fr4n2y
     dev: false
 
-  /react-qr-code/2.0.7_react@18.2.0:
-    resolution: {integrity: sha512-NpknL80p7dWbLdHfBSIxQIqLCu3+kBlyzYD692rO0UnVwfCSziIxc1xn/p3JhPEv1RV1lRD8j0w+hR3L7tawTQ==}
+  /react-qr-code/2.0.8_react@18.2.0:
+    resolution: {integrity: sha512-zYO9EAPQU8IIeD6c6uAle7NlKOiVKs8ji9hpbWPTGxO+FLqBN2on+XCXQvnhm91nrRd306RvNXUkUNcXXSfhWA==}
     peerDependencies:
       react: ^16.x || ^17.x || ^18.x
       react-native-svg: '*'
