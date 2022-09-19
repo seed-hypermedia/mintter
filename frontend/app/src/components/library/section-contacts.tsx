@@ -47,6 +47,7 @@ function ContactListLoading() {
 
 export function ContactsSection() {
   const {status, data, refetch} = useContacts()
+  console.log('Contacts Data: ', data)
   let title = `Contacts (${data?.accounts?.length || 0})`
 
   return (

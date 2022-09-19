@@ -40,6 +40,12 @@ export function useFileFromRef(id: string): PublicationRef | DraftRef {
       return state.children[id] as FileActor
   })() as FileActor
 
+  // return useMemo(() => {
+  //   if (id.startsWith('pub') || id.startsWith('draft')) {
+  //     let
+  //   }
+  // }, [id])
+
   return file
 }
 

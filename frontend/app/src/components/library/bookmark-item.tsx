@@ -95,33 +95,35 @@ export function BookmarkItem({
             <Icon name="MoreHorizontal" size="1" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
-        <Dropdown.Content
-          align="start"
-          data-testid="bookmark-item-dropdown-root"
-          hidden={deleteState.matches('open')}
-        >
-          <Dropdown.Item onSelect={onCopy}>
-            <Icon name="Copy" size="1" />
-            <Text size="2">Copy Document ID</Text>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={onMainPanel}>
-            <Icon size="1" name="ArrowTopRight" />
-            <Text size="2">Open in main panel</Text>
-          </Dropdown.Item>
-          <DeleteDialog
-            deleteRef={deleteService}
-            title="Delete Bookmark"
-            description="Are you sure you want to delete this bookmark? This action is not reversible."
+        <Dropdown.Portal>
+          <Dropdown.Content
+            align="start"
+            data-testid="bookmark-item-dropdown-root"
+            hidden={deleteState.matches('open')}
           >
-            <Dropdown.Item
-              data-testid="delete-item"
-              onSelect={(e) => e.preventDefault()}
-            >
-              <Icon size="1" name="Close" />
-              <Text size="2">Delete bookmark</Text>
+            <Dropdown.Item onSelect={onCopy}>
+              <Icon name="Copy" size="1" />
+              <Text size="2">Copy Document ID</Text>
             </Dropdown.Item>
-          </DeleteDialog>
-        </Dropdown.Content>
+            <Dropdown.Item onSelect={onMainPanel}>
+              <Icon size="1" name="ArrowTopRight" />
+              <Text size="2">Open in main panel</Text>
+            </Dropdown.Item>
+            <DeleteDialog
+              deleteRef={deleteService}
+              title="Delete Bookmark"
+              description="Are you sure you want to delete this bookmark? This action is not reversible."
+            >
+              <Dropdown.Item
+                data-testid="delete-item"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <Icon size="1" name="Close" />
+                <Text size="2">Delete bookmark</Text>
+              </Dropdown.Item>
+            </DeleteDialog>
+          </Dropdown.Content>
+        </Dropdown.Portal>
       </Dropdown.Root>
     </StyledItem>
   )

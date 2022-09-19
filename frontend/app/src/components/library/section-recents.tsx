@@ -13,7 +13,7 @@ export function RecentsSection() {
     <Section title="Recents" icon="Clock">
       {recents.length
         ? recents.map((fileRef) => (
-            <RecentItem key={fileRef} fileRef={fileRef} />
+            <RecentItemWrapper key={fileRef} fileRef={fileRef} />
           ))
         : null}
     </Section>
@@ -39,12 +39,21 @@ type RecentItemProps = {
   fileRef: string
 }
 
-function RecentItem({fileRef}: RecentItemProps) {
-  const mainService = useMain()
+function RecentItemWrapper({fileRef}: RecentItemProps) {
   const file = useFileFromRef(fileRef)
+
+  if (file) {
+    return <RecentItem file={file} />
+  }
+
+  return null
+}
+
+function RecentItem({file}: {file: ReturnType<typeof useFileFromRef>}) {
+  const mainService = useMain()
   let [state] = useActor(file)
 
-  let isDraft = useMemo(() => fileRef.startsWith('draft'), [fileRef])
+  let isDraft = useMemo(() => file.id.startsWith('draft'), [file.id])
 
   function goToDocument(event: MouseEvent) {
     event.preventDefault()

@@ -184,44 +184,46 @@ export function LibraryItem({
               />
             </ElementDropdown>
           </Dropdown.Trigger>
-          <Dropdown.Content
-            align="start"
-            data-testid="library-item-dropdown-root"
-            hidden={deleteState.matches('open')}
-          >
-            <Dropdown.Item
-              data-testid="copy-item"
-              disabled={!isPublication}
-              onSelect={onCopy}
-            >
-              <Icon name="Copy" size="1" />
-              <Text size="2">Copy Document ID</Text>
-            </Dropdown.Item>
-            <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
-              <Icon size="1" name="ArrowTopRight" />
-              <Text size="2">Open in main panel</Text>
-            </Dropdown.Item>
-            <Dropdown.Item
-              data-testid="new-window-item"
-              onSelect={onOpenInNewWindow}
-            >
-              <Icon size="1" name="OpenInNewWindow" />
-              <Text size="2">Open in new Window</Text>
-            </Dropdown.Item>
-            <DeleteDialog
-              deleteRef={deleteService}
-              title="Delete document"
-              description="Are you sure you want to delete this document? This action is not reversible."
+          <Dropdown.Portal>
+            <Dropdown.Content
+              align="start"
+              data-testid="library-item-dropdown-root"
+              hidden={deleteState.matches('open')}
             >
               <Dropdown.Item
-                data-testid="delete-item"
-                onSelect={(e) => e.preventDefault()}
+                data-testid="copy-item"
+                disabled={!isPublication}
+                onSelect={onCopy}
               >
-                <Icon size="1" name="Close" />
-                <Text size="2">Delete Document</Text>
+                <Icon name="Copy" size="1" />
+                <Text size="2">Copy Document ID</Text>
               </Dropdown.Item>
-            </DeleteDialog>
-          </Dropdown.Content>
+              <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
+                <Icon size="1" name="ArrowTopRight" />
+                <Text size="2">Open in main panel</Text>
+              </Dropdown.Item>
+              <Dropdown.Item
+                data-testid="new-window-item"
+                onSelect={onOpenInNewWindow}
+              >
+                <Icon size="1" name="OpenInNewWindow" />
+                <Text size="2">Open in new Window</Text>
+              </Dropdown.Item>
+              <DeleteDialog
+                deleteRef={deleteService}
+                title="Delete document"
+                description="Are you sure you want to delete this document? This action is not reversible."
+              >
+                <Dropdown.Item
+                  data-testid="delete-item"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <Icon size="1" name="Close" />
+                  <Text size="2">Delete Document</Text>
+                </Dropdown.Item>
+              </DeleteDialog>
+            </Dropdown.Content>
+          </Dropdown.Portal>
         </Dropdown.Root>
       </span>
     </div>

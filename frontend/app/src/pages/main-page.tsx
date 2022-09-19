@@ -43,6 +43,8 @@ export default function MainPage() {
           window.location.reload()
         }}
       >
+        {state.hasTag('library') ? <Library /> : null}
+        {state.hasTag('topbar') ? <Topbar /> : null}
         {state.context.currentFile ? (
           state.hasTag('publication') ? (
             <Publication
@@ -60,8 +62,6 @@ export default function MainPage() {
         {state.matches('routes.draftList') ? <DraftList /> : null}
         {state.matches('routes.publicationList') ? <PublicationList /> : null}
       </ErrorBoundary>
-      {state.hasTag('library') ? <Library /> : null}
-      {state.hasTag('topbar') ? <Topbar /> : null}
     </Box>
   )
 }
