@@ -9,7 +9,7 @@ require (
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
 	github.com/gorilla/mux v1.8.0
 	github.com/improbable-eng/grpc-web v0.15.0
-	github.com/ipfs/go-bitswap v0.7.0
+	github.com/ipfs/go-bitswap v0.10.2
 	github.com/ipfs/go-block-format v0.0.3
 	github.com/ipfs/go-cid v0.3.2
 	github.com/ipfs/go-datastore v0.6.0
