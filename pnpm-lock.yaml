@@ -57,7 +57,7 @@ importers:
       '@radix-ui/react-tooltip': 1.0.0
       '@stitches/core': 1.2.8
       '@stitches/react': 1.2.8
-      '@tauri-apps/api': 1.0.2
+      '@tauri-apps/api': 1.1.0
       '@types/google-protobuf': 3.15.6
       '@types/hast': 2.3.4
       '@types/is-url': 1.2.30
@@ -128,8 +128,8 @@ importers:
       slate-history: https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-hyperscript: https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-react: https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688
-      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#01374ddaa7327eb3fb1f714ee0c46519a16400d5
-      tauri-plugin-store-api: https://github.com/tauri-apps/tauri-plugin-store#6163c041d7d7ab2dc50e01ba5161da4f3d1d548e
+      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#9ccffd8e7462821d81723b668bb32becf9a613f8
+      tauri-plugin-store-api: https://github.com/tauri-apps/tauri-plugin-store#d8efb964bb1894bdf01407693ee896d0f9c557b3
       tiny-glob: 0.2.9
       trim-trailing-lines: 2.0.0
       ts-node: 10.9.1
@@ -172,7 +172,7 @@ importers:
       '@radix-ui/react-tooltip': 1.0.0_63dfw6rfgd64rl77ptfma4cvt4
       '@stitches/core': 1.2.8
       '@stitches/react': 1.2.8_react@18.2.0
-      '@tauri-apps/api': 1.0.2
+      '@tauri-apps/api': 1.1.0
       '@xstate/react': 3.0.1_wuh36jwbrf5hemtqgozb23tawi
       autosize: 5.0.1
       browser-headers: 0.4.1
@@ -220,8 +220,8 @@ importers:
       slate-history: '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-hyperscript: '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-react: '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688_2hwyydqlvvkbaegiievw3yx7se'
-      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/01374ddaa7327eb3fb1f714ee0c46519a16400d5
-      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/6163c041d7d7ab2dc50e01ba5161da4f3d1d548e
+      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/9ccffd8e7462821d81723b668bb32becf9a613f8
+      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/d8efb964bb1894bdf01407693ee896d0f9c557b3
       trim-trailing-lines: 2.0.0
       unified: 10.1.2
       unist-builder: 3.0.0
@@ -2407,8 +2407,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@tauri-apps/api/1.0.2:
-    resolution: {integrity: sha512-yuNW0oeJ1/ZA7wNF1KgxhHrSu5viPVzY/UgUczzN5ptLM8dH15Juy5rEGkoHfeXGju90Y/l22hi3BtIrp/za+w==}
+  /@tauri-apps/api/1.1.0:
+    resolution: {integrity: sha512-n13pIqdPd3KtaMmmAcrU7BTfdMtIlGNnfZD0dNX8L4p8dgmuNyikm6JAA+yCpl9gqq6I8x5cV2Y0muqdgD0cWw==}
     engines: {node: '>= 12.22.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
     dev: false
 
@@ -9109,20 +9109,20 @@ packages:
       tiny-warning: 1.0.3
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-log/01374ddaa7327eb3fb1f714ee0c46519a16400d5:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/01374ddaa7327eb3fb1f714ee0c46519a16400d5}
+  github.com/tauri-apps/tauri-plugin-log/9ccffd8e7462821d81723b668bb32becf9a613f8:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/9ccffd8e7462821d81723b668bb32becf9a613f8}
     name: tauri-plugin-log-api
     version: 0.1.0
     dependencies:
-      '@tauri-apps/api': 1.0.2
+      '@tauri-apps/api': 1.1.0
       tslib: 2.4.0
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-store/6163c041d7d7ab2dc50e01ba5161da4f3d1d548e:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/6163c041d7d7ab2dc50e01ba5161da4f3d1d548e}
+  github.com/tauri-apps/tauri-plugin-store/d8efb964bb1894bdf01407693ee896d0f9c557b3:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/d8efb964bb1894bdf01407693ee896d0f9c557b3}
     name: tauri-plugin-store-api
     version: 0.1.0
     dependencies:
-      '@tauri-apps/api': 1.0.2
+      '@tauri-apps/api': 1.1.0
       tslib: 2.4.0
     dev: false
