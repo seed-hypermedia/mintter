@@ -22,3 +22,13 @@ go_binary(
         "//third_party:sqlite",
     ],
 )
+
+go_binary(
+    name = "pingp2p",
+    srcs = glob(["./cmd/pingp2p/*.go"]),
+    out = "pingp2p-" + target_platform_triple(),
+    cgo = True,
+    gomod = "//:gomod",
+    package = "./cmd/pingp2p",
+    visibility = ["PUBLIC"],
+)
