@@ -78,7 +78,7 @@ importers:
       cmdk: 0.1.20
       copy-text-to-clipboard: 3.0.1
       covector: 0.7.3
-      csstype: 3.1.0
+      csstype: 3.1.1
       cypress: 10.7.0
       deepmerge: 4.2.2
       fast-deep-equal: 3.1.3
@@ -177,7 +177,7 @@ importers:
       autosize: 5.0.1
       browser-headers: 0.4.1
       cmdk: 0.1.20_7ey2zzynotv32rpkwno45fsx4e
-      csstype: 3.1.0
+      csstype: 3.1.1
       deepmerge: 4.2.2
       fast-deep-equal: 3.1.3
       framer-motion: 5.6.0_biqbaboplfbrettd7655fr4n2y
@@ -205,7 +205,7 @@ importers:
       react-error-boundary: 3.1.4_react@18.2.0
       react-highlight-words: 0.18.0_react@18.2.0
       react-hook-form: 7.34.2_react@18.2.0
-      react-hot-toast: 2.3.0_vt6aeitzauirmcdhimiad2yjxy
+      react-hot-toast: 2.3.0_owo25xnefcwdq3zjgtohz6dbju
       react-qr-barcode-scanner: 1.0.6_biqbaboplfbrettd7655fr4n2y
       react-qr-code: 2.0.7_react@18.2.0
       react-query: 3.39.2_biqbaboplfbrettd7655fr4n2y
@@ -2569,7 +2569,7 @@ packages:
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
-      csstype: 3.1.0
+      csstype: 3.1.1
     dev: false
 
   /@types/react/18.0.20:
@@ -2577,7 +2577,7 @@ packages:
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
-      csstype: 3.1.0
+      csstype: 3.1.1
 
   /@types/scheduler/0.16.2:
     resolution: {integrity: sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==}
@@ -3856,8 +3856,8 @@ packages:
     resolution: {integrity: sha512-YUifsXXuknHlUsmlgyY0PKzgPOr7/FjCePfHNt0jxm83wHZi44VDMQ7/fGNkjY3/jV1MC+1CmZbaHzugyeRtpg==}
     dev: true
 
-  /csstype/3.1.0:
-    resolution: {integrity: sha512-uX1KG+x9h5hIJsaKR9xHUeUraxf8IODOwq9JLNPq6BwB04a/xgpq3rcx47l5BZu5zBPlgD342tdke3Hom/nJRA==}
+  /csstype/3.1.1:
+    resolution: {integrity: sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==}
 
   /ctrlc-windows/2.0.0:
     resolution: {integrity: sha512-bpZLqGGwJ/2uLIXmhBYC4TObQlpfEeCCzmJ1At6TWFIWcY4FydkJLTolABFPUxmDYHeC9y95wdYBLa4U4PSktA==}
@@ -5270,12 +5270,12 @@ packages:
     resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
     dev: true
 
-  /goober/2.1.11_csstype@3.1.0:
+  /goober/2.1.11_csstype@3.1.1:
     resolution: {integrity: sha512-5SS2lmxbhqH0u9ABEWq7WPU69a4i2pYcHeCxqaNq6Cw3mnrF0ghWNM4tEGid4dKy8XNIAUbuThuozDHHKJVh3A==}
     peerDependencies:
       csstype: ^3.0.10
     dependencies:
-      csstype: 3.1.0
+      csstype: 3.1.1
     dev: false
 
   /google-protobuf/3.21.0:
@@ -7237,14 +7237,14 @@ packages:
       react: 18.2.0
     dev: false
 
-  /react-hot-toast/2.3.0_vt6aeitzauirmcdhimiad2yjxy:
+  /react-hot-toast/2.3.0_owo25xnefcwdq3zjgtohz6dbju:
     resolution: {integrity: sha512-/RxV+bfjld7tSJR1SCLzMAXgFuNW7fCpK6+vbYqfmbGSWcqTMz2rizrvfWKvtcPH5HK0NqxmBaC5SrAy1F42zA==}
     engines: {node: '>=10'}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
     dependencies:
-      goober: 2.1.11_csstype@3.1.0
+      goober: 2.1.11_csstype@3.1.1
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     transitivePeerDependencies:
