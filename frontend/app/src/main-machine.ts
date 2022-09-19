@@ -196,6 +196,7 @@ export function createMainPageService({
               states: {
                 idle: {
                   entry: 'pushDraftRoute',
+                  exit: 'pushDraftToRecents',
                   tags: ['documentView', 'draft'],
                   on: {
                     'COMMIT.PUBLISH': {
@@ -230,6 +231,7 @@ export function createMainPageService({
               states: {
                 idle: {
                   entry: 'pushPublicationRoute',
+                  exit: 'pushPublicationToRecents',
                   tags: ['documentView', 'publication'],
                   on: {
                     'COMMIT.CREATE.REPLY': {
@@ -331,18 +333,13 @@ export function createMainPageService({
               target: '.draftList',
             },
             'GO.TO.DRAFT': {
-              actions: [
-                'assignDraftParams',
-                'assignCurrentDraft',
-                'pushDraftToRecents',
-              ],
+              actions: ['assignDraftParams', 'assignCurrentDraft'],
               target: '.editor',
             },
             'GO.TO.PUBLICATION': {
               actions: [
                 'assignPublicationParams',
                 'assignCurrentPublication',
-                'pushPublicationToRecents',
                 'pushToActivity',
               ],
               target: '.publication',
@@ -369,7 +366,6 @@ export function createMainPageService({
       },
     },
     {
-      guards: {},
       actions: {
         // @ts-ignore
         spawnUIMachines: assign({
@@ -768,7 +764,16 @@ export function createMainPageService({
            * - update draft
            * - return draft
            */
-          let currentPub = context.currentFile?.getSnapshot()
+          try {
+            var currentPub = context.currentFile?.getSnapshot()
+          } catch (err) {
+            throw Error(
+              `[REPLYTO ERROR]: currentFile does not have a snapshot - ${JSON.stringify(
+                err,
+              )}`,
+            )
+          }
+
           let currentUrl = `mtt://${currentPub?.context.documentId}/${currentPub?.context.version}`
           let doc = await createDraft()
           let block = statement([

@@ -188,41 +188,43 @@ export function DraftBlockTools({
             <Icon name="Grid4" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
-        <Dropdown.Content portalled align="start" side="bottom">
-          {Object.entries(items).map(([key, value], index, arr) => {
-            return (
-              <Fragment key={key}>
-                <Dropdown.Label>
-                  <Text color="muted" size="2" css={{padding: '$3'}}>
-                    {key}
-                  </Text>
-                </Dropdown.Label>
-                {value.map((item) => (
-                  <Dropdown.Item
-                    data-testid={`item-${item.label}`}
-                    key={item.label}
-                    onSelect={() => {
-                      if (blockEntry) {
-                        item.onSelect(
-                          editor,
-                          blockEntry[0],
-                          blockEntry[1],
-                          editor.selection,
-                        )
-                      }
-                      // item.onSelect(editor, block, path)
-                      // item.onSelect(editor, element, path, editor.selection)
-                    }}
-                  >
-                    <Icon size="2" name={item.iconName} />
-                    {item.label}
-                  </Dropdown.Item>
-                ))}
-                {arr.length > index + 1 && <Dropdown.Separator />}
-              </Fragment>
-            )
-          })}
-        </Dropdown.Content>
+        <Dropdown.Portal>
+          <Dropdown.Content align="start" side="bottom">
+            {Object.entries(items).map(([key, value], index, arr) => {
+              return (
+                <Fragment key={key}>
+                  <Dropdown.Label>
+                    <Text color="muted" size="2" css={{padding: '$3'}}>
+                      {key}
+                    </Text>
+                  </Dropdown.Label>
+                  {value.map((item) => (
+                    <Dropdown.Item
+                      data-testid={`item-${item.label}`}
+                      key={item.label}
+                      onSelect={() => {
+                        if (blockEntry) {
+                          item.onSelect(
+                            editor,
+                            blockEntry[0],
+                            blockEntry[1],
+                            editor.selection,
+                          )
+                        }
+                        // item.onSelect(editor, block, path)
+                        // item.onSelect(editor, element, path, editor.selection)
+                      }}
+                    >
+                      <Icon size="2" name={item.iconName} />
+                      {item.label}
+                    </Dropdown.Item>
+                  ))}
+                  {arr.length > index + 1 && <Dropdown.Separator />}
+                </Fragment>
+              )
+            })}
+          </Dropdown.Content>
+        </Dropdown.Portal>
       </Dropdown.Root>
     </Box>
   )

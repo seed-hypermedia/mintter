@@ -25,7 +25,7 @@ import {
   CustomMountOptions,
   TestProvider,
 } from '@app/test/utils'
-import {mount, MountOptions, MountReturn} from 'cypress/react'
+import {mount, MountOptions, MountReturn} from 'cypress/react18'
 import Navaid from 'navaid'
 
 // Augment the Cypress namespace to include type definitions for

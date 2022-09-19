@@ -204,7 +204,7 @@ function DraftActions({fileRef}: {fileRef: DraftRef}) {
           send('DRAFT.PUBLISH')
         }}
       >
-        Publish
+        Done
       </Button>
     </Box>
   )
@@ -280,19 +280,21 @@ function PublicationActions({
               <Icon size="1" name="MoreHorizontal" color="muted" />
             </TopbarButton>
           </Dropdown.Trigger>
-          <Dropdown.Content alignOffset={-5} align="end">
-            {!state.context.canUpdate ? (
-              <TippingModal fileRef={fileRef} />
-            ) : null}
-            <Dropdown.Item onSelect={onCopyReference}>
-              <Icon size="1" name="Copy" />
-              <span className={dropdownLabel()}>Copy Document Reference</span>
-            </Dropdown.Item>
-            <Dropdown.Item onSelect={onBookmark}>
-              <Icon size="1" name="ArrowBottomRight" />
-              <span className={dropdownLabel()}>Add to Bookmarks</span>
-            </Dropdown.Item>
-          </Dropdown.Content>
+          <Dropdown.Portal>
+            <Dropdown.Content alignOffset={-5} align="end">
+              {!state.context.canUpdate ? (
+                <TippingModal fileRef={fileRef} />
+              ) : null}
+              <Dropdown.Item onSelect={onCopyReference}>
+                <Icon size="1" name="Copy" />
+                <span className={dropdownLabel()}>Copy Document Reference</span>
+              </Dropdown.Item>
+              <Dropdown.Item onSelect={onBookmark}>
+                <Icon size="1" name="ArrowBottomRight" />
+                <span className={dropdownLabel()}>Add to Bookmarks</span>
+              </Dropdown.Item>
+            </Dropdown.Content>
+          </Dropdown.Portal>
         </Dropdown.Root>
       </Box>
       <Dropdown.Root>
@@ -315,47 +317,49 @@ function PublicationActions({
             </TopbarButton>
           </Dropdown.Trigger>
         </Tooltip>
-        <Dropdown.Content alignOffset={-5} align="end">
-          {state.context.canUpdate ? (
-            <Dropdown.Item
-              onSelect={() =>
-                mainService.send({type: 'COMMIT.EDIT.PUBLICATION'})
-              }
-            >
-              <Icon size="1" name="Pencil" />
-              <span className={dropdownLabel()}>Edit</span>
-            </Dropdown.Item>
-          ) : null}
+        <Dropdown.Portal>
+          <Dropdown.Content alignOffset={-5} align="end">
+            {state.context.canUpdate ? (
+              <Dropdown.Item
+                onSelect={() =>
+                  mainService.send({type: 'COMMIT.EDIT.PUBLICATION'})
+                }
+              >
+                <Icon size="1" name="Pencil" />
+                <span className={dropdownLabel()}>Edit</span>
+              </Dropdown.Item>
+            ) : null}
 
-          <Dropdown.Item
-            onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
-          >
-            <Icon size="1" name="File" />
-            <span className={dropdownLabel()}>New Document</span>
-          </Dropdown.Item>
-          <Dropdown.Item
-            disabled={mainState.matches('routes.publication.replying')}
-            onSelect={() => mainService.send('COMMIT.CREATE.REPLY')}
-          >
-            <Icon size="1" name="MessageBubble" />
-            <span className={dropdownLabel()}>Reply</span>
-          </Dropdown.Item>
-          <Dropdown.Item>
-            <Icon size="1" name="PencilAdd" />
-            <span className={dropdownLabel()}>Review</span>
-          </Dropdown.Item>
-          <Dropdown.Separator color="muted" />
-          <Dropdown.Item disabled>
-            <Box
-              css={{
-                paddingBlock: '1rem',
-                userSelect: 'none',
-              }}
+            <Dropdown.Item
+              onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
             >
-              pub date here
-            </Box>
-          </Dropdown.Item>
-        </Dropdown.Content>
+              <Icon size="1" name="File" />
+              <span className={dropdownLabel()}>New Document</span>
+            </Dropdown.Item>
+            <Dropdown.Item
+              disabled={mainState.matches('routes.publication.replying')}
+              onSelect={() => mainService.send('COMMIT.CREATE.REPLY')}
+            >
+              <Icon size="1" name="MessageBubble" />
+              <span className={dropdownLabel()}>Reply</span>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Icon size="1" name="PencilAdd" />
+              <span className={dropdownLabel()}>Review</span>
+            </Dropdown.Item>
+            <Dropdown.Separator color="muted" />
+            <Dropdown.Item disabled>
+              <Box
+                css={{
+                  paddingBlock: '1rem',
+                  userSelect: 'none',
+                }}
+              >
+                pub date here
+              </Box>
+            </Dropdown.Item>
+          </Dropdown.Content>
+        </Dropdown.Portal>
       </Dropdown.Root>
     </Box>
   )
