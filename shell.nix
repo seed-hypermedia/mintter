@@ -9,7 +9,6 @@ let
       go
       nodejs
       nodePackages.pnpm
-      golangci-lint
       please
       python3
       bazel-buildtools
