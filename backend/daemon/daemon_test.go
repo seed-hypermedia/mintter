@@ -23,6 +23,68 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func TestBug_PublicationsListInconsistent(t *testing.T) {
+	// See: https://github.com/mintterteam/mintter/issues/692.
+	// Although it turns out this bug may not be the daemon's issue.
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	publish := func(ctx context.Context, t *testing.T, title, text string) *documents.Publication {
+		draft, err := alice.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
+		require.NoError(t, err)
+
+		_, err = alice.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+			DocumentId: draft.Id,
+			Changes: []*documents.DocumentChange{
+				{
+					Op: &documents.DocumentChange_SetTitle{SetTitle: title},
+				},
+				{
+					Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{
+						BlockId:     "b1",
+						Parent:      "",
+						LeftSibling: "",
+					}},
+				},
+				{
+					Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+						Id:   "b1",
+						Text: "Hello world",
+					}},
+				},
+			},
+		})
+		require.NoError(t, err)
+
+		pub, err := alice.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{
+			DocumentId: draft.Id,
+		})
+		require.NoError(t, err)
+
+		return pub
+	}
+
+	want := []*documents.Publication{
+		publish(ctx, t, "Doc-1", "This is a doc-1"),
+		publish(ctx, t, "Doc-2", "This is a doc-2"),
+		publish(ctx, t, "Doc-3", "This is a doc-3"),
+		publish(ctx, t, "Doc-4", "This is a doc-4"),
+	}
+
+	// Trying this more than once and expecting it to return the same result. This is what bug was mostly about.
+	// Arbitrary number of attempts was chosen.
+	for i := 0; i < 10; i++ {
+		list, err := alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+		require.NoError(t, err)
+
+		for w := range want {
+			testutil.ProtoEqual(t, want[w], list.Publications[w], "publication %d doesn't match", w)
+		}
+	}
+}
+
 func TestDaemonList(t *testing.T) {
 	t.Parallel()
 
