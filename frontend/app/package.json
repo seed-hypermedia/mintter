@@ -129,7 +129,7 @@
     "@xstate/test": "0.5.1",
     "copy-text-to-clipboard": "3.0.1",
     "covector": "0.7.3",
-    "cypress": "10.7.0",
+    "cypress": "10.8.0",
     "graphql": "16.6.0",
     "happy-dom": "6.0.4",
     "is-hidden": "2.0.0",
