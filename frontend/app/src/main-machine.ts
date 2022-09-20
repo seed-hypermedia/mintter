@@ -120,7 +120,7 @@ export function createMainPageService({
   client,
   initialRoute,
 }: CreateMainPageServiceParams) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWjQYwAsswA6AGwHtUIsoAxdMuAYgCUBRABQHlWAVEnQCSAGXYBlEuICqAYVkTxiUAAcKsdABd0FTMpAAPRAGZjAThIAWAOzmArMbuWADI9cAaEAE8TARmsktv5mAGzOztYATGEAHNYAvvGeaFi4qITE5FQ0mPSMLBw8-IKiEiTsrKy8+moa2rr6RgimFjb2ji5uxp4+CJ0kIcYxzjEhkTHGI0N2ickYOPhEmKQAThQArppwJAQUyGDMstwAssdCAgAi7GJ87CViNepaOnpIhiYxviQxZnbW1mZjL5IpFASEeogQXYvr5nJZQdDfMDIjMkiAUgt0ktVhstrASJAtBQViR0BAmIcTmcBJxpAAhERCcQACUedRejUQyIsZk+IU+ll8o35EIQQrMlhIZgB-0isNhzjMs3R8zSGWWJDWm22hM0xNJ5IO7Au5yEADkAOJs54NN5NXyOEIDUymax2OyRFz-UW+NokUEuYbWRUxT4JNEYtXYzW4nU0PUk3W0ZjHbjScR3VMANXY1vqr1A9uMgpIDj+xbMkWMtg9Pum3ziNndPzMzkiysji0yWrxJBU6wARmR0HhUPmDRSjqdziRZBwAIK3EiFEQATTzHLtXKDJCBVcbcJ+Q1FcqFzvdlkslZCIUsxg7qq7Gp7237Q5HY5emrAKjIXmTEC6KQWAAG4UAA1qQeArGAY5gKwP5-hutqFogZiwiQrjVtYV7jIMPpjAEdi3oKEwhL8IQ4Q+qRPji2r4m+w6juOMG-v+uTMGAKxrCSv5jgAZsSyAkNBsFbAhbHIQW7wIHKrgDBE6H8tYoy+O6J7OL6mF2BMrjRDeKLthGj5Yt2sYMYOTGfroIjoLAmgTgcU7UiQVw3HcwgPG8tQ2tJTTunYUqRM4gx3jEp4it427Vt8lh2M4DjwtY-ghKicw0aZz7mSQEArKg-GaLZ9mOZS06XNc7BLp5ubeU8+acs0xZSmGkQ4a21YJd0UVip6Tq+CEalOANbqTPexkZeqdG9qJcEXHlBXMIBGqgRBUEwXBZpgAA7nN+WaFJDXkTEVjGHKDiuIC0R2KKgLHdWt6gipwyGdRmKTTG9FsGmS5mtwAh0GmZoXAdW49ZEJ7-E6tgxA4YQDW20qvVGZmfRa3AkHw6PMicNWqHVm6oWDJ7woFD0eoGESmJYSO0R9eLMGjGPoxmfB8OaFpKLV7IoTJyInmMXwxPClGuA9EppSqE3Ri+sAM+jmMkLSDJCLIi5CNwZqMuIfAg4TfPdf1ditLCkyUbDYwhDTmVTSwjMKxcrDznQfBazrXO+Q1+u9MifWjMWIyKuYVZW+9Mty0zrmO87uu8yCPqVoFoKhHFrgek4vgh9L5nhwrSuMqrbMazH9px91wXkSQ-iWGMiqpThY3pW9WefXO7CLncZrsAA6pHTtu3j3N+Vype9L8ATGLEIXjECLiW+NTco-TzkztwnDsGaJBd+aFzcF3xdcmpx2tvXR2jP813dclXxOHep0ouhl2Z4vLDLwIxoznnKtq0X7v1aDSI2EwsCM+oYnC-C6r0cYowBg3lDKlVsDpTBP2WOHOk85ZAAGl95in8IFCI4x-A4QDNXG6ARWxjAcI4QEEpfjIIOIzAGrAu7zlYMDX+BNeaG39DhVKcRiKOHBgbIyaJMAUAgHAfQnZrZZGoLQBgTB4DsJ5k0Gwoo77+iRELGwal+TBQllI96XEeKQGwWME8vJnCllsAHUMp07xz0bsjLK9FHLYLdE6UY4V5TxWIoCfm-IrBVlwf1XkQJwyONpjLHYewwDYNak6L0RsErwyFKlE85geQAiBIlX0rV9EmVDtlXU+oyRMGwbCX4VhgRmGlOYUYrYYg+jikfWw0p4mhCFPkqWz98TFMTNxYk5S1LGFLJeeKgIRiAjinWVsmE2zwxItMIyETpFRL6QSeMtByk2EiFKBKtgbw2HCKYJpxEBjAkFOhYY5gkHzycTbXp8ZBlKKHmKCIXxBRJ1afUkYdYHRSiFMMexOkJ7LMlgvZxvZGIfnHKU2JLzPbQgCKA0wftrAPWsBpOIAxLyUUGCMSwPw6F01fJZGFX5WJ-i2Qi0GwVTADABOndOlEhQnlhJKZOYDPStWLNTO5kTsrQuYl+IxzyB4e3-kbY6KIHr9VGFeCBkJNLHUosWeU8DyLEqiUK6y0kfJ-z1gqhslC0UYvjvCTCPxLwhVbLyKIWrsqwDAJobQuRFHioNTJaG-pHCOEBcWVqmKy42CIvFZK4VeTRAzvy1ZgqyXCpsnZBycLTGANaoS3q8V+RpINryKGwUEaOHRalLpEKHl9njbqoq+0aWEwcF8SsIVixDAio0g2D0pRRHdJpSYwV+oOpcblPa1bXG1pkoGf05FoQoh2b6WwdYbzaRBP4FELaYYDt7EOgq1bsFAksbyFdbVXDBgcD6BKXxxitmhKdBKAUN3bBmlsXaBVd1VhOnKeurhxSCNHtEXc5F0JCirIS+1MbCn0WwbyUUAIPlZq-cGQYTg6FxMVWKCU3xgR-AlMKGwYxEiJCAA */
+  /** @xstate-layout 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-Jeb7ydYEQ8htASoTQlcm1az-2liA1QhwXwZIoPOkMfaIl95CylDY71aFojLP0TOyKj0GZAcmlQr2O5ArAicFEGRg6xSyqdAGOUUQHB7V1o2xjL0cOga4kCVsvJ-CQdNbDXjsJoQ7h+L61T-bG14y2PTF6VD-nsyE9BVw4pE5OOiEgn5SI9pYqiOmx1pHegAi+KdNDPY2Ggj4VslTEpvicc8YeTpaEQqJCAA */
   return createMachine(
     {
       context: () =>
@@ -152,11 +152,11 @@ export function createMainPageService({
       initial: 'loadingFiles',
       states: {
         loadingFiles: {
-          tags: ['loading'],
           invoke: {
             src: 'fetchFiles',
             id: 'fetchFiles',
           },
+          tags: 'loading',
           on: {
             'REPORT.FILES.SUCCESS': {
               actions: 'assignFiles',
@@ -174,8 +174,8 @@ export function createMainPageService({
           initial: 'idle',
           states: {
             idle: {
-              tags: ['loading'],
               entry: send('listen', {to: 'router'}),
+              tags: 'loading',
             },
             home: {
               entry: ['clearCurrentFile', 'clearParams'],
@@ -217,9 +217,21 @@ export function createMainPageService({
                 },
                 editing: {
                   tags: ['documentView', 'draft'],
-                  on: {
-                    'MOUSE.MOVE': {
-                      target: 'idle',
+                  initial: 'not typing',
+                  states: {
+                    typing: {
+                      on: {
+                        'MOUSE.MOVE': {
+                          target: 'not typing',
+                        },
+                      },
+                    },
+                    'not typing': {
+                      on: {
+                        EDITING: {
+                          target: 'typing',
+                        },
+                      },
                     },
                   },
                 },
@@ -303,7 +315,6 @@ export function createMainPageService({
               },
             },
             createDraft: {
-              tags: ['loading'],
               invoke: {
                 src: 'createNewDraft',
                 id: 'createNewDraft',
@@ -314,6 +325,7 @@ export function createMainPageService({
                   },
                 ],
               },
+              tags: 'loading',
             },
           },
           on: {

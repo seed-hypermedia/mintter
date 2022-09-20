@@ -74,7 +74,11 @@ export default function EditorPage({draftRef}: EditorPageProps) {
         <MainWindow onScroll={() => blocktoolsService.send('DISABLE')}>
           <Box
             data-testid="editor-wrapper"
-            onMouseMove={() => mainService.send('MOUSE.MOVE')}
+            onMouseMove={() => {
+              if (isEditing) {
+                mainService.send('MOUSE.MOVE')
+              }
+            }}
           >
             {context.localDraft?.content && (
               <>

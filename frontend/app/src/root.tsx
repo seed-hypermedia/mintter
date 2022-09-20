@@ -4,6 +4,7 @@ import {createThemeService, ThemeProvider} from '@app/theme'
 import {error} from '@app/utils/logger'
 import {LibraryShell} from '@components/library'
 import {QuickSwitcher} from '@components/quick-switcher'
+import {TopbarShell} from '@components/topbar'
 
 import {useActor, useInterpret} from '@xstate/react'
 import React, {lazy, Suspense} from 'react'
@@ -70,8 +71,9 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
 function AppShell() {
   return (
     <MainPageShell>
-      <LibraryShell />
       <MainWindowShell />
+      <TopbarShell />
+      <LibraryShell />
     </MainPageShell>
   )
 }
