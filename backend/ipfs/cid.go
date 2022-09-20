@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ipfs/go-cid"
-	crypto "github.com/libp2p/go-libp2p-core/crypto"
+	crypto "github.com/libp2p/go-libp2p/core/crypto"
 	multihash "github.com/multiformats/go-multihash"
 )
 

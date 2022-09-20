@@ -9,9 +9,9 @@ import (
 	"sync"
 
 	"github.com/ipfs/go-cid"
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/peer"
 	gostream "github.com/libp2p/go-libp2p-gostream"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"go.uber.org/multierr"
 	"google.golang.org/grpc"

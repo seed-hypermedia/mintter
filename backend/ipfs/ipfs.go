@@ -14,9 +14,9 @@ import (
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-ipfs-provider/queue"
 	"github.com/ipfs/go-ipfs-provider/simple"
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/routing"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/routing"
 
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	provider "github.com/ipfs/go-ipfs-provider"
@@ -90,7 +90,7 @@ func NewBitswap(host host.Host, rt routing.ContentRouting, bs blockstore.Blockst
 	b := bitswap.New(ctx, net, bs, bitswap.ProvideEnabled(true))
 
 	return &Bitswap{
-		Bitswap: b.(*bitswap.Bitswap),
+		Bitswap: b,
 		Net:     net,
 		cancel:  cancel,
 	}, nil
