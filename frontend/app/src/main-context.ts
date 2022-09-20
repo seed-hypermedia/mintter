@@ -55,9 +55,6 @@ export var useIsEditing = createMainSelector((state) => {
    * We want to hide those **only** when the user is typing in the editor.
    * If the user is in another state (publication), we should show those no matter what (thats why else returns always false)
    */
-  if (state.matches('routes.editor')) {
-    return state.matches('routes.editor.editing')
-  } else {
-    return false
-  }
+
+  return state.matches('routes.editor.editing.typing')
 })

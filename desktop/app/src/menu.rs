@@ -33,7 +33,7 @@ pub fn get_menu() -> Menu {
     .add_native_item(MenuItem::Cut)
     .add_native_item(MenuItem::Copy)
     .add_native_item(MenuItem::Paste)
-    .add_native_item(MenuItem::SelectAll)
+    .add_item(CustomMenuItem::new("select_all", "Select All").accelerator("CmdOrControl+A"))
     .add_item(CustomMenuItem::new("find", "Find...").accelerator("CmdOrControl+F"));
 
   let view_menu = Menu::new()
@@ -113,6 +113,9 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
     }
     "quick_switcher" => {
       event.window().emit("open_quick_switcher", ())?;
+    }
+    "select_all" => {
+      event.window().emit("select_all", ())?;
     }
     id => bail!("Unhandled menu item \"{}\"", id),
   }

@@ -8,7 +8,7 @@ import {libraryMachine} from '@components/library/library-machine'
 import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
 import {Tooltip} from '@components/tooltip'
-import {useActor, useSelector} from '@xstate/react'
+import {useSelector} from '@xstate/react'
 import {ActorRefFrom} from 'xstate'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
@@ -42,7 +42,12 @@ let libraryStyle = css({
 
 export function Library() {
   const mainService = useMain()
-  var [mainState] = useActor(mainService)
+  const isInDraftList = useSelector(mainService, (state) =>
+    state.matches('routes.draftList'),
+  )
+  const isInPubsList = useSelector(mainService, (state) =>
+    state.matches('routes.publicationList'),
+  )
   const library = useLibrary()
   const isOpen = useSelector(
     library as ActorRefFrom<typeof libraryMachine>,
@@ -131,13 +136,13 @@ export function Library() {
             icon="File"
             onClick={() => mainService.send('GO.TO.PUBLICATIONLIST')}
             title="Files"
-            active={mainState.matches('routes.publicationList')}
+            active={isInPubsList}
           />
           <LibraryButton
             icon="PencilAdd"
             onClick={() => mainService.send('GO.TO.DRAFTLIST')}
             title="Drafts"
-            active={mainState.matches('routes.draftList')}
+            active={isInDraftList}
           />
           <Separator />
           <BookmarksSection />
