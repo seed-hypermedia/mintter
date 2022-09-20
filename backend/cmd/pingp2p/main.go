@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	"github.com/libp2p/go-libp2p"
-	peerstore "github.com/libp2p/go-libp2p-core/peer"
+	peerstore "github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	multiaddr "github.com/multiformats/go-multiaddr"
 )

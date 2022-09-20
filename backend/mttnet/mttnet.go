@@ -24,12 +24,12 @@ import (
 
 	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/libp2p/go-libp2p-core/peer"
-	"github.com/libp2p/go-libp2p-core/protocol"
 	gostream "github.com/libp2p/go-libp2p-gostream"
-	"github.com/libp2p/go-libp2p-peerstore/pstoremem"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
+	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoremem"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr/net"
@@ -383,7 +383,6 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 			libp2p.EnableHolePunching(),
 			libp2p.EnableNATService(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
-				autorelay.WithStaticRescan(cfg.StaticRelayRescanInterval),
 				autorelay.WithBackoff(cfg.RelayBackoffDelay)),
 		)
 	}

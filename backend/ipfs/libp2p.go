@@ -11,18 +11,17 @@ import (
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-ipns"
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p-core/crypto"
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/peer"
 	record "github.com/libp2p/go-libp2p-record"
+	"github.com/libp2p/go-libp2p/core/crypto"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
 
-	ipfsconfig "github.com/ipfs/go-ipfs-config"
-	routing "github.com/libp2p/go-libp2p-core/routing"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
+	routing "github.com/libp2p/go-libp2p/core/routing"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 )
 
@@ -33,11 +32,17 @@ type Bootstrappers []peer.AddrInfo
 // DefaultBootstrapPeers exposes default bootstrap peers from the go-ipfs package,
 // failing in case of an error, which should only happen if there's a bug somewhere.
 func DefaultBootstrapPeers() Bootstrappers {
-	peers, err := ipfsconfig.DefaultBootstrapPeers()
-	if err != nil {
-		panic(err)
+	out := make(Bootstrappers, len(DefaultBootstrapAddresses))
+
+	for i, a := range DefaultBootstrapAddresses {
+		ai, err := peer.AddrInfoFromString(a)
+		if err != nil {
+			panic(err)
+		}
+		out[i] = *ai
 	}
-	return peers
+
+	return out
 }
 
 // BootstrapResult is a result of the bootstrap process.

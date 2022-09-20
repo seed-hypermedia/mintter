@@ -18,7 +18,7 @@ import (
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
-	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/stretchr/testify/require"
 )
 

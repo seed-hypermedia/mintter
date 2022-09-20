@@ -5,9 +5,9 @@ import (
 	"net"
 	"sync"
 
-	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/peer"
 
 	relayv1 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv1/relay"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
