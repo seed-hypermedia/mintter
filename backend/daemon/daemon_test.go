@@ -19,9 +19,43 @@ import (
 
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
+
+func TestBug_SyncHangs(t *testing.T) {
+	// See: https://github.com/mintterteam/mintter/issues/712.
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
+	carol := makeTestApp(t, "carol", makeTestConfig(t), true)
+	ctx := context.Background()
+
+	var g errgroup.Group
+	g.Go(func() error {
+		_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+			Addrs: getAddrs(t, bob),
+		})
+		return err
+	})
+
+	g.Go(func() error {
+		_, err := alice.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+		return err
+	})
+
+	require.NoError(t, func() error {
+		_, err := alice.RPC.Networking.Connect(ctx, &networking.ConnectRequest{
+			Addrs: getAddrs(t, carol),
+		})
+		return err
+	}())
+
+	require.NoError(t, g.Wait())
+
+}
 
 func TestBug_PublicationsListInconsistent(t *testing.T) {
 	// See: https://github.com/mintterteam/mintter/issues/692.
@@ -75,9 +109,11 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 
 	// Trying this more than once and expecting it to return the same result. This is what bug was mostly about.
 	// Arbitrary number of attempts was chosen.
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 15; i++ {
 		list, err := alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 		require.NoError(t, err)
+
+		require.Len(t, list.Publications, len(want))
 
 		for w := range want {
 			testutil.ProtoEqual(t, want[w], list.Publications[w], "publication %d doesn't match", w)
