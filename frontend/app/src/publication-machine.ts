@@ -245,6 +245,9 @@ export function createPublicationMachine({
                   context.publication?.document?.id,
                   context.publication?.version,
                 ),
+              {
+                staleTime: Infinity,
+              },
             ),
             client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
           ])

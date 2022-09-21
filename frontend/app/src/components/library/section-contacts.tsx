@@ -3,7 +3,6 @@ import {
   connect as apiConnect,
   ConnectionStatus,
   listAccounts,
-  ListAccountsResponse,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {CSS, keyframes, styled} from '@app/stitches.config'
@@ -47,6 +46,7 @@ function ContactListLoading() {
 
 export function ContactsSection() {
   const {status, data, refetch, fetchStatus} = useContacts()
+  console.log('Contacts', status, data, fetchStatus)
   let title = `Contacts (${data?.accounts?.length || 0})`
 
   return (
@@ -70,7 +70,7 @@ export function ContactsSection() {
           window.location.reload()
         }}
       >
-        {status == 'loading' || fetchStatus == 'idle' ? (
+        {status == 'loading' ? (
           <ContactListLoading />
         ) : status == 'error' ? (
           <Text color="danger">Contact List error</Text>
@@ -327,8 +327,6 @@ function ContactItem({contact}: ContactItemProps) {
 }
 
 function useContacts() {
-  return useQuery<any, any, ListAccountsResponse>(
-    [queryKeys.GET_CONTACTS_LIST],
-    () => listAccounts,
-  )
+  console.log('useContacts!')
+  return useQuery([queryKeys.GET_CONTACTS_LIST], () => listAccounts())
 }
