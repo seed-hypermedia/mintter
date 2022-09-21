@@ -6,7 +6,7 @@ import {
   updateProfile,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {QueryClient} from 'react-query'
+import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine} from 'xstate'
 import {getInfo, Info} from './client'
 
@@ -172,7 +172,7 @@ export function createAuthService(client: QueryClient) {
     {
       services: {
         fetchInfo: () =>
-          function fetchInfoService(sendBack) {
+          (function fetchInfoService(sendBack) {
             client
               .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
               .then(function (accountInfo) {
@@ -181,7 +181,7 @@ export function createAuthService(client: QueryClient) {
               .catch(function () {
                 sendBack('REPORT.DEVICE.INFO.MISSING')
               })
-          },
+          }),
         fetchAccount: function fetchAccountService() {
           return client.fetchQuery(
             [queryKeys.GET_ACCOUNT, ''],
@@ -255,5 +255,5 @@ export function createAuthService(client: QueryClient) {
         },
       },
     },
-  )
+  );
 }

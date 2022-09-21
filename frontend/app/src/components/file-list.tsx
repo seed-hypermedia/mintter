@@ -62,7 +62,7 @@ export function FileList({
           items.map((file) => (
             <LibraryItem
               isNew={
-                (file as PublicationWithRef).document
+                state.matches('ready') && (file as PublicationWithRef).document
                   ? !state.context.visitList.includes(
                       `${(file as PublicationWithRef).document?.id}/${
                         (file as PublicationWithRef).version

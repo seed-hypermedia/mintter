@@ -20,7 +20,7 @@ import {libraryMachine} from '@components/library/library-machine'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import Navaid from 'navaid'
 import toast from 'react-hot-toast'
-import {QueryClient} from 'react-query'
+import {QueryClient} from '@tanstack/react-query'
 import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
 
 export type PublicationRef = ActorRefFrom<

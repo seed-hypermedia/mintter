@@ -14,11 +14,11 @@ import {createContactMachine} from '@components/library/contact-machine'
 import {StyledItem} from '@components/library/library-item'
 import {Placeholder} from '@components/placeholder-box'
 import * as HoverCard from '@radix-ui/react-hover-card'
+import {useQuery} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
-import {useQuery} from 'react-query'
 import {Box} from '../box'
 import {Button} from '../button'
 import {Prompt} from '../prompt'
@@ -46,7 +46,7 @@ function ContactListLoading() {
 }
 
 export function ContactsSection() {
-  const {status, data, refetch} = useContacts()
+  const {status, data, refetch, fetchStatus} = useContacts()
   let title = `Contacts (${data?.accounts?.length || 0})`
 
   return (
@@ -70,7 +70,7 @@ export function ContactsSection() {
           window.location.reload()
         }}
       >
-        {status == 'loading' || status == 'idle' ? (
+        {status == 'loading' || fetchStatus == 'idle' ? (
           <ContactListLoading />
         ) : status == 'error' ? (
           <Text color="danger">Contact List error</Text>

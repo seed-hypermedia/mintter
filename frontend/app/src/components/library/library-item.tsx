@@ -129,14 +129,7 @@ export function LibraryItem({
 
   let title = state.context.title || 'Untitled Document'
 
-  // console.log(
-  //   isPublication
-  //     ? state.context.publication.document.publishTime
-  //     : state.context.draft.updateTime,
-  // )
-
   const {search} = useContext(findContext)
-
   return (
     <div
       data-testid="library-item"

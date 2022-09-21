@@ -11,7 +11,7 @@ import {ClientPublication} from '@app/publication-machine'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {debug, error} from '@app/utils/logger'
 import {createInterpreterContext} from '@app/utils/machine-utils'
-import {QueryClient} from 'react-query'
+import {QueryClient} from '@tanstack/react-query'
 import {visit} from 'unist-util-visit'
 import {
   ActorRefFrom,
