@@ -115,7 +115,7 @@ func TestSync(t *testing.T) {
 
 	res, err := bob.Syncer.Sync(ctx)
 	require.NoError(t, err)
-	require.Equal(t, int64(0), res.NumSyncFailed, "unexpected number of sync failures")
+	require.Equalf(t, int64(0), res.NumSyncFailed, "unexpected number of sync failures: %v", res.Errs)
 	require.Equal(t, int64(1), res.NumSyncOK, "unexpected number of successful syncs")
 
 	{

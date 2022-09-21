@@ -545,6 +545,10 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 
 		// TODO(burdiyan): validate lamport timestamp of the incoming change here, or elsewhere?
 
+		if err := conn.bs.putBlock(conn.conn, vc.Cid(), vc.RawData()); err != nil {
+			return err
+		}
+
 		res, err := vcssql.IPFSBlocksLookupPK(conn.conn, vc.Cid().Hash())
 		if err != nil || res.IPFSBlocksID == 0 {
 			return fmt.Errorf("ipfs block for the remote change must exist before indexing: %w", err)
