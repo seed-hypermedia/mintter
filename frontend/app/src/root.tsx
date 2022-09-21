@@ -6,18 +6,16 @@ import {LibraryShell} from '@components/library'
 import {QuickSwitcher} from '@components/quick-switcher'
 import {TopbarShell} from '@components/topbar'
 
-import {useActor, useInterpret} from '@xstate/react'
-import React, {lazy, Suspense} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {
   dehydrate,
   Hydrate,
   QueryClient,
   QueryClientProvider,
-  setLogger,
-} from 'react-query'
-import 'show-keys'
-import {info, warn} from 'tauri-plugin-log-api'
+} from '@tanstack/react-query'
+import {useActor, useInterpret} from '@xstate/react'
+import React, {lazy, Suspense} from 'react'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+// import 'show-keys'
 import {MainPageShell, MainWindowShell} from './pages/window-components'
 import {globalStyles} from './stitches.config'
 
@@ -117,14 +115,14 @@ export function RootProvider({
   )
 }
 
-setLogger({
-  log: (...args) => info(args.toString()),
-  warn: (...args) => warn(args.toString()),
-  // ✅ no more errors on the console
-  error: () => {
-    // noop
-  },
-})
+// setLogger({
+//   log: (...args) => info(args.toString()),
+//   warn: (...args) => warn(args.toString()),
+//   // ✅ no more errors on the console
+//   error: () => {
+//     // noop
+//   },
+// })
 
 /**
  * we need this to run tests without the `__TAURI_IPC__ not a function` error since we are not running tests inside Tauri (yet)

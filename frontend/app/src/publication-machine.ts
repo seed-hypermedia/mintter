@@ -10,7 +10,7 @@ import {
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {EditorDocument} from '@app/draft-machine'
 import {queryKeys} from '@app/hooks'
-import {QueryClient} from 'react-query'
+import {QueryClient} from '@tanstack/react-query'
 import {Editor} from 'slate'
 import {assign, createMachine} from 'xstate'
 

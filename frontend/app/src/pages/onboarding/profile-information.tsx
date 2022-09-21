@@ -1,9 +1,9 @@
 import {updateProfile} from '@app/client'
 import {TextField} from '@components/text-field'
+import {useMutation} from '@tanstack/react-query'
 import {useCallback} from 'react'
 import {useForm} from 'react-hook-form'
 import toast from 'react-hot-toast'
-import {useMutation} from 'react-query'
 import type {OnboardingStepPropsType} from './common'
 import {
   OnboardingStep,

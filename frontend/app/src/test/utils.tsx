@@ -26,7 +26,7 @@ import {TooltipProvider} from '@components/tooltip'
 import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {Suspense} from 'react'
-import {QueryClient, QueryClientProvider} from 'react-query'
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {spawn} from 'xstate'
 
 type TestMockData = {

@@ -9,7 +9,7 @@ import {paragraph, statement, text} from '@app/mttast'
 import {createPublicationMachine} from '@app/publication-machine'
 import {createTestQueryClient} from '@app/test/utils'
 import {useInterpret} from '@xstate/react'
-import {QueryClient} from 'react-query'
+import {QueryClient} from '@tanstack/react-query'
 import {Editor} from 'slate'
 import Publication from '../publication'
 

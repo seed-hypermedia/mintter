@@ -19,7 +19,7 @@ import {
 import {createTestQueryClient} from '@app/test/utils'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
-import {QueryClient} from 'react-query'
+import {QueryClient} from '@tanstack/react-query'
 import {Editor as EditorType} from 'slate'
 
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
