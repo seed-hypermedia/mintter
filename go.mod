@@ -41,7 +41,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/tyler-smith/go-bip39 v1.1.0
-	github.com/vektah/gqlparser/v2 v2.5.0
+	github.com/vektah/gqlparser/v2 v2.5.1
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.23.0
