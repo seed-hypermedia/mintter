@@ -110,7 +110,7 @@ importers:
       react-dom: 18.2.0
       react-error-boundary: 3.1.4
       react-highlight-words: 0.18.0
-      react-hook-form: 7.34.2
+      react-hook-form: 7.36.0
       react-hot-toast: 2.4.0
       react-qr-barcode-scanner: 1.0.6
       react-qr-code: 2.0.8
@@ -204,7 +204,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-error-boundary: 3.1.4_react@18.2.0
       react-highlight-words: 0.18.0_react@18.2.0
-      react-hook-form: 7.34.2_react@18.2.0
+      react-hook-form: 7.36.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
       react-qr-barcode-scanner: 1.0.6_biqbaboplfbrettd7655fr4n2y
       react-qr-code: 2.0.8_react@18.2.0
@@ -7240,8 +7240,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /react-hook-form/7.34.2_react@18.2.0:
-    resolution: {integrity: sha512-1lYWbEqr0GW7HHUjMScXMidGvV0BE2RJV3ap2BL7G0EJirkqpccTaawbsvBO8GZaB3JjCeFBEbnEWI1P8ZoLRQ==}
+  /react-hook-form/7.36.0_react@18.2.0:
+    resolution: {integrity: sha512-2PmRhTDH90/G1XWbUGpfuFBf7wxj9kYvzPqoZCv4wUGBIfuac0fK3up9sbeoz0ghpLYcFFXRVDKMUXgMutLXTw==}
     engines: {node: '>=12.22.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18
