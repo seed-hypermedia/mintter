@@ -122,7 +122,7 @@ importers:
       rehype-stringify: 9.0.3
       rollup: 2.79.0
       sass: 1.54.9
-      shiki: 0.10.1
+      shiki: 0.11.1
       show-keys: 1.1.2
       slate: https://gitpkg.now.sh/mintterteam/slate/packages/slate?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-history: https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688
@@ -214,7 +214,7 @@ importers:
       rehype-parse: 8.0.4
       rehype-sanitize: 5.0.1
       rehype-stringify: 9.0.3
-      shiki: 0.10.1
+      shiki: 0.11.1
       show-keys: 1.1.2
       slate: '@gitpkg.now.sh/mintterteam/slate/packages/slate?4a136b50302aa869e8a8af548400597f5c6b6688'
       slate-history: '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
@@ -7770,21 +7770,12 @@ packages:
     resolution: {integrity: sha512-vFwSUfQvqybiICwZY5+DAWIPLKsWO31Q91JSKl3UYv+K5c2QRPzn0qzec6QPu1Qc9eHYItiP3NdJqNVqetYAww==}
     dev: true
 
-  /shiki/0.10.1:
-    resolution: {integrity: sha512-VsY7QJVzU51j5o1+DguUd+6vmCmZ5v/6gYu4vyYAhzjuNQU6P/vmSy4uQaOhvje031qQMiW0d2BwgMH52vqMng==}
-    dependencies:
-      jsonc-parser: 3.2.0
-      vscode-oniguruma: 1.6.2
-      vscode-textmate: 5.2.0
-    dev: false
-
   /shiki/0.11.1:
     resolution: {integrity: sha512-EugY9VASFuDqOexOgXR18ZV+TbFrQHeCpEYaXamO+SZlsnT/2LxuLBX25GGtIrwaEVFXUAbUQ601SWE2rMwWHA==}
     dependencies:
       jsonc-parser: 3.2.0
       vscode-oniguruma: 1.6.2
       vscode-textmate: 6.0.0
-    dev: true
 
   /show-keys/1.1.2:
     resolution: {integrity: sha512-lAPb8lXfNZxCW9rKD6roiuZtExvK4pN1S0QrddP623kDiLVxkK4Zro5B4oI4RblkG+fZlXoxk68/QsqR6h4bNQ==}
@@ -8815,13 +8806,8 @@ packages:
   /vscode-oniguruma/1.6.2:
     resolution: {integrity: sha512-KH8+KKov5eS/9WhofZR8M8dMHWN2gTxjMsG4jd04YhpbPR91fUj7rYQ2/XjeHCJWbg7X++ApRIU9NUwM2vTvLA==}
 
-  /vscode-textmate/5.2.0:
-    resolution: {integrity: sha512-Uw5ooOQxRASHgu6C7GVvUxisKXfSgW4oFlO+aa+PAkgmH89O3CXxEEzNRNtHSqtXFTl0nAC1uYj0GMSH27uwtQ==}
-    dev: false
-
   /vscode-textmate/6.0.0:
     resolution: {integrity: sha512-gu73tuZfJgu+mvCSy4UZwd2JXykjK9zAZsfmDeut5dx/1a7FeTk0XwJsSuqQn+cuMCGVbIBfl+s53X4T19DnzQ==}
-    dev: true
 
   /wcwidth/1.0.1:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
