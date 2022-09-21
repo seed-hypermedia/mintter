@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	crawshaw.io/sqlite v0.3.2
-	github.com/99designs/gqlgen v0.17.16
+	github.com/99designs/gqlgen v0.17.20
 	github.com/btcsuite/btcd v0.23.1
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
 	github.com/gorilla/mux v1.8.0
@@ -41,7 +41,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/tidwall/tinyqueue v0.1.1
 	github.com/tyler-smith/go-bip39 v1.1.0
-	github.com/vektah/gqlparser/v2 v2.5.0
+	github.com/vektah/gqlparser/v2 v2.5.1
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.23.0
