@@ -76,7 +76,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 
 	if err := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
-		meLocal := conn.EnsureIdentity(me)
+		meLocal := conn.LookupIdentity(me)
 		version := conn.GetVersion(obj, "main", meLocal)
 		cs := conn.ResolveChangeSet(obj, version)
 
@@ -213,7 +213,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 
 	if err := conn.WithTx(false, func() error {
 		accs := conn.ListObjectsByType(vcstypes.AccountType)
-		meLocal := conn.EnsureIdentity(me)
+		meLocal := conn.LookupIdentity(me)
 		myAcc := conn.LookupPermanode(perma.ID)
 
 		resp.Accounts = make([]*accounts.Account, 0, len(accs))

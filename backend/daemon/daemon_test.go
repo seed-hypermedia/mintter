@@ -107,18 +107,25 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 		publish(ctx, t, "Doc-4", "This is a doc-4"),
 	}
 
+	var g errgroup.Group
+
 	// Trying this more than once and expecting it to return the same result. This is what bug was mostly about.
 	// Arbitrary number of attempts was chosen.
 	for i := 0; i < 15; i++ {
-		list, err := alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
-		require.NoError(t, err)
+		g.Go(func() error {
+			list, err := alice.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+			require.NoError(t, err)
 
-		require.Len(t, list.Publications, len(want))
+			require.Len(t, list.Publications, len(want))
 
-		for w := range want {
-			testutil.ProtoEqual(t, want[w], list.Publications[w], "publication %d doesn't match", w)
-		}
+			for w := range want {
+				testutil.ProtoEqual(t, want[w], list.Publications[w], "publication %d doesn't match", w)
+			}
+			return nil
+		})
 	}
+
+	require.NoError(t, g.Wait())
 }
 
 func TestDaemonList(t *testing.T) {

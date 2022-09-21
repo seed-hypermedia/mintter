@@ -1318,26 +1318,23 @@ func (conn *Conn) SaveVersion(object LocalID, name string, id LocalIdentity, hea
 }
 
 // GetVersion loads a named version.
-func (conn *Conn) GetVersion(object LocalID, name string, id LocalIdentity) LocalVersion {
-	if conn.err != nil {
-		return nil
-	}
+func (conn *Conn) GetVersion(object LocalID, name string, id LocalIdentity) (out LocalVersion) {
+	must.Maybe(&conn.err, func() error {
+		res, err := vcssql.NamedVersionsGet(conn.conn, int(object), int(id.Account), int(id.Device), name)
+		if err != nil {
+			return err
+		}
 
-	res, err := vcssql.NamedVersionsGet(conn.conn, int(object), int(id.Account), int(id.Device), name)
-	if err != nil {
-		conn.err = err
-		return nil
-	}
+		if res.NamedVersionsVersion == "" {
+			return fmt.Errorf("no version (obj: %d, name: %s, account: %d, device: %d)", object, name, id.Account, id.Device)
+		}
 
-	if res.NamedVersionsVersion == "" {
-		return nil
-	}
+		if err := json.Unmarshal([]byte(res.NamedVersionsVersion), &out); err != nil {
+			return err
+		}
 
-	var out []LocalID
-	if err := json.Unmarshal([]byte(res.NamedVersionsVersion), &out); err != nil {
-		conn.err = err
 		return nil
-	}
+	})
 
 	return out
 }
