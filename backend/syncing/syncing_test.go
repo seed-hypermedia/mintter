@@ -124,7 +124,7 @@ func TestSync(t *testing.T) {
 
 		err = conn.WithTx(false, func() error {
 			obj := conn.LookupPermanode(alicePerma.ID)
-			idLocal := conn.EnsureIdentity(bob.ID())
+			idLocal := conn.LookupIdentity(bob.ID())
 			version := conn.GetVersion(obj, "main", idLocal)
 
 			var i int

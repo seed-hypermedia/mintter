@@ -241,7 +241,7 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 	var docpb *documents.Document
 
 	if err := conn.WithTx(false, func() error {
-		meLocal := conn.EnsureIdentity(me)
+		meLocal := conn.LookupIdentity(me)
 		obj := conn.LookupPermanode(oid)
 		version := conn.GetVersion(obj, "draft", meLocal)
 		if len(version) != 1 {
@@ -425,10 +425,10 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	out := &documents.Publication{}
 	if err := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
-		meLocal := conn.EnsureIdentity(me)
+		meLocal := conn.LookupIdentity(me)
 		version := conn.GetVersion(obj, "main", meLocal)
 		if len(version) != 1 {
-			return fmt.Errorf("TODO(burdiyan): implement publication versions with more than one change")
+			return fmt.Errorf("TODO(burdiyan): can only get publication with 1 leaf change, got: %d", len(version))
 		}
 		out.Document, err = api.getDocument(conn, obj, version)
 		if err != nil {
