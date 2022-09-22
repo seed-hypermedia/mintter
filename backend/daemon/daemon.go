@@ -96,7 +96,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, 
 	// If errors occurred during loading, we need to close everything
 	// we managed to initialize so far, and wait for all the goroutines
 	// to finish. If everything booted correctly, we need to close the cleanup stack
-	// when the context is canceled, so the up is shut down gracefully.
+	// when the context is canceled, so the app is shut down gracefully.
 	defer func() {
 		if err != nil {
 			err = multierr.Combine(err, a.clean.Close(), a.g.Wait())
