@@ -172,7 +172,7 @@ export function createAuthService(client: QueryClient) {
     {
       services: {
         fetchInfo: () =>
-          (function fetchInfoService(sendBack) {
+          function fetchInfoService(sendBack) {
             client
               .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
               .then(function (accountInfo) {
@@ -181,7 +181,7 @@ export function createAuthService(client: QueryClient) {
               .catch(function () {
                 sendBack('REPORT.DEVICE.INFO.MISSING')
               })
-          }),
+          },
         fetchAccount: function fetchAccountService() {
           return client.fetchQuery(
             [queryKeys.GET_ACCOUNT, ''],
@@ -255,5 +255,5 @@ export function createAuthService(client: QueryClient) {
         },
       },
     },
-  );
+  )
 }
