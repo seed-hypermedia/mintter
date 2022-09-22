@@ -105,7 +105,7 @@ importers:
       nanoid: 4.0.0
       navaid: 1.2.0
       prettier: 2.7.1
-      protobufjs: 7.1.1
+      protobufjs: 7.1.2
       react: 18.2.0
       react-async-ssr: 0.7.2
       react-copy-to-clipboard: 5.1.0
@@ -200,7 +200,7 @@ importers:
       long: 5.2.0
       nanoid: 4.0.0
       navaid: 1.2.0
-      protobufjs: 7.1.1
+      protobufjs: 7.1.2
       react: 18.2.0
       react-copy-to-clipboard: 5.1.0_react@18.2.0
       react-dom: 18.2.0_react@18.2.0
@@ -7109,8 +7109,8 @@ packages:
       long: 4.0.0
     dev: true
 
-  /protobufjs/7.1.1:
-    resolution: {integrity: sha512-d0nMQqS/aT3lfV8bKi9Gbg73vPd2LcDdTDOu6RE/M+h9DY8g1EmDzk3ADPccthEWfTBjkR2oxNdx9Gs8YubT+g==}
+  /protobufjs/7.1.2:
+    resolution: {integrity: sha512-4ZPTPkXCdel3+L81yw3dG6+Kq3umdWKh7Dc7GW/CpNk4SX3hK58iPCWeCyhVTDrbkNeKrYNZ7EojM5WDaEWTLQ==}
     engines: {node: '>=12.0.0'}
     requiresBuild: true
     dependencies:
