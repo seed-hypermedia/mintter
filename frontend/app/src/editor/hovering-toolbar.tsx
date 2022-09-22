@@ -3,7 +3,7 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
-import {offset, shift, useFloating} from '@floating-ui/react-dom'
+import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
 import {PropsWithChildren, useEffect} from 'react'
 import {Editor, Range, Transforms} from 'slate'
 import {ReactEditor, useFocused, useSlate} from 'slate-react'
@@ -123,6 +123,9 @@ const defaultVirtualEl = {
       height: 20,
     }
   },
+  getClientRects() {
+    return [this.getBoundingClientRect()]
+  },
 }
 
 function HoveringToolbar({children}: PropsWithChildren) {
@@ -131,7 +134,7 @@ function HoveringToolbar({children}: PropsWithChildren) {
 
   const {x, y, reference, floating, strategy} = useFloating({
     placement: 'top',
-    middleware: [offset(8), shift()],
+    middleware: [inline(), offset(8), shift(), flip()],
   })
 
   useEffect(() => {
