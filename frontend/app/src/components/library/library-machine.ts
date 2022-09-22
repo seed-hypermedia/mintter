@@ -13,6 +13,13 @@ export var libraryMachine = createMachine({
     events: {} as LibraryEvent,
   },
   initial: 'opened',
+  on: {
+    '*': {
+      actions: (c, e) => {
+        console.log('TOGGLE', c, e)
+      },
+    },
+  },
   states: {
     opened: {
       on: {
@@ -20,6 +27,9 @@ export var libraryMachine = createMachine({
           target: 'closed',
         },
         'LIBRARY.TOGGLE': {
+          actions: (c, e) => {
+            console.log('TOGGLE', c, e)
+          },
           target: 'closed',
         },
       },
@@ -30,6 +40,9 @@ export var libraryMachine = createMachine({
           target: 'opened',
         },
         'LIBRARY.TOGGLE': {
+          actions: (c, e) => {
+            console.log('TOGGLE', c, e)
+          },
           target: 'opened',
         },
       },

@@ -174,7 +174,9 @@ export function createAuthService(client: QueryClient) {
         fetchInfo: () =>
           function fetchInfoService(sendBack) {
             client
-              .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo())
+              .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => {
+                return getInfo()
+              })
               .then(function (accountInfo) {
                 sendBack({type: 'REPORT.DEVICE.INFO.PRESENT', accountInfo})
               })

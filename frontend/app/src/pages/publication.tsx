@@ -4,6 +4,7 @@ import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
+import {useCurrentFile} from '@app/main-context'
 import {PublicationRef} from '@app/main-machine'
 import {MainWindow} from '@app/pages/window-components'
 import {AppError} from '@app/root'
@@ -25,22 +26,30 @@ type PublicationProps = {
 function usePublication(ref: PublicationRef) {
   useEffect(() => {
     ref.send('LOAD')
-
     return () => {
       ref.send('UNLOAD')
     }
   }, [ref])
-
   return useActor(ref)
 }
 
-export default function Publication({
+export default function PublicationWrapper() {
+  let file = useCurrentFile()
+
+  if (file) {
+    return <PublicationPage publicationRef={file as PublicationRef} />
+  }
+}
+
+function PublicationPage({
   publicationRef,
   blockToolsService,
 }: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
+
   const localBlockToolsService = useInterpret(() => blockToolsMachine)
   blockToolsService = blockToolsService || localBlockToolsService
+
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
   }

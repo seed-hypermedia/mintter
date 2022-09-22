@@ -40,6 +40,15 @@ let libraryStyle = css({
   },
 })
 
+function LibraryWrapper() {
+  var library = useLibrary()
+
+  console.log('library', library)
+  return null
+}
+
+// export const Library = LibraryWrapper
+
 export function Library() {
   const mainService = useMain()
   const isInDraftList = useSelector(mainService, (state) =>
@@ -54,6 +63,7 @@ export function Library() {
     (state) => state.matches('opened'),
   )
 
+  console.log('isOpen', isOpen)
   let isEditing = useIsEditing()
 
   async function handleSync() {

@@ -6,6 +6,8 @@ export function PublicationList() {
   const mainService = useMain()
 
   let pubList = usePublicationList()
+
+  console.log('pubList', pubList)
   return (
     <MainWindow>
       <FileList

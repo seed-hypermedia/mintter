@@ -16,7 +16,12 @@ import {Box} from './box'
 import {Icon} from './icon'
 
 import {useAccountProfile} from '@app/auth-context'
-import {useIsEditing, useMain} from '@app/main-context'
+import {
+  useCurrentFile,
+  useIsEditing,
+  useLibrary,
+  useMain,
+} from '@app/main-context'
 import {listen} from '@tauri-apps/api/event'
 import '../styles/find.scss'
 
@@ -34,9 +39,12 @@ export function Topbar() {
   let [mainState] = useActor(mainService)
   let profile = useAccountProfile()
   let isEditing = useIsEditing()
+  let library = useLibrary()
+  let file = useCurrentFile()
 
   function handleLinbraryToggle() {
-    mainState.context.library?.send('LIBRARY.TOGGLE')
+    console.log('toggle library!', library)
+    library?.send('LIBRARY.TOGGLE')
   }
 
   return (
@@ -52,8 +60,8 @@ export function Topbar() {
         className={topbarSectionStyles({type: 'main'})}
         {...draggableProps}
       >
-        {mainState.context.currentFile ? (
-          <FileTitle fileRef={mainState.context.currentFile} />
+        {file ? (
+          <FileTitle fileRef={file} />
         ) : (
           <TopbarTitle
             title={
@@ -68,9 +76,7 @@ export function Topbar() {
         )}
       </Box>
       <Find />
-      {mainState.context.currentFile ? (
-        <TopbarFileActions fileRef={mainState.context.currentFile} />
-      ) : null}
+      {file ? <TopbarFileActions fileRef={file} /> : null}
       <TopbarLibrarySection
         handleLibraryToggle={handleLinbraryToggle}
         handleBack={() => mainService.send('GO.BACK')}
