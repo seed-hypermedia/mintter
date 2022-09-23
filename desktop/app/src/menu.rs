@@ -36,6 +36,28 @@ pub fn get_menu() -> Menu {
     .add_item(CustomMenuItem::new("select_all", "Select All").accelerator("CmdOrControl+A"))
     .add_item(CustomMenuItem::new("find", "Find...").accelerator("CmdOrControl+F"));
 
+  let format_menu = Menu::new()
+    .add_item(CustomMenuItem::new("strong", "Strong").accelerator("CmdOrControl+B"))
+    .add_item(CustomMenuItem::new("emphasis", "Emphasis").accelerator("CmdOrControl+I"))
+    .add_item(CustomMenuItem::new("code", "Code").accelerator("CmdOrControl+E"))
+    .add_item(CustomMenuItem::new("underline", "Underline").accelerator("CmdOrControl+U"))
+    .add_item(CustomMenuItem::new("strikethrough", "Strikethrough"))
+    .add_item(CustomMenuItem::new("subscript", "Subscript"))
+    .add_item(CustomMenuItem::new("superscript", "Superscript"))
+    .add_native_item(MenuItem::Separator)
+    .add_item(CustomMenuItem::new("heading", "Heading").accelerator("Shift+CmdOrControl+H"))
+    .add_item(CustomMenuItem::new("statement", "Statement").accelerator("Shift+CmdOrControl+S"))
+    .add_item(CustomMenuItem::new("blockquote", "Blockquote").accelerator("Shift+CmdOrControl+Q"))
+    .add_item(CustomMenuItem::new("codeblock", "Code Block").accelerator("Shift+CmdOrControl+C"))
+    .add_native_item(MenuItem::Separator)
+    .add_item(
+      CustomMenuItem::new("unordered_list", "Bullet List").accelerator("Shift+CmdOrControl+7"),
+    )
+    .add_item(
+      CustomMenuItem::new("ordered_list", "Numbered List").accelerator("Shift+CmdOrControl+8"),
+    )
+    .add_item(CustomMenuItem::new("group", "Plain List").accelerator("Shift+CmdOrControl+9"));
+
   let view_menu = Menu::new()
     .add_item(CustomMenuItem::new("reload", "Reload").accelerator("CmdOrControl+R"))
     .add_item(
@@ -51,6 +73,7 @@ pub fn get_menu() -> Menu {
     .add_submenu(Submenu::new("Mintter", app_menu))
     .add_submenu(Submenu::new("File", file_menu))
     .add_submenu(Submenu::new("Edit", edit_menu))
+    .add_submenu(Submenu::new("Format", format_menu))
     .add_submenu(Submenu::new("View", view_menu))
     .add_submenu(Submenu::new("Help", help_menu))
 }
@@ -116,6 +139,16 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
     }
     "select_all" => {
       event.window().emit("select_all", ())?;
+    }
+    "strong" | "emphasis" | "code" | "underline" | "strikethrough" | "subscript"
+    | "superscript" => {
+      event.window().emit("format_mark", event.menu_item_id())?;
+    }
+    "heading" | "statement" | "blockquote" | "codeblock" => {
+      event.window().emit("format_block", event.menu_item_id())?;
+    }
+    "unordered_list" | "ordered_list" | "group" => {
+      event.window().emit("format_list", event.menu_item_id())?;
     }
     id => bail!("Unhandled menu item \"{}\"", id),
   }
