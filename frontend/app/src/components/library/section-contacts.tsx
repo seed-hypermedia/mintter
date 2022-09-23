@@ -46,7 +46,7 @@ function ContactListLoading() {
 
 export function ContactsSection() {
   const {status, data, refetch, fetchStatus} = useContacts()
-  // console.log('Contacts', status, data, fetchStatus)
+  console.log('Contacts', status, data, fetchStatus)
   let title = `Contacts (${data?.accounts?.length || 0})`
 
   return (
@@ -327,6 +327,6 @@ function ContactItem({contact}: ContactItemProps) {
 }
 
 function useContacts() {
-  // console.log('useContacts!')
+  console.log('useContacts!')
   return useQuery([queryKeys.GET_CONTACTS_LIST], () => listAccounts())
 }
