@@ -13,13 +13,13 @@ import {
 } from '@app/mttast'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
+import {useEffect} from 'react'
 import {
   BUNDLED_LANGUAGES,
   getHighlighter,
   Highlighter,
   Lang,
   setCDN,
-  Theme,
 } from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
@@ -34,6 +34,11 @@ export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
 const HIGHLIGHTER = Symbol('shiki highlighter')
 
+const THEMES = {
+  light: 'github-light',
+  dark: 'github-dark',
+}
+
 const SelectorWrapper = styled('div', {
   boxSizing: 'border-box',
   position: 'absolute',
@@ -45,13 +50,7 @@ const SelectorWrapper = styled('div', {
   transition: 'opacity 0.5s',
 })
 
-interface CodePluginProps {
-  theme?: Theme
-}
-
-export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
-  const {theme = 'github-dark'} = props
-
+export const createCodePlugin = (): EditorPlugin => {
   setCDN('/shiki/')
 
   return {
@@ -126,7 +125,10 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
 
         // if the codeblock has a lang attribute but no highlighter yet, attach one
         if (isCode(node) && !node.data?.[HIGHLIGHTER] && node.lang) {
-          getHighlighter({theme, langs: [node.lang]}).then((highlighter) => {
+          getHighlighter({
+            themes: Object.values(THEMES),
+            langs: [node.lang],
+          }).then((highlighter) => {
             Transforms.setNodes(
               editor,
               {data: {...node.data, [HIGHLIGHTER]: highlighter}},
@@ -149,7 +151,7 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
 
           const lines = (
             code.data?.[HIGHLIGHTER] as Highlighter
-          ).codeToThemedTokens(string, code.lang, theme, {
+          ).codeToThemedTokens(string, code.lang, code.data?.theme, {
             includeExplanation: false,
           })
 
@@ -215,6 +217,22 @@ function Code({
       {at: path},
     )
   }
+
+  const theme = useCurrentTheme()
+
+  useEffect(() => {
+    // TODO make this user configurable in the future
+    const codeTheme = THEMES[theme]
+
+    const {...newData} = (element as CodeType).data || {}
+    delete newData[HIGHLIGHTER]
+
+    Transforms.setNodes(
+      editor,
+      {data: {...newData, theme: codeTheme}},
+      {at: path},
+    )
+  }, [theme])
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (

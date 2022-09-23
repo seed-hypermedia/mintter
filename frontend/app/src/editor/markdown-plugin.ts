@@ -9,6 +9,7 @@ import {
 } from '@app/mttast'
 
 import {Editor, Range, Transforms} from 'slate'
+import {ELEMENT_CODE} from './code'
 import {ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST} from './group'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
@@ -159,6 +160,27 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 editor,
                 {type: ELEMENT_STATIC_PARAGRAPH},
                 {match: isParagraph},
+              )
+            })
+            return
+          }
+        }
+
+        // turn Statement into Codeblock
+        if (beforeText === '```') {
+          const above = Editor.above(editor, {
+            match: isStatement,
+            mode: 'lowest',
+          })
+
+          if (above) {
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.select(editor, range)
+              Transforms.delete(editor)
+              Transforms.setNodes(
+                editor,
+                {type: ELEMENT_CODE},
+                {match: isStatement},
               )
             })
             return
