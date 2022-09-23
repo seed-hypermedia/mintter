@@ -142,13 +142,13 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
     }
     "strong" | "emphasis" | "code" | "underline" | "strikethrough" | "subscript"
     | "superscript" => {
-      event.window().emit("format_mark", event.menu_item_id());
+      event.window().emit("format_mark", event.menu_item_id())?;
     }
     "heading" | "statement" | "blockquote" | "codeblock" => {
-      event.window().emit("format_block", event.menu_item_id());
+      event.window().emit("format_block", event.menu_item_id())?;
     }
     "unordered_list" | "ordered_list" | "group" => {
-      event.window().emit("format_list", event.menu_item_id());
+      event.window().emit("format_list", event.menu_item_id())?;
     }
     id => bail!("Unhandled menu item \"{}\"", id),
   }
