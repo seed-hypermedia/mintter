@@ -39,9 +39,11 @@ export default function PublicationWrapper() {
   if (file) {
     return <PublicationPage publicationRef={file as PublicationRef} />
   }
+
+  return null
 }
 
-function PublicationPage({
+export function PublicationPage({
   publicationRef,
   blockToolsService: _btS,
 }: PublicationProps) {

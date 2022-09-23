@@ -16,36 +16,26 @@ import {Box} from './box'
 import {Icon} from './icon'
 
 import {useAccountProfile} from '@app/auth-context'
-import {
-  useCurrentFile,
-  useIsEditing,
-  useLibrary,
-  useMain,
-} from '@app/main-context'
+import {useCurrentFile, useIsEditing, useMain} from '@app/main-context'
+import {libraryMachine} from '@components/library/library-machine'
 import {listen} from '@tauri-apps/api/event'
+import {InterpreterFrom} from 'xstate'
 import '../styles/find.scss'
 
-// type TopbarProps = {
-//   copy?: typeof copyTextToClipboard
-//   currentFile?: CurrentFile | null
-// }
+type TopbarProps = {
+  libraryService: InterpreterFrom<typeof libraryMachine>
+}
 
 const draggableProps = {
   'data-tauri-drag-region': true,
 }
 
-export function Topbar() {
+export function Topbar({libraryService}: TopbarProps) {
   const mainService = useMain()
   let [mainState] = useActor(mainService)
   let profile = useAccountProfile()
   let isEditing = useIsEditing()
-  let library = useLibrary()
   let file = useCurrentFile()
-
-  function handleLinbraryToggle() {
-    console.log('toggle library!', library)
-    library?.send('LIBRARY.TOGGLE')
-  }
 
   return (
     <Box
@@ -78,7 +68,7 @@ export function Topbar() {
       <Find />
       {file ? <TopbarFileActions fileRef={file} /> : null}
       <TopbarLibrarySection
-        handleLibraryToggle={handleLinbraryToggle}
+        handleLibraryToggle={() => libraryService.send('LIBRARY.TOGGLE')}
         handleBack={() => mainService.send('GO.BACK')}
         handleForward={() => mainService.send('GO.BACK')}
         libraryLabel={profile?.alias ?? ''}

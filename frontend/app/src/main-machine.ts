@@ -16,7 +16,6 @@ import {queryKeys} from '@app/hooks'
 import {link, paragraph, statement, text} from '@app/mttast'
 import {createPublicationMachine} from '@app/publication-machine'
 import {getRefFromParams} from '@app/utils/machine-utils'
-import {libraryMachine} from '@components/library/library-machine'
 import {QueryClient} from '@tanstack/react-query'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import Navaid from 'navaid'
@@ -39,7 +38,6 @@ export type MainPageContext = {
     replace: boolean
   }
   recents: Array<string>
-  library: ActorRefFrom<typeof libraryMachine>
   activity: ActorRefFrom<typeof activityMachine>
   publicationList: Array<PublicationWithRef>
   draftList: Array<DraftWithRef>
@@ -128,27 +126,26 @@ export function createMainPageService({
   /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWjQYwAsswA6AJwHsBXAFzhIIuTAGIBhAeQFkuBJAFRIARAKIAZEfxEkAYrwmJQABwqx0NdBUyKQAD0QAWAAxGSADgMB2AGw2D16wFZLjgMwAaEAE9EZowEYSS1cAgCZQlxdrUOsAX1jPNCxcVEJicmo6WBJIdQoyEnQIABtWTh4BEgAFAFUAITFeAGUACR0VNQ0tHX0EfzNXMyCBm38x6IBOazNPHz6pxxIjJ1cJx39Q10sJiYN4xIwcfCJMUkpaelyafMKS1hEhAV4AOQBxdtV1TW0kPUQNgyhEhTVzGCZmaJGeyOWaIcJjJZjAxWBaOaz+Vz7EBJI6pE5nTKXCB5ApXLBQEg0LxKcksLgcGpNaT0gBqIg+nW+PX+6yGrlB0ycjiME0sFlhCHhpkcoSM635rkcMssWJxKTSpwyF2yVxuZMwFMwFBoAAIqTSDSwHk83hyvt1fr1-LySPz7BClSKxQYJeFHEMDBNloqDBCjJZ-HsEtjDur8VqsiQlFQAEbFdB4VBdTC3Ursbh8QRsABKIgAglISKWqmIAJp27PcyUGUFLYUR3nOsyR32AgzAqLg6wGJUQ1Wx47pc6J5NpjNZ77kMBKYpeWkQLSkLAANwoAGtSHgyGAs2Bi8vVw2uY7ELtTP45ci5bszGZwRL+s6SGjuxjooMjG7cdkknTVp3oWd00zbMlxXNdLTAMhKAKFcswAM3yZASCPE86HPOCrwdUBegiEJXUcIM1n8CZQmo-xfVcWVyM-RioScUIowOEC8SnQlskg+dszEdBYBoXMygLSpRAkSs5AUX4OntH5iMQJxrHMKF-FsMxLBcLTrA-UN1ICFsIWsRV+R2YDcQ1AltRICAyFQNCaGE0TxPzCpBGkyRpDk9kFM+RsbwQRVFhM0IdgWXSfW8f5dkWVYzCVdYxmCMxQmsuNePsnDTyEJyXJYDdNR3fdD2PU9njAAB3ArnJoQjlL+BAIwDXS-EBcMtksCVnEWbZLBHDraIsTLozVUC7KyFhiwZStng4QQZAZZ4hCaptI1CCUI1cIIKIoodNkGRwsqmhM4BYV4OBIfgbpabgAuUILrxUvpAQlUV1P5TZrF2Gx-RbM6eLAvirpuu6SCZfh+BeV4mg2kKto-fxLCBdFQwGIwtnBRjgdsi7YHB26btqBpeDYCteA4Z5GiafhEbe5G4vemilhiNGdLWEZTomicQemy7rpJ4RizLGR+DphnAs5IiWuZuZqNCRZjBO0FATRUV8fjcCieFyGhDFiXGflj6WdoiZAkVCxoiG7tnExPnuIJ3XichsnGkp2GaZNp0zbmTY32BCZBho1xnVccy4idmydbBktywWkQAHVRfF6Xntl5q-e2lmKP7MUBmRDLtj+8auNjnKZvKQsSA4KoRGeEhk5eIQOGT33-lDIFSMjh9nFFXYJVBIYIWG6woTRextary6a8qa1BA9imqZ9mWlM2qxTC2HSLFRt8ZnN6JgQ2Qv+gMMYNmjivstOYrN0KTBdwPEg0LAGhCBkdBSngdfgqZwMlgSAtkiv0CMgFxQsw2DPO+iFkJJmKOhTCr936f2-nATuCBbC+goqYXYaVkShAyhEGBrBhZ1DLGwAA0pg50gFgEX1fCODiQ0aK+m7N9aYr43BRS0qQ4mK1izJzLMWdaf9Xqm3BCQYcco3ChjvC2X0wRTAX0sF6NwAxuyO2jEaCAGDfiTQFjkJC+RICYM2BMDSFEBio3+oQ30E9+yAiIRPaIAxaKcRjM7OO9kiilEwfyIBB8L5OHkaCXqLNphAhcG+MU-Q-DOn8KQwmDAmBgEwX9UwtFbZQgjDYOUH4jAxGAeHUESpIpqOWMk3WORiTXAKH49J4i5a9HBPeR8xh86vnfObDEliZQcVokQmw4Rql8VqSSYxyFMGikWP3J8XSD6+nDNKcO6xcktkDGM+yupSR1PJJSak5JaG2EWOsKeWlGJvhhObDx0jRhojFMsYwKoY630FjqOpep9kGhIEaU05pjnNOzv8QYfJ1ZozlC4EINyA5DJIKjdEjy-AyNeTfc6NTdkTI0AaWhkd+xuisLKfqMLfQYiGG4TYkZwRDXDtsxMuyZnrARR058mMemKx2BSls4chnRDcNfLxldQb2QEtBRcjTzFXyCBiEcE9wikvNlsRYbSASAUGMiNFQr3kpLFQuLQsFVxAszhvEKMQJ4MI1dRTqgFewIhCJHAIyx0QQi1YYl24y9UwTgfkcx2T2bgmpYEnYBklXLGBG+TZsoikR3pRBVMUF9XNUUv-FqtEikyrKfKzYBTbmKiWGEa2MpoFvIxeM2A78cVQF-ia1NvRw6WIiLREIYwoShgxCjOU0iOKClxkQ8Ecb+IJsEt8NyYlJXAqbHbV0wQ-SbBiFYWKitzL9hfGlCI3pPHup8TOYd4qtBjoyYxDSISxS6XWA4D8oCljmTHtjCwF9B0OUKq5ES467iYMBBSrSL4iFhTGMspwroL7hxbOZSIgrt2z2yI5Bqh7J0hX5IECKUUnAxQ-C4FRKJGJWA2E2p9eU6D1RcgElswDhwWF5T+CMfVzLDF0srTYhcxSDtof0CUX7zCXO2K+P6kZnSkM-R4FmltgTrFLuiSMUIaLxHiEAA */
   return createMachine(
     {
+      id: 'main-machine',
+      tsTypes: {} as import('./main-machine.typegen').Typegen0,
+      predictableActionArguments: true,
+      schema: {
+        context: {} as MainPageContext,
+        events: {} as MainPageEvent,
+        services: {} as MainServices,
+      },
       context: () =>
         ({
           params: {
             replace: false,
           },
           recents: [],
-
           currentFile: null,
           publicationList: [],
           draftList: [],
           errorMessage: '',
-          library: spawn(libraryMachine, 'library'),
           activity: spawn(activityMachine, 'activity'),
         } as MainPageContext),
-      tsTypes: {} as import('./main-machine.typegen').Typegen0,
-      schema: {
-        context: {} as MainPageContext,
-        events: {} as MainPageEvent,
-        services: {} as MainServices,
-      },
-      predictableActionArguments: true,
       invoke: [
         {
           src: 'router',
@@ -170,7 +167,6 @@ export function createMainPageService({
           ],
         },
       ],
-      id: 'main-machine',
       initial: 'routes',
       states: {
         errored: {},
@@ -179,10 +175,9 @@ export function createMainPageService({
           states: {
             idle: {
               entry: send('listen', {to: 'router'}),
-              tags: 'loading',
             },
             home: {
-              entry: ['clearCurrentFile', 'clearParams'],
+              entry: ['clearParams'],
               on: {
                 'COMMIT.DELETE.FILE': {
                   actions: [
@@ -200,14 +195,6 @@ export function createMainPageService({
                 idle: {
                   tags: ['documentView', 'draft'],
                   on: {
-                    'COMMIT.PUBLISH': {
-                      actions: [
-                        'removeDraftFromList',
-                        'asssignNewPublicationValues',
-                        'removeDraftFromRecents',
-                      ],
-                      target: '#main-machine.routes.publication',
-                    },
                     EDITING: {
                       target: 'editing',
                     },
@@ -219,6 +206,16 @@ export function createMainPageService({
                 editing: {
                   tags: ['documentView', 'draft'],
                   initial: 'not typing',
+                  on: {
+                    'COMMIT.PUBLISH': {
+                      actions: [
+                        'removeDraftFromList',
+                        'asssignNewPublicationValues',
+                        'removeDraftFromRecents',
+                      ],
+                      target: '#main-machine.routes.publication',
+                    },
+                  },
                   states: {
                     typing: {
                       on: {
@@ -240,7 +237,13 @@ export function createMainPageService({
             },
             publication: {
               initial: 'idle',
-              entry: ['pushPublicationRoute', 'pushPublicationToRecents'],
+              entry: [
+                'pushPublicationRoute',
+                'pushPublicationToRecents',
+                (c, e) => {
+                  console.log('publication state entry:', c, e)
+                },
+              ],
               states: {
                 idle: {
                   tags: ['documentView', 'publication'],
@@ -375,7 +378,6 @@ export function createMainPageService({
         removePublicationFromCitations: () => {
           // TODO.
         },
-
         assignError: assign({
           errorMessage: (_, event) =>
             `[Main Machine]: Error => ${JSON.stringify(event)}`,
@@ -465,12 +467,9 @@ export function createMainPageService({
             url,
           })
         },
-        clearCurrentFile: assign({
-          // eslint-disable-next-line
-          currentFile: (c) => null,
-        }),
         pushPublicationRoute: send(
-          (context) => {
+          (context, e) => {
+            console.log('pushPublicationRoute', context, e)
             return {
               type: 'pushPublication',
               docId: context.params.docId,
@@ -570,7 +569,6 @@ export function createMainPageService({
               version: undefined,
               blockId: undefined,
             },
-            currentFile: draftRef,
             draftList: [
               ...context.draftList,
               {
@@ -603,13 +601,12 @@ export function createMainPageService({
               blockId: undefined,
               replace: true,
             },
-            currentFile: publicationRef,
             publicationList: [
-              ...context.publicationList,
               {
                 ...event.publication,
                 ref: publicationRef,
               },
+              ...context.publicationList,
             ],
           }
         }),

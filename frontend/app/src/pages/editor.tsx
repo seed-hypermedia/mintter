@@ -31,7 +31,7 @@ export function useDraft(ref: DraftRef) {
   useEffect(() => {
     ref.send('LOAD')
     return () => {
-      ref.send('UNLOAD')
+      ref?.send('UNLOAD')
     }
   }, [ref])
 
@@ -59,14 +59,18 @@ export default function DraftWrapper() {
   if (file) {
     return <EditorPage draftRef={file as DraftRef} />
   }
+
+  return null
 }
 
-function EditorPage({draftRef, blockToolsService: _btS}: EditorPageProps) {
+export function EditorPage({
+  draftRef,
+  blockToolsService: _btS,
+}: EditorPageProps) {
   const [visible, setVisible] = useState(false)
   const [state, send] = useDraft(draftRef)
   let localBlocktoolsService = useInterpret(() => blockToolsMachine)
   let blocktoolsService = _btS || localBlocktoolsService
-
   const {context} = state
   const mainService = useMain()
   const isEditing = useIsEditing()

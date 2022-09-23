@@ -13,13 +13,6 @@ export var libraryMachine = createMachine({
     events: {} as LibraryEvent,
   },
   initial: 'opened',
-  on: {
-    '*': {
-      actions: (c, e) => {
-        console.log('TOGGLE', c, e)
-      },
-    },
-  },
   states: {
     opened: {
       on: {

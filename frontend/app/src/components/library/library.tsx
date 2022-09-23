@@ -1,5 +1,5 @@
 import {forceSync} from '@app/client/daemon'
-import {useIsEditing, useLibrary, useMain} from '@app/main-context'
+import {useIsEditing, useMain} from '@app/main-context'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -9,7 +9,7 @@ import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
 import {Tooltip} from '@components/tooltip'
 import {useSelector} from '@xstate/react'
-import {ActorRefFrom} from 'xstate'
+import {InterpreterFrom} from 'xstate'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
 import {BookmarksSection} from './section-bookmarks'
@@ -40,16 +40,11 @@ let libraryStyle = css({
   },
 })
 
-function LibraryWrapper() {
-  var library = useLibrary()
-
-  console.log('library', library)
-  return null
-}
-
-// export const Library = LibraryWrapper
-
-export function Library() {
+export function Library({
+  service,
+}: {
+  service: InterpreterFrom<typeof libraryMachine>
+}) {
   const mainService = useMain()
   const isInDraftList = useSelector(mainService, (state) =>
     state.matches('routes.draftList'),
@@ -57,13 +52,7 @@ export function Library() {
   const isInPubsList = useSelector(mainService, (state) =>
     state.matches('routes.publicationList'),
   )
-  const library = useLibrary()
-  const isOpen = useSelector(
-    library as ActorRefFrom<typeof libraryMachine>,
-    (state) => state.matches('opened'),
-  )
-
-  console.log('isOpen', isOpen)
+  const isOpen = useSelector(service, (state) => state.matches('opened'))
   let isEditing = useIsEditing()
 
   async function handleSync() {

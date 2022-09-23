@@ -2,9 +2,10 @@ import {useMain} from '@app/main-context'
 import {PageError, rootPageStyle} from '@app/pages/window-components'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
+import {libraryMachine} from '@components/library/library-machine'
 import {Settings} from '@components/settings'
 import {Topbar} from '@components/topbar'
-import {useActor} from '@xstate/react'
+import {useActor, useInterpret} from '@xstate/react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {DraftList} from './draft-list-page'
 import EditorPage from './editor'
@@ -14,8 +15,7 @@ import {PublicationList} from './publication-list-page'
 export default function MainPage() {
   const mainService = useMain()
   const [state] = useActor(mainService)
-  console.log('main state', state.context.currentFile)
-
+  const libraryService = useInterpret(() => libraryMachine)
   if (state.matches('routes.settings')) {
     return <Settings />
   }
@@ -28,10 +28,10 @@ export default function MainPage() {
           window.location.reload()
         }}
       >
-        <Library />
-        <Topbar />
+        <Library service={libraryService} />
+        <Topbar library={libraryService} />
         {state.matches('routes.publication') ? (
-          <Publication />
+          <Publication key={state.context.params.docId} />
         ) : state.matches('routes.editor') ? (
           <EditorPage key={state.context.params.docId} />
         ) : null}
@@ -41,12 +41,4 @@ export default function MainPage() {
       </ErrorBoundary>
     </Box>
   )
-}
-
-var CurrentView = {
-  PUBLICATION: Publication,
-  DRAFT: EditorPage,
-  HOME: PublicationList,
-  DRAFTLIST: DraftList,
-  PUBLICATIONLIST: PublicationList,
 }
