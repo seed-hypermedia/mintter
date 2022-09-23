@@ -52,7 +52,6 @@ const SelectorWrapper = styled('div', {
 })
 
 export const createCodePlugin = (): EditorPlugin => {
-  // const {theme = 'github-dark'} = props
   setCDN('/shiki/')
 
   return {
@@ -147,13 +146,13 @@ export const createCodePlugin = (): EditorPlugin => {
               match: isCode,
             }) || []
 
-          if (!code || !code.data?.[HIGHLIGHTER]) return []
+          if (!code || !code.data?.[HIGHLIGHTER] || !code.data?.theme) return []
 
           const string = Node.string(node)
 
           const lines = (
             code.data?.[HIGHLIGHTER] as Highlighter
-          ).codeToThemedTokens(string, code.lang, code.data.theme, {
+          ).codeToThemedTokens(string, code.lang, code.data.theme as string, {
             includeExplanation: false,
           })
 
