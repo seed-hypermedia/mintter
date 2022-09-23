@@ -113,6 +113,7 @@ export interface Text extends Literal {
   subscript?: boolean
   code?: boolean
   color?: string
+  codeToken?: string
 }
 
 // Mixin
