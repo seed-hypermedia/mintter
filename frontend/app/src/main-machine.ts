@@ -3,6 +3,7 @@ import {
   createDraft,
   Document,
   getDraft,
+  getPublication,
   listDrafts,
   listPublications,
   Publication,
@@ -140,7 +141,6 @@ export function createMainPageService({
             replace: false,
           },
           recents: [],
-          currentFile: null,
           publicationList: [],
           draftList: [],
           errorMessage: '',
@@ -277,15 +277,11 @@ export function createMainPageService({
               },
             },
             settings: {
-              entry: ['clearCurrentFile', 'clearParams', 'pushSettings'],
+              entry: ['clearParams', 'pushSettings'],
               tags: 'settings',
             },
             publicationList: {
-              entry: [
-                'clearCurrentFile',
-                'clearParams',
-                'pushPublicationListRoute',
-              ],
+              entry: ['clearParams', 'pushPublicationListRoute'],
               initial: 'idle',
               states: {
                 idle: {
@@ -302,7 +298,7 @@ export function createMainPageService({
               },
             },
             draftList: {
-              entry: ['clearCurrentFile', 'clearParams', 'pushDraftListRoute'],
+              entry: ['clearParams', 'pushDraftListRoute'],
               initial: 'idle',
               states: {
                 idle: {
@@ -737,7 +733,6 @@ export function createMainPageService({
            */
           try {
             // TODO: change the currentFile access here
-            var currentPub = context.currentFile?.getSnapshot()
           } catch (err) {
             throw Error(
               `[REPLYTO ERROR]: currentFile does not have a snapshot - ${JSON.stringify(
@@ -746,16 +741,29 @@ export function createMainPageService({
             )
           }
 
-          let currentUrl = `mtt://${currentPub?.context.documentId}/${currentPub?.context.version}`
+          let publication = await client.fetchQuery(
+            [
+              queryKeys.GET_PUBLICATION,
+              context.params.docId,
+              context.params.version,
+            ],
+            () =>
+              getPublication(
+                context.params.docId as string,
+                context.params.version,
+              ),
+          )
+
+          let currentUrl = `mtt://${context.params.docId}/${context.params.version}`
           let doc = await createDraft()
           let block = statement([
             paragraph([
-              text('Reply to '),
+              text('RE: '),
               link(
                 {
                   url: currentUrl,
                 },
-                [text(currentPub?.context.title || currentUrl)],
+                [text(publication?.document?.title || currentUrl)],
               ),
               text(': '),
             ]),
@@ -767,8 +775,8 @@ export function createMainPageService({
                 {
                   op: {
                     $case: 'setTitle',
-                    setTitle: `Reply to ${
-                      currentPub?.context.title || currentUrl
+                    setTitle: `RE: ${
+                      publication?.document?.title || currentUrl
                     }`,
                   },
                 },
