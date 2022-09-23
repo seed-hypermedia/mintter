@@ -12,6 +12,7 @@ import {
   text,
 } from '@app/mttast'
 import {styled} from '@app/stitches.config'
+import {useCurrentTheme} from '@app/theme'
 import {Box} from '@components/box'
 import {
   BUNDLED_LANGUAGES,
@@ -19,7 +20,6 @@ import {
   Highlighter,
   Lang,
   setCDN,
-  Theme,
 } from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import type {RenderElementProps} from 'slate-react'
@@ -45,13 +45,8 @@ const SelectorWrapper = styled('div', {
   transition: 'opacity 0.5s',
 })
 
-interface CodePluginProps {
-  theme?: Theme
-}
-
-export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
-  const {theme = 'github-dark'} = props
-
+export const createCodePlugin = (): EditorPlugin => {
+  // const {theme = 'github-dark'} = props
   setCDN('/shiki/')
 
   return {
@@ -124,9 +119,19 @@ export const createCodePlugin = (props: CodePluginProps = {}): EditorPlugin => {
       ([node, path]) => {
         const ranges: Array<Range> = []
 
+        // TODO make this user configurable in the future
+        const themes = {
+          light: 'github-light',
+          dark: 'github-dark',
+        }
+        const theme = themes[useCurrentTheme()]
+
         // if the codeblock has a lang attribute but no highlighter yet, attach one
         if (isCode(node) && !node.data?.[HIGHLIGHTER] && node.lang) {
-          getHighlighter({theme, langs: [node.lang]}).then((highlighter) => {
+          getHighlighter({
+            themes: Object.values(themes),
+            langs: [node.lang],
+          }).then((highlighter) => {
             Transforms.setNodes(
               editor,
               {data: {...node.data, [HIGHLIGHTER]: highlighter}},
