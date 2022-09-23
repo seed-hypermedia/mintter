@@ -70,10 +70,6 @@ export function blockToApi(
       annotations.addSpan('code', null, start, end)
     }
 
-    if (leaf.color) {
-      annotations.addSpan('color', {color: leaf.color}, start, end)
-    }
-
     // inline block elements check
 
     if (leaf.type == 'image') {
