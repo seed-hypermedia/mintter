@@ -14,6 +14,7 @@ import {
 import {styled} from '@app/stitches.config'
 import {useCurrentTheme} from '@app/theme'
 import {Box} from '@components/box'
+import {useEffect} from 'react'
 import {
   BUNDLED_LANGUAGES,
   getHighlighter,
@@ -33,6 +34,11 @@ import {findPath, lowerPoint, resetFlowContent} from '../utils'
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
 const HIGHLIGHTER = Symbol('shiki highlighter')
+// TODO make this user configurable in the future
+const THEMES = {
+  light: 'github-light',
+  dark: 'github-dark',
+}
 
 const SelectorWrapper = styled('div', {
   boxSizing: 'border-box',
@@ -119,17 +125,10 @@ export const createCodePlugin = (): EditorPlugin => {
       ([node, path]) => {
         const ranges: Array<Range> = []
 
-        // TODO make this user configurable in the future
-        const themes = {
-          light: 'github-light',
-          dark: 'github-dark',
-        }
-        const theme = themes[useCurrentTheme()]
-
         // if the codeblock has a lang attribute but no highlighter yet, attach one
         if (isCode(node) && !node.data?.[HIGHLIGHTER] && node.lang) {
           getHighlighter({
-            themes: Object.values(themes),
+            themes: Object.values(THEMES),
             langs: [node.lang],
           }).then((highlighter) => {
             Transforms.setNodes(
@@ -154,7 +153,7 @@ export const createCodePlugin = (): EditorPlugin => {
 
           const lines = (
             code.data?.[HIGHLIGHTER] as Highlighter
-          ).codeToThemedTokens(string, code.lang, theme, {
+          ).codeToThemedTokens(string, code.lang, code.data.theme, {
             includeExplanation: false,
           })
 
@@ -220,6 +219,20 @@ function Code({
       {at: path},
     )
   }
+
+  const theme = useCurrentTheme()
+
+  useEffect(() => {
+    const codeTheme = THEMES[theme]
+    const {...newData} = (element as CodeType).data || {}
+    delete newData[HIGHLIGHTER]
+
+    Transforms.setNodes(
+      editor,
+      {data: {...newData, theme: codeTheme}},
+      {at: path},
+    )
+  }, [theme, editor])
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (
