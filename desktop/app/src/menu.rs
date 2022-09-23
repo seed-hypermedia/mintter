@@ -48,7 +48,7 @@ pub fn get_menu() -> Menu {
     .add_item(CustomMenuItem::new("heading", "Heading").accelerator("Shift+CmdOrControl+H"))
     .add_item(CustomMenuItem::new("statement", "Statement").accelerator("Shift+CmdOrControl+S"))
     .add_item(CustomMenuItem::new("blockquote", "Blockquote").accelerator("Shift+CmdOrControl+Q"))
-    .add_item(CustomMenuItem::new("codeblock", "Code Block").accelerator("Shift+CmdOrControl+C"))
+    .add_item(CustomMenuItem::new("codeblock", "Code Block").accelerator("Shift+CmdOrControl+E"))
     .add_native_item(MenuItem::Separator)
     .add_item(
       CustomMenuItem::new("unordered_list", "Bullet List").accelerator("Shift+CmdOrControl+7"),

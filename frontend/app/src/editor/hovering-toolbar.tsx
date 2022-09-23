@@ -4,8 +4,9 @@ import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
-import {PropsWithChildren, useEffect} from 'react'
-import {Editor, Range, Transforms} from 'slate'
+import {css} from '@stitches/react'
+import {PropsWithChildren, useEffect, useState} from 'react'
+import {Editor, Range, Text, Transforms} from 'slate'
 import {ReactEditor, useFocused, useSlate} from 'slate-react'
 import {MARK_EMPHASIS} from './emphasis'
 import {MARK_CODE} from './inline-code'
@@ -15,6 +16,25 @@ import {MARK_UNDERLINE} from './underline'
 import {isFormatActive, toggleFormat} from './utils'
 
 export function EditorHoveringToolbar() {
+  const editor = useSlate()
+  const [selectionColor, setSelectionColor] = useState<string>()
+
+  useEffect(() => {
+    const nodes = Editor.nodes(editor, {
+      match: Text.isText,
+      mode: 'all',
+    })
+
+    const selectionColors = new Set([...nodes].map(([node]) => node.color))
+
+    console.log(selectionColors)
+
+    const maybeColor =
+      selectionColors.size === 1 ? [...selectionColors.values()][0] : null
+
+    setSelectionColor(maybeColor || 'invalid color')
+  }, [editor.selection])
+
   return (
     <HoveringToolbar>
       <Box
@@ -40,6 +60,20 @@ export function EditorHoveringToolbar() {
         <FormatButton format={MARK_EMPHASIS} icon="Emphasis" />
         <FormatButton format={MARK_UNDERLINE} icon="Underline" />
         <FormatButton format={MARK_CODE} icon="Code" />
+        <Tooltip content={<span>Text color</span>}>
+          <input
+            type="color"
+            className={textSelectorStyles()}
+            value={selectionColor}
+            onChange={(ev) =>
+              Transforms.setNodes(
+                editor,
+                {color: ev.target.value},
+                {match: Text.isText, split: true, mode: 'highest'},
+              )
+            }
+          />
+        </Tooltip>
         <InsertLinkButton />
         <InsertImageButton />
       </Box>
@@ -50,6 +84,18 @@ export function EditorHoveringToolbar() {
 export function PublicationHoveringToolbar() {
   return <HoveringToolbar>copy reference</HoveringToolbar>
 }
+
+const textSelectorStyles = css({
+  '$$outlined-border-size': '1px',
+  width: '2em',
+  height: '2em',
+  fontSize: '$2',
+  lineHeight: '$1',
+  padding: '$1',
+  '::invalid': {
+    border: '2px solid red',
+  },
+})
 
 function FormatButton({
   format,

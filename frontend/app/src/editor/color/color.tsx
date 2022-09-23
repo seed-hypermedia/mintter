@@ -1,5 +1,5 @@
+import {Text, Transforms} from 'slate'
 import type {EditorPlugin} from '../types'
-import {toggleFormat} from '../utils'
 
 export const MARK_COLOR = 'color'
 
@@ -19,7 +19,12 @@ export const createColorPlugin = (): EditorPlugin => ({
   onDOMBeforeInput: (editor) => (ev) => {
     if (ev.inputType == 'formatFontColor' && editor.selection) {
       ev.preventDefault()
-      toggleFormat(editor, 'color', ev.data)
+
+      Transforms.setNodes(
+        editor,
+        {color: ev.data},
+        {match: Text.isText, split: true, mode: 'highest'},
+      )
     }
   },
 })
