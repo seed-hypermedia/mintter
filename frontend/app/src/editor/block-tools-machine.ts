@@ -77,19 +77,13 @@ export const blockToolsMachine =
             },
             open: {
               on: {
-                'DROPDOWN.CLOSE': {
-                  target: 'close',
-                },
+                'DROPDOWN.CLOSE': 'close',
               },
             },
           },
           on: {
-            EDITING: {
-              target: 'inactive',
-            },
-            DISABLE: {
-              target: 'inactive',
-            },
+            EDITING: 'inactive',
+            DISABLE: 'inactive',
           },
         },
         inactive: {
@@ -102,15 +96,11 @@ export const blockToolsMachine =
                 },
               },
               on: {
-                EDITING: {
-                  target: 'disabled',
-                },
+                EDITING: 'disabled',
               },
             },
             disabled: {
-              always: {
-                target: 'idle',
-              },
+              always: 'idle',
             },
           },
         },
