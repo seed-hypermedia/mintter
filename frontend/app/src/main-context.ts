@@ -1,12 +1,13 @@
 import {createDraftMachine} from '@app/draft-machine'
 import {
   createMainPageService,
+  CurrentFile,
   DraftRef,
   PublicationRef,
 } from '@app/main-machine'
 import {createPublicationMachine} from '@app/publication-machine'
 import {ActorRefFrom, InterpreterFrom} from 'xstate'
-import {createInterpreterContext} from './utils/machine-utils'
+import {createInterpreterContext, getRefFromParams} from './utils/machine-utils'
 
 export type MainMachine = ReturnType<typeof createMainPageService>
 export type MainService = InterpreterFrom<MainMachine>
@@ -18,9 +19,22 @@ export {MainProvider, useMain}
 
 export var useLibrary = createMainSelector((state) => state.context.library)
 export var useActivity = createMainSelector((state) => state.context.activity)
-export var useCurrentFile = createMainSelector(
-  (state) => state.context.currentFile,
-)
+export var useCurrentFile = createMainSelector((state) => {
+  let {params} = state.context
+
+  if (!params.docId) return null
+
+  let fileId = getRefFromParams(
+    params.version ? 'pub' : 'draft',
+    params.docId,
+    params.version,
+  )
+  if (fileId) {
+    return state.children[fileId] as CurrentFile
+  }
+
+  return null
+})
 export var usePublicationList = createMainSelector(
   (state) => state.context.publicationList,
 )

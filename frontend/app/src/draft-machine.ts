@@ -219,7 +219,7 @@ export function createDraftMachine({
             onDone: [
               {
                 actions: ['afterPublish', 'resetQueryData'],
-                target: 'published',
+                target: '#editor.idle',
               },
             ],
             onError: [
@@ -229,9 +229,6 @@ export function createDraftMachine({
               },
             ],
           },
-        },
-        published: {
-          type: 'final',
         },
         errored: {
           on: {

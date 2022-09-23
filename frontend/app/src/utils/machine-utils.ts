@@ -52,7 +52,7 @@ export function createRequiredContext<TContext>(displayName: string) {
 export function getRefFromParams(
   type: 'pub' | 'draft',
   docId: string,
-  version: string | null,
+  version: string | null | undefined,
 ): string {
   if (type == 'draft') {
     return `draft-${docId}`

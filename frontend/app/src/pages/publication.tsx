@@ -4,6 +4,7 @@ import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
+import {useCurrentFile} from '@app/main-context'
 import {PublicationRef} from '@app/main-machine'
 import {MainWindow} from '@app/pages/window-components'
 import {AppError} from '@app/root'
@@ -25,22 +26,31 @@ type PublicationProps = {
 function usePublication(ref: PublicationRef) {
   useEffect(() => {
     ref.send('LOAD')
-
     return () => {
       ref.send('UNLOAD')
     }
   }, [ref])
-
   return useActor(ref)
 }
 
-export default function Publication({
+export default function PublicationWrapper() {
+  let file = useCurrentFile()
+
+  if (file) {
+    return <PublicationPage publicationRef={file as PublicationRef} />
+  }
+
+  return null
+}
+
+export function PublicationPage({
   publicationRef,
-  blockToolsService,
+  blockToolsService: _btS,
 }: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
   const localBlockToolsService = useInterpret(() => blockToolsMachine)
-  blockToolsService = blockToolsService || localBlockToolsService
+  let blockToolsService = _btS || localBlockToolsService
+
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
   }
@@ -68,7 +78,17 @@ export default function Publication({
           <FileProvider value={publicationRef}>
             <BlockToolsProvider value={blockToolsService}>
               {state.context.publication?.document?.content && (
-                <>
+                <div
+                  onMouseMove={(event) =>
+                    blockToolsService.send({
+                      type: 'MOUSE.MOVE',
+                      mouseY: event.clientY,
+                    })
+                  }
+                  onMouseLeave={() => {
+                    blockToolsService.send('DISABLE')
+                  }}
+                >
                   <BlockTools
                     mode={EditorMode.Publication}
                     service={blockToolsService}
@@ -82,7 +102,7 @@ export default function Publication({
                       // noop
                     }}
                   />
-                </>
+                </div>
               )}
               <Box
                 css={{
