@@ -167,6 +167,11 @@ export function blockToSlate(blk: Block): FlowContent {
         // @ts-ignore
         leaf[l.type] = true
       }
+
+      if (l.type === 'color') {
+        // @ts-ignore
+        leaf['color'] = l.attributes.color
+      }
     })
 
     if (linkAnnotation) {
