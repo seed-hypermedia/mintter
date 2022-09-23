@@ -40,6 +40,9 @@ const SelectorWrapper = styled('div', {
   right: 0,
   top: 0,
   transform: 'translate(8px, -8px)',
+  zIndex: 2,
+  opacity: 0,
+  transition: 'opacity 0.5s',
 })
 
 interface CodePluginProps {
