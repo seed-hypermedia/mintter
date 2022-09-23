@@ -68,11 +68,11 @@ function FormatButton({
       css={
         isFormatActive(editor, format)
           ? {
-              backgroundColor: '$base-text-high',
-              color: '$base-text-hight',
+              backgroundColor: '$base-component-bg-active',
+              color: '$base-text-high',
               '&:hover': {
-                backgroundColor: '$base-text-high !important',
-                color: '$base-text-hight !important',
+                backgroundColor: '$base-border-normal !important',
+                color: '$base-text-high !important',
               },
             }
           : {}
