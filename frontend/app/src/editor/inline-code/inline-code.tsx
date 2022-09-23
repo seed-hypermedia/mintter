@@ -1,4 +1,3 @@
-// import {toggleMark} from '../utils'
 import {css} from '@app/stitches.config'
 import type {EditorPlugin} from '../types'
 
@@ -25,10 +24,4 @@ export const createInlineCodePlugin = (): EditorPlugin => ({
         )
       }
     },
-  // onDOMBeforeInput: (editor) => (ev) => {
-  //   if (ev.inputType == 'formatItalic') {
-  //     ev.preventDefault()
-  //     toggleMark(editor, MARK_CODE)
-  //   }
-  // },
 })
