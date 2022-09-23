@@ -3,6 +3,7 @@ import {
   createDraft,
   Document,
   getDraft,
+  getPublication,
   listDrafts,
   listPublications,
   Publication,
@@ -16,11 +17,10 @@ import {queryKeys} from '@app/hooks'
 import {link, paragraph, statement, text} from '@app/mttast'
 import {createPublicationMachine} from '@app/publication-machine'
 import {getRefFromParams} from '@app/utils/machine-utils'
-import {libraryMachine} from '@components/library/library-machine'
+import {QueryClient} from '@tanstack/react-query'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import Navaid from 'navaid'
 import toast from 'react-hot-toast'
-import {QueryClient} from '@tanstack/react-query'
 import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
 
 export type PublicationRef = ActorRefFrom<
@@ -39,12 +39,10 @@ export type MainPageContext = {
     replace: boolean
   }
   recents: Array<string>
-  library: ActorRefFrom<typeof libraryMachine> | null
-  activity: ActorRefFrom<typeof activityMachine> | null
+  activity: ActorRefFrom<typeof activityMachine>
   publicationList: Array<PublicationWithRef>
   draftList: Array<DraftWithRef>
   errorMessage: string
-  currentFile: CurrentFile | null
 }
 
 type MainPageEvent =
@@ -114,72 +112,72 @@ type MainServices = {
   createReply: {
     data: Document
   }
+  fetchFiles: {
+    data: {
+      publicationList: Array<Publication>
+      draftList: Array<Document>
+    }
+  }
 }
 
 export function createMainPageService({
   client,
   initialRoute,
 }: CreateMainPageServiceParams) {
-  /** @xstate-layout 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-Jeb7ydYEQ8htASoTQlcm1az-2liA1QhwXwZIoPOkMfaIl95CylDY71aFojLP0TOyKj0GZAcmlQr2O5ArAicFEGRg6xSyqdAGOUUQHB7V1o2xjL0cOga4kCVsvJ-CQdNbDXjsJoQ7h+L61T-bG14y2PTF6VD-nsyE9BVw4pE5OOiEgn5SI9pYqiOmx1pHegAi+KdNDPY2Ggj4VslTEpvicc8YeTpaEQqJCAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWjQYwAsswA6AJwHsBXAFzhIIuTAGIBhAeQFkuBJAFRIARAKIAZEfxEkAYrwmJQABwqx0NdBUyKQAD0QAWAAxGSADgMB2AGw2D16wFZLjgMwAaEAE9EZowEYSS1cAgCZQlxdrUOsAX1jPNCxcVEJicmo6WBJIdQoyEnQIABtWTh4BEgAFAFUAITFeAGUACR0VNQ0tHX0EfzNXMyCBm38x6IBOazNPHz6pxxIjJ1cJx39Q10sJiYN4xIwcfCJMUkpaelyafMKS1hEhAV4AOQBxdtV1TW0kPUQNgyhEhTVzGCZmaJGeyOWaIcJjJZjAxWBaOaz+Vz7EBJI6pE5nTKXCB5ApXLBQEg0LxKcksLgcGpNaT0gBqIg+nW+PX+6yGrlB0ycjiME0sFlhCHhpkcoSM635rkcMssWJxKTSpwyF2yVxuZMwFMwFBoAAIqTSDSwHk83hyvt1fr1-LySPz7BClSKxQYJeFHEMDBNloqDBCjJZ-HsEtjDur8VqsiQlFQAEbFdB4VBdTC3Ursbh8QRsABKIgAglISKWqmIAJp27PcyUGUFLYUR3nOsyR32AgzAqLg6wGJUQ1Wx47pc6J5NpjNZ77kMBKYpeWkQLSkLAANwoAGtSHgyGAs2Bi8vVw2uY7ELtTP45ci5bszGZwRL+s6SGjuxjooMjG7cdkknTVp3oWd00zbMlxXNdLTAMhKAKFcswAM3yZASCPE86HPOCrwdUBegiEJXUcIM1n8CZQmo-xfVcWVyM-RioScUIowOEC8SnQlskg+dszEdBYBoXMygLSpRAkSs5AUX4OntH5iMQJxrHMKF-FsMxLBcLTrA-UN1ICFsIWsRV+R2YDcQ1AltRICAyFQNCaGE0TxPzCpBGkyRpDk9kFM+RsbwQRVFhM0IdgWXSfW8f5dkWVYzCVdYxmCMxQmsuNePsnDTyEJyXJYDdNR3fdD2PU9njAAB3ArnJoQjlL+BAIwDXS-EBcMtksCVnEWbZLBHDraIsTLozVUC7KyFhiwZStng4QQZAZZ4hCaptI1CCUI1cIIKIoodNkGRwsqmhM4BYV4OBIfgbpabgAuUILrxUvpAQlUV1P5TZrF2Gx-RbM6eLAvirpuu6SCZfh+BeV4mg2kKto-fxLCBdFQwGIwtnBRjgdsi7YHB26btqBpeDYCteA4Z5GiafhEbe5G4vemilhiNGdLWEZTomicQemy7rpJ4RizLGR+DphnAs5IiWuZuZqNCRZjBO0FATRUV8fjcCieFyGhDFiXGflj6WdoiZAkVCxoiG7tnExPnuIJ3XichsnGkp2GaZNp0zbmTY32BCZBho1xnVccy4idmydbBktywWkQAHVRfF6Xntl5q-e2lmKP7MUBmRDLtj+8auNjnKZvKQsSA4KoRGeEhk5eIQOGT33-lDIFSMjh9nFFXYJVBIYIWG6woTRextary6a8qa1BA9imqZ9mWlM2qxTC2HSLFRt8ZnN6JgQ2Qv+gMMYNmjivstOYrN0KTBdwPEg0LAGhCBkdBSngdfgqZwMlgSAtkiv0CMgFxQsw2DPO+iFkJJmKOhTCr936f2-nATuCBbC+goqYXYaVkShAyhEGBrBhZ1DLGwAA0pg50gFgEX1fCODiQ0aK+m7N9aYr43BRS0qQ4mK1izJzLMWdaf9Xqm3BCQYcco3ChjvC2X0wRTAX0sF6NwAxuyO2jEaCAGDfiTQFjkJC+RICYM2BMDSFEBio3+oQ30E9+yAiIRPaIAxaKcRjM7OO9kiilEwfyIBB8L5OHkaCXqLNphAhcG+MU-Q-DOn8KQwmDAmBgEwX9UwtFbZQgjDYOUH4jAxGAeHUESpIpqOWMk3WORiTXAKH49J4i5a9HBPeR8xh86vnfObDEliZQcVokQmw4Rql8VqSSYxyFMGikWP3J8XSD6+nDNKcO6xcktkDGM+yupSR1PJJSak5JaG2EWOsKeWlGJvhhObDx0jRhojFMsYwKoY630FjqOpep9kGhIEaU05pjnNOzv8QYfJ1ZozlC4EINyA5DJIKjdEjy-AyNeTfc6NTdkTI0AaWhkd+xuisLKfqMLfQYiGG4TYkZwRDXDtsxMuyZnrARR058mMemKx2BSls4chnRDcNfLxldQb2QEtBRcjTzFXyCBiEcE9wikvNlsRYbSASAUGMiNFQr3kpLFQuLQsFVxAszhvEKMQJ4MI1dRTqgFewIhCJHAIyx0QQi1YYl24y9UwTgfkcx2T2bgmpYEnYBklXLGBG+TZsoikR3pRBVMUF9XNUUv-FqtEikyrKfKzYBTbmKiWGEa2MpoFvIxeM2A78cVQF-ia1NvRw6WIiLREIYwoShgxCjOU0iOKClxkQ8Ecb+IJsEt8NyYlJXAqbHbV0wQ-SbBiFYWKitzL9hfGlCI3pPHup8TOYd4qtBjoyYxDSISxS6XWA4D8oCljmTHtjCwF9B0OUKq5ES467iYMBBSrSL4iFhTGMspwroL7hxbOZSIgrt2z2yI5Bqh7J0hX5IECKUUnAxQ-C4FRKJGJWA2E2p9eU6D1RcgElswDhwWF5T+CMfVzLDF0srTYhcxSDtof0CUX7zCXO2K+P6kZnSkM-R4FmltgTrFLuiSMUIaLxHiEAA */
   return createMachine(
     {
+      id: 'main-machine',
+      tsTypes: {} as import('./main-machine.typegen').Typegen0,
+      predictableActionArguments: true,
+      schema: {
+        context: {} as MainPageContext,
+        events: {} as MainPageEvent,
+        services: {} as MainServices,
+      },
       context: () =>
         ({
           params: {
             replace: false,
           },
           recents: [],
-
-          currentFile: null,
           publicationList: [],
           draftList: [],
           errorMessage: '',
-          library: null,
-          activity: null,
+          activity: spawn(activityMachine, 'activity'),
         } as MainPageContext),
-      tsTypes: {} as import('./main-machine.typegen').Typegen0,
-      schema: {
-        context: {} as MainPageContext,
-        events: {} as MainPageEvent,
-        services: {} as MainServices,
-      },
-      predictableActionArguments: true,
-      invoke: {
-        src: 'router',
-        id: 'router',
-      },
-      id: 'main-machine',
-      initial: 'loadingFiles',
-      states: {
-        loadingFiles: {
-          invoke: {
-            src: 'fetchFiles',
-            id: 'fetchFiles',
-          },
-          tags: 'loading',
-          on: {
-            'REPORT.FILES.SUCCESS': {
-              actions: 'assignFiles',
-              target: 'routes',
-            },
-            'REPORT.FILES.ERROR': {
-              actions: 'assignError',
-              target: 'errored',
-            },
-          },
+      invoke: [
+        {
+          src: 'router',
+          id: 'router',
         },
+        {
+          src: 'fetchFiles',
+          id: 'fetchFiles',
+          onDone: [
+            {
+              actions: 'assignFiles',
+            },
+          ],
+          onError: [
+            {
+              actions: 'assignError',
+              target: '.errored',
+            },
+          ],
+        },
+      ],
+      initial: 'routes',
+      states: {
         errored: {},
         routes: {
-          entry: 'spawnUIMachines',
           initial: 'idle',
           states: {
             idle: {
               entry: send('listen', {to: 'router'}),
-              tags: 'loading',
             },
             home: {
-              entry: ['clearCurrentFile', 'clearParams'],
-              tags: ['topbar', 'library'],
+              entry: ['clearParams'],
               on: {
                 'COMMIT.DELETE.FILE': {
                   actions: [
@@ -191,22 +189,12 @@ export function createMainPageService({
               },
             },
             editor: {
-              tags: ['topbar', 'library'],
               initial: 'idle',
+              entry: ['pushDraftRoute', 'pushDraftToRecents'],
               states: {
                 idle: {
-                  entry: 'pushDraftRoute',
-                  exit: 'pushDraftToRecents',
                   tags: ['documentView', 'draft'],
                   on: {
-                    'COMMIT.PUBLISH': {
-                      actions: [
-                        'removeDraftFromList',
-                        'asssignNewPublicationValues',
-                        'removeDraftFromRecents',
-                      ],
-                      target: '#main-machine.routes.publication.idle',
-                    },
                     EDITING: {
                       target: 'editing',
                     },
@@ -218,6 +206,16 @@ export function createMainPageService({
                 editing: {
                   tags: ['documentView', 'draft'],
                   initial: 'not typing',
+                  on: {
+                    'COMMIT.PUBLISH': {
+                      actions: [
+                        'removeDraftFromList',
+                        'asssignNewPublicationValues',
+                        'removeDraftFromRecents',
+                      ],
+                      target: '#main-machine.routes.publication',
+                    },
+                  },
                   states: {
                     typing: {
                       on: {
@@ -238,12 +236,16 @@ export function createMainPageService({
               },
             },
             publication: {
-              tags: ['topbar', 'library'],
               initial: 'idle',
+              entry: [
+                'pushPublicationRoute',
+                'pushPublicationToRecents',
+                (c, e) => {
+                  console.log('publication state entry:', c, e)
+                },
+              ],
               states: {
                 idle: {
-                  entry: 'pushPublicationRoute',
-                  exit: 'pushPublicationToRecents',
                   tags: ['documentView', 'publication'],
                   on: {
                     'COMMIT.CREATE.REPLY': {
@@ -258,7 +260,7 @@ export function createMainPageService({
                     onDone: [
                       {
                         actions: 'assignNewDraftValues',
-                        target: '#main-machine.routes.editor.idle',
+                        target: '#main-machine.routes.editor',
                       },
                     ],
                     onError: [
@@ -275,16 +277,11 @@ export function createMainPageService({
               },
             },
             settings: {
-              entry: ['clearCurrentFile', 'clearParams', 'pushSettings'],
+              entry: ['clearParams', 'pushSettings'],
               tags: 'settings',
             },
             publicationList: {
-              entry: [
-                'clearCurrentFile',
-                'clearParams',
-                'pushPublicationListRoute',
-              ],
-              tags: ['topbar', 'library'],
+              entry: ['clearParams', 'pushPublicationListRoute'],
               initial: 'idle',
               states: {
                 idle: {
@@ -301,8 +298,7 @@ export function createMainPageService({
               },
             },
             draftList: {
-              entry: ['clearCurrentFile', 'clearParams', 'pushDraftListRoute'],
-              tags: ['topbar', 'library'],
+              entry: ['clearParams', 'pushDraftListRoute'],
               initial: 'idle',
               states: {
                 idle: {
@@ -321,7 +317,7 @@ export function createMainPageService({
                 onDone: [
                   {
                     actions: 'assignNewDraftValues',
-                    target: '#main-machine.routes.editor.idle',
+                    target: '#main-machine.routes.editor',
                   },
                 ],
               },
@@ -345,15 +341,11 @@ export function createMainPageService({
               target: '.draftList',
             },
             'GO.TO.DRAFT': {
-              actions: ['assignDraftParams', 'assignCurrentDraft'],
+              actions: ['assignDraftParams'],
               target: '.editor',
             },
             'GO.TO.PUBLICATION': {
-              actions: [
-                'assignPublicationParams',
-                'assignCurrentPublication',
-                'pushToActivity',
-              ],
+              actions: ['assignPublicationParams', 'pushToActivity'],
               target: '.publication',
             },
             'CREATE.NEW.DRAFT': {
@@ -379,21 +371,18 @@ export function createMainPageService({
     },
     {
       actions: {
-        // @ts-ignore
-        spawnUIMachines: assign({
-          library: () => spawn(libraryMachine, 'library'),
-          activity: () => spawn(activityMachine, 'activity'),
-        }),
         removePublicationFromCitations: () => {
           // TODO.
         },
-
         assignError: assign({
           errorMessage: (_, event) =>
             `[Main Machine]: Error => ${JSON.stringify(event)}`,
         }),
         assignFiles: assign(function assignFilesPredicate(_, event) {
-          let draftList = event.draftList.map(function draftListMapper(draft) {
+          console.log('assignFiles call', event.data)
+          let draftList = event.data.draftList.map(function draftListMapper(
+            draft,
+          ) {
             let editor = buildEditorHook(plugins, EditorMode.Draft)
             return {
               ...draft,
@@ -403,7 +392,7 @@ export function createMainPageService({
               ),
             }
           })
-          let publicationList = event.publicationList.map(
+          let publicationList = event.data.publicationList.map(
             function publicationListMapper(publication) {
               let editor = buildEditorHook(plugins, EditorMode.Publication)
               return {
@@ -412,7 +401,7 @@ export function createMainPageService({
                   createPublicationMachine({client, publication, editor}),
                   getRefFromParams(
                     'pub',
-                    publication.document.id,
+                    (publication.document as Document).id,
                     publication.version,
                   ),
                 ),
@@ -423,26 +412,6 @@ export function createMainPageService({
             publicationList,
             draftList,
           }
-        }),
-        assignCurrentPublication: assign({
-          currentFile: (context, event) => {
-            return (
-              context.publicationList.find(
-                (p) =>
-                  p.ref.id ==
-                  getRefFromParams('pub', event.docId, event.version),
-              )?.ref ?? null
-            )
-          },
-        }),
-        assignCurrentDraft: assign({
-          currentFile: (context, event) => {
-            return (
-              context.draftList.find(
-                (d) => d.ref.id == getRefFromParams('draft', event.docId, null),
-              )?.ref ?? null
-            )
-          },
         }),
         pushPublicationToRecents: assign({
           recents: (context, event) => {
@@ -494,12 +463,9 @@ export function createMainPageService({
             url,
           })
         },
-        clearCurrentFile: assign({
-          // eslint-disable-next-line
-          currentFile: (c) => null,
-        }),
         pushPublicationRoute: send(
-          (context) => {
+          (context, e) => {
+            console.log('pushPublicationRoute', context, e)
             return {
               type: 'pushPublication',
               docId: context.params.docId,
@@ -599,7 +565,6 @@ export function createMainPageService({
               version: undefined,
               blockId: undefined,
             },
-            currentFile: draftRef,
             draftList: [
               ...context.draftList,
               {
@@ -632,13 +597,12 @@ export function createMainPageService({
               blockId: undefined,
               replace: true,
             },
-            currentFile: publicationRef,
             publicationList: [
-              ...context.publicationList,
               {
                 ...event.publication,
                 ref: publicationRef,
               },
+              ...context.publicationList,
             ],
           }
         }),
@@ -658,36 +622,27 @@ export function createMainPageService({
         }),
       },
       services: {
-        fetchFiles: () => (sendBack) => {
+        fetchFiles: () =>
           Promise.all([
             client.fetchQuery([queryKeys.GET_PUBLICATION_LIST], () =>
               listPublications(),
             ),
             client.fetchQuery([queryKeys.GET_DRAFT_LIST], () => listDrafts()),
-          ])
-            .then(function filesResponse([pubList, draftList]) {
-              sendBack({
-                type: 'REPORT.FILES.SUCCESS',
-                publicationList: pubList.publications.sort((a, b) => {
-                  // @ts-ignore
-                  return (
-                    new Date(b.document?.createTime) -
-                    new Date(a.document?.createTime)
-                  )
-                }),
-                draftList: draftList.documents.sort((a, b) => {
-                  // @ts-ignore
-                  return new Date(b.createTime) - new Date(a.createTime)
-                }),
-              })
-            })
-            .catch((error) => {
-              sendBack({
-                type: 'REPORT.FILES.ERROR',
-                errorMessage: JSON.stringify(error),
-              })
-            })
-        },
+          ]).then(function filesResponse([pubList, draftList]) {
+            return {
+              publicationList: pubList.publications.sort((a, b) => {
+                // @ts-ignore
+                return (
+                  new Date(b.document?.createTime) -
+                  new Date(a.document?.createTime)
+                )
+              }),
+              draftList: draftList.documents.sort((a, b) => {
+                // @ts-ignore
+                return new Date(b.createTime) - new Date(a.createTime)
+              }),
+            }
+          }),
         // router reference: https://gist.github.com/ChrisShank/369aa8cbd4002244d7769bd1ba3e232a
         router: () => (sendBack, receive) => {
           let navRouter = Navaid('/', () => sendBack('GO.TO.HOME'))
@@ -777,7 +732,7 @@ export function createMainPageService({
            * - return draft
            */
           try {
-            var currentPub = context.currentFile?.getSnapshot()
+            // TODO: change the currentFile access here
           } catch (err) {
             throw Error(
               `[REPLYTO ERROR]: currentFile does not have a snapshot - ${JSON.stringify(
@@ -786,16 +741,29 @@ export function createMainPageService({
             )
           }
 
-          let currentUrl = `mtt://${currentPub?.context.documentId}/${currentPub?.context.version}`
+          let publication = await client.fetchQuery(
+            [
+              queryKeys.GET_PUBLICATION,
+              context.params.docId,
+              context.params.version,
+            ],
+            () =>
+              getPublication(
+                context.params.docId as string,
+                context.params.version,
+              ),
+          )
+
+          let currentUrl = `mtt://${context.params.docId}/${context.params.version}`
           let doc = await createDraft()
           let block = statement([
             paragraph([
-              text('Reply to '),
+              text('RE: '),
               link(
                 {
                   url: currentUrl,
                 },
-                [text(currentPub?.context.title || currentUrl)],
+                [text(publication?.document?.title || currentUrl)],
               ),
               text(': '),
             ]),
@@ -807,8 +775,8 @@ export function createMainPageService({
                 {
                   op: {
                     $case: 'setTitle',
-                    setTitle: `Reply to ${
-                      currentPub?.context.title || currentUrl
+                    setTitle: `RE: ${
+                      publication?.document?.title || currentUrl
                     }`,
                   },
                 },

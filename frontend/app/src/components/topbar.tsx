@@ -16,28 +16,26 @@ import {Box} from './box'
 import {Icon} from './icon'
 
 import {useAccountProfile} from '@app/auth-context'
-import {useIsEditing, useMain} from '@app/main-context'
+import {useCurrentFile, useIsEditing, useMain} from '@app/main-context'
+import {libraryMachine} from '@components/library/library-machine'
 import {listen} from '@tauri-apps/api/event'
+import {InterpreterFrom} from 'xstate'
 import '../styles/find.scss'
 
-// type TopbarProps = {
-//   copy?: typeof copyTextToClipboard
-//   currentFile?: CurrentFile | null
-// }
+type TopbarProps = {
+  libraryService: InterpreterFrom<typeof libraryMachine>
+}
 
 const draggableProps = {
   'data-tauri-drag-region': true,
 }
 
-export function Topbar() {
+export function Topbar({libraryService}: TopbarProps) {
   const mainService = useMain()
   let [mainState] = useActor(mainService)
   let profile = useAccountProfile()
   let isEditing = useIsEditing()
-
-  function handleLinbraryToggle() {
-    mainState.context.library?.send('LIBRARY.TOGGLE')
-  }
+  let file = useCurrentFile()
 
   return (
     <Box
@@ -52,8 +50,8 @@ export function Topbar() {
         className={topbarSectionStyles({type: 'main'})}
         {...draggableProps}
       >
-        {mainState.context.currentFile ? (
-          <FileTitle fileRef={mainState.context.currentFile} />
+        {file ? (
+          <FileTitle fileRef={file} />
         ) : (
           <TopbarTitle
             title={
@@ -68,11 +66,9 @@ export function Topbar() {
         )}
       </Box>
       <Find />
-      {mainState.context.currentFile ? (
-        <TopbarFileActions fileRef={mainState.context.currentFile} />
-      ) : null}
+      {file ? <TopbarFileActions fileRef={file} /> : null}
       <TopbarLibrarySection
-        handleLibraryToggle={handleLinbraryToggle}
+        handleLibraryToggle={() => libraryService.send('LIBRARY.TOGGLE')}
         handleBack={() => mainService.send('GO.BACK')}
         handleForward={() => mainService.send('GO.BACK')}
         libraryLabel={profile?.alias ?? ''}

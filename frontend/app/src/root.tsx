@@ -2,9 +2,7 @@ import {AuthProvider, useAuthService} from '@app/auth-context'
 import {createAuthService} from '@app/auth-machine'
 import {createThemeService, ThemeProvider} from '@app/theme'
 import {error} from '@app/utils/logger'
-import {LibraryShell} from '@components/library'
 import {QuickSwitcher} from '@components/quick-switcher'
-import {TopbarShell} from '@components/topbar'
 
 import {
   dehydrate,
@@ -16,7 +14,6 @@ import {useActor, useInterpret} from '@xstate/react'
 import React, {lazy, Suspense} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 // import 'show-keys'
-import {MainPageShell, MainWindowShell} from './pages/window-components'
 import {globalStyles} from './stitches.config'
 
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
@@ -53,7 +50,7 @@ export function Root() {
     error('[Auth]: Something went wrong', state.context)
   }
 
-  return <AppShell />
+  return null
 }
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {
@@ -63,16 +60,6 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
       <pre>{error.message}</pre>
       <button onClick={resetErrorBoundary}>Try again</button>
     </div>
-  )
-}
-
-function AppShell() {
-  return (
-    <MainPageShell>
-      <MainWindowShell />
-      <TopbarShell />
-      <LibraryShell />
-    </MainPageShell>
   )
 }
 
@@ -104,7 +91,7 @@ export function RootProvider({
 
   return (
     <QueryClientProvider client={client}>
-      <Suspense fallback={<AppShell />}>
+      <Suspense fallback={<div></div>}>
         <Hydrate state={dehydrateState}>
           <ThemeProvider value={themeService}>
             <AuthProvider value={authService}>{children}</AuthProvider>

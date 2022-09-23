@@ -16,22 +16,14 @@ export var libraryMachine = createMachine({
   states: {
     opened: {
       on: {
-        'LIBRARY.CLOSE': {
-          target: 'closed',
-        },
-        'LIBRARY.TOGGLE': {
-          target: 'closed',
-        },
+        'LIBRARY.CLOSE': 'closed',
+        'LIBRARY.TOGGLE': 'closed',
       },
     },
     closed: {
       on: {
-        'LIBRARY.OPEN': {
-          target: 'opened',
-        },
-        'LIBRARY.TOGGLE': {
-          target: 'opened',
-        },
+        'LIBRARY.OPEN': 'opened',
+        'LIBRARY.TOGGLE': 'opened',
       },
     },
   },
