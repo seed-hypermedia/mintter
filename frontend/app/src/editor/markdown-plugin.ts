@@ -139,7 +139,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
           }
         }
 
-        // turn statement into
+        // turn Statement into Heading
         if (beforeText === '#') {
           const above = Editor.above(editor, {
             match: isStatement,
@@ -161,6 +161,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 {match: isParagraph},
               )
             })
+            return
           }
         }
       }
