@@ -43,12 +43,11 @@ export default function PublicationWrapper() {
 
 function PublicationPage({
   publicationRef,
-  blockToolsService,
+  blockToolsService: _btS,
 }: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
-
   const localBlockToolsService = useInterpret(() => blockToolsMachine)
-  blockToolsService = blockToolsService || localBlockToolsService
+  let blockToolsService = _btS || localBlockToolsService
 
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
@@ -77,7 +76,17 @@ function PublicationPage({
           <FileProvider value={publicationRef}>
             <BlockToolsProvider value={blockToolsService}>
               {state.context.publication?.document?.content && (
-                <>
+                <div
+                  onMouseMove={(event) =>
+                    blockToolsService.send({
+                      type: 'MOUSE.MOVE',
+                      mouseY: event.clientY,
+                    })
+                  }
+                  onMouseLeave={() => {
+                    blockToolsService.send('DISABLE')
+                  }}
+                >
                   <BlockTools
                     mode={EditorMode.Publication}
                     service={blockToolsService}
@@ -91,7 +100,7 @@ function PublicationPage({
                       // noop
                     }}
                   />
-                </>
+                </div>
               )}
               <Box
                 css={{

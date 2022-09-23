@@ -23,7 +23,7 @@ export type BlockToolsMachineEvent =
   | {type: 'WINDOW.BLUR'}
 
 export const blockToolsMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QCMA2B7AxgawC7vVVgFoBbAQ0wAsBLAOzADpLcaA3JzDWMAYgFkA8gFUAygFFGQgGrjEoAA7pYNVujryQAD0QAOAKwBmRgHYTugGwAWXSYAMVowCZ9AGhABPRPtuML-kwBOAEYLJytAg2CAX2j3NCw8AiIySloGZkxWDkYuZT4AEQAlQQAFAsEAdQA5RjLxas0lFTUNJG1EYLtg3UYnLsC7Qzt9fzD3LwQTfr6LB0MnQ10rYMMTWPiMHHxCEgpqeiYWdiZ0BTA6XmKyiprGAGEAGUEJJuVVGnVNHQQu4KtGFYrEFgoElvo7HNghNEHNAqYLLpFoFgWswhsQAltsk9mlDplsnxxAUAJIAFRJ1QA4m8Wp82qAfk5FoxlrpAvYTPoudZrDCEAYLIxwYZIk4Qvp-voMVikrtUgcMvRjjkaBBUETSRTqbSPl92j9DNzASjdPNBVZwvyLEa-EaIcy1sMVjKtnKUvt0kxlVkTow1RreFpYLhyLgjgAzcMAJwAFBC7ABKXiynYevFKugq73qsC61rfWEzCH6ZnhFyDQJOflc-SMLorYGhfo+XSuxJp3GK71Z305CA0WDkNCQXj5+mFhCGRGMOx2Fw9SHz+fQzzeXwWDkoqz2yxWCzt7Hyz2HXgNMlFACajAAggUCuP9YzYStZjuwcNzLp+RzGIMwoM+j6JEEROOscSYm6nYKl6Z7VBe14FOIjziGScjtM0eoMh0CBhL0gSRCCc4rtWa6-E4h7ul2sHnledQAEISEUsiPthPxhE49aLDyui6KKvH8l0zJ9OKDibiYhjDNYlHQSeDC8IIjHiMxymsZOYRCqEFjTGWdjsj+07CsySItvYvGBDJOIwaelSUrcjD0Y8whFGpBqwiY-JGL0LhONYTjdKsOmxBBdDoBAcCaKmVlyUcfacNweYYe8BZuQKPj1iYPSGEC9g9BJNbpSs-iDHOgojJZx4ZrFhKMGcFyuc+5HBMEjDATaDhgqsQHWo4s5OLYQwmP43SBNKEFRZV3YEicDU4Ui8JmHuA2OAsbhkaKnFBECzLdAYQ1rBV6ZTT6NUBolijJROqUuL0bIcnYXI8vuVieVWf7hPo+7Mj4jgWeNUHRVV-q9jVA5DiOECzT8wKcXxCyVhYUrAa9LXLGsXLLmYQ2HdR+InTNSV0k+OGLACd2ctyozPZ5wR1tMVaSSYO6fUBOPWQwUOIDugmI3+aKGFl1h6YswXREAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QCMA2B7AxgawC7vVVgFoBbAQ0wAsBLAOzADpLcaA3JzDWMAYgFkA8gFUAygFFGQgGrjEoAA7pYNVujryQAD0QAOAKwBmRgHYTugGwAWXSYAMVowCZ9AGhABPRPtuML-kwBOAEYLJytAg2CAX2j3NCw8AiIySloGZkxWDkYuZT4AEQAlQQAFAsEAdQA5RjLxas0lFTUNJG1EYLtg3UYnLsC7Qzt9fzD3LwQTfr6LB0MnQ10rYMMTWPiMHHxCEgpqeiYWdiZ0BTA6XmKyiprGAGEAGUEJJuVVGnVNHQQu4KtGFYrEFgoElvo7HNghNEHNAqYLLpFoFgWswhsQAltsk9mlDplsnxxAUAJIAFRJ1QA4m8Wp82qAfk5FoxlrpAvYTPoudZrDCEAYLIxwYZIk4Qvp-voMVikrtUgcMscOFcSaIAIIAIUecnazQ+X3aP1WQMY+n0g2cui6dg5-McJkBJisFi5wRM-2RMq2cpS+3STHoysDEFQRNJFOptINDI6CEMYVMNjmhm5gRCFkM-MRxl5gXNJmGhgigW9iR2frxGSDWROjBoob4WlguHIuCOADN2wAnAAUELsAEpeLKK7jFYG6MH643o61vrCZhD9Mzwi5BoEnPyufpGF0VsDQv0fLoy9j5f78TXCYwIDRYOQ0JBeHP6Qv44jGHY7C4epCfz+0KeN4vgWByKJWKmPi8mevrjgGvANGSRQAJqMOqBQFK+hqMrCKyzJBYLDOYuj8hyjCDGEloWssm7rHEmI+mOCoIUhqGMAU4g6mSuqKO885GouvTprYITfoBW7Ab8Tiwcxl4MIh1TIWhgiahIRSyNhsY-GETh7osPK6LoopGfyXTMn04oOGBhbDNYsk4ixhy8Kp6myEUWnvmEQqhK6q5OHY7JkQmwrMkix72EZpYMaOjnyXwlSUrcjDasIHl6vxb6CQgrr8kYvQuE41gBcEqzTDJGJ0OgEBwJosUXlWRy1jkeQ8J52UGL07o9MWwLdLYWZSVyvQrP4gzfoKIwOQ1E4EnWZwXO1uHSaVZqBJmDhgqs5rZo4X5OLYQwmP43T5tNlazcGS1xki8JmJYNj2I4CxuFJop6UEQK2uyx0WDEMVMXFjX1lOzUhmG11Mj4rI2BydhcjyLpWHlm4UeE+gusyPiONFmzlkDs3XnWd4Pk+ECQ4gwJ6cZCwbn9jgWijwQw2sXIAWYx3nfBV6g4SFMIIsAJsnDCOjEjeXBLu0wSkVBgQbjjH4zNAb85BZl-RRaw+AFELFk4zqxLEQA */
   createMachine(
     {
       context: {
@@ -49,10 +49,10 @@ export const blockToolsMachine =
           src: 'windowBlurService',
           id: 'windowBlurService',
         },
-        {
-          src: 'mouseListener',
-          id: 'mouseListener',
-        },
+        // {
+        //   src: 'mouseListener',
+        //   id: 'mouseListener',
+        // },
       ],
       id: 'blocktools-machine',
       initial: 'inactive',
@@ -87,7 +87,9 @@ export const blockToolsMachine =
             EDITING: {
               target: 'inactive',
             },
-            DISABLE: 'inactive',
+            DISABLE: {
+              target: 'inactive',
+            },
           },
         },
         inactive: {
@@ -144,16 +146,16 @@ export const blockToolsMachine =
             window.removeEventListener('blur', onBlur)
           }
         },
-        mouseListener: () => (sendBack) => {
-          function mouseCallback(event: MouseEvent) {
-            sendBack({type: 'MOUSE.MOVE', mouseY: event.clientY})
-          }
-          window.addEventListener('mousemove', mouseCallback)
+        // mouseListener: () => (sendBack) => {
+        //   function mouseCallback(event: MouseEvent) {
+        //     sendBack({type: 'MOUSE.MOVE', mouseY: event.clientY})
+        //   }
+        //   window.addEventListener('mousemove', mouseCallback)
 
-          return () => {
-            window.removeEventListener('mousemove', mouseCallback)
-          }
-        },
+        //   return () => {
+        //     window.removeEventListener('mousemove', mouseCallback)
+        //   }
+        // },
         visibilityObserver: () => (sendBack) => {
           function callback(entries: Array<IntersectionObserverEntry>) {
             for (const entry of entries) {
