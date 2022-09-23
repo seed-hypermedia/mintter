@@ -1,19 +1,24 @@
-import type {GroupingContent} from '@app/mttast'
 import {
   FlowContent,
   group,
+  GroupingContent,
   isFlowContent,
   isGroup,
   isGroupContent,
+  isHeading,
   isStatement,
+  MttastContent,
   Statement,
   statement,
 } from '@app/mttast'
+import {ObjectKeys} from '@app/utils/object-keys'
 import videoParser from 'js-video-url-parser'
 import {useMemo} from 'react'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {MintterEditor} from './mintter-changes/plugin'
+import {ELEMENT_PARAGRAPH} from './paragraph'
 
 export const isCollapsed = (range: Range): boolean =>
   !!range && Range.isCollapsed(range)
@@ -316,4 +321,65 @@ export function lowerPoint(root: Node, point: Point): Point | null {
   }
 
   return null
+}
+
+// eslint-disable-next-line
+export function setType(fn: any) {
+  return function setToStatementType(
+    editor: Editor,
+    element: FlowContent,
+    at: Path,
+  ) {
+    Editor.withoutNormalizing(editor, function () {
+      MintterEditor.addChange(editor, ['replaceBlock', element.id])
+      const keys = ObjectKeys(element).filter(
+        (key) => !['type', 'id', 'children', 'data'].includes(key as string),
+      )
+
+      if (isHeading(element)) {
+        Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: [...at, 0]})
+      }
+
+      if (keys.length) {
+        Transforms.unsetNodes(editor, keys, {at})
+      }
+
+      // IDs are meant to be stable, so we shouldn't obverride it
+      // eslint-disable-next-line
+      const {id, ...props} = fn()
+
+      Transforms.setNodes(editor, props, {at})
+    })
+  }
+}
+
+// eslint-disable-next-line
+export function setList(fn: any) {
+  return function wrapWithListType(
+    editor: Editor,
+    element: MttastContent,
+    at: Path,
+  ) {
+    Editor.withoutNormalizing(editor, () => {
+      const list = Node.parent(editor, at)
+
+      if (list && isGroupContent(list)) {
+        let newList = fn()
+        Transforms.setNodes(editor, {type: newList.type}, {at: Path.parent(at)})
+
+        if (at.length == 2) {
+          // block is at the root level
+        } else {
+          let parentBlockEntry = Editor.above(editor, {
+            match: isFlowContent,
+            at,
+          })
+          if (parentBlockEntry) {
+            let [block] = parentBlockEntry
+            MintterEditor.addChange(editor, ['replaceBlock', block.id])
+          }
+        }
+      }
+    })
+  }
 }

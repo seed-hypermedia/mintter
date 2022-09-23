@@ -1,9 +1,22 @@
 import {useHover} from '@app/editor/hover-context'
-import {ChildrenOf, Document, FlowContent} from '@app/mttast'
+import {
+  blockquote,
+  ChildrenOf,
+  code,
+  Document,
+  FlowContent,
+  group,
+  heading,
+  isFlowContent,
+  ol,
+  statement,
+  ul,
+} from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {PropsWithChildren, Suspense, useMemo} from 'react'
-import type {Descendant, Editor as EditorType} from 'slate'
+import {Event, listen} from '@tauri-apps/api/event'
+import {PropsWithChildren, useEffect, useMemo} from 'react'
+import {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {EditorHoveringToolbar} from './hovering-toolbar'
 import {
@@ -16,6 +29,7 @@ import {
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
 import type {EditorPlugin} from './types'
+import {setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
   mode?: EditorMode
@@ -84,62 +98,147 @@ export function Editor({
   )
   const hoverService = useHover()
 
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten
+
+    listen('format_mark', (event: Event<string>) => {
+      if (!isSubscribed) {
+        return unlisten()
+      }
+      console.log('set mark', event.payload)
+
+      toggleFormat(_editor, event.payload)
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
+
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten
+
+    listen('format_block', (event: Event<string>) => {
+      if (!isSubscribed) {
+        return unlisten()
+      }
+
+      if (!_editor.selection) return
+
+      const set = setType(
+        {
+          heading,
+          statement,
+          blockquote,
+          codeblock: code,
+        }[event.payload],
+      )
+
+      const [el, path] =
+        EditorType.above(_editor, {
+          at: _editor.selection,
+          match: isFlowContent,
+        }) || []
+
+      if (!el || !path) throw new Error('whut')
+
+      set(_editor, el, path)
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
+
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten
+
+    listen('format_list', (event: Event<string>) => {
+      if (!isSubscribed) {
+        return unlisten()
+      }
+
+      if (!_editor.selection) return
+
+      const set = setList(
+        {
+          ordered_list: ol,
+          unordered_list: ul,
+          group,
+        }[event.payload],
+      )
+
+      const [el, path] =
+        EditorType.above(_editor, {
+          at: _editor.selection,
+          match: isFlowContent,
+        }) || []
+
+      if (!el || !path) throw new Error('whut')
+
+      set(_editor, el, path)
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
+
   if (mode == EditorMode.Draft) {
     return (
-      <Suspense fallback={'loading'}>
-        <Box className={editorWrapperStyles({mode})} id="editor">
-          <Slate
-            editor={_editor}
-            value={value as Array<Descendant>}
-            onChange={onChange}
-          >
-            <EditorHoveringToolbar />
-            <Editable
-              spellCheck={false}
-              autoCorrect="false"
-              autoCapitalize="false"
-              data-testid="editor"
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              decorate={decorate}
-              placeholder="Start typing here..."
-              {...eventHandlers}
-            />
-            {children}
-          </Slate>
-        </Box>
-      </Suspense>
-    )
-  }
-
-  return (
-    <Suspense fallback={'loading'}>
-      <Box
-        as="span"
-        className={editorWrapperStyles({mode})}
-        id="editor"
-        onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
-      >
+      <Box className={editorWrapperStyles({mode})} id="editor">
         <Slate
           editor={_editor}
           value={value as Array<Descendant>}
           onChange={onChange}
         >
-          {/* {mode == EditorMode.Publication ? (
-            <PublicationHoveringToolbar />
-          ) : null} */}
+          <EditorHoveringToolbar />
           <Editable
-            as={as}
+            spellCheck={false}
+            autoCorrect="false"
+            autoCapitalize="false"
             data-testid="editor"
-            style={{display: 'inline'}}
-            readOnly
             renderElement={renderElement}
             renderLeaf={renderLeaf}
             decorate={decorate}
+            placeholder="Start typing here..."
             {...eventHandlers}
           />
+          {children}
         </Slate>
       </Box>
-    </Suspense>
+    )
+  }
+
+  return (
+    <Box
+      as="span"
+      className={editorWrapperStyles({mode})}
+      id="editor"
+      onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
+    >
+      <Slate
+        editor={_editor}
+        value={value as Array<Descendant>}
+        onChange={onChange}
+      >
+        {/* {mode == EditorMode.Publication ? (
+            <PublicationHoveringToolbar />
+          ) : null} */}
+        <Editable
+          as={as}
+          data-testid="editor"
+          style={{display: 'inline'}}
+          readOnly
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          decorate={decorate}
+          {...eventHandlers}
+        />
+      </Slate>
+    </Box>
   )
 }
