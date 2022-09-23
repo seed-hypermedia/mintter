@@ -6,7 +6,7 @@ import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {getEditorBlock} from '@app/editor/utils'
+import {getEditorBlock, setList, setType} from '@app/editor/utils'
 import {useFile, useFileEditor, useFileIds} from '@app/file-provider'
 import {
   blockquote,
@@ -16,10 +16,7 @@ import {
   heading,
   image,
   isBlockquote,
-  isFlowContent,
-  isGroupContent,
   isHeading,
-  MttastContent,
   ol,
   statement,
   text,
@@ -27,7 +24,6 @@ import {
   video,
 } from '@app/mttast'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {ObjectKeys} from '@app/utils/object-keys'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -35,10 +31,9 @@ import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 import {Fragment, useMemo} from 'react'
 import toast from 'react-hot-toast'
-import {BaseRange, Editor, Node, NodeEntry, Path, Transforms} from 'slate'
+import {BaseRange, Editor, NodeEntry, Path, Transforms} from 'slate'
 import {InterpreterFrom} from 'xstate'
 import {Dropdown, ElementDropdown} from './dropdown'
-import {ELEMENT_PARAGRAPH} from './paragraph'
 
 const items: {
   [key: string]: Array<{
@@ -288,36 +283,6 @@ export function PublicationBlockTools({
   ) : null
 }
 
-// eslint-disable-next-line
-function setType(fn: any) {
-  return function setToStatementType(
-    editor: Editor,
-    element: FlowContent,
-    at: Path,
-  ) {
-    Editor.withoutNormalizing(editor, function () {
-      MintterEditor.addChange(editor, ['replaceBlock', element.id])
-      const keys = ObjectKeys(element).filter(
-        (key) => !['type', 'id', 'children', 'data'].includes(key as string),
-      )
-
-      if (isHeading(element)) {
-        Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: [...at, 0]})
-      }
-
-      if (keys.length) {
-        Transforms.unsetNodes(editor, keys, {at})
-      }
-
-      // IDs are meant to be stable, so we shouldn't obverride it
-      // eslint-disable-next-line
-      const {id, ...props} = fn()
-
-      Transforms.setNodes(editor, props, {at})
-    })
-  }
-}
-
 function insertInline(fn: typeof image | typeof video) {
   return function insertInlineElement(
     editor: Editor,
@@ -328,37 +293,6 @@ function insertInline(fn: typeof image | typeof video) {
       MintterEditor.addChange(editor, ['replaceBlock', element.id])
       Transforms.insertNodes(editor, fn({url: ''}, [text('')]), {
         at: selection,
-      })
-    }
-  }
-}
-
-// eslint-disable-next-line
-function setList(fn: any) {
-  return function wrapWithListType(
-    editor: Editor,
-    element: MttastContent,
-    at: Path,
-  ) {
-    const list = Node.parent(editor, at)
-
-    if (list && isGroupContent(list)) {
-      Editor.withoutNormalizing(editor, () => {
-        let newList = fn()
-        Transforms.setNodes(editor, {type: newList.type}, {at: Path.parent(at)})
-
-        if (at.length == 2) {
-          // block is at the root level
-        } else {
-          let parentBlockEntry = Editor.above(editor, {
-            match: isFlowContent,
-            at,
-          })
-          if (parentBlockEntry) {
-            let [block] = parentBlockEntry
-            MintterEditor.addChange(editor, ['replaceBlock', block.id])
-          }
-        }
       })
     }
   }
