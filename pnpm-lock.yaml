@@ -129,7 +129,7 @@ importers:
       slate-history: https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-hyperscript: https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-react: https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688
-      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#9ccffd8e7462821d81723b668bb32becf9a613f8
+      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#093b18f414907b5712ce5d0352aa91efcbc1c116
       tauri-plugin-store-api: https://github.com/tauri-apps/tauri-plugin-store#d8efb964bb1894bdf01407693ee896d0f9c557b3
       tiny-glob: 0.2.9
       trim-trailing-lines: 2.0.0
@@ -221,7 +221,7 @@ importers:
       slate-history: '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-hyperscript: '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-react: '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688_2hwyydqlvvkbaegiievw3yx7se'
-      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/9ccffd8e7462821d81723b668bb32becf9a613f8
+      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/093b18f414907b5712ce5d0352aa91efcbc1c116
       tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/d8efb964bb1894bdf01407693ee896d0f9c557b3
       trim-trailing-lines: 2.0.0
       unified: 10.1.2
@@ -9099,8 +9099,8 @@ packages:
       tiny-warning: 1.0.3
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-log/9ccffd8e7462821d81723b668bb32becf9a613f8:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/9ccffd8e7462821d81723b668bb32becf9a613f8}
+  github.com/tauri-apps/tauri-plugin-log/093b18f414907b5712ce5d0352aa91efcbc1c116:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/093b18f414907b5712ce5d0352aa91efcbc1c116}
     name: tauri-plugin-log-api
     version: 0.1.0
     dependencies:
