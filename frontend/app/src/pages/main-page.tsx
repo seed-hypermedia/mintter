@@ -29,7 +29,7 @@ export default function MainPage() {
         }}
       >
         <Library service={libraryService} />
-        <Topbar library={libraryService} />
+        <Topbar libraryService={libraryService} />
         {state.matches('routes.publication') ? (
           <Publication key={state.context.params.docId} />
         ) : state.matches('routes.editor') ? (
