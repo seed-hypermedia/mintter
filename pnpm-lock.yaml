@@ -35,7 +35,7 @@ importers:
       '@cypress/vite-dev-server': 3.1.1
       '@floating-ui/react-dom': 1.0.0
       '@floating-ui/react-dom-interactions': 0.10.1
-      '@graphql-codegen/cli': 2.12.1
+      '@graphql-codegen/cli': 2.12.2
       '@graphql-codegen/typescript': 2.7.3
       '@happy-dom/global-registrator': 6.0.4
       '@improbable-eng/grpc-web': 0.15.0
@@ -234,7 +234,7 @@ importers:
       xstate: 4.33.6
     devDependencies:
       '@cypress/vite-dev-server': 3.1.1
-      '@graphql-codegen/cli': 2.12.1_6t64k4tasa6q6qsw3mv4rhgpay
+      '@graphql-codegen/cli': 2.12.2_6t64k4tasa6q6qsw3mv4rhgpay
       '@graphql-codegen/typescript': 2.7.3_graphql@16.6.0
       '@happy-dom/global-registrator': 6.0.4
       '@tanstack/react-query-devtools': 4.6.1_3ciuqbo4tgglg566jqz6smj4ya
@@ -1198,8 +1198,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@graphql-codegen/cli/2.12.1_6t64k4tasa6q6qsw3mv4rhgpay:
-    resolution: {integrity: sha512-kBYArVrIceKmNy2qZeiqoAHuNFUVRuVL3f0XX3VproXNmCGjLzcYosPmzV8+2H9mjjDU+vq5mLddAc8oVNGz9g==}
+  /@graphql-codegen/cli/2.12.2_6t64k4tasa6q6qsw3mv4rhgpay:
+    resolution: {integrity: sha512-cM2BS1FDWiZKpCFxdmhKsUzlNFs8X54yJm9djsPdz36yzXV5Sa4t6HQzr0vAX8cpc9RneBBi3rCkozRuRbBtjA==}
     hasBin: true
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
