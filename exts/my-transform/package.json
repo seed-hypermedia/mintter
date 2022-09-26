@@ -8,6 +8,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "assemblyscript": "0.21.3"
+    "assemblyscript": "0.21.4"
   }
 }
