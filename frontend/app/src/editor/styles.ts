@@ -20,11 +20,11 @@ export var groupStyles = css({
 export var blockStyles = css({
   maxInlineSize: '$prose-width',
   position: 'relative',
+  userSelect: 'none',
   '&::marker': {
     color: '$base-active',
     fontSize: '0.95rem',
     zIndex: 10,
-    position: 'relative',
   },
   // '&:hover': {
   //   boxShadow: '$debug',
@@ -34,9 +34,9 @@ export var blockStyles = css({
       orderedList: {
         // background: 'red',
       },
-      unorderedList: {
-        listStyleType: 'disc',
-      },
+      // unorderedList: {
+      //   listStyleType: 'disc',
+      // },
       group: {
         listStyle: 'none',
       },
@@ -61,9 +61,13 @@ export var blockStyles = css({
 export var phrasingStyles = css({
   position: 'relative',
   inlineSize: '$full',
+  userSelect: 'none',
+
   zIndex: 0,
   '& > *': {
     position: 'relative',
+    userSelect: 'initial',
+    display: 'inline-block',
     zIndex: 10,
   },
   '&:before': {
@@ -79,6 +83,9 @@ export var phrasingStyles = css({
     opacity: 0,
     transition: 'opacity 0.35s ease',
     backgroundColor: 'transparent',
+  },
+  '& [data-slate-spacer="true"]': {
+    userSelect: 'none',
   },
   variants: {
     blockType: {
@@ -122,7 +129,7 @@ export var phrasingStyles = css({
       },
       paragraph: {
         // fontSize: '1rem',
-        lineHeight: 1.4,
+        // lineHeight: 1.4,
         paddingBlock: '0.5rem',
       },
     },
@@ -139,7 +146,7 @@ export var phrasingStyles = css({
       true: {
         '&:before': {
           backgroundColor: '$primary-component-bg-normal',
-          opacity: 1,
+          opacity: 0.5,
         },
       },
     },
@@ -175,7 +182,7 @@ export var toolsTargetStyles = css({
 export var embedStyles = css({
   borderBottom: '3px solid transparent',
   fontStyle: 'italic',
-  userSelect: 'none',
+  // userSelect: 'none',
   zIndex: 1,
   '& > *': {
     zIndex: 10,
