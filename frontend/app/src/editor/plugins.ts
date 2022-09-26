@@ -48,7 +48,7 @@ export const plugins: EditorPlugin[] = [
   createStatementPlugin(),
 
   createBlockquotePlugin(),
-  createCodePlugin({theme: 'github-light'}),
+  createCodePlugin(),
 
   createGroupPlugin(),
 

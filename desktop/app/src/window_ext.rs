@@ -5,7 +5,7 @@ use url::Url;
 #[cfg(target_os = "macos")]
 use cocoa::appkit::{NSWindow, NSWindowStyleMask, NSWindowTitleVisibility};
 #[cfg(target_os = "macos")]
-use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+use objc::{msg_send, runtime::Object, sel, sel_impl};
 #[cfg(target_os = "macos")]
 use std::os::raw::c_char;
 
@@ -28,6 +28,8 @@ pub trait WindowExt {
 impl WindowExt for Window<Wry> {
   #[cfg(target_os = "macos")]
   fn set_transparent_titlebar(&self, transparent: bool) {
+    use cocoa::appkit::NSToolbar;
+
     unsafe {
       let id = self.ns_window().unwrap() as cocoa::base::id;
 
@@ -50,9 +52,9 @@ impl WindowExt for Window<Wry> {
         cocoa::base::NO
       });
 
-      let toolbar_cls = class!(NSToolbar);
-      let toolbar: cocoa::base::id = msg_send![toolbar_cls, new];
-      id.setToolbar_(toolbar);
+      let new_toolbar = NSToolbar::alloc(id);
+      new_toolbar.init_();
+      id.setToolbar_(new_toolbar);
     }
   }
 

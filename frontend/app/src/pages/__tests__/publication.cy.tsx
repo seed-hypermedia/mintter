@@ -8,10 +8,10 @@ import {queryKeys} from '@app/hooks'
 import {paragraph, statement, text} from '@app/mttast'
 import {createPublicationMachine} from '@app/publication-machine'
 import {createTestQueryClient} from '@app/test/utils'
-import {useInterpret} from '@xstate/react'
 import {QueryClient} from '@tanstack/react-query'
+import {useInterpret} from '@xstate/react'
 import {Editor} from 'slate'
-import Publication from '../publication'
+import {PublicationPage} from '../publication'
 
 // TODO: FIXME
 describe('Publication Page', () => {
@@ -41,6 +41,7 @@ describe('Publication Page', () => {
     let {client} = createTestQueryClient({
       publication,
       publicationList: [publication],
+      url: `/p/foo/1`,
     })
 
     client.setQueryData<ListCitationsResponse>(
@@ -103,7 +104,7 @@ function TestPublication({
   )
 
   return (
-    <Publication
+    <PublicationPage
       publicationRef={service}
       blockToolsService={blockToolsService}
     />

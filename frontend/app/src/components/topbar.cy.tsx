@@ -2,14 +2,19 @@ import {Account, Publication} from '@app/client'
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
+import {libraryMachine} from '@components/library/library-machine'
+import {interpret} from 'xstate'
 import {Topbar, TopbarLibrarySection} from './topbar'
 
 /**
  *
  */
+
+var libraryService = interpret(libraryMachine).start()
+
 describe('Topbar', () => {
   it('default', () => {
-    cy.mount(<Topbar />)
+    cy.mount(<Topbar libraryService={libraryService} />)
       .get('[data-testid="topbar-title"]')
       .contains('Publications')
       .get('[data-testid="topbar-publication-actions"]')
@@ -91,7 +96,7 @@ describe('Topbar', () => {
 
       theAuthors = authors as Array<Account>
 
-      cy.mount(<Topbar />, {
+      cy.mount(<Topbar libraryService={libraryService} />, {
         client,
         path: '/p/d1/v1',
       })

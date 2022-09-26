@@ -34,6 +34,11 @@ import {findPath, lowerPoint, resetFlowContent} from '../utils'
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
 const HIGHLIGHTER = Symbol('shiki highlighter')
+// TODO make this user configurable in the future
+const THEMES = {
+  light: 'github-light',
+  dark: 'github-dark',
+}
 
 const THEMES = {
   light: 'github-light',
@@ -146,13 +151,13 @@ export const createCodePlugin = (): EditorPlugin => {
               match: isCode,
             }) || []
 
-          if (!code || !code.data?.[HIGHLIGHTER]) return []
+          if (!code || !code.data?.[HIGHLIGHTER] || !code.data?.theme) return []
 
           const string = Node.string(node)
 
           const lines = (
             code.data?.[HIGHLIGHTER] as Highlighter
-          ).codeToThemedTokens(string, code.lang, code.data?.theme, {
+          ).codeToThemedTokens(string, code.lang, code.data.theme as string, {
             includeExplanation: false,
           })
 
@@ -233,7 +238,7 @@ function Code({
       {data: {...newData, theme: codeTheme}},
       {at: path},
     )
-  }, [theme])
+  }, [theme, editor])
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return (

@@ -6,7 +6,7 @@ import {blockToolsMachine} from '@app/editor/block-tools-machine'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
-import {useIsEditing, useMain} from '@app/main-context'
+import {useCurrentFile, useIsEditing, useMain} from '@app/main-context'
 import {DraftRef} from '@app/main-machine'
 import {ChildrenOf} from '@app/mttast'
 import {MainWindow} from '@app/pages/window-components'
@@ -18,18 +18,20 @@ import {useEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {InterpreterFrom} from 'xstate'
 
 export type EditorPageProps = {
   editor?: SlateEditor
   shouldAutosave?: boolean
   draftRef: DraftRef
+  blockToolsService?: InterpreterFrom<typeof blockToolsMachine>
 }
 
 export function useDraft(ref: DraftRef) {
   useEffect(() => {
     ref.send('LOAD')
     return () => {
-      ref.send('UNLOAD')
+      ref?.send('UNLOAD')
     }
   }, [ref])
 
@@ -51,10 +53,24 @@ function useInitialFocus(editor: SlateEditor) {
   }, [editor])
 }
 
-export default function EditorPage({draftRef}: EditorPageProps) {
+export default function DraftWrapper() {
+  let file = useCurrentFile()
+
+  if (file) {
+    return <EditorPage draftRef={file as DraftRef} />
+  }
+
+  return null
+}
+
+export function EditorPage({
+  draftRef,
+  blockToolsService: _btS,
+}: EditorPageProps) {
   const [visible, setVisible] = useState(false)
   const [state, send] = useDraft(draftRef)
-  const blocktoolsService = useInterpret(() => blockToolsMachine)
+  let localBlocktoolsService = useInterpret(() => blockToolsMachine)
+  let blocktoolsService = _btS || localBlocktoolsService
   const {context} = state
   const mainService = useMain()
   const isEditing = useIsEditing()
@@ -72,30 +88,41 @@ export default function EditorPage({draftRef}: EditorPageProps) {
         onReset={() => window.location.reload()}
       >
         <MainWindow onScroll={() => blocktoolsService.send('DISABLE')}>
-          <Box
-            data-testid="editor-wrapper"
-            onMouseMove={() => {
-              if (isEditing) {
-                mainService.send('MOUSE.MOVE')
-              }
-            }}
-          >
+          <Box data-testid="editor-wrapper">
             {context.localDraft?.content && (
               <>
                 <FileProvider value={draftRef}>
                   <BlockToolsProvider value={blocktoolsService}>
-                    <BlockTools isEditing={isEditing} mode={EditorMode.Draft} />
-                    <Editor
-                      editor={state.context.editor}
-                      value={context.localDraft.content}
-                      //@ts-ignore
-                      onChange={(content: ChildrenOf<Document>) => {
-                        if (!content && typeof content == 'string') return
-                        blocktoolsService.send('EDITING')
-                        mainService.send('EDITING')
-                        send({type: 'DRAFT.UPDATE', payload: {content}})
+                    <div
+                      onMouseMove={(event) => {
+                        blocktoolsService.send({
+                          type: 'MOUSE.MOVE',
+                          mouseY: event.clientY,
+                        })
+                        if (isEditing) {
+                          mainService.send('MOUSE.MOVE')
+                        }
                       }}
-                    />
+                      onMouseLeave={() => {
+                        blocktoolsService.send('DISABLE')
+                      }}
+                    >
+                      <BlockTools
+                        isEditing={isEditing}
+                        mode={EditorMode.Draft}
+                      />
+                      <Editor
+                        editor={state.context.editor}
+                        value={context.localDraft.content}
+                        //@ts-ignore
+                        onChange={(content: ChildrenOf<Document>) => {
+                          if (!content && typeof content == 'string') return
+                          blocktoolsService.send('EDITING')
+                          mainService.send('EDITING')
+                          send({type: 'DRAFT.UPDATE', payload: {content}})
+                        }}
+                      />
+                    </div>
                   </BlockToolsProvider>
                 </FileProvider>
                 <Box css={{margin: '$9', marginLeft: '$7'}}>

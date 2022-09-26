@@ -4,7 +4,6 @@ import {FileList} from '../components/file-list'
 
 export function PublicationList() {
   const mainService = useMain()
-
   let pubList = usePublicationList()
   return (
     <MainWindow>

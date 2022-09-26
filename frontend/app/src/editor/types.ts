@@ -7,7 +7,7 @@ import type {
   StaticParagraph,
   Text,
   Video,
-} from '@app/mttast/src'
+} from '@app/mttast'
 import React from 'react'
 import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {HistoryEditor} from 'slate-history'
