@@ -79,10 +79,10 @@ function Embed({
   }, [btService, attributes.ref])
 
   async function onOpenInNewWindow() {
-    if (mode != EditorMode.Discussion) {
-      let path = `p/${docId}/${version}/${blockId}`
-      mainService.send({type: 'COMMIT.OPEN.WINDOW', path})
-    }
+    if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
+
+    let path = `p/${docId}/${version}/${blockId}`
+    mainService.send({type: 'COMMIT.OPEN.WINDOW', path})
   }
 
   if (state.matches('errored')) {

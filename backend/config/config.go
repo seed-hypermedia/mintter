@@ -32,6 +32,7 @@ func Default() Config {
 		P2P: P2P{
 			Port:              55000,
 			RelayBackoffDelay: 21600 * time.Minute,
+			StaticRelayRescan: 1 * time.Minute,
 		},
 
 		Syncing: Syncing{
@@ -54,6 +55,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.BoolVar(&cfg.P2P.NoBootstrap, "p2p.no-bootstrap", cfg.P2P.NoBootstrap, "Disable IPFS bootstrapping")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoffDelay, "p2p.relay-backoff-delay", cfg.P2P.RelayBackoffDelay, "The time in which the autorelay will prune a relay if it cannot connect to it")
+	fs.DurationVar(&cfg.P2P.StaticRelayRescan, "p2p.static-relay-rescan", cfg.P2P.StaticRelayRescan, "The period for automatic static relay rescanning")
 	fs.BoolVar(&cfg.P2P.ReportPrivateAddrs, "p2p.report-private-addrs", cfg.P2P.ReportPrivateAddrs, "If true the node will report/announce addresses within private IP ranges")
 
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
@@ -88,6 +90,7 @@ type P2P struct {
 	NoBootstrap        bool
 	NoMetrics          bool
 	RelayBackoffDelay  time.Duration
+	StaticRelayRescan  time.Duration
 	ReportPrivateAddrs bool
 }
 
