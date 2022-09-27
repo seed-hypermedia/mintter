@@ -182,7 +182,8 @@ export var toolsTargetStyles = css({
 export var embedStyles = css({
   borderBottom: '3px solid transparent',
   fontStyle: 'italic',
-  // userSelect: 'none',
+  userSelect: 'none',
+  display: 'inline',
   zIndex: 1,
   '& > *': {
     zIndex: 10,
