@@ -210,6 +210,8 @@ require (
 	nhooyr.io/websocket v1.8.6 // indirect
 )
 
+replace github.com/libp2p/go-libp2p => github.com/mintterteam/go-libp2p v0.23.95
+
 replace crawshaw.io/sqlite => ./third_party/sqlite
 
 // LND imports etcd, which imports some very old version of OpenTelemetry,

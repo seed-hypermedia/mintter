@@ -53,20 +53,20 @@ var userAgent = "mintter/<dev>"
 // DefaultRelays bootstrap mintter-owned relays so they can reserveslots to do holepunch.
 func DefaultRelays() []peer.AddrInfo {
 	return []peer.AddrInfo{
-		// Mintter test server
-		{
-			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
-			Addrs: []multiaddr.Multiaddr{
-				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
-				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
-			},
-		},
 		// Mintter prod server
 		{
 			ID: must.Do2(peer.Decode("12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq")),
 			Addrs: []multiaddr.Multiaddr{
 				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/tcp/4002")),
-				must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
+				//must.Do2(multiaddr.NewMultiaddr("/ip4/23.20.24.146/udp/4002/quic")),
+			},
+		},
+		// Mintter test server
+		{
+			ID: must.Do2(peer.Decode("12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ")),
+			Addrs: []multiaddr.Multiaddr{
+				must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/tcp/4002")),
+				//must.Do2(multiaddr.NewMultiaddr("/ip4/52.22.139.174/udp/4002/quic")),
 			},
 		},
 	}
@@ -383,6 +383,8 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 			libp2p.EnableHolePunching(),
 			libp2p.EnableNATService(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
+				autorelay.WithNumRelays(2),
+				autorelay.WithStaticRescan(cfg.StaticRelayRescan),
 				autorelay.WithBackoff(cfg.RelayBackoffDelay)),
 		)
 	}
