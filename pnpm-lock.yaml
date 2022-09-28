@@ -129,8 +129,8 @@ importers:
       slate-history: https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-hyperscript: https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-react: https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688
-      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#1573c5144423e50f28204d9ce6393ef0026335fa
-      tauri-plugin-store-api: https://github.com/tauri-apps/tauri-plugin-store#d8efb964bb1894bdf01407693ee896d0f9c557b3
+      tauri-plugin-log-api: https://github.com/tauri-apps/tauri-plugin-log#b58475bbc410fa78eb69276c62d0b64c91c07914
+      tauri-plugin-store-api: https://github.com/tauri-apps/tauri-plugin-store#4326f75446b8b9e0cb9904c65f258b81e23e544e
       tiny-glob: 0.2.9
       trim-trailing-lines: 2.0.0
       ts-node: 10.9.1
@@ -221,8 +221,8 @@ importers:
       slate-history: '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-hyperscript: '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-react: '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688_2hwyydqlvvkbaegiievw3yx7se'
-      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/1573c5144423e50f28204d9ce6393ef0026335fa
-      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/d8efb964bb1894bdf01407693ee896d0f9c557b3
+      tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/b58475bbc410fa78eb69276c62d0b64c91c07914
+      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/4326f75446b8b9e0cb9904c65f258b81e23e544e
       trim-trailing-lines: 2.0.0
       unified: 10.1.2
       unist-builder: 3.0.0
@@ -8863,8 +8863,8 @@ packages:
       tiny-warning: 1.0.3
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-log/1573c5144423e50f28204d9ce6393ef0026335fa:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/1573c5144423e50f28204d9ce6393ef0026335fa}
+  github.com/tauri-apps/tauri-plugin-log/b58475bbc410fa78eb69276c62d0b64c91c07914:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/b58475bbc410fa78eb69276c62d0b64c91c07914}
     name: tauri-plugin-log-api
     version: 0.1.0
     dependencies:
@@ -8872,8 +8872,8 @@ packages:
       tslib: 2.4.0
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-store/d8efb964bb1894bdf01407693ee896d0f9c557b3:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/d8efb964bb1894bdf01407693ee896d0f9c557b3}
+  github.com/tauri-apps/tauri-plugin-store/4326f75446b8b9e0cb9904c65f258b81e23e544e:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/4326f75446b8b9e0cb9904c65f258b81e23e544e}
     name: tauri-plugin-store-api
     version: 0.1.0
     dependencies:
