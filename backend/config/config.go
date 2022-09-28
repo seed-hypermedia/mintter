@@ -18,6 +18,7 @@ type Config struct {
 	GRPCPort int
 	RepoPath string
 
+	Lndhub  Lndhub
 	P2P     P2P
 	Syncing Syncing
 }
@@ -28,6 +29,10 @@ func Default() Config {
 		HTTPPort: 55001,
 		GRPCPort: 55002,
 		RepoPath: "~/.mtt",
+
+		Lndhub: Lndhub{
+			Mainnet: false,
+		},
 
 		P2P: P2P{
 			Port:              55000,
@@ -49,6 +54,8 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.HTTPPort, "http-port", cfg.HTTPPort, "Port to expose HTTP Server (including grpc-web)")
 	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
+
+	fs.BoolVar(&cfg.Lndhub.Mainnet, "lndhub.mainnet", cfg.Lndhub.Mainnet, "Connect to the mainnet lndhub.go server")
 
 	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&cfg.P2P.NoRelay, "p2p.no-relay", cfg.P2P.NoRelay, "Disable libp2p circuit relay")
@@ -74,6 +81,11 @@ func (c *Config) ExpandRepoPath() error {
 		c.RepoPath = strings.Replace(c.RepoPath, "~", homedir, 1)
 	}
 	return nil
+}
+
+// Lndhub related config. For field descriptions see SetupFlags().
+type Lndhub struct {
+	Mainnet bool
 }
 
 // Syncing related config. For field descriptions see SetupFlags().
