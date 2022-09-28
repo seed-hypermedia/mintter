@@ -108,7 +108,6 @@ type Invoice struct {
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
 func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity], mintterDomain, lnaddressDomain string) *Client {
-
 	f := future.New[string]()
 	client := Client{
 		http:            h,
