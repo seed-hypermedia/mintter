@@ -124,7 +124,7 @@ func makeTestService(t *testing.T, name string) *Service {
 
 	require.NoError(t, lndhubsql.SetLoginSignature(conn, hex.EncodeToString(signature)))
 
-	srv := New(context.Background(), logging.New("mintter/wallet", "debug"), db, fut.ReadOnly, identity.ReadOnly)
+	srv := New(context.Background(), logging.New("mintter/wallet", "debug"), db, fut.ReadOnly, identity.ReadOnly, false)
 
 	return srv
 }

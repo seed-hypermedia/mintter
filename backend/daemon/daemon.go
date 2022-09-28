@@ -130,7 +130,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, 
 		return nil, err
 	}
 
-	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me)
+	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
 	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet)
 	if err != nil {

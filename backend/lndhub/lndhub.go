@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"errors"
 	"mintter/backend/core"
 	lndhub "mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/pkg/future"
@@ -34,11 +34,7 @@ const (
 	getPaidInvoicesRoute     = "/v2/invoices/outgoing"
 	getReceivedInvoicesRoute = "/v2/invoices/incoming"
 
-	//MintterDomain is the domain for internal lndhub calls.
-	MintterDomain = "ln.testnet.mintter.com"
-	//LnaddressDomain is the domain to be appended to nicknames. i.e.: lnaddress.
-	LnaddressDomain = "testnet.mintter.com"
-	networkType     = lnTestnet
+	networkType = lnTestnet
 
 	// SigninMessage is the fixed message to sign. The server must have the same message.
 	SigninMessage = "sign in into mintter lndhub"
@@ -60,12 +56,14 @@ type lndhubErrorTemplate struct {
 	Message string `mapstructure:"message"`
 }
 
-// Client stores all thenecessary structs to perform wallet operations.
+// Client stores all the necessary structs to perform wallet operations.
 type Client struct {
-	http     *http.Client
-	db       *sqlitex.Pool
-	WalletID string
-	pubKey   *future.ReadOnly[string]
+	http            *http.Client
+	db              *sqlitex.Pool
+	WalletID        string
+	pubKey          *future.ReadOnly[string]
+	mintterDomain   string
+	lnaddressDomain string
 }
 
 type createRequest struct {
@@ -109,19 +107,21 @@ type Invoice struct {
 
 // NewClient returns an instance of an lndhub client. The id is the credentials URI
 // hash that acts as an index in the wallet table.
-func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity]) *Client {
+func NewClient(ctx context.Context, h *http.Client, db *sqlitex.Pool, identity *future.ReadOnly[core.Identity], mintterDomain, lnaddressDomain string) *Client {
 	f := future.New[string]()
 	client := Client{
-		http:   h,
-		db:     db,
-		pubKey: f.ReadOnly,
+		http:            h,
+		db:              db,
+		pubKey:          f.ReadOnly,
+		mintterDomain:   mintterDomain,
+		lnaddressDomain: lnaddressDomain,
 	}
 	go func() {
 		id, err := identity.Await(ctx)
-		if errors.Is(err, context.Canceled){
+		if errors.Is(err, context.Canceled) {
 			return
 		}
-		if err != nil{
+		if err != nil {
 			panic(err)
 		}
 		pubkeyRaw, err := id.Account().ID().ExtractPublicKey()
@@ -237,7 +237,7 @@ func (c *Client) GetLnAddress(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return user.Nickname + "@" + LnaddressDomain, nil
+	return user.Nickname + "@" + c.lnaddressDomain, nil
 }
 
 // Auth tries to get authorized on the lndhub service pointed by apiBaseURL.
@@ -574,7 +574,7 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 			}
 			return err
 		}()
-		if errors.Is(err,errContinue){
+		if errors.Is(err, errContinue) {
 			continue
 		}
 		if err != nil {
