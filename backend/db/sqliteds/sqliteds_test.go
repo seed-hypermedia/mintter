@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -242,7 +243,7 @@ func TestNotExistGet(t *testing.T) {
 		t.Error("Key should not be found")
 	}
 
-	if err != ds.ErrNotFound {
+	if !errors.Is(err, ds.ErrNotFound) {
 		t.Error("Error was not set to ds.ErrNotFound")
 		if err != nil {
 			t.Error(err)
@@ -444,13 +445,13 @@ func SubtestBasicPutGet(t *testing.T) {
 	}
 
 	size, err = d.GetSize(ctx, k)
-	switch err {
-	case ds.ErrNotFound:
-	case nil:
+	if err == nil {
 		t.Fatal("expected error getting size after delete")
-	default:
+	}
+	if err != nil && !errors.Is(err, ds.ErrNotFound) {
 		t.Fatal("wrong error getting size after delete: ", err)
 	}
+
 	if size != -1 {
 		t.Fatal("expected missing size to be -1")
 	}
@@ -465,7 +466,7 @@ func TestNotFounds(t *testing.T) {
 	defer cancelCtx()
 
 	val, err := d.Get(ctx, badk)
-	if err != ds.ErrNotFound {
+	if !errors.Is(err, ds.ErrNotFound) {
 		t.Fatal("expected ErrNotFound for key that doesnt exist, got: ", err)
 	}
 
@@ -482,11 +483,10 @@ func TestNotFounds(t *testing.T) {
 	}
 
 	size, err := d.GetSize(ctx, badk)
-	switch err {
-	case ds.ErrNotFound:
-	case nil:
+	if err == nil {
 		t.Fatal("expected error getting size after delete")
-	default:
+	}
+	if err != nil && !errors.Is(err, ds.ErrNotFound) {
 		t.Fatal("wrong error getting size after delete: ", err)
 	}
 	if size != -1 {
@@ -577,7 +577,8 @@ func SubtestManyKeysAndQuery(t *testing.T) {
 	}
 }
 
-// Tests from basic_tests from go-datastore
+// Tests from basic_tests from go-datastore.
+
 func TestBasicPutGet(t *testing.T) {
 	d := newDS(t)
 
