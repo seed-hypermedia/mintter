@@ -108,6 +108,35 @@ func ExecTransient(conn *sqlite.Conn, query string, resultFn func(stmt *sqlite.S
 }
 
 func exec(stmt *sqlite.Stmt, resultFn func(stmt *sqlite.Stmt) error, args []interface{}) (err error) {
+	BindArgs(stmt, args...)
+
+	for {
+		hasRow, err := stmt.Step()
+		if err != nil {
+			return annotateErr(err)
+		}
+		if !hasRow {
+			break
+		}
+		if resultFn != nil {
+			if err := resultFn(stmt); err != nil {
+				if err, isError := err.(sqlite.Error); isError {
+					if err.Loc == "" {
+						err.Loc = "Exec"
+					} else {
+						err.Loc = "Exec: " + err.Loc
+					}
+				}
+				// don't modify non-Error errors from resultFn.
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// BindArgs to the prepared statement.
+func BindArgs(stmt *sqlite.Stmt, args ...interface{}) {
 	for i, arg := range args {
 		i++ // parameters are 1-indexed
 		v := reflect.ValueOf(arg)
@@ -135,29 +164,6 @@ func exec(stmt *sqlite.Stmt, resultFn func(stmt *sqlite.Stmt) error, args []inte
 			panic("invalid bind parameter type " + k.String())
 		}
 	}
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return annotateErr(err)
-		}
-		if !hasRow {
-			break
-		}
-		if resultFn != nil {
-			if err := resultFn(stmt); err != nil {
-				if err, isError := err.(sqlite.Error); isError {
-					if err.Loc == "" {
-						err.Loc = "Exec"
-					} else {
-						err.Loc = "Exec: " + err.Loc
-					}
-				}
-				// don't modify non-Error errors from resultFn.
-				return err
-			}
-		}
-	}
-	return nil
 }
 
 func annotateErr(err error) error {

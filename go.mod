@@ -26,7 +26,6 @@ require (
 	github.com/libp2p/go-libp2p v0.23.2
 	github.com/libp2p/go-libp2p-gostream v0.5.0
 	github.com/libp2p/go-libp2p-kad-dht v0.18.0
-	github.com/libp2p/go-libp2p-kbucket v0.5.0
 	github.com/libp2p/go-libp2p-record v0.2.0
 	github.com/lightningnetwork/lnd v0.15.1-beta.rc2
 	github.com/mitchellh/mapstructure v1.5.0
@@ -39,10 +38,8 @@ require (
 	github.com/prometheus/client_golang v1.13.0
 	github.com/sanity-io/litter v1.5.5
 	github.com/stretchr/testify v1.8.0
-	github.com/tidwall/tinyqueue v0.1.1
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/vektah/gqlparser/v2 v2.5.1
-	go.etcd.io/bbolt v1.3.6
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.23.0
 	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7
@@ -108,6 +105,7 @@ require (
 	github.com/ipfs/bbloom v0.0.4 // indirect
 	github.com/ipfs/go-blockservice v0.4.0 // indirect
 	github.com/ipfs/go-cidutil v0.1.0 // indirect
+	github.com/ipfs/go-detect-race v0.0.1 // indirect
 	github.com/ipfs/go-fetcher v1.6.1 // indirect
 	github.com/ipfs/go-ipfs-delay v0.0.1 // indirect
 	github.com/ipfs/go-ipfs-ds-help v1.1.0 // indirect
@@ -131,6 +129,7 @@ require (
 	github.com/libp2p/go-flow-metrics v0.1.0 // indirect
 	github.com/libp2p/go-libp2p-asn-util v0.2.0 // indirect
 	github.com/libp2p/go-libp2p-core v0.20.1 // indirect
+	github.com/libp2p/go-libp2p-kbucket v0.5.0 // indirect
 	github.com/libp2p/go-libp2p-routing-helpers v0.2.3 // indirect
 	github.com/libp2p/go-msgio v0.2.0 // indirect
 	github.com/libp2p/go-nat v0.1.0 // indirect

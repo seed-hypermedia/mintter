@@ -103,8 +103,11 @@ func (b *Bitswap) Close() error {
 	return err
 }
 
+// ReprovidingStrategy is a function that returns a channel of CIDs to be reprovided.
+type ReprovidingStrategy func(context.Context) (<-chan cid.Cid, error)
+
 // NewProviderSystem creates a new provider.System. Users must call Run() to start and Close() to shutdown.
-func NewProviderSystem(bs blockstore.Blockstore, ds datastore.Datastore, rt routing.ContentRouting) (provider.System, error) {
+func NewProviderSystem(ds datastore.Datastore, rt routing.ContentRouting, strategy ReprovidingStrategy) (provider.System, error) {
 	ctx := context.Background() // This will be canceled when Close() is called explicitly.
 	q, err := queue.NewQueue(ctx, "provider-v1", ds)
 	if err != nil {
@@ -116,7 +119,7 @@ func NewProviderSystem(bs blockstore.Blockstore, ds datastore.Datastore, rt rout
 
 	prov := simple.NewProvider(ctx, q, rt)
 
-	sp := simple.NewReprovider(ctx, defaultReprovideInterval, rt, simple.NewBlockstoreProvider(bs))
+	sp := simple.NewReprovider(ctx, defaultReprovideInterval, rt, simple.KeyChanFunc(strategy))
 
 	return provider.NewSystem(prov, sp), nil
 }
