@@ -25,7 +25,7 @@ type Datastore struct {
 	table string
 }
 
-// New creates a new datastore
+// New creates a new datastore.
 func New(pool *sqlitex.Pool, tableName string) *Datastore {
 	return &Datastore{pool: pool, table: tableName}
 }
