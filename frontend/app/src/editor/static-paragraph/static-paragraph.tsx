@@ -1,19 +1,14 @@
-import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
-import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {hoverStyles, phrasingStyles} from '@app/editor/styles'
-import {useFileIds} from '@app/file-provider'
-import {useIsEditing} from '@app/main-context'
+import {useBlockObserve, useMouse} from '@app/mouse-context'
 import {
   isStaticParagraph,
   StaticParagraph as StaticParagraphType,
 } from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {Text} from '@components/text'
-import {useEffect, useMemo} from 'react'
-import type {RenderElementProps} from 'slate-react'
+import {useMemo} from 'react'
+import {RenderElementProps, useSlateStatic} from 'slate-react'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
@@ -22,15 +17,6 @@ export const staticphrasingStyles = css({
   fontWeight: '$medium',
   marginTop: '.5em',
 })
-
-const headingMap = {
-  2: 'h2',
-  4: 'h3',
-  6: 'h4',
-  8: 'h5',
-  10: 'h6',
-  default: 'p',
-}
 
 export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
@@ -57,70 +43,50 @@ function StaticParagraph({
   attributes,
   mode,
 }: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
-  let {elementProps, parentNode, parentPath} = usePhrasingProps(element)
-  let btService = useBlockTools()
-  let isEditing = useIsEditing()
+  let editor = useSlateStatic()
+  let {elementProps, parentPath} = usePhrasingProps(editor, element)
 
-  let as = useMemo(
-    () => headingMap[parentPath?.length ?? 'default'],
-    [parentPath],
-  )
+  useBlockObserve(mode, attributes.ref)
 
-  let hoverService = useHover()
-  let [docId] = useFileIds()
+  let mouseService = useMouse()
 
-  useEffect(() => {
-    if (attributes.ref.current) {
-      btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
-    }
-  }, [attributes.ref, btService])
-
-  let hoverProps = {
-    css: !isEditing ? hoverStyles(`${docId}/${parentNode?.id}`) : undefined,
+  let mouseProps = {
     onMouseEnter: () => {
-      hoverService.send({
-        type: 'MOUSE_ENTER',
-        ref: `${docId}/${parentNode?.id}`,
+      mouseService.send({
+        type: 'HIGHLIGHT.ENTER',
+        ref: elementProps['data-highlight'] as string,
       })
     },
-    // onMouseLeave: () => {
-    //   hoverService.send({
-    //     type: 'MOUSE_LEAVE',
-    //     ref: `${docId}/${parentNode?.id}`,
-    //   })
-    // },
+    onMouseLeave: () => {
+      mouseService.send('HIGHLIGHT.LEAVE')
+    },
   }
 
-  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+  let as = useMemo(() => {
+    const headingMap: {[key: number]: string} = {
+      2: 'h2',
+      4: 'h3',
+      6: 'h4',
+      8: 'h5',
+      10: 'h6',
+    }
+    if (parentPath) {
+      return headingMap[parentPath.length] || 'p'
+    }
+
+    return 'p'
+  }, [parentPath])
+
+  if (mode == EditorMode.Embed) {
     return (
-      <Box
-        as="span"
-        {...attributes}
-        // {...elementProps}
-        css={{
-          [`[data-hover-ref="${docId}/${parentNode?.id}"] &:before`]: {
-            backgroundColor: '$primary-component-bg-normal',
-            opacity: 1,
-          },
-        }}
-      >
+      <Box as="span" {...attributes}>
         {children}
       </Box>
     )
   }
-
   return (
-    <Text
-      as={as}
-      {...attributes}
-      {...elementProps}
-      className={phrasingStyles({
-        type: 'staticParagraph',
-        blockType: 'heading',
-      })}
-      {...hoverProps}
-    >
+    <Box as={as} {...attributes} {...elementProps} {...mouseProps}>
       {children}
-    </Text>
+    </Box>
   )
 }

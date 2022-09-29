@@ -1,11 +1,12 @@
-import {BlockTools} from '@app/editor/block-tools'
-import {BlockToolsProvider} from '@app/editor/block-tools-context'
-import {blockToolsMachine} from '@app/editor/block-tools-machine'
+import {BlockHighLighter} from '@app/editor/block-highlighter'
+import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {FileProvider} from '@app/file-provider'
 import {useCurrentFile} from '@app/main-context'
 import {PublicationRef} from '@app/main-machine'
+import {MouseProvider} from '@app/mouse-context'
+import {mouseMachine} from '@app/mouse-machine'
 import {MainWindow} from '@app/pages/window-components'
 import {AppError} from '@app/root'
 import {Box} from '@components/box'
@@ -16,11 +17,9 @@ import {Text} from '@components/text'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {InterpreterFrom} from 'xstate'
 
 type PublicationProps = {
   publicationRef: PublicationRef
-  blockToolsService?: InterpreterFrom<typeof blockToolsMachine>
 }
 
 function usePublication(ref: PublicationRef) {
@@ -43,13 +42,9 @@ export default function PublicationWrapper() {
   return null
 }
 
-export function PublicationPage({
-  publicationRef,
-  blockToolsService: _btS,
-}: PublicationProps) {
+export function PublicationPage({publicationRef}: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
-  const localBlockToolsService = useInterpret(() => blockToolsMachine)
-  let blockToolsService = _btS || localBlockToolsService
+  const mouseService = useInterpret(() => mouseMachine)
 
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
@@ -74,69 +69,63 @@ export function PublicationPage({
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
-        <MainWindow onScroll={() => blockToolsService.send('DISABLE')}>
-          <FileProvider value={publicationRef}>
-            <BlockToolsProvider value={blockToolsService}>
-              {state.context.publication?.document?.content && (
-                <div
-                  onMouseMove={(event) =>
-                    blockToolsService.send({
-                      type: 'MOUSE.MOVE',
-                      mouseY: event.clientY,
-                    })
-                  }
-                  onMouseLeave={() => {
-                    blockToolsService.send('DISABLE')
-                  }}
-                >
-                  <BlockTools
-                    mode={EditorMode.Publication}
-                    service={blockToolsService}
-                  />
-                  <Editor
-                    editor={state.context.editor}
-                    mode={EditorMode.Publication}
-                    value={state.context.publication?.document.content}
-                    onChange={() => {
-                      blockToolsService.send('DISABLE')
-                      // noop
-                    }}
-                  />
-                </div>
-              )}
-              <Box
-                css={{
-                  paddingBlock: '2rem',
-                  paddingInlineStart: '1rem',
-                  // maxWidth: '$prose-width',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1rem',
-                }}
-              >
-                <Button
-                  variant="ghost"
-                  color="primary"
-                  size="1"
-                  onClick={() => send('DISCUSSION.TOGGLE')}
+        <MainWindow
+          onMouseMove={(event) => {
+            mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
+          }}
+          onScroll={() => mouseService.send('DISABLE.SCROLL')}
+        >
+          <MouseProvider value={mouseService}>
+            <BlockHighLighter>
+              <FileProvider value={publicationRef}>
+                {state.context.publication?.document?.content && (
+                  <Blocktools>
+                    <Editor
+                      editor={state.context.editor}
+                      mode={EditorMode.Publication}
+                      value={state.context.publication?.document.content}
+                      onChange={() => {
+                        mouseService.send('DISABLE.CHANGE')
+                        // noop
+                      }}
+                    />
+                  </Blocktools>
+                )}
+                <Box
                   css={{
                     paddingBlock: '2rem',
-                    paddingInline: '1rem',
-                    display: 'block',
-                    inlineSize: '$full',
-                    textAlign: 'start',
-                    '&:hover': {
-                      backgroundColor: '$base-background-normal',
-                    },
+                    paddingInlineStart: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
                   }}
                 >
-                  {state.matches('discussion.ready.hidden') ? 'Show ' : 'Hide '}
-                  Discussion/Citations
-                </Button>
-                <Discussion service={publicationRef} />
-              </Box>
-            </BlockToolsProvider>
-          </FileProvider>
+                  <Button
+                    variant="ghost"
+                    color="primary"
+                    size="1"
+                    onClick={() => send('DISCUSSION.TOGGLE')}
+                    css={{
+                      paddingBlock: '2rem',
+                      paddingInline: '1rem',
+                      display: 'block',
+                      inlineSize: '$full',
+                      textAlign: 'start',
+                      '&:hover': {
+                        backgroundColor: '$base-background-normal',
+                      },
+                    }}
+                  >
+                    {state.matches('discussion.ready.hidden')
+                      ? 'Show '
+                      : 'Hide '}
+                    Discussion/Citations
+                  </Button>
+                  <Discussion service={publicationRef} />
+                </Box>
+              </FileProvider>
+            </BlockHighLighter>
+          </MouseProvider>
         </MainWindow>
       </ErrorBoundary>
     )

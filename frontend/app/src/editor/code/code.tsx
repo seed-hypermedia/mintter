@@ -1,6 +1,4 @@
-import {BlockToolsTarget} from '@app/editor/block-tools-target'
 import {useBlockProps} from '@app/editor/editor-node-props'
-import {blockStyles} from '@app/editor/styles'
 import {useFileEditor} from '@app/file-provider'
 import {
   Code as CodeType,
@@ -11,9 +9,7 @@ import {
   statement,
   text,
 } from '@app/mttast'
-import {styled} from '@app/stitches.config'
 import {useCurrentTheme} from '@app/theme'
-import {Box} from '@components/box'
 import {useEffect} from 'react'
 import {
   BUNDLED_LANGUAGES,
@@ -39,17 +35,6 @@ const THEMES = {
   light: 'github-light',
   dark: 'github-dark',
 }
-
-const SelectorWrapper = styled('div', {
-  boxSizing: 'border-box',
-  position: 'absolute',
-  right: 0,
-  top: 0,
-  transform: 'translate(8px, -8px)',
-  zIndex: 2,
-  opacity: 0,
-  transition: 'opacity 0.5s',
-})
 
 export const createCodePlugin = (): EditorPlugin => {
   setCDN('/shiki/')
@@ -205,7 +190,7 @@ function Code({
 }) {
   let editor = useFileEditor()
   let path = findPath(element)
-  let {blockProps, parentNode} = useBlockProps(element)
+  let {blockProps} = useBlockProps(element)
   let lang = (element as CodeType).lang || ''
 
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -233,9 +218,9 @@ function Code({
       {data: {...newData, theme: codeTheme}},
       {at: path},
     )
-  }, [theme, editor])
+  }, [theme, editor, element, path])
 
-  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+  if (mode == EditorMode.Embed) {
     return (
       <span {...attributes} {...blockProps}>
         {children}
@@ -244,25 +229,10 @@ function Code({
   }
 
   return (
-    <Box
-      as="li"
-      className={blockStyles({type: 'code', groupType: parentNode?.type})}
-      {...attributes}
-      {...blockProps}
-    >
+    <li {...attributes} {...blockProps}>
       {children}
-      <BlockToolsTarget type="code" />
       {mode == EditorMode.Draft ? (
-        <SelectorWrapper
-          contentEditable={false}
-          css={{
-            position: 'absolute',
-            left: '$sizes$prose-width',
-            top: 0,
-            transform: 'translate(-100px, -8px)',
-            zIndex: 2,
-          }}
-        >
+        <div className="code-selector-wrapper" contentEditable={false}>
           <select
             id="lang-selection"
             name="lang-selection"
@@ -276,8 +246,8 @@ function Code({
               </option>
             ))}
           </select>
-        </SelectorWrapper>
+        </div>
       ) : null}
-    </Box>
+    </li>
   )
 }

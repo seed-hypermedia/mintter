@@ -43,9 +43,14 @@ let mainWindowStyle = css({
   paddingBottom: 0,
 })
 
-export function MainWindow({children, orientation, onScroll}: ScrollAreaProps) {
+export function MainWindow({
+  children,
+  orientation,
+  onScroll,
+  ...props
+}: ScrollAreaProps) {
   return (
-    <Box data-layout-section="main" className={mainWindowStyle()}>
+    <Box data-layout-section="main" className={mainWindowStyle()} {...props}>
       <ScrollArea orientation={orientation} onScroll={onScroll}>
         {children}
       </ScrollArea>

@@ -1,7 +1,5 @@
-import {BlockToolsTarget} from '@app/editor/block-tools-target'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
-import {blockStyles} from '@app/editor/styles'
 import {
   createId,
   FlowContent,
@@ -17,7 +15,6 @@ import {
   Statement as StatementType,
   text,
 } from '@app/mttast'
-import {Box} from '@components/box'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
@@ -234,10 +231,10 @@ function Statement({
   children,
   element,
   mode,
-}: RenderElementProps & {mode: EditorMode; element: FlowContent}) {
-  let {blockProps, parentNode} = useBlockProps(element)
+}: RenderElementProps & {mode: EditorMode}) {
+  let {blockProps} = useBlockProps(element)
 
-  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+  if (mode == EditorMode.Embed) {
     return (
       <span {...attributes} {...blockProps}>
         {children}
@@ -246,18 +243,9 @@ function Statement({
   }
 
   return (
-    <Box
-      as="li"
-      className={blockStyles({
-        type: (element as StatementType).type,
-        groupType: parentNode?.type,
-      })}
-      {...attributes}
-      {...blockProps}
-    >
-      <BlockToolsTarget type="statement" />
+    <li {...attributes} {...blockProps}>
       {children}
-    </Box>
+    </li>
   )
 }
 

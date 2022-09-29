@@ -1,17 +1,7 @@
-import {BlockToolsTarget} from '@app/editor/block-tools-target'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {blockStyles} from '@app/editor/styles'
-import {
-  createId,
-  FlowContent,
-  isBlockquote,
-  paragraph,
-  statement,
-  text,
-} from '@app/mttast'
-import {Box} from '@components/box'
+import {createId, isBlockquote, paragraph, statement, text} from '@app/mttast'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import type {EditorPlugin} from '../types'
@@ -74,10 +64,10 @@ function BlockQuote({
   attributes,
   children,
   mode,
-}: RenderElementProps & {mode: EditorMode; element: FlowContent}) {
-  let {blockProps, parentNode} = useBlockProps(element)
+}: RenderElementProps & {mode: EditorMode}) {
+  let {blockProps} = useBlockProps(element)
 
-  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+  if (mode == EditorMode.Embed) {
     return (
       <span {...attributes} {...blockProps}>
         {children}
@@ -86,17 +76,8 @@ function BlockQuote({
   }
 
   return (
-    <Box
-      as="li"
-      className={blockStyles({
-        type: 'blockquote',
-        groupType: parentNode?.type,
-      })}
-      {...attributes}
-      {...blockProps}
-    >
-      <BlockToolsTarget type="blockquote" />
+    <li {...attributes} {...blockProps}>
       {children}
-    </Box>
+    </li>
   )
 }

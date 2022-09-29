@@ -3,6 +3,7 @@ import {PageError, rootPageStyle} from '@app/pages/window-components'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {libraryMachine} from '@components/library/library-machine'
+import {QuickSwitcher} from '@components/quick-switcher'
 import {Settings} from '@components/settings'
 import {Topbar} from '@components/topbar'
 import {useActor, useInterpret} from '@xstate/react'
@@ -21,24 +22,27 @@ export default function MainPage() {
   }
 
   return (
-    <Box className={rootPageStyle()}>
-      <ErrorBoundary
-        FallbackComponent={PageError}
-        onReset={() => {
-          window.location.reload()
-        }}
-      >
-        <Library service={libraryService} />
-        <Topbar libraryService={libraryService} />
-        {state.matches('routes.publication') ? (
-          <Publication key={state.context.params.docId} />
-        ) : state.matches('routes.editor') ? (
-          <EditorPage key={state.context.params.docId} />
-        ) : null}
-        {state.matches('routes.home') && <PublicationList />}
-        {state.matches('routes.draftList') && <DraftList />}
-        {state.matches('routes.publicationList') ? <PublicationList /> : null}
-      </ErrorBoundary>
-    </Box>
+    <>
+      <Box className={rootPageStyle()}>
+        <ErrorBoundary
+          FallbackComponent={PageError}
+          onReset={() => {
+            window.location.reload()
+          }}
+        >
+          {state.matches('routes.publication') ? (
+            <Publication key={state.context.params.docId} />
+          ) : state.matches('routes.editor') ? (
+            <EditorPage key={state.context.params.docId} />
+          ) : null}
+          {state.matches('routes.home') && <PublicationList />}
+          {state.matches('routes.draftList') && <DraftList />}
+          {state.matches('routes.publicationList') ? <PublicationList /> : null}
+          <Library service={libraryService} />
+          <Topbar libraryService={libraryService} />
+        </ErrorBoundary>
+      </Box>
+      <QuickSwitcher />
+    </>
   )
 }

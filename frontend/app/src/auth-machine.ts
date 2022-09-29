@@ -20,13 +20,6 @@ type AuthContext = {
 
 type AuthEvent =
   | {
-      type: 'REPORT.DEVICE.INFO.PRESENT'
-      accountInfo: Info
-    }
-  | {
-      type: 'REPORT.DEVICE.INFO.MISSING'
-    }
-  | {
       type: 'UPDATE.PROFILE'
       profile: Profile
     }
@@ -40,6 +33,9 @@ type AuthService = {
   }
   updateProfile: {
     data: Account
+  }
+  fetchInfo: {
+    data: Info
   }
   fetchPeerData: {
     data: Array<string>
@@ -68,18 +64,13 @@ export function createAuthService(client: QueryClient) {
       states: {
         checkingAccount: {
           invoke: {
-            id: 'authMachine-fetch',
+            id: 'fetchInfo',
             src: 'fetchInfo',
-            onError: {
-              target: 'loggedOut',
-            },
-          },
-          on: {
-            'REPORT.DEVICE.INFO.PRESENT': {
+            onDone: {
               target: 'loggedIn',
               actions: ['assignAccountInfo', 'clearRetries', 'clearError'],
             },
-            'REPORT.DEVICE.INFO.MISSING': [
+            onError: [
               {
                 cond: 'shouldRetry',
                 target: 'retry',
@@ -171,19 +162,11 @@ export function createAuthService(client: QueryClient) {
     },
     {
       services: {
-        fetchInfo: () =>
-          function fetchInfoService(sendBack) {
-            client
-              .fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => {
-                return getInfo()
-              })
-              .then(function (accountInfo) {
-                sendBack({type: 'REPORT.DEVICE.INFO.PRESENT', accountInfo})
-              })
-              .catch(function () {
-                sendBack('REPORT.DEVICE.INFO.MISSING')
-              })
-          },
+        fetchInfo: function fetchInfoService() {
+          return client.fetchQuery<Info>([queryKeys.GET_ACCOUNT_INFO], () =>
+            getInfo(),
+          )
+        },
         fetchAccount: function fetchAccountService() {
           return client.fetchQuery(
             [queryKeys.GET_ACCOUNT, ''],
@@ -196,9 +179,12 @@ export function createAuthService(client: QueryClient) {
           return updateProfile(event.profile)
         },
         fetchPeerData: function fetchPeerDataService(context: AuthContext) {
-          return client.fetchQuery(
+          return client.fetchQuery<Array<string>>(
             [queryKeys.GET_PEER_ADDRS, context.accountInfo?.peerId],
-            () => listPeerAddrs(context.accountInfo.peerId),
+            () =>
+              context.accountInfo
+                ? listPeerAddrs(context.accountInfo?.peerId)
+                : [],
           )
         },
       },
@@ -210,7 +196,7 @@ export function createAuthService(client: QueryClient) {
           retries: (context) => context.retries + 1,
         }),
         assignAccountInfo: assign((_, event) => ({
-          accountInfo: event.accountInfo,
+          accountInfo: event.data,
         })),
         /* @ts-ignore */
         removeAccountInfo: assign({
@@ -251,8 +237,8 @@ export function createAuthService(client: QueryClient) {
         }),
       },
       delays: {
-        RETRY_DELAY: (context) => {
-          const exponent = context.retries ** 2
+        RETRY_DELAY: function getRetryDelay(context) {
+          var exponent = context.retries * 2
           return exponent * 200
         },
       },
