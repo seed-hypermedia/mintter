@@ -7,6 +7,7 @@ import (
 	"io"
 	"mintter/backend/config"
 	"mintter/backend/core"
+	"mintter/backend/db/sqliteds"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/cleanup"
@@ -17,19 +18,21 @@ import (
 	"strconv"
 	"sync"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	dssync "github.com/ipfs/go-datastore/sync"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	provider "github.com/ipfs/go-ipfs-provider"
+	"github.com/ipfs/go-ipfs-provider/simple"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/ipfs/go-datastore"
 	"github.com/libp2p/go-libp2p"
 	gostream "github.com/libp2p/go-libp2p-gostream"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
-	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoremem"
+	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr/net"
@@ -87,11 +90,12 @@ type Node struct {
 	accountDeviceProof  []byte
 	accountPublicKeyRaw []byte
 
-	p2p     *ipfs.Libp2p
-	bitswap *ipfs.Bitswap
-	grpc    *grpc.Server
-	quit    io.Closer
-	ready   chan struct{}
+	p2p       *ipfs.Libp2p
+	bitswap   *ipfs.Bitswap
+	providing provider.System
+	grpc      *grpc.Server
+	quit      io.Closer
+	ready     chan struct{}
 
 	ctx context.Context // will be set after calling Start()
 }
@@ -101,7 +105,7 @@ type Node struct {
 func New(cfg config.P2P, vcs *vcsdb.DB, accountObj vcs.ObjectID, me core.Identity, log *zap.Logger) (*Node, error) {
 	var clean cleanup.Stack
 
-	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped())
+	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), vcs.DB())
 	if err != nil {
 		return nil, fmt.Errorf("failed to start libp2p host: %w", err)
 	}
@@ -112,6 +116,13 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj vcs.ObjectID, me core.Identit
 		return nil, fmt.Errorf("failed to start bitswap: %w", err)
 	}
 	clean.Add(bitswap)
+
+	// TODO(burdiyan): find a better reproviding strategy than naive provide-everything.
+	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, ipfs.ReprovidingStrategy(simple.NewBlockstoreProvider(vcs.Blockstore())))
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize providing: %w", err)
+	}
+	clean.Add(providing)
 
 	client := NewClient(me, host)
 	clean.Add(client)
@@ -125,6 +136,7 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj vcs.ObjectID, me core.Identit
 		client:          client,
 		p2p:             host,
 		bitswap:         bitswap,
+		providing:       providing,
 		grpc:            grpc.NewServer(),
 		quit:            &clean,
 		ready:           make(chan struct{}),
@@ -157,6 +169,16 @@ func (n *Node) VCS() *vcsdb.DB {
 // ID returns the node's identity.
 func (n *Node) ID() core.Identity {
 	return n.me
+}
+
+// Blockstore returns the underlying IPFS blockstore for convenience.
+func (n *Node) Blockstore() blockstore.Blockstore {
+	return n.vcs.Blockstore()
+}
+
+// ProvideCID notifies the providing system to provide the given CID on the DHT.
+func (n *Node) ProvideCID(c cid.Cid) error {
+	return n.providing.Provide(c)
 }
 
 // Bitswap returns the underlying Bitswap service.
@@ -212,6 +234,8 @@ func (n *Node) Start(ctx context.Context) (err error) {
 	if err := n.startLibp2p(ctx); err != nil {
 		return err
 	}
+
+	n.providing.Run()
 
 	lis, err := gostream.Listen(n.p2p.Host, ProtocolID)
 	if err != nil {
@@ -272,7 +296,7 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	}
 
 	if !n.cfg.NoBootstrap {
-		res := n.p2p.Bootstrap(ctx)
+		res := n.p2p.Bootstrap(ctx, ipfs.DefaultBootstrapPeers())
 		n.log.Info("BootstrapFinished",
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(res.Peers)),
@@ -338,18 +362,21 @@ func AddrInfoFromStrings(addrs ...string) (out peer.AddrInfo, err error) {
 	return out, nil
 }
 
-func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, error) {
+func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs.Libp2p, io.Closer, error) {
 	var clean cleanup.Stack
-	ds := dssync.MutexWrap(datastore.NewMapDatastore())
+	ds := sqliteds.New(pool, "datastore")
 	clean.Add(ds)
 
-	ps, err := pstoremem.NewPeerstore()
+	if err := ds.InitTable(context.Background()); err != nil {
+		return nil, nil, err
+	}
+
+	ps, err := pstoreds.NewPeerstore(context.Background(), ds, pstoreds.DefaultOpts())
 	if err != nil {
 		return nil, nil, err
 	}
-	clean.Add(ps)
-
-	m := ipfs.NewLibp2pMetrics()
+	// Not adding peerstore to the cleanup stack because weirdly enough, libp2p host closes it,
+	// even if it doesn't own it. See BasicHost#Close() inside libp2p.
 
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
@@ -389,11 +416,13 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey) (*ipfs.Libp2p, io.Closer, 
 		)
 	}
 
+	m := ipfs.NewLibp2pMetrics()
+
 	if !cfg.NoMetrics {
 		opts = append(opts, libp2p.BandwidthReporter(m))
 	}
 
-	node, err := ipfs.NewLibp2pNode(device, ds, ipfs.DefaultBootstrapPeers(), opts...)
+	node, err := ipfs.NewLibp2pNode(device, ds, opts...)
 	if err != nil {
 		return nil, nil, err
 	}

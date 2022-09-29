@@ -19,7 +19,6 @@ import (
 	"go.uber.org/multierr"
 
 	dht "github.com/libp2p/go-libp2p-kad-dht"
-	"github.com/libp2p/go-libp2p-kad-dht/dual"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
 	routing "github.com/libp2p/go-libp2p/core/routing"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
@@ -110,20 +109,19 @@ func ParseMultiaddrs(in []string) ([]multiaddr.Multiaddr, error) {
 type Libp2p struct {
 	host.Host
 
+	ds      datastore.Batching
 	Routing routing.Routing
 
-	bootstrappers []peer.AddrInfo
-	clean         cleanup.Stack
+	clean cleanup.Stack
 }
 
 // NewLibp2pNode creates a new node. It's a convenience wrapper around the main libp2p package.
-// It allows to start listening on the network as a separate call, and provides some convenience for bootstrapping.
-// It forces one to pass the peer private key, datastore, bootstrap peers.
+// It forces one to pass the peer private key and datastore.
 // To the default options of the libp2p package it also adds DHT Routing, Connection Manager, Relay protocol support.
 // To actually enable relay you also need to pass EnableAutoRelay, and NATPortMap.
-func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.AddrInfo, opts ...libp2p.Option) (n *Libp2p, err error) {
+func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Option) (n *Libp2p, err error) {
 	n = &Libp2p{
-		bootstrappers: bootstrap,
+		ds: ds,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -167,7 +165,8 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 						"ipns": ipns.Validator{KeyBook: h.Peerstore()},
 					}),
 				),
-				dual.WanDHTOption(dht.BootstrapPeers(bootstrap...)),
+				// LAN DHT should always be in server mode.
+				dualdht.LanDHTOption(dht.Mode(dht.ModeServer)),
 			)
 			if err != nil {
 				return nil, err
@@ -197,6 +196,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, bootstrap []peer.A
 	return n, nil
 }
 
+// AddrInfo returns the addresses of the running node.
 func (n *Libp2p) AddrInfo() peer.AddrInfo {
 	return peer.AddrInfo{
 		ID:    n.Host.ID(),
@@ -204,12 +204,14 @@ func (n *Libp2p) AddrInfo() peer.AddrInfo {
 	}
 }
 
+// Datastore returns the underlying datastore for convenience.
+func (n *Libp2p) Datastore() datastore.Batching {
+	return n.ds
+}
+
 // Bootstrap blocks, and performs bootstrapping process for the node,
 // including the underlying routing system.
-func (n *Libp2p) Bootstrap(ctx context.Context, bootstrappers ...peer.AddrInfo) BootstrapResult {
-	if bootstrappers == nil {
-		bootstrappers = n.bootstrappers
-	}
+func (n *Libp2p) Bootstrap(ctx context.Context, bootstrappers []peer.AddrInfo) BootstrapResult {
 	return Bootstrap(ctx, n.Host, n.Routing, bootstrappers)
 }
 
