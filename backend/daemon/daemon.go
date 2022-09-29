@@ -266,9 +266,22 @@ func initNetwork(
 ) (*future.ReadOnly[*mttnet.Node], error) {
 	f := future.New[*mttnet.Node]()
 
+	done := make(chan struct{})
+
 	ctx, cancel := context.WithCancel(context.Background())
 	clean.AddErrFunc(func() error {
 		cancel()
+
+		// If we've resolved the node future, we should wait
+		// until the node fully stops before going to the next cleanup function.
+		// Otherwise the SQLite pool gets closed before the node stops, which
+		// fails in many miserable ways in tests.
+		// TODO(burdiyan): probably easier to have a separate Close method rather than
+		// using context here.
+		if _, ok := f.Get(); ok {
+			<-done
+		}
+
 		return nil
 	})
 
@@ -291,7 +304,9 @@ func initNetwork(
 		}
 
 		g.Go(func() error {
-			return n.Start(ctx)
+			err := n.Start(ctx)
+			close(done)
+			return err
 		})
 
 		select {

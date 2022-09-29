@@ -143,9 +143,9 @@ const (
 
 // Table sqlite_sequence.
 const (
-	SqliteSequence     sqlitegen.Table  = "sqlite_sequence"
-	SqliteSequenceName sqlitegen.Column = "sqlite_sequence.name"
-	SqliteSequenceSeq  sqlitegen.Column = "sqlite_sequence.seq"
+	SQLITESequence     sqlitegen.Table  = "sqlite_sequence"
+	SQLITESequenceName sqlitegen.Column = "sqlite_sequence.name"
+	SQLITESequenceSeq  sqlitegen.Column = "sqlite_sequence.seq"
 )
 
 // Table wallets.
@@ -224,8 +224,8 @@ var Schema = sqlitegen.Schema{
 		ProfilesBio:                  {Table: Profiles, SQLType: "TEXT"},
 		ProfilesChangeID:             {Table: Profiles, SQLType: "INTEGER"},
 		ProfilesEmail:                {Table: Profiles, SQLType: "TEXT"},
-		SqliteSequenceName:           {Table: SqliteSequence, SQLType: ""},
-		SqliteSequenceSeq:            {Table: SqliteSequence, SQLType: ""},
+		SQLITESequenceName:           {Table: SQLITESequence, SQLType: ""},
+		SQLITESequenceSeq:            {Table: SQLITESequence, SQLType: ""},
 		WalletsAddress:               {Table: Wallets, SQLType: "TEXT"},
 		WalletsBalance:               {Table: Wallets, SQLType: "INTEGER"},
 		WalletsID:                    {Table: Wallets, SQLType: "TEXT"},
