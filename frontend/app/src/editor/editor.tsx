@@ -8,6 +8,7 @@ import {
   group,
   heading,
   isFlowContent,
+  isMark,
   ol,
   statement,
   ul,
@@ -107,7 +108,8 @@ export function Editor({
       if (!isSubscribed) {
         return unlisten()
       }
-      console.log('set mark', event.payload)
+
+      if (!isMark(event.payload)) return
 
       toggleFormat(_editor, event.payload)
     }).then((_unlisten) => (unlisten = _unlisten))
@@ -162,14 +164,18 @@ export function Editor({
         return unlisten()
       }
 
-      if (!_editor.selection) return
+      if (
+        !_editor.selection ||
+        !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
+      )
+        return
 
       const set = setList(
         {
           ordered_list: ol,
           unordered_list: ul,
           group,
-        }[event.payload],
+        }[event.payload]!,
       )
 
       const [el, path] =
