@@ -22,16 +22,6 @@ pnpm_install(
     ],
 )
 
-# Exposes tsconfig to the frontend targets.
-filegroup(
-    name = "tsconfig",
-    srcs = [
-        "tsconfig.base.json",
-        "tsconfig.json",
-    ],
-    visibility = ["//frontend/..."],
-)
-
 # Exposes the tools file to the build tools targets.
 # This is a common convention in Go to have a file named tools.go
 # with blank imports of Go tools, so that `go mod tidy` doesn't remove
