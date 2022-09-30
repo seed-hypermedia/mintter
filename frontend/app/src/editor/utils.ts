@@ -7,6 +7,7 @@ import {
   isGroupContent,
   isHeading,
   isStatement,
+  isText,
   MttastContent,
   Statement,
   statement,
@@ -20,7 +21,7 @@ import {ReactEditor} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
-export const isCollapsed = (range: Range): boolean =>
+export const isCollapsed = (range: Range | null): boolean =>
   !!range && Range.isCollapsed(range)
 
 export interface UnhangRangeOptions {
@@ -103,6 +104,8 @@ export function getLastChild(
   entry: NodeEntry<Ancestor>,
 ): NodeEntry<Descendant> | null {
   const [node, path] = entry
+
+  node
   if (!node.children.length) return null
   return [
     node.children[node.children.length - 1],
@@ -133,7 +136,7 @@ export function isFirstChild(path: Path): boolean {
 
 export function toggleFormat(
   editor: Editor,
-  format: string,
+  format: keyof Text,
   data: unknown = true,
 ) {
   const isActive = isFormatActive(editor, format)
@@ -145,9 +148,9 @@ export function toggleFormat(
   )
 }
 
-export function isFormatActive(editor: Editor, format: string) {
+export function isFormatActive(editor: Editor, format: keyof Text) {
   const [match] = Editor.nodes(editor, {
-    match: (n) => !!n[format],
+    match: (n) => isText(n) && !!n[format],
     mode: 'all',
   })
 

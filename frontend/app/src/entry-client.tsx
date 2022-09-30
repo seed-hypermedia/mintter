@@ -5,8 +5,9 @@ import {attachConsole, debug} from 'tauri-plugin-log-api'
 
 import {Root, RootProvider} from './root'
 
-var container = document.getElementById('root')
-var root = createRoot(container)
+const container = document.getElementById('root')
+if (!container) throw new Error('No `root` html element')
+const root = createRoot(container)
 
 attachConsole()
 

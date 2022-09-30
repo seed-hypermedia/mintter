@@ -33,7 +33,7 @@ const isOneOfTypes =
   }
 
 const isType =
-  <T extends MttastContent>(type: string) =>
+  <T extends MttastContent | Document>(type: string) =>
   (value: unknown): value is T => {
     return isPlainObject(value) && (value as Node).type == type
   }
