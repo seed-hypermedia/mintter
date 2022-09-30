@@ -180,7 +180,7 @@ export function Editor({
 
       if (!el || !path) throw new Error('whut')
 
-      set(_editor, el, path)
+      set(_editor, path)
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {
