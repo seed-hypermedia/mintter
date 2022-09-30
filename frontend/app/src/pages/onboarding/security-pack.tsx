@@ -6,10 +6,10 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
+import {useQuery} from '@tanstack/react-query'
 import {useCallback, useState} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
-import {useQuery} from '@tanstack/react-query'
 import type {OnboardingStepPropsType} from './common'
 import {
   OnboardingStep,
@@ -47,7 +47,9 @@ export function SecurityPack({
         await registerAccount(words)
         next()
       } catch (error) {
-        toast.error(error.message)
+        if (error instanceof Error) {
+          toast.error(error.message)
+        }
       }
     } else {
       toast.error('no words have being received?')
