@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"mintter/backend/core"
 	lndhub "mintter/backend/lndhub/lndhubsql"
 	"mintter/backend/pkg/future"
@@ -153,7 +154,7 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 	if err != nil {
 		return resp, err
 	}
-	if c.do(ctx, conn, httpRequest{
+	err = c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
@@ -162,7 +163,8 @@ func (c *Client) Create(ctx context.Context, connectionURL, login, pass, nicknam
 			Nickname: nickname,
 		},
 		Token: pubKey,
-	}, 1, &resp) != nil {
+	}, 2, &resp)
+	if err != nil {
 		return resp, err
 	}
 
@@ -194,7 +196,7 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 	if err != nil {
 		return err
 	}
-	if c.do(ctx, conn, httpRequest{
+	err = c.do(ctx, conn, httpRequest{
 		URL:    connectionURL + createRoute,
 		Method: http.MethodPost,
 		Payload: createRequest{
@@ -203,14 +205,14 @@ func (c *Client) UpdateNickname(ctx context.Context, nickname string) error {
 			Nickname: nickname,
 		},
 		Token: pubKey, // this token should be in reality the pubkey whose private counterpart was used to sign the password
-	}, 1, &resp) != nil {
+	}, 2, &resp)
+	if err != nil {
 		return err
 	}
 
 	if resp.Nickname != nickname {
 		return fmt.Errorf("New nickname was not set properly. Expected %s but got %s", nickname, resp.Nickname)
 	}
-
 	return nil
 }
 
@@ -266,7 +268,7 @@ func (c *Client) Auth(ctx context.Context) (string, error) {
 			Login:    login,
 			Password: pass,
 		},
-	}, 1, &resp)
+	}, 2, &resp)
 	if err != nil {
 		return resp.AccessToken, err
 	}
@@ -562,7 +564,8 @@ func (c *Client) do(ctx context.Context, conn *sqlite.Conn, request httpRequest,
 						}
 					}
 				} else if resp.StatusCode == http.StatusTooManyRequests {
-					time.Sleep(1125 * time.Millisecond)
+					waitingTime := int(rand.Float32() + 1.0)
+					time.Sleep(time.Duration(waitingTime) * time.Second)
 				} else {
 					errMsg, ok := genericResponse["message"]
 					if ok {
