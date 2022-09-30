@@ -116,6 +116,8 @@ export interface Text extends Literal {
   codeToken?: string
 }
 
+export type Mark = keyof Omit<Text, 'type' | 'value'>
+
 // Mixin
 
 export interface Alternative {
