@@ -135,7 +135,6 @@ export type MttastContent =
   | Content
   | StaticContent
   | PhrasingContent
-  | Document
 
 export type MttastNode = Parent | Literal
 export type Content = Paragraph
