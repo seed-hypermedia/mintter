@@ -105,7 +105,6 @@ export function getLastChild(
 ): NodeEntry<Descendant> | null {
   const [node, path] = entry
 
-  node
   if (!node.children.length) return null
   return [
     node.children[node.children.length - 1],
