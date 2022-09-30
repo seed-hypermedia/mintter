@@ -101,7 +101,7 @@ export function Editor({
 
   useEffect(() => {
     let isSubscribed = true
-    let unlisten
+    let unlisten: () => void
 
     listen('format_mark', (event: Event<string>) => {
       if (!isSubscribed) {
@@ -119,7 +119,7 @@ export function Editor({
 
   useEffect(() => {
     let isSubscribed = true
-    let unlisten
+    let unlisten: () => void
 
     listen('format_block', (event: Event<string>) => {
       if (!isSubscribed) {
@@ -155,7 +155,7 @@ export function Editor({
 
   useEffect(() => {
     let isSubscribed = true
-    let unlisten
+    let unlisten: () => void
 
     listen('format_list', (event: Event<string>) => {
       if (!isSubscribed) {
