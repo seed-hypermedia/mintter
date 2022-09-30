@@ -6,7 +6,9 @@ import {
   isFlowContent,
   isGroupContent,
   isOrderedList,
+  ol,
   statement,
+  ul,
 } from '@app/mttast'
 import {Box} from '@components/box'
 import {useMemo} from 'react'
@@ -15,7 +17,7 @@ import {RenderElementProps} from 'slate-react'
 import {debug} from 'tauri-plugin-log-api'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {isFirstChild, resetGroupingContent} from '../utils'
+import {isFirstChild, resetGroupingContent, toggleList} from '../utils'
 
 export const ELEMENT_GROUP = 'group'
 export const ELEMENT_ORDERED_LIST = 'orderedList'
@@ -34,6 +36,32 @@ export const createGroupPlugin = (): EditorPlugin => ({
         )
       }
     },
+  onDOMBeforeInput: (editor) => (ev) => {
+    if (
+      (ev.inputType === 'insertUnorderedList' ||
+        ev.inputType === 'insertOrderedList') &&
+      editor.selection
+    ) {
+      ev.preventDefault()
+
+      const [, path] =
+        Editor.above(editor, {
+          at: editor.selection,
+          match: isFlowContent,
+        }) || []
+
+      if (!path) throw new Error('whut')
+
+      const set = toggleList(
+        {
+          insertUnorderedList: ul,
+          insertOrderedList: ol,
+        }[ev.inputType],
+      )
+
+      set(editor, path)
+    }
+  },
   configureEditor(editor) {
     const {normalizeNode, deleteBackward} = editor
 
@@ -143,17 +171,21 @@ export function Group({
   attributes,
   children,
   mode,
-}: RenderElementProps & {mode: EditorMode}) {
+}: RenderElementProps & {mode: EditorMode; element: GroupingContent}) {
   let elementProps = useMemo(
     () => ({
       ...attributes,
       'data-element-type': (element as GroupingContent).type,
-      start: (element as GroupingContent).start ?? 1,
+      start: isOrderedList(element) ? element.start : 1,
     }),
     [element, attributes],
   )
 
-  let as = useMemo(() => (isOrderedList(element) ? 'ol' : 'ul'), [element])
+  const as = {
+    group: 'div',
+    orderedList: 'ol',
+    unorderedList: 'ul',
+  }[element.type]
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return null
