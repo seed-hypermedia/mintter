@@ -1,6 +1,6 @@
 import {invoke} from '@tauri-apps/api'
 import {lazy, Suspense} from 'react'
-import {EditorPlugin} from './editor'
+import {EditorPlugin} from './types'
 
 export const extensionsPlugin = (plugins: string[]): EditorPlugin => {
   plugins.map(async (specifier) => {

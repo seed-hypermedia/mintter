@@ -3,7 +3,14 @@ import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {blockStyles} from '@app/editor/styles'
-import {createId, isBlockquote, paragraph, statement, text} from '@app/mttast'
+import {
+  createId,
+  FlowContent,
+  isBlockquote,
+  paragraph,
+  statement,
+  text,
+} from '@app/mttast'
 import {Box} from '@components/box'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
@@ -67,7 +74,7 @@ function BlockQuote({
   attributes,
   children,
   mode,
-}: RenderElementProps & {mode: EditorMode}) {
+}: RenderElementProps & {mode: EditorMode; element: FlowContent}) {
   let {blockProps, parentNode} = useBlockProps(element)
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {

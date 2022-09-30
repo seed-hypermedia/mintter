@@ -8,6 +8,7 @@ import {
   group,
   heading,
   isFlowContent,
+  isMark,
   ol,
   statement,
   ul,
@@ -101,13 +102,14 @@ export function Editor({
 
   useEffect(() => {
     let isSubscribed = true
-    let unlisten
+    let unlisten: () => void
 
     listen('format_mark', (event: Event<string>) => {
       if (!isSubscribed) {
         return unlisten()
       }
-      console.log('set mark', event.payload)
+
+      if (!isMark(event.payload)) return
 
       toggleFormat(_editor, event.payload)
     }).then((_unlisten) => (unlisten = _unlisten))
@@ -119,7 +121,7 @@ export function Editor({
 
   useEffect(() => {
     let isSubscribed = true
-    let unlisten
+    let unlisten: () => void
 
     listen('format_block', (event: Event<string>) => {
       if (!isSubscribed) {
@@ -137,15 +139,15 @@ export function Editor({
         }[event.payload],
       )
 
-      const [el, path] =
+      const [element, path] =
         EditorType.above(_editor, {
           at: _editor.selection,
           match: isFlowContent,
         }) || []
 
-      if (!el || !path) throw new Error('whut')
+      if (!element || !path) throw new Error('whut')
 
-      set(_editor, el, path)
+      set(_editor, {at: path, element})
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {
@@ -155,32 +157,36 @@ export function Editor({
 
   useEffect(() => {
     let isSubscribed = true
-    let unlisten
+    let unlisten: () => void
 
     listen('format_list', (event: Event<string>) => {
       if (!isSubscribed) {
         return unlisten()
       }
 
-      if (!_editor.selection) return
+      if (
+        !_editor.selection ||
+        !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
+      )
+        return
 
       const set = setList(
         {
           ordered_list: ol,
           unordered_list: ul,
           group,
-        }[event.payload],
+        }[event.payload]!,
       )
 
-      const [el, path] =
+      const [, path] =
         EditorType.above(_editor, {
           at: _editor.selection,
           match: isFlowContent,
         }) || []
 
-      if (!el || !path) throw new Error('whut')
+      if (!path) throw new Error('whut')
 
-      set(_editor, path)
+      set(_editor, {at: path})
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {

@@ -31,7 +31,7 @@ import {Text} from '@components/text'
 import {useActor} from '@xstate/react'
 import {Fragment, useMemo} from 'react'
 import toast from 'react-hot-toast'
-import {BaseRange, Editor, NodeEntry, Path, Transforms} from 'slate'
+import {BaseSelection, Editor, NodeEntry, Path, Transforms} from 'slate'
 import {InterpreterFrom} from 'xstate'
 import {Dropdown, ElementDropdown} from './dropdown'
 
@@ -41,9 +41,11 @@ const items: {
     iconName: keyof typeof icons
     onSelect: (
       editor: Editor,
-      element: FlowContent,
-      at: Path,
-      lastSelection: BaseRange | null,
+      options: {
+        selection: BaseSelection
+        element: FlowContent
+        at: Path
+      },
     ) => void
   }>
 } = {
@@ -199,12 +201,11 @@ export function DraftBlockTools({
                       key={item.label}
                       onSelect={() => {
                         if (blockEntry) {
-                          item.onSelect(
-                            editor,
-                            blockEntry[0],
-                            blockEntry[1],
-                            editor.selection,
-                          )
+                          item.onSelect(editor, {
+                            selection: editor.selection,
+                            element: blockEntry[0],
+                            at: blockEntry[1],
+                          })
                         }
                         // item.onSelect(editor, block, path)
                         // item.onSelect(editor, element, path, editor.selection)
@@ -286,13 +287,12 @@ export function PublicationBlockTools({
 function insertInline(fn: typeof image | typeof video) {
   return function insertInlineElement(
     editor: Editor,
-    element: FlowContent,
-    selection: typeof editor.selection,
+    opts: {selection: BaseSelection; element: FlowContent},
   ) {
-    if (selection) {
-      MintterEditor.addChange(editor, ['replaceBlock', element.id])
+    if (opts.selection) {
+      MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
       Transforms.insertNodes(editor, fn({url: ''}, [text('')]), {
-        at: selection,
+        at: opts.selection,
       })
     }
   }

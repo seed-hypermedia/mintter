@@ -9,8 +9,14 @@ import {
 } from '@app/client'
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {queryKeys} from '@app/hooks'
-import {createId, group, paragraph, statement, text} from '@app/mttast'
-import {GroupingContent} from '@app/mttast/src'
+import {
+  createId,
+  group,
+  GroupingContent,
+  paragraph,
+  statement,
+  text,
+} from '@app/mttast'
 import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'

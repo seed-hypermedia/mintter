@@ -8,7 +8,7 @@ import {
   ul,
 } from '@app/mttast'
 
-import {Editor, Range, Transforms} from 'slate'
+import {Ancestor, Editor, Range, Transforms} from 'slate'
 import {ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST} from './group'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
@@ -60,7 +60,9 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 Transforms.delete(editor)
 
                 const [prev, prevPath] =
-                  Editor.previous(editor, {at: abovePath}) || []
+                  Editor.previous<Ancestor>(editor, {
+                    at: abovePath,
+                  }) || []
 
                 if (!prev || !prevPath) throw new Error('bug')
 
@@ -115,7 +117,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 const start = parseInt(beforeText)
 
                 const [prev, prevPath] =
-                  Editor.previous(editor, {at: abovePath}) || []
+                  Editor.previous<Ancestor>(editor, {at: abovePath}) || []
 
                 if (!prev || !prevPath) throw new Error('bug')
 

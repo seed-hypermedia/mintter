@@ -107,7 +107,7 @@ export function ContactsPrompt({
         })
         refetch()
       } catch (err) {
-        error('Connect Error:', err.message)
+        error('Connect Error:', err)
       }
       setPeer('')
     }

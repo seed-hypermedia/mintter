@@ -113,8 +113,12 @@ export interface Text extends Literal {
   subscript?: boolean
   code?: boolean
   color?: string
+  // implementation relevant marks. not persistent
   codeToken?: string
+  'find-highlight'?: boolean
 }
+
+export type Mark = keyof Omit<Text, 'type' | 'value'>
 
 // Mixin
 
@@ -135,7 +139,6 @@ export type MttastContent =
   | Content
   | StaticContent
   | PhrasingContent
-  | Document
 
 export type MttastNode = Parent | Literal
 export type Content = Paragraph

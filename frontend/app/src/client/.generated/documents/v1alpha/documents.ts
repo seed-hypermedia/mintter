@@ -2,10 +2,10 @@
 //@ts-nocheck
 /* eslint-disable */
 import { grpc } from "@improbable-eng/grpc-web";
-import { Empty } from "../../google/protobuf/empty";
 import { BrowserHeaders } from "browser-headers";
-import { Timestamp } from "../../google/protobuf/timestamp";
 import _m0 from "protobufjs/minimal";
+import { Empty } from "../../google/protobuf/empty";
+import { Timestamp } from "../../google/protobuf/timestamp";
 
 /** Request to create a new draft. */
 export interface CreateDraftRequest {
@@ -197,7 +197,7 @@ export interface Block {
   /** Text of the content block. */
   text: string;
   /** Arbitrary attributes of the block. */
-  attributes: { [key: string]: string };
+  attributes: Record<string, unknown>;
   /** Annotation "layers" of the block. */
   annotations: Annotation[];
 }

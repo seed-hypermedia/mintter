@@ -116,17 +116,15 @@ function insertDocumentLink(editor: Editor, url: string) {
   // eslint-disable-next-line
   let publicationList = usePublicationList()
 
-  let publication: PublicationWithRef = publicationList.find(
-    (pub: PublicationWithRef) => {
-      let [docId, version] = getIdsfromUrl(url)
+  let publication = publicationList.find((pub: PublicationWithRef) => {
+    let [docId, version] = getIdsfromUrl(url)
 
-      return pub.ref.id == getRefFromParams('pub', docId, version)
-    },
-  )
+    return pub.ref.id == getRefFromParams('pub', docId, version)
+  })
 
   if (publication) {
     Transforms.insertNodes(editor, [
-      link({url}, [text(publication.document?.title)]),
+      link({url}, [text(publication.document?.title || '')]),
       text(''),
     ])
   }
@@ -265,10 +263,7 @@ export function insertLink(
     return
   }
 
-  const newLink: LinkType = link(
-    {url},
-    isCollapsed(selection) ? [text(url)] : [],
-  )
+  const newLink = link({url}, isCollapsed(selection) ? [text(url)] : [])
 
   if (isCollapsed(selection)) {
     Transforms.insertNodes(editor, newLink, {at: selection})
