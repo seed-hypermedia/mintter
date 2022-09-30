@@ -219,13 +219,9 @@ func initSQLite(ctx context.Context, clean *cleanup.Stack, path string) (*sqlite
 		return nil, err
 	}
 
-	conn := pool.Get(ctx)
-	err = sqliteschema.Migrate(conn)
-	pool.Put(conn)
-	if err != nil {
+	if err := sqliteschema.MigratePool(ctx, pool); err != nil {
 		return nil, err
 	}
-
 	clean.Add(pool)
 
 	return pool, nil
@@ -267,17 +263,10 @@ func initNetwork(
 	f := future.New[*mttnet.Node]()
 
 	done := make(chan struct{})
-
 	ctx, cancel := context.WithCancel(context.Background())
 	clean.AddErrFunc(func() error {
 		cancel()
-
-		// If we've resolved the node future, we should wait
-		// until the node fully stops before going to the next cleanup function.
-		// Otherwise the SQLite pool gets closed before the node stops, which
-		// fails in many miserable ways in tests.
-		// TODO(burdiyan): probably easier to have a separate Close method rather than
-		// using context here.
+		// Wait until the network fully stops if it was ever started.
 		if _, ok := f.Get(); ok {
 			<-done
 		}
@@ -336,9 +325,14 @@ func initSyncing(
 ) (*future.ReadOnly[*syncing.Service], error) {
 	f := future.New[*syncing.Service]()
 
+	done := make(chan struct{})
 	ctx, cancel := context.WithCancel(context.Background())
 	clean.AddErrFunc(func() error {
 		cancel()
+		// Wait for syncing service to stop fully if it was ever started.
+		if _, ok := f.Get(); ok {
+			<-done
+		}
 		return nil
 	})
 
@@ -359,7 +353,9 @@ func initSyncing(
 		svc.SetSyncInterval(cfg.Interval)
 
 		g.Go(func() error {
-			return svc.Start(ctx)
+			err := svc.Start(ctx)
+			close(done)
+			return err
 		})
 
 		if err := f.Resolve(svc); err != nil {
