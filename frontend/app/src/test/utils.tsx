@@ -259,6 +259,7 @@ export function TestPublicationProvider({children}: {children: JSX.Element[]}) {
 
 ;(function mockTauriIpc() {
   if (window) {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     mockIPC(() => {})
     mockWindows('test')
   }
