@@ -33,7 +33,7 @@ func TestCreate(t *testing.T) {
 
 	const invoiceAmt = 12543
 	const invoiceMemo = "test invoice go"
-	var nickname = randStringRunes(6)
+	var nickname = randStringRunes(8)
 
 	pool, err := makeConn(t)
 	require.NoError(t, err)
@@ -77,7 +77,7 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	_, err = lndHubClient.Auth(ctx)
 	require.NoError(t, err)
-	var newNickname = randStringRunes(6)
+	var newNickname = randStringRunes(8)
 	err = lndHubClient.UpdateNickname(ctx, newNickname)
 	require.NoError(t, err)
 	lnaddress, err := lndHubClient.GetLnAddress(ctx)
