@@ -13,6 +13,7 @@ import type {
   Heading,
   Image,
   Link,
+  Mark,
   MttastContent,
   OrderedList,
   Paragraph,
@@ -33,7 +34,7 @@ const isOneOfTypes =
   }
 
 const isType =
-  <T extends MttastContent>(type: string) =>
+  <T extends MttastContent | Document>(type: string) =>
   (value: unknown): value is T => {
     return isPlainObject(value) && (value as Node).type == type
   }
@@ -85,3 +86,16 @@ export const isImage = isType<Image>('image')
 export const isEmbed = isType<Embed>('embed')
 export const isLink = isType<Link>('link')
 export const isText = isType<Text>('text')
+
+export const isMark = (maybeMark: string): maybeMark is Mark => {
+  return [
+    'strong',
+    'emphasis',
+    'underline',
+    'strikethrough',
+    'superscript',
+    'subscript',
+    'code',
+    'color',
+  ].includes(maybeMark)
+}

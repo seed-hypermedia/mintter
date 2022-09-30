@@ -7,11 +7,11 @@ import {
   createBookmarkListMachine,
 } from '@components/bookmarks'
 import {TooltipProvider} from '@components/tooltip'
+import {useQueryClient} from '@tanstack/react-query'
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, useState} from 'react'
 import {Toaster} from 'react-hot-toast'
-import {useQueryClient} from '@tanstack/react-query'
-import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {FindContextProvider} from './editor/find'
 
 type AppProviderProps = {
@@ -29,9 +29,6 @@ function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
     <MainProvider value={mainService}>
       <HoverProvider value={hoverService}>
         <BookmarksProvider value={bookmarksService}>
-          {
-            // TODO: @jonas check types on SearchTearmProvider
-          }
           <FindContextProvider value={{search, setSearch}}>
             <TooltipProvider>{children}</TooltipProvider>
             <ReactQueryDevtools />

@@ -53,7 +53,7 @@ const WelcomeStep = ({
   title,
   description,
 }: {
-  icon
+  icon: JSX.Element
   title: string
   description: string
 }) => {

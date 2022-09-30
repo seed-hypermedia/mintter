@@ -1,4 +1,3 @@
-import {Empty} from '@app/mttast'
 import {assign, createMachine} from 'xstate'
 
 export type DeleteMachineEvent =
@@ -23,7 +22,7 @@ export type DeleteMachineContext = {
 
 export type DeleteMachineServices = {
   performDelete: {
-    data: Empty
+    data: unknown
   }
 }
 export const deleteFileMachine = createMachine(

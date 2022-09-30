@@ -65,8 +65,8 @@ describe('Transform: blockToSlate', () => {
       type: 'statement',
       text: 'A',
       annotations: [
-        {type: 'strong', starts: [0], ends: [1], attributes: null},
-        // { type: "emphasis", starts: [1], ends: [2], attributes: null },
+        {type: 'strong', starts: [0], ends: [1], attributes: {}},
+        // { type: "emphasis", starts: [1], ends: [2], attributes: {} },
       ],
       attributes: {},
     })
@@ -84,12 +84,12 @@ describe('Transform: blockToSlate', () => {
       type: 'statement',
       text: 'A B C D E F',
       annotations: [
-        {type: 'subscript', starts: [0], ends: [2], attributes: null},
-        {type: 'emphasis', starts: [2], ends: [4], attributes: null},
-        {type: 'underline', starts: [4], ends: [6], attributes: null},
-        {type: 'strikethrough', starts: [6], ends: [8], attributes: null},
-        {type: 'superscript', starts: [8], ends: [10], attributes: null},
-        {type: 'subscript', starts: [10], ends: [11], attributes: null},
+        {type: 'subscript', starts: [0], ends: [2], attributes: {}},
+        {type: 'emphasis', starts: [2], ends: [4], attributes: {}},
+        {type: 'underline', starts: [4], ends: [6], attributes: {}},
+        {type: 'strikethrough', starts: [6], ends: [8], attributes: {}},
+        {type: 'superscript', starts: [8], ends: [10], attributes: {}},
+        {type: 'subscript', starts: [10], ends: [11], attributes: {}},
       ],
       attributes: {},
     })
@@ -114,8 +114,8 @@ describe('Transform: blockToSlate', () => {
       type: 'statement',
       text: 'Mintter is Awesome',
       annotations: [
-        {type: 'strong', starts: [0], ends: [10], attributes: null},
-        {type: 'emphasis', starts: [8], ends: [18], attributes: null},
+        {type: 'strong', starts: [0], ends: [10], attributes: {}},
+        {type: 'emphasis', starts: [8], ends: [18], attributes: {}},
       ],
       attributes: {},
     })
@@ -136,9 +136,7 @@ describe('Transform: blockToSlate', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello from 👨‍👩‍👧‍👦 family',
-      annotations: [
-        {type: 'strong', starts: [6], ends: [25], attributes: null},
-      ],
+      annotations: [{type: 'strong', starts: [6], ends: [25], attributes: {}}],
     })
 
     let output = statement({id: 'blockId'}, [
@@ -517,7 +515,7 @@ describe('Transform: blockToSlate', () => {
             starts: [5],
             ends: [6],
           },
-          {starts: [30], ends: [41], type: 'strong', attributes: null},
+          {starts: [30], ends: [41], type: 'strong', attributes: {}},
           {
             type: 'embed',
             attributes: {url: 'mtt://doc2/block2'},
@@ -553,7 +551,7 @@ describe('Transform: blockToSlate', () => {
           type: 'emphasis',
           starts: [4],
           ends: [11],
-          attributes: null,
+          attributes: {},
         },
       ],
     })

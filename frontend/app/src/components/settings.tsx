@@ -51,7 +51,9 @@ export function Settings() {
           {/* <ScrollArea> */}
           <ProfileForm
             profile={
-              state.matches('loggedIn') && state.context.account?.profile
+              state.matches('loggedIn')
+                ? state.context.account?.profile
+                : undefined
             }
             handleUpdate={(profile) => send({type: 'UPDATE.PROFILE', profile})}
           />

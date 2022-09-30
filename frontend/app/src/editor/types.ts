@@ -1,8 +1,10 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import type {
+  Embed,
   FlowContent,
   GroupingContent,
   Image,
+  Link,
   Paragraph,
   StaticParagraph,
   Text,
@@ -27,8 +29,10 @@ declare module 'slate' {
     Element:
       | FlowContent
       | GroupingContent
-      | Paragraph
       | StaticParagraph
+      | Paragraph
+      | Link
+      | Embed
       | Video
       | Image
     Text: Text

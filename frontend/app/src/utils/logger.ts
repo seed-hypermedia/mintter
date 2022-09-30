@@ -15,7 +15,7 @@ function loggerFactory(cb: FnType) {
 
   return function actualLogger(...args: Array<unknown>): Promise<void> {
     if (args.length == 1) {
-      return fn(args[0])
+      return fn(JSON.stringify(args[0], null, 3))
     } else {
       let message = args
         .map((v) => {

@@ -183,6 +183,7 @@ export const createStatementPlugin = (): EditorPlugin => ({
 
             if (
               !Node.string(prevBlockNode) &&
+              isFlowContent(prevBlockNode) &&
               !hasEmbedOnly([prevBlockNode, prevBlockPath])
             ) {
               Transforms.removeNodes(editor, {at: prevBlockPath})
@@ -233,7 +234,7 @@ function Statement({
   children,
   element,
   mode,
-}: RenderElementProps & {mode: EditorMode}) {
+}: RenderElementProps & {mode: EditorMode; element: FlowContent}) {
   let {blockProps, parentNode} = useBlockProps(element)
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {

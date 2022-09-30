@@ -98,7 +98,7 @@ export const video = createParent<Video>('video')
 
 export const text = (
   value: string,
-  options: Omit<Text, 'type' | 'value' | 'text'> = {},
+  options: Omit<Text, 'type' | 'value'> = {},
 ): Text => ({
   type: 'text',
   value,
