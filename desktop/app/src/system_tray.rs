@@ -1,5 +1,7 @@
 use crate::daemon;
-use tauri::{AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri::{
+  AppHandle, CustomMenuItem, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
+};
 
 pub fn get_tray() -> SystemTray {
   let tray = SystemTray::new();
@@ -21,20 +23,21 @@ pub fn get_tray() -> SystemTray {
   tray.with_menu(tray_menu)
 }
 
-pub fn event_handler(app: &AppHandle, event: SystemTrayEvent) {
+pub fn event_handler<R: Runtime>(app_handle: &AppHandle<R>, event: SystemTrayEvent) {
   if let SystemTrayEvent::MenuItemClick { id, .. } = event {
     match id.as_str() {
       "exit_app" => {
         // exit the app
-        app.exit(0);
+        app_handle.exit(0);
       }
       "start" => {
         daemon::start_daemon(
-          app.state::<daemon::Connection>(),
-          app.state::<daemon::Flags>(),
+          app_handle.clone(),
+          app_handle.state::<daemon::Connection>(),
+          app_handle.state::<daemon::Flags>(),
         );
 
-        let status_handle = app.tray_handle().get_item("status");
+        let status_handle = app_handle.tray_handle().get_item("status");
 
         status_handle.set_title("Online").unwrap();
 
@@ -44,8 +47,8 @@ pub fn event_handler(app: &AppHandle, event: SystemTrayEvent) {
           .unwrap();
       }
       "stop" => {
-        daemon::stop_daemon(app.state::<daemon::Connection>());
-        let item_handle = app.tray_handle().get_item("status");
+        daemon::stop_daemon(app_handle.state::<daemon::Connection>());
+        let item_handle = app_handle.tray_handle().get_item("status");
 
         item_handle.set_title("Offline").unwrap();
 

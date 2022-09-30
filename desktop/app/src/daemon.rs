@@ -3,15 +3,20 @@ use std::sync::Mutex;
 use tauri::{
   api::{
     cli::get_matches,
+    dialog::blocking::confirm,
     process::{Command, CommandEvent},
   },
   plugin::{Builder as PluginBuilder, TauriPlugin},
-  Manager, Runtime,
+  AppHandle, Manager, Runtime,
 };
 use tokio::sync::mpsc::{self, Sender};
 
 #[tracing::instrument]
-pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::State<Flags>) {
+pub fn start_daemon<R: Runtime>(
+  app_handle: AppHandle<R>,
+  connection: tauri::State<Connection>,
+  daemon_flags: tauri::State<Flags>,
+) {
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
 
@@ -34,6 +39,13 @@ pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::S
             CommandEvent::Stderr(out) => info!("{}", out),
             CommandEvent::Error(err) => error!("{}", err),
             CommandEvent::Terminated(reason) => {
+
+              let message = format!("The Daemon crashed with exit code {} \n You need to restart the app now.", reason.code.unwrap_or(0));
+
+              if confirm::<R>(None, "Daemon crashed", message) {
+                app_handle.restart();
+              }
+
               match reason.code {
                 Some(code) if code == 0 => error!("daemon terminated"),
                 Some(code) => error!("daemon crashed with exit code {}", code),

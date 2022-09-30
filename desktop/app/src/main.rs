@@ -73,6 +73,7 @@ fn main() {
     .invoke_handler(tauri::generate_handler![emit_all])
     .setup(|app| {
       daemon::start_daemon(
+        app.handle(),
         app.state::<daemon::Connection>(),
         app.state::<daemon::Flags>(),
       );
