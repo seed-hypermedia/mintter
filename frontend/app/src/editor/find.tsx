@@ -8,8 +8,8 @@ const FIND_HIGHLIGHT = 'find-highlight'
 
 export const findContext = createContext({
   search: '',
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setSearch: () => {},
+  // eslint-disable-next-line
+  setSearch: (v: string) => {},
 })
 export const FindContextProvider = findContext.Provider
 
@@ -29,7 +29,7 @@ export function createFindPlugin(): EditorPlugin {
       },
     decorate: () => (entry) => {
       const [node, path] = entry
-      let ranges: Range[] = []
+      let ranges: Array<Range & {[FIND_HIGHLIGHT]: boolean}> = []
 
       const {search} = useContext(findContext)
       if (!search) return

@@ -139,15 +139,15 @@ export function Editor({
         }[event.payload],
       )
 
-      const [el, path] =
+      const [element, path] =
         EditorType.above(_editor, {
           at: _editor.selection,
           match: isFlowContent,
         }) || []
 
-      if (!el || !path) throw new Error('whut')
+      if (!element || !path) throw new Error('whut')
 
-      set(_editor, el, path)
+      set(_editor, {at: path, element})
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {
@@ -178,15 +178,15 @@ export function Editor({
         }[event.payload]!,
       )
 
-      const [el, path] =
+      const [, path] =
         EditorType.above(_editor, {
           at: _editor.selection,
           match: isFlowContent,
         }) || []
 
-      if (!el || !path) throw new Error('whut')
+      if (!path) throw new Error('whut')
 
-      set(_editor, path)
+      set(_editor, {at: path})
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {

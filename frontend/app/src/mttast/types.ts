@@ -113,7 +113,9 @@ export interface Text extends Literal {
   subscript?: boolean
   code?: boolean
   color?: string
+  // implementation relevant marks. not persistent
   codeToken?: string
+  'find-highlight'?: boolean
 }
 
 export type Mark = keyof Omit<Text, 'type' | 'value'>

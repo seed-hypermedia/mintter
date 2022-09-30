@@ -495,7 +495,7 @@ function Find() {
         autoCorrect="off"
         placeholder="Search"
         value={search}
-        onInput={(e) => setSearch(e.target.value)}
+        onInput={(e) => setSearch(e.currentTarget.value)}
       />
     </label>
   )

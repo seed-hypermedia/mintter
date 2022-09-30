@@ -114,6 +114,7 @@
     "@graphql-codegen/typescript": "2.7.3",
     "@happy-dom/global-registrator": "6.0.4",
     "@tanstack/react-query-devtools": "4.7.2",
+    "@types/autosize": "^4.0.1",
     "@types/google-protobuf": "3.15.6",
     "@types/hast": "2.3.4",
     "@types/is-hotkey": "^0.1.7",

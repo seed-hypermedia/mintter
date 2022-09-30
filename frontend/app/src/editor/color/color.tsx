@@ -22,7 +22,7 @@ export const createColorPlugin = (): EditorPlugin => ({
 
       Transforms.setNodes(
         editor,
-        {color: ev.data},
+        {color: ev.data ?? undefined},
         {match: Text.isText, split: true, mode: 'highest'},
       )
     }

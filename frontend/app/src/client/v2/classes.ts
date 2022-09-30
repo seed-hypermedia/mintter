@@ -55,7 +55,8 @@ export class AnnotationSet {
     let out: Annotation[] = new Array(keys.length)
     // Then we add annotations in the proper order.
     for (let i in keys) {
-      out[i] = this.annotations.get(keys[i])
+      const annotation = this.annotations.get(keys[i])
+      if (annotation) out[i] = annotation
     }
 
     out = out.sort((a, b) => {

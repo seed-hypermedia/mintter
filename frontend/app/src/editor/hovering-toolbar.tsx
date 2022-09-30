@@ -1,4 +1,5 @@
 import {image, isCode, text} from '@app/mttast'
+import {Mark} from '@app/mttast/types'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -108,7 +109,7 @@ function FormatButton({
   format,
   icon,
 }: {
-  format: string
+  format: Mark
   icon: keyof typeof icons
 }) {
   const editor = useSlate()
