@@ -383,8 +383,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		if err != nil {
 			return err
 		}
-		node.ProvideCID(oid)
-		return nil
+		return node.ProvideCID(oid)
 	})
 
 	return pub, nil
