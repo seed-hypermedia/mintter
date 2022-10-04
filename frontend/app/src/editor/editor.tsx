@@ -44,7 +44,7 @@ interface EditorProps {
 
 const editorWrapperStyles = css({
   position: 'relative',
-  userSelect: 'none',
+  // userSelect: 'none',
   '& [data-slate-placeholder="true"]': {
     // this is needed to make sure the placeholder does not wrap the text.
     whiteSpace: 'nowrap',
