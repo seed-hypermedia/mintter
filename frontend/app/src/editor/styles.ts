@@ -20,7 +20,7 @@ export var groupStyles = css({
 export var blockStyles = css({
   maxInlineSize: '$prose-width',
   position: 'relative',
-  userSelect: 'none',
+  // userSelect: 'none',
   '&::marker': {
     color: '$base-active',
     fontSize: '0.95rem',
@@ -61,7 +61,7 @@ export var blockStyles = css({
 export var phrasingStyles = css({
   position: 'relative',
   inlineSize: '$full',
-  userSelect: 'none',
+  // userSelect: 'none',
 
   zIndex: 0,
   '& > *': {
@@ -84,9 +84,9 @@ export var phrasingStyles = css({
     transition: 'opacity 0.35s ease',
     backgroundColor: 'transparent',
   },
-  '& [data-slate-spacer="true"]': {
-    userSelect: 'none',
-  },
+  // '& [data-slate-spacer="true"]': {
+  // userSelect: 'none',
+  // },
   variants: {
     blockType: {
       code: {
