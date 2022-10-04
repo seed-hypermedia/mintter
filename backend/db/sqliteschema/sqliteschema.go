@@ -18,6 +18,7 @@ func init() {
 	sqlitegen.AddInitialism(
 		"IPFS",
 		"CID",
+		"SQLite",
 	)
 }
 
@@ -28,13 +29,24 @@ var mainSchema string
 // that must be executed one by one until the end. This is very common approach for managing
 // SQL database schema migrations.
 // But SQLite is a bit more peculiar in this case, and have very limited ALTER TABLE capabilities.
-// For complex schema migrations they actually recommend a very thorough 12-step procedure, which must
-// be implemented very carefully.
+// For complex schema migrations they actually recommend a very specific 12-step procedure, which must
+// be implemented very thoroughly.
 // There're multiple approaches in the wild for imperative and declarative schema migrations for SQLite,
 // so eventually we need to implement one, following the recommended procedure.
 //
 // See more at: https://www.sqlite.org/lang_altertable.html
-var migrations = []string{mainSchema}
+var migrations = []string{
+	mainSchema,
+	// This table was accidentally created and messed up my local database during tests.
+	// So I'm leaving this here, until the final breaking change is implemented in Build 11.
+	// TODO(burdiyan): build11: remove these migrations after the last breaking change.
+	`CREATE TABLE ipfs_blocks_providing (
+		id INTEGER PRIMARY KEY,
+		last_provide_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
+		FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
+	);`,
+	"DROP TABLE ipfs_blocks_providing",
+}
 
 // Open a connection pool for SQLite, enabling some needed functionality for our schema
 // like foreign keys.

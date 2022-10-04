@@ -7,10 +7,13 @@ import {
   isGroupContent,
   isHeading,
   isStatement,
-  MttastContent,
+  isText,
+  ol,
   Statement,
   statement,
+  ul,
 } from '@app/mttast'
+import {Mark} from '@app/mttast/types'
 import {ObjectKeys} from '@app/utils/object-keys'
 import videoParser from 'js-video-url-parser'
 import {useMemo} from 'react'
@@ -20,7 +23,7 @@ import {ReactEditor} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
 
-export const isCollapsed = (range: Range): boolean =>
+export const isCollapsed = (range: Range | null): boolean =>
   !!range && Range.isCollapsed(range)
 
 export interface UnhangRangeOptions {
@@ -103,6 +106,7 @@ export function getLastChild(
   entry: NodeEntry<Ancestor>,
 ): NodeEntry<Descendant> | null {
   const [node, path] = entry
+
   if (!node.children.length) return null
   return [
     node.children[node.children.length - 1],
@@ -133,7 +137,7 @@ export function isFirstChild(path: Path): boolean {
 
 export function toggleFormat(
   editor: Editor,
-  format: string,
+  format: Mark,
   data: unknown = true,
 ) {
   const isActive = isFormatActive(editor, format)
@@ -145,9 +149,9 @@ export function toggleFormat(
   )
 }
 
-export function isFormatActive(editor: Editor, format: string) {
+export function isFormatActive(editor: Editor, format: Mark) {
   const [match] = Editor.nodes(editor, {
-    match: (n) => !!n[format],
+    match: (n) => isText(n) && !!n[format],
     mode: 'all',
   })
 
@@ -327,49 +331,87 @@ export function lowerPoint(root: Node, point: Point): Point | null {
 export function setType(fn: any) {
   return function setToStatementType(
     editor: Editor,
-    element: FlowContent,
-    at: Path,
+    opts: {
+      element: FlowContent
+      at: Path
+    },
   ) {
     Editor.withoutNormalizing(editor, function () {
-      MintterEditor.addChange(editor, ['replaceBlock', element.id])
-      const keys = ObjectKeys(element).filter(
+      MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
+      const keys = ObjectKeys(opts.element).filter(
         (key) => !['type', 'id', 'children', 'data'].includes(key as string),
       )
 
-      if (isHeading(element)) {
-        Transforms.setNodes(editor, {type: ELEMENT_PARAGRAPH}, {at: [...at, 0]})
+      if (isHeading(opts.element)) {
+        Transforms.setNodes(
+          editor,
+          {type: ELEMENT_PARAGRAPH},
+          {at: [...opts.at, 0]},
+        )
       }
 
       if (keys.length) {
-        Transforms.unsetNodes(editor, keys, {at})
+        Transforms.unsetNodes(editor, keys, {at: opts.at})
       }
 
       // IDs are meant to be stable, so we shouldn't obverride it
       // eslint-disable-next-line
       const {id, ...props} = fn()
 
-      Transforms.setNodes(editor, props, {at})
+      Transforms.setNodes(editor, props, {at: opts.at})
     })
   }
 }
 
-// eslint-disable-next-line
-export function setList(fn: any) {
-  return function wrapWithListType(
-    editor: Editor,
-    element: MttastContent,
-    at: Path,
-  ) {
+export function setList(fn: typeof ol | typeof ul | typeof group) {
+  return function wrapWithListType(editor: Editor, opts: {at: Path}) {
+    Editor.withoutNormalizing(editor, () => {
+      const list = Node.parent(editor, opts.at)
+
+      if (list && isGroupContent(list)) {
+        let newList = fn([])
+        Transforms.setNodes(
+          editor,
+          {type: newList.type},
+          {at: Path.parent(opts.at)},
+        )
+
+        if (opts.at.length > 2) {
+          let parentBlockEntry = Editor.above(editor, {
+            match: isFlowContent,
+            at: opts.at,
+          })
+          if (parentBlockEntry) {
+            let [block] = parentBlockEntry
+            MintterEditor.addChange(editor, ['replaceBlock', block.id])
+          }
+        }
+      }
+    })
+  }
+}
+
+export function toggleList(fn: typeof ol | typeof ul) {
+  return function wrapWithListType(editor: Editor, at: Path) {
     Editor.withoutNormalizing(editor, () => {
       const list = Node.parent(editor, at)
 
-      if (list && isGroupContent(list)) {
-        let newList = fn()
-        Transforms.setNodes(editor, {type: newList.type}, {at: Path.parent(at)})
+      const newList = fn([])
 
-        if (at.length == 2) {
-          // block is at the root level
+      if (isGroupContent(list)) {
+        if (list.type === newList.type) {
+          // reset type to group
+          Transforms.setNodes(editor, {type: 'group'}, {at: Path.parent(at)})
         } else {
+          // set type
+          Transforms.setNodes(
+            editor,
+            {type: newList.type},
+            {at: Path.parent(at)},
+          )
+        }
+
+        if (at.length > 2) {
           let parentBlockEntry = Editor.above(editor, {
             match: isFlowContent,
             at,

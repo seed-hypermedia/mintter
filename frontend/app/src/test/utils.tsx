@@ -23,10 +23,11 @@ import {
 } from '@components/bookmarks'
 import {libraryMachine} from '@components/library/library-machine'
 import {TooltipProvider} from '@components/tooltip'
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
 import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {Suspense} from 'react'
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {spawn} from 'xstate'
 
 type TestMockData = {
@@ -247,7 +248,7 @@ export type TestProviderProps = CustomMountOptions & {
   client: QueryClient
 }
 
-export function TestPublicationProvider({children}) {
+export function TestPublicationProvider({children}: {children: JSX.Element[]}) {
   const blockToolsService = useInterpret(() => blockToolsMachine)
   return (
     <BlockToolsProvider value={blockToolsService}>
@@ -258,21 +259,8 @@ export function TestPublicationProvider({children}) {
 
 ;(function mockTauriIpc() {
   if (window) {
-    window.TAURI_IPC = function () {
-      // noop
-    }
-    window.__TAURI_IPC__ = function TauriIPCMock() {
-      // noop
-    }
-    window.__TAURI_METADATA__ = {
-      __currentWindow: {
-        label: 'test',
-      },
-      __windows: [
-        {
-          label: 'test',
-        },
-      ],
-    }
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    mockIPC(() => {})
+    mockWindows('test')
   }
 })()

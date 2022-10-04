@@ -65,6 +65,8 @@ export function createMintterChangesPlugin(): EditorPlugin {
                   match: isFlowContent,
                 }) || []
 
+              if (!_node) throw new Error('bug')
+
               node = _node
             }
 

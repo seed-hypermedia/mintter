@@ -18,7 +18,6 @@ pnpm_script(
     name = "app",
     srcs = [
         ":srcs",
-        "//:tsconfig",
     ],
     outs = ["dist"],
     pnpm_deps = "//:pnpm",

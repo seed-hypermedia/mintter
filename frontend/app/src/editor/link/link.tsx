@@ -1,5 +1,6 @@
 import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {useMain, usePublicationList} from '@app/main-context'
 import {PublicationWithRef} from '@app/main-machine'
 import type {Embed, Link as LinkType} from '@app/mttast'
@@ -35,11 +36,11 @@ export const ELEMENT_LINK = 'link'
 export const createLinkPlugin = (): EditorPlugin => ({
   name: ELEMENT_LINK,
   renderElement:
-    () =>
+    ({mode}) =>
     ({children, attributes, element}) => {
       if (isLink(element)) {
         return (
-          <Link attributes={attributes} element={element}>
+          <Link attributes={attributes} element={element} mode={mode}>
             {children}
           </Link>
         )
@@ -115,17 +116,15 @@ function insertDocumentLink(editor: Editor, url: string) {
   // eslint-disable-next-line
   let publicationList = usePublicationList()
 
-  let publication: PublicationWithRef = publicationList.find(
-    (pub: PublicationWithRef) => {
-      let [docId, version] = getIdsfromUrl(url)
+  let publication = publicationList.find((pub: PublicationWithRef) => {
+    let [docId, version] = getIdsfromUrl(url)
 
-      return pub.ref.id == getRefFromParams('pub', docId, version)
-    },
-  )
+    return pub.ref.id == getRefFromParams('pub', docId, version)
+  })
 
   if (publication) {
     Transforms.insertNodes(editor, [
-      link({url}, [text(publication.document?.title)]),
+      link({url}, [text(publication.document?.title || '')]),
       text(''),
     ])
   }
@@ -157,6 +156,7 @@ const StyledLink = styled(
 
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
+  mode: EditorMode
 }
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
@@ -181,6 +181,8 @@ function RenderMintterLink(
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     let isShiftKey = event.shiftKey
     event.preventDefault()
+    if (props.mode == EditorMode.Embed || props.mode == EditorMode.Discussion)
+      return
     if (isShiftKey) {
       mainService.send({type: 'GO.TO.PUBLICATION', docId, version, blockId})
     } else {
@@ -213,7 +215,8 @@ function RenderMintterLink(
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
-
+    if (props.mode == EditorMode.Embed || props.mode == EditorMode.Discussion)
+      return
     open(props.element.url)
   }
 
@@ -260,10 +263,7 @@ export function insertLink(
     return
   }
 
-  const newLink: LinkType = link(
-    {url},
-    isCollapsed(selection) ? [text(url)] : [],
-  )
+  const newLink = link({url}, isCollapsed(selection) ? [text(url)] : [])
 
   if (isCollapsed(selection)) {
     Transforms.insertNodes(editor, newLink, {at: selection})

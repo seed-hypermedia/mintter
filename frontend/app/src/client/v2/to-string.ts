@@ -1,13 +1,13 @@
-import {MttastNode} from '@app/mttast'
+import {isText, MttastContent} from '@app/mttast'
 
-export function toString(node: MttastNode, separator = ''): string {
+export function toString(node: MttastContent, separator = ''): string {
   let index = -1
 
   if (!node || (!Array.isArray(node) && !node.type)) {
     throw new Error(`Expected node, not ' ${node} '`)
   }
 
-  if (typeof node.value == 'string') return node.value
+  if (isText(node)) return node.value
 
   const children = (Array.isArray(node) ? node : node.children) || []
 

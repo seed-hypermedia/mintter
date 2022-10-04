@@ -2,6 +2,7 @@ import {
   isFlowContent,
   isImage,
   isPhrasingContent,
+  MttRoot,
   sanitizeSchema,
   toMttast,
 } from '@app/mttast'
@@ -11,7 +12,6 @@ import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
 import {Editor, Transforms} from 'slate'
 import {unified} from 'unified'
-import {Parent} from 'unist'
 import {visit} from 'unist-util-visit'
 import {EditorPlugin} from './types'
 
@@ -110,11 +110,11 @@ export function createPlainTextPastePlugin(): EditorPlugin {
   }
 }
 
-function removeEmptyText(tree: Parent) {
-  visit(tree, 'text', (node: unknown, index: number, parent: unknown) => {
+function removeEmptyText(tree: MttRoot) {
+  visit(tree, 'text', (node, index, parent) => {
     if (node.value === '') {
       if (!isImage(parent)) {
-        parent.children.splice(index, 1, ...node.children)
+        parent!.children.splice(index!, 1, ...node.children)
       }
     }
   })

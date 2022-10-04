@@ -18,6 +18,7 @@ type Config struct {
 	GRPCPort int
 	RepoPath string
 
+	Lndhub  Lndhub
 	P2P     P2P
 	Syncing Syncing
 }
@@ -29,9 +30,14 @@ func Default() Config {
 		GRPCPort: 55002,
 		RepoPath: "~/.mtt",
 
+		Lndhub: Lndhub{
+			Mainnet: false,
+		},
+
 		P2P: P2P{
 			Port:              55000,
 			RelayBackoffDelay: 21600 * time.Minute,
+			StaticRelayRescan: 1 * time.Minute,
 		},
 
 		Syncing: Syncing{
@@ -49,11 +55,14 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
 
+	fs.BoolVar(&cfg.Lndhub.Mainnet, "lndhub.mainnet", cfg.Lndhub.Mainnet, "Connect to the mainnet lndhub.go server")
+
 	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&cfg.P2P.NoRelay, "p2p.no-relay", cfg.P2P.NoRelay, "Disable libp2p circuit relay")
 	fs.BoolVar(&cfg.P2P.NoBootstrap, "p2p.no-bootstrap", cfg.P2P.NoBootstrap, "Disable IPFS bootstrapping")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoffDelay, "p2p.relay-backoff-delay", cfg.P2P.RelayBackoffDelay, "The time in which the autorelay will prune a relay if it cannot connect to it")
+	fs.DurationVar(&cfg.P2P.StaticRelayRescan, "p2p.static-relay-rescan", cfg.P2P.StaticRelayRescan, "The period for automatic static relay rescanning")
 	fs.BoolVar(&cfg.P2P.ReportPrivateAddrs, "p2p.report-private-addrs", cfg.P2P.ReportPrivateAddrs, "If true the node will report/announce addresses within private IP ranges")
 
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
@@ -74,6 +83,11 @@ func (c *Config) ExpandRepoPath() error {
 	return nil
 }
 
+// Lndhub related config. For field descriptions see SetupFlags().
+type Lndhub struct {
+	Mainnet bool
+}
+
 // Syncing related config. For field descriptions see SetupFlags().
 type Syncing struct {
 	WarmupDuration time.Duration
@@ -88,6 +102,7 @@ type P2P struct {
 	NoBootstrap        bool
 	NoMetrics          bool
 	RelayBackoffDelay  time.Duration
+	StaticRelayRescan  time.Duration
 	ReportPrivateAddrs bool
 }
 

@@ -290,7 +290,7 @@ export function blockNodeToSlate(
       if (children.length) {
         slateBlock.children[1] = blockNodeToSlate(
           children,
-          block?.attributes.childrenType || 'group',
+          (block?.attributes.childrenType as string) ?? 'group',
         )
       }
 

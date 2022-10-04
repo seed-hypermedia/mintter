@@ -54,13 +54,20 @@ type Credentials struct {
 }
 
 // New is the constructor of the wallet service. Since it needs to authenticate to the internal wallet provider (lndhub)
-// it may take time in case node is offline. This is why it's initialyzed in a gorutine and calls to the service functions
+// it may take time in case node is offline. This is why it's initialized in a gorutine and calls to the service functions
 // will fail until the initial wallet is successfully initialized.
-func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], me *future.ReadOnly[core.Identity]) *Service {
+func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], me *future.ReadOnly[core.Identity], mainnet bool) *Service {
+	mintterDomain := "ln.testnet.mintter.com"
+	lnaddressDomain := "testnet.mintter.com"
+	if mainnet {
+		//mintterDomain is the domain for internal lndhub calls.
+		mintterDomain = "ln.mintter.com"
+		lnaddressDomain = "mintter.com"
+	}
 	srv := Service{
 		pool: db,
 		lightningClient: lnclient{
-			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, me),
+			Lndhub: lndhub.NewClient(ctx, &http.Client{}, db, me, mintterDomain, lnaddressDomain),
 		},
 		net: net,
 		log: log,
@@ -98,7 +105,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		db.Put(conn)
 		tickerAccount.Stop()
 		credURI, err := EncodeCredentialsURL(Credentials{
-			Domain:     lndhub.MintterDomain,
+			Domain:     mintterDomain,
 			WalletType: lndhubsql.LndhubGoWalletType,
 			Login:      id.AccountID().String(),
 			Password:   loginSignature,

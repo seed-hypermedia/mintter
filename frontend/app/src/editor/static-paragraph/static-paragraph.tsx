@@ -5,7 +5,10 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {hoverStyles, phrasingStyles} from '@app/editor/styles'
 import {useFileIds} from '@app/file-provider'
 import {useIsEditing} from '@app/main-context'
-import {isStaticParagraph} from '@app/mttast'
+import {
+  isStaticParagraph,
+  StaticParagraph as StaticParagraphType,
+} from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Text} from '@components/text'

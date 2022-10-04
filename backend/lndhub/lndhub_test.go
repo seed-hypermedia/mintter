@@ -23,7 +23,9 @@ import (
 )
 
 const (
-	connectionURL = "https://" + MintterDomain
+	mintterDomain   = "ln.testnet.mintter.com"
+	lnaddressDomain = "testnet.mintter.com"
+	connectionURL   = "https://" + mintterDomain
 )
 
 func TestCreate(t *testing.T) {
@@ -31,7 +33,7 @@ func TestCreate(t *testing.T) {
 
 	const invoiceAmt = 12543
 	const invoiceMemo = "test invoice go"
-	var nickname = randStringRunes(6)
+	var nickname = randStringRunes(8)
 
 	pool, err := makeConn(t)
 	require.NoError(t, err)
@@ -41,7 +43,7 @@ func TestCreate(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(640)*time.Second)
 	defer cancel()
 	identity := future.New[core.Identity]()
-	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, identity.ReadOnly)
+	lndHubClient := NewClient(context.Background(), &http.Client{}, pool, identity.ReadOnly, mintterDomain, lnaddressDomain)
 	keypair, err := core.NewKeyPairRandom(core.CodecDeviceKey)
 	require.NoError(t, err)
 	priv, pub, err := crypto.GenerateEd25519Key(nil)
@@ -57,7 +59,7 @@ func TestCreate(t *testing.T) {
 	password := hex.EncodeToString(passwordBytes)
 	require.NoError(t, err)
 	require.NoError(t, identity.Resolve(core.NewIdentity(pubkey, keypair)))
-	lndHubClient.WalletID = credentials2Id("lndhub.go", login, password, MintterDomain)
+	lndHubClient.WalletID = credentials2Id("lndhub.go", login, password, mintterDomain)
 
 	makeTestWallet(t, conn, walletsql.Wallet{
 		ID:      lndHubClient.WalletID,
@@ -75,12 +77,12 @@ func TestCreate(t *testing.T) {
 	require.NoError(t, err)
 	_, err = lndHubClient.Auth(ctx)
 	require.NoError(t, err)
-	var newNickname = randStringRunes(6)
+	var newNickname = randStringRunes(8)
 	err = lndHubClient.UpdateNickname(ctx, newNickname)
 	require.NoError(t, err)
 	lnaddress, err := lndHubClient.GetLnAddress(ctx)
 	require.NoError(t, err)
-	require.EqualValues(t, newNickname+"@"+LnaddressDomain, lnaddress)
+	require.EqualValues(t, newNickname+"@"+lnaddressDomain, lnaddress)
 	balance, err := lndHubClient.GetBalance(ctx)
 	require.NoError(t, err)
 	require.EqualValues(t, 0, balance)

@@ -2,16 +2,20 @@ use log::{error, info};
 use std::sync::Mutex;
 use tauri::{
   api::{
-    cli::get_matches,
+    dialog::blocking::confirm,
     process::{Command, CommandEvent},
   },
   plugin::{Builder as PluginBuilder, TauriPlugin},
-  Manager, Runtime,
+  AppHandle, Manager, Runtime,
 };
 use tokio::sync::mpsc::{self, Sender};
 
 #[tracing::instrument]
-pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::State<Flags>) {
+pub fn start_daemon<R: Runtime>(
+  app_handle: AppHandle<R>,
+  connection: tauri::State<Connection>,
+  daemon_flags: tauri::State<Flags>,
+) {
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
 
@@ -38,6 +42,12 @@ pub fn start_daemon(connection: tauri::State<Connection>, daemon_flags: tauri::S
                 Some(code) if code == 0 => error!("daemon terminated"),
                 Some(code) => error!("daemon crashed with exit code {}", code),
                 None => error!("daemon crashed without exit code")
+              }
+
+              let message = format!("The Daemon crashed with exit code {} \n You need to restart the app now.", reason.code.unwrap_or(0));
+
+              if confirm::<R>(None, "Daemon crashed", message) {
+                app_handle.restart();
               }
             },
             _ => {}
@@ -66,23 +76,9 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     .setup(|app_handle| {
       app_handle.manage(Connection::default());
 
-      let cli_config = app_handle.config().tauri.cli.clone().unwrap();
-
-      let mut flags = get_matches(&cli_config, app_handle.package_info())
-        .ok()
-        .and_then(|matches| {
-          let str = matches.args.get("daemon-flags")?.value.as_str()?;
-          Some(
-            str[1..str.len() - 1]
-              .split_whitespace()
-              .map(ToString::to_string)
-              .collect::<Vec<String>>(),
-          )
-        })
-        .unwrap_or_default();
+      let mut flags: Vec<String> = std::env::args().skip(1).collect();
 
       let repo_path = app_handle.path_resolver().app_dir().unwrap();
-
       flags.push(format!("--repo-path={}", repo_path.as_path().display()));
 
       app_handle.manage(Flags(flags));

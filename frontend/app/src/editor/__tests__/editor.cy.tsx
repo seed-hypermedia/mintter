@@ -17,9 +17,9 @@ import {
   text,
 } from '@app/mttast'
 import {createTestQueryClient} from '@app/test/utils'
+import {QueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
-import {QueryClient} from '@tanstack/react-query'
 import {Editor as EditorType} from 'slate'
 
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
@@ -107,8 +107,8 @@ describe('Editor', () => {
         .type('{enter}')
         .then(() => {
           let changes = editor.__mtt_changes
-          let newBlock: FlowContent = (editor.children[0] as Group).children[0]
-            ?.children?.[1]?.children[0]
+          let newBlock = (editor.children[0] as Group).children[0]
+            ?.children?.[1]?.children[0] as FlowContent
           expect(changes).to.have.lengthOf.greaterThan(2)
           let expected: ChangeOperation = ['moveBlock', newBlock.id]
           expect(changes).to.deep.include(expected)

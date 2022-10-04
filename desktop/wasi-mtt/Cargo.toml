@@ -10,11 +10,11 @@ version = "0.1.0"
 anyhow = "1.0.65"
 futures-util = "0.3.24"
 tauri = "1.1.1"
-thiserror = "1.0.36"
-tokio = "1.21.1"
+thiserror = "1.0.37"
+tokio = "1.21.2"
 tracing = "0.1.36"
-wasmtime = "1.0.0"
-wiggle = "1.0.0"
+wasmtime = "1.0.1"
+wiggle = "1.0.1"
 workspace-hack = {version = "0.1", path = "../workspace-hack"}
 
 [build-dependencies]
