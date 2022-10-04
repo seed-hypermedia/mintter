@@ -20,6 +20,7 @@ anyhow = "1.0.65"
 env_logger = "0.9.1"
 # futures-util = "0.3.21"
 log = "0.4.17"
+ringbuffer = "0.8.5"
 # semver = {version = "1.0.12", features = ["serde"] }
 secmem-proc = "0.2.0"
 serde = {version = "1.0.145", features = ["derive"] }
