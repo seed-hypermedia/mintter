@@ -222,7 +222,9 @@ function Code({
   const theme = useCurrentTheme()
 
   useEffect(() => {
+    // TODO make this user configurable in the future
     const codeTheme = THEMES[theme]
+
     const {...newData} = (element as CodeType).data || {}
     delete newData[HIGHLIGHTER]
 
