@@ -59,7 +59,7 @@ export function QuickSwitcher() {
           return (
             <Command.Item
               key={draft.id}
-              value={draft.title || 'Untitled Draft'}
+              value={(draft.title || 'Untitled Draft') + draft.id}
               onSelect={() => {
                 setOpen(false)
 
@@ -86,7 +86,7 @@ export function QuickSwitcher() {
           return (
             <Command.Item
               key={docId}
-              value={title}
+              value={title + docId}
               onSelect={() => {
                 setOpen(false)
 
