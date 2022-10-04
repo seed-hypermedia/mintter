@@ -40,11 +40,6 @@ const THEMES = {
   dark: 'github-dark',
 }
 
-const THEMES = {
-  light: 'github-light',
-  dark: 'github-dark',
-}
-
 const SelectorWrapper = styled('div', {
   boxSizing: 'border-box',
   position: 'absolute',
