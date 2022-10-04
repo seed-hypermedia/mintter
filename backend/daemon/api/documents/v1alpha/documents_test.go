@@ -2,12 +2,18 @@ package documents
 
 import (
 	"context"
+	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/mttnet"
+	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
+	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
+	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/vcsdb"
 	"path/filepath"
 	"testing"
 	"time"
@@ -15,6 +21,8 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -728,17 +736,56 @@ func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, upda
 }
 
 func newTestDocsAPI(t *testing.T, name string) *Server {
-	u := coretest.NewTester("alice")
+	u := coretest.NewTester(name)
 
 	db := newTestSQLite(t)
 
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	srv := NewServer(fut.ReadOnly, db)
+	mttFut := future.New[*mttnet.Node]()
+	g, _ := errgroup.WithContext(context.Background())
 
-	_, err := srv.me.Await(context.Background())
+	clean := cleanup.Stack{}
+
+	srv := NewServer(fut.ReadOnly, db, mttFut.ReadOnly, &clean, g)
+
+	hvcs := vcsdb.New(db)
+
+	conn, release, err := hvcs.Conn(context.Background())
 	require.NoError(t, err)
+	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	release()
+	require.NoError(t, err)
+
+	cfg := config.Default().P2P
+	cfg.Port = 0
+	cfg.ReportPrivateAddrs = true
+	cfg.NoRelay = true
+	cfg.NoBootstrap = true
+	cfg.NoMetrics = true
+
+	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
+	require.NoError(t, err)
+	require.NoError(t, mttFut.Resolve(n))
+
+	errc := make(chan error, 1)
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		errc <- n.Start(ctx)
+	}()
+
+	t.Cleanup(func() {
+		cancel()
+		clean.Close()
+		require.NoError(t, <-errc)
+	})
+
+	select {
+	case <-n.Ready():
+	case err := <-errc:
+		require.NoError(t, err)
+	}
 
 	return srv
 }
