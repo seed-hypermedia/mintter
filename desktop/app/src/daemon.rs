@@ -1,4 +1,5 @@
 use log::{error, info};
+use ringbuffer::{ConstGenericRingBuffer, RingBufferExt, RingBufferWrite};
 use std::sync::Mutex;
 use tauri::{
   api::{
@@ -26,6 +27,8 @@ pub fn start_daemon<R: Runtime>(
     .expect("failed to spawn sidecar");
 
   tauri::async_runtime::spawn(async move {
+    let mut messages = ConstGenericRingBuffer::<_, 32>::new();
+
     loop {
       tokio::select! {
         _ = rx.recv() => {
@@ -34,9 +37,18 @@ pub fn start_daemon<R: Runtime>(
         }
         Some(event) = cx.recv() => {
           match event {
-            CommandEvent::Stdout(out) => info!("{}", out),
-            CommandEvent::Stderr(out) => info!("{}", out),
-            CommandEvent::Error(err) => error!("{}", err),
+            CommandEvent::Stdout(out) => {
+              info!("{}", out);
+              messages.push(out);
+            },
+            CommandEvent::Stderr(out) => {
+              info!("{}", out);
+              messages.push(out);
+            },
+            CommandEvent::Error(err) => {
+              error!("{}", err);
+              messages.push(err);
+            },
             CommandEvent::Terminated(reason) => {
               match reason.code {
                 Some(code) if code == 0 => error!("daemon terminated"),
@@ -44,9 +56,9 @@ pub fn start_daemon<R: Runtime>(
                 None => error!("daemon crashed without exit code")
               }
 
-              let message = format!("The Daemon crashed with exit code {} \n You need to restart the app now.", reason.code.unwrap_or(0));
+              let message = format!("You need to restart the app now. \n Latest 20 logs: \n {}", messages.iter().cloned().collect::<String>());
 
-              if confirm::<R>(None, "Daemon crashed", message) {
+              if confirm::<R>(None, "The Daemon crashed", message) {
                 app_handle.restart();
               }
             },
