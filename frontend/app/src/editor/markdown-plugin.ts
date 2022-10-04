@@ -189,40 +189,6 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
           }
         }
       }
-
-      if (text == '`' && selection && Range.isCollapsed(selection)) {
-        const {anchor} = selection
-        const block = Editor.above(editor, {
-          match: (n) => Editor.isBlock(editor, n),
-        })
-
-        const path = block ? block[1] : []
-        const start = Editor.start(editor, path)
-        const range = {anchor, focus: start}
-        const beforeText = Editor.string(editor, range)
-
-        // turn Statement into Codeblock
-        if (beforeText === '``') {
-          const above = Editor.above(editor, {
-            match: isStatement,
-            mode: 'lowest',
-          })
-
-          if (above) {
-            Editor.withoutNormalizing(editor, () => {
-              Transforms.select(editor, range)
-              Transforms.delete(editor)
-              Transforms.setNodes(
-                editor,
-                {type: ELEMENT_CODE},
-                {match: isStatement},
-              )
-            })
-            return
-          }
-        }
-      }
-
       insertText(text)
     }
 
