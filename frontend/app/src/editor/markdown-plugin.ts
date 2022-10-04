@@ -16,6 +16,11 @@ import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
 import type {EditorPlugin} from './types'
 import {isFirstChild} from './utils'
 
+const LANGUAGE_SHORTCUTS = {
+  js: 'javascript',
+  ts: 'typescript',
+}
+
 export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
   name: 'markdown shortcuts',
   configureEditor(editor) {
@@ -169,7 +174,12 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
         }
 
         // turn Statement into Codeblock
-        if (beforeText === '```') {
+        if (/```\w*/.test(beforeText)) {
+          const lang =
+            LANGUAGE_SHORTCUTS[beforeText.slice(3)] ||
+            beforeText.slice(3) ||
+            undefined
+
           const above = Editor.above(editor, {
             match: isStatement,
             mode: 'lowest',
@@ -181,7 +191,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
               Transforms.delete(editor)
               Transforms.setNodes(
                 editor,
-                {type: ELEMENT_CODE},
+                {type: ELEMENT_CODE, lang},
                 {match: isStatement},
               )
             })
