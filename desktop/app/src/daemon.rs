@@ -56,7 +56,7 @@ pub fn start_daemon<R: Runtime>(
                 None => error!("daemon crashed without exit code")
               }
 
-              let message = format!("You need to restart the app now. \n Latest 20 logs: \n {}", messages.iter().cloned().collect::<String>());
+              let message = format!("You need to restart the app now. \n Last messages: \n {}", messages.iter().cloned().collect::<String>());
 
               if confirm::<R>(None, "The Daemon crashed", message) {
                 app_handle.restart();
