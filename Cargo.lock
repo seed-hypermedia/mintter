@@ -2916,9 +2916,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "secmem-proc"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bc425db8e602c9cd393e4eb862a6679ff2f7cd66e92f506f50befab4881cd2d"
+checksum = "cd96024bdbd05fcf4cb5f8cb6511fe804d5870d3ad25e8a0b4d239d09b0e4a10"
 dependencies = [
  "cfg-if",
  "libc",
