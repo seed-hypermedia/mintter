@@ -9,11 +9,17 @@ import {
 } from '@app/mttast'
 
 import {Ancestor, Editor, Range, Transforms} from 'slate'
+import {ELEMENT_CODE} from './code'
 import {ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST} from './group'
 import {ELEMENT_HEADING} from './heading'
 import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
 import type {EditorPlugin} from './types'
 import {isFirstChild} from './utils'
+
+const LANGUAGE_SHORTCUTS = {
+  js: 'javascript',
+  ts: 'typescript',
+}
 
 export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
   name: 'markdown shortcuts',
@@ -161,6 +167,32 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 editor,
                 {type: ELEMENT_STATIC_PARAGRAPH},
                 {match: isParagraph},
+              )
+            })
+            return
+          }
+        }
+
+        // turn Statement into Codeblock
+        if (/```\w*/.test(beforeText)) {
+          const lang =
+            LANGUAGE_SHORTCUTS[beforeText.slice(3)] ||
+            beforeText.slice(3) ||
+            undefined
+
+          const above = Editor.above(editor, {
+            match: isStatement,
+            mode: 'lowest',
+          })
+
+          if (above) {
+            Editor.withoutNormalizing(editor, () => {
+              Transforms.select(editor, range)
+              Transforms.delete(editor)
+              Transforms.setNodes(
+                editor,
+                {type: ELEMENT_CODE, lang},
+                {match: isStatement},
               )
             })
             return

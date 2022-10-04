@@ -204,9 +204,9 @@ export function Editor({
         >
           <EditorHoveringToolbar />
           <Editable
-            spellCheck={false}
             autoCorrect="false"
             autoCapitalize="false"
+            spellCheck="false"
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
