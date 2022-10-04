@@ -387,7 +387,7 @@ func initGRPC(
 
 	srv = grpc.NewServer()
 
-	rpc = api.New(id, repo, pool, v, node, sync, wallet)
+	rpc = api.New(id, repo, pool, v, node, sync, wallet, clean, g)
 	rpc.Register(srv)
 	reflection.Register(srv)
 

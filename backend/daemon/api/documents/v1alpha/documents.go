@@ -6,12 +6,16 @@ import (
 	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/mttnet"
+	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -27,14 +31,20 @@ type Server struct {
 	db    *sqlitex.Pool
 	vcsdb *vcsdb.DB
 	me    *future.ReadOnly[core.Identity]
+	node  *future.ReadOnly[*mttnet.Node]
+	clean *cleanup.Stack
+	g     *errgroup.Group
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, node *future.ReadOnly[*mttnet.Node], clean *cleanup.Stack, g *errgroup.Group) *Server {
 	srv := &Server{
 		db:    db,
 		vcsdb: vcsdb.New(db),
 		me:    me,
+		node:  node,
+		clean: clean,
+		g:     g,
 	}
 
 	return srv
@@ -357,10 +367,27 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	}); err != nil {
 		return nil, err
 	}
-
-	return api.GetPublication(ctx, &documents.GetPublicationRequest{
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: in.DocumentId,
 	})
+	if err != nil {
+		return nil, err
+	}
+	api.g.Go(func() error {
+		ctx, cancel := context.WithCancel(context.Background())
+		api.clean.AddErrFunc(func() error {
+			cancel()
+			return nil
+		})
+		node, err := api.node.Await(ctx)
+		if err != nil {
+			return err
+		}
+		node.ProvideCID(oid)
+		return nil
+	})
+
+	return pub, nil
 }
 
 // DeleteDraft implements the corresponding gRPC method.
