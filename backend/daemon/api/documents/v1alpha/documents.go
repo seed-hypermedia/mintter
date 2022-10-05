@@ -172,7 +172,12 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		lamport := conn.GetChangeLamportTime(change)
 
 		doc := mttdoc.New(vcsdb.MakeDatomFactory(change, lamport, seq))
-		if err := doc.Replay(conn.LoadObjectDatoms(obj, version)); err != nil {
+		it := conn.QueryObjectDatoms(obj, version)
+		datoms := it.Slice()
+		if it.Err() != nil {
+			return it.Err()
+		}
+		if err := doc.Replay(datoms); err != nil {
 			return err
 		}
 
@@ -259,7 +264,11 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 
 func (api *Server) getDocument(conn *vcsdb.Conn, obj vcsdb.LocalID, version vcsdb.LocalVersion) (*documents.Document, error) {
 	doc := mttdoc.New(nil)
-	datoms := conn.LoadObjectDatoms(obj, version)
+	it := conn.QueryObjectDatoms(obj, version)
+	datoms := it.Slice()
+	if it.Err() != nil {
+		return nil, it.Err()
+	}
 	objctime := conn.GetPermanodeCreateTime(obj)
 	changectime := conn.GetChangeCreateTime(datoms[len(datoms)-1].Change)
 	did := conn.GetObjectCID(obj)
@@ -338,13 +347,13 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		conn.SaveVersion(obj, "main", meLocal, newVersion)
 
 		// TODO(burdiyan): build11: this should be gone.
-		for _, d := range conn.LoadObjectDatoms(obj, newVersion) {
-			if err := backlinks.IndexDatom(conn, obj, d); err != nil {
+		it := conn.QueryObjectDatoms(obj, newVersion)
+		for it.Next() {
+			if err := backlinks.IndexDatom(conn, obj, it.Item().Datom()); err != nil {
 				return err
 			}
 		}
-
-		return nil
+		return it.Err()
 	}); err != nil {
 		return nil, err
 	}

@@ -65,13 +65,20 @@ func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid)
 	cs := conn.ResolveChangeSet(obj, ver)
 
 	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, AttrRegistration)
-	for _, reg := range regs {
-		dd := conn.QueryLastValue(obj, cs, reg.Value.(vcsdb.NodeID), AttrDevice)
+	for regs.Next() {
+		rv := regs.Item().ValueAny().(vcsdb.NodeID)
+		dd := conn.QueryLastValue(obj, cs, rv, AttrDevice)
 		if !dd.Value.(cid.Cid).Equals(device) {
 			continue
 		}
-		proof := conn.QueryLastValue(obj, cs, reg.Value.(vcsdb.NodeID), AttrProof)
+		proof := conn.QueryLastValue(obj, cs, rv, AttrProof)
+		if err := regs.Close(); err != nil {
+			return nil, err
+		}
 		return proof.Value.([]byte), nil
+	}
+	if regs.Err() != nil {
+		return nil, regs.Err()
 	}
 
 	return nil, fmt.Errorf("proof not found")
