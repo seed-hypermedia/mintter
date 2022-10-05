@@ -114,6 +114,7 @@ func (ds *Datastore) Has(ctx context.Context, key datastore.Key) (bool, error) {
 
 func (ds *Datastore) has(conn *sqlite.Conn, key datastore.Key) (has bool, err error) {
 	q := sqlf.From(ds.table).Select("1").Where(keyCol+" = ?", key.String()).Limit(1)
+	defer q.Close()
 
 	err = sqlitex.Exec(conn, q.String(), func(stmt *sqlite.Stmt) error {
 		has = true
@@ -125,6 +126,7 @@ func (ds *Datastore) has(conn *sqlite.Conn, key datastore.Key) (has bool, err er
 
 func (ds *Datastore) delete(conn *sqlite.Conn, key datastore.Key) error {
 	q := sqlf.DeleteFrom(ds.table).Where(keyCol+" = ?", key.String())
+	defer q.Close()
 	return sqlitex.Exec(conn, q.String(), nil, q.Args()...)
 }
 
@@ -132,6 +134,7 @@ func (ds *Datastore) getSize(conn *sqlite.Conn, key datastore.Key) (out int, err
 	q := sqlf.From(ds.table).Select("LENGTH("+valCol+") as size").
 		Where(keyCol+"= ?", key.String()).
 		Limit(1)
+	defer q.Close()
 
 	stmt := conn.Prep(q.String())
 	sqlitex.BindArgs(stmt, q.Args()...)
@@ -164,6 +167,7 @@ func (ds *Datastore) get(conn *sqlite.Conn, key datastore.Key) (value []byte, er
 		Select(valCol).
 		Where(keyCol+" = ?", key.String()).
 		Limit(1)
+	defer q.Close()
 
 	var found bool
 	err = sqlitex.Exec(conn, q.String(), func(stmt *sqlite.Stmt) error {
@@ -203,6 +207,7 @@ func (ds *Datastore) query(conn *sqlite.Conn, releaseFunc func(), in query.Query
 
 func (ds *Datastore) rawQuery(conn *sqlite.Conn, releaseFunc func(), in query.Query) (query.Results, error) {
 	q := sqlf.From(ds.table).Select(keyCol)
+	defer q.Close()
 
 	if in.Prefix != "" {
 		// normalize
