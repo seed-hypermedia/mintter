@@ -295,7 +295,20 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	}
 
 	if !n.cfg.NoBootstrap {
-		res := n.p2p.Bootstrap(ctx, ipfs.DefaultBootstrapPeers())
+		var res ipfs.BootstrapResult
+		if n.cfg.BootstrapPeer != "" {
+			peers := make(ipfs.Bootstrappers, 1)
+
+			ai, err := peer.AddrInfoFromString(n.cfg.BootstrapPeer)
+			if err != nil {
+				return err
+			}
+			peers[0] = *ai
+			res = n.p2p.Bootstrap(ctx, peers)
+		} else {
+			res = n.p2p.Bootstrap(ctx, ipfs.DefaultBootstrapPeers())
+		}
+
 		n.log.Info("BootstrapFinished",
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(res.Peers)),

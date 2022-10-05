@@ -8,7 +8,6 @@ import (
 	"mintter/backend/db/sqliteschema"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/mttnet"
-	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
@@ -22,14 +21,13 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 )
 
 func TestCreateDraftFromPublication(t *testing.T) {
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -93,7 +91,7 @@ func TestCreateDraftFromPublication(t *testing.T) {
 func TestBug_MissingLinkTarget(t *testing.T) {
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -133,7 +131,7 @@ func TestBug_BrokenPublicationList(t *testing.T) {
 	// See: https://www.notion.so/mintter/Fix-List-of-Publications-Breaks-c5f37e237cca4618bd3296d926958cd6.
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -172,7 +170,7 @@ func TestBug_BrokenPublicationList(t *testing.T) {
 func TestAPICreateDraft(t *testing.T) {
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -189,7 +187,7 @@ func TestAPICreateDraft(t *testing.T) {
 func TestAPIGetDraft(t *testing.T) {
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -212,7 +210,7 @@ func TestAPIGetDraft(t *testing.T) {
 }
 
 func TestUpdateDraftSmoke(t *testing.T) {
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -242,7 +240,7 @@ func TestUpdateDraftSmoke(t *testing.T) {
 }
 
 func TestAPIUpdateDraft(t *testing.T) {
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -299,7 +297,7 @@ func TestAPIUpdateDraft(t *testing.T) {
 func TestUpdateDraft_Annotations(t *testing.T) {
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -376,7 +374,7 @@ func TestUpdateDraft_Annotations(t *testing.T) {
 func TestAPIUpdateDraft_Complex(t *testing.T) {
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -568,7 +566,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 }
 
 func TestAPIDeleteDraft(t *testing.T) {
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	d1, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -596,7 +594,7 @@ func TestAPIPublishDraft(t *testing.T) {
 
 	// Move clock back a bit so that timestamps generated in tests
 	// are clearly after the test start.
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -646,8 +644,65 @@ func TestAPIPublishDraft(t *testing.T) {
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 }
 
+func TestAPIGetRemotePublication(t *testing.T) {
+	t.Parallel()
+
+	// We'll measure that dates on the published document are greater than start date.
+	// Since the test runs fast we reverse the start time a bit to notice the difference.
+	start := time.Now().Add(time.Minute * -1).UTC().Round(time.Second)
+
+	ctx := context.Background()
+	// Carol will be the DHT server
+	carol := newTestDocsAPI(t, "carol", "")
+	carolAddrs := carol.node.MustGet().AddrInfo().Addrs[0].String()
+	carolID := carol.node.MustGet().AddrInfo().ID.String()
+	alice := newTestDocsAPI(t, "alice", carolAddrs+"/p2p/"+carolID)
+	bob := newTestDocsAPI(t, "bob", carolAddrs+"/p2p/"+carolID)
+
+	draft, err := alice.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated := updateDraft(ctx, t, alice, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+
+	published, err := alice.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	updated.UpdateTime = published.Document.UpdateTime
+	updated.PublishTime = published.Document.PublishTime // This is the only field that should differ.
+	testutil.ProtoEqual(t, updated, published.Document, "published document doesn't match")
+
+	require.NotEqual(t, "", published.Document.Id, "publication must have id")
+	require.NotEqual(t, "", published.Version, "publication must have version")
+	require.Equal(t, draft.Id, published.Document.Id)
+
+	require.True(t, start.Before(published.Document.CreateTime.AsTime()), "create time must be after test start")
+	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
+	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
+	cId := cid.Cid{}
+	cId.UnmarshalText([]byte(draft.Id))
+
+	// To make sure bob is not directly connected to alice since they are bootstrapped to the same node
+	err = bob.node.MustGet().Libp2p().Host.Network().ClosePeer(alice.node.MustGet().AddrInfo().ID)
+	require.NoError(t, err)
+
+	// Get the Document
+	block, err := bob.node.MustGet().Bitswap().GetBlock(context.Background(), cId)
+
+	require.NoError(t, err)
+	require.Equal(t, cId, block.Cid())
+
+}
+
 func TestAPIDeletePublication(t *testing.T) {
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
@@ -735,7 +790,7 @@ func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, upda
 	return draft
 }
 
-func newTestDocsAPI(t *testing.T, name string) *Server {
+func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
 	u := coretest.NewTester(name)
 
 	db := newTestSQLite(t)
@@ -744,11 +799,8 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	require.NoError(t, fut.Resolve(u.Identity))
 
 	mttFut := future.New[*mttnet.Node]()
-	g, _ := errgroup.WithContext(context.Background())
 
-	clean := cleanup.Stack{}
-
-	srv := NewServer(fut.ReadOnly, db, mttFut.ReadOnly, &clean, g)
+	srv := NewServer(fut.ReadOnly, db, mttFut.ReadOnly)
 
 	hvcs := vcsdb.New(db)
 
@@ -762,7 +814,8 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	cfg.Port = 0
 	cfg.ReportPrivateAddrs = true
 	cfg.NoRelay = true
-	cfg.NoBootstrap = true
+	cfg.NoBootstrap = bootstrapPeer == ""
+	cfg.BootstrapPeer = bootstrapPeer
 	cfg.NoMetrics = true
 
 	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
@@ -777,7 +830,6 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 
 	t.Cleanup(func() {
 		cancel()
-		clean.Close()
 		require.NoError(t, <-errc)
 	})
 
