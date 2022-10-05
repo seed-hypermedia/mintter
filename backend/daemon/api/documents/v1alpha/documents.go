@@ -480,7 +480,6 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 
 		out.Version = conn.LocalVersionToPublic(version).String()
 		return nil
-
 	}); err != nil {
 		if errors.Is(err, errNumVersionsNotOne) {
 			return nil, err
