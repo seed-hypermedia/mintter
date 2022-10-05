@@ -10,14 +10,12 @@ import (
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/mttnet"
-	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/syncing"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
-	"golang.org/x/sync/errgroup"
 )
 
 // Server combines all the daemon API services into one thing.
@@ -37,8 +35,6 @@ func New(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
-	clean *cleanup.Stack,
-	g *errgroup.Group,
 ) Server {
 	doSync := func() error {
 		s, ok := sync.Get()
@@ -58,7 +54,7 @@ func New(
 	return Server{
 		Accounts:   accounts.NewServer(id, v),
 		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
-		Documents:  documents.NewServer(id, db, node, clean, g),
+		Documents:  documents.NewServer(id, db, node),
 		Networking: networking.NewServer(node),
 	}
 }
