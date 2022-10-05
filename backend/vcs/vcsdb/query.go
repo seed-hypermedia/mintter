@@ -73,14 +73,13 @@ func (conn *Conn) QueryLastValue(object LocalID, cs ChangeSet, entity NodeID, a 
 func (conn *Conn) QueryValuesByAttr(object LocalID, cs ChangeSet, entity NodeID, a Attribute) (out []Datom) {
 	must.Maybe(&conn.err, func() error {
 		q := newQuery(cs, false)
+		defer q.Close()
 
 		if !entity.IsZero() {
 			q.Where(sqliteschema.DatomsEntity.String()+" = ?", entity.Bytes())
 		}
 
 		q.Where(sqliteschema.DatomAttrsAttr.String()+" = ?", a)
-
-		defer q.Close()
 
 		return sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
 			out = append(out, DatomRow{stmt: stmt}.Datom())
