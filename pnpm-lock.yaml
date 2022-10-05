@@ -35,7 +35,7 @@ importers:
       '@cypress/vite-dev-server': 3.2.0
       '@floating-ui/react-dom': 1.0.0
       '@floating-ui/react-dom-interactions': 0.10.1
-      '@graphql-codegen/cli': 2.13.3
+      '@graphql-codegen/cli': 2.13.4
       '@graphql-codegen/typescript': 2.7.3
       '@happy-dom/global-registrator': 6.0.4
       '@improbable-eng/grpc-web': 0.15.0
@@ -236,7 +236,7 @@ importers:
       xstate: 4.33.6
     devDependencies:
       '@cypress/vite-dev-server': 3.2.0
-      '@graphql-codegen/cli': 2.13.3_5eb2zmpkxvcn7g22ykvyaexn24
+      '@graphql-codegen/cli': 2.13.4_k4tgeuxgjoyg5fbcy4uzgsyom4
       '@graphql-codegen/typescript': 2.7.3_graphql@16.6.0
       '@happy-dom/global-registrator': 6.0.4
       '@tanstack/react-query-devtools': 4.10.1_u34amavde33a6d2g2dyykucmvy
@@ -1202,8 +1202,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@graphql-codegen/cli/2.13.3_5eb2zmpkxvcn7g22ykvyaexn24:
-    resolution: {integrity: sha512-nhSPc79Ieov7qz4XDgGzkxmAv2EQY+KxeBzcOL2HhnfbVZZLXa/B0TGE4B9lAbz/HAYwWzwv0YX7zg8UFkhzig==}
+  /@graphql-codegen/cli/2.13.4_k4tgeuxgjoyg5fbcy4uzgsyom4:
+    resolution: {integrity: sha512-HhaLumR9/rov2WzDchZmIarD/MteNQOCiwgrOdS+A3WcUYBomeL8t5CoRsarFTc6McKoQIAdAqSl+eiNJ5oxJw==}
     hasBin: true
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
@@ -1228,7 +1228,7 @@ packages:
       chalk: 4.1.2
       chokidar: 3.5.3
       cosmiconfig: 7.0.1
-      cosmiconfig-typescript-swc-loader: 0.0.2
+      cosmiconfig-typescript-loader: 4.1.1_23ohybvxtvuxhbgi6sdsdghkbe
       debounce: 1.2.1
       detect-indent: 6.1.0
       graphql: 16.6.0
@@ -1252,6 +1252,7 @@ packages:
       - encoding
       - enquirer
       - supports-color
+      - ts-node
       - typescript
       - utf-8-validate
     dev: true
@@ -2381,168 +2382,6 @@ packages:
     dependencies:
       react: 18.2.0
     dev: false
-
-  /@swc/core-android-arm-eabi/1.3.4:
-    resolution: {integrity: sha512-aq+CAebSQMtdrIR4+v/JBfykK/daD+so2gPHm4wgLaTR+xwziQAsBBI5iq5sinhIg4FGnmljtO75QolcNLmpvw==}
-    engines: {node: '>=10'}
-    cpu: [arm]
-    os: [android]
-    requiresBuild: true
-    dependencies:
-      '@swc/wasm': 1.2.122
-    dev: true
-    optional: true
-
-  /@swc/core-android-arm64/1.3.4:
-    resolution: {integrity: sha512-E5z6ribiEzDqrq5Kv5xOLdWcTzHWlzGuqDSxTQNz9GCC94qSVzXp5Df+egVEKE/4t7u2P6nO46BUKweYMb9TJg==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [android]
-    requiresBuild: true
-    dependencies:
-      '@swc/wasm': 1.2.130
-    dev: true
-    optional: true
-
-  /@swc/core-darwin-arm64/1.3.4:
-    resolution: {integrity: sha512-JNBFQKtaUdsq0Sv6N29++Q6xrvZDn1bQ7pbMvr8t7kBNXaYCDmupbwPGT725MrGVs72N4qKee5Z0OIvmnLCQfw==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [darwin]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-darwin-x64/1.3.4:
-    resolution: {integrity: sha512-A6KMZsUJ3j5TVxAizbv+UEjCNvMgWBm9jw4R3biaw8kbgu3XUWHdkiheXO+c2kjjjgwr1jhkHcLgRjffwpLYFA==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [darwin]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-freebsd-x64/1.3.4:
-    resolution: {integrity: sha512-C5FCXHebcHwPJtEhgRShumXvcdPO5Cqiwd7GDNBav1IZribs3+ZqrTkCaz2hY7gb5NvyFIxkJ5HhpS4Pxafhuw==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [freebsd]
-    requiresBuild: true
-    dependencies:
-      '@swc/wasm': 1.2.130
-    dev: true
-    optional: true
-
-  /@swc/core-linux-arm-gnueabihf/1.3.4:
-    resolution: {integrity: sha512-vawHUhUcS//xNvGzL0zZ3vZ1YnsjgyvWQXB5PF4bhM5Y0/rmcrEdpkSId1qTfaMpcL7l2QSy9/DM7ucjlSpK6w==}
-    engines: {node: '>=10'}
-    cpu: [arm]
-    os: [linux]
-    requiresBuild: true
-    dependencies:
-      '@swc/wasm': 1.2.130
-    dev: true
-    optional: true
-
-  /@swc/core-linux-arm64-gnu/1.3.4:
-    resolution: {integrity: sha512-p60RoYaDS8zrqp/cGkcJryk9HobJvrL+Ox/iz8ivDrV4IS0LXvqW5/5YTSzLo93/+blvG/M0hdaokoMhWhDnwA==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-linux-arm64-musl/1.3.4:
-    resolution: {integrity: sha512-F9hW6g5l4YesJJH/JMznaLGdLeCV4FKq5MN5DaZfuB8qrCZGLmAasGgvSNbXh1oZnDu1PD2ZxMYivkf2n8/4OA==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-linux-x64-gnu/1.3.4:
-    resolution: {integrity: sha512-rRqDtxktiVaxO8NQeEZSX0kNSFkI5Ft+4fZcFTbWhDO0vknC0+ZYbWpverfQ8yAwo7aA9jKWupwc3I7iZ1EQQQ==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-linux-x64-musl/1.3.4:
-    resolution: {integrity: sha512-stVnU7KXQxSbh67UiIVxZsgjkRSXApPTEU3CYnwsdH7G+ynfO1WocSatzjIKpJfhcY2Nss8/33yDaOKZXVhbIA==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core-win32-arm64-msvc/1.3.4:
-    resolution: {integrity: sha512-qc3UIdAQfLTA1mJsFkX3ISqJDU02qtcjUbnLI8sl6oedCAOFF66TcecJvwl4iO+BTO04+KoZc5rJovSTOb3eQA==}
-    engines: {node: '>=10'}
-    cpu: [arm64]
-    os: [win32]
-    requiresBuild: true
-    dependencies:
-      '@swc/wasm': 1.2.130
-    dev: true
-    optional: true
-
-  /@swc/core-win32-ia32-msvc/1.3.4:
-    resolution: {integrity: sha512-FxuDGn60VrnYBcpH0CeR9+pCnPUaVvZ20CO6o/oNYHSfIhqPc76o3zFYYEFswYodExjCCYwsuPYgi+stvKZroA==}
-    engines: {node: '>=10'}
-    cpu: [ia32]
-    os: [win32]
-    requiresBuild: true
-    dependencies:
-      '@swc/wasm': 1.2.130
-    dev: true
-    optional: true
-
-  /@swc/core-win32-x64-msvc/1.3.4:
-    resolution: {integrity: sha512-9/bSvgjV31u1G2slRFPgK85ohJdo8KtWJ0f4CPp2LdVtIJHbFGd0pWjnMfiPJeodSxSGGWrgUNQtajqIIsrbqA==}
-    engines: {node: '>=10'}
-    cpu: [x64]
-    os: [win32]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/core/1.3.4:
-    resolution: {integrity: sha512-W1AvQImfF2T+7dzWdg/GqFpcMJ24lyXGQ/kPKHL/FGPZbf0Q1ExD7wp3eQ2PQMgHTLe28qWonxicm2DPfprx3g==}
-    engines: {node: '>=10'}
-    hasBin: true
-    requiresBuild: true
-    optionalDependencies:
-      '@swc/core-android-arm-eabi': 1.3.4
-      '@swc/core-android-arm64': 1.3.4
-      '@swc/core-darwin-arm64': 1.3.4
-      '@swc/core-darwin-x64': 1.3.4
-      '@swc/core-freebsd-x64': 1.3.4
-      '@swc/core-linux-arm-gnueabihf': 1.3.4
-      '@swc/core-linux-arm64-gnu': 1.3.4
-      '@swc/core-linux-arm64-musl': 1.3.4
-      '@swc/core-linux-x64-gnu': 1.3.4
-      '@swc/core-linux-x64-musl': 1.3.4
-      '@swc/core-win32-arm64-msvc': 1.3.4
-      '@swc/core-win32-ia32-msvc': 1.3.4
-      '@swc/core-win32-x64-msvc': 1.3.4
-    dev: true
-
-  /@swc/wasm/1.2.122:
-    resolution: {integrity: sha512-sM1VCWQxmNhFtdxME+8UXNyPNhxNu7zdb6ikWpz0YKAQQFRGT5ThZgJrubEpah335SUToNg8pkdDF7ibVCjxbQ==}
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@swc/wasm/1.2.130:
-    resolution: {integrity: sha512-rNcJsBxS70+pv8YUWwf5fRlWX6JoY/HJc25HD/F8m6Kv7XhJdqPPMhyX6TKkUBPAG7TWlZYoxa+rHAjPy4Cj3Q==}
-    requiresBuild: true
-    dev: true
-    optional: true
 
   /@tanstack/match-sorter-utils/8.1.1:
     resolution: {integrity: sha512-IdmEekEYxQsoLOR0XQyw3jD1GujBpRRYaGJYQUw1eOT1eUugWxdc7jomh1VQ1EKHcdwDLpLaCz/8y4KraU4T9A==}
@@ -3890,8 +3729,8 @@ packages:
       '@iarna/toml': 2.2.5
     dev: true
 
-  /cosmiconfig-typescript-loader/4.1.0_23ohybvxtvuxhbgi6sdsdghkbe:
-    resolution: {integrity: sha512-HbWIuR5O+XO5Oj9SZ5bzgrD4nN+rfhrm2PMb0FVx+t+XIvC45n8F0oTNnztXtspWGw0i2IzHaUWFD5LzV1JB4A==}
+  /cosmiconfig-typescript-loader/4.1.1_23ohybvxtvuxhbgi6sdsdghkbe:
+    resolution: {integrity: sha512-9DHpa379Gp0o0Zefii35fcmuuin6q92FnLDffzdZ0l9tVd3nEobG3O+MZ06+kuBvFTSVScvNb/oHA13Nd4iipg==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@types/node': '*'
@@ -3903,13 +3742,6 @@ packages:
       cosmiconfig: 7.0.1
       ts-node: 10.9.1_p7mthwln2shynjad7kcqanrvhq
       typescript: 4.8.4
-    dev: true
-
-  /cosmiconfig-typescript-swc-loader/0.0.2:
-    resolution: {integrity: sha512-kWewZRRtQR40bjp63Is8Ys2/2uRK6c2lGfSb6TMgx9ouuz1FT6aOua1+cESHED2kSY9btT5tr54MA2VjWaWUkg==}
-    dependencies:
-      '@swc/core': 1.3.4
-      cosmiconfig: 7.0.1
     dev: true
 
   /cosmiconfig/7.0.1:
@@ -5379,7 +5211,7 @@ packages:
       '@graphql-tools/utils': 8.12.0_graphql@16.6.0
       cosmiconfig: 7.0.1
       cosmiconfig-toml-loader: 1.0.0
-      cosmiconfig-typescript-loader: 4.1.0_23ohybvxtvuxhbgi6sdsdghkbe
+      cosmiconfig-typescript-loader: 4.1.1_23ohybvxtvuxhbgi6sdsdghkbe
       graphql: 16.6.0
       minimatch: 4.2.1
       string-env-interpolation: 1.0.1
