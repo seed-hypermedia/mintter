@@ -2,20 +2,18 @@ package documents
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/mttnet"
-	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
 	"time"
-
-	"golang.org/x/sync/errgroup"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -32,19 +30,15 @@ type Server struct {
 	vcsdb *vcsdb.DB
 	me    *future.ReadOnly[core.Identity]
 	node  *future.ReadOnly[*mttnet.Node]
-	clean *cleanup.Stack
-	g     *errgroup.Group
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, node *future.ReadOnly[*mttnet.Node], clean *cleanup.Stack, g *errgroup.Group) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, node *future.ReadOnly[*mttnet.Node]) *Server {
 	srv := &Server{
 		db:    db,
 		vcsdb: vcsdb.New(db),
 		me:    me,
 		node:  node,
-		clean: clean,
-		g:     g,
 	}
 
 	return srv
@@ -333,6 +327,11 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
+	node, err := api.node.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	conn, release, err := api.vcsdb.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -373,19 +372,11 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	if err != nil {
 		return nil, err
 	}
-	api.g.Go(func() error {
-		ctx, cancel := context.WithCancel(context.Background())
-		api.clean.AddErrFunc(func() error {
-			cancel()
-			return nil
-		})
-		node, err := api.node.Await(ctx)
-		if err != nil {
-			return err
-		}
-		return node.ProvideCID(oid)
-	})
 
+	err = node.ProvideCID(oid)
+	if err != nil {
+		return nil, err
+	}
 	return pub, nil
 }
 
@@ -457,6 +448,8 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	}
 	defer release()
 
+	errNumVersionsNotOne := errors.New("TODO(burdiyan): can only get publication with 1 leaf change,")
+	errNotFoundLocally := errors.New("Document with specified id not found locally")
 	out := &documents.Publication{}
 	if err := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
@@ -474,8 +467,11 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 			version = conn.PublicVersionToLocal(pubVer)
 		}
 
+		if version == nil {
+			return errNotFoundLocally
+		}
 		if len(version) != 1 {
-			return fmt.Errorf("TODO(burdiyan): can only get publication with 1 leaf change, got: %d", len(version))
+			return fmt.Errorf("%w, got: %d", errNumVersionsNotOne, len(version))
 		}
 		out.Document, err = api.getDocument(conn, obj, version)
 		if err != nil {
@@ -484,7 +480,22 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 
 		out.Version = conn.LocalVersionToPublic(version).String()
 		return nil
+
 	}); err != nil {
+		if errors.Is(err, errNumVersionsNotOne) {
+			return nil, err
+		}
+		//make network call
+		n, err2 := api.node.Await(ctx)
+		if err2 != nil {
+			return nil, err
+		}
+		//block, err = n.Bitswap().GetBlock(ctx, oid)
+		_, err2 = n.AddrInfo().MarshalJSON() //TODO: remove
+		if err2 != nil {
+			return nil, err
+		}
+
 		return nil, err
 	}
 

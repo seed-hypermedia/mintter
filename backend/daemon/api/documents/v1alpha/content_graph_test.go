@@ -12,7 +12,7 @@ import (
 func TestBacklinks(t *testing.T) {
 	t.Parallel()
 
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})

@@ -60,6 +60,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&cfg.P2P.NoRelay, "p2p.no-relay", cfg.P2P.NoRelay, "Disable libp2p circuit relay")
 	fs.BoolVar(&cfg.P2P.NoBootstrap, "p2p.no-bootstrap", cfg.P2P.NoBootstrap, "Disable IPFS bootstrapping")
+	fs.StringVar(&cfg.P2P.BootstrapPeer, "p2p.bootstrap-peer", cfg.P2P.BootstrapPeer, "Custom bootstrapping peer address")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoffDelay, "p2p.relay-backoff-delay", cfg.P2P.RelayBackoffDelay, "The time in which the autorelay will prune a relay if it cannot connect to it")
 	fs.DurationVar(&cfg.P2P.StaticRelayRescan, "p2p.static-relay-rescan", cfg.P2P.StaticRelayRescan, "The period for automatic static relay rescanning")
@@ -100,6 +101,7 @@ type P2P struct {
 	Port               int
 	NoRelay            bool
 	NoBootstrap        bool
+	BootstrapPeer      string
 	NoMetrics          bool
 	RelayBackoffDelay  time.Duration
 	StaticRelayRescan  time.Duration
