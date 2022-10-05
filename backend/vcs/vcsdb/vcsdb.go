@@ -19,8 +19,6 @@ import (
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/vcssql"
 	"sort"
-	"strings"
-	"text/template"
 	"time"
 	"unsafe"
 
@@ -400,47 +398,6 @@ var (
 		"JOIN", sqliteschema.DatomAttrs, "ON", sqliteschema.DatomAttrsID, "=", sqliteschema.DatomsAttr, '\n',
 		"WHERE", sqliteschema.DatomsChange, "=", qb.VarCol(sqliteschema.DatomsChange),
 	)
-
-	qIterateObjectDatoms = qb.MakeQuery(sqliteschema.Schema, "iterateObjectDatoms", sqlitegen.QueryKindMany,
-		"WITH RECURSIVE changeset (change) AS", qb.SubQuery(
-			"SELECT value",
-			"FROM json_each(:heads)",
-			"UNION",
-			"SELECT", qb.Results(
-				sqliteschema.ChangeDepsParent,
-			),
-			"FROM", sqliteschema.ChangeDeps,
-			"JOIN changeset ON changeset.change", "=", sqliteschema.ChangeDepsChild,
-		),
-		"SELECT", qb.Results(
-			qb.ResultCol(sqliteschema.DatomsChange),
-			qb.ResultCol(sqliteschema.DatomsSeq),
-			qb.ResultCol(sqliteschema.DatomsEntity),
-			qb.ResultCol(sqliteschema.DatomAttrsAttr),
-			qb.ResultCol(sqliteschema.DatomsValueType),
-			qb.ResultCol(sqliteschema.DatomsValue),
-			qb.ResultCol(sqliteschema.ChangesLamportTime),
-		), '\n',
-		"FROM", sqliteschema.Datoms, '\n',
-		"JOIN changeset ON changeset.change", "=", sqliteschema.DatomsChange, '\n',
-		"JOIN", sqliteschema.DatomAttrs, "ON", sqliteschema.DatomAttrsID, "=", sqliteschema.DatomsAttr, '\n',
-		"JOIN", sqliteschema.Changes, "ON", sqliteschema.ChangesID, "=", sqliteschema.DatomsChange, '\n',
-		"ORDER BY", qb.Enumeration(
-			sqliteschema.ChangesLamportTime,
-			sqliteschema.DatomsChange,
-			sqliteschema.DatomsSeq,
-		),
-	)
-)
-
-const (
-	colChange      = 0
-	colSeq         = 1
-	colEntity      = 2
-	colAttr        = 3
-	colValueType   = 4
-	colValue       = 5
-	colLamportTime = 6
 )
 
 type changeBody struct {
@@ -511,12 +468,14 @@ func init() {
 // SignedChange is a type for Change with signature and signer information.
 type SignedChange = vcs.SignedCBOR[vcs.Change]
 
+// VerifiedChange is a change with a verified signature.
 type VerifiedChange struct {
 	blocks.Block
 
 	Decoded vcs.SignedCBOR[vcs.Change]
 }
 
+// VerifyChangeBlock ensures that a signature of a change IPLD block is valid.
 func VerifyChangeBlock(blk blocks.Block) (vc VerifiedChange, err error) {
 	sc, err := vcs.ParseChangeBlock(blk)
 	if err != nil {
@@ -1053,233 +1012,6 @@ func MakeDatomFactory(change LocalID, lamportTime, seq int) DatomFactory {
 		seq++
 		return NewDatom(change, seq, entity, a, value, lamportTime)
 	}
-}
-
-// DatomRow is an accessor for Datom data using a database row.
-type DatomRow struct {
-	stmt *sqlite.Stmt
-}
-
-// Datom collects the Datom from the database row.
-func (dr DatomRow) Datom() Datom {
-	vt, v := dr.Value()
-
-	return Datom{
-		OpID: OpID{
-			Change:      dr.Change(),
-			Seq:         dr.Seq(),
-			LamportTime: dr.LamportTime(),
-		},
-		Entity:    dr.Entity(),
-		Attr:      dr.Attr(),
-		ValueType: vt,
-		Value:     v,
-	}
-}
-
-// Change returns change column value.
-func (dr DatomRow) Change() LocalID {
-	return LocalID(dr.stmt.ColumnInt(colChange))
-}
-
-// Seq returns seq column value.
-func (dr DatomRow) Seq() int {
-	return dr.stmt.ColumnInt(colSeq)
-}
-
-// Entity returns entity column value.
-func (dr DatomRow) Entity() NodeID {
-	var entity NodeID
-	if dr.stmt.ColumnBytesCopy(colEntity, entity[:]) != nodeIDSize {
-		panic("BUG: unexpected node ID size")
-	}
-	return entity
-}
-
-// Attr returns attr column value.
-func (dr DatomRow) Attr() Attribute {
-	return Attribute(dr.stmt.ColumnText(colAttr))
-}
-
-// ValueType returns value type column value.
-func (dr DatomRow) ValueType() ValueType {
-	return ValueType(dr.stmt.ColumnInt(colValueType))
-}
-
-// Value returns value column value.
-func (dr DatomRow) Value() (ValueType, any) {
-	vt := dr.ValueType()
-
-	switch vt {
-	case ValueTypeRef:
-		var ref NodeID
-		if dr.stmt.ColumnBytesCopy(colValue, ref[:]) != nodeIDSize {
-			panic("BUG: bad node ID size for ref")
-		}
-		return vt, ref
-	case ValueTypeString:
-		v := dr.stmt.ColumnText(colValue)
-		return vt, v
-	case ValueTypeInt:
-		return vt, dr.stmt.ColumnInt(colValue)
-	case ValueTypeBool:
-		v := dr.stmt.ColumnInt(colValue)
-		switch v {
-		case 0:
-			return vt, false
-		case 1:
-			return vt, true
-		default:
-			panic("BUG: invalid bool value type value")
-		}
-	case ValueTypeBytes:
-		return vt, dr.stmt.ColumnBytes(colValue)
-	case ValueTypeCID:
-		c, err := cid.Cast(dr.stmt.ColumnBytes(colValue))
-		if err != nil {
-			panic("BUG: bad CID " + err.Error())
-		}
-		return vt, c
-	default:
-		panic("BUG: invalid value type")
-	}
-}
-
-// LamportTime returns lamport timestamp of the datom's change.
-func (dr DatomRow) LamportTime() int {
-	return dr.stmt.ColumnInt(colLamportTime)
-}
-
-// This is a query template which gets replaces by the actual string inside an init function bellow.
-var forEachDatomRecursiveQuery = `WITH RECURSIVE 
-x (
-	{{.ChangeCol}},
-	{{.SeqCol}},
-	{{.EntityCol}},
-	{{.AttrCol}},
-	{{.ValueTypeCol}},
-	{{.ValueCol}}
-) AS (
-	SELECT
-		{{.ChangeCol}},
-		{{.SeqCol}},
-		{{.EntityCol}},
-		{{.AttrCol}},
-		{{.ValueTypeCol}},
-		{{.ValueCol}}
-	FROM {{.DatomsTable}}
-	WHERE {{.ObjCol}} = :obj
-	AND {{.EntityCol}} = :entity
-
-	UNION
-
-	SELECT
-		{{.DatomsTable}}.{{.ChangeCol}},
-		{{.DatomsTable}}.{{.SeqCol}},
-		{{.DatomsTable}}.{{.EntityCol}},
-		{{.DatomsTable}}.{{.AttrCol}},
-		{{.DatomsTable}}.{{.ValueTypeCol}},
-		{{.DatomsTable}}.{{.ValueCol}}
-	FROM {{.DatomsTable}}, x
-	WHERE {{.DatomsTable}}.{{.ObjCol}} = :obj
-	AND x.{{.ValueTypeCol}} = 0
-	AND x.{{.ValueCol}} = {{.DatomsTable}}.{{.EntityCol}}
-)
-SELECT
-	x.{{.ChangeCol}},
-	x.{{.SeqCol}},
-	x.{{.EntityCol}},
-	{{.AttrsTable}}.{{.AttrsAttrCol}},
-	x.{{.ValueTypeCol}},
-	x.{{.ValueCol}}
-FROM x
-JOIN {{.AttrsTable}} ON {{.AttrsTable}}.{{.AttrsIDCol}} = x.{{.AttrCol}}
-`
-
-func init() {
-	tpl, err := template.New("").Parse(forEachDatomRecursiveQuery)
-	if err != nil {
-		panic(err)
-	}
-
-	var buf strings.Builder
-	if err := tpl.Execute(&buf, datomTemplate); err != nil {
-		panic(err)
-	}
-
-	forEachDatomRecursiveQuery = buf.String()
-}
-
-var datomTemplate = struct {
-	AttrsTable   string
-	AttrsIDCol   string
-	AttrsAttrCol string
-
-	DatomsTable  string
-	ObjCol       string
-	ChangeCol    string
-	SeqCol       string
-	EntityCol    string
-	AttrCol      string
-	ValueTypeCol string
-	ValueCol     string
-}{
-	AttrsTable:   string(sqliteschema.DatomAttrs),
-	AttrsIDCol:   sqliteschema.DatomAttrsID.ShortName(),
-	AttrsAttrCol: sqliteschema.DatomAttrsAttr.ShortName(),
-
-	DatomsTable:  string(sqliteschema.Datoms),
-	ObjCol:       sqliteschema.DatomsPermanode.ShortName(),
-	ChangeCol:    sqliteschema.DatomsChange.ShortName(),
-	SeqCol:       sqliteschema.DatomsSeq.ShortName(),
-	EntityCol:    sqliteschema.DatomsEntity.ShortName(),
-	AttrCol:      sqliteschema.DatomsAttr.ShortName(),
-	ValueTypeCol: sqliteschema.DatomsValueType.ShortName(),
-	ValueCol:     sqliteschema.DatomsValue.ShortName(),
-}
-
-// ForEachDatomRecursive recursively iterates over all datoms starting from a given entity.
-func (conn *Conn) ForEachDatomRecursive(obj LocalID, entity NodeID, fn func(DatomRow) error) {
-	if conn.err != nil {
-		return
-	}
-
-	if err := sqlitex.Exec(conn.conn, forEachDatomRecursiveQuery, handleDatoms(fn), obj, entity[:]); err != nil {
-		conn.err = err
-		return
-	}
-}
-
-// IterateObjectDatoms loads all the datoms for an object at a given version.
-func (conn *Conn) IterateObjectDatoms(obj LocalID, at LocalVersion, fn func(DatomRow) error) {
-	if conn.err != nil {
-		return
-	}
-
-	if len(at) == 0 {
-		return
-	}
-
-	heads, err := json.Marshal(at)
-	if err != nil {
-		conn.err = err
-		return
-	}
-
-	if err := sqlitex.Exec(conn.conn, qIterateObjectDatoms.SQL, handleDatoms(fn), heads); err != nil {
-		conn.err = err
-		return
-	}
-}
-
-// LoadObjectDatoms is the same as IterateObjectDatoms but returns the resulting slice.
-func (conn *Conn) LoadObjectDatoms(obj LocalID, at LocalVersion) []Datom {
-	var out []Datom
-	conn.IterateObjectDatoms(obj, at, func(dr DatomRow) error {
-		out = append(out, dr.Datom())
-		return nil
-	})
-	return out
 }
 
 func handleDatoms(fn func(DatomRow) error) func(*sqlite.Stmt) error {

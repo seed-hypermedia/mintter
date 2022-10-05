@@ -128,10 +128,10 @@ func TestSync(t *testing.T) {
 			version := conn.GetVersion(obj, "main", idLocal)
 
 			var i int
-			conn.IterateObjectDatoms(obj, version, func(dr vcsdb.DatomRow) error {
+			it := conn.QueryObjectDatoms(obj, version)
+			for it.Next() {
 				i++
-				return nil
-			})
+			}
 			require.Equal(t, len(wantDatoms), i, "must get the same number of datoms as in the original object")
 
 			return nil
