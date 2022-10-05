@@ -686,19 +686,18 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.True(t, start.Before(published.Document.CreateTime.AsTime()), "create time must be after test start")
 	require.True(t, start.Before(published.Document.UpdateTime.AsTime()), "update time must be after test start")
 	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
-	cId := cid.Cid{}
-	cId.UnmarshalText([]byte(draft.Id))
+	cID := cid.Cid{}
+	require.NoError(t, cID.UnmarshalText([]byte(draft.Id)))
 
 	// To make sure bob is not directly connected to alice since they are bootstrapped to the same node
 	err = bob.node.MustGet().Libp2p().Host.Network().ClosePeer(alice.node.MustGet().AddrInfo().ID)
 	require.NoError(t, err)
 
 	// Get the Document
-	block, err := bob.node.MustGet().Bitswap().GetBlock(context.Background(), cId)
+	block, err := bob.node.MustGet().Bitswap().GetBlock(context.Background(), cID)
 
 	require.NoError(t, err)
-	require.Equal(t, cId, block.Cid())
-
+	require.Equal(t, cID, block.Cid())
 }
 
 func TestAPIDeletePublication(t *testing.T) {
