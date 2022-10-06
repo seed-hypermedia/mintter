@@ -58,11 +58,11 @@ type Credentials struct {
 // will fail until the initial wallet is successfully initialized.
 func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.ReadOnly[*mttnet.Node], me *future.ReadOnly[core.Identity], mainnet bool) *Service {
 	mintterDomain := "ln.testnet.mintter.com"
-	lnaddressDomain := "testnet.mintter.com"
+	lnaddressDomain := "ln.testnet.mintter.com"
 	if mainnet {
 		//mintterDomain is the domain for internal lndhub calls.
 		mintterDomain = "ln.mintter.com"
-		lnaddressDomain = "mintter.com"
+		lnaddressDomain = "ln.mintter.com"
 	}
 	srv := Service{
 		pool: db,
