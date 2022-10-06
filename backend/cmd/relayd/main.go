@@ -23,15 +23,12 @@ func main() {
 	}
 
 	logging.SetAllLoggers(lvl)
-	cfg, err := relay.LoadConfig(*cfgPath)
+
+	relay, err := relay.NewRelay(log.Desugar(), *cfgPath)
 	if err != nil {
 		panic(err)
 	}
 
-	relay, err := relay.NewRelay(log.Desugar(), cfg)
-	if err != nil {
-		panic(err)
-	}
 	if err := relay.Start(); err != nil {
 		panic(err)
 	}

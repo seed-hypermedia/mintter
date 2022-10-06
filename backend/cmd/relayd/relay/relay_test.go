@@ -26,22 +26,20 @@ func initAndTest(relayVersion uint8) error {
 	// Create the relay
 	log, _ := zap.NewDevelopment(zap.WithCaller(false))
 
-	cfg := defaultConfig()
-	cfg.Network.AnnounceAddrs = []string{
+	h2, _ := NewRelay(log, "")
+	h2.cfg.Network.AnnounceAddrs = []string{
 		"/ip4/0.0.0.0/tcp/4001",
 		"/ip4/0.0.0.0/udp/4001/quic",
 	}
 	if relayVersion == 1 {
-		cfg.RelayV1.Enabled = true
-		cfg.RelayV2.Enabled = false
+		h2.cfg.RelayV1.Enabled = true
+		h2.cfg.RelayV2.Enabled = false
 	} else if relayVersion == 2 {
-		cfg.RelayV1.Enabled = false
-		cfg.RelayV2.Enabled = true
+		h2.cfg.RelayV1.Enabled = false
+		h2.cfg.RelayV2.Enabled = true
 	} else {
 		return fmt.Errorf("only v1 and v2 relay version supported, requested %d version", relayVersion)
 	}
-
-	h2, _ := NewRelay(log, cfg)
 	if err := h2.Start(); err != nil {
 		return err
 	}

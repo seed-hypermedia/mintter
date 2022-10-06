@@ -24,13 +24,15 @@ type Relay struct {
 }
 
 // NewRelay is used to create a new relay based on both
-// configuration cfg and private key priv_k. A logger must be provided
-// as well.
-func NewRelay(log *zap.Logger, cfg Config) (*Relay, error) {
-	return &Relay{
-		log: log,
-		cfg: cfg,
-	}, nil
+// configuration file (json with keys, filters, etc) and a logger.
+func NewRelay(log *zap.Logger, cfgPath string) (*Relay, error) {
+	relay := Relay{log: log}
+	cfg, err := relay.loadConfig(cfgPath)
+	if err != nil {
+		return nil, err
+	}
+	relay.cfg = cfg
+	return &relay, nil
 }
 
 // ID returns the p2p id of the relay in string format.
