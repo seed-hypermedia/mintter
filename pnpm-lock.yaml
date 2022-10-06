@@ -133,7 +133,7 @@ importers:
       slate-hyperscript: https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688
       slate-react: https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688
       tauri-plugin-log-api: github:tauri-apps/tauri-plugin-log#b58475bbc410fa78eb69276c62d0b64c91c07914
-      tauri-plugin-sentry-api: github:JonasKruckenberg/sentry-tauri#1b4be2681f2d666da0aefd2f5c45bb161437b464
+      tauri-plugin-sentry-api: github:JonasKruckenberg/sentry-tauri#df123beb03104b6068b3bdd6fc509e3158f7dd30
       tauri-plugin-store-api: github:tauri-apps/tauri-plugin-store#4326f75446b8b9e0cb9904c65f258b81e23e544e
       tiny-glob: 0.2.9
       trim-trailing-lines: 2.0.0
@@ -227,7 +227,7 @@ importers:
       slate-hyperscript: '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688_slate@0.80.0'
       slate-react: '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688_2hwyydqlvvkbaegiievw3yx7se'
       tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/b58475bbc410fa78eb69276c62d0b64c91c07914
-      tauri-plugin-sentry-api: github.com/JonasKruckenberg/sentry-tauri/1b4be2681f2d666da0aefd2f5c45bb161437b464
+      tauri-plugin-sentry-api: github.com/JonasKruckenberg/sentry-tauri/df123beb03104b6068b3bdd6fc509e3158f7dd30
       tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/4326f75446b8b9e0cb9904c65f258b81e23e544e
       trim-trailing-lines: 2.0.0
       unified: 10.1.2
@@ -8788,12 +8788,13 @@ packages:
       tiny-warning: 1.0.3
     dev: false
 
-  github.com/JonasKruckenberg/sentry-tauri/1b4be2681f2d666da0aefd2f5c45bb161437b464:
-    resolution: {tarball: https://codeload.github.com/JonasKruckenberg/sentry-tauri/tar.gz/1b4be2681f2d666da0aefd2f5c45bb161437b464}
-    name: tauri-plugin-sentry-api
+  github.com/JonasKruckenberg/sentry-tauri/df123beb03104b6068b3bdd6fc509e3158f7dd30:
+    resolution: {tarball: https://codeload.github.com/JonasKruckenberg/sentry-tauri/tar.gz/df123beb03104b6068b3bdd6fc509e3158f7dd30}
+    name: '@timfish/sentry-tauri'
     version: 0.1.0
     dependencies:
       '@sentry/browser': 7.14.2
+      '@tauri-apps/api': 1.1.0
       tslib: 2.4.0
     dev: false
 
