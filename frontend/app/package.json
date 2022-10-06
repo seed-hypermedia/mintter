@@ -110,7 +110,7 @@
   },
   "devDependencies": {
     "@cypress/vite-dev-server": "3.2.0",
-    "@graphql-codegen/cli": "2.13.4",
+    "@graphql-codegen/cli": "2.13.5",
     "@graphql-codegen/typescript": "2.7.3",
     "@happy-dom/global-registrator": "7.0.0",
     "@tanstack/react-query-devtools": "4.10.1",

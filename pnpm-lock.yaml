@@ -35,7 +35,7 @@ importers:
       '@cypress/vite-dev-server': 3.2.0
       '@floating-ui/react-dom': 1.0.0
       '@floating-ui/react-dom-interactions': 0.10.1
-      '@graphql-codegen/cli': 2.13.4
+      '@graphql-codegen/cli': 2.13.5
       '@graphql-codegen/typescript': 2.7.3
       '@happy-dom/global-registrator': 7.0.0
       '@improbable-eng/grpc-web': 0.15.0
@@ -236,7 +236,7 @@ importers:
       xstate: 4.33.6
     devDependencies:
       '@cypress/vite-dev-server': 3.2.0
-      '@graphql-codegen/cli': 2.13.4_k4tgeuxgjoyg5fbcy4uzgsyom4
+      '@graphql-codegen/cli': 2.13.5_k4tgeuxgjoyg5fbcy4uzgsyom4
       '@graphql-codegen/typescript': 2.7.3_graphql@16.6.0
       '@happy-dom/global-registrator': 7.0.0
       '@tanstack/react-query-devtools': 4.10.1_u34amavde33a6d2g2dyykucmvy
@@ -1202,8 +1202,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@graphql-codegen/cli/2.13.4_k4tgeuxgjoyg5fbcy4uzgsyom4:
-    resolution: {integrity: sha512-HhaLumR9/rov2WzDchZmIarD/MteNQOCiwgrOdS+A3WcUYBomeL8t5CoRsarFTc6McKoQIAdAqSl+eiNJ5oxJw==}
+  /@graphql-codegen/cli/2.13.5_k4tgeuxgjoyg5fbcy4uzgsyom4:
+    resolution: {integrity: sha512-qqkQxd+9jBdZDjUSCsH3rTHKmFY9KNQwvwXXEMpRSz+oByYTxGZ0ZE5Lxt0hRXFkGOe8BaVkfPiwa2qSUfA5vw==}
     hasBin: true
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
@@ -1232,7 +1232,7 @@ packages:
       debounce: 1.2.1
       detect-indent: 6.1.0
       graphql: 16.6.0
-      graphql-config: 4.3.5_5eb2zmpkxvcn7g22ykvyaexn24
+      graphql-config: 4.3.6_5eb2zmpkxvcn7g22ykvyaexn24
       inquirer: 8.2.4
       is-glob: 4.0.3
       json-to-pretty-yaml: 1.2.2
@@ -5197,8 +5197,8 @@ packages:
     resolution: {integrity: sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==}
     dev: true
 
-  /graphql-config/4.3.5_5eb2zmpkxvcn7g22ykvyaexn24:
-    resolution: {integrity: sha512-B4jXhHL7j3llCem+ACeo48wvVYhtJxRyt5SfSnvywbRlVYyUzt5ibZV6WJU2Yii2/rcVRIGi7BHDgcAPWdWdJg==}
+  /graphql-config/4.3.6_5eb2zmpkxvcn7g22ykvyaexn24:
+    resolution: {integrity: sha512-i7mAPwc0LAZPnYu2bI8B6yXU5820Wy/ArvmOseDLZIu0OU1UTULEuexHo6ZcHXeT9NvGGaUPQZm8NV3z79YydA==}
     engines: {node: '>= 10.0.0'}
     peerDependencies:
       graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
