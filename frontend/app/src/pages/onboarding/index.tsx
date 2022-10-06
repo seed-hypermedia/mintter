@@ -5,6 +5,7 @@ import {useMemo} from 'react'
 import {createMachine, MachineOptionsFrom} from 'xstate'
 import type {OnboardingStepPropsType} from './common'
 import {Complete} from './complete'
+import {CrashReporting} from './crash-reporting'
 import {ProfileInformation} from './profile-information'
 import {SecurityPack} from './security-pack'
 import {Welcome} from './welcome'
@@ -48,6 +49,12 @@ let onboardingMachine = createMachine(
         entry: 'removeStores',
         on: {
           PREV: 'securityPack',
+          NEXT: 'crashReporting',
+        },
+      },
+      crashReporting: {
+        on: {
+          PREV: 'profileInformation',
           NEXT: 'complete',
         },
       },
@@ -118,6 +125,9 @@ export default function OnboardingPage({
         )}
         {onboardingMachineState.matches('profileInformation') && (
           <ProfileInformation {...onboardingStepProps} />
+        )}
+        {onboardingMachineState.matches('crashReporting') && (
+          <CrashReporting {...onboardingStepProps} />
         )}
         {onboardingMachineState.matches('complete') && <Complete />}
       </Box>
