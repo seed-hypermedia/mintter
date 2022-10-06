@@ -25,8 +25,6 @@ onUpdaterEvent(({error, status}) => {
   debug(`Updater event. error: ${error} status: ${status}`)
 })
 
-throw new Error('failed this')
-
 root.render(
   <StrictMode>
     <RootProvider>
