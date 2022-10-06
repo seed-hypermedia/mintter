@@ -2,11 +2,13 @@ package relay
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"time"
 
 	relayv1 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv1/relay"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
+	"go.uber.org/zap"
 )
 
 // Config holds relay configuration.
@@ -47,7 +49,6 @@ type aclConfig struct {
 
 func defaultConfig() Config {
 	return Config{
-		PrivKey: "08011240a32b1c17b1e07e6ea398abe22aaf59ca4963904e851b847e8f5d900e8e2df8e932e08f2ff4a0477b66630e7fc3d1f543a5a5269395aa14e525213216f9e13e8a",
 		Network: networkConfig{
 			ListenAddrs: []string{
 				"/ip4/0.0.0.0/udp/4001/quic",
@@ -73,12 +74,13 @@ func defaultConfig() Config {
 }
 
 // LoadConfig reads configuration from json file in cfgPath.
-func LoadConfig(cfgPath string) (Config, error) {
+func (r *Relay) loadConfig(cfgPath string) (Config, error) {
 	cfg := defaultConfig()
-
+	const defaultCfgPath = "./relay.conf"
 	if cfgPath != "" {
 		cfgFile, err := os.Open(cfgPath)
 		if err != nil {
+			r.log.Error("Can't open provided conf file", zap.String("Path ", cfgPath))
 			return Config{}, err
 		}
 		defer cfgFile.Close()
@@ -86,6 +88,35 @@ func LoadConfig(cfgPath string) (Config, error) {
 		decoder := json.NewDecoder(cfgFile)
 		err = decoder.Decode(&cfg)
 		if err != nil {
+			r.log.Error("Can't decode provided conf file", zap.String("Path ", cfgPath))
+			return Config{}, err
+		}
+	} else if cfgFile, err := os.Open(defaultCfgPath); err == nil {
+		r.log.Info("Found a default config file. Reading it", zap.String("Path ", defaultCfgPath))
+		defer cfgFile.Close()
+		decoder := json.NewDecoder(cfgFile)
+		err = decoder.Decode(&cfg)
+		if err != nil {
+			r.log.Error("Can't decode default conf file", zap.String("Path ", cfgPath))
+			return Config{}, err
+		}
+	}
+
+	if cfg.PrivKey == "" {
+		key_str, err := NewIdentity()
+		if err != nil {
+			return Config{}, err
+		}
+		cfg.PrivKey = key_str
+		bytes, err := json.MarshalIndent(cfg, "", " ")
+		if err != nil {
+			return Config{}, err
+		}
+		if cfgPath == "" {
+			cfgPath = defaultCfgPath
+		}
+		r.log.Info("New Identity was added to the conf file", zap.String("Path ", cfgPath))
+		if err = ioutil.WriteFile(cfgPath, bytes, 0644); err != nil {
 			return Config{}, err
 		}
 	}
