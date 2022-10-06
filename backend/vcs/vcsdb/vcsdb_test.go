@@ -217,10 +217,9 @@ func TestIterateObjectDatoms(t *testing.T) {
 				aliceLocal := conn.EnsureIdentity(alice.Identity)
 				ver := conn.GetVersion(obj, versions[i], aliceLocal)
 
-				conn.IterateObjectDatoms(obj, ver, func(dr DatomRow) error {
-					got[i] = append(got[i], dr.Datom())
-					return nil
-				})
+				it := conn.QueryObjectDatoms(obj, ver)
+				got[i] = it.Slice()
+				require.NoError(t, it.Err())
 
 				return nil
 			})

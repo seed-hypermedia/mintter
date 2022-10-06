@@ -108,8 +108,8 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.Chan
 	}
 
 	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, mttacc.AttrRegistration)
-	for _, reg := range regs {
-		d := conn.QueryLastValue(obj, cs, reg.Value.(vcsdb.NodeID), mttacc.AttrDevice)
+	for regs.Next() {
+		d := conn.QueryLastValue(obj, cs, regs.Item().ValueAny().(vcsdb.NodeID), mttacc.AttrDevice)
 		if d.IsZero() {
 			panic("BUG: registration without a device")
 		}
@@ -119,6 +119,9 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.Chan
 		acc.Devices[did] = &accounts.Device{
 			PeerId: did,
 		}
+	}
+	if regs.Err() != nil {
+		panic(regs.Err())
 	}
 
 	return acc

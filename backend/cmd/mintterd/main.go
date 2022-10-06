@@ -5,15 +5,19 @@ import (
 	"errors"
 	"flag"
 	"os"
+	"time"
 
 	_ "expvar"
 	_ "net/http/pprof"
 
 	"mintter/backend/config"
 	"mintter/backend/daemon"
+	"mintter/backend/logging"
 
 	"github.com/burdiyan/go/mainutil"
+	"github.com/getsentry/sentry-go"
 	"github.com/peterbourgon/ff/v3"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -52,6 +56,13 @@ func main() {
 			ff.WithAllowMissingConfigFile(false),
 		); err != nil {
 			return err
+		}
+
+		log := logging.New("mintterd", "debug")
+		if err := sentry.Init(sentry.ClientOptions{}); err != nil {
+			log.Debug("SentryInitError", zap.Error(err))
+		} else {
+			defer sentry.Flush(2 * time.Second)
 		}
 
 		app, err := daemon.Load(ctx, cfg)
