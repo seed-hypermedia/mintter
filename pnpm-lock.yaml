@@ -90,7 +90,7 @@ importers:
       google-protobuf: 3.21.0
       graphql: 16.6.0
       graphql-request: 5.0.0
-      happy-dom: 7.0.3
+      happy-dom: 7.0.5
       hast: 1.0.0
       hast-util-has-property: 2.0.0
       hast-util-is-element: 2.1.2
@@ -259,7 +259,7 @@ importers:
       copy-text-to-clipboard: 3.0.1
       covector: 0.7.3
       cypress: 10.9.0
-      happy-dom: 7.0.3
+      happy-dom: 7.0.5
       is-hidden: 2.0.0
       prettier: 2.7.1
       react-async-ssr: 0.7.2_react@18.2.0
@@ -274,7 +274,7 @@ importers:
       vite: 3.1.6_sass@1.55.0
       vite-react-jsx: 1.1.2_vite@3.1.6
       vite-tsconfig-paths: 3.5.1_vite@3.1.6
-      vitest: 0.23.4_kjqk4k6gt32e7f7q5xf3qefliy
+      vitest: 0.23.4_hixtwv5elo5uns67p5drzgb7z4
       ws: 8.9.0
 
 packages:
@@ -1618,7 +1618,7 @@ packages:
   /@happy-dom/global-registrator/7.0.0:
     resolution: {integrity: sha512-FnbO0C2IsKCj5Ql5W6UCJ3xgrNzegoRdvWCrUwe6FqtTi0qC/ezWXchke4PL0RlJ8Rm72VuK3vzGibAPEKRI2g==}
     dependencies:
-      happy-dom: 7.0.3
+      happy-dom: 7.0.5
     transitivePeerDependencies:
       - encoding
     dev: true
@@ -5276,8 +5276,8 @@ packages:
       uglify-js: 3.17.2
     dev: true
 
-  /happy-dom/7.0.3:
-    resolution: {integrity: sha512-RlTpOHF3jdBqV4L99jSic5LTv8bRBQVFXEmo70TsVyCArQsbrwbJNqfvMnxHAKmMhp6ztYBXCKoLd1REZHUBEA==}
+  /happy-dom/7.0.5:
+    resolution: {integrity: sha512-AdNoBKbigCKatz+/ipHnVlX9G8R0Q0sTywiz7dByafsSg3dD/cxp7Os71c5nOnRJSSJC6ZPT/HnFPdclsZrZ3A==}
     dependencies:
       css.escape: 1.5.1
       he: 1.2.0
@@ -8458,7 +8458,7 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.23.4_kjqk4k6gt32e7f7q5xf3qefliy:
+  /vitest/0.23.4_hixtwv5elo5uns67p5drzgb7z4:
     resolution: {integrity: sha512-iukBNWqQAv8EKDBUNntspLp9SfpaVFbmzmM0sNcnTxASQZMzRw3PsM6DMlsHiI+I6GeO5/sYDg3ecpC+SNFLrQ==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
@@ -8485,7 +8485,7 @@ packages:
       '@types/node': 18.7.14
       chai: 4.3.6
       debug: 4.3.4
-      happy-dom: 7.0.3
+      happy-dom: 7.0.5
       local-pkg: 0.4.2
       strip-literal: 0.4.2
       tinybench: 2.1.5
