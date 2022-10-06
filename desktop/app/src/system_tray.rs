@@ -35,6 +35,7 @@ pub fn event_handler<R: Runtime>(app_handle: &AppHandle<R>, event: SystemTrayEve
           app_handle.clone(),
           app_handle.state::<daemon::Connection>(),
           app_handle.state::<daemon::Flags>(),
+          app_handle.state::<sentry::ClientOptions>(),
         );
 
         let status_handle = app_handle.tray_handle().get_item("status");

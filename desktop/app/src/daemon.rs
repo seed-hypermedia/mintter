@@ -1,6 +1,6 @@
 use log::{error, info};
 use ringbuffer::{ConstGenericRingBuffer, RingBufferExt, RingBufferWrite};
-use std::sync::Mutex;
+use std::{collections::HashMap, sync::Mutex};
 use tauri::{
   api::{
     dialog::blocking::confirm,
@@ -16,13 +16,26 @@ pub fn start_daemon<R: Runtime>(
   app_handle: AppHandle<R>,
   connection: tauri::State<Connection>,
   daemon_flags: tauri::State<Flags>,
+  sentry_options: tauri::State<sentry::ClientOptions>,
 ) {
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
 
+  let mut envs = HashMap::new();
+  if let Some(dsn) = &sentry_options.dsn {
+    envs.insert("SENTRY_DSN".to_string(), dsn.to_string().replace(":@", "@"));
+  }
+  if let Some(release) = &sentry_options.release {
+    envs.insert("SENTRY_RELEASE".to_string(), release.to_string());
+  }
+  if let Some(environment) = &sentry_options.environment {
+    envs.insert("SENTRY_ENVIRONMENT".to_string(), environment.to_string());
+  }
+
   let (mut cx, child) = Command::new_sidecar("mintterd")
     .expect("failed to create `mintterd` binary command")
     .args(daemon_flags.inner().0.iter())
+    .envs(envs)
     .spawn()
     .expect("failed to spawn sidecar");
 
@@ -81,11 +94,11 @@ pub fn stop_daemon(connection: tauri::State<'_, Connection>) {
 pub struct Connection(Mutex<Option<Sender<()>>>);
 
 #[derive(Debug, Default)]
-pub struct Flags(pub(crate) Vec<String>);
+pub struct Flags(Vec<String>);
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
   PluginBuilder::new("daemon")
-    .setup(|app_handle| {
+    .setup(move |app_handle| {
       app_handle.manage(Connection::default());
 
       let mut flags: Vec<String> = std::env::args().skip(1).collect();
@@ -94,6 +107,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
       flags.push(format!("--repo-path={}", repo_path.as_path().display()));
 
       app_handle.manage(Flags(flags));
+
       Ok(())
     })
     .build()
