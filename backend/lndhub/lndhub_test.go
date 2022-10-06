@@ -24,7 +24,7 @@ import (
 
 const (
 	mintterDomain   = "ln.testnet.mintter.com"
-	lnaddressDomain = "testnet.mintter.com"
+	lnaddressDomain = "ln.testnet.mintter.com"
 	connectionURL   = "https://" + mintterDomain
 )
 
