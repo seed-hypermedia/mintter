@@ -24,21 +24,51 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+type Provider interface {
+	Await(context.Context) (*mttnet.Node, error)
+	MustGet() *mttnet.Node
+	ProvideCID(cid.Cid) error
+}
+
+type MttProvider struct {
+	n *future.ReadOnly[*mttnet.Node]
+}
+
+func NewProvider(n *future.ReadOnly[*mttnet.Node]) *MttProvider {
+	return &MttProvider{n: n}
+}
+
+func (mp *MttProvider) ProvideCID(c cid.Cid) error {
+	n, ok := mp.n.Get()
+	if !ok {
+		return fmt.Errorf("provider is not ready")
+	}
+
+	return n.ProvideCID(c)
+}
+
+func (mp *MttProvider) Await(ctx context.Context) (*mttnet.Node, error) {
+	return mp.n.Await(ctx)
+}
+func (mp *MttProvider) MustGet() *mttnet.Node {
+	return mp.n.MustGet()
+}
+
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db    *sqlitex.Pool
-	vcsdb *vcsdb.DB
-	me    *future.ReadOnly[core.Identity]
-	node  *future.ReadOnly[*mttnet.Node]
+	db       *sqlitex.Pool
+	vcsdb    *vcsdb.DB
+	me       *future.ReadOnly[core.Identity]
+	provider Provider
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, node *future.ReadOnly[*mttnet.Node]) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, provider Provider) *Server {
 	srv := &Server{
-		db:    db,
-		vcsdb: vcsdb.New(db),
-		me:    me,
-		node:  node,
+		db:       db,
+		vcsdb:    vcsdb.New(db),
+		me:       me,
+		provider: provider,
 	}
 
 	return srv
@@ -327,7 +357,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
-	node, err := api.node.Await(ctx)
+	node, err := api.provider.Await(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -485,12 +515,11 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 			return nil, err
 		}
 		//make network call
-		n, err2 := api.node.Await(ctx)
+		_, err2 := api.provider.Await(ctx)
 		if err2 != nil {
 			return nil, err
 		}
 		//block, err = n.Bitswap().GetBlock(ctx, oid)
-		_, err2 = n.AddrInfo().MarshalJSON() //TODO: remove
 		if err2 != nil {
 			return nil, err
 		}

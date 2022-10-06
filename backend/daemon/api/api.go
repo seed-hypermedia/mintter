@@ -54,7 +54,7 @@ func New(
 	return Server{
 		Accounts:   accounts.NewServer(id, v),
 		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
-		Documents:  documents.NewServer(id, db, node),
+		Documents:  documents.NewServer(id, db, documents.NewProvider(node)),
 		Networking: networking.NewServer(node),
 	}
 }
