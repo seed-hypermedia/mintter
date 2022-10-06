@@ -654,8 +654,8 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	ctx := context.Background()
 	// Carol will be the DHT server
 	carol := newTestDocsAPI(t, "carol", "")
-	carolAddrs := carol.node.MustGet().AddrInfo().Addrs[0].String()
-	carolID := carol.node.MustGet().AddrInfo().ID.String()
+	carolAddrs := carol.provider.MustGet().AddrInfo().Addrs[0].String()
+	carolID := carol.provider.MustGet().AddrInfo().ID.String()
 	alice := newTestDocsAPI(t, "alice", carolAddrs+"/p2p/"+carolID)
 	bob := newTestDocsAPI(t, "bob", carolAddrs+"/p2p/"+carolID)
 
@@ -690,11 +690,11 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.NoError(t, cID.UnmarshalText([]byte(draft.Id)))
 
 	// To make sure bob is not directly connected to alice since they are bootstrapped to the same node
-	err = bob.node.MustGet().Libp2p().Host.Network().ClosePeer(alice.node.MustGet().AddrInfo().ID)
+	err = bob.provider.MustGet().Libp2p().Host.Network().ClosePeer(alice.provider.MustGet().AddrInfo().ID)
 	require.NoError(t, err)
 
 	// Get the Document
-	block, err := bob.node.MustGet().Bitswap().GetBlock(context.Background(), cID)
+	block, err := bob.provider.MustGet().Bitswap().GetBlock(context.Background(), cID)
 
 	require.NoError(t, err)
 	require.Equal(t, cID, block.Cid())
@@ -799,7 +799,7 @@ func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
 
 	mttFut := future.New[*mttnet.Node]()
 
-	srv := NewServer(fut.ReadOnly, db, mttFut.ReadOnly)
+	srv := NewServer(fut.ReadOnly, db, NewProvider(mttFut.ReadOnly))
 
 	hvcs := vcsdb.New(db)
 
