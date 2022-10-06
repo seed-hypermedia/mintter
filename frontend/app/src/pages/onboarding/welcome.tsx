@@ -8,9 +8,9 @@ import {
   OnboardingStepButton,
   OnboardingStepDescription,
   OnboardingStepTitle,
-  ProfileInformationIcon,
-  SecurityPackIcon,
 } from './common'
+import {ProfileInformationIcon} from './profile-information'
+import {SecurityPackIcon} from './security-pack'
 
 export function Welcome({next}: OnboardingStepPropsType) {
   return (
