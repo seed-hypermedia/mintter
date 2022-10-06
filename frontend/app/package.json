@@ -134,7 +134,7 @@
     "covector": "0.7.3",
     "cypress": "10.9.0",
     "graphql": "16.6.0",
-    "happy-dom": "7.0.0",
+    "happy-dom": "7.0.3",
     "is-hidden": "2.0.0",
     "prettier": "2.7.1",
     "react": "18.2.0",
