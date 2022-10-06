@@ -10,15 +10,15 @@ import {useQuery} from '@tanstack/react-query'
 import {useCallback, useState} from 'react'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
-import type {OnboardingStepPropsType} from './common'
 import {
+  IconContainer,
   OnboardingStep,
   OnboardingStepActions,
   OnboardingStepBody,
   OnboardingStepButton,
   OnboardingStepDescription,
+  OnboardingStepPropsType,
   OnboardingStepTitle,
-  SecurityPackIcon,
 } from './common'
 
 export function SecurityPack({
@@ -171,5 +171,27 @@ function MnemonicList({words}: {words: string[]}) {
         </Button>
       </CopyToClipboard>
     </OnboardingStepBody>
+  )
+}
+
+export function SecurityPackIcon() {
+  return (
+    <IconContainer>
+      <svg
+        width="34"
+        height="40"
+        viewBox="0 0 30 36"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M15 34.6666C15 34.6666 28.3334 28 28.3334 18V6.33331L15 1.33331L1.66669 6.33331V18C1.66669 28 15 34.6666 15 34.6666Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </IconContainer>
   )
 }
