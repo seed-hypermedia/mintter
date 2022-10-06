@@ -3850,7 +3850,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-sentry"
 version = "0.1.0"
-source = "git+https://github.com/JonasKruckenberg/sentry-tauri?rev=3873f8640750a7f3ed7d8be3cef95ae3ff7ac8f4#3873f8640750a7f3ed7d8be3cef95ae3ff7ac8f4"
+source = "git+https://github.com/JonasKruckenberg/sentry-tauri?rev=1b4be2681f2d666da0aefd2f5c45bb161437b464#1b4be2681f2d666da0aefd2f5c45bb161437b464"
 dependencies = [
  "sentry",
  "sentry-rust-minidump",

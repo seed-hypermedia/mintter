@@ -98,7 +98,7 @@
     "slate-hyperscript": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?4a136b50302aa869e8a8af548400597f5c6b6688",
     "slate-react": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?4a136b50302aa869e8a8af548400597f5c6b6688",
     "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#b58475bbc410fa78eb69276c62d0b64c91c07914",
-    "tauri-plugin-sentry-api": "github:JonasKruckenberg/sentry-tauri#6a10b43d4fdf200fb1fc0dacd5638b70e6757f1a",
+    "tauri-plugin-sentry-api": "github:JonasKruckenberg/sentry-tauri#1b4be2681f2d666da0aefd2f5c45bb161437b464",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#4326f75446b8b9e0cb9904c65f258b81e23e544e",
     "trim-trailing-lines": "2.0.0",
     "unified": "10.1.2",
