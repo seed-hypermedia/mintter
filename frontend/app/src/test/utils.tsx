@@ -9,13 +9,13 @@ import {
   ListPublicationsResponse,
   Publication,
 } from '@app/client'
-import {BlockToolsProvider} from '@app/editor/block-tools-context'
-import {blockToolsMachine} from '@app/editor/block-tools-machine'
-import {HoverProvider} from '@app/editor/hover-context'
-import {createHoverService} from '@app/editor/hover-machine'
+import {BlockHighLighter} from '@app/editor/block-highlighter'
+import {Blocktools} from '@app/editor/blocktools'
 import {queryKeys} from '@app/hooks'
 import {MainProvider} from '@app/main-context'
 import {createMainPageService} from '@app/main-machine'
+import {MouseProvider} from '@app/mouse-context'
+import {mouseMachine} from '@app/mouse-machine'
 import {createThemeService, ThemeProvider} from '@app/theme'
 import {
   BookmarksProvider,
@@ -195,7 +195,6 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 export function TestProvider({client, children}: TestProviderProps) {
   let authService = useInterpret(() => createAuthService(client))
   let themeService = useInterpret(() => createThemeService())
-  let hoverService = useInterpret(() => createHoverService())
   let bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   let mainService = useInterpret(() =>
     createMainPageService({client}).withContext({
@@ -220,14 +219,12 @@ export function TestProvider({client, children}: TestProviderProps) {
         <ThemeProvider value={themeService}>
           <AuthProvider value={authService}>
             <MainProvider value={mainService}>
-              <HoverProvider value={hoverService}>
-                <BookmarksProvider value={bookmarksService}>
-                  {
-                    // TODO: @jonas why SearchTermProvider breaks tests?
-                  }
-                  <TooltipProvider>{children}</TooltipProvider>
-                </BookmarksProvider>
-              </HoverProvider>
+              <BookmarksProvider value={bookmarksService}>
+                {
+                  // TODO: @jonas why SearchTermProvider breaks tests?
+                }
+                <TooltipProvider>{children}</TooltipProvider>
+              </BookmarksProvider>
               {/* // <Toaster position="bottom-right" /> */}
             </MainProvider>
           </AuthProvider>
@@ -248,12 +245,16 @@ export type TestProviderProps = CustomMountOptions & {
   client: QueryClient
 }
 
-export function TestPublicationProvider({children}: {children: JSX.Element[]}) {
-  const blockToolsService = useInterpret(() => blockToolsMachine)
+export function TestPublicationProvider({children}) {
+  let mouseService = useInterpret(() => mouseMachine)
   return (
-    <BlockToolsProvider value={blockToolsService}>
-      {children}
-    </BlockToolsProvider>
+    <div>
+      <MouseProvider value={mouseService}>
+        <BlockHighLighter>
+          <Blocktools>{children}</Blocktools>
+        </BlockHighLighter>
+      </MouseProvider>
+    </div>
   )
 }
 

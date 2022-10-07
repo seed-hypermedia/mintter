@@ -58,11 +58,11 @@ export const Dropdown = {
 }
 
 export var ElementDropdown = styled('button', {
-  userSelect: 'none',
   all: 'unset',
+  zIndex: 10,
   padding: 0,
-  blockSize: '1rem',
-  inlineSize: '1rem',
+  blockSize: '1.2rem',
+  inlineSize: '1.2rem',
   borderRadius: '$2',
   display: 'flex',
   alignItems: 'center',

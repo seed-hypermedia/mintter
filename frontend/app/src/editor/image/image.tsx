@@ -98,7 +98,7 @@ function Image({element, attributes, children}: RenderElementProps) {
   const [state] = useActor(imgService)
 
   return (
-    <Box {...attributes}>
+    <Box css={{zIndex: '$max'}} {...attributes}>
       {children}
       {state.matches('image') ? (
         <ImageComponent service={imgService} element={element as ImageType} />

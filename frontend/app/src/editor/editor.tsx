@@ -1,4 +1,4 @@
-import {useHover} from '@app/editor/hover-context'
+import {EditorHoveringToolbar} from '@app/editor/hovering-toolbar'
 import {
   blockquote,
   ChildrenOf,
@@ -13,13 +13,12 @@ import {
   statement,
   ul,
 } from '@app/mttast'
-import {css} from '@app/stitches.config'
-import {Box} from '@components/box'
+import {flow} from '@app/stitches.config'
+import {classnames} from '@app/utils/classnames'
 import {Event, listen} from '@tauri-apps/api/event'
 import {PropsWithChildren, useEffect, useMemo} from 'react'
 import {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'
-import {EditorHoveringToolbar} from './hovering-toolbar'
 import {
   buildDecorateHook,
   buildEditorHook,
@@ -29,6 +28,7 @@ import {
   EditorMode,
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
+import './styles/editor.scss'
 import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
 
@@ -41,33 +41,6 @@ interface EditorProps {
   as?: unknown
   className?: string
 }
-
-const editorWrapperStyles = css({
-  position: 'relative',
-  // userSelect: 'none',
-  '& [data-slate-placeholder="true"]': {
-    // this is needed to make sure the placeholder does not wrap the text.
-    whiteSpace: 'nowrap',
-  },
-  variants: {
-    mode: {
-      [EditorMode.Discussion]: {
-        fontSize: '0.9rem',
-      },
-      [EditorMode.Draft]: {
-        display: 'block',
-        paddingBlockStart: '1rem',
-        marginInlineStart: '1rem',
-      },
-      [EditorMode.Embed]: {},
-      [EditorMode.Mention]: {},
-      [EditorMode.Publication]: {
-        display: 'block',
-        paddingBlockStart: '1rem',
-      },
-    },
-  },
-})
 
 export function Editor({
   value,
@@ -98,7 +71,6 @@ export function Editor({
     () => buildEventHandlerHooks(plugins, _editor),
     [plugins, _editor],
   )
-  const hoverService = useHover()
 
   useEffect(() => {
     let isSubscribed = true
@@ -196,7 +168,7 @@ export function Editor({
 
   if (mode == EditorMode.Draft) {
     return (
-      <Box className={editorWrapperStyles({mode})} id="editor">
+      <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
         <Slate
           editor={_editor}
           value={value as Array<Descendant>}
@@ -216,16 +188,15 @@ export function Editor({
           />
           {children}
         </Slate>
-      </Box>
+      </div>
     )
   }
 
   return (
-    <Box
-      as="span"
-      className={editorWrapperStyles({mode})}
+    <span
+      className={`${classnames('editor', mode)} ${flow()}`}
       id="editor"
-      onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
+      // onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
     >
       <Slate
         editor={_editor}
@@ -238,7 +209,6 @@ export function Editor({
         <Editable
           as={as}
           data-testid="editor"
-          style={{display: 'inline'}}
           readOnly
           renderElement={renderElement}
           renderLeaf={renderLeaf}
@@ -246,6 +216,6 @@ export function Editor({
           {...eventHandlers}
         />
       </Slate>
-    </Box>
+    </span>
   )
 }

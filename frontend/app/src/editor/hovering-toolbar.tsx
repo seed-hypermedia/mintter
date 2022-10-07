@@ -18,7 +18,7 @@ import {isFormatActive, toggleFormat} from './utils'
 
 export function EditorHoveringToolbar() {
   const editor = useSlate()
-  const [selectionColor, setSelectionColor] = useState<string>()
+  const [selectionColor, setSelectionColor] = useState<string>('')
 
   useEffect(() => {
     const nodes = Editor.nodes(editor, {

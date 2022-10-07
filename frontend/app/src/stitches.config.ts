@@ -113,13 +113,14 @@ const stitches = createStitches({
       UI Symbol`,
     },
     fontSizes: {
-      1: '12px',
-      2: '14px',
-      3: '16px',
-      4: '20px',
-      5: '24px',
-      6: '32px',
-      7: '48px',
+      1: '0.75rem',
+      2: '0.85rem',
+      3: '1rem',
+      4: '1.33rem',
+      5: '1.77rem',
+      6: '2.36rem',
+      7: '3.15rem',
+      8: '4.2rem',
     },
     fontWeights: {
       regular: 400,
@@ -128,8 +129,8 @@ const stitches = createStitches({
     },
     letterSpacings: {},
     lineHeights: {
-      1: '1.2',
-      2: '1.4',
+      1: '1.1',
+      2: '1.3',
       3: '1.5',
       4: '2',
     },
@@ -398,55 +399,102 @@ export const globalStyles = globalCss({
     '--library-size': '232px',
     '--tools-x': '-999px',
     '--tools-y': '-999px',
+    '--block-h': '0',
   },
   '*': {
     boxSizing: 'border-box',
-    margin: 0,
+    // margin: 0,
   },
   html: {
     blockSize: '100%',
   },
   body: {
-    minBlockSize: '100%',
     backgroundColor: '$base-background-subtle',
     color: '$base-text-high',
-    position: 'fixed',
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    // extra
+    lineHeight: '$3',
     fontFamily: '$base',
     fontSize: '100%',
-    margin: 0,
-    transition: 'background-color color 0.25s ease',
+    textRendering: 'optimizeSpeed',
     '-webkit-font-smoothing': 'antialiased',
     '-moz-osx-font-smoothing': 'grayscale',
-    textRendering: 'optimizeSpeed',
   },
-  'input, button, textarea, select': {
-    font: 'inherit',
+  'a:not([class])': {
+    color: 'currentColor',
+  },
+  'main:focus': {
+    outline: 'none',
+  },
+  '[href]:hover': {
+    cursor: 'pointer',
+    textDecoration: 'underline',
   },
   'p, h1, h2, h3, h4, h5, h6': {
     overflowWrap: 'break-word',
   },
-  p: {
-    hyphens: 'auto',
-    fontFamily: '$alt',
+  'h1, h2, h3, h4': {
+    fontFamily: '$base',
+    lineHeight: '$2',
   },
-  'img, picture, video, canvas': {
-    display: 'block',
-    maxInlineSize: '$full',
+  'h1, h2': {
+    fontWeight: '$bold',
+  },
+  h1: {
+    fontSize: '$5',
+    '@bp1': {
+      fontSize: '$6',
+    },
+  },
+  h2: {
+    fontSize: '$4',
+    '@bp1': {
+      fontSize: '$5',
+    },
+  },
+  'h3,h4,h5,h6': {fontSize: '$4', marginBlock: '1rem'},
+  'input, button, textarea, select': {
+    font: 'inherit',
+  },
+  img: {
+    maxWidth: 'min(55rem, 100%)', // review
+  },
+  figcaption: {
+    fontSize: '$1',
+    fontStyle: 'italic',
+    marginTop: '$5',
+    '@bp1': {
+      fontSize: '$2',
+    },
+  },
+  p: {
+    fontFamily: '$alt',
+    fontSize: '$3',
+    '@bp1': {
+      // fontSize: '$4',
+    },
+  },
+  blockquote: {
+    marginInlineStart: 0,
+    paddingInlineStart: '$5',
+    borderInlineStart: '3px solid $colors$primary-active',
+    fontStyle: 'italic',
+    '& p': {
+      fontSize: '$4',
+      maxWidth: '40ch',
+      color: '$base-text-low',
+    },
+  },
+  pre: {
+    // maxWidth: '80ch',
+    backgroundColor: '$base-background-normal',
+    paddingInlineStart: '2rem',
+    paddingBlock: '$5',
+    marginInlineEnd: '$4',
+    fontSize: '$4',
+    whiteSpace: 'pre',
   },
   '::selection': {
-    backgroundColor: 'lightblue',
-  },
-  'h1, h2, h3': {
-    fontWeight: '$medium',
-    fontFamily: '$base',
-  },
-  ul: {
-    margin: 0,
-    padding: 0,
+    backgroundColor: '$primary-active',
+    color: 'white',
   },
   '@dark': {
     // notice the `media` definition on the stitches.config.ts file
@@ -464,5 +512,11 @@ export const globalStyles = globalCss({
         }
       }, {}),
     },
+  },
+})
+
+export const flow = css({
+  '& li > * + li *': {
+    marginTop: 'var(--flow-space, 1em)',
   },
 })

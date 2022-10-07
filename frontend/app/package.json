@@ -91,7 +91,7 @@
     "rehype-parse": "8.0.4",
     "rehype-sanitize": "5.0.1",
     "rehype-stringify": "9.0.3",
-    "shiki": "0.11.1",
+    "shiki": "0.10.1",
     "show-keys": "1.1.2",
     "slate": "https://gitpkg.now.sh/mintterteam/slate/packages/slate?4a136b50302aa869e8a8af548400597f5c6b6688",
     "slate-history": "https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?4a136b50302aa869e8a8af548400597f5c6b6688",

@@ -1,5 +1,3 @@
-import {HoverProvider} from '@app/editor/hover-context'
-import {createHoverService} from '@app/editor/hover-machine'
 import {MainProvider} from '@app/main-context'
 import {createMainPageService} from '@app/main-machine'
 import {
@@ -22,20 +20,21 @@ function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
   const client = useQueryClient()
   const mainService = useInterpret(() => createMainPageService({client}))
   const bookmarksService = useInterpret(() => createBookmarkListMachine(client))
-  const hoverService = useInterpret(() => createHoverService())
+
   const [search, setSearch] = useState('')
 
   return (
     <MainProvider value={mainService}>
-      <HoverProvider value={hoverService}>
-        <BookmarksProvider value={bookmarksService}>
-          <FindContextProvider value={{search, setSearch}}>
-            <TooltipProvider>{children}</TooltipProvider>
-            <ReactQueryDevtools />
-            <Toaster position="bottom-right" />
-          </FindContextProvider>
-        </BookmarksProvider>
-      </HoverProvider>
+      <BookmarksProvider value={bookmarksService}>
+        {
+          // TODO: @jonas check types on SearchTearmProvider
+        }
+        <FindContextProvider value={{search, setSearch}}>
+          <TooltipProvider>{children}</TooltipProvider>
+          <ReactQueryDevtools />
+          <Toaster position="bottom-right" />
+        </FindContextProvider>
+      </BookmarksProvider>
     </MainProvider>
   )
 }

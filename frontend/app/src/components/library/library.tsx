@@ -9,6 +9,7 @@ import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
 import {Tooltip} from '@components/tooltip'
 import {useSelector} from '@xstate/react'
+import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
@@ -57,6 +58,7 @@ export function Library({
 
   async function handleSync() {
     await forceSync()
+    toast.success('reload sync successful!')
   }
 
   return (

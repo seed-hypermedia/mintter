@@ -1,19 +1,14 @@
-import {useBlockTools} from '@app/editor/block-tools-context'
 import {Editor} from '@app/editor/editor'
-import {useHover} from '@app/editor/hover-context'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {embedStyles} from '@app/editor/styles'
 import {MainService, useMain} from '@app/main-context'
 import {PublicationRef} from '@app/main-machine'
+import {useMouse} from '@app/mouse-context'
 import {Embed as EmbedType, FlowContent, isEmbed} from '@app/mttast'
 import {createPublicationMachine} from '@app/publication-machine'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {error} from '@app/utils/logger'
 import {getRefFromParams} from '@app/utils/machine-utils'
-import {Box} from '@components/box'
 import {useMachine} from '@xstate/react'
-import {useEffect} from 'react'
-import {RenderElementProps, useFocused, useSelected} from 'slate-react'
+import {RenderElementProps} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {ActorRefFrom, assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
@@ -62,21 +57,14 @@ function Embed({
   mode,
 }: RenderElementProps & {
   mode: EditorMode
-  element: EmbedType
 }) {
   const mainService = useMain()
-  let btService = useBlockTools()
+  const mouseService = useMouse()
   let [docId, version, blockId] = getIdsfromUrl(element.url)
-  let [state] = useMachine(() => createEmbedMachine(element.url, mainService))
-  let hoverService = useHover()
-  let selected = useSelected()
-  let focused = useFocused()
 
-  useEffect(() => {
-    if (attributes.ref.current) {
-      btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
-    }
-  }, [btService, attributes.ref])
+  let [state] = useMachine(() => createEmbedMachine(element.url, mainService))
+  // let selected = useSelected()
+  // let focused = useFocused()
 
   async function onOpenInNewWindow() {
     if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
@@ -103,32 +91,23 @@ function Embed({
     )
   }
 
+  function mouseEnter() {
+    mouseService.send({type: 'HIGHLIGHT.ENTER', ref: element.url})
+  }
+  function mouseLeave() {
+    mouseService.send('HIGHLIGHT.LEAVE')
+  }
+
   return (
-    <Box
-      as="q"
+    <q
       cite={element.url}
       {...attributes}
       contentEditable={false}
-      className={embedStyles({
-        highlight: document.body.dataset.hoverBlock == blockId,
-        selected: selected && focused,
-      })}
-      data-element-type="embed"
-      data-block-id={blockId}
-      data-parent-block={blockId}
-      onMouseEnter={() => {
-        hoverService.send({type: 'MOUSE_ENTER', ref: `${docId}/${blockId}`})
-      }}
-      // onMouseLeave={() => {
-      //   hoverService.send({type: 'MOUSE_LEAVE', ref: `${docId}/${blockId}`})
-      // }}
-      css={{
-        [`[data-hover-ref="${docId}/${blockId}"] &:before`]: {
-          backgroundColor: '$primary-component-bg-active',
-          opacity: 1,
-        },
-      }}
       onClick={onOpenInNewWindow}
+      onMouseEnter={mouseEnter}
+      onMouseLeave={mouseLeave}
+      data-highlight={element.url}
+      // {...embedProps?.elementProps}
     >
       <Editor
         as="span"
@@ -139,7 +118,7 @@ function Embed({
         }}
       />
       {children}
-    </Box>
+    </q>
   )
 }
 
