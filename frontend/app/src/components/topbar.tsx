@@ -270,7 +270,7 @@ function PublicationActions({
           },
         }}
       >
-        <Dropdown.Root>
+        <Dropdown.Root modal={false}>
           <Dropdown.Trigger asChild>
             <TopbarButton css={{padding: '0.3rem'}}>
               <Icon size="1" name="MoreHorizontal" color="muted" />
@@ -293,7 +293,7 @@ function PublicationActions({
           </Dropdown.Portal>
         </Dropdown.Root>
       </Box>
-      <Dropdown.Root>
+      <Dropdown.Root modal={false}>
         <Tooltip content="Edit Actions">
           <Dropdown.Trigger asChild>
             <TopbarButton
