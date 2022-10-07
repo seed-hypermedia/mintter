@@ -91,7 +91,7 @@ importers:
       google-protobuf: 3.21.0
       graphql: 16.6.0
       graphql-request: 5.0.0
-      happy-dom: 7.2.0
+      happy-dom: 7.3.0
       hast: 1.0.0
       hast-util-has-property: 2.0.0
       hast-util-is-element: 2.1.2
@@ -263,7 +263,7 @@ importers:
       copy-text-to-clipboard: 3.0.1
       covector: 0.7.3
       cypress: 10.9.0
-      happy-dom: 7.2.0
+      happy-dom: 7.3.0
       is-hidden: 2.0.0
       prettier: 2.7.1
       react-async-ssr: 0.7.2_react@18.2.0
@@ -278,7 +278,7 @@ importers:
       vite: 3.1.6_sass@1.55.0
       vite-react-jsx: 1.1.2_vite@3.1.6
       vite-tsconfig-paths: 3.5.1_vite@3.1.6
-      vitest: 0.23.4_xmgogdrf5b2g4ir7qsrs6p2d7m
+      vitest: 0.23.4_5456zc56awlvzlawrbx7lytcki
       ws: 8.9.0
 
 packages:
@@ -1622,7 +1622,7 @@ packages:
   /@happy-dom/global-registrator/7.2.0:
     resolution: {integrity: sha512-rhUx5E4JstrFrmcFBL/DRhsJCMQoa55LFdRuiMOhB0xBw6DDGmpAdaH29GBTy5ErjB6NYsSe0/xRBqBTsAAdWw==}
     dependencies:
-      happy-dom: 7.2.0
+      happy-dom: 7.3.0
     transitivePeerDependencies:
       - encoding
     dev: true
@@ -2448,7 +2448,6 @@ packages:
 
   /@tanstack/query-core/4.10.1:
     resolution: {integrity: sha512-UZRYzjgQSfYhQ+cJX0CspAbzutf8p93gR1xFjQuH3OYcb/7t3WnHkdb/qC9mbqrfWXN/JAbBTJlTU/XQHc5HbA==}
-    dev: false
 
   /@tanstack/react-query-devtools/4.10.1_u34amavde33a6d2g2dyykucmvy:
     resolution: {integrity: sha512-aPsFBr9zbylnQxQoCNzPF1teN+NVGdeU1xQO515FM3gq6uISUWbqirVj/mE6HHJJpH/zi0j6HD1StD5h1XdNmg==}
@@ -2481,7 +2480,6 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
-    dev: false
 
   /@tauri-apps/api/1.1.0:
     resolution: {integrity: sha512-n13pIqdPd3KtaMmmAcrU7BTfdMtIlGNnfZD0dNX8L4p8dgmuNyikm6JAA+yCpl9gqq6I8x5cV2Y0muqdgD0cWw==}
@@ -2657,7 +2655,6 @@ packages:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
       csstype: 3.1.1
-    dev: true
 
   /@types/scheduler/0.16.2:
     resolution: {integrity: sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==}
@@ -5262,7 +5259,6 @@ packages:
   /graphql/16.6.0:
     resolution: {integrity: sha512-KPIBPDlW7NxrbT/eh4qPXz5FiFdL5UbaA0XUNz2Rp3Z3hqBSkbj0GVjwFDztsWVauZUWsbKHgMg++sk8UX0bkw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
-    dev: false
 
   /handlebars/4.7.7:
     resolution: {integrity: sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==}
@@ -5277,8 +5273,8 @@ packages:
       uglify-js: 3.17.3
     dev: true
 
-  /happy-dom/7.2.0:
-    resolution: {integrity: sha512-xwJ/zFQx0/RNdW9FW1b5QJz4dCfo2fQlnYoxsDdwbh5ttIyTSDmdtnGPTbliTBfCvtUN71O3sVIvxf5YYWln0g==}
+  /happy-dom/7.3.0:
+    resolution: {integrity: sha512-KJDR6CJ2S9MeOznLUU4iF98sh2yBmwEOTFcJHHZvNCYo8PsmgeeECZqUOr33VmNdSYBO+X9hSOTjeT533hwSXA==}
     dependencies:
       css.escape: 1.5.1
       he: 1.2.0
@@ -7008,7 +7004,6 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
-    dev: false
 
   /react-error-boundary/3.1.4_react@18.2.0:
     resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
@@ -7171,7 +7166,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
-    dev: false
 
   /readable-stream/2.3.7:
     resolution: {integrity: sha512-Ebho8K4jIbHAxnuxi7o42OrZgF/ZTNcsZj6nRKyUmkhLFq8CHItp/fy6hQZuZmP/n3yZ9VBUbp4zz/mX8hmYPw==}
@@ -7477,7 +7471,6 @@ packages:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
     dependencies:
       loose-envify: 1.4.0
-    dev: false
 
   /scroll-into-view-if-needed/2.2.29:
     resolution: {integrity: sha512-hxpAR6AN+Gh53AdAimHM6C8oTN1ppwVZITihix+WqalywBeFcQ6LdQP5ABNl26nX8GTEL7VT+b8lKpdqq65wXg==}
@@ -8158,6 +8151,7 @@ packages:
   /unified/9.2.2:
     resolution: {integrity: sha512-Sg7j110mtefBD+qunSLO1lqOEKdrwBFBrR6Qd8f4uwkhWNlbkaqwHse6e7QvD3AP/MNoJdEDLaf8OxYyoWgorQ==}
     dependencies:
+      '@types/unist': 2.0.6
       bail: 1.0.5
       extend: 3.0.2
       is-buffer: 2.0.5
@@ -8471,7 +8465,7 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.23.4_xmgogdrf5b2g4ir7qsrs6p2d7m:
+  /vitest/0.23.4_5456zc56awlvzlawrbx7lytcki:
     resolution: {integrity: sha512-iukBNWqQAv8EKDBUNntspLp9SfpaVFbmzmM0sNcnTxASQZMzRw3PsM6DMlsHiI+I6GeO5/sYDg3ecpC+SNFLrQ==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
@@ -8498,7 +8492,7 @@ packages:
       '@types/node': 18.7.14
       chai: 4.3.6
       debug: 4.3.4
-      happy-dom: 7.2.0
+      happy-dom: 7.3.0
       local-pkg: 0.4.2
       strip-literal: 0.4.2
       tinybench: 2.3.0
