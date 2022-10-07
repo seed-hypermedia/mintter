@@ -736,7 +736,7 @@ describe('Transclusions', () => {
           },
         })
       })
-      .paste({pastePayload: 'mtt://d1/v1/b1', pasteType: 'text'})
+      .paste({pastePayload: 'mintter://d1/v1/b1', pasteType: 'text'})
       .contains(blockContent)
   })
 })

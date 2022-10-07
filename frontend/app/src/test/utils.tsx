@@ -17,10 +17,6 @@ import {createMainPageService} from '@app/main-machine'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {createThemeService, ThemeProvider} from '@app/theme'
-import {
-  BookmarksProvider,
-  createBookmarkListMachine,
-} from '@components/bookmarks'
 import {libraryMachine} from '@components/library/library-machine'
 import {TooltipProvider} from '@components/tooltip'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
@@ -36,7 +32,6 @@ type TestMockData = {
   publication?: Publication
   draftList?: Array<Document>
   publicationList?: Array<Publication>
-  bookmarks?: Array<string>
   info?: Partial<Info>
   authors?: Array<Partial<Account>>
   url?: string
@@ -180,13 +175,6 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     values.publicationList = mocks.publicationList
   }
 
-  mocks.bookmarks = mocks.bookmarks || []
-  client.setQueryData([queryKeys.GET_BOOKMARK_LIST], mocks.bookmarks)
-
-  if (mocks.bookmarks) {
-    values.bookmarks = mocks.bookmarks
-  }
-
   client.invalidateQueries = cy.spy()
 
   return values
@@ -195,7 +183,6 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 export function TestProvider({client, children}: TestProviderProps) {
   let authService = useInterpret(() => createAuthService(client))
   let themeService = useInterpret(() => createThemeService())
-  let bookmarksService = useInterpret(() => createBookmarkListMachine(client))
   let mainService = useInterpret(() =>
     createMainPageService({client}).withContext({
       activity: spawn(activityMachine, 'activity'),
@@ -219,12 +206,11 @@ export function TestProvider({client, children}: TestProviderProps) {
         <ThemeProvider value={themeService}>
           <AuthProvider value={authService}>
             <MainProvider value={mainService}>
-              <BookmarksProvider value={bookmarksService}>
-                {
-                  // TODO: @jonas why SearchTermProvider breaks tests?
-                }
-                <TooltipProvider>{children}</TooltipProvider>
-              </BookmarksProvider>
+              {
+                // TODO: @jonas why SearchTermProvider breaks tests?
+              }
+              <TooltipProvider>{children}</TooltipProvider>
+
               {/* // <Toaster position="bottom-right" /> */}
             </MainProvider>
           </AuthProvider>

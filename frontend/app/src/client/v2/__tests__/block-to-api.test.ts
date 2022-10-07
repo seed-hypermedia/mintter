@@ -387,7 +387,7 @@ describe('Transform: blockToApi', () => {
 
   test('Embeds: simple', () => {
     let input: Statement = statement({id: 'blockId'}, [
-      paragraph([embed({url: 'mtt://doc1/block1'}, [text('')])]),
+      paragraph([embed({url: 'mintter://doc1/block1'}, [text('')])]),
     ])
 
     let output = {
@@ -400,7 +400,7 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc1/block1'},
+          attributes: {url: 'mintter://doc1/block1'},
           starts: [0],
           ends: [1],
         },
@@ -413,8 +413,8 @@ describe('Transform: blockToApi', () => {
   test('Embeds: multiple embeds together', () => {
     let input: Statement = statement({id: 'blockId'}, [
       paragraph([
-        embed({url: 'mtt://doc1/block1'}, [text('')]),
-        embed({url: 'mtt://doc2/block2'}, [text('')]),
+        embed({url: 'mintter://doc1/block1'}, [text('')]),
+        embed({url: 'mintter://doc2/block2'}, [text('')]),
       ]),
     ])
 
@@ -428,13 +428,13 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc1/block1'},
+          attributes: {url: 'mintter://doc1/block1'},
           starts: [0],
           ends: [1],
         },
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc2/block2'},
+          attributes: {url: 'mintter://doc2/block2'},
           starts: [1],
           ends: [2],
         },
@@ -448,10 +448,10 @@ describe('Transform: blockToApi', () => {
     let input: Statement = statement({id: 'blockId'}, [
       paragraph([
         text('This '),
-        embed({url: 'mtt://doc1/block1'}, [text('')]),
+        embed({url: 'mintter://doc1/block1'}, [text('')]),
         text(' and also this are very '),
         text('important: ', {strong: true}),
-        embed({url: 'mtt://doc2/block2'}, [text('')]),
+        embed({url: 'mintter://doc2/block2'}, [text('')]),
       ]),
     ])
 
@@ -465,14 +465,14 @@ describe('Transform: blockToApi', () => {
       annotations: [
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc1/block1'},
+          attributes: {url: 'mintter://doc1/block1'},
           starts: [5],
           ends: [6],
         },
         {starts: [30], ends: [41], type: 'strong', attributes: {}},
         {
           type: 'embed',
-          attributes: {url: 'mtt://doc2/block2'},
+          attributes: {url: 'mintter://doc2/block2'},
           starts: [41],
           ends: [42],
         },

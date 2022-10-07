@@ -70,7 +70,7 @@ export const deleteFileMachine = createMachine(
               },
               onDone: {
                 target: 'deleted',
-                actions: ['persistDelete', 'removeFileFromBookmarks'],
+                actions: ['persistDelete'],
               },
             },
           },

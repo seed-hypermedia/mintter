@@ -1,19 +1,14 @@
-import {forceSync} from '@app/client/daemon'
 import {useIsEditing, useMain} from '@app/main-context'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {libraryMachine} from '@components/library/library-machine'
 import {RecentsSection} from '@components/library/section-recents'
 import {Text} from '@components/text'
-import {Tooltip} from '@components/tooltip'
 import {useSelector} from '@xstate/react'
-import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import {ScrollArea} from '../scroll-area'
 import {Separator} from '../separator'
-import {BookmarksSection} from './section-bookmarks'
 import {ContactsSection} from './section-contacts'
 
 let libraryStyle = css({
@@ -56,11 +51,6 @@ export function Library({
   const isOpen = useSelector(service, (state) => state.matches('opened'))
   let isEditing = useIsEditing()
 
-  async function handleSync() {
-    await forceSync()
-    toast.success('reload sync successful!')
-  }
-
   return (
     <Box
       className={libraryStyle({
@@ -75,64 +65,11 @@ export function Library({
             width: isOpen ? '$library-width' : 0,
             position: 'relative',
             paddingHorizontal: isOpen ? '$3' : 0,
+            paddingTop: '$5',
             transition: 'width 0.15s ease',
             willChange: 'width',
           }}
         >
-          <Box
-            css={{
-              display: 'flex',
-              gap: '$3',
-              alignItems: 'center',
-              paddingHorizontal: '$3',
-              paddingVertical: '$3',
-              // borderBottom: '1px solid $colors$base-border-subtle',
-            }}
-          >
-            <Box css={{flex: 1, display: 'flex', gap: '$3'}}>
-              <Tooltip content="new Draft">
-                <Button
-                  variant="ghost"
-                  size="0"
-                  color="success"
-                  onClick={() => mainService.send('CREATE.NEW.DRAFT')}
-                  css={{
-                    '&:hover': {
-                      backgroundColor: '$success-component-bg-normal',
-                    },
-                  }}
-                >
-                  <Icon name="AddCircle" size="1" />
-                </Button>
-              </Tooltip>
-              <Tooltip content="new Document">
-                <Button
-                  variant="ghost"
-                  size="0"
-                  color="success"
-                  onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
-                  css={{
-                    '&:hover': {
-                      backgroundColor: '$success-component-bg-normal',
-                    },
-                  }}
-                >
-                  <Icon name="File" size="1" />
-                </Button>
-              </Tooltip>
-            </Box>
-            <Tooltip content="Reload Sync">
-              <Button
-                variant="ghost"
-                size="0"
-                color="muted"
-                onClick={handleSync}
-              >
-                <Icon name="Reload" size="1" />
-              </Button>
-            </Tooltip>
-          </Box>
-
           <LibraryButton
             icon="File"
             onClick={() => mainService.send('GO.TO.PUBLICATIONLIST')}
@@ -145,8 +82,8 @@ export function Library({
             title="Drafts"
             active={isInDraftList}
           />
+
           <Separator />
-          <BookmarksSection />
           <RecentsSection />
           <Separator />
           <ContactsSection />
@@ -185,11 +122,7 @@ function LibraryButton({title, icon, onClick, active}: LibraryButtonProps) {
       }}
     >
       {icon && (
-        <Icon
-          color={active ? 'primary-opposite' : 'primary'}
-          name={icon}
-          size="1"
-        />
+        <Icon color={active ? 'primary-opposite' : 'primary'} name={icon} />
       )}
       <Text
         size="2"

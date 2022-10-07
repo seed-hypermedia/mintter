@@ -51,7 +51,6 @@ export {
   registerAccount,
   updateProfile,
 } from './accounts'
-export {listBookmarks, updateListBookmarks} from './bookmarks'
 export {getInfo} from './daemon'
 export {
   createDraft,

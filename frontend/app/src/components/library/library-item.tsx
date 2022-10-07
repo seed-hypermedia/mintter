@@ -2,6 +2,7 @@ import {
   deleteDraft as defaultDeleteDraft,
   deletePublication as defaultDeletePublication,
 } from '@app/client'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {deleteFileMachine} from '@app/delete-machine'
 import {DraftContext} from '@app/draft-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
@@ -13,7 +14,6 @@ import {css, styled} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {formattedDate} from '@app/utils/get-format-date'
-import {useBookmarksService} from '@components/bookmarks'
 import {DeleteDialog} from '@components/delete-dialog'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
@@ -43,7 +43,6 @@ export function LibraryItem({
   isNew = false,
 }: PropsWithChildren<LibraryItemProps>) {
   const [state, send] = useActor(fileRef)
-  let bookmarksService = useBookmarksService()
   let params = useParams()
   const mainService = useMain()
   let isPublication = useMemo(() => fileRef.id.startsWith('pub-'), [fileRef.id])
@@ -84,13 +83,6 @@ export function LibraryItem({
             version: context.version,
           })
         },
-        removeFileFromBookmarks: (context) => {
-          bookmarksService.send({
-            type: 'BOOKMARK.FILE.DELETE',
-            documentId: context.documentId,
-            version: context.version,
-          })
-        },
       },
     },
   )
@@ -98,7 +90,9 @@ export function LibraryItem({
 
   async function onCopy() {
     if (isPublication) {
-      await copy(`mtt://${state.context.documentId}/${state.context.version}`)
+      await copy(
+        `${MINTTER_LINK_PREFIX}${state.context.documentId}/${state.context.version}`,
+      )
       toast.success('Document ID copied successfully', {position: 'top-center'})
     }
   }

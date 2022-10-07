@@ -1,4 +1,5 @@
 import {Document, Publication} from '@app/client'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {createDraftMachine} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -73,7 +74,7 @@ describe('<LibraryItem />', () => {
       .then(() => {
         expect(copyTextToClipboard).to.have.been.calledOnce
         expect(copyTextToClipboard).to.have.been.calledWith(
-          `mtt://${publication.document?.id}/${publication.version}`,
+          `${MINTTER_LINK_PREFIX}${publication.document?.id}/${publication.version}`,
         )
       })
   })
