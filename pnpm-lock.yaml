@@ -37,7 +37,7 @@ importers:
       '@floating-ui/react-dom-interactions': 0.10.1
       '@graphql-codegen/cli': 2.13.5
       '@graphql-codegen/typescript': 2.7.3
-      '@happy-dom/global-registrator': 7.2.0
+      '@happy-dom/global-registrator': 7.3.0
       '@improbable-eng/grpc-web': 0.15.0
       '@radix-ui/colors': 0.1.8
       '@radix-ui/react-accessible-icon': 1.0.0
@@ -242,7 +242,7 @@ importers:
       '@cypress/vite-dev-server': 3.3.0
       '@graphql-codegen/cli': 2.13.5_k4tgeuxgjoyg5fbcy4uzgsyom4
       '@graphql-codegen/typescript': 2.7.3_graphql@16.6.0
-      '@happy-dom/global-registrator': 7.2.0
+      '@happy-dom/global-registrator': 7.3.0
       '@tanstack/react-query-devtools': 4.10.1_u34amavde33a6d2g2dyykucmvy
       '@types/autosize': 4.0.1
       '@types/google-protobuf': 3.15.6
@@ -1619,8 +1619,8 @@ packages:
     dependencies:
       graphql: 16.6.0
 
-  /@happy-dom/global-registrator/7.2.0:
-    resolution: {integrity: sha512-rhUx5E4JstrFrmcFBL/DRhsJCMQoa55LFdRuiMOhB0xBw6DDGmpAdaH29GBTy5ErjB6NYsSe0/xRBqBTsAAdWw==}
+  /@happy-dom/global-registrator/7.3.0:
+    resolution: {integrity: sha512-vyLqzhyIN9EO/yqcdRnxdBDia/s+x2IVDyX+6SHAa0tSyUgGsa6PvtvjYcQhxn2YnarnWA4Mnx4/ojR919Ztzw==}
     dependencies:
       happy-dom: 7.3.0
     transitivePeerDependencies:
@@ -5271,6 +5271,20 @@ packages:
       wordwrap: 1.0.0
     optionalDependencies:
       uglify-js: 3.17.3
+    dev: true
+
+  /happy-dom/7.3.0:
+    resolution: {integrity: sha512-KJDR6CJ2S9MeOznLUU4iF98sh2yBmwEOTFcJHHZvNCYo8PsmgeeECZqUOr33VmNdSYBO+X9hSOTjeT533hwSXA==}
+    dependencies:
+      css.escape: 1.5.1
+      he: 1.2.0
+      node-fetch: 2.6.7
+      sync-request: 6.1.0
+      webidl-conversions: 7.0.0
+      whatwg-encoding: 2.0.0
+      whatwg-mimetype: 3.0.0
+    transitivePeerDependencies:
+      - encoding
     dev: true
 
   /happy-dom/7.3.0:
