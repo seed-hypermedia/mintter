@@ -152,7 +152,7 @@ importers:
       vite: 3.1.6
       vite-react-jsx: 1.1.2
       vite-tsconfig-paths: 3.5.1
-      vitest: 0.23.4
+      vitest: 0.24.0
       ws: 8.9.0
       xstate: 4.33.6
     dependencies:
@@ -278,7 +278,7 @@ importers:
       vite: 3.1.6_sass@1.55.0
       vite-react-jsx: 1.1.2_vite@3.1.6
       vite-tsconfig-paths: 3.5.1_vite@3.1.6
-      vitest: 0.23.4_5456zc56awlvzlawrbx7lytcki
+      vitest: 0.24.0_5456zc56awlvzlawrbx7lytcki
       ws: 8.9.0
 
 packages:
@@ -3323,7 +3323,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001416
+      caniuse-lite: 1.0.30001418
       electron-to-chromium: 1.4.275
       node-releases: 2.0.6
       update-browserslist-db: 1.0.10_browserslist@4.21.4
@@ -3390,8 +3390,8 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /caniuse-lite/1.0.30001416:
-    resolution: {integrity: sha512-06wzzdAkCPZO+Qm4e/eNghZBDfVNDsCgw33T27OwBH9unE9S478OYw//Q2L7Npf/zBzs7rjZOszIFQkwQKAEqA==}
+  /caniuse-lite/1.0.30001418:
+    resolution: {integrity: sha512-oIs7+JL3K9JRQ3jPZjlH6qyYDp+nBTCais7hjh0s+fuBwufc7uZ7hPYMXrDOJhV360KGMTcczMRObk0/iMqZRg==}
     dev: true
 
   /capital-case/1.0.4:
@@ -4494,7 +4494,7 @@ packages:
       '@mdn/browser-compat-data': 4.2.1
       ast-metadata-inferer: 0.7.0
       browserslist: 4.21.4
-      caniuse-lite: 1.0.30001416
+      caniuse-lite: 1.0.30001418
       core-js: 3.25.5
       eslint: 8.24.0
       find-up: 5.0.0
@@ -5271,20 +5271,6 @@ packages:
       wordwrap: 1.0.0
     optionalDependencies:
       uglify-js: 3.17.3
-    dev: true
-
-  /happy-dom/7.3.0:
-    resolution: {integrity: sha512-KJDR6CJ2S9MeOznLUU4iF98sh2yBmwEOTFcJHHZvNCYo8PsmgeeECZqUOr33VmNdSYBO+X9hSOTjeT533hwSXA==}
-    dependencies:
-      css.escape: 1.5.1
-      he: 1.2.0
-      node-fetch: 2.6.7
-      sync-request: 6.1.0
-      webidl-conversions: 7.0.0
-      whatwg-encoding: 2.0.0
-      whatwg-mimetype: 3.0.0
-    transitivePeerDependencies:
-      - encoding
     dev: true
 
   /happy-dom/7.3.0:
@@ -8479,8 +8465,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.23.4_5456zc56awlvzlawrbx7lytcki:
-    resolution: {integrity: sha512-iukBNWqQAv8EKDBUNntspLp9SfpaVFbmzmM0sNcnTxASQZMzRw3PsM6DMlsHiI+I6GeO5/sYDg3ecpC+SNFLrQ==}
+  /vitest/0.24.0_5456zc56awlvzlawrbx7lytcki:
+    resolution: {integrity: sha512-k5j3FPTor+MJx2x0pDW2gtVk+s9VC6nSHT3SoqOIk9Je5fFpPgict+Xy2eAVXUogvSixs45Ya1oZk+oK93BO0w==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
     peerDependencies:
