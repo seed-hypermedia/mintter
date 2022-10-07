@@ -1,9 +1,6 @@
-import {useBlockTools} from '@app/editor/block-tools-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
-import {useHover} from '@app/editor/hover-context'
-import {hoverStyles, phrasingStyles} from '@app/editor/styles'
-import {useFileIds} from '@app/file-provider'
-import {useIsEditing} from '@app/main-context'
+import {useBlockObserve, useMouse} from '@app/mouse-context'
+
 import {
   isBlockquote,
   isCode,
@@ -12,9 +9,8 @@ import {
   Paragraph as ParagraphType,
 } from '@app/mttast'
 import {Box} from '@components/box'
-import {useEffect} from 'react'
 import {Node, Path, Transforms} from 'slate'
-import {RenderElementProps} from 'slate-react'
+import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 
@@ -65,43 +61,26 @@ function Paragraph({
   attributes,
   mode,
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
-  let btService = useBlockTools()
-  const hoverService = useHover()
-  let {elementProps, parentNode} = usePhrasingProps(element)
-  let [docId] = useFileIds()
-  let isEditing = useIsEditing()
+  let editor = useSlateStatic()
+  let {elementProps, parentNode} = usePhrasingProps(editor, element)
 
-  useEffect(() => {
-    if (mode != EditorMode.Embed && mode != EditorMode.Mention) {
-      if (attributes.ref.current) {
-        btService.send({type: 'ENTRY.OBSERVE', entry: attributes.ref.current})
-      }
-    }
-  }, [attributes.ref, btService, mode])
+  useBlockObserve(mode, attributes.ref)
+  let mouseService = useMouse()
 
-  let hoverProps = {
-    css: !isEditing ? hoverStyles(`${docId}/${parentNode?.id}`) : undefined,
+  let mouseProps = {
     onMouseEnter: () => {
-      hoverService.send({
-        type: 'MOUSE_ENTER',
-        ref: `${docId}/${parentNode?.id}`,
+      mouseService.send({
+        type: 'HIGHLIGHT.ENTER',
+        ref: elementProps['data-highlight'] as string,
       })
     },
-    // onMouseLeave: () => {
-    //   hoverService.send({
-    //     type: 'MOUSE_LEAVE',
-    //     ref: `${docId}/${parentNode?.id}`,
-    //   })
-    // },
+    onMouseLeave: () => {
+      mouseService.send('HIGHLIGHT.LEAVE')
+    },
   }
-
-  if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
+  if (mode == EditorMode.Embed) {
     return (
-      <Box
-        as="span"
-        {...attributes}
-        // {...elementProps}
-      >
+      <Box as="span" {...attributes} {...elementProps}>
         {children}
       </Box>
     )
@@ -109,16 +88,7 @@ function Paragraph({
 
   if (isCode(parentNode)) {
     return (
-      <Box
-        as="pre"
-        className={phrasingStyles({
-          blockType: 'code',
-          type: 'paragraph',
-        })}
-        {...attributes}
-        {...elementProps}
-        {...hoverProps}
-      >
+      <Box as="pre" {...attributes} {...elementProps} {...mouseProps}>
         <code>{children}</code>
       </Box>
     )
@@ -126,34 +96,15 @@ function Paragraph({
 
   if (isBlockquote(parentNode)) {
     return (
-      <Box
-        as="blockquote"
-        {...attributes}
-        {...elementProps}
-        className={phrasingStyles({
-          mode,
-          type: 'paragraph',
-          blockType: 'blockquote',
-        })}
-        {...hoverProps}
-      >
-        {children}
+      <Box as="blockquote" {...attributes} {...elementProps} {...mouseProps}>
+        <p>{children}</p>
       </Box>
     )
   }
 
   return (
-    <Box
-      as="p"
-      className={phrasingStyles({
-        type: 'paragraph',
-        blockType: parentNode?.type,
-      })}
-      {...attributes}
-      {...elementProps}
-      {...hoverProps}
-    >
+    <p {...attributes} {...elementProps} {...mouseProps}>
       {children}
-    </Box>
+    </p>
   )
 }

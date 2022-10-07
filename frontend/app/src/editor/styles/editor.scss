@@ -1,0 +1,136 @@
+[data-element-type='group'] {
+  list-style: none !important;
+}
+
+[data-element-type='unorderedList'] {
+  list-style: disc;
+}
+
+li::marker {
+  color: var(--mtt-colors-base-active);
+  user-select: none;
+}
+
+[data-element-type] {
+  position: relative;
+}
+
+[data-element-type='code'] {
+  position: relative;
+  max-width: 80ch;
+  pre {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  code {
+    overflow-x: scroll;
+  }
+
+  &:hover > .code-selector-wrapper {
+    opacity: 1 !important;
+  }
+}
+
+.code-selector-wrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.editor {
+  --size-300: 0.75rem;
+  --size-400: 1rem;
+  --size-500: 1.33rem;
+  --size-600: 1.77rem;
+  --size-700: 2.36rem;
+  --size-800: 3.15rem;
+  --size-900: 4.2rem;
+  font-size: var(--size-400);
+
+  --flow-space: var(--size-700);
+
+  padding-inline-end: var(--size-400);
+  width: 100%;
+
+  @media (min-width: 768px) {
+    padding-inline-end: var(--size-700);
+  }
+
+  [data-slate-placeholder='true'] {
+    white-space: nowrap;
+  }
+
+  p,
+  q,
+  blockquote {
+    max-width: 60ch;
+  }
+
+  h1 {
+    max-width: 15ch;
+  }
+
+  h2,
+  h3 {
+    max-width: 25ch;
+  }
+
+  :is(li h2, li h3) + * {
+    --flow-space: var(--size-400);
+  }
+
+  li figure,
+  li figure + * {
+    --flow-space: var(--size-900);
+  }
+
+  &.mode-draft,
+  &.mode-publication {
+    display: block;
+    padding-block-start: var(--size-400);
+  }
+
+  &.mode-embed {
+    display: inline !important;
+  }
+
+  a {
+    text-decoration: underline;
+    word-break: break-all;
+
+    &:hover {
+      cursor: pointer;
+    }
+    &[data-highlight]:hover {
+      background-color: var(--mtt-colors-primary-component-bg-hover);
+    }
+  }
+}
+
+q {
+  // display: inline-block;
+  display: inline;
+  span {
+    // font-style: italic;
+    color: var(--mtt-colors-primary-normal);
+    text-shadow: 0 0 3px var(--mtt-colors-primary-component-bg-hover);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  &:before,
+  &:after {
+    content: '';
+  }
+
+  &:hover {
+    cursor: pointer;
+    background-color: var(--mtt-colors-primary-component-bg-hover);
+    span {
+      color: var(--mtt-colors-primary-text-low);
+      text-shadow: 0 0 6px var(--mtt-colors-primary-component-bg-active);
+    }
+  }
+}

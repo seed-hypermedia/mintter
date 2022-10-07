@@ -1,5 +1,4 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
-import {groupStyles} from '@app/editor/styles'
 import {
   createId,
   GroupingContent,
@@ -10,7 +9,6 @@ import {
   statement,
   ul,
 } from '@app/mttast'
-import {Box} from '@components/box'
 import {useMemo} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
@@ -181,23 +179,14 @@ export function Group({
     [element, attributes],
   )
 
-  const as = {
-    group: 'div',
-    orderedList: 'ol',
-    unorderedList: 'ul',
-  }[element.type]
+  let Component = useMemo(
+    () => (isOrderedList(element) ? 'ol' : 'ul'),
+    [element],
+  )
 
   if (mode == EditorMode.Embed || mode == EditorMode.Mention) {
     return null
   }
 
-  return (
-    <Box
-      as={as}
-      className={groupStyles({type: (element as GroupingContent).type})}
-      {...elementProps}
-    >
-      {children}
-    </Box>
-  )
+  return <Component {...elementProps}>{children}</Component>
 }

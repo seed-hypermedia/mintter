@@ -2,6 +2,7 @@ import {
   FlowContent,
   group,
   GroupingContent,
+  image,
   isFlowContent,
   isGroup,
   isGroupContent,
@@ -11,7 +12,9 @@ import {
   ol,
   Statement,
   statement,
+  text,
   ul,
+  video,
 } from '@app/mttast'
 import {Mark} from '@app/mttast/types'
 import {ObjectKeys} from '@app/utils/object-keys'
@@ -212,7 +215,7 @@ export function resetGroupingContent(editor: Editor): boolean {
 }
 
 export function findPath(node: Node): Path {
-  // `ReactEditor.findPath` does nto use the editor param for anything. it's there because of API consistency reasons I guess? 🤷🏼‍♂️
+  // `ReactEditor.findPath` does not use the editor param for anything. it's there because of API consistency reasons I guess? 🤷🏼‍♂️
   // @ts-ignore
   return ReactEditor.findPath(null, node)
 }
@@ -364,7 +367,10 @@ export function setType(fn: any) {
 }
 
 export function setList(fn: typeof ol | typeof ul | typeof group) {
-  return function wrapWithListType(editor: Editor, opts: {at: Path}) {
+  return function wrapWithListType(
+    editor: Editor,
+    opts: {element: FlowContent; at: Path},
+  ) {
     Editor.withoutNormalizing(editor, () => {
       const list = Node.parent(editor, opts.at)
 
@@ -422,6 +428,23 @@ export function toggleList(fn: typeof ol | typeof ul) {
           }
         }
       }
+    })
+  }
+}
+
+export function insertInline(fn: typeof image | typeof video) {
+  return function insertInlineElement(
+    editor: Editor,
+    opts: {
+      element: FlowContent
+      at: Path
+    },
+  ) {
+    let {element, at} = opts
+    MintterEditor.addChange(editor, ['replaceBlock', element.id])
+    Transforms.insertNodes(editor, fn({url: ''}, [text('')]), {
+      // TODO: maybe this needs to insert at selection position? now I guess is creating a new image on top of the current block
+      at,
     })
   }
 }

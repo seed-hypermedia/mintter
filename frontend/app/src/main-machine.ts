@@ -79,7 +79,7 @@ type MainPageEvent =
       draftList: Array<Document>
     }
   | {type: 'EDITING'}
-  | {type: 'MOUSE.MOVE'}
+  | {type: 'NOT.EDITING'}
 
 type RouterEvent =
   | {type: 'pushHome'}
@@ -124,17 +124,9 @@ export function createMainPageService({
   client,
   initialRoute,
 }: CreateMainPageServiceParams) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWjQYwAsswA6AJwHsBXAFzhIIuTAGIBhAeQFkuBJAFRIARAKIAZEfxEkAYrwmJQABwqx0NdBUyKQAD0QAWAAxGSADgMB2AGw2D16wFZLjgMwAaEAE9EZowEYSS1cAgCZQlxdrUOsAX1jPNCxcVEJicmo6WBJIdQoyEnQIABtWTh4BEgAFAFUAITFeAGUACR0VNQ0tHX0EfzNXMyCBm38x6IBOazNPHz6pxxIjJ1cJx39Q10sJiYN4xIwcfCJMUkpaelyafMKS1hEhAV4AOQBxdtV1TW0kPUQNgyhEhTVzGCZmaJGeyOWaIcJjJZjAxWBaOaz+Vz7EBJI6pE5nTKXCB5ApXLBQEg0LxKcksLgcGpNaT0gBqIg+nW+PX+6yGrlB0ycjiME0sFlhCHhpkcoSM635rkcMssWJxKTSpwyF2yVxuZMwFMwFBoAAIqTSDSwHk83hyvt1fr1-LySPz7BClSKxQYJeFHEMDBNloqDBCjJZ-HsEtjDur8VqsiQlFQAEbFdB4VBdTC3Ursbh8QRsABKIgAglISKWqmIAJp27PcyUGUFLYUR3nOsyR32AgzAqLg6wGJUQ1Wx47pc6J5NpjNZ77kMBKYpeWkQLSkLAANwoAGtSHgyGAs2Bi8vVw2uY7ELtTP45ci5bszGZwRL+s6SGjuxjooMjG7cdkknTVp3oWd00zbMlxXNdLTAMhKAKFcswAM3yZASCPE86HPOCrwdUBegiEJXUcIM1n8CZQmo-xfVcWVyM-RioScUIowOEC8SnQlskg+dszEdBYBoXMygLSpRAkSs5AUX4OntH5iMQJxrHMKF-FsMxLBcLTrA-UN1ICFsIWsRV+R2YDcQ1AltRICAyFQNCaGE0TxPzCpBGkyRpDk9kFM+RsbwQRVFhM0IdgWXSfW8f5dkWVYzCVdYxmCMxQmsuNePsnDTyEJyXJYDdNR3fdD2PU9njAAB3ArnJoQjlL+BAIwDXS-EBcMtksCVnEWbZLBHDraIsTLozVUC7KyFhiwZStng4QQZAZZ4hCaptI1CCUI1cIIKIoodNkGRwsqmhM4BYV4OBIfgbpabgAuUILrxUvpAQlUV1P5TZrF2Gx-RbM6eLAvirpuu6SCZfh+BeV4mg2kKto-fxLCBdFQwGIwtnBRjgdsi7YHB26btqBpeDYCteA4Z5GiafhEbe5G4vemilhiNGdLWEZTomicQemy7rpJ4RizLGR+DphnAs5IiWuZuZqNCRZjBO0FATRUV8fjcCieFyGhDFiXGflj6WdoiZAkVCxoiG7tnExPnuIJ3XichsnGkp2GaZNp0zbmTY32BCZBho1xnVccy4idmydbBktywWkQAHVRfF6Xntl5q-e2lmKP7MUBmRDLtj+8auNjnKZvKQsSA4KoRGeEhk5eIQOGT33-lDIFSMjh9nFFXYJVBIYIWG6woTRextary6a8qa1BA9imqZ9mWlM2qxTC2HSLFRt8ZnN6JgQ2Qv+gMMYNmjivstOYrN0KTBdwPEg0LAGhCBkdBSngdfgqZwMlgSAtkiv0CMgFxQsw2DPO+iFkJJmKOhTCr936f2-nATuCBbC+goqYXYaVkShAyhEGBrBhZ1DLGwAA0pg50gFgEX1fCODiQ0aK+m7N9aYr43BRS0qQ4mK1izJzLMWdaf9Xqm3BCQYcco3ChjvC2X0wRTAX0sF6NwAxuyO2jEaCAGDfiTQFjkJC+RICYM2BMDSFEBio3+oQ30E9+yAiIRPaIAxaKcRjM7OO9kiilEwfyIBB8L5OHkaCXqLNphAhcG+MU-Q-DOn8KQwmDAmBgEwX9UwtFbZQgjDYOUH4jAxGAeHUESpIpqOWMk3WORiTXAKH49J4i5a9HBPeR8xh86vnfObDEliZQcVokQmw4Rql8VqSSYxyFMGikWP3J8XSD6+nDNKcO6xcktkDGM+yupSR1PJJSak5JaG2EWOsKeWlGJvhhObDx0jRhojFMsYwKoY630FjqOpep9kGhIEaU05pjnNOzv8QYfJ1ZozlC4EINyA5DJIKjdEjy-AyNeTfc6NTdkTI0AaWhkd+xuisLKfqMLfQYiGG4TYkZwRDXDtsxMuyZnrARR058mMemKx2BSls4chnRDcNfLxldQb2QEtBRcjTzFXyCBiEcE9wikvNlsRYbSASAUGMiNFQr3kpLFQuLQsFVxAszhvEKMQJ4MI1dRTqgFewIhCJHAIyx0QQi1YYl24y9UwTgfkcx2T2bgmpYEnYBklXLGBG+TZsoikR3pRBVMUF9XNUUv-FqtEikyrKfKzYBTbmKiWGEa2MpoFvIxeM2A78cVQF-ia1NvRw6WIiLREIYwoShgxCjOU0iOKClxkQ8Ecb+IJsEt8NyYlJXAqbHbV0wQ-SbBiFYWKitzL9hfGlCI3pPHup8TOYd4qtBjoyYxDSISxS6XWA4D8oCljmTHtjCwF9B0OUKq5ES467iYMBBSrSL4iFhTGMspwroL7hxbOZSIgrt2z2yI5Bqh7J0hX5IECKUUnAxQ-C4FRKJGJWA2E2p9eU6D1RcgElswDhwWF5T+CMfVzLDF0srTYhcxSDtof0CUX7zCXO2K+P6kZnSkM-R4FmltgTrFLuiSMUIaLxHiEAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWjQYwAsswA6AJwHsBXAFzhIIuTAGIBhAeQFkuBJAFRIARAKIAZEfxEkAYrwmJQABwqx0NdBUyKQAD0QAWAAxGSADgMB2AGw2D16wFZLjgMwAaEAE9EZowEYSS1cAgCZQlxdrUOsAX1jPNCxcVEJicmo6WBJIdQoyEnQIABtWESEBXgA5AHEdFTUNLR19BH9XV0cSRwBOMx7HCJcDAx6Pb0R-N1cSPtd-fx6e6w6h+MSMHHwiTFJKWnpcmnyciHUsKBIaLyULliqOQXLK2vrVc+akPUnrHoNzGK9fz2VxDcY+NqOAwzXqhRwOaJmfyWYHrEBJLapHZ7TKHM7HApHC4kTAUGgAAmut0wUBYz341TqXwaH20X1a-lslhIRmsZjMTl58Pa1k8EOBbhIIVCARsoSW4QMaIxKTSuwyB2yRxORJp7G4fEEAAUAKoAITEvAAygAJN6NTRs0AQ0LAmb+Iz8qFGP5+EaeDn9UwdJzWEYWAzORzKzaq7EarIkJRUABGxXQeFQTUwhRKrE4PAEJDYACURABBKQkMtGsQATXtrJaiFC0P+RkcRhRjn8SMcSIMYpbBlbsyifTDjn7cQS6Nj23S+0TybTGazjvIYCUxS8dwgWlIWAAbhQANakPBkMBZsAlrc7xvZ5sIP6mD1Q4y9Az8vpDtp97o+QWVxolcPwkRjZIF3VJd6BXdNM2zTdt13PUwDISgCm3LMADN8mQEhL2vOg7xQx9HWfCIQilXofR7HpXR6fw-1CUFgx7JE2PsQYlVnFVoJxTUk1TBD1y0MR0FgGhc1KfVC0EUQJCrOQFGZd4n3ZRBQ3MIwDE5SwzEsFxOVFCY2m-aweTdAUVmmJZIMxNVBMTCAyFQHCaAkqSZPzA0i0UyRpBUkRyM+UBWk6LoAhHJZlmcSxBzMxZIylPopx7BZgjMUIHLjRdcWyIibyENyPJYfd1WPM8LyvG8qjAAB3Er3JoUKnW+BAUTMEgrAM3SZWCIy-yjIIegS+Lst7EdcoEhM4BYEsOBNKsHkEGQlqqIQ2ufYFQj-FEZhcAYlgFViwOjPj5yxfLNRYGoOBIfgHptbgQrUh0wo63a-zGyzVhAv4bH7aEZuumCCruh6npIK1JAZWorW2zTzL2pLkVCEhrGBfkQlcSw5hyy6oLB5z5vux6HtNC1eDYSteA4KpLStfgkfCyYRz-YEGJ5GJLFCQyBjMPGLo2YmnLm2BIYp4QS3LGR+CZln3qbZHvqShiumMc7XBGOFfksUHxdgyXyehoRZfl1mvo5szGMCToLGiBK+2CQ342NqXoapy1aYZBmrY5G2XTAnpZjGfpWKmECQLdm6snYMtK2kKoRAAdRluWleUdSKNVoPEC-IIcfDCJlgY2PwdugtDRIDgjREKoSFT6ohA4VOA-Z7KSCokD33x-HEohHXuoFSMbF0+F7Ar0nJerot6RIb2abp-3lY0tnzMsYMDIMvSDN-W3olmfwIn5KaFhPmdRcc7FyoPQpMBPc8SBwsAaEIGR0FKeA19zjeue5NCeUvYUSegsJzQm188q7BYOhTCSZii4Xwi-N+H8v5wA7ggWwLFaKzD0siXW2UIjTylmacsbAADSmCpieh6npfkkZWwJQYixJEf0+RelcLFTkJDybrRLKncsJYtq-0+oHPomNPxuG-K+aELFgimD3j6FwYEwLtHiLOUkEAMFfH4iTHIGF8iQEwaxUOfhehC2RIDXWLFrC6R6uEAUvJ+aglRETG+cd6BFFKJgjo3J+gWE5FCfoOtLB-j5BjFw-QDK9j8FMfw08JYMCYGATBvxTCuidrpFE49HCcyMDEHq8wdZTnlFvXkiTjanDyAUbxqTRHtQ5L2DGLifTLGBAsJwnN7D-BWIsJYwQVijCvnOMW7sCrVIJAYzC1DkTclaUsLG+CulJS4V0MMHofysS7LYSpEztSEnxMSKkFxqHZUOt+JEFghZ8m6VYbuo9vwjkyTrPZQkDmTOJKSCkJyaTULcJZeEdggyWKnHc-4BkwxPPCJyV57joEz0mTqI5fyGk7R7BjIFYYQXzDBasvm5g5k0L+MieEbzEwHNmZKBZ7Tll5KSq6GYDFexgVdBZA28LZpVPgmuJCdSTGXyCO0SMdjwghHpcHFwsw4mtk9GBEYHKoFcomTyxCG4rwoVOWi5GMQ7F0PlYsP0noWL4KlEYECAReRYwFIq0ZHjK7LhEryjccD8gmMyTzPoXM-GLJYiESyfQ-g6xlAUqO5K4JOrVZ9Fk68OqugKUKkportkSpbAsDGmUuxdj8LYSBdqEVJNgG-DQNIf7Zw+o0xA8xQ4REZQED04Z2ic3fJjVsfJfhC35n0cN2RVViUwF5aS-LtUb2dlKYI4RBigjDAlTmQy8FInRkZCMPbhKrijQOySrUR0dRWBjP0+lDLGQcJzUE3IFgCk7JyQytgRb5uVUJVyLVB0+UwSObqPZfjfhcVOBYLEhRSj0vMaEKxIgjL0UbCZT6PKDt8fMKyMVFnxUHpMSF3QCm2HOa2eU4GrqQaEkVOgzUPK+OhD1bF0IT7wkMsxMy8JDpHrhKxAyhkzA9tmWYP8VgzG9iWIsNp0833gkQNzAIvwnAhDGgELhGjYhAA */
   return createMachine(
     {
-      id: 'main-machine',
-      tsTypes: {} as import('./main-machine.typegen').Typegen0,
-      predictableActionArguments: true,
-      schema: {
-        context: {} as MainPageContext,
-        events: {} as MainPageEvent,
-        services: {} as MainServices,
-      },
       context: () =>
         ({
           params: {
@@ -146,6 +138,13 @@ export function createMainPageService({
           errorMessage: '',
           activity: spawn(activityMachine, 'activity'),
         } as MainPageContext),
+      tsTypes: {} as import('./main-machine.typegen').Typegen0,
+      schema: {
+        context: {} as MainPageContext,
+        events: {} as MainPageEvent,
+        services: {} as MainServices,
+      },
+      predictableActionArguments: true,
       invoke: [
         {
           src: 'router',
@@ -167,6 +166,7 @@ export function createMainPageService({
           ],
         },
       ],
+      id: 'main-machine',
       initial: 'routes',
       states: {
         errored: {},
@@ -177,7 +177,7 @@ export function createMainPageService({
               entry: send('listen', {to: 'router'}),
             },
             home: {
-              entry: ['clearParams'],
+              entry: 'clearParams',
               on: {
                 'COMMIT.DELETE.FILE': {
                   actions: [
@@ -189,8 +189,8 @@ export function createMainPageService({
               },
             },
             editor: {
-              initial: 'idle',
               entry: ['pushDraftRoute', 'pushDraftToRecents'],
+              initial: 'idle',
               states: {
                 idle: {
                   tags: ['documentView', 'draft'],
@@ -206,20 +206,10 @@ export function createMainPageService({
                 editing: {
                   tags: ['documentView', 'draft'],
                   initial: 'not typing',
-                  on: {
-                    'COMMIT.PUBLISH': {
-                      actions: [
-                        'removeDraftFromList',
-                        'asssignNewPublicationValues',
-                        'removeDraftFromRecents',
-                      ],
-                      target: '#main-machine.routes.publication',
-                    },
-                  },
                   states: {
                     typing: {
                       on: {
-                        'MOUSE.MOVE': {
+                        'NOT.EDITING': {
                           target: 'not typing',
                         },
                       },
@@ -232,18 +222,22 @@ export function createMainPageService({
                       },
                     },
                   },
+                  on: {
+                    'COMMIT.PUBLISH': {
+                      actions: [
+                        'removeDraftFromList',
+                        'asssignNewPublicationValues',
+                        'removeDraftFromRecents',
+                      ],
+                      target: '#main-machine.routes.publication',
+                    },
+                  },
                 },
               },
             },
             publication: {
+              entry: ['pushPublicationRoute', 'pushPublicationToRecents'],
               initial: 'idle',
-              entry: [
-                'pushPublicationRoute',
-                'pushPublicationToRecents',
-                (c, e) => {
-                  console.log('publication state entry:', c, e)
-                },
-              ],
               states: {
                 idle: {
                   tags: ['documentView', 'publication'],
@@ -317,7 +311,7 @@ export function createMainPageService({
                 onDone: [
                   {
                     actions: 'assignNewDraftValues',
-                    target: '#main-machine.routes.editor',
+                    target: 'editor',
                   },
                 ],
               },
@@ -341,7 +335,7 @@ export function createMainPageService({
               target: '.draftList',
             },
             'GO.TO.DRAFT': {
-              actions: ['assignDraftParams'],
+              actions: 'assignDraftParams',
               target: '.editor',
             },
             'GO.TO.PUBLICATION': {
@@ -379,7 +373,6 @@ export function createMainPageService({
             `[Main Machine]: Error => ${JSON.stringify(event)}`,
         }),
         assignFiles: assign(function assignFilesPredicate(_, event) {
-          console.log('assignFiles call', event.data)
           let draftList = event.data.draftList.map(function draftListMapper(
             draft,
           ) {
@@ -464,8 +457,7 @@ export function createMainPageService({
           })
         },
         pushPublicationRoute: send(
-          (context, e) => {
-            console.log('pushPublicationRoute', context, e)
+          (context) => {
             return {
               type: 'pushPublication',
               docId: context.params.docId,

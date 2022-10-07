@@ -53,6 +53,8 @@ export type ScrollAreaProps = PropsWithChildren<
   Partial<{
     orientation: ScrollAreaPrimitive.ScrollAreaScrollbarVisibleProps['orientation']
     onScroll: ScrollAreaPrimitive.ScrollAreaViewportProps['onScroll']
+    onMouseMove: ScrollAreaPrimitive.ScrollAreaViewportProps['onMouseMove']
+    onMouseLeave: ScrollAreaPrimitive.ScrollAreaViewportProps['onMouseLeave']
   }>
 >
 

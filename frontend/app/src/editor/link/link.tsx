@@ -1,11 +1,10 @@
-import {useHover} from '@app/editor/hover-context'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useMain, usePublicationList} from '@app/main-context'
 import {PublicationWithRef} from '@app/main-machine'
+import {useMouse} from '@app/mouse-context'
 import type {Embed, Link as LinkType} from '@app/mttast'
 import {embed, isLink, link, text} from '@app/mttast'
-import {styled} from '@app/stitches.config'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {getRefFromParams} from '@app/utils/machine-utils'
@@ -130,30 +129,6 @@ function insertDocumentLink(editor: Editor, url: string) {
   }
 }
 
-const StyledLink = styled(
-  'span',
-  {
-    textDecoration: 'underline',
-    appearance: 'none',
-    display: 'inline',
-    color: '$base-text-hight',
-    width: 'auto',
-    wordBreak: 'break-all',
-    '&:hover': {
-      cursor: 'pointer',
-    },
-  },
-  {
-    variants: {
-      highlight: {
-        true: {
-          backgroundColor: '$primary-component-bg-active',
-        },
-      },
-    },
-  },
-)
-
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
   mode: EditorMode
@@ -175,7 +150,7 @@ function RenderMintterLink(
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
   const mainService = useMain()
-  let hoverService = useHover()
+  let mouseService = useMouse()
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -194,20 +169,21 @@ function RenderMintterLink(
   }
 
   function mouseEnter() {
-    hoverService.send({type: 'MOUSE_ENTER', ref: `${docId}/${blockId}`})
+    mouseService.send({type: 'HIGHLIGHT.ENTER', ref: props.element.url})
+  }
+
+  function mouseLeave() {
+    mouseService.send({type: 'HIGHLIGHT.LEAVE', ref: ''})
   }
 
   return (
-    <StyledLink
+    <a
       ref={ref}
       {...props}
       onClick={onClick}
       onMouseEnter={mouseEnter}
-      css={{
-        [`[data-hover-ref="${docId}/${blockId}"] &`]: {
-          backgroundColor: '$primary-component-bg-normal',
-        },
-      }}
+      onMouseLeave={mouseLeave}
+      data-highlight={props.element.url}
     />
   )
 }
@@ -223,20 +199,13 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   return (
     <Tooltip
       content={
-        <Box
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$2',
-            fontFamily: '$base',
-          }}
-        >
+        <span>
           {props.element.url}
           <Icon size="1" name="ExternalLink" color="opposite" />
-        </Box>
+        </span>
       }
     >
-      <StyledLink ref={ref} onClick={onClick} {...props} />
+      <a ref={ref} onClick={onClick} {...props} />
     </Tooltip>
   )
 }
