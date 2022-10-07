@@ -12,7 +12,7 @@ futures-util = "0.3.24"
 tauri = "1.1.1"
 thiserror = "1.0.37"
 tokio = "1.21.2"
-tracing = "0.1.36"
+tracing = "0.1.37"
 wasmtime = "1.0.1"
 wiggle = "1.0.1"
 workspace-hack = {version = "0.1", path = "../workspace-hack"}
