@@ -45,7 +45,7 @@ require (
 	go.uber.org/zap v1.23.0
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	golang.org/x/text v0.3.7
-	google.golang.org/grpc v1.49.0
+	google.golang.org/grpc v1.50.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf v1.28.1
 )
