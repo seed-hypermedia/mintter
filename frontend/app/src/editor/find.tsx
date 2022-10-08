@@ -1,12 +1,44 @@
 import {isParagraph} from '@app/mttast'
-import {createContext, useContext} from 'react'
+import {Icon} from '@components/icon'
+import {listen} from '@tauri-apps/api/event'
+import {createContext, useContext, useEffect, useRef} from 'react'
 import {Node, Range} from 'slate'
+import '../styles/find.scss'
 import {EditorPlugin} from './types'
 import {lowerPoint} from './utils'
 
 const FIND_HIGHLIGHT = 'find-highlight'
 
-export const findContext = createContext({
+export function Find() {
+  const {search, setSearch} = useContext(findContext)
+  const searchInput = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    listen('open_find', () => {
+      searchInput.current?.focus()
+    }).then((f) => (unlisten = f))
+
+    return () => unlisten?.()
+  })
+
+  return (
+    <label className="topbar-search">
+      <Icon name="Search" />
+      <input
+        ref={searchInput}
+        type="search"
+        autoCorrect="off"
+        placeholder="Search"
+        value={search}
+        onInput={(e) => setSearch(e.currentTarget.value)}
+      />
+    </label>
+  )
+}
+
+export var findContext = createContext({
   search: '',
   // eslint-disable-next-line
   setSearch: (v: string) => {},

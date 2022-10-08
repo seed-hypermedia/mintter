@@ -1,20 +1,16 @@
-import {
-  Account,
-  connect as apiConnect,
-  ConnectionStatus,
-  listAccounts,
-} from '@app/client'
-import {queryKeys} from '@app/hooks'
+import {connect as apiConnect, ConnectionStatus} from '@app/client'
 import {CSS, keyframes, styled} from '@app/stitches.config'
 import {error} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Icon} from '@components/icon'
-import {createContactMachine} from '@components/library/contact-machine'
+import {
+  AccountWithRef,
+  contactListMachine,
+} from '@components/library/contacts-machine'
 import {StyledItem} from '@components/library/library-item'
 import {Placeholder} from '@components/placeholder-box'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import {useQuery} from '@tanstack/react-query'
-import {useMachine} from '@xstate/react'
+import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
@@ -45,8 +41,17 @@ function ContactListLoading() {
 }
 
 export function ContactsSection() {
-  const {status, data, refetch} = useContacts()
-  let title = `Contacts (${data?.accounts?.length || 0})`
+  let contactListService = useInterpret(() => contactListMachine)
+  const totalCount = useSelector(
+    contactListService,
+    (state) => state.context.all.length,
+  )
+  const online = useSelector(contactListService, (state) =>
+    state.context.all.filter((acc) =>
+      state.context.online.includes(acc.ref.id),
+    ),
+  )
+  let title = `Contacts (${online.length}/${totalCount || 0})`
 
   return (
     <Section
@@ -59,7 +64,7 @@ export function ContactsSection() {
             alignItems: 'center',
           }}
         >
-          <ContactsPrompt refetch={refetch} />
+          <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
         </Box>
       }
     >
@@ -69,17 +74,9 @@ export function ContactsSection() {
           window.location.reload()
         }}
       >
-        {status == 'loading' ? (
-          <ContactListLoading />
-        ) : status == 'error' ? (
-          <Text color="danger">Contact List error</Text>
-        ) : data.accounts?.length == 0 ? (
-          <Text>NO Accounts</Text>
-        ) : (
-          data.accounts?.map((contact) => (
-            <ContactItem key={contact.id} contact={contact} />
-          ))
-        )}
+        {online.map((contact) => (
+          <ContactItem key={contact.id} contact={contact} />
+        ))}
       </ErrorBoundary>
     </Section>
   )
@@ -210,11 +207,11 @@ const HoverCardContentStyled = styled(HoverCard.Content, {
 })
 
 export type ContactItemProps = {
-  contact: Account
+  contact: AccountWithRef
 }
 
 function ContactItem({contact}: ContactItemProps) {
-  let [state] = useMachine(() => createContactMachine(contact))
+  let [state] = useActor(contact.ref)
 
   let accountId = useMemo(
     () => contact.id.slice(contact.id.length - 8),
@@ -266,7 +263,7 @@ function ContactItem({contact}: ContactItemProps) {
           }`}</Text>
         </StyledItem>
       </HoverCard.Trigger>
-      <HoverCardContentStyled align="start" portalled side="top">
+      <HoverCardContentStyled align="start" side="top">
         <Box
           css={{
             width: 32,
@@ -323,8 +320,4 @@ function ContactItem({contact}: ContactItemProps) {
       </HoverCardContentStyled>
     </HoverCard.Root>
   )
-}
-
-function useContacts() {
-  return useQuery([queryKeys.GET_CONTACTS_LIST], () => listAccounts())
 }

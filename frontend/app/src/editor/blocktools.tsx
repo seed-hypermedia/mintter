@@ -96,7 +96,6 @@ function DraftBlocktools(props: BlockData) {
       <Dropdown.Root
         modal={false}
         onOpenChange={(isOpen) => {
-          console.log
           mouseService.send(
             isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
           )
@@ -283,12 +282,12 @@ var items: {
     },
     {
       label: 'Blockquote',
-      iconName: 'MessageBubble',
+      iconName: 'Quote',
       onSelect: setType(blockquote),
     },
     {
       label: 'Code block',
-      iconName: 'AddCircle',
+      iconName: 'Code',
       onSelect: setType(code),
     },
   ],

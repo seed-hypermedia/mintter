@@ -35,7 +35,7 @@ export function Section({
           },
         }}
       >
-        {icon && <Icon color="primary" name={icon} size="1" />}
+        {icon && <Icon color="primary" name={icon} />}
         <Box css={{flex: 1}} data-testid="section-title">
           <Text size="2" fontWeight="medium">
             {title}

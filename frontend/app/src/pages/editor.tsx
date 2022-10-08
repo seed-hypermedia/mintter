@@ -4,7 +4,7 @@ import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
-import {useCurrentFile} from '@app/main-context'
+import {useCurrentFile, useMain} from '@app/main-context'
 import {DraftRef} from '@app/main-machine'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
@@ -63,6 +63,7 @@ export default function DraftWrapper() {
 export function EditorPage({draftRef}: EditorPageProps) {
   const [state, send] = useDraft(draftRef)
   const {context} = state
+  const mainService = useMain()
   const mouseService = useInterpret(() => mouseMachine)
   useInitialFocus(context.editor)
 
@@ -77,10 +78,14 @@ export function EditorPage({draftRef}: EditorPageProps) {
         onReset={() => window.location.reload()}
       >
         <MainWindow
-          onMouseMove={(event) =>
+          onMouseMove={(event) => {
             mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-          }
-          onScroll={() => mouseService.send('DISABLE.SCROLL')}
+            mainService.send('NOT.EDITING')
+          }}
+          onScroll={() => {
+            mouseService.send('DISABLE.SCROLL')
+            mainService.send('NOT.EDITING')
+          }}
         >
           {context.localDraft?.content && (
             <>
@@ -95,6 +100,7 @@ export function EditorPage({draftRef}: EditorPageProps) {
                         onChange={(content: ChildrenOf<Document>) => {
                           if (!content && typeof content == 'string') return
                           mouseService.send('DISABLE.CHANGE')
+                          mainService.send('EDITING')
                           send({type: 'DRAFT.UPDATE', payload: {content}})
                         }}
                       />

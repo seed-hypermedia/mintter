@@ -11,17 +11,17 @@ import _m0 from "protobufjs/minimal";
  */
 export enum ConnectionStatus {
   /** NOT_CONNECTED - NotConnected means no connection to peer, and no extra information (default). */
-  NOT_CONNECTED = 0,
+  NOT_CONNECTED = 'NOT_CONNECTED',
   /** CONNECTED - Connected means has an open, live connection to peer. */
-  CONNECTED = 1,
+  CONNECTED = 'CONNECTED',
   /** CAN_CONNECT - CanConnect means recently connected to peer, terminated gracefully. */
-  CAN_CONNECT = 2,
+  CAN_CONNECT = 'CAN_CONNECT',
   /**
    * CANNOT_CONNECT - CannotConnect means recently attempted connecting but failed to connect.
    * (should signal "made effort, failed").
    */
-  CANNOT_CONNECT = 3,
-  UNRECOGNIZED = -1,
+  CANNOT_CONNECT = 'CANNOT_CONNECT',
+  UNRECOGNIZED = 'UNRECOGNIZED',
 }
 
 export function connectionStatusFromJSON(object: any): ConnectionStatus {

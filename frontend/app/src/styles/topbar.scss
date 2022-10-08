@@ -1,0 +1,132 @@
+.topbar {
+  display: flex;
+  user-select: none;
+  -webkit-user-select: none;
+  align-items: stretch;
+  block-size: 100%;
+  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
+  background-color: var(--mtt-colors-base-background-subtle);
+  transition: opacity 0.25s ease;
+  opacity: 0;
+
+  &:hover {
+    cursor: default;
+  }
+
+  &.visible {
+    opacity: 1;
+  }
+
+  &.macos {
+    padding-inline-start: 72px;
+  }
+}
+
+.topbar-section {
+  display: flex;
+  padding-inline: 0.5em;
+  padding-block: 0.5em;
+  align-items: stretch;
+
+  & > *:hover {
+    cursor: default;
+  }
+
+  &.main {
+    flex: 1;
+    gap: 0.5rem;
+    min-width: 0;
+    align-items: center;
+  }
+
+  &.actions {
+    gap: 1em;
+  }
+}
+
+.topbar-title {
+  font-family: var(--mtt-fonts-base);
+  font-weight: var(--mtt-fontWeights-medium);
+  user-select: none;
+  -webkit-user-select: none;
+  font-size: 1rem;
+  max-width: 40ch;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+
+  &:hover {
+    cursor: default;
+  }
+
+  & > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.topbar-button {
+  --color: var(--mtt-colors-base-text-low);
+  --color-hover: var(--mtt-colors-base-text-low);
+  --surface: transparent;
+  --surface-hover: var(--mtt-colors-base-component-bg-hover);
+  all: unset;
+  min-inline-size: 1em;
+  min-block-size: 1em;
+  padding-block: 0.1em;
+  padding-inline: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.3em;
+  gap: 0.2em;
+  font-size: 0.8rem;
+  background-color: var(--surface);
+  color: var(--color);
+  border: 1px solid transparent;
+
+  &:hover {
+    background-color: var(--surface-hover);
+    color: var(--color-hover);
+    cursor: pointer;
+  }
+
+  &.primary {
+    --color: var(--mtt-colors-primary-active);
+    --color-hover: white;
+    --surface-hover: var(--mtt-colors-primary-active);
+    border: 1px solid transparent;
+  }
+  &.success {
+    --color: var(--mtt-colors-success-active);
+    --color-hover: white;
+    --surface-hover: var(--mtt-colors-success-active);
+  }
+
+  &.dropdown {
+    font-weight: bold;
+  }
+
+  &.outlined {
+    border-color: var(--color);
+  }
+}
+
+.button-group {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--mtt-colors-base-border-normal);
+  overflow: hidden;
+  border-radius: 0.3em;
+
+  .topbar-button {
+    padding-inline: 0.2em;
+  }
+}
+
+@media (min-width: 768px) {
+  .topbar-title {
+    font-size: 1.1rem;
+  }
+}

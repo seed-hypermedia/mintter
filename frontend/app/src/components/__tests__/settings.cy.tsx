@@ -88,7 +88,6 @@ describe('Settings', () => {
      * - theme selection?
      * - editor element styles (font size, font family, variants...)
      * - default page?
-     * - clear bookmarks?
      */
   })
 })

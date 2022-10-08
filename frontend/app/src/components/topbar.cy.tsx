@@ -4,7 +4,7 @@ import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
 import {libraryMachine} from '@components/library/library-machine'
 import {interpret} from 'xstate'
-import {Topbar, TopbarLibrarySection} from './topbar'
+import {Topbar} from './topbar'
 
 /**
  *
@@ -14,38 +14,33 @@ var libraryService = interpret(libraryMachine).start()
 
 describe('Topbar', () => {
   it('default', () => {
-    cy.mount(<Topbar libraryService={libraryService} />)
+    cy.mount(<Topbar onLibraryToggle={cy.stub()} />)
       .get('[data-testid="topbar-title"]')
       .contains('Publications')
-      .get('[data-testid="topbar-publication-actions"]')
-      .should('not.exist')
-      .get('[data-testid="topbar-draft-actions"]')
-      .should('not.exist')
   })
 
   it('should navigation buttons work + library toggle', () => {
     var props = {
-      handleBack: cy.stub(),
-      handleForward: cy.stub(),
-      handleLibraryToggle: cy.stub(),
-      libraryLabel: 'demo',
+      onBack: cy.stub(),
+      onForward: cy.stub(),
+      onLibraryToggle: cy.stub(),
     }
 
-    cy.mount(<TopbarLibrarySection {...props} />)
+    cy.mount(<Topbar {...props} />)
       .get('[data-testid="history-back"]')
       .click()
       .then(() => {
-        expect(props.handleBack).to.be.calledOnce
+        expect(props.onBack).to.be.calledOnce
       })
       .get('[data-testid="history-forward"]')
       .click()
       .then(() => {
-        expect(props.handleBack).to.be.calledOnce
+        expect(props.onForward).to.be.calledOnce
       })
       .get('[data-testid="library-toggle-button"]')
       .click()
       .then(() => {
-        expect(props.handleBack).to.be.calledOnce
+        expect(props.onLibraryToggle).to.be.calledOnce
       })
   })
 
@@ -110,10 +105,6 @@ describe('Topbar', () => {
     })
 
     it('should copy publication link to clipboard', () => {
-      // noop
-    })
-
-    it('should add to bookmarks', () => {
       // noop
     })
     it('should call edit', () => {

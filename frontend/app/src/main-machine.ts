@@ -10,6 +10,7 @@ import {
   updateDraftV2 as updateDraft,
 } from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {createDraftMachine} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -335,11 +336,15 @@ export function createMainPageService({
               target: '.draftList',
             },
             'GO.TO.DRAFT': {
-              actions: 'assignDraftParams',
+              actions: ['assignDraftParams', 'pushDraftToRecents'],
               target: '.editor',
             },
             'GO.TO.PUBLICATION': {
-              actions: ['assignPublicationParams', 'pushToActivity'],
+              actions: [
+                'assignPublicationParams',
+                'pushToActivity',
+                'pushPublicationToRecents',
+              ],
               target: '.publication',
             },
             'CREATE.NEW.DRAFT': {
@@ -408,26 +413,24 @@ export function createMainPageService({
         }),
         pushPublicationToRecents: assign({
           recents: (context, event) => {
-            let set = new Set<string>(context.recents)
-            let fileRef = getRefFromParams('pub', event.docId, event.version)
-            if (set.has(fileRef)) {
-              set.delete(fileRef)
-            }
-            set.add(fileRef)
-
-            return [...set]
+            let docId =
+              event.type == 'COMMIT.PUBLISH' ? event.documentId : event.docId
+            let version =
+              event.type == 'COMMIT.PUBLISH'
+                ? event.publication.version
+                : event.version
+            let fileRef = getRefFromParams('pub', docId, version)
+            let currentList = context.recents.filter((ref) => fileRef != ref)
+            return [fileRef, ...currentList].splice(0, 9)
           },
         }),
         pushDraftToRecents: assign({
           recents: (context, event) => {
-            let set = new Set<string>(context.recents)
-            let fileRef = getRefFromParams('draft', event.docId, null)
-            if (set.has(fileRef)) {
-              set.delete(fileRef)
-            }
-            set.add(fileRef)
-
-            return [...set]
+            let docId =
+              event.type == 'GO.TO.DRAFT' ? event.docId : event.data.id
+            let fileRef = getRefFromParams('draft', docId, null)
+            let currentList = context.recents.filter((ref) => fileRef != ref)
+            return [fileRef, ...currentList].splice(0, 9)
           },
         }),
         assignPublicationParams: assign({
@@ -605,12 +608,8 @@ export function createMainPageService({
           },
         }),
         removeDraftFromRecents: assign({
-          recents: (context, event) => {
-            let ref = getRefFromParams('draft', event.documentId, null)
-            let _set = new Set(context.recents)
-            _set.delete(ref)
-            return [..._set]
-          },
+          recents: (context, event) =>
+            context.recents.filter((ref) => !ref.includes(event.documentId)),
         }),
       },
       services: {
@@ -746,7 +745,7 @@ export function createMainPageService({
               ),
           )
 
-          let currentUrl = `mtt://${context.params.docId}/${context.params.version}`
+          let currentUrl = `${MINTTER_LINK_PREFIX}${context.params.docId}/${context.params.version}`
           let doc = await createDraft()
           let block = statement([
             paragraph([
