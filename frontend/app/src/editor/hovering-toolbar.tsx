@@ -32,11 +32,11 @@ export function EditorHoveringToolbar() {
       selectionColors.size === 1 ? [...selectionColors.values()][0] : null
 
     setSelectionColor(maybeColor || 'invalid color')
-  }, [editor.selection])
+  }, [editor])
 
   const codeInSelection = useMemo(
     () => [...Editor.nodes(editor)].some(([node]) => isCode(node)),
-    [editor, editor.selection],
+    [editor],
   )
 
   return (

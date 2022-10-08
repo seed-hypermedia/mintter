@@ -6,7 +6,6 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-
   border-radius: 0.3em;
   border: var(--mtt-space-1) solid transparent;
   color: var(--mtt-colors-primary-text-high);
@@ -16,6 +15,11 @@
     border: 2px solid var(--mtt-colors-warning-active);
     gap: 0.2em;
     padding-inline: var(--mtt-space-2);
+  }
+
+  &:hover {
+    cursor: pointer;
+    background-color: var(--mtt-colors-base-component-bg-hover);
   }
 
   // when the input lost focus, but there is still content inside it, we show a grey border instead of an orange one

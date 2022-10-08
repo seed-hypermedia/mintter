@@ -2,14 +2,16 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {useCurrentFile, useIsEditing, useMain} from '@app/main-context'
-import {CurrentFile, PublicationRef} from '@app/main-machine'
+import {CurrentFile, DraftRef, PublicationRef} from '@app/main-machine'
 import {classnames} from '@app/utils/classnames'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TippingModal} from '@components/tipping-modal'
+import {Tooltip} from '@components/tooltip'
 import {useActor, useSelector} from '@xstate/react'
 import {useMemo} from 'react'
+import toast from 'react-hot-toast'
 import '../styles/topbar.scss'
 type TopbarProps = {
   onLibraryToggle: () => void
@@ -25,13 +27,23 @@ export function Topbar({onLibraryToggle, onBack, onForward}: TopbarProps) {
     if (!currentFile) return null
     return currentFile.id.startsWith('pub-')
   }, [currentFile])
+
+  async function handleCopy() {
+    await copyTextToClipboard(
+      `${MINTTER_LINK_PREFIX}${mainState.context.params.docId}/${mainState.context.params.version}`,
+    )
+    toast.success('Document Reference copied successfully', {
+      position: 'top-center',
+    })
+  }
+
   return (
     <div
       data-layout-section="topbar"
       className={classnames('topbar', 'macos', {visible: !isEditing})}
       {...draggableProps}
     >
-      <div className="topbar-section main">
+      <div className="topbar-section main" {...draggableProps}>
         {currentFile ? (
           <FileTitle fileRef={currentFile} isPublication={isPublication} />
         ) : (
@@ -47,21 +59,44 @@ export function Topbar({onLibraryToggle, onBack, onForward}: TopbarProps) {
           />
         )}
       </div>
-      <div className="topbar-section actions">
-        {currentFile && isPublication ? (
-          <PublicationActions fileRef={currentFile} />
-        ) : null}
-        {currentFile && !isPublication ? (
-          <button className="topbar-button success outlined">Done</button>
-        ) : null}
+      <div className="topbar-section actions" {...draggableProps}>
         <Find />
-        <button
-          className="topbar-button primary outlined"
-          onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
-        >
-          <Icon name="Add" size="2" />
-          <span>New Document</span>
-        </button>
+        {isPublication && (
+          <Tooltip content="Copy Document Reference">
+            <button
+              className="topbar-button"
+              data-testid="copy-button"
+              onClick={handleCopy}
+            >
+              <Icon name="Copy" />
+            </button>
+          </Tooltip>
+        )}
+        {currentFile && !isPublication && (
+          <button
+            onClick={() => (currentFile as DraftRef).send('DRAFT.PUBLISH')}
+            className="topbar-button success outlined"
+            data-testid="button-publish"
+          >
+            Done
+          </button>
+        )}
+        <div className="button-group">
+          <button
+            onClick={() => mainService.send('COMMIT.OPEN.WINDOW')}
+            className="topbar-button"
+          >
+            <Icon name="Add" />
+            <span style={{marginRight: '0.3em'}}>Write</span>
+          </button>
+          {currentFile && isPublication && (
+            <WriteDropdown
+              fileRef={currentFile as PublicationRef}
+              isPublication={isPublication}
+            />
+          )}
+        </div>
+
         <div className="button-group">
           <button
             data-testid="history-back"
@@ -80,6 +115,7 @@ export function Topbar({onLibraryToggle, onBack, onForward}: TopbarProps) {
             <Icon name="ArrowChevronRight" size="2" color="muted" />
           </button>
         </div>
+
         <button
           data-testid="library-toggle-button"
           onClick={onLibraryToggle}
@@ -138,36 +174,43 @@ function TopbarTitle({title}: {title: string}) {
   )
 }
 
-function PublicationActions({fileRef}: {fileRef: CurrentFile}) {
-  const mainService = useMain()
+type WriteDropdownProps = {
+  fileRef: PublicationRef
+  isPublication?: boolean
+}
+
+function WriteDropdown({fileRef, isPublication = false}: WriteDropdownProps) {
+  let mainService = useMain()
+  const canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
   let isReplying = useSelector(mainService, (state) =>
     state.matches('routes.publication.replying'),
   )
-  const [state] = useActor(fileRef)
-
-  async function handleCopy() {
-    await copyTextToClipboard(
-      `${MINTTER_LINK_PREFIX}${state.context.documentId}/${state.context.version}`,
-    )
-  }
   return (
     <Dropdown.Root modal={false}>
       <Dropdown.Trigger asChild>
-        <button className="topbar-button dropdown success">
-          <span>Write</span>
+        <button className="topbar-button dropdown">
           <Icon name="CaretDown" />
         </button>
       </Dropdown.Trigger>
       <Dropdown.Portal>
         <Dropdown.Content alignOffset={-5} align="end">
           <Dropdown.Item
-            onSelect={() => mainService.send('COMMIT.CREATE.REPLY')}
-            disabled={isReplying}
+            onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
           >
-            <Icon name="MessageBubble" />
-            <span>Reply</span>
+            <Icon name="File" />
+            <span>New Document</span>
           </Dropdown.Item>
-          {state.context.canUpdate ? (
+
+          {isPublication && (
+            <Dropdown.Item
+              onSelect={() => mainService.send('COMMIT.CREATE.REPLY')}
+              disabled={isReplying}
+            >
+              <Icon name="MessageBubble" />
+              <span>Reply</span>
+            </Dropdown.Item>
+          )}
+          {isPublication && canUpdate ? (
             <Dropdown.Item
               onSelect={() => {
                 // noop
@@ -179,21 +222,12 @@ function PublicationActions({fileRef}: {fileRef: CurrentFile}) {
           ) : (
             <TippingModal fileRef={fileRef as PublicationRef} />
           )}
-          <Dropdown.Item
-            onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
-          >
-            <Icon name="File" />
-            <span>New Docuent</span>
-          </Dropdown.Item>
-          <Dropdown.Item>
-            <Icon name="PencilAdd" />
-            <span>Review</span>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={handleCopy}>
-            <Icon name="Copy" />
-            <span>Copy Reference</span>
-          </Dropdown.Item>
-          <Dropdown.Separator color="muted" />
+          {isPublication && (
+            <Dropdown.Item>
+              <Icon name="PencilAdd" />
+              <span>Review</span>
+            </Dropdown.Item>
+          )}
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>

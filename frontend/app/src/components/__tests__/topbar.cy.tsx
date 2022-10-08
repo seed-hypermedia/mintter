@@ -1,16 +1,12 @@
-import {Account, Publication} from '@app/client'
+import {Account, Document, Publication} from '@app/client'
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
-import {libraryMachine} from '@components/library/library-machine'
-import {interpret} from 'xstate'
-import {Topbar} from './topbar'
+import {Topbar} from '../topbar'
 
 /**
  *
  */
-
-var libraryService = interpret(libraryMachine).start()
 
 describe('Topbar', () => {
   it('default', () => {
@@ -45,8 +41,32 @@ describe('Topbar', () => {
   })
 
   describe('Topbar with Draft', () => {
-    it('should render draft title', () => {
-      // noop
+    it.only('should render draft title', () => {
+      let mockDraft: Document = {
+        id: 'foo',
+        title: 'draft test',
+        author: 'testauthor',
+        subtitle: '',
+        children: [],
+        createTime: new Date(),
+        updateTime: undefined,
+        publishTime: undefined,
+      }
+
+      let {client} = createTestQueryClient({
+        draft: mockDraft,
+        draftList: [mockDraft],
+        authors: [
+          {
+            id: 'testauthor',
+          },
+        ],
+      })
+
+      cy.mount(<Topbar onLibraryToggle={cy.stub()} />, {
+        client,
+        path: `/editor/foo`,
+      }).get('[data-testid="button-publish"]')
     })
   })
 
@@ -91,7 +111,7 @@ describe('Topbar', () => {
 
       theAuthors = authors as Array<Account>
 
-      cy.mount(<Topbar libraryService={libraryService} />, {
+      cy.mount(<Topbar onLibraryToggle={cy.stub()} />, {
         client,
         path: '/p/d1/v1',
       })

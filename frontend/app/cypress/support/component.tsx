@@ -25,7 +25,8 @@ import {
   CustomMountOptions,
   TestProvider,
 } from '@app/test/utils'
-import {mount, MountOptions, MountReturn} from 'cypress/react18'
+import {MountOptions, MountReturn} from 'cypress/react'
+import {mount} from 'cypress/react18'
 import Navaid from 'navaid'
 
 // Augment the Cypress namespace to include type definitions for
@@ -50,17 +51,28 @@ declare global {
 }
 
 Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
-  let {client: customClient, account, path, ...mountOptions} = options
+  let {
+    client: customClient,
+    account,
+    path,
+    mainMachineOptions,
+    ...mountOptions
+  } = options
   let client = customClient ?? createTestQueryClient({account}).client
   globalStyles()
 
   let router = Navaid('/').listen()
 
   if (path) {
+    console.log('ROUTE!', path)
     router.route(path)
   }
 
-  const wrapped = <TestProvider client={client}>{component}</TestProvider>
+  const wrapped = (
+    <TestProvider client={client} mainMachineOptions={mainMachineOptions}>
+      {component}
+    </TestProvider>
+  )
   // const wrapped = <div>{component}</div>
 
   return mount(wrapped, mountOptions)

@@ -187,7 +187,7 @@ function PublicationBlocktools(
           gap: '$2',
         }}
       >
-        <Icon name="Copy" size="1" /> <span>{blockId}</span>
+        <Icon name="Copy" /> <span>{blockId}</span>
       </Button>
     </Box>
   )
