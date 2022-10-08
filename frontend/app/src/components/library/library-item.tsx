@@ -182,18 +182,18 @@ export function LibraryItem({
                 disabled={!isPublication}
                 onSelect={onCopy}
               >
-                <Icon name="Copy" size="1" />
+                <Icon name="Copy" />
                 <Text size="2">Copy Document ID</Text>
               </Dropdown.Item>
               <Dropdown.Item data-testid="mainpanel-item" onSelect={goToItem}>
-                <Icon size="1" name="ArrowTopRight" />
+                <Icon name="ArrowTopRight" />
                 <Text size="2">Open in main panel</Text>
               </Dropdown.Item>
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={onOpenInNewWindow}
               >
-                <Icon size="1" name="OpenInNewWindow" />
+                <Icon name="OpenInNewWindow" />
                 <Text size="2">Open in new Window</Text>
               </Dropdown.Item>
               <DeleteDialog
@@ -205,7 +205,7 @@ export function LibraryItem({
                   data-testid="delete-item"
                   onSelect={(e) => e.preventDefault()}
                 >
-                  <Icon size="1" name="Close" />
+                  <Icon name="Close" />
                   <Text size="2">Delete Document</Text>
                 </Dropdown.Item>
               </DeleteDialog>

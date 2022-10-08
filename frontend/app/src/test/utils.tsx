@@ -16,6 +16,7 @@ import {MainProvider} from '@app/main-context'
 import {createMainPageService} from '@app/main-machine'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
+import {globalStyles} from '@app/stitches.config'
 import {createThemeService, ThemeProvider} from '@app/theme'
 import {libraryMachine} from '@components/library/library-machine'
 import {TooltipProvider} from '@components/tooltip'
@@ -24,7 +25,7 @@ import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
 import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {Suspense} from 'react'
-import {spawn} from 'xstate'
+import {MachineOptionsFrom, spawn} from 'xstate'
 
 type TestMockData = {
   account?: Partial<Account>
@@ -180,26 +181,33 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   return values
 }
 
-export function TestProvider({client, children}: TestProviderProps) {
+export function TestProvider({
+  client,
+  children,
+  mainMachineOptions,
+}: TestProviderProps) {
   let authService = useInterpret(() => createAuthService(client))
   let themeService = useInterpret(() => createThemeService())
-  let mainService = useInterpret(() =>
-    createMainPageService({client}).withContext({
-      activity: spawn(activityMachine, 'activity'),
-      library: spawn(libraryMachine, 'library'),
-      params: {
-        replace: false,
-      },
-      recents: [],
+  let mainService = useInterpret(
+    () =>
+      createMainPageService({client}).withContext(() => ({
+        activity: spawn(activityMachine, 'activity'),
+        library: spawn(libraryMachine, 'library'),
+        params: {
+          replace: false,
+        },
+        recents: [],
 
-      currentFile: null,
-      publicationList: [],
-      draftList: [],
-      errorMessage: '',
-    }),
+        currentFile: null,
+        publicationList: [],
+        draftList: [],
+        errorMessage: '',
+      })),
+    mainMachineOptions,
   )
 
   // return null
+  globalStyles()
   return (
     <QueryClientProvider client={client}>
       <Suspense fallback={<p>Loading...</p>}>
@@ -224,11 +232,17 @@ export type CustomMountOptions = {
   account?: Account
   path?: string
   client?: QueryClient
+  mainMachineOptions?: MachineOptionsFrom<
+    ReturnType<typeof createMainPageService>
+  >
 }
 
 export type TestProviderProps = CustomMountOptions & {
   children: React.ReactNode
   client: QueryClient
+  mainMachineOptions?: MachineOptionsFrom<
+    ReturnType<typeof createMainPageService>
+  >
 }
 
 export function TestPublicationProvider({children}) {

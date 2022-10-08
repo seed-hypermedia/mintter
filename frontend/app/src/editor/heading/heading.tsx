@@ -108,7 +108,7 @@ function Heading({
   element,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
-  let {blockProps, parentNode} = useBlockProps(element)
+  let {blockProps} = useBlockProps(element)
 
   if (mode == EditorMode.Embed) {
     return (

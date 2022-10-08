@@ -74,9 +74,13 @@ export function ContactsSection() {
           window.location.reload()
         }}
       >
-        {online.map((contact) => (
-          <ContactItem key={contact.id} contact={contact} />
-        ))}
+        {online.length ? (
+          online.map((contact) => (
+            <ContactItem key={contact.id} contact={contact} />
+          ))
+        ) : (
+          <ContactListLoading />
+        )}
       </ErrorBoundary>
     </Section>
   )
@@ -130,7 +134,7 @@ export function ContactsPrompt({
           },
         }}
       >
-        <Icon name="Add" color="muted" size="1" />
+        <Icon name="Add" color="muted" />
       </Prompt.Trigger>
       <Prompt.Content>
         <Prompt.Title>Connect to Peer</Prompt.Title>

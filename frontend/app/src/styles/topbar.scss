@@ -28,9 +28,9 @@
   padding-block: 0.5em;
   align-items: stretch;
 
-  & > *:hover {
-    cursor: default;
-  }
+  // & > *:hover {
+  //   cursor: default;
+  // }
 
   &.main {
     flex: 1;
@@ -40,7 +40,7 @@
   }
 
   &.actions {
-    gap: 1em;
+    gap: 0.5em;
   }
 }
 
