@@ -1,5 +1,6 @@
 import {useAccount, useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
+import {forceSync} from '@app/client/daemon'
 import {useActivity} from '@app/main-context'
 import {styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
@@ -7,6 +8,7 @@ import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useActor} from '@xstate/react'
 import {FormEvent} from 'react'
+import toast from 'react-hot-toast'
 import {Box} from './box'
 import {Button} from './button'
 import {PeerAddrs} from './peer-addrs'
@@ -245,11 +247,17 @@ export function AccountInfo() {
 function AppSettings() {
   let activityService = useActivity()
 
+  async function onReloadSync() {
+    await forceSync()
+    toast.success('reload sync successful!')
+  }
+
   return (
     <Box
       css={{
         alignItems: 'center',
         display: 'flex',
+        // flexDirection: 'column',
         gap: '$3',
         padding: '$5',
         marginTop: '$8',
@@ -266,6 +274,9 @@ function AppSettings() {
         }}
       >
         Reset Activity
+      </Button>
+      <Button size="1" variant="outlined" onClick={onReloadSync}>
+        Reload Database Sync
       </Button>
     </Box>
   )

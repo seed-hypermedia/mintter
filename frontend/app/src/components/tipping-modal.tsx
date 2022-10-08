@@ -73,7 +73,7 @@ export function TippingModal({fileRef}: {fileRef: PublicationRef}) {
             },
           }}
         >
-          <Icon size="1" name="Star" color="muted" />
+          <Icon name="Star" />
           Tip {fileState.context.author?.profile?.alias}
         </Button>
       </PopoverPrimitive.Trigger>

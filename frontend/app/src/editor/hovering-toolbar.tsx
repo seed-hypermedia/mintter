@@ -93,8 +93,8 @@ export function PublicationHoveringToolbar() {
 
 const textSelectorStyles = css({
   '$$outlined-border-size': '1px',
-  width: '2em',
-  height: '2em',
+  width: '1.5em',
+  height: '1.5em',
   fontSize: '$2',
   lineHeight: '$1',
   padding: '$1',

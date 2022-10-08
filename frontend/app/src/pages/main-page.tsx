@@ -39,7 +39,9 @@ export default function MainPage() {
           {state.matches('routes.draftList') && <DraftList />}
           {state.matches('routes.publicationList') ? <PublicationList /> : null}
           <Library service={libraryService} />
-          <Topbar libraryService={libraryService} />
+          <Topbar
+            onLibraryToggle={() => libraryService.send('LIBRARY.TOGGLE')}
+          />
         </ErrorBoundary>
       </Box>
       <QuickSwitcher />

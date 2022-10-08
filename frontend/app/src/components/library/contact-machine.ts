@@ -1,5 +1,5 @@
 import {Account, ConnectionStatus, getPeerInfo, PeerInfo} from '@app/client'
-import {assign, createMachine} from 'xstate'
+import {assign, createMachine, sendParent} from 'xstate'
 
 type ContactContext = {
   account: Account
@@ -50,7 +50,11 @@ export function createContactMachine(account: Account) {
               },
               on: {
                 'REPORT.FETCH.SUCCESS': {
-                  actions: ['assignData', 'assignConnectionStatus'],
+                  actions: [
+                    'assignData',
+                    'assignConnectionStatus',
+                    'commitStatus',
+                  ],
                   target: 'ready',
                 },
                 'REPORT.FETCH.ERROR': {
@@ -96,6 +100,19 @@ export function createContactMachine(account: Account) {
               }
             }
           },
+        }),
+        commitStatus: sendParent((context) => {
+          if (context.status == ConnectionStatus.CONNECTED) {
+            return {
+              type: 'COMMIT.ONLINE',
+              accountId: context.account.id,
+            }
+          }
+
+          return {
+            type: 'COMMIT.OFFLINE',
+            accountId: context.account.id,
+          }
         }),
         assignData: assign({
           peers: (_, event) => event.data,

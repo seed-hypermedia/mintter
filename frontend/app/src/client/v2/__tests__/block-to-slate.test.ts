@@ -451,7 +451,7 @@ describe('Transform: blockToSlate', () => {
         annotations: [
           {
             type: 'embed',
-            attributes: {url: 'mtt://doc1/block1'},
+            attributes: {url: 'mintter://doc1/block1'},
             starts: [0],
             ends: [1],
           },
@@ -461,7 +461,7 @@ describe('Transform: blockToSlate', () => {
       let output = statement({id: 'blockId'}, [
         paragraph([
           text(''),
-          embed({url: 'mtt://doc1/block1'}, [text('')]),
+          embed({url: 'mintter://doc1/block1'}, [text('')]),
           text(''),
         ]),
       ])
@@ -477,13 +477,13 @@ describe('Transform: blockToSlate', () => {
         annotations: [
           {
             type: 'embed',
-            attributes: {url: 'mtt://doc1/block1'},
+            attributes: {url: 'mintter://doc1/block1'},
             starts: [0],
             ends: [1],
           },
           {
             type: 'embed',
-            attributes: {url: 'mtt://doc2/block2'},
+            attributes: {url: 'mintter://doc2/block2'},
             starts: [1],
             ends: [2],
           },
@@ -493,9 +493,9 @@ describe('Transform: blockToSlate', () => {
       let output = statement({id: 'blockId'}, [
         paragraph([
           text(''),
-          embed({url: 'mtt://doc1/block1'}, [text('')]),
+          embed({url: 'mintter://doc1/block1'}, [text('')]),
           text(''),
-          embed({url: 'mtt://doc2/block2'}, [text('')]),
+          embed({url: 'mintter://doc2/block2'}, [text('')]),
           text(''),
         ]),
       ])
@@ -511,14 +511,14 @@ describe('Transform: blockToSlate', () => {
         annotations: [
           {
             type: 'embed',
-            attributes: {url: 'mtt://doc1/block1'},
+            attributes: {url: 'mintter://doc1/block1'},
             starts: [5],
             ends: [6],
           },
           {starts: [30], ends: [41], type: 'strong', attributes: {}},
           {
             type: 'embed',
-            attributes: {url: 'mtt://doc2/block2'},
+            attributes: {url: 'mintter://doc2/block2'},
             starts: [41],
             ends: [42],
           },
@@ -528,11 +528,11 @@ describe('Transform: blockToSlate', () => {
       let output = statement({id: 'blockId'}, [
         paragraph([
           text('This '),
-          embed({url: 'mtt://doc1/block1'}, [text('')]),
+          embed({url: 'mintter://doc1/block1'}, [text('')]),
           text(''),
           text(' and also this are very '),
           text('important: ', {strong: true}),
-          embed({url: 'mtt://doc2/block2'}, [text('')]),
+          embed({url: 'mintter://doc2/block2'}, [text('')]),
           text(''),
         ]),
       ])

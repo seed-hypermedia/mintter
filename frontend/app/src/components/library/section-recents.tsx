@@ -76,7 +76,7 @@ function RecentItem({file}: {file: ReturnType<typeof useFileFromRef>}) {
 
   return (
     <StyledItem className={listItemStyle()}>
-      <a className="title" onClick={goToDocument} href="">
+      <a className="title" onClick={goToDocument}>
         {state.context.title || 'Untitled Document'}
       </a>
     </StyledItem>
