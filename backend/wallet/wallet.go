@@ -249,7 +249,7 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	ret.Name = name
 	if creds.WalletType == lndhubsql.LndhubGoWalletType {
 		// Only one lndhub.go wallet is allowed
-		wallets, err := srv.ListWallets(ctx)
+		wallets, err := srv.ListWallets(ctx, false)
 		if err != nil {
 			srv.log.Debug(err.Error())
 			return ret, err
@@ -291,8 +291,10 @@ func (srv *Service) InsertWallet(ctx context.Context, credentialsURL, name strin
 	return ret, err
 }
 
-// ListWallets returns all the wallets available in the database.
-func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
+// ListWallets returns all the wallets available in the database. If includeBalance is tru, then
+// ListWallets will also include the balance one every lndhub-like wallet. If false,then the call
+// is quicker but no balance information will appear.
+func (srv *Service) ListWallets(ctx context.Context, includeBalance bool) ([]wallet.Wallet, error) {
 	conn := srv.pool.Get(ctx)
 	if conn == nil {
 		err := fmt.Errorf("couldn't get sqlite connector from the pool before timeout")
@@ -306,7 +308,7 @@ func (srv *Service) ListWallets(ctx context.Context) ([]wallet.Wallet, error) {
 		return nil, fmt.Errorf("couldn't list wallets")
 	}
 	for i, w := range wallets {
-		if strings.ToLower(w.Type) == lndhubsql.LndhubWalletType || strings.ToLower(w.Type) == lndhubsql.LndhubGoWalletType {
+		if includeBalance && (strings.ToLower(w.Type) == lndhubsql.LndhubWalletType || strings.ToLower(w.Type) == lndhubsql.LndhubGoWalletType) {
 			balance, err := srv.lightningClient.Lndhub.GetBalance(ctx)
 			if err != nil {
 				srv.log.Debug("couldn't get balance", zap.String("wallet", w.Name), zap.String("error", err.Error()))

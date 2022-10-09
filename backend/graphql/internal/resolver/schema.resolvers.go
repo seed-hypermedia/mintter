@@ -15,7 +15,7 @@ import (
 
 // Wallets is the resolver for the wallets field.
 func (r *meResolver) Wallets(ctx context.Context, obj *generated.Me) ([]generated.LightningWallet, error) {
-	wallets, err := r.svc.ListWallets(ctx)
+	wallets, err := r.svc.ListWallets(ctx, true)
 	ret := []generated.LightningWallet{}
 
 	if err != nil {
