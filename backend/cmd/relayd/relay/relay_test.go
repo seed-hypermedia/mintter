@@ -3,6 +3,7 @@ package relay
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/libp2p/go-libp2p"
@@ -45,6 +46,7 @@ func initAndTest(relayVersion uint8) error {
 	}
 	defer func() {
 		_ = h2.Stop()
+		os.Remove(defaultCfgPath)
 	}()
 	h2info := peer.AddrInfo{
 		ID: h2.host.ID(), //We use the internal function since the exported one returns string instead of peer.ID

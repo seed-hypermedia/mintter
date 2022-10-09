@@ -11,6 +11,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const defaultCfgPath = "./relay.conf"
+
 // Config holds relay configuration.
 type Config struct {
 	PrivKey string
@@ -76,7 +78,6 @@ func defaultConfig() Config {
 // LoadConfig reads configuration from json file in cfgPath.
 func (r *Relay) loadConfig(cfgPath string) (Config, error) {
 	cfg := defaultConfig()
-	const defaultCfgPath = "./relay.conf"
 	if cfgPath != "" {
 		cfgFile, err := os.Open(cfgPath)
 		if err != nil {
