@@ -33,14 +33,20 @@ func TestModifyWallets(t *testing.T) {
 	ctx := context.Background()
 	var err error
 	var defaultWallet walletsql.Wallet
-	require.Eventually(t, func() bool { defaultWallet, err = alice.GetDefaultWallet(ctx); return err == nil }, 10*time.Second, 3*time.Second)
-
+	require.Eventually(t, func() bool { defaultWallet, err = alice.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 3*time.Second)
+	require.Eventually(t, func() bool {
+		conn := alice.pool.Get(ctx)
+		defer alice.pool.Put(conn)
+		lndhubsql.GetToken(conn, defaultWallet.ID)
+		return err == nil
+	}, 3*time.Second, 1*time.Second)
 	require.EqualValues(t, lndhubsql.LndhubGoWalletType, defaultWallet.Type)
 	err = alice.DeleteWallet(ctx, defaultWallet.ID)
 	require.Error(t, err)
 	const newName = "new wallet name"
 	_, err = alice.UpdateWalletName(ctx, defaultWallet.ID, newName)
 	require.NoError(t, err)
+
 	wallets, err := alice.ListWallets(ctx, true)
 	require.NoError(t, err)
 	require.EqualValues(t, 1, len(wallets))
@@ -61,6 +67,14 @@ func TestRequestLndHubInvoice(t *testing.T) {
 	var memo = "test invoice"
 	var err error
 	var payreq string
+	var defaultWallet walletsql.Wallet
+	require.Eventually(t, func() bool { defaultWallet, err = bob.GetDefaultWallet(ctx); return err == nil }, 7*time.Second, 3*time.Second)
+	require.Eventually(t, func() bool {
+		conn := bob.pool.Get(ctx)
+		defer bob.pool.Put(conn)
+		lndhubsql.GetToken(conn, defaultWallet.ID)
+		return err == nil
+	}, 3*time.Second, 1*time.Second)
 	require.Eventually(t, func() bool {
 		payreq, err = alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
 		return err == nil
