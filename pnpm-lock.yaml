@@ -59,7 +59,7 @@ importers:
       '@stitches/core': 1.2.8
       '@stitches/react': 1.2.8
       '@tanstack/react-query': 4.10.3
-      '@tanstack/react-query-devtools': 4.10.4
+      '@tanstack/react-query-devtools': 4.11.0
       '@tauri-apps/api': 1.1.0
       '@types/autosize': 4.0.1
       '@types/google-protobuf': 3.15.6
@@ -243,7 +243,7 @@ importers:
       '@graphql-codegen/cli': 2.13.5_k4tgeuxgjoyg5fbcy4uzgsyom4
       '@graphql-codegen/typescript': 2.7.3_graphql@16.6.0
       '@happy-dom/global-registrator': 7.4.0
-      '@tanstack/react-query-devtools': 4.10.4_vhepussragssjkevgznguhxexq
+      '@tanstack/react-query-devtools': 4.11.0_vhepussragssjkevgznguhxexq
       '@types/autosize': 4.0.1
       '@types/google-protobuf': 3.15.6
       '@types/hast': 2.3.4
@@ -2445,8 +2445,8 @@ packages:
   /@tanstack/query-core/4.10.3:
     resolution: {integrity: sha512-+ME02sUmBfx3Pjd+0XtEthK8/4rVMD2jcxvnW9DSgFONpKtpjzfRzjY4ykzpDw1QEo2eoPvl7NS8J5mNI199aA==}
 
-  /@tanstack/react-query-devtools/4.10.4_vhepussragssjkevgznguhxexq:
-    resolution: {integrity: sha512-+V2wxeDyXYAUTSP/kUy6JsuFXDDHBouexBINaRCNTgPe0xcFP34syWAATVTvyarpqgYhIYLJtkYzT1JL2wM8TQ==}
+  /@tanstack/react-query-devtools/4.11.0_vhepussragssjkevgznguhxexq:
+    resolution: {integrity: sha512-g/414SruE0TEp4jeMYxVUSXGXCc+zMY9j0gB8Q6B91gmyPseNqs9WLkVrqxRXoQDyRvDcphVOaEANNygGx+zGg==}
     peerDependencies:
       '@tanstack/react-query': 4.10.3
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
