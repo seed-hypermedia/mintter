@@ -15,6 +15,7 @@ import (
 	"mintter/backend/testutil"
 	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/vcsdb"
+	"mintter/backend/wallet/walletsql"
 	"path/filepath"
 	"testing"
 	"time"
@@ -24,27 +25,23 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	timeoutSeconds = 15
-)
-
 func TestModifyWallets(t *testing.T) {
 	//t.Skip("Uncomment skip to run integration tests with BlueWallet")
 
 	alice := makeTestService(t, "alice")
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-	defer cancel()
-	time.Sleep(5 * time.Second) // wait until internal wallet is registered
-	defaultWallet, err := alice.GetDefaultWallet(ctx)
-	require.NoError(t, err)
+	ctx := context.Background()
+	var err error
+	var defaultWallet walletsql.Wallet
+	require.Eventually(t, func() bool { defaultWallet, err = alice.GetDefaultWallet(ctx); return err == nil }, 10*time.Second, 3*time.Second)
+
 	require.EqualValues(t, lndhubsql.LndhubGoWalletType, defaultWallet.Type)
 	err = alice.DeleteWallet(ctx, defaultWallet.ID)
 	require.Error(t, err)
 	const newName = "new wallet name"
 	_, err = alice.UpdateWalletName(ctx, defaultWallet.ID, newName)
 	require.NoError(t, err)
-	wallets, err := alice.ListWallets(ctx)
+	wallets, err := alice.ListWallets(ctx, true)
 	require.NoError(t, err)
 	require.EqualValues(t, 1, len(wallets))
 	require.EqualValues(t, newName, wallets[0].Name)
@@ -55,16 +52,19 @@ func TestRequestLndHubInvoice(t *testing.T) {
 
 	alice := makeTestService(t, "alice")
 	bob := makeTestService(t, "bob")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-	defer cancel()
-	time.Sleep(5 * time.Second) // wait until internal wallet is registered
+	ctx := context.Background()
 
+	require.Eventually(t, func() bool { _, ok := bob.net.Get(); return ok }, 5*time.Second, 1*time.Second)
 	cid := bob.net.MustGet().ID().AccountID()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
-	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
-	require.NoError(t, err)
+	var err error
+	var payreq string
+	require.Eventually(t, func() bool {
+		payreq, err = alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
+		return err == nil
+	}, 8*time.Second, 2*time.Second)
 	invoice, err := lndhub.DecodeInvoice(payreq)
 	require.NoError(t, err)
 	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())
@@ -80,17 +80,22 @@ func TestRequestP2PInvoice(t *testing.T) {
 
 	alice := makeTestService(t, "alice")
 	bob := makeTestService(t, "bob")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-	defer cancel()
-	time.Sleep(5 * time.Second) // wait until internal wallet is registered
+	ctx := context.Background()
+
+	require.Eventually(t, func() bool { _, ok := alice.net.Get(); return ok }, 5*time.Second, 1*time.Second)
 	require.NoError(t, alice.net.MustGet().Connect(ctx, bob.net.MustGet().AddrInfo()))
 
+	require.Eventually(t, func() bool { _, ok := bob.net.Get(); return ok }, 3*time.Second, 1*time.Second)
 	cid := bob.net.MustGet().ID().AccountID()
 	var amt uint64 = 23
 	var wrongAmt uint64 = 24
 	var memo = "test invoice"
-	payreq, err := alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
-	require.NoError(t, err)
+	var err error
+	var payreq string
+	require.Eventually(t, func() bool {
+		payreq, err = alice.RequestRemoteInvoice(ctx, cid.String(), int64(amt), &memo)
+		return err == nil
+	}, 8*time.Second, 2*time.Second)
 	invoice, err := lndhub.DecodeInvoice(payreq)
 	require.NoError(t, err)
 	require.EqualValues(t, amt, invoice.MilliSat.ToSatoshis())

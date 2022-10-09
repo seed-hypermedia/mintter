@@ -16,7 +16,7 @@ import (
 type Service interface {
 	GetLnAddress(context.Context) (string, error)
 	InsertWallet(context.Context, string, string) (wallet.Wallet, error)
-	ListWallets(context.Context) ([]wallet.Wallet, error)
+	ListWallets(context.Context, bool) ([]wallet.Wallet, error)
 	DeleteWallet(context.Context, string) error
 	UpdateWalletName(context.Context, string, string) (wallet.Wallet, error)
 	SetDefaultWallet(context.Context, string) (wallet.Wallet, error)

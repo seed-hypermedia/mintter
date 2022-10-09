@@ -59,7 +59,7 @@ func GetToken(conn *sqlite.Conn, id string) (string, error) {
 	res, err := getToken(conn, id)
 	// TODO: decrypt token before returning
 	if err == nil && len(res.WalletsToken) == 0 {
-		return "", fmt.Errorf("Could not find any password associated with provided id [%s]: %w", id, ErrEmptyResult)
+		return "", fmt.Errorf("Could not find any token associated with provided id [%s]: %w", id, ErrEmptyResult)
 	}
 	return string(res.WalletsToken[:]), err
 }
