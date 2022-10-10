@@ -92,6 +92,8 @@ export interface GetPublicationRequest {
   documentId: string;
   /** Optional. Specific version of the published document. If empty, the latest one is returned. */
   version: string;
+  /** Optional. If true, only local publications will be found. False by default. */
+  localOnly: boolean;
 }
 
 /** Request for deleting a publication. */
@@ -811,7 +813,7 @@ export const PublishDraftRequest = {
 };
 
 function createBaseGetPublicationRequest(): GetPublicationRequest {
-  return { documentId: "", version: "" };
+  return { documentId: "", version: "", localOnly: false };
 }
 
 export const GetPublicationRequest = {
@@ -821,6 +823,9 @@ export const GetPublicationRequest = {
     }
     if (message.version !== "") {
       writer.uint32(18).string(message.version);
+    }
+    if (message.localOnly === true) {
+      writer.uint32(24).bool(message.localOnly);
     }
     return writer;
   },
@@ -838,6 +843,9 @@ export const GetPublicationRequest = {
         case 2:
           message.version = reader.string();
           break;
+        case 3:
+          message.localOnly = reader.bool();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -850,6 +858,7 @@ export const GetPublicationRequest = {
     return {
       documentId: isSet(object.documentId) ? String(object.documentId) : "",
       version: isSet(object.version) ? String(object.version) : "",
+      localOnly: isSet(object.localOnly) ? Boolean(object.localOnly) : false,
     };
   },
 
@@ -857,6 +866,7 @@ export const GetPublicationRequest = {
     const obj: any = {};
     message.documentId !== undefined && (obj.documentId = message.documentId);
     message.version !== undefined && (obj.version = message.version);
+    message.localOnly !== undefined && (obj.localOnly = message.localOnly);
     return obj;
   },
 
@@ -864,6 +874,7 @@ export const GetPublicationRequest = {
     const message = createBaseGetPublicationRequest();
     message.documentId = object.documentId ?? "";
     message.version = object.version ?? "";
+    message.localOnly = object.localOnly ?? false;
     return message;
   },
 };

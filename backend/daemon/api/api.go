@@ -16,6 +16,7 @@ import (
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/go-cid"
 )
 
 // Server combines all the daemon API services into one thing.
@@ -50,11 +51,17 @@ func New(
 
 		return nil
 	}
-
+	syncPeer := func(ctx context.Context, id cid.Cid) error {
+		sync_srv, ok := sync.Get()
+		if !ok {
+			return fmt.Errorf("account is not initialized yet")
+		}
+		return sync_srv.SyncWithPeer(ctx, id)
+	}
 	return Server{
 		Accounts:   accounts.NewServer(id, v),
 		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
-		Documents:  documents.NewServer(id, db, documents.NewProvider(node)),
+		Documents:  documents.NewServer(id, db, documents.NewProvider(node, syncPeer)),
 		Networking: networking.NewServer(node),
 	}
 }
