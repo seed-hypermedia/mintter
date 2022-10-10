@@ -10,6 +10,7 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
+	"mintter/backend/syncing"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/vcsdb"
@@ -122,7 +123,7 @@ func TestBug_MissingLinkTarget(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, published)
 
-	linked, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: "bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy"})
+	linked, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: "bafy2bzaceaemtzyq7gj6fa5jn4xhfq6yp657j5dpoqvh6bio4kk4bi2wmoroy", LocalOnly: true})
 	require.Error(t, err)
 	require.Nil(t, linked)
 }
@@ -639,7 +640,7 @@ func TestAPIPublishDraft(t *testing.T) {
 	}
 
 	// Must get publication after publishing.
-	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id})
+	got, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: draft.Id, LocalOnly: true})
 	require.NoError(t, err, "must get document after publishing")
 	testutil.ProtoEqual(t, published, got, "published document doesn't match")
 }
@@ -697,12 +698,10 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	err = bob.provider.ClosePeer(aliceAI.ID)
 	require.NoError(t, err)
 
-	// Get the Document
-	peer, err := bob.provider.FindProvider(ctx, cID, 1)
-
+	remotePublication, err := bob.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: cID.String()})
 	require.NoError(t, err)
-	require.Equal(t, alice.me.MustGet().DeviceKey().ID(), peer[0].ID)
-	//require.Equal(t, cID, block.Cid())
+	testutil.ProtoEqual(t, published, remotePublication, "remote publication doesn't match")
+
 }
 
 func TestAPIDeletePublication(t *testing.T) {
@@ -730,7 +729,7 @@ func TestAPIDeletePublication(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, list.Publications, 0)
 
-	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id, LocalOnly: true})
 	require.Error(t, err, "must fail to get deleted publication")
 	_ = pub
 
@@ -804,8 +803,6 @@ func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
 
 	mttFut := future.New[*mttnet.Node]()
 
-	srv := NewServer(fut.ReadOnly, db, NewProvider(mttFut.ReadOnly))
-
 	hvcs := vcsdb.New(db)
 
 	conn, release, err := hvcs.Conn(context.Background())
@@ -842,6 +839,10 @@ func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
 	case err := <-errc:
 		require.NoError(t, err)
 	}
+
+	syncService := syncing.NewService(must.Do2(zap.NewDevelopment()).Named(name), n.ID(), n.VCS().DB(), n.VCS(), n.Bitswap().NewSession, n.Client)
+
+	srv := NewServer(fut.ReadOnly, db, NewProvider(mttFut.ReadOnly, syncService.SyncWithPeer))
 
 	return srv
 }

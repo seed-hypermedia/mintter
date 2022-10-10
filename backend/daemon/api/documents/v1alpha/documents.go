@@ -15,6 +15,8 @@ import (
 	"mintter/backend/vcs/vcssql"
 	"time"
 
+	peerstore "github.com/libp2p/go-libp2p/core/peer"
+
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -37,16 +39,24 @@ type Provider interface {
 	ClosePeer(id peer.ID) error
 	// AddrInfo returns info for our own peer.
 	AddrInfo() (peer.AddrInfo, error)
+	// Connect to a peer using provided addr info.
+	Connect(ctx context.Context, ai peer.AddrInfo) error
+	// SyncWithPeer syncs all documents from a given peer
+	SyncPeer(ctx context.Context, cid cid.Cid) error
 }
 
+// Type to hold all the provide (get) publications to (from) the network
 type MttProvider struct {
-	n *future.ReadOnly[*mttnet.Node]
+	n        *future.ReadOnly[*mttnet.Node]
+	syncPeer func(context.Context, cid.Cid) error
 }
 
-func NewProvider(n *future.ReadOnly[*mttnet.Node]) *MttProvider {
-	return &MttProvider{n: n}
+// NewProvider builds the struct out of a node future and a sync callback
+func NewProvider(n *future.ReadOnly[*mttnet.Node], sync func(context.Context, cid.Cid) error) *MttProvider {
+	return &MttProvider{n: n, syncPeer: sync}
 }
 
+// ProvideCID notifies the providing system to provide the given CID on the DHT.
 func (mp *MttProvider) ProvideCID(c cid.Cid) error {
 	n, ok := mp.n.Get()
 	if !ok {
@@ -56,6 +66,10 @@ func (mp *MttProvider) ProvideCID(c cid.Cid) error {
 	return n.ProvideCID(c)
 }
 
+// Search for peers who are able to provide a given key
+//
+// When count is 0, this method will return an unbounded number of
+// results.
 func (mp *MttProvider) FindProvider(ctx context.Context, cid cid.Cid, nPeers int) ([]peer.AddrInfo, error) {
 	n, ok := mp.n.Get()
 
@@ -69,18 +83,18 @@ func (mp *MttProvider) FindProvider(ctx context.Context, cid cid.Cid, nPeers int
 
 	peers_chan := n.Libp2p().Routing.FindProvidersAsync(ctx, cid, nPeers)
 
-	for i := 0; i < nPeers; {
+	for i := 0; i < nPeers; { //This is active waiting make default sleeping or smt
 		select {
 		case ai := <-peers_chan:
 			peers[i] = ai
 			i++
-		case <-ctx.Done():
-			return []peer.AddrInfo{}, fmt.Errorf("context canceled")
 		}
+
 	}
 	return peers, nil
 }
 
+// ClosePeer closes the connection to a given peer
 func (mp *MttProvider) ClosePeer(id peer.ID) error {
 	n, ok := mp.n.Get()
 
@@ -90,6 +104,7 @@ func (mp *MttProvider) ClosePeer(id peer.ID) error {
 	return n.Libp2p().Host.Network().ClosePeer(id)
 }
 
+// AddrInfo returns info for our own peer.
 func (mp *MttProvider) AddrInfo() (peer.AddrInfo, error) {
 	n, ok := mp.n.Get()
 
@@ -97,7 +112,21 @@ func (mp *MttProvider) AddrInfo() (peer.AddrInfo, error) {
 		return peer.AddrInfo{}, fmt.Errorf("provider is not ready")
 	}
 	return n.AddrInfo(), nil
+}
 
+// Connect to a peer using provided addr info.
+func (mp *MttProvider) Connect(ctx context.Context, ai peer.AddrInfo) error {
+	n, ok := mp.n.Get()
+
+	if !ok {
+		return fmt.Errorf("provider is not ready")
+	}
+	return n.Connect(ctx, ai)
+}
+
+// SyncWithPeer syncs all documents from a given peer
+func (mp *MttProvider) SyncPeer(ctx context.Context, cid cid.Cid) error {
+	return mp.syncPeer(ctx, cid)
 }
 
 // Server implements DocumentsServer gRPC API.
@@ -439,6 +468,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	}
 	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: in.DocumentId,
+		LocalOnly:  true,
 	})
 	if err != nil {
 		return nil, err
@@ -517,12 +547,11 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	if err != nil {
 		return nil, err
 	}
-	defer release()
 
 	errNumVersionsNotOne := errors.New("TODO(burdiyan): can only get publication with 1 leaf change,")
 	errNotFoundLocally := errors.New("Document with specified id not found locally")
 	out := &documents.Publication{}
-	if err := conn.WithTx(false, func() error {
+	errLocal := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
 		meLocal := conn.LookupIdentity(me)
 
@@ -551,17 +580,67 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 
 		out.Version = conn.LocalVersionToPublic(version).String()
 		return nil
-	}); err != nil {
+	})
+	if errLocal != nil && !in.LocalOnly {
+		release()
 		if errors.Is(err, errNumVersionsNotOne) {
 			return nil, err
 		}
-		//make network call
-		_, err2 := api.provider.FindProvider(ctx, oid, 1)
-		if err2 != nil {
+		// make network call
+		// Get the peer that has the document
+		const maxPeers = 3
+		peers, errRemote := api.provider.FindProvider(ctx, oid, maxPeers)
+		if errRemote != nil {
 			return nil, err
 		}
 
-		return nil, err
+		// connect with remote peer
+
+		for _, peer := range peers {
+			if peer.ID == "" {
+				continue
+			}
+			if errRemote = api.provider.Connect(ctx, peer); errRemote != nil {
+				continue
+			}
+			if errRemote = api.provider.SyncPeer(ctx, peerstore.ToCid(peer.ID)); errRemote != nil {
+				continue
+			}
+			conn, release, err := api.vcsdb.Conn(ctx)
+			if err != nil {
+				return nil, err
+			}
+			errLocal = conn.WithTx(false, func() error {
+				obj := conn.LookupPermanode(oid)
+				meLocal := conn.LookupIdentity(me)
+				version := conn.GetVersion(obj, "main", meLocal)
+				if version == nil {
+					return errNotFoundLocally
+				}
+				if len(version) != 1 {
+					return fmt.Errorf("%w, got: %d", errNumVersionsNotOne, len(version))
+				}
+				out.Document, err = api.getDocument(conn, obj, version)
+				if err != nil {
+					return err
+				}
+
+				out.Version = conn.LocalVersionToPublic(version).String()
+				return nil
+			})
+			release()
+			if errors.Is(errLocal, errNotFoundLocally) {
+				continue
+			} else if errLocal != nil {
+				return nil, errLocal
+			}
+			break
+		}
+	} else {
+		release()
+	}
+	if errLocal != nil && in.LocalOnly {
+		return nil, errLocal
 	}
 
 	out.Document.PublishTime = out.Document.UpdateTime
@@ -616,6 +695,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	for _, d := range docs {
 		draft, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId: cid.NewCidV1(uint64(d.PermanodeCodec), d.PermanodeMultihash).String(),
+			LocalOnly:  true,
 		})
 		if err != nil {
 			continue
