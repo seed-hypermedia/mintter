@@ -185,6 +185,9 @@ function PublicationBlocktools(
           display: 'flex',
           alignItems: 'center',
           gap: '$2',
+          '&:hover': {
+            background: '$base-background-normal',
+          },
         }}
       >
         <Icon name="Copy" /> <span>{blockId}</span>
