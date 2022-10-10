@@ -95,6 +95,7 @@ li::marker {
 
   &.mode-embed {
     display: inline !important;
+    padding-inline-end: 0 !important;
   }
 
   a {

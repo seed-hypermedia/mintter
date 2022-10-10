@@ -8,18 +8,18 @@ type KeyOfType<T, U> = {
 export type DateKeys = KeyOfType<Document, Date | undefined>
 
 var months = [
-  'January',
-  'February',
-  'March',
-  'April',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
   'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ]
 
 export function getDateFormat(
@@ -36,11 +36,51 @@ export function getDateFormat(
 }
 
 export function formattedDate(value: Date) {
+  var now = new Date()
   var date = new Date(value)
 
-  return `${
-    months[date.getMonth()]
-  } ${date.getDate()}, ${date.getFullYear()} at ${String(
-    date.getHours(),
-  ).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+  var result = difference(date, now)
+
+  if (result.year < -1) {
+    // after one year: Nov 22, 2021
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
+  } else if (result.day > -1) {
+    // within 24hrs: 2h
+    let formatter = new Intl.RelativeTimeFormat('en-US', {
+      style: 'short',
+    })
+
+    return formatter.format(Math.floor(result.hour), 'hour')
+  } else {
+    return `${date.getDate()} ${months[date.getMonth()]}`
+    // within the same year: 9 Sep (day + short month)
+  }
+}
+
+function difference(date1: Date, date2: Date) {
+  const date1utc = Date.UTC(
+    date1.getFullYear(),
+    date1.getMonth(),
+    date1.getDate(),
+    date1.getHours(),
+    date1.getMinutes(),
+  )
+  const date2utc = Date.UTC(
+    date2.getFullYear(),
+    date2.getMonth(),
+    date2.getDate(),
+    date2.getHours(),
+    date2.getMinutes(),
+  )
+  var year = 1000 * 60 * 60 * 24 * 30 * 12
+  var day = 1000 * 60 * 60 * 24
+  var hour = 1000 * 60 * 60
+  var minute = 1000 * 60
+
+  return {
+    year: (date1utc - date2utc) / year,
+    day: (date1utc - date2utc) / day,
+    hour: (date1utc - date2utc) / hour,
+    minute: (date1utc - date2utc) / minute,
+  }
 }

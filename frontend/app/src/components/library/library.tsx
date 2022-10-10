@@ -66,7 +66,7 @@ export function Library({
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
-            gap: '$3',
+            gap: '$2',
             paddingHorizontal: isOpen ? '$3' : 0,
             paddingTop: '$5',
             transition: 'width 0.15s ease',
@@ -76,7 +76,7 @@ export function Library({
           <LibraryButton
             icon="File"
             onClick={() => mainService.send('GO.TO.PUBLICATIONLIST')}
-            title="Files"
+            title="Inbox"
             active={isInPubsList}
           />
           <LibraryButton

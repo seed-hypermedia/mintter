@@ -8,7 +8,7 @@ export function PublicationList() {
   return (
     <MainWindow>
       <FileList
-        title="Publications"
+        title="Inbox"
         items={pubList}
         handleNewDraft={() => mainService.send('CREATE.NEW.DRAFT')}
         handleNewWindow={() => mainService.send('COMMIT.OPEN.WINDOW')}

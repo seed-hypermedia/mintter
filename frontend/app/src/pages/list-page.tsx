@@ -8,5 +8,5 @@ export var pageListStyle = css({
   marginInlineStart: '-$3',
   display: 'flex',
   flexDirection: 'column',
-  gap: '$3',
+  gap: '$2',
 })

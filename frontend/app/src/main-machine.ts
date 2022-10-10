@@ -610,13 +610,13 @@ export function createMainPageService({
               publicationList: pubList.publications.sort((a, b) => {
                 // @ts-ignore
                 return (
-                  new Date(b.document?.createTime) -
-                  new Date(a.document?.createTime)
+                  new Date(b.document?.updateTime) -
+                  new Date(a.document?.updateTime)
                 )
               }),
               draftList: draftList.documents.sort((a, b) => {
                 // @ts-ignore
-                return new Date(b.createTime) - new Date(a.createTime)
+                return new Date(b.updateTime) - new Date(a.updateTime)
               }),
             }
           }),
