@@ -120,8 +120,8 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
         Version: {}
         Commit: {}
 
-        Copyright © 2003-2022 {}.
-        All rights reserved.
+        Copyright © 2019-2022 {}.
+        Some rights reserved.
       "#,
         package_info.description,
         package_info.version,
