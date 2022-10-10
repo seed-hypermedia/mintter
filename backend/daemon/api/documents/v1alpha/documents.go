@@ -17,6 +17,7 @@ import (
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -25,9 +26,17 @@ import (
 )
 
 type Provider interface {
-	Await(context.Context) (*mttnet.Node, error)
-	MustGet() *mttnet.Node
+	// ProvideCID notifies the providing system to provide the given CID on the DHT.
 	ProvideCID(cid.Cid) error
+	// Search for peers who are able to provide a given key
+	//
+	// When count is 0, this method will return an unbounded number of
+	// results.
+	FindProvider(ctx context.Context, cid cid.Cid, nPeers int) ([]peer.AddrInfo, error)
+	// ClosePeer closes the connection to a given peer
+	ClosePeer(id peer.ID) error
+	// AddrInfo returns info for our own peer.
+	AddrInfo() (peer.AddrInfo, error)
 }
 
 type MttProvider struct {
@@ -47,11 +56,48 @@ func (mp *MttProvider) ProvideCID(c cid.Cid) error {
 	return n.ProvideCID(c)
 }
 
-func (mp *MttProvider) Await(ctx context.Context) (*mttnet.Node, error) {
-	return mp.n.Await(ctx)
+func (mp *MttProvider) FindProvider(ctx context.Context, cid cid.Cid, nPeers int) ([]peer.AddrInfo, error) {
+	n, ok := mp.n.Get()
+
+	if !ok {
+		return []peer.AddrInfo{}, fmt.Errorf("provider is not ready")
+	}
+	if nPeers < 1 {
+		return []peer.AddrInfo{}, fmt.Errorf("al least one peer should be found, provided %d peers", nPeers)
+	}
+	peers := make([]peer.AddrInfo, nPeers)
+
+	peers_chan := n.Libp2p().Routing.FindProvidersAsync(ctx, cid, nPeers)
+
+	for i := 0; i < nPeers; {
+		select {
+		case ai := <-peers_chan:
+			peers[i] = ai
+			i++
+		case <-ctx.Done():
+			return []peer.AddrInfo{}, fmt.Errorf("context canceled")
+		}
+	}
+	return peers, nil
 }
-func (mp *MttProvider) MustGet() *mttnet.Node {
-	return mp.n.MustGet()
+
+func (mp *MttProvider) ClosePeer(id peer.ID) error {
+	n, ok := mp.n.Get()
+
+	if !ok {
+		return fmt.Errorf("provider is not ready")
+	}
+	return n.Libp2p().Host.Network().ClosePeer(id)
+}
+
+func (mp *MttProvider) AddrInfo() (peer.AddrInfo, error) {
+	n, ok := mp.n.Get()
+
+	if !ok {
+		return peer.AddrInfo{}, fmt.Errorf("provider is not ready")
+	}
+	return n.AddrInfo(), nil
+
 }
 
 // Server implements DocumentsServer gRPC API.
@@ -357,11 +403,6 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
-	node, err := api.provider.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	conn, release, err := api.vcsdb.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -403,7 +444,7 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
-	err = node.ProvideCID(oid)
+	err = api.provider.ProvideCID(oid)
 	if err != nil {
 		return nil, err
 	}
@@ -515,11 +556,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 			return nil, err
 		}
 		//make network call
-		_, err2 := api.provider.Await(ctx)
-		if err2 != nil {
-			return nil, err
-		}
-		//block, err = n.Bitswap().GetBlock(ctx, oid)
+		_, err2 := api.provider.FindProvider(ctx, oid, 1)
 		if err2 != nil {
 			return nil, err
 		}
