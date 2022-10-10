@@ -53,7 +53,7 @@ export function Topbar({onLibraryToggle, onBack, onForward}: TopbarProps) {
                 ? 'Drafts'
                 : mainState.matches('routes.publicationList') ||
                   mainState.matches('routes.home')
-                ? 'Publications'
+                ? 'Inbox'
                 : ''
             }
           />
