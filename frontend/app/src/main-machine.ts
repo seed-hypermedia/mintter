@@ -21,7 +21,6 @@ import {getRefFromParams} from '@app/utils/machine-utils'
 import {QueryClient} from '@tanstack/react-query'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import Navaid from 'navaid'
-import toast from 'react-hot-toast'
 import {ActorRefFrom, assign, createMachine, send, spawn} from 'xstate'
 
 export type PublicationRef = ActorRefFrom<
@@ -309,12 +308,11 @@ export function createMainPageService({
               invoke: {
                 src: 'createNewDraft',
                 id: 'createNewDraft',
-                onDone: [
-                  {
-                    actions: 'assignNewDraftValues',
-                    target: 'editor',
-                  },
-                ],
+                onDone: {
+                  actions: 'assignNewDraftValues',
+                  target: 'editor',
+                },
+                onError: {},
               },
               tags: 'loading',
             },
@@ -354,7 +352,7 @@ export function createMainPageService({
               actions: 'openWindow',
             },
             'COMMIT.EDIT.PUBLICATION': {
-              actions: 'editPublication',
+              target: '.createDraft',
             },
           },
         },
@@ -517,18 +515,6 @@ export function createMainPageService({
           },
           {to: 'router'},
         ),
-        editPublication: (context) => {
-          createDraft(context.params.docId)
-            .then((doc) => {
-              openWindow(`/editor/${doc.id}`)
-            })
-            .catch((err) => {
-              toast.error(
-                `[CREATE.EDIT.ERROR]: Something went wrong when creating a new Edit. chec the console.`,
-              )
-              console.error('[CREATE.EDIT.ERROR]:', err)
-            })
-        },
         updateDraftList: assign((context, event) => {
           let draftId = getRefFromParams('draft', event.documentId, null)
           return {
@@ -711,9 +697,12 @@ export function createMainPageService({
 
           return () => navRouter?.unlisten?.()
         },
-        createNewDraft: async () => {
-          let doc = await createDraft()
-          return doc
+        createNewDraft: async (context, event) => {
+          if (event.type == 'COMMIT.EDIT.PUBLICATION') {
+            return createDraft(context.params.docId)
+          } else {
+            return createDraft()
+          }
         },
         createReply: async (context) => {
           /**

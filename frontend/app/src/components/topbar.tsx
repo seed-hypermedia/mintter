@@ -213,7 +213,7 @@ function WriteDropdown({fileRef, isPublication = false}: WriteDropdownProps) {
           {isPublication && canUpdate ? (
             <Dropdown.Item
               onSelect={() => {
-                // noop
+                mainService.send('COMMIT.EDIT.PUBLICATION')
               }}
             >
               <Icon name="Pencil" />
@@ -223,7 +223,11 @@ function WriteDropdown({fileRef, isPublication = false}: WriteDropdownProps) {
             <TippingModal fileRef={fileRef as PublicationRef} />
           )}
           {isPublication && (
-            <Dropdown.Item>
+            <Dropdown.Item
+              onSelect={() => {
+                console.log('IMPLEMENT ME: Review document')
+              }}
+            >
               <Icon name="PencilAdd" />
               <span>Review</span>
             </Dropdown.Item>
