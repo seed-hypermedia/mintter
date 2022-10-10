@@ -111,6 +111,11 @@
   &.outlined {
     border-color: var(--color);
   }
+
+  & > * {
+    max-height: 1em;
+    line-height: 1;
+  }
 }
 
 .button-group {

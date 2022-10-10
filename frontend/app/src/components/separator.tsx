@@ -5,5 +5,5 @@ export const Separator = styled(RadixSeparator.Root, {
   backgroundColor: '$base-border-subtle',
   '&[data-orientation=horizontal]': {height: 1, width: '100%'},
   '&[data-orientation=vertical]': {height: '100%', width: 1},
-  margin: '20px 0',
+  margin: '8px 0',
 })

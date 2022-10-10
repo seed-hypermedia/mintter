@@ -21,10 +21,8 @@ describe('<FileList />', () => {
       .contains('empty label')
       .get('[data-testid="filelist-new-button"]')
       .click()
-      .get('[data-testid="filelist-new-window-button"]')
-      .click()
       .then(() => {
-        expect(newBtn).callCount(2)
+        expect(newBtn).callCount(1)
       })
   })
 })

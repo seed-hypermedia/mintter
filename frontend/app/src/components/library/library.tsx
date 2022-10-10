@@ -64,6 +64,9 @@ export function Library({
           css={{
             width: isOpen ? '$library-width' : 0,
             position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '$3',
             paddingHorizontal: isOpen ? '$3' : 0,
             paddingTop: '$5',
             transition: 'width 0.15s ease',
@@ -122,12 +125,22 @@ function LibraryButton({title, icon, onClick, active}: LibraryButtonProps) {
       }}
     >
       {icon && (
-        <Icon color={active ? 'primary-opposite' : 'primary'} name={icon} />
+        <Icon
+          color={active ? 'primary-opposite' : 'primary'}
+          name={icon}
+          css={{
+            height: '1em',
+          }}
+        />
       )}
       <Text
         size="2"
         fontWeight="medium"
         color={active ? 'primary-opposite' : 'base-hight'}
+        css={{
+          height: '1em',
+          lineHeight: 1,
+        }}
       >
         {title}
       </Text>

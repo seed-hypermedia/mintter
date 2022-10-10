@@ -165,9 +165,8 @@ export function LibraryItem({
             >
               <Icon
                 name="MoreHorizontal"
-                size="1"
                 color="muted"
-                className={match ? hoverIconStyle() : ''}
+                className={match ? hoverIconStyle() : undefined}
               />
             </ElementDropdown>
           </Dropdown.Trigger>

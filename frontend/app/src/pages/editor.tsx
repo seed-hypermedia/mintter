@@ -78,6 +78,17 @@ export function EditorPage({draftRef}: EditorPageProps) {
         onReset={() => window.location.reload()}
       >
         <MainWindow
+          onClick={() => {
+            if (ReactEditor.isFocused(state.context.editor)) {
+              console.log('EDITOR IS FOCUSED!!')
+            } else {
+              ReactEditor.focus(state.context.editor)
+              Transforms.select(
+                state.context.editor,
+                SlateEditor.end(state.context.editor, []),
+              )
+            }
+          }}
           onMouseMove={(event) => {
             mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
             mainService.send('NOT.EDITING')
