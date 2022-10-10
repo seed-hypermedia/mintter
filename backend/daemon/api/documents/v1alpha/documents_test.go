@@ -654,8 +654,10 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	ctx := context.Background()
 	// Carol will be the DHT server
 	carol := newTestDocsAPI(t, "carol", "")
-	carolAddrs := carol.provider.MustGet().AddrInfo().Addrs[0].String()
-	carolID := carol.provider.MustGet().AddrInfo().ID.String()
+	carolAddrInfo, err := carol.provider.AddrInfo()
+	require.NoError(t, err)
+	carolAddrs := carolAddrInfo.Addrs[0].String()
+	carolID := carolAddrInfo.ID.String()
 	alice := newTestDocsAPI(t, "alice", carolAddrs+"/p2p/"+carolID)
 	bob := newTestDocsAPI(t, "bob", carolAddrs+"/p2p/"+carolID)
 
@@ -690,14 +692,17 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.NoError(t, cID.UnmarshalText([]byte(draft.Id)))
 
 	// To make sure bob is not directly connected to alice since they are bootstrapped to the same node
-	err = bob.provider.MustGet().Libp2p().Host.Network().ClosePeer(alice.provider.MustGet().AddrInfo().ID)
+	aliceAI, err := alice.provider.AddrInfo()
+	require.NoError(t, err)
+	err = bob.provider.ClosePeer(aliceAI.ID)
 	require.NoError(t, err)
 
 	// Get the Document
-	block, err := bob.provider.MustGet().Bitswap().GetBlock(context.Background(), cID)
+	peer, err := bob.provider.FindProvider(ctx, cID, 1)
 
 	require.NoError(t, err)
-	require.Equal(t, cID, block.Cid())
+	require.Equal(t, alice.me.MustGet().DeviceKey().ID(), peer[0].ID)
+	//require.Equal(t, cID, block.Cid())
 }
 
 func TestAPIDeletePublication(t *testing.T) {
