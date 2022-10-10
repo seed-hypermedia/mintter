@@ -153,7 +153,7 @@
     "vite": "3.1.7",
     "vite-react-jsx": "1.1.2",
     "vite-tsconfig-paths": "3.5.1",
-    "vitest": "0.24.0",
+    "vitest": "0.24.1",
     "ws": "8.9.0"
   },
   "peerDependencies": {
