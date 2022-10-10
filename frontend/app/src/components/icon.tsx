@@ -111,6 +111,7 @@ export const icons = {
 }
 
 export type IconProps = Stitches.VariantProps<typeof Svg> & {
+  className?: string
   name: keyof typeof icons
   css?: CSS
 }

@@ -46,15 +46,6 @@ export function FileList({
           <Text data-testid="filelist-title" size="4" fontWeight="bold">
             {title}
           </Text>
-          <Button
-            data-testid="filelist-new-window-button"
-            size="1"
-            variant="ghost"
-            color="muted"
-            onClick={handleNewWindow}
-          >
-            New Document
-          </Button>
         </Box>
       )}
       <Box as="ol" className={pageListStyle()} data-testid="filelist-list">
