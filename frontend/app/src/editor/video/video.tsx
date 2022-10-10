@@ -213,7 +213,6 @@ function VideoEmbed({videoData, service, mode}: VideoEmbedProps) {
         src={url}
         frameBorder="0"
         sandbox="allow-scripts allow-popups allow-top-navigation-by-user-activation allow-forms allow-same-origin"
-        allowFullScreen
       />
     </Box>
   )
