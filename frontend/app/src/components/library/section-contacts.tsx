@@ -42,6 +42,10 @@ function ContactListLoading() {
 
 export function ContactsSection() {
   let contactListService = useInterpret(() => contactListMachine)
+  let isLoading = useSelector(contactListService, (state) =>
+    state.matches('fetching'),
+  )
+
   const totalCount = useSelector(
     contactListService,
     (state) => state.context.all.length,
@@ -74,13 +78,13 @@ export function ContactsSection() {
           window.location.reload()
         }}
       >
-        {online.length ? (
+        {isLoading ? (
+          <ContactListLoading />
+        ) : online.length ? (
           online.map((contact) => (
             <ContactItem key={contact.id} contact={contact} />
           ))
-        ) : (
-          <ContactListLoading />
-        )}
+        ) : null}
       </ErrorBoundary>
     </Section>
   )
