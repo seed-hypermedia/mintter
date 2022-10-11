@@ -4,7 +4,7 @@ import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
-import {useCurrentFile, useMain} from '@app/main-context'
+import {useCanEdit, useCurrentFile, useMain} from '@app/main-context'
 import {DraftRef} from '@app/main-machine'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
@@ -64,6 +64,7 @@ export function EditorPage({draftRef}: EditorPageProps) {
   const [state, send] = useDraft(draftRef)
   const {context} = state
   const mainService = useMain()
+  const canEdit = useCanEdit()
   const mouseService = useInterpret(() => mouseMachine)
   useInitialFocus(context.editor)
 
@@ -91,11 +92,17 @@ export function EditorPage({draftRef}: EditorPageProps) {
           }}
           onMouseMove={(event) => {
             mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-            mainService.send('NOT.EDITING')
+
+            if (!canEdit) {
+              mainService.send('NOT.EDITING')
+            }
           }}
           onScroll={() => {
             mouseService.send('DISABLE.SCROLL')
-            mainService.send('NOT.EDITING')
+
+            if (!canEdit) {
+              mainService.send('NOT.EDITING')
+            }
           }}
         >
           {context.localDraft?.content && (

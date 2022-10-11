@@ -314,6 +314,8 @@ export function createPublicationMachine({
                     )
                   : []
 
+                console.log('Discussion Links:', response)
+
                 sendBack({
                   type: 'DISCUSSION.REPORT.SUCCESS',
                   links,

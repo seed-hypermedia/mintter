@@ -144,10 +144,7 @@ export var mouseMachine = createMachine(
         })
       },
       assignHighlightRef: assign({
-        highlightRef: (_, event) => {
-          console.log('assignHighlightRef', event)
-          return event.ref
-        },
+        highlightRef: (_, event) => event.ref,
       }),
       clearHighlightRef: assign({
         // eslint-disable-next-line
