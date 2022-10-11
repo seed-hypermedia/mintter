@@ -32,7 +32,7 @@ importers:
 
   frontend/app:
     specifiers:
-      '@cypress/vite-dev-server': 3.3.0
+      '@cypress/vite-dev-server': 3.3.1
       '@floating-ui/react-dom': 1.0.0
       '@floating-ui/react-dom-interactions': 0.10.1
       '@graphql-codegen/cli': 2.13.5
@@ -239,7 +239,7 @@ importers:
       unist-util-visit-parents: 5.1.1
       xstate: 4.33.6
     devDependencies:
-      '@cypress/vite-dev-server': 3.3.0
+      '@cypress/vite-dev-server': 3.3.1
       '@graphql-codegen/cli': 2.13.5_k4tgeuxgjoyg5fbcy4uzgsyom4
       '@graphql-codegen/typescript': 2.7.3_graphql@16.6.0
       '@happy-dom/global-registrator': 7.5.6
@@ -1045,8 +1045,8 @@ packages:
       uuid: 8.3.2
     dev: true
 
-  /@cypress/vite-dev-server/3.3.0:
-    resolution: {integrity: sha512-Fj2OR9wnPGpixXkU1HzNVEknyz+kGGBfW70YS/brDcGClAE/zdwja9MYiPObfevDxb+pAv9cQT3q40tEY+2Avg==}
+  /@cypress/vite-dev-server/3.3.1:
+    resolution: {integrity: sha512-Iw6WtPeamQbQtyI+iNIutCDOjHvBFNBBqg1NiT3HjdRMiXAPmeehqy/LUP1Q4W/FdBpmCADAXOHU4bW85ds/mg==}
     dependencies:
       debug: 4.3.3
       find-up: 6.3.0
@@ -2466,7 +2466,6 @@ packages:
 
   /@tanstack/query-core/4.10.3:
     resolution: {integrity: sha512-+ME02sUmBfx3Pjd+0XtEthK8/4rVMD2jcxvnW9DSgFONpKtpjzfRzjY4ykzpDw1QEo2eoPvl7NS8J5mNI199aA==}
-    dev: false
 
   /@tanstack/react-query-devtools/4.11.0_vhepussragssjkevgznguhxexq:
     resolution: {integrity: sha512-g/414SruE0TEp4jeMYxVUSXGXCc+zMY9j0gB8Q6B91gmyPseNqs9WLkVrqxRXoQDyRvDcphVOaEANNygGx+zGg==}
@@ -2499,7 +2498,6 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
-    dev: false
 
   /@tauri-apps/api/1.1.0:
     resolution: {integrity: sha512-n13pIqdPd3KtaMmmAcrU7BTfdMtIlGNnfZD0dNX8L4p8dgmuNyikm6JAA+yCpl9gqq6I8x5cV2Y0muqdgD0cWw==}
@@ -2675,7 +2673,6 @@ packages:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
       csstype: 3.1.1
-    dev: true
 
   /@types/scheduler/0.16.2:
     resolution: {integrity: sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==}
@@ -5340,7 +5337,6 @@ packages:
   /graphql/16.6.0:
     resolution: {integrity: sha512-KPIBPDlW7NxrbT/eh4qPXz5FiFdL5UbaA0XUNz2Rp3Z3hqBSkbj0GVjwFDztsWVauZUWsbKHgMg++sk8UX0bkw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
-    dev: false
 
   /handlebars/4.7.7:
     resolution: {integrity: sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==}
@@ -7086,7 +7082,6 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
-    dev: false
 
   /react-error-boundary/3.1.4_react@18.2.0:
     resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
@@ -7249,7 +7244,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
-    dev: false
 
   /readable-stream/2.3.7:
     resolution: {integrity: sha512-Ebho8K4jIbHAxnuxi7o42OrZgF/ZTNcsZj6nRKyUmkhLFq8CHItp/fy6hQZuZmP/n3yZ9VBUbp4zz/mX8hmYPw==}
@@ -7555,7 +7549,6 @@ packages:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
     dependencies:
       loose-envify: 1.4.0
-    dev: false
 
   /scroll-into-view-if-needed/2.2.29:
     resolution: {integrity: sha512-hxpAR6AN+Gh53AdAimHM6C8oTN1ppwVZITihix+WqalywBeFcQ6LdQP5ABNl26nX8GTEL7VT+b8lKpdqq65wXg==}
