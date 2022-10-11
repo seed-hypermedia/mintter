@@ -97,7 +97,7 @@ importers:
       hast-util-is-element: 2.1.2
       hast-util-sanitize: 4.0.0
       hast-util-to-text: 3.1.1
-      hastscript: 7.0.2
+      hastscript: 7.1.0
       immer: 9.0.15
       is-hidden: 2.0.0
       is-hotkey: 0.2.0
@@ -196,7 +196,7 @@ importers:
       hast-util-is-element: 2.1.2
       hast-util-sanitize: 4.0.0
       hast-util-to-text: 3.1.1
-      hastscript: 7.0.2
+      hastscript: 7.1.0
       immer: 9.0.15
       is-hotkey: 0.2.0
       is-plain-object: 5.0.0
@@ -5416,7 +5416,7 @@ packages:
       '@types/hast': 2.3.4
       '@types/parse5': 6.0.3
       '@types/unist': 2.0.6
-      hastscript: 7.0.2
+      hastscript: 7.1.0
       property-information: 6.1.1
       vfile: 5.3.5
       vfile-location: 4.0.1
@@ -5478,8 +5478,8 @@ packages:
     deprecated: Renamed to rehype
     dev: false
 
-  /hastscript/7.0.2:
-    resolution: {integrity: sha512-uA8ooUY4ipaBvKcMuPehTAB/YfFLSSzCwFSwT6ltJbocFUKH/GDHLN+tflq7lSRf9H86uOuxOFkh1KgIy3Gg2g==}
+  /hastscript/7.1.0:
+    resolution: {integrity: sha512-uBjaTTLN0MkCZxY/R2fWUOcu7FRtUVzKRO5P/RAfgsu3yFiMB1JWCO4AjeVkgHxAira1f2UecHK5WfS9QurlWA==}
     dependencies:
       '@types/hast': 2.3.4
       comma-separated-tokens: 2.0.2
