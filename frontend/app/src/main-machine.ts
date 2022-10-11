@@ -124,7 +124,7 @@ export function createMainPageService({
   client,
   initialRoute,
 }: CreateMainPageServiceParams) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWjQYwAsswA6AJwHsBXAFzhIIuTAGIBhAeQFkuBJAFRIARAKIAZEfxEkAYrwmJQABwqx0NdBUyKQAD0QAWAAxGSADgMB2AGw2D16wFZLjgMwAaEAE9EZowEYSS1cAgCZQlxdrUOsAX1jPNCxcVEJicmo6WBJIdQoyEnQIABtWESEBXgA5AHEdFTUNLR19BH9XV0cSRwBOMx7HCJcDAx6Pb0R-N1cSPtd-fx6e6w6h+MSMHHwiTFJKWnpcmnyciHUsKBIaLyULliqOQXLK2vrVc+akPUnrHoNzGK9fz2VxDcY+NqOAwzXqhRwOaJmfyWYHrEBJLapHZ7TKHM7HApHC4kTAUGgAAmut0wUBYz341TqXwaH20X1a-lslhIRmsZjMTl58Pa1k8EOBbhIIVCARsoSW4QMaIxKTSuwyB2yRxORJp7G4fEEAAUAKoAITEvAAygAJN6NTRs0AQ0LAmb+Iz8qFGP5+EaeDn9UwdJzWEYWAzORzKzaq7EarIkJRUABGxXQeFQTUwhRKrE4PAEJDYACURABBKQkMtGsQATXtrJaiFC0P+RkcRhRjn8SMcSIMYpbBlbsyifTDjn7cQS6Nj23S+0TybTGazjvIYCUxS8dwgWlIWAAbhQANakPBkMBZsAlrc7xvZ5sIP6mD1Q4y9Az8vpDtp97o+QWVxolcPwkRjZIF3VJd6BXdNM2zTdt13PUwDISgCm3LMADN8mQEhL2vOg7xQx9HWfCIQilXofR7HpXR6fw-1CUFgx7JE2PsQYlVnFVoJxTUk1TBD1y0MR0FgGhc1KfVC0EUQJCrOQFGZd4n3ZRBQ3MIwDE5SwzEsFxOVFCY2m-aweTdAUVmmJZIMxNVBMTCAyFQHCaAkqSZPzA0i0UyRpBUkRyM+UBWk6LoAhHJZlmcSxBzMxZIylPopx7BZgjMUIHLjRdcWyIibyENyPJYfd1WPM8LyvG8qjAAB3Er3JoUKnW+BAUTMEgrAM3SZWCIy-yjIIegS+Lst7EdcoEhM4BYEsOBNKsHkEGQlqqIQ2ufYFQj-FEZhcAYlgFViwOjPj5yxfLNRYGoOBIfgHptbgQrUh0wo63a-zGyzVhAv4bH7aEZuumCCruh6npIK1JAZWorW2zTzL2pLkVCEhrGBfkQlcSw5hyy6oLB5z5vux6HtNC1eDYSteA4KpLStfgkfCyYRz-YEGJ5GJLFCQyBjMPGLo2YmnLm2BIYp4QS3LGR+CZln3qbZHvqShiumMc7XBGOFfksUHxdgyXyehoRZfl1mvo5szGMCToLGiBK+2CQ342NqXoapy1aYZBmrY5G2XTAnpZjGfpWKmECQLdm6snYMtK2kKoRAAdRluWleUdSKNVoPEC-IIcfDCJlgY2PwdugtDRIDgjREKoSFT6ohA4VOA-Z7KSCokD33x-HEohHXuoFSMbF0+F7Ar0nJerot6RIb2abp-3lY0tnzMsYMDIMvSDN-W3olmfwIn5KaFhPmdRcc7FyoPQpMBPc8SBwsAaEIGR0FKeA19zjeue5NCeUvYUSegsJzQm188q7BYOhTCSZii4Xwi-N+H8v5wA7ggWwLFaKzD0siXW2UIjTylmacsbAADSmCpieh6npfkkZWwJQYixJEf0+RelcLFTkJDybrRLKncsJYtq-0+oHPomNPxuG-K+aELFgimD3j6FwYEwLtHiLOUkEAMFfH4iTHIGF8iQEwaxUOfhehC2RIDXWLFrC6R6uEAUvJ+aglRETG+cd6BFFKJgjo3J+gWE5FCfoOtLB-j5BjFw-QDK9j8FMfw08JYMCYGATBvxTCuidrpFE49HCcyMDEHq8wdZTnlFvXkiTjanDyAUbxqTRHtQ5L2DGLifTLGBAsJwnN7D-BWIsJYwQVijCvnOMW7sCrVIJAYzC1DkTclaUsLG+CulJS4V0MMHofysS7LYSpEztSEnxMSKkFxqHZUOt+JEFghZ8m6VYbuo9vwjkyTrPZQkDmTOJKSCkJyaTULcJZeEdggyWKnHc-4BkwxPPCJyV57joEz0mTqI5fyGk7R7BjIFYYQXzDBasvm5g5k0L+MieEbzEwHNmZKBZ7Tll5KSq6GYDFexgVdBZA28LZpVPgmuJCdSTGXyCO0SMdjwghHpcHFwsw4mtk9GBEYHKoFcomTyxCG4rwoVOWi5GMQ7F0PlYsP0noWL4KlEYECAReRYwFIq0ZHjK7LhEryjccD8gmMyTzPoXM-GLJYiESyfQ-g6xlAUqO5K4JOrVZ9Fk68OqugKUKkportkSpbAsDGmUuxdj8LYSBdqEVJNgG-DQNIf7Zw+o0xA8xQ4REZQED04Z2ic3fJjVsfJfhC35n0cN2RVViUwF5aS-LtUb2dlKYI4RBigjDAlTmQy8FInRkZCMPbhKrijQOySrUR0dRWBjP0+lDLGQcJzUE3IFgCk7JyQytgRb5uVUJVyLVB0+UwSObqPZfjfhcVOBYLEhRSj0vMaEKxIgjL0UbCZT6PKDt8fMKyMVFnxUHpMSF3QCm2HOa2eU4GrqQaEkVOgzUPK+OhD1bF0IT7wkMsxMy8JDpHrhKxAyhkzA9tmWYP8VgzG9iWIsNp0833gkQNzAIvwnAhDGgELhGjYhAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QFsCGBLAdgWjQYwAsswA6AJwHsBXAFzhIIuTAGIBhAeQFkuBJAFRIARAKIAZEfxEkAYrwmJQABwqx0NdBUyKQAD0QAWAAxGSADgMB2AGw2D16wFZLjgMwAaEAE9EZowEYSS1cAgCZQlxdrUOsAX1jPNCxcVEJicmo6WBJIdQoyEnQIABtWESEBXgA5AHEdFTUNLR19BH9XV0cSRwBOMx7HCJcDAx6Pb0R-N1cSPtd-fx6e6w6h+MSMHHwiTFJKWnpcmnyciHUsKBIaLyULwpLWKo5Bcsra+tVz5qQ9SbM-EjhUIBWzORyOfyWTw+NrOMxBPwDMwQtwQgzrEBJLapHZ7TKHM7HApHO7XW6YS4QMAAI2oeEgLF0sBoqDoJFQADM6GQABSOEwAShYWJSaV2GQO2SOJxJFKuNzuVNpVHpEA+jU02h+rUhxhIRmCEVcZhsjlG1mhk2s-VmZqMPUsAWcHQxIu26X2WVOeWJhNJCrlSrpDNe-GqdR+DS+WtAOrGlhIC2sSyMwNCBn8RnGMKmAUBlks9izBjcutdm1FuIlXulvvOcswFBoAAIyRcWKHw+roy0rQ7E5CTRZXBElpa2iWZiFgZDoktwuiEpiK+7xZ6CT7vRoKexuHxBAAFACqACExLwAMoACW7TRjEwQoX8Bhmmf+dp6Bj8I08Ov6pg6JxrBGCwSxcctklXPFJRIJQqGpYp0DwVlNXuUpdx4AQSDYAAlEQAEEpBIPCDzEABNW9NV7R8XwMfV+UsKZ-DMKYWIMcd03TWYoj6YDwTMOIlzdHEPXxbI4IQpCUK0cgwCUYovHbCAtFILAADcKAAa1IPAyDAVkwBwuSFMo75Y0QT9TEzM1jF6L9+jMcdmKmbprQWVxomNIwWIg7ExWgr0JMQ5C71k+TFJ3MAyEoAp5NZDl8mQEhdP0ugjPC0z71aI0AN6e0IR6J8en8DiR1y5yyvsQZFw2SCRLXMTYPg4LpMwMR0GZNDWE4TDBFECQiLkBRI0+O9qKA8wjAzWwTRcfwHCcr9rH1Z9jQcToOiWXzK1EmCIDITkaHazqinQnr92EcRJGkIaREy6jOi6AIDFCJZlmcQsnM-LpXD6cEIQWYIzFCbaoOregUoMoQDq5FhlPFdStJ0vSDKqMAAHdocO+7tUQRj4SsSxv2BYIC3HMEggdMCiafCwQaEld6oCiGUboLHYaimLYOKeLEuS1mwDRzGYZoHHzIQBxQnzJ9wXaQsjF6cmIkpwsPuB5iXtBpnwdgFgcI4I8iKeQQZANqohDF34J1CcdGJmFwBiWATQg6ZEtf8nWWBqDgSH4H2r24O6Ro1MyrefG2HwdZbVg8z9TWHd2q3XXXvd9n2L0kMNagvS2dRepzISl6xn3+EJXEsOZ6dqvyk7Er2fb9khjzPXg2EI3gOCqc8L34XPJnzh9n0K-UYksUITSRcvHET3asnrtPhBw-CZH4bve+Dntcetr7Qi6YxjTcEZd+TSwZ4ayV58boQl5Xvvt4fIrAk6CxokLFjnTP5mU4bn3m-PNuwydzvuHUqNoljGkKvMNwKxBLVx2ufOeuECJGxEAAdUXsvdeyhRpUS3iAh8dkERmFcCBUcyYq7Ljqh7ZOGELocAPCIKoJBUHVCEBwVBwCvxSyNB5ayFcK7sQfCQ+EAkwLWCmo4YCsDKE11nnAWhWFQxN1PP-duQCN5jTwVYACRMiYZiJn0Di0RZj+AiP8DWCxTHSOEv5OGKlCiYA0tpEgHIwA0EIDIdApR4AaNweLIeCYXyvWYoxbyFgnIUJsbiFgnMThxRoAlMgSVXHuIIJ47xd9bAcTyrMDMuoXrAwiJ-eeJ58JsAANLAP5ATDM-wSzpkLIVDiLFo7WnfL9JY81imp1NjhVB+EcIW18aHPOfQSDAQVoffoxgXwcWCKYfR9oXDGmNO0eIS5GxUh8SgRmHtYl6TVMMrKiAXY9Emr0YhkI45HyMVNEgL1x7iOiMQp8NUZHwK-l1O+HQEwOWmmafoJCoQPmtFLFw-QibMT8ExT+OsGBMDAJknopgnyvymoxGwCsnKpmWi+doJZBgOhMNY3ZtcYK1i+Uc6iCxgaAmIfaZYz4kyOEWsBcZ8w3rBBWOaWFyctwymivkYBkIEzjxCEsYueSnBOV+l0YCb5+guwNLYXljUKWykuG2OUp1EVUrwRYBMb8WIWGIdaRaAx8xfnLo6ZikizCqvJYSGUfo5RaspDSYMhzsEh2OY+Iwxd9TQpCF+by8wnL8hmFNeau8p7jymA6msTq6zbk1QGKAwDgb23shrU1jlB4vRmI8yR8wpiDBJVQslibNwapII2FsbqqniNmKCDy9gxjhDzTmEYorOl5UzMi60CaNxEi3BcKpHlm3LKke28eMqISAj6GQhYER-VDqlEm4Vbg6XisZVKllg9FhSx+SQ4Cr1ip9DXU1SSIVUI6rvk+GIQR8WSNTEq-dMIXYuFmNC9MobQKnwZhWuR4lmpSVCnpcKY69XixiE2kYxoMx9Cmt5DieSSBl3EZmBwzEVWAdkQg+gQUwOoX2fe1FI8+hDx+RK0q-rv2fhIcCVMUxXCXqIze0OUZNEwczGC594jwghHfSckuI9kQhALCYADcCwZ8tgG4lN2yQBcb8VbDl0t2gBEzCBdoBcFbjPTNaZMLyHJsdAxxtqHUaCUu9ZvcWb90OGl3i7GIVhBE5m5bklihcCygTM9e1qx1RbQatisKW355q6LmgtQeI4EwK1jsCB07RWN4Y+XC-ah0gs2eUzgkZhhx7dHmp+YGxDZYlQfv6n6GZ5gvhWJEct+HPmZa5EF758wVovTek4As7nJhE1xeXJw8135jFSzJ7WfLIZsxFt8l89zgLDlMXaxi5MVgIgLM58u-wiZruFZ2-r8JColhfAaA0DzGsfLvrMh8CZlgeV+hM3oY9+TT3WUAA */
   return createMachine(
     {
       context: () =>
@@ -208,9 +208,27 @@ export function createMainPageService({
                   initial: 'not typing',
                   states: {
                     typing: {
-                      on: {
-                        'NOT.EDITING': {
-                          target: 'not typing',
+                      initial: 'idle',
+                      states: {
+                        idle: {
+                          on: {
+                            'NOT.EDITING': {
+                              target: 'debouced',
+                            },
+                          },
+                        },
+                        debouced: {
+                          after: {
+                            '500': {
+                              target:
+                                '#main-machine.routes.editor.editing.not typing',
+                            },
+                          },
+                          on: {
+                            EDITING: {
+                              target: 'idle',
+                            },
+                          },
                         },
                       },
                     },
@@ -308,11 +326,13 @@ export function createMainPageService({
               invoke: {
                 src: 'createNewDraft',
                 id: 'createNewDraft',
-                onDone: {
-                  actions: 'assignNewDraftValues',
-                  target: 'editor',
-                },
-                onError: {},
+                onDone: [
+                  {
+                    actions: 'assignNewDraftValues',
+                    target: 'editor',
+                  },
+                ],
+                onError: [{}],
               },
               tags: 'loading',
             },

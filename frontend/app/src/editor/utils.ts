@@ -1,4 +1,5 @@
 import {
+  createId,
   FlowContent,
   group,
   GroupingContent,
@@ -10,6 +11,7 @@ import {
   isStatement,
   isText,
   ol,
+  paragraph,
   Statement,
   statement,
   text,
@@ -199,12 +201,17 @@ export function resetGroupingContent(editor: Editor): boolean {
 
   if (list) {
     const [listNode, listPath] = list
-    if (!Node.string(listNode)) {
+    if (listNode.children.length == 1 && !Node.string(listNode)) {
       Editor.withoutNormalizing(editor, () => {
-        Transforms.insertNodes(editor, group(listNode.children), {
-          at: Path.next(listPath),
-        })
-        Transforms.removeNodes(editor, {at: listPath})
+        Transforms.insertNodes(
+          editor,
+          statement({id: createId()}, [paragraph([text('')])]),
+          {
+            at: listPath,
+          },
+        )
+        Transforms.removeNodes(editor, {at: Path.next(listPath)})
+
         Transforms.select(editor, listPath.concat(0))
       })
       return true

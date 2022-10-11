@@ -72,3 +72,5 @@ export var useIsEditing = createMainSelector((state) => {
 
   return state.matches('routes.editor.editing.typing')
 })
+
+export var useCanEdit = createMainSelector((state) => state.can('EDITING'))
