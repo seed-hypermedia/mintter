@@ -1,6 +1,6 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: App Crash report
+about: Create a App Crash report to help us improve
 title: '[Crash Report]: '
 labels: ''
 assignees: ''
