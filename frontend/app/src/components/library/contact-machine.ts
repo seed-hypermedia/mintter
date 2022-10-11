@@ -21,6 +21,12 @@ type AccountEvent =
       type: 'RETRY'
     }
 
+type ContactServices = {
+  fetchListDeviceStatus: {
+    data: Array<PeerInfo>
+  }
+}
+
 export function createContactMachine(account: Account) {
   return createMachine(
     {
@@ -30,6 +36,7 @@ export function createContactMachine(account: Account) {
       schema: {
         context: {} as ContactContext,
         events: {} as AccountEvent,
+        services: {} as ContactServices,
       },
       context: {
         account,
@@ -37,45 +44,34 @@ export function createContactMachine(account: Account) {
         peers: [],
         status: undefined,
       },
-      type: 'parallel',
+      initial: 'fetching',
       states: {
-        data: {
-          initial: 'fetching',
-          states: {
-            fetching: {
-              entry: 'clearError',
-              invoke: {
-                src: 'fetchListDeviceStatus',
-                id: 'fetchListDeviceStatus',
-              },
-              on: {
-                'REPORT.FETCH.SUCCESS': {
-                  actions: [
-                    'assignData',
-                    'assignConnectionStatus',
-                    'commitStatus',
-                  ],
-                  target: 'ready',
-                },
-                'REPORT.FETCH.ERROR': {
-                  actions: 'assignError',
-                  target: 'errored',
-                },
-              },
+        fetching: {
+          entry: 'clearError',
+          invoke: {
+            src: 'fetchListDeviceStatus',
+            id: 'fetchListDeviceStatus',
+            onDone: {
+              actions: ['assignData', 'assignConnectionStatus', 'commitStatus'],
+              target: 'ready',
             },
-            ready: {
-              after: {
-                10000: {
-                  target: 'fetching',
-                },
-              },
+            onError: {
+              actions: 'assignError',
+              target: 'errored',
             },
-            errored: {
-              on: {
-                RETRY: {
-                  target: 'fetching',
-                },
-              },
+          },
+        },
+        ready: {
+          after: {
+            10000: {
+              target: 'fetching',
+            },
+          },
+        },
+        errored: {
+          on: {
+            RETRY: {
+              target: 'fetching',
             },
           },
         },
@@ -85,7 +81,9 @@ export function createContactMachine(account: Account) {
       actions: {
         assignConnectionStatus: assign({
           status: (_, event) => {
+            console.log(event.data)
             if (event.data.length == 1) {
+              console.log('connectionStatus', event.data[0].connectionStatus)
               return event.data[0].connectionStatus
             } else {
               let filter = event.data.map(
@@ -96,7 +94,7 @@ export function createContactMachine(account: Account) {
               if (filter.length) {
                 return ConnectionStatus.CONNECTED
               } else {
-                ConnectionStatus.NOT_CONNECTED
+                return ConnectionStatus.NOT_CONNECTED
               }
             }
           },
@@ -122,25 +120,16 @@ export function createContactMachine(account: Account) {
           errorMessage: '',
         }),
         assignError: assign({
-          errorMessage: (_, event) => `Contact Error: ${event.errorMessage}`,
+          errorMessage: (_, event) => `Contact Error: ${event.data}`,
         }),
       },
       services: {
-        fetchListDeviceStatus: (context) => (sendBack) => {
-          Promise.all(
+        fetchListDeviceStatus: (context) => {
+          return Promise.all(
             Object.values(context.account.devices).map((device) =>
               getPeerInfo(device),
             ),
           )
-            .then((data) => {
-              sendBack({type: 'REPORT.FETCH.SUCCESS', data})
-            })
-            .catch((error) => {
-              sendBack({
-                type: 'REPORT.FETCH.ERROR',
-                errorMessage: JSON.stringify(error),
-              })
-            })
         },
       },
     },

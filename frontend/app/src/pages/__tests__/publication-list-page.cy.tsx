@@ -9,7 +9,7 @@ describe('Publicationlist', () => {
   it('Should show an empty list', () => {
     cy.mount(<PublicationList />)
       .get('[data-testid="filelist-title"]')
-      .contains('Publications')
+      .contains('Inbox')
       .get('[data-testid="filelist-empty-label"]')
       .contains('You have no Publications yet.')
   })
