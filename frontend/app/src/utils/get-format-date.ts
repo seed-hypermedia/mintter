@@ -45,10 +45,19 @@ export function formattedDate(value: Date) {
     // after one year: Nov 22, 2021
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
   } else if (result.day > -1) {
-    // within 24hrs: 2h
     let formatter = new Intl.RelativeTimeFormat('en-US', {
       style: 'short',
     })
+
+    if (result.minute > -2) {
+      return 'just now'
+    }
+
+    if (result.minute > -60) {
+      return formatter.format(Math.floor(result.minute), 'minute')
+    }
+
+    // within 24hrs: 2h
 
     return formatter.format(Math.floor(result.hour), 'hour')
   } else {
