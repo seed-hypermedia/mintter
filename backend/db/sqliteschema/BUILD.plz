@@ -8,7 +8,6 @@ generated(
     name = "schema",
     srcs = [
         "gen.go",
-        "schema.sql",
         "sqliteschema.go",
     ],
     outs = ["schema.gen.go"],
@@ -26,6 +25,6 @@ $TOOLS_GORUN -tags codegen generateSchema
 
 filegroup(
     name = "go_library",
-    srcs = glob(["*.go"]) + ["schema.sql"],
+    srcs = glob(["*.go"]),
     visibility = ["//backend/..."],
 )

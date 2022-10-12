@@ -93,7 +93,7 @@ type link struct {
 	TargetBlock    string
 }
 
-var linkRegex = regexp.MustCompile(`^mtt:\/\/([a-z0-9]+)\/([a-z0-9]+)\/?([^\/]+)?$`)
+var linkRegex = regexp.MustCompile(`^(?:mtt|mintter):\/\/([a-z0-9]+)\/([a-z0-9]+)\/?([^\/]+)?$`)
 
 func parseLink(s string) (link, error) {
 	match := linkRegex.FindStringSubmatch(s)
