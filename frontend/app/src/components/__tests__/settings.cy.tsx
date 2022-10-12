@@ -8,7 +8,6 @@ describe('Settings', () => {
     /**
      * - it should render account details
      * - it should update alias
-     * - it should update email
      * - it should update bio
      */
 
@@ -18,7 +17,6 @@ describe('Settings', () => {
 
     let newProfile: Profile = {
       alias: 'new alias',
-      email: 'new@email.com',
       bio: 'new bio',
     }
 
@@ -29,10 +27,6 @@ describe('Settings', () => {
       .should('have.value', account?.profile?.alias)
       .clear()
       .type(newProfile.alias)
-      .get('[data-testid="input-email"]')
-      .should('have.value', account?.profile?.email)
-      .clear()
-      .type(newProfile.email)
       .get('[data-testid="input-bio"]')
       .should('have.value', account?.profile?.bio)
       .clear()

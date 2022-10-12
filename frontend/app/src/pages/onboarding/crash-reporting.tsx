@@ -4,11 +4,14 @@ import {
   OnboardingStepActions,
   OnboardingStepButton,
   OnboardingStepDescription,
-  OnboardingStepPropsType,
   OnboardingStepTitle,
 } from './common'
 
-export function CrashReporting({prev, next}: OnboardingStepPropsType) {
+export function CrashReporting() {
+  function reloadOnComplete() {
+    window.location.reload()
+  }
+
   return (
     <OnboardingStep>
       <OnboardingStepTitle icon={<CrashReportingIcon />}>
@@ -23,14 +26,11 @@ export function CrashReporting({prev, next}: OnboardingStepPropsType) {
       </OnboardingStepDescription>
       <OnboardingStepActions>
         <OnboardingStepButton
-          variant="outlined"
-          onClick={prev}
-          data-testid="prev-btn"
+          color="success"
+          onClick={reloadOnComplete}
+          data-testid="next-btn"
         >
-          Back
-        </OnboardingStepButton>
-        <OnboardingStepButton onClick={next} data-testid="next-btn">
-          Next
+          Open Mintter App
         </OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>

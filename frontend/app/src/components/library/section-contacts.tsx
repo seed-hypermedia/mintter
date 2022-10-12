@@ -292,7 +292,6 @@ function ContactItem({contact}: ContactItemProps) {
           >
             {state.context.account.profile?.bio}
           </Text>
-          <Text size="1">{state.context.account.profile?.email}</Text>
           <Text size="1" fontWeight="bold">
             (
             {state.context.status == ConnectionStatus.CONNECTED

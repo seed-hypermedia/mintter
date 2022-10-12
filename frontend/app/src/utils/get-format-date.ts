@@ -45,6 +45,7 @@ export function formattedDate(value: Date) {
     // after one year: Nov 22, 2021
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`
   } else if (result.day > -1) {
+    // TODO: avoid showing 24hrs ago
     let formatter = new Intl.RelativeTimeFormat('en-US', {
       style: 'short',
     })

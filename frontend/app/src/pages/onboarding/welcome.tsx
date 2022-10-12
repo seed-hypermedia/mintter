@@ -36,7 +36,7 @@ export function Welcome({next}: OnboardingStepPropsType) {
         <WelcomeStep
           icon={<ProfileInformationIcon />}
           title="2. Profile Information"
-          description="Set up your profile providing an alias and an email"
+          description="Set up your profile providing an alias and a Bio"
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
