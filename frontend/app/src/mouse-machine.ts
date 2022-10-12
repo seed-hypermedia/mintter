@@ -241,7 +241,6 @@ export var mouseMachine = createMachine(
           threshold: [0.33, 0.66],
         }
         let observer = new IntersectionObserver(callback, options)
-        console.log('boundsListener!')
         sendBack({type: 'INIT.OBSERVER', observer})
 
         // =============

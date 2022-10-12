@@ -1,19 +1,20 @@
+import {getPublication} from '@app/client'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {useMain, usePublicationList} from '@app/main-context'
-import {PublicationWithRef} from '@app/main-machine'
+import {queryKeys} from '@app/hooks'
+import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
 import type {Embed, Link as LinkType} from '@app/mttast'
 import {embed, isLink, link, text} from '@app/mttast'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {isMintterLink} from '@app/utils/is-mintter-link'
-import {getRefFromParams} from '@app/utils/machine-utils'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {useQuery} from '@tanstack/react-query'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
 import {ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
@@ -26,9 +27,14 @@ import {
   Range,
   Transforms,
 } from 'slate'
-import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
+import {
+  ReactEditor,
+  RenderElementProps,
+  useSlate,
+  useSlateStatic,
+} from 'slate-react'
 import type {EditorPlugin} from '../types'
-import {getEditorBlock, isCollapsed} from '../utils'
+import {findPath, getEditorBlock, isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
@@ -38,6 +44,16 @@ export const createLinkPlugin = (): EditorPlugin => ({
     ({mode}) =>
     ({children, attributes, element}) => {
       if (isLink(element)) {
+        if (element.data?.void) {
+          return (
+            <MintterDocumentLink
+              attributes={attributes}
+              element={element}
+              mode={mode}
+            />
+          )
+        }
+
         return (
           <Link attributes={attributes} element={element} mode={mode}>
             {children}
@@ -77,8 +93,9 @@ export const createLinkPlugin = (): EditorPlugin => ({
      *   - write a link text
      *   - by selecting and interacting with the toolbar (not in here)
      */
-    const {isInline, insertText, insertData} = editor
+    const {isInline, insertText, insertData, isVoid} = editor
 
+    editor.isVoid = (element) => element.data?.void || isVoid(element)
     editor.isInline = (element) => isLink(element) || isInline(element)
 
     editor.insertText = (text: string) => {
@@ -111,22 +128,11 @@ export const createLinkPlugin = (): EditorPlugin => ({
 })
 
 function insertDocumentLink(editor: Editor, url: string) {
-  // TODO: remove this hook from here. not a component so this will blowu at some point
-  // eslint-disable-next-line
-  let publicationList = usePublicationList()
-
-  let publication = publicationList.find((pub: PublicationWithRef) => {
-    let [docId, version] = getIdsfromUrl(url)
-
-    return pub.ref.id == getRefFromParams('pub', docId, version)
-  })
-
-  if (publication) {
-    Transforms.insertNodes(editor, [
-      link({url}, [text(publication.document?.title || '')]),
-      text(''),
-    ])
-  }
+  Transforms.insertNodes(editor, [
+    // we are setting the `void` data attribute to true as a temporary value in order to fetch for the document title and convert it to a normal link
+    link({url, data: {void: true}}, [text('')]),
+    text(''),
+  ])
 }
 
 type LinkProps = Omit<RenderElementProps, 'element'> & {
@@ -213,6 +219,33 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
 export const Link = forwardRef(renderLink)
 
 Link.displayName = 'Link'
+
+function MintterDocumentLink({element, attributes, mode}: LinkProps) {
+  let editor = useSlateStatic()
+  let at = findPath(element)
+  let [docId, version] = getIdsfromUrl(element.url)
+  let {data} = useQuery([queryKeys.GET_PUBLICATION, docId, version], () =>
+    getPublication(docId, version),
+  )
+  useEffect(() => {
+    if (data) {
+      Editor.withoutNormalizing(editor, () => {
+        Transforms.insertNodes(
+          editor,
+          link({url: element.url}, [text(data.document?.title || element.url)]),
+          {at},
+        )
+        Transforms.removeNodes(editor, {at: Path.next(at)})
+      })
+    }
+  }, [data, element, at, editor])
+
+  return (
+    <span contentEditable={false} {...attributes}>
+      ...
+    </span>
+  )
+}
 
 export interface InsertLinkOptions {
   url: string

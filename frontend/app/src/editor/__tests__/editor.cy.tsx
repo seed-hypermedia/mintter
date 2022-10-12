@@ -664,6 +664,64 @@ describe('Editor', () => {
   })
 })
 
+describe('Links', () => {
+  it('should add a Document Link with title', () => {
+    let block = statement({id: 'b1'}, [paragraph([text('')])])
+    let title = 'Demo title'
+
+    let draft: Document = {
+      id: 'foo',
+      title: 'demo',
+      subtitle: '',
+      children: [
+        {
+          block: blockToApi(block),
+          children: [],
+        },
+      ],
+      createTime: new Date(),
+      updateTime: new Date(),
+      author: '',
+      publishTime: undefined,
+    }
+
+    let publication: Publication = {
+      version: 'v1',
+      document: {
+        id: 'd1',
+        author: 'demoauthor',
+        title,
+        subtitle: '',
+        createTime: undefined,
+        updateTime: undefined,
+        publishTime: undefined,
+        children: [],
+      },
+    }
+
+    let editor = buildEditorHook(plugins, EditorMode.Draft)
+
+    let {client} = createTestQueryClient({
+      publication,
+      publicationList: [publication],
+      draft,
+      authors: [{id: 'demoauthor'}],
+    })
+
+    cy.mount(<TestEditor editor={editor} client={client} draft={draft} />, {
+      client,
+    })
+      .get('[data-testid="editor"]')
+      .click()
+      .then(() => {
+        let data = new DataTransfer()
+        data.setData('text', 'mintter://d1/v1')
+        editor.insertData(data)
+      })
+      .contains(title)
+  })
+})
+
 describe('Transclusions', () => {
   it('should paste a transclusion into the editor', () => {
     let blockContent = 'Hello b1'

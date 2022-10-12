@@ -16,8 +16,6 @@ import {PublicationList} from './publication-list-page'
 export default function MainPage() {
   const mainService = useMain()
 
-  console.log('mainpage render')
-
   const params = useParams()
   const isPublication = useSelector(mainService, (state) =>
     state.matches('routes.publication'),
