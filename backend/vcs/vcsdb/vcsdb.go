@@ -1105,6 +1105,29 @@ func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
 	return vcs.NewVersion(uint64(len(cids)), cids...)
 }
 
+// PublicVersionToLocal converts a public version into a local one. All changes
+// of the public version must already be in the database.
+func (conn *Conn) PublicVersionToLocal(v vcs.Version) (out LocalVersion) {
+	must.Maybe(&conn.err, func() error {
+		cids := v.CIDs()
+		out = make(LocalVersion, len(cids))
+		for i, c := range cids {
+			res, err := vcssql.IPFSBlocksLookupPK(conn.conn, c.Hash())
+			if err != nil {
+				return err
+			}
+
+			if res.IPFSBlocksID == 0 {
+				return fmt.Errorf("version not found: %s", c.String())
+			}
+
+			out[i] = LocalID(res.IPFSBlocksID)
+		}
+		return nil
+	})
+	return out
+}
+
 // CountVersions of a given object.
 func (conn *Conn) CountVersions(object LocalID) (out int) {
 	const q = "SELECT COUNT() FROM named_versions WHERE object_id = ?"

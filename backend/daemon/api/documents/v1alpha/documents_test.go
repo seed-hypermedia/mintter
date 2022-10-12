@@ -15,6 +15,7 @@ import (
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestCreateDraftFromPublication(t *testing.T) {
@@ -671,6 +672,46 @@ func TestAPIDeletePublication(t *testing.T) {
 	// require.True(t, ok)
 	// require.Nil(t, pub)
 	// require.Equal(t, codes.NotFound, s.Code())
+}
+
+func TestGetPreviousVersions(t *testing.T) {
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc = updateDraft(ctx, t, api, doc.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}}},
+	)
+
+	pub1, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	doc, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub1.Document.Id})
+	require.NoError(t, err)
+	doc = updateDraft(ctx, t, api, doc.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "Changed document title"}},
+	})
+
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	require.False(t, proto.Equal(pub1, pub2), "changed publication must not be equal to the old one")
+
+	// Get latest publication
+	p, err := api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, p, pub2, "latest publication must match")
+
+	// Get latest by version
+	p, err = api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id, Version: pub2.Version})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, p, pub2, "latest publication must match getting by version string")
+
+	// Get older version
+	p, err = api.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: doc.Id, Version: pub1.Version})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, p, pub1, "latest publication must match getting by version string")
 }
 
 func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*documents.DocumentChange) *documents.Document {

@@ -7,6 +7,7 @@ import (
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/future"
+	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
@@ -435,7 +436,19 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	if err := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
 		meLocal := conn.LookupIdentity(me)
-		version := conn.GetVersion(obj, "main", meLocal)
+
+		var version vcsdb.LocalVersion
+		if in.Version == "" || in.Version == "main" {
+			version = conn.GetVersion(obj, "main", meLocal)
+		} else {
+			pubVer, err := vcs.ParseVersion(in.Version)
+			if err != nil {
+				return err
+			}
+
+			version = conn.PublicVersionToLocal(pubVer)
+		}
+
 		if len(version) != 1 {
 			return fmt.Errorf("TODO(burdiyan): can only get publication with 1 leaf change, got: %d", len(version))
 		}
