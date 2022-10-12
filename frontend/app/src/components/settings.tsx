@@ -1,6 +1,13 @@
 import {useAccount, useAuthService} from '@app/auth-context'
 import * as localApi from '@app/client'
 import {forceSync} from '@app/client/daemon'
+import {Box} from '@app/components/box'
+import {Button} from '@app/components/button'
+import {PeerAddrs} from '@app/components/peer-addrs'
+import {ScrollArea} from '@app/components/scroll-area'
+import {Text} from '@app/components/text'
+import {TextField} from '@app/components/text-field'
+import {WalletList} from '@app/components/wallet-list'
 import {useActivity} from '@app/main-context'
 import {styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
@@ -9,13 +16,6 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useActor} from '@xstate/react'
 import {FormEvent} from 'react'
 import toast from 'react-hot-toast'
-import {Box} from './box'
-import {Button} from './button'
-import {PeerAddrs} from './peer-addrs'
-import {ScrollArea} from './scroll-area'
-import {Text} from './text'
-import {TextField} from './text-field'
-import {WalletList} from './wallet-list'
 
 export function Settings() {
   let authService = useAuthService()
@@ -34,20 +34,17 @@ export function Settings() {
         background: '$base-component-bg-normal',
       }}
     >
-      <StyledTabs defaultValue="profile" orientation="horizontal">
+      <StyledTabs
+        defaultValue="profile"
+        orientation="vertical"
+        data-tauri-drag-region
+      >
         <StyledTabsList aria-label="Manage your node" data-tauri-drag-region>
-          <TabTrigger data-tauri-drag-region value="profile">
-            Profile
-          </TabTrigger>
-          <TabTrigger data-tauri-drag-region value="account">
-            Account Info
-          </TabTrigger>
-          <TabTrigger data-tauri-drag-region value="wallets">
-            Wallets
-          </TabTrigger>
-          <TabTrigger data-tauri-drag-region value="settings">
-            Settings
-          </TabTrigger>
+          <TabTrigger value="profile">Profile</TabTrigger>
+          <TabTrigger value="account">Account Info</TabTrigger>
+          <TabTrigger value="wallets">Wallets</TabTrigger>
+          <TabTrigger value="settings">Settings</TabTrigger>
+          <TabTrigger value="verified-accounts">Verified Accounts</TabTrigger>
         </StyledTabsList>
         <TabsContent value="profile">
           {/* <ScrollArea> */}
@@ -61,18 +58,21 @@ export function Settings() {
           />
           {/* </ScrollArea> */}
         </TabsContent>
-        <TabsContent value="account">
+        <TabsContent value="account" data-tauri-drag-region>
           {/* <ScrollArea> */}
           <AccountInfo />
           {/* </ScrollArea> */}
         </TabsContent>
-        <TabsContent value="wallets">
+        <TabsContent value="wallets" data-tauri-drag-region>
           <ScrollArea>
             <WalletsInfo />
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="settings">
+        <TabsContent value="settings" data-tauri-drag-region>
           <AppSettings />
+        </TabsContent>
+        <TabsContent value="verified-accounts" data-tauri-drag-region>
+          <div></div>
         </TabsContent>
       </StyledTabs>
     </Box>
@@ -101,7 +101,7 @@ export function ProfileForm({
   }
 
   if (profile) {
-    let {alias, bio, email} = profile
+    let {alias, bio} = profile
     return (
       <Box
         as="form"
@@ -123,15 +123,6 @@ export function ProfileForm({
           name="alias"
           defaultValue={alias}
           placeholder="Readable alias or username. Doesn't have to be unique."
-        />
-        <TextField
-          type="email"
-          label="Email"
-          id="email"
-          name="email"
-          data-testid="input-email"
-          placeholder="Real email that could be publically shared"
-          defaultValue={email}
         />
 
         <TextField
@@ -302,25 +293,24 @@ function WalletsInfo() {
 var StyledTabs = styled(TabsPrimitive.Root, {
   width: '$full',
   height: '$full',
+  display: 'flex',
 })
 
 var StyledTabsList = styled(TabsPrimitive.List, {
   borderRight: '1px solid rgba(0,0,0,0.1)',
-
-  display: 'flex',
-  justifyContent: 'center',
+  minWidth: '20vw',
+  paddingTop: '$9',
 })
 
 var TabTrigger = styled(TabsPrimitive.Trigger, {
   all: 'unset',
   // padding: '0 $6',
   height: 45,
-  textAlign: 'center',
-
+  textAlign: 'left',
+  paddingInline: '$5',
   display: 'flex',
+  width: '$full',
   alignItems: 'center',
-  flex: 1,
-  justifyContent: 'center',
   fontSize: '$3',
   fontFamily: '$base',
   lineHeight: '1',

@@ -17,7 +17,6 @@ import {
 
 type ProfileInformationDataType = {
   alias: string
-  email: string
   bio: string
 }
 
@@ -28,7 +27,6 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
       mode: 'onChange',
       defaultValues: {
         alias: '',
-        email: '',
         bio: '',
       },
     })
@@ -64,22 +62,6 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
           {...register('alias')}
           data-testid="alias-input"
           placeholder="Readable alias or username. Doesn't have to be unique."
-        />
-        <TextField
-          type="email"
-          status={formState.errors.email && 'danger'}
-          label="Email"
-          id="email"
-          data-testid="email-input"
-          {...register('email', {
-            pattern: {
-              // eslint-disable-next-line no-control-regex
-              value: /[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+/,
-              message: 'Please type a valid email.',
-            },
-          })}
-          placeholder="Real email that could be publically shared"
-          hint={formState.errors.email?.message}
         />
         <TextField
           textarea

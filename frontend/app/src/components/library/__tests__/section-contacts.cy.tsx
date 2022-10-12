@@ -28,7 +28,6 @@ describe.skip('Contacts Section', () => {
           id: 'foo',
           profile: {
             alias: 'foo',
-            email: '',
             bio: '',
           },
         },
@@ -36,7 +35,6 @@ describe.skip('Contacts Section', () => {
           id: 'bar',
           profile: {
             alias: 'bar',
-            email: '',
             bio: '',
           },
         },
@@ -102,7 +100,6 @@ describe.skip('Contacts Section', () => {
           id: 'foo',
           profile: {
             alias: 'foo',
-            email: '',
             bio: '',
           },
         },

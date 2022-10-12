@@ -1,16 +1,17 @@
+import {getPublication, Publication} from '@app/client'
+import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {Editor} from '@app/editor/editor'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {MainService, useMain} from '@app/main-context'
-import {PublicationRef} from '@app/main-machine'
+import {queryKeys} from '@app/hooks'
+import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
 import {Embed as EmbedType, FlowContent, isEmbed} from '@app/mttast'
-import {createPublicationMachine} from '@app/publication-machine'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
-import {getRefFromParams} from '@app/utils/machine-utils'
+import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {RenderElementProps} from 'slate-react'
 import {visit} from 'unist-util-visit'
-import {ActorRefFrom, assign, createMachine} from 'xstate'
+import {assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
 
 export const ELEMENT_EMBED = 'embed'
@@ -61,8 +62,8 @@ function Embed({
   const mainService = useMain()
   const mouseService = useMouse()
   let [docId, version, blockId] = getIdsfromUrl(element.url)
-
-  let [state] = useMachine(() => createEmbedMachine(element.url, mainService))
+  let client = useQueryClient()
+  let [state] = useMachine(() => createEmbedMachine({url: element.url, client}))
   // let selected = useSelected()
   // let focused = useFocused()
 
@@ -124,21 +125,21 @@ function Embed({
 
 type EmbedMachineContext = {
   url: string
-  publication?: PublicationRef
+  publication?: Publication
   block?: FlowContent
   errorMessage: string
 }
 
 type EmbedMachineServices = {
   getEmbedPublication: {
-    data: PublicationRef
+    data: Publication
   }
   getEmbedBlock: {
     data: FlowContent
   }
 }
 
-function createEmbedMachine(url: string, mainService: MainService) {
+function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
   /** @xstate-layout N4IgpgJg5mDOIC5RgLYCNIFoUEMDGAFgJYB2YAdAGZgAuhpUACgK5oA2ReONRA9iQGII-CqQBuvANYUYNAKLpILdp258SiUAAdesIj36aQAD0SYArAGZyANgCMAFgDsAJgAcATks2fHgAzmADQgAJ5mdnZO5Ob2Ng4eHnaWfn6ebgC+6cGoGBDY+MRkVLT0JEysHFwGgmAATrW8teRabNyUjSjksgq5ypVqhkggOnrVRqYImHZ+duRudi52MX4JDi42lkGhiBGzLs5+my6Wlm4O8y6Z2Yp5uKUUlKQQAEJsvHiSQiLk4lIytD1IK93pIjCN9OpxohLB5zOQHJs3G44pYHGtzPtgmEEFE3N4bE41sknJZCV5zFdwDd8vcqE9gR8BHUGk0Wm0Ol0ATcGaChuCxkMJnZ-OQXDFEjMxYs4ljELj8YTjn4SU5zDNMlkQCReBA4EYclg7oUHiVCuUVFVIXzdBDBqAJpgHFZbI5FWcnPNzG5ZZMFrM-LEnV61R4fE5KQbbgVSA96W8PmCbQL7YgXH4HORCQ44o51u5Fj6pi4PNFA363OY1usI9SjTGfhA2GBE6MrSmEPY-OREmiSZWvG5UoWIjY5jYXE5YV4bMGzjXcjTjeRmY1IC3bRpBamTuQ7BWSe5nASvT6Fhn9k5Dql3DO7AT54bo2R18mTGZnFF7M41u7Pd7tpMUqlneuwrE6CyWBq6RAA */
   return createMachine(
     {
@@ -207,45 +208,42 @@ function createEmbedMachine(url: string, mainService: MainService) {
     {
       services: {
         getEmbedPublication: (context) => {
+          let [docId, version] = getIdsfromUrl(context.url)
+          return client.fetchQuery<Publication>(
+            [queryKeys.GET_PUBLICATION, docId, version],
+            () => getPublication(docId, version),
+          )
+        },
+        getEmbedBlock: (context) => {
           return new Promise((resolve, reject) => {
-            let [docId, version] = getIdsfromUrl(context.url)
-            let machine = mainService.children.get(
-              getRefFromParams('pub', docId, version),
-            ) as ActorRefFrom<ReturnType<typeof createPublicationMachine>>
-            if (machine) {
-              machine.send('LOAD')
-              resolve(machine)
+            let [, , blockId] = getIdsfromUrl(context.url)
+            if (context.publication?.document?.children) {
+              let pubContent = blockNodeToSlate(
+                context.publication?.document?.children,
+                'group',
+              )
+
+              let temp: FlowContent | undefined
+
+              visit(
+                {
+                  type: 'root',
+                  children: pubContent.children,
+                },
+                {id: blockId},
+                (node) => {
+                  temp = node
+                },
+              )
+
+              if (temp) {
+                resolve(temp as FlowContent)
+              }
             } else {
-              reject('getEmbedPublication Error')
+              reject(`getEmbedBlock Error: no block was found`)
             }
           })
         },
-        getEmbedBlock: (context) =>
-          new Promise((resolve, reject) => {
-            let [, , blockId] = getIdsfromUrl(context.url)
-            context.publication?.subscribe((state) => {
-              if (state.matches({publication: 'ready'})) {
-                let temp: FlowContent | undefined
-
-                visit(
-                  {
-                    type: 'root',
-                    children: state.context.publication?.document?.content,
-                  },
-                  {id: blockId},
-                  (node) => {
-                    temp = node
-                  },
-                )
-
-                if (temp) {
-                  resolve(temp as FlowContent)
-                } else {
-                  reject(`getEmbedBlock Error: no block was found`)
-                }
-              }
-            })
-          }),
       },
       actions: {
         assignBlock: assign({
