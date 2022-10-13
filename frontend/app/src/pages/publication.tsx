@@ -13,6 +13,7 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
 import {Placeholder} from '@components/placeholder-box'
+import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {useActor, useInterpret} from '@xstate/react'
 import {Allotment} from 'allotment'
@@ -98,13 +99,15 @@ export function PublicationPage({publicationRef}: PublicationProps) {
                   preferredSize="40%"
                   visible={state.matches('discussion.ready.visible')}
                 >
-                  <div style={{height: '100%', overflow: 'auto'}}>
+                  <ScrollArea
+                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                  >
                     <Discussion service={publicationRef} />
-                  </div>
+                  </ScrollArea>
                 </Allotment.Pane>
                 <Allotment.Pane preferredSize="60%">
-                  <div
-                    style={{height: '100%', overflow: 'auto'}}
+                  <ScrollArea
+                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
                     onMouseMove={(event) => {
                       mouseService.send({
                         type: 'MOUSE.MOVE',
@@ -158,7 +161,7 @@ export function PublicationPage({publicationRef}: PublicationProps) {
                         </Button>
                       </Box>
                     </FileProvider>
-                  </div>
+                  </ScrollArea>
                 </Allotment.Pane>
               </Allotment>
             </BlockHighLighter>
