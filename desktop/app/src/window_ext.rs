@@ -3,7 +3,7 @@ use tauri::{Window, Wry};
 use url::Url;
 
 #[cfg(target_os = "macos")]
-use cocoa::appkit::{NSWindow, NSWindowStyleMask, NSWindowTitleVisibility};
+use cocoa::appkit::{NSWindow, NSWindowStyleMask};
 #[cfg(target_os = "macos")]
 use objc::{msg_send, runtime::Object, sel, sel_impl};
 #[cfg(target_os = "macos")]
@@ -18,7 +18,6 @@ use webview2_com::take_pwstr;
 use windows::core::PWSTR;
 
 pub trait WindowExt {
-  fn set_transparent_titlebar(&self, transparent: bool);
   fn is_transparent_titlebar(&self) -> bool;
   fn set_closable(&self, closable: bool);
   fn set_minimizable(&self, minimizable: bool);
@@ -26,41 +25,6 @@ pub trait WindowExt {
 }
 
 impl WindowExt for Window<Wry> {
-  #[cfg(target_os = "macos")]
-  fn set_transparent_titlebar(&self, transparent: bool) {
-    use cocoa::appkit::NSToolbar;
-
-    unsafe {
-      let id = self.ns_window().unwrap() as cocoa::base::id;
-
-      let mut style_mask = id.styleMask();
-      style_mask.set(
-        NSWindowStyleMask::NSFullSizeContentViewWindowMask,
-        transparent,
-      );
-      id.setStyleMask_(style_mask);
-
-      id.setTitleVisibility_(if transparent {
-        NSWindowTitleVisibility::NSWindowTitleHidden
-      } else {
-        NSWindowTitleVisibility::NSWindowTitleVisible
-      });
-
-      id.setTitlebarAppearsTransparent_(if transparent {
-        cocoa::base::YES
-      } else {
-        cocoa::base::NO
-      });
-
-      let new_toolbar = NSToolbar::alloc(id);
-      new_toolbar.init_();
-      id.setToolbar_(new_toolbar);
-    }
-  }
-
-  #[cfg(not(target_os = "macos"))]
-  fn set_transparent_titlebar(&self, _transparent: bool) {}
-
   #[cfg(target_os = "macos")]
   fn is_transparent_titlebar(&self) -> bool {
     let id = self.ns_window().unwrap() as cocoa::base::id;
