@@ -71,7 +71,7 @@ fn main() {
   };
   let init_opts = sentry_options.clone();
 
-  tauri_plugin_sentry::init(
+  sentry_tauri::init(
     |_| sentry::init(init_opts),
     move |sentry_plugin| {
       tauri::Builder::default()
@@ -96,15 +96,10 @@ fn main() {
             app.state::<sentry::ClientOptions>(),
           );
 
-          let win = app.get_window("main").unwrap();
-          win.set_transparent_titlebar(true);
-
           Ok(())
         })
         .on_window_event(|event| {
           if let WindowEvent::Focused(_) = event.event() {
-            event.window().set_transparent_titlebar(true);
-
             if event.window().label() == "preferences" {
               event.window().set_minimizable(false);
               event.window().set_resizable(false).unwrap();
