@@ -12,6 +12,7 @@ import {AppError} from '@app/root'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
+import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
@@ -20,6 +21,7 @@ import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useEffect, useLayoutEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import '../styles/publication.scss'
 
 type PublicationProps = {
   publicationRef: PublicationRef
@@ -87,6 +89,11 @@ export function PublicationPage({publicationRef}: PublicationProps) {
         onReset={() => window.location.reload()}
       >
         <MainWindow>
+          <div className="discussion-toggle">
+            <button onClick={() => send('DISCUSSION.TOGGLE')}>
+              <Icon name="MessageBubble" />
+            </button>
+          </div>
           <MouseProvider value={mouseService}>
             <BlockHighLighter>
               <Allotment
@@ -129,37 +136,6 @@ export function PublicationPage({publicationRef}: PublicationProps) {
                           />
                         </Blocktools>
                       )}
-                      <Box
-                        css={{
-                          paddingBlock: '2rem',
-                          paddingInlineStart: '1rem',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '1rem',
-                        }}
-                      >
-                        <Button
-                          variant="ghost"
-                          color="primary"
-                          size="1"
-                          onClick={() => send('DISCUSSION.TOGGLE')}
-                          css={{
-                            paddingBlock: '2rem',
-                            paddingInline: '1rem',
-                            display: 'block',
-                            inlineSize: '$full',
-                            textAlign: 'start',
-                            '&:hover': {
-                              backgroundColor: '$base-background-normal',
-                            },
-                          }}
-                        >
-                          {state.matches('discussion.ready.hidden')
-                            ? 'Show '
-                            : 'Hide '}
-                          Discussion/Citations
-                        </Button>
-                      </Box>
                     </FileProvider>
                   </ScrollArea>
                 </Allotment.Pane>
