@@ -271,13 +271,14 @@ export function createMainPageService({
                     id: 'createReply',
                     onDone: [
                       {
-                        actions: 'assignNewDraftValues',
-                        target: '#main-machine.routes.editor',
+                        actions: ['openWindow'],
+                        target: 'idle',
                       },
                     ],
                     onError: [
                       {
                         actions: 'assignError',
+                        target: 'idle',
                       },
                     ],
                   },
@@ -467,8 +468,13 @@ export function createMainPageService({
             replace: !!event.replace,
           }),
         }),
-        openWindow: async (context, event) => {
-          openWindow(event.path)
+        openWindow: async (_, event) => {
+          let path =
+            event.type == 'done.invoke.createReply'
+              ? `/editor/${event.data.id}`
+              : event.path
+
+          openWindow(path)
         },
         pushToActivity: (context, event) => {
           let url = `${event.docId}/${event.version}`
