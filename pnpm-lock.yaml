@@ -78,7 +78,7 @@ importers:
       '@xstate/inspect': 0.7.0
       '@xstate/react': 3.0.1
       '@xstate/test': 0.5.1
-      allotment: ^1.17.0
+      allotment: 1.17.0
       autosize: 5.0.1
       browser-headers: 0.4.1
       cmdk: 0.1.20
