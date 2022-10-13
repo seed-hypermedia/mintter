@@ -11,6 +11,7 @@ import {mouseMachine} from '@app/mouse-machine'
 import {ChildrenOf} from '@app/mttast'
 import {MainWindow} from '@app/pages/window-components'
 import {AppError} from '@app/root'
+import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
@@ -105,29 +106,31 @@ export function EditorPage({draftRef}: EditorPageProps) {
             }
           }}
         >
-          {context.localDraft?.content && (
-            <>
-              <MouseProvider value={mouseService}>
-                <BlockHighLighter>
-                  <FileProvider value={draftRef}>
-                    <Blocktools>
-                      <Editor
-                        editor={state.context.editor}
-                        value={context.localDraft.content}
-                        //@ts-ignore
-                        onChange={(content: ChildrenOf<Document>) => {
-                          if (!content && typeof content == 'string') return
-                          mouseService.send('DISABLE.CHANGE')
-                          mainService.send('EDITING')
-                          send({type: 'DRAFT.UPDATE', payload: {content}})
-                        }}
-                      />
-                    </Blocktools>
-                  </FileProvider>
-                </BlockHighLighter>
-              </MouseProvider>
-            </>
-          )}
+          <ScrollArea>
+            {context.localDraft?.content && (
+              <>
+                <MouseProvider value={mouseService}>
+                  <BlockHighLighter>
+                    <FileProvider value={draftRef}>
+                      <Blocktools>
+                        <Editor
+                          editor={state.context.editor}
+                          value={context.localDraft.content}
+                          //@ts-ignore
+                          onChange={(content: ChildrenOf<Document>) => {
+                            if (!content && typeof content == 'string') return
+                            mouseService.send('DISABLE.CHANGE')
+                            mainService.send('EDITING')
+                            send({type: 'DRAFT.UPDATE', payload: {content}})
+                          }}
+                        />
+                      </Blocktools>
+                    </FileProvider>
+                  </BlockHighLighter>
+                </MouseProvider>
+              </>
+            )}
+          </ScrollArea>
         </MainWindow>
       </ErrorBoundary>
     )
