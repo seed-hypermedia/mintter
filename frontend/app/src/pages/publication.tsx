@@ -15,7 +15,9 @@ import {Discussion} from '@components/discussion'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {useActor, useInterpret} from '@xstate/react'
-import {useEffect} from 'react'
+import {Allotment} from 'allotment'
+import 'allotment/dist/style.css'
+import {useEffect, useLayoutEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 
 type PublicationProps = {
@@ -46,6 +48,20 @@ export function PublicationPage({publicationRef}: PublicationProps) {
   let [state, send] = usePublication(publicationRef)
   const mouseService = useInterpret(() => mouseMachine)
 
+  let [qMatch, setQMatch] = useState({ready: false, value: false})
+
+  useLayoutEffect(() => {
+    let matchQuery = window.matchMedia('(min-width: 768px)')
+
+    matchQuery.addEventListener('change', (event) => {
+      console.log('change!', event)
+
+      setQMatch({ready: true, value: event.matches})
+    })
+
+    setQMatch({ready: true, value: matchQuery.matches})
+  }, [])
+
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
   }
@@ -63,67 +79,88 @@ export function PublicationPage({publicationRef}: PublicationProps) {
     )
   }
 
-  if (state.hasTag('ready')) {
+  if (state.hasTag('ready') && qMatch.ready) {
     return (
       <ErrorBoundary
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
-        <MainWindow
-          onMouseMove={(event) => {
-            mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-          }}
-          onScroll={() => mouseService.send('DISABLE.SCROLL')}
-        >
+        <MainWindow>
           <MouseProvider value={mouseService}>
             <BlockHighLighter>
-              <FileProvider value={publicationRef}>
-                {state.context.publication?.document?.content && (
-                  <Blocktools>
-                    <Editor
-                      editor={state.context.editor}
-                      mode={EditorMode.Publication}
-                      value={state.context.publication?.document.content}
-                      onChange={() => {
-                        mouseService.send('DISABLE.CHANGE')
-                        // noop
-                      }}
-                    />
-                  </Blocktools>
-                )}
-                <Box
-                  css={{
-                    paddingBlock: '2rem',
-                    paddingInlineStart: '1rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1rem',
-                  }}
+              <Allotment
+                vertical={!qMatch.value}
+                onChange={() => {
+                  mouseService.send('DISABLE.SCROLL')
+                }}
+              >
+                <Allotment.Pane
+                  preferredSize="40%"
+                  visible={state.matches('discussion.ready.visible')}
                 >
-                  <Button
-                    variant="ghost"
-                    color="primary"
-                    size="1"
-                    onClick={() => send('DISCUSSION.TOGGLE')}
-                    css={{
-                      paddingBlock: '2rem',
-                      paddingInline: '1rem',
-                      display: 'block',
-                      inlineSize: '$full',
-                      textAlign: 'start',
-                      '&:hover': {
-                        backgroundColor: '$base-background-normal',
-                      },
+                  <div style={{height: '100%', overflow: 'auto'}}>
+                    <Discussion service={publicationRef} />
+                  </div>
+                </Allotment.Pane>
+                <Allotment.Pane preferredSize="60%">
+                  <div
+                    style={{height: '100%', overflow: 'auto'}}
+                    onMouseMove={(event) => {
+                      mouseService.send({
+                        type: 'MOUSE.MOVE',
+                        position: event.clientY,
+                      })
                     }}
                   >
-                    {state.matches('discussion.ready.hidden')
-                      ? 'Show '
-                      : 'Hide '}
-                    Discussion/Citations
-                  </Button>
-                  <Discussion service={publicationRef} />
-                </Box>
-              </FileProvider>
+                    <FileProvider value={publicationRef}>
+                      {state.context.publication?.document?.content && (
+                        <Blocktools>
+                          <Editor
+                            editor={state.context.editor}
+                            mode={EditorMode.Publication}
+                            value={state.context.publication?.document.content}
+                            onChange={() => {
+                              mouseService.send('DISABLE.CHANGE')
+                              // noop
+                            }}
+                          />
+                        </Blocktools>
+                      )}
+                      <Box
+                        css={{
+                          paddingBlock: '2rem',
+                          paddingInlineStart: '1rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1rem',
+                        }}
+                      >
+                        <Button
+                          variant="ghost"
+                          color="primary"
+                          size="1"
+                          onClick={() => send('DISCUSSION.TOGGLE')}
+                          css={{
+                            paddingBlock: '2rem',
+                            paddingInline: '1rem',
+                            display: 'block',
+                            inlineSize: '$full',
+                            textAlign: 'start',
+                            '&:hover': {
+                              backgroundColor: '$base-background-normal',
+                            },
+                          }}
+                        >
+                          {state.matches('discussion.ready.hidden')
+                            ? 'Show '
+                            : 'Hide '}
+                          Discussion/Citations
+                        </Button>
+                      </Box>
+                    </FileProvider>
+                  </div>
+                </Allotment.Pane>
+              </Allotment>
             </BlockHighLighter>
           </MouseProvider>
         </MainWindow>

@@ -38,7 +38,7 @@ const hasHook =
     return typeof plugin[hook] == 'function'
   }
 
-const withMode = (mode: EditorMode) => (editor: Editor) => {
+export const withMode = (mode: EditorMode) => (editor: Editor) => {
   editor.mode = mode
   editor.readOnly = mode != EditorMode.Draft
   return editor

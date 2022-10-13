@@ -78,9 +78,9 @@ function Paragraph({
       mouseService.send('HIGHLIGHT.LEAVE')
     },
   }
-  if (mode == EditorMode.Embed) {
+  if (mode == EditorMode.Embed || mode == EditorMode.Discussion) {
     return (
-      <Box as="span" {...attributes} {...elementProps}>
+      <Box as="span" {...attributes}>
         {children}
       </Box>
     )

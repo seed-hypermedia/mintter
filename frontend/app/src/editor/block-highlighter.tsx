@@ -10,6 +10,7 @@ export function BlockHighLighter({children}: {children: ReactNode}) {
       css={
         id
           ? {
+              height: '100%',
               [`& [data-highlight="${id}"]`]: {
                 zIndex: 1,
               },
@@ -31,7 +32,9 @@ export function BlockHighLighter({children}: {children: ReactNode}) {
                 background: '$primary-component-bg-hover',
               },
             }
-          : {}
+          : {
+              height: '100%',
+            }
       }
     >
       {children}

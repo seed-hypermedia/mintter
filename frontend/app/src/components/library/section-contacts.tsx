@@ -2,14 +2,16 @@ import {connect as apiConnect, ConnectionStatus} from '@app/client'
 import {CSS, keyframes, styled} from '@app/stitches.config'
 import {error} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
+import {Avatar} from '@components/avatar'
 import {Icon} from '@components/icon'
 import {
   AccountWithRef,
-  contactListMachine,
+  createContactListMachine,
 } from '@components/library/contacts-machine'
 import {StyledItem} from '@components/library/library-item'
 import {Placeholder} from '@components/placeholder-box'
 import * as HoverCard from '@radix-ui/react-hover-card'
+import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -41,7 +43,10 @@ function ContactListLoading() {
 }
 
 export function ContactsSection() {
-  let contactListService = useInterpret(() => contactListMachine)
+  let client = useQueryClient()
+  let contactListService = useInterpret(() =>
+    createContactListMachine({client}),
+  )
   let isLoading = useSelector(contactListService, (state) =>
     state.matches('fetching'),
   )
@@ -196,6 +201,7 @@ const slideLeftAndFade = keyframes({
 const HoverCardContentStyled = styled(HoverCard.Content, {
   minWidth: 130,
   maxWidth: 520,
+  zIndex: '$4',
   border: '1px solid $colors$base-border-normal',
   backgroundColor: '$base-background-normal',
   borderRadius: 6,
@@ -239,21 +245,10 @@ function ContactItem({contact}: ContactItemProps) {
             marginLeft: '-$6',
           }}
         >
-          {typeof state.context.status != 'undefined' ? (
-            <Box
-              css={{
-                width: 7,
-                height: 7,
-                borderRadius: '$round',
-                flex: 'none',
-                backgroundColor:
-                  state.context.status === ConnectionStatus.CONNECTED
-                    ? '$success-normal'
-                    : '$base-component-bg-active',
-              }}
-            />
-          ) : null}
-
+          <Avatar
+            size={1}
+            alias={state.context.account.profile?.alias || 'C'}
+          />
           <Text
             size="2"
             css={{
@@ -269,17 +264,24 @@ function ContactItem({contact}: ContactItemProps) {
           >{`(${state.context.account.id.slice(-5)}) ${
             state.context.account.profile?.alias
           }`}</Text>
+          {typeof state.context.status != 'undefined' ? (
+            <Box
+              css={{
+                width: 7,
+                height: 7,
+                borderRadius: '$round',
+                flex: 'none',
+                backgroundColor:
+                  state.context.status === ConnectionStatus.CONNECTED
+                    ? '$success-normal'
+                    : '$base-component-bg-active',
+              }}
+            />
+          ) : null}
         </StyledItem>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" side="top">
-        <Box
-          css={{
-            width: 32,
-            height: 32,
-            backgroundColor: '$base-component-bg-normal',
-            borderRadius: '$round',
-          }}
-        />
+        <Avatar size={2} alias={state.context.account.profile?.alias} />
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
           <Text fontWeight="bold">{state.context.account.profile?.alias}</Text>
           <Text
