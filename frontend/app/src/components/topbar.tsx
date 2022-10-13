@@ -186,7 +186,7 @@ function WriteDropdown({fileRef, isPublication = false}: WriteDropdownProps) {
     state.matches('routes.publication.replying'),
   )
   return (
-    <Dropdown.Root modal={false}>
+    <Dropdown.Root>
       <Dropdown.Trigger asChild>
         <button className="topbar-button dropdown">
           <Icon name="CaretDown" />

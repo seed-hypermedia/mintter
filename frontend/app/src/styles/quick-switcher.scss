@@ -1,11 +1,19 @@
+[cmdk-overlay] {
+  position: fixed;
+  inset: 0;
+  background-color: var(--mtt-colors-base-background-normal);
+  opacity: 0.7;
+}
+
 [cmdk-dialog] {
-  z-index: 1000;
+  z-index: 9999;
   height: var(--mtt-sizes-full);
   display: flex;
   align-items: center;
   justify-content: center;
 
   [cmdk-root] {
+    z-index: 1;
     max-width: var(--mtt-sizes-two-thirds);
     width: 100%;
     padding: var(--mtt-space-3);
