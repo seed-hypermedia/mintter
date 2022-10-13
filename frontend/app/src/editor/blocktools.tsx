@@ -94,7 +94,6 @@ function DraftBlocktools(props: BlockData) {
       }}
     >
       <Dropdown.Root
-        modal={false}
         onOpenChange={(isOpen) => {
           mouseService.send(
             isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',

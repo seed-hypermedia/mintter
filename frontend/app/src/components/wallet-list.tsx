@@ -238,7 +238,7 @@ const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
 function CameraDialog({children, ...props}: DialogPrimitive.DialogProps) {
   return (
-    <DialogPrimitive.Root {...props} modal={false}>
+    <DialogPrimitive.Root {...props}>
       <StyledOverlay />
       {children}
     </DialogPrimitive.Root>

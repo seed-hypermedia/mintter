@@ -19,11 +19,9 @@ export var rootPageStyle = css({
   gridTemplateRows: '40px 1fr',
   gridTemplateColumns: '1fr auto',
   gap: 0,
-  zIndex: -1,
   gridTemplateAreas: `"topbar topbar"
   "main library"`,
   background: '$base-background-subtle',
-
   '& [data-layout-section="topbar"]': {
     gridArea: 'topbar',
   },

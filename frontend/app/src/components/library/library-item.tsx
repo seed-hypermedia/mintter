@@ -154,7 +154,7 @@ export function LibraryItem({
           : formattedDate((state.context as DraftContext).draft?.updateTime)}
       </span>
       <span className="item-controls">
-        <Dropdown.Root modal={false}>
+        <Dropdown.Root>
           <Dropdown.Trigger asChild>
             <ElementDropdown
               data-trigger

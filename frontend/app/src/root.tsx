@@ -2,6 +2,7 @@ import {AuthProvider, useAuthService} from '@app/auth-context'
 import {createAuthService} from '@app/auth-machine'
 import {createThemeService, ThemeProvider} from '@app/theme'
 import {error} from '@app/utils/logger'
+import {QuickSwitcher} from '@components/quick-switcher'
 
 import {
   dehydrate,
@@ -38,6 +39,7 @@ export function Root() {
         }}
       >
         <AppProvider>
+          <QuickSwitcher />
           <MainPage />
         </AppProvider>
       </ErrorBoundary>

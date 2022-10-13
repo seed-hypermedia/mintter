@@ -21,7 +21,6 @@ export function DeleteDialog({
   let [state, send] = useActor(deleteRef)
   return (
     <Alert.Root
-      modal={false}
       open={state.matches('open')}
       onOpenChange={(newVal: boolean) => {
         debug('TOGGLE ALERT', state.value, newVal)

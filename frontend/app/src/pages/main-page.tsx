@@ -3,7 +3,6 @@ import {PageError, rootPageStyle} from '@app/pages/window-components'
 import {Box} from '@components/box'
 import {Library} from '@components/library'
 import {libraryMachine} from '@components/library/library-machine'
-import {QuickSwitcher} from '@components/quick-switcher'
 import {Settings} from '@components/settings'
 import {Topbar} from '@components/topbar'
 import {useInterpret, useSelector} from '@xstate/react'
@@ -64,7 +63,6 @@ export default function MainPage() {
           />
         </ErrorBoundary>
       </Box>
-      <QuickSwitcher />
     </>
   )
 }
