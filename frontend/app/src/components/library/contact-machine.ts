@@ -1,4 +1,6 @@
 import {Account, ConnectionStatus, getPeerInfo, PeerInfo} from '@app/client'
+import {queryKeys} from '@app/hooks'
+import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine, sendParent} from 'xstate'
 
 type ContactContext = {
@@ -27,7 +29,13 @@ type ContactServices = {
   }
 }
 
-export function createContactMachine(account: Account) {
+export function createContactMachine({
+  account,
+  client,
+}: {
+  account: Account
+  client: QueryClient
+}) {
   return createMachine(
     {
       id: `contact-machine-${account.id}`,
@@ -81,9 +89,7 @@ export function createContactMachine(account: Account) {
       actions: {
         assignConnectionStatus: assign({
           status: (_, event) => {
-            console.log(event.data)
             if (event.data.length == 1) {
-              console.log('connectionStatus', event.data[0].connectionStatus)
               return event.data[0].connectionStatus
             } else {
               let filter = event.data.map(
@@ -125,9 +131,12 @@ export function createContactMachine(account: Account) {
       },
       services: {
         fetchListDeviceStatus: (context) => {
+          console.log('fetchListDeviceStatus')
           return Promise.all(
             Object.values(context.account.devices).map((device) =>
-              getPeerInfo(device),
+              client.fetchQuery([queryKeys.GET_PEER_INFO, device.peerId], () =>
+                getPeerInfo(device),
+              ),
             ),
           )
         },

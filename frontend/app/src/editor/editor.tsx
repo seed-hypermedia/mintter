@@ -26,6 +26,7 @@ import {
   buildRenderElementHook,
   buildRenderLeafHook,
   EditorMode,
+  withMode,
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
@@ -51,7 +52,7 @@ export function Editor({
   as = 'div',
 }: PropsWithChildren<EditorProps>) {
   const _editor = useMemo(
-    () => editor ?? buildEditorHook(plugins, mode),
+    () => (editor ? withMode(mode)(editor) : buildEditorHook(plugins, mode)),
     [editor, plugins, mode],
   )
   const renderElement = useMemo(

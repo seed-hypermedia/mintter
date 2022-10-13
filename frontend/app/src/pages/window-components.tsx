@@ -1,6 +1,6 @@
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {ScrollArea, ScrollAreaProps} from '@components/scroll-area'
+import {ScrollAreaProps} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {PropsWithChildren} from 'react'
 import {FallbackProps} from 'react-error-boundary'
@@ -35,6 +35,7 @@ export var rootPageStyle = css({
 
 let mainWindowStyle = css({
   height: '$full',
+  background: 'red',
   overflow: 'hidden',
   position: 'relative',
   backgroundColor: '$base-background-subtle',
@@ -49,9 +50,9 @@ export function MainWindow({
 }: ScrollAreaProps) {
   return (
     <Box data-layout-section="main" className={mainWindowStyle()} {...props}>
-      <ScrollArea orientation={orientation} onScroll={onScroll}>
-        {children}
-      </ScrollArea>
+      {/* <ScrollArea orientation={orientation} onScroll={onScroll}> */}
+      {children}
+      {/* </ScrollArea> */}
     </Box>
   )
 }

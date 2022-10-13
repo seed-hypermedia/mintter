@@ -1,4 +1,9 @@
-import {Account, ListAccountsResponse} from '@app/client'
+import {
+  Account,
+  ConnectionStatus,
+  ListAccountsResponse,
+  PeerInfo,
+} from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
 import {
@@ -6,7 +11,7 @@ import {
   ContactsSection,
 } from '@components/library/section-contacts'
 
-describe.skip('Contacts Section', () => {
+describe('Contacts Section', () => {
   it('should render an empty list', () => {
     let {client} = createTestQueryClient()
 
@@ -45,6 +50,22 @@ describe.skip('Contacts Section', () => {
       accounts: (authors as Array<Account>) || [],
       nextPageToken: '',
     })
+
+    authors?.forEach((author) => {
+      if (author.devices) {
+        Object.entries(author.devices).forEach(([key, value]) => {
+          client.setQueryData<PeerInfo>(
+            [queryKeys.GET_PEER_INFO, value.peerId],
+            {
+              addrs: ['foo'],
+              connectionStatus: ConnectionStatus.CONNECTED,
+              accountId: author.id,
+            },
+          )
+        })
+      }
+    })
+
     cy.mount(<ContactsSection />, {
       client,
     })

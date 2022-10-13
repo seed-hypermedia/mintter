@@ -1,28 +1,11 @@
-import {styled} from '@app/stitches.config'
-import {Box} from './box'
+import {useMemo} from 'react'
+import './avatar.scss'
 
-export const Avatar = styled(Box, {
-  $$size: '$space$6',
-  width: '$$size',
-  height: '$$size',
-  borderRadius: '$round',
-  backgroundColor: '$base-component-bg-normal',
-  variants: {
-    size: {
-      1: {
-        $$size: '$space$5',
-      },
-      2: {
-        $$size: '$space$6',
-      },
-      3: {
-        $$size: '$space$7',
-      },
-    },
-  },
-  defaultVariants: {
-    size: '2',
-  },
-})
-
-export type AvatarProps = React.ComponentProps<typeof Avatar>
+export function Avatar({alias, size = 2}: {alias: string; size: 1 | 2 | 3}) {
+  let initials = useMemo(() => alias[0], [alias])
+  return (
+    <div className="avatar-circle" data-size={size}>
+      <span className="initials">{initials}</span>
+    </div>
+  )
+}

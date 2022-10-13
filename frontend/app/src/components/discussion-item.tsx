@@ -5,6 +5,7 @@ import {FileProvider} from '@app/file-provider'
 import {useMain, usePublicationList} from '@app/main-context'
 import {PublicationRef} from '@app/main-machine'
 import {getRefFromParams} from '@app/utils/machine-utils'
+import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {FileTime} from '@components/file-time'
 import {Text} from '@components/text'
@@ -94,10 +95,9 @@ function DiscussionEditor({
     >
       <Box
         css={{
-          position: 'sticky',
           top: 0,
-          zIndex: '$4',
           display: 'flex',
+          alignItems: 'center',
           borderTop: '1px solid rgba(0,0,0,0.1)',
           paddingBlock: '1rem',
           gap: '1ch',
@@ -106,14 +106,20 @@ function DiscussionEditor({
         }}
       >
         {state.context.author && (
-          <Text
-            size="1"
-            color="muted"
-            css={{textDecoration: 'underline'}}
-            data-testid="discussion-item-alias"
-          >
-            {state.context.author.profile?.alias}
-          </Text>
+          <>
+            <Avatar
+              size={1}
+              alias={state.context.author.profile?.alias || 'U'}
+            />
+            <Text
+              size="1"
+              color="muted"
+              css={{textDecoration: 'underline'}}
+              data-testid="discussion-item-alias"
+            >
+              {state.context.author.profile?.alias}
+            </Text>
+          </>
         )}
         {/* @ts-ignore */}
         {state.context.publication?.document?.content && (

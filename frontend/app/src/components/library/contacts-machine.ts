@@ -1,5 +1,7 @@
 import {Account, listAccounts, ListAccountsResponse} from '@app/client'
+import {queryKeys} from '@app/hooks'
 import {createContactMachine} from '@components/library/contact-machine'
+import {QueryClient} from '@tanstack/react-query'
 import {ActorRefFrom, assign, createMachine, spawn} from 'xstate'
 
 export type AccountWithRef = Account & {
@@ -22,75 +24,83 @@ type ContactListServices = {
   }
 }
 
-export const contactListMachine = createMachine(
-  {
-    id: 'contact-list-machine',
-    tsTypes: {} as import('./contacts-machine.typegen').Typegen0,
-    schema: {
-      context: {} as ContactListContext,
-      events: {} as ContactListEvent,
-      services: {} as ContactListServices,
-    },
-    context: {
-      all: [],
-      offline: [],
-      online: [],
-    },
-    initial: 'fetching',
-    states: {
-      fetching: {
-        invoke: {
-          id: 'fetchList',
-          src: 'fetchList',
-          onDone: {
-            target: 'idle',
-            actions: ['assignAllList'],
+export function createContactListMachine({client}: {client: QueryClient}) {
+  return createMachine(
+    {
+      id: 'contact-list-machine',
+      tsTypes: {} as import('./contacts-machine.typegen').Typegen0,
+      schema: {
+        context: {} as ContactListContext,
+        events: {} as ContactListEvent,
+        services: {} as ContactListServices,
+      },
+      context: {
+        all: [],
+        offline: [],
+        online: [],
+      },
+      initial: 'fetching',
+      states: {
+        fetching: {
+          invoke: {
+            id: 'fetchList',
+            src: 'fetchList',
+            onDone: {
+              target: 'idle',
+              actions: ['assignAllList'],
+            },
+          },
+        },
+        idle: {
+          on: {
+            REFETCH: 'fetching',
+            'COMMIT.ONLINE': {
+              actions: ['assignContactOnline'],
+            },
+            'COMMIT.OFFLINE': {
+              actions: ['assignContactOffline'],
+            },
           },
         },
       },
-      idle: {
-        on: {
-          REFETCH: 'fetching',
-          'COMMIT.ONLINE': {
-            actions: ['assignContactOnline'],
+    },
+    {
+      actions: {
+        assignAllList: assign({
+          all: (_, event) =>
+            event.data.accounts.map((account) => ({
+              ...account,
+              ref: spawn(
+                createContactMachine({account, client}),
+                `account-${account.id}`,
+              ),
+            })),
+        }),
+        assignContactOnline: assign({
+          online: (context, event) => {
+            let id = `account-${event.accountId}`
+            if (!context.online.includes(id)) {
+              return [...context.online, id]
+            }
+            return context.online
           },
-          'COMMIT.OFFLINE': {
-            actions: ['assignContactOffline'],
+        }),
+        assignContactOffline: assign({
+          offline: (context, event) => {
+            let id = `account-${event.accountId}`
+            if (!context.offline.includes(id)) {
+              return [...context.offline, id]
+            }
+            return context.offline
           },
-        },
+        }),
+      },
+      services: {
+        fetchList: () =>
+          client.fetchQuery([queryKeys.GET_CONTACTS_LIST], () =>
+            listAccounts(),
+          ),
       },
     },
-  },
-  {
-    actions: {
-      assignAllList: assign({
-        all: (_, event) =>
-          event.data.accounts.map((account) => ({
-            ...account,
-            ref: spawn(createContactMachine(account), `account-${account.id}`),
-          })),
-      }),
-      assignContactOnline: assign({
-        online: (context, event) => {
-          let id = `account-${event.accountId}`
-          if (!context.online.includes(id)) {
-            return [...context.online, id]
-          }
-          return context.online
-        },
-      }),
-      assignContactOffline: assign({
-        offline: (context, event) => {
-          let id = `account-${event.accountId}`
-          if (!context.offline.includes(id)) {
-            return [...context.offline, id]
-          }
-          return context.offline
-        },
-      }),
-    },
-    services: {
-      fetchList: () => listAccounts(),
-    },
-  },
-)
+  )
+}
