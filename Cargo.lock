@@ -3473,15 +3473,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "signal-hook-registry"
-version = "1.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e51e73328dc4ac0c7ccbda3a494dfa03df1de2f46018127f60c693f2648455b0"
-dependencies = [
- "libc",
-]
-
-[[package]]
 name = "siphasher"
 version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3654,7 +3645,6 @@ dependencies = [
  "core-foundation",
  "core-graphics",
  "crossbeam-channel",
- "dirs-next",
  "dispatch",
  "gdk",
  "gdk-pixbuf",
@@ -3668,7 +3658,6 @@ dependencies = [
  "instant",
  "jni",
  "lazy_static",
- "libappindicator",
  "libc",
  "log",
  "ndk",
@@ -3878,7 +3867,6 @@ dependencies = [
  "png 0.17.6",
  "proc-macro2",
  "quote",
- "regex",
  "semver 1.0.14",
  "serde",
  "serde_json",
@@ -4209,23 +4197,9 @@ dependencies = [
  "memchr",
  "mio",
  "num_cpus",
- "parking_lot",
  "pin-project-lite",
- "signal-hook-registry",
  "socket2",
- "tokio-macros",
  "winapi",
-]
-
-[[package]]
-name = "tokio-macros"
-version = "1.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9724f9a975fb987ef7a3cd9be0350edcbe130698af5b8f7a631e23d42d052484"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -5259,7 +5233,9 @@ dependencies = [
  "bytes",
  "cc",
  "futures-core",
+ "futures-util",
  "generic-array",
+ "gimli",
  "hashbrown",
  "indexmap",
  "libc",
@@ -5267,23 +5243,24 @@ dependencies = [
  "miniz_oxide",
  "num-integer",
  "num-traits 0.2.15",
+ "object",
  "rand 0.8.5",
+ "reqwest",
  "scopeguard",
  "semver 1.0.14",
  "serde",
  "serde_json",
  "syn",
- "tao 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "tauri-codegen 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "tauri-runtime 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "tauri-runtime-wry 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri 1.1.1 (git+https://github.com/tauri-apps/tauri)",
+ "tauri-macros 1.1.1 (git+https://github.com/tauri-apps/tauri)",
  "tauri-utils 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tauri-utils 1.1.1 (git+https://github.com/tauri-apps/tauri)",
  "tokio",
  "tracing",
+ "uuid 1.2.1",
  "winapi",
  "windows 0.39.0",
  "windows-sys",
- "wry 0.21.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
