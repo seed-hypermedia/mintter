@@ -28,7 +28,7 @@ tauri = {git = "https://github.com/tauri-apps/tauri", features = ["dialog-messag
 tauri-plugin-log = {git = "https://github.com/tauri-apps/tauri-plugin-log", branch = "next", features = ["colored"] }
 tauri-plugin-store = {git = "https://github.com/tauri-apps/tauri-plugin-store", branch = "next"}
 thiserror = "1.0.37"
-tokio = {version = "1.21.2", features = ["full"] }
+tokio = {version = "1.21.2", features = ["sync"] }
 tracing = "0.1.37"
 url = "2.3.1"
 workspace-hack = {version = "0.1", path = "../workspace-hack"}
