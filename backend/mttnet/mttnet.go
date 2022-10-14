@@ -35,7 +35,6 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
-	manet "github.com/multiformats/go-multiaddr/net"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -381,7 +380,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
-		libp2p.EnableNATService(),
+		libp2p.ForceReachabilityPrivate(),
 		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
 		libp2p.Transport(tcp.NewTCPTransport),
 	}
@@ -392,10 +391,6 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 				out := make([]multiaddr.Multiaddr, 0, len(addrs))
 
 				for _, a := range addrs {
-					if manet.IsPrivateAddr(a) {
-						continue
-					}
-
 					out = append(out, a)
 				}
 
@@ -406,9 +401,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 
 	if !cfg.NoRelay {
 		opts = append(opts,
-			libp2p.NATPortMap(),
 			libp2p.EnableHolePunching(),
-			libp2p.EnableNATService(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
 				autorelay.WithNumRelays(2),
 				autorelay.WithStaticRescan(cfg.StaticRelayRescan),
