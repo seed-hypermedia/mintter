@@ -47,21 +47,9 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
 
   let label = window_label();
 
-  let win = WindowBuilder::new(&app_handle, label, WindowUrl::App(path.into()))
-    .min_inner_size(500.0, 500.0);
-
-  #[cfg(target_os = "macos")]
-  {
-    use tauri::TitleBarStyle;
-
-    win
-      .hidden_title(true)
-      .title_bar_style(TitleBarStyle::Overlay)
-      .build()?;
-  }
-
-  #[cfg(not(target_os = "macos"))]
-  win.build()?;
+  WindowBuilder::new(&app_handle, label, WindowUrl::App(path.into()))
+    .min_inner_size(500.0, 500.0)
+    .build()?;
 
   Ok(())
 }
@@ -69,21 +57,9 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
 pub fn new_window<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
   let label = window_label();
 
-  let win = WindowBuilder::new(manager, label, WindowUrl::App("index.html".into()))
-    .min_inner_size(500.0, 500.0);
-
-  #[cfg(target_os = "macos")]
-  {
-    use tauri::TitleBarStyle;
-
-    win
-      .hidden_title(true)
-      .title_bar_style(TitleBarStyle::Overlay)
-      .build()?;
-  }
-
-  #[cfg(not(target_os = "macos"))]
-  win.build()?;
+  WindowBuilder::new(manager, label, WindowUrl::App("index.html".into()))
+    .min_inner_size(500.0, 500.0)
+    .build()?;
 
   Ok(())
 }

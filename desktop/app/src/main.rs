@@ -96,10 +96,15 @@ fn main() {
             app.state::<sentry::ClientOptions>(),
           );
 
+          let win = app.get_window("main").unwrap();
+          win.set_transparent_titlebar(true);
+
           Ok(())
         })
         .on_window_event(|event| {
           if let WindowEvent::Focused(_) = event.event() {
+            event.window().set_transparent_titlebar(true);
+
             if event.window().label() == "preferences" {
               event.window().set_minimizable(false);
               event.window().set_resizable(false).unwrap();
