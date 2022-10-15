@@ -4837,9 +4837,9 @@ dependencies = [
 
 [[package]]
 name = "webkit2gtk"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29952969fb5e10fe834a52eb29ad0814ccdfd8387159b0933edf1344a1c9cdcc"
+checksum = "9e35143128317257daa794f00be0f5545faedf778a10dab54ac4b06fd74a44f4"
 dependencies = [
  "bitflags",
  "cairo-rs",
