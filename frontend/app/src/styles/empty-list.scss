@@ -1,0 +1,12 @@
+.empty-list {
+  max-width: var(--mtt-sizes-prose-width);
+  padding: 1em;
+  margin: 1em;
+}
+
+.empty-list-description {
+  font-size: 1.5rem;
+  font-family: var(--mtt-fonts-base);
+  user-select: none;
+  -webkit-user-select: none;
+}

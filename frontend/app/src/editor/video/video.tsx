@@ -7,7 +7,6 @@ import {
   parseVideoUrl,
 } from '@app/editor/utils'
 import {videoMachine} from '@app/editor/video/video-machine'
-import {useFileEditor} from '@app/file-provider'
 import {isVideo, text, video, Video as VideoType} from '@app/mttast'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -23,6 +22,7 @@ import {
   RenderElementProps,
   useFocused,
   useSelected,
+  useSlateStatic,
 } from 'slate-react'
 import {ActorRefFrom, assign} from 'xstate'
 import type {EditorPlugin} from '../types'
@@ -79,7 +79,7 @@ function insertVideo(editor: Editor, url: string) {
 }
 
 function Video({element, attributes, children}: RenderElementProps) {
-  const editor = useFileEditor()
+  const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const videoService = useInterpret(() => videoMachine, {
     actions: {

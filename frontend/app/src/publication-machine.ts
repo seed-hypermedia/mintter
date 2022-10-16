@@ -1,24 +1,31 @@
 import {
   Account,
+  createDraft,
+  Document,
   getAccount,
+  getDraft,
   getInfo,
   getPublication,
   Link,
   listCitations,
   Publication,
+  updateDraftV2 as updateDraft,
 } from '@app/client'
+import {blockToApi} from '@app/client/v2/block-to-api'
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {EditorDocument} from '@app/draft-machine'
 import {queryKeys} from '@app/hooks'
+import {GroupingContent, link, paragraph, statement, text} from '@app/mttast'
+import {openWindow} from '@app/utils/open-window'
 import {QueryClient} from '@tanstack/react-query'
-import {Editor} from 'slate'
-import {assign, createMachine} from 'xstate'
+import {assign, createMachine, InterpreterFrom} from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
 }
 
-export type PublicationContext = {
+export type PublicationMachineContext = {
   documentId: string
   version: string
   author: Account | null
@@ -27,14 +34,10 @@ export type PublicationContext = {
   canUpdate: boolean
   links: Array<Link>
   dedupeLinks: Array<Link>
-  editor: Editor
   title: string
 }
 
-export type PublicationEvent =
-  | {type: 'LOAD'}
-  | {type: 'UNLOAD'}
-  | {type: 'PREFETCH'}
+export type PublicationMachineEvent =
   | {type: 'PUBLICATION.FETCH.DATA'}
   | {
       type: 'PUBLICATION.REPORT.SUCCESS'
@@ -53,27 +56,40 @@ export type PublicationEvent =
   | {type: 'FILE.DELETE.CANCEL'}
   | {type: 'FILE.DELETE.CONFIRM'}
   | {type: 'PUBLICATION.REPLY.TO'}
+  | {type: 'PUBLICATION.EDIT'}
+  | {type: 'PUBLICATION.REPLY'}
+
+type PublicationMachineServices = {
+  createDraft: {
+    data: Document
+  }
+}
 
 type CreatePublicationProps = {
   client: QueryClient
-  publication: Publication
-  editor: Editor
+  documentId: string
+  version: string
+  blockId?: string
 }
+
+export type PublicationActor = InterpreterFrom<
+  ReturnType<typeof createPublicationMachine>
+>
 
 export function createPublicationMachine({
   client,
-  publication,
-  editor,
+  documentId,
+  version,
+  blockId,
 }: CreatePublicationProps) {
   /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiADIB5AIIARRChI9i5OSAAeiAIwA2AKzMtAFh0AOAEw6txjQGZTATmsGANCACeiazoDszL9Y1eWgAMdjrWdhqmGgC+0S5oWHhEvNS0DEys7JzcvMwAZmCE9IxQwtIAkgDKAMIAqpWV5eIAcswASgCiAAribQAqzB1tbb0qyArYSmQq6gg6QVrMdn4Rxo4adqaezm6IXl56wVoHBkamxjo6MXEgCTgEU6nFGWwcXDzk+YXPpRU19Y0Wu1ur0BpVatVqh0GmMJlMZoh5otluENGsDBstjodu4EMYtBpmFdrEENEFTF4ySZTLF4hh7slyE90ixXtkPnwAE5gfAQVzMBgQCBgMhlKp1BpNVqVAAS4gA6rDFLwEQhQot5ld5kEDKZTEYXLiyVtmOsNAZHBcNBsvLTbvSko8aM9WVl3rlubz+YLhaK-hLAa0+uIAOIh0QdJWTFVINSIOwY016i744xBEnaQ2IYxeOxE866WzWY5BHQ0m53R0pZ0szJvHKfT185gAN3Y2CwIn9AKlzBl5Wkkdj42VyljswThNs5xMlnTpK0WbVFOYBi0BIMdjs+ICxztlYe1bSjFd9Y5zCb-LbPE7Yv+kqBwbDEaj8PH8cT05Tc4zi92aoOVd00MY5PEMMx9wdQ8mRrE863ZD0eT5YRamaCQZFfGNQFmHMl2WHw7GArRzACUs9UgxJoMoWCXjdBs+DATlORIbkIDvANewAMQ6PpqhlZhpEkPpJEwsdsMRBYlhWNF1k2bYly8Fd102bwvHTaw1ltCsoMZajjwyA9dP4QQRHQ2RhzhLC4wQTdCRRVZZKxHFNAJQkLmU45ziCKwdAohknX0lhDKmYyhGELpOm43iZVE6Z3wQWwk2I0lCK8Wy7D-I15h8Uwji2LYFlJa46Uo3TmTg4LckY5jWPC2oACFRHKaohK4ni+IEoSRIs0c4vEuZrGsJZzQWNLjhMLwl0iDZmH1NKFn8NYyy0kr-KPF1mEqz4CiKdJSi6Bqmpavpe06Hp+mYcFIWhSpYtVWypNRdFMXk-9zVMIJmB1XVDAMSlwnOPyqxgwLNp0kKdp+OrGua1qgTO0FBmGUYeujMTrIe+yZIxOTsSmwaDGYGw028ws0WWIGqPKgzwcQr0ULQqRzPkXrVXXIa-ACXL01y-FrCmiwhoiYWty8fEQjsSmypokQIHIFhGBbEgAGsWEhuhJFQQg6BYu74p0Bwkw0bx7ATYs8f-A2lmsNKMttv7zWMKWApdYRqpYzbMCIPIWKoL5ds17XddRt9+oNwnggxS5Qg++xjCm8sbjIEhhXgYdaZBja2XdT4BCEPX+v2Jdizc-YJpJIJFLSgxnfW2ts-o-2fgL6zjQUzcie80tjGMP7vA2WvM-rujz0vAUBF9FvZmtYivt0dMVg0j6NDw85Zr+3VcwsYwHGsQe9Kzke6eba8O3zkOrJwtEvuxLRBu0avAiXHuCOAgw1gTSx8X36nTwQxskK4hZmjPq1lcyE1LGue+xxThP3-GmHw0cHBmHCCSSkP8ZbwRzgxJiLFIBTz2JYXwalczuRzMEeO-5ObMB8iEC4CwN4YNBg3DkBCBpLhnL4Yi25NwUgcNaGu2lSou1rFtPgecwBsMxElZeqV0qZU0PMQkFJiK6E5oRciQi1pDwqhnHBNV8EX3RrMMWn1jhojCGWHUGx+ZvXMIsfEywLhGDFkiJhG0xFNz2mwoudjwizQfhcRS6Ye6+S0cDA+oi9EXkAT4tM+hKQXE8B9HGtisomCAsk8kY1vLFXtMIuuuiCnoxHCA1UxgZEpUrvI5yCABE5VcYYCwmwUHuJZGwigxsEk223CEcwXdixTVnr3YsakPo9PJLEWIQA */
   return createMachine(
     {
       context: {
-        title: publication.document?.title ?? '',
-        documentId: publication.document?.id ?? '',
-        version: publication.version,
-        editor,
-        publication,
+        title: '',
+        documentId,
+        version,
+        publication: null,
         author: null,
         links: [],
         dedupeLinks: [],
@@ -82,33 +98,18 @@ export function createPublicationMachine({
       },
       tsTypes: {} as import('./publication-machine.typegen').Typegen0,
       schema: {
-        context: {} as PublicationContext,
-        events: {} as PublicationEvent,
+        context: {} as PublicationMachineContext,
+        events: {} as PublicationMachineEvent,
+        services: {} as PublicationMachineServices,
       },
       predictableActionArguments: true,
-      invoke: {
-        src: 'fetchAuthor',
-        id: 'fetchAuthor',
-        onDone: [
-          {
-            actions: 'assignAuthor',
-          },
-        ],
-        onError: [{}],
-      },
       id: 'publication-machine',
       type: 'parallel',
+      entry: ['sendActorToParent'],
       states: {
         discussion: {
-          initial: 'idle',
+          initial: 'fetching',
           states: {
-            idle: {
-              on: {
-                LOAD: {
-                  target: 'fetching',
-                },
-              },
-            },
             fetching: {
               invoke: {
                 src: 'fetchDiscussionData',
@@ -150,11 +151,6 @@ export function createPublicationMachine({
                   },
                 },
               },
-              on: {
-                UNLOAD: {
-                  target: 'idle',
-                },
-              },
             },
             errored: {
               on: {
@@ -166,24 +162,8 @@ export function createPublicationMachine({
           },
         },
         publication: {
-          initial: 'idle',
+          initial: 'fetching',
           states: {
-            idle: {
-              on: {
-                LOAD: [
-                  {
-                    cond: 'isCached',
-                    target: 'ready',
-                  },
-                  {
-                    target: 'fetching',
-                  },
-                ],
-                PREFETCH: {
-                  actions: ['prefetchPublication'],
-                },
-              },
-            },
             errored: {
               on: {
                 'PUBLICATION.FETCH.DATA': {
@@ -214,9 +194,55 @@ export function createPublicationMachine({
               },
             },
             ready: {
-              on: {
-                UNLOAD: {
-                  target: 'idle',
+              invoke: {
+                src: 'fetchAuthor',
+                id: 'fetchAuthor',
+                onDone: [
+                  {
+                    actions: 'assignAuthor',
+                  },
+                ],
+                onError: [{}],
+              },
+              initial: 'idle',
+              states: {
+                idle: {
+                  on: {
+                    'PUBLICATION.EDIT': 'editing',
+                    'PUBLICATION.REPLY': 'replying',
+                  },
+                },
+                editing: {
+                  invoke: {
+                    id: 'createDraft',
+                    src: 'createDraft',
+                    onDone: {
+                      actions: ['onEditSuccess'],
+                    },
+                    onError: [
+                      {
+                        actions: ['assignError'],
+                        target: 'idle',
+                      },
+                    ],
+                  },
+                },
+                replying: {
+                  invoke: {
+                    src: 'createDraft',
+                    id: 'createDraft',
+                    onDone: [
+                      {
+                        actions: ['openWindow'],
+                      },
+                    ],
+                    onError: [
+                      {
+                        actions: ['assignError'],
+                        target: 'idle',
+                      },
+                    ],
+                  },
                 },
               },
             },
@@ -226,6 +252,14 @@ export function createPublicationMachine({
     },
     {
       services: {
+        createDraft: (context, event) => {
+          if (event.type == 'PUBLICATION.EDIT') {
+            return createDraft(context.documentId)
+          }
+
+          // reply
+          return createReply(context)
+        },
         fetchAuthor: (context) => {
           let author = context.publication?.document?.author || ''
           return client.fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
@@ -235,16 +269,8 @@ export function createPublicationMachine({
         fetchPublicationData: (context) => (sendBack) => {
           Promise.all([
             client.fetchQuery(
-              [
-                queryKeys.GET_PUBLICATION,
-                context.publication?.document?.id,
-                context.publication?.version,
-              ],
-              () =>
-                getPublication(
-                  context.publication?.document?.id,
-                  context.publication?.version,
-                ),
+              [queryKeys.GET_PUBLICATION, context.documentId, context.version],
+              () => getPublication(context.documentId, context.version),
               {
                 staleTime: Infinity,
               },
@@ -254,15 +280,17 @@ export function createPublicationMachine({
             .then(([publication, info]) => {
               if (publication.document?.children.length) {
                 // TODO: use the parent list type instead
-                let content = [
-                  blockNodeToSlate(publication.document.children, 'group'),
-                ]
+
+                let content = blockNodeToSlate(
+                  publication.document.children,
+                  'group',
+                )
                 sendBack({
                   type: 'PUBLICATION.REPORT.SUCCESS',
                   publication: Object.assign(publication, {
                     document: {
                       ...publication.document,
-                      content,
+                      content: [content] as [GroupingContent],
                     },
                   }),
                   canUpdate: info.accountId == publication.document.author,
@@ -294,12 +322,12 @@ export function createPublicationMachine({
               .fetchQuery(
                 [
                   queryKeys.GET_PUBLICATION_DISCUSSION,
-                  context.publication.document.id,
-                  context.publication.version,
+                  context.documentId,
+                  context.version,
                 ],
                 () => {
                   if (context.publication?.document?.id) {
-                    return listCitations(context.publication?.document?.id)
+                    return listCitations(context.documentId)
                   }
 
                   return null
@@ -330,13 +358,10 @@ export function createPublicationMachine({
           } else {
             sendBack({
               type: 'DISCUSSION.REPORT.ERROR',
-              errorMessage: `Error fetching Discussion: No docId found: ${context.publication?.document?.id}`,
+              errorMessage: `Error fetching Discussion: No docId found: ${context.documentId}`,
             })
           }
         },
-      },
-      guards: {
-        isCached: () => false,
       },
       actions: {
         assignTitle: assign({
@@ -359,7 +384,13 @@ export function createPublicationMachine({
           }
         }),
         assignError: assign({
-          errorMessage: (_, event) => event.errorMessage,
+          errorMessage: (_, event) => {
+            if (event.type == 'error.platform.createDraft') {
+              return JSON.stringify(event.data)
+            } else {
+              return event.errorMessage
+            }
+          },
         }),
         // @ts-ignore
         clearLinks: assign({
@@ -369,23 +400,30 @@ export function createPublicationMachine({
         clearError: assign({
           errorMessage: '',
         }),
-        prefetchPublication: (context) => {
-          client.prefetchQuery(
-            [
-              queryKeys.GET_PUBLICATION,
-              context.publication?.document?.id,
-              context.publication?.version,
-            ],
-            () =>
-              getPublication(
-                context.publication?.document?.id,
-                context.publication?.version,
-              ),
-            {
-              staleTime: 10 * 1000, // only prefetch if older than 10 seconds
-            },
-          )
+        openWindow: (_, event) => {
+          // if (event.type == 'done.invoke.createDraft') {
+          //   openWindow(event.path)
+          // } else {
+          openWindow(`/d/${event.data.id}`)
+          // }
         },
+        // prefetchPublication: (context) => {
+        //   client.prefetchQuery(
+        //     [
+        //       queryKeys.GET_PUBLICATION,
+        //       context.publication?.document?.id,
+        //       context.publication?.version,
+        //     ],
+        //     () =>
+        //       getPublication(
+        //         context.publication?.document?.id,
+        //         context.publication?.version,
+        //       ),
+        //     {
+        //       staleTime: 10 * 1000, // only prefetch if older than 10 seconds
+        //     },
+        //   )
+        // },
       },
     },
   )
@@ -406,4 +444,62 @@ function createDedupeLinks(entry: Array<Link>): Array<Link> {
       return true
     }
   })
+}
+
+async function createReply(
+  context: PublicationMachineContext,
+): Promise<Document> {
+  /**
+   * - create draft
+   * - create block with link
+   * - update draft
+   * - return draft
+   */
+  let currentUrl = `${MINTTER_LINK_PREFIX}${context.documentId}/${context.version}`
+  let doc = await createDraft()
+  let block = statement([
+    paragraph([
+      text('RE: '),
+      link(
+        {
+          url: currentUrl,
+        },
+        [text(context.title || currentUrl)],
+      ),
+      text(': '),
+    ]),
+  ])
+  try {
+    await updateDraft({
+      documentId: doc.id,
+      changes: [
+        {
+          op: {
+            $case: 'setTitle',
+            setTitle: `RE: ${context.title || currentUrl}`,
+          },
+        },
+        {
+          op: {
+            $case: 'moveBlock',
+            moveBlock: {
+              parent: '',
+              leftSibling: '',
+              blockId: block.id,
+            },
+          },
+        },
+        {
+          op: {
+            $case: 'replaceBlock',
+            replaceBlock: blockToApi(block),
+          },
+        },
+      ],
+    })
+    // TODO: change to use the query client
+    return getDraft(doc.id)
+  } catch (err) {
+    throw Error(`[REPLYTO ERROR]: ${JSON.stringify(err)}`)
+  }
 }

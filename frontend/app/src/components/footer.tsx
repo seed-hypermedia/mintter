@@ -1,97 +1,70 @@
 import {connect as apiConnect, ConnectionStatus} from '@app/client'
 import {CSS, keyframes, styled} from '@app/stitches.config'
-import {error} from '@app/utils/logger'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Avatar} from '@components/avatar'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {
   AccountWithRef,
   createContactListMachine,
 } from '@components/library/contacts-machine'
-import {StyledItem} from '@components/library/library-item'
-import {Placeholder} from '@components/placeholder-box'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {useMemo, useState} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
-import {Box} from '../box'
-import {Button} from '../button'
-import {Prompt} from '../prompt'
-import {Text} from '../text'
-import {TextField} from '../text-field'
-import {Section} from './section'
-import './section-contacts.scss'
-import {SectionError} from './section-error'
+import {InterpreterFrom} from 'xstate'
+import '../styles/footer.scss'
+import {Prompt} from './prompt'
 
-/**
- *
- * Contacts Section
- * - fetch the contacts list
- * - create a machine for each contact
- */
-
-function ContactListLoading() {
-  return (
-    <>
-      <Placeholder css={{height: 20, width: '90%'}} />
-      <Placeholder css={{height: 20, width: '$full'}} />
-      <Placeholder css={{height: 20, width: '85%'}} />
-    </>
-  )
-}
-
-export function ContactsSection() {
+export default function Footer() {
   let client = useQueryClient()
   let contactListService = useInterpret(() =>
     createContactListMachine({client}),
   )
-  let isLoading = useSelector(contactListService, (state) =>
-    state.matches('fetching'),
+  return (
+    <div className="main-footer">
+      <Contacts service={contactListService} />
+      <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
+    </div>
   )
+}
 
-  const totalCount = useSelector(
-    contactListService,
-    (state) => state.context.all.length,
-  )
-  const online = useSelector(contactListService, (state) =>
+function Contacts({
+  service,
+}: {
+  service: InterpreterFrom<ReturnType<typeof createContactListMachine>>
+}) {
+  const totalCount = useSelector(service, (state) => state.context.all.length)
+  const online = useSelector(service, (state) =>
     state.context.all.filter((acc) =>
       state.context.online.includes(acc.ref.id),
     ),
   )
-  let title = `Contacts (${online.length}/${totalCount || 0})`
+  console.log('🚀 ~ file: footer.tsx ~ line 48 ~ online', online)
 
   return (
-    <Section
-      title={title}
-      icon="Person"
-      actions={
-        <Box
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
-        </Box>
-      }
-    >
-      <ErrorBoundary
-        FallbackComponent={SectionError}
-        onReset={() => {
-          window.location.reload()
-        }}
-      >
-        {isLoading ? (
-          <ContactListLoading />
-        ) : online.length ? (
-          online.map((contact) => (
-            <ContactItem key={contact.id} contact={contact} />
-          ))
-        ) : null}
-      </ErrorBoundary>
-    </Section>
+    <HoverCard.Root openDelay={100}>
+      <HoverCard.Trigger asChild>
+        <button className="button">
+          {online.length && <span className="status-indicator" />}
+          <Icon name="Person" />
+          <span>{`(${online.length}/${totalCount || 0})`}</span>
+        </button>
+      </HoverCard.Trigger>
+      <HoverCard.Portal>
+        <HoverCard.Content side="top" align="end">
+          <ul className="contacts-content">
+            {online.map((contact) => (
+              <ContactItem key={contact.id} contact={contact} />
+            ))}
+          </ul>
+        </HoverCard.Content>
+      </HoverCard.Portal>
+    </HoverCard.Root>
   )
 }
 
@@ -117,7 +90,7 @@ export function ContactsPrompt({
         })
         refetch()
       } catch (err) {
-        error('Connect Error:', err)
+        console.error('Connect Error:', err)
       }
       setPeer('')
     }
@@ -145,39 +118,44 @@ export function ContactsPrompt({
       >
         <Icon name="Add" color="muted" />
       </Prompt.Trigger>
-      <Prompt.Content>
-        <Prompt.Title>Connect to Peer</Prompt.Title>
-        <Prompt.Description>Enter a peer address to connect</Prompt.Description>
-        <TextField
-          value={peer}
-          onChange={(event) => setPeer(event.currentTarget.value)}
-          textarea
-          rows={3}
-          data-testid="add-contact-input"
-          containerCss={
-            {
-              minHeight: 150,
-              maxHeight: 150,
-              overflow: 'scroll',
-            } as CSS
-          }
-        />
-        <Prompt.Actions>
-          <Prompt.Close asChild>
-            <Button
-              data-testid="add-contact-submit"
-              size="2"
-              onClick={handleConnect}
-              disabled={!peer}
-            >
-              Connect
-            </Button>
-          </Prompt.Close>
-        </Prompt.Actions>
-      </Prompt.Content>
+      <Prompt.Portal>
+        <Prompt.Content>
+          <Prompt.Title>Add a Contact</Prompt.Title>
+          <Prompt.Description>
+            Enter a contact address to connect
+          </Prompt.Description>
+          <TextField
+            value={peer}
+            onChange={(event) => setPeer(event.currentTarget.value)}
+            textarea
+            rows={3}
+            data-testid="add-contact-input"
+            containerCss={
+              {
+                minHeight: 150,
+                maxHeight: 150,
+                overflow: 'scroll',
+              } as CSS
+            }
+          />
+          <Prompt.Actions>
+            <Prompt.Close asChild>
+              <Button
+                data-testid="add-contact-submit"
+                size="2"
+                onClick={handleConnect}
+                disabled={!peer}
+              >
+                Connect
+              </Button>
+            </Prompt.Close>
+          </Prompt.Actions>
+        </Prompt.Content>
+      </Prompt.Portal>
     </Prompt.Root>
   )
 }
+
 const slideUpAndFade = keyframes({
   '0%': {opacity: 0, transform: 'translateY(2px)'},
   '100%': {opacity: 1, transform: 'translateY(0)'},
@@ -235,16 +213,7 @@ function ContactItem({contact}: ContactItemProps) {
   return (
     <HoverCard.Root>
       <HoverCard.Trigger asChild>
-        <StyledItem
-          data-testid={`contact-item-${accountId}`}
-          color="default"
-          css={{
-            gap: '$4',
-            paddingVertical: '$2',
-            paddingHorizontal: '$3',
-            marginLeft: '-$6',
-          }}
-        >
+        <li className="contact-item" data-testid={`contact-item-${accountId}`}>
           <Avatar
             size={1}
             alias={state.context.account.profile?.alias || 'C'}
@@ -278,10 +247,10 @@ function ContactItem({contact}: ContactItemProps) {
               }}
             />
           ) : null}
-        </StyledItem>
+        </li>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" side="top">
-        <Avatar size={2} alias={state.context.account.profile?.alias} />
+        <Avatar size={2} alias={state.context.account.profile?.alias || ''} />
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
           <Text fontWeight="bold">{state.context.account.profile?.alias}</Text>
           <Text
@@ -330,3 +299,53 @@ function ContactItem({contact}: ContactItemProps) {
     </HoverCard.Root>
   )
 }
+
+export var StyledItem = styled('li', {
+  //   $$bg: 'transparent',
+  //   $$bgHover: '$colors$base-component-bg-hover',
+  //   $$foreground: '$colors$base-text-high',
+  //   display: 'flex',
+  //   minHeight: 28,
+  //   gap: '1rem',
+  //   alignItems: 'center',
+  //   position: 'relative',
+  //   borderRadius: '$1',
+  //   backgroundColor: '$$bg',
+  //   paddingHorizontal: '$2',
+  //   '&:hover': {
+  //     cursor: 'pointer',
+  //     backgroundColor: '$$bgHover',
+  //     '.dropdown': {
+  //       opacity: 1,
+  //     },
+  //   },
+  //   '.title': {
+  //     userSelect: 'none',
+  //     letterSpacing: '0.01em',
+  //     lineHeight: '$2',
+  //     textOverflow: 'ellipsis',
+  //     whiteSpace: 'nowrap',
+  //     overflow: 'hidden',
+  //     color: '$$foreground',
+  //     flex: 1,
+  //     paddingHorizontal: '$3',
+  //     paddingVertical: '$2',
+  //   },
+  //   '.dropdown': {
+  //     opacity: 0,
+  //   },
+  // },
+  // {
+  //   defaultVariants: {
+  //     active: false,
+  //   },
+  //   variants: {
+  //     active: {
+  //       true: {
+  //         $$bg: '$colors$primary-normal',
+  //         $$bgHover: '$colors$primary-active',
+  //         $$foreground: '$colors$primary-text-opposite',
+  //       },
+  //     },
+  //   },
+})

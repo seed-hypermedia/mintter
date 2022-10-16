@@ -1,82 +1,23 @@
-import {useAccount, useAuthService} from '@app/auth-context'
+import {useAccount} from '@app/auth-context'
 import * as localApi from '@app/client'
 import {forceSync} from '@app/client/daemon'
 import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
 import {PeerAddrs} from '@app/components/peer-addrs'
-import {ScrollArea} from '@app/components/scroll-area'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
 import {WalletList} from '@app/components/wallet-list'
-import {useActivity} from '@app/main-context'
 import {styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import {useActor} from '@xstate/react'
 import {FormEvent} from 'react'
 import toast from 'react-hot-toast'
 
-export function Settings() {
-  let authService = useAuthService()
-  let [state, send] = useActor(authService)
-  return (
-    <Box
-      css={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
+export default Settings
 
-        background: '$base-component-bg-normal',
-      }}
-    >
-      <StyledTabs
-        defaultValue="profile"
-        orientation="vertical"
-        data-tauri-drag-region
-      >
-        <StyledTabsList aria-label="Manage your node" data-tauri-drag-region>
-          <TabTrigger value="profile">Profile</TabTrigger>
-          <TabTrigger value="account">Account Info</TabTrigger>
-          <TabTrigger value="wallets">Wallets</TabTrigger>
-          <TabTrigger value="settings">Settings</TabTrigger>
-          <TabTrigger value="verified-accounts">Verified Accounts</TabTrigger>
-        </StyledTabsList>
-        <TabsContent value="profile">
-          {/* <ScrollArea> */}
-          <ProfileForm
-            profile={
-              state.matches('loggedIn')
-                ? state.context.account?.profile
-                : undefined
-            }
-            handleUpdate={(profile) => send({type: 'UPDATE.PROFILE', profile})}
-          />
-          {/* </ScrollArea> */}
-        </TabsContent>
-        <TabsContent value="account" data-tauri-drag-region>
-          {/* <ScrollArea> */}
-          <AccountInfo />
-          {/* </ScrollArea> */}
-        </TabsContent>
-        <TabsContent value="wallets" data-tauri-drag-region>
-          <ScrollArea>
-            <WalletsInfo />
-          </ScrollArea>
-        </TabsContent>
-        <TabsContent value="settings" data-tauri-drag-region>
-          <AppSettings />
-        </TabsContent>
-        <TabsContent value="verified-accounts" data-tauri-drag-region>
-          <div></div>
-        </TabsContent>
-      </StyledTabs>
-    </Box>
-  )
+function Settings() {
+  return <div>settings</div>
 }
 
 type ProfileFormProps = {
@@ -236,7 +177,7 @@ export function AccountInfo() {
 }
 
 function AppSettings() {
-  let activityService = useActivity()
+  // let activityService = useActivity()
 
   async function onReloadSync() {
     await forceSync()
@@ -261,7 +202,7 @@ function AppSettings() {
         variant="outlined"
         onClick={(e) => {
           e.preventDefault()
-          activityService?.send('RESET')
+          // activityService?.send('RESET')
         }}
       >
         Reset Activity

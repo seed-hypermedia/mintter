@@ -1,7 +1,7 @@
 import {Profile} from '@app/client'
+import {AccountInfo, ProfileForm} from '@app/pages/settings'
 import {createTestQueryClient} from '@app/test/utils'
 import {PeerAddrs} from '@components/peer-addrs'
-import {AccountInfo, ProfileForm} from '@components/settings'
 
 describe('Settings', () => {
   it('Profile', () => {

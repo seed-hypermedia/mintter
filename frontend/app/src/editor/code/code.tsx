@@ -1,5 +1,4 @@
 import {useBlockProps} from '@app/editor/editor-node-props'
-import {useFileEditor} from '@app/file-provider'
 import {
   Code as CodeType,
   createId,
@@ -19,7 +18,7 @@ import {
   setCDN,
 } from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
-import type {RenderElementProps} from 'slate-react'
+import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {MARK_EMPHASIS} from '../emphasis'
 import {EditorMode} from '../plugin-utils'
 import {MARK_STRONG} from '../strong'
@@ -188,7 +187,7 @@ function Code({
   element: CodeType
   mode: EditorMode
 }) {
-  let editor = useFileEditor()
+  let editor = useSlateStatic()
   let path = findPath(element)
   let {blockProps} = useBlockProps(element)
   let lang = (element as CodeType).lang || ''

@@ -10,7 +10,7 @@ import {createTestQueryClient} from '@app/test/utils'
 import {QueryClient} from '@tanstack/react-query'
 import {useInterpret} from '@xstate/react'
 import {Editor} from 'slate'
-import {PublicationPage} from '../publication'
+import PublicationPage from '../publication'
 
 // TODO: FIXME
 describe('Publication Page', () => {
