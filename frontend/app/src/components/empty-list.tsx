@@ -6,6 +6,7 @@ type EmptyListProps = {
   action: () => void
 }
 
+// TODO: add tests
 export function EmptyList({description, action}: EmptyListProps) {
   return (
     <div className="empty-list">

@@ -1,8 +1,4 @@
 import {createPublicationMachine} from '@app/publication-machine'
-import {error} from '@app/utils/logger'
-import {Box} from '@components/box'
-import {DiscussionItem} from '@components/discussion-item'
-import {useActor} from '@xstate/react'
 import {ActorRefFrom} from 'xstate'
 
 export type DiscussionProps = {
@@ -10,36 +6,9 @@ export type DiscussionProps = {
 }
 
 export function Discussion({service}: DiscussionProps) {
-  const [state] = useActor(service)
-
-  if (state.matches('discussion.fetching')) {
-    return <span>loading discussion...</span>
-  }
-
-  if (state.matches('discussion.errored')) {
-    error('Discussion Error')
-    return <span>Discussion ERROR</span>
-  }
-
-  if (state.matches('discussion.ready.visible')) {
-    return (
-      <Box
-        css={{
-          display: 'flex',
-          width: '$full',
-          flexDirection: 'column',
-          // gap: '1.5rem',
-          // paddingInline: '1rem',
-        }}
-      >
-        {state.context.dedupeLinks.map((link) => {
-          let {source} = link
-          let key = `link-${source?.documentId}-${source?.version}-${source?.blockId}`
-          return <DiscussionItem key={key} link={link} />
-        })}
-      </Box>
-    )
-  }
-
+  console.log(
+    '🚀 ~ file: discussion.tsx ~ line 13 ~ Discussion ~ service',
+    service,
+  )
   return null
 }
