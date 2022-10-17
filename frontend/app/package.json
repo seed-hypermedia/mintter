@@ -31,7 +31,7 @@
     "@floating-ui/react-dom-interactions": "0.10.1",
     "@improbable-eng/grpc-web": "0.15.0",
     "@radix-ui/colors": "0.1.8",
-    "@radix-ui/react-accessible-icon": "1.0.0",
+    "@radix-ui/react-accessible-icon": "1.0.1",
     "@radix-ui/react-alert-dialog": "1.0.0",
     "@radix-ui/react-collapsible": "1.0.0",
     "@radix-ui/react-context-menu": "1.0.0",
