@@ -366,7 +366,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 	return nil
 }
 
-// SyncWithPeer syncs all documents from a given peer
+// SyncWithPeer syncs all documents from a given peer.
 func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
 	c, err := s.client(ctx, device)
 	if err != nil {

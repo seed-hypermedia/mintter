@@ -27,6 +27,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// Provider interface for not passing a full-fledged node.
 type Provider interface {
 	// ProvideCID notifies the providing system to provide the given CID on the DHT.
 	ProvideCID(cid.Cid) error
@@ -45,13 +46,13 @@ type Provider interface {
 	SyncPeer(ctx context.Context, cid cid.Cid) error
 }
 
-// Type to hold all the provide (get) publications to (from) the network
+// MttProvider is a type to hold all the provide (get) publications to (from) the network.
 type MttProvider struct {
 	n        *future.ReadOnly[*mttnet.Node]
 	syncPeer func(context.Context, cid.Cid) error
 }
 
-// NewProvider builds the struct out of a node future and a sync callback
+// NewProvider builds the struct out of a node future and a sync callback.
 func NewProvider(n *future.ReadOnly[*mttnet.Node], sync func(context.Context, cid.Cid) error) *MttProvider {
 	return &MttProvider{n: n, syncPeer: sync}
 }
@@ -66,8 +67,7 @@ func (mp *MttProvider) ProvideCID(c cid.Cid) error {
 	return n.ProvideCID(c)
 }
 
-// Search for peers who are able to provide a given key
-//
+// FindProvider Search for peers who are able to provide a given key
 // When count is 0, this method will return an unbounded number of
 // results.
 func (mp *MttProvider) FindProvider(ctx context.Context, cid cid.Cid, nPeers int) ([]peer.AddrInfo, error) {
@@ -81,20 +81,17 @@ func (mp *MttProvider) FindProvider(ctx context.Context, cid cid.Cid, nPeers int
 	}
 	peers := make([]peer.AddrInfo, nPeers)
 
-	peers_chan := n.Libp2p().Routing.FindProvidersAsync(ctx, cid, nPeers)
+	peersChan := n.Libp2p().Routing.FindProvidersAsync(ctx, cid, nPeers)
 
 	for i := 0; i < nPeers; { //This is active waiting make default sleeping or smt
-		select {
-		case ai := <-peers_chan:
-			peers[i] = ai
-			i++
-		}
-
+		ai := <-peersChan
+		peers[i] = ai
+		i++
 	}
 	return peers, nil
 }
 
-// ClosePeer closes the connection to a given peer
+// ClosePeer closes the connection to a given peer.
 func (mp *MttProvider) ClosePeer(id peer.ID) error {
 	n, ok := mp.n.Get()
 
@@ -124,7 +121,7 @@ func (mp *MttProvider) Connect(ctx context.Context, ai peer.AddrInfo) error {
 	return n.Connect(ctx, ai)
 }
 
-// SyncWithPeer syncs all documents from a given peer
+// SyncPeer syncs all documents from a given peer.
 func (mp *MttProvider) SyncPeer(ctx context.Context, cid cid.Cid) error {
 	return mp.syncPeer(ctx, cid)
 }

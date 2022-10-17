@@ -701,7 +701,6 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	remotePublication, err := bob.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: cID.String()})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, published, remotePublication, "remote publication doesn't match")
-
 }
 
 func TestAPIDeletePublication(t *testing.T) {
