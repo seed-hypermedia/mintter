@@ -52,11 +52,11 @@ func New(
 		return nil
 	}
 	syncPeer := func(ctx context.Context, id cid.Cid) error {
-		sync_srv, ok := sync.Get()
+		syncSrv, ok := sync.Get()
 		if !ok {
 			return fmt.Errorf("account is not initialized yet")
 		}
-		return sync_srv.SyncWithPeer(ctx, id)
+		return syncSrv.SyncWithPeer(ctx, id)
 	}
 	return Server{
 		Accounts:   accounts.NewServer(id, v),
