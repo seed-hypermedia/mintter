@@ -2,7 +2,7 @@ import {Account, Document, Publication} from '@app/client'
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
-import {HistoryButtons, Menu, Topbar} from '../topbar'
+import Topbar, {HistoryButtons, Menu} from '../topbar'
 
 /**
  *

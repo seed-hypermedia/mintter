@@ -10,6 +10,7 @@
   transition: opacity 0.25s ease;
   display: flex;
   align-items: stretch;
+  z-index: 1000;
 
   user-select: none;
   -webkit-user-select: none;

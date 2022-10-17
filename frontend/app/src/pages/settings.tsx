@@ -1,61 +1,145 @@
-import {useAccount} from '@app/auth-context'
+import {createAuthService} from '@app/auth-machine'
 import * as localApi from '@app/client'
+import {updateProfile as apiUpdateProfile} from '@app/client'
 import {forceSync} from '@app/client/daemon'
 import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
-import {PeerAddrs} from '@app/components/peer-addrs'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
-import {WalletList} from '@app/components/wallet-list'
-import {styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
+import {useQueryClient} from '@tanstack/react-query'
+import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {FormEvent} from 'react'
 import toast from 'react-hot-toast'
+import {InterpreterFrom} from 'xstate'
+import '../styles/settings.scss'
 
-export default Settings
-
-function Settings() {
-  return <div>settings</div>
+export default function Settings({
+  updateProfile = apiUpdateProfile,
+}: {
+  updateProfile?: typeof apiUpdateProfile
+}) {
+  const client = useQueryClient()
+  const auth = useInterpret(() => createAuthService(client, updateProfile))
+  return (
+    <div className="settings-wrapper">
+      <TabsPrimitive.Root
+        className="tabs"
+        defaultValue="profile"
+        orientation="vertical"
+        data-tauri-drag-region
+      >
+        <TabsPrimitive.List
+          className="tabs-list"
+          aria-label="Manage your node"
+          data-tauri-drag-region
+        >
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="profile"
+            data-testid="tab-profile"
+          >
+            Profile
+          </TabsPrimitive.Trigger>
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="account"
+            data-testid="tab-account"
+          >
+            Account Info
+          </TabsPrimitive.Trigger>
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="wallets"
+            data-testid="tab-wallets"
+          >
+            Wallets
+          </TabsPrimitive.Trigger>
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="settings"
+            data-testid="tab-settings"
+          >
+            Settings
+          </TabsPrimitive.Trigger>
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="verified-accounts"
+            data-testid="tab-verified-accounts"
+          >
+            Verified Accounts
+          </TabsPrimitive.Trigger>
+        </TabsPrimitive.List>
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="profile"
+        >
+          <ProfileForm service={auth} />
+        </TabsPrimitive.Content>
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="account"
+          data-tauri-drag-region
+        >
+          {/* <ScrollArea> */}
+          <AccountInfo service={auth} />
+          {/* </ScrollArea> */}
+        </TabsPrimitive.Content>
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="wallets"
+          data-tauri-drag-region
+        >
+          <ComingSoon />
+        </TabsPrimitive.Content>
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="settings"
+          data-tauri-drag-region
+        >
+          <AppSettings />
+        </TabsPrimitive.Content>
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="verified-accounts"
+          data-tauri-drag-region
+        >
+          <ComingSoon />
+        </TabsPrimitive.Content>
+      </TabsPrimitive.Root>
+    </div>
+  )
 }
 
-type ProfileFormProps = {
-  profile?: localApi.Profile
-  handleUpdate: (p: localApi.Profile) => void
-  isPending?: boolean
-  updateSuccess?: boolean
+type SettingsTabProps = {
+  service: InterpreterFrom<ReturnType<typeof createAuthService>>
 }
 
-export function ProfileForm({
-  profile,
-  handleUpdate,
-  isPending = false,
-  updateSuccess = false,
-}: ProfileFormProps) {
+export function ProfileForm({service}: SettingsTabProps) {
+  let [state, send] = useActor(service)
+
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     let formData = new FormData(e.currentTarget)
     // @ts-ignore
     let newProfile: localApi.Profile = Object.fromEntries(formData.entries())
     e.preventDefault()
-    handleUpdate(newProfile)
+    send({type: 'ACCOUNT.UPDATE.PROFILE', profile: newProfile})
   }
 
-  if (profile) {
-    let {alias, bio} = profile
+  let isPending = useSelector(service, (state) =>
+    state.matches('loggedIn.updating'),
+  )
+  let onSuccess = useSelector(service, (state) =>
+    state.matches('loggedIn.onSuccess'),
+  )
+
+  if (state.context.account?.profile && state.matches('loggedIn')) {
+    let {alias, bio} = state.context.account.profile
+
     return (
-      <Box
-        as="form"
-        onSubmit={onSubmit}
-        css={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '$7',
-          padding: '$5',
-          marginTop: '$8',
-          marginBottom: '$8',
-        }}
-      >
+      <form onSubmit={onSubmit} className="settings-tab-content">
         <TextField
           type="text"
           label="Alias"
@@ -94,86 +178,89 @@ export function ProfileForm({
           >
             Save
           </Button>
-          {updateSuccess && (
+          {onSuccess && (
             <Text size="3" color="success">
               update success!
             </Text>
           )}
         </Box>
-      </Box>
+      </form>
     )
-  } else {
-    return null
   }
+
+  return null
 }
 
-export function AccountInfo() {
-  let account = useAccount()
+export function AccountInfo({service}: SettingsTabProps) {
+  let [state] = useActor(service)
+  let account = useSelector(service, (state) => state.context.account)
+  let onSuccess = useSelector(service, (state) =>
+    state.matches('loggedIn.onSuccess'),
+  )
+  const peerAddrs = useSelector(service, (state) => state.context.peerAddrs)
 
-  return account ? (
-    <Box
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$7',
-        padding: '$5',
-        marginTop: '$8',
-        marginBottom: '$8',
-      }}
-    >
-      {/* <Text
-        size="2"
-        color="primary"
-        css={{
-          paddingHorizontal: '$4',
-          paddingVertical: '$3',
-          borderRadius: '$2',
-          display: 'block',
-          background: '$primary-component-bg-normal',
-          border: '1px solid $colors$primary-border-normal',
-        }}
-      >
-        All your Mintter content is located in <code>~/.mtt/</code>
-      </Text> */}
-      <TextField
-        readOnly
-        type="text"
-        label="Account ID"
-        name="accountId"
-        value={account.id}
-        data-testid="account-id"
-      />
-      <PeerAddrs />
-      <Separator data-orientation="horizontal" />
-      <Text size="4">Devices List</Text>
-      <Box
-        as="ul"
-        css={{
-          margin: 0,
-          padding: 0,
-        }}
-        data-testid="account-device-list"
-      >
-        {account.devices && ObjectKeys(account.devices).length
-          ? Object.entries(account.devices).map(
-              ([id, device]: [string, localApi.Device], index: number) => (
-                <Text as="li" key={id}>
-                  <Text
-                    as="span"
-                    color="muted"
-                    css={{display: 'inline-block', marginRight: '$4'}}
-                  >
-                    {index + 1}.
-                  </Text>
-                  {device.peerId}
-                </Text>
-              ),
-            )
-          : null}
-      </Box>
-      <Separator data-orientation="horizontal" />
-    </Box>
-  ) : null
+  if (account && state.matches('loggedIn')) {
+    return (
+      <div className="settings-tab-content">
+        <TextField
+          readOnly
+          type="text"
+          label="Account ID"
+          name="accountId"
+          value={account.id}
+          data-testid="account-id"
+          css={{fontFamily: 'monospace'}}
+        />
+
+        <TextField
+          readOnly
+          textarea
+          id="addresses"
+          name="addresses"
+          label="Your Mintter address"
+          rows={4}
+          value={peerAddrs}
+          data-testid="account-addresses"
+          css={{fontFamily: 'monospace', userSelect: 'none'}}
+        />
+        <Box
+          css={{
+            display: 'flex',
+            gap: '$5',
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="success"
+            size="1"
+            type="button"
+            onClick={() => service.send('ACCOUNT.COPY.ADDRESS')}
+          >
+            Copy Address
+          </Button>
+          {onSuccess && (
+            <Text size="3" color="success">
+              copied!
+            </Text>
+          )}
+        </Box>
+        <Separator data-orientation="horizontal" />
+        <Text size="3">Devices List</Text>
+        <ol data-testid="account-device-list" className="account-device-list">
+          {account.devices && ObjectKeys(account.devices).length
+            ? Object.keys(account.devices).map((id) => (
+                <li key={id}>
+                  <p>...{id.slice(-40)}</p>
+                </li>
+              ))
+            : null}
+        </ol>
+      </div>
+    )
+  }
+
+  return null
 }
 
 function AppSettings() {
@@ -185,17 +272,7 @@ function AppSettings() {
   }
 
   return (
-    <Box
-      css={{
-        alignItems: 'center',
-        display: 'flex',
-        // flexDirection: 'column',
-        gap: '$3',
-        padding: '$5',
-        marginTop: '$8',
-        marginBottom: '$8',
-      }}
-    >
+    <div className="settings-tab-content">
       <Button
         color="danger"
         size="1"
@@ -210,65 +287,14 @@ function AppSettings() {
       <Button size="1" variant="outlined" onClick={onReloadSync}>
         Reload Database Sync
       </Button>
-    </Box>
+    </div>
   )
 }
 
-function WalletsInfo() {
+function ComingSoon() {
   return (
-    <Box
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$7',
-        padding: '$5',
-        marginTop: '$8',
-        marginBottom: '$8',
-      }}
-    >
-      <WalletList />
-    </Box>
+    <div className="settings-tab-content">
+      <code>coming soon!</code>
+    </div>
   )
 }
-
-var StyledTabs = styled(TabsPrimitive.Root, {
-  width: '$full',
-  height: '$full',
-  display: 'flex',
-})
-
-var StyledTabsList = styled(TabsPrimitive.List, {
-  borderRight: '1px solid rgba(0,0,0,0.1)',
-  minWidth: '20vw',
-  paddingTop: '$9',
-})
-
-var TabTrigger = styled(TabsPrimitive.Trigger, {
-  all: 'unset',
-  // padding: '0 $6',
-  height: 45,
-  textAlign: 'left',
-  paddingInline: '$5',
-  display: 'flex',
-  width: '$full',
-  alignItems: 'center',
-  fontSize: '$3',
-  fontFamily: '$base',
-  lineHeight: '1',
-  color: '$base-text-hight',
-  '&:hover': {
-    background: '$primary-component-bg-hover',
-  },
-  '&[data-state="active"]': {
-    color: '$primary-normal',
-    fontWeight: '$bold',
-    // boxShadow: 'inset 0 -2px 0 0 currentColor, 0 2px 0 0 currentColor',
-  },
-  '&:focus': {position: 'relative', background: '$primary-component-bg-active'},
-})
-
-var TabsContent = styled(TabsPrimitive.Content, {
-  flex: 1,
-  position: 'relative',
-  background: '$base-component-bg-normal',
-})

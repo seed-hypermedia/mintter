@@ -1,8 +1,8 @@
-import {DraftRef, PublicationRef} from '@app/main-machine'
-import {useSelector} from '@xstate/react'
-import {createContext, useContext} from 'react'
+import {Document} from '@app/client'
+import {ClientPublication} from '@app/publication-machine'
+import {createContext, useContext, useMemo} from 'react'
 
-export type FileContext = PublicationRef | DraftRef
+export type FileContext = ClientPublication | Document
 
 const fileContext = createContext<FileContext | null>(null)
 
@@ -20,15 +20,15 @@ export function useFile() {
   return context
 }
 
-export function useFileEditor() {
+export function useFileIds():
+  | [documentId: string, version: string]
+  | [documentId: string] {
   let context = useFile()
-  return useSelector(context, (state) => state.context.editor)
-}
-
-export function useFileIds() {
-  let context = useFile()
-  return useSelector(context, (state) => [
-    state.context.documentId,
-    state.context.version,
-  ])
+  return useMemo(() => {
+    if ('document' in context) {
+      return [context.document.id, context.version]
+    } else {
+      return [context.id]
+    }
+  }, [context])
 }

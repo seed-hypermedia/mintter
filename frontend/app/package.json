@@ -85,7 +85,6 @@
     "react-highlight-words": "0.18.0",
     "react-hook-form": "7.37.0",
     "react-hot-toast": "2.4.0",
-    "react-qr-barcode-scanner": "1.0.6",
     "react-qr-code": "2.0.8",
     "rehype": "12.0.1",
     "rehype-minify-whitespace": "5.0.1",
@@ -143,7 +142,6 @@
     "is-hidden": "2.0.0",
     "prettier": "2.7.1",
     "react": "18.2.0",
-    "react-async-ssr": "0.7.2",
     "sass": "1.55.0",
     "tiny-glob": "0.2.9",
     "ts-node": "10.9.1",
@@ -158,5 +156,10 @@
   },
   "peerDependencies": {
     "typescript": "4.8.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "18.2.0"
+    }
   }
 }

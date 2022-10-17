@@ -1,7 +1,8 @@
 import {getPublication, Publication} from '@app/client'
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {Editor} from '@app/editor/editor'
-import {EditorMode} from '@app/editor/plugin-utils'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
@@ -9,6 +10,7 @@ import {Embed as EmbedType, FlowContent, isEmbed} from '@app/mttast'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
+import {useMemo} from 'react'
 import {RenderElementProps} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
@@ -64,6 +66,7 @@ function Embed({
   let [docId, version, blockId] = getIdsfromUrl(element.url)
   let client = useQueryClient()
   let [state] = useMachine(() => createEmbedMachine({url: element.url, client}))
+  let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Embed))
   // let selected = useSelected()
   // let focused = useFocused()
 
@@ -112,6 +115,7 @@ function Embed({
     >
       <Editor
         as="span"
+        editor={editor}
         mode={EditorMode.Embed}
         value={state.context.block?.children}
         onChange={() => {

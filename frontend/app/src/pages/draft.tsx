@@ -1,5 +1,5 @@
 // import 'show-keys'
-import {Document} from '@app/client'
+import {Document, publishDraft as apiPublishDraft} from '@app/client'
 import {createDraftMachine} from '@app/draft-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
@@ -12,7 +12,7 @@ import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {ChildrenOf} from '@app/mttast'
 import {AppError} from '@app/root'
-import {RouteComponentProps, useLocation, useRoute} from '@components/router'
+import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {useQueryClient} from '@tanstack/react-query'
@@ -23,29 +23,36 @@ import toast from 'react-hot-toast'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 
-type DraftPageProps = RouteComponentProps<{
+type DraftPageProps = {
   shouldAutosave?: boolean
-}>
+  publishDraft?: typeof apiPublishDraft
+  editor?: SlateEditor
+}
 
-export default function DraftWrapper({shouldAutosave = true}: DraftPageProps) {
+export default function DraftWrapper({
+  shouldAutosave = true,
+  publishDraft = apiPublishDraft,
+  editor,
+}: DraftPageProps) {
   let client = useQueryClient()
   let mainService = useMain()
   let [, params] = useRoute('/d/:id')
   let [, setLocation] = useLocation()
   let mouseService = useInterpret(() => mouseMachine)
-  let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
+  let localEditor = useMemo(
+    () => buildEditorHook(plugins, EditorMode.Draft),
+    [],
+  )
+  let _editor = editor ?? localEditor
+  useInitialFocus(_editor)
 
-  useInitialFocus(editor)
-
-  let [state, send, service] = useMachine(
-    () =>
-      createDraftMachine({
-        client,
-        documentId: params?.id,
-        shouldAutosave,
-        editor,
-      }),
-    {
+  let [state, send, service] = useMachine(() =>
+    createDraftMachine({
+      client,
+      documentId: params?.id,
+      shouldAutosave,
+      editor: _editor,
+    }).withConfig({
       actions: {
         sendActorToParent: () => {
           mainService.send({type: 'COMMIT.CURRENT.DRAFT', service})
@@ -55,7 +62,13 @@ export default function DraftWrapper({shouldAutosave = true}: DraftPageProps) {
           toast.success('Draft published Successfully!')
         },
       },
-    },
+      services: {
+        // @ts-ignore
+        publishDraft: (context) => {
+          return publishDraft(context.documentId)
+        },
+      },
+    }),
   )
 
   if (state.matches('errored')) {
@@ -92,13 +105,13 @@ export default function DraftWrapper({shouldAutosave = true}: DraftPageProps) {
               // }
             }}
           >
-            {state.context.localDraft?.content && (
-              <MouseProvider value={mouseService}>
-                <BlockHighLighter>
-                  <FileProvider value={service}>
-                    <Blocktools editor={editor}>
+            <MouseProvider value={mouseService}>
+              <BlockHighLighter>
+                <FileProvider value={state.context.draft}>
+                  <Blocktools editor={_editor}>
+                    {state.context.localDraft?.content ? (
                       <Editor
-                        editor={editor}
+                        editor={_editor}
                         value={state.context.localDraft.content}
                         //@ts-ignore
                         onChange={(content: ChildrenOf<Document>) => {
@@ -108,11 +121,11 @@ export default function DraftWrapper({shouldAutosave = true}: DraftPageProps) {
                           send({type: 'DRAFT.UPDATE', payload: {content}})
                         }}
                       />
-                    </Blocktools>
-                  </FileProvider>
-                </BlockHighLighter>
-              </MouseProvider>
-            )}
+                    ) : null}
+                  </Blocktools>
+                </FileProvider>
+              </BlockHighLighter>
+            </MouseProvider>
           </ScrollArea>
         </ErrorBoundary>
       </div>

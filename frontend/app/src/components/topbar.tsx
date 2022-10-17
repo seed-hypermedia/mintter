@@ -174,14 +174,6 @@ function TopbarPublicationData({fileRef}: {fileRef: PublicationActor}) {
 }
 
 function DraftTopbar() {
-  /**
-   * - title: Draft title
-   * - search icon
-   * - done button
-   * - write button
-   * - navigation buttons
-   * - library toggle
-   */
   let mainService = useMain()
   let current = useSelector(mainService, (state) => state.context.current)
 
@@ -189,9 +181,7 @@ function DraftTopbar() {
     <>
       <TopbarNavigation />
       <div className="topbar-section main" {...draggableProps}>
-        <p className="topbar-title" data-testid="topbar-title">
-          {current && <TopbarDraftData fileRef={current as DraftActor} />}
-        </p>
+        {current && <TopbarDraftData fileRef={current as DraftActor} />}
       </div>
       <div className="topbar-section actions" {...draggableProps}>
         <Find />
@@ -229,7 +219,10 @@ function PublishButton({fileRef}: {fileRef: DraftActor}) {
 
   return (
     <button
-      onClick={() => fileRef.send('DRAFT.PUBLISH')}
+      onClick={() => {
+        console.log('PUBLISH!', fileRef)
+        fileRef.send('DRAFT.PUBLISH')
+      }}
       className="topbar-button success outlined"
       data-testid="button-publish"
       disabled={isSaving}

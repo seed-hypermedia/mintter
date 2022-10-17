@@ -3,11 +3,12 @@ import {
   getAccount,
   listPeerAddrs,
   Profile,
-  updateProfile,
+  updateProfile as apiUpdateProfile,
 } from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {QueryClient} from '@tanstack/react-query'
-import {assign, createMachine} from 'xstate'
+import copyTextToClipboard from 'copy-text-to-clipboard'
+import {assign, createMachine, MachineOptions} from 'xstate'
 import {getInfo, Info} from './client'
 
 type AuthContext = {
@@ -19,13 +20,9 @@ type AuthContext = {
 }
 
 type AuthEvent =
-  | {
-      type: 'UPDATE.PROFILE'
-      profile: Profile
-    }
-  | {
-      type: 'RETRY'
-    }
+  | {type: 'ACCOUNT.UPDATE.PROFILE'; profile: Profile}
+  | {type: 'RETRY'}
+  | {type: 'ACCOUNT.COPY.ADDRESS'}
 
 type AuthService = {
   fetchAccount: {
@@ -42,7 +39,12 @@ type AuthService = {
   }
 }
 
-export function createAuthService(client: QueryClient) {
+export type AccountMachineOptions = MachineOptions<AuthContext, AuthEvent>
+
+export function createAuthService(
+  client: QueryClient,
+  updateProfile: typeof apiUpdateProfile,
+) {
   return createMachine(
     {
       id: 'authStateMachine',
@@ -121,8 +123,12 @@ export function createAuthService(client: QueryClient) {
           states: {
             idle: {
               on: {
-                'UPDATE.PROFILE': {
+                'ACCOUNT.UPDATE.PROFILE': {
                   target: 'updating',
+                },
+                'ACCOUNT.COPY.ADDRESS': {
+                  actions: ['copyindAddressToClipboard'],
+                  target: 'onSuccess',
                 },
               },
             },
@@ -132,7 +138,7 @@ export function createAuthService(client: QueryClient) {
                 src: 'updateProfile',
                 id: 'updateProfile',
                 onDone: {
-                  target: 'updateSuccess',
+                  target: 'onSuccess',
                   actions: ['assignAccount'],
                 },
                 onError: {
@@ -141,7 +147,7 @@ export function createAuthService(client: QueryClient) {
                 },
               },
             },
-            updateSuccess: {
+            onSuccess: {
               tags: ['pending'],
               after: {
                 1000: 'idle',
@@ -176,6 +182,10 @@ export function createAuthService(client: QueryClient) {
           )
         },
         updateProfile: function updateProfileService(_, event) {
+          console.log(
+            '🚀 ~ file: auth-machine.ts ~ line 185 ~ updateProfileService ~ event',
+            event,
+          )
           return updateProfile(event.profile)
         },
         fetchPeerData: function fetchPeerDataService(context: AuthContext) {
@@ -235,6 +245,10 @@ export function createAuthService(client: QueryClient) {
           // eslint-disable-next-line
           retries: (_) => 0,
         }),
+        copyindAddressToClipboard: (context) => {
+          let value = context.peerAddrs.join(',')
+          copyTextToClipboard(value)
+        },
       },
       delays: {
         RETRY_DELAY: function getRetryDelay(context) {

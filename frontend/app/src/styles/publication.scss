@@ -1,3 +1,20 @@
+.publication-wrapper {
+  display: flex;
+  width: 100%;
+
+  & > * {
+    flex: 1;
+    height: 100%;
+    box-sizing: border-box;
+  }
+}
+
+// .publication-section {}
+
+.discussion-section {
+  border-right: 1px solid var(--mtt-colors-base-border-hover);
+}
+
 .discussion-toggle {
   position: fixed;
   top: 40px;

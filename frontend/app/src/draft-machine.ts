@@ -4,7 +4,6 @@ import {
   DocumentChange,
   getDraft,
   Publication,
-  publishDraft,
   updateDraftV2 as apiUpdateDraft,
 } from '@app/client'
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
@@ -17,6 +16,7 @@ import {
   statement,
   text,
 } from '@app/mttast'
+import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'
 import {Editor} from 'slate'
@@ -32,6 +32,7 @@ export type EditorDocument = Partial<Document> & {
 
 export type DraftMachineContext = {
   documentId: string
+  draft: Document | null
   localDraft: EditorDocument | null
   errorMessage: string
   author: Account | null
@@ -40,9 +41,7 @@ export type DraftMachineContext = {
 }
 
 export type DraftMachineEvent =
-  | {type: 'DRAFT.UPDATE'; payload: Partial<EditorDocument>}
-  | {type: 'DRAFT.UPDATE.SUCCESS'}
-  | {type: 'DRAFT.UPDATE.ERROR'; errorMessage: Error['message']}
+  | {type: 'DRAFT.UPDATE'; payload: Array<GroupingContent>}
   | {type: 'DRAFT.MIGRATE'}
   | {type: 'RESET.CHANGES'}
   | {type: 'DRAFT.REPORT.AUTHOR.ERROR'; errorMessage: string}
@@ -52,6 +51,9 @@ export type DraftMachineEvent =
 
 type DraftMachineServices = {
   fetchDraft: {
+    data: Document
+  }
+  saveDraft: {
     data: Document
   }
   publishDraft: {
@@ -85,6 +87,7 @@ export function createDraftMachine({
     {
       context: {
         documentId,
+        draft: null,
         localDraft: null,
         errorMessage: '',
         author: null,
@@ -116,7 +119,7 @@ export function createDraftMachine({
             src: 'fetchDraft',
             id: 'fetchDraft',
             onDone: {
-              actions: ['assignDraft', 'assignTitle'],
+              actions: ['assignLocalDraft', 'assignDraft', 'assignTitle'],
               target: 'editing',
             },
             onError: {
@@ -127,10 +130,10 @@ export function createDraftMachine({
         },
         editing: {
           // TODO: enable selectAll machine back
-          // invoke: {
-          //   src: createSelectAllActor(editor),
-          //   id: 'selectAllListener',
-          // },
+          invoke: {
+            src: createSelectAllActor(editor),
+            id: 'selectAllListener',
+          },
           initial: 'idle',
           states: {
             idle: {
@@ -171,6 +174,10 @@ export function createDraftMachine({
               invoke: {
                 src: 'saveDraft',
                 id: 'saveDraft',
+                onDone: {
+                  actions: ['resetChanges', 'assignDraft', 'resetQueryData'],
+                  target: 'idle',
+                },
                 onError: [
                   {
                     actions: 'assignError',
@@ -182,14 +189,6 @@ export function createDraftMachine({
               on: {
                 'DRAFT.UPDATE': {
                   target: 'debouncing',
-                },
-                'DRAFT.UPDATE.SUCCESS': {
-                  actions: ['resetChanges', 'resetQueryData'],
-                  target: 'idle',
-                },
-                'DRAFT.UPDATE.ERROR': {
-                  actions: 'assignError',
-                  target: 'idle',
                 },
               },
             },
@@ -206,7 +205,7 @@ export function createDraftMachine({
             id: 'publishDraft',
             onDone: [
               {
-                actions: ['afterPublish', 'resetQueryData'],
+                actions: ['resetQueryData', 'afterPublish'],
               },
             ],
             onError: [
@@ -231,8 +230,10 @@ export function createDraftMachine({
     },
     {
       actions: {
-        //@ts-ignore
-        assignDraft: assign((context, event) => {
+        assignDraft: assign({
+          draft: (_, event) => event.data,
+        }),
+        assignLocalDraft: assign((context, event) => {
           // TODO: fixme types
 
           let newValue: EditorDocument = {
@@ -254,7 +255,7 @@ export function createDraftMachine({
           }
 
           return {
-            draft: newValue,
+            draft: event.data,
             localDraft: newValue,
           }
         }),
@@ -274,13 +275,9 @@ export function createDraftMachine({
         // }),
         assignError: assign({
           errorMessage: (_, event) => {
-            if (event.type == 'DRAFT.UPDATE.ERROR') {
-              return event.errorMessage
-            } else {
-              return JSON.stringify(
-                `Draft machine error: ${JSON.stringify(event)}`,
-              )
-            }
+            return JSON.stringify(
+              `Draft machine error: ${JSON.stringify(event)}`,
+            )
           },
         }),
         updateValueToContext: assign({
@@ -297,78 +294,57 @@ export function createDraftMachine({
           MintterEditor.resetChanges(context.editor)
         },
         resetQueryData: (context) => {
-          client.removeQueries([queryKeys.GET_DRAFT, context.documentId])
-          client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
+          resetQueryData(client, context.documentId)
         },
       },
       services: {
         fetchDraft: (context) => {
-          return client.fetchQuery({
-            queryKey: [queryKeys.GET_DRAFT, context.documentId],
-            queryFn: () => getDraft(context.documentId),
-          })
+          return getDraftQuery(client, context.documentId)
         },
-        saveDraft: (context) => (sendBack) => {
+        saveDraft: async (context) => {
           if (shouldAutosave) {
-            ;(async function autosave() {
-              let contentChanges = MintterEditor.transformChanges(
-                context.editor,
-              ).filter(Boolean)
+            let contentChanges = MintterEditor.transformChanges(
+              context.editor,
+            ).filter(Boolean)
 
-              // debug('contentChanges', contentChanges)
-              let newTitle = context.title
-              let changes: Array<DocumentChange> = newTitle
-                ? [
-                    ...contentChanges,
-                    {
-                      op: {
-                        $case: 'setTitle',
-                        setTitle: newTitle,
-                      },
+            // debug('contentChanges', contentChanges)
+            let newTitle = context.title
+            let changes: Array<DocumentChange> = newTitle
+              ? [
+                  ...contentChanges,
+                  {
+                    op: {
+                      $case: 'setTitle',
+                      setTitle: newTitle,
                     },
-                  ]
-                : contentChanges
-              try {
-                await updateDraft({
-                  documentId: context.documentId,
-                  changes,
-                })
-                // TODO: update document
-                sendBack('DRAFT.UPDATE.SUCCESS')
-              } catch (err: unknown) {
-                sendBack({
-                  type: 'DRAFT.UPDATE.ERROR',
-                  errorMessage: JSON.stringify(err),
-                })
-              }
-            })()
+                  },
+                ]
+              : contentChanges
+
+            await updateDraft({
+              documentId: context.documentId,
+              changes,
+            })
+            // TODO: update document
+            client.removeQueries([queryKeys.GET_DRAFT, context.documentId])
+            client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
           }
-        },
-        // fetchAuthor: (context) => (sendBack) => {
-        //   let author = context.draft.author || ''
-        //   if (author) {
-        //     client
-        //       .fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
-        //         getAccount(author),
-        //       )
-        //       .then((author) => {
-        //         sendBack({
-        //           type: 'DRAFT.REPORT.AUTHOR.SUCCESS',
-        //           author,
-        //         })
-        //       })
-        //       .catch((err) => {
-        //         sendBack({
-        //           type: 'DRAFT.REPORT.AUTHOR.ERROR',
-        //           errorMessage: `fetchAuthor ERROR: ${JSON.stringify(err)}`,
-        //         })
-        //       })
-        //   }
-        // },
-        publishDraft: (context) => {
-          return publishDraft(context.documentId)
+
+          return getDraftQuery(client, context.documentId)
         },
       },
     },
   )
+}
+
+function getDraftQuery(client: QueryClient, docId: string) {
+  return client.fetchQuery({
+    queryKey: [queryKeys.GET_DRAFT, docId],
+    queryFn: () => getDraft(docId),
+  })
+}
+
+function resetQueryData(client: QueryClient, docId: string) {
+  client.removeQueries([queryKeys.GET_DRAFT, docId])
+  client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
 }

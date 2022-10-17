@@ -1,14 +1,14 @@
 import {connect as apiConnect, ConnectionStatus} from '@app/client'
+import {
+  AccountWithRef,
+  createContactListMachine,
+} from '@app/contact-list-machine'
 import {CSS, keyframes, styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {
-  AccountWithRef,
-  createContactListMachine,
-} from '@components/library/contacts-machine'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'

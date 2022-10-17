@@ -18,6 +18,7 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
 import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
+import {nanoid} from 'nanoid'
 import {Suspense} from 'react'
 import {MachineOptionsFrom} from 'xstate'
 
@@ -74,7 +75,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   }
 
   let account: Account = mocks.account
-    ? deepmerge(defaultAccount, mocks.account)
+    ? createAccount(mocks.account)
     : defaultAccount
 
   let info = mocks.info
@@ -225,6 +226,41 @@ export function TestPublicationProvider({children}) {
       </MouseProvider>
     </div>
   )
+}
+
+export function createTestDraft(entry: Partial<Document> = {}): Document {
+  return deepmerge(
+    {
+      id: nanoid(),
+      title: 'Test draft Title',
+      subtitle: 'Test draft Subtitle',
+      createTime: undefined,
+      updateTime: undefined,
+      children: [],
+      author: 'testauthor',
+      publishTime: undefined,
+    },
+    entry,
+  )
+}
+
+let peerId = 'testPeerID'
+let defaultAccount = {
+  id: 'testAccountId',
+  profile: {
+    alias: 'demo',
+    email: 'test@demo.com',
+    bio: 'demo bio',
+  },
+  devices: {
+    [peerId]: {
+      peerId,
+    },
+  },
+}
+
+export function createAccount(entry: Partial<Account>): Account {
+  return deepmerge(defaultAccount, entry)
 }
 
 ;(function mockTauriIpc() {

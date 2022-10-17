@@ -10,6 +10,7 @@ import {mouseMachine} from '@app/mouse-machine'
 import {createPublicationMachine} from '@app/publication-machine'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
+import {Discussion} from '@components/discussion'
 import {Placeholder} from '@components/placeholder-box'
 import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
@@ -58,7 +59,7 @@ export default function PublicationWrapper() {
 
   if (state.matches('publication.errored')) {
     return (
-      <div data-testid="publication-wrapper" className="page-wrapper">
+      <div data-testid="publication-section" className="page-wrapper">
         <p>Publication ERROR</p>
         <p>{state.context.errorMessage}</p>
         <Button onClick={() => send('PUBLICATION.FETCH.DATA')} color="muted">
@@ -68,42 +69,56 @@ export default function PublicationWrapper() {
     )
   }
 
+  console.log('Discussions', state.context)
+
   if (state.matches('publication.ready')) {
     return (
-      <div
-        data-testid="publication-wrapper"
-        className="page-wrapper"
-        onMouseMove={(event) =>
-          mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-        }
-      >
-        <ErrorBoundary
-          fallback={<div>error</div>}
-          onReset={() => window.location.reload()}
-        >
-          <ScrollArea onScroll={() => mouseService.send('DISABLE.SCROLL')}>
-            <MouseProvider value={mouseService}>
-              <BlockHighLighter>
-                <FileProvider value={service}>
-                  {state.context.publication?.document?.content && (
-                    <Blocktools editor={editor}>
-                      <Editor
-                        editor={editor}
-                        mode={EditorMode.Publication}
-                        value={state.context.publication?.document.content}
-                        onChange={() => {
-                          mouseService.send('DISABLE.CHANGE')
-                          // noop
-                        }}
-                      />
-                    </Blocktools>
-                  )}
-                </FileProvider>
-              </BlockHighLighter>
-            </MouseProvider>
-          </ScrollArea>
-        </ErrorBoundary>
-      </div>
+      <MouseProvider value={mouseService}>
+        <BlockHighLighter>
+          <div className="page-wrapper publication-wrapper">
+            <section className="discussion-section">
+              <ScrollArea onScroll={() => mouseService.send('DISABLE.SCROLL')}>
+                <Discussion fileRef={service} />
+              </ScrollArea>
+            </section>
+            <section
+              className="publication-section"
+              data-testid="publication-section"
+              onMouseMove={(event) =>
+                mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
+              }
+              onMouseLeave={() => {
+                mouseService.send('DISABLE.CHANGE')
+              }}
+            >
+              <ErrorBoundary
+                fallback={<div>error</div>}
+                onReset={() => window.location.reload()}
+              >
+                <ScrollArea
+                  onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                >
+                  <FileProvider value={state.context.publication}>
+                    {state.context.publication?.document?.content && (
+                      <Blocktools editor={editor}>
+                        <Editor
+                          editor={editor}
+                          mode={EditorMode.Publication}
+                          value={state.context.publication?.document.content}
+                          onChange={() => {
+                            mouseService.send('DISABLE.CHANGE')
+                            // noop
+                          }}
+                        />
+                      </Blocktools>
+                    )}
+                  </FileProvider>
+                </ScrollArea>
+              </ErrorBoundary>
+            </section>
+          </div>
+        </BlockHighLighter>
+      </MouseProvider>
     )
   }
   return null

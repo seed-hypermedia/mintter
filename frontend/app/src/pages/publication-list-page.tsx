@@ -58,6 +58,7 @@ export function PublicationListItem({
   copy = copyTextToClipboard,
 }: {
   publication: Publication
+  copy?: typeof copyTextToClipboard
 }) {
   let {search} = useFind()
   let [, setLocation] = useLocation()
@@ -93,7 +94,7 @@ export function PublicationListItem({
 
   function onCopy() {
     copy(
-      `${MINTTER_LINK_PREFIX}${publication.document.id}/${publication.version}`,
+      `${MINTTER_LINK_PREFIX}${publication.document?.id}/${publication.version}`,
     )
     toast.success('Document ID copied successfully')
   }

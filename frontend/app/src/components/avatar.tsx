@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import './avatar.scss'
+import '../styles/avatar.scss'
 
 export function Avatar({alias, size = 2}: {alias: string; size: 1 | 2 | 3}) {
   let initials = useMemo(() => alias[0], [alias])
