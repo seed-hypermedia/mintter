@@ -741,7 +741,7 @@ func TestAPIDeletePublication(t *testing.T) {
 }
 
 func TestGetPreviousVersions(t *testing.T) {
-	api := newTestDocsAPI(t, "alice")
+	api := newTestDocsAPI(t, "alice", "")
 	ctx := context.Background()
 
 	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
