@@ -611,6 +611,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 				return nil, err
 			}
 			if ctx_err := ctx.Err(); ctx_err != nil {
+				release()
 				return nil, ctx_err
 			}
 			errLocal = conn.WithTx(false, func() error {
@@ -638,6 +639,9 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 				return nil, errLocal
 			}
 			break
+		}
+		if out == nil || out.Document == nil {
+			return nil, fmt.Errorf("could not find any peer available to provide requested document")
 		}
 	} else {
 		release()
