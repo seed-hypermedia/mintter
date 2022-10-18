@@ -7,6 +7,7 @@ export const dropdownContentStyle = css({
   boxShadow: '$menu',
   borderRadius: '$2',
   overflow: 'hidden',
+  zIndex: '$max',
 })
 
 export const dropdownItemStyle = css({

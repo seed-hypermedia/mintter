@@ -87,9 +87,10 @@ export default function DraftWrapper({
         onMouseMove={(event) => {
           mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
 
-          // if (!canEdit) {
-          //   mainService.send('NOT.EDITING')
-          // }
+          service.send('EDITING.STOP')
+        }}
+        onMouseLeave={() => {
+          mouseService.send('DISABLE.CHANGE')
         }}
       >
         <ErrorBoundary
@@ -117,7 +118,7 @@ export default function DraftWrapper({
                         onChange={(content: ChildrenOf<Document>) => {
                           if (!content && typeof content == 'string') return
                           mouseService.send('DISABLE.CHANGE')
-                          mainService.send('EDITING')
+                          service.send('EDITING.START')
                           send({type: 'DRAFT.UPDATE', payload: {content}})
                         }}
                       />

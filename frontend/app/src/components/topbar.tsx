@@ -3,7 +3,7 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {DraftActor} from '@app/draft-machine'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
-import {useIsReplying, useMain} from '@app/main-context'
+import {MainService, useIsReplying, useMain} from '@app/main-context'
 import {PublicationActor} from '@app/publication-machine'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {Icon} from '@components/icon'
@@ -15,24 +15,20 @@ import '../styles/topbar.scss'
 
 export default function Topbar() {
   return (
-    <div
-      className="topbar visible"
-      data-layout-section="topbar"
-      {...draggableProps}
-    >
+    <div className="topbar" data-layout-section="topbar" {...draggableProps}>
       {/* 
         - we need this div in order to push the whole topbar to the right because of the traffic lights buttons.
         - this is not necessary for other OSs
       */}
       {import.meta.env.TAURI_PLATFORM == 'macos' ? (
-        <div style={{width: 64}} />
+        <div className="macos-separator no-flex" />
       ) : null}
       <Switch>
         <Route path="/" component={DefaultTopbar} />
         <Route path="/inbox" component={DefaultTopbar} />
         <Route path="/drafts" component={DraftListTopbar} />
         <Route path="/p/:id/:version/:block?" component={PublicationTopbar} />
-        <Route path="/d/:id" component={DraftTopbar} />
+        <Route path="/d/:id" component={DraftTopbarWrapper} />
         <Route component={PlaceholderTopbar}></Route>
       </Switch>
     </div>
@@ -173,19 +169,42 @@ function TopbarPublicationData({fileRef}: {fileRef: PublicationActor}) {
   )
 }
 
-function DraftTopbar() {
+function DraftTopbarWrapper() {
+  /**
+   * we need this component because I can't conditionally call the `isEditing` selector if the service is not available.
+   * ...It sucks I know, but meh!
+   */
   let mainService = useMain()
-  let current = useSelector(mainService, (state) => state.context.current)
+  let current = useSelector(
+    mainService,
+    (state) => state.context.current as DraftActor,
+  )
 
+  if (!current) return null
+  return <DraftTopbar fileRef={current} mainService={mainService} />
+}
+
+function DraftTopbar({
+  fileRef,
+  mainService,
+}: {
+  fileRef: DraftActor
+  mainService: MainService
+}) {
+  let isEditing = useSelector(fileRef, (state) => state.context.isEditing)
+  console.log(
+    '🚀 ~ file: topbar.tsx ~ line 180 ~ DraftTopbar ~ isEditing',
+    isEditing,
+  )
   return (
-    <>
+    <div className="topbar-inner" data-state={isEditing ? 'hidden' : 'visible'}>
       <TopbarNavigation />
       <div className="topbar-section main" {...draggableProps}>
-        {current && <TopbarDraftData fileRef={current as DraftActor} />}
+        <TopbarDraftData fileRef={fileRef} />
       </div>
-      <div className="topbar-section actions" {...draggableProps}>
+      <div className="topbar-section actions no-flex" {...draggableProps}>
         <Find />
-        {current && <PublishButton fileRef={current as DraftActor} />}
+        <PublishButton fileRef={fileRef} />
         <div className="button-group">
           <button
             onClick={() => {
@@ -199,7 +218,7 @@ function DraftTopbar() {
           </button>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

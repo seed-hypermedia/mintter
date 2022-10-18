@@ -10,20 +10,24 @@
   transition: opacity 0.25s ease;
   display: flex;
   align-items: stretch;
-  z-index: 1000;
+  z-index: 100;
 
   user-select: none;
   -webkit-user-select: none;
 
-  opacity: 0;
-
   &:hover {
     cursor: default;
   }
-
-  &.visible {
-    opacity: 1;
+  &:has([data-state='hidden']) {
+    opacity: 0;
   }
+}
+
+.topbar-inner {
+  inline-size: calc(100% - 64px);
+  block-size: var(--topbar-h, 40px);
+  display: flex;
+  align-items: stretch;
 }
 
 .topbar-section {
@@ -144,4 +148,14 @@
   .topbar-title {
     font-size: 1.1rem;
   }
+}
+
+.no-flex {
+  flex: none;
+  flex-shrink: 0 !important;
+  flex-grow: 0 !important;
+}
+
+.macos-separator {
+  width: 64px;
 }
