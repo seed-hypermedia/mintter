@@ -16,6 +16,7 @@ import (
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
 	"strconv"
+	"strings"
 	"sync"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -297,13 +298,15 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	if !n.cfg.NoBootstrap {
 		var res ipfs.BootstrapResult
 		if n.cfg.BootstrapPeer != "" {
-			peers := make(ipfs.Bootstrappers, 1)
-
-			ai, err := peer.AddrInfoFromString(n.cfg.BootstrapPeer)
-			if err != nil {
-				return err
+			bootstrapPeers := strings.Split(n.cfg.BootstrapPeer, ",")
+			peers := make(ipfs.Bootstrappers, len(bootstrapPeers))
+			for i := 0; i < len(bootstrapPeers); i++ {
+				ai, err := peer.AddrInfoFromString(bootstrapPeers[i])
+				if err != nil {
+					return err
+				}
+				peers[i] = *ai
 			}
-			peers[0] = *ai
 			res = n.p2p.Bootstrap(ctx, peers)
 		} else {
 			res = n.p2p.Bootstrap(ctx, ipfs.DefaultBootstrapPeers())
