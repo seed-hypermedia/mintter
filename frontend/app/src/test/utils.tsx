@@ -1,6 +1,3 @@
-import {activityMachine} from '@app/activity-machine'
-import {AuthProvider} from '@app/auth-context'
-import {createAuthService} from '@app/auth-machine'
 import {
   Account,
   Document,
@@ -12,20 +9,18 @@ import {
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
 import {queryKeys} from '@app/hooks'
-import {MainProvider} from '@app/main-context'
-import {createMainPageService} from '@app/main-machine'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {globalStyles} from '@app/stitches.config'
-import {createThemeService, ThemeProvider} from '@app/theme'
-import {libraryMachine} from '@components/library/library-machine'
-import {TooltipProvider} from '@components/tooltip'
+import {themeMachine, ThemeProvider} from '@app/theme'
+import AppProvider from '@components/app-provider'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
 import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
+import {nanoid} from 'nanoid'
 import {Suspense} from 'react'
-import {MachineOptionsFrom, spawn} from 'xstate'
+import {MachineOptionsFrom} from 'xstate'
 
 type TestMockData = {
   account?: Partial<Account>
@@ -80,7 +75,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   }
 
   let account: Account = mocks.account
-    ? deepmerge(defaultAccount, mocks.account)
+    ? createAccount(mocks.account)
     : defaultAccount
 
   let info = mocks.info
@@ -181,30 +176,8 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   return values
 }
 
-export function TestProvider({
-  client,
-  children,
-  mainMachineOptions,
-}: TestProviderProps) {
-  let authService = useInterpret(() => createAuthService(client))
-  let themeService = useInterpret(() => createThemeService())
-  let mainService = useInterpret(
-    () =>
-      createMainPageService({client}).withContext(() => ({
-        activity: spawn(activityMachine, 'activity'),
-        library: spawn(libraryMachine, 'library'),
-        params: {
-          replace: false,
-        },
-        recents: [],
-
-        currentFile: null,
-        publicationList: [],
-        draftList: [],
-        errorMessage: '',
-      })),
-    mainMachineOptions,
-  )
+export function TestProvider({client, children}: TestProviderProps) {
+  let themeService = useInterpret(() => themeMachine)
 
   // return null
   globalStyles()
@@ -212,16 +185,12 @@ export function TestProvider({
     <QueryClientProvider client={client}>
       <Suspense fallback={<p>Loading...</p>}>
         <ThemeProvider value={themeService}>
-          <AuthProvider value={authService}>
-            <MainProvider value={mainService}>
-              {
-                // TODO: @jonas why SearchTermProvider breaks tests?
-              }
-              <TooltipProvider>{children}</TooltipProvider>
+          {
+            // TODO: @jonas why SearchTermProvider breaks tests?
+          }
+          <AppProvider>{children}</AppProvider>
 
-              {/* // <Toaster position="bottom-right" /> */}
-            </MainProvider>
-          </AuthProvider>
+          {/* // <Toaster position="bottom-right" /> */}
         </ThemeProvider>
       </Suspense>
     </QueryClientProvider>
@@ -231,6 +200,7 @@ export function TestProvider({
 export type CustomMountOptions = {
   account?: Account
   path?: string
+  setLocation?: () => void
   client?: QueryClient
   mainMachineOptions?: MachineOptionsFrom<
     ReturnType<typeof createMainPageService>
@@ -256,6 +226,41 @@ export function TestPublicationProvider({children}) {
       </MouseProvider>
     </div>
   )
+}
+
+export function createTestDraft(entry: Partial<Document> = {}): Document {
+  return deepmerge(
+    {
+      id: nanoid(),
+      title: 'Test draft Title',
+      subtitle: 'Test draft Subtitle',
+      createTime: undefined,
+      updateTime: undefined,
+      children: [],
+      author: 'testauthor',
+      publishTime: undefined,
+    },
+    entry,
+  )
+}
+
+let peerId = 'testPeerID'
+let defaultAccount = {
+  id: 'testAccountId',
+  profile: {
+    alias: 'demo',
+    email: 'test@demo.com',
+    bio: 'demo bio',
+  },
+  devices: {
+    [peerId]: {
+      peerId,
+    },
+  },
+}
+
+export function createAccount(entry: Partial<Account>): Account {
+  return deepmerge(defaultAccount, entry)
 }
 
 ;(function mockTauriIpc() {

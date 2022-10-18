@@ -1,6 +1,6 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {findPath} from '@app/editor/utils'
-import {useFileEditor, useFileIds} from '@app/file-provider'
+import {useFileIds} from '@app/file-provider'
 import {
   Embed,
   FlowContent,
@@ -12,10 +12,10 @@ import {
 } from '@app/mttast'
 import {useMemo} from 'react'
 import {Editor} from 'slate'
-import {ReactEditor} from 'slate-react'
+import {ReactEditor, useSlateStatic} from 'slate-react'
 
 export function useBlockProps(element: FlowContent) {
-  let editor = useFileEditor()
+  let editor = useSlateStatic()
   let path = findPath(element)
   let parentGroup = Editor.above<GroupingContent>(editor, {
     match: isGroupContent,
@@ -76,7 +76,7 @@ export function usePhrasingProps(
 }
 
 export function useEmbedProps(element: Embed, docId: string) {
-  let editor = useFileEditor()
+  let editor = useSlateStatic()
 
   let path = findPath(element)
   return useMemo(() => {

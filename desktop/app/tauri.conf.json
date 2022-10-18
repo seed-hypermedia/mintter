@@ -71,8 +71,8 @@
         "title": "Mintter",
         "width": 1000,
         "height": 800,
-        "minWidth": 500,
-        "minHeight": 500,
+        "minWidth": 640,
+        "minHeight": 480,
         "resizable": true,
         "fullscreen": false
       }

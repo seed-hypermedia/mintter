@@ -1,45 +1,22 @@
-import {createPublicationMachine} from '@app/publication-machine'
-import {error} from '@app/utils/logger'
-import {Box} from '@components/box'
+import {PublicationActor} from '@app/publication-machine'
 import {DiscussionItem} from '@components/discussion-item'
-import {useActor} from '@xstate/react'
-import {ActorRefFrom} from 'xstate'
+import {useSelector} from '@xstate/react'
+import '../styles/discussion.scss'
 
 export type DiscussionProps = {
-  service: ActorRefFrom<ReturnType<typeof createPublicationMachine>>
+  fileRef: PublicationActor
 }
 
-export function Discussion({service}: DiscussionProps) {
-  const [state] = useActor(service)
-
-  if (state.matches('discussion.fetching')) {
-    return <span>loading discussion...</span>
-  }
-
-  if (state.matches('discussion.errored')) {
-    error('Discussion Error')
-    return <span>Discussion ERROR</span>
-  }
-
-  if (state.matches('discussion.ready.visible')) {
-    return (
-      <Box
-        css={{
-          display: 'flex',
-          width: '$full',
-          flexDirection: 'column',
-          // gap: '1.5rem',
-          // paddingInline: '1rem',
-        }}
-      >
-        {state.context.dedupeLinks.map((link) => {
-          let {source} = link
-          let key = `link-${source?.documentId}-${source?.version}-${source?.blockId}`
-          return <DiscussionItem key={key} link={link} />
-        })}
-      </Box>
-    )
-  }
-
-  return null
+export function Discussion({fileRef}: DiscussionProps) {
+  const items = useSelector(fileRef, (state) => state.context.dedupeLinks)
+  return (
+    <ul className="discussion-list" data-testid="discussion-list">
+      {items.map((link) => (
+        <DiscussionItem
+          key={`${link.source?.documentId}-${link.source?.version}`}
+          link={link}
+        />
+      ))}
+    </ul>
+  )
 }

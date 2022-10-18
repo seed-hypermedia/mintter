@@ -1,17 +1,12 @@
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
+import {mergeRefs} from '@app/utils/mege-refs'
 import * as Label from '@radix-ui/react-label'
 import type * as Stitches from '@stitches/react'
 import {css} from '@stitches/react'
 import autosize from 'autosize'
 import {nanoid} from 'nanoid/non-secure'
-import type {
-  InputHTMLAttributes,
-  LegacyRef,
-  MutableRefObject,
-  PropsWithChildren,
-  RefCallback,
-} from 'react'
+import type {InputHTMLAttributes, PropsWithChildren} from 'react'
 import {forwardRef, useLayoutEffect, useRef} from 'react'
 import {Box} from './box'
 import {Text} from './text'
@@ -201,6 +196,7 @@ type TextFieldProps = PropsWithChildren<
       containerCss?: CSS
       textarea?: boolean
       rows?: number
+      css?: CSS
     }
 >
 
@@ -260,17 +256,3 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   },
 )
 TextField.displayName = 'TextField'
-
-function mergeRefs<T = unknown>(
-  refs: Array<MutableRefObject<T> | LegacyRef<T>>,
-): RefCallback<T> {
-  return (value: T | null) => {
-    refs.forEach((ref) => {
-      if (typeof ref == 'function') {
-        ref(value)
-      } else if (ref != null) {
-        ;(ref as MutableRefObject<T | null>).current = value
-      }
-    })
-  }
-}

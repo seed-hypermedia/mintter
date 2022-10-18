@@ -3,7 +3,6 @@ import {error} from '@app/utils/logger'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useActor, useInterpret} from '@xstate/react'
 import {FormEvent, useRef} from 'react'
-import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 import {ActorRefFrom} from 'xstate'
 import {
   createWalletMachine,
@@ -155,20 +154,7 @@ export function WalletList() {
               alignItems: 'center',
               justifyContent: 'center',
             }}
-          >
-            <BarcodeScannerComponent
-              onError={error}
-              width={340}
-              height={340}
-              onUpdate={(err, result) => {
-                if (result) {
-                  send(
-                    listModel.events['REPORT.CAMERA.SUCCESS'](result.getText()),
-                  )
-                }
-              }}
-            />
-          </Box>
+          ></Box>
         </Content>
       </CameraDialog>
       <pre>{JSON.stringify(state.context, null, 2)}</pre>

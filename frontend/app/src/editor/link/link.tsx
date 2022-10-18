@@ -425,87 +425,87 @@ export function InsertLinkButton() {
   }, [editor])
 
   return (
-    <Tooltip content={<span>Add Link</span>}>
-      <PopoverPrimitive.Root>
-        <PopoverPrimitive.Trigger asChild>
-          <Button
-            variant="ghost"
-            size="0"
-            color="muted"
-            data-testid="toolbar-link-button"
-          >
-            <Icon name="Link" size="2" />
-          </Button>
-        </PopoverPrimitive.Trigger>
+    // <Tooltip content={<span>Add Link</span>}>
+    <PopoverPrimitive.Root>
+      <PopoverPrimitive.Trigger asChild>
+        <Button
+          variant="ghost"
+          size="0"
+          color="muted"
+          data-testid="toolbar-link-button"
+        >
+          <Icon name="Link" size="2" />
+        </Button>
+      </PopoverPrimitive.Trigger>
 
-        <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Content sideOffset={35}>
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content sideOffset={35}>
+          <Box
+            css={{
+              zIndex: '$max',
+              boxShadow: '$menu',
+              backgroundColor: '$base-background-normal',
+              borderRadius: '2px',
+              transition: 'opacity 0.5s',
+              display: 'flex',
+              gap: '$2',
+              paddingHorizontal: '$2',
+              padding: '$5',
+              width: '300px',
+              flexDirection: 'column',
+            }}
+          >
             <Box
+              as="form"
+              onSubmit={handleSubmit}
               css={{
-                zIndex: '$max',
-                boxShadow: '$menu',
-                backgroundColor: '$base-background-normal',
-                borderRadius: '2px',
-                transition: 'opacity 0.5s',
+                width: '$full',
                 display: 'flex',
-                gap: '$2',
-                paddingHorizontal: '$2',
-                padding: '$5',
-                width: '300px',
                 flexDirection: 'column',
+                gap: '$5',
               }}
             >
+              <TextField
+                type="url"
+                id="address"
+                name="address"
+                label="Link Address"
+                data-testid="modal-link-input"
+                autoCorrect="off"
+                size={1}
+                value={link}
+                onChange={(e) => setLink(e.currentTarget.value)}
+              />
               <Box
-                as="form"
-                onSubmit={handleSubmit}
                 css={{
-                  width: '$full',
                   display: 'flex',
-                  flexDirection: 'column',
-                  gap: '$5',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
-                <TextField
-                  type="url"
-                  id="address"
-                  name="address"
-                  label="Link Address"
-                  data-testid="modal-link-input"
-                  autoCorrect="off"
-                  size={1}
-                  value={link}
-                  onChange={(e) => setLink(e.currentTarget.value)}
-                />
-                <Box
-                  css={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
+                <Button size="1" type="submit">
+                  save
+                </Button>
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleRemove()
                   }}
+                  data-testid="modal-link-remove-button"
+                  disabled={!isLink}
+                  variant="outlined"
+                  color="danger"
+                  size="1"
                 >
-                  <Button size="1" type="submit">
-                    save
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      handleRemove()
-                    }}
-                    data-testid="modal-link-remove-button"
-                    disabled={!isLink}
-                    variant="outlined"
-                    color="danger"
-                    size="1"
-                  >
-                    <span>remove link</span>
-                  </Button>
-                </Box>
+                  <span>remove link</span>
+                </Button>
               </Box>
             </Box>
-          </PopoverPrimitive.Content>
-        </PopoverPrimitive.Portal>
-      </PopoverPrimitive.Root>
-    </Tooltip>
+          </Box>
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </PopoverPrimitive.Root>
+    // </Tooltip>
   )
 }
