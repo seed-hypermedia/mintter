@@ -4,7 +4,7 @@ import (
 	"context"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
-	"mintter/backend/vcs/vcstypes"
+	"mintter/backend/vcs"
 	"testing"
 	"time"
 
@@ -20,7 +20,7 @@ func TestQuery(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcstypes.NewAccountPermanode(alice.AccountID))
+	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	require.NoError(t, conn.BeginTx(true))

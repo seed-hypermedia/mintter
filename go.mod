@@ -38,11 +38,13 @@ require (
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
 	github.com/prometheus/client_golang v1.13.0
 	github.com/sanity-io/litter v1.5.5
+	github.com/sergi/go-diff v1.2.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/vektah/gqlparser/v2 v2.5.1
 	go.uber.org/multierr v1.8.0
 	go.uber.org/zap v1.23.0
+	golang.org/x/exp v0.0.0-20221011111909-0220f59fc3e4
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 	golang.org/x/text v0.3.8
 	google.golang.org/grpc v1.50.1
@@ -196,7 +198,6 @@ require (
 	go.opentelemetry.io/proto/otlp v0.16.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
-	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20221002022538-bcab6841153b // indirect
 	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect

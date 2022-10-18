@@ -7,7 +7,6 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/vcstypes"
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -97,7 +96,7 @@ func (n *Node) verifyHandshake(ctx context.Context, device cid.Cid, pb *p2p.Hand
 		return fmt.Errorf("failed to parse remote account public key: %w", err)
 	}
 
-	if err := vcstypes.RegistrationProof(pb.AccountDeviceProof).Verify(pubKey, device); err != nil {
+	if err := mttacc.RegistrationProof(pb.AccountDeviceProof).Verify(pubKey, device); err != nil {
 		return fmt.Errorf("failed to verify account device registration proof: %w", err)
 	}
 

@@ -11,7 +11,6 @@ import (
 	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
-	"mintter/backend/vcs/vcstypes"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -52,7 +51,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	perma, err := vcsdb.NewPermanode(vcstypes.NewDocumentPermanode(me.AccountID()))
+	perma, err := vcsdb.NewPermanode(mttdoc.NewDocumentPermanode(me.AccountID()))
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +68,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 
 		change := conn.NewChange(obj, meLocal, nil, perma.PermanodeCreateTime())
 
-		doc := mttdoc.New(vcsdb.MakeDatomFactory(change, conn.LastLamportTime(), 0))
+		doc := mttdoc.New(vcsdb.NewDatomWriter(change, conn.LastLamportTime(), 0))
 
 		doc.EnsureTitle("")
 		doc.EnsureSubtitle("")
@@ -172,7 +171,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		}
 		lamport := conn.GetChangeLamportTime(change)
 
-		doc := mttdoc.New(vcsdb.MakeDatomFactory(change, lamport, seq))
+		doc := mttdoc.New(vcsdb.NewDatomWriter(change, lamport, seq))
 		it := conn.QueryObjectDatoms(obj, version)
 		datoms := it.Slice()
 		if it.Err() != nil {
@@ -288,7 +287,7 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(vcstypes.DocumentType))
+	docs, err := vcssql.PermanodesListByType(conn, string(mttdoc.DocumentType))
 	release()
 	if err != nil {
 		return nil, err
@@ -501,7 +500,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(vcstypes.DocumentType))
+	docs, err := vcssql.PermanodesListByType(conn, string(mttdoc.DocumentType))
 	release()
 	if err != nil {
 		return nil, err

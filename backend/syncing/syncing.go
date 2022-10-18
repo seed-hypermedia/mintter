@@ -15,7 +15,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
@@ -64,7 +63,7 @@ const (
 )
 
 // NewService creates a new syncing service. Users must call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, db *sqlitex.Pool, vcs *vcsdb.DB, bitswap FetcherFunc, client NetDialFunc) *Service {
+func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap FetcherFunc, client NetDialFunc) *Service {
 	svc := &Service{
 		warmupDuration:  defaultWarmupDuration,
 		syncInterval:    defaultSyncInterval,

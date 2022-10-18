@@ -7,7 +7,7 @@ import (
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/pkg/must"
-	"mintter/backend/vcs/vcstypes"
+	"mintter/backend/vcs"
 	"testing"
 	"time"
 
@@ -25,7 +25,7 @@ func TestSmoke(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcstypes.NewAccountPermanode(alice.AccountID))
+	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	now := time.Time{}
@@ -100,7 +100,7 @@ func TestSmoke(t *testing.T) {
 
 		// Canonical encoding must be deterministic.
 		// Hash is generated out of band.
-		checkSum(t, "6ed9460baa77e8680d5ad46499d0bc5fbdce2b7e", data)
+		checkSum(t, "97032be78aebe8fa01d41ba28d607a8c388b005c", data)
 	}
 
 	// Create a new change with base.
@@ -144,7 +144,7 @@ func TestIterateObjectDatoms(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcstypes.NewAccountPermanode(alice.AccountID))
+	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	now := time.Time{}
@@ -254,7 +254,7 @@ func TestChangeEncoding(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcstypes.NewAccountPermanode(alice.AccountID))
+	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	now := time.Time{}
