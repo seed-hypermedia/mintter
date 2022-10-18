@@ -44,7 +44,7 @@
     "@radix-ui/react-scroll-area": "1.0.1",
     "@radix-ui/react-separator": "1.0.1",
     "@radix-ui/react-slot": "1.0.1",
-    "@radix-ui/react-tabs": "1.0.0",
+    "@radix-ui/react-tabs": "1.0.1",
     "@radix-ui/react-tooltip": "1.0.0",
     "@sentry/tracing": "7.15.0",
     "@stitches/core": "1.2.8",
