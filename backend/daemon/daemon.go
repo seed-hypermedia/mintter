@@ -23,9 +23,9 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
-	"mintter/backend/syncing"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/syncing"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/wallet"
 
