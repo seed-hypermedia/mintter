@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 import '../styles/topbar.scss'
 
 export default function Topbar() {
+  console.log('import.meta.env.TAURI_PLATFORM', import.meta.env.TAURI_PLATFORM)
   return (
     <div className="topbar" data-layout-section="topbar" {...draggableProps}>
       {/* 
@@ -192,10 +193,6 @@ function DraftTopbar({
   mainService: MainService
 }) {
   let isEditing = useSelector(fileRef, (state) => state.context.isEditing)
-  console.log(
-    '🚀 ~ file: topbar.tsx ~ line 180 ~ DraftTopbar ~ isEditing',
-    isEditing,
-  )
   return (
     <div className="topbar-inner" data-state={isEditing ? 'hidden' : 'visible'}>
       <TopbarNavigation />
