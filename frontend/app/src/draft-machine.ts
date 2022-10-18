@@ -2,9 +2,8 @@ import {
   Account,
   Document,
   DocumentChange,
-  getAccount,
   getDraft,
-  publishDraft,
+  Publication,
   updateDraftV2 as apiUpdateDraft,
 } from '@app/client'
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
@@ -21,47 +20,52 @@ import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'
 import {Editor} from 'slate'
-import {assign, createMachine, sendParent} from 'xstate'
+import {assign, createMachine, InterpreterFrom} from 'xstate'
 import {MintterEditor} from './editor/mintter-changes/plugin'
+
+export type DraftActor = InterpreterFrom<ReturnType<typeof createDraftMachine>>
 
 export type EditorDocument = Partial<Document> & {
   id?: string
-  content?: [GroupingContent]
+  content: Array<GroupingContent>
 }
 
-export type DraftContext = {
+export type DraftMachineContext = {
   documentId: string
-  version: null
-  draft: Document
+  draft: Document | null
   localDraft: EditorDocument | null
   errorMessage: string
-  editor: Editor
   author: Account | null
   title: string
+  editor: Editor
+  isEditing: boolean
 }
 
-export type DraftEvent =
-  | {type: 'FETCH'; documentId: string}
-  | {
-      type: 'DRAFT.REPORT.FETCH.SUCCESS'
-      data: Document
-    }
-  | {type: 'DRAFT.REPORT.FETCH.ERROR'; errorMessage: string}
-  | {type: 'DRAFT.UPDATE'; payload: Partial<EditorDocument>}
-  | {type: 'DRAFT.UPDATE.SUCCESS'}
-  | {type: 'DRAFT.UPDATE.ERROR'; errorMessage: Error['message']}
-  | {type: 'DRAFT.CANCEL'}
+export type DraftMachineEvent =
+  | {type: 'DRAFT.UPDATE'; payload: Array<GroupingContent>}
   | {type: 'DRAFT.MIGRATE'}
-  | {type: 'LOAD'}
-  | {type: 'UNLOAD'}
-  | {type: 'PREFETCH'}
   | {type: 'RESET.CHANGES'}
   | {type: 'DRAFT.REPORT.AUTHOR.ERROR'; errorMessage: string}
   | {type: 'DRAFT.REPORT.AUTHOR.SUCCESS'; author: Account}
   | {type: 'DRAFT.PUBLISH'}
+  | {type: 'RETRY'}
+  | {type: 'EDITING.START'}
+  | {type: 'EDITING.STOP'}
+
+type DraftMachineServices = {
+  fetchDraft: {
+    data: Document
+  }
+  saveDraft: {
+    data: Document
+  }
+  publishDraft: {
+    data: Publication
+  }
+}
 
 export interface CreateDraftMachineProps {
-  draft: Document
+  documentId: string
   client: QueryClient
   shouldAutosave?: boolean
   updateDraft?: typeof apiUpdateDraft
@@ -75,70 +79,60 @@ const defaultContent: [GroupingContent] = [
 ]
 
 export function createDraftMachine({
-  draft,
+  documentId,
   client,
-  editor,
   updateDraft = apiUpdateDraft,
   shouldAutosave = true,
+  editor,
 }: CreateDraftMachineProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdCiANmAMQAyA8gIIAiioADhrOihgHZ0gAeiATAGy8cAVgAcwgJyiADMP4BmACy9pAgDQgAnogCMq6TgDshpTvnyJS3qMUBfWxtSZc+IsQAKAJQCiAMW8AKgDCABKcjMxorBxI3IiKOkKG-KKihnLp-Ir8wooa2gjiEjiWUhKG0pX8OqIS9o4Q6Ng4AGZgaADGABYobFDE1J6UvgE4QZQAckHepOFMLOycPAj80ooi8rKGisJr-CbC+bo6OsWGevKpa9bZ9eCNzq3t3b39g8OjPu7knqP+wSEcABlACqQWmQKBc0i0SWiH2R0KhiE5Qson4Eks5wk-DuTmabU6PT6AyGIxwXx+f0CoRw3k8nh+0IWMVAy14iSEqkkKgUp2Ehy0iAk2RwqmMCQkwhOpzqDnuTVwTleeEIJHe5JB7molAC3mZUUWsWW6XkRnkOn41UMoiUyIkiMUoiEgl4dpUkgtuPl+KVDxVrhI-1CBthxt01RRCmEvDdhnKOjyQoQ534JVENWk8dqEizojxD2ayr6qrcGtG7hBACFSABJIFhWIRFlwhCWxIlaOx+Tx85JgpW4prBLO+Rd8wFxU4YtQHAQMAAIwwAFc2B0Vd0AIZ9SDEUNGtm6eS8dZOjE2ZJmZGIy6iHC8Co2XaKaQYk52H2Fv0sEvzper9cS0DYguFgNBNzQMAcE3FpIKwAAKXZpAASmIX1p39X9FxXNcAzVfdWTiBBFEUM05BPbYFBtYRzEMREOTvVIZGlaREjSEjJ0eGc52wgDXlJD4cC1HU9QI1tMWEEodl4HFpGY2ib1yIwRWsK4THjMxOKLTDZ1gTcADd+LALAsGaegCAglpsAAWxwPT9LAagsBgtAxPDYizBEQRFEontxAU5NVmKXYY0TMKnQ-Bop24+z+PLITtV1fUm3mQ1COWEiyO83zqICgoxwMYw5J2NZXwkRItO-KIS1ikl4uEpLgTBCEoRSmEDyI5Qsoo7I-JontHRFHBqh2K0dAqCpWPkSqMJ-XSDLislRgavU6QZJk2pbdzSO6nzetygbkxfO9HxkntVjPHyZpnYgfCBQIxhCSYAHFvFahhUrDQ9CgkIQLV4XIahIkjBQKdIdDFRIJPG-YdAFGb6GXBcCBQWBiX6CB2Cg3p9IwABrKDEeR1Guicly3O+jksxwJ1xuSIqgtB+FTjFDMzGUPQUgtBGkZRtGjJMsyLLQKysFsom+dJ5zYIpoiqcMGmM2MfYKkZxETDNBMbQYxN9muwWsF3YNGw+9r0r4Y9ihxDlLRPUq3URGQkjdZRfqlORnUq4gQQmCgaFl5ZhDo5MLgMUjFCkE45A94QvfiylfhwSgQQCEIfia8E3vekBmzS1sTmsYafMSaUslI4OChOeMcCUHsLVzWN0XseU2Awed4FidDAwDxAg6SFI0gyORsiZwoaJKAVpTOzEVZmwkXj6Hu23OBXZBtrJLmqURHe2Iwg-pyMUhMa6dNLMAl6tAw5LEG05JqcxeERGMhCD3Jn4ESedBPuaeP-XCSy3DuCAS9EhyRwHDVIY5yrpGkOUG8zo96hUxCeJQWRv7VVnH+HCgFZzd02nndyiYZI1zppvW+2x+yIEuEkAUHJkHhzQZ+aKp8sF8UXvgr6REExSRjLJeSh0CgPgMDIVYCgszSHMGIdBKpapQBAbGeiLMVDyCDuNAG2QI7SPYabLa30pCIl1jgHMzoYzpFtCcHmxN+baJzp9DqyxxoZhrrAywrEMwWDMIiBQd5ZDmBsC7eMCRLGS0gEvWMmJhoYljNkXM5RR5ZDTLkOSWZ77vn1qZQ2wCOH2ItuVIxpFsrINfBXRAtQX6URSO+comI56bhQEQLJOiCHfSDgYuSd4ewnhkmkBQCg5RRWcEvcwBiIa-SfEk1Qv0Kix2bkAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdAMzDQGMALFAOygGIINywcKA3DAawYOJIBEsBDPGgDaABgC6iUAAcMsdCjqSQAD0QBmAEwacAVgDsGgBwaAnABY9ZtSb0A2ADQgAnoj2Wca22f0bNO24aGJgC+wY6omLicpBTUYFhY2DhSADZ8aHjYALb4hKS8AsLiSjJyaArkSqoImto+xuaW1naOLggAjCI6IrpqeiImJiK2g+3thqHhEOhJEbGMEClgVNwASgCCAGIAKjgAqgAK3OvbAKKiEkggpfKKV9WdhmY4g2aGah8DZhq2eq2IOneHk6gM6GmGdg0k3A00iODmlAWSxWGx2OAOewAQgAZACSAGUABIXEqyW6Ve6IdomQE4H5qTqWDTtNQiDQ6f4IMy2do4YwiNQ6dmCrqGFnQiKzWHzCBgABGGAAruQiPNSHxKJAqCSrjdyndQA8AjpgWoxXZ9CJ2pZOXoTNoTO0NG5vG4RN8QmEYTNcAioDhZQrlarEShFstlLA0OkGIV4gAKboiACUVElvuliMDSpV8zDSx10jJ+ophsQ7x63SGQTsv387U59u0I3t-lsmhpbwlsKl8iz8pzIeoay2u0OxzOheuxYqVSpajMvOdlnaZm8b0XDmcrh0Js6vzM5ntnj0Om7Pvhmf9sD4TFiNDoDGYbAYN6YYAKginetnlIQ-N0AYRBrWw6x5Tl-BMF4hmdLQ9EMU97XPOE-RwN973iRJcFSdJMiwHI3w-fgv2KXUZwNFRy06QDqxsUDT3A7cuX6HB+h0J0tFZD52h0MxkN7cpEXQygUVHfYjhOc5SKLMpfzLf9WRo4C6LAhsmPgnpF2XV1+g9fiMz7ahVlOfFTl2ABhQl1gAOQAcRM79yNLSiOnZE1nRMQUdBMWwBh8Tl2l+HBfPYnkfmNHyzy9dNkkVOUUhQWAyBE2h6EYcgWHYWL4sSnhiKKS4ZPJOdXPc3d3WAryRFPMwAr6XljF8IwWSePR9OyhKkowhIkhwjJsg63LPwK0lZIo6oPkMVj2StQFPCeCwAu6Z52VAx1-HdAJ2sw7AtWM7ZVgATUcsbnIeDQAqhaKeywKhTm4XFtlxOyTuKv8AFoNEXXQvFsXcvpMII+kMTkxSg90zXtIYnTcNroXIDBZXgK4YuiZKoFGt75O+AK2T0HBvAZEUjF3GxtqvJEwExksSs6Vc+R+Gw9FZfwhT+JjDD+4LPPbb47DXcZycMgMB2DNUSA1GAIGpuSXJ4oLSabP7DG85nbU8gmYcsfRdNMIXBP9bMxdDcMZfGql4OecZT2qq0nU0NS2jtNRNe0nX3T166L1Qo3c0oM2zqpUwXe01d1yeQLOVA2wcBZEQIWsarHn1+ZhIxsjTpK3ipu8cYBh80CBQujn3AZNdfhse2jBT-2M6xlykwJ9jDHz6OBR4zkPhdywBVscE7U5-R2qkOLOvRgOSsWpiePdTXD3BPoLTJr2UJ6rBIAnv8dE8DwxU0CubDZJbFKGIY3F8x1PamC88D4FAlmluuab-HGmILgmW2Zs1mjNfTN-k96nhOTvSdM8HybxrDWmGGyWwoRQhAA */
   return createMachine(
     {
       context: {
-        documentId: draft.id,
-        version: null,
-        draft,
-        editor,
+        documentId,
+        draft: null,
         localDraft: null,
         errorMessage: '',
         author: null,
-        title: draft.title,
+        title: '',
+        editor,
+        isEditing: false,
       },
       tsTypes: {} as import('./draft-machine.typegen').Typegen0,
-      schema: {context: {} as DraftContext, events: {} as DraftEvent},
+      schema: {
+        context: {} as DraftMachineContext,
+        events: {} as DraftMachineEvent,
+        services: {} as DraftMachineServices,
+      },
       predictableActionArguments: true,
-      invoke: {
-        src: 'fetchAuthor',
-        id: 'fetchAuthor',
+      entry: 'sendActorToParent',
+      on: {
+        'EDITING.START': {
+          actions: ['assignEditing'],
+        },
+        'EDITING.STOP': {
+          actions: ['assignEditing'],
+        },
       },
       id: 'editor',
-      initial: 'idle',
-      on: {
-        UNLOAD: {
-          target: '.idle',
-        },
-        'DRAFT.REPORT.AUTHOR.SUCCESS': {
-          actions: 'assignAuthor',
-        },
-      },
+      initial: 'fetching',
       states: {
-        idle: {
-          on: {
-            LOAD: {
-              target: 'fetching',
-            },
-            PREFETCH: {
-              actions: 'prefetchDraft',
-            },
-          },
-        },
         fetching: {
           invoke: {
-            src: 'fetchDraftContent',
-            id: 'fetchDraftContent',
-          },
-          on: {
-            'DRAFT.CANCEL': {
-              target: 'idle',
-            },
-            'DRAFT.REPORT.FETCH.SUCCESS': {
-              actions: ['assignDraftsValue', 'assignTitle'],
-              target: 'editing',
-            },
-            'DRAFT.REPORT.FETCH.ERROR': {
-              actions: 'assignError',
-              target: 'errored',
-            },
+            src: 'fetchDraft',
+            id: 'fetchDraft',
+            onDone: [
+              {
+                target: 'editing',
+                actions: ['assignLocalDraft', 'assignDraft', 'assignTitle'],
+              },
+            ],
+            onError: [
+              {
+                target: 'errored',
+                actions: 'assignError',
+              },
+            ],
           },
         },
         editing: {
@@ -151,11 +145,8 @@ export function createDraftMachine({
             idle: {
               on: {
                 'DRAFT.UPDATE': {
-                  actions: ['updateValueToContext', 'updateTitle'],
                   target: 'debouncing',
-                },
-                FETCH: {
-                  target: '#editor.fetching',
+                  actions: ['updateValueToContext', 'updateTitle'],
                 },
                 'DRAFT.PUBLISH': {
                   target: '#editor.publishing',
@@ -174,14 +165,16 @@ export function createDraftMachine({
                   after: {
                     '500': {
                       target: '#editor.editing.saving',
+                      actions: [],
+                      internal: false,
                     },
                   },
                 },
               },
               on: {
                 'DRAFT.UPDATE': {
-                  actions: ['updateValueToContext', 'updateTitle'],
                   target: '.changed',
+                  actions: ['updateValueToContext', 'updateTitle'],
                 },
               },
             },
@@ -189,10 +182,16 @@ export function createDraftMachine({
               invoke: {
                 src: 'saveDraft',
                 id: 'saveDraft',
+                onDone: [
+                  {
+                    target: 'idle',
+                    actions: ['resetChanges', 'assignDraft', 'resetQueryData'],
+                  },
+                ],
                 onError: [
                   {
-                    actions: 'assignError',
                     target: 'idle',
+                    actions: 'assignError',
                   },
                 ],
               },
@@ -200,14 +199,6 @@ export function createDraftMachine({
               on: {
                 'DRAFT.UPDATE': {
                   target: 'debouncing',
-                },
-                'DRAFT.UPDATE.SUCCESS': {
-                  actions: ['resetChanges', 'resetQueryData'],
-                  target: 'idle',
-                },
-                'DRAFT.UPDATE.ERROR': {
-                  actions: 'assignError',
-                  target: 'idle',
                 },
               },
             },
@@ -224,21 +215,20 @@ export function createDraftMachine({
             id: 'publishDraft',
             onDone: [
               {
-                actions: ['afterPublish', 'resetQueryData'],
-                target: '#editor.idle',
+                actions: ['resetQueryData', 'afterPublish'],
               },
             ],
             onError: [
               {
-                actions: 'assignError',
                 target: 'errored',
+                actions: 'assignError',
               },
             ],
           },
         },
         errored: {
           on: {
-            FETCH: {
+            RETRY: {
               target: 'fetching',
             },
           },
@@ -250,12 +240,15 @@ export function createDraftMachine({
     },
     {
       actions: {
-        //@ts-ignore
-        assignDraftsValue: assign((context, event) => {
+        assignDraft: assign({
+          draft: (_, event) => event.data,
+        }),
+        assignLocalDraft: assign((context, event) => {
           // TODO: fixme types
 
           let newValue: EditorDocument = {
             ...event.data,
+            content: [],
           }
 
           if (event.data.children?.length) {
@@ -272,7 +265,7 @@ export function createDraftMachine({
           }
 
           return {
-            draft: newValue,
+            draft: event.data,
             localDraft: newValue,
           }
         }),
@@ -287,131 +280,84 @@ export function createDraftMachine({
         assignTitle: assign({
           title: (_, event) => event.data.title || 'Untitled Draft',
         }),
-        assignAuthor: assign({
-          author: (_, event) => event.author,
-        }),
+        // assignAuthor: assign({
+        //   author: (_, event) => event.author,
+        // }),
         assignError: assign({
           errorMessage: (_, event) => {
-            if (event.type == 'DRAFT.REPORT.FETCH.ERROR') {
-              return event.errorMessage
-            } else {
-              return JSON.stringify(
-                `Draft machine error: ${JSON.stringify(event)}`,
-              )
-            }
+            return JSON.stringify(
+              `Draft machine error: ${JSON.stringify(event)}`,
+            )
           },
+        }),
+        assignEditing: assign({
+          isEditing: (_, event) => event.type == 'EDITING.START',
         }),
         updateValueToContext: assign({
           localDraft: (context, event) => {
             return {
               ...context.localDraft,
               ...event.payload,
-              content: event.payload.content || context.localDraft?.content,
+              content:
+                event.payload.content || context.localDraft?.content || [],
             }
           },
         }),
         resetChanges: (context) => {
           MintterEditor.resetChanges(context.editor)
         },
-        resetQueryData: () => {
-          client.invalidateQueries([queryKeys.GET_DRAFT])
-          client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
-        },
-        afterPublish: sendParent((context, event) => ({
-          type: 'COMMIT.PUBLISH',
-          publication: event.data,
-          documentId: context.documentId,
-        })),
-        prefetchDraft: (context) => {
-          client.prefetchQuery(
-            [queryKeys.GET_DRAFT, context.draft.id],
-            () => getDraft(context.draft.id),
-            {
-              staleTime: 10 * 1000,
-            },
-          )
+        resetQueryData: (context) => {
+          resetQueryData(client, context.documentId)
         },
       },
       services: {
-        fetchDraftContent: (context) => (sendBack) => {
-          ;(async () => {
-            try {
-              client
-                .fetchQuery([queryKeys.GET_DRAFT, context.draft.id], () =>
-                  getDraft(context.draft.id),
-                )
-                .then((data) => {
-                  sendBack({type: 'DRAFT.REPORT.FETCH.SUCCESS', data})
-                })
-            } catch (err) {
-              sendBack({
-                type: 'DRAFT.REPORT.FETCH.ERROR',
-                errorMessage: `[DRAFT ERROR]: ${JSON.stringify(err)}`,
-              })
-            }
-          })()
+        fetchDraft: (context) => {
+          return getDraftQuery(client, context.documentId)
         },
-        saveDraft: (context) => (sendBack) => {
+        saveDraft: async (context) => {
           if (shouldAutosave) {
-            ;(async function autosave() {
-              let contentChanges = MintterEditor.transformChanges(
-                context.editor,
-              ).filter(Boolean)
+            let contentChanges = MintterEditor.transformChanges(
+              context.editor,
+            ).filter(Boolean)
 
-              // debug('contentChanges', contentChanges)
-              let newTitle = context.title
-              let changes: Array<DocumentChange> = newTitle
-                ? [
-                    ...contentChanges,
-                    {
-                      op: {
-                        $case: 'setTitle',
-                        setTitle: newTitle,
-                      },
+            // debug('contentChanges', contentChanges)
+            let newTitle = context.title
+            let changes: Array<DocumentChange> = newTitle
+              ? [
+                  ...contentChanges,
+                  {
+                    op: {
+                      $case: 'setTitle',
+                      setTitle: newTitle,
                     },
-                  ]
-                : contentChanges
-              try {
-                await updateDraft({
-                  documentId: context.draft.id,
-                  changes,
-                })
-                // TODO: update document
-                sendBack('DRAFT.UPDATE.SUCCESS')
-              } catch (err: unknown) {
-                sendBack({
-                  type: 'DRAFT.UPDATE.ERROR',
-                  errorMessage: JSON.stringify(err),
-                })
-              }
-            })()
+                  },
+                ]
+              : contentChanges
+
+            await updateDraft({
+              documentId: context.documentId,
+              changes,
+            })
+            // TODO: update document
+            client.removeQueries([queryKeys.GET_DRAFT, context.documentId])
+            client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
           }
-        },
-        fetchAuthor: (context) => (sendBack) => {
-          let author = context.draft.author || ''
-          if (author) {
-            client
-              .fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
-                getAccount(author),
-              )
-              .then((author) => {
-                sendBack({
-                  type: 'DRAFT.REPORT.AUTHOR.SUCCESS',
-                  author,
-                })
-              })
-              .catch((err) => {
-                sendBack({
-                  type: 'DRAFT.REPORT.AUTHOR.ERROR',
-                  errorMessage: `fetchAuthor ERROR: ${JSON.stringify(err)}`,
-                })
-              })
-          }
-        },
-        publishDraft: (context) => {
-          return publishDraft(context.documentId)
+
+          return getDraftQuery(client, context.documentId)
         },
       },
     },
   )
+}
+
+function getDraftQuery(client: QueryClient, docId: string) {
+  return client.fetchQuery({
+    queryKey: [queryKeys.GET_DRAFT, docId],
+    queryFn: () => getDraft(docId),
+  })
+}
+
+function resetQueryData(client: QueryClient, docId: string) {
+  client.removeQueries([queryKeys.GET_DRAFT, docId])
+  client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
 }

@@ -131,7 +131,6 @@ export function createContactMachine({
       },
       services: {
         fetchListDeviceStatus: (context) => {
-          console.log('fetchListDeviceStatus')
           return Promise.all(
             Object.values(context.account.devices).map((device) =>
               client.fetchQuery([queryKeys.GET_PEER_INFO, device.peerId], () =>

@@ -3,7 +3,7 @@ import {GroupingContent} from '@app/mttast'
 import {Node} from 'slate'
 
 export function getTitleFromContent(entry: {
-  children: [GroupingContent]
+  children: Array<GroupingContent>
 }): string {
   return Node.string(Node.get(entry, [0, 0, 0])) || ''
 }

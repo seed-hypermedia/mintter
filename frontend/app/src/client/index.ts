@@ -22,7 +22,6 @@ export {
   CreateDraftRequest,
   DeleteDraftRequest,
   DeletePublicationRequest,
-  Document,
   DocumentChange,
   GetDraftRequest,
   GetPublicationRequest,
@@ -32,7 +31,6 @@ export {
   ListDraftsResponse,
   ListPublicationsRequest,
   ListPublicationsResponse,
-  Publication,
   PublishDraftRequest,
   UpdateDraftRequestV2,
 } from './.generated/documents/v1alpha/documents'
@@ -69,3 +67,11 @@ export {
   listCitations,
   listPublications,
 } from './publications'
+export {Document}
+import {
+  Document,
+  Publication as APIPublication,
+} from './.generated/documents/v1alpha/documents'
+export type Publication = APIPublication & {
+  document: Document
+}

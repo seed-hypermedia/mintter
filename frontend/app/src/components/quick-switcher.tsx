@@ -1,23 +1,26 @@
-import {useDraftList, useMain, usePublicationList} from '@app/main-context'
+import {useDraftList, usePublicationList} from '@app/hooks'
 import {isMintterLink} from '@app/utils/is-mintter-link'
+import {useLocation} from '@components/router'
 import {listen} from '@tauri-apps/api/event'
 import {Command} from 'cmdk'
 import {useEffect, useState} from 'react'
 import '../styles/quick-switcher.scss'
 import {getIdsfromUrl} from '../utils/get-ids-from-url'
 
-export function QuickSwitcher() {
-  const mainService = useMain()
-  const publications = usePublicationList()
-  const drafts = useDraftList()
+export default function QuickSwitcher() {
+  const {data: drafts} = useDraftList()
+  const {data: publications} = usePublicationList()
+
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+  let [, setLocation] = useLocation()
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
     let unlisten: () => void | undefined
 
     listen('open_quick_switcher', () => {
+      console.log('LISTENED!!!!')
       setOpen(true)
     }).then((f) => (unlisten = f))
 
@@ -39,23 +42,16 @@ export function QuickSwitcher() {
             key="mtt-link"
             value={search}
             onSelect={() => {
-              const [docId, version, blockId] = getIdsfromUrl(search)
-
-              mainService.send({
-                type: 'GO.TO.PUBLICATION',
-                docId,
-                version,
-                blockId,
-              })
-
               setOpen(false)
+              let [docId, version, block] = getIdsfromUrl(search)
+              setLocation(`/p/${docId}/${version}/${block && `/${block}`}`)
             }}
           >
             Jump to {search}
           </Command.Item>
         )}
 
-        {drafts.map((draft) => {
+        {drafts?.documents.map((draft) => {
           return (
             <Command.Item
               key={draft.id}
@@ -63,10 +59,7 @@ export function QuickSwitcher() {
               onSelect={() => {
                 setOpen(false)
 
-                mainService.send({
-                  type: 'GO.TO.DRAFT',
-                  docId: draft.id,
-                })
+                setLocation(`/d/${draft.id}`)
               }}
             >
               <span className="cmdk-mtt-text">
@@ -77,7 +70,7 @@ export function QuickSwitcher() {
           )
         })}
 
-        {publications.map((publication) => {
+        {publications?.publications.map((publication) => {
           const docId = publication.document?.id
           const title = publication.document?.title || 'Untitled Publication'
 
@@ -89,12 +82,7 @@ export function QuickSwitcher() {
               value={title + docId}
               onSelect={() => {
                 setOpen(false)
-
-                mainService.send({
-                  type: 'GO.TO.PUBLICATION',
-                  docId,
-                  version: publication.version,
-                })
+                setLocation(`/p/${docId}/${publication.version}`)
               }}
             >
               <span className="cmdk-mtt-text">

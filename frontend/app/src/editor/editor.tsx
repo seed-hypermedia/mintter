@@ -21,12 +21,10 @@ import {Descendant, Editor as EditorType} from 'slate'
 import {Editable, Slate} from 'slate-react'
 import {
   buildDecorateHook,
-  buildEditorHook,
   buildEventHandlerHooks,
   buildRenderElementHook,
   buildRenderLeafHook,
   EditorMode,
-  withMode,
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
@@ -51,25 +49,25 @@ export function Editor({
   plugins = defaultPlugins,
   as = 'div',
 }: PropsWithChildren<EditorProps>) {
-  const _editor = useMemo(
-    () => (editor ? withMode(mode)(editor) : buildEditorHook(plugins, mode)),
-    [editor, plugins, mode],
-  )
+  if (!editor) {
+    throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
+  }
+
   const renderElement = useMemo(
-    () => buildRenderElementHook(plugins, _editor),
-    [plugins, _editor],
+    () => buildRenderElementHook(plugins, editor),
+    [plugins, editor],
   )
   const renderLeaf = useMemo(
-    () => buildRenderLeafHook(plugins, _editor),
-    [plugins, _editor],
+    () => buildRenderLeafHook(plugins, editor),
+    [plugins, editor],
   )
   const decorate = useMemo(
-    () => buildDecorateHook(plugins, _editor),
-    [plugins, _editor],
+    () => buildDecorateHook(plugins, editor),
+    [plugins, editor],
   )
   const eventHandlers = useMemo(
-    () => buildEventHandlerHooks(plugins, _editor),
-    [plugins, _editor],
+    () => buildEventHandlerHooks(plugins, editor),
+    [plugins, editor],
   )
 
   useEffect(() => {
@@ -83,7 +81,7 @@ export function Editor({
 
       if (!isMark(event.payload)) return
 
-      toggleFormat(_editor, event.payload)
+      toggleFormat(editor, event.payload)
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {
@@ -100,7 +98,7 @@ export function Editor({
         return unlisten()
       }
 
-      if (!_editor.selection) return
+      if (!editor.selection) return
 
       const set = setType(
         {
@@ -112,14 +110,14 @@ export function Editor({
       )
 
       const [element, path] =
-        EditorType.above(_editor, {
-          at: _editor.selection,
+        EditorType.above(editor, {
+          at: editor.selection,
           match: isFlowContent,
         }) || []
 
       if (!element || !path) throw new Error('whut')
 
-      set(_editor, {at: path, element})
+      set(editor, {at: path, element})
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {
@@ -137,7 +135,7 @@ export function Editor({
       }
 
       if (
-        !_editor.selection ||
+        !editor.selection ||
         !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
       )
         return
@@ -151,14 +149,14 @@ export function Editor({
       )
 
       const [, path] =
-        EditorType.above(_editor, {
-          at: _editor.selection,
+        EditorType.above(editor, {
+          at: editor.selection,
           match: isFlowContent,
         }) || []
 
       if (!path) throw new Error('whut')
 
-      set(_editor, {at: path})
+      set(editor, {at: path})
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {
@@ -170,7 +168,7 @@ export function Editor({
     return (
       <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
         <Slate
-          editor={_editor}
+          editor={editor}
           value={value as Array<Descendant>}
           onChange={onChange}
         >
@@ -199,7 +197,7 @@ export function Editor({
       // onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
     >
       <Slate
-        editor={_editor}
+        editor={editor}
         value={value as Array<Descendant>}
         onChange={onChange}
       >

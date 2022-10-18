@@ -61,4 +61,5 @@ export const Prompt = {
   Description,
   Actions,
   Close: DialogPrimitive.Close,
+  Portal: DialogPrimitive.Portal,
 }

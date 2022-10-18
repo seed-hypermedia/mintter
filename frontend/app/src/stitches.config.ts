@@ -400,6 +400,8 @@ export const globalStyles = globalCss({
     '--tools-x': '-999px',
     '--tools-y': '-999px',
     '--block-h': '0',
+    '--topbar-h': '40px',
+    '--footer-h': '24px',
   },
   '*': {
     boxSizing: 'border-box',

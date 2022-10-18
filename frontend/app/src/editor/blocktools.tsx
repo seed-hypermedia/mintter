@@ -5,7 +5,6 @@ import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ELEMENT_STATEMENT} from '@app/editor/statement'
 import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
-import {useFileEditor} from '@app/file-provider'
 import {
   MouseInterpret,
   useCurrentBound,
@@ -43,8 +42,14 @@ let toolsByMode = {
   [EditorMode.Mention]: () => null,
 }
 
-export function Blocktools({children}: {children: ReactNode}) {
-  let blocktoolsOptions = useBlocktoolsData()
+export function Blocktools({
+  children,
+  editor,
+}: {
+  children: ReactNode
+  editor: Editor
+}) {
+  let blocktoolsOptions = useBlocktoolsData(editor)
   let Component = toolsByMode[blocktoolsOptions.mode] || null
   return (
     <>
@@ -206,9 +211,8 @@ type BlockData = {
   left: string
 }
 
-function useBlocktoolsData(): BlockData {
+function useBlocktoolsData(editor: Editor): BlockData {
   let mouseService = useMouse()
-  let editor = useFileEditor()
   let [id, rect] = useCurrentBound() || []
 
   let element = useMemo(

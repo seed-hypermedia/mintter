@@ -1,11 +1,9 @@
 import {Document, Publication} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
-import {createDraftMachine} from '@app/draft-machine'
-import {Editor} from '@app/editor/editor'
+
 import {ChangeOperation} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {FileProvider} from '@app/file-provider'
 import {
   FlowContent,
   GroupingContent,
@@ -16,19 +14,15 @@ import {
   staticParagraph,
   text,
 } from '@app/mttast'
-import {createTestQueryClient} from '@app/test/utils'
-import {QueryClient} from '@tanstack/react-query'
-import {useActor, useInterpret} from '@xstate/react'
-import {useEffect} from 'react'
+import {createTestDraft, createTestQueryClient} from '@app/test/utils'
+import {Route} from '@components/router'
 import {Editor as EditorType} from 'slate'
 
 import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
-import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {Blocktools} from '@app/editor/blocktools'
 import {queryKeys} from '@app/hooks'
-import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {Group} from '@app/mttast'
+import DraftPage from '@app/pages/draft'
 import {InterpreterFrom} from 'xstate'
 
 before(() => {
@@ -40,55 +34,43 @@ before(() => {
 describe('Editor', () => {
   describe('Move Operations', () => {
     it('should add the default block', () => {
-      let draft: Document = {
-        id: 'foo',
-        title: 'demo',
-        subtitle: '',
-        children: [],
-        createTime: new Date(),
-        updateTime: new Date(),
-        author: '',
-        publishTime: undefined,
-      }
+      let {client, draft} = createTestQueryClient({
+        draft: createTestDraft(),
+      })
 
       let editor = buildEditorHook(plugins, EditorMode.Draft)
-      let {client} = createTestQueryClient({
-        draft,
-      })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]').then(() => {
-        expect(editor.__mtt_changes).to.have.length(2)
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft?.id}`,
       })
+        .get('[data-testid="editor"]')
+        .then(() => {
+          expect(editor.__mtt_changes).to.have.length(2)
+        })
     })
 
     it('should move to the correct parent when enter from a heading block', () => {
       let block = heading({id: 'b1'}, [staticParagraph([text('Hello World')])])
-      let draft: Document = {
-        id: 'foo',
-        title: 'demo',
-        subtitle: '',
+      let draft = createTestDraft({
         children: [
           {
             block: blockToApi(block),
             children: [],
           },
         ],
-        createTime: new Date(),
-        updateTime: new Date(),
-        author: '',
-        publishTime: undefined,
-      }
-
+      })
       let editor = buildEditorHook(plugins, EditorMode.Draft)
 
       let {client} = createTestQueryClient({
         draft,
       })
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft.id}`,
+      })
+        // .wait(100)
+        .get('[data-testid="editor"]')
         .then(() => {
           editor.apply({
             type: 'set_selection',
@@ -120,35 +102,28 @@ describe('Editor', () => {
       let block1 = statement({id: 'b1'}, [paragraph([text('')])])
       let block2 = statement({id: 'b2'}, [paragraph([text('move this block')])])
 
-      let draft: Document = {
-        id: 'foo',
-        title: 'demo',
-        subtitle: '',
-        children: [
-          {
-            block: blockToApi(block1),
-            children: [],
-          },
-          {
-            block: blockToApi(block2),
-            children: [],
-          },
-        ],
-        createTime: new Date(),
-        updateTime: new Date(),
-        author: '',
-        publishTime: undefined,
-      }
-
       let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-      let {client} = createTestQueryClient({
-        draft,
+      let {client, draft} = createTestQueryClient({
+        draft: createTestDraft({
+          children: [
+            {
+              block: blockToApi(block1),
+              children: [],
+            },
+            {
+              block: blockToApi(block2),
+              children: [],
+            },
+          ],
+        }),
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft.id}`,
+      })
+        .get('[data-testid="editor"]')
         .focus()
         .then(() => {
           editor.apply({
@@ -176,30 +151,24 @@ describe('Editor', () => {
 
     it('should add new block after press enter', () => {
       let block = statement({id: 'b1'}, [paragraph([text('Hello World')])])
-      let draft: Document = {
-        id: 'foo',
-        title: 'demo',
-        subtitle: '',
-        children: [
-          {
-            block: blockToApi(block),
-            children: [],
-          },
-        ],
-        createTime: new Date(),
-        updateTime: new Date(),
-        author: '',
-        publishTime: undefined,
-      }
 
       let editor = buildEditorHook(plugins, EditorMode.Draft)
-      let {client} = createTestQueryClient({
-        draft,
+      let {client, draft} = createTestQueryClient({
+        draft: createTestDraft({
+          children: [
+            {
+              block: blockToApi(block),
+              children: [],
+            },
+          ],
+        }),
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft?.id}`,
+      })
+        .get('[data-testid="editor"]')
         .then(() => {
           editor.apply({
             type: 'set_selection',
@@ -328,35 +297,30 @@ describe('Editor', () => {
     it('should delete one block', () => {
       let block1 = statement({id: 'b1'}, [paragraph([text('Parent block')])])
       let block2 = statement({id: 'b2'}, [paragraph([text('')])])
-      let draft: Document = {
-        id: 'foo',
-        title: '',
-        subtitle: '',
-        author: 'authortest',
-        updateTime: new Date(),
-        createTime: new Date(),
-        publishTime: undefined,
-        children: [
-          {
-            block: blockToApi(block1),
-            children: [],
-          },
-          {
-            block: blockToApi(block2),
-            children: [],
-          },
-        ],
-      }
 
       let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-      let {client} = createTestQueryClient({
-        draft,
+      let {client, draft} = createTestQueryClient({
+        draft: createTestDraft({
+          children: [
+            {
+              block: blockToApi(block1),
+              children: [],
+            },
+            {
+              block: blockToApi(block2),
+              children: [],
+            },
+          ],
+        }),
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft?.id}`,
+      })
+        // .wait(100)
+        .get('[data-testid="editor"]')
         .then(() => {
           editor.apply({
             type: 'set_selection',
@@ -423,9 +387,11 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft.id}`,
+      })
+        .get('[data-testid="editor"]')
         .type(' ') // need to type this because if not the first letter is not typed ¯\_(ツ)_/¯
         .type('Hello World')
         .then(() => {
@@ -461,9 +427,11 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft.id}`,
+      })
+        .get('[data-testid="editor"]')
         .then(() => {
           editor.apply({
             type: 'set_selection',
@@ -515,10 +483,12 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-block-id="b1"]')
-        .wait(500)
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft.id}`,
+      })
+        .get('[data-block-id="b1"]')
+        // .wait(500)
         .then(() => {
           ;(window.mouseService as InterpreterFrom<typeof mouseMachine>).send({
             type: 'MOUSE.MOVE',
@@ -563,9 +533,12 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft.id}`,
+      })
+        .wait(100)
+        .get('[data-testid="editor"]')
         .then(() => {
           // TODO: for some reason this selection is not applied correctly to the editor? cc @jonas
           editor.apply({
@@ -584,13 +557,13 @@ describe('Editor', () => {
           })
         })
         .get('[data-testid="toolbar-link-button"]')
-        .click({force: true})
+        .click()
         .get('[data-testid="modal-link-remove-button"]')
         .should('be.disabled')
         .get('[data-testid="modal-link-input"]')
-        .type('https://mintter.com', {force: true})
+        .type('https://mintter.com')
         .get('[type="submit"]')
-        .click({force: true})
+        .click()
         .then(() => {
           let changes = editor.__mtt_changes
           expect(changes).to.have.lengthOf.greaterThan(1)
@@ -609,31 +582,25 @@ describe('Editor', () => {
         ]),
       ])
 
-      let draft: Document = {
-        id: 'foo',
-        title: 'demo',
-        subtitle: '',
-        children: [
-          {
-            block: blockToApi(block),
-            children: [],
-          },
-        ],
-        createTime: new Date(),
-        updateTime: new Date(),
-        author: '',
-        publishTime: undefined,
-      }
-
       let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-      let {client} = createTestQueryClient({
-        draft,
+      let {client, draft} = createTestQueryClient({
+        draft: createTestDraft({
+          children: [
+            {
+              block: blockToApi(block),
+              children: [],
+            },
+          ],
+        }),
       })
 
-      cy.mount(<TestEditor editor={editor} client={client} draft={draft} />)
-
-      cy.get('[data-testid="editor"]')
+      cy.mount(<TestEditor editor={editor} />, {
+        client,
+        path: `/d/${draft?.id}`,
+      })
+        .wait(100)
+        .get('[data-testid="editor"]')
         .then(() => {
           editor.apply({
             type: 'set_selection',
@@ -651,9 +618,9 @@ describe('Editor', () => {
           })
         })
         .get('[data-testid="toolbar-link-button"]')
-        .click({force: true})
+        .click()
         .get('[data-testid="modal-link-remove-button"]')
-        .click({force: true})
+        .click()
         .then(() => {
           let changes = editor.__mtt_changes
           expect(changes).to.have.lengthOf.greaterThan(1)
@@ -708,8 +675,9 @@ describe('Links', () => {
       authors: [{id: 'demoauthor'}],
     })
 
-    cy.mount(<TestEditor editor={editor} client={client} draft={draft} />, {
+    cy.mount(<TestEditor editor={editor} />, {
       client,
+      path: `/d/${draft.id}`,
     })
       .get('[data-testid="editor"]')
       .click()
@@ -774,8 +742,9 @@ describe('Transclusions', () => {
 
     let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-    cy.mount(<TestEditor editor={editor} client={client} draft={draft} />, {
+    cy.mount(<TestEditor editor={editor} />, {
       client,
+      path: `/d/${draft.id}`,
     })
       .get('[data-testid="editor"]')
       .then(() => {
@@ -800,51 +769,13 @@ describe('Transclusions', () => {
 })
 
 type TestEditorProps = {
-  client: QueryClient
   editor: EditorType
-  draft: Document
 }
 
-function TestEditor({editor, client, draft}: TestEditorProps) {
-  let service = useInterpret(() =>
-    createDraftMachine({draft, client, editor, shouldAutosave: false}),
+function TestEditor({editor}: TestEditorProps) {
+  return (
+    <Route path="/d/:id">
+      {() => <DraftPage shouldAutosave={false} editor={editor} />}
+    </Route>
   )
-  let [state, send] = useActor(service)
-
-  let mouseService = useInterpret(() => mouseMachine)
-
-  useEffect(() => {
-    send('LOAD')
-
-    return () => {
-      send('UNLOAD')
-    }
-  }, [send])
-
-  // @ts-ignore
-  window.mouseService = mouseService
-
-  if (state.matches('editing') && state.context.localDraft?.content) {
-    return (
-      <MouseProvider value={mouseService}>
-        <BlockHighLighter>
-          <FileProvider value={service}>
-            <Blocktools>
-              <Editor
-                plugins={plugins}
-                value={state.context.localDraft.content}
-                editor={state.context.editor}
-                onChange={(content) => {
-                  if (!content && typeof content == 'string') return
-                  send({type: 'DRAFT.UPDATE', payload: {content}})
-                }}
-              />
-            </Blocktools>
-          </FileProvider>
-        </BlockHighLighter>
-      </MouseProvider>
-    )
-  }
-
-  return null
 }

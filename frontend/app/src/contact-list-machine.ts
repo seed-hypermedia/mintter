@@ -1,8 +1,8 @@
 import {Account, listAccounts, ListAccountsResponse} from '@app/client'
 import {queryKeys} from '@app/hooks'
-import {createContactMachine} from '@components/library/contact-machine'
 import {QueryClient} from '@tanstack/react-query'
 import {ActorRefFrom, assign, createMachine, spawn} from 'xstate'
+import {createContactMachine} from './contact-machine'
 
 export type AccountWithRef = Account & {
   ref: ActorRefFrom<ReturnType<typeof createContactMachine>>
@@ -28,7 +28,7 @@ export function createContactListMachine({client}: {client: QueryClient}) {
   return createMachine(
     {
       id: 'contact-list-machine',
-      tsTypes: {} as import('./contacts-machine.typegen').Typegen0,
+      tsTypes: {} as import('./contact-list-machine.typegen').Typegen0,
       schema: {
         context: {} as ContactListContext,
         events: {} as ContactListEvent,

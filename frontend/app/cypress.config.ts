@@ -8,11 +8,13 @@ export default defineConfig({
     viewportHeight: 800,
     projectId: 'd3nyda',
     // specPattern: '**/*.cy.tsx',
+    experimentalWebKitSupport: true,
     devServer: {
       framework: 'react',
       bundler: 'vite',
     },
   },
+
   trashAssetsBeforeRuns: true,
   retries: {
     runMode: 5,

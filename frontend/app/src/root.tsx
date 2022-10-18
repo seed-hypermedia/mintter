@@ -1,8 +1,5 @@
-import {AuthProvider, useAuthService} from '@app/auth-context'
-import {createAuthService} from '@app/auth-machine'
-import {createThemeService, ThemeProvider} from '@app/theme'
-import {error} from '@app/utils/logger'
-import {QuickSwitcher} from '@components/quick-switcher'
+import {getInfo} from '@app/client'
+import {themeMachine, ThemeProvider} from '@app/theme'
 
 import {
   dehydrate,
@@ -10,56 +7,53 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
-import {useActor, useInterpret} from '@xstate/react'
-import React, {lazy, Suspense} from 'react'
-import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
+import {useInterpret} from '@xstate/react'
+import {lazy, Suspense, useLayoutEffect, useState} from 'react'
+import {FallbackProps} from 'react-error-boundary'
 // import 'show-keys'
 import {globalStyles} from './stitches.config'
 
-const OnboardingPage = lazy(() => import('./pages/onboarding'))
-const AppProvider = lazy(() => import('./app-provider'))
-const MainPage = lazy(() => import('./pages/main-page'))
-// app component lazy
+var OnboardingPage = lazy(() => import('./pages/onboarding'))
+var AppProvider = lazy(() => import('./components/app-provider'))
+var Main = lazy(() => import('./pages/main'))
 
 export function Root() {
+  var themeService = useInterpret(() => themeMachine)
+  let [info, setInfo] = useState<undefined | boolean>(undefined)
+
   globalStyles()
-  const service = useAuthService()
-  const [state] = useActor(service)
+  useLayoutEffect(() => {
+    getInfo()
+      .then(() => {
+        setInfo(true)
+      })
+      .catch(() => {
+        setInfo(false)
+      })
+  }, [])
 
-  if (state.matches('loggedOut')) {
-    return <OnboardingPage />
+  if (typeof info == 'undefined') {
+    return null
   }
 
-  if (state.matches('loggedIn')) {
-    return (
-      <ErrorBoundary
-        FallbackComponent={AppError}
-        onReset={() => {
-          location.reload()
-        }}
-      >
-        <AppProvider>
-          <QuickSwitcher />
-          <MainPage />
-        </AppProvider>
-      </ErrorBoundary>
-    )
-  }
-
-  if (state.matches('errored')) {
-    error('[Auth]: Something went wrong', state.context)
-  }
-
-  return null
-}
-
-export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (
-    <div role="alert">
-      <p>Something went wrong loading the App:</p>
-      <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={<div></div>}>
+        <Hydrate state={dehydrateState}>
+          <ThemeProvider value={themeService}>
+            {info ? (
+              <AppProvider>
+                <Main />
+              </AppProvider>
+            ) : (
+              <OnboardingPage />
+            )}
+          </ThemeProvider>
+        </Hydrate>
+      </Suspense>
+      <ReactQueryDevtools />
+    </QueryClientProvider>
   )
 }
 
@@ -79,26 +73,13 @@ var queryClient = new QueryClient({
 
 var dehydrateState = dehydrate(queryClient)
 
-export function RootProvider({
-  client = queryClient,
-  children,
-}: {
-  client?: QueryClient
-  children: React.ReactNode
-}) {
-  var themeService = useInterpret(() => createThemeService())
-  var authService = useInterpret(() => createAuthService(client))
-
+export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (
-    <QueryClientProvider client={client}>
-      <Suspense fallback={<div></div>}>
-        <Hydrate state={dehydrateState}>
-          <ThemeProvider value={themeService}>
-            <AuthProvider value={authService}>{children}</AuthProvider>
-          </ThemeProvider>
-        </Hydrate>
-      </Suspense>
-    </QueryClientProvider>
+    <div role="alert">
+      <p>Something went wrong loading the App:</p>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
   )
 }
 

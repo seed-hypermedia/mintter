@@ -1,14 +1,27 @@
 $new-color: var(--mtt-colors-primary-active);
 $foreground: var(--mtt-colors-base-text-high);
 $bg: transparent;
+
+.list-page-wrapper {
+  height: 100%;
+}
+
+.file-list {
+  margin: 0;
+  // padding: 0;
+  max-width: 800px;
+  margin-top: 2rem;
+  box-sizing: border-box;
+}
 .list-item {
   position: relative;
   display: grid;
-  gap: 0 1rem;
+  background-color: red;
+  gap: 0;
   grid-auto-flow: row;
-  padding-inline: 0.5rem;
-  padding-block: 0.25rem;
   user-select: none;
+  overflow: hidden;
+  border-radius: 0.2rem;
   background-color: $bg;
   grid-template-columns: 1fr 1fr auto;
   grid-template-rows: auto auto;
@@ -24,6 +37,11 @@ $bg: transparent;
     & .item-controls {
       opacity: 1;
     }
+  }
+
+  & > * {
+    padding-inline: 0.5rem;
+    padding-block: 0.25rem;
   }
 
   @media (min-width: 768px) {
@@ -46,6 +64,8 @@ $bg: transparent;
 }
 
 .item-title {
+  font-family: var(--mtt-fonts-base);
+  margin: 0;
   grid-area: item-title;
   letter-spacing: 0.01rem;
   text-overflow: ellipsis;

@@ -7,6 +7,7 @@ export const dropdownContentStyle = css({
   boxShadow: '$menu',
   borderRadius: '$2',
   overflow: 'hidden',
+  zIndex: '$max',
 })
 
 export const dropdownItemStyle = css({
@@ -32,6 +33,10 @@ export const dropdownItemStyle = css({
     cursor: 'default',
     opacity: 0.5,
   },
+  '&[data-highlighted]': {
+    backgroundColor: '$primary-component-bg-normal',
+    color: '$primary-text-low',
+  },
 })
 
 export var dropdownLabel = css({
@@ -50,11 +55,20 @@ const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {
   margin: '0.5rem',
 })
 
+var RightSlot = styled('div', {
+  marginLeft: 'auto',
+  paddingLeft: 20,
+  color: '$base-active',
+  '[data-highlighted] > &': {color: '$primary-active'},
+  '[data-disabled] &': {color: '$primary-component-bg-normal'},
+})
+
 export const Dropdown = {
   ...DropdownMenuPrimitive,
   Content: DropdownContent,
   Item: DropdownItem,
   Separator: StyledSeparator,
+  RightSlot,
 }
 
 export var ElementDropdown = styled('button', {

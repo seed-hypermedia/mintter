@@ -1,5 +1,5 @@
+import {ObjectKeys} from '@app/utils/object-keys'
 import {TextProps} from '../types'
-import {ObjectKeys} from './object-keys'
 
 export function filterProps(entry: TextProps): TextProps {
   const result: TextProps = {}

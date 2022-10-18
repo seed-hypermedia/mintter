@@ -1,14 +1,13 @@
-import {DraftList} from '@app/pages/draft-list-page'
+import {Document} from '@app/client'
 import {createTestQueryClient} from '@app/test/utils'
+import DraftList, {DraftListItem} from '../draft-list-page'
 
 // TODO: FIXME
-describe('DraftList', () => {
+describe('Draft List', () => {
   // TODO: maybe there are two mainServices started here, I'm getting DraftList and PubList queryClient errors (hitting the )
   it('Should show an empty list', () => {
     cy.mount(<DraftList />)
-      .get('[data-testid="filelist-title"]')
-      .contains('Drafts')
-      .get('[data-testid="filelist-empty-label"]')
+      .get('[data-testid="empty-list-description"]')
       .contains('You have no Drafts yet.')
   })
 
@@ -16,7 +15,7 @@ describe('DraftList', () => {
     let {client} = createTestQueryClient({
       draftList: [
         {
-          id: '1',
+          id: 'd1',
           title: 'document 1',
           subtitle: '',
           author: 'testauthor',
@@ -26,7 +25,7 @@ describe('DraftList', () => {
           children: [],
         },
         {
-          id: '2',
+          id: 'd2',
           title: 'document 2',
           subtitle: '',
           author: 'testauthor',
@@ -36,15 +35,120 @@ describe('DraftList', () => {
           children: [],
         },
       ],
-
       authors: [{id: 'testauthor'}],
     })
 
     cy.mount(<DraftList />, {
       client,
     })
-      .get('[data-testid="filelist-list"]')
+      .get('[data-testid="files-list"]')
       .children()
       .should('have.length', 2)
+  })
+
+  describe('Draft list item', () => {
+    let draft: Document = {
+      id: 'd1',
+      title: 'document 1',
+      subtitle: '',
+      author: 'testauthor',
+      createTime: new Date(),
+      updateTime: new Date(),
+      publishTime: new Date(),
+      children: [],
+    }
+
+    it('should render all the content', () => {
+      let {client} = createTestQueryClient({
+        draft,
+        authors: [{id: 'testauthor'}],
+      })
+      let setLocation = cy.stub()
+
+      cy.mount(<DraftListItem draft={draft} />, {
+        client,
+        setLocation,
+      })
+        .get('[data-testid="list-item-title"]')
+        .contains(draft.title)
+        .get('[data-testid="list-item-date"]')
+        .contains('just now')
+    })
+
+    it('should navigate to draft', () => {
+      let {client} = createTestQueryClient({
+        draft,
+        authors: [{id: 'testauthor'}],
+      })
+      let setLocation = cy.spy()
+
+      cy.mount(<DraftListItem draft={draft} />, {
+        setLocation,
+        client,
+      })
+        .get('[data-testid="list-item-title"]')
+        .click()
+        .get('[data-testid="list-item-date"]')
+        .click()
+        .then(() => {
+          expect(setLocation).to.be.calledTwice
+          console.log()
+          expect(setLocation.args).to.deep.equal([['/d/d1'], ['/d/d1']])
+        })
+    })
+
+    it('should open in the same window', () => {
+      let setLocation = cy.spy()
+      let {client} = createTestQueryClient({
+        draft,
+        authors: [{id: 'testauthor'}],
+      })
+      cy.mount(<DraftListItem draft={draft} />, {
+        client,
+        setLocation,
+      })
+        .get('[data-trigger]')
+        .click({force: true})
+        .get('[data-testid="open-item"]')
+        .click()
+        .then(() => {
+          // TODO: get the clipboard value from the system
+          expect(setLocation).to.have.been.calledOnceWith('/d/d1')
+        })
+    })
+
+    it('should open in a new window', () => {
+      let {client} = createTestQueryClient({
+        draft,
+        authors: [{id: 'testauthor'}],
+      })
+      cy.mount(<DraftListItem draft={draft} />, {
+        client,
+      })
+        .get('[data-trigger]')
+        .click({force: true})
+        .get('[data-testid="open-item"]')
+        .click()
+        .then(() => {
+          // TODO: mock the window function (maybe mock the mainService event)
+        })
+    })
+
+    it('should delete', () => {
+      let {client} = createTestQueryClient({
+        draft,
+        authors: [{id: 'testauthor'}],
+      })
+      cy.mount(<DraftListItem draft={draft} />, {
+        client,
+      })
+        .get('[data-trigger]')
+        .click({force: true})
+        .get('[data-testid="delete-item"]')
+        .click()
+        .then(() => {
+          // TODO: mock the window function (maybe mock the mainService event)
+        })
+    })
   })
 })

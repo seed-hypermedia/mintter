@@ -91,3 +91,13 @@ export function createFindPlugin(): EditorPlugin {
     },
   }
 }
+
+export function useFind() {
+  let context = useContext(findContext)
+
+  if (!context) {
+    throw new Error(`useFind must be called inside a FindContextProvider`)
+  }
+
+  return context
+}
