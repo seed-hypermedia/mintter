@@ -4,7 +4,7 @@ import (
 	"context"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs/mttdoc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 	"time"
 

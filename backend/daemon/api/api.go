@@ -11,8 +11,8 @@ import (
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/syncing"
-	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"

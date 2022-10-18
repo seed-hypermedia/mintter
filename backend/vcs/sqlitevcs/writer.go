@@ -1,4 +1,4 @@
-package vcsdb
+package sqlitevcs
 
 // DatomWriter collects datoms to be written or deleted.
 type DatomWriter struct {

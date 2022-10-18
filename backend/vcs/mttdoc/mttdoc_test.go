@@ -1,7 +1,7 @@
 package mttdoc
 
 import (
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 
 	"github.com/stretchr/testify/require"

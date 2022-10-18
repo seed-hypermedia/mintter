@@ -11,7 +11,7 @@ import (
 	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttdoc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 
 	"crawshaw.io/sqlite"

@@ -1,4 +1,4 @@
-package vcsdb
+package sqlitevcs
 
 import (
 	"encoding/json"

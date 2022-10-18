@@ -1,7 +1,7 @@
-// Package vcsdb provides version-control-system-related functionality.
+// Package sqlitevcs provides version-control-system-related functionality.
 // It's mostly a wrapper around SQLite with specific functions around
 // our graph/triple-store mode for Mintter Objects.
-package vcsdb
+package sqlitevcs
 
 import (
 	"context"

@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/core"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"time"
 
 	"github.com/ipfs/go-cid"

@@ -25,8 +25,8 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttacc"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/syncing"
-	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"

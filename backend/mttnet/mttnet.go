@@ -13,7 +13,7 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"strconv"
 	"sync"

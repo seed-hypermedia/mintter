@@ -11,7 +11,7 @@ import (
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/mttdoc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
 	"time"

@@ -10,7 +10,7 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 
 	"github.com/ipfs/go-cid"

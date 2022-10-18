@@ -3,7 +3,7 @@ package mttdoc
 import (
 	"fmt"
 	"mintter/backend/vcs/crdt"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 )
 
 type blockTree struct {

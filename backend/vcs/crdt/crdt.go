@@ -3,7 +3,7 @@
 // we favor Mintter-specific use cases.
 package crdt
 
-import "mintter/backend/vcs/vcsdb"
+import vcsdb "mintter/backend/vcs/sqlitevcs"
 
 // OpID of a CRDT operation.
 type OpID = vcsdb.OpID

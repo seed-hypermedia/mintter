@@ -8,7 +8,7 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/crdt"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"sort"
 	"time"
 
