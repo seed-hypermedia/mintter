@@ -49,7 +49,7 @@ importers:
       '@radix-ui/react-hover-card': 1.0.2
       '@radix-ui/react-label': 1.0.0
       '@radix-ui/react-popover': 1.0.2
-      '@radix-ui/react-portal': 1.0.0
+      '@radix-ui/react-portal': 1.0.1
       '@radix-ui/react-scroll-area': 1.0.0
       '@radix-ui/react-separator': 1.0.0
       '@radix-ui/react-slot': 1.0.0
@@ -167,7 +167,7 @@ importers:
       '@radix-ui/react-hover-card': 1.0.2_rj7ozvcq3uehdlnj3cbwzbi5ce
       '@radix-ui/react-label': 1.0.0_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-popover': 1.0.2_rj7ozvcq3uehdlnj3cbwzbi5ce
-      '@radix-ui/react-portal': 1.0.0_biqbaboplfbrettd7655fr4n2y
+      '@radix-ui/react-portal': 1.0.1_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-scroll-area': 1.0.0_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-separator': 1.0.0_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-slot': 1.0.0_react@18.2.0
