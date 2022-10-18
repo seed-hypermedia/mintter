@@ -464,15 +464,15 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 			return nil, err
 		}
 
-		if !vc.Decoded.Payload.Object.Equals(obj) {
-			return nil, fmt.Errorf("change for unrelated object: got = %s, want = %s", vc.Decoded.Payload.Object, obj)
+		if !vc.Decoded.Object.Equals(obj) {
+			return nil, fmt.Errorf("change for unrelated object: got = %s, want = %s", vc.Decoded.Object, obj)
 		}
 
 		fetched = append(fetched, vc)
 
 		visited[id] = struct{}{}
 
-		for _, p := range vc.Decoded.Payload.Parents {
+		for _, p := range vc.Decoded.Parents {
 			queue = append(queue, p)
 		}
 	}
@@ -483,7 +483,7 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 	}
 
 	sort.Slice(fetched, func(i, j int) bool {
-		return fetched[i].Decoded.Payload.LamportTime < fetched[j].Decoded.Payload.LamportTime
+		return fetched[i].Decoded.LamportTime < fetched[j].Decoded.LamportTime
 	})
 
 	return fetched, nil

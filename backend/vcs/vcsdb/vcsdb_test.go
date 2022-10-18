@@ -100,7 +100,7 @@ func TestSmoke(t *testing.T) {
 
 		// Canonical encoding must be deterministic.
 		// Hash is generated out of band.
-		checkSum(t, "97032be78aebe8fa01d41ba28d607a8c388b005c", data)
+		checkSum(t, "0fe019809f30360a639484bf5f7ffa7989b3b868", data)
 	}
 
 	// Create a new change with base.
@@ -290,6 +290,6 @@ func TestChangeEncoding(t *testing.T) {
 	c2 := conn.StoreRemoteChange(obj, vc, nil)
 	require.Equal(t, c1, c2)
 
-	got := must.Do2(datomsFromChange(c1, vc.Decoded.Payload))
+	got := must.Do2(datomsFromChange(c1, vc.Decoded))
 	require.Equal(t, datoms, got)
 }

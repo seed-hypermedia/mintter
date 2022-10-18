@@ -465,28 +465,25 @@ func init() {
 	cbornode.RegisterCborType(changeBody{})
 }
 
-// SignedChange is a type for Change with signature and signer information.
-type SignedChange = vcs.SignedCBOR[vcs.Change]
-
 // VerifiedChange is a change with a verified signature.
 type VerifiedChange struct {
 	blocks.Block
 
-	Decoded vcs.SignedCBOR[vcs.Change]
+	Decoded vcs.Change
 }
 
 // VerifyChangeBlock ensures that a signature of a change IPLD block is valid.
 func VerifyChangeBlock(blk blocks.Block) (vc VerifiedChange, err error) {
-	sc, err := vcs.ParseChangeBlock(blk)
+	c, err := vcs.DecodeChange(blk.RawData())
 	if err != nil {
 		return vc, err
 	}
 
-	if err := sc.Verify(); err != nil {
+	if err := c.Verify(); err != nil {
 		return vc, fmt.Errorf("failed to verify change %s: %w", blk.Cid(), err)
 	}
 
-	return VerifiedChange{Block: blk, Decoded: sc}, nil
+	return VerifiedChange{Block: blk, Decoded: c}, nil
 }
 
 // StoreRemoteChange stores the changes fetched from the remote peer,
@@ -496,10 +493,10 @@ func VerifyChangeBlock(blk blocks.Block) (vc VerifiedChange, err error) {
 // by the BitSwap session.
 func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func(conn *Conn, obj LocalID, d Datom) error) (change LocalID) {
 	must.Maybe(&conn.err, func() error {
-		sc := vc.Decoded
+		ch := vc.Decoded
 
-		if sc.Payload.Kind != changeKindV1 {
-			panic("BUG: change kind is invalid: " + sc.Payload.Kind)
+		if ch.Kind != changeKindV1 {
+			panic("BUG: change kind is invalid: " + ch.Kind)
 		}
 
 		// TODO(burdiyan): validate lamport timestamp of the incoming change here, or elsewhere?
@@ -514,13 +511,11 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 		}
 		change = LocalID(res.IPFSBlocksID)
 
-		ch := sc.Payload
-
 		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), ch.Kind, int(ch.LamportTime), int(ch.CreateTime.Unix())); err != nil {
 			return err
 		}
 
-		idLocal := conn.EnsureAccountDevice(ch.Author, sc.Signer)
+		idLocal := conn.EnsureAccountDevice(ch.Author, ch.Signer)
 
 		if err := vcssql.ChangeAuthorsInsertOrIgnore(conn.conn, int(change), int(idLocal.Account), int(idLocal.Device)); err != nil {
 			return err
@@ -691,11 +686,7 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		CreateTime:  time.Unix(int64(authors[0].ChangesCreateTime), 0),
 	}
 
-	sc, err := vcs.NewSignedCBOR(c, sig)
-	if err != nil {
-		conn.err = err
-		return nil
-	}
+	sc := c.Sign(sig)
 
 	signed, err := cbornode.DumpObject(sc)
 	if err != nil {

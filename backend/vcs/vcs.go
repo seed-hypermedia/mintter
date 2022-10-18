@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"mintter/backend/core"
 	"mintter/backend/ipfs"
 	"time"
 
@@ -14,127 +13,15 @@ import (
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
-	"github.com/libp2p/go-libp2p/core/crypto"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multibase"
 )
 
+// ObjectType is a type for describing types of our IPLD data.
+// Generally, IPLD data is a free-form JSON-like structure,
+// which lacks the description of the logical "object" it represents.
+// We borrow the idea of using a dedicated field `@type` from JSON-LD (linked data web standard)
+// to hold a URL identifier which helps distinguishing between objects of different types.
 type ObjectType string
-
-const (
-	ChangeType = "https://schema.mintter.org/Change"
-	SignedType = "https://schema.mintter.org/SignedEnvelope"
-)
-
-func init() {
-	cbornode.RegisterCborType(Change{})
-	cbornode.RegisterCborType(SignedCBOR[Change]{})
-}
-
-type Change struct {
-	Type   string  `refmt:"@type"`
-	Object cid.Cid `refmt:"object"`
-	// TODO: should this be a DID instead?
-	Author      cid.Cid   `refmt:"author"` // account id.
-	Parents     []cid.Cid `refmt:"parents,omitempty"`
-	LamportTime uint64    `refmt:"lamportTime"`
-	Kind        string    `refmt:"kind"`
-	Body        []byte    `refmt:"body"`
-	Message     string    `refmt:"message"`
-	CreateTime  time.Time `refmt:"createTime"`
-	// TODO: add proclamation or UCAN here.
-}
-
-type RecordedChange struct {
-	ID cid.Cid
-
-	Change
-}
-
-type SignedCBOR[T any] struct {
-	// Fields are named this way to ensure that canonical sorting will sort them in this order.
-	// Having payload size allows for efficient signature check with partial decoding.
-	// CBOR is not very optimized for fast seeking, because nested structures are not byte-length prefixed.
-	// Having payload size allows to skip the payload bytes entirely and extract the signature.
-
-	Type        string         `refmt:"@type" cbor:"@type"`
-	PayloadSize int            `refmt:"psize" cbor:"psize"`
-	Payload     T              `refmt:"payload" cbor:"payload"`
-	Signer      cid.Cid        `refmt:"signer" cbor:"signer"` // Libp2p key CID.
-	Signature   core.Signature `refmt:"signature" cbor:"signature"`
-}
-
-func (s SignedCBOR[T]) Verify() error {
-	// TODO: optimize this.
-	// Avoid double serialization.
-	// Simplify public key extraction.
-	// Optionally take public key if we ever support non ed25519 keys that couldn't be inlined in CID.
-
-	data, err := cbornode.DumpObject(s.Payload)
-	if err != nil {
-		return err
-	}
-
-	pid, err := peer.FromCid(s.Signer)
-	if err != nil {
-		return err
-	}
-
-	key, err := pid.ExtractPublicKey()
-	if err != nil {
-		return fmt.Errorf("failed to extract public key for signer: %w", err)
-	}
-
-	pk, err := core.NewPublicKey(core.CodecDeviceKey, key.(*crypto.Ed25519PublicKey))
-	if err != nil {
-		return err
-	}
-
-	return pk.Verify(data, s.Signature)
-}
-
-type signer interface {
-	core.Signer
-	core.CIDer
-}
-
-func NewSignedCBOR[T any](v T, s signer) (out SignedCBOR[T], err error) {
-	data, err := cbornode.DumpObject(v)
-	if err != nil {
-		return out, err
-	}
-
-	sig, err := s.Sign(data)
-	if err != nil {
-		return out, err
-	}
-
-	out = SignedCBOR[T]{
-		Type:        SignedType,
-		PayloadSize: len(data),
-		Payload:     v,
-		Signature:   sig,
-		Signer:      s.CID(),
-	}
-
-	return out, nil
-}
-
-func ParseChangeBlock(blk blocks.Block) (out SignedCBOR[Change], err error) {
-	if err := cbornode.DecodeInto(blk.RawData(), &out); err != nil {
-		return out, fmt.Errorf("failed to parse change block %s: %w", blk.Cid(), err)
-	}
-
-	return out, nil
-}
-
-func ParseChangeData(data []byte) (out SignedCBOR[Change], err error) {
-	if err := cbornode.DecodeInto(data, &out); err != nil {
-		return out, fmt.Errorf("failed to parse change data: %w", err)
-	}
-
-	return out, nil
-}
 
 // Version defines a version of a Mintter Object.
 // It's a set of leaf nodes of the Time DAG.
