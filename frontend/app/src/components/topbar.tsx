@@ -14,16 +14,15 @@ import toast from 'react-hot-toast'
 import '../styles/topbar.scss'
 
 export default function Topbar() {
-  console.log('import.meta.env.TAURI_PLATFORM', import.meta.env.TAURI_PLATFORM)
   return (
     <div className="topbar" data-layout-section="topbar" {...draggableProps}>
       {/* 
         - we need this div in order to push the whole topbar to the right because of the traffic lights buttons.
         - this is not necessary for other OSs
       */}
-      {import.meta.env.TAURI_PLATFORM == 'macos' ? (
-        <div className="macos-separator no-flex" />
-      ) : null}
+
+      <div className="macos-separator no-flex" />
+
       <Switch>
         <Route path="/" component={DefaultTopbar} />
         <Route path="/inbox" component={DefaultTopbar} />
