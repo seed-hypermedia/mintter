@@ -25,8 +25,8 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/syncing"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/vcsdb"
-	"mintter/backend/vcs/vcstypes"
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -281,7 +281,7 @@ func initNetwork(
 		}
 
 		// We assume registration already happened.
-		perma := vcstypes.NewAccountPermanode(id.AccountID())
+		perma := mttacc.NewAccountPermanode(id.AccountID())
 		blk, err := vcs.EncodeBlock(perma)
 		if err != nil {
 			return err
@@ -347,7 +347,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, db, vcs, node.Bitswap().NewSession, node.Client)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap().NewSession, node.Client)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)

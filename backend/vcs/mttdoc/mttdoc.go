@@ -3,12 +3,48 @@ package mttdoc
 
 import (
 	"bytes"
+	"crypto/rand"
 	"fmt"
 	"mintter/backend/pkg/must"
+	"mintter/backend/vcs"
 	"mintter/backend/vcs/crdt"
 	"mintter/backend/vcs/vcsdb"
 	"sort"
+	"time"
+
+	"github.com/ipfs/go-cid"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 )
+
+const DocumentType vcs.ObjectType = "https://schema.mintter.org/Document"
+
+func init() {
+	cbornode.RegisterCborType(DocumentPermanode{})
+}
+
+type DocumentPermanode struct {
+	vcs.BasePermanode
+
+	Nonce []byte
+}
+
+func NewDocumentPermanode(owner cid.Cid) DocumentPermanode {
+	p := DocumentPermanode{
+		BasePermanode: vcs.BasePermanode{
+			Type:       DocumentType,
+			Owner:      owner,
+			CreateTime: time.Now().UTC().Round(time.Second),
+		},
+		Nonce: make([]byte, 8),
+	}
+
+	_, err := rand.Read(p.Nonce)
+	if err != nil {
+		panic("can't read random data")
+	}
+
+	return p
+}
 
 // Attributes for document-related datoms.
 const (
@@ -25,45 +61,32 @@ const (
 
 // Document is an instance of a Mintter Document.
 type Document struct {
-	datomFn vcsdb.DatomFactory
-
 	title    *crdt.LWW[vcsdb.Datom]
 	subtitle *crdt.LWW[vcsdb.Datom]
-
-	blocks map[vcsdb.NodeID]*crdt.LWW[vcsdb.Datom]
-
-	blockPos map[vcsdb.NodeID]*crdt.ListElement[BlockPosition] // block-id => current position
-	children map[vcsdb.NodeID]*crdt.RGA[BlockPosition]         // parent => children
-
-	dirtyDatoms   []vcsdb.Datom
-	deletedDatoms map[vcsdb.OpID]struct{}
-	lastOp        vcsdb.OpID
-	err           error
+	blocks   map[vcsdb.NodeID]*crdt.LWW[vcsdb.Datom]
+	tree     *blockTree
+	dw       *vcsdb.DatomWriter
+	tracker  *crdt.OpTracker
+	err      error
 }
 
 // New creates a new Document.
-func New(newDatom vcsdb.DatomFactory) *Document {
-	doc := &Document{
-		datomFn: newDatom,
+func New(dw *vcsdb.DatomWriter) *Document {
+	ot := crdt.NewOpTracker(lessComparator)
 
+	return &Document{
 		title:    crdt.NewLWW[vcsdb.Datom](lessComparator),
 		subtitle: crdt.NewLWW[vcsdb.Datom](lessComparator),
-
-		blocks: make(map[vcsdb.NodeID]*crdt.LWW[vcsdb.Datom]),
-
-		blockPos: make(map[vcsdb.NodeID]*crdt.ListElement[BlockPosition]),
-		children: make(map[vcsdb.NodeID]*crdt.RGA[BlockPosition]),
-
-		deletedDatoms: make(map[vcsdb.OpID]struct{}),
+		blocks:   make(map[vcsdb.NodeID]*crdt.LWW[vcsdb.Datom]),
+		tree:     newBlockTree(ot, dw),
+		dw:       dw,
+		tracker:  ot,
 	}
-	doc.children[vcsdb.RootNode] = crdt.NewRGA[BlockPosition](lessComparator)
-	doc.children[vcsdb.TrashNode] = crdt.NewRGA[BlockPosition](lessComparator)
-	return doc
 }
 
 // Replay existing sorted datoms to restore the state of the document.
 func (doc *Document) Replay(in []vcsdb.Datom) error {
-	if !doc.lastOp.IsZero() {
+	if !doc.tracker.IsZero() {
 		return fmt.Errorf("document must be empty to replay existing state")
 	}
 
@@ -89,7 +112,7 @@ func (doc *Document) Replay(in []vcsdb.Datom) error {
 	moveLog := m.Log()
 
 	for _, move := range moveLog {
-		if _, err := doc.integrateMove(move.Op, move.Block, move.Parent, move.ID, move.Ref); err != nil {
+		if _, err := doc.tree.integrateMove(move.Op, move.Block, move.Parent, move.ID, move.Ref); err != nil {
 			return err
 		}
 	}
@@ -97,75 +120,14 @@ func (doc *Document) Replay(in []vcsdb.Datom) error {
 	return nil
 }
 
-func (doc *Document) integrateMove(id vcsdb.OpID, block, parent, posID vcsdb.NodeID, refID vcsdb.OpID) (moved bool, err error) {
-	if doc.err != nil {
-		return false, doc.err
-	}
-
-	if block.IsReserved() {
-		return false, fmt.Errorf("can't move reserved nodes")
-	}
-
-	if block == parent {
-		return false, fmt.Errorf("can't move block under itself")
-	}
-
-	l := doc.getChildren(parent)
-	el, err := l.GetElement(refID)
-	if err != nil {
-		return false, err
-	}
-
-	// Don't do anything if block is already where we want.
-	curPos := doc.blockPos[block]
-	if curPos != nil && curPos.Value().Parent == parent {
-		prevLive := curPos.PrevAlive()
-		if prevLive == el || prevLive == nil && el.ID().IsZero() {
-			return false, nil
-		}
-	}
-
-	// We can safely update clock here, because we've checked all the invariants up to this point.
-	// Although we still have to make the ancestorship check, these invalid moves would still
-	// allocate a position, but won't perform the actual move.
-	if err := doc.track(id); err != nil {
-		return false, err
-	}
-
-	newEl, err := l.InsertAfter(id, el, BlockPosition{
-		ID:     posID,
-		Block:  block,
-		Parent: parent,
-	})
-	if err != nil {
-		return false, err
-	}
-
-	moved = doc.doMove(block, newEl)
-
-	return moved, nil
-}
-
-func (doc *Document) doMove(blk vcsdb.NodeID, li *crdt.ListElement[BlockPosition]) (moved bool) {
-	if doc.isAncestor(blk, li.Value().Parent) {
-		return false
-	}
-
-	if curPos, ok := doc.blockPos[blk]; ok {
-		curPos.MarkDeleted()
-	}
-	doc.blockPos[blk] = li
-
-	return true
+// Iterator creates a new document iterator to walk the document
+// hierarchy of content blocks in depth-first order.
+func (doc *Document) Iterator() *Iterator {
+	return doc.tree.Iterator()
 }
 
 func (doc *Document) track(op vcsdb.OpID) error {
-	if !lessComparator(doc.lastOp, op) {
-		return fmt.Errorf("tracking out of date op")
-	}
-
-	doc.lastOp = op
-	return nil
+	return doc.tracker.Track(op)
 }
 
 type moves struct {
@@ -281,12 +243,11 @@ func (doc *Document) EnsureBlockState(blk string, state []byte) {
 			return nil
 		}
 
-		d := doc.newDatom(nid, AttrBlockState, state)
-		doc.dirtyDatoms = append(doc.dirtyDatoms, d)
+		d := doc.dw.NewAndAdd(nid, AttrBlockState, state)
 		lww.Set(d.OpID, d)
 
 		if oldDatom.Change == d.Change {
-			doc.deletedDatoms[oldDatom.OpID] = struct{}{}
+			doc.dw.DeleteDatom(oldDatom.OpID)
 		}
 
 		return doc.track(d.OpID)
@@ -321,12 +282,11 @@ func (doc *Document) EnsureTitle(s string) {
 			return nil
 		}
 
-		d := doc.newDatom(vcsdb.RootNode, AttrTitle, s)
-		doc.dirtyDatoms = append(doc.dirtyDatoms, d)
+		d := doc.dw.NewAndAdd(vcsdb.RootNode, AttrTitle, s)
 		doc.title.Set(d.OpID, d)
 
 		if oldDatom.Change == d.Change {
-			doc.deletedDatoms[oldDatom.OpID] = struct{}{}
+			doc.dw.DeleteDatom(oldDatom.OpID)
 		}
 
 		return doc.track(d.OpID)
@@ -366,12 +326,11 @@ func (doc *Document) EnsureSubtitle(s string) {
 			return nil
 		}
 
-		d := doc.newDatom(vcsdb.RootNode, AttrSubtitle, s)
-		doc.dirtyDatoms = append(doc.dirtyDatoms, d)
+		d := doc.dw.NewAndAdd(vcsdb.RootNode, AttrSubtitle, s)
 		doc.subtitle.Set(d.OpID, d)
 
 		if oldDatom.Change == d.Change {
-			doc.deletedDatoms[oldDatom.OpID] = struct{}{}
+			doc.dw.DeleteDatom(oldDatom.OpID)
 		}
 
 		return doc.track(d.OpID)
@@ -384,8 +343,19 @@ func (doc *Document) EnsureSubtitle(s string) {
 // Left ID can also be empty which means beginning of the parent's list of children.
 func (doc *Document) MoveBlock(blockID, parentID, leftID string) (moved bool) {
 	must.Maybe(&doc.err, func() error {
-		ok, err := doc.moveBlock(blockID, parentID, leftID)
+		block := vcsdb.NodeIDFromString(blockID)
+		parent := vcsdb.RootNode
+		if parentID != "" {
+			parent = vcsdb.NodeIDFromString(parentID)
+		}
+		var left vcsdb.NodeID
+		if leftID != "" {
+			left = vcsdb.NodeIDFromString(leftID)
+		}
+
+		ok, err := doc.tree.MoveBlock(block, parent, left)
 		moved = ok
+
 		return err
 	})
 	return moved
@@ -396,51 +366,14 @@ func (doc *Document) DeleteBlock(blockID string) (deleted bool) {
 	return doc.MoveBlock(blockID, "$TRASH", "")
 }
 
-func (doc *Document) moveBlock(blockID, parentID, leftID string) (moved bool, err error) {
-	block := vcsdb.NodeIDFromString(blockID)
-
-	parent := vcsdb.RootNode
-	if parentID != "" {
-		parent = vcsdb.NodeIDFromString(parentID)
-	}
-
-	if doc.isAncestor(block, parent) {
-		return false, fmt.Errorf("can't move: %s is ancestor of %s", block, parent)
-	}
-
-	refID := crdt.ListStart
-	leftPosNode := parent
-	if leftID != "" {
-		el := doc.blockPos[vcsdb.NodeIDFromString(leftID)]
-		if el == nil {
-			return false, fmt.Errorf("left block %s is not in the document", leftID)
-		}
-		refID = el.ID()
-		leftPosNode = el.Value().ID
-	}
-
-	posNode := vcsdb.NewNodeID()
-	d1 := doc.newDatom(vcsdb.RootNode, AttrMove, posNode)
-	d2 := doc.newDatom(posNode, AttrPosBlock, block)
-	d3 := doc.newDatom(posNode, AttrPosParent, parent)
-	d4 := doc.newDatom(posNode, AttrPosLeft, leftPosNode)
-
-	moved, err = doc.integrateMove(d4.OpID, block, parent, posNode, refID)
-	if moved && err == nil {
-		doc.dirtyDatoms = append(doc.dirtyDatoms, d1, d2, d3, d4)
-	}
-
-	return moved, err
-}
-
 // DeletedDatoms returns the set of datoms to be deleted.
 func (doc *Document) DeletedDatoms() map[vcsdb.OpID]struct{} {
-	return doc.deletedDatoms
+	return doc.dw.Deleted()
 }
 
 // DirtyDatoms returns the list of datoms to be inserted into the database.
 func (doc *Document) DirtyDatoms() []vcsdb.Datom {
-	return doc.dirtyDatoms
+	return doc.dw.Dirty()
 }
 
 // Err returns the underlying document error.
@@ -448,55 +381,6 @@ func (doc *Document) Err() error {
 	return doc.err
 }
 
-func (doc *Document) getChildren(parent vcsdb.NodeID) *crdt.RGA[BlockPosition] {
-	l := doc.children[parent]
-	if l == nil {
-		l = crdt.NewRGA[BlockPosition](lessComparator)
-		doc.children[parent] = l
-	}
-	return l
-}
-
-func (doc *Document) isAncestor(a, b vcsdb.NodeID) bool {
-	// check if a is ancestor of b transitively.
-	cur := b
-
-	for {
-		pos, ok := doc.blockPos[cur]
-		if !ok {
-			return false
-		}
-
-		parent := pos.Value().Parent
-		if parent == a {
-			return true
-		}
-		cur = parent
-	}
-}
-
-func (doc *Document) newDatom(e vcsdb.NodeID, a vcsdb.Attribute, v any) (d vcsdb.Datom) {
-	must.Maybe(&doc.err, func() error {
-		d = doc.datomFn(e, a, v)
-		return nil
-	})
-
-	return d
-}
-
 func lessComparator(i, j vcsdb.OpID) bool {
 	return vcsdb.BasicOpCompare(i, j) == -1
-}
-
-// BlockPosition is an instance of a block at some position
-// within the hierarchy of content blocks.
-type BlockPosition struct {
-	// ID of the position node itself.
-	ID vcsdb.NodeID
-	// Parent block ID where this position lives.
-	Parent vcsdb.NodeID
-	// Block is a content block that's supposed to be at this position.
-	// When blocks are moved their position are still there,
-	// although their RGA list elements are marked as deleted.
-	Block vcsdb.NodeID
 }

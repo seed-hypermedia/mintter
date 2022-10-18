@@ -3,8 +3,8 @@ package mttnet
 import (
 	"context"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/vcsdb"
-	"mintter/backend/vcs/vcstypes"
 	"testing"
 	"time"
 
@@ -23,7 +23,7 @@ func TestListObjects(t *testing.T) {
 		require.NoError(t, err)
 
 		err = conn.WithTx(true, func() error {
-			perma, err := vcsdb.NewPermanode(vcstypes.NewDocumentPermanode(alice.me.AccountID()))
+			perma, err := vcsdb.NewPermanode(mttdoc.NewDocumentPermanode(alice.me.AccountID()))
 			if err != nil {
 				return err
 			}

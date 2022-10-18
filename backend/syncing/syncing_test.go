@@ -10,8 +10,8 @@ import (
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/vcsdb"
-	"mintter/backend/vcs/vcstypes"
 	"path/filepath"
 	"testing"
 	"time"
@@ -28,8 +28,8 @@ func TestPermanodeFromMap(t *testing.T) {
 	tests := []struct {
 		In vcs.Permanode
 	}{
-		{In: vcstypes.NewDocumentPermanode(alice.AccountID)},
-		{In: vcstypes.NewAccountPermanode(alice.AccountID)},
+		{In: mttdoc.NewDocumentPermanode(alice.AccountID)},
+		{In: mttacc.NewAccountPermanode(alice.AccountID)},
 	}
 
 	for _, tt := range tests {
@@ -70,7 +70,7 @@ func TestSync(t *testing.T) {
 		t.Cleanup(stop)
 		n.Node = peer
 
-		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS().DB(), peer.VCS(), peer.Bitswap().NewSession, peer.Client)
+		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap().NewSession, peer.Client)
 
 		return n
 	}
@@ -88,7 +88,7 @@ func TestSync(t *testing.T) {
 		require.NoError(t, err)
 
 		err = conn.WithTx(true, func() error {
-			perma, err := vcsdb.NewPermanode(vcstypes.NewDocumentPermanode(alice.ID().AccountID()))
+			perma, err := vcsdb.NewPermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID()))
 			alicePerma = perma
 			require.NoError(t, err)
 			obj := conn.NewObject(perma)

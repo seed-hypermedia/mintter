@@ -240,62 +240,36 @@ func (v Version) IsZero() bool {
 // ObjectID is an ID of a Mintter Object in the VCS.
 type ObjectID = cid.Cid
 
-// WorkingCopy is a dirty mutable copy of a Mintter Object.
-type WorkingCopy struct {
-	etag       string
-	oid        ObjectID
-	name       string
-	ver        Version
-	data       []byte
-	createTime time.Time
-	updateTime time.Time
-}
-
-// NewWorkingCopy creates a new clean working copy.
-func NewWorkingCopy(objectID ObjectID, name string) WorkingCopy {
-	now := time.Now().UTC().Round(time.Second)
-
-	return WorkingCopy{
-		oid:        objectID,
-		name:       name,
-		createTime: now,
-		updateTime: now,
-	}
-}
-
-// Version returns the version of the working copy.
-func (wc *WorkingCopy) Version() Version { return wc.ver }
-
-// Data returns the data of the working copy.
-func (wc *WorkingCopy) Data() []byte { return wc.data }
-
-// SetData mutates the working copy data.
-func (wc *WorkingCopy) SetData(data []byte) {
-	if wc.createTime.IsZero() {
-		panic("BUG: using invalid working copy")
-	}
-
-	wc.data = data
-	wc.updateTime = time.Now().UTC().Round(time.Second)
-}
-
-// UpdateTime returns the time of the last update.
-func (wc *WorkingCopy) UpdateTime() time.Time { return wc.updateTime }
-
+// BasePermanode is the simplest Permanode.
 type BasePermanode struct {
 	Type       ObjectType `refmt:"@type"`
 	Owner      cid.Cid    `refmt:"owner"`
 	CreateTime time.Time  `refmt:"createTime"`
 }
 
-func (b BasePermanode) PermanodeType() ObjectType      { return b.Type }
-func (b BasePermanode) PermanodeOwner() cid.Cid        { return b.Owner }
+// PermanodeType implements the Permanode interface.
+func (b BasePermanode) PermanodeType() ObjectType { return b.Type }
+
+// PermanodeOwner implements the Permanode interface.
+func (b BasePermanode) PermanodeOwner() cid.Cid { return b.Owner }
+
+// PermanodeCreateTime implements the Permanode interface.
 func (b BasePermanode) PermanodeCreateTime() time.Time { return b.CreateTime }
 
 func init() {
 	cbornode.RegisterCborType(BasePermanode{})
 }
 
+// NewPermanode create a new base permanode.
+func NewPermanode(ot ObjectType, owner cid.Cid, createTime time.Time) Permanode {
+	return BasePermanode{
+		Type:       ot,
+		Owner:      owner,
+		CreateTime: createTime,
+	}
+}
+
+// Permanode is an interface for common Permanode fields.
 type Permanode interface {
 	PermanodeType() ObjectType
 	PermanodeOwner() cid.Cid

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs/vcsdb"
-	"mintter/backend/vcs/vcstypes"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -26,7 +25,7 @@ const (
 func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (c cid.Cid, err error) {
 	aid := acc.CID()
 
-	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(aid))
+	perma, err := vcsdb.NewPermanode(NewAccountPermanode(aid))
 	if err != nil {
 		return c, err
 	}
@@ -36,7 +35,7 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 	change := conn.NewChange(obj, id, nil, time.Now().UTC())
 	newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
 
-	proof, err := vcstypes.NewRegistrationProof(acc, device.CID())
+	proof, err := NewRegistrationProof(acc, device.CID())
 	if err != nil {
 		return c, err
 	}
@@ -54,7 +53,7 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 
 // GetDeviceProof searches for a registration proof of a device under an account.
 func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid) (proof []byte, err error) {
-	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(account))
+	perma, err := vcsdb.NewPermanode(NewAccountPermanode(account))
 	if err != nil {
 		return nil, err
 	}

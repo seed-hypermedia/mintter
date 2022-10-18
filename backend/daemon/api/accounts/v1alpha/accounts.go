@@ -12,7 +12,6 @@ import (
 	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
-	"mintter/backend/vcs/vcstypes"
 
 	"github.com/ipfs/go-cid"
 	codes "google.golang.org/grpc/codes"
@@ -54,7 +53,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		aid = acc
 	}
 
-	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(aid))
+	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +134,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	}
 	aid := me.AccountID()
 
-	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(aid))
+	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
@@ -209,13 +208,13 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 
 	resp := &accounts.ListAccountsResponse{}
 
-	perma, err := vcsdb.NewPermanode(vcstypes.NewAccountPermanode(me.AccountID()))
+	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(me.AccountID()))
 	if err != nil {
 		return nil, err
 	}
 
 	if err := conn.WithTx(false, func() error {
-		accs := conn.ListObjectsByType(vcstypes.AccountType)
+		accs := conn.ListObjectsByType(mttacc.AccountType)
 		meLocal := conn.LookupIdentity(me)
 		myAcc := conn.LookupPermanode(perma.ID)
 
