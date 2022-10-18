@@ -580,7 +580,7 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	})
 	if errLocal != nil && !in.LocalOnly {
 		release()
-		if errors.Is(err, errNumVersionsNotOne) {
+		if !errors.Is(err, errNumVersionsNotOne) && !errors.Is(errLocal, errNotFoundLocally) {
 			return nil, err
 		}
 		// make network call
@@ -588,7 +588,10 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		const maxPeers = 3
 		peers, errRemote := api.provider.FindProvider(ctx, oid, maxPeers)
 		if errRemote != nil {
-			return nil, err
+			return nil, errRemote
+		}
+		if ctx_err := ctx.Err(); ctx_err != nil {
+			return nil, ctx_err
 		}
 
 		// connect with remote peer
@@ -606,6 +609,9 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 			conn, release, err := api.vcsdb.Conn(ctx)
 			if err != nil {
 				return nil, err
+			}
+			if ctx_err := ctx.Err(); ctx_err != nil {
+				return nil, ctx_err
 			}
 			errLocal = conn.WithTx(false, func() error {
 				obj := conn.LookupPermanode(oid)
