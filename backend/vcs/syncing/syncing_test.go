@@ -81,14 +81,14 @@ func TestSync(t *testing.T) {
 
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
-	var alicePerma vcsdb.EncodedPermanode
+	var alicePerma vcs.EncodedPermanode
 	var wantDatoms []vcsdb.Datom
 	{
 		conn, release, err := alice.VCS().Conn(ctx)
 		require.NoError(t, err)
 
 		err = conn.WithTx(true, func() error {
-			perma, err := vcsdb.NewPermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID()))
+			perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID()))
 			alicePerma = perma
 			require.NoError(t, err)
 			obj := conn.NewObject(perma)

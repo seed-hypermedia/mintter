@@ -280,7 +280,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 
 	var permanode vcs.Permanode
 	var shouldStorePermanode bool
-	var ep vcsdb.EncodedPermanode
+	var ep vcs.EncodedPermanode
 	{
 		// Important to check before using bitswap, because it would add the fetched block into our blockstore,
 		// without any mintter-specific indexing.
@@ -312,7 +312,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 
 		if !has {
 			shouldStorePermanode = true
-			ep = vcsdb.EncodedPermanode{
+			ep = vcs.EncodedPermanode{
 				ID:        perma.Cid(),
 				Data:      perma.RawData(),
 				Permanode: permanode,

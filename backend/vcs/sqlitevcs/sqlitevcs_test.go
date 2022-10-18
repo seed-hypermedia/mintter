@@ -25,7 +25,7 @@ func TestSmoke(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	now := time.Time{}
@@ -144,7 +144,7 @@ func TestIterateObjectDatoms(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	now := time.Time{}
@@ -254,7 +254,7 @@ func TestChangeEncoding(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	now := time.Time{}

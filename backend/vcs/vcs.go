@@ -1,19 +1,12 @@
 package vcs
 
 import (
-	"bytes"
-	"context"
-	"encoding/binary"
 	"fmt"
-	"io"
 	"mintter/backend/ipfs"
 	"time"
 
-	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
-	"github.com/multiformats/go-multibase"
 )
 
 // ObjectType is a type for describing types of our IPLD data.
@@ -167,48 +160,27 @@ type Permanode interface {
 	PermanodeCreateTime() time.Time
 }
 
-type EncodedBlock[T any] struct {
-	blocks.Block
-	Value T
+// EncodedPermanode is a Permanode encoded in a canonical form.
+// The ID of the Permanode is the ID of a Mintter Object.
+type EncodedPermanode struct {
+	ID   cid.Cid
+	Data []byte
+
+	Permanode
 }
 
-func EncodeBlock[T any](v T) (EncodedBlock[T], error) {
-	data, err := cbornode.DumpObject(v)
+// EncodePermanode encodes a given Permanode.
+func EncodePermanode(p Permanode) (ep EncodedPermanode, err error) {
+	data, err := cbornode.DumpObject(p)
 	if err != nil {
-		return EncodedBlock[T]{}, err
+		return ep, fmt.Errorf("failed to encode permanode: %w", err)
 	}
 
 	blk := ipfs.NewBlock(cid.DagCBOR, data)
 
-	return EncodedBlock[T]{
-		Block: blk,
-		Value: v,
-	}, nil
-}
+	ep.ID = blk.Cid()
+	ep.Data = blk.RawData()
+	ep.Permanode = p
 
-type bstoreGetter struct {
-	blockstore.Blockstore
-}
-
-func (b bstoreGetter) GetBlock(ctx context.Context, c cid.Cid) (blocks.Block, error) {
-	return b.Blockstore.Get(ctx, c)
-}
-
-type BlockGetter interface {
-	GetBlock(context.Context, cid.Cid) (blocks.Block, error)
-}
-
-func LoadPermanode[P Permanode](ctx context.Context, bg BlockGetter, c cid.Cid) (out EncodedBlock[P], err error) {
-	blk, err := bg.GetBlock(ctx, c)
-	if err != nil {
-		return out, err
-	}
-
-	if err := cbornode.DecodeInto(blk.RawData(), &out.Value); err != nil {
-		return EncodedBlock[P]{}, err
-	}
-
-	out.Block = blk
-
-	return out, nil
+	return ep, nil
 }

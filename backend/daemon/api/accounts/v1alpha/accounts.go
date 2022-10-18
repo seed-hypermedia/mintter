@@ -9,6 +9,7 @@ import (
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
+	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
@@ -53,7 +54,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		aid = acc
 	}
 
-	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	}
 	aid := me.AccountID()
 
-	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +209,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 
 	resp := &accounts.ListAccountsResponse{}
 
-	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(me.AccountID()))
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(me.AccountID()))
 	if err != nil {
 		return nil, err
 	}

@@ -40,32 +40,6 @@ type DB struct {
 	bs *blockStore
 }
 
-// Permanode is a common interface for different Permanode structs.
-type Permanode = vcs.Permanode
-
-// EncodedPermanode is a Permanode encoded in a canonical form.
-// The ID of the Permanode is the ID of a Mintter Object.
-type EncodedPermanode struct {
-	ID   cid.Cid
-	Data []byte
-
-	Permanode
-}
-
-// NewPermanode creates a new permanode in the encoded form.
-func NewPermanode(p Permanode) (ep EncodedPermanode, err error) {
-	blk, err := vcs.EncodeBlock(p)
-	if err != nil {
-		return ep, err
-	}
-
-	ep.ID = blk.Cid()
-	ep.Data = blk.RawData()
-	ep.Permanode = p
-
-	return ep, nil
-}
-
 // New creates a new DB.
 func New(pool *sqlitex.Pool) *DB {
 	return &DB{pool: pool, bs: newBlockstore(pool)}
@@ -147,7 +121,7 @@ func (conn *Conn) Attr(s Attribute) LocalID {
 }
 
 // NewObject creates a new object and returns it internal ID.
-func (conn *Conn) NewObject(p EncodedPermanode) (lid LocalID) {
+func (conn *Conn) NewObject(p vcs.EncodedPermanode) (lid LocalID) {
 	must.Maybe(&conn.err, func() error {
 		defer sqlitex.Save(conn.conn)(&conn.err)
 
@@ -203,7 +177,7 @@ func (conn *Conn) GetObjectOwner(id LocalID) (c cid.Cid) {
 }
 
 // EnsurePermanode ensures a permanode exist and returns it's local ID.
-func (conn *Conn) EnsurePermanode(p EncodedPermanode) (lid LocalID) {
+func (conn *Conn) EnsurePermanode(p vcs.EncodedPermanode) (lid LocalID) {
 	must.Maybe(&conn.err, func() error {
 		lid = conn.LookupPermanode(p.ID)
 		if lid == 0 {

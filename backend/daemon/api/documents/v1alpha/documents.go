@@ -62,7 +62,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	perma, err := vcsdb.NewPermanode(mttdoc.NewDocumentPermanode(me.AccountID()))
+	perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(me.AccountID()))
 	if err != nil {
 		return nil, err
 	}

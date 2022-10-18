@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/core"
+	"mintter/backend/vcs"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"time"
 
@@ -25,7 +26,7 @@ const (
 func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (c cid.Cid, err error) {
 	aid := acc.CID()
 
-	perma, err := vcsdb.NewPermanode(NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(NewAccountPermanode(aid))
 	if err != nil {
 		return c, err
 	}
@@ -53,7 +54,7 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 
 // GetDeviceProof searches for a registration proof of a device under an account.
 func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid) (proof []byte, err error) {
-	perma, err := vcsdb.NewPermanode(NewAccountPermanode(account))
+	perma, err := vcs.EncodePermanode(NewAccountPermanode(account))
 	if err != nil {
 		return nil, err
 	}

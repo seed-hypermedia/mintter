@@ -282,13 +282,12 @@ func initNetwork(
 		}
 
 		// We assume registration already happened.
-		perma := mttacc.NewAccountPermanode(id.AccountID())
-		blk, err := vcs.EncodeBlock(perma)
+		perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(id.AccountID()))
 		if err != nil {
 			return err
 		}
 
-		n, err := mttnet.New(cfg, vcsh, blk.Cid(), id, logging.New("mintter/network", "debug"))
+		n, err := mttnet.New(cfg, vcsh, perma.ID, id, logging.New("mintter/network", "debug"))
 		if err != nil {
 			return err
 		}

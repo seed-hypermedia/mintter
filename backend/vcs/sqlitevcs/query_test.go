@@ -20,7 +20,7 @@ func TestQuery(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
 	require.NoError(t, err)
 
 	require.NoError(t, conn.BeginTx(true))
