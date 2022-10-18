@@ -27,9 +27,9 @@ reqwest = { version = "0.11", features = ["__tls", "blocking", "default-tls", "h
 semver = { version = "1", features = ["serde", "std"] }
 serde = { version = "1", features = ["alloc", "derive", "serde_derive", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
-tauri = { git = "https://github.com/tauri-apps/tauri", features = ["bytes", "compression", "custom-protocol", "dialog", "dialog-message", "objc-exception", "open", "os_pipe", "process-command-api", "regex", "reqwest", "reqwest-client", "reqwest-native-tls-vendored", "rfd", "shared_child", "shell-execute", "shell-open", "shell-open-api", "system-tray", "tauri-runtime-wry", "window-maximize", "window-start-dragging", "window-unmaximize", "wry"] }
 tauri-utils-c8186c8c63ad2324 = { package = "tauri-utils", git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 tauri-utils-dff4ba8e3ae991db = { package = "tauri-utils", version = "1", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
+tokio = { version = "1", features = ["bytes", "fs", "io-util", "macros", "memchr", "num_cpus", "rt", "rt-multi-thread", "sync", "tokio-macros"] }
 tracing = { version = "0.1", features = ["attributes", "log", "std", "tracing-attributes"] }
 uuid = { version = "1", features = ["getrandom", "rng", "serde", "std", "v4"] }
 
@@ -44,7 +44,6 @@ semver = { version = "1", features = ["serde", "std"] }
 serde = { version = "1", features = ["alloc", "derive", "serde_derive", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
 syn = { version = "1", features = ["clone-impls", "derive", "extra-traits", "fold", "full", "parsing", "printing", "proc-macro", "quote", "visit", "visit-mut"] }
-tauri-macros = { git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["compression", "custom-protocol", "shell-scope"] }
 tauri-utils-c8186c8c63ad2324 = { package = "tauri-utils", git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 tauri-utils-dff4ba8e3ae991db = { package = "tauri-utils", version = "1", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 uuid = { version = "1", features = ["getrandom", "rng", "serde", "std", "v4"] }
@@ -54,7 +53,7 @@ futures-core = { version = "0.3", features = ["alloc", "std"] }
 futures-util = { version = "0.3", features = ["alloc", "async-await", "async-await-macro", "futures-io", "futures-macro", "io", "memchr", "slab", "std"] }
 hashbrown = { version = "0.12", default-features = false, features = ["ahash", "raw"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
-tokio = { version = "1", features = ["bytes", "fs", "io-util", "libc", "memchr", "mio", "net", "num_cpus", "rt", "rt-multi-thread", "socket2", "sync", "time"] }
+tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time"] }
 
 [target.x86_64-unknown-linux-gnu.build-dependencies]
 libc = { version = "0.2", features = ["extra_traits", "std"] }
@@ -65,7 +64,7 @@ futures-util = { version = "0.3", features = ["alloc", "async-await", "async-awa
 hashbrown = { version = "0.12", default-features = false, features = ["ahash", "raw"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
 scopeguard = { version = "1", features = ["use_std"] }
-tokio = { version = "1", features = ["bytes", "fs", "io-util", "libc", "memchr", "mio", "net", "num_cpus", "rt", "rt-multi-thread", "socket2", "sync", "time"] }
+tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time"] }
 
 [target.x86_64-apple-darwin.build-dependencies]
 hashbrown = { version = "0.12", default-features = false, features = ["ahash", "raw"] }
@@ -79,7 +78,7 @@ futures-util = { version = "0.3", features = ["alloc", "async-await", "async-awa
 hashbrown = { version = "0.12", default-features = false, features = ["ahash", "raw"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
 scopeguard = { version = "1", features = ["use_std"] }
-tokio = { version = "1", features = ["bytes", "fs", "io-util", "libc", "memchr", "mio", "net", "num_cpus", "rt", "rt-multi-thread", "socket2", "sync", "time"] }
+tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time"] }
 
 [target.aarch64-apple-darwin.build-dependencies]
 hashbrown = { version = "0.12", default-features = false, features = ["ahash", "raw"] }
@@ -94,7 +93,7 @@ hashbrown = { version = "0.12", default-features = false, features = ["ahash", "
 libc = { version = "0.2", features = ["extra_traits", "std"] }
 num-integer = { version = "0.1", default-features = false, features = ["i128", "std"] }
 num-traits = { version = "0.2", default-features = false, features = ["i128"] }
-tokio = { version = "1", features = ["bytes", "fs", "io-util", "libc", "memchr", "mio", "net", "num_cpus", "rt", "rt-multi-thread", "socket2", "sync", "time", "winapi"] }
+tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time", "winapi"] }
 winapi = { version = "0.3", default-features = false, features = ["accctrl", "aclapi", "consoleapi", "errhandlingapi", "fileapi", "handleapi", "impl-debug", "impl-default", "ioapiset", "knownfolders", "minwinbase", "minwindef", "namedpipeapi", "ntdef", "objbase", "processenv", "processthreadsapi", "shlobj", "std", "synchapi", "sysinfoapi", "timezoneapi", "winbase", "wincon", "winerror", "winnt", "winreg", "winsock2", "ws2ipdef", "ws2tcpip"] }
 windows = { version = "0.39", features = ["Win32", "Win32_Devices", "Win32_Devices_HumanInterfaceDevice", "Win32_Foundation", "Win32_Globalization", "Win32_Graphics", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Security_Authorization", "Win32_System", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_DataExchange", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_SystemInformation", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WinRT", "Win32_System_WindowsProgramming", "Win32_UI", "Win32_UI_Accessibility", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Input", "Win32_UI_Input_Ime", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Input_Pointer", "Win32_UI_Input_Touch", "Win32_UI_Shell", "Win32_UI_TextServices", "Win32_UI_WindowsAndMessaging", "implement", "windows-implement"] }
 windows-sys = { version = "0.36", features = ["Win32", "Win32_Foundation", "Win32_NetworkManagement", "Win32_NetworkManagement_IpHelper", "Win32_Networking", "Win32_Networking_WinSock", "Win32_Security", "Win32_Security_Authentication", "Win32_Security_Authentication_Identity", "Win32_Security_Credentials", "Win32_Security_Cryptography", "Win32_Storage", "Win32_Storage_FileSystem", "Win32_System", "Win32_System_ApplicationVerifier", "Win32_System_Diagnostics", "Win32_System_Diagnostics_Debug", "Win32_System_IO", "Win32_System_Kernel", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Pipes", "Win32_System_SystemInformation", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_System_WindowsProgramming", "Win32_UI", "Win32_UI_Shell"] }

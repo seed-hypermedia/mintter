@@ -5263,8 +5263,6 @@ dependencies = [
  "serde",
  "serde_json",
  "syn",
- "tauri 1.1.1 (git+https://github.com/tauri-apps/tauri)",
- "tauri-macros 1.1.1 (git+https://github.com/tauri-apps/tauri)",
  "tauri-utils 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "tauri-utils 1.1.1 (git+https://github.com/tauri-apps/tauri)",
  "tokio",
