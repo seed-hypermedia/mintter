@@ -18,7 +18,7 @@ jobs:
     outputs:
       version: ${{ steps.current_time.outputs.formattedTime }}
     steps:
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -213,7 +213,7 @@ jobs:
 
       - name:
         if: failure()
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -228,7 +228,7 @@ jobs:
     needs: [get-version, build-binaries]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v5
+      - uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
