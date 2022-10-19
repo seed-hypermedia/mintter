@@ -3,7 +3,6 @@ import {mainMachine} from '@app/main-machine'
 import {TooltipProvider} from '@components/tooltip'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, useState} from 'react'
-import {Toaster} from 'react-hot-toast'
 import {FindContextProvider} from '../editor/find'
 
 type AppProviderProps = {
@@ -17,7 +16,6 @@ function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
     <MainProvider value={mainService}>
       <FindContextProvider value={{search, setSearch}}>
         <TooltipProvider>{children}</TooltipProvider>
-        <Toaster position="bottom-right" />
       </FindContextProvider>
     </MainProvider>
   )
