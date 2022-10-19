@@ -21,6 +21,6 @@ pnpm_script(
     ],
     outs = ["dist"],
     pnpm_deps = "//:pnpm",
-    script_name = "build:client",
+    script_name = "build",
     workdir = "./app",
 )
