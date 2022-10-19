@@ -101,7 +101,7 @@ def main():
 
     @cmd(cmds, "release", "Cut a new release.")
     def release(args):
-        allowed_components = ["desktop", "relay"]
+        allowed_components = ["desktop", "relay", "daemon"]
         want_branch = "master"
 
         if len(args) != 1:
