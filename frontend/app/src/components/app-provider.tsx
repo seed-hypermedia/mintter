@@ -3,6 +3,7 @@ import {mainMachine} from '@app/main-machine'
 import {TooltipProvider} from '@components/tooltip'
 import {useInterpret} from '@xstate/react'
 import {PropsWithChildren, useState} from 'react'
+import {useLocation} from 'wouter'
 import {FindContextProvider} from '../editor/find'
 
 type AppProviderProps = {
@@ -11,7 +12,14 @@ type AppProviderProps = {
 
 function AppProvider({children}: PropsWithChildren<AppProviderProps>) {
   const [search, setSearch] = useState('')
-  const mainService = useInterpret(() => mainMachine)
+  const [, setLocation] = useLocation()
+  const mainService = useInterpret(() => mainMachine, {
+    actions: {
+      navigateToDraft: (c, event) => {
+        setLocation(`/d/${event.data.id}`)
+      },
+    },
+  })
   return (
     <MainProvider value={mainService}>
       <FindContextProvider value={{search, setSearch}}>

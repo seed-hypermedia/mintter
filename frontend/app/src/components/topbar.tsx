@@ -1,4 +1,4 @@
-import {Route, Switch, useLocation} from '@app/components/router'
+import {Route, Switch, useLocation, useRoute} from '@app/components/router'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {DraftActor} from '@app/draft-machine'
 import {Dropdown} from '@app/editor/dropdown'
@@ -16,13 +16,6 @@ import '../styles/topbar.scss'
 export default function Topbar() {
   return (
     <div className="topbar" data-layout-section="topbar" {...draggableProps}>
-      {/* 
-        - we need this div in order to push the whole topbar to the right because of the traffic lights buttons.
-        - this is not necessary for other OSs
-      */}
-
-      <div className="macos-separator no-flex" />
-
       <Switch>
         <Route path="/" component={DefaultTopbar} />
         <Route path="/inbox" component={DefaultTopbar} />
@@ -353,6 +346,7 @@ export function Menu({emit = tauriEmit}: {emit?: typeof tauriEmit}) {
 function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
   let mainService = useMain()
   let isReplying = useIsReplying()
+  let [, params] = useRoute('/p/:id/:version/:block?')
 
   return (
     <Dropdown.Root>
@@ -381,7 +375,7 @@ function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
           {/* {isPublication && canUpdate ? ( */}
           <Dropdown.Item
             onSelect={() => {
-              fileRef.send('PUBLICATION.EDIT')
+              fileRef.send({type: 'PUBLICATION.EDIT', params})
             }}
           >
             <Icon name="Pencil" />
