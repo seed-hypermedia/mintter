@@ -541,20 +541,19 @@ type NamedVersionsListByObjectOwnerResult struct {
 	PermanodeMultihash   []byte
 }
 
-func NamedVersionsListByObjectOwner(conn *sqlite.Conn, permanodeOwnersAccountID int) ([]NamedVersionsListByObjectOwnerResult, error) {
+func NamedVersionsListByObjectOwner(conn *sqlite.Conn, permanodesAccountID int) ([]NamedVersionsListByObjectOwnerResult, error) {
 	const query = `SELECT accounts.multihash, devices.multihash, named_versions.version, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash
 FROM named_versions
-INNER JOIN permanode_owners ON permanode_owners.permanode_id = named_versions.object_id
-INNER JOIN devices ON devices.id = named_versions.device_id
-INNER JOIN accounts ON accounts.id = named_versions.account_id
-INNER JOIN ipfs_blocks ON ipfs_blocks.id = named_versions.object_id
-WHERE permanode_owners.account_id = :permanodeOwnersAccountID
+JOIN devices ON devices.id = named_versions.device_id
+JOIN accounts ON accounts.id = named_versions.account_id
+JOIN ipfs_blocks ON ipfs_blocks.id = named_versions.object_id
+WHERE permanodes.account_id = :permanodesAccountID
 `
 
 	var out []NamedVersionsListByObjectOwnerResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":permanodeOwnersAccountID", permanodeOwnersAccountID)
+		stmt.SetInt(":permanodesAccountID", permanodesAccountID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -970,14 +969,15 @@ LIMIT 1`
 	return out, err
 }
 
-func PermanodesInsertOrIgnore(conn *sqlite.Conn, permanodesType string, permanodesID int, permanodesCreateTime int) error {
-	const query = `INSERT OR IGNORE INTO permanodes (type, id, create_time)
-VALUES (:permanodesType, :permanodesID, :permanodesCreateTime)`
+func PermanodesInsertOrIgnore(conn *sqlite.Conn, permanodesType string, permanodesID int, permanodesCreateTime int, permanodesAccountID int) error {
+	const query = `INSERT OR IGNORE INTO permanodes (type, id, create_time, account_id)
+VALUES (:permanodesType, :permanodesID, :permanodesCreateTime, :permanodesAccountID)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":permanodesType", permanodesType)
 		stmt.SetInt(":permanodesID", permanodesID)
 		stmt.SetInt(":permanodesCreateTime", permanodesCreateTime)
+		stmt.SetInt(":permanodesAccountID", permanodesAccountID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -992,42 +992,21 @@ VALUES (:permanodesType, :permanodesID, :permanodesCreateTime)`
 	return err
 }
 
-func PermanodeOwnersInsertOrIgnore(conn *sqlite.Conn, permanodeOwnersAccountID int, permanodeOwnersPermanodeID int) error {
-	const query = `INSERT OR IGNORE INTO permanode_owners (account_id, permanode_id)
-VALUES (:permanodeOwnersAccountID, :permanodeOwnersPermanodeID)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":permanodeOwnersAccountID", permanodeOwnersAccountID)
-		stmt.SetInt(":permanodeOwnersPermanodeID", permanodeOwnersPermanodeID)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: PermanodeOwnersInsertOrIgnore: %w", err)
-	}
-
-	return err
-}
-
 type PermanodeOwnersGetOneResult struct {
 	AccountsMultihash []byte
 }
 
-func PermanodeOwnersGetOne(conn *sqlite.Conn, permanodeOwnersPermanodeID int) (PermanodeOwnersGetOneResult, error) {
+func PermanodeOwnersGetOne(conn *sqlite.Conn, permanodesID int) (PermanodeOwnersGetOneResult, error) {
 	const query = `SELECT accounts.multihash
-FROM permanode_owners
-JOIN accounts ON permanode_owners.account_id = accounts.id
-WHERE permanode_owners.permanode_id = :permanodeOwnersPermanodeID
+FROM permanodes
+JOIN accounts ON permanodes.account_id = accounts.id
+WHERE permanodes.id = :permanodesID
 LIMIT 1`
 
 	var out PermanodeOwnersGetOneResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":permanodeOwnersPermanodeID", permanodeOwnersPermanodeID)
+		stmt.SetInt(":permanodesID", permanodesID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1048,20 +1027,19 @@ LIMIT 1`
 }
 
 type PermanodesListWithVersionsByTypeResult struct {
-	PermanodesID             int
-	PermanodeOwnersAccountID int
-	AccountsMultihash        []byte
-	PermanodeCodec           int
-	PermanodeMultihash       []byte
-	PermanodesCreateTime     int
+	PermanodesID         int
+	PermanodesAccountID  int
+	AccountsMultihash    []byte
+	PermanodeCodec       int
+	PermanodeMultihash   []byte
+	PermanodesCreateTime int
 }
 
 func PermanodesListWithVersionsByType(conn *sqlite.Conn, permanodesType string) ([]PermanodesListWithVersionsByTypeResult, error) {
-	const query = `SELECT permanodes.id, permanode_owners.account_id, accounts.multihash, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash, permanodes.create_time
+	const query = `SELECT permanodes.id, permanodes.account_id, accounts.multihash, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash, permanodes.create_time
 FROM permanodes
 JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
-JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id
-JOIN accounts ON accounts.id = permanode_owners.account_id
+JOIN accounts ON accounts.id = permanodes.account_id
 WHERE permanodes.type = :permanodesType
 AND permanodes.id IN (SELECT DISTINCT named_versions.object_id FROM named_versions)`
 
@@ -1073,12 +1051,12 @@ AND permanodes.id IN (SELECT DISTINCT named_versions.object_id FROM named_versio
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, PermanodesListWithVersionsByTypeResult{
-			PermanodesID:             stmt.ColumnInt(0),
-			PermanodeOwnersAccountID: stmt.ColumnInt(1),
-			AccountsMultihash:        stmt.ColumnBytes(2),
-			PermanodeCodec:           stmt.ColumnInt(3),
-			PermanodeMultihash:       stmt.ColumnBytes(4),
-			PermanodesCreateTime:     stmt.ColumnInt(5),
+			PermanodesID:         stmt.ColumnInt(0),
+			PermanodesAccountID:  stmt.ColumnInt(1),
+			AccountsMultihash:    stmt.ColumnBytes(2),
+			PermanodeCodec:       stmt.ColumnInt(3),
+			PermanodeMultihash:   stmt.ColumnBytes(4),
+			PermanodesCreateTime: stmt.ColumnInt(5),
 		})
 
 		return nil
@@ -1093,19 +1071,19 @@ AND permanodes.id IN (SELECT DISTINCT named_versions.object_id FROM named_versio
 }
 
 type PermanodesListByTypeResult struct {
-	PermanodesID             int
-	PermanodeOwnersAccountID int
-	AccountsMultihash        []byte
-	PermanodeCodec           int
-	PermanodeMultihash       []byte
-	PermanodesCreateTime     int
+	PermanodesID         int
+	PermanodesAccountID  int
+	AccountsMultihash    []byte
+	PermanodeCodec       int
+	PermanodeMultihash   []byte
+	PermanodesCreateTime int
 }
 
 func PermanodesListByType(conn *sqlite.Conn, permanodesType string) ([]PermanodesListByTypeResult, error) {
-	const query = `SELECT permanodes.id, permanode_owners.account_id, accounts.multihash, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash, permanodes.create_time
+	const query = `SELECT permanodes.id, permanodes.account_id, accounts.multihash, ipfs_blocks.codec AS permanode_codec, ipfs_blocks.multihash AS permanode_multihash, permanodes.create_time
 FROM permanodes
 JOIN ipfs_blocks ON ipfs_blocks.id = permanodes.id
-JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id JOIN accounts ON accounts.id = permanode_owners.account_id WHERE permanodes.type = :permanodesType`
+JOIN accounts ON accounts.id = permanodes.account_id WHERE permanodes.type = :permanodesType`
 
 	var out []PermanodesListByTypeResult
 
@@ -1115,12 +1093,12 @@ JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id JOIN acco
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, PermanodesListByTypeResult{
-			PermanodesID:             stmt.ColumnInt(0),
-			PermanodeOwnersAccountID: stmt.ColumnInt(1),
-			AccountsMultihash:        stmt.ColumnBytes(2),
-			PermanodeCodec:           stmt.ColumnInt(3),
-			PermanodeMultihash:       stmt.ColumnBytes(4),
-			PermanodesCreateTime:     stmt.ColumnInt(5),
+			PermanodesID:         stmt.ColumnInt(0),
+			PermanodesAccountID:  stmt.ColumnInt(1),
+			AccountsMultihash:    stmt.ColumnBytes(2),
+			PermanodeCodec:       stmt.ColumnInt(3),
+			PermanodeMultihash:   stmt.ColumnBytes(4),
+			PermanodesCreateTime: stmt.ColumnInt(5),
 		})
 
 		return nil
@@ -1134,13 +1112,15 @@ JOIN permanode_owners ON permanode_owners.permanode_id = permanodes.id JOIN acco
 	return out, err
 }
 
-func ChangesInsertOrIgnore(conn *sqlite.Conn, changesID int, changesPermanodeID int, changesKind string, changesLamportTime int, changesCreateTime int) error {
-	const query = `INSERT OR IGNORE INTO changes (id, permanode_id, kind, lamport_time, create_time)
-VALUES (:changesID, :changesPermanodeID, :changesKind, :changesLamportTime, :changesCreateTime)`
+func ChangesInsertOrIgnore(conn *sqlite.Conn, changesID int, changesPermanodeID int, changesAccountID int, changesDeviceID int, changesKind string, changesLamportTime int, changesCreateTime int) error {
+	const query = `INSERT OR IGNORE INTO changes (id, permanode_id, account_id, device_id, kind, lamport_time, create_time)
+VALUES (:changesID, :changesPermanodeID, :changesAccountID, :changesDeviceID, :changesKind, :changesLamportTime, :changesCreateTime)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":changesID", changesID)
 		stmt.SetInt(":changesPermanodeID", changesPermanodeID)
+		stmt.SetInt(":changesAccountID", changesAccountID)
+		stmt.SetInt(":changesDeviceID", changesDeviceID)
 		stmt.SetText(":changesKind", changesKind)
 		stmt.SetInt(":changesLamportTime", changesLamportTime)
 		stmt.SetInt(":changesCreateTime", changesCreateTime)
@@ -1195,25 +1175,24 @@ AND changes.permanode_id = :changesPermanodeID`
 }
 
 type ChangesGetWithAuthorsResult struct {
-	ChangesID              int
-	IPFSBlocksCodec        int
-	IPFSBlocksMultihash    []byte
-	ChangesPermanodeID     int
-	ChangesKind            string
-	ChangesLamportTime     int
-	ChangesCreateTime      int
-	AccountsMultihash      []byte
-	DevicesMultihash       []byte
-	ChangeAuthorsAccountID int
-	ChangeAuthorsDeviceID  int
+	ChangesID           int
+	IPFSBlocksCodec     int
+	IPFSBlocksMultihash []byte
+	ChangesPermanodeID  int
+	ChangesKind         string
+	ChangesLamportTime  int
+	ChangesCreateTime   int
+	AccountsMultihash   []byte
+	DevicesMultihash    []byte
+	ChangesAccountID    int
+	ChangesDeviceID     int
 }
 
 func ChangesGetWithAuthors(conn *sqlite.Conn, changesID int) ([]ChangesGetWithAuthorsResult, error) {
-	const query = `SELECT changes.id, ipfs_blocks.codec, ipfs_blocks.multihash, changes.permanode_id, changes.kind, changes.lamport_time, changes.create_time, accounts.multihash, devices.multihash, change_authors.account_id, change_authors.device_id
+	const query = `SELECT changes.id, ipfs_blocks.codec, ipfs_blocks.multihash, changes.permanode_id, changes.kind, changes.lamport_time, changes.create_time, accounts.multihash, devices.multihash, changes.account_id, changes.device_id
 FROM changes
-JOIN change_authors ON change_authors.change_id = changes.id
-JOIN accounts ON accounts.id = change_authors.account_id
-JOIN devices ON devices.id = change_authors.device_id
+JOIN accounts ON accounts.id = changes.account_id
+JOIN devices ON devices.id = changes.device_id
 JOIN ipfs_blocks ON ipfs_blocks.id = changes.permanode_id
 WHERE changes.id = :changesID`
 
@@ -1225,17 +1204,17 @@ WHERE changes.id = :changesID`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, ChangesGetWithAuthorsResult{
-			ChangesID:              stmt.ColumnInt(0),
-			IPFSBlocksCodec:        stmt.ColumnInt(1),
-			IPFSBlocksMultihash:    stmt.ColumnBytes(2),
-			ChangesPermanodeID:     stmt.ColumnInt(3),
-			ChangesKind:            stmt.ColumnText(4),
-			ChangesLamportTime:     stmt.ColumnInt(5),
-			ChangesCreateTime:      stmt.ColumnInt(6),
-			AccountsMultihash:      stmt.ColumnBytes(7),
-			DevicesMultihash:       stmt.ColumnBytes(8),
-			ChangeAuthorsAccountID: stmt.ColumnInt(9),
-			ChangeAuthorsDeviceID:  stmt.ColumnInt(10),
+			ChangesID:           stmt.ColumnInt(0),
+			IPFSBlocksCodec:     stmt.ColumnInt(1),
+			IPFSBlocksMultihash: stmt.ColumnBytes(2),
+			ChangesPermanodeID:  stmt.ColumnInt(3),
+			ChangesKind:         stmt.ColumnText(4),
+			ChangesLamportTime:  stmt.ColumnInt(5),
+			ChangesCreateTime:   stmt.ColumnInt(6),
+			AccountsMultihash:   stmt.ColumnBytes(7),
+			DevicesMultihash:    stmt.ColumnBytes(8),
+			ChangesAccountID:    stmt.ColumnInt(9),
+			ChangesDeviceID:     stmt.ColumnInt(10),
 		})
 
 		return nil
@@ -1304,28 +1283,6 @@ VALUES (:changeDepsChild, :changeDepsParent)`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: ChangesInsertParent: %w", err)
-	}
-
-	return err
-}
-
-func ChangeAuthorsInsertOrIgnore(conn *sqlite.Conn, changeAuthorsChangeID int, changeAuthorsAccountID int, changeAuthorsDeviceID int) error {
-	const query = `INSERT OR IGNORE INTO change_authors (change_id, account_id, device_id)
-VALUES (:changeAuthorsChangeID, :changeAuthorsAccountID, :changeAuthorsDeviceID)`
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":changeAuthorsChangeID", changeAuthorsChangeID)
-		stmt.SetInt(":changeAuthorsAccountID", changeAuthorsAccountID)
-		stmt.SetInt(":changeAuthorsDeviceID", changeAuthorsDeviceID)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ChangeAuthorsInsertOrIgnore: %w", err)
 	}
 
 	return err

@@ -22,14 +22,6 @@ const (
 	AccountsPublicKey  sqlitegen.Column = "accounts.public_key"
 )
 
-// Table change_authors.
-const (
-	ChangeAuthors          sqlitegen.Table  = "change_authors"
-	ChangeAuthorsAccountID sqlitegen.Column = "change_authors.account_id"
-	ChangeAuthorsChangeID  sqlitegen.Column = "change_authors.change_id"
-	ChangeAuthorsDeviceID  sqlitegen.Column = "change_authors.device_id"
-)
-
 // Table change_deps.
 const (
 	ChangeDeps       sqlitegen.Table  = "change_deps"
@@ -40,7 +32,9 @@ const (
 // Table changes.
 const (
 	Changes            sqlitegen.Table  = "changes"
+	ChangesAccountID   sqlitegen.Column = "changes.account_id"
 	ChangesCreateTime  sqlitegen.Column = "changes.create_time"
+	ChangesDeviceID    sqlitegen.Column = "changes.device_id"
 	ChangesID          sqlitegen.Column = "changes.id"
 	ChangesKind        sqlitegen.Column = "changes.kind"
 	ChangesLamportTime sqlitegen.Column = "changes.lamport_time"
@@ -116,16 +110,10 @@ const (
 	NamedVersionsVersion   sqlitegen.Column = "named_versions.version"
 )
 
-// Table permanode_owners.
-const (
-	PermanodeOwners            sqlitegen.Table  = "permanode_owners"
-	PermanodeOwnersAccountID   sqlitegen.Column = "permanode_owners.account_id"
-	PermanodeOwnersPermanodeID sqlitegen.Column = "permanode_owners.permanode_id"
-)
-
 // Table permanodes.
 const (
 	Permanodes           sqlitegen.Table  = "permanodes"
+	PermanodesAccountID  sqlitegen.Column = "permanodes.account_id"
 	PermanodesCreateTime sqlitegen.Column = "permanodes.create_time"
 	PermanodesID         sqlitegen.Column = "permanodes.id"
 	PermanodesType       sqlitegen.Column = "permanodes.type"
@@ -170,12 +158,11 @@ var Schema = sqlitegen.Schema{
 		AccountsID:                   {Table: Accounts, SQLType: "INTEGER"},
 		AccountsMultihash:            {Table: Accounts, SQLType: "BLOB"},
 		AccountsPublicKey:            {Table: Accounts, SQLType: "BLOB"},
-		ChangeAuthorsAccountID:       {Table: ChangeAuthors, SQLType: "INTEGER"},
-		ChangeAuthorsChangeID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
-		ChangeAuthorsDeviceID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
 		ChangeDepsChild:              {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangeDepsParent:             {Table: ChangeDeps, SQLType: "INTEGER"},
+		ChangesAccountID:             {Table: Changes, SQLType: "INTEGER"},
 		ChangesCreateTime:            {Table: Changes, SQLType: "INTEGER"},
+		ChangesDeviceID:              {Table: Changes, SQLType: "INTEGER"},
 		ChangesID:                    {Table: Changes, SQLType: "INTEGER"},
 		ChangesKind:                  {Table: Changes, SQLType: "TEXT"},
 		ChangesLamportTime:           {Table: Changes, SQLType: "INTEGER"},
@@ -214,8 +201,7 @@ var Schema = sqlitegen.Schema{
 		NamedVersionsName:            {Table: NamedVersions, SQLType: "TEXT"},
 		NamedVersionsObjectID:        {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsVersion:         {Table: NamedVersions, SQLType: "TEXT"},
-		PermanodeOwnersAccountID:     {Table: PermanodeOwners, SQLType: "INTEGER"},
-		PermanodeOwnersPermanodeID:   {Table: PermanodeOwners, SQLType: "INTEGER"},
+		PermanodesAccountID:          {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesCreateTime:         {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesID:                 {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesType:               {Table: Permanodes, SQLType: "TEXT"},

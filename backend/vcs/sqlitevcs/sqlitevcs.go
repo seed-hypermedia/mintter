@@ -138,11 +138,7 @@ func (conn *Conn) NewObject(p vcs.EncodedPermanode) (lid LocalID) {
 			return err
 		}
 
-		if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int(p.PermanodeCreateTime().Unix())); err != nil {
-			return err
-		}
-
-		if err := vcssql.PermanodeOwnersInsertOrIgnore(conn.conn, aid, res.IPFSBlocksID); err != nil {
+		if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int(p.PermanodeCreateTime().Unix()), aid); err != nil {
 			return err
 		}
 
@@ -307,12 +303,7 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, creat
 
 	now := createTime.Unix()
 
-	if err := vcssql.ChangesInsertOrIgnore(conn.conn, changeID, int(obj), changeKindV1, lamportTime, int(now)); err != nil {
-		conn.err = err
-		return 0
-	}
-
-	if err := vcssql.ChangeAuthorsInsertOrIgnore(conn.conn, changeID, int(id.Account), int(id.Device)); err != nil {
+	if err := vcssql.ChangesInsertOrIgnore(conn.conn, changeID, int(obj), int(id.Account), int(id.Device), changeKindV1, lamportTime, int(now)); err != nil {
 		conn.err = err
 		return 0
 	}
@@ -485,13 +476,9 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 		}
 		change = LocalID(res.IPFSBlocksID)
 
-		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), ch.Kind, int(ch.LamportTime), int(ch.CreateTime.Unix())); err != nil {
-			return err
-		}
-
 		idLocal := conn.EnsureAccountDevice(ch.Author, ch.Signer)
 
-		if err := vcssql.ChangeAuthorsInsertOrIgnore(conn.conn, int(change), int(idLocal.Account), int(idLocal.Device)); err != nil {
+		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), int(idLocal.Account), int(idLocal.Device), ch.Kind, int(ch.LamportTime), int(ch.CreateTime.Unix())); err != nil {
 			return err
 		}
 
