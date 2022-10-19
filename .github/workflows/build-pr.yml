@@ -200,7 +200,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: artifacts-${{ matrix.config.goarch }}
+          name: artifacts-${{ matrix.config.rust_target }}
           path:
             "${{ join(fromJSON(steps.tauri_build.outputs.artifacts), '\n') }}"
 
