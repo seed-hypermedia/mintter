@@ -55,7 +55,7 @@ importers:
       '@radix-ui/react-slot': 1.0.1
       '@radix-ui/react-tabs': 1.0.1
       '@radix-ui/react-tooltip': 1.0.2
-      '@sentry/tracing': 7.15.0
+      '@sentry/tracing': 7.16.0
       '@stitches/core': 1.2.8
       '@stitches/react': 1.2.8
       '@tanstack/react-query': 4.12.0
@@ -173,7 +173,7 @@ importers:
       '@radix-ui/react-slot': 1.0.1_react@18.2.0
       '@radix-ui/react-tabs': 1.0.1_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-tooltip': 1.0.2_rj7ozvcq3uehdlnj3cbwzbi5ce
-      '@sentry/tracing': 7.15.0
+      '@sentry/tracing': 7.16.0
       '@stitches/core': 1.2.8
       '@stitches/react': 1.2.8_react@18.2.0
       '@tanstack/react-query': 4.12.0_biqbaboplfbrettd7655fr4n2y
@@ -2589,13 +2589,22 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /@sentry/tracing/7.15.0:
-    resolution: {integrity: sha512-c0Y3+z6EWsc+EJsfBcRtc58ugkWYa6+6KTu3ceMkx2ZgZTCmRUuzAb7yodMt/gwezBsxzq706fnQivx1lQgzlQ==}
+  /@sentry/core/7.16.0:
+    resolution: {integrity: sha512-vq6H1b/IPTvzDD9coQ3wIudvSjkAYuUlXb1dv69dRlq4v3st9dcKBps1Zf0lQ1i4TVlDLoe1iGMmNFglMF1Q5w==}
     engines: {node: '>=8'}
     dependencies:
-      '@sentry/core': 7.15.0
-      '@sentry/types': 7.15.0
-      '@sentry/utils': 7.15.0
+      '@sentry/types': 7.16.0
+      '@sentry/utils': 7.16.0
+      tslib: 1.14.1
+    dev: false
+
+  /@sentry/tracing/7.16.0:
+    resolution: {integrity: sha512-8a9bViUY7oS35msBMouxkgz5OGd9NGutuKF7SQ8hPZwTcQPOxOwPyHccykgr56k6OmaDjGCLZMqZowaysJj+4g==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/core': 7.16.0
+      '@sentry/types': 7.16.0
+      '@sentry/utils': 7.16.0
       tslib: 1.14.1
     dev: false
 
@@ -2604,11 +2613,24 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /@sentry/types/7.16.0:
+    resolution: {integrity: sha512-i6D+OK6d0l/k+VQvRp/Pt21WkDEgVBUIZq+sOkEZJczbcfexVdXKeXXoYTD2vYuFq8Yy28fzlsZaKI+NoH94yQ==}
+    engines: {node: '>=8'}
+    dev: false
+
   /@sentry/utils/7.15.0:
     resolution: {integrity: sha512-akic22/6xa/RG5Mj7UN6pLc23VnX9zQlKM53L/q3yIr0juckSVthJiiFNdgdqrX03S1tHYlBgPeShKFFTHpkjA==}
     engines: {node: '>=8'}
     dependencies:
       '@sentry/types': 7.15.0
+      tslib: 1.14.1
+    dev: false
+
+  /@sentry/utils/7.16.0:
+    resolution: {integrity: sha512-3Zh1txg7IRp4kZAdG27YF7K6lD1IZyuAo9KjoPg1Xzqa4DOZyASJuEkbf+rK2a9T4HrtVHHXJUsNbKg8WM3VHg==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/types': 7.16.0
       tslib: 1.14.1
     dev: false
 
