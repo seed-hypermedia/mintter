@@ -29,7 +29,7 @@ jobs:
               body: '🤖 Your build has started. I will notify you when the artifacts are ready.'
             })
 
-            github.rest.issues.deleteLabel({
+            github.rest.issues.removeLabel({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
