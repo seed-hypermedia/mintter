@@ -12,10 +12,12 @@ import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {ChildrenOf} from '@app/mttast'
 import {AppError} from '@app/root'
+import {openWindow} from '@app/utils/open-window'
 import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {useQueryClient} from '@tanstack/react-query'
+import {appWindow} from '@tauri-apps/api/window'
 import {useInterpret, useMachine} from '@xstate/react'
 import {useEffect, useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -58,7 +60,15 @@ export default function DraftWrapper({
           mainService.send({type: 'COMMIT.CURRENT.DRAFT', service})
         },
         afterPublish: (_, event) => {
-          setLocation(`/p/${event.data.document?.id}/${event.data.version}`)
+          let searchParams = new URLSearchParams(window.location.search)
+          let replyToParams = searchParams.get('replyto')
+          if (replyToParams) {
+            let [docId, version] = replyToParams.split('/')
+            openWindow(`/p/${docId}/${version}`)
+            appWindow.close()
+          } else {
+            setLocation(`/p/${event.data.document?.id}/${event.data.version}`)
+          }
           toast.success('Draft published Successfully!')
         },
       },

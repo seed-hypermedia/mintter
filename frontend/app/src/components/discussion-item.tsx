@@ -35,7 +35,6 @@ export function DiscussionItem({link}: {link: Link}) {
 
   return (
     <li className="discussion-item">
-      <div className="item-section item-header"></div>
       <div className="item-section item-content">
         {editorValue ? (
           <FileProvider value={publication}>

@@ -59,7 +59,8 @@
         "all": false,
         "startDragging": true,
         "maximize": true,
-        "unmaximize": true
+        "unmaximize": true,
+        "close": true
       },
       "dialog": {
         "all": false,
