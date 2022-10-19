@@ -27,10 +27,14 @@ type Clock struct {
 // The given now function should produce the current timestamp
 // according to the system wall clock. The system clock is expected to have somewhat low skew
 // among peers. But HLC handles any possible clock skews caused by synchronizing with NTP or similar.
+// Nil system clock can be passed, in which case [time.Now] will be used.
 func NewClock(systemClock func() time.Time) *Clock {
+	if systemClock == nil {
+		systemClock = time.Now
+	}
+
 	return &Clock{
 		sysClock: systemClock,
-		// maxTime:  newTime(systemClock().UnixMicro(), 0),
 	}
 }
 

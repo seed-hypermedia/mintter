@@ -22,11 +22,10 @@ func TestTrack(t *testing.T) {
 }
 
 func TestCompactTimestamp(t *testing.T) {
-	now := time.Now()
+	in := newTime(time.Now().UnixMicro(), 356)
+	out := Unpack(in.Pack())
 
-	hlc := newTime(now.UnixMicro(), 356)
-
-	require.Equal(t, hlc, Unpack(hlc.Time().UnixMicro()), "must pack and unpack hlc timestamp into a unix timestamp")
+	require.Equal(t, in, out)
 }
 
 func TestClock(t *testing.T) {
