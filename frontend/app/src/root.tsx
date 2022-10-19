@@ -11,6 +11,7 @@ import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {useInterpret} from '@xstate/react'
 import {lazy, Suspense, useLayoutEffect, useState} from 'react'
 import {FallbackProps} from 'react-error-boundary'
+import {Toaster} from 'react-hot-toast'
 // import 'show-keys'
 import {globalStyles} from './stitches.config'
 
@@ -49,6 +50,7 @@ export function Root() {
             ) : (
               <OnboardingPage />
             )}
+            <Toaster position="bottom-right" />
           </ThemeProvider>
         </Hydrate>
       </Suspense>

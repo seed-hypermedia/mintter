@@ -7,8 +7,8 @@ import {Button} from '@components/button'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {useQuery} from '@tanstack/react-query'
+import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useCallback, useState} from 'react'
-import CopyToClipboard from 'react-copy-to-clipboard'
 import toast from 'react-hot-toast'
 import {
   IconContainer,
@@ -120,6 +120,11 @@ export function SecurityPack({
 }
 
 function MnemonicList({words}: {words: string[]}) {
+  function onCopy() {
+    copyTextToClipboard(words.join(','))
+    toast.success('Words copied to your clipboard!')
+  }
+
   return (
     <OnboardingStepBody
       css={{
@@ -156,20 +161,16 @@ function MnemonicList({words}: {words: string[]}) {
           </Box>
         ))}
       </Box>
-      <CopyToClipboard
-        text={words.join(' ')}
-        onCopy={(_, result) => {
-          if (result) {
-            toast.success('Words copied to your clipboard!')
-          } else {
-            toast.error('Error while copying to clipboard')
-          }
-        }}
+
+      <Button
+        type="button"
+        size="2"
+        color="success"
+        variant="outlined"
+        onClick={() => onCopy()}
       >
-        <Button type="button" size="2" color="success" variant="outlined">
-          Copy words to clipboard
-        </Button>
-      </CopyToClipboard>
+        Copy words to clipboard
+      </Button>
     </OnboardingStepBody>
   )
 }
