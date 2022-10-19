@@ -590,8 +590,8 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		if errRemote != nil {
 			return nil, errRemote
 		}
-		if ctx_err := ctx.Err(); ctx_err != nil {
-			return nil, ctx_err
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, ctxErr
 		}
 
 		// connect with remote peer
@@ -610,9 +610,9 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 			if err != nil {
 				return nil, err
 			}
-			if ctx_err := ctx.Err(); ctx_err != nil {
+			if ctxErr := ctx.Err(); ctxErr != nil {
 				release()
-				return nil, ctx_err
+				return nil, ctxErr
 			}
 			errLocal = conn.WithTx(false, func() error {
 				obj := conn.LookupPermanode(oid)
