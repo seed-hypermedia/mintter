@@ -5,17 +5,24 @@ import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {MainService, useIsReplying, useMain} from '@app/main-context'
 import {PublicationActor} from '@app/publication-machine'
+import {classnames} from '@app/utils/classnames'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
+import {getCurrent} from '@tauri-apps/api/window'
 import {useSelector} from '@xstate/react'
+import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
 import '../styles/topbar.scss'
 
 export default function Topbar() {
   return (
-    <div className="topbar" data-layout-section="topbar" {...draggableProps}>
+    <div
+      id="desktop-app-title-bar"
+      data-layout-section="topbar"
+      {...draggableProps}
+    >
       <Switch>
         <Route path="/" component={DefaultTopbar} />
         <Route path="/inbox" component={DefaultTopbar} />
@@ -25,7 +32,13 @@ export default function Topbar() {
         <Route component={PlaceholderTopbar}></Route>
       </Switch>
 
-      {import.meta.env.TAURI_PLATFORM == 'windows' && <h1>windows</h1>}
+      {import.meta.env.TAURI_PLATFORM == 'windows' && (
+        <>
+          <MaximizeOrRestoreButton />
+          <MinimizeButton />
+          <CloseButton />
+        </>
+      )}
     </div>
   )
 }
@@ -403,4 +416,87 @@ function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
 
 var draggableProps = {
   'data-tauri-drag-region': true,
+}
+
+function CloseButton() {
+  const win = getCurrent()
+  return (
+    <button
+      aria-label="close"
+      title="Close"
+      tabIndex={-1}
+      className="window-control close"
+      onClick={() => win.close()}
+    >
+      <svg aria-hidden="true" version="1.1" width="10" height="10">
+        <path d="M 0,0 0,0.7 4.3,5 0,9.3 0,10 0.7,10 5,5.7 9.3,10 10,10 10,9.3 5.7,5 10,0.7 10,0 9.3,0 5,4.3 0.7,0 Z" />
+      </svg>
+    </button>
+  )
+}
+
+function MaximizeOrRestoreButton() {
+  const win = getCurrent()
+
+  const [isMaximized, setIsMaximized] = useState<boolean | undefined>()
+  useEffect(() => {
+    win.isMaximized().then((v) => setIsMaximized(v))
+  })
+
+  if (typeof isMaximized == 'undefined') return null
+
+  let name: string
+  let path: string
+  let cb
+
+  if (isMaximized) {
+    name = 'restore'
+    path =
+      'm 2,1e-5 0,2 -2,0 0,8 8,0 0,-2 2,0 0,-8 z m 1,1 6,0 0,6 -1,0 0,-5 -5,0 z m -2,2 6,0 0,6 -6,0 z'
+    cb = () => {
+      win.unmaximize()
+      setIsMaximized(false)
+    }
+  } else {
+    name = 'maximize'
+    path = 'M 0,0 0,10 10,10 10,0 Z M 1,1 9,1 9,9 1,9 Z'
+    cb = () => {
+      win.maximize()
+      setIsMaximized(true)
+    }
+  }
+
+  const title = name[0].toUpperCase() + name.substring(1)
+
+  return (
+    <button
+      aria-label={name}
+      title={title}
+      tabIndex={-1}
+      className={classnames('window-control', name)}
+      onClick={cb}
+    >
+      <svg aria-hidden="true" version="1.1" width="10" height="10">
+        <path d={path} />
+      </svg>
+    </button>
+  )
+}
+
+function MinimizeButton() {
+  const win = getCurrent()
+
+  return (
+    <button
+      aria-label="minize"
+      title="Minimize"
+      tabIndex={-1}
+      className="window-control minimize"
+      onClick={() => win.minimize()}
+    >
+      <svg aria-hidden="true" version="1.1" width="10" height="10">
+        <path d="M 0,5 10,5 10,6 0,6 Z" />
+      </svg>
+    </button>
+  )
 }

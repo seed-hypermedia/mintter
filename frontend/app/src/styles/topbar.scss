@@ -1,12 +1,12 @@
 @use 'mixins/platform';
+@use 'variables' as *;
 
-.topbar {
+#desktop-app-title-bar {
   position: fixed;
   inset-inline: 0;
   top: 0;
   flex: none;
   inline-size: 100%;
-  block-size: var(--topbar-h, 40px);
   border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
   background-color: var(--mtt-colors-base-background-subtle);
   transition: opacity 0.25s ease;
@@ -14,18 +14,77 @@
   align-items: stretch;
   z-index: 100;
 
-  @include platform.macos {
-    padding-inline-start: 64px;
-  }
-
   user-select: none;
   -webkit-user-select: none;
 
-  &:hover {
-    cursor: default;
+  // &:hover {
+  //   cursor: default;
+  // }
+  // &:has([data-state='hidden']) {
+  //   opacity: 0;
+  // }
+
+  @include platform.macos {
+    block-size: $darwin-title-bar-height;
+    padding-inline-start: 64px;
   }
-  &:has([data-state='hidden']) {
-    opacity: 0;
+
+  @include platform.win32 {
+    block-size: $win32-title-bar-height;
+
+    button.window-control {
+      display: inline-block;
+      position: relative;
+      width: 45px;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      background-color: transparent;
+
+      // Reset styles from global buttons
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+
+      line-height: 10px;
+
+      &:focus {
+        outline: none;
+      }
+
+      &:hover {
+        background-color: #e5e5e5;
+        color: #000;
+
+        // Doing :hover:active as oposed to just :active is
+        // a conscious choice to match how the real Windows
+        // controls behave when someone hovers, clicks and then
+        // moves away from the hitbox.
+        &:active {
+          background-color: #cccccc;
+
+          // Immediate feedback when clicking
+          transition: none;
+        }
+      }
+
+      &.close:hover {
+        background-color: #e81123;
+        color: #fff;
+
+        &:active {
+          background-color: #f1707a;
+
+          // Immediate feedback when clicking
+          transition: none;
+        }
+      }
+
+      svg {
+        fill: currentColor;
+      }
+    }
   }
 }
 
@@ -38,10 +97,18 @@
 
 .topbar-section {
   display: flex;
-  padding-inline: 0.5em;
-  padding-block: 0.5em;
   align-items: stretch;
   gap: 0.5em;
+  // more relaxed spacing on wider widths
+  padding-inline: 1vw;
+
+  @include platform.macos {
+    padding-block: 0.5em;
+  }
+
+  @include platform.win32 {
+    padding-block: 0.2em;
+  }
 
   &.main {
     flex: 1;
