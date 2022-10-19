@@ -1,0 +1,20 @@
+@use 'sass:meta';
+@use 'src/styles/env';
+
+@mixin win32 {
+  @if env.$TAURI_PLATFORM == 'windows' {
+    @content;
+  }
+}
+
+@mixin macos {
+  @if env.$TAURI_PLATFORM == 'macos' {
+    @content;
+  }
+}
+
+@mixin linux {
+  @if env.$TAURI_PLATFORM == 'linux' {
+    @content;
+  }
+}

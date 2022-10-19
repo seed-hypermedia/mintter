@@ -12,3 +12,5 @@ cypress/downloads
 cypress/screenshots
 cypress/snapshots
 src/**/*.typegen.*
+# dynamically generated
+src/styles/_env.scss
