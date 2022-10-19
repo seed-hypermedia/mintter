@@ -44,7 +44,6 @@ function Contacts({
       state.context.online.includes(acc.ref.id),
     ),
   )
-  console.log('🚀 ~ file: footer.tsx ~ line 48 ~ online', online)
 
   return (
     <HoverCard.Root openDelay={100}>

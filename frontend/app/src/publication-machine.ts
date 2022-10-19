@@ -400,12 +400,10 @@ export function createPublicationMachine({
         clearError: assign({
           errorMessage: '',
         }),
-        openWindow: (_, event) => {
-          // if (event.type == 'done.invoke.createDraft') {
-          //   openWindow(event.path)
-          // } else {
-          openWindow(`/d/${event.data.id}`)
-          // }
+        openWindow: (context, event) => {
+          openWindow(
+            `/d/${event.data.id}?replyto=${context.documentId}/${context.version}`,
+          )
         },
         // prefetchPublication: (context) => {
         //   client.prefetchQuery(

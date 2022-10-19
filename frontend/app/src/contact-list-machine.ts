@@ -28,6 +28,7 @@ export function createContactListMachine({client}: {client: QueryClient}) {
   return createMachine(
     {
       id: 'contact-list-machine',
+      predictableActionArguments: true,
       tsTypes: {} as import('./contact-list-machine.typegen').Typegen0,
       schema: {
         context: {} as ContactListContext,
