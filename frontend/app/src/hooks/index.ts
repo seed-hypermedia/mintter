@@ -41,7 +41,7 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
   let publications = useMemo(() => {
     return queryResult.data?.publications.sort(sort) || []
 
-    function sort(a: Publication, b: Publication) {
+    function sort(a, b) {
       let dateA = a.document?.updateTime ? new Date(a.document?.updateTime) : 0
       let dateB = b.document?.updateTime ? new Date(b.document?.updateTime) : 1
 

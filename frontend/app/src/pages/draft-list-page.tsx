@@ -19,6 +19,7 @@ import '../styles/file-list.scss'
 export default DraftList
 
 function DraftList() {
+  let mainService = useMain()
   let {isLoading, data} = useDraftList()
 
   return (
@@ -35,6 +36,7 @@ function DraftList() {
             description="You have no Drafts yet."
             action={() => {
               // TODO: create a new draft
+              mainService.send('COMMIT.OPEN.WINDOW')
             }}
           />
         )}
