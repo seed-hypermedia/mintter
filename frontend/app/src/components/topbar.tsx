@@ -34,8 +34,8 @@ export default function Topbar() {
 
       {import.meta.env.TAURI_PLATFORM == 'windows' && (
         <>
-          <MaximizeOrRestoreButton />
           <MinimizeButton />
+          <MaximizeOrRestoreButton />
           <CloseButton />
         </>
       )}
