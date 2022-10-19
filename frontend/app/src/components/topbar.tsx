@@ -24,6 +24,8 @@ export default function Topbar() {
         <Route path="/d/:id" component={DraftTopbarWrapper} />
         <Route component={PlaceholderTopbar}></Route>
       </Switch>
+
+      {import.meta.env.TAURI_PLATFORM == 'windows' && <h1>windows</h1>}
     </div>
   )
 }
@@ -334,7 +336,7 @@ export function Menu({emit = tauriEmit}: {emit?: typeof tauriEmit}) {
             onSelect={handleSearchSelect}
           >
             <Icon name="Search" />
-            <span>Search</span>
+            <span>Quick Switcher</span>
             <Dropdown.RightSlot>⌘+K</Dropdown.RightSlot>
           </Dropdown.Item>
         </Dropdown.Content>
