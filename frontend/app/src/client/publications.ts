@@ -1,3 +1,4 @@
+import {Publication} from '@app/client'
 import {client} from '@app/client/client'
 import {
   ContentGraphClientImpl,
@@ -5,7 +6,6 @@ import {
   GetPublicationRequest,
   ListCitationsRequest,
   ListPublicationsRequest,
-  Publication,
   PublicationsClientImpl,
 } from './.generated/documents/v1alpha/documents'
 import type {GrpcClient} from './grpc-client'

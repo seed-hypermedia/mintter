@@ -9,6 +9,7 @@ import {
   useAuthor,
   usePublicationList,
 } from '@app/hooks'
+import {useMain} from '@app/main-context'
 import {formattedDate} from '@app/utils/get-format-date'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
@@ -26,6 +27,7 @@ import '../styles/file-list.scss'
 export default PublicationList
 
 function PublicationList() {
+  let mainService = useMain()
   let {isLoading, data} = usePublicationList()
 
   return (
@@ -45,6 +47,7 @@ function PublicationList() {
             description="You have no Publications yet."
             action={() => {
               // TODO: create a new draft
+              mainService.send('COMMIT.OPEN.WINDOW')
             }}
           />
         )}
