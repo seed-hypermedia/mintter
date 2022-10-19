@@ -72,8 +72,7 @@
         "width": 1000,
         "height": 800,
         "minWidth": 640,
-        "minHeight": 480,
-        "decorations": false
+        "minHeight": 480
       }
     ],
     "security": {
