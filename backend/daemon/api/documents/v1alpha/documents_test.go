@@ -839,7 +839,7 @@ func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
 		require.NoError(t, err)
 	}
 
-	syncService := syncing.NewService(must.Do2(zap.NewDevelopment()).Named(name), n.ID(), n.VCS().DB(), n.VCS(), n.Bitswap().NewSession, n.Client)
+	syncService := syncing.NewService(must.Do2(zap.NewDevelopment()).Named(name), n.ID(), n.VCS(), n.Bitswap().NewSession, n.Client)
 
 	srv := NewServer(fut.ReadOnly, db, NewProvider(mttFut.ReadOnly, syncService.SyncWithPeer))
 
