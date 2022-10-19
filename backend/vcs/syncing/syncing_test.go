@@ -94,7 +94,7 @@ func TestSync(t *testing.T) {
 			obj := conn.NewObject(perma)
 			idLocal := conn.EnsureIdentity(alice.ID())
 			change := conn.NewChange(obj, idLocal, nil, time.Time{})
-			newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
+			newDatom := vcsdb.NewDatomWriter(change, 1, 0).NewDatom
 
 			wantDatoms = []vcsdb.Datom{
 				newDatom(vcsdb.RootNode, "title", "This is a title"),

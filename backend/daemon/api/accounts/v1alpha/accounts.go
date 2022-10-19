@@ -154,7 +154,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		version := conn.GetVersion(obj, "main", meLocal)
 		cs := conn.ResolveChangeSet(obj, version)
 		change := conn.NewChange(obj, meLocal, version, time.Now().UTC())
-		newDatom := vcsdb.MakeDatomFactory(change, conn.GetChangeLamportTime(change), 0)
+		newDatom := vcsdb.NewDatomWriter(change, conn.GetChangeLamportTime(change), 0).NewDatom
 
 		email := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrEmail)
 		alias := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrAlias)

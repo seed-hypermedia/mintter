@@ -31,7 +31,7 @@ func TestListObjects(t *testing.T) {
 			obj := conn.NewObject(perma)
 			meLocal := conn.EnsureIdentity(alice.me)
 			change := conn.NewChange(obj, meLocal, nil, time.Time{})
-			newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
+			newDatom := vcsdb.NewDatomWriter(change, 1, 0).NewDatom
 
 			conn.AddDatom(obj, newDatom(vcsdb.RootNode, "title", "This is a title"))
 			conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})

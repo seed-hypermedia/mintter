@@ -264,7 +264,7 @@ func TestChangeEncoding(t *testing.T) {
 	obj := conn.NewObject(perma)
 	me := conn.EnsureIdentity(alice.Identity)
 	c1 := conn.NewChange(obj, me, nil, now)
-	newDatom := MakeDatomFactory(c1, conn.GetChangeLamportTime(c1), 0)
+	newDatom := NewDatomWriter(c1, conn.GetChangeLamportTime(c1), 0).NewDatom
 	person1 := NewNodeID()
 	person2 := NewNodeID()
 

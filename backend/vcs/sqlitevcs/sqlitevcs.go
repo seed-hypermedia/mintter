@@ -965,20 +965,6 @@ type Datom struct {
 	Value     any
 }
 
-// DatomFactory is a function which returns new datoms
-// incrementing the seq internally.
-type DatomFactory func(entity NodeID, a Attribute, value any) Datom
-
-// MakeDatomFactory creates a new DatomFactory for a given change, its
-// lamport timestamp, and initial seq. Seq gets incremented *before*
-// the new datom is created, i.e. pass seq = 0 for the very first datom.
-func MakeDatomFactory(change LocalID, lamportTime, seq int) DatomFactory {
-	return func(entity NodeID, a Attribute, value any) Datom {
-		seq++
-		return NewDatom(change, seq, entity, a, value, lamportTime)
-	}
-}
-
 func handleDatoms(fn func(DatomRow) error) func(*sqlite.Stmt) error {
 	return func(stmt *sqlite.Stmt) error {
 		return fn(DatomRow{stmt: stmt})

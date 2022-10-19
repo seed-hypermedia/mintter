@@ -34,7 +34,7 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 	obj := conn.NewObject(perma)
 	id := conn.EnsureIdentity(core.NewIdentity(acc.PublicKey, device))
 	change := conn.NewChange(obj, id, nil, time.Now().UTC())
-	newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
+	newDatom := vcsdb.NewDatomWriter(change, 1, 0).NewDatom
 
 	proof, err := NewRegistrationProof(acc, device.CID())
 	if err != nil {

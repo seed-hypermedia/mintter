@@ -37,7 +37,7 @@ func (dw *DatomWriter) AddDatom(dd ...Datom) {
 	dw.dirty = append(dw.dirty, dd...)
 }
 
-// NewDatom creates a new Datom and records it.
+// NewDatom creates a new Datom and records the timestamp.
 func (dw *DatomWriter) NewDatom(entity NodeID, a Attribute, value any) Datom {
 	dw.seq++
 	d := NewDatom(dw.change, dw.seq, entity, a, value, dw.lamportTime)

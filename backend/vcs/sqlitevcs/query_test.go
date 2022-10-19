@@ -31,7 +31,7 @@ func TestQuery(t *testing.T) {
 	now := time.Time{}
 	c1 := conn.NewChange(obj, me, nil, now)
 
-	newDatom := MakeDatomFactory(c1, 1, 0)
+	newDatom := NewDatomWriter(c1, 1, 0).NewDatom
 	conn.AddDatom(obj, newDatom(RootNode, "email", "foo@example.com"))
 	conn.AddDatom(obj, newDatom(RootNode, "alias", "fulanito"))
 	conn.AddDatom(obj, newDatom(RootNode, "bio", "Just an example"))
@@ -43,7 +43,7 @@ func TestQuery(t *testing.T) {
 
 	c2 := conn.NewChange(obj, me, LocalVersion{c1}, now.Add(time.Hour))
 
-	newDatom = MakeDatomFactory(c2, 1, 0)
+	newDatom = NewDatomWriter(c2, 1, 0).NewDatom
 	conn.AddDatom(obj, newDatom(RootNode, "email", "changed@example.com"))
 
 	conn.SaveVersion(obj, "main", me, LocalVersion{c2})
