@@ -28,6 +28,13 @@ jobs:
               repo: context.repo.repo,
               body: '🤖 Your build has started. I will notify you when the artifacts are ready.'
             })
+
+            github.rest.issues.deleteLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'build-artifacts',
+            })
       - name: Get current time
         uses: srfrnk/current-time@master
         id: current_time
