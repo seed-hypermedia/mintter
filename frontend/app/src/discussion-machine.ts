@@ -45,7 +45,7 @@ export function createDiscussionMachine({
   return createMachine(
     {
       id: `discussion-machine-${link.source?.documentId}-${link.source?.version}`,
-      preserveActionOrder: true,
+      predictableActionArguments: true,
       tsTypes: {} as import('./discussion-machine.typegen').Typegen0,
       schema: {
         context: {} as DiscussionMachineContext,
