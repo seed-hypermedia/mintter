@@ -4,7 +4,7 @@
     "productName": "Mintter"
   },
   "build": {
-    "distDir": "../../plz-out/gen/frontend/dist/client",
+    "distDir": "../../plz-out/gen/frontend/dist",
     "devPath": "http://localhost:5173",
     "beforeDevCommand": "cd ../frontend/app && pnpm dev",
     "withGlobalTauri": false
@@ -73,8 +73,7 @@
         "height": 800,
         "minWidth": 640,
         "minHeight": 480,
-        "resizable": true,
-        "fullscreen": false
+        "decorations": false
       }
     ],
     "security": {

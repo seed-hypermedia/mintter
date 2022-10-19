@@ -1,9 +1,9 @@
 {
   "build": {
-    "distDir": "../../frontend/app/dist/client",
+    "distDir": "../../frontend/app/dist",
     "devPath": "http://localhost:3000",
     "beforeDevCommand": "cd ../frontend/app && pnpm typegen && pnpm dev",
-    "beforeBuildCommand": "cd ../frontend/app && pnpm typegen && pnpm build:client",
+    "beforeBuildCommand": "cd ../frontend/app && pnpm typegen && pnpm build",
     "withGlobalTauri": false
   },
   "tauri": {
