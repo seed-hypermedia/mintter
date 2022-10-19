@@ -149,7 +149,8 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, 
 
 func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
 	logging.SetLogLevel("autorelay", "debug")
-
+	logging.SetLogLevel("provider.simple", "debug")
+	logging.SetLogLevel("reprovider.simple", "debug")
 	a.g.Go(func() error {
 		a.log.Info("DaemonStarted",
 			zap.String("grpcListener", a.GRPCListener.Addr().String()),
