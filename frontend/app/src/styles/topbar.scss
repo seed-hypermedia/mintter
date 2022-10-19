@@ -1,3 +1,5 @@
+@use 'mixins/platform';
+
 .topbar {
   position: fixed;
   inset-inline: 0;
@@ -11,6 +13,10 @@
   display: flex;
   align-items: stretch;
   z-index: 100;
+
+  @include platform.macos {
+    padding-inline-start: 64px;
+  }
 
   user-select: none;
   -webkit-user-select: none;
@@ -36,10 +42,6 @@
   padding-block: 0.5em;
   align-items: stretch;
   gap: 0.5em;
-
-  // & > *:hover {
-  //   cursor: default;
-  // }
 
   &.main {
     flex: 1;
