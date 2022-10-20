@@ -56,7 +56,7 @@ describe('Settings', () => {
     })
 
     it.skip('should copy mintter addresses', () => {
-      const {client, account} = createTestQueryClient()
+      const {client} = createTestQueryClient()
 
       cy.mount(<Settings />, {
         client,
