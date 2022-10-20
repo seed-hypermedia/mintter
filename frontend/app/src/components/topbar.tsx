@@ -352,6 +352,7 @@ export function Menu({emit = tauriEmit}: {emit?: typeof tauriEmit}) {
 function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
   let mainService = useMain()
   let isReplying = useIsReplying()
+  let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
   let [, params] = useRoute('/p/:id/:version/:block?')
 
   return (
@@ -378,16 +379,16 @@ function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
             <span>Reply</span>
           </Dropdown.Item>
 
-          {/* {isPublication && canUpdate ? ( */}
-          <Dropdown.Item
-            onSelect={() => {
-              fileRef.send({type: 'PUBLICATION.EDIT', params})
-            }}
-          >
-            <Icon name="Pencil" />
-            <span>Edit</span>
-          </Dropdown.Item>
-          {/* ) : ( */}
+          {canUpdate ? (
+            <Dropdown.Item
+              onSelect={() => {
+                fileRef.send({type: 'PUBLICATION.EDIT', params})
+              }}
+            >
+              <Icon name="Pencil" />
+              <span>Edit</span>
+            </Dropdown.Item>
+          ) : null}
           {/* <TippingModal fileRef={fileRef as PublicationRef} /> */}
           {/* )} */}
 
