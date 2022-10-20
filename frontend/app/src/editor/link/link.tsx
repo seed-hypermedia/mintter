@@ -11,6 +11,7 @@ import {isMintterLink} from '@app/utils/is-mintter-link'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
+import {useLocation} from '@components/router'
 import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
@@ -155,17 +156,16 @@ function RenderMintterLink(
   props: LinkProps,
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
+  const [, setLocation] = useLocation()
   const mainService = useMain()
   let mouseService = useMouse()
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
-    let isShiftKey = event.shiftKey
+    let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
-    if (props.mode == EditorMode.Embed || props.mode == EditorMode.Discussion)
-      return
     if (isShiftKey) {
-      mainService.send({type: 'GO.TO.PUBLICATION', docId, version, blockId})
+      setLocation(`/p/${docId}/${version}/${blockId}`)
     } else {
       mainService.send({
         type: 'COMMIT.OPEN.WINDOW',
