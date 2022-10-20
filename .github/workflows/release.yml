@@ -47,7 +47,7 @@ jobs:
           toolchain: stable
           target: ${{ matrix.config.rust_target }}
 
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.config.rust_target }}
 
