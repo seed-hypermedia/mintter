@@ -78,7 +78,7 @@ def main():
         cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
     )
     def build_desktop(args):
-        run("plz build //frontend:app //backend:mintterd")
+        run("plz build //backend:mintterd")
         run("cargo tauri build --debug")
 
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")

@@ -4,9 +4,10 @@
     "productName": "Mintter"
   },
   "build": {
-    "distDir": "../../plz-out/gen/frontend/dist",
+    "distDir": "../../frontend/app/dist",
     "devPath": "http://localhost:5173",
-    "beforeDevCommand": "cd ../frontend/app && pnpm dev",
+    "beforeDevCommand": "cd ../frontend/app && pnpm typegen && pnpm dev",
+    "beforeBuildCommand": "cd ../frontend/app && pnpm typegen && pnpm build",
     "withGlobalTauri": false
   },
   "tauri": {
