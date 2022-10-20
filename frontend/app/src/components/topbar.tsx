@@ -18,28 +18,19 @@ import '../styles/topbar.scss'
 
 export default function Topbar() {
   return (
-    <div
-      id="desktop-app-title-bar"
-      data-layout-section="topbar"
-      {...draggableProps}
-    >
-      <Switch>
-        <Route path="/" component={DefaultTopbar} />
-        <Route path="/inbox" component={DefaultTopbar} />
-        <Route path="/drafts" component={DraftListTopbar} />
-        <Route path="/p/:id/:version/:block?" component={PublicationTopbar} />
-        <Route path="/d/:id" component={DraftTopbarWrapper} />
-        <Route component={PlaceholderTopbar}></Route>
-      </Switch>
-
-      {import.meta.env.TAURI_PLATFORM == 'windows' && (
-        <>
-          <MinimizeButton />
-          <MaximizeOrRestoreButton />
-          <CloseButton />
-        </>
-      )}
-    </div>
+    <>
+      {import.meta.env.TAURI_PLATFORM == 'windows' && <WindowsTitleBar />}
+      <div className="topbar-main-bar" {...draggableProps}>
+        <Switch>
+          <Route path="/" component={DefaultTopbar} />
+          <Route path="/inbox" component={DefaultTopbar} />
+          <Route path="/drafts" component={DraftListTopbar} />
+          <Route path="/p/:id/:version/:block?" component={PublicationTopbar} />
+          <Route path="/d/:id" component={DraftTopbarWrapper} />
+          <Route component={PlaceholderTopbar}></Route>
+        </Switch>
+      </div>
+    </>
   )
 }
 
@@ -498,5 +489,42 @@ function MinimizeButton() {
         <path d="M 0,5 10,5 10,6 0,6 Z" />
       </svg>
     </button>
+  )
+}
+
+function WindowsTitleBar() {
+  return (
+    <div className="topbar-title-bar">
+      <div className="topbar-section title-menu">
+        <Dropdown.Root>
+          <Dropdown.Trigger asChild>
+            <button className="topbar-button">File</button>
+          </Dropdown.Trigger>
+          <Dropdown.Portal>
+            <Dropdown.Content>
+              <Dropdown.Item>item 1</Dropdown.Item>
+            </Dropdown.Content>
+          </Dropdown.Portal>
+        </Dropdown.Root>
+        <Dropdown.Root>
+          <Dropdown.Trigger asChild>
+            <button className="topbar-button">File</button>
+          </Dropdown.Trigger>
+          <Dropdown.Portal>
+            <Dropdown.Content>
+              <Dropdown.Item>
+                <span>item 1</span>
+                <Dropdown.RightSlot>⌘+K</Dropdown.RightSlot>
+              </Dropdown.Item>
+            </Dropdown.Content>
+          </Dropdown.Portal>
+        </Dropdown.Root>
+      </div>
+      <div className="topbar-section actions">
+        <MinimizeButton />
+        <MaximizeOrRestoreButton />
+        <CloseButton />
+      </div>
+    </div>
   )
 }
