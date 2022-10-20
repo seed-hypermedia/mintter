@@ -25,17 +25,13 @@ export default function Settings({
   const auth = useInterpret(() => createAuthService(client, updateProfile))
   return (
     <div className="settings-wrapper">
+      <div className="drag-handle" data-tauri-drag-region></div>
       <TabsPrimitive.Root
         className="tabs"
         defaultValue="profile"
         orientation="vertical"
-        data-tauri-drag-region
       >
-        <TabsPrimitive.List
-          className="tabs-list"
-          aria-label="Manage your node"
-          data-tauri-drag-region
-        >
+        <TabsPrimitive.List className="tabs-list" aria-label="Manage your node">
           <TabsPrimitive.Trigger
             className="tab-trigger"
             value="profile"
