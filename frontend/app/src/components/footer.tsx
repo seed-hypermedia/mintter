@@ -82,7 +82,7 @@ export function ContactsPrompt({
     if (peer) {
       try {
         // const connAttempt = await connect(peer.split(','))
-        await toast.promise(connect(peer.split(',')), {
+        await toast.promise(connect(peer.trim().split(',')), {
           loading: 'Connecting to peer...',
           success: 'Connection Succeeded!',
           error: 'Connection Error',
