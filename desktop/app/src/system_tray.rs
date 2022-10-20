@@ -7,14 +7,6 @@ pub fn get_tray() -> SystemTray {
   let tray = SystemTray::new();
   let tray_menu = SystemTrayMenu::new();
 
-  #[cfg(target_os = "macos")]
-  let tray_menu = tray_menu.add_item(
-    CustomMenuItem::new("status", "Online").native_image(tauri::NativeImage::StatusAvailable),
-  );
-
-  #[cfg(not(target_os = "macos"))]
-  let tray_menu = tray_menu.add_item(CustomMenuItem::new("status", "Online"));
-
   let tray_menu = tray_menu
     .add_item(CustomMenuItem::new("start", "Start Daemon"))
     .add_item(CustomMenuItem::new("stop", "Stop Daemon"))
@@ -37,26 +29,9 @@ pub fn event_handler<R: Runtime>(app_handle: &AppHandle<R>, event: SystemTrayEve
           app_handle.state::<daemon::Flags>(),
           app_handle.state::<sentry::ClientOptions>(),
         );
-
-        let status_handle = app_handle.tray_handle().get_item("status");
-
-        status_handle.set_title("Online").unwrap();
-
-        #[cfg(target_os = "macos")]
-        status_handle
-          .set_native_image(tauri::NativeImage::StatusAvailable)
-          .unwrap();
       }
       "stop" => {
         daemon::stop_daemon(app_handle.state::<daemon::Connection>());
-        let item_handle = app_handle.tray_handle().get_item("status");
-
-        item_handle.set_title("Offline").unwrap();
-
-        #[cfg(target_os = "macos")]
-        item_handle
-          .set_native_image(tauri::NativeImage::StatusNone)
-          .unwrap();
       }
       _ => {}
     }
