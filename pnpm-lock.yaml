@@ -36,7 +36,7 @@ importers:
       '@floating-ui/react-dom': 1.0.0
       '@floating-ui/react-dom-interactions': 0.10.2
       '@graphql-codegen/cli': 2.13.7
-      '@graphql-codegen/typescript': 2.7.4
+      '@graphql-codegen/typescript': 2.7.5
       '@happy-dom/global-registrator': 7.6.0
       '@improbable-eng/grpc-web': 0.15.0
       '@radix-ui/colors': 0.1.8
@@ -240,7 +240,7 @@ importers:
     devDependencies:
       '@cypress/vite-dev-server': 3.3.1
       '@graphql-codegen/cli': 2.13.7_k4tgeuxgjoyg5fbcy4uzgsyom4
-      '@graphql-codegen/typescript': 2.7.4_graphql@16.6.0
+      '@graphql-codegen/typescript': 2.7.5_graphql@16.6.0
       '@happy-dom/global-registrator': 7.6.0
       '@tanstack/react-query-devtools': 4.12.0_pqnxmwujmmnpcx44ucekqkefny
       '@types/autosize': 4.0.1
@@ -1295,14 +1295,14 @@ packages:
       tslib: 2.4.0
     dev: true
 
-  /@graphql-codegen/typescript/2.7.4_graphql@16.6.0:
-    resolution: {integrity: sha512-mjoE3KqmAaBUSlCuKb2WDot3+CTfdJ9eKIcWsDFubPTNdZE0Z8mLoATmVryx8NOBjDtPU/ZziI0rYEGOR4qpAw==}
+  /@graphql-codegen/typescript/2.7.5_graphql@16.6.0:
+    resolution: {integrity: sha512-NZMViINr0KEH+DgtOE3BDWkdrisX7cz3/+m6M73Sa2cMM1udTTCpLbNqFIHRmGl1UyfwjdZB32YoF/fxshjV/Q==}
     peerDependencies:
       graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     dependencies:
       '@graphql-codegen/plugin-helpers': 2.7.1_graphql@16.6.0
       '@graphql-codegen/schema-ast': 2.5.1_graphql@16.6.0
-      '@graphql-codegen/visitor-plugin-common': 2.12.2_graphql@16.6.0
+      '@graphql-codegen/visitor-plugin-common': 2.13.0_graphql@16.6.0
       auto-bind: 4.0.0
       graphql: 16.6.0
       tslib: 2.4.0
@@ -1311,8 +1311,8 @@ packages:
       - supports-color
     dev: true
 
-  /@graphql-codegen/visitor-plugin-common/2.12.2_graphql@16.6.0:
-    resolution: {integrity: sha512-UZJxY3mWwaM7yii7mSbl6Rxb6sJlpwGZc3QAs2Yd8MnYjXFPTBR0OO6aBTr9xuftl0pYwHu/pVK7vTPNnVmPww==}
+  /@graphql-codegen/visitor-plugin-common/2.13.0_graphql@16.6.0:
+    resolution: {integrity: sha512-8lKw4l8W6yKaqrxx025eB6+lRMWaBKedbKjC9UyLhXAnqTi3tgaRKOBo4zvl1+KzE6R41Ruov9UcGD7OjgmBrw==}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     dependencies:
