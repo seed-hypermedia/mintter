@@ -5,6 +5,7 @@ import {useFind} from '@app/editor/find'
 import {prefetchDraft, queryKeys, useDraftList} from '@app/hooks'
 import {useMain} from '@app/main-context'
 import {formattedDate} from '@app/utils/get-format-date'
+import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
 import {Icon} from '@components/icon'
@@ -76,8 +77,13 @@ export function DraftListItem({draft}: {draft: Document}) {
   )
   const [deleteState] = useActor(deleteService)
 
-  function goToItem() {
-    setLocation(`/d/${draft.id}`)
+  function goToItem(event: MouseEvent) {
+    event.preventDefault()
+    if (event.metaKey || event.shiftKey) {
+      openWindow(`/d/${draft.id}`)
+    } else {
+      setLocation(`/d/${draft.id}`)
+    }
   }
 
   return (

@@ -11,6 +11,7 @@ import {
 } from '@app/hooks'
 import {useMain} from '@app/main-context'
 import {formattedDate} from '@app/utils/get-format-date'
+import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
 import {Icon} from '@components/icon'
@@ -93,8 +94,13 @@ export function PublicationListItem({
   )
   const [deleteState] = useActor(deleteService)
 
-  function goToItem() {
-    setLocation(`/p/${publication.document?.id}/${publication.version}`)
+  function goToItem(event: MouseEvent) {
+    event.preventDefault()
+    if (event.metaKey || event.shiftKey) {
+      openWindow(`/p/${publication.document?.id}/${publication.version}`)
+    } else {
+      setLocation(`/p/${publication.document?.id}/${publication.version}`)
+    }
   }
 
   function onCopy() {
