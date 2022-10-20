@@ -220,7 +220,7 @@ export const Link = forwardRef(renderLink)
 
 Link.displayName = 'Link'
 
-function MintterDocumentLink({element, attributes, mode}: LinkProps) {
+function MintterDocumentLink({element, attributes}: LinkProps) {
   let editor = useSlateStatic()
   let at = findPath(element)
   let [docId, version] = getIdsfromUrl(element.url)

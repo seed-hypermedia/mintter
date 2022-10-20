@@ -6,7 +6,6 @@ import {
   getDraft,
   getInfo,
   getPublication,
-  Link,
   Publication,
   updateDraftV2 as updateDraft,
 } from '@app/client'
@@ -83,8 +82,6 @@ export function createPublicationMachine({
         version,
         publication: null,
         author: null,
-        links: [],
-        dedupeLinks: [],
         errorMessage: '',
         canUpdate: false,
       },
@@ -341,23 +338,6 @@ export function createPublicationMachine({
       },
     },
   )
-}
-
-function createDedupeLinks(entry: Array<Link>): Array<Link> {
-  let sourceSet = new Set<string>()
-
-  return entry.filter((link) => {
-    // this will remove any link with no source. maybe this is not possible?
-    if (!link.source) return false
-
-    let currentSource = `${link.source.documentId}/${link.source.version}`
-    if (sourceSet.has(currentSource)) {
-      return false
-    } else {
-      sourceSet.add(currentSource)
-      return true
-    }
-  })
 }
 
 async function createReply(

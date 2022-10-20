@@ -66,7 +66,7 @@ function Embed({
   let [docId, version, blockId] = getIdsfromUrl(element.url)
   let client = useQueryClient()
   let [state] = useMachine(() => createEmbedMachine({url: element.url, client}))
-  let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Embed))
+  let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Embed), [])
   // let selected = useSelected()
   // let focused = useFocused()
 

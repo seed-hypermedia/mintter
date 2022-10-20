@@ -12,7 +12,7 @@ export type DiscussionProps = {
   version?: string
 }
 
-export function Discussion({documentId, version}: DiscussionProps) {
+export function Discussion({documentId}: DiscussionProps) {
   const {data, refetch} = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
     queryFn: () => listCitations(documentId),
