@@ -164,9 +164,9 @@ function PublicationBlocktools(
   let localCopy = props.copy ?? copyTextToClipboard
 
   function handleCopy() {
-    let highlight = target?.dataset.highlight
-    if (highlight) {
-      localCopy(highlight)
+    let reference = target?.dataset.reference
+    if (reference) {
+      localCopy(reference)
       toast.success('copied block!')
     }
   }
