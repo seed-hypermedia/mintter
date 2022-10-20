@@ -34,13 +34,16 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
       url
     };
 
+    let left = win_url.path_segments().unwrap().take(2);
+    let right = requested_url.path_segments().unwrap().take(2);
+
     debug!(
-      "comparing win url {}  to requested {}, equal: {}",
-      win_url,
-      requested_url,
-      win_url == requested_url
+      "comparing win url {:?}  to requested {:?}, equal: {}",
+      left.clone().collect::<Vec<_>>(),
+      right.clone().collect::<Vec<_>>(),
+      left.clone().eq(right.clone())
     );
-    if win_url == requested_url {
+    if left.eq(right) {
       return win.set_focus().map_err(Into::into);
     }
   }

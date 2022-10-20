@@ -66,11 +66,12 @@ export function PublicationListItem({
   publication: Publication
   copy?: typeof copyTextToClipboard
 }) {
-  let {search} = useFind()
-  let [, setLocation] = useLocation()
-  let client = useQueryClient()
-  let title = publication.document?.title || 'Untitled Document'
-  let {data: author} = useAuthor(publication.document?.author)
+  const {search} = useFind()
+  const [, setLocation] = useLocation()
+  const client = useQueryClient()
+  const title = publication.document?.title || 'Untitled Document'
+  const {data: author} = useAuthor(publication.document?.author)
+  const mainService = useMain()
 
   const deleteService = useInterpret(
     () =>
@@ -178,7 +179,12 @@ export function PublicationListItem({
               </Dropdown.Item>
               <Dropdown.Item
                 data-testid="new-window-item"
-                // onSelect={onOpenInNewWindow}
+                onSelect={() =>
+                  mainService.send({
+                    type: 'COMMIT.OPEN.WINDOW',
+                    path: `/p/${publication.document.id}/${publication.version}`,
+                  })
+                }
               >
                 <Icon name="OpenInNewWindow" />
                 <Text size="2">Open in new Window</Text>

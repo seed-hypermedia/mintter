@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use log::debug;
 use tauri::{Window, Wry};
 use url::Url;
 
@@ -106,7 +106,7 @@ impl WindowExt for Window<Wry> {
   fn set_minimizable(&self, _minimizable: bool) {}
 
   fn url(&self) -> tauri::Result<Url> {
-    let (tx, rx) = std::sync::mpsc::channel::<Cow<'_, str>>();
+    let (tx, rx) = std::sync::mpsc::channel::<String>();
 
     self.with_webview(move |webview| {
       #[cfg(target_os = "linux")]
@@ -141,11 +141,13 @@ impl WindowExt for Window<Wry> {
         let len = unsafe { msg_send![absolute_url, lengthOfBytesUsingEncoding: 4] };
         let bytes = unsafe { std::slice::from_raw_parts(bytes, len) };
 
-        tx.send(String::from_utf8_lossy(bytes)).unwrap();
+        tx.send(std::str::from_utf8(bytes).unwrap().to_string())
+          .unwrap();
       }
     })?;
 
     let str = rx.recv().expect("Failed to receive string pointer");
+    debug!("received raw url {}", str);
     Url::parse(&str).map_err(tauri::Error::InvalidUrl)
   }
 }
