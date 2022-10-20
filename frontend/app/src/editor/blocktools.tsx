@@ -225,13 +225,15 @@ function useBlocktoolsData(editor: Editor): BlockData {
 
   let show = useSelector(mouseService, (state) => state.matches('active'))
 
+  let topPlatform = import.meta.env.TAURI_PLATFORM == 'win32' ? 0 : 0
+
   return {
     mouseService,
     editor,
     show,
     mode: editor.mode,
     element,
-    top: rect ? `calc(${rect.top} * 1px)` : '-999px',
+    top: rect ? `calc(${rect.top - topPlatform} * 1px)` : '-999px',
     height: rect
       ? `calc(calc(${rect.bottom - rect.top} * 1px) + 1rem)`
       : '-999px',

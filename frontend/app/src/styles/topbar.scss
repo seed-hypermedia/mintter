@@ -1,44 +1,30 @@
 @use 'mixins/platform';
 @use 'variables' as *;
 
-#desktop-app-title-bar {
+.topbar-title-bar {
+  block-size: 32px;
   position: fixed;
-  inset-inline: 0;
   top: 0;
-  flex: none;
-  inline-size: 100%;
-  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
-  background-color: var(--mtt-colors-base-background-subtle);
-  transition: opacity 0.25s ease;
+  inset-inline: 0;
+  // background-color: red;
+
   display: flex;
   align-items: stretch;
-  z-index: 100;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
 
-  user-select: none;
-  -webkit-user-select: none;
-
-  // &:hover {
-  //   cursor: default;
-  // }
-  // &:has([data-state='hidden']) {
-  //   opacity: 0;
-  // }
-
-  @include platform.macos {
-    block-size: $darwin-title-bar-height;
-    padding-inline-start: 64px;
+  .topbar-section {
+    padding: 0;
   }
 
   @include platform.win32 {
-    block-size: $win32-title-bar-height;
-
     button.window-control {
       display: inline-block;
       position: relative;
       width: 45px;
       height: 100%;
-      padding: 0;
-      margin: 0;
+      // padding: 0;
+      // margin: 0;
       overflow: hidden;
       background-color: transparent;
 
@@ -87,6 +73,39 @@
     }
   }
 }
+.topbar-main-bar {
+  position: fixed;
+  inset-inline: 0;
+
+  block-size: var(--topbar-h);
+  flex: none;
+  inline-size: 100%;
+  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
+  background-color: var(--mtt-colors-base-background-subtle);
+  transition: opacity 0.25s ease;
+  display: flex;
+  align-items: stretch;
+  z-index: 100;
+
+  user-select: none;
+  -webkit-user-select: none;
+
+  &:hover {
+    cursor: default;
+  }
+  &:has([data-state='hidden']) {
+    opacity: 0;
+  }
+
+  @include platform.macos {
+    top: 0;
+    padding-inline-start: 64px;
+  }
+
+  @include platform.win32 {
+    top: 32px;
+  }
+}
 
 .topbar-inner {
   inline-size: calc(100% - 64px);
@@ -100,15 +119,17 @@
   align-items: stretch;
   gap: 0.5em;
   // more relaxed spacing on wider widths
-  padding-inline: 1vw;
+  padding-inline: 0.5em;
+  padding-block: 0.5em;
+  // padding-inline: 1vw;
 
-  @include platform.macos {
-    padding-block: 0.5em;
-  }
+  // @include platform.macos {
+  //   padding-block: 0.5em;
+  // }
 
-  @include platform.win32 {
-    padding-block: 0.2em;
-  }
+  // @include platform.win32 {
+  //   padding-block: 0.2em;
+  // }
 
   &.main {
     flex: 1;

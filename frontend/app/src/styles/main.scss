@@ -1,10 +1,22 @@
+@use 'mixins/platform';
+@use 'variables' as *;
+
 .main-root {
   position: absolute;
-  inset: var(--topbar-h) 0 var(--footer-h) 0;
+  inset: 0;
+  bottom: var(--footer-h);
   overflow: hidden;
   display: flex;
   gap: 0;
   background-color: var(--mtt-colors-base-background-subtle);
+
+  @include platform.macos {
+    top: $darwin-title-bar-height;
+  }
+
+  @include platform.win32 {
+    top: $win32-title-bar-height;
+  }
 
   &.settings {
     padding-block-start: 0;
