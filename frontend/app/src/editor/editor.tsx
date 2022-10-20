@@ -193,7 +193,6 @@ export function Editor({
   return (
     <span
       className={`${classnames('editor', mode)} ${flow()}`}
-      id="editor"
       // onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
     >
       <Slate

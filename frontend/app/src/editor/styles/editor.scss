@@ -98,6 +98,11 @@ li::marker {
     padding-inline-end: 0 !important;
   }
 
+  &.mode-discussion {
+    transform: translateX(-40px);
+    display: block;
+  }
+
   a {
     text-decoration: underline;
     word-break: break-all;

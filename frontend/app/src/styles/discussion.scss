@@ -1,12 +1,15 @@
+.discussions-wrapper {
+  > h2 {
+    margin-bottom: 3rem;
+    line-height: 2;
+    border-bottom: 1px solid var(--mtt-colors-base-border-normal);
+  }
+}
+
 .discussion-list {
   position: relative;
-  padding: 1rem;
-  padding-inline-start: 0;
+  padding: 0;
+  // padding: 1rem;
 
-  list-style-type: none;
-
-  li {
-    padding: 0;
-    margin: 0;
-  }
+  // list-style-type: none;
 }

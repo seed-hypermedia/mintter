@@ -78,7 +78,7 @@ export default function PublicationWrapper() {
           <div className="page-wrapper publication-wrapper">
             <section className="discussion-section">
               <ScrollArea onScroll={() => mouseService.send('DISABLE.SCROLL')}>
-                <Discussion fileRef={service} />
+                <Discussion documentId={params?.id} version={params?.version} />
               </ScrollArea>
             </section>
             <section

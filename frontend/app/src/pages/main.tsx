@@ -29,8 +29,12 @@ export default function Main() {
             {/* <Route path="/" component={Home} /> */}
             <Route path="/inbox" component={PublicationList} />
             <Route path="/drafts" component={DraftList} />
-            <Route path="/p/:id/:version/:block?" component={Publication} />
-            <Route path="/d/:id" component={Draft} />
+            <Route
+              path="/p/:id/:version/:block?"
+              component={Publication}
+              key={window.location.href}
+            />
+            <Route path="/d/:id" component={Draft} key={window.location.href} />
             <Route path="/settings" component={Settings} />
             <Route>{() => <Redirect to="/inbox" />}</Route>
           </Switch>

@@ -1,7 +1,71 @@
 .discussion-item {
-  p {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-all;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0 1rem;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
+  grid-template-areas:
+    'avatar info'
+    '. content';
+
+  .item-avatar {
+    grid-area: avatar;
   }
+  .item-info {
+    grid-area: info;
+  }
+  .item-content {
+    grid-area: content;
+    display: block;
+  }
+
+  &:hover {
+    background-color: var(--mtt-colors-base-component-bg-normal);
+
+    .item-control {
+      opacity: 1;
+    }
+  }
+
+  &:after .item-avatar {
+    content: '';
+    width: 3px;
+    height: 100%;
+    background: red;
+    top: 0;
+    left: 0;
+  }
+}
+
+.item-avatar,
+.item-info {
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
+}
+
+.item-info {
+  gap: 0.5rem;
+  user-select: none;
+  -webkit-user-select: none;
+
+  * {
+    color: var(--mtt-colors-base-text-low);
+    font-size: small;
+    margin-inline: 0.25rem;
+    font-family: var(--mtt-fonts-base);
+    margin: 0;
+    padding: 0;
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.item-control {
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }

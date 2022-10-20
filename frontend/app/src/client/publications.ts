@@ -55,8 +55,12 @@ export async function getPublication(
   return result
 }
 
-export function listCitations(documentId: string, rpc: GrpcClient = client) {
-  const request = ListCitationsRequest.fromPartial({documentId, depth: 1})
+export function listCitations(
+  documentId: string,
+  depth = 0,
+  rpc: GrpcClient = client,
+) {
+  const request = ListCitationsRequest.fromPartial({documentId, depth})
   let result = new ContentGraphClientImpl(rpc).listCitations(request)
   return result
 }

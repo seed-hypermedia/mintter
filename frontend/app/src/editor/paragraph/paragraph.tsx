@@ -67,20 +67,24 @@ function Paragraph({
   useBlockObserve(mode, attributes.ref)
   let mouseService = useMouse()
 
-  let mouseProps = {
-    onMouseEnter: () => {
-      mouseService.send({
-        type: 'HIGHLIGHT.ENTER',
-        ref: elementProps['data-highlight'] as string,
-      })
-    },
-    onMouseLeave: () => {
-      mouseService.send('HIGHLIGHT.LEAVE')
-    },
-  }
-  if (mode == EditorMode.Embed || mode == EditorMode.Discussion) {
+  let mouseProps =
+    mode != EditorMode.Discussion
+      ? {
+          onMouseEnter: () => {
+            mouseService.send({
+              type: 'HIGHLIGHT.ENTER',
+              ref: elementProps['data-highlight'] as string,
+            })
+          },
+          onMouseLeave: () => {
+            mouseService.send('HIGHLIGHT.LEAVE')
+          },
+        }
+      : {}
+
+  if (mode == EditorMode.Embed) {
     return (
-      <Box as="span" {...attributes}>
+      <Box as="span" {...attributes} {...elementProps}>
         {children}
       </Box>
     )
