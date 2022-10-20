@@ -13,9 +13,8 @@ through prerendering our entry points. The setup for this follows the
 
    The client bundle is the optimized browser distribution of our frontend. It
    will be loaded in the app and will hydrate the prerendered html. It's
-   entrypoint is [./src/entry-client.tsx](./src/entry-client.tsx). This file
-   will be run in the browser so have access to browser/tauri specific APIs
-   here.
+   entrypoint is [./src/entry.tsx](./src/entry.tsx). This file will be run in
+   the browser so have access to browser/tauri specific APIs here.
 
 2. Server Bundle
 

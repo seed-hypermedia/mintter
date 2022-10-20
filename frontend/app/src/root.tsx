@@ -10,8 +10,7 @@ import {
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {useInterpret} from '@xstate/react'
-import {lazy, StrictMode, Suspense, useLayoutEffect, useState} from 'react'
-import {createRoot} from 'react-dom/client'
+import {lazy, Suspense, useLayoutEffect, useState} from 'react'
 import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
@@ -36,16 +35,6 @@ attachConsole()
 onUpdaterEvent(({error, status}) => {
   debug(`Updater event. error: ${error} status: ${status}`)
 })
-
-var container = document.getElementById('root')
-if (!container) throw new Error('No `root` html element')
-var root = createRoot(container)
-
-root.render(
-  <StrictMode>
-    <Root />
-  </StrictMode>,
-)
 
 export function Root() {
   var themeService = useInterpret(() => themeMachine)
@@ -111,7 +100,7 @@ if (window.Cypress) {
   }
 }
 
-const queryClient = new QueryClient({
+var queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       useErrorBoundary: true,
@@ -125,7 +114,7 @@ const queryClient = new QueryClient({
   },
 })
 
-const dehydrateState = dehydrate(queryClient)
+var dehydrateState = dehydrate(queryClient)
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (

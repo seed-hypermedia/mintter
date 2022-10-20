@@ -2,7 +2,6 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {findPath} from '@app/editor/utils'
 import {useFileIds} from '@app/file-provider'
 import {
-  Embed,
   FlowContent,
   GroupingContent,
   isFlowContent,
@@ -65,7 +64,8 @@ export function usePhrasingProps(
         'data-element-type': element.type,
         'data-parent-block': parentBlock?.[0].id,
         'data-parent-group': parentGroup?.[0].type,
-        'data-highlight': version
+        'data-highlight': `${docId}/${parentBlock?.[0].id}`,
+        'data-reference': version
           ? `${MINTTER_LINK_PREFIX}${docId}/${version}/${parentBlock?.[0].id}`
           : undefined,
       },
@@ -75,25 +75,26 @@ export function usePhrasingProps(
   }
 }
 
-export function useEmbedProps(element: Embed, docId: string) {
-  let editor = useSlateStatic()
+// export function useEmbedProps(element: Embed, docId: string) {
+//   let editor = useSlateStatic()
 
-  let path = findPath(element)
-  return useMemo(() => {
-    if (!path) return
-    let parentBlock = Editor.above<FlowContent>(editor, {
-      match: isFlowContent,
-      mode: 'lowest',
-      at: path,
-    })
+//   let path = findPath(element)
+//   return useMemo(() => {
+//     if (!path) return
+//     let parentBlock = Editor.above<FlowContent>(editor, {
+//       match: isFlowContent,
+//       mode: 'lowest',
+//       at: path,
+//     })
 
-    return {
-      elementProps: {
-        'data-element-type': element.type,
-        'data-highlight': `${docId}/${parentBlock?.[0].id}`,
-      },
-      parentNode: parentBlock?.[0],
-      parentPath: parentBlock?.[1],
-    }
-  }, [element, path, docId, editor])
-}
+//     return {
+//       elementProps: {
+//         'data-element-type': element.type,
+//         'data-reference': `${docId}/${parentBlock?.[0].id}`,
+//         'data-highlight':
+//       },
+//       parentNode: parentBlock?.[0],
+//       parentPath: parentBlock?.[1],
+//     }
+//   }, [element, path, docId, editor])
+// }

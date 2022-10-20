@@ -25,10 +25,15 @@ export function BlockHighLighter({children}: {children: ReactNode}) {
                 height: 'calc(100% + 1rem)',
                 transform: 'translateX(-50%)',
                 background: '$primary-component-bg-hover',
+                // background: 'red',
                 zIndex: -1,
                 pointerEvents: 'none',
               },
+              [`& [data-highlight="${id}"]:hover:before`]: {
+                display: 'none',
+              },
               [`& a[data-highlight="${id}"], & q[data-highlight="${id}"]`]: {
+                // [`& [data-highlight="${id}"]`]: {
                 background: '$primary-component-bg-hover',
               },
             }

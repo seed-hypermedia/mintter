@@ -96,7 +96,7 @@ function Embed({
   }
 
   function mouseEnter() {
-    mouseService.send({type: 'HIGHLIGHT.ENTER', ref: element.url})
+    mouseService.send({type: 'HIGHLIGHT.ENTER', ref: `${docId}/${blockId}`})
   }
   function mouseLeave() {
     mouseService.send('HIGHLIGHT.LEAVE')
@@ -110,7 +110,8 @@ function Embed({
       onClick={onOpenInNewWindow}
       onMouseEnter={mouseEnter}
       onMouseLeave={mouseLeave}
-      data-highlight={element.url}
+      data-highlight={`${docId}/${blockId}`}
+      data-reference={element.url}
       // {...embedProps?.elementProps}
     >
       <Editor
