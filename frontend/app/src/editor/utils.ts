@@ -202,18 +202,35 @@ export function resetGroupingContent(editor: Editor): boolean {
   if (list) {
     const [listNode, listPath] = list
     if (listNode.children.length == 1 && !Node.string(listNode)) {
-      Editor.withoutNormalizing(editor, () => {
-        Transforms.insertNodes(
-          editor,
-          statement({id: createId()}, [paragraph([text('')])]),
-          {
-            at: listPath,
-          },
-        )
-        Transforms.removeNodes(editor, {at: Path.next(listPath)})
+      if (isGroup(listNode)) {
+        // remove the list if the type os the default one (group)
+        Editor.withoutNormalizing(editor, () => {
+          Transforms.insertNodes(
+            editor,
+            statement({id: createId()}, [paragraph([text('')])]),
+            {
+              at: listPath,
+            },
+          )
+          Transforms.removeNodes(editor, {at: Path.next(listPath)})
 
-        Transforms.select(editor, listPath.concat(0))
-      })
+          Transforms.select(editor, listPath.concat(0))
+        })
+      } else {
+        // reset the group type for the empty list
+        Editor.withoutNormalizing(editor, () => {
+          Transforms.insertNodes(
+            editor,
+            group([statement([paragraph([text('')])])]),
+            {
+              at: listPath,
+            },
+          )
+          Transforms.removeNodes(editor, {at: Path.next(listPath)})
+          Transforms.select(editor, [...listPath, 0, 0])
+        })
+      }
+
       return true
     }
   }
