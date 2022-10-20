@@ -182,10 +182,6 @@ export function createAuthService(
           )
         },
         updateProfile: function updateProfileService(_, event) {
-          console.log(
-            '🚀 ~ file: auth-machine.ts ~ line 185 ~ updateProfileService ~ event',
-            event,
-          )
           return updateProfile(event.profile)
         },
         fetchPeerData: function fetchPeerDataService(context: AuthContext) {

@@ -50,17 +50,20 @@ function StaticParagraph({
 
   let mouseService = useMouse()
 
-  let mouseProps = {
-    onMouseEnter: () => {
-      mouseService.send({
-        type: 'HIGHLIGHT.ENTER',
-        ref: elementProps['data-highlight'] as string,
-      })
-    },
-    onMouseLeave: () => {
-      mouseService.send('HIGHLIGHT.LEAVE')
-    },
-  }
+  let mouseProps =
+    mode != EditorMode.Discussion
+      ? {
+          onMouseEnter: () => {
+            mouseService.send({
+              type: 'HIGHLIGHT.ENTER',
+              ref: elementProps['data-highlight'] as string,
+            })
+          },
+          onMouseLeave: () => {
+            mouseService.send('HIGHLIGHT.LEAVE')
+          },
+        }
+      : {}
 
   let as = useMemo(() => {
     const headingMap: {[key: number]: string} = {
@@ -84,6 +87,7 @@ function StaticParagraph({
       </Box>
     )
   }
+
   return (
     <Box as={as} {...attributes} {...elementProps} {...mouseProps}>
       {children}

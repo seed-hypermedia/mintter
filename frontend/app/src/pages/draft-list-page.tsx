@@ -20,23 +20,25 @@ export default DraftList
 
 function DraftList() {
   let mainService = useMain()
-  let {isLoading, data} = useDraftList()
-
+  let {data, isInitialLoading} = useDraftList()
+  // TODO: add a `isFetching` indicator
   return (
     <div className="page-wrapper">
       <ScrollArea>
-        {data && data.documents.length ? (
+        {isInitialLoading ? (
+          <p>loading...</p>
+        ) : data && data.documents.length ? (
           <ul className="file-list" data-testid="files-list">
             {data.documents.map((draft) => (
               <DraftListItem key={draft.id} draft={draft} />
             ))}
           </ul>
-        ) : isLoading ? null : (
+        ) : (
           <EmptyList
             description="You have no Drafts yet."
             action={() => {
               // TODO: create a new draft
-              mainService.send('COMMIT.OPEN.WINDOW')
+              mainService.send('COMMIT.NEW.DRAFT')
             }}
           />
         )}

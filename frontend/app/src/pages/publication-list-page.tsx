@@ -28,12 +28,14 @@ export default PublicationList
 
 function PublicationList() {
   let mainService = useMain()
-  let {isLoading, data} = usePublicationList()
+  let {data, isInitialLoading} = usePublicationList()
 
   return (
     <div className="page-wrapper">
       <ScrollArea>
-        {data && data.publications.length ? (
+        {isInitialLoading ? (
+          <p>loading...</p>
+        ) : data && data.publications.length ? (
           <ul className="file-list" data-testid="files-list">
             {data.publications.map((publication) => (
               <PublicationListItem
@@ -42,12 +44,12 @@ function PublicationList() {
               />
             ))}
           </ul>
-        ) : isLoading ? null : (
+        ) : (
           <EmptyList
             description="You have no Publications yet."
             action={() => {
               // TODO: create a new draft
-              mainService.send('COMMIT.OPEN.WINDOW')
+              mainService.send('COMMIT.NEW.DRAFT')
             }}
           />
         )}

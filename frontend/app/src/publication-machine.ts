@@ -7,7 +7,6 @@ import {
   getInfo,
   getPublication,
   Link,
-  listCitations,
   Publication,
   updateDraftV2 as updateDraft,
 } from '@app/client'
@@ -32,8 +31,6 @@ export type PublicationMachineContext = {
   publication: ClientPublication | null
   errorMessage: string
   canUpdate: boolean
-  links: Array<Link>
-  dedupeLinks: Array<Link>
   title: string
 }
 
@@ -45,17 +42,13 @@ export type PublicationMachineEvent =
       canUpdate?: boolean
     }
   | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
-  | {type: 'DISCUSSION.FETCH.DATA'}
   | {type: 'DISCUSSION.SHOW'}
   | {type: 'DISCUSSION.HIDE'}
   | {type: 'DISCUSSION.TOGGLE'}
-  | {type: 'DISCUSSION.REPORT.SUCCESS'; links: Array<Link>}
-  | {type: 'DISCUSSION.REPORT.ERROR'; errorMessage: string}
   | {type: 'FILE.DELETE.OPEN'}
   | {type: 'FILE.DELETE.CLOSE'}
   | {type: 'FILE.DELETE.CANCEL'}
   | {type: 'FILE.DELETE.CONFIRM'}
-  | {type: 'PUBLICATION.REPLY.TO'}
   | {type: 'PUBLICATION.EDIT'}
   | {type: 'PUBLICATION.REPLY'}
 
@@ -80,7 +73,6 @@ export function createPublicationMachine({
   client,
   documentId,
   version,
-  blockId,
 }: CreatePublicationMachineProps) {
   /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiADIB5AIIARRChI9i5OSAAeiAIwA2AKzMtAFh0AOAEw6txjQGZTATmsGANCACeiazoDszL9Y1eWgAMdjrWdhqmGgC+0S5oWHhEvNS0DEys7JzcvMwAZmCE9IxQwtIAkgDKAMIAqpWV5eIAcswASgCiAAribQAqzB1tbb0qyArYSmQq6gg6QVrMdn4Rxo4adqaezm6IXl56wVoHBkamxjo6MXEgCTgEU6nFGWwcXDzk+YXPpRU19Y0Wu1ur0BpVatVqh0GmMJlMZoh5otluENGsDBstjodu4EMYtBpmFdrEENEFTF4ySZTLF4hh7slyE90ixXtkPnwAE5gfAQVzMBgQCBgMhlKp1BpNVqVAAS4gA6rDFLwEQhQot5ld5kEDKZTEYXLiyVtmOsNAZHBcNBsvLTbvSko8aM9WVl3rlubz+YLhaK-hLAa0+uIAOIh0QdJWTFVINSIOwY016i744xBEnaQ2IYxeOxE866WzWY5BHQ0m53R0pZ0szJvHKfT185gAN3Y2CwIn9AKlzBl5Wkkdj42VyljswThNs5xMlnTpK0WbVFOYBi0BIMdjs+ICxztlYe1bSjFd9Y5zCb-LbPE7Yv+kqBwbDEaj8PH8cT05Tc4zi92aoOVd00MY5PEMMx9wdQ8mRrE863ZD0eT5YRamaCQZFfGNQFmHMl2WHw7GArRzACUs9UgxJoMoWCXjdBs+DATlORIbkIDvANewAMQ6PpqhlZhpEkPpJEwsdsMRBYlhWNF1k2bYly8Fd102bwvHTaw1ltCsoMZajjwyA9dP4QQRHQ2RhzhLC4wQTdCRRVZZKxHFNAJQkLmU45ziCKwdAohknX0lhDKmYyhGELpOm43iZVE6Z3wQWwk2I0lCK8Wy7D-I15h8Uwji2LYFlJa46Uo3TmTg4LckY5jWPC2oACFRHKaohK4ni+IEoSRIs0c4vEuZrGsJZzQWNLjhMLwl0iDZmH1NKFn8NYyy0kr-KPF1mEqz4CiKdJSi6Bqmpavpe06Hp+mYcFIWhSpYtVWypNRdFMXk-9zVMIJmB1XVDAMSlwnOPyqxgwLNp0kKdp+OrGua1qgTO0FBmGUYeujMTrIe+yZIxOTsSmwaDGYGw028ws0WWIGqPKgzwcQr0ULQqRzPkXrVXXIa-ACXL01y-FrCmiwhoiYWty8fEQjsSmypokQIHIFhGBbEgAGsWEhuhJFQQg6BYu74p0Bwkw0bx7ATYs8f-A2lmsNKMttv7zWMKWApdYRqpYzbMCIPIWKoL5ds17XddRt9+oNwnggxS5Qg++xjCm8sbjIEhhXgYdaZBja2XdT4BCEPX+v2Jdizc-YJpJIJFLSgxnfW2ts-o-2fgL6zjQUzcie80tjGMP7vA2WvM-rujz0vAUBF9FvZmtYivt0dMVg0j6NDw85Zr+3VcwsYwHGsQe9Kzke6eba8O3zkOrJwtEvuxLRBu0avAiXHuCOAgw1gTSx8X36nTwQxskK4hZmjPq1lcyE1LGue+xxThP3-GmHw0cHBmHCCSSkP8ZbwRzgxJiLFIBTz2JYXwalczuRzMEeO-5ObMB8iEC4CwN4YNBg3DkBCBpLhnL4Yi25NwUgcNaGu2lSou1rFtPgecwBsMxElZeqV0qZU0PMQkFJiK6E5oRciQi1pDwqhnHBNV8EX3RrMMWn1jhojCGWHUGx+ZvXMIsfEywLhGDFkiJhG0xFNz2mwoudjwizQfhcRS6Ye6+S0cDA+oi9EXkAT4tM+hKQXE8B9HGtisomCAsk8kY1vLFXtMIuuuiCnoxHCA1UxgZEpUrvI5yCABE5VcYYCwmwUHuJZGwigxsEk223CEcwXdixTVnr3YsakPo9PJLEWIQA */
   return createMachine(
@@ -107,60 +99,6 @@ export function createPublicationMachine({
       type: 'parallel',
       entry: ['sendActorToParent'],
       states: {
-        discussion: {
-          initial: 'fetching',
-          states: {
-            fetching: {
-              invoke: {
-                src: 'getDiscussion',
-                id: 'getDiscussion',
-              },
-              on: {
-                'DISCUSSION.REPORT.ERROR': {
-                  actions: 'assignError',
-                  target: 'errored',
-                },
-                'DISCUSSION.REPORT.SUCCESS': {
-                  actions: 'assignLinks',
-                  target: 'ready',
-                },
-              },
-            },
-            ready: {
-              tags: 'ready',
-              initial: 'visible',
-              states: {
-                hidden: {
-                  on: {
-                    'DISCUSSION.SHOW': {
-                      target: 'visible',
-                    },
-                    'DISCUSSION.TOGGLE': {
-                      target: 'visible',
-                    },
-                  },
-                },
-                visible: {
-                  on: {
-                    'DISCUSSION.HIDE': {
-                      target: 'hidden',
-                    },
-                    'DISCUSSION.TOGGLE': {
-                      target: 'hidden',
-                    },
-                  },
-                },
-              },
-            },
-            errored: {
-              on: {
-                'DISCUSSION.FETCH.DATA': {
-                  target: 'fetching',
-                },
-              },
-            },
-          },
-        },
         publication: {
           initial: 'fetching',
           states: {
@@ -231,21 +169,50 @@ export function createPublicationMachine({
                   invoke: {
                     src: 'createDraft',
                     id: 'createDraft',
-                    onDone: [
-                      {
-                        actions: ['openWindow'],
-                      },
-                    ],
-                    onError: [
-                      {
-                        actions: ['assignError'],
-                        target: 'idle',
-                      },
-                    ],
+                    onDone: {
+                      actions: ['openWindow'],
+                      target: 'idle',
+                    },
+                    onError: {
+                      actions: ['assignError'],
+                      target: 'idle',
+                    },
                   },
                 },
               },
             },
+          },
+        },
+        discussion: {
+          initial: 'ready',
+          states: {
+            ready: {
+              tags: 'ready',
+              initial: 'visible',
+              states: {
+                hidden: {
+                  on: {
+                    'DISCUSSION.SHOW': {
+                      target: 'visible',
+                    },
+                    'DISCUSSION.TOGGLE': {
+                      target: 'visible',
+                    },
+                  },
+                },
+                visible: {
+                  on: {
+                    'DISCUSSION.HIDE': {
+                      target: 'hidden',
+                    },
+                    'DISCUSSION.TOGGLE': {
+                      target: 'hidden',
+                    },
+                  },
+                },
+              },
+            },
+            errored: {},
           },
         },
       },
@@ -285,6 +252,7 @@ export function createPublicationMachine({
                   publication.document.children,
                   'group',
                 )
+                console.log('Publication', publication)
                 sendBack({
                   type: 'PUBLICATION.REPORT.SUCCESS',
                   publication: Object.assign(publication, {
@@ -316,52 +284,6 @@ export function createPublicationMachine({
               })
             })
         },
-        getDiscussion: (context) => (sendBack) => {
-          if (context.documentId) {
-            client
-              .fetchQuery(
-                [
-                  queryKeys.GET_PUBLICATION_DISCUSSION,
-                  context.documentId,
-                  context.version,
-                ],
-                () => {
-                  if (context.documentId) {
-                    return listCitations(context.documentId)
-                  }
-
-                  return null
-                },
-              )
-              .then((response) => {
-                let links = response
-                  ? response.links.filter(
-                      (link) =>
-                        typeof link.source != 'undefined' &&
-                        typeof link.target != 'undefined',
-                    )
-                  : []
-
-                sendBack({
-                  type: 'DISCUSSION.REPORT.SUCCESS',
-                  links,
-                })
-              })
-              .catch((error: unknown) => {
-                sendBack({
-                  type: 'DISCUSSION.REPORT.ERROR',
-                  errorMessage: `Error fetching Discussion: ${JSON.stringify(
-                    error,
-                  )}`,
-                })
-              })
-          } else {
-            sendBack({
-              type: 'DISCUSSION.REPORT.ERROR',
-              errorMessage: `Error fetching Discussion: No docId found: ${context.documentId}`,
-            })
-          }
-        },
       },
       actions: {
         assignTitle: assign({
@@ -376,12 +298,6 @@ export function createPublicationMachine({
         }),
         assignCanUpdate: assign({
           canUpdate: (_, event) => Boolean(event.canUpdate),
-        }),
-        assignLinks: assign((_, event) => {
-          return {
-            links: event.links,
-            dedupeLinks: createDedupeLinks(event.links),
-          }
         }),
         assignError: assign({
           errorMessage: (_, event) => {
@@ -453,7 +369,7 @@ async function createReply(
    * - update draft
    * - return draft
    */
-  let currentUrl = `${MINTTER_LINK_PREFIX}${context.documentId}/${context.version}`
+  let currentUrl = `${MINTTER_LINK_PREFIX}${context.documentId}/${context.version}?type=reply`
   let doc = await createDraft()
   let block = statement([
     paragraph([

@@ -4,6 +4,7 @@ import {
   getDraft,
   getPublication,
   GrpcClient,
+  listCitations,
   listDrafts,
   listPublications,
   Publication,
@@ -90,7 +91,7 @@ export function useDraftList(
   }
 }
 
-export function useAuthor(id?: string, opts: QueryOptions = {}) {
+export function useAuthor(id = '', opts: QueryOptions = {}) {
   return useQuery([queryKeys.GET_ACCOUNT, id], () => getAccount(id, opts.rpc))
 }
 
@@ -105,5 +106,25 @@ export function prefetchDraft(client: QueryClient, draft: Document) {
   client.prefetchQuery({
     queryKey: [queryKeys.GET_DRAFT, draft.id],
     queryFn: () => getDraft(draft.id),
+  })
+}
+
+type UseCitationsOptions = QueryOptions & {
+  depth?: number
+}
+
+export function useCitations(documentId: string, opts: UseCitationsOptions) {
+  return listCitations(documentId, opts.depth, opts.rpc)
+}
+
+export function usePublication(
+  documentId: string,
+  version: string,
+  opts: QueryOptions,
+) {
+  return useQuery({
+    queryKey: [queryKeys.GET_PUBLICATION, documentId, version],
+    enabled: !!documentId && !!version,
+    queryFn: () => getPublication(documentId, version, opts.rpc),
   })
 }
