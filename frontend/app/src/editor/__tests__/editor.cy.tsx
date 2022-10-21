@@ -168,6 +168,7 @@ describe('Editor', () => {
         client,
         path: `/d/${draft?.id}`,
       })
+        .wait(300)
         .get('[data-testid="editor"]')
         .then(() => {
           editor.apply({
@@ -319,7 +320,7 @@ describe('Editor', () => {
         client,
         path: `/d/${draft?.id}`,
       })
-        // .wait(100)
+        .wait(100)
         .get('[data-testid="editor"]')
         .then(() => {
           editor.apply({

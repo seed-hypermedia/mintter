@@ -4,13 +4,12 @@ import {
   getDraft,
   getPublication,
   GrpcClient,
-  Link,
   listCitations,
   listDrafts,
   listPublications,
   Publication,
 } from '@app/client'
-import {QueryClient, useQuery, useQueryClient} from '@tanstack/react-query'
+import {QueryClient, useQuery} from '@tanstack/react-query'
 import {useMemo} from 'react'
 
 export * from './types'
@@ -123,7 +122,6 @@ export function usePublication(
 }
 
 export function useDiscussion(documentId?: string) {
-  let client = useQueryClient()
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
     queryFn: () => listCitations(documentId),
@@ -161,22 +159,22 @@ export function useDiscussion(documentId?: string) {
   return queryResult
 }
 
-function createDedupeLinks(entry: Array<Link>): Array<Link> {
-  let sourceSet = new Set<string>()
+// function createDedupeLinks(entry: Array<Link>): Array<Link> {
+//   let sourceSet = new Set<string>()
 
-  return entry.filter((link) => {
-    // this will remove any link with no source. maybe this is not possible?
-    if (!link.source) return false
+//   return entry.filter((link) => {
+//     // this will remove any link with no source. maybe this is not possible?
+//     if (!link.source) return false
 
-    let currentSource = `${link.source.documentId}/${link.source.version}`
-    if (sourceSet.has(currentSource)) {
-      return false
-    } else {
-      sourceSet.add(currentSource)
-      return true
-    }
-  })
-}
+//     let currentSource = `${link.source.documentId}/${link.source.version}`
+//     if (sourceSet.has(currentSource)) {
+//       return false
+//     } else {
+//       sourceSet.add(currentSource)
+//       return true
+//     }
+//   })
+// }
 
 function sortPublications(a: Publication, b: Publication) {
   let dateA = a.document?.updateTime ? new Date(a.document?.updateTime) : 0

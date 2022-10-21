@@ -15,23 +15,18 @@
 
 .discussion-toggle {
   position: fixed;
-  top: 40px;
   left: 0;
   z-index: 1000;
-  padding: 16px 40px;
 
   &:hover {
     button {
-      opacity: 1;
       pointer-events: initial !important;
     }
   }
 
   button {
     all: unset;
-    opacity: 0;
     width: 40px;
-    transform: translateX(-50%);
     height: 40px;
     display: flex;
     align-items: center;
