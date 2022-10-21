@@ -11,20 +11,23 @@ import {createPublicationMachine} from '@app/publication-machine'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
+import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useMachine} from '@xstate/react'
+import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useMemo} from 'react'
+import {useLayoutEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import '../styles/publication.scss'
 
 export default function PublicationWrapper() {
   let client = useQueryClient()
   let mainService = useMain()
-
+  let [showDiscussion, setShowDiscussion] = useState(true)
+  let vertical = useVertical()
   let [, params] = useRoute('/p/:id/:version/:block?')
   let [, setLocation] = useLocation()
   let mouseService = useInterpret(() => mouseMachine)
@@ -69,53 +72,72 @@ export default function PublicationWrapper() {
     )
   }
 
-  console.log('Discussions', state.context)
-
   if (state.matches('publication.ready')) {
     return (
       <MouseProvider value={mouseService}>
         <BlockHighLighter>
+          <div className="discussion-toggle" style={vertical ? {} : {}}>
+            <button onClick={() => setShowDiscussion((v) => !v)}>
+              <Icon name="MessageBubble" />
+            </button>
+          </div>
           <div className="page-wrapper publication-wrapper">
-            <section className="discussion-section">
-              <ScrollArea onScroll={() => mouseService.send('DISABLE.SCROLL')}>
-                <Discussion documentId={params?.id} version={params?.version} />
-              </ScrollArea>
-            </section>
-            <section
-              className="publication-section"
-              data-testid="publication-section"
-              onMouseMove={(event) =>
-                mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-              }
-              onMouseLeave={() => {
-                mouseService.send('DISABLE.CHANGE')
-              }}
-            >
-              <ErrorBoundary
-                fallback={<div>error</div>}
-                onReset={() => window.location.reload()}
-              >
-                <ScrollArea
-                  onScroll={() => mouseService.send('DISABLE.SCROLL')}
+            <Allotment vertical={vertical} key={vertical}>
+              <Allotment.Pane visible={showDiscussion}>
+                <section className="discussion-section">
+                  <ScrollArea
+                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                  >
+                    <Discussion
+                      documentId={params?.id}
+                      version={params?.version}
+                    />
+                  </ScrollArea>
+                </section>
+              </Allotment.Pane>
+              <Allotment.Pane>
+                <section
+                  className="publication-section"
+                  data-testid="publication-section"
+                  onMouseMove={(event) =>
+                    mouseService.send({
+                      type: 'MOUSE.MOVE',
+                      position: event.clientY,
+                    })
+                  }
+                  onMouseLeave={() => {
+                    mouseService.send('DISABLE.CHANGE')
+                  }}
                 >
-                  <FileProvider value={state.context.publication}>
-                    {state.context.publication?.document?.content && (
-                      <Blocktools editor={editor}>
-                        <Editor
-                          editor={editor}
-                          mode={EditorMode.Publication}
-                          value={state.context.publication?.document.content}
-                          onChange={() => {
-                            mouseService.send('DISABLE.CHANGE')
-                            // noop
-                          }}
-                        />
-                      </Blocktools>
-                    )}
-                  </FileProvider>
-                </ScrollArea>
-              </ErrorBoundary>
-            </section>
+                  <ErrorBoundary
+                    fallback={<div>error</div>}
+                    onReset={() => window.location.reload()}
+                  >
+                    <ScrollArea
+                      onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                    >
+                      <FileProvider value={state.context.publication}>
+                        {state.context.publication?.document?.content && (
+                          <Blocktools editor={editor}>
+                            <Editor
+                              editor={editor}
+                              mode={EditorMode.Publication}
+                              value={
+                                state.context.publication?.document.content
+                              }
+                              onChange={() => {
+                                mouseService.send('DISABLE.CHANGE')
+                                // noop
+                              }}
+                            />
+                          </Blocktools>
+                        )}
+                      </FileProvider>
+                    </ScrollArea>
+                  </ErrorBoundary>
+                </section>
+              </Allotment.Pane>
+            </Allotment>
           </div>
         </BlockHighLighter>
       </MouseProvider>
@@ -160,4 +182,23 @@ function BlockPlaceholder() {
       <Placeholder css={{height: 24, width: '90%'}} />
     </Box>
   )
+}
+
+function useVertical() {
+  let [vertical, setVertical] = useState(false)
+
+  useLayoutEffect(() => {
+    let responsiveMedia = window.matchMedia('(max-width: 768px)')
+    responsiveMedia.addEventListener('change', handler)
+    // initial set
+    setVertical(responsiveMedia.matches)
+    return () => {
+      responsiveMedia.removeEventListener('change', handler)
+    }
+
+    function handler(event: MediaQueryListEvent) {
+      setVertical(event.matches)
+    }
+  }, [])
+  return vertical
 }
