@@ -407,9 +407,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 				numCustomAddrs = len(strings.Split(cfg.AddAddrs, ","))
 			}
 			out := make([]multiaddr.Multiaddr, 0, len(addrs)+numCustomAddrs)
-			for _, a := range addrs {
-				out = append(out, a)
-			}
+			out = append(out, addrs...)
 			if numCustomAddrs > 0 {
 				for _, a := range strings.Split(cfg.AddAddrs, ",") {
 					out = append(out, multiaddr.StringCast(a))
