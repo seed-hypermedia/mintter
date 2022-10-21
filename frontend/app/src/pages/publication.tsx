@@ -19,15 +19,14 @@ import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useLayoutEffect, useMemo, useState} from 'react'
+import {useMemo} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
 
 export default function PublicationWrapper() {
   let client = useQueryClient()
   let mainService = useMain()
-  let [showDiscussion, setShowDiscussion] = useState(true)
-  let vertical = useVertical()
   let [, params] = useRoute('/p/:id/:version/:block?')
   let [, setLocation] = useLocation()
   let mouseService = useInterpret(() => mouseMachine)
@@ -35,6 +34,7 @@ export default function PublicationWrapper() {
     () => buildEditorHook(plugins, EditorMode.Publication),
     [],
   )
+  let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
 
   let [state, send, service] = useMachine(
     () =>
@@ -76,14 +76,29 @@ export default function PublicationWrapper() {
     return (
       <MouseProvider value={mouseService}>
         <BlockHighLighter>
-          <div className="discussion-toggle" style={vertical ? {} : {}}>
-            <button onClick={() => setShowDiscussion((v) => !v)}>
-              <Icon name="MessageBubble" />
-            </button>
-          </div>
+          {resizablePanelState.context.visible ? (
+            <div
+              className="discussion-toggle"
+              style={{
+                top: `${resizablePanelState.context.top}px`,
+                left: `${resizablePanelState.context.left}px`,
+                transform: resizablePanelState.context.vertical
+                  ? 'translateY(50%)'
+                  : 'translateX(-50%)',
+              }}
+            >
+              <button onClick={() => panelSend('DISCUSSION.TOGGLE')}>
+                <Icon name="MessageBubble" />
+              </button>
+            </div>
+          ) : null}
           <div className="page-wrapper publication-wrapper">
-            <Allotment vertical={vertical} key={vertical}>
-              <Allotment.Pane visible={showDiscussion}>
+            <Allotment
+              vertical={resizablePanelState.context.vertical}
+              key={resizablePanelState.context.vertical}
+              onChange={(values) => panelSend({type: 'RESIZE', values})}
+            >
+              <Allotment.Pane visible={resizablePanelState.context.visible}>
                 <section className="discussion-section">
                   <ScrollArea
                     onScroll={() => mouseService.send('DISABLE.SCROLL')}
@@ -119,6 +134,13 @@ export default function PublicationWrapper() {
                       <FileProvider value={state.context.publication}>
                         {state.context.publication?.document?.content && (
                           <Blocktools editor={editor}>
+                            {!resizablePanelState.context.visible ? (
+                              <button
+                                onClick={() => panelSend('DISCUSSION.TOGGLE')}
+                              >
+                                show discussions
+                              </button>
+                            ) : null}
                             <Editor
                               editor={editor}
                               mode={EditorMode.Publication}
@@ -184,21 +206,85 @@ function BlockPlaceholder() {
   )
 }
 
-function useVertical() {
-  let [vertical, setVertical] = useState(false)
-
-  useLayoutEffect(() => {
-    let responsiveMedia = window.matchMedia('(max-width: 768px)')
-    responsiveMedia.addEventListener('change', handler)
-    // initial set
-    setVertical(responsiveMedia.matches)
-    return () => {
-      responsiveMedia.removeEventListener('change', handler)
-    }
-
-    function handler(event: MediaQueryListEvent) {
-      setVertical(event.matches)
-    }
-  }, [])
-  return vertical
+type ResizablePanelMachineContext = {
+  top: number
+  left: number
+  vertical: boolean
+  visible: boolean
 }
+
+type ResizablePanelMachineEvent =
+  | {type: 'DISCUSSION.TOGGLE'}
+  | {type: 'RESIZE'; values: Array<number>}
+  | {type: 'MATCHMEDIA.MATCH'; match: boolean}
+
+type ResizablePanelMachineServices = {
+  matchMediaService: {
+    data: void
+  }
+}
+let resizablePanelMachine =
+  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAlAUQGUBJALToG0AGAXUVGID2sNABc0AsnxAAPRADZOAOgAsARgAcAZk3KAnAt2aA7AFYANCACeiQhrmLOGncqOH1qgEyGAvt4uphbHwiUgpqAFkAQQAVAGEACXC6ABEmSMUouPiuXiQQQWExCSlZBE97Tj0PdRN1OrkjDXULazKTZUUFdU5HI051XXVlTXVfPxAyAQg4KQDMXAISckopAtFxSTzSwmUlRzkTVR7OXSMDuQ9zKxs1B2U1WsMTdrl1UzHvIA */
+  createMachine(
+    {
+      context: {top: 100, left: 100, vertical: false, visible: true},
+      tsTypes: {} as import('./publication.typegen').Typegen0,
+      schema: {
+        context: {} as ResizablePanelMachineContext,
+        events: {} as ResizablePanelMachineEvent,
+        services: {} as ResizablePanelMachineServices,
+      },
+      invoke: {
+        src: 'matchMediaService',
+        id: 'matchMediaService',
+      },
+      on: {
+        'DISCUSSION.TOGGLE': {
+          actions: 'setDiscussionVisibility',
+        },
+        RESIZE: {
+          actions: 'updateHandlePosition',
+        },
+        'MATCHMEDIA.MATCH': {
+          actions: ['setOrientation'],
+        },
+      },
+      id: 'resizable-panel',
+    },
+    {
+      actions: {
+        setOrientation: assign({
+          vertical: (_, event) => event.match,
+        }),
+        updateHandlePosition: assign((context, event) => {
+          // hardcoded value to apply to the controls
+          let newValue = event.values[0]
+
+          if (context.vertical) {
+            return {top: newValue, left: 60}
+          } else {
+            return {left: newValue, top: 100}
+          }
+        }),
+        setDiscussionVisibility: assign({
+          visible: (context) => !context.visible,
+        }),
+      },
+      services: {
+        matchMediaService: () => (sendBack) => {
+          let responsiveMedia = window.matchMedia('(max-width: 768px)')
+          responsiveMedia.addEventListener('change', handler)
+          // initial set
+          sendBack({type: 'MATCHMEDIA.MATCH', match: responsiveMedia.matches})
+
+          return () => {
+            responsiveMedia.removeEventListener('change', handler)
+          }
+
+          function handler(event: MediaQueryListEvent) {
+            sendBack({type: 'MATCHMEDIA.MATCH', match: event.matches})
+          }
+        },
+      },
+    },
+  )
