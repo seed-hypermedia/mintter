@@ -112,7 +112,7 @@ impl WindowExt for Window<Wry> {
       #[cfg(target_os = "linux")]
       {
         let uri = webview.inner().uri().unwrap();
-        tx.send(uri.as_str().to_string().into()).unwrap();
+        tx.send(uri.as_str().to_string()).unwrap();
       }
 
       #[cfg(windows)]
