@@ -1,18 +1,16 @@
 .publication-wrapper {
-  display: flex;
   width: 100%;
-
-  & > * {
-    flex: 1;
-    height: 100%;
-    box-sizing: border-box;
-  }
 }
 
-// .publication-section {}
+.split-view-view > * {
+  height: 100%;
+  box-sizing: border-box;
+}
 
 .discussion-section {
   border-right: 1px solid var(--mtt-colors-base-border-hover);
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .discussion-toggle {

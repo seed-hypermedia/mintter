@@ -1,8 +1,6 @@
-import {listCitations} from '@app/client'
-import {queryKeys} from '@app/hooks'
-import {useQuery} from '@tanstack/react-query'
 import '../styles/discussion.scss'
 
+import {useDiscussion} from '@app/hooks'
 import {DiscussionItem} from '@components/discussion-item'
 import {appWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
@@ -13,11 +11,7 @@ export type DiscussionProps = {
 }
 
 export function Discussion({documentId}: DiscussionProps) {
-  const {data, refetch} = useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
-    queryFn: () => listCitations(documentId),
-    enabled: !!documentId,
-  })
+  const {data, refetch} = useDiscussion(documentId)
 
   useEffect(() => {
     let isSubscribed = true
