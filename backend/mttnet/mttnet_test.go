@@ -52,7 +52,6 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 
 	cfg := config.Default().P2P
 	cfg.Port = 0
-	cfg.ReportPrivateAddrs = true
 	cfg.NoRelay = true
 	cfg.NoBootstrap = true
 	cfg.NoMetrics = true
