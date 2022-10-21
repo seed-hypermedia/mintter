@@ -180,8 +180,8 @@ var moveAttrs = map[vcsdb.Attribute]struct{}{
 func (m *moves) handle(d vcsdb.Datom) {
 	if m.Blocks == nil {
 		m.Blocks = make(map[vcsdb.NodeID]struct{})
-		m.Blocks[vcsdb.RootNode] = struct{}{}
-		m.Blocks[vcsdb.TrashNode] = struct{}{}
+		m.Blocks[vcs.RootNode] = struct{}{}
+		m.Blocks[vcs.TrashNode] = struct{}{}
 	}
 
 	if m.Moves == nil {
@@ -225,7 +225,7 @@ type moveOp struct {
 // TODO(burdiyan): implement block identity based on text.
 func (doc *Document) EnsureBlockState(blk string, state []byte) {
 	must.Maybe(&doc.err, func() error {
-		nid := vcsdb.NodeIDFromString(blk)
+		nid := vcs.NodeIDFromString(blk)
 
 		lww := doc.blocks[nid]
 		if lww == nil {
@@ -282,7 +282,7 @@ func (doc *Document) EnsureTitle(s string) {
 			return nil
 		}
 
-		d := doc.dw.NewAndAdd(vcsdb.RootNode, AttrTitle, s)
+		d := doc.dw.NewAndAdd(vcs.RootNode, AttrTitle, s)
 		doc.title.Set(d.OpID, d)
 
 		if oldDatom.Change == d.Change {
@@ -326,7 +326,7 @@ func (doc *Document) EnsureSubtitle(s string) {
 			return nil
 		}
 
-		d := doc.dw.NewAndAdd(vcsdb.RootNode, AttrSubtitle, s)
+		d := doc.dw.NewAndAdd(vcs.RootNode, AttrSubtitle, s)
 		doc.subtitle.Set(d.OpID, d)
 
 		if oldDatom.Change == d.Change {
@@ -343,14 +343,14 @@ func (doc *Document) EnsureSubtitle(s string) {
 // Left ID can also be empty which means beginning of the parent's list of children.
 func (doc *Document) MoveBlock(blockID, parentID, leftID string) (moved bool) {
 	must.Maybe(&doc.err, func() error {
-		block := vcsdb.NodeIDFromString(blockID)
-		parent := vcsdb.RootNode
+		block := vcs.NodeIDFromString(blockID)
+		parent := vcs.RootNode
 		if parentID != "" {
-			parent = vcsdb.NodeIDFromString(parentID)
+			parent = vcs.NodeIDFromString(parentID)
 		}
-		var left vcsdb.NodeID
+		var left vcs.NodeID
 		if leftID != "" {
-			left = vcsdb.NodeIDFromString(leftID)
+			left = vcs.NodeIDFromString(leftID)
 		}
 
 		ok, err := doc.tree.MoveBlock(block, parent, left)

@@ -141,7 +141,7 @@ var migrations = []string{
 		-- Mintter Object that datom is applied to.
 		permanode INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
 		-- Entity within Mintter Object.
-		entity BLOB NOT NULL,
+		entity INTEGER NOT NULL,
 		-- Attribute.
 		attr INTEGER REFERENCES datom_attrs NOT NULL,
 		-- Value types. See the code for possible values types.

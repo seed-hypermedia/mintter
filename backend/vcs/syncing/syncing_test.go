@@ -97,7 +97,7 @@ func TestSync(t *testing.T) {
 			newDatom := vcsdb.NewDatomWriter(change, 1, 0).NewDatom
 
 			wantDatoms = []vcsdb.Datom{
-				newDatom(vcsdb.RootNode, "title", "This is a title"),
+				newDatom(vcs.RootNode, "title", "This is a title"),
 			}
 
 			for _, d := range wantDatoms {

@@ -33,7 +33,7 @@ func TestListObjects(t *testing.T) {
 			change := conn.NewChange(obj, meLocal, nil, time.Time{})
 			newDatom := vcsdb.NewDatomWriter(change, 1, 0).NewDatom
 
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, "title", "This is a title"))
+			conn.AddDatom(obj, newDatom(vcs.RootNode, "title", "This is a title"))
 			conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
 			conn.EncodeChange(change, alice.me.DeviceKey())
 

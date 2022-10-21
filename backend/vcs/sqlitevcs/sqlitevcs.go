@@ -5,8 +5,6 @@ package sqlitevcs
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -691,98 +689,8 @@ func (conn *Conn) NextChangeSeq(obj, change LocalID) int {
 	return res.Max + 1
 }
 
-const nodeIDSize = 8
-
-// NodeID is an ID of a Graph Node within a Mintter Object.
-type NodeID [nodeIDSize]byte
-
-// NewNodeID creates a new random NodeID.
-func NewNodeID() (nid NodeID) {
-retry:
-	n, err := rand.Read(nid[:])
-	if err != nil {
-		panic(err)
-	}
-	if n != nodeIDSize {
-		panic("bad randomness for node ID")
-	}
-
-	if nid.IsZero() || nid.IsReserved() {
-		goto retry
-	}
-
-	return nid
-}
-
-// String implements fmt.Stringer.
-func (nid NodeID) String() string {
-	var notASCII bool
-	const maxASCII = 127
-
-	out := make([]byte, 0, len(nid))
-
-	for _, b := range nid {
-		if b == 0 {
-			continue
-		}
-
-		if b > maxASCII {
-			notASCII = true
-		}
-
-		out = append(out, b)
-	}
-
-	if notASCII {
-		return base64.RawStdEncoding.EncodeToString(out)
-	}
-
-	return string(out)
-}
-
-// NodeIDFromString converts a string into a NodeID.
-func NodeIDFromString(s string) NodeID {
-	if s == "" {
-		panic("BUG: empty string for node ID")
-	}
-
-	l := len(s)
-	if l > nodeIDSize {
-		panic("BUG: string length is larger than NodeID size")
-	}
-
-	var nid NodeID
-	if copy(nid[:], s) != l {
-		panic("BUG: couldn't copy all the string bytes into a NodeID")
-	}
-
-	return nid
-}
-
-// IsZero returns true if NodeID is zero.
-func (nid NodeID) IsZero() bool {
-	return nid == zeroNode
-}
-
-// IsReserved returns true if NodeID is a reserved ID.
-func (nid NodeID) IsReserved() bool {
-	return nid == RootNode || nid == TrashNode
-}
-
-// Bytes returns byte representation of the NodeID.
-func (nid NodeID) Bytes() []byte {
-	return nid[:]
-}
-
-var (
-	zeroNode = NodeID{}
-
-	// RootNode is a reserved node ID for root of the Object.
-	RootNode = NodeID{'$', 'R', 'O', 'O', 'T'}
-
-	// TrashNode is a reserved node ID for deleting other nodes.
-	TrashNode = NodeID{'$', 'T', 'R', 'A', 'S', 'H'}
-)
+// NodeID is an ID of a Node in a Mintter Object.
+type NodeID = vcs.NodeID
 
 // NewEntity creates a new NodeID.
 func (conn *Conn) NewEntity() (nid NodeID) {
@@ -790,7 +698,7 @@ func (conn *Conn) NewEntity() (nid NodeID) {
 		return
 	}
 
-	return NewNodeID()
+	return vcs.NewNodeIDv1(time.Now())
 }
 
 var addDatomQuery = qb.MakeQuery(sqliteschema.Schema, "insertDatom", sqlitegen.QueryKindExec,
@@ -878,15 +786,12 @@ func (conn *Conn) AddDatom(object LocalID, d Datom) (nextSeq int) {
 		// sqlitex.Exec doesn't support array bind parameters.
 		// We convert array into slice here. Need to do better.
 		value := d.Value
-		if d.ValueType == ValueTypeRef {
-			nid := d.Value.(NodeID)
-			value = nid.Bytes()
-		}
+
 		if d.ValueType == ValueTypeCID {
 			value = d.Value.(cid.Cid).Bytes()
 		}
 
-		e := d.Entity.Bytes()
+		e := d.Entity
 
 		if err := sqlitex.Exec(conn.conn, addDatomQuery.SQL, nil, object, d.Change, d.Seq, e, conn.Attr(d.Attr), d.ValueType, value); err != nil {
 			return err
@@ -905,7 +810,7 @@ func (conn *Conn) DeleteDatoms(object, change LocalID, entity NodeID, attribute 
 		return
 	}
 
-	if err := vcssql.DatomsDelete(conn.conn, int(object), entity.Bytes(), int(change), int(attribute)); err != nil {
+	if err := vcssql.DatomsDelete(conn.conn, int(object), int(entity), int(change), int(attribute)); err != nil {
 		conn.err = err
 		return
 	}

@@ -29,6 +29,11 @@ func (nid NodeID) IsZero() bool {
 	return nid == 0
 }
 
+// IsReserved checks whether NodeID is reserved.
+func (nid NodeID) IsReserved() bool {
+	return nid == RootNode || nid == TrashNode
+}
+
 // String implements fmt.Stringer.
 func (nid NodeID) String() string {
 	if nid.IsZero() {

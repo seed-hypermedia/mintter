@@ -32,9 +32,9 @@ func TestQuery(t *testing.T) {
 	c1 := conn.NewChange(obj, me, nil, now)
 
 	newDatom := NewDatomWriter(c1, 1, 0).NewDatom
-	conn.AddDatom(obj, newDatom(RootNode, "email", "foo@example.com"))
-	conn.AddDatom(obj, newDatom(RootNode, "alias", "fulanito"))
-	conn.AddDatom(obj, newDatom(RootNode, "bio", "Just an example"))
+	conn.AddDatom(obj, newDatom(vcs.RootNode, "email", "foo@example.com"))
+	conn.AddDatom(obj, newDatom(vcs.RootNode, "alias", "fulanito"))
+	conn.AddDatom(obj, newDatom(vcs.RootNode, "bio", "Just an example"))
 
 	conn.SaveVersion(obj, "main", me, LocalVersion{c1})
 
@@ -44,7 +44,7 @@ func TestQuery(t *testing.T) {
 	c2 := conn.NewChange(obj, me, LocalVersion{c1}, now.Add(time.Hour))
 
 	newDatom = NewDatomWriter(c2, 1, 0).NewDatom
-	conn.AddDatom(obj, newDatom(RootNode, "email", "changed@example.com"))
+	conn.AddDatom(obj, newDatom(vcs.RootNode, "email", "changed@example.com"))
 
 	conn.SaveVersion(obj, "main", me, LocalVersion{c2})
 
@@ -52,5 +52,5 @@ func TestQuery(t *testing.T) {
 
 	cs := conn.ResolveChangeSet(obj, LocalVersion{c2})
 	require.Equal(t, "[3,2]", string(cs))
-	require.Equal(t, "changed@example.com", conn.QueryLastValue(obj, cs, RootNode, "email").Value)
+	require.Equal(t, "changed@example.com", conn.QueryLastValue(obj, cs, vcs.RootNode, "email").Value)
 }

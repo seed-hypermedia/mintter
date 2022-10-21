@@ -97,17 +97,17 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.Chan
 		Devices: make(map[string]*accounts.Device),
 	}
 
-	if alias := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrAlias); !alias.IsZero() {
+	if alias := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias); !alias.IsZero() {
 		acc.Profile.Alias = alias.Value.(string)
 	}
-	if bio := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrBio); !bio.IsZero() {
+	if bio := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio); !bio.IsZero() {
 		acc.Profile.Bio = bio.Value.(string)
 	}
-	if email := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrEmail); !email.IsZero() {
+	if email := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrEmail); !email.IsZero() {
 		acc.Profile.Email = email.Value.(string)
 	}
 
-	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, mttacc.AttrRegistration)
+	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, mttacc.AttrRegistration)
 	for regs.Next() {
 		d := conn.QueryLastValue(obj, cs, regs.Item().ValueAny().(vcsdb.NodeID), mttacc.AttrDevice)
 		if d.IsZero() {
@@ -156,25 +156,25 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		change := conn.NewChange(obj, meLocal, version, time.Now().UTC())
 		newDatom := vcsdb.NewDatomWriter(change, conn.GetChangeLamportTime(change), 0).NewDatom
 
-		email := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrEmail)
-		alias := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrAlias)
-		bio := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrBio)
+		email := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrEmail)
+		alias := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias)
+		bio := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio)
 
 		var dirty bool
 
 		if email.IsZero() || email.Value.(string) != in.Email {
 			dirty = true
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrEmail, in.Email))
+			conn.AddDatom(obj, newDatom(vcs.RootNode, mttacc.AttrEmail, in.Email))
 		}
 
 		if alias.IsZero() || alias.Value.(string) != in.Alias {
 			dirty = true
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrAlias, in.Alias))
+			conn.AddDatom(obj, newDatom(vcs.RootNode, mttacc.AttrAlias, in.Alias))
 		}
 
 		if bio.IsZero() || bio.Value.(string) != in.Bio {
 			dirty = true
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrBio, in.Bio))
+			conn.AddDatom(obj, newDatom(vcs.RootNode, mttacc.AttrBio, in.Bio))
 		}
 
 		if !dirty {

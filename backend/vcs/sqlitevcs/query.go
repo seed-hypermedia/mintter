@@ -7,6 +7,7 @@ import (
 	"mintter/backend/db/sqlitegen/qb"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/pkg/must"
+	"mintter/backend/vcs"
 	"strings"
 	"text/template"
 
@@ -59,7 +60,7 @@ func (conn *Conn) ResolveChangeSet(object LocalID, heads LocalVersion) (cs Chang
 func (conn *Conn) QueryLastValue(object LocalID, cs ChangeSet, entity NodeID, a Attribute) (d Datom) {
 	must.Maybe(&conn.err, func() error {
 		q := newQuery(cs, true).
-			Where(sqliteschema.DatomsEntity.String()+" = ?", entity.Bytes()).
+			Where(sqliteschema.DatomsEntity.String()+" = ?", entity).
 			Where(sqliteschema.DatomAttrsAttr.String()+" = ?", a).
 			Limit(1)
 		defer q.Close()
@@ -131,7 +132,7 @@ func (conn *Conn) QueryValuesByAttr(object LocalID, cs ChangeSet, entity NodeID,
 		defer q.Close()
 
 		if !entity.IsZero() {
-			q.Where(sqliteschema.DatomsEntity.String()+" = ?", entity.Bytes())
+			q.Where(sqliteschema.DatomsEntity.String()+" = ?", entity)
 		}
 
 		q.Where(sqliteschema.DatomAttrsAttr.String()+" = ?", a)
@@ -281,11 +282,7 @@ func (dr DatomRow) Seq() int {
 
 // Entity returns entity column value.
 func (dr DatomRow) Entity() NodeID {
-	var entity NodeID
-	if dr.stmt.ColumnBytesCopy(colEntity, entity[:]) != nodeIDSize {
-		panic("BUG: unexpected node ID size")
-	}
-	return entity
+	return vcs.NodeID(dr.stmt.ColumnInt64(colEntity))
 }
 
 // Attr returns attr column value.
@@ -310,11 +307,7 @@ func (dr DatomRow) Value() (ValueType, any) {
 
 	switch vt {
 	case ValueTypeRef:
-		var ref NodeID
-		if dr.stmt.ColumnBytesCopy(colValue, ref[:]) != nodeIDSize {
-			panic("BUG: bad node ID size for ref")
-		}
-		return vt, ref
+		return vt, NodeID(dr.stmt.ColumnInt64(colValue))
 	case ValueTypeString:
 		v := dr.stmt.ColumnText(colValue)
 		return vt, v
@@ -442,7 +435,7 @@ func (conn *Conn) ForEachDatomRecursive(obj LocalID, entity NodeID, fn func(Dato
 		return
 	}
 
-	if err := sqlitex.Exec(conn.conn, forEachDatomRecursiveQuery, handleDatoms(fn), obj, entity[:]); err != nil {
+	if err := sqlitex.Exec(conn.conn, forEachDatomRecursiveQuery, handleDatoms(fn), obj, entity); err != nil {
 		conn.err = err
 		return
 	}

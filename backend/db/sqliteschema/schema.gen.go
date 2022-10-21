@@ -178,7 +178,7 @@ var Schema = sqlitegen.Schema{
 		DatomAttrsID:                 {Table: DatomAttrs, SQLType: "INTEGER"},
 		DatomsAttr:                   {Table: Datoms, SQLType: "INTEGER"},
 		DatomsChange:                 {Table: Datoms, SQLType: "INTEGER"},
-		DatomsEntity:                 {Table: Datoms, SQLType: "BLOB"},
+		DatomsEntity:                 {Table: Datoms, SQLType: "INTEGER"},
 		DatomsPermanode:              {Table: Datoms, SQLType: "INTEGER"},
 		DatomsSeq:                    {Table: Datoms, SQLType: "INTEGER"},
 		DatomsValue:                  {Table: Datoms, SQLType: "BLOB"},

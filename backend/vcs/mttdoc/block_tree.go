@@ -2,8 +2,10 @@ package mttdoc
 
 import (
 	"fmt"
+	"mintter/backend/vcs"
 	"mintter/backend/vcs/crdt"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
+	"time"
 )
 
 type blockTree struct {
@@ -17,15 +19,15 @@ func newBlockTree(ot *crdt.OpTracker, dw *vcsdb.DatomWriter) *blockTree {
 	return &blockTree{
 		blockPos: make(map[vcsdb.NodeID]*crdt.ListElement[BlockPosition]),
 		children: map[vcsdb.NodeID]*crdt.RGA[BlockPosition]{
-			vcsdb.RootNode:  crdt.NewRGA[BlockPosition](lessComparator),
-			vcsdb.TrashNode: crdt.NewRGA[BlockPosition](lessComparator),
+			vcs.RootNode:  crdt.NewRGA[BlockPosition](lessComparator),
+			vcs.TrashNode: crdt.NewRGA[BlockPosition](lessComparator),
 		},
 		tracker: ot,
 		dw:      dw,
 	}
 }
 
-func (bt *blockTree) MoveBlock(block, parent, left vcsdb.NodeID) (moved bool, err error) {
+func (bt *blockTree) MoveBlock(block, parent, left vcs.NodeID) (moved bool, err error) {
 	if bt.isAncestor(block, parent) {
 		return false, fmt.Errorf("can't move: %s is ancestor of %s", block, parent)
 	}
@@ -41,8 +43,8 @@ func (bt *blockTree) MoveBlock(block, parent, left vcsdb.NodeID) (moved bool, er
 		leftPosNode = el.Value().ID
 	}
 
-	posNode := vcsdb.NewNodeID()
-	d1 := bt.dw.NewDatom(vcsdb.RootNode, AttrMove, posNode)
+	posNode := vcs.NewNodeIDv1(time.Now())
+	d1 := bt.dw.NewDatom(vcs.RootNode, AttrMove, posNode)
 	d2 := bt.dw.NewDatom(posNode, AttrPosBlock, block)
 	d3 := bt.dw.NewDatom(posNode, AttrPosParent, parent)
 	d4 := bt.dw.NewDatom(posNode, AttrPosLeft, leftPosNode)
@@ -56,7 +58,7 @@ func (bt *blockTree) MoveBlock(block, parent, left vcsdb.NodeID) (moved bool, er
 }
 
 func (bt *blockTree) Iterator() *Iterator {
-	l, ok := bt.children[vcsdb.RootNode]
+	l, ok := bt.children[vcs.RootNode]
 	if !ok {
 		panic("BUG: must have top-level root list of children")
 	}

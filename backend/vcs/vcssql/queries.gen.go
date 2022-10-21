@@ -1439,7 +1439,7 @@ LIMIT 1`
 	return out, err
 }
 
-func DatomsDelete(conn *sqlite.Conn, datomsPermanode int, datomsEntity []byte, datomsChange int, datomsAttr int) error {
+func DatomsDelete(conn *sqlite.Conn, datomsPermanode int, datomsEntity int, datomsChange int, datomsAttr int) error {
 	const query = `DELETE FROM datoms
 WHERE datoms.permanode = :datomsPermanode
 AND datoms.entity = :datomsEntity
@@ -1448,7 +1448,7 @@ AND datoms.attr = :datomsAttr`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":datomsPermanode", datomsPermanode)
-		stmt.SetBytes(":datomsEntity", datomsEntity)
+		stmt.SetInt(":datomsEntity", datomsEntity)
 		stmt.SetInt(":datomsChange", datomsChange)
 		stmt.SetInt(":datomsAttr", datomsAttr)
 	}

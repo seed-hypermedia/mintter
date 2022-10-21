@@ -41,10 +41,10 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 		return c, err
 	}
 
-	reg := vcsdb.NewNodeID()
+	reg := vcs.NewNodeIDv1(time.Now())
 	conn.AddDatom(obj, newDatom(reg, AttrDevice, device.CID()))
 	conn.AddDatom(obj, newDatom(reg, AttrProof, []byte(proof)))
-	conn.AddDatom(obj, newDatom(vcsdb.RootNode, AttrRegistration, reg))
+	conn.AddDatom(obj, newDatom(vcs.RootNode, AttrRegistration, reg))
 
 	conn.SaveVersion(obj, "main", id, vcsdb.LocalVersion{change})
 	conn.EncodeChange(change, device)
@@ -64,7 +64,7 @@ func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid)
 	ver := conn.GetVersion(obj, "main", localMe)
 	cs := conn.ResolveChangeSet(obj, ver)
 
-	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, AttrRegistration)
+	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, AttrRegistration)
 	for regs.Next() {
 		rv := regs.Item().ValueAny().(vcsdb.NodeID)
 		dd := conn.QueryLastValue(obj, cs, rv, AttrDevice)

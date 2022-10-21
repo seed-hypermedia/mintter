@@ -599,7 +599,7 @@ func mttdocToProto(id, author string, createTime, updateTime time.Time, doc *mtt
 	blockMap := map[vcsdb.NodeID]*documents.BlockNode{}
 
 	appendChild := func(parent vcsdb.NodeID, child *documents.BlockNode) {
-		if parent == vcsdb.RootNode {
+		if parent == vcs.RootNode {
 			docpb.Children = append(docpb.Children, child)
 			return
 		}

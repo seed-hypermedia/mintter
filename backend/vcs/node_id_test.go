@@ -12,6 +12,7 @@ import (
 
 func TestNodeID2String(t *testing.T) {
 	require.Equal(t, "b1", NodeIDFromString("b1").String())
+	require.Equal(t, "ab1", NodeIDFromString("ab1").String())
 	require.Equal(t, "$ROOT", RootNode.String())
 	require.Equal(t, "$TRASH", TrashNode.String())
 
