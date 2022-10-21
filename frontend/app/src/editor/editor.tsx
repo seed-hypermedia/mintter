@@ -15,6 +15,7 @@ import {
 } from '@app/mttast'
 import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
+import {error} from '@app/utils/logger'
 import {Event, listen} from '@tauri-apps/api/event'
 import {PropsWithChildren, useEffect, useMemo} from 'react'
 import {Descendant, Editor as EditorType} from 'slate'
@@ -154,7 +155,7 @@ export function Editor({
           match: isFlowContent,
         }) || []
 
-      if (!path) throw new Error('whut')
+      if (!path) error('whut')
 
       set(editor, {at: path})
     }).then((_unlisten) => (unlisten = _unlisten))
@@ -215,4 +216,8 @@ export function Editor({
       </Slate>
     </span>
   )
+}
+
+function preventBackspaceNavigation(event: KeyboardEvent) {
+  console.log(event.key)
 }
