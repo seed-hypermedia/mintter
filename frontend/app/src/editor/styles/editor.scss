@@ -139,4 +139,8 @@ q {
       text-shadow: 0 0 6px var(--mtt-colors-primary-component-bg-active);
     }
   }
+
+  &.selected {
+    box-shadow: 0 0 0 2px var(--mtt-colors-primary-border-hover);
+  }
 }

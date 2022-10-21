@@ -11,7 +11,8 @@ import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
-import {RenderElementProps} from 'slate-react'
+import {Editor as SlateEditor, Transforms} from 'slate'
+import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
@@ -28,12 +29,23 @@ export const createEmbedPlugin = (): EditorPlugin => ({
 
     return editor
   },
+  onKeyDown: (editor) => (event) => {
+    if (editor.selection && event.key == 'Backspace') {
+      let match = isEmbedActive(editor)
+      if (match) {
+        event.preventDefault()
+        let [, path] = match
+
+        Transforms.removeNodes(editor, {at: path})
+      }
+    }
+  },
   renderElement:
     (editor) =>
     ({attributes, children, element}) => {
       if (isEmbed(element)) {
         if (!element.url) {
-          error(
+          console.error(
             `Embed: element does not have a url attribute: ${JSON.stringify(
               element,
             )}`,
@@ -67,8 +79,8 @@ function Embed({
   let client = useQueryClient()
   let [state] = useMachine(() => createEmbedMachine({url: element.url, client}))
   let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Embed), [])
-  // let selected = useSelected()
-  // let focused = useFocused()
+  let selected = useSelected()
+  let focused = useFocused()
 
   async function onOpenInNewWindow() {
     if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
@@ -106,13 +118,13 @@ function Embed({
     <q
       cite={element.url}
       {...attributes}
+      className={focused && selected ? 'selected' : undefined}
       contentEditable={false}
       onClick={onOpenInNewWindow}
       onMouseEnter={mouseEnter}
       onMouseLeave={mouseLeave}
       data-highlight={`${docId}/${blockId}`}
       data-reference={element.url}
-      // {...embedProps?.elementProps}
     >
       <Editor
         as="span"
@@ -276,4 +288,12 @@ function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
       },
     },
   )
+}
+
+function isEmbedActive(editor: SlateEditor) {
+  let [match] = SlateEditor.nodes(editor, {
+    match: isEmbed,
+    mode: 'all',
+  })
+  return match
 }
