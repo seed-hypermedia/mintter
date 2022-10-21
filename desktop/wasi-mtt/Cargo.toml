@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 # These dependencies are necessary for the witx-generation macros to work:
-anyhow = "1.0.65"
+anyhow = "1.0.66"
 futures-util = "0.3.25"
 tauri = "1.1.1"
 thiserror = "1.0.37"
