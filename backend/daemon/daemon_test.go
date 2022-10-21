@@ -360,7 +360,6 @@ func makeTestConfig(t *testing.T) config.Config {
 	cfg.P2P.NoBootstrap = true
 	cfg.P2P.NoRelay = true
 	cfg.P2P.NoMetrics = true
-	cfg.P2P.ReportPrivateAddrs = true
 
 	return cfg
 }

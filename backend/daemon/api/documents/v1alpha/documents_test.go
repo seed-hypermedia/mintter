@@ -812,7 +812,6 @@ func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
 
 	cfg := config.Default().P2P
 	cfg.Port = 0
-	cfg.ReportPrivateAddrs = true
 	cfg.NoRelay = true
 	cfg.NoBootstrap = bootstrapPeer == ""
 	cfg.BootstrapPeer = bootstrapPeer

@@ -400,21 +400,27 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
 		libp2p.Transport(tcp.NewTCPTransport),
 	}
-
-	if !cfg.ReportPrivateAddrs {
-		opts = append(opts,
-			libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
-				out := make([]multiaddr.Multiaddr, 0, len(addrs))
-
-				for _, a := range addrs {
-					out = append(out, a)
+	opts = append(opts,
+		libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+			numCustomAddrs := 0
+			if cfg.AddAddrs != "" && len(strings.Split(cfg.AddAddrs, ",")) != 0 {
+				numCustomAddrs = len(strings.Split(cfg.AddAddrs, ","))
+			}
+			out := make([]multiaddr.Multiaddr, 0, len(addrs)+numCustomAddrs)
+			for _, a := range addrs {
+				out = append(out, a)
+			}
+			if numCustomAddrs > 0 {
+				for _, a := range strings.Split(cfg.AddAddrs, ",") {
+					out = append(out, multiaddr.StringCast(a))
 				}
 
-				return out
-			}),
-		)
-	}
+			}
+			return out
+		}),
+	)
 
+	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
 		opts = append(opts,
 			libp2p.EnableHolePunching(),

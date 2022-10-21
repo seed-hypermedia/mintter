@@ -64,7 +64,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoffDelay, "p2p.relay-backoff-delay", cfg.P2P.RelayBackoffDelay, "The time in which the autorelay will prune a relay if it cannot connect to it")
 	fs.DurationVar(&cfg.P2P.StaticRelayRescan, "p2p.static-relay-rescan", cfg.P2P.StaticRelayRescan, "The period for automatic static relay rescanning")
-	fs.BoolVar(&cfg.P2P.ReportPrivateAddrs, "p2p.report-private-addrs", cfg.P2P.ReportPrivateAddrs, "If true the node will report/announce addresses within private IP ranges")
+	fs.StringVar(&cfg.P2P.AddAddrs, "p2p.add-addrs", cfg.P2P.AddAddrs, "Adding extra address to announce. Comma separated")
 
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
@@ -98,14 +98,14 @@ type Syncing struct {
 
 // P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
-	Port               int
-	NoRelay            bool
-	NoBootstrap        bool
-	BootstrapPeer      string
-	NoMetrics          bool
-	RelayBackoffDelay  time.Duration
-	StaticRelayRescan  time.Duration
-	ReportPrivateAddrs bool
+	Port              int
+	NoRelay           bool
+	NoBootstrap       bool
+	BootstrapPeer     string
+	NoMetrics         bool
+	RelayBackoffDelay time.Duration
+	StaticRelayRescan time.Duration
+	AddAddrs          string
 }
 
 // EnsureConfigFile makes sure a config file exist.
