@@ -100,7 +100,7 @@ importers:
       hast-util-sanitize: 4.0.0
       hast-util-to-text: 3.1.1
       hastscript: 7.1.0
-      immer: 9.0.15
+      immer: 9.0.16
       is-hidden: 2.0.0
       is-hotkey: 0.2.0
       is-plain-object: 5.0.0
@@ -196,7 +196,7 @@ importers:
       hast-util-sanitize: 4.0.0
       hast-util-to-text: 3.1.1
       hastscript: 7.1.0
-      immer: 9.0.15
+      immer: 9.0.16
       is-hotkey: 0.2.0
       is-plain-object: 5.0.0
       is-url: 1.2.4
@@ -5776,8 +5776,8 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
-  /immer/9.0.15:
-    resolution: {integrity: sha512-2eB/sswms9AEUSkOm4SbV5Y7Vmt/bKRwByd52jfLkW4OLYeaTP3EEiJ9agqU0O/tq6Dk62Zfj+TJSqfm1rLVGQ==}
+  /immer/9.0.16:
+    resolution: {integrity: sha512-qenGE7CstVm1NrHQbMh8YaSzTZTFNP3zPqr3YU0S0UY441j4bJTg4A2Hh5KAhwgaiU6ZZ1Ar6y/2f4TblnMReQ==}
     dev: false
 
   /immutable/3.7.6:
@@ -8960,7 +8960,7 @@ packages:
     name: slate
     version: 0.80.0
     dependencies:
-      immer: 9.0.15
+      immer: 9.0.16
       is-plain-object: 5.0.0
       tiny-warning: 1.0.3
     dev: false
