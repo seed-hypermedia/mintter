@@ -3,6 +3,7 @@ import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
+import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
 import {useMain} from '@app/main-context'
 import {MouseProvider} from '@app/mouse-context'
@@ -15,12 +16,15 @@ import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
+import {Tooltip} from '@components/tooltip'
 import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useMemo} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
+import {Editor as SlateEditor} from 'slate'
+import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
 
@@ -34,6 +38,10 @@ export default function PublicationWrapper() {
     () => buildEditorHook(plugins, EditorMode.Publication),
     [],
   )
+  let scrollWrapperRef = useRef<HTMLDivElement>(null)
+
+  useScrollToBlock(editor, scrollWrapperRef, params?.block)
+
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
 
   let [state, send, service] = useMachine(
@@ -72,26 +80,13 @@ export default function PublicationWrapper() {
     )
   }
 
+  let topOffset = resizablePanelState.context.vertical ? 82 : 0
+  let top = resizablePanelState.context.top - topOffset
+
   if (state.matches('publication.ready')) {
     return (
       <MouseProvider value={mouseService}>
         <BlockHighLighter>
-          {resizablePanelState.context.visible ? (
-            <div
-              className="discussion-toggle"
-              style={{
-                top: `${resizablePanelState.context.top}px`,
-                left: `${resizablePanelState.context.left}px`,
-                transform: resizablePanelState.context.vertical
-                  ? 'translateY(50%)'
-                  : 'translateX(-50%)',
-              }}
-            >
-              <button onClick={() => panelSend('DISCUSSION.TOGGLE')}>
-                <Icon name="MessageBubble" />
-              </button>
-            </div>
-          ) : null}
           <div className="page-wrapper publication-wrapper">
             <Allotment
               vertical={resizablePanelState.context.vertical}
@@ -128,19 +123,37 @@ export default function PublicationWrapper() {
                     fallback={<div>error</div>}
                     onReset={() => window.location.reload()}
                   >
-                    <ScrollArea
-                      onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                    >
-                      <FileProvider value={state.context.publication}>
+                    <FileProvider value={state.context.publication}>
+                      <ScrollArea
+                        ref={scrollWrapperRef}
+                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                      >
+                        <div
+                          className="discussion-toggle"
+                          style={
+                            resizablePanelState.context.visible
+                              ? {
+                                  top: `${top}px`,
+                                  left: `${resizablePanelState.context.left}px`,
+                                  transform: resizablePanelState.context
+                                    .vertical
+                                    ? 'translateY(50%)'
+                                    : 'translateX(-50%)',
+                                }
+                              : undefined
+                          }
+                        >
+                          <Tooltip content="Toggle Activity">
+                            <button
+                              className="discussion-button"
+                              onClick={() => panelSend('DISCUSSION.TOGGLE')}
+                            >
+                              <Icon name="MessageBubble" />
+                            </button>
+                          </Tooltip>
+                        </div>
                         {state.context.publication?.document?.content && (
                           <Blocktools editor={editor}>
-                            {!resizablePanelState.context.visible ? (
-                              <button
-                                onClick={() => panelSend('DISCUSSION.TOGGLE')}
-                              >
-                                show discussions
-                              </button>
-                            ) : null}
                             <Editor
                               editor={editor}
                               mode={EditorMode.Publication}
@@ -154,8 +167,8 @@ export default function PublicationWrapper() {
                             />
                           </Blocktools>
                         )}
-                      </FileProvider>
-                    </ScrollArea>
+                      </ScrollArea>
+                    </FileProvider>
                   </ErrorBoundary>
                 </section>
               </Allotment.Pane>
@@ -227,7 +240,7 @@ let resizablePanelMachine =
   /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAlAUQGUBJALToG0AGAXUVGID2sNABc0AsnxAAPRADZOAOgAsARgAcAZk3KAnAt2aA7AFYANCACeiQhrmLOGncqOH1qgEyGAvt4uphbHwiUgpqAFkAQQAVAGEACXC6ABEmSMUouPiuXiQQQWExCSlZBE97Tj0PdRN1OrkjDXULazKTZUUFdU5HI051XXVlTXVfPxAyAQg4KQDMXAISckopAtFxSTzSwmUlRzkTVR7OXSMDuQ9zKxs1B2U1WsMTdrl1UzHvIA */
   createMachine(
     {
-      context: {top: 100, left: 100, vertical: false, visible: true},
+      context: {top: 100, left: 100, vertical: false, visible: false},
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
         context: {} as ResizablePanelMachineContext,
@@ -261,7 +274,7 @@ let resizablePanelMachine =
           let newValue = event.values[0]
 
           if (context.vertical) {
-            return {top: newValue, left: 60}
+            return {top: newValue, left: 0}
           } else {
             return {left: newValue, top: 100}
           }
@@ -288,3 +301,36 @@ let resizablePanelMachine =
       },
     },
   )
+
+function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
+  useEffect(() => {
+    setTimeout(() => {
+      if (blockId) {
+        console.log(
+          '🚀 ~ file: publication.tsx ~ line 309 ~ useEffect ~ ref?.current',
+          ref?.current,
+        )
+        if (ref?.current) {
+          let entry = getEditorBlock(editor, {id: blockId})
+          console.log(
+            '🚀 ~ file: publication.tsx ~ line 310 ~ useEffect ~ entry',
+            entry,
+          )
+          if (entry) {
+            let [block] = entry
+            let elm = ReactEditor.toDOMNode(editor, block)
+            console.log(
+              '🚀 ~ file: publication.tsx ~ line 313 ~ useEffect ~ elm',
+              elm,
+            )
+
+            console.log('SCROLL')
+            let rect = elm.getBoundingClientRect()
+            let wrapper = ref.current.getBoundingClientRect()
+            ref.current.scrollTo({top: rect.top - wrapper.top - 24})
+          }
+        }
+      }
+    }, 1000)
+  }, [ref, blockId, editor])
+}

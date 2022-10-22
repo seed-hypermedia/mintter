@@ -17,9 +17,10 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
 
 export var TooltipProvider = TooltipPrimitive.Provider
 
-export type TooltipPropsLocal = TooltipPrimitive.TooltipProps & {
-  content: string | React.ReactNode
-}
+export type TooltipPropsLocal = TooltipPrimitive.TooltipProps &
+  TooltipPrimitive.TooltipContentProps & {
+    content: string | React.ReactNode
+  }
 
 export function Tooltip({
   children,

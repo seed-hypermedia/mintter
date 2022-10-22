@@ -7,6 +7,15 @@
   box-sizing: border-box;
 }
 
+.publication-section {
+  height: 100%;
+  overflow-y: scroll;
+
+  [data-radix-scroll-area-viewport] {
+    scroll-behavior: smooth;
+  }
+}
+
 .discussion-section {
   border-right: 1px solid var(--mtt-colors-base-border-hover);
   height: 100%;
@@ -16,29 +25,42 @@
 .discussion-toggle {
   position: fixed;
   left: 0;
+  top: 100px;
   z-index: 1000;
+  padding: 40px;
 
-  &:hover {
+  button {
+    opacity: 0;
+  }
+
+  @media (min-width: 768px) {
+    // padding: 0;
+
     button {
-      pointer-events: initial !important;
+      opacity: 1;
     }
   }
 
-  button {
-    all: unset;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--mtt-colors-primary-component-bg-hover);
-    border-radius: 50%;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-    box-shadow: 0px 4px 8px var(--mtt-colors-base-border-hover);
-    &:hover {
-      pointer-events: initial;
-      cursor: pointer;
+  &:hover {
+    button {
+      opacity: 1;
+      pointer-events: initial !important;
     }
+  }
+}
+
+.discussion-button {
+  all: unset;
+  display: flex;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  background-color: var(--mtt-colors-primary-component-bg-hover);
+  border-radius: 50%;
+  box-shadow: 0px 4px 8px var(--mtt-colors-base-border-hover);
+
+  &:hover {
+    cursor: pointer;
   }
 }

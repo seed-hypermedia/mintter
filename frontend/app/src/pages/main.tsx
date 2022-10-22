@@ -42,7 +42,7 @@ export default function Main() {
         {!isSettings ? (
           <>
             <Topbar />
-            <QuickSwitcher />
+            {/* <QuickSwitcher /> */}
             <Footer />
           </>
         ) : null}

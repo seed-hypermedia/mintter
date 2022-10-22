@@ -54,6 +54,8 @@ li::marker {
 
   padding-inline-end: var(--size-400);
   width: 100%;
+  max-width: 64ch;
+  margin-inline: auto;
 
   @media (min-width: 768px) {
     padding-inline-end: var(--size-700);
@@ -66,7 +68,7 @@ li::marker {
   p,
   q,
   blockquote {
-    max-width: 60ch;
+    max-width: 64ch;
   }
 
   h1 {
@@ -101,6 +103,8 @@ li::marker {
   &.mode-discussion {
     transform: translateX(-40px);
     display: block;
+    font-size: 0.8em;
+    margin-inline: 0;
   }
 
   a {
@@ -142,5 +146,18 @@ q {
 
   &.selected {
     box-shadow: 0 0 0 2px var(--mtt-colors-primary-border-hover);
+  }
+}
+
+.flash span {
+  animation: yellowflash-bg 5s;
+}
+
+@keyframes yellowflash-bg {
+  from {
+    background: yellow;
+  }
+  to {
+    background: transparent;
   }
 }

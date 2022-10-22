@@ -249,7 +249,6 @@ export function createPublicationMachine({
                   publication.document.children,
                   'group',
                 )
-                console.log('Publication', publication)
                 sendBack({
                   type: 'PUBLICATION.REPORT.SUCCESS',
                   publication: Object.assign(publication, {
