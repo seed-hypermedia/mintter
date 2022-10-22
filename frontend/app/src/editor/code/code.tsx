@@ -24,7 +24,7 @@ import {EditorMode} from '../plugin-utils'
 import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
-import {findPath, lowerPoint, resetFlowContent} from '../utils'
+import {findPath, lowerPoint, resetFlowContent, useBlockFlash} from '../utils'
 
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
@@ -192,6 +192,8 @@ function Code({
   let {blockProps} = useBlockProps(element)
   let lang = (element as CodeType).lang || ''
 
+  let inRoute = useBlockFlash(attributes.ref, element.id)
+
   function setLanguage(e: React.ChangeEvent<HTMLSelectElement>) {
     const {...newData} = (element as CodeType).data || {}
     delete newData[HIGHLIGHTER]
@@ -228,7 +230,11 @@ function Code({
   }
 
   return (
-    <li {...attributes} {...blockProps}>
+    <li
+      {...attributes}
+      {...blockProps}
+      className={inRoute ? 'flash' : undefined}
+    >
       {children}
       {mode == EditorMode.Draft ? (
         <div className="code-selector-wrapper" contentEditable={false}>

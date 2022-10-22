@@ -149,7 +149,7 @@ q {
   }
 }
 
-.flash span {
+.flash > :first-child span {
   animation: yellowflash-bg 5s;
 }
 

@@ -19,7 +19,7 @@ import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import {isFirstChild, useScrollIntoBlock} from '../utils'
+import {isFirstChild, useBlockFlash} from '../utils'
 
 export const ELEMENT_STATEMENT = 'statement'
 
@@ -234,7 +234,7 @@ function Statement({
 }: RenderElementProps & {mode: EditorMode}) {
   let {blockProps} = useBlockProps(element)
 
-  let inRoute = useScrollIntoBlock(attributes.ref, element.id)
+  let inRoute = useBlockFlash(attributes.ref, element.id)
 
   if (mode == EditorMode.Embed) {
     return (
