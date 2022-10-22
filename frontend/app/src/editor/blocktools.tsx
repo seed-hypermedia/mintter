@@ -114,7 +114,7 @@ function DraftBlocktools(props: BlockData) {
           </ElementDropdown>
         </Dropdown.Trigger>
         <Dropdown.Portal>
-          <Dropdown.Content>
+          <Dropdown.Content side="right" align="start">
             {Object.entries(items).map(([key, value], index, arr) => {
               return (
                 <Fragment key={key}>

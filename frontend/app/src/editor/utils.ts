@@ -20,8 +20,9 @@ import {
 } from '@app/mttast'
 import {Mark} from '@app/mttast/types'
 import {ObjectKeys} from '@app/utils/object-keys'
+import {useRoute} from '@components/router'
 import videoParser from 'js-video-url-parser'
-import {useMemo} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
 import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -471,4 +472,23 @@ export function insertInline(fn: typeof image | typeof video) {
       at,
     })
   }
+}
+
+// eslint-disable-next-line
+export function useScrollIntoBlock(ref: any, id: string) {
+  let [active, setActive] = useState(false)
+  let [match, params] = useRoute('/p/:id/:version/:block')
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (ref.current) {
+        if (match && params?.block == id) {
+          console.log('done')
+          setActive(true)
+        }
+      }
+    }, 100)
+  }, [id, match, params, ref])
+
+  return active
 }
