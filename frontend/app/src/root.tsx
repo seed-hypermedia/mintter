@@ -16,7 +16,7 @@ import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
 import * as TauriSentry from 'tauri-plugin-sentry-api'
 import {globalStyles} from './stitches.config'
-
+import './styles/root.scss'
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 const AppProvider = lazy(() => import('./components/app-provider'))
 const Main = lazy(() => import('./pages/main'))

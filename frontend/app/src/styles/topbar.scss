@@ -11,7 +11,7 @@
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
+  border-bottom: 1px solid var(--base-border-subtle);
 
   .topbar-section {
     padding: 0;
@@ -80,8 +80,8 @@
   block-size: var(--topbar-h);
   flex: none;
   inline-size: 100%;
-  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
-  background-color: var(--mtt-colors-base-background-subtle);
+  border-bottom: 1px solid var(--base-border-subtle);
+  background-color: var(--base-background-subtle);
   transition: opacity 0.25s ease;
   display: flex;
   align-items: stretch;
@@ -153,7 +153,7 @@
   overflow: hidden;
 
   small {
-    color: var(--mtt-colors-base-text-low);
+    color: var(--base-text-low);
     font-size: small;
     margin-inline: 0.5rem;
   }
@@ -169,10 +169,10 @@
 }
 
 .topbar-button {
-  --color: var(--mtt-colors-base-text-low);
-  --color-hover: var(--mtt-colors-base-text-low);
+  --color: var(--base-text-low);
+  --color-hover: var(--base-text-low);
   --surface: transparent;
-  --surface-hover: var(--mtt-colors-base-component-bg-hover);
+  --surface-hover: var(--base-component-bg-hover);
   all: unset;
   min-inline-size: 1em;
   min-block-size: 1em;
@@ -196,15 +196,15 @@
   }
 
   &.primary {
-    --color: var(--mtt-colors-primary-active);
+    --color: var(--primary-active);
     --color-hover: white;
-    --surface-hover: var(--mtt-colors-primary-active);
+    --surface-hover: var(--primary-active);
     border: 1px solid transparent;
   }
   &.success {
-    --color: var(--mtt-colors-success-active);
+    --color: var(--success-active);
     --color-hover: white;
-    --surface-hover: var(--mtt-colors-success-active);
+    --surface-hover: var(--success-active);
   }
 
   &.dropdown {
@@ -222,7 +222,7 @@
 }
 
 .button-group {
-  --border-color: var(--mtt-colors-base-border-normal);
+  --border-color: var(--base-border-normal);
   display: flex;
   align-items: stretch;
   border: 1px solid var(--border-color);

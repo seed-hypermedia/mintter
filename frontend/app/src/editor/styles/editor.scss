@@ -7,7 +7,7 @@
 }
 
 li::marker {
-  color: var(--mtt-colors-base-active);
+  color: var(--base-active);
   user-select: none;
 }
 
@@ -115,7 +115,7 @@ li::marker {
       cursor: pointer;
     }
     &[data-highlight]:hover {
-      background-color: var(--mtt-colors-primary-component-bg-hover);
+      background-color: var(--primary-component-bg-hover);
     }
   }
 }
@@ -125,8 +125,8 @@ q {
   display: inline;
   span {
     // font-style: italic;
-    color: var(--mtt-colors-primary-normal);
-    text-shadow: 0 0 3px var(--mtt-colors-primary-component-bg-hover);
+    color: var(--primary-normal);
+    text-shadow: 0 0 3px var(--primary-component-bg-hover);
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
@@ -137,15 +137,15 @@ q {
 
   &:hover {
     cursor: pointer;
-    background-color: var(--mtt-colors-primary-component-bg-hover);
+    background-color: var(--primary-component-bg-hover);
     span {
-      color: var(--mtt-colors-primary-text-low);
-      text-shadow: 0 0 6px var(--mtt-colors-primary-component-bg-active);
+      color: var(--primary-text-low);
+      text-shadow: 0 0 6px var(--primary-component-bg-active);
     }
   }
 
   &.selected {
-    box-shadow: 0 0 0 2px var(--mtt-colors-primary-border-hover);
+    box-shadow: 0 0 0 2px var(--primary-border-hover);
   }
 }
 

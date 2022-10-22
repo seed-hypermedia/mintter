@@ -5,7 +5,7 @@
   grid-template-rows: auto 1fr;
   gap: 0 1rem;
   padding: 1rem 2rem;
-  border-bottom: 1px solid var(--mtt-colors-base-border-subtle);
+  border-bottom: 1px solid var(--base-border-subtle);
   grid-template-areas:
     'avatar info'
     '. content';
@@ -22,7 +22,7 @@
   }
 
   &:hover {
-    background-color: var(--mtt-colors-base-component-bg-normal);
+    background-color: var(--base-component-bg-normal);
 
     .item-control {
       opacity: 1;
@@ -52,7 +52,7 @@
   -webkit-user-select: none;
 
   * {
-    color: var(--mtt-colors-base-text-low);
+    color: var(--base-text-low);
     font-size: small;
     margin-inline: 0.25rem;
     font-family: var(--mtt-fonts-base);
