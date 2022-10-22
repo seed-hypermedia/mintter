@@ -475,7 +475,7 @@ export function insertInline(fn: typeof image | typeof video) {
 }
 
 // eslint-disable-next-line
-export function useScrollIntoBlock(ref: any, id: string) {
+export function useBlockFlash(ref: any, id: string) {
   let [active, setActive] = useState(false)
   let [match, params] = useRoute('/p/:id/:version/:block')
 

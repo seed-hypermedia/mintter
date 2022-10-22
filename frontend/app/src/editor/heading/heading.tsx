@@ -12,7 +12,7 @@ import {Editor, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {MintterEditor} from '../mintter-changes/plugin'
 import type {EditorPlugin} from '../types'
-import {isFirstChild, resetFlowContent} from '../utils'
+import {isFirstChild, resetFlowContent, useBlockFlash} from '../utils'
 
 export const ELEMENT_HEADING = 'heading'
 
@@ -110,6 +110,7 @@ function Heading({
 }: RenderElementProps & {mode: EditorMode}) {
   let {blockProps} = useBlockProps(element)
 
+  let inRoute = useBlockFlash(attributes.ref, element.id)
   if (mode == EditorMode.Embed) {
     return (
       <span {...attributes} {...blockProps}>
@@ -119,7 +120,11 @@ function Heading({
   }
 
   return (
-    <li {...attributes} {...blockProps}>
+    <li
+      {...attributes}
+      {...blockProps}
+      className={inRoute ? 'flash' : undefined}
+    >
       {children}
     </li>
   )
