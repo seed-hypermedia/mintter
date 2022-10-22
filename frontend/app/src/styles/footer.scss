@@ -3,8 +3,8 @@
   height: var(--footer-h);
   inset: auto 0 0 0;
   background-color: red;
-  border-top: 1px solid var(--mtt-colors-base-border-subtle);
-  background-color: var(--mtt-colors-base-background-subtle);
+  border-top: 1px solid var(--base-border-subtle);
+  background-color: var(--base-background-subtle);
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -12,10 +12,10 @@
 }
 
 .button {
-  --color: var(--mtt-colors-base-text-low);
-  --color-hover: var(--mtt-colors-base-text-low);
+  --color: var(--base-text-low);
+  --color-hover: var(--base-text-low);
   --surface: transparent;
-  --surface-hover: var(--mtt-colors-base-component-bg-hover);
+  --surface-hover: var(--base-component-bg-hover);
   all: unset;
   min-inline-size: 1em;
   min-block-size: 1em;
@@ -39,15 +39,15 @@
   }
 
   &.primary {
-    --color: var(--mtt-colors-primary-active);
+    --color: var(--primary-active);
     --color-hover: white;
-    --surface-hover: var(--mtt-colors-primary-active);
+    --surface-hover: var(--primary-active);
     border: 1px solid transparent;
   }
   &.success {
-    --color: var(--mtt-colors-success-active);
+    --color: var(--success-active);
     --color-hover: white;
-    --surface-hover: var(--mtt-colors-success-active);
+    --surface-hover: var(--success-active);
   }
 
   &.dropdown {
@@ -68,11 +68,11 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: var(--mtt-colors-success-active);
+  background-color: var(--success-active);
 }
 
 .contacts-content {
-  background-color: var(--mtt-colors-base-background-normal);
+  background-color: var(--base-background-normal);
   padding: 0.5rem;
   box-shadow: var(--mtt-shadows-menu);
   // border-radius: 1rem;
@@ -139,6 +139,6 @@
   white-space: nowrap;
 
   &:hover {
-    background-color: var(--mtt-colors-base-component-bg-hover);
+    background-color: var(--base-component-bg-hover);
   }
 }

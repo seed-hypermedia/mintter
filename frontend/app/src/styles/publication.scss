@@ -17,7 +17,7 @@
 }
 
 .discussion-section {
-  border-right: 1px solid var(--mtt-colors-base-border-hover);
+  border-right: 1px solid var(--base-border-hover);
   height: 100%;
   box-sizing: border-box;
 }
@@ -56,9 +56,9 @@
   width: 40px;
   height: 40px;
   justify-content: center;
-  background-color: var(--mtt-colors-primary-component-bg-hover);
+  background-color: var(--primary-component-bg-hover);
   border-radius: 50%;
-  box-shadow: 0px 4px 8px var(--mtt-colors-base-border-hover);
+  box-shadow: 0px 4px 8px var(--base-border-hover);
 
   &:hover {
     cursor: pointer;

@@ -1,5 +1,5 @@
 .find-highlight {
-  background-color: var(--mtt-colors-warning-component-bg-active);
+  background-color: var(--warning-component-bg-active);
 }
 
 .topbar-search {
@@ -8,23 +8,23 @@
   justify-content: flex-end;
   border-radius: 0.3em;
   border: var(--mtt-space-1) solid transparent;
-  color: var(--mtt-colors-primary-text-high);
+  color: var(--primary-text-high);
 
   // show an orange border around the input when it is focused
   &:focus-within {
-    border: 2px solid var(--mtt-colors-warning-active);
+    border: 2px solid var(--warning-active);
     gap: 0.2em;
     padding-inline: var(--mtt-space-2);
   }
 
   &:hover {
     cursor: pointer;
-    background-color: var(--mtt-colors-base-component-bg-hover);
+    background-color: var(--base-component-bg-hover);
   }
 
   // when the input lost focus, but there is still content inside it, we show a grey border instead of an orange one
   &:not(:focus-within):has(input[type='search']:not(:placeholder-shown)) {
-    border: var(--mtt-space-1) solid var(--mtt-colors-base-border-subtle);
+    border: var(--mtt-space-1) solid var(--base-border-subtle);
   }
 
   input[type='search'] {
@@ -36,7 +36,7 @@
     font-size: 0.8em;
     background-color: transparent;
     border: none;
-    color: var(--mtt-colors-primary-text-high);
+    color: var(--primary-text-high);
 
     // the input is collapsed to an icon by default
     // expad it to full size when focused or there is text inside it

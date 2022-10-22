@@ -1,5 +1,5 @@
-$new-color: var(--mtt-colors-primary-active);
-$foreground: var(--mtt-colors-base-text-high);
+$new-color: var(--primary-active);
+$foreground: var(--base-text-high);
 $bg: transparent;
 
 .list-page-wrapper {
@@ -30,7 +30,7 @@ $bg: transparent;
     'item-author item-date .';
 
   &:hover {
-    $bg: var(--mtt-colors-base-component-bg-hover);
+    $bg: var(--base-component-bg-hover);
     cursor: pointer;
     background-color: $bg;
 
@@ -86,7 +86,7 @@ $bg: transparent;
 
 .item-date,
 .item-author {
-  --text-color-dimmed: var(--mtt-colors-base-text-low);
+  --text-color-dimmed: var(--base-text-low);
   color: var(--text-color-dimmed);
   text-align: start;
   font-size: 0.8rem;

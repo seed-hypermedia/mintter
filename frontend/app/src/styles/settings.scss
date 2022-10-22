@@ -12,7 +12,7 @@
   }
 
   .tabs-list {
-    border-right: 1px solid var(--mtt-colors-base-background-subtle);
+    border-right: 1px solid var(--base-background-subtle);
     flex: none;
     width: 30%;
     min-width: 160px;
@@ -30,25 +30,25 @@
     font-size: 1rem;
     font-family: var(--mtt-fonts-base);
     line-height: 1;
-    color: var(--mtt-colors-base-text-high);
+    color: var(--base-text-high);
 
     &:hover {
-      background-color: var(--mtt-colors-primary-component-bg-hover);
+      background-color: var(--primary-component-bg-hover);
     }
     &[data-state='active'] {
-      color: var(--mtt-colors-primary-active);
+      color: var(--primary-active);
     }
 
     &:focus {
       position: relative;
-      background-color: var(--mtt-colors-primary-component-bg-active);
+      background-color: var(--primary-component-bg-active);
     }
   }
 
   .tab-content {
     flex: 1;
     position: relative;
-    background-color: var(--mtt-colors-base-component-bg-normal);
+    background-color: var(--base-component-bg-normal);
     height: 100%;
     width: 100%;
     overflow: auto;

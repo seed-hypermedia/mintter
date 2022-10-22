@@ -8,7 +8,7 @@
   overflow: hidden;
   display: flex;
   gap: 0;
-  background-color: var(--mtt-colors-base-background-subtle);
+  background-color: var(--base-background-subtle);
 
   @include platform.macos {
     top: $darwin-title-bar-height;
