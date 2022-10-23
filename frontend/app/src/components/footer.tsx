@@ -214,6 +214,7 @@ function ContactItem({contact}: ContactItemProps) {
       <HoverCard.Trigger asChild>
         <li className="contact-item" data-testid={`contact-item-${accountId}`}>
           <Avatar
+            accountId={state.context.account.id}
             size={1}
             alias={state.context.account.profile?.alias || 'C'}
           />
@@ -249,7 +250,12 @@ function ContactItem({contact}: ContactItemProps) {
         </li>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" side="top">
-        <Avatar size={2} alias={state.context.account.profile?.alias || ''} />
+        contact-item
+        <Avatar
+          accountId={state.context.account.id}
+          size={2}
+          alias={state.context.account.profile?.alias || ''}
+        />
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
           <Text fontWeight="bold">{state.context.account.profile?.alias}</Text>
           <Text

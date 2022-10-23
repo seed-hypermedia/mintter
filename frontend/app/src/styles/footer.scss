@@ -81,55 +81,6 @@
 }
 
 .contact-item {
-  /**
-  //   $$bg: 'transparent',
-  //   $$bgHover: '$colors$base-component-bg-hover',
-  //   $$foreground: '$colors$base-text-high',
-  //   display: 'flex',
-  //   minHeight: 28,
-  //   gap: '1rem',
-  //   alignItems: 'center',
-  //   position: 'relative',
-  //   borderRadius: '$1',
-  //   backgroundColor: '$$bg',
-  //   paddingHorizontal: '$2',
-  //   '&:hover': {
-  //     cursor: 'pointer',
-  //     backgroundColor: '$$bgHover',
-  //     '.dropdown': {
-  //       opacity: 1,
-  //     },
-  //   },
-  //   '.title': {
-  //     userSelect: 'none',
-  //     letterSpacing: '0.01em',
-  //     lineHeight: '$2',
-  //     textOverflow: 'ellipsis',
-  //     whiteSpace: 'nowrap',
-  //     overflow: 'hidden',
-  //     color: '$$foreground',
-  //     flex: 1,
-  //     paddingHorizontal: '$3',
-  //     paddingVertical: '$2',
-  //   },
-  //   '.dropdown': {
-  //     opacity: 0,
-  //   },
-  // },
-  // {
-  //   defaultVariants: {
-  //     active: false,
-  //   },
-  //   variants: {
-  //     active: {
-  //       true: {
-  //         $$bg: '$colors$primary-normal',
-  //         $$bgHover: '$colors$primary-active',
-  //         $$foreground: '$colors$primary-text-opposite',
-  //       },
-  //     },
-  //   },
-  */
   display: flex;
   align-items: center;
   min-width: 20ch;
@@ -137,6 +88,7 @@
   user-select: none;
   border-radius: 0.3rem;
   white-space: nowrap;
+  gap: 0.5rem;
 
   &:hover {
     background-color: var(--base-component-bg-hover);

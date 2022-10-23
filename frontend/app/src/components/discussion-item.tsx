@@ -38,7 +38,11 @@ export function DiscussionItem({link}: {link: Link}) {
   return (
     <li className="discussion-item">
       <div className="item-avatar">
-        <Avatar size={2} alias={author?.profile?.alias || 'A'} />
+        <Avatar
+          accountId={author?.id}
+          size={2}
+          alias={author?.profile?.alias || 'A'}
+        />
       </div>
       <div className="item-info">
         <p className="alias">{author?.profile?.alias || '...'}</p>
