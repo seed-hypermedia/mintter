@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"sort"
-	"time"
 
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
@@ -109,7 +109,7 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.Chan
 
 	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, mttacc.AttrRegistration)
 	for regs.Next() {
-		d := conn.QueryLastValue(obj, cs, regs.Item().ValueAny().(vcsdb.NodeID), mttacc.AttrDevice)
+		d := conn.QueryLastValue(obj, cs, regs.Item().ValueAny().(vcs.NodeID), mttacc.AttrDevice)
 		if d.IsZero() {
 			panic("BUG: registration without a device")
 		}
@@ -152,35 +152,37 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		obj := conn.LookupPermanode(perma.ID)
 		meLocal := conn.EnsureIdentity(me)
 		version := conn.GetVersion(obj, "main", meLocal)
+		clock := hlc.NewClock()
+		for _, v := range version {
+			vt := conn.GetChangeMaxTime(obj, v)
+			clock.Track(hlc.Unpack(vt))
+		}
 		cs := conn.ResolveChangeSet(obj, version)
-		change := conn.NewChange(obj, meLocal, version, time.Now().UTC())
-		newDatom := vcsdb.NewDatomWriter(change, conn.GetChangeLamportTime(change), 0).NewDatom
+		change := conn.NewChange(obj, meLocal, version, clock)
+
+		batch := vcs.NewBatch(clock, me.DeviceKey().Abbrev())
 
 		email := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrEmail)
 		alias := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias)
 		bio := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio)
 
-		var dirty bool
-
 		if email.IsZero() || email.Value.(string) != in.Email {
-			dirty = true
-			conn.AddDatom(obj, newDatom(vcs.RootNode, mttacc.AttrEmail, in.Email))
+			batch.Add(vcs.RootNode, mttacc.AttrEmail, in.Email)
 		}
 
 		if alias.IsZero() || alias.Value.(string) != in.Alias {
-			dirty = true
-			conn.AddDatom(obj, newDatom(vcs.RootNode, mttacc.AttrAlias, in.Alias))
+			batch.Add(vcs.RootNode, mttacc.AttrAlias, in.Alias)
 		}
 
 		if bio.IsZero() || bio.Value.(string) != in.Bio {
-			dirty = true
-			conn.AddDatom(obj, newDatom(vcs.RootNode, mttacc.AttrBio, in.Bio))
+			batch.Add(vcs.RootNode, mttacc.AttrBio, in.Bio)
 		}
 
-		if !dirty {
+		dirty := batch.Dirty()
+		if len(dirty) == 0 {
 			return errNoUpdate
 		}
-
+		conn.AddDatoms(obj, change, dirty...)
 		conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
 		conn.EncodeChange(change, me.DeviceKey())
 

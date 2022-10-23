@@ -8,6 +8,7 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/mttdoc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
@@ -62,7 +63,9 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		return nil, err
 	}
 
-	perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(me.AccountID()))
+	clock := hlc.NewClock()
+
+	perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(me.AccountID(), clock.Now()))
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +80,11 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		obj := conn.NewObject(perma)
 		meLocal := conn.EnsureIdentity(me)
 
-		change := conn.NewChange(obj, meLocal, nil, perma.PermanodeCreateTime())
+		change := conn.NewChange(obj, meLocal, nil, clock)
 
-		doc := mttdoc.New(vcsdb.NewDatomWriter(change, conn.LastLamportTime(), 0))
+		batch := vcs.NewBatch(clock, me.DeviceKey().Abbrev())
+
+		doc := mttdoc.New(batch)
 
 		doc.EnsureTitle("")
 		doc.EnsureSubtitle("")
@@ -88,10 +93,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 			return doc.Err()
 		}
 
-		for _, d := range doc.DirtyDatoms() {
-			conn.AddDatom(obj, d)
-		}
-
+		conn.AddDatoms(obj, change, batch.Dirty()...)
 		conn.SaveVersion(obj, "draft", meLocal, vcsdb.LocalVersion{change})
 
 		return nil
@@ -102,8 +104,8 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 	return &documents.Document{
 		Id:         perma.ID.String(),
 		Author:     me.AccountID().String(),
-		CreateTime: timestamppb.New(perma.PermanodeCreateTime()),
-		UpdateTime: timestamppb.New(perma.PermanodeCreateTime()),
+		CreateTime: timestamppb.New(perma.PermanodeCreateTime().Time()),
+		UpdateTime: timestamppb.New(clock.Max().Time()),
 	}, nil
 }
 
@@ -128,10 +130,13 @@ func (api *Server) createDraftWithBase(ctx context.Context, in *documents.Create
 		obj := conn.LookupPermanode(oid)
 		meLocal := conn.EnsureIdentity(me)
 
+		clock := hlc.NewClock()
 		main := conn.GetVersion(obj, "main", meLocal)
+		for _, v := range main {
+			clock.Track(hlc.Unpack(conn.GetChangeMaxTime(obj, v)))
+		}
 
-		change := conn.NewChange(obj, meLocal, main, time.Now())
-
+		change := conn.NewChange(obj, meLocal, main, clock)
 		conn.SaveVersion(obj, "draft", meLocal, vcsdb.LocalVersion{change})
 
 		return nil
@@ -176,21 +181,22 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 		}
 
 		change := version[0]
-		seq := conn.NextChangeSeq(obj, change)
-		if seq != 0 {
-			seq-- // datom factory increments seq before creating datom
-		}
-		lamport := conn.GetChangeLamportTime(change)
 
-		doc := mttdoc.New(vcsdb.NewDatomWriter(change, lamport, seq))
-		it := conn.QueryObjectDatoms(obj, version)
+		clock := conn.GetChangeClock(obj, change)
+		batch := vcs.NewBatch(clock, me.DeviceKey().Abbrev())
+		doc := mttdoc.New(batch)
+		cs := conn.ResolveChangeSet(obj, version)
+		it := conn.QueryObjectDatoms(obj, cs)
 		datoms := it.Slice()
 		if it.Err() != nil {
 			return it.Err()
 		}
 		if err := doc.Replay(datoms); err != nil {
-			return err
+			return fmt.Errorf("failed to load document before update: %w", err)
 		}
+
+		// TODO: this should not be necessary.
+		clock.Track(hlc.Unpack(datoms[len(datoms)-1].Time))
 
 		for _, c := range in.Changes {
 			switch op := c.Op.(type) {
@@ -214,19 +220,15 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 			}
 
 			if doc.Err() != nil {
-				return doc.Err()
+				return fmt.Errorf("failed to apply document update: %w", doc.Err())
 			}
 		}
 
-		for _, d := range doc.DirtyDatoms() {
-			conn.AddDatom(obj, d)
-		}
+		conn.AddDatoms(obj, change, batch.Dirty()...)
 
-		for opid := range doc.DeletedDatoms() {
-			conn.DeleteDatomByID(opid.Change, opid.Seq)
+		for opid := range batch.Deleted() {
+			conn.DeleteDatomByID(obj, change, opid)
 		}
-
-		conn.TouchChange(change, time.Now())
 
 		return nil
 	}); err != nil {
@@ -264,7 +266,9 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 			return fmt.Errorf("draft version must have only 1 leaf change, got: %d", len(version))
 		}
 
-		docpb, err = api.getDocument(conn, obj, version)
+		cs := conn.ResolveChangeSet(obj, version)
+
+		docpb, err = api.getDocument(conn, obj, cs)
 		return err
 	}); err != nil {
 		return nil, err
@@ -273,22 +277,21 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 	return docpb, nil
 }
 
-func (api *Server) getDocument(conn *vcsdb.Conn, obj vcsdb.LocalID, version vcsdb.LocalVersion) (*documents.Document, error) {
+func (api *Server) getDocument(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.ChangeSet) (*documents.Document, error) {
 	doc := mttdoc.New(nil)
-	it := conn.QueryObjectDatoms(obj, version)
+	it := conn.QueryObjectDatoms(obj, cs)
 	datoms := it.Slice()
 	if it.Err() != nil {
 		return nil, it.Err()
 	}
 	objctime := conn.GetPermanodeCreateTime(obj)
-	changectime := conn.GetChangeCreateTime(datoms[len(datoms)-1].Change)
 	did := conn.GetObjectCID(obj)
 	author := conn.GetObjectOwner(obj)
 	if err := doc.Replay(datoms); err != nil {
 		return nil, err
 	}
 
-	return mttdocToProto(did.String(), author.String(), objctime, changectime, doc)
+	return mttdocToProto(did.String(), author.String(), objctime, doc)
 }
 
 // ListDrafts implements the corresponding gRPC method.
@@ -350,17 +353,16 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		}
 
 		change := version[0]
+		cs := conn.ResolveChangeSet(obj, version)
 
 		conn.EncodeChange(change, me.DeviceKey())
 		conn.DeleteVersion(obj, "draft", meLocal)
+		conn.SaveVersion(obj, "main", meLocal, version)
 
-		newVersion := vcsdb.LocalVersion{change}
-		conn.SaveVersion(obj, "main", meLocal, newVersion)
-
-		// TODO(burdiyan): build11: this should be gone.
-		it := conn.QueryObjectDatoms(obj, newVersion)
+		// TODO(burdiyan): at some point we want to add backlinks for drafts too.
+		it := conn.QueryObjectDatoms(obj, cs)
 		for it.Next() {
-			if err := backlinks.IndexDatom(conn, obj, it.Item().Datom()); err != nil {
+			if err := backlinks.IndexDatom(conn, obj, change, it.Item().Datom()); err != nil {
 				return err
 			}
 		}
@@ -504,7 +506,9 @@ func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Versi
 		if len(version) > 1 {
 			return fmt.Errorf("TODO(burdiyan): can only get publication with 1 leaf change, got: %d", len(version))
 		}
-		out.Document, err = api.getDocument(conn, obj, version)
+		cs := conn.ResolveChangeSet(obj, version)
+
+		out.Document, err = api.getDocument(conn, obj, cs)
 		if err != nil {
 			return err
 		}
@@ -582,7 +586,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	return out, nil
 }
 
-func mttdocToProto(id, author string, createTime, updateTime time.Time, doc *mttdoc.Document) (*documents.Document, error) {
+func mttdocToProto(id, author string, createTime time.Time, doc *mttdoc.Document) (*documents.Document, error) {
 	if doc.Err() != nil {
 		return nil, doc.Err()
 	}
@@ -593,12 +597,12 @@ func mttdocToProto(id, author string, createTime, updateTime time.Time, doc *mtt
 		Subtitle:   doc.Subtitle(),
 		Author:     author,
 		CreateTime: timestamppb.New(createTime),
-		UpdateTime: timestamppb.New(updateTime),
+		UpdateTime: timestamppb.New(doc.UpdateTime()),
 	}
 
-	blockMap := map[vcsdb.NodeID]*documents.BlockNode{}
+	blockMap := map[vcs.NodeID]*documents.BlockNode{}
 
-	appendChild := func(parent vcsdb.NodeID, child *documents.BlockNode) {
+	appendChild := func(parent vcs.NodeID, child *documents.BlockNode) {
 		if parent == vcs.RootNode {
 			docpb.Children = append(docpb.Children, child)
 			return

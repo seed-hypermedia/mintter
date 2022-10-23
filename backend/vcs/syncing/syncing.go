@@ -8,6 +8,7 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"sort"
@@ -173,7 +174,7 @@ func (s *Service) Start(ctx context.Context) (err error) {
 // Calls will be de-duplicated as only one sync loop may be in progress at any given moment.
 // Returned error indicates a fatal error. The behavior of calling Sync again after a fatal error is undefined.
 func (s *Service) SyncAndLog(ctx context.Context) error {
-	log := s.log.With(zap.Int64("traceID", time.Now().Unix()))
+	log := s.log.With(zap.Int64("traceID", time.Now().UnixMicro()))
 
 	log.Info("SyncLoopStarted")
 
@@ -418,14 +419,9 @@ func permanodeFromMap(v interface{}) (p vcs.Permanode, err error) {
 
 	base.Type = vcs.ObjectType(v.(map[string]interface{})["@type"].(string))
 	base.Owner = v.(map[string]interface{})["owner"].(cid.Cid)
-	t := v.(map[string]interface{})["createTime"].(string)
+	t := v.(map[string]interface{})["createTime"].(int)
 
-	tt, err := time.ParseInLocation(time.RFC3339, t, time.UTC)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse permanode create time: %w", err)
-	}
-
-	base.CreateTime = tt
+	base.CreateTime = hlc.Unpack(int64(t))
 
 	return base, nil
 }
@@ -483,7 +479,7 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 	}
 
 	sort.Slice(fetched, func(i, j int) bool {
-		return fetched[i].Decoded.LamportTime < fetched[j].Decoded.LamportTime
+		return fetched[i].Decoded.Time < fetched[j].Decoded.Time
 	})
 
 	return fetched, nil

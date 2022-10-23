@@ -124,7 +124,7 @@ func nidCounterInc() uint64 {
 // 3. It expects machine clock not going backwards, at least not by seconds.
 // 4. It expects the generated IDs to be unique within the scope of a Mintter Object, not globally.
 func NewNodeIDv1(ts time.Time) NodeID {
-	return newNodeIDv1(ts, nidSession, atomic.LoadUint64(&nidCounter))
+	return newNodeIDv1(ts, nidSession, nidCounterInc())
 }
 
 func randomUint14() uint64 {

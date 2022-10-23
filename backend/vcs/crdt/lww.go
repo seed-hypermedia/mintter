@@ -2,21 +2,18 @@ package crdt
 
 // LWW is a Last-Writer-Wins register.
 type LWW[T any] struct {
-	v      T
-	op     OpID
-	isLess LessFunc
+	v  T
+	op OpID
 }
 
 // NewLWW creates a new LWW.
-func NewLWW[T any](less LessFunc) *LWW[T] {
-	return &LWW[T]{
-		isLess: less,
-	}
+func NewLWW[T any]() *LWW[T] {
+	return &LWW[T]{}
 }
 
 // Set the value.
 func (l *LWW[T]) Set(op OpID, v T) (ok bool) {
-	if l.isLess(l.op, op) {
+	if l.op.Less(op) {
 		l.v = v
 		return true
 	}

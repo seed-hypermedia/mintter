@@ -24,7 +24,7 @@ import (
 // It will be removed in Build 11 when we implement proper granular block CRDT.
 //
 // TODO(burdiyan): remove this. Search for other places with build11.
-func IndexDatom(conn *vcsdb.Conn, obj vcsdb.LocalID, d vcsdb.Datom) error {
+func IndexDatom(conn *vcsdb.Conn, obj, change vcsdb.LocalID, d vcsdb.Datom) error {
 	if d.Attr != mttdoc.AttrBlockState {
 		return nil
 	}
@@ -34,7 +34,7 @@ func IndexDatom(conn *vcsdb.Conn, obj vcsdb.LocalID, d vcsdb.Datom) error {
 		return fmt.Errorf("failed to unmarshal content block: %w", err)
 	}
 
-	return indexBacklinks(conn, obj, d.Change, blk)
+	return indexBacklinks(conn, obj, change, blk)
 }
 
 func indexBacklinks(conn *vcsdb.Conn, obj, change vcsdb.LocalID, blk *documents.Block) error {

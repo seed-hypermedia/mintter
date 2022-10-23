@@ -33,12 +33,11 @@ const (
 const (
 	Changes            sqlitegen.Table  = "changes"
 	ChangesAccountID   sqlitegen.Column = "changes.account_id"
-	ChangesCreateTime  sqlitegen.Column = "changes.create_time"
 	ChangesDeviceID    sqlitegen.Column = "changes.device_id"
 	ChangesID          sqlitegen.Column = "changes.id"
 	ChangesKind        sqlitegen.Column = "changes.kind"
-	ChangesLamportTime sqlitegen.Column = "changes.lamport_time"
 	ChangesPermanodeID sqlitegen.Column = "changes.permanode_id"
+	ChangesStartTime   sqlitegen.Column = "changes.start_time"
 )
 
 // Table content_links.
@@ -66,8 +65,9 @@ const (
 	DatomsAttr      sqlitegen.Column = "datoms.attr"
 	DatomsChange    sqlitegen.Column = "datoms.change"
 	DatomsEntity    sqlitegen.Column = "datoms.entity"
+	DatomsOrigin    sqlitegen.Column = "datoms.origin"
 	DatomsPermanode sqlitegen.Column = "datoms.permanode"
-	DatomsSeq       sqlitegen.Column = "datoms.seq"
+	DatomsTime      sqlitegen.Column = "datoms.time"
 	DatomsValue     sqlitegen.Column = "datoms.value"
 	DatomsValueType sqlitegen.Column = "datoms.value_type"
 )
@@ -161,12 +161,11 @@ var Schema = sqlitegen.Schema{
 		ChangeDepsChild:              {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangeDepsParent:             {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangesAccountID:             {Table: Changes, SQLType: "INTEGER"},
-		ChangesCreateTime:            {Table: Changes, SQLType: "INTEGER"},
 		ChangesDeviceID:              {Table: Changes, SQLType: "INTEGER"},
 		ChangesID:                    {Table: Changes, SQLType: "INTEGER"},
 		ChangesKind:                  {Table: Changes, SQLType: "TEXT"},
-		ChangesLamportTime:           {Table: Changes, SQLType: "INTEGER"},
 		ChangesPermanodeID:           {Table: Changes, SQLType: "INTEGER"},
+		ChangesStartTime:             {Table: Changes, SQLType: "INTEGER"},
 		ContentLinksSourceBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
 		ContentLinksSourceChangeID:   {Table: ContentLinks, SQLType: "INTEGER"},
 		ContentLinksSourceDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
@@ -179,8 +178,9 @@ var Schema = sqlitegen.Schema{
 		DatomsAttr:                   {Table: Datoms, SQLType: "INTEGER"},
 		DatomsChange:                 {Table: Datoms, SQLType: "INTEGER"},
 		DatomsEntity:                 {Table: Datoms, SQLType: "INTEGER"},
+		DatomsOrigin:                 {Table: Datoms, SQLType: "INTEGER"},
 		DatomsPermanode:              {Table: Datoms, SQLType: "INTEGER"},
-		DatomsSeq:                    {Table: Datoms, SQLType: "INTEGER"},
+		DatomsTime:                   {Table: Datoms, SQLType: "INTEGER"},
 		DatomsValue:                  {Table: Datoms, SQLType: "BLOB"},
 		DatomsValueType:              {Table: Datoms, SQLType: "INTEGER"},
 		DevicesCreateTime:            {Table: Devices, SQLType: "INTEGER"},

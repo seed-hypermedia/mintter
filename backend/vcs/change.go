@@ -3,7 +3,6 @@ package vcs
 import (
 	"fmt"
 	"mintter/backend/core"
-	"time"
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -22,17 +21,16 @@ func init() {
 // If a Permanode "instantiates" a Mintter Object, a Change mutates the corresponding object.
 // Future changes depend on previous changes, forming a DAG (directed acyclic graph).
 type Change struct {
-	Type        ObjectType     `refmt:"@type"`
-	Object      cid.Cid        `refmt:"object"`
-	Author      cid.Cid        `refmt:"author"` // TODO: should this be a DID instead?
-	Parents     []cid.Cid      `refmt:"parents,omitempty"`
-	LamportTime uint64         `refmt:"lamportTime"`
-	Kind        string         `refmt:"kind"`
-	Body        []byte         `refmt:"body"`
-	Message     string         `refmt:"message,omitempty"`
-	CreateTime  time.Time      `refmt:"createTime"`
-	Signer      cid.Cid        `refmt:"signer,omitempty"` // CID-formatter Libp2p key.
-	Signature   core.Signature `refmt:"signature,omitempty"`
+	Type      ObjectType     `refmt:"@type"`
+	Object    cid.Cid        `refmt:"object"`
+	Author    cid.Cid        `refmt:"author"` // TODO: should this be a DID instead?
+	Parents   []cid.Cid      `refmt:"parents,omitempty"`
+	Kind      string         `refmt:"kind"`
+	Body      []byte         `refmt:"body"`
+	Message   string         `refmt:"message,omitempty"`
+	Time      int64          `refmt:"time"`             // Hybrid Logical Timestamp.
+	Signer    cid.Cid        `refmt:"signer,omitempty"` // CID-formatter Libp2p key.
+	Signature core.Signature `refmt:"signature,omitempty"`
 }
 
 // Sign a prepared change and produce its copy with the produces signature.

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"time"
 
@@ -33,8 +34,8 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 
 	obj := conn.NewObject(perma)
 	id := conn.EnsureIdentity(core.NewIdentity(acc.PublicKey, device))
-	change := conn.NewChange(obj, id, nil, time.Now().UTC())
-	newDatom := vcsdb.NewDatomWriter(change, 1, 0).NewDatom
+	clock := hlc.NewClock()
+	change := conn.NewChange(obj, id, nil, clock)
 
 	proof, err := NewRegistrationProof(acc, device.CID())
 	if err != nil {
@@ -42,10 +43,13 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 	}
 
 	reg := vcs.NewNodeIDv1(time.Now())
-	conn.AddDatom(obj, newDatom(reg, AttrDevice, device.CID()))
-	conn.AddDatom(obj, newDatom(reg, AttrProof, []byte(proof)))
-	conn.AddDatom(obj, newDatom(vcs.RootNode, AttrRegistration, reg))
 
+	batch := vcs.NewBatch(clock, device.Abbrev())
+	batch.Add(reg, AttrDevice, device.CID())
+	batch.Add(reg, AttrProof, []byte(proof))
+	batch.Add(vcs.RootNode, AttrRegistration, reg)
+
+	conn.AddDatoms(obj, change, batch.Dirty()...)
 	conn.SaveVersion(obj, "main", id, vcsdb.LocalVersion{change})
 	conn.EncodeChange(change, device)
 
@@ -66,7 +70,7 @@ func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid)
 
 	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, AttrRegistration)
 	for regs.Next() {
-		rv := regs.Item().ValueAny().(vcsdb.NodeID)
+		rv := regs.Item().ValueAny().(vcs.NodeID)
 		dd := conn.QueryLastValue(obj, cs, rv, AttrDevice)
 		if !dd.Value.(cid.Cid).Equals(device) {
 			continue

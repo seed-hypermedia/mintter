@@ -5,15 +5,12 @@ import "fmt"
 // OpTracker can be used to track the most recently seen operation.
 // Useful to make sure we're processing operations in the correctly sorted order.
 type OpTracker struct {
-	lastOp  OpID
-	lessCmp func(a, b OpID) bool
+	lastOp OpID
 }
 
 // NewOpTracker creates a new tracker.
-func NewOpTracker(lessCmp func(a, b OpID) bool) *OpTracker {
-	return &OpTracker{
-		lessCmp: lessCmp,
-	}
+func NewOpTracker() *OpTracker {
+	return &OpTracker{}
 }
 
 // LastOp returns the most recently tracked op.
@@ -28,7 +25,7 @@ func (ot *OpTracker) IsZero() bool {
 
 // Track an incoming op. New op must be newer than previously tracked op.
 func (ot *OpTracker) Track(op OpID) error {
-	if !ot.lessCmp(ot.lastOp, op) {
+	if !ot.lastOp.Less(op) {
 		return fmt.Errorf("tracking out of date op")
 	}
 	ot.lastOp = op

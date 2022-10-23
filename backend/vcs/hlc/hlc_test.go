@@ -1,15 +1,28 @@
 package hlc
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
+func TestMocked(t *testing.T) {
+	clock := NewClockWithWall(func() time.Time { return time.Time{} })
+
+	tt := clock.Now()
+	require.Equal(t, tt.wall, int64(0))
+	require.Equal(t, tt.counter, uint16(1))
+
+	tt = clock.Now()
+	require.Equal(t, tt.wall, int64(0))
+	require.Equal(t, tt.counter, uint16(2))
+}
+
 func TestTrack(t *testing.T) {
-	c1 := NewClock(time.Now)
-	c2 := NewClock(time.Now)
+	c1 := NewClock()
+	c2 := NewClock()
 
 	t1 := c1.Now()
 
@@ -31,31 +44,37 @@ func TestCompactTimestamp(t *testing.T) {
 func TestClock(t *testing.T) {
 	now := time.Now()
 
-	times := []time.Time{
+	in := []time.Time{
 		now,
 		now.Add(time.Hour * -1),
 		now.Add(time.Hour),
 		now.Add(time.Hour).Add(30 * time.Minute * -1),
 	}
-
-	var c int
-	mockedTime := func() time.Time {
-		defer func() { c++ }()
-		if c < len(times) {
-			return times[c]
-		}
-		return time.Now()
-	}
-
-	clock := NewClock(mockedTime)
+	clock := NewClock()
 
 	var old Time
-	for i := 0; i < 5; i++ {
-		now := clock.Now()
-
+	for _, tt := range in {
+		now := clock.Time(tt)
 		require.True(t, old.Before(now), "new timestamp must be after any previous one even if physical clock goes back")
 		require.True(t, old.Time().Before(now.Time()), "unix timestamp representation must respect happens-before property")
 
 		old = now
 	}
 }
+
+func TestWallClockAlwaysRounded(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		tt := NewClock().Now()
+		require.Equal(t, uint16(0), tt.counter, "counter must be 0 at clock start")
+		require.Equal(t, uint16(0), uint16(tt.wall), "wall clock must be rounded to 48 bits, i.e. lower 16 bits are 0")
+		require.Equal(t, tt.wall, tt.Time().UnixMicro(), "unix micro representation doesn't match wall clock part")
+		fmt.Println(tt.wall)
+	}
+}
+
+func TestZero(t *testing.T) {
+	require.True(t, Unpack(0).IsZero())
+	require.Equal(t, int64(0), Unpack(0).Pack())
+}
+
+// TODO(burdiyan): check for clock drift, add relevant tests.

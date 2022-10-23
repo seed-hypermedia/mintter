@@ -19,28 +19,48 @@ const mask = 0xFFFF
 // Clock is an instance of a hybrid logical clock.
 // Not safe for concurrent use.
 type Clock struct {
-	sysClock func() time.Time
-	maxTime  Time
+	wallClock func() time.Time
+	maxTime   Time
 }
 
 // NewClock creates a new HLC.
-// The given now function should produce the current timestamp
-// according to the system wall clock. The system clock is expected to have somewhat low skew
-// among peers. But HLC handles any possible clock skews caused by synchronizing with NTP or similar.
-// Nil system clock can be passed, in which case [time.Now] will be used.
-func NewClock(systemClock func() time.Time) *Clock {
-	if systemClock == nil {
-		systemClock = time.Now
-	}
+// The system clock is expected to have somewhat low skew among peers.
+// But HLC handles any possible clock skews caused by synchronizing with NTP or similar.
+func NewClock() *Clock {
+	return NewClockWithWall(time.Now)
+}
 
+// NewClockAt creates a new clock set to the given time.
+func NewClockAt(at Time) *Clock {
+	c := NewClock()
+	c.Track(at)
+	return c
+}
+
+// NewClockWithWall creates a new clock with a given system wall clock function.
+func NewClockWithWall(fn func() time.Time) *Clock {
 	return &Clock{
-		sysClock: systemClock,
+		wallClock: fn,
 	}
+}
+
+// Max returns the currently known maximum time.
+func (hc *Clock) Max() Time {
+	return hc.maxTime
 }
 
 // Now creates a new timestamp which is greater than any previously known timestamp.
 func (hc *Clock) Now() Time {
-	now := newTime(hc.sysClock().UnixMicro(), 0)
+	return hc.Time(hc.wallClock())
+}
+
+// Time creates new timestamp using a given wall clock timestamp.
+func (hc *Clock) Time(at time.Time) Time {
+	if hc == nil {
+		return Time{}
+	}
+
+	now := newTime(at.UnixMicro(), 0)
 	if now.wall <= hc.maxTime.wall {
 		hc.maxTime = hc.maxTime.Add(1)
 	} else {
@@ -52,6 +72,10 @@ func (hc *Clock) Now() Time {
 // Track a timestamp produced by some other clock, so next timestamp
 // produces by this clock is guaranteed to be greater than the tracked one.
 func (hc *Clock) Track(remoteTime Time) {
+	if hc == nil {
+		return
+	}
+
 	if hc.maxTime.Before(remoteTime) {
 		hc.maxTime = remoteTime
 	}
@@ -61,6 +85,16 @@ func (hc *Clock) Track(remoteTime Time) {
 type Time struct {
 	wall    int64
 	counter uint16
+}
+
+// AsTime returns packed HLC timestamp as std time.
+func AsTime(n int64) time.Time {
+	return time.UnixMicro(n)
+}
+
+// FromTime unpacks std time into HLC time.
+func FromTime(t time.Time) Time {
+	return Unpack(t.UnixMicro())
 }
 
 // Unpack an integer representation of an HLC timestamp
@@ -106,6 +140,11 @@ func (ht Time) Pack() int64 {
 	// Assuming wall timestamp is rounded to 48 bits, so just
 	// packing the two components together into a single integer.
 	return ht.wall | int64(ht.counter)
+}
+
+// IsZero checks if timestamp is zero value.
+func (ht Time) IsZero() bool {
+	return ht.wall == 0 && ht.counter == 0
 }
 
 // newTime produces a new timestamp.

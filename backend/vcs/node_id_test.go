@@ -60,3 +60,17 @@ func TestRandomUint14(t *testing.T) {
 func TestUint14(t *testing.T) {
 	require.Equal(t, maxUint14, uint14(math.MaxUint64))
 }
+
+func TestNodeIDDifferent(t *testing.T) {
+	ids := make(map[NodeID]int, 1500)
+
+	for i := 0; i < 1500; i++ {
+		ids[NewNodeIDv1(time.Now())]++
+	}
+
+	for id, count := range ids {
+		if count > 1 {
+			t.Fatalf("%d was generated %d times", id, count)
+		}
+	}
+}

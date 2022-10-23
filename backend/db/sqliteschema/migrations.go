@@ -114,8 +114,8 @@ var migrations = []string{
 		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
 		device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
 		kind TEXT,
-		lamport_time INTEGER NOT NULL,
-		create_time INTEGER NOT NULL
+		-- Hybrid Logical Timestamp when change was created.
+		start_time INTEGER NOT NULL
 		-- You can imagine this foreign key exist, but it's disabled
 		-- because draft changes don't have the corresponding record
 		-- in the ipfs_blocks table until they are actually published.
@@ -150,9 +150,11 @@ var migrations = []string{
 		value BLOB NOT NULL,
 		-- Change that introduced the datom.
 		change INTEGER REFERENCES changes ON DELETE CASCADE NOT NULL,
-		-- Sequence ID within the change that introduced the datom.
-		seq INTEGER NOT NULL CHECK (seq > 0),
-		PRIMARY KEY (change, seq)
+		-- Hybrid Logical Timestamp of the datom.
+		time INTEGER NOT NULL CHECK (time > 0),
+		-- Abbreviated device ID that authored the change.
+		origin INTEGER NOT NULL CHECK (origin != 0),
+		PRIMARY KEY (permanode, change, time)
 	) WITHOUT ROWID;`,
 
 	`CREATE INDEX datoms_eavt ON datoms (permanode, entity, attr);

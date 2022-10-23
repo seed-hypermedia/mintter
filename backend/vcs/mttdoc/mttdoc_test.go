@@ -1,14 +1,17 @@
 package mttdoc
 
 import (
-	vcsdb "mintter/backend/vcs/sqlitevcs"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestDocumentSmoke(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	doc := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
 
 	require.True(t, doc.MoveBlock("b1", "", ""))
 	require.False(t, doc.MoveBlock("b1", "", ""))
@@ -30,18 +33,23 @@ func TestDocumentSmoke(t *testing.T) {
 	}, doc)
 }
 
-func TestModeAncestor(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+func TestMoveAncestor(t *testing.T) {
+	batch := vcs.NewBatch(hlc.NewClock(), 123)
+	doc := New(batch)
 
 	require.True(t, doc.MoveBlock("b1", "", ""))
 	require.True(t, doc.MoveBlock("b2", "", "b1"))
 	require.True(t, doc.MoveBlock("b2", "b1", ""))
 	require.False(t, doc.MoveBlock("b1", "b2", ""))
 	require.Error(t, doc.err)
+
+	require.Equal(t, 3*4, len(doc.dw.Dirty()))
 }
 
 func TestReplicate(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	doc := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
 
 	/*
 		- b1
@@ -65,14 +73,19 @@ func TestReplicate(t *testing.T) {
 
 	testHierarchy(t, want, doc)
 
-	r := New(vcsdb.NewDatomWriter(1, 1, doc.tracker.LastOp().Seq))
+	r := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
+
 	require.NoError(t, r.Replay(doc.dw.Dirty()))
 
 	testHierarchy(t, want, r)
 }
 
 func TestDeleteBlock(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	doc := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
 
 	/*
 		- b1
@@ -97,10 +110,13 @@ func TestDeleteBlock(t *testing.T) {
 	testHierarchy(t, want, doc)
 }
 
-func TestComplexWithMode(t *testing.T) {
+func TestComplexWithMove(t *testing.T) {
 	t.Parallel()
 
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	clock := hlc.NewClock()
+	batch := vcs.NewBatch(clock, 123)
+
+	doc := New(batch)
 
 	doc.MoveBlock("b1", "", "")
 	doc.MoveBlock("b1.1", "b1", "")
@@ -110,6 +126,6 @@ func TestComplexWithMode(t *testing.T) {
 
 	require.NoError(t, doc.Err())
 
-	r := New(vcsdb.NewDatomWriter(1, 1, 0))
+	r := New(vcs.NewBatch(hlc.NewClock(), 123))
 	require.NoError(t, r.Replay(doc.dw.Dirty()))
 }

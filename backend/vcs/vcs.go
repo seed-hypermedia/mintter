@@ -3,11 +3,25 @@ package vcs
 import (
 	"fmt"
 	"mintter/backend/ipfs"
-	"time"
+	"mintter/backend/vcs/hlc"
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/polydawn/refmt/obj/atlas"
 )
+
+var hlcAtlas = atlas.BuildEntry(hlc.Time{}).Transform().
+	TransformMarshal(atlas.MakeMarshalTransformFunc(func(t hlc.Time) (int64, error) {
+		return t.Pack(), nil
+	})).
+	TransformUnmarshal(atlas.MakeUnmarshalTransformFunc(func(in int64) (hlc.Time, error) {
+		return hlc.Unpack(in), nil
+	})).
+	Complete()
+
+func init() {
+	cbornode.RegisterCborType(hlcAtlas)
+}
 
 // ObjectType is a type for describing types of our IPLD data.
 // Generally, IPLD data is a free-form JSON-like structure,
@@ -128,7 +142,7 @@ type ObjectID = cid.Cid
 type BasePermanode struct {
 	Type       ObjectType `refmt:"@type"`
 	Owner      cid.Cid    `refmt:"owner"`
-	CreateTime time.Time  `refmt:"createTime"`
+	CreateTime hlc.Time   `refmt:"createTime"`
 }
 
 // PermanodeType implements the Permanode interface.
@@ -138,18 +152,18 @@ func (b BasePermanode) PermanodeType() ObjectType { return b.Type }
 func (b BasePermanode) PermanodeOwner() cid.Cid { return b.Owner }
 
 // PermanodeCreateTime implements the Permanode interface.
-func (b BasePermanode) PermanodeCreateTime() time.Time { return b.CreateTime }
+func (b BasePermanode) PermanodeCreateTime() hlc.Time { return b.CreateTime }
 
 func init() {
 	cbornode.RegisterCborType(BasePermanode{})
 }
 
 // NewPermanode create a new base permanode.
-func NewPermanode(ot ObjectType, owner cid.Cid, createTime time.Time) Permanode {
+func NewPermanode(ot ObjectType, owner cid.Cid, at hlc.Time) Permanode {
 	return BasePermanode{
 		Type:       ot,
 		Owner:      owner,
-		CreateTime: createTime,
+		CreateTime: at,
 	}
 }
 
@@ -157,7 +171,7 @@ func NewPermanode(ot ObjectType, owner cid.Cid, createTime time.Time) Permanode 
 type Permanode interface {
 	PermanodeType() ObjectType
 	PermanodeOwner() cid.Cid
-	PermanodeCreateTime() time.Time
+	PermanodeCreateTime() hlc.Time
 }
 
 // EncodedPermanode is a Permanode encoded in a canonical form.

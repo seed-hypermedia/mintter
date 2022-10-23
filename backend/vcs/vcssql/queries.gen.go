@@ -1112,9 +1112,9 @@ JOIN accounts ON accounts.id = permanodes.account_id WHERE permanodes.type = :pe
 	return out, err
 }
 
-func ChangesInsertOrIgnore(conn *sqlite.Conn, changesID int, changesPermanodeID int, changesAccountID int, changesDeviceID int, changesKind string, changesLamportTime int, changesCreateTime int) error {
-	const query = `INSERT OR IGNORE INTO changes (id, permanode_id, account_id, device_id, kind, lamport_time, create_time)
-VALUES (:changesID, :changesPermanodeID, :changesAccountID, :changesDeviceID, :changesKind, :changesLamportTime, :changesCreateTime)`
+func ChangesInsertOrIgnore(conn *sqlite.Conn, changesID int, changesPermanodeID int, changesAccountID int, changesDeviceID int, changesKind string, changesStartTime int) error {
+	const query = `INSERT OR IGNORE INTO changes (id, permanode_id, account_id, device_id, kind, start_time)
+VALUES (:changesID, :changesPermanodeID, :changesAccountID, :changesDeviceID, :changesKind, :changesStartTime)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":changesID", changesID)
@@ -1122,8 +1122,7 @@ VALUES (:changesID, :changesPermanodeID, :changesAccountID, :changesDeviceID, :c
 		stmt.SetInt(":changesAccountID", changesAccountID)
 		stmt.SetInt(":changesDeviceID", changesDeviceID)
 		stmt.SetText(":changesKind", changesKind)
-		stmt.SetInt(":changesLamportTime", changesLamportTime)
-		stmt.SetInt(":changesCreateTime", changesCreateTime)
+		stmt.SetInt(":changesStartTime", changesStartTime)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1143,17 +1142,17 @@ type ChangesGetBaseResult struct {
 	MaxClock int
 }
 
-func ChangesGetBase(conn *sqlite.Conn, jsonHeads string, changesPermanodeID int) (ChangesGetBaseResult, error) {
-	const query = `SELECT COUNT(id) AS count, MAX(lamport_time) AS max_clock
-FROM changes
-WHERE changes.id IN (SELECT value FROM json_each( :jsonHeads ))
-AND changes.permanode_id = :changesPermanodeID`
+func ChangesGetBase(conn *sqlite.Conn, datomsPermanode int, jsonHeads string) (ChangesGetBaseResult, error) {
+	const query = `SELECT COUNT(DISTINCT change) AS count, MAX(time) AS max_clock
+FROM datoms
+WHERE datoms.permanode = :datomsPermanode
+AND datoms.change IN (SELECT value FROM json_each( :jsonHeads ))`
 
 	var out ChangesGetBaseResult
 
 	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt(":datomsPermanode", datomsPermanode)
 		stmt.SetText(":jsonHeads", jsonHeads)
-		stmt.SetInt(":changesPermanodeID", changesPermanodeID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -1174,55 +1173,55 @@ AND changes.permanode_id = :changesPermanodeID`
 	return out, err
 }
 
-type ChangesGetWithAuthorsResult struct {
+type ChangesGetOneResult struct {
 	ChangesID           int
 	IPFSBlocksCodec     int
 	IPFSBlocksMultihash []byte
 	ChangesPermanodeID  int
 	ChangesKind         string
-	ChangesLamportTime  int
-	ChangesCreateTime   int
+	ChangesStartTime    int
 	AccountsMultihash   []byte
 	DevicesMultihash    []byte
 	ChangesAccountID    int
 	ChangesDeviceID     int
 }
 
-func ChangesGetWithAuthors(conn *sqlite.Conn, changesID int) ([]ChangesGetWithAuthorsResult, error) {
-	const query = `SELECT changes.id, ipfs_blocks.codec, ipfs_blocks.multihash, changes.permanode_id, changes.kind, changes.lamport_time, changes.create_time, accounts.multihash, devices.multihash, changes.account_id, changes.device_id
+func ChangesGetOne(conn *sqlite.Conn, changesID int) (ChangesGetOneResult, error) {
+	const query = `SELECT changes.id, ipfs_blocks.codec, ipfs_blocks.multihash, changes.permanode_id, changes.kind, changes.start_time, accounts.multihash, devices.multihash, changes.account_id, changes.device_id
 FROM changes
 JOIN accounts ON accounts.id = changes.account_id
 JOIN devices ON devices.id = changes.device_id
 JOIN ipfs_blocks ON ipfs_blocks.id = changes.permanode_id
-WHERE changes.id = :changesID`
+WHERE changes.id = :changesID
+LIMIT 1`
 
-	var out []ChangesGetWithAuthorsResult
+	var out ChangesGetOneResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt(":changesID", changesID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, ChangesGetWithAuthorsResult{
-			ChangesID:           stmt.ColumnInt(0),
-			IPFSBlocksCodec:     stmt.ColumnInt(1),
-			IPFSBlocksMultihash: stmt.ColumnBytes(2),
-			ChangesPermanodeID:  stmt.ColumnInt(3),
-			ChangesKind:         stmt.ColumnText(4),
-			ChangesLamportTime:  stmt.ColumnInt(5),
-			ChangesCreateTime:   stmt.ColumnInt(6),
-			AccountsMultihash:   stmt.ColumnBytes(7),
-			DevicesMultihash:    stmt.ColumnBytes(8),
-			ChangesAccountID:    stmt.ColumnInt(9),
-			ChangesDeviceID:     stmt.ColumnInt(10),
-		})
+		if i > 1 {
+			return errors.New("ChangesGetOne: more than one result return for a single-kind query")
+		}
 
+		out.ChangesID = stmt.ColumnInt(0)
+		out.IPFSBlocksCodec = stmt.ColumnInt(1)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(2)
+		out.ChangesPermanodeID = stmt.ColumnInt(3)
+		out.ChangesKind = stmt.ColumnText(4)
+		out.ChangesStartTime = stmt.ColumnInt(5)
+		out.AccountsMultihash = stmt.ColumnBytes(6)
+		out.DevicesMultihash = stmt.ColumnBytes(7)
+		out.ChangesAccountID = stmt.ColumnInt(8)
+		out.ChangesDeviceID = stmt.ColumnInt(9)
 		return nil
 	}
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: ChangesGetWithAuthors: %w", err)
+		err = fmt.Errorf("failed query: ChangesGetOne: %w", err)
 	}
 
 	return out, err
@@ -1399,41 +1398,6 @@ WHERE datom_attrs.attr = :datomAttrsAttr LIMIT 1`
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
 		err = fmt.Errorf("failed query: DatomsAttrLookup: %w", err)
-	}
-
-	return out, err
-}
-
-type DatomsMaxSeqResult struct {
-	Max int
-}
-
-func DatomsMaxSeq(conn *sqlite.Conn, datomsPermanode int, datomsChange int) (DatomsMaxSeqResult, error) {
-	const query = `SELECT MAX(datoms.seq) AS max
-FROM datoms
-WHERE datoms.permanode = :datomsPermanode
-AND datoms.change = :datomsChange
-LIMIT 1`
-
-	var out DatomsMaxSeqResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt(":datomsPermanode", datomsPermanode)
-		stmt.SetInt(":datomsChange", datomsChange)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("DatomsMaxSeq: more than one result return for a single-kind query")
-		}
-
-		out.Max = stmt.ColumnInt(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: DatomsMaxSeq: %w", err)
 	}
 
 	return out, err

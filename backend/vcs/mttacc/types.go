@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs"
-	"time"
+	"mintter/backend/vcs/hlc"
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -29,7 +29,7 @@ func NewAccountPermanode(owner cid.Cid) AccountPermanode {
 		BasePermanode: vcs.BasePermanode{
 			Type:       AccountType,
 			Owner:      owner,
-			CreateTime: time.Time{}, // zero time for deterministic permanode.
+			CreateTime: hlc.Time{}, // zero time for deterministic permanode.
 		},
 	}
 }
