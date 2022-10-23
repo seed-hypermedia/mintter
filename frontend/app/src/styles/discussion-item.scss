@@ -1,3 +1,4 @@
+// import css-variables from './_theme.scss'
 .discussion-item {
   position: relative;
   display: grid;
@@ -9,6 +10,24 @@
   grid-template-areas:
     'avatar info'
     '. content';
+
+  &:before {
+    z-index: 0;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(2rem + 16px);
+    width: 1px;
+    height: 100%;
+    border-inline-start: 1px dashed var(--base-border-hover);
+  }
+
+  .item-avatar,
+  .item-content,
+  .item-control,
+  .item-info {
+    z-index: 1;
+  }
 
   .item-avatar {
     grid-area: avatar;
@@ -22,21 +41,34 @@
   }
 
   &:hover {
-    background-color: var(--base-component-bg-normal);
+    background-color: var(--base-background-subtle);
 
     .item-control {
       opacity: 1;
     }
   }
 
-  &:after .item-avatar {
-    content: '';
-    width: 3px;
-    height: 100%;
-    background: red;
-    top: 0;
-    left: 0;
+  &:last-child {
+    &:before {
+      height: calc(1rem + 20px);
+    }
   }
+
+  &:first-child {
+    &:before {
+      height: calc(20px + 100%);
+      top: -20px;
+    }
+  }
+
+  // &:after .item-avatar {
+  //   content: '';
+  //   width: 3px;
+  //   height: 100%;
+  //   background: red;
+  //   top: 0;
+  //   left: 0;
+  // }
 }
 
 .item-avatar,
@@ -64,7 +96,6 @@
     cursor: pointer;
   }
 }
-
 .item-control {
   opacity: 0;
   transition: opacity 0.25s ease;
