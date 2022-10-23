@@ -3,6 +3,7 @@ package vcs
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 
@@ -46,11 +47,11 @@ func ParseVersion(s string) (Version, error) {
 	var cids []cid.Cid
 	for {
 		_, c, err := cid.CidFromReader(r)
-		if err != nil && err != io.EOF {
+		if err != nil && errors.Is(err, io.EOF) {
 			return Version{}, err
 		}
 
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 

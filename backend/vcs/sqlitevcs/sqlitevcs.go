@@ -354,14 +354,6 @@ func (conn *Conn) GetChangeMaxTime(object, change LocalID) int64 {
 	return out
 }
 
-func anySlice[In any](in []In) []any {
-	out := make([]any, len(in))
-	for i, v := range in {
-		out[i] = v
-	}
-	return out
-}
-
 type changeBody struct {
 	Entities []NodeID    `refmt:"e,omitempty"`
 	Strings  []string    `refmt:"s,omitempty"`

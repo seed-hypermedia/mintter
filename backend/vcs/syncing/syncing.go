@@ -468,9 +468,7 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 
 		visited[id] = struct{}{}
 
-		for _, p := range vc.Decoded.Parents {
-			queue = append(queue, p)
-		}
+		queue = append(queue, vc.Decoded.Parents...)
 	}
 
 	// Avoid returning preallocated slice if we never ended up discovering new blocks to fetch.

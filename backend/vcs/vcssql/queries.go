@@ -565,3 +565,5 @@ func generateQueries() error {
 
 	return ioutil.WriteFile("queries.gen.go", code, 0600)
 }
+
+var _ = generateQueries
