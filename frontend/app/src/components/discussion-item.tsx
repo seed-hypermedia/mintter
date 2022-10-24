@@ -88,7 +88,7 @@ export function DiscussionItem({link}: {link: LinkType}) {
             className="item-control"
             href={`/p/${link.source?.documentId}/${link.source?.version}`}
           >
-            Expand
+            Jump
           </Link>
         )}
       </div>
