@@ -396,7 +396,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
-		libp2p.ForceReachabilityPrivate(),
+		libp2p.EnableNATService(),
 		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
 		libp2p.Transport(tcp.NewTCPTransport),
 	}
