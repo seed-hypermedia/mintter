@@ -1,18 +1,21 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {DraftActor} from '@app/draft-machine'
+import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {useMain} from '@app/main-context'
 import {PublicationActor} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
+import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import {getCurrent} from '@tauri-apps/api/window'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
-import {Route, Switch} from 'wouter'
-import '../styles/topbar.scss'
+import {Route, Switch, useLocation} from 'wouter'
+import '../styles/dropdown.scss'
+import '../styles/titlebar.scss'
 
 export function TitleBar() {
   return (
@@ -26,10 +29,11 @@ export function TitleBar() {
 
 export function TitleBarMacos() {
   return (
-    <header>
-      {/* traffic lights */}
-      <Menu />
-      <NavigationButtons />
+    <header id="titlebar" className="titlebar-row" data-tauri-drag-region>
+      <div className="titlebar-section">
+        <Menu />
+        <NavigationButtons />
+      </div>
 
       <Title />
 
@@ -40,32 +44,241 @@ export function TitleBarMacos() {
 
 export function TitleBarWindows() {
   return (
-    <header>
-      {/* icon */}
-      {/* system menu */}
+    <header id="titlebar" data-tauri-drag-region>
+      <div className="titlebar-row" data-tauri-drag-region>
+        <div id="titlebar-icon" data-tauri-drag-region>
+          icon
+        </div>
+        <NavigationMenu.Root id="titlebar-system-menu">
+          <NavigationMenu.List className="system-menu">
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className="titlebar-button">
+                Mintter
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content className="content">
+                <NavigationMenu.Sub className="dropdown">
+                  <NavigationMenu.List className="content">
+                    <NavigationMenu.Item className="item">
+                      About Mintter
+                    </NavigationMenu.Item>
+                    <div className="separator"></div>
+                    <NavigationMenu.Item className="item">
+                      About Mintter
+                      <div className="right-slot">⌘,</div>
+                    </NavigationMenu.Item>
+                  </NavigationMenu.List>
+                </NavigationMenu.Sub>
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className="titlebar-button">
+                File
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content>
+                <NavigationMenu.Sub className="dropdown">
+                  <NavigationMenu.List className="content">
+                    <NavigationMenu.Item className="item">
+                      New Window
+                      <div className="right-slot">⌘N</div>
+                    </NavigationMenu.Item>
+                    <div className="separator"></div>
+                    <NavigationMenu.Item className="item">
+                      Close Window
+                      <div className="right-slot">⌘W</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Close All Windows
+                      <div className="right-slot">⌥⇧⌘W</div>
+                    </NavigationMenu.Item>
+                  </NavigationMenu.List>
+                </NavigationMenu.Sub>
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className="titlebar-button">
+                Edit
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content>
+                <NavigationMenu.Sub className="dropdown">
+                  <NavigationMenu.List className="content">
+                    <NavigationMenu.Item className="item">
+                      Undo
+                      <div className="right-slot">⌘Z</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Redo
+                      <div className="right-slot">⇧⌘Z</div>
+                    </NavigationMenu.Item>
+                    <div className="separator"></div>
+                    <NavigationMenu.Item className="item">
+                      Cut
+                      <div className="right-slot">⌘X</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Copy
+                      <div className="right-slot">⌘C</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Paste
+                      <div className="right-slot">⌘V</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Select All
+                      <div className="right-slot">⌘A</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Find...
+                      <div className="right-slot">⌘F</div>
+                    </NavigationMenu.Item>
+                  </NavigationMenu.List>
+                </NavigationMenu.Sub>
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className="titlebar-button">
+                Format
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content>
+                <NavigationMenu.Sub className="dropdown">
+                  <NavigationMenu.List className="content">
+                    <NavigationMenu.Item className="item">
+                      Strong
+                      <div className="right-slot">⌘B</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Emphasis
+                      <div className="right-slot">⌘I</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Code
+                      <div className="right-slot">⌘E</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Underline
+                      <div className="right-slot">⌘U</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Strikethrough
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Subscript
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Superscript
+                    </NavigationMenu.Item>
 
-      <Title />
+                    <div className="separator"></div>
 
-      <div className="window-controls">
-        <MinimizeButton />
-        <MaximizeOrRestoreButton />
-        <CloseButton />
+                    <NavigationMenu.Item className="item">
+                      Heading
+                      <div className="right-slot">⇧⌘H</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Statement
+                      <div className="right-slot">⇧⌘S</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Blockquote
+                      <div className="right-slot">⇧⌘Q</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Code Block
+                      <div className="right-slot">⇧⌘E</div>
+                    </NavigationMenu.Item>
+
+                    <div className="separator"></div>
+
+                    <NavigationMenu.Item className="item">
+                      Bullet List
+                      <div className="right-slot">⇧⌘7</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Numbered List
+                      <div className="right-slot">⇧⌘8</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Plain List
+                      <div className="right-slot">⇧⌘9</div>
+                    </NavigationMenu.Item>
+                  </NavigationMenu.List>
+                </NavigationMenu.Sub>
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className="titlebar-button">
+                View
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content className="content">
+                <NavigationMenu.Sub className="dropdown">
+                  <NavigationMenu.List className="content">
+                    <NavigationMenu.Item className="item">
+                      Reload
+                      <div className="right-slot">⌘R</div>
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Quick Switcher...
+                      <div className="right-slot">⌘K</div>
+                    </NavigationMenu.Item>
+                  </NavigationMenu.List>
+                </NavigationMenu.Sub>
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
+            <NavigationMenu.Item>
+              <NavigationMenu.Trigger className="titlebar-button">
+                Help
+              </NavigationMenu.Trigger>
+              <NavigationMenu.Content className="content">
+                <NavigationMenu.Sub className="dropdown">
+                  <NavigationMenu.List className="content">
+                    <NavigationMenu.Item className="item">
+                      Documentation
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Release Notes
+                    </NavigationMenu.Item>
+                    <NavigationMenu.Item className="item">
+                      Acknowledgements
+                    </NavigationMenu.Item>
+                  </NavigationMenu.List>
+                </NavigationMenu.Sub>
+              </NavigationMenu.Content>
+            </NavigationMenu.Item>
+          </NavigationMenu.List>
+        </NavigationMenu.Root>
+
+        <Title />
+
+        <div id="titlebar-window-controls">
+          <MinimizeButton />
+          <MaximizeOrRestoreButton />
+          <CloseButton />
+        </div>
       </div>
 
-      <br />
+      <div
+        className="titlebar-row"
+        style={{blockSize: 'var(--topbar-h)'}}
+        data-tauri-drag-region
+      >
+        <div className="titlebar-section">
+          <NavigationButtons />
+        </div>
 
-      <NavigationButtons />
+        <div data-tauri-drag-region style={{flexGrow: 1}}></div>
 
-      <ActionButtons />
-      <Menu />
+        <ActionButtons />
+        <Menu />
+      </div>
     </header>
   )
 }
 
 export function TitleBarLinux() {
   return (
-    <header>
-      <NavigationButtons />
+    <header id="titlebar" className="titlebar-row" data-tauri-drag-region>
+      <div className="titlebar-section">
+        <NavigationButtons />
+      </div>
 
       <Title />
 
@@ -95,13 +308,17 @@ function ActionButtons() {
   }
 
   return (
-    <div>
+    <div
+      id="titlebar-action-buttons"
+      className="titlebar-section"
+      data-tauri-drag-region
+    >
       <Find />
 
       <Switch>
         <Route path="/p/:id/:version/:block?">
           <Tooltip content="Copy document reference">
-            <button onClick={onCopy} className="topbar-button">
+            <button onClick={onCopy} className="titlebar-button">
               <Icon name="Copy" />
             </button>
           </Tooltip>
@@ -113,7 +330,7 @@ function ActionButtons() {
 
       <div className="button-group">
         <button
-          className="topbar-button"
+          className="titlebar-button"
           onClick={() => {
             // create new draft and open a new window
             mainService.send({type: 'COMMIT.OPEN.WINDOW'})
@@ -127,8 +344,160 @@ function ActionButtons() {
   )
 }
 
-function Menu() {
-  return <div></div>
+export function Menu() {
+  let [location, setLocation] = useLocation()
+
+  return (
+    <Dropdown.Root>
+      <Dropdown.Trigger asChild>
+        <button data-testid="titlebar-menu" className="titlebar-button">
+          <Icon name="HamburgerMenu" size="2" color="muted" />
+        </button>
+      </Dropdown.Trigger>
+      <Dropdown.Portal>
+        <Dropdown.Content>
+          <Dropdown.Item
+            disabled={location == '/inbox'}
+            data-testid="menu-item-inbox"
+            onSelect={() => setLocation('/inbox')}
+          >
+            <Icon name="File" />
+            <span>Inbox</span>
+          </Dropdown.Item>
+          <Dropdown.Item
+            disabled={location == '/drafts'}
+            data-testid="menu-item-drafts"
+            onSelect={() => setLocation('/drafts')}
+          >
+            <Icon name="PencilAdd" />
+            <span>Drafts</span>
+          </Dropdown.Item>
+
+          {import.meta.env.TAURI_PLATFORM == 'linux' && (
+            <>
+              <Dropdown.Sub>
+                <Dropdown.SubTrigger>Edit</Dropdown.SubTrigger>
+                <Dropdown.SubContent>
+                  <Dropdown.Item>
+                    Undo
+                    <Dropdown.RightSlot>⌘Z</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Redo
+                    <Dropdown.RightSlot>⇧⌘Z</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Separator />
+                  <Dropdown.Item>
+                    Cut
+                    <Dropdown.RightSlot>⌘X</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Copy
+                    <Dropdown.RightSlot>⌘C</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Paste
+                    <Dropdown.RightSlot>⌘V</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Select All
+                    <Dropdown.RightSlot>⌘A</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Find...
+                    <Dropdown.RightSlot>⌘F</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                </Dropdown.SubContent>
+              </Dropdown.Sub>
+
+              <Dropdown.Sub>
+                <Dropdown.SubTrigger>Format</Dropdown.SubTrigger>
+                <Dropdown.SubContent>
+                  <Dropdown.Item>
+                    Strong
+                    <Dropdown.RightSlot>⌘B</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Emphasis
+                    <Dropdown.RightSlot>⌘I</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Code
+                    <Dropdown.RightSlot>⌘E</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Underline
+                    <Dropdown.RightSlot>⌘U</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>Strikethrough</Dropdown.Item>
+                  <Dropdown.Item>Subscript</Dropdown.Item>
+                  <Dropdown.Item>Superscript</Dropdown.Item>
+
+                  <Dropdown.Separator />
+
+                  <Dropdown.Item>
+                    Heading
+                    <Dropdown.RightSlot>⇧⌘H</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Statement
+                    <Dropdown.RightSlot>⇧⌘S</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Blockquote
+                    <Dropdown.RightSlot>⇧⌘Q</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Code Block
+                    <Dropdown.RightSlot>⇧⌘E</Dropdown.RightSlot>
+                  </Dropdown.Item>
+
+                  <Dropdown.Separator />
+
+                  <Dropdown.Item>
+                    Bullet List
+                    <Dropdown.RightSlot>⇧⌘7</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Numbered List
+                    <Dropdown.RightSlot>⇧⌘8</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                  <Dropdown.Item>
+                    Plain List
+                    <Dropdown.RightSlot>⇧⌘9</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                </Dropdown.SubContent>
+              </Dropdown.Sub>
+
+              <Dropdown.Sub>
+                <Dropdown.SubTrigger>View</Dropdown.SubTrigger>
+                <Dropdown.SubContent>
+                  <Dropdown.Item>
+                    Reload
+                    <Dropdown.RightSlot>⌘R</Dropdown.RightSlot>
+                  </Dropdown.Item>
+
+                  <Dropdown.Item>
+                    Quick Switcher
+                    <Dropdown.RightSlot>⌘K</Dropdown.RightSlot>
+                  </Dropdown.Item>
+                </Dropdown.SubContent>
+              </Dropdown.Sub>
+
+              <Dropdown.Sub>
+                <Dropdown.SubTrigger>Help</Dropdown.SubTrigger>
+                <Dropdown.SubContent>
+                  <Dropdown.Item>Documentation</Dropdown.Item>
+                  <Dropdown.Item>Release Notes</Dropdown.Item>
+                  <Dropdown.Item>Acknowledgements</Dropdown.Item>
+                </Dropdown.SubContent>
+              </Dropdown.Sub>
+            </>
+          )}
+        </Dropdown.Content>
+      </Dropdown.Portal>
+    </Dropdown.Root>
+  )
 }
 
 type Push = {
@@ -138,18 +507,18 @@ type Push = {
 
 export function NavigationButtons({push = history}: {push?: Push}) {
   return (
-    <div className="button-group">
+    <div className="button-group" id="titlebar-navigation-buttons">
       <button
         data-testid="history-back"
         onClick={() => push.back()}
-        className="topbar-button"
+        className="titlebar-button"
       >
         <Icon name="ArrowChevronLeft" size="2" color="muted" />
       </button>
       <button
         data-testid="history-forward"
         onClick={() => push.forward()}
-        className="topbar-button "
+        className="titlebar-button "
       >
         <Icon name="ArrowChevronRight" size="2" color="muted" />
       </button>
@@ -168,7 +537,7 @@ function PublishButton({fileRef}: {fileRef: DraftActor}) {
         console.log('PUBLISH!', fileRef)
         fileRef.send('DRAFT.PUBLISH')
       }}
-      className="topbar-button success outlined"
+      className="titlebar-button success outlined"
       data-testid="button-publish"
       disabled={isSaving}
     >
@@ -182,7 +551,7 @@ function Title() {
   const current = useSelector(mainService, (state) => state.context.current)
 
   return (
-    <h1 className="topbar-title" data-testid="topbar-title">
+    <h1 id="titlebar-title" data-testid="titlebar-title" data-tauri-drag-region>
       <Switch>
         <Route path="/inbox">Inbox</Route>
         <Route path="/drafts">Drafts</Route>
@@ -236,14 +605,14 @@ function DraftTitle({fileRef}: {fileRef: DraftActor}) {
 //   return (
 //     <>
 //       <TopbarNavigation />
-//       <div className="topbar-section main" {...draggableProps}>
+//       <div className="titlebar-section main" {...draggableProps}>
 //         {current ? (
 //           <TopbarPublicationData fileRef={current as PublicationActor} />
 //         ) : (
 //           <span className="topbar-title">...</span>
 //         )}
 //       </div>
-//       <div className="topbar-section actions" {...draggableProps}>
+//       <div className="titlebar-section actions" {...draggableProps}>
 //         <Find />
 //         <Tooltip content="Copy document reference">
 //           <button onClick={onCopy} className="topbar-button">
@@ -308,10 +677,10 @@ function DraftTitle({fileRef}: {fileRef: DraftActor}) {
 //   return (
 //     <div className="topbar-inner" data-state={isEditing ? 'hidden' : 'visible'}>
 //       <TopbarNavigation />
-//       <div className="topbar-section main" {...draggableProps}>
+//       <div className="titlebar-section main" {...draggableProps}>
 //         <TopbarDraftData fileRef={fileRef} />
 //       </div>
-//       <div className="topbar-section actions no-flex" {...draggableProps}>
+//       <div className="titlebar-section actions no-flex" {...draggableProps}>
 //         <Find />
 //         <PublishButton fileRef={fileRef} />
 //         <div className="button-group">
@@ -342,62 +711,10 @@ function DraftTitle({fileRef}: {fileRef: DraftActor}) {
 
 // function TopbarNavigation() {
 //   return (
-//     <div className="topbar-section navigation" {...draggableProps}>
+//     <div className="titlebar-section navigation" {...draggableProps}>
 //       <Menu />
 //       <HistoryButtons />
 //     </div>
-//   )
-// }
-
-// export function Menu({emit = tauriEmit}: {emit?: typeof tauriEmit}) {
-//   let [location, setLocation] = useLocation()
-
-//   async function handleSearchSelect() {
-//     try {
-//       await emit('open_quick_switcher')
-//     } catch (err) {
-//       console.log(
-//         '🚀 ~ file: topbar.tsx ~ line 198 ~ handleSearchSelect ~ err',
-//         err,
-//       )
-//     }
-//   }
-//   return (
-//     <Dropdown.Root>
-//       <Dropdown.Trigger asChild>
-//         <button data-testid="topbar-menu" className="topbar-button">
-//           <Icon name="HamburgerMenu" size="2" color="muted" />
-//         </button>
-//       </Dropdown.Trigger>
-//       <Dropdown.Portal>
-//         <Dropdown.Content>
-//           <Dropdown.Item
-//             disabled={location == '/inbox'}
-//             data-testid="menu-item-inbox"
-//             onSelect={() => setLocation('/inbox')}
-//           >
-//             <Icon name="File" />
-//             <span>Inbox</span>
-//           </Dropdown.Item>
-//           <Dropdown.Item
-//             disabled={location == '/drafts'}
-//             data-testid="menu-item-drafts"
-//             onSelect={() => setLocation('/drafts')}
-//           >
-//             <Icon name="PencilAdd" />
-//             <span>Drafts</span>
-//           </Dropdown.Item>
-//           <Dropdown.Item
-//             data-testid="menu-item-search"
-//             onSelect={handleSearchSelect}
-//           >
-//             <Icon name="Search" />
-//             <span>Quick Switcher</span>
-//             <Dropdown.RightSlot>⌘+K</Dropdown.RightSlot>
-//           </Dropdown.Item>
-//         </Dropdown.Content>
-//       </Dropdown.Portal>
-//     </Dropdown.Root>
 //   )
 // }
 
@@ -548,7 +865,7 @@ function MinimizeButton() {
 // function WindowsTitleBar() {
 //   return (
 //     <div className="topbar-title-bar">
-//       <div className="topbar-section title-menu">
+//       <div className="titlebar-section title-menu">
 //         <Dropdown.Root>
 //           <Dropdown.Trigger asChild>
 //             <button className="topbar-button">File</button>
@@ -573,7 +890,7 @@ function MinimizeButton() {
 //           </Dropdown.Portal>
 //         </Dropdown.Root>
 //       </div>
-//       <div className="topbar-section actions">
+//       <div className="titlebar-section actions">
 //         <MinimizeButton />
 //         <MaximizeOrRestoreButton />
 //         <CloseButton />

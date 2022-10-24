@@ -1,0 +1,214 @@
+@use 'mixins/platform';
+@use 'variables' as *;
+
+#titlebar {
+  block-size: var(--topbar-h);
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+
+  .titlebar-button {
+    --color: var(--base-text-low);
+    --color-hover: var(--base-text-low);
+    --surface: transparent;
+    --surface-hover: var(--base-component-bg-hover);
+    all: unset;
+    min-inline-size: 1em;
+    min-block-size: 1em;
+    padding-block: 0.1em;
+    padding-inline: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 0.3em;
+    gap: 0.2em;
+    font-size: 0.8rem;
+    background-color: var(--surface);
+    color: var(--color);
+    border: 1px solid transparent;
+
+    &:hover {
+      background-color: var(--surface-hover);
+      color: var(--color-hover);
+      cursor: pointer;
+    }
+
+    &.primary {
+      --color: var(--primary-active);
+      --color-hover: white;
+      --surface-hover: var(--primary-active);
+      border: 1px solid transparent;
+    }
+    &.success {
+      --color: var(--success-active);
+      --color-hover: white;
+      --surface-hover: var(--success-active);
+    }
+
+    &.dropdown {
+      font-weight: bold;
+    }
+
+    &.outlined {
+      border-color: var(--color);
+    }
+
+    & > * {
+      max-height: 1em;
+      line-height: 1;
+    }
+  }
+
+  .button-group {
+    --border-color: var(--base-border-normal);
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    border-radius: 0.3em;
+
+    .topbar-button {
+      padding-inline: 0.2em;
+    }
+  }
+
+  #titlebar-title {
+    user-select: none;
+    font-family: var(--mtt-fonts-base);
+    font-weight: var(--mtt-fontWeights-medium);
+    user-select: none;
+    -webkit-user-select: none;
+    font-size: 1rem;
+
+    // max-width: 40ch;
+    max-width: calc(50vw - 135px);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin: auto;
+
+    small {
+      color: var(--base-text-low);
+      font-size: small;
+      margin-inline: 0.5rem;
+    }
+
+    &:hover {
+      cursor: default;
+    }
+
+    & > * {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .titlebar-section {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5em;
+
+    // more relaxed spacing on wider widths
+    padding-inline: 0.5em;
+    padding-block: 0.5em;
+  }
+
+  @include platform.macos {
+    padding-inline-start: 64px;
+  }
+
+  @include platform.win32 {
+    .titlebar-section {
+      padding-block: 0.3em;
+    }
+
+    #titlebar-icon {
+      user-select: none;
+      width: 32px;
+    }
+
+    #titlebar-system-menu {
+      user-select: none;
+
+      .system-menu {
+        all: unset;
+        display: flex;
+      }
+    }
+
+    #titlebar-window-controls {
+      width: 135px;
+    }
+
+    button.window-control {
+      display: inline-block;
+      position: relative;
+      width: 45px;
+      height: 100%;
+      // padding: 0;
+      // margin: 0;
+      overflow: hidden;
+      background-color: transparent;
+
+      // Reset styles from global buttons
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+
+      line-height: 10px;
+
+      &:focus {
+        outline: none;
+      }
+
+      &:hover {
+        background-color: #e5e5e5;
+        color: #000;
+
+        // Doing :hover:active as oposed to just :active is
+        // a conscious choice to match how the real Windows
+        // controls behave when someone hovers, clicks and then
+        // moves away from the hitbox.
+        &:active {
+          background-color: #cccccc;
+
+          // Immediate feedback when clicking
+          transition: none;
+        }
+      }
+
+      &.close:hover {
+        background-color: #e81123;
+        color: #fff;
+
+        &:active {
+          background-color: #f1707a;
+
+          // Immediate feedback when clicking
+          transition: none;
+        }
+      }
+
+      svg {
+        fill: currentColor;
+      }
+    }
+  }
+
+  @include platform.linux {
+    .titlebar-section {
+      padding-block: 0.2em;
+    }
+  }
+}
+
+.titlebar-row {
+  block-size: 32px;
+  display: flex;
+  // flex-wrap: wrap;
+  // align-items: stretch;
+  justify-content: space-between;
+
+  border-bottom: 1px solid var(--base-border-subtle);
+}
