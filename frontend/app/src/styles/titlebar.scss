@@ -130,6 +130,8 @@
 
     #titlebar-system-menu {
       user-select: none;
+      display: flex;
+      align-items: center;
 
       .system-menu {
         all: unset;
@@ -156,6 +158,7 @@
       border: none;
       box-shadow: none;
       border-radius: 0;
+      color: var(--mtt-colors-base-text-high);
 
       line-height: 10px;
 

@@ -2,8 +2,8 @@ use crate::window::{close_all_windows, new_window};
 use anyhow::bail;
 use log::error;
 use tauri::{
-  api::shell::open, window::WindowBuilder, CustomMenuItem, Manager, Menu, MenuItem, Submenu,
-  WindowMenuEvent, WindowUrl,
+  api::shell::open, window::WindowBuilder, AppHandle, CustomMenuItem, Manager, Menu, MenuItem,
+  Runtime, Submenu, Window, WindowMenuEvent, WindowUrl,
 };
 
 pub fn get_menu() -> Menu {
@@ -78,6 +78,54 @@ pub fn get_menu() -> Menu {
     .add_submenu(Submenu::new("Help", help_menu))
 }
 
+#[tauri::command]
+pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
+  let package_info = app_handle.package_info();
+  let message = format!(
+    r#"
+    {}
+
+    Version: {}
+    Commit: {}
+
+    Copyright © 2019-2022 {}.
+    Some rights reserved.
+  "#,
+    package_info.description,
+    package_info.version,
+    std::option_env!("GITHUB_SHA").unwrap_or("N/A"),
+    package_info.authors,
+  );
+
+  tauri::api::dialog::message(Some(&window), &package_info.name, message);
+}
+
+#[tauri::command]
+pub fn open_preferences<R: Runtime>(window: Window<R>) -> tauri::Result<()> {
+  if let Some(window) = window.get_window("preferences") {
+    window.set_focus()?;
+  } else {
+    WindowBuilder::new(&window, "preferences", WindowUrl::App("/settings".into())).build()?;
+  }
+
+  Ok(())
+}
+
+#[tauri::command]
+pub fn open_documentation<R: Runtime>(window: Window<R>) {
+  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
+}
+
+#[tauri::command]
+pub fn open_release_notes<R: Runtime>(window: Window<R>) {
+  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
+}
+
+#[tauri::command]
+pub fn open_acknowledgements<R: Runtime>(window: Window<R>) {
+  todo!()
+}
+
 pub fn event_handler(event: WindowMenuEvent) {
   if let Err(err) = event_handler_inner(event) {
     error!("Failed to handle menu event {}", err);
@@ -96,40 +144,19 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
       close_all_windows(event.window())?;
     }
     "documentation" => {
-      open(&event.window().shell_scope(), "https://mintter.com", None)?;
+      open_documentation(event.window().clone());
+    }
+    "release_notes" => {
+      open_release_notes(event.window().clone());
+    }
+    "acknowledgements" => {
+      open_acknowledgements(event.window().clone());
     }
     "preferences" => {
-      if let Some(window) = event.window().get_window("preferences") {
-        window.set_focus()?;
-      } else {
-        WindowBuilder::new(
-          event.window(),
-          "preferences",
-          WindowUrl::App("/settings".into()),
-        )
-        .build()?;
-      }
+      open_preferences(event.window().clone())?;
     }
     "about" => {
-      let app_handle = event.window().app_handle();
-      let package_info = app_handle.package_info();
-      let message = format!(
-        r#"
-        {}
-
-        Version: {}
-        Commit: {}
-
-        Copyright © 2019-2022 {}.
-        Some rights reserved.
-      "#,
-        package_info.description,
-        package_info.version,
-        std::option_env!("GITHUB_SHA").unwrap_or("N/A"),
-        package_info.authors,
-      );
-
-      tauri::api::dialog::message(Some(event.window()), &package_info.name, message);
+      open_about(event.window().app_handle(), event.window().clone());
     }
     "find" => {
       event.window().emit("open_find", ())?;

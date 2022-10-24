@@ -84,7 +84,14 @@ fn main() {
         .on_menu_event(menu::event_handler)
         .system_tray(system_tray::get_tray())
         .on_system_tray_event(system_tray::event_handler)
-        .invoke_handler(tauri::generate_handler![emit_all])
+        .invoke_handler(tauri::generate_handler![
+          emit_all,
+          menu::open_about,
+          menu::open_preferences,
+          menu::open_documentation,
+          menu::open_release_notes,
+          menu::open_acknowledgements
+        ])
         .setup(move |app| {
           app.manage(sentry_options);
 
