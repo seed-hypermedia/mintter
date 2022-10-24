@@ -74,14 +74,13 @@ fn main() {
   sentry_tauri::init(
     |_| sentry::init(init_opts),
     move |sentry_plugin| {
-      tauri::Builder::default()
+      let win = tauri::Builder::default()
         .plugin(sentry_plugin)
         .plugin(log_plugin)
         .plugin(StorePluginBuilder::default().build())
         .plugin(daemon::init())
         .plugin(window::init())
         // .plugin(exts::init())
-        .menu(menu::get_menu())
         .on_menu_event(menu::event_handler)
         .system_tray(system_tray::get_tray())
         .on_system_tray_event(system_tray::event_handler)
@@ -110,7 +109,12 @@ fn main() {
               event.window().set_resizable(false).unwrap();
             }
           }
-        })
+        });
+
+      #[cfg(target_os = "macos")]
+      let win = { win.menu(menu::get_menu()) };
+
+      win
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     },

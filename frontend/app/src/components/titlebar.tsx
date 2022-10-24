@@ -42,6 +42,42 @@ export function TitleBarMacos() {
   )
 }
 
+interface MenuItemProps {
+  title: string
+  accelerator?: string
+  onClick: () => void
+}
+
+function MenuItem(props: MenuItemProps) {
+  useEffect(() => {
+    if (props.accelerator) {
+      const keys = props.accelerator.split('+')
+
+      window.addEventListener('keyup', (e) => {
+        if (
+          keys.every((k) => {
+            if (k === 'Alt') return e.altKey
+            if (k === 'Shift') return e.shiftKey
+            if (k === 'Ctrl') return e.ctrlKey
+            k === e.key
+          })
+        ) {
+          console.log(`triggered acc ${props.accelerator}!`)
+        }
+      })
+    }
+  }, [props.accelerator])
+
+  return (
+    <NavigationMenu.Item className="item" onClick={props.onClick}>
+      {props.title}
+      {props.accelerator && (
+        <div className="right-slot">{props.accelerator}</div>
+      )}
+    </NavigationMenu.Item>
+  )
+}
+
 export function TitleBarWindows() {
   return (
     <header id="titlebar" data-tauri-drag-region>
@@ -58,14 +94,21 @@ export function TitleBarWindows() {
               <NavigationMenu.Content className="content">
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <NavigationMenu.Item className="item">
-                      About Mintter
-                    </NavigationMenu.Item>
+                    <MenuItem title="About Mintter" onClick={() => {}} />
                     <div className="separator"></div>
-                    <NavigationMenu.Item className="item">
-                      About Mintter
-                      <div className="right-slot">⌘,</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Preferences..."
+                      accelerator="Ctrl+,"
+                      onClick={() => {}}
+                    />
+                    <div className="separator"></div>
+                    <MenuItem
+                      title="Hide"
+                      accelerator="Ctrl+H"
+                      onClick={() => {}}
+                    />
+                    <div className="separator"></div>
+                    <MenuItem title="Quit" onClick={() => {}} />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -77,19 +120,22 @@ export function TitleBarWindows() {
               <NavigationMenu.Content>
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <NavigationMenu.Item className="item">
-                      New Window
-                      <div className="right-slot">⌘N</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="New Window"
+                      accelerator="Ctrl+N"
+                      onClick={() => {}}
+                    />
                     <div className="separator"></div>
-                    <NavigationMenu.Item className="item">
-                      Close Window
-                      <div className="right-slot">⌘W</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Close All Windows
-                      <div className="right-slot">⌥⇧⌘W</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Close"
+                      accelerator="Ctrl+F4"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Close All Windows"
+                      accelerator="Ctrl+Shift+Alt+W"
+                      onClick={() => {}}
+                    />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -101,35 +147,42 @@ export function TitleBarWindows() {
               <NavigationMenu.Content>
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <NavigationMenu.Item className="item">
-                      Undo
-                      <div className="right-slot">⌘Z</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Redo
-                      <div className="right-slot">⇧⌘Z</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Undo"
+                      accelerator="Ctrl+Z"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Redo"
+                      accelerator="Ctrl+Shift+Z"
+                      onClick={() => {}}
+                    />
                     <div className="separator"></div>
-                    <NavigationMenu.Item className="item">
-                      Cut
-                      <div className="right-slot">⌘X</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Copy
-                      <div className="right-slot">⌘C</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Paste
-                      <div className="right-slot">⌘V</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Select All
-                      <div className="right-slot">⌘A</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Find...
-                      <div className="right-slot">⌘F</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Cut"
+                      accelerator="Ctrl+X"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Copy"
+                      accelerator="Ctrl+C"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Paste"
+                      accelerator="Ctrl+V"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Select All"
+                      accelerator="Ctrl+A"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Find..."
+                      accelerator="Ctrl+F"
+                      onClick={() => {}}
+                    />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -141,50 +194,52 @@ export function TitleBarWindows() {
               <NavigationMenu.Content>
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <NavigationMenu.Item className="item">
-                      Strong
-                      <div className="right-slot">⌘B</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Emphasis
-                      <div className="right-slot">⌘I</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Code
-                      <div className="right-slot">⌘E</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Underline
-                      <div className="right-slot">⌘U</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Strikethrough
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Subscript
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Superscript
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Strong"
+                      accelerator="Ctrl+B"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Emphasis"
+                      accelerator="Ctrl+I"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Code"
+                      accelerator="Ctrl+E"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Underline"
+                      accelerator="Ctrl+U"
+                      onClick={() => {}}
+                    />
+                    <MenuItem title="Strikethrough" onClick={() => {}} />
+                    <MenuItem title="Subscript" onClick={() => {}} />
+                    <MenuItem title="Superscript" onClick={() => {}} />
 
                     <div className="separator"></div>
 
-                    <NavigationMenu.Item className="item">
-                      Heading
-                      <div className="right-slot">⇧⌘H</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Statement
-                      <div className="right-slot">⇧⌘S</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Blockquote
-                      <div className="right-slot">⇧⌘Q</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Code Block
-                      <div className="right-slot">⇧⌘E</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Heading"
+                      accelerator="Ctrl+Shift+H"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Statement"
+                      accelerator="Ctrl+Shif+S"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Blockquote"
+                      accelerator="Ctrl+Shift+Q"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Code Block"
+                      accelerator="Ctrl+Shift+E"
+                      onClick={() => {}}
+                    />
 
                     <div className="separator"></div>
 
@@ -211,14 +266,16 @@ export function TitleBarWindows() {
               <NavigationMenu.Content className="content">
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <NavigationMenu.Item className="item">
-                      Reload
-                      <div className="right-slot">⌘R</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Quick Switcher...
-                      <div className="right-slot">⌘K</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Reload"
+                      accelerator="Ctrl+R"
+                      onClick={() => {}}
+                    />
+                    <MenuItem
+                      title="Quick Switcher..."
+                      accelerator="Ctrl+K"
+                      onClick={() => {}}
+                    />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -230,15 +287,9 @@ export function TitleBarWindows() {
               <NavigationMenu.Content className="content">
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <NavigationMenu.Item className="item">
-                      Documentation
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Release Notes
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Acknowledgements
-                    </NavigationMenu.Item>
+                    <MenuItem title="Documentation" onClick={() => {}} />
+                    <MenuItem title="Release Notes" onClick={() => {}} />
+                    <MenuItem title="Acknowledgements" onClick={() => {}} />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -380,7 +431,7 @@ export function Menu() {
                 <Dropdown.SubContent>
                   <Dropdown.Item>
                     Undo
-                    <Dropdown.RightSlot>⌘Z</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+Z</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Redo
@@ -389,23 +440,23 @@ export function Menu() {
                   <Dropdown.Separator />
                   <Dropdown.Item>
                     Cut
-                    <Dropdown.RightSlot>⌘X</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+X</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Copy
-                    <Dropdown.RightSlot>⌘C</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+C</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Paste
-                    <Dropdown.RightSlot>⌘V</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+V</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Select All
-                    <Dropdown.RightSlot>⌘A</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+A</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Find...
-                    <Dropdown.RightSlot>⌘F</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+F</Dropdown.RightSlot>
                   </Dropdown.Item>
                 </Dropdown.SubContent>
               </Dropdown.Sub>
@@ -415,19 +466,19 @@ export function Menu() {
                 <Dropdown.SubContent>
                   <Dropdown.Item>
                     Strong
-                    <Dropdown.RightSlot>⌘B</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+B</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Emphasis
-                    <Dropdown.RightSlot>⌘I</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+I</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Code
-                    <Dropdown.RightSlot>⌘E</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+E</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>
                     Underline
-                    <Dropdown.RightSlot>⌘U</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+U</Dropdown.RightSlot>
                   </Dropdown.Item>
                   <Dropdown.Item>Strikethrough</Dropdown.Item>
                   <Dropdown.Item>Subscript</Dropdown.Item>
@@ -474,12 +525,12 @@ export function Menu() {
                 <Dropdown.SubContent>
                   <Dropdown.Item>
                     Reload
-                    <Dropdown.RightSlot>⌘R</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+R</Dropdown.RightSlot>
                   </Dropdown.Item>
 
                   <Dropdown.Item>
                     Quick Switcher
-                    <Dropdown.RightSlot>⌘K</Dropdown.RightSlot>
+                    <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
                   </Dropdown.Item>
                 </Dropdown.SubContent>
               </Dropdown.Sub>
@@ -775,10 +826,6 @@ function DraftTitle({fileRef}: {fileRef: DraftActor}) {
 //   )
 // }
 
-var draggableProps = {
-  'data-tauri-drag-region': true,
-}
-
 function CloseButton() {
   const win = getCurrent()
   return (
@@ -884,7 +931,7 @@ function MinimizeButton() {
 //             <Dropdown.Content>
 //               <Dropdown.Item>
 //                 <span>item 1</span>
-//                 <Dropdown.RightSlot>⌘+K</Dropdown.RightSlot>
+//                 <Dropdown.RightSlot>Ctrl++K</Dropdown.RightSlot>
 //               </Dropdown.Item>
 //             </Dropdown.Content>
 //           </Dropdown.Portal>
