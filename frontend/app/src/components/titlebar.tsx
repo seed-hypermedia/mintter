@@ -8,6 +8,9 @@ import {classnames} from '@app/utils/classnames'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
+import {invoke} from '@tauri-apps/api'
+import {emit as tauriEmit} from '@tauri-apps/api/event'
+import * as process from '@tauri-apps/api/process'
 import {getCurrent} from '@tauri-apps/api/window'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -68,14 +71,27 @@ function MenuItem(props: MenuItemProps) {
     }
   }, [props.accelerator])
 
-  return (
-    <NavigationMenu.Item className="item" onClick={props.onClick}>
-      {props.title}
-      {props.accelerator && (
-        <div className="right-slot">{props.accelerator}</div>
-      )}
-    </NavigationMenu.Item>
-  )
+  if (import.meta.env.TAURI_PLATFORM === 'windows') {
+    return (
+      <NavigationMenu.Item className="item" onClick={props.onClick}>
+        {props.title}
+        {props.accelerator && (
+          <div className="right-slot">{props.accelerator}</div>
+        )}
+      </NavigationMenu.Item>
+    )
+  } else if (import.meta.env.TAURI_PLATFORM === 'linux') {
+    return (
+      <Dropdown.Item onClick={props.onClick}>
+        {props.title}
+        {props.accelerator && (
+          <Dropdown.RightSlot>{props.accelerator}</Dropdown.RightSlot>
+        )}
+      </Dropdown.Item>
+    )
+  } else {
+    throw new Error('unsupported platform')
+  }
 }
 
 export function TitleBarWindows() {
@@ -94,21 +110,24 @@ export function TitleBarWindows() {
               <NavigationMenu.Content className="content">
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <MenuItem title="About Mintter" onClick={() => {}} />
+                    <MenuItem
+                      title="About Mintter"
+                      onClick={() => invoke('open_about')}
+                    />
                     <div className="separator"></div>
                     <MenuItem
                       title="Preferences..."
                       accelerator="Ctrl+,"
-                      onClick={() => {}}
+                      onClick={() => invoke('open_preferences')}
                     />
                     <div className="separator"></div>
                     <MenuItem
                       title="Hide"
                       accelerator="Ctrl+H"
-                      onClick={() => {}}
+                      onClick={() => getCurrent().hide()}
                     />
                     <div className="separator"></div>
-                    <MenuItem title="Quit" onClick={() => {}} />
+                    <MenuItem title="Quit" onClick={() => process.exit(0)} />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -176,12 +195,12 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Select All"
                       accelerator="Ctrl+A"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('select_all')}
                     />
                     <MenuItem
                       title="Find..."
                       accelerator="Ctrl+F"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('open_find')}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -197,64 +216,76 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Strong"
                       accelerator="Ctrl+B"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_mark', 'strong')}
                     />
                     <MenuItem
                       title="Emphasis"
                       accelerator="Ctrl+I"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_mark', 'emphasis')}
                     />
                     <MenuItem
                       title="Code"
                       accelerator="Ctrl+E"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_mark', 'code')}
                     />
                     <MenuItem
                       title="Underline"
                       accelerator="Ctrl+U"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_mark', 'underline')}
                     />
-                    <MenuItem title="Strikethrough" onClick={() => {}} />
-                    <MenuItem title="Subscript" onClick={() => {}} />
-                    <MenuItem title="Superscript" onClick={() => {}} />
+                    <MenuItem
+                      title="Strikethrough"
+                      onClick={() => tauriEmit('format_mark', 'strikethrough')}
+                    />
+                    <MenuItem
+                      title="Subscript"
+                      onClick={() => tauriEmit('format_mark', 'subscript')}
+                    />
+                    <MenuItem
+                      title="Superscript"
+                      onClick={() => tauriEmit('format_mark', 'superscript')}
+                    />
 
                     <div className="separator"></div>
 
                     <MenuItem
                       title="Heading"
                       accelerator="Ctrl+Shift+H"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_block', 'heading')}
                     />
                     <MenuItem
                       title="Statement"
                       accelerator="Ctrl+Shif+S"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_block', 'statement')}
                     />
                     <MenuItem
                       title="Blockquote"
                       accelerator="Ctrl+Shift+Q"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_block', 'blockquote')}
                     />
                     <MenuItem
                       title="Code Block"
                       accelerator="Ctrl+Shift+E"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('format_block', 'codeblock')}
                     />
 
                     <div className="separator"></div>
 
-                    <NavigationMenu.Item className="item">
-                      Bullet List
-                      <div className="right-slot">⇧⌘7</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Numbered List
-                      <div className="right-slot">⇧⌘8</div>
-                    </NavigationMenu.Item>
-                    <NavigationMenu.Item className="item">
-                      Plain List
-                      <div className="right-slot">⇧⌘9</div>
-                    </NavigationMenu.Item>
+                    <MenuItem
+                      title="Bullet List"
+                      accelerator="Ctrl+Shift+7"
+                      onClick={() => tauriEmit('format_list', 'unordered_list')}
+                    />
+                    <MenuItem
+                      title="Numbered List"
+                      accelerator="Ctrl+Shift+8"
+                      onClick={() => tauriEmit('format_list', 'ordered_list')}
+                    />
+                    <MenuItem
+                      title="Plain List"
+                      accelerator="Ctrl+Shift+9"
+                      onClick={() => tauriEmit('format_list', 'group')}
+                    />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -269,12 +300,12 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Reload"
                       accelerator="Ctrl+R"
-                      onClick={() => {}}
+                      onClick={() => window.location.reload()}
                     />
                     <MenuItem
                       title="Quick Switcher..."
                       accelerator="Ctrl+K"
-                      onClick={() => {}}
+                      onClick={() => tauriEmit('open_quick_switcher')}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -287,9 +318,18 @@ export function TitleBarWindows() {
               <NavigationMenu.Content className="content">
                 <NavigationMenu.Sub className="dropdown">
                   <NavigationMenu.List className="content">
-                    <MenuItem title="Documentation" onClick={() => {}} />
-                    <MenuItem title="Release Notes" onClick={() => {}} />
-                    <MenuItem title="Acknowledgements" onClick={() => {}} />
+                    <MenuItem
+                      title="Documentation"
+                      onClick={() => invoke('open_documentation')}
+                    />
+                    <MenuItem
+                      title="Release Notes"
+                      onClick={() => invoke('open_release_notes')}
+                    />
+                    <MenuItem
+                      title="Acknowledgements"
+                      onClick={() => invoke('open_acknowledgements')}
+                    />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -426,123 +466,202 @@ export function Menu() {
 
           {import.meta.env.TAURI_PLATFORM == 'linux' && (
             <>
-              <Dropdown.Sub>
-                <Dropdown.SubTrigger>Edit</Dropdown.SubTrigger>
-                <Dropdown.SubContent>
-                  <Dropdown.Item>
-                    Undo
-                    <Dropdown.RightSlot>Ctrl+Z</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Redo
-                    <Dropdown.RightSlot>⇧⌘Z</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Separator />
-                  <Dropdown.Item>
-                    Cut
-                    <Dropdown.RightSlot>Ctrl+X</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Copy
-                    <Dropdown.RightSlot>Ctrl+C</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Paste
-                    <Dropdown.RightSlot>Ctrl+V</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Select All
-                    <Dropdown.RightSlot>Ctrl+A</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Find...
-                    <Dropdown.RightSlot>Ctrl+F</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                </Dropdown.SubContent>
-              </Dropdown.Sub>
+              <Dropdown.Separator />
+
+              <MenuItem
+                title="About Mintter"
+                onClick={() => invoke('open_about')}
+              />
+
+              <MenuItem
+                title="Preferences..."
+                accelerator="Ctrl+,"
+                onClick={() => invoke('open_preferences')}
+              />
 
               <Dropdown.Sub>
-                <Dropdown.SubTrigger>Format</Dropdown.SubTrigger>
+                <Dropdown.SubTrigger>View...</Dropdown.SubTrigger>
                 <Dropdown.SubContent>
-                  <Dropdown.Item>
-                    Strong
-                    <Dropdown.RightSlot>Ctrl+B</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Emphasis
-                    <Dropdown.RightSlot>Ctrl+I</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Code
-                    <Dropdown.RightSlot>Ctrl+E</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Underline
-                    <Dropdown.RightSlot>Ctrl+U</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>Strikethrough</Dropdown.Item>
-                  <Dropdown.Item>Subscript</Dropdown.Item>
-                  <Dropdown.Item>Superscript</Dropdown.Item>
+                  <MenuItem
+                    title="New Window"
+                    accelerator="Ctrl+N"
+                    onClick={() => {}}
+                  />
 
                   <Dropdown.Separator />
 
-                  <Dropdown.Item>
-                    Heading
-                    <Dropdown.RightSlot>⇧⌘H</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Statement
-                    <Dropdown.RightSlot>⇧⌘S</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Blockquote
-                    <Dropdown.RightSlot>⇧⌘Q</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Code Block
-                    <Dropdown.RightSlot>⇧⌘E</Dropdown.RightSlot>
-                  </Dropdown.Item>
+                  <MenuItem
+                    title="Close"
+                    accelerator="Ctrl+F4"
+                    onClick={() => {}}
+                  />
+                  <MenuItem
+                    title="Close All Windows"
+                    accelerator="Ctrl+Shift+Alt+W"
+                    onClick={() => {}}
+                  />
+                </Dropdown.SubContent>
+              </Dropdown.Sub>
+              <Dropdown.Sub>
+                <Dropdown.SubTrigger>Edit...</Dropdown.SubTrigger>
+                <Dropdown.SubContent>
+                  <MenuItem
+                    title="Undo"
+                    accelerator="Ctrl+Z"
+                    onClick={() => {}}
+                  />
+                  <MenuItem
+                    title="Redo"
+                    accelerator="Ctrl+Shift+Z"
+                    onClick={() => {}}
+                  />
 
                   <Dropdown.Separator />
 
-                  <Dropdown.Item>
-                    Bullet List
-                    <Dropdown.RightSlot>⇧⌘7</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Numbered List
-                    <Dropdown.RightSlot>⇧⌘8</Dropdown.RightSlot>
-                  </Dropdown.Item>
-                  <Dropdown.Item>
-                    Plain List
-                    <Dropdown.RightSlot>⇧⌘9</Dropdown.RightSlot>
-                  </Dropdown.Item>
+                  <MenuItem
+                    title="Cut"
+                    accelerator="Ctrl+X"
+                    onClick={() => {}}
+                  />
+                  <MenuItem
+                    title="Copy"
+                    accelerator="Ctrl+C"
+                    onClick={() => {}}
+                  />
+                  <MenuItem
+                    title="Paste"
+                    accelerator="Ctrl+V"
+                    onClick={() => {}}
+                  />
+                  <MenuItem
+                    title="Select All"
+                    accelerator="Ctrl+A"
+                    onClick={() => tauriEmit('select_all')}
+                  />
+                  <MenuItem
+                    title="Find..."
+                    accelerator="Ctrl+F"
+                    onClick={() => tauriEmit('open_find')}
+                  />
                 </Dropdown.SubContent>
               </Dropdown.Sub>
 
               <Dropdown.Sub>
-                <Dropdown.SubTrigger>View</Dropdown.SubTrigger>
+                <Dropdown.SubTrigger>Format...</Dropdown.SubTrigger>
                 <Dropdown.SubContent>
-                  <Dropdown.Item>
-                    Reload
-                    <Dropdown.RightSlot>Ctrl+R</Dropdown.RightSlot>
-                  </Dropdown.Item>
+                  <MenuItem
+                    title="Strong"
+                    accelerator="Ctrl+B"
+                    onClick={() => tauriEmit('format_mark', 'strong')}
+                  />
+                  <MenuItem
+                    title="Emphasis"
+                    accelerator="Ctrl+I"
+                    onClick={() => tauriEmit('format_mark', 'emphasis')}
+                  />
+                  <MenuItem
+                    title="Code"
+                    accelerator="Ctrl+E"
+                    onClick={() => tauriEmit('format_mark', 'code')}
+                  />
+                  <MenuItem
+                    title="Underline"
+                    accelerator="Ctrl+U"
+                    onClick={() => tauriEmit('format_mark', 'underline')}
+                  />
+                  <MenuItem
+                    title="Strikethrough"
+                    onClick={() => tauriEmit('format_mark', 'strikethrough')}
+                  />
+                  <MenuItem
+                    title="Subscript"
+                    onClick={() => tauriEmit('format_mark', 'subscript')}
+                  />
+                  <MenuItem
+                    title="Superscript"
+                    onClick={() => tauriEmit('format_mark', 'superscript')}
+                  />
 
-                  <Dropdown.Item>
-                    Quick Switcher
-                    <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
-                  </Dropdown.Item>
+                  <Dropdown.Separator />
+
+                  <MenuItem
+                    title="Heading"
+                    accelerator="Ctrl+Shift+H"
+                    onClick={() => tauriEmit('format_block', 'heading')}
+                  />
+                  <MenuItem
+                    title="Statement"
+                    accelerator="Ctrl+Shif+S"
+                    onClick={() => tauriEmit('format_block', 'statement')}
+                  />
+                  <MenuItem
+                    title="Blockquote"
+                    accelerator="Ctrl+Shift+Q"
+                    onClick={() => tauriEmit('format_block', 'blockquote')}
+                  />
+                  <MenuItem
+                    title="Code Block"
+                    accelerator="Ctrl+Shift+E"
+                    onClick={() => tauriEmit('format_block', 'codeblock')}
+                  />
+
+                  <Dropdown.Separator />
+
+                  <MenuItem
+                    title="Bullet List"
+                    accelerator="Ctrl+Shift+7"
+                    onClick={() => tauriEmit('format_list', 'unordered_list')}
+                  />
+                  <MenuItem
+                    title="Numbered List"
+                    accelerator="Ctrl+Shift+8"
+                    onClick={() => tauriEmit('format_list', 'ordered_list')}
+                  />
+                  <MenuItem
+                    title="Plain List"
+                    accelerator="Ctrl+Shift+9"
+                    onClick={() => tauriEmit('format_list', 'group')}
+                  />
                 </Dropdown.SubContent>
               </Dropdown.Sub>
 
               <Dropdown.Sub>
-                <Dropdown.SubTrigger>Help</Dropdown.SubTrigger>
+                <Dropdown.SubTrigger>View...</Dropdown.SubTrigger>
                 <Dropdown.SubContent>
-                  <Dropdown.Item>Documentation</Dropdown.Item>
-                  <Dropdown.Item>Release Notes</Dropdown.Item>
-                  <Dropdown.Item>Acknowledgements</Dropdown.Item>
+                  <MenuItem
+                    title="Reload"
+                    accelerator="Ctrl+R"
+                    onClick={() => window.location.reload()}
+                  />
+                  <MenuItem
+                    title="Quick Switcher..."
+                    accelerator="Ctrl+K"
+                    onClick={() => tauriEmit('open_quick_switcher')}
+                  />
                 </Dropdown.SubContent>
               </Dropdown.Sub>
+
+              <Dropdown.Sub>
+                <Dropdown.SubTrigger>Help...</Dropdown.SubTrigger>
+                <Dropdown.SubContent>
+                  <MenuItem
+                    title="Documentation"
+                    onClick={() => invoke('open_documentation')}
+                  />
+                  <MenuItem
+                    title="Release Notes"
+                    onClick={() => invoke('open_release_notes')}
+                  />
+                  <MenuItem
+                    title="Acknowledgements"
+                    onClick={() => invoke('open_acknowledgements')}
+                  />
+                </Dropdown.SubContent>
+              </Dropdown.Sub>
+
+              <Dropdown.Separator />
+
+              <MenuItem title="Quit" onClick={() => process.exit(0)} />
             </>
           )}
         </Dropdown.Content>

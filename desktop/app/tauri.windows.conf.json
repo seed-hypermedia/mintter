@@ -8,7 +8,12 @@
         "maximize": true,
         "unmaximize": true,
         "minimize": true,
-        "close": true
+        "close": true,
+        "hide": true
+      },
+      "process": {
+        "all": false,
+        "exit": true
       }
     },
     "windows": [
