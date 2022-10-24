@@ -17,7 +17,7 @@
 }
 
 .discussion-section {
-  border-right: 1px solid var(--base-border-hover);
+  // border-right: 1px solid var(--base-border-hover);
   height: 100%;
   box-sizing: border-box;
   background-color: var(--base-background-normal);
@@ -27,7 +27,7 @@
   position: fixed;
   left: 0;
   top: 100px;
-  z-index: 1000;
+  z-index: 100;
   padding: 40px;
 
   button {

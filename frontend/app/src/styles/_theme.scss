@@ -82,6 +82,11 @@
   --danger-text-low: var(--red11);
   --danger-text-high: var(--red12);
   --danger-text-opposite: var(--red1);
+
+  --highlight-surface1: rgba(255, 212, 0, 0.14);
+  --highlight-surface2: rgba(255, 212, 0, 0.4);
+  --highlight-surface3: rgba(255, 212, 0, 0.8);
+  --highlight-surface4: rgba(255, 212, 0, 0.95);
 }
 
 .dark-theme {
@@ -168,4 +173,9 @@
   --danger-text-low: var(--red11);
   --danger-text-high: var(--red12);
   --danger-text-opposite: var(--red1);
+
+  --highlight-surface1: rgba(255, 212, 0, 0.14);
+  --highlight-surface2: rgba(255, 212, 0, 0.4);
+  --highlight-surface3: rgba(255, 212, 0, 0.8);
+  --highlight-surface4: rgba(255, 212, 0, 0.95);
 }

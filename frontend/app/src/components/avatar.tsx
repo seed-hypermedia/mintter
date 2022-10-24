@@ -37,5 +37,5 @@ function getRandomColor(id: string) {
     hash = hash & hash // Convert to 32bit integer
   }
   const shortened = hash % 360
-  return 'hsl(' + shortened + ',50%,50%)'
+  return `hsl(${shortened},60%,80%)`
 }

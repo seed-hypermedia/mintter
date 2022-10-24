@@ -4,6 +4,7 @@ import {
   getDraft,
   getPublication,
   GrpcClient,
+  Link,
   listCitations,
   listDrafts,
   listPublications,
@@ -120,61 +121,51 @@ export function usePublication(
     queryFn: () => getPublication(documentId, version, opts.rpc),
   })
 }
+type UseDiscussionParams = {
+  documentId?: string
+  visible?: boolean
+}
 
-export function useDiscussion(documentId?: string) {
+export function useDiscussion({documentId, visible}: UseDiscussionParams) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
     queryFn: () => listCitations(documentId),
-    enabled: !!documentId,
+    enabled: !!documentId && visible,
+    refetchOnWindowFocus: false,
   })
 
-  // let data = useMemo(() => {
-  //   if (queryResult.data?.links) {
-  //     let dedupeLinks = createDedupeLinks(queryResult.data.links).filter(
-  //       (l) => !!l.source,
-  //     )
-  //     return Promise.all(
-  //       dedupeLinks.map((link) =>
-  //         client.fetchQuery({
-  //           queryKey: [
-  //             queryKeys.GET_PUBLICATION,
-  //             link.source.documentId,
-  //             link.source.version,
-  //           ],
-  //           queryFn: () =>
-  //             getPublication(link.source.documentId, link.source?.version),
-  //         }),
-  //       ),
-  //     ).then(sortPublications)
-  //   } else {
-  //     return []
-  //   }
-  // }, [queryResult.data, queryResult.data?.links])
+  let data = useMemo(() => {
+    console.log(
+      '🚀 ~ file: index.ts ~ line 139 ~ data ~ queryResult.data?.links',
+      queryResult.data?.links,
+    )
+    if (queryResult.data) {
+      return createDedupeLinks(queryResult.data.links)
+    } else []
+  }, [queryResult.data])
 
-  // return {
-  //   ...queryResult,
-  //   data,
-  // }
-
-  return queryResult
+  return {
+    ...queryResult,
+    data,
+  }
 }
 
-// function createDedupeLinks(entry: Array<Link>): Array<Link> {
-//   let sourceSet = new Set<string>()
+function createDedupeLinks(entry: Array<Link>): Array<Link> {
+  let sourceSet = new Set<string>()
 
-//   return entry.filter((link) => {
-//     // this will remove any link with no source. maybe this is not possible?
-//     if (!link.source) return false
+  return entry.filter((link) => {
+    // this will remove any link with no source. maybe this is not possible?
+    if (!link.source) return false
 
-//     let currentSource = `${link.source.documentId}/${link.source.version}`
-//     if (sourceSet.has(currentSource)) {
-//       return false
-//     } else {
-//       sourceSet.add(currentSource)
-//       return true
-//     }
-//   })
-// }
+    let currentSource = `${link.source.documentId}/${link.source.version}`
+    if (sourceSet.has(currentSource)) {
+      return false
+    } else {
+      sourceSet.add(currentSource)
+      return true
+    }
+  })
+}
 
 function sortPublications(a: Publication, b: Publication) {
   let dateA = a.document?.updateTime ? new Date(a.document?.updateTime) : 0
