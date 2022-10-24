@@ -67,7 +67,9 @@ export default function DraftWrapper({
             openWindow(`/p/${docId}/${version}`)
             appWindow.close()
           } else {
-            setLocation(`/p/${event.data.document?.id}/${event.data.version}`)
+            setLocation(`/p/${event.data.document?.id}/${event.data.version}`, {
+              replace: true,
+            })
           }
           toast.success('Draft published Successfully!')
         },
