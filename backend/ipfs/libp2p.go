@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"mintter/backend/pkg/cleanup"
+	"mintter/backend/pkg/must"
 
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-ipns"
@@ -20,6 +21,7 @@ import (
 
 	dht "github.com/libp2p/go-libp2p-kad-dht"
 	dualdht "github.com/libp2p/go-libp2p-kad-dht/dual"
+	"github.com/libp2p/go-libp2p-kad-dht/providers"
 	routing "github.com/libp2p/go-libp2p/core/routing"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 )
@@ -136,19 +138,12 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 		return nil
 	})
 
-	mustConnMgr := func(mgr *connmgr.BasicConnMgr, err error) *connmgr.BasicConnMgr {
-		if err != nil {
-			panic(err)
-		}
-		return mgr
-	}
-
 	o := []libp2p.Option{
 		libp2p.Identity(key),
 		libp2p.NoListenAddrs,      // Users must explicitly start listening.
 		libp2p.EnableRelay(),      // Be able to dial behind-relay peers and receive connections from them.
 		libp2p.EnableNATService(), // Dial other peers on-demand to let them know if they are reachable.
-		libp2p.ConnectionManager(mustConnMgr(connmgr.NewConnManager(50, 100,
+		libp2p.ConnectionManager(must.Do2(connmgr.NewConnManager(50, 100,
 			connmgr.WithGracePeriod(10*time.Minute),
 		))),
 		libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
@@ -156,11 +151,23 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 				panic("BUG: must provide datastore for DHT")
 			}
 
+			// The DHT code creates this automatically to store providing records,
+			// but the problem is that it doesn't close it properly. When this provider
+			// manager wants to flush records into the database, we would have closed the database
+			// already. Because of this we always have an annoying error during our shutdown.
+			// Here we manually ensure all the goroutines started by provider manager are closed.
+			provStore, err := providers.NewProviderManager(ctx, h.ID(), h.Peerstore(), ds)
+			if err != nil {
+				return nil, err
+			}
+			n.clean.Add(provStore.Process())
+
 			r, err := dualdht.New(
 				ctx, h,
 				dualdht.DHTOption(
 					dht.Concurrency(10),
 					dht.Mode(dht.ModeAuto),
+					dht.ProviderStore(provStore),
 					dht.Datastore(ds),
 					dht.Validator(record.NamespacedValidator{
 						"pk":   record.PublicKeyValidator{},
@@ -177,6 +184,7 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 			// Routing interface from IPFS doesn't expose Close method,
 			// so it actually never gets closed properly, even inside IPFS.
 			// This ugly trick attempts to solve this.
+			// n.clean.Add(r)
 			n.clean.AddErrFunc(func() error {
 				return r.Close()
 			})
