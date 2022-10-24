@@ -29,7 +29,7 @@ import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
 import {Text} from '@components/text'
 import {useSelector} from '@xstate/react'
-import {Fragment, ReactNode, useMemo} from 'react'
+import {Fragment, ReactNode, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
 import './styles/blocktools.scss'
@@ -171,14 +171,23 @@ function PublicationBlocktools(
     }
   }
 
+  let [match, setMatch] = useState(false)
+
+  useEffect(() => {
+    let responsiveMedia = window.matchMedia('(max-width: 768px)')
+    responsiveMedia.addEventListener('change', handler)
+    setMatch(responsiveMedia.matches)
+    function handler(event: MediaQueryListEvent) {
+      setMatch(event.matches)
+    }
+  }, [])
+
+  let blockStyle = match
+    ? {top: `calc(${props.top} - 40px)`, right: '0.5rem'}
+    : {top: `calc(${props.top} - 40px)`, left: props.right}
+
   return (
-    <Box
-      className="blocktools"
-      css={{
-        top: `calc(${props.top} - 40px)`,
-        right: '0.5em',
-      }}
-    >
+    <Box className="blocktools" css={blockStyle}>
       <Button
         variant="ghost"
         color="primary"
@@ -209,6 +218,7 @@ type BlockData = {
   top: string
   height: string
   left: string
+  right: string
 }
 
 function useBlocktoolsData(editor: Editor): BlockData {
@@ -238,6 +248,7 @@ function useBlocktoolsData(editor: Editor): BlockData {
       ? `calc(calc(${rect.bottom - rect.top} * 1px) + 1rem)`
       : '-999px',
     left: rect ? `calc(${rect.left} * 1px)` : '0',
+    right: rect ? `calc(${rect.right} * 1px)` : '0',
   }
 }
 

@@ -10,6 +10,7 @@ type MouseEvent =
   | {type: 'BLOCK.REMOVE'; blockId: string}
   | {type: 'BLOCK.OBSERVE'; entry: HTMLElement}
   | {type: 'DISABLE.WINDOW.BLUR'}
+  | {type: 'DISABLE.WINDOW.RESIZE'}
   | {type: 'MOUSE.MOVE'; position: number}
   | {type: 'DISABLE.CHANGE'}
   | {type: 'DISABLE.BLOCKTOOLS.OPEN'}
@@ -46,6 +47,10 @@ export var mouseMachine = createMachine(
       {
         src: 'windowBlurService',
         id: 'windowBlurService',
+      },
+      {
+        src: 'windowResizeService',
+        id: 'windowResizeService',
       },
     ],
     id: 'mouse-machine',
@@ -118,6 +123,11 @@ export var mouseMachine = createMachine(
         actions: 'blockObserve',
       },
       'DISABLE.WINDOW.BLUR': {
+        description:
+          'when the window gets inactive, the machine should get inactive too',
+        target: '.inactive',
+      },
+      'DISABLE.WINDOW.RESIZE': {
         description:
           'when the window gets inactive, the machine should get inactive too',
         target: '.inactive',
@@ -202,7 +212,12 @@ export var mouseMachine = createMachine(
       }),
     },
     guards: {
-      hoverNewBlockId: () => true,
+      hoverNewBlockId: (c, e) => {
+        // if (!c.currentBound?.[1]) return true
+        // let {top, height} = c.currentBound[1]
+        // return e.position < top && e.position > top + height
+        return true
+      },
     },
     services: {
       windowBlurService: () => (sendBack) => {
@@ -269,6 +284,17 @@ export var mouseMachine = createMachine(
 
         return () => {
           observer.disconnect()
+        }
+      },
+      windowResizeService: () => (sendBack) => {
+        window.addEventListener('resize', handler)
+
+        return () => {
+          window.removeEventListener('resize', handler)
+        }
+
+        function handler() {
+          sendBack('DISABLE.WINDOW.RESIZE')
         }
       },
     },

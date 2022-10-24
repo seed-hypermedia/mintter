@@ -131,7 +131,11 @@ export default function PublicationWrapper() {
                         onScroll={() => mouseService.send('DISABLE.SCROLL')}
                       >
                         <div
-                          className="discussion-toggle"
+                          className={`discussion-toggle ${
+                            resizablePanelState.context.visible
+                              ? 'visible'
+                              : undefined
+                          }`}
                           style={
                             resizablePanelState.context.visible
                               ? {

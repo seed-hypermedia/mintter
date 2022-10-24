@@ -27,11 +27,15 @@
   position: fixed;
   left: 0;
   top: 100px;
-  z-index: 100;
+  z-index: 1000;
   padding: 40px;
 
   button {
     opacity: 0;
+  }
+
+  &.visible button {
+    opacity: 1;
   }
 
   @media (min-width: 768px) {
