@@ -47,7 +47,7 @@ func ParseVersion(s string) (Version, error) {
 	var cids []cid.Cid
 	for {
 		_, c, err := cid.CidFromReader(r)
-		if err != nil && errors.Is(err, io.EOF) {
+		if err != nil && !errors.Is(err, io.EOF) {
 			return Version{}, err
 		}
 

@@ -16,14 +16,14 @@ func TestDocumentSmoke(t *testing.T) {
 	require.True(t, doc.MoveBlock("b1", "", ""))
 	require.False(t, doc.MoveBlock("b1", "", ""))
 	require.False(t, doc.MoveBlock("b1", "", ""))
-	require.Len(t, doc.dw.Dirty(), 4, doc.err)
+	require.Len(t, doc.batch.Dirty(), 4, doc.err)
 
 	require.True(t, doc.MoveBlock("b2", "", "b1"))
 	require.False(t, doc.MoveBlock("b2", "", "b1"))
-	require.Len(t, doc.dw.Dirty(), 8, doc.err)
+	require.Len(t, doc.batch.Dirty(), 8, doc.err)
 
 	require.True(t, doc.MoveBlock("b2", "b1", ""), doc.err)
-	require.Len(t, doc.dw.Dirty(), 12, doc.err)
+	require.Len(t, doc.batch.Dirty(), 12, doc.err)
 
 	require.NoError(t, doc.err)
 
@@ -43,7 +43,7 @@ func TestMoveAncestor(t *testing.T) {
 	require.False(t, doc.MoveBlock("b1", "b2", ""))
 	require.Error(t, doc.err)
 
-	require.Equal(t, 3*4, len(doc.dw.Dirty()))
+	require.Equal(t, 3*4, len(doc.batch.Dirty()))
 }
 
 func TestReplicate(t *testing.T) {
@@ -62,7 +62,7 @@ func TestReplicate(t *testing.T) {
 	require.True(t, doc.MoveBlock("b3", "", "b1"))
 	require.True(t, doc.MoveBlock("b2", "b3", ""))
 	require.True(t, doc.MoveBlock("b4", "b3", "b2"))
-	require.Len(t, doc.dw.Dirty(), 5*4, doc.err)
+	require.Len(t, doc.batch.Dirty(), 5*4, doc.err)
 
 	want := []contentBlockPosition{
 		{"b1", "$ROOT", ""},
@@ -77,7 +77,7 @@ func TestReplicate(t *testing.T) {
 		vcs.NewBatch(
 			hlc.NewClock(), 123))
 
-	require.NoError(t, r.Replay(doc.dw.Dirty()))
+	require.NoError(t, r.Replay(doc.batch.Dirty()))
 
 	testHierarchy(t, want, r)
 }
@@ -99,7 +99,7 @@ func TestDeleteBlock(t *testing.T) {
 	require.True(t, doc.MoveBlock("b2", "b3", ""))
 	require.True(t, doc.MoveBlock("b4", "b3", "b2"))
 	require.True(t, doc.DeleteBlock("b2"), doc.err)
-	require.Len(t, doc.dw.Dirty(), 6*4, doc.err)
+	require.Len(t, doc.batch.Dirty(), 6*4, doc.err)
 
 	want := []contentBlockPosition{
 		{"b1", "$ROOT", ""},
@@ -127,5 +127,5 @@ func TestComplexWithMove(t *testing.T) {
 	require.NoError(t, doc.Err())
 
 	r := New(vcs.NewBatch(hlc.NewClock(), 123))
-	require.NoError(t, r.Replay(doc.dw.Dirty()))
+	require.NoError(t, r.Replay(doc.batch.Dirty()))
 }

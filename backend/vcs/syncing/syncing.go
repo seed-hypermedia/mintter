@@ -426,14 +426,12 @@ func permanodeFromMap(v interface{}) (p vcs.Permanode, err error) {
 	return base, nil
 }
 
-type verifiedChange = vcsdb.VerifiedChange
-
-func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]verifiedChange, error) {
+func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]vcs.VerifiedChange, error) {
 	queue := ver.CIDs()
 
 	visited := make(map[cid.Cid]struct{}, ver.TotalCount())
 
-	fetched := make([]verifiedChange, 0, 10) // Arbitrary buffer to reduce allocations when buffer grows.
+	fetched := make([]vcs.VerifiedChange, 0, 10) // Arbitrary buffer to reduce allocations when buffer grows.
 
 	for len(queue) > 0 {
 		last := len(queue) - 1
@@ -455,7 +453,7 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 			return nil, fmt.Errorf("failed to fetch change %s: %w", id, err)
 		}
 
-		vc, err := vcsdb.VerifyChangeBlock(blk)
+		vc, err := vcs.VerifyChangeBlock(blk)
 		if err != nil {
 			return nil, err
 		}
@@ -477,7 +475,7 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 	}
 
 	sort.Slice(fetched, func(i, j int) bool {
-		return fetched[i].Decoded.Time < fetched[j].Decoded.Time
+		return fetched[i].Decoded.Less(fetched[j].Decoded)
 	})
 
 	return fetched, nil

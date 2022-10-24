@@ -1,12 +1,14 @@
 package vcs
 
 import (
+	"io"
 	"math"
 	"sync/atomic"
 	"testing"
 	"time"
 	"unsafe"
 
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,10 +27,7 @@ func TestNodeID2String(t *testing.T) {
 }
 
 func TestIncrementCounter(t *testing.T) {
-	old := atomic.LoadUint64(&nidCounter)
-	if old > maxUint14 {
-		t.Fatal("nid counter must not be initialized beyond 14 bits")
-	}
+	old := uint14(atomic.LoadUint64(&nidCounter))
 
 	for i := 0; i < int(maxUint14)*3; i++ {
 		c := nidCounterInc()
@@ -73,4 +72,31 @@ func TestNodeIDDifferent(t *testing.T) {
 			t.Fatalf("%d was generated %d times", id, count)
 		}
 	}
+}
+
+type Thing struct {
+	ID   string
+	Body Body
+}
+
+type Body struct {
+	Name string
+}
+
+func (b Body) MarshalCBOR(w io.Writer) error {
+	data, err := cbornode.DumpObject([]any{b.Name})
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(data)
+	return err
+}
+
+func (b Body) EncodeDagCbor(w io.Writer) error {
+	data, err := cbornode.DumpObject([]any{b.Name})
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(data)
+	return err
 }

@@ -271,10 +271,10 @@ func TestChangeEncoding(t *testing.T) {
 
 	require.NoError(t, conn.Commit())
 
-	vc := must.Do2(VerifyChangeBlock(blk))
+	vc := must.Do2(vcs.VerifyChangeBlock(blk))
 	c2 := conn.StoreRemoteChange(obj, vc, nil)
 	require.Equal(t, c1, c2)
 
-	got := must.Do2(datomsFromChange(c1, vc.Decoded))
+	got := must.Do2(vc.Decoded.Datoms())
 	require.Equal(t, datoms, got)
 }

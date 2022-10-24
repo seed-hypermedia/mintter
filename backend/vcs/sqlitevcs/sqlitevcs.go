@@ -30,7 +30,7 @@ import (
 	"go.uber.org/multierr"
 )
 
-const changeKindV1 = "mintter.vcsdb.v1"
+const changeKindV1 = vcs.ChangeKindV1
 
 // DB is a database of Mintter Objects.
 type DB struct {
@@ -354,102 +354,12 @@ func (conn *Conn) GetChangeMaxTime(object, change LocalID) int64 {
 	return out
 }
 
-type changeBody struct {
-	Entities []NodeID    `refmt:"e,omitempty"`
-	Strings  []string    `refmt:"s,omitempty"`
-	Bytes    [][]byte    `refmt:"b,omitempty"`
-	Attrs    []Attribute `refmt:"a,omitempty"`
-	CIDs     []cid.Cid   `refmt:"c,omitempty"`
-	Datoms   [][5]int    `refmt:"d"` // time, entity, attrIdx, valueType, stringIdx | entityIdx | bool | int
-}
-
-func datomsFromChange(changeLocal LocalID, ch vcs.Change) ([]Datom, error) {
-	if ch.Kind != changeKindV1 {
-		return nil, fmt.Errorf("change kind %q is invalid", ch.Kind)
-	}
-
-	var cb changeBody
-	if err := cbornode.DecodeInto(ch.Body, &cb); err != nil {
-		return nil, fmt.Errorf("failed to decode datoms from change body: %w", err)
-	}
-
-	key, err := core.PublicKeyFromCID(ch.Signer)
-	if err != nil {
-		return nil, err
-	}
-
-	origin := key.Abbrev()
-
-	out := make([]Datom, len(cb.Datoms))
-
-	for i, d := range cb.Datoms {
-		out[i] = Datom{
-			Entity:    cb.Entities[d[1]],
-			Attr:      cb.Attrs[d[2]],
-			ValueType: vcs.ValueType(d[3]),
-			Time:      int64(d[0]),
-			Origin:    origin,
-		}
-
-		switch out[i].ValueType {
-		case vcs.ValueTypeRef:
-			out[i].Value = cb.Entities[d[4]]
-		case vcs.ValueTypeString:
-			out[i].Value = cb.Strings[d[4]]
-		case vcs.ValueTypeInt:
-			out[i].Value = d[4]
-		case vcs.ValueTypeBool:
-			switch d[4] {
-			case 0:
-				out[i].Value = false
-			case 1:
-				out[i].Value = true
-			default:
-				return nil, fmt.Errorf("bad boolean value: %v", d[4])
-			}
-		case vcs.ValueTypeBytes:
-			out[i].Value = cb.Bytes[d[4]]
-		case vcs.ValueTypeCID:
-			out[i].Value = cb.CIDs[d[4]]
-		default:
-			return nil, fmt.Errorf("unsupported value type: %v", out[i].ValueType)
-		}
-	}
-
-	return out, nil
-}
-
-func init() {
-	cbornode.RegisterCborType(changeBody{})
-}
-
-// VerifiedChange is a change with a verified signature.
-type VerifiedChange struct {
-	blocks.Block
-
-	Decoded vcs.Change
-}
-
-// VerifyChangeBlock ensures that a signature of a change IPLD block is valid.
-func VerifyChangeBlock(blk blocks.Block) (vc VerifiedChange, err error) {
-	c, err := vcs.DecodeChange(blk.RawData())
-	if err != nil {
-		return vc, err
-	}
-
-	if err := c.Verify(); err != nil {
-		return vc, fmt.Errorf("failed to verify change %s: %w", blk.Cid(), err)
-	}
-
-	return VerifiedChange{Block: blk, Decoded: c}, nil
-}
-
 // StoreRemoteChange stores the changes fetched from the remote peer,
 // and indexes its datoms. It assumes that the change signature was already
 // validated elsewhere. It also assumes that change parents already exist in the database.
 // It also expects that IPFS block of the incoming change is already in the blockstore, placed there
 // by the BitSwap session.
-func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func(conn *Conn, obj, change LocalID, d Datom) error) (change LocalID) {
+func (conn *Conn) StoreRemoteChange(obj LocalID, vc vcs.VerifiedChange, onDatom func(conn *Conn, obj, change LocalID, d Datom) error) (change LocalID) {
 	must.Maybe(&conn.err, func() error {
 		ch := vc.Decoded
 
@@ -471,7 +381,7 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 
 		idLocal := conn.EnsureAccountDevice(ch.Author, ch.Signer)
 
-		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), int(idLocal.Account), int(idLocal.Device), ch.Kind, int(ch.Time)); err != nil {
+		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), int(idLocal.Account), int(idLocal.Device), ch.Kind, int(ch.Time.Pack())); err != nil {
 			return err
 		}
 
@@ -486,7 +396,7 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 			}
 		}
 
-		datoms, err := datomsFromChange(change, ch)
+		datoms, err := ch.Datoms()
 		if err != nil {
 			return err
 		}
@@ -513,7 +423,7 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 	}
 
 	var (
-		body         changeBody
+		body         vcs.ChangeBody
 		attrLookup   lookup[Attribute, Attribute]
 		stringLookup lookup[string, string]
 		entityLookup lookup[NodeID, NodeID]
@@ -629,14 +539,16 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 	author := cid.NewCidV1(core.CodecAccountKey, changeInfo.AccountsMultihash)
 
 	c := vcs.Change{
-		Type:    vcs.ChangeType,
-		Object:  obj,
-		Author:  author,
-		Parents: deps,
-		Kind:    changeInfo.ChangesKind,
-		Body:    data,
-		Message: "",
-		Time:    int64(changeInfo.ChangesStartTime),
+		ChangeInfo: vcs.ChangeInfo{
+			Object:  obj,
+			Author:  author,
+			Parents: deps,
+			Kind:    changeInfo.ChangesKind,
+			Message: "",
+			Time:    hlc.Unpack(int64(changeInfo.ChangesStartTime)),
+		},
+		Type: vcs.ChangeType,
+		Body: data,
 	}
 
 	sc := c.Sign(sig)

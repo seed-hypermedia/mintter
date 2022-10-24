@@ -65,7 +65,7 @@ type Document struct {
 	subtitle *crdt.LWW[vcs.Datom]
 	blocks   map[vcs.NodeID]*crdt.LWW[vcs.Datom]
 	tree     *blockTree
-	dw       *vcs.Batch
+	batch    *vcs.Batch
 	tracker  *crdt.OpTracker
 	err      error
 }
@@ -79,7 +79,7 @@ func New(dw *vcs.Batch) *Document {
 		subtitle: crdt.NewLWW[vcs.Datom](),
 		blocks:   make(map[vcs.NodeID]*crdt.LWW[vcs.Datom]),
 		tree:     newBlockTree(ot, dw),
-		dw:       dw,
+		batch:    dw,
 		tracker:  ot,
 	}
 }
@@ -244,10 +244,10 @@ func (doc *Document) EnsureBlockState(blk string, state []byte) {
 			return nil
 		}
 
-		d := doc.dw.Add(nid, AttrBlockState, state)
+		d := doc.batch.Add(nid, AttrBlockState, state)
 		lww.Set(d.OpID(), d)
 		if !oldDatom.OpID().IsZero() {
-			doc.dw.Delete(oldDatom.OpID())
+			doc.batch.Delete(oldDatom.OpID())
 		}
 
 		return doc.track(d.OpID())
@@ -282,10 +282,10 @@ func (doc *Document) EnsureTitle(s string) {
 			return nil
 		}
 
-		d := doc.dw.Add(vcs.RootNode, AttrTitle, s)
+		d := doc.batch.Add(vcs.RootNode, AttrTitle, s)
 		doc.title.Set(d.OpID(), d)
 		if !oldDatom.OpID().IsZero() {
-			doc.dw.Delete(oldDatom.OpID())
+			doc.batch.Delete(oldDatom.OpID())
 		}
 		return doc.track(d.OpID())
 	})
@@ -324,10 +324,10 @@ func (doc *Document) EnsureSubtitle(s string) {
 			return nil
 		}
 
-		d := doc.dw.Add(vcs.RootNode, AttrSubtitle, s)
+		d := doc.batch.Add(vcs.RootNode, AttrSubtitle, s)
 		doc.subtitle.Set(d.OpID(), d)
 		if !oldDatom.OpID().IsZero() {
-			doc.dw.Delete(oldDatom.OpID())
+			doc.batch.Delete(oldDatom.OpID())
 		}
 		return doc.track(d.OpID())
 	})
