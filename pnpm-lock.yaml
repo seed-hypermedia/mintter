@@ -74,7 +74,7 @@ importers:
       '@types/node': 18.7.14
       '@types/react': 18.0.22
       '@types/react-copy-to-clipboard': 5.0.4
-      '@types/react-dom': 18.0.6
+      '@types/react-dom': 18.0.7
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.1.0
@@ -256,7 +256,7 @@ importers:
       '@types/node': 18.7.14
       '@types/react': 18.0.22
       '@types/react-copy-to-clipboard': 5.0.4
-      '@types/react-dom': 18.0.6
+      '@types/react-dom': 18.0.7
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.1.0_vite@3.1.8
@@ -2840,8 +2840,8 @@ packages:
       '@types/react': 18.0.22
     dev: true
 
-  /@types/react-dom/18.0.6:
-    resolution: {integrity: sha512-/5OFZgfIPSwy+YuIBP/FgJnQnsxhZhjjrnxudMddeblOouIodEQ75X14Rr4wGSG/bknL+Omy9iWlLo1u/9GzAA==}
+  /@types/react-dom/18.0.7:
+    resolution: {integrity: sha512-HaXc+BbqAZE1RdsK3tC8SbkFy6UL2xF76lT9rQs5JkPrJg3rWA3Ou/Lhw3YJQzEDkBpmJ79nBsfnd05WrBd2QQ==}
     dependencies:
       '@types/react': 18.0.22
     dev: true
