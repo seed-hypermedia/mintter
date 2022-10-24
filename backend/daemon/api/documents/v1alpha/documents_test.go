@@ -661,6 +661,13 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	carolID := carolAddrInfo.ID.String()
 	alice := newTestDocsAPI(t, "alice", carolAddrs+"/p2p/"+carolID)
 	bob := newTestDocsAPI(t, "bob", carolAddrs+"/p2p/"+carolID)
+	// To make sure bob is not directly connected to alice since they are bootstrapped to the same node
+	aliceAI, err := alice.provider.AddrInfo()
+	require.NoError(t, err)
+	err = bob.provider.ClosePeer(aliceAI.ID)
+	require.NoError(t, err)
+	bob.libp2p.Libp2p().Peerstore().RemovePeer(aliceAI.ID)
+	time.Sleep(time.Second)
 
 	draft, err := alice.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
@@ -691,12 +698,6 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	require.True(t, start.Before(published.Document.PublishTime.AsTime()), "publish time must be after test start")
 	cID := cid.Cid{}
 	require.NoError(t, cID.UnmarshalText([]byte(draft.Id)))
-
-	// To make sure bob is not directly connected to alice since they are bootstrapped to the same node
-	aliceAI, err := alice.provider.AddrInfo()
-	require.NoError(t, err)
-	err = bob.provider.ClosePeer(aliceAI.ID)
-	require.NoError(t, err)
 
 	remotePublication, err := bob.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: cID.String()})
 	require.NoError(t, err)
@@ -779,7 +780,7 @@ func TestGetPreviousVersions(t *testing.T) {
 	testutil.ProtoEqual(t, p, pub1, "latest publication must match getting by version string")
 }
 
-func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*documents.DocumentChange) *documents.Document {
+func updateDraft(ctx context.Context, t *testing.T, api *testServer, id string, updates []*documents.DocumentChange) *documents.Document {
 	_, err := api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
 		DocumentId: id,
 		Changes:    updates,
@@ -792,7 +793,12 @@ func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, upda
 	return draft
 }
 
-func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
+type testServer struct {
+	*Server
+	libp2p *mttnet.Node
+}
+
+func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *testServer {
 	u := coretest.NewTester(name)
 
 	db := newTestSQLite(t)
@@ -842,7 +848,7 @@ func newTestDocsAPI(t *testing.T, name string, bootstrapPeer string) *Server {
 
 	srv := NewServer(fut.ReadOnly, db, NewProvider(mttFut.ReadOnly, syncService.SyncWithPeer))
 
-	return srv
+	return &testServer{srv, n}
 }
 
 func newTestSQLite(t *testing.T) *sqlitex.Pool {
