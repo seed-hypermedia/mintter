@@ -105,6 +105,10 @@
   @include platform.win32 {
     top: 32px;
   }
+
+  @include platform.linux {
+    top: 32px;
+  }
 }
 
 .topbar-inner {
