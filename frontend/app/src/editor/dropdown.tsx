@@ -47,7 +47,15 @@ const DropdownContent = styled(
   DropdownMenuPrimitive.Content,
   dropdownContentStyle,
 )
+const DropdownSubContent = styled(
+  DropdownMenuPrimitive.SubContent,
+  dropdownContentStyle,
+)
 const DropdownItem = styled(DropdownMenuPrimitive.Item, dropdownItemStyle)
+const DropdownSubTrigger = styled(
+  DropdownMenuPrimitive.SubTrigger,
+  dropdownItemStyle,
+)
 
 const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {
   height: 1,
@@ -66,7 +74,9 @@ var RightSlot = styled('div', {
 export const Dropdown = {
   ...DropdownMenuPrimitive,
   Content: DropdownContent,
+  SubContent: DropdownSubContent,
   Item: DropdownItem,
+  SubTrigger: DropdownSubTrigger,
   Separator: StyledSeparator,
   RightSlot,
 }
