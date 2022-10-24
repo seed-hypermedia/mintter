@@ -92,6 +92,7 @@ export default function PublicationWrapper() {
               vertical={resizablePanelState.context.vertical}
               key={resizablePanelState.context.vertical}
               onChange={(values) => panelSend({type: 'RESIZE', values})}
+              defaultSizes={[40, 60]}
             >
               <Allotment.Pane visible={resizablePanelState.context.visible}>
                 <section className="discussion-section">
@@ -99,6 +100,7 @@ export default function PublicationWrapper() {
                     onScroll={() => mouseService.send('DISABLE.SCROLL')}
                   >
                     <Discussion
+                      visible={resizablePanelState.context.visible}
                       documentId={params?.id}
                       version={params?.version}
                     />
@@ -240,7 +242,7 @@ let resizablePanelMachine =
   /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAlAUQGUBJALToG0AGAXUVGID2sNABc0AsnxAAPRADZOAOgAsARgAcAZk3KAnAt2aA7AFYANCACeiQhrmLOGncqOH1qgEyGAvt4uphbHwiUgpqAFkAQQAVAGEACXC6ABEmSMUouPiuXiQQQWExCSlZBE97Tj0PdRN1OrkjDXULazKTZUUFdU5HI051XXVlTXVfPxAyAQg4KQDMXAISckopAtFxSTzSwmUlRzkTVR7OXSMDuQ9zKxs1B2U1WsMTdrl1UzHvIA */
   createMachine(
     {
-      context: {top: 100, left: 100, vertical: false, visible: false},
+      context: {top: 100, left: 100, vertical: false, visible: true},
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
         context: {} as ResizablePanelMachineContext,
@@ -306,10 +308,6 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
   useEffect(() => {
     setTimeout(() => {
       if (blockId) {
-        console.log(
-          '🚀 ~ file: publication.tsx ~ line 309 ~ useEffect ~ ref?.current',
-          ref?.current,
-        )
         if (ref?.current) {
           let entry = getEditorBlock(editor, {id: blockId})
           console.log(
@@ -331,6 +329,6 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
           }
         }
       }
-    }, 1000)
+    }, 100)
   }, [ref, blockId, editor])
 }

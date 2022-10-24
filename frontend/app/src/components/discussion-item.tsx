@@ -1,8 +1,10 @@
+import {Link as LinkType} from '@app/client'
 import {createDiscussionMachine} from '@app/discussion-machine'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {FileProvider} from '@app/file-provider'
+import {useDiscussion} from '@app/hooks'
 import {formattedDate} from '@app/utils/get-format-date'
 import {Avatar} from '@components/avatar'
 import {Link} from '@components/router'
@@ -11,7 +13,7 @@ import {useInterpret, useSelector} from '@xstate/react'
 import {useMemo} from 'react'
 import '../styles/discussion-item.scss'
 
-export function DiscussionItem({link}: {link: Link}) {
+export function DiscussionItem({link}: {link: LinkType}) {
   let client = useQueryClient()
   let service = useInterpret(() =>
     createDiscussionMachine({
@@ -31,20 +33,25 @@ export function DiscussionItem({link}: {link: Link}) {
     [],
   )
 
+  let {data: discussions} = useDiscussion({
+    documentId: publication?.document.id,
+    visible: true,
+  })
+
   if (isFetching) {
     return <li>...</li>
   }
 
   return (
     <li className="discussion-item">
-      <div className="item-avatar">
+      <div className="item-section item-avatar">
         <Avatar
           accountId={author?.id}
           size={2}
           alias={author?.profile?.alias || 'A'}
         />
       </div>
-      <div className="item-info">
+      <div className="item-section item-info">
         <p className="alias">{author?.profile?.alias || '...'}</p>
         {publication ? (
           <p className="date">
@@ -53,12 +60,6 @@ export function DiscussionItem({link}: {link: Link}) {
               : '...'}
           </p>
         ) : null}
-        <Link
-          className="item-control"
-          href={`/p/${link.source.documentId}/${link.source.version}`}
-        >
-          move to base document
-        </Link>
       </div>
 
       <div className="item-section item-content">
@@ -71,6 +72,25 @@ export function DiscussionItem({link}: {link: Link}) {
             />
           </FileProvider>
         ) : null}
+      </div>
+      <div className="item-section item-footer">
+        {discussions && discussions.length > 0 ? (
+          <Link
+            className="item-control"
+            href={`/p/${link.source?.documentId}/${link.source?.version}`}
+          >
+            {discussions?.length == 1
+              ? '1 Reply'
+              : `${discussions?.length} Replies`}
+          </Link>
+        ) : (
+          <Link
+            className="item-control"
+            href={`/p/${link.source?.documentId}/${link.source?.version}`}
+          >
+            Expand
+          </Link>
+        )}
       </div>
     </li>
   )

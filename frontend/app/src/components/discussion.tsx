@@ -8,10 +8,11 @@ import {useEffect} from 'react'
 export type DiscussionProps = {
   documentId?: string
   version?: string
+  visible: boolean
 }
 
-export function Discussion({documentId}: DiscussionProps) {
-  const {data, refetch} = useDiscussion(documentId)
+export function Discussion({documentId, visible = false}: DiscussionProps) {
+  const {data, refetch} = useDiscussion({documentId, visible})
 
   useEffect(() => {
     let isSubscribed = true
@@ -39,7 +40,7 @@ export function Discussion({documentId}: DiscussionProps) {
     <div className="discussions-wrapper">
       <ul className="discussion-list" data-testid="discussion-list">
         {data &&
-          data.links.map((link) => (
+          data.map((link) => (
             <DiscussionItem
               key={`${link.source?.documentId}-${link.source?.version}`}
               link={link}

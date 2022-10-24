@@ -13,7 +13,7 @@
   justify-content: center;
 
   [cmdk-root] {
-    z-index: 1;
+    z-index: 100;
     max-width: var(--mtt-sizes-two-thirds);
     width: 100%;
     padding: var(--mtt-space-3);
