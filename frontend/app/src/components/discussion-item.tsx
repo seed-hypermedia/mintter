@@ -5,6 +5,7 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {FileProvider} from '@app/file-provider'
 import {useDiscussion} from '@app/hooks'
+import {useMain} from '@app/main-context'
 import {formattedDate} from '@app/utils/get-format-date'
 import {Avatar} from '@components/avatar'
 import {Link} from '@components/router'
@@ -22,6 +23,7 @@ export function DiscussionItem({link}: {link: LinkType}) {
     }),
   )
   let isFetching = useSelector(service, (state) => state.matches('fetching'))
+  let main = useMain()
   const editorValue = useSelector(
     service,
     (state) => state.context.source?.document.content,
@@ -75,14 +77,19 @@ export function DiscussionItem({link}: {link: LinkType}) {
       </div>
       <div className="item-section item-footer">
         {discussions && discussions.length > 0 ? (
-          <Link
+          <button
+            onClick={() =>
+              main.send({
+                type: 'COMMIT.OPEN.WINDOW',
+                path: `/p/${link.source?.documentId}/${link.source?.version}`,
+              })
+            }
             className="item-control"
-            href={`/p/${link.source?.documentId}/${link.source?.version}`}
           >
             {discussions?.length == 1
               ? '1 Reply'
               : `${discussions?.length} Replies`}
-          </Link>
+          </button>
         ) : (
           <Link
             className="item-control"
