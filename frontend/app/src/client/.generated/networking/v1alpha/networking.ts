@@ -11,17 +11,17 @@ import _m0 from "protobufjs/minimal";
  */
 export enum ConnectionStatus {
   /** NOT_CONNECTED - NotConnected means no connection to peer, and no extra information (default). */
-  NOT_CONNECTED,
+  NOT_CONNECTED = 0,
   /** CONNECTED - Connected means has an open, live connection to peer. */
-  CONNECTED,
+  CONNECTED = 1,
   /** CAN_CONNECT - CanConnect means recently connected to peer, terminated gracefully. */
-  CAN_CONNECT,
+  CAN_CONNECT = 2,
   /**
    * CANNOT_CONNECT - CannotConnect means recently attempted connecting but failed to connect.
    * (should signal "made effort, failed").
    */
-  CANNOT_CONNECT,
-  UNRECOGNIZED,
+  CANNOT_CONNECT = 3,
+  UNRECOGNIZED = -1,
 }
 
 export function connectionStatusFromJSON(object: any): ConnectionStatus {
@@ -77,7 +77,8 @@ export interface ConnectRequest {
 }
 
 /** Response for conneting to a peer. */
-export interface ConnectResponse {}
+export interface ConnectResponse {
+}
 
 /** Various details about a known peer. */
 export interface PeerInfo {
@@ -94,10 +95,7 @@ function createBaseGetPeerInfoRequest(): GetPeerInfoRequest {
 }
 
 export const GetPeerInfoRequest = {
-  encode(
-    message: GetPeerInfoRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: GetPeerInfoRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.peerId !== "") {
       writer.uint32(10).string(message.peerId);
     }
@@ -123,9 +121,7 @@ export const GetPeerInfoRequest = {
   },
 
   fromJSON(object: any): GetPeerInfoRequest {
-    return {
-      peerId: isSet(object.peerId) ? String(object.peerId) : "",
-    };
+    return { peerId: isSet(object.peerId) ? String(object.peerId) : "" };
   },
 
   toJSON(message: GetPeerInfoRequest): unknown {
@@ -134,9 +130,7 @@ export const GetPeerInfoRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GetPeerInfoRequest>, I>>(
-    object: I
-  ): GetPeerInfoRequest {
+  fromPartial<I extends Exact<DeepPartial<GetPeerInfoRequest>, I>>(object: I): GetPeerInfoRequest {
     const message = createBaseGetPeerInfoRequest();
     message.peerId = object.peerId ?? "";
     return message;
@@ -148,10 +142,7 @@ function createBaseConnectRequest(): ConnectRequest {
 }
 
 export const ConnectRequest = {
-  encode(
-    message: ConnectRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ConnectRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.addrs) {
       writer.uint32(10).string(v!);
     }
@@ -177,11 +168,7 @@ export const ConnectRequest = {
   },
 
   fromJSON(object: any): ConnectRequest {
-    return {
-      addrs: Array.isArray(object?.addrs)
-        ? object.addrs.map((e: any) => String(e))
-        : [],
-    };
+    return { addrs: Array.isArray(object?.addrs) ? object.addrs.map((e: any) => String(e)) : [] };
   },
 
   toJSON(message: ConnectRequest): unknown {
@@ -194,9 +181,7 @@ export const ConnectRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ConnectRequest>, I>>(
-    object: I
-  ): ConnectRequest {
+  fromPartial<I extends Exact<DeepPartial<ConnectRequest>, I>>(object: I): ConnectRequest {
     const message = createBaseConnectRequest();
     message.addrs = object.addrs?.map((e) => e) || [];
     return message;
@@ -208,10 +193,7 @@ function createBaseConnectResponse(): ConnectResponse {
 }
 
 export const ConnectResponse = {
-  encode(
-    _: ConnectResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(_: ConnectResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer;
   },
 
@@ -239,9 +221,7 @@ export const ConnectResponse = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ConnectResponse>, I>>(
-    _: I
-  ): ConnectResponse {
+  fromPartial<I extends Exact<DeepPartial<ConnectResponse>, I>>(_: I): ConnectResponse {
     const message = createBaseConnectResponse();
     return message;
   },
@@ -252,10 +232,7 @@ function createBasePeerInfo(): PeerInfo {
 }
 
 export const PeerInfo = {
-  encode(
-    message: PeerInfo,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: PeerInfo, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.addrs) {
       writer.uint32(10).string(v!);
     }
@@ -294,12 +271,8 @@ export const PeerInfo = {
 
   fromJSON(object: any): PeerInfo {
     return {
-      addrs: Array.isArray(object?.addrs)
-        ? object.addrs.map((e: any) => String(e))
-        : [],
-      connectionStatus: isSet(object.connectionStatus)
-        ? connectionStatusFromJSON(object.connectionStatus)
-        : 0,
+      addrs: Array.isArray(object?.addrs) ? object.addrs.map((e: any) => String(e)) : [],
+      connectionStatus: isSet(object.connectionStatus) ? connectionStatusFromJSON(object.connectionStatus) : 0,
       accountId: isSet(object.accountId) ? String(object.accountId) : "",
     };
   },
@@ -311,8 +284,7 @@ export const PeerInfo = {
     } else {
       obj.addrs = [];
     }
-    message.connectionStatus !== undefined &&
-      (obj.connectionStatus = connectionStatusToJSON(message.connectionStatus));
+    message.connectionStatus !== undefined && (obj.connectionStatus = connectionStatusToJSON(message.connectionStatus));
     message.accountId !== undefined && (obj.accountId = message.accountId);
     return obj;
   },
@@ -329,15 +301,9 @@ export const PeerInfo = {
 /** Networking API service of the Mintter daemon. */
 export interface Networking {
   /** Lookup details about a known peer. */
-  getPeerInfo(
-    request: DeepPartial<GetPeerInfoRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<PeerInfo>;
+  getPeerInfo(request: DeepPartial<GetPeerInfoRequest>, metadata?: grpc.Metadata): Promise<PeerInfo>;
   /** Establishes a direct connection with a given peer explicitly. */
-  connect(
-    request: DeepPartial<ConnectRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ConnectResponse>;
+  connect(request: DeepPartial<ConnectRequest>, metadata?: grpc.Metadata): Promise<ConnectResponse>;
 }
 
 export class NetworkingClientImpl implements Networking {
@@ -349,32 +315,16 @@ export class NetworkingClientImpl implements Networking {
     this.connect = this.connect.bind(this);
   }
 
-  getPeerInfo(
-    request: DeepPartial<GetPeerInfoRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<PeerInfo> {
-    return this.rpc.unary(
-      NetworkingGetPeerInfoDesc,
-      GetPeerInfoRequest.fromPartial(request),
-      metadata
-    );
+  getPeerInfo(request: DeepPartial<GetPeerInfoRequest>, metadata?: grpc.Metadata): Promise<PeerInfo> {
+    return this.rpc.unary(NetworkingGetPeerInfoDesc, GetPeerInfoRequest.fromPartial(request), metadata);
   }
 
-  connect(
-    request: DeepPartial<ConnectRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ConnectResponse> {
-    return this.rpc.unary(
-      NetworkingConnectDesc,
-      ConnectRequest.fromPartial(request),
-      metadata
-    );
+  connect(request: DeepPartial<ConnectRequest>, metadata?: grpc.Metadata): Promise<ConnectResponse> {
+    return this.rpc.unary(NetworkingConnectDesc, ConnectRequest.fromPartial(request), metadata);
   }
 }
 
-export const NetworkingDesc = {
-  serviceName: "com.mintter.networking.v1alpha.Networking",
-};
+export const NetworkingDesc = { serviceName: "com.mintter.networking.v1alpha.Networking" };
 
 export const NetworkingGetPeerInfoDesc: UnaryMethodDefinitionish = {
   methodName: "GetPeerInfo",
@@ -420,8 +370,7 @@ export const NetworkingConnectDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-interface UnaryMethodDefinitionishR
-  extends grpc.UnaryMethodDefinition<any, any> {
+interface UnaryMethodDefinitionishR extends grpc.UnaryMethodDefinition<any, any> {
   requestStream: any;
   responseStream: any;
 }
@@ -432,7 +381,7 @@ interface Rpc {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any>;
 }
 
@@ -454,7 +403,7 @@ export class GrpcWebImpl {
       debug?: boolean;
       metadata?: grpc.Metadata;
       upStreamRetryCodes?: number[];
-    }
+    },
   ) {
     this.host = host;
     this.options = options;
@@ -463,16 +412,12 @@ export class GrpcWebImpl {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     _request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any> {
     const request = { ..._request, ...methodDesc.requestType };
-    const maybeCombinedMetadata =
-      metadata && this.options.metadata
-        ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
-        : metadata || this.options.metadata;
+    const maybeCombinedMetadata = metadata && this.options.metadata
+      ? new BrowserHeaders({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
+      : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {
         request,
@@ -484,9 +429,7 @@ export class GrpcWebImpl {
           if (response.status === grpc.Code.OK) {
             resolve(response.message);
           } else {
-            const err = new Error(response.statusMessage) as any;
-            err.code = response.status;
-            err.metadata = response.trailers;
+            const err = new GrpcWebError(response.statusMessage, response.status, response.trailers);
             reject(err);
           }
         },
@@ -495,37 +438,24 @@ export class GrpcWebImpl {
   }
 }
 
-type Builtin =
-  | Date
-  | Function
-  | Uint8Array
-  | string
-  | number
-  | boolean
-  | undefined;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends Array<infer U>
-  ? Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string }
-  ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & {
-      $case: T["$case"];
-    }
-  : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends { $case: string } ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & { $case: T["$case"] }
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-type Exact<P, I extends P> = P extends Builtin
-  ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
-        Exclude<keyof I, KeysOfUnion<P>>,
-        never
-      >;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
+}
+
+export class GrpcWebError extends Error {
+  constructor(message: string, public code: grpc.Code, public metadata: grpc.Metadata) {
+    super(message);
+  }
 }
