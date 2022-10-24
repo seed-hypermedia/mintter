@@ -173,9 +173,13 @@ export interface Document {
   /** This is WIP feature for block-aware API. It will supersede the `content` field. */
   children: BlockNode[];
   /** Output only. Time when document was created. */
-  createTime: Date | undefined;
+  createTime:
+    | Date
+    | undefined;
   /** Output only. Time when document was updated. */
-  updateTime: Date | undefined;
+  updateTime:
+    | Date
+    | undefined;
   /** Output only. Time when this version was published. Not present in drafts. */
   publishTime: Date | undefined;
 }
@@ -183,7 +187,9 @@ export interface Document {
 /** Content block with children. */
 export interface BlockNode {
   /** Content block. */
-  block: Block | undefined;
+  block:
+    | Block
+    | undefined;
   /** Child blocks. */
   children: BlockNode[];
 }
@@ -197,7 +203,7 @@ export interface Block {
   /** Text of the content block. */
   text: string;
   /** Arbitrary attributes of the block. */
-  attributes: Record<string, unknown>;
+  attributes: { [key: string]: string };
   /** Annotation "layers" of the block. */
   annotations: Annotation[];
 }
@@ -242,7 +248,9 @@ export interface Annotation_AttributesEntry {
 /** Description of a link inside a document. */
 export interface Link {
   /** Required. Describes where link originates from. */
-  source: LinkNode | undefined;
+  source:
+    | LinkNode
+    | undefined;
   /**
    * Required. Describes where link points to.
    * Here the block_id is optional, because the whole document can be linked.
@@ -265,10 +273,7 @@ function createBaseCreateDraftRequest(): CreateDraftRequest {
 }
 
 export const CreateDraftRequest = {
-  encode(
-    message: CreateDraftRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: CreateDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.existingDocumentId !== "") {
       writer.uint32(10).string(message.existingDocumentId);
     }
@@ -294,23 +299,16 @@ export const CreateDraftRequest = {
   },
 
   fromJSON(object: any): CreateDraftRequest {
-    return {
-      existingDocumentId: isSet(object.existingDocumentId)
-        ? String(object.existingDocumentId)
-        : "",
-    };
+    return { existingDocumentId: isSet(object.existingDocumentId) ? String(object.existingDocumentId) : "" };
   },
 
   toJSON(message: CreateDraftRequest): unknown {
     const obj: any = {};
-    message.existingDocumentId !== undefined &&
-      (obj.existingDocumentId = message.existingDocumentId);
+    message.existingDocumentId !== undefined && (obj.existingDocumentId = message.existingDocumentId);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<CreateDraftRequest>, I>>(
-    object: I
-  ): CreateDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<CreateDraftRequest>, I>>(object: I): CreateDraftRequest {
     const message = createBaseCreateDraftRequest();
     message.existingDocumentId = object.existingDocumentId ?? "";
     return message;
@@ -322,10 +320,7 @@ function createBaseDeleteDraftRequest(): DeleteDraftRequest {
 }
 
 export const DeleteDraftRequest = {
-  encode(
-    message: DeleteDraftRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: DeleteDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
     }
@@ -351,9 +346,7 @@ export const DeleteDraftRequest = {
   },
 
   fromJSON(object: any): DeleteDraftRequest {
-    return {
-      documentId: isSet(object.documentId) ? String(object.documentId) : "",
-    };
+    return { documentId: isSet(object.documentId) ? String(object.documentId) : "" };
   },
 
   toJSON(message: DeleteDraftRequest): unknown {
@@ -362,9 +355,7 @@ export const DeleteDraftRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<DeleteDraftRequest>, I>>(
-    object: I
-  ): DeleteDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<DeleteDraftRequest>, I>>(object: I): DeleteDraftRequest {
     const message = createBaseDeleteDraftRequest();
     message.documentId = object.documentId ?? "";
     return message;
@@ -376,10 +367,7 @@ function createBaseGetDraftRequest(): GetDraftRequest {
 }
 
 export const GetDraftRequest = {
-  encode(
-    message: GetDraftRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: GetDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
     }
@@ -405,9 +393,7 @@ export const GetDraftRequest = {
   },
 
   fromJSON(object: any): GetDraftRequest {
-    return {
-      documentId: isSet(object.documentId) ? String(object.documentId) : "",
-    };
+    return { documentId: isSet(object.documentId) ? String(object.documentId) : "" };
   },
 
   toJSON(message: GetDraftRequest): unknown {
@@ -416,9 +402,7 @@ export const GetDraftRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GetDraftRequest>, I>>(
-    object: I
-  ): GetDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<GetDraftRequest>, I>>(object: I): GetDraftRequest {
     const message = createBaseGetDraftRequest();
     message.documentId = object.documentId ?? "";
     return message;
@@ -430,10 +414,7 @@ function createBaseUpdateDraftRequestV2(): UpdateDraftRequestV2 {
 }
 
 export const UpdateDraftRequestV2 = {
-  encode(
-    message: UpdateDraftRequestV2,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: UpdateDraftRequestV2, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(26).string(message.documentId);
     }
@@ -443,10 +424,7 @@ export const UpdateDraftRequestV2 = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): UpdateDraftRequestV2 {
+  decode(input: _m0.Reader | Uint8Array, length?: number): UpdateDraftRequestV2 {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseUpdateDraftRequestV2();
@@ -470,9 +448,7 @@ export const UpdateDraftRequestV2 = {
   fromJSON(object: any): UpdateDraftRequestV2 {
     return {
       documentId: isSet(object.documentId) ? String(object.documentId) : "",
-      changes: Array.isArray(object?.changes)
-        ? object.changes.map((e: any) => DocumentChange.fromJSON(e))
-        : [],
+      changes: Array.isArray(object?.changes) ? object.changes.map((e: any) => DocumentChange.fromJSON(e)) : [],
     };
   },
 
@@ -480,22 +456,17 @@ export const UpdateDraftRequestV2 = {
     const obj: any = {};
     message.documentId !== undefined && (obj.documentId = message.documentId);
     if (message.changes) {
-      obj.changes = message.changes.map((e) =>
-        e ? DocumentChange.toJSON(e) : undefined
-      );
+      obj.changes = message.changes.map((e) => e ? DocumentChange.toJSON(e) : undefined);
     } else {
       obj.changes = [];
     }
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<UpdateDraftRequestV2>, I>>(
-    object: I
-  ): UpdateDraftRequestV2 {
+  fromPartial<I extends Exact<DeepPartial<UpdateDraftRequestV2>, I>>(object: I): UpdateDraftRequestV2 {
     const message = createBaseUpdateDraftRequestV2();
     message.documentId = object.documentId ?? "";
-    message.changes =
-      object.changes?.map((e) => DocumentChange.fromPartial(e)) || [];
+    message.changes = object.changes?.map((e) => DocumentChange.fromPartial(e)) || [];
     return message;
   },
 };
@@ -505,10 +476,7 @@ function createBaseDocumentChange(): DocumentChange {
 }
 
 export const DocumentChange = {
-  encode(
-    message: DocumentChange,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: DocumentChange, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.op?.$case === "setTitle") {
       writer.uint32(10).string(message.op.setTitle);
     }
@@ -516,10 +484,7 @@ export const DocumentChange = {
       writer.uint32(18).string(message.op.setSubtitle);
     }
     if (message.op?.$case === "moveBlock") {
-      DocumentChange_MoveBlock.encode(
-        message.op.moveBlock,
-        writer.uint32(26).fork()
-      ).ldelim();
+      DocumentChange_MoveBlock.encode(message.op.moveBlock, writer.uint32(26).fork()).ldelim();
     }
     if (message.op?.$case === "replaceBlock") {
       Block.encode(message.op.replaceBlock, writer.uint32(34).fork()).ldelim();
@@ -544,16 +509,10 @@ export const DocumentChange = {
           message.op = { $case: "setSubtitle", setSubtitle: reader.string() };
           break;
         case 3:
-          message.op = {
-            $case: "moveBlock",
-            moveBlock: DocumentChange_MoveBlock.decode(reader, reader.uint32()),
-          };
+          message.op = { $case: "moveBlock", moveBlock: DocumentChange_MoveBlock.decode(reader, reader.uint32()) };
           break;
         case 4:
-          message.op = {
-            $case: "replaceBlock",
-            replaceBlock: Block.decode(reader, reader.uint32()),
-          };
+          message.op = { $case: "replaceBlock", replaceBlock: Block.decode(reader, reader.uint32()) };
           break;
         case 5:
           message.op = { $case: "deleteBlock", deleteBlock: reader.string() };
@@ -573,15 +532,9 @@ export const DocumentChange = {
         : isSet(object.setSubtitle)
         ? { $case: "setSubtitle", setSubtitle: String(object.setSubtitle) }
         : isSet(object.moveBlock)
-        ? {
-            $case: "moveBlock",
-            moveBlock: DocumentChange_MoveBlock.fromJSON(object.moveBlock),
-          }
+        ? { $case: "moveBlock", moveBlock: DocumentChange_MoveBlock.fromJSON(object.moveBlock) }
         : isSet(object.replaceBlock)
-        ? {
-            $case: "replaceBlock",
-            replaceBlock: Block.fromJSON(object.replaceBlock),
-          }
+        ? { $case: "replaceBlock", replaceBlock: Block.fromJSON(object.replaceBlock) }
         : isSet(object.deleteBlock)
         ? { $case: "deleteBlock", deleteBlock: String(object.deleteBlock) }
         : undefined,
@@ -591,64 +544,32 @@ export const DocumentChange = {
   toJSON(message: DocumentChange): unknown {
     const obj: any = {};
     message.op?.$case === "setTitle" && (obj.setTitle = message.op?.setTitle);
-    message.op?.$case === "setSubtitle" &&
-      (obj.setSubtitle = message.op?.setSubtitle);
+    message.op?.$case === "setSubtitle" && (obj.setSubtitle = message.op?.setSubtitle);
     message.op?.$case === "moveBlock" &&
-      (obj.moveBlock = message.op?.moveBlock
-        ? DocumentChange_MoveBlock.toJSON(message.op?.moveBlock)
-        : undefined);
+      (obj.moveBlock = message.op?.moveBlock ? DocumentChange_MoveBlock.toJSON(message.op?.moveBlock) : undefined);
     message.op?.$case === "replaceBlock" &&
-      (obj.replaceBlock = message.op?.replaceBlock
-        ? Block.toJSON(message.op?.replaceBlock)
-        : undefined);
-    message.op?.$case === "deleteBlock" &&
-      (obj.deleteBlock = message.op?.deleteBlock);
+      (obj.replaceBlock = message.op?.replaceBlock ? Block.toJSON(message.op?.replaceBlock) : undefined);
+    message.op?.$case === "deleteBlock" && (obj.deleteBlock = message.op?.deleteBlock);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<DocumentChange>, I>>(
-    object: I
-  ): DocumentChange {
+  fromPartial<I extends Exact<DeepPartial<DocumentChange>, I>>(object: I): DocumentChange {
     const message = createBaseDocumentChange();
-    if (
-      object.op?.$case === "setTitle" &&
-      object.op?.setTitle !== undefined &&
-      object.op?.setTitle !== null
-    ) {
+    if (object.op?.$case === "setTitle" && object.op?.setTitle !== undefined && object.op?.setTitle !== null) {
       message.op = { $case: "setTitle", setTitle: object.op.setTitle };
     }
-    if (
-      object.op?.$case === "setSubtitle" &&
-      object.op?.setSubtitle !== undefined &&
-      object.op?.setSubtitle !== null
-    ) {
+    if (object.op?.$case === "setSubtitle" && object.op?.setSubtitle !== undefined && object.op?.setSubtitle !== null) {
       message.op = { $case: "setSubtitle", setSubtitle: object.op.setSubtitle };
     }
-    if (
-      object.op?.$case === "moveBlock" &&
-      object.op?.moveBlock !== undefined &&
-      object.op?.moveBlock !== null
-    ) {
-      message.op = {
-        $case: "moveBlock",
-        moveBlock: DocumentChange_MoveBlock.fromPartial(object.op.moveBlock),
-      };
+    if (object.op?.$case === "moveBlock" && object.op?.moveBlock !== undefined && object.op?.moveBlock !== null) {
+      message.op = { $case: "moveBlock", moveBlock: DocumentChange_MoveBlock.fromPartial(object.op.moveBlock) };
     }
     if (
-      object.op?.$case === "replaceBlock" &&
-      object.op?.replaceBlock !== undefined &&
-      object.op?.replaceBlock !== null
+      object.op?.$case === "replaceBlock" && object.op?.replaceBlock !== undefined && object.op?.replaceBlock !== null
     ) {
-      message.op = {
-        $case: "replaceBlock",
-        replaceBlock: Block.fromPartial(object.op.replaceBlock),
-      };
+      message.op = { $case: "replaceBlock", replaceBlock: Block.fromPartial(object.op.replaceBlock) };
     }
-    if (
-      object.op?.$case === "deleteBlock" &&
-      object.op?.deleteBlock !== undefined &&
-      object.op?.deleteBlock !== null
-    ) {
+    if (object.op?.$case === "deleteBlock" && object.op?.deleteBlock !== undefined && object.op?.deleteBlock !== null) {
       message.op = { $case: "deleteBlock", deleteBlock: object.op.deleteBlock };
     }
     return message;
@@ -660,10 +581,7 @@ function createBaseDocumentChange_MoveBlock(): DocumentChange_MoveBlock {
 }
 
 export const DocumentChange_MoveBlock = {
-  encode(
-    message: DocumentChange_MoveBlock,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: DocumentChange_MoveBlock, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.blockId !== "") {
       writer.uint32(10).string(message.blockId);
     }
@@ -676,10 +594,7 @@ export const DocumentChange_MoveBlock = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): DocumentChange_MoveBlock {
+  decode(input: _m0.Reader | Uint8Array, length?: number): DocumentChange_MoveBlock {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseDocumentChange_MoveBlock();
@@ -715,14 +630,11 @@ export const DocumentChange_MoveBlock = {
     const obj: any = {};
     message.blockId !== undefined && (obj.blockId = message.blockId);
     message.parent !== undefined && (obj.parent = message.parent);
-    message.leftSibling !== undefined &&
-      (obj.leftSibling = message.leftSibling);
+    message.leftSibling !== undefined && (obj.leftSibling = message.leftSibling);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<DocumentChange_MoveBlock>, I>>(
-    object: I
-  ): DocumentChange_MoveBlock {
+  fromPartial<I extends Exact<DeepPartial<DocumentChange_MoveBlock>, I>>(object: I): DocumentChange_MoveBlock {
     const message = createBaseDocumentChange_MoveBlock();
     message.blockId = object.blockId ?? "";
     message.parent = object.parent ?? "";
@@ -736,10 +648,7 @@ function createBaseListDraftsRequest(): ListDraftsRequest {
 }
 
 export const ListDraftsRequest = {
-  encode(
-    message: ListDraftsRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListDraftsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.pageSize !== 0) {
       writer.uint32(8).int32(message.pageSize);
     }
@@ -779,15 +688,12 @@ export const ListDraftsRequest = {
 
   toJSON(message: ListDraftsRequest): unknown {
     const obj: any = {};
-    message.pageSize !== undefined &&
-      (obj.pageSize = Math.round(message.pageSize));
+    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize));
     message.pageToken !== undefined && (obj.pageToken = message.pageToken);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListDraftsRequest>, I>>(
-    object: I
-  ): ListDraftsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListDraftsRequest>, I>>(object: I): ListDraftsRequest {
     const message = createBaseListDraftsRequest();
     message.pageSize = object.pageSize ?? 0;
     message.pageToken = object.pageToken ?? "";
@@ -800,10 +706,7 @@ function createBaseListDraftsResponse(): ListDraftsResponse {
 }
 
 export const ListDraftsResponse = {
-  encode(
-    message: ListDraftsResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListDraftsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.documents) {
       Document.encode(v!, writer.uint32(10).fork()).ldelim();
     }
@@ -836,35 +739,25 @@ export const ListDraftsResponse = {
 
   fromJSON(object: any): ListDraftsResponse {
     return {
-      documents: Array.isArray(object?.documents)
-        ? object.documents.map((e: any) => Document.fromJSON(e))
-        : [],
-      nextPageToken: isSet(object.nextPageToken)
-        ? String(object.nextPageToken)
-        : "",
+      documents: Array.isArray(object?.documents) ? object.documents.map((e: any) => Document.fromJSON(e)) : [],
+      nextPageToken: isSet(object.nextPageToken) ? String(object.nextPageToken) : "",
     };
   },
 
   toJSON(message: ListDraftsResponse): unknown {
     const obj: any = {};
     if (message.documents) {
-      obj.documents = message.documents.map((e) =>
-        e ? Document.toJSON(e) : undefined
-      );
+      obj.documents = message.documents.map((e) => e ? Document.toJSON(e) : undefined);
     } else {
       obj.documents = [];
     }
-    message.nextPageToken !== undefined &&
-      (obj.nextPageToken = message.nextPageToken);
+    message.nextPageToken !== undefined && (obj.nextPageToken = message.nextPageToken);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListDraftsResponse>, I>>(
-    object: I
-  ): ListDraftsResponse {
+  fromPartial<I extends Exact<DeepPartial<ListDraftsResponse>, I>>(object: I): ListDraftsResponse {
     const message = createBaseListDraftsResponse();
-    message.documents =
-      object.documents?.map((e) => Document.fromPartial(e)) || [];
+    message.documents = object.documents?.map((e) => Document.fromPartial(e)) || [];
     message.nextPageToken = object.nextPageToken ?? "";
     return message;
   },
@@ -875,10 +768,7 @@ function createBasePublishDraftRequest(): PublishDraftRequest {
 }
 
 export const PublishDraftRequest = {
-  encode(
-    message: PublishDraftRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: PublishDraftRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
     }
@@ -904,9 +794,7 @@ export const PublishDraftRequest = {
   },
 
   fromJSON(object: any): PublishDraftRequest {
-    return {
-      documentId: isSet(object.documentId) ? String(object.documentId) : "",
-    };
+    return { documentId: isSet(object.documentId) ? String(object.documentId) : "" };
   },
 
   toJSON(message: PublishDraftRequest): unknown {
@@ -915,9 +803,7 @@ export const PublishDraftRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<PublishDraftRequest>, I>>(
-    object: I
-  ): PublishDraftRequest {
+  fromPartial<I extends Exact<DeepPartial<PublishDraftRequest>, I>>(object: I): PublishDraftRequest {
     const message = createBasePublishDraftRequest();
     message.documentId = object.documentId ?? "";
     return message;
@@ -929,10 +815,7 @@ function createBaseGetPublicationRequest(): GetPublicationRequest {
 }
 
 export const GetPublicationRequest = {
-  encode(
-    message: GetPublicationRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: GetPublicationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
     }
@@ -942,10 +825,7 @@ export const GetPublicationRequest = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): GetPublicationRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetPublicationRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseGetPublicationRequest();
@@ -980,9 +860,7 @@ export const GetPublicationRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GetPublicationRequest>, I>>(
-    object: I
-  ): GetPublicationRequest {
+  fromPartial<I extends Exact<DeepPartial<GetPublicationRequest>, I>>(object: I): GetPublicationRequest {
     const message = createBaseGetPublicationRequest();
     message.documentId = object.documentId ?? "";
     message.version = object.version ?? "";
@@ -995,20 +873,14 @@ function createBaseDeletePublicationRequest(): DeletePublicationRequest {
 }
 
 export const DeletePublicationRequest = {
-  encode(
-    message: DeletePublicationRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: DeletePublicationRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
     }
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): DeletePublicationRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeletePublicationRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseDeletePublicationRequest();
@@ -1027,9 +899,7 @@ export const DeletePublicationRequest = {
   },
 
   fromJSON(object: any): DeletePublicationRequest {
-    return {
-      documentId: isSet(object.documentId) ? String(object.documentId) : "",
-    };
+    return { documentId: isSet(object.documentId) ? String(object.documentId) : "" };
   },
 
   toJSON(message: DeletePublicationRequest): unknown {
@@ -1038,9 +908,7 @@ export const DeletePublicationRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<DeletePublicationRequest>, I>>(
-    object: I
-  ): DeletePublicationRequest {
+  fromPartial<I extends Exact<DeepPartial<DeletePublicationRequest>, I>>(object: I): DeletePublicationRequest {
     const message = createBaseDeletePublicationRequest();
     message.documentId = object.documentId ?? "";
     return message;
@@ -1052,10 +920,7 @@ function createBaseListPublicationsRequest(): ListPublicationsRequest {
 }
 
 export const ListPublicationsRequest = {
-  encode(
-    message: ListPublicationsRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.pageSize !== 0) {
       writer.uint32(8).int32(message.pageSize);
     }
@@ -1065,10 +930,7 @@ export const ListPublicationsRequest = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): ListPublicationsRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseListPublicationsRequest();
@@ -1098,15 +960,12 @@ export const ListPublicationsRequest = {
 
   toJSON(message: ListPublicationsRequest): unknown {
     const obj: any = {};
-    message.pageSize !== undefined &&
-      (obj.pageSize = Math.round(message.pageSize));
+    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize));
     message.pageToken !== undefined && (obj.pageToken = message.pageToken);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListPublicationsRequest>, I>>(
-    object: I
-  ): ListPublicationsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListPublicationsRequest>, I>>(object: I): ListPublicationsRequest {
     const message = createBaseListPublicationsRequest();
     message.pageSize = object.pageSize ?? 0;
     message.pageToken = object.pageToken ?? "";
@@ -1119,10 +978,7 @@ function createBaseListPublicationsResponse(): ListPublicationsResponse {
 }
 
 export const ListPublicationsResponse = {
-  encode(
-    message: ListPublicationsResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListPublicationsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.publications) {
       Publication.encode(v!, writer.uint32(10).fork()).ldelim();
     }
@@ -1132,10 +988,7 @@ export const ListPublicationsResponse = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): ListPublicationsResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseListPublicationsResponse();
@@ -1143,9 +996,7 @@ export const ListPublicationsResponse = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.publications.push(
-            Publication.decode(reader, reader.uint32())
-          );
+          message.publications.push(Publication.decode(reader, reader.uint32()));
           break;
         case 2:
           message.nextPageToken = reader.string();
@@ -1163,32 +1014,24 @@ export const ListPublicationsResponse = {
       publications: Array.isArray(object?.publications)
         ? object.publications.map((e: any) => Publication.fromJSON(e))
         : [],
-      nextPageToken: isSet(object.nextPageToken)
-        ? String(object.nextPageToken)
-        : "",
+      nextPageToken: isSet(object.nextPageToken) ? String(object.nextPageToken) : "",
     };
   },
 
   toJSON(message: ListPublicationsResponse): unknown {
     const obj: any = {};
     if (message.publications) {
-      obj.publications = message.publications.map((e) =>
-        e ? Publication.toJSON(e) : undefined
-      );
+      obj.publications = message.publications.map((e) => e ? Publication.toJSON(e) : undefined);
     } else {
       obj.publications = [];
     }
-    message.nextPageToken !== undefined &&
-      (obj.nextPageToken = message.nextPageToken);
+    message.nextPageToken !== undefined && (obj.nextPageToken = message.nextPageToken);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListPublicationsResponse>, I>>(
-    object: I
-  ): ListPublicationsResponse {
+  fromPartial<I extends Exact<DeepPartial<ListPublicationsResponse>, I>>(object: I): ListPublicationsResponse {
     const message = createBaseListPublicationsResponse();
-    message.publications =
-      object.publications?.map((e) => Publication.fromPartial(e)) || [];
+    message.publications = object.publications?.map((e) => Publication.fromPartial(e)) || [];
     message.nextPageToken = object.nextPageToken ?? "";
     return message;
   },
@@ -1199,10 +1042,7 @@ function createBaseListCitationsRequest(): ListCitationsRequest {
 }
 
 export const ListCitationsRequest = {
-  encode(
-    message: ListCitationsRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListCitationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
     }
@@ -1212,10 +1052,7 @@ export const ListCitationsRequest = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): ListCitationsRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListCitationsRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseListCitationsRequest();
@@ -1250,9 +1087,7 @@ export const ListCitationsRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListCitationsRequest>, I>>(
-    object: I
-  ): ListCitationsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListCitationsRequest>, I>>(object: I): ListCitationsRequest {
     const message = createBaseListCitationsRequest();
     message.documentId = object.documentId ?? "";
     message.depth = object.depth ?? 0;
@@ -1265,20 +1100,14 @@ function createBaseListCitationsResponse(): ListCitationsResponse {
 }
 
 export const ListCitationsResponse = {
-  encode(
-    message: ListCitationsResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListCitationsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.links) {
       Link.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): ListCitationsResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListCitationsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseListCitationsResponse();
@@ -1297,26 +1126,20 @@ export const ListCitationsResponse = {
   },
 
   fromJSON(object: any): ListCitationsResponse {
-    return {
-      links: Array.isArray(object?.links)
-        ? object.links.map((e: any) => Link.fromJSON(e))
-        : [],
-    };
+    return { links: Array.isArray(object?.links) ? object.links.map((e: any) => Link.fromJSON(e)) : [] };
   },
 
   toJSON(message: ListCitationsResponse): unknown {
     const obj: any = {};
     if (message.links) {
-      obj.links = message.links.map((e) => (e ? Link.toJSON(e) : undefined));
+      obj.links = message.links.map((e) => e ? Link.toJSON(e) : undefined);
     } else {
       obj.links = [];
     }
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListCitationsResponse>, I>>(
-    object: I
-  ): ListCitationsResponse {
+  fromPartial<I extends Exact<DeepPartial<ListCitationsResponse>, I>>(object: I): ListCitationsResponse {
     const message = createBaseListCitationsResponse();
     message.links = object.links?.map((e) => Link.fromPartial(e)) || [];
     return message;
@@ -1328,10 +1151,7 @@ function createBasePublication(): Publication {
 }
 
 export const Publication = {
-  encode(
-    message: Publication,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Publication, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.version !== "") {
       writer.uint32(10).string(message.version);
     }
@@ -1365,31 +1185,23 @@ export const Publication = {
   fromJSON(object: any): Publication {
     return {
       version: isSet(object.version) ? String(object.version) : "",
-      document: isSet(object.document)
-        ? Document.fromJSON(object.document)
-        : undefined,
+      document: isSet(object.document) ? Document.fromJSON(object.document) : undefined,
     };
   },
 
   toJSON(message: Publication): unknown {
     const obj: any = {};
     message.version !== undefined && (obj.version = message.version);
-    message.document !== undefined &&
-      (obj.document = message.document
-        ? Document.toJSON(message.document)
-        : undefined);
+    message.document !== undefined && (obj.document = message.document ? Document.toJSON(message.document) : undefined);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<Publication>, I>>(
-    object: I
-  ): Publication {
+  fromPartial<I extends Exact<DeepPartial<Publication>, I>>(object: I): Publication {
     const message = createBasePublication();
     message.version = object.version ?? "";
-    message.document =
-      object.document !== undefined && object.document !== null
-        ? Document.fromPartial(object.document)
-        : undefined;
+    message.document = (object.document !== undefined && object.document !== null)
+      ? Document.fromPartial(object.document)
+      : undefined;
     return message;
   },
 };
@@ -1408,10 +1220,7 @@ function createBaseDocument(): Document {
 }
 
 export const Document = {
-  encode(
-    message: Document,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Document, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== "") {
       writer.uint32(10).string(message.id);
     }
@@ -1428,22 +1237,13 @@ export const Document = {
       BlockNode.encode(v!, writer.uint32(74).fork()).ldelim();
     }
     if (message.createTime !== undefined) {
-      Timestamp.encode(
-        toTimestamp(message.createTime),
-        writer.uint32(50).fork()
-      ).ldelim();
+      Timestamp.encode(toTimestamp(message.createTime), writer.uint32(50).fork()).ldelim();
     }
     if (message.updateTime !== undefined) {
-      Timestamp.encode(
-        toTimestamp(message.updateTime),
-        writer.uint32(58).fork()
-      ).ldelim();
+      Timestamp.encode(toTimestamp(message.updateTime), writer.uint32(58).fork()).ldelim();
     }
     if (message.publishTime !== undefined) {
-      Timestamp.encode(
-        toTimestamp(message.publishTime),
-        writer.uint32(66).fork()
-      ).ldelim();
+      Timestamp.encode(toTimestamp(message.publishTime), writer.uint32(66).fork()).ldelim();
     }
     return writer;
   },
@@ -1471,19 +1271,13 @@ export const Document = {
           message.children.push(BlockNode.decode(reader, reader.uint32()));
           break;
         case 6:
-          message.createTime = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
-          );
+          message.createTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           break;
         case 7:
-          message.updateTime = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
-          );
+          message.updateTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           break;
         case 8:
-          message.publishTime = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
-          );
+          message.publishTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           break;
         default:
           reader.skipType(tag & 7);
@@ -1499,18 +1293,10 @@ export const Document = {
       title: isSet(object.title) ? String(object.title) : "",
       subtitle: isSet(object.subtitle) ? String(object.subtitle) : "",
       author: isSet(object.author) ? String(object.author) : "",
-      children: Array.isArray(object?.children)
-        ? object.children.map((e: any) => BlockNode.fromJSON(e))
-        : [],
-      createTime: isSet(object.createTime)
-        ? fromJsonTimestamp(object.createTime)
-        : undefined,
-      updateTime: isSet(object.updateTime)
-        ? fromJsonTimestamp(object.updateTime)
-        : undefined,
-      publishTime: isSet(object.publishTime)
-        ? fromJsonTimestamp(object.publishTime)
-        : undefined,
+      children: Array.isArray(object?.children) ? object.children.map((e: any) => BlockNode.fromJSON(e)) : [],
+      createTime: isSet(object.createTime) ? fromJsonTimestamp(object.createTime) : undefined,
+      updateTime: isSet(object.updateTime) ? fromJsonTimestamp(object.updateTime) : undefined,
+      publishTime: isSet(object.publishTime) ? fromJsonTimestamp(object.publishTime) : undefined,
     };
   },
 
@@ -1521,18 +1307,13 @@ export const Document = {
     message.subtitle !== undefined && (obj.subtitle = message.subtitle);
     message.author !== undefined && (obj.author = message.author);
     if (message.children) {
-      obj.children = message.children.map((e) =>
-        e ? BlockNode.toJSON(e) : undefined
-      );
+      obj.children = message.children.map((e) => e ? BlockNode.toJSON(e) : undefined);
     } else {
       obj.children = [];
     }
-    message.createTime !== undefined &&
-      (obj.createTime = message.createTime.toISOString());
-    message.updateTime !== undefined &&
-      (obj.updateTime = message.updateTime.toISOString());
-    message.publishTime !== undefined &&
-      (obj.publishTime = message.publishTime.toISOString());
+    message.createTime !== undefined && (obj.createTime = message.createTime.toISOString());
+    message.updateTime !== undefined && (obj.updateTime = message.updateTime.toISOString());
+    message.publishTime !== undefined && (obj.publishTime = message.publishTime.toISOString());
     return obj;
   },
 
@@ -1542,8 +1323,7 @@ export const Document = {
     message.title = object.title ?? "";
     message.subtitle = object.subtitle ?? "";
     message.author = object.author ?? "";
-    message.children =
-      object.children?.map((e) => BlockNode.fromPartial(e)) || [];
+    message.children = object.children?.map((e) => BlockNode.fromPartial(e)) || [];
     message.createTime = object.createTime ?? undefined;
     message.updateTime = object.updateTime ?? undefined;
     message.publishTime = object.publishTime ?? undefined;
@@ -1556,10 +1336,7 @@ function createBaseBlockNode(): BlockNode {
 }
 
 export const BlockNode = {
-  encode(
-    message: BlockNode,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: BlockNode, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.block !== undefined) {
       Block.encode(message.block, writer.uint32(10).fork()).ldelim();
     }
@@ -1593,36 +1370,25 @@ export const BlockNode = {
   fromJSON(object: any): BlockNode {
     return {
       block: isSet(object.block) ? Block.fromJSON(object.block) : undefined,
-      children: Array.isArray(object?.children)
-        ? object.children.map((e: any) => BlockNode.fromJSON(e))
-        : [],
+      children: Array.isArray(object?.children) ? object.children.map((e: any) => BlockNode.fromJSON(e)) : [],
     };
   },
 
   toJSON(message: BlockNode): unknown {
     const obj: any = {};
-    message.block !== undefined &&
-      (obj.block = message.block ? Block.toJSON(message.block) : undefined);
+    message.block !== undefined && (obj.block = message.block ? Block.toJSON(message.block) : undefined);
     if (message.children) {
-      obj.children = message.children.map((e) =>
-        e ? BlockNode.toJSON(e) : undefined
-      );
+      obj.children = message.children.map((e) => e ? BlockNode.toJSON(e) : undefined);
     } else {
       obj.children = [];
     }
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<BlockNode>, I>>(
-    object: I
-  ): BlockNode {
+  fromPartial<I extends Exact<DeepPartial<BlockNode>, I>>(object: I): BlockNode {
     const message = createBaseBlockNode();
-    message.block =
-      object.block !== undefined && object.block !== null
-        ? Block.fromPartial(object.block)
-        : undefined;
-    message.children =
-      object.children?.map((e) => BlockNode.fromPartial(e)) || [];
+    message.block = (object.block !== undefined && object.block !== null) ? Block.fromPartial(object.block) : undefined;
+    message.children = object.children?.map((e) => BlockNode.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1643,10 +1409,7 @@ export const Block = {
       writer.uint32(26).string(message.text);
     }
     Object.entries(message.attributes).forEach(([key, value]) => {
-      Block_AttributesEntry.encode(
-        { key: key as any, value },
-        writer.uint32(34).fork()
-      ).ldelim();
+      Block_AttributesEntry.encode({ key: key as any, value }, writer.uint32(34).fork()).ldelim();
     });
     for (const v of message.annotations) {
       Annotation.encode(v!, writer.uint32(42).fork()).ldelim();
@@ -1693,17 +1456,12 @@ export const Block = {
       type: isSet(object.type) ? String(object.type) : "",
       text: isSet(object.text) ? String(object.text) : "",
       attributes: isObject(object.attributes)
-        ? Object.entries(object.attributes).reduce<{ [key: string]: string }>(
-            (acc, [key, value]) => {
-              acc[key] = String(value);
-              return acc;
-            },
-            {}
-          )
+        ? Object.entries(object.attributes).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        }, {})
         : {},
-      annotations: Array.isArray(object?.annotations)
-        ? object.annotations.map((e: any) => Annotation.fromJSON(e))
-        : [],
+      annotations: Array.isArray(object?.annotations) ? object.annotations.map((e: any) => Annotation.fromJSON(e)) : [],
     };
   },
 
@@ -1719,9 +1477,7 @@ export const Block = {
       });
     }
     if (message.annotations) {
-      obj.annotations = message.annotations.map((e) =>
-        e ? Annotation.toJSON(e) : undefined
-      );
+      obj.annotations = message.annotations.map((e) => e ? Annotation.toJSON(e) : undefined);
     } else {
       obj.annotations = [];
     }
@@ -1733,16 +1489,16 @@ export const Block = {
     message.id = object.id ?? "";
     message.type = object.type ?? "";
     message.text = object.text ?? "";
-    message.attributes = Object.entries(object.attributes ?? {}).reduce<{
-      [key: string]: string;
-    }>((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = String(value);
-      }
-      return acc;
-    }, {});
-    message.annotations =
-      object.annotations?.map((e) => Annotation.fromPartial(e)) || [];
+    message.attributes = Object.entries(object.attributes ?? {}).reduce<{ [key: string]: string }>(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = String(value);
+        }
+        return acc;
+      },
+      {},
+    );
+    message.annotations = object.annotations?.map((e) => Annotation.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1752,10 +1508,7 @@ function createBaseBlock_AttributesEntry(): Block_AttributesEntry {
 }
 
 export const Block_AttributesEntry = {
-  encode(
-    message: Block_AttributesEntry,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Block_AttributesEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
     }
@@ -1765,10 +1518,7 @@ export const Block_AttributesEntry = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): Block_AttributesEntry {
+  decode(input: _m0.Reader | Uint8Array, length?: number): Block_AttributesEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBlock_AttributesEntry();
@@ -1790,10 +1540,7 @@ export const Block_AttributesEntry = {
   },
 
   fromJSON(object: any): Block_AttributesEntry {
-    return {
-      key: isSet(object.key) ? String(object.key) : "",
-      value: isSet(object.value) ? String(object.value) : "",
-    };
+    return { key: isSet(object.key) ? String(object.key) : "", value: isSet(object.value) ? String(object.value) : "" };
   },
 
   toJSON(message: Block_AttributesEntry): unknown {
@@ -1803,9 +1550,7 @@ export const Block_AttributesEntry = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<Block_AttributesEntry>, I>>(
-    object: I
-  ): Block_AttributesEntry {
+  fromPartial<I extends Exact<DeepPartial<Block_AttributesEntry>, I>>(object: I): Block_AttributesEntry {
     const message = createBaseBlock_AttributesEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
@@ -1818,18 +1563,12 @@ function createBaseAnnotation(): Annotation {
 }
 
 export const Annotation = {
-  encode(
-    message: Annotation,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Annotation, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.type !== "") {
       writer.uint32(10).string(message.type);
     }
     Object.entries(message.attributes).forEach(([key, value]) => {
-      Annotation_AttributesEntry.encode(
-        { key: key as any, value },
-        writer.uint32(18).fork()
-      ).ldelim();
+      Annotation_AttributesEntry.encode({ key: key as any, value }, writer.uint32(18).fork()).ldelim();
     });
     writer.uint32(26).fork();
     for (const v of message.starts) {
@@ -1855,10 +1594,7 @@ export const Annotation = {
           message.type = reader.string();
           break;
         case 2:
-          const entry2 = Annotation_AttributesEntry.decode(
-            reader,
-            reader.uint32()
-          );
+          const entry2 = Annotation_AttributesEntry.decode(reader, reader.uint32());
           if (entry2.value !== undefined) {
             message.attributes[entry2.key] = entry2.value;
           }
@@ -1895,20 +1631,13 @@ export const Annotation = {
     return {
       type: isSet(object.type) ? String(object.type) : "",
       attributes: isObject(object.attributes)
-        ? Object.entries(object.attributes).reduce<{ [key: string]: string }>(
-            (acc, [key, value]) => {
-              acc[key] = String(value);
-              return acc;
-            },
-            {}
-          )
+        ? Object.entries(object.attributes).reduce<{ [key: string]: string }>((acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        }, {})
         : {},
-      starts: Array.isArray(object?.starts)
-        ? object.starts.map((e: any) => Number(e))
-        : [],
-      ends: Array.isArray(object?.ends)
-        ? object.ends.map((e: any) => Number(e))
-        : [],
+      starts: Array.isArray(object?.starts) ? object.starts.map((e: any) => Number(e)) : [],
+      ends: Array.isArray(object?.ends) ? object.ends.map((e: any) => Number(e)) : [],
     };
   },
 
@@ -1934,19 +1663,18 @@ export const Annotation = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<Annotation>, I>>(
-    object: I
-  ): Annotation {
+  fromPartial<I extends Exact<DeepPartial<Annotation>, I>>(object: I): Annotation {
     const message = createBaseAnnotation();
     message.type = object.type ?? "";
-    message.attributes = Object.entries(object.attributes ?? {}).reduce<{
-      [key: string]: string;
-    }>((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key] = String(value);
-      }
-      return acc;
-    }, {});
+    message.attributes = Object.entries(object.attributes ?? {}).reduce<{ [key: string]: string }>(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = String(value);
+        }
+        return acc;
+      },
+      {},
+    );
     message.starts = object.starts?.map((e) => e) || [];
     message.ends = object.ends?.map((e) => e) || [];
     return message;
@@ -1958,10 +1686,7 @@ function createBaseAnnotation_AttributesEntry(): Annotation_AttributesEntry {
 }
 
 export const Annotation_AttributesEntry = {
-  encode(
-    message: Annotation_AttributesEntry,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Annotation_AttributesEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
     }
@@ -1971,10 +1696,7 @@ export const Annotation_AttributesEntry = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): Annotation_AttributesEntry {
+  decode(input: _m0.Reader | Uint8Array, length?: number): Annotation_AttributesEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseAnnotation_AttributesEntry();
@@ -1996,10 +1718,7 @@ export const Annotation_AttributesEntry = {
   },
 
   fromJSON(object: any): Annotation_AttributesEntry {
-    return {
-      key: isSet(object.key) ? String(object.key) : "",
-      value: isSet(object.value) ? String(object.value) : "",
-    };
+    return { key: isSet(object.key) ? String(object.key) : "", value: isSet(object.value) ? String(object.value) : "" };
   },
 
   toJSON(message: Annotation_AttributesEntry): unknown {
@@ -2009,9 +1728,7 @@ export const Annotation_AttributesEntry = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<Annotation_AttributesEntry>, I>>(
-    object: I
-  ): Annotation_AttributesEntry {
+  fromPartial<I extends Exact<DeepPartial<Annotation_AttributesEntry>, I>>(object: I): Annotation_AttributesEntry {
     const message = createBaseAnnotation_AttributesEntry();
     message.key = object.key ?? "";
     message.value = object.value ?? "";
@@ -2057,38 +1774,26 @@ export const Link = {
 
   fromJSON(object: any): Link {
     return {
-      source: isSet(object.source)
-        ? LinkNode.fromJSON(object.source)
-        : undefined,
-      target: isSet(object.target)
-        ? LinkNode.fromJSON(object.target)
-        : undefined,
+      source: isSet(object.source) ? LinkNode.fromJSON(object.source) : undefined,
+      target: isSet(object.target) ? LinkNode.fromJSON(object.target) : undefined,
     };
   },
 
   toJSON(message: Link): unknown {
     const obj: any = {};
-    message.source !== undefined &&
-      (obj.source = message.source
-        ? LinkNode.toJSON(message.source)
-        : undefined);
-    message.target !== undefined &&
-      (obj.target = message.target
-        ? LinkNode.toJSON(message.target)
-        : undefined);
+    message.source !== undefined && (obj.source = message.source ? LinkNode.toJSON(message.source) : undefined);
+    message.target !== undefined && (obj.target = message.target ? LinkNode.toJSON(message.target) : undefined);
     return obj;
   },
 
   fromPartial<I extends Exact<DeepPartial<Link>, I>>(object: I): Link {
     const message = createBaseLink();
-    message.source =
-      object.source !== undefined && object.source !== null
-        ? LinkNode.fromPartial(object.source)
-        : undefined;
-    message.target =
-      object.target !== undefined && object.target !== null
-        ? LinkNode.fromPartial(object.target)
-        : undefined;
+    message.source = (object.source !== undefined && object.source !== null)
+      ? LinkNode.fromPartial(object.source)
+      : undefined;
+    message.target = (object.target !== undefined && object.target !== null)
+      ? LinkNode.fromPartial(object.target)
+      : undefined;
     return message;
   },
 };
@@ -2098,10 +1803,7 @@ function createBaseLinkNode(): LinkNode {
 }
 
 export const LinkNode = {
-  encode(
-    message: LinkNode,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: LinkNode, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
     }
@@ -2166,35 +1868,17 @@ export const LinkNode = {
 /** Drafts service exposes the functionality */
 export interface Drafts {
   /** Creates a new draft with a new permanent document ID. */
-  createDraft(
-    request: DeepPartial<CreateDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Document>;
+  createDraft(request: DeepPartial<CreateDraftRequest>, metadata?: grpc.Metadata): Promise<Document>;
   /** Deletes a draft by its document ID. */
-  deleteDraft(
-    request: DeepPartial<DeleteDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty>;
+  deleteDraft(request: DeepPartial<DeleteDraftRequest>, metadata?: grpc.Metadata): Promise<Empty>;
   /** Gets a single draft if exists. */
-  getDraft(
-    request: DeepPartial<GetDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Document>;
+  getDraft(request: DeepPartial<GetDraftRequest>, metadata?: grpc.Metadata): Promise<Document>;
   /** Updates a draft using granular update operations. */
-  updateDraftV2(
-    request: DeepPartial<UpdateDraftRequestV2>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty>;
+  updateDraftV2(request: DeepPartial<UpdateDraftRequestV2>, metadata?: grpc.Metadata): Promise<Empty>;
   /** List currently stored drafts. */
-  listDrafts(
-    request: DeepPartial<ListDraftsRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ListDraftsResponse>;
+  listDrafts(request: DeepPartial<ListDraftsRequest>, metadata?: grpc.Metadata): Promise<ListDraftsResponse>;
   /** Publishes a draft. I.e. draft will become a publication, and will no longer appear in drafts section. */
-  publishDraft(
-    request: DeepPartial<PublishDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Publication>;
+  publishDraft(request: DeepPartial<PublishDraftRequest>, metadata?: grpc.Metadata): Promise<Publication>;
 }
 
 export class DraftsClientImpl implements Drafts {
@@ -2210,76 +1894,32 @@ export class DraftsClientImpl implements Drafts {
     this.publishDraft = this.publishDraft.bind(this);
   }
 
-  createDraft(
-    request: DeepPartial<CreateDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Document> {
-    return this.rpc.unary(
-      DraftsCreateDraftDesc,
-      CreateDraftRequest.fromPartial(request),
-      metadata
-    );
+  createDraft(request: DeepPartial<CreateDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
+    return this.rpc.unary(DraftsCreateDraftDesc, CreateDraftRequest.fromPartial(request), metadata);
   }
 
-  deleteDraft(
-    request: DeepPartial<DeleteDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty> {
-    return this.rpc.unary(
-      DraftsDeleteDraftDesc,
-      DeleteDraftRequest.fromPartial(request),
-      metadata
-    );
+  deleteDraft(request: DeepPartial<DeleteDraftRequest>, metadata?: grpc.Metadata): Promise<Empty> {
+    return this.rpc.unary(DraftsDeleteDraftDesc, DeleteDraftRequest.fromPartial(request), metadata);
   }
 
-  getDraft(
-    request: DeepPartial<GetDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Document> {
-    return this.rpc.unary(
-      DraftsGetDraftDesc,
-      GetDraftRequest.fromPartial(request),
-      metadata
-    );
+  getDraft(request: DeepPartial<GetDraftRequest>, metadata?: grpc.Metadata): Promise<Document> {
+    return this.rpc.unary(DraftsGetDraftDesc, GetDraftRequest.fromPartial(request), metadata);
   }
 
-  updateDraftV2(
-    request: DeepPartial<UpdateDraftRequestV2>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty> {
-    return this.rpc.unary(
-      DraftsUpdateDraftV2Desc,
-      UpdateDraftRequestV2.fromPartial(request),
-      metadata
-    );
+  updateDraftV2(request: DeepPartial<UpdateDraftRequestV2>, metadata?: grpc.Metadata): Promise<Empty> {
+    return this.rpc.unary(DraftsUpdateDraftV2Desc, UpdateDraftRequestV2.fromPartial(request), metadata);
   }
 
-  listDrafts(
-    request: DeepPartial<ListDraftsRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ListDraftsResponse> {
-    return this.rpc.unary(
-      DraftsListDraftsDesc,
-      ListDraftsRequest.fromPartial(request),
-      metadata
-    );
+  listDrafts(request: DeepPartial<ListDraftsRequest>, metadata?: grpc.Metadata): Promise<ListDraftsResponse> {
+    return this.rpc.unary(DraftsListDraftsDesc, ListDraftsRequest.fromPartial(request), metadata);
   }
 
-  publishDraft(
-    request: DeepPartial<PublishDraftRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Publication> {
-    return this.rpc.unary(
-      DraftsPublishDraftDesc,
-      PublishDraftRequest.fromPartial(request),
-      metadata
-    );
+  publishDraft(request: DeepPartial<PublishDraftRequest>, metadata?: grpc.Metadata): Promise<Publication> {
+    return this.rpc.unary(DraftsPublishDraftDesc, PublishDraftRequest.fromPartial(request), metadata);
   }
 }
 
-export const DraftsDesc = {
-  serviceName: "com.mintter.documents.v1alpha.Drafts",
-};
+export const DraftsDesc = { serviceName: "com.mintter.documents.v1alpha.Drafts" };
 
 export const DraftsCreateDraftDesc: UnaryMethodDefinitionish = {
   methodName: "CreateDraft",
@@ -2416,19 +2056,13 @@ export const DraftsPublishDraftDesc: UnaryMethodDefinitionish = {
 /** Publications service provides access to published documents. */
 export interface Publications {
   /** Gets a single publication. */
-  getPublication(
-    request: DeepPartial<GetPublicationRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Publication>;
+  getPublication(request: DeepPartial<GetPublicationRequest>, metadata?: grpc.Metadata): Promise<Publication>;
   /** Deletes a publication from the local node. It removes all the patches corresponding to a document. */
-  deletePublication(
-    request: DeepPartial<DeletePublicationRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty>;
+  deletePublication(request: DeepPartial<DeletePublicationRequest>, metadata?: grpc.Metadata): Promise<Empty>;
   /** Lists stored publications. Only the most recent versions show up. */
   listPublications(
     request: DeepPartial<ListPublicationsRequest>,
-    metadata?: grpc.Metadata
+    metadata?: grpc.Metadata,
   ): Promise<ListPublicationsResponse>;
 }
 
@@ -2442,43 +2076,23 @@ export class PublicationsClientImpl implements Publications {
     this.listPublications = this.listPublications.bind(this);
   }
 
-  getPublication(
-    request: DeepPartial<GetPublicationRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Publication> {
-    return this.rpc.unary(
-      PublicationsGetPublicationDesc,
-      GetPublicationRequest.fromPartial(request),
-      metadata
-    );
+  getPublication(request: DeepPartial<GetPublicationRequest>, metadata?: grpc.Metadata): Promise<Publication> {
+    return this.rpc.unary(PublicationsGetPublicationDesc, GetPublicationRequest.fromPartial(request), metadata);
   }
 
-  deletePublication(
-    request: DeepPartial<DeletePublicationRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty> {
-    return this.rpc.unary(
-      PublicationsDeletePublicationDesc,
-      DeletePublicationRequest.fromPartial(request),
-      metadata
-    );
+  deletePublication(request: DeepPartial<DeletePublicationRequest>, metadata?: grpc.Metadata): Promise<Empty> {
+    return this.rpc.unary(PublicationsDeletePublicationDesc, DeletePublicationRequest.fromPartial(request), metadata);
   }
 
   listPublications(
     request: DeepPartial<ListPublicationsRequest>,
-    metadata?: grpc.Metadata
+    metadata?: grpc.Metadata,
   ): Promise<ListPublicationsResponse> {
-    return this.rpc.unary(
-      PublicationsListPublicationsDesc,
-      ListPublicationsRequest.fromPartial(request),
-      metadata
-    );
+    return this.rpc.unary(PublicationsListPublicationsDesc, ListPublicationsRequest.fromPartial(request), metadata);
   }
 }
 
-export const PublicationsDesc = {
-  serviceName: "com.mintter.documents.v1alpha.Publications",
-};
+export const PublicationsDesc = { serviceName: "com.mintter.documents.v1alpha.Publications" };
 
 export const PublicationsGetPublicationDesc: UnaryMethodDefinitionish = {
   methodName: "GetPublication",
@@ -2548,10 +2162,7 @@ export const PublicationsListPublicationsDesc: UnaryMethodDefinitionish = {
 
 /** Content graph service provides access to citations (backlinks). */
 export interface ContentGraph {
-  listCitations(
-    request: DeepPartial<ListCitationsRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ListCitationsResponse>;
+  listCitations(request: DeepPartial<ListCitationsRequest>, metadata?: grpc.Metadata): Promise<ListCitationsResponse>;
 }
 
 export class ContentGraphClientImpl implements ContentGraph {
@@ -2562,21 +2173,12 @@ export class ContentGraphClientImpl implements ContentGraph {
     this.listCitations = this.listCitations.bind(this);
   }
 
-  listCitations(
-    request: DeepPartial<ListCitationsRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ListCitationsResponse> {
-    return this.rpc.unary(
-      ContentGraphListCitationsDesc,
-      ListCitationsRequest.fromPartial(request),
-      metadata
-    );
+  listCitations(request: DeepPartial<ListCitationsRequest>, metadata?: grpc.Metadata): Promise<ListCitationsResponse> {
+    return this.rpc.unary(ContentGraphListCitationsDesc, ListCitationsRequest.fromPartial(request), metadata);
   }
 }
 
-export const ContentGraphDesc = {
-  serviceName: "com.mintter.documents.v1alpha.ContentGraph",
-};
+export const ContentGraphDesc = { serviceName: "com.mintter.documents.v1alpha.ContentGraph" };
 
 export const ContentGraphListCitationsDesc: UnaryMethodDefinitionish = {
   methodName: "ListCitations",
@@ -2600,8 +2202,7 @@ export const ContentGraphListCitationsDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-interface UnaryMethodDefinitionishR
-  extends grpc.UnaryMethodDefinition<any, any> {
+interface UnaryMethodDefinitionishR extends grpc.UnaryMethodDefinition<any, any> {
   requestStream: any;
   responseStream: any;
 }
@@ -2612,7 +2213,7 @@ interface Rpc {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any>;
 }
 
@@ -2634,7 +2235,7 @@ export class GrpcWebImpl {
       debug?: boolean;
       metadata?: grpc.Metadata;
       upStreamRetryCodes?: number[];
-    }
+    },
   ) {
     this.host = host;
     this.options = options;
@@ -2643,16 +2244,12 @@ export class GrpcWebImpl {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     _request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any> {
     const request = { ..._request, ...methodDesc.requestType };
-    const maybeCombinedMetadata =
-      metadata && this.options.metadata
-        ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
-        : metadata || this.options.metadata;
+    const maybeCombinedMetadata = metadata && this.options.metadata
+      ? new BrowserHeaders({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
+      : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {
         request,
@@ -2664,9 +2261,7 @@ export class GrpcWebImpl {
           if (response.status === grpc.Code.OK) {
             resolve(response.message);
           } else {
-            const err = new Error(response.statusMessage) as any;
-            err.code = response.status;
-            err.metadata = response.trailers;
+            const err = new GrpcWebError(response.statusMessage, response.status, response.trailers);
             reject(err);
           }
         },
@@ -2675,36 +2270,17 @@ export class GrpcWebImpl {
   }
 }
 
-type Builtin =
-  | Date
-  | Function
-  | Uint8Array
-  | string
-  | number
-  | boolean
-  | undefined;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends Array<infer U>
-  ? Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string }
-  ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & {
-      $case: T["$case"];
-    }
-  : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends { $case: string } ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & { $case: T["$case"] }
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-type Exact<P, I extends P> = P extends Builtin
-  ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
-        Exclude<keyof I, KeysOfUnion<P>>,
-        never
-      >;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000;
@@ -2734,4 +2310,10 @@ function isObject(value: any): boolean {
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
+}
+
+export class GrpcWebError extends Error {
+  constructor(message: string, public code: grpc.Code, public metadata: grpc.Metadata) {
+    super(message);
+  }
 }

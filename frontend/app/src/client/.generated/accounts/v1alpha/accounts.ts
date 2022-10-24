@@ -24,7 +24,9 @@ export interface Account {
   /** Mintter Account ID. */
   id: string;
   /** Profile information of this account. */
-  profile: Profile | undefined;
+  profile:
+    | Profile
+    | undefined;
   /** List of known devices of this Account. */
   devices: { [key: string]: Device };
 }
@@ -50,10 +52,7 @@ function createBaseGetAccountRequest(): GetAccountRequest {
 }
 
 export const GetAccountRequest = {
-  encode(
-    message: GetAccountRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: GetAccountRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== "") {
       writer.uint32(10).string(message.id);
     }
@@ -79,9 +78,7 @@ export const GetAccountRequest = {
   },
 
   fromJSON(object: any): GetAccountRequest {
-    return {
-      id: isSet(object.id) ? String(object.id) : "",
-    };
+    return { id: isSet(object.id) ? String(object.id) : "" };
   },
 
   toJSON(message: GetAccountRequest): unknown {
@@ -90,9 +87,7 @@ export const GetAccountRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GetAccountRequest>, I>>(
-    object: I
-  ): GetAccountRequest {
+  fromPartial<I extends Exact<DeepPartial<GetAccountRequest>, I>>(object: I): GetAccountRequest {
     const message = createBaseGetAccountRequest();
     message.id = object.id ?? "";
     return message;
@@ -104,10 +99,7 @@ function createBaseListAccountsRequest(): ListAccountsRequest {
 }
 
 export const ListAccountsRequest = {
-  encode(
-    message: ListAccountsRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListAccountsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.pageSize !== 0) {
       writer.uint32(8).int32(message.pageSize);
     }
@@ -147,15 +139,12 @@ export const ListAccountsRequest = {
 
   toJSON(message: ListAccountsRequest): unknown {
     const obj: any = {};
-    message.pageSize !== undefined &&
-      (obj.pageSize = Math.round(message.pageSize));
+    message.pageSize !== undefined && (obj.pageSize = Math.round(message.pageSize));
     message.pageToken !== undefined && (obj.pageToken = message.pageToken);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListAccountsRequest>, I>>(
-    object: I
-  ): ListAccountsRequest {
+  fromPartial<I extends Exact<DeepPartial<ListAccountsRequest>, I>>(object: I): ListAccountsRequest {
     const message = createBaseListAccountsRequest();
     message.pageSize = object.pageSize ?? 0;
     message.pageToken = object.pageToken ?? "";
@@ -168,10 +157,7 @@ function createBaseListAccountsResponse(): ListAccountsResponse {
 }
 
 export const ListAccountsResponse = {
-  encode(
-    message: ListAccountsResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: ListAccountsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.accounts) {
       Account.encode(v!, writer.uint32(10).fork()).ldelim();
     }
@@ -181,10 +167,7 @@ export const ListAccountsResponse = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): ListAccountsResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListAccountsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseListAccountsResponse();
@@ -207,35 +190,25 @@ export const ListAccountsResponse = {
 
   fromJSON(object: any): ListAccountsResponse {
     return {
-      accounts: Array.isArray(object?.accounts)
-        ? object.accounts.map((e: any) => Account.fromJSON(e))
-        : [],
-      nextPageToken: isSet(object.nextPageToken)
-        ? String(object.nextPageToken)
-        : "",
+      accounts: Array.isArray(object?.accounts) ? object.accounts.map((e: any) => Account.fromJSON(e)) : [],
+      nextPageToken: isSet(object.nextPageToken) ? String(object.nextPageToken) : "",
     };
   },
 
   toJSON(message: ListAccountsResponse): unknown {
     const obj: any = {};
     if (message.accounts) {
-      obj.accounts = message.accounts.map((e) =>
-        e ? Account.toJSON(e) : undefined
-      );
+      obj.accounts = message.accounts.map((e) => e ? Account.toJSON(e) : undefined);
     } else {
       obj.accounts = [];
     }
-    message.nextPageToken !== undefined &&
-      (obj.nextPageToken = message.nextPageToken);
+    message.nextPageToken !== undefined && (obj.nextPageToken = message.nextPageToken);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListAccountsResponse>, I>>(
-    object: I
-  ): ListAccountsResponse {
+  fromPartial<I extends Exact<DeepPartial<ListAccountsResponse>, I>>(object: I): ListAccountsResponse {
     const message = createBaseListAccountsResponse();
-    message.accounts =
-      object.accounts?.map((e) => Account.fromPartial(e)) || [];
+    message.accounts = object.accounts?.map((e) => Account.fromPartial(e)) || [];
     message.nextPageToken = object.nextPageToken ?? "";
     return message;
   },
@@ -246,10 +219,7 @@ function createBaseAccount(): Account {
 }
 
 export const Account = {
-  encode(
-    message: Account,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Account, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.id !== "") {
       writer.uint32(10).string(message.id);
     }
@@ -257,10 +227,7 @@ export const Account = {
       Profile.encode(message.profile, writer.uint32(18).fork()).ldelim();
     }
     Object.entries(message.devices).forEach(([key, value]) => {
-      Account_DevicesEntry.encode(
-        { key: key as any, value },
-        writer.uint32(26).fork()
-      ).ldelim();
+      Account_DevicesEntry.encode({ key: key as any, value }, writer.uint32(26).fork()).ldelim();
     });
     return writer;
   },
@@ -295,17 +262,12 @@ export const Account = {
   fromJSON(object: any): Account {
     return {
       id: isSet(object.id) ? String(object.id) : "",
-      profile: isSet(object.profile)
-        ? Profile.fromJSON(object.profile)
-        : undefined,
+      profile: isSet(object.profile) ? Profile.fromJSON(object.profile) : undefined,
       devices: isObject(object.devices)
-        ? Object.entries(object.devices).reduce<{ [key: string]: Device }>(
-            (acc, [key, value]) => {
-              acc[key] = Device.fromJSON(value);
-              return acc;
-            },
-            {}
-          )
+        ? Object.entries(object.devices).reduce<{ [key: string]: Device }>((acc, [key, value]) => {
+          acc[key] = Device.fromJSON(value);
+          return acc;
+        }, {})
         : {},
     };
   },
@@ -313,10 +275,7 @@ export const Account = {
   toJSON(message: Account): unknown {
     const obj: any = {};
     message.id !== undefined && (obj.id = message.id);
-    message.profile !== undefined &&
-      (obj.profile = message.profile
-        ? Profile.toJSON(message.profile)
-        : undefined);
+    message.profile !== undefined && (obj.profile = message.profile ? Profile.toJSON(message.profile) : undefined);
     obj.devices = {};
     if (message.devices) {
       Object.entries(message.devices).forEach(([k, v]) => {
@@ -329,13 +288,10 @@ export const Account = {
   fromPartial<I extends Exact<DeepPartial<Account>, I>>(object: I): Account {
     const message = createBaseAccount();
     message.id = object.id ?? "";
-    message.profile =
-      object.profile !== undefined && object.profile !== null
-        ? Profile.fromPartial(object.profile)
-        : undefined;
-    message.devices = Object.entries(object.devices ?? {}).reduce<{
-      [key: string]: Device;
-    }>((acc, [key, value]) => {
+    message.profile = (object.profile !== undefined && object.profile !== null)
+      ? Profile.fromPartial(object.profile)
+      : undefined;
+    message.devices = Object.entries(object.devices ?? {}).reduce<{ [key: string]: Device }>((acc, [key, value]) => {
       if (value !== undefined) {
         acc[key] = Device.fromPartial(value);
       }
@@ -350,10 +306,7 @@ function createBaseAccount_DevicesEntry(): Account_DevicesEntry {
 }
 
 export const Account_DevicesEntry = {
-  encode(
-    message: Account_DevicesEntry,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Account_DevicesEntry, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.key !== "") {
       writer.uint32(10).string(message.key);
     }
@@ -363,10 +316,7 @@ export const Account_DevicesEntry = {
     return writer;
   },
 
-  decode(
-    input: _m0.Reader | Uint8Array,
-    length?: number
-  ): Account_DevicesEntry {
+  decode(input: _m0.Reader | Uint8Array, length?: number): Account_DevicesEntry {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseAccount_DevicesEntry();
@@ -397,20 +347,16 @@ export const Account_DevicesEntry = {
   toJSON(message: Account_DevicesEntry): unknown {
     const obj: any = {};
     message.key !== undefined && (obj.key = message.key);
-    message.value !== undefined &&
-      (obj.value = message.value ? Device.toJSON(message.value) : undefined);
+    message.value !== undefined && (obj.value = message.value ? Device.toJSON(message.value) : undefined);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<Account_DevicesEntry>, I>>(
-    object: I
-  ): Account_DevicesEntry {
+  fromPartial<I extends Exact<DeepPartial<Account_DevicesEntry>, I>>(object: I): Account_DevicesEntry {
     const message = createBaseAccount_DevicesEntry();
     message.key = object.key ?? "";
-    message.value =
-      object.value !== undefined && object.value !== null
-        ? Device.fromPartial(object.value)
-        : undefined;
+    message.value = (object.value !== undefined && object.value !== null)
+      ? Device.fromPartial(object.value)
+      : undefined;
     return message;
   },
 };
@@ -420,10 +366,7 @@ function createBaseProfile(): Profile {
 }
 
 export const Profile = {
-  encode(
-    message: Profile,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Profile, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.alias !== "") {
       writer.uint32(10).string(message.alias);
     }
@@ -490,10 +433,7 @@ function createBaseDevice(): Device {
 }
 
 export const Device = {
-  encode(
-    message: Device,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: Device, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.peerId !== "") {
       writer.uint32(10).string(message.peerId);
     }
@@ -519,9 +459,7 @@ export const Device = {
   },
 
   fromJSON(object: any): Device {
-    return {
-      peerId: isSet(object.peerId) ? String(object.peerId) : "",
-    };
+    return { peerId: isSet(object.peerId) ? String(object.peerId) : "" };
   },
 
   toJSON(message: Device): unknown {
@@ -543,24 +481,15 @@ export interface Accounts {
    * Lookup an Account information across the already known accounts.
    * Can also be used to retrieve our own account.
    */
-  getAccount(
-    request: DeepPartial<GetAccountRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Account>;
+  getAccount(request: DeepPartial<GetAccountRequest>, metadata?: grpc.Metadata): Promise<Account>;
   /** Update Profile information of our own Account. */
-  updateProfile(
-    request: DeepPartial<Profile>,
-    metadata?: grpc.Metadata
-  ): Promise<Account>;
+  updateProfile(request: DeepPartial<Profile>, metadata?: grpc.Metadata): Promise<Account>;
   /**
    * List accounts known to the backend (excluding our own account). New accounts can be discovered naturally by
    * interacting with the network, or users can ask to discover specific accounts using
    * the Networking API.
    */
-  listAccounts(
-    request: DeepPartial<ListAccountsRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ListAccountsResponse>;
+  listAccounts(request: DeepPartial<ListAccountsRequest>, metadata?: grpc.Metadata): Promise<ListAccountsResponse>;
 }
 
 export class AccountsClientImpl implements Accounts {
@@ -573,43 +502,20 @@ export class AccountsClientImpl implements Accounts {
     this.listAccounts = this.listAccounts.bind(this);
   }
 
-  getAccount(
-    request: DeepPartial<GetAccountRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Account> {
-    return this.rpc.unary(
-      AccountsGetAccountDesc,
-      GetAccountRequest.fromPartial(request),
-      metadata
-    );
+  getAccount(request: DeepPartial<GetAccountRequest>, metadata?: grpc.Metadata): Promise<Account> {
+    return this.rpc.unary(AccountsGetAccountDesc, GetAccountRequest.fromPartial(request), metadata);
   }
 
-  updateProfile(
-    request: DeepPartial<Profile>,
-    metadata?: grpc.Metadata
-  ): Promise<Account> {
-    return this.rpc.unary(
-      AccountsUpdateProfileDesc,
-      Profile.fromPartial(request),
-      metadata
-    );
+  updateProfile(request: DeepPartial<Profile>, metadata?: grpc.Metadata): Promise<Account> {
+    return this.rpc.unary(AccountsUpdateProfileDesc, Profile.fromPartial(request), metadata);
   }
 
-  listAccounts(
-    request: DeepPartial<ListAccountsRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<ListAccountsResponse> {
-    return this.rpc.unary(
-      AccountsListAccountsDesc,
-      ListAccountsRequest.fromPartial(request),
-      metadata
-    );
+  listAccounts(request: DeepPartial<ListAccountsRequest>, metadata?: grpc.Metadata): Promise<ListAccountsResponse> {
+    return this.rpc.unary(AccountsListAccountsDesc, ListAccountsRequest.fromPartial(request), metadata);
   }
 }
 
-export const AccountsDesc = {
-  serviceName: "com.mintter.accounts.v1alpha.Accounts",
-};
+export const AccountsDesc = { serviceName: "com.mintter.accounts.v1alpha.Accounts" };
 
 export const AccountsGetAccountDesc: UnaryMethodDefinitionish = {
   methodName: "GetAccount",
@@ -677,8 +583,7 @@ export const AccountsListAccountsDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-interface UnaryMethodDefinitionishR
-  extends grpc.UnaryMethodDefinition<any, any> {
+interface UnaryMethodDefinitionishR extends grpc.UnaryMethodDefinition<any, any> {
   requestStream: any;
   responseStream: any;
 }
@@ -689,7 +594,7 @@ interface Rpc {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any>;
 }
 
@@ -711,7 +616,7 @@ export class GrpcWebImpl {
       debug?: boolean;
       metadata?: grpc.Metadata;
       upStreamRetryCodes?: number[];
-    }
+    },
   ) {
     this.host = host;
     this.options = options;
@@ -720,16 +625,12 @@ export class GrpcWebImpl {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     _request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any> {
     const request = { ..._request, ...methodDesc.requestType };
-    const maybeCombinedMetadata =
-      metadata && this.options.metadata
-        ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
-        : metadata || this.options.metadata;
+    const maybeCombinedMetadata = metadata && this.options.metadata
+      ? new BrowserHeaders({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
+      : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {
         request,
@@ -741,9 +642,7 @@ export class GrpcWebImpl {
           if (response.status === grpc.Code.OK) {
             resolve(response.message);
           } else {
-            const err = new Error(response.statusMessage) as any;
-            err.code = response.status;
-            err.metadata = response.trailers;
+            const err = new GrpcWebError(response.statusMessage, response.status, response.trailers);
             reject(err);
           }
         },
@@ -752,36 +651,17 @@ export class GrpcWebImpl {
   }
 }
 
-type Builtin =
-  | Date
-  | Function
-  | Uint8Array
-  | string
-  | number
-  | boolean
-  | undefined;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends Array<infer U>
-  ? Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string }
-  ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & {
-      $case: T["$case"];
-    }
-  : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends { $case: string } ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & { $case: T["$case"] }
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-type Exact<P, I extends P> = P extends Builtin
-  ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
-        Exclude<keyof I, KeysOfUnion<P>>,
-        never
-      >;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function isObject(value: any): boolean {
   return typeof value === "object" && value !== null;
@@ -789,4 +669,10 @@ function isObject(value: any): boolean {
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
+}
+
+export class GrpcWebError extends Error {
+  constructor(message: string, public code: grpc.Code, public metadata: grpc.Metadata) {
+    super(message);
+  }
 }
