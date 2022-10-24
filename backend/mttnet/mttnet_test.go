@@ -53,7 +53,7 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	cfg := config.Default().P2P
 	cfg.Port = 0
 	cfg.NoRelay = true
-	cfg.NoBootstrap = true
+	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
 	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))

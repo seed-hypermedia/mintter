@@ -26,21 +26,17 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
 )
 
-// Bootstrappers is a convenience alias for a list of bootstrap addresses.
-// It is to provide some semantic meaning to otherwise unclear slice of addresses.
-type Bootstrappers []peer.AddrInfo
-
 // DefaultBootstrapPeers exposes default bootstrap peers from the go-ipfs package,
 // failing in case of an error, which should only happen if there's a bug somewhere.
-func DefaultBootstrapPeers() Bootstrappers {
-	out := make(Bootstrappers, len(DefaultBootstrapAddresses))
+func DefaultBootstrapPeers() []multiaddr.Multiaddr {
+	out := make([]multiaddr.Multiaddr, len(DefaultBootstrapAddresses))
 
 	for i, a := range DefaultBootstrapAddresses {
-		ai, err := peer.AddrInfoFromString(a)
+		addr, err := multiaddr.NewMultiaddr(a)
 		if err != nil {
 			panic(err)
 		}
-		out[i] = *ai
+		out[i] = addr
 	}
 
 	return out
@@ -72,6 +68,8 @@ func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []pee
 
 	var wg sync.WaitGroup
 	wg.Add(len(peers))
+
+	peer.AddrInfosFromP2pAddrs()
 
 	for i, pinfo := range peers {
 		go func(i int, pinfo peer.AddrInfo) {
@@ -204,6 +202,17 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 	n.clean.Add(n.Host)
 
 	return n, nil
+}
+
+// AddrsFull returns a list of fully-qualified multiaddrs.
+func (n *Libp2p) AddrsFull() []multiaddr.Multiaddr {
+	info := n.AddrInfo()
+	addrs, err := peer.AddrInfoToP2pAddrs(&info)
+	if err != nil {
+		panic(err)
+	}
+
+	return addrs
 }
 
 // AddrInfo returns the addresses of the running node.

@@ -70,7 +70,7 @@ func TestSync(t *testing.T) {
 		t.Cleanup(stop)
 		n.Node = peer
 
-		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap().NewSession, peer.Client)
+		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap(), peer.Client)
 
 		return n
 	}
@@ -157,7 +157,7 @@ func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) 
 	cfg := config.Default().P2P
 	cfg.Port = 0
 	cfg.NoRelay = true
-	cfg.NoBootstrap = true
+	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
 	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))

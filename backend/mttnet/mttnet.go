@@ -16,7 +16,6 @@ import (
 	"mintter/backend/vcs/vcsdb"
 	"mintter/backend/vcs/vcssql"
 	"strconv"
-	"strings"
 	"sync"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -295,22 +294,13 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 		return err
 	}
 
-	if !n.cfg.NoBootstrap {
-		var res ipfs.BootstrapResult
-		if n.cfg.BootstrapPeer != "" {
-			bootstrapPeers := strings.Split(n.cfg.BootstrapPeer, ",")
-			peers := make(ipfs.Bootstrappers, len(bootstrapPeers))
-			for i := 0; i < len(bootstrapPeers); i++ {
-				ai, err := peer.AddrInfoFromString(bootstrapPeers[i])
-				if err != nil {
-					return err
-				}
-				peers[i] = *ai
-			}
-			res = n.p2p.Bootstrap(ctx, peers)
-		} else {
-			res = n.p2p.Bootstrap(ctx, ipfs.DefaultBootstrapPeers())
+	if !n.cfg.NoBootstrap() {
+		bootInfo, err := peer.AddrInfosFromP2pAddrs(n.cfg.BootstrapPeers...)
+		if err != nil {
+			return fmt.Errorf("failed to parse bootstrap addresses %+v: %w", n.cfg.BootstrapPeers, err)
 		}
+
+		res := n.p2p.Bootstrap(ctx, bootInfo)
 
 		n.log.Info("BootstrapFinished",
 			zap.NamedError("dhtError", res.RoutingErr),
@@ -399,24 +389,16 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		libp2p.EnableNATService(),
 		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
 		libp2p.Transport(tcp.NewTCPTransport),
-	}
-	opts = append(opts,
 		libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
-			numCustomAddrs := 0
-			if cfg.AddAddrs != "" && len(strings.Split(cfg.AddAddrs, ",")) != 0 {
-				numCustomAddrs = len(strings.Split(cfg.AddAddrs, ","))
+			if cfg.ExtraAddrs == nil {
+				return addrs
 			}
-			out := make([]multiaddr.Multiaddr, 0, len(addrs)+numCustomAddrs)
+			out := make([]multiaddr.Multiaddr, 0, len(addrs)+len(cfg.ExtraAddrs))
 			out = append(out, addrs...)
-			if numCustomAddrs > 0 {
-				for _, a := range strings.Split(cfg.AddAddrs, ",") {
-					out = append(out, multiaddr.StringCast(a))
-				}
-
-			}
+			out = append(out, cfg.ExtraAddrs...)
 			return out
 		}),
-	)
+	}
 
 	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {

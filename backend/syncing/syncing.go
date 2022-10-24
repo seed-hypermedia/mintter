@@ -19,6 +19,7 @@ import (
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/libp2p/go-libp2p-core/peer"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 )
@@ -27,9 +28,11 @@ import (
 // of a P2P RPC client for a given remote Device ID.
 type NetDialFunc func(context.Context, cid.Cid) (p2p.P2PClient, error)
 
-// FetcherFunc is a subset of the Bitswap protocol that creates a Session for fetching
-// blocks from the network.
-type FetcherFunc func(context.Context) exchange.Fetcher
+// Bitswap is a subset of the Bitswap that is used by syncing service.
+type Bitswap interface {
+	NewSession(context.Context) exchange.Fetcher
+	FindProvidersAsync(context.Context, cid.Cid, int) <-chan peer.AddrInfo
+}
 
 // Service manages syncing of Mintter objects among peers.
 type Service struct {
@@ -50,7 +53,7 @@ type Service struct {
 	log     *zap.Logger
 	vcs     *vcsdb.DB
 	me      core.Identity
-	bitswap FetcherFunc
+	bitswap Bitswap
 	client  NetDialFunc
 
 	mu sync.Mutex // Ensures only one sync loop is running at a time.
@@ -63,7 +66,7 @@ const (
 )
 
 // NewService creates a new syncing service. Users must call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap FetcherFunc, client NetDialFunc) *Service {
+func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap Bitswap, client NetDialFunc) *Service {
 	svc := &Service{
 		warmupDuration:  defaultWarmupDuration,
 		syncInterval:    defaultSyncInterval,
@@ -279,7 +282,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 	var shouldStorePermanode bool
 	var ep vcsdb.EncodedPermanode
 	{
-		// Important to check before using bitswap, because it would add the fetched block into out blockstore,
+		// Important to check before using bitswap, because it would add the fetched block into our blockstore,
 		// without any mintter-specific indexing.
 		has, err := bs.Has(ctx, oid)
 		if err != nil {
@@ -368,6 +371,11 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 
 // SyncWithPeer syncs all documents from a given peer.
 func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
+	// Can't sync with self.
+	if s.me.DeviceKey().CID().Equals(device) {
+		return nil
+	}
+
 	c, err := s.client(ctx, device)
 	if err != nil {
 		return err
@@ -378,7 +386,7 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
 		return err
 	}
 
-	sess := s.bitswap(ctx)
+	sess := s.bitswap.NewSession(ctx)
 	for _, obj := range resp.Objects {
 		oid, err := cid.Decode(obj.Id)
 		if err != nil {

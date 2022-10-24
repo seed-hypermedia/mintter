@@ -2,12 +2,10 @@ package documents
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttdoc"
@@ -15,11 +13,8 @@ import (
 	"mintter/backend/vcs/vcssql"
 	"time"
 
-	peerstore "github.com/libp2p/go-libp2p/core/peer"
-
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -27,120 +22,30 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// Provider interface for not passing a full-fledged node.
-type Provider interface {
-	// ProvideCID notifies the providing system to provide the given CID on the DHT.
+// Discoverer is a subset of the syncing service that
+// is able to discover given Mintter objects, optionally specifying versions.
+type Discoverer interface {
+	DiscoverObject(ctx context.Context, obj cid.Cid, version []cid.Cid) error
+	// TODO: this is here temporarily. Eventually we need to provide from the vcs
+	// so every time we save a main version, we need to provide the leaf changes.
 	ProvideCID(cid.Cid) error
-	// Search for peers who are able to provide a given key
-	//
-	// When count is 0, this method will return an unbounded number of
-	// results.
-	FindProvider(ctx context.Context, cid cid.Cid, nPeers int) ([]peer.AddrInfo, error)
-	// ClosePeer closes the connection to a given peer
-	ClosePeer(id peer.ID) error
-	// AddrInfo returns info for our own peer.
-	AddrInfo() (peer.AddrInfo, error)
-	// Connect to a peer using provided addr info.
-	Connect(ctx context.Context, ai peer.AddrInfo) error
-	// SyncWithPeer syncs all documents from a given peer
-	SyncPeer(ctx context.Context, cid cid.Cid) error
-}
-
-// MttProvider is a type to hold all the provide (get) publications to (from) the network.
-type MttProvider struct {
-	n        *future.ReadOnly[*mttnet.Node]
-	syncPeer func(context.Context, cid.Cid) error
-}
-
-// NewProvider builds the struct out of a node future and a sync callback.
-func NewProvider(n *future.ReadOnly[*mttnet.Node], sync func(context.Context, cid.Cid) error) *MttProvider {
-	return &MttProvider{n: n, syncPeer: sync}
-}
-
-// ProvideCID notifies the providing system to provide the given CID on the DHT.
-func (mp *MttProvider) ProvideCID(c cid.Cid) error {
-	n, ok := mp.n.Get()
-	if !ok {
-		return fmt.Errorf("provider is not ready")
-	}
-
-	return n.ProvideCID(c)
-}
-
-// FindProvider Search for peers who are able to provide a given key
-// When count is 0, this method will return an unbounded number of
-// results.
-func (mp *MttProvider) FindProvider(ctx context.Context, cid cid.Cid, nPeers int) ([]peer.AddrInfo, error) {
-	n, ok := mp.n.Get()
-
-	if !ok {
-		return []peer.AddrInfo{}, fmt.Errorf("provider is not ready")
-	}
-	if nPeers < 1 {
-		return []peer.AddrInfo{}, fmt.Errorf("al least one peer should be found, provided %d peers", nPeers)
-	}
-	peers := make([]peer.AddrInfo, nPeers)
-
-	peersChan := n.Libp2p().Routing.FindProvidersAsync(ctx, cid, nPeers)
-
-	for i := 0; i < nPeers; { //This is active waiting make default sleeping or smt
-		ai := <-peersChan
-		peers[i] = ai
-		i++
-	}
-	return peers, nil
-}
-
-// ClosePeer closes the connection to a given peer.
-func (mp *MttProvider) ClosePeer(id peer.ID) error {
-	n, ok := mp.n.Get()
-
-	if !ok {
-		return fmt.Errorf("provider is not ready")
-	}
-	return n.Libp2p().Host.Network().ClosePeer(id)
-}
-
-// AddrInfo returns info for our own peer.
-func (mp *MttProvider) AddrInfo() (peer.AddrInfo, error) {
-	n, ok := mp.n.Get()
-
-	if !ok {
-		return peer.AddrInfo{}, fmt.Errorf("provider is not ready")
-	}
-	return n.AddrInfo(), nil
-}
-
-// Connect to a peer using provided addr info.
-func (mp *MttProvider) Connect(ctx context.Context, ai peer.AddrInfo) error {
-	n, ok := mp.n.Get()
-
-	if !ok {
-		return fmt.Errorf("provider is not ready")
-	}
-	return n.Connect(ctx, ai)
-}
-
-// SyncPeer syncs all documents from a given peer.
-func (mp *MttProvider) SyncPeer(ctx context.Context, cid cid.Cid) error {
-	return mp.syncPeer(ctx, cid)
 }
 
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db       *sqlitex.Pool
-	vcsdb    *vcsdb.DB
-	me       *future.ReadOnly[core.Identity]
-	provider Provider
+	db    *sqlitex.Pool
+	vcsdb *vcsdb.DB
+	me    *future.ReadOnly[core.Identity]
+	disc  Discoverer
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, provider Provider) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
 	srv := &Server{
-		db:       db,
-		vcsdb:    vcsdb.New(db),
-		me:       me,
-		provider: provider,
+		db:    db,
+		vcsdb: vcsdb.New(db),
+		me:    me,
+		disc:  disc,
 	}
 
 	return srv
@@ -463,19 +368,16 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 	}); err != nil {
 		return nil, err
 	}
-	pub, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
-		DocumentId: in.DocumentId,
-		LocalOnly:  true,
-	})
-	if err != nil {
-		return nil, err
+
+	if api.disc != nil {
+		if err := api.disc.ProvideCID(oid); err != nil {
+			return nil, err
+		}
 	}
 
-	err = api.provider.ProvideCID(oid)
-	if err != nil {
-		return nil, err
-	}
-	return pub, nil
+	return api.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: in.DocumentId,
+	})
 }
 
 // DeleteDraft implements the corresponding gRPC method.
@@ -535,6 +437,42 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, err
 	}
 
+	var inVersion vcs.Version
+	if in.Version != "" {
+		inVersion, err = vcs.ParseVersion(in.Version)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	pub, err := api.loadPublication(ctx, oid, inVersion)
+	if err == nil {
+		return pub, nil
+	}
+
+	// We can only attempt to handle not found errors.
+	if status.Code(err) != codes.NotFound {
+		return nil, err
+	}
+
+	// If no discoverer is set we can't do anything else.
+	if api.disc == nil {
+		return nil, err
+	}
+
+	// We should only attempt to discover publication if didn't specify local only.
+	if in.LocalOnly {
+		return nil, err
+	}
+
+	if err := api.disc.DiscoverObject(ctx, oid, inVersion.CIDs()); err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", oid.String(), inVersion.String())
+	}
+
+	return api.loadPublication(ctx, oid, inVersion)
+}
+
+func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Version) (*documents.Publication, error) {
 	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
@@ -544,113 +482,44 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	if err != nil {
 		return nil, err
 	}
+	defer release()
 
-	errNumVersionsNotOne := errors.New("TODO(burdiyan): can only get publication with 1 leaf change,")
-	errNotFoundLocally := errors.New("Document with specified id not found locally")
 	out := &documents.Publication{}
-	errLocal := conn.WithTx(false, func() error {
+	var found bool
+	if err := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
 		meLocal := conn.LookupIdentity(me)
 
 		var version vcsdb.LocalVersion
-		if in.Version == "" || in.Version == "main" {
+		if v.IsZero() {
 			version = conn.GetVersion(obj, "main", meLocal)
 		} else {
-			pubVer, err := vcs.ParseVersion(in.Version)
-			if err != nil {
-				return err
-			}
-
-			version = conn.PublicVersionToLocal(pubVer)
+			version = conn.PublicVersionToLocal(v)
 		}
 
-		if version == nil {
-			return errNotFoundLocally
+		if len(version) == 0 {
+			return nil
 		}
-		if len(version) != 1 {
-			return fmt.Errorf("%w, got: %d", errNumVersionsNotOne, len(version))
+
+		if len(version) > 1 {
+			return fmt.Errorf("TODO(burdiyan): can only get publication with 1 leaf change, got: %d", len(version))
 		}
 		out.Document, err = api.getDocument(conn, obj, version)
 		if err != nil {
 			return err
 		}
+		found = true
 
 		out.Version = conn.LocalVersionToPublic(version).String()
+		out.Document.PublishTime = out.Document.UpdateTime
 		return nil
-	})
-	if errLocal != nil && !in.LocalOnly {
-		release()
-		if !errors.Is(err, errNumVersionsNotOne) && !errors.Is(errLocal, errNotFoundLocally) {
-			return nil, err
-		}
-		// make network call
-		// Get the peer that has the document
-		const maxPeers = 3
-		peers, errRemote := api.provider.FindProvider(ctx, oid, maxPeers)
-		if errRemote != nil {
-			return nil, errRemote
-		}
-		if ctxErr := ctx.Err(); ctxErr != nil {
-			return nil, ctxErr
-		}
-
-		// connect with remote peer
-
-		for _, peer := range peers {
-			if peer.ID == "" {
-				continue
-			}
-			if errRemote = api.provider.Connect(ctx, peer); errRemote != nil {
-				continue
-			}
-			if errRemote = api.provider.SyncPeer(ctx, peerstore.ToCid(peer.ID)); errRemote != nil {
-				continue
-			}
-			conn, release, err := api.vcsdb.Conn(ctx)
-			if err != nil {
-				return nil, err
-			}
-			if ctxErr := ctx.Err(); ctxErr != nil {
-				release()
-				return nil, ctxErr
-			}
-			errLocal = conn.WithTx(false, func() error {
-				obj := conn.LookupPermanode(oid)
-				meLocal := conn.LookupIdentity(me)
-				version := conn.GetVersion(obj, "main", meLocal)
-				if version == nil {
-					return errNotFoundLocally
-				}
-				if len(version) != 1 {
-					return fmt.Errorf("%w, got: %d", errNumVersionsNotOne, len(version))
-				}
-				out.Document, err = api.getDocument(conn, obj, version)
-				if err != nil {
-					return err
-				}
-
-				out.Version = conn.LocalVersionToPublic(version).String()
-				return nil
-			})
-			release()
-			if errors.Is(errLocal, errNotFoundLocally) {
-				continue
-			} else if errLocal != nil {
-				return nil, errLocal
-			}
-			break
-		}
-		if out == nil || out.Document == nil {
-			return nil, fmt.Errorf("could not find any peer available to provide requested document")
-		}
-	} else {
-		release()
-	}
-	if errLocal != nil && in.LocalOnly {
-		return nil, errLocal
+	}); err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to find object %q at version %q: %v", oid.String(), v.String(), err)
 	}
 
-	out.Document.PublishTime = out.Document.UpdateTime
+	if !found {
+		return nil, status.Errorf(codes.NotFound, "not found object %q at version %q", oid.String(), v.String())
+	}
 
 	return out, nil
 }

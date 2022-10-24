@@ -60,7 +60,7 @@ func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.Cancel
 
 	cfg.Port = 0
 	cfg.NoRelay = true
-	cfg.NoBootstrap = true
+	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
 	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, zap.NewNop())
