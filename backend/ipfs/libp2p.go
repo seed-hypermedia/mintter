@@ -103,9 +103,8 @@ func ParseMultiaddrs(in []string) ([]multiaddr.Multiaddr, error) {
 	return out, nil
 }
 
-// Libp2p exposes libp2p host and the underlying routing system (DHT), providing
-// some defaults. The node will not be listening, so users must explicitly call Listen()
-// on the underlying host's network.
+// Libp2p exposes libp2p host and the underlying routing system (DHT).
+// It provides some reasonable defaults, and also handles shutdown more gracefully.
 type Libp2p struct {
 	host.Host
 
@@ -118,7 +117,9 @@ type Libp2p struct {
 // NewLibp2pNode creates a new node. It's a convenience wrapper around the main libp2p package.
 // It forces one to pass the peer private key and datastore.
 // To the default options of the libp2p package it also adds DHT Routing, Connection Manager, Relay protocol support.
-// To actually enable relay you also need to pass EnableAutoRelay, and NATPortMap.
+// To actually enable relay you also need to pass EnableAutoRelay, and optionally enable HolePunching.
+// The returning node won't be listening on the network by default, so users have to start listening manually,
+// using the Listen() method on the underlying P2P network.
 func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Option) (n *Libp2p, err error) {
 	n = &Libp2p{
 		ds: ds,
@@ -144,8 +145,9 @@ func NewLibp2pNode(key crypto.PrivKey, ds datastore.Batching, opts ...libp2p.Opt
 
 	o := []libp2p.Option{
 		libp2p.Identity(key),
-		libp2p.NoListenAddrs, // Users must explicitly start listening.
-		libp2p.EnableRelay(),
+		libp2p.NoListenAddrs,      // Users must explicitly start listening.
+		libp2p.EnableRelay(),      // Be able to dial behind-relay peers and receive connections from them.
+		libp2p.EnableNATService(), // Dial other peers on-demand to let them know if they are reachable.
 		libp2p.ConnectionManager(mustConnMgr(connmgr.NewConnManager(50, 100,
 			connmgr.WithGracePeriod(10*time.Minute),
 		))),
