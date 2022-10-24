@@ -242,7 +242,7 @@ let resizablePanelMachine =
   /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAlAUQGUBJALToG0AGAXUVGID2sNABc0AsnxAAPRADZOAOgAsARgAcAZk3KAnAt2aA7AFYANCACeiQhrmLOGncqOH1qgEyGAvt4uphbHwiUgpqAFkAQQAVAGEACXC6ABEmSMUouPiuXiQQQWExCSlZBE97Tj0PdRN1OrkjDXULazKTZUUFdU5HI051XXVlTXVfPxAyAQg4KQDMXAISckopAtFxSTzSwmUlRzkTVR7OXSMDuQ9zKxs1B2U1WsMTdrl1UzHvIA */
   createMachine(
     {
-      context: {top: 100, left: 100, vertical: false, visible: true},
+      context: {top: 100, left: 100, vertical: false, visible: false},
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
         context: {} as ResizablePanelMachineContext,
