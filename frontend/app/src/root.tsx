@@ -1,4 +1,5 @@
 import {getInfo} from '@app/client'
+import {queryKeys} from '@app/hooks'
 import {themeMachine, ThemeProvider} from '@app/theme'
 import {BrowserTracing} from '@sentry/tracing'
 import {
@@ -6,11 +7,12 @@ import {
   Hydrate,
   QueryClient,
   QueryClientProvider,
+  useQuery,
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {useInterpret} from '@xstate/react'
-import {lazy, Suspense, useEffect, useState} from 'react'
+import {lazy, Suspense} from 'react'
 import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
@@ -56,40 +58,49 @@ export function Root() {
 }
 
 function App() {
-  let [status, setStatus] = useState<
-    'loading' | 'no_account' | 'error' | 'success'
-  >('loading')
+  // let [status, setStatus] = useState<
+  //   'loading' | 'no_account' | 'error' | 'success'
+  // >('loading')
 
-  useEffect(() => {
-    getInfo()
-      .then(() => {
-        setStatus('success')
-      })
-      .catch((error) => {
-        setStatus('no_account')
-        // if (contains('account is not initialized')) {
-        //   console.log('NO ACCOUNT'
-        // } else {
-        //   console.log('ERROR', error)
-        // }
-        // setStatus('error')
-      })
-  }, [])
-  // let {status} = useQuery({
-  //   queryKey: [queryKeys.GET_ACCOUNT_INFO],
-  //   queryFn: () => getInfo(),
-  //   refetchOnWindowFocus: false,
-  //   onError: (err) => {
-  //     console.log(`Root error: ${err}`)
-  //     setNotAccount(true)
-  //   },
-  //   retry: 2,
-  //   // retryDelay: (attempt) =>
-  //   //   Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
-  //   keepPreviousData: true,
-  // })
+  // useEffect(() => {
+  //   getInfo()
+  //     .then(() => {
+  //       setStatus('success')
+  //     })
+  //     .catch((error) => {
+  //       setStatus('no_account')
+  //       // if (contains('account is not initialized')) {
+  //       //   console.log('NO ACCOUNT'
+  //       // } else {
+  //       //   console.log('ERROR', error)
+  //       // }
+  //       // setStatus('error')
+  //     })
+  // }, [])
+  let {data, status} = useQuery({
+    queryKey: [queryKeys.GET_ACCOUNT_INFO],
+    queryFn: () =>
+      getInfo().catch((err) => {
+        let message = err.metadata?.headersMap?.['grpc-message']
+        // console.log('message', message)
+        if (message?.[0] == 'account is not initialized') {
+          return 'no account'
+        }
 
-  if (status == 'no_account') {
+        return new Error(err)
+      }),
+    refetchOnWindowFocus: false,
+    onError: (err) => {
+      console.log(`Root error: ${err}`)
+      // setNotAccount(true)
+    },
+    retry: 2,
+    retryDelay: (attempt) =>
+      Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
+    keepPreviousData: true,
+  })
+
+  if (data == 'no account') {
     return <OnboardingPage />
   }
 
