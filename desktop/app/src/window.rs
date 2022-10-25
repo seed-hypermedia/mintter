@@ -61,7 +61,7 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
   Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 #[tracing::instrument(skip(app_handle))]
 pub fn new_window<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
   let label = window_label();
