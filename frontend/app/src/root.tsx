@@ -58,18 +58,51 @@ export function Root() {
 }
 
 function App() {
-  let {status} = useQuery({
+  // let [status, setStatus] = useState<
+  //   'loading' | 'no_account' | 'error' | 'success'
+  // >('loading')
+
+  // useEffect(() => {
+  //   getInfo()
+  //     .then(() => {
+  //       setStatus('success')
+  //     })
+  //     .catch((error) => {
+  //       setStatus('no_account')
+  //       // if (contains('account is not initialized')) {
+  //       //   console.log('NO ACCOUNT'
+  //       // } else {
+  //       //   console.log('ERROR', error)
+  //       // }
+  //       // setStatus('error')
+  //     })
+  // }, [])
+  let {data, status} = useQuery({
     queryKey: [queryKeys.GET_ACCOUNT_INFO],
-    queryFn: () => getInfo(),
+    queryFn: () =>
+      getInfo().catch((err) => {
+        let message = err.metadata?.headersMap?.['grpc-message']
+        // console.log('message', message)
+        if (message?.[0] == 'account is not initialized') {
+          return 'no account'
+        }
+
+        return new Error(err)
+      }),
     refetchOnWindowFocus: false,
     onError: (err) => {
-      console.log(`useDiscussion error: ${err}`)
+      console.log(`Root error: ${err}`)
+      // setNotAccount(true)
     },
-    retry: 4,
+    retry: 2,
     retryDelay: (attempt) =>
       Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
     keepPreviousData: true,
   })
+
+  if (data == 'no account') {
+    return <OnboardingPage />
+  }
 
   if (status == 'success') {
     return (
@@ -80,7 +113,7 @@ function App() {
   }
 
   if (status == 'error') {
-    return <OnboardingPage />
+    throw new Error('Root Error')
   }
 
   return <span>waiting...</span>
