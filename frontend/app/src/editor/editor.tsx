@@ -96,7 +96,7 @@ export function Editor({
 
     listen('format_block', (event: Event<string>) => {
       if (!isSubscribed) {
-        return unlisten()
+        unlisten()
       }
 
       if (!editor.selection) return
