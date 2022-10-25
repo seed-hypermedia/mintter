@@ -38,6 +38,9 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
     queryFn: () => listPublications(rpc),
+    onError: (err) => {
+      console.log(`usePublicationList error: ${err}`)
+    },
   })
 
   let publications = useMemo(() => {
@@ -53,14 +56,23 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
   }
 }
 
-export function useDraftList(
-  pageSize?: number,
-  pageToken?: string,
-  opts: QueryOptions = {},
-) {
+type UseDraftListParams = {
+  pageSize?: number
+  pageToken?: string
+  options?: QueryOptions
+}
+
+export function useDraftList({
+  pageSize,
+  pageToken,
+  options,
+}: UseDraftListParams = {}) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
-    queryFn: () => listDrafts(pageSize, pageToken, opts.rpc),
+    queryFn: () => listDrafts(pageSize, pageToken, options?.rpc),
+    onError: (err) => {
+      console.log(`useDraftList error: ${err}`)
+    },
   })
 
   let documents = useMemo(() => {
@@ -85,7 +97,13 @@ export function useDraftList(
 }
 
 export function useAuthor(id = '', opts: QueryOptions = {}) {
-  return useQuery([queryKeys.GET_ACCOUNT, id], () => getAccount(id, opts.rpc))
+  return useQuery({
+    queryKey: [queryKeys.GET_ACCOUNT, id],
+    queryFn: () => getAccount(id, opts.rpc),
+    onError: (err) => {
+      console.log(`useAuthor error: ${err}`)
+    },
+  })
 }
 
 export function prefetchPublication(client: QueryClient, pub: Publication) {
@@ -107,7 +125,14 @@ type UseCitationsOptions = QueryOptions & {
 }
 
 export function useCitations(documentId: string, opts: UseCitationsOptions) {
-  return listCitations(documentId, opts.depth, opts.rpc)
+  return useQuery({
+    queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
+    queryFn: () => listCitations(documentId, opts.depth, opts.rpc),
+    onError: (err) => {
+      console.log(`useCitations error: ${err}`)
+    },
+  })
+  return
 }
 
 export function usePublication(
@@ -119,6 +144,9 @@ export function usePublication(
     queryKey: [queryKeys.GET_PUBLICATION, documentId, version],
     enabled: !!documentId && !!version,
     queryFn: () => getPublication(documentId, version, opts.rpc),
+    onError: (err) => {
+      console.log(`usePublication error: ${err}`)
+    },
   })
 }
 type UseDiscussionParams = {
@@ -135,10 +163,6 @@ export function useDiscussion({documentId, visible}: UseDiscussionParams) {
   })
 
   let data = useMemo(() => {
-    console.log(
-      '🚀 ~ file: index.ts ~ line 139 ~ data ~ queryResult.data?.links',
-      queryResult.data?.links,
-    )
     if (queryResult.data) {
       return createDedupeLinks(queryResult.data.links)
     } else []
