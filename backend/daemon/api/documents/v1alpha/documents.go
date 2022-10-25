@@ -22,19 +22,30 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// Discoverer is a subset of the syncing service that
+// is able to discover given Mintter objects, optionally specifying versions.
+type Discoverer interface {
+	DiscoverObject(ctx context.Context, obj cid.Cid, version []cid.Cid) error
+	// TODO: this is here temporarily. Eventually we need to provide from the vcs
+	// so every time we save a main version, we need to provide the leaf changes.
+	ProvideCID(cid.Cid) error
+}
+
 // Server implements DocumentsServer gRPC API.
 type Server struct {
 	db    *sqlitex.Pool
 	vcsdb *vcsdb.DB
 	me    *future.ReadOnly[core.Identity]
+	disc  Discoverer
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
 	srv := &Server{
 		db:    db,
 		vcsdb: vcsdb.New(db),
 		me:    me,
+		disc:  disc,
 	}
 
 	return srv
@@ -358,6 +369,12 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
+	if api.disc != nil {
+		if err := api.disc.ProvideCID(oid); err != nil {
+			return nil, err
+		}
+	}
+
 	return api.GetPublication(ctx, &documents.GetPublicationRequest{
 		DocumentId: in.DocumentId,
 	})
@@ -420,6 +437,42 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 		return nil, err
 	}
 
+	var inVersion vcs.Version
+	if in.Version != "" {
+		inVersion, err = vcs.ParseVersion(in.Version)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	pub, err := api.loadPublication(ctx, oid, inVersion)
+	if err == nil {
+		return pub, nil
+	}
+
+	// We can only attempt to handle not found errors.
+	if status.Code(err) != codes.NotFound {
+		return nil, err
+	}
+
+	// If no discoverer is set we can't do anything else.
+	if api.disc == nil {
+		return nil, err
+	}
+
+	// We should only attempt to discover publication if didn't specify local only.
+	if in.LocalOnly {
+		return nil, err
+	}
+
+	if err := api.disc.DiscoverObject(ctx, oid, inVersion.CIDs()); err != nil {
+		return nil, status.Errorf(codes.NotFound, "failed to discover object %q at version %q", oid.String(), inVersion.String())
+	}
+
+	return api.loadPublication(ctx, oid, inVersion)
+}
+
+func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Version) (*documents.Publication, error) {
 	me, err := api.me.Await(ctx)
 	if err != nil {
 		return nil, err
@@ -432,37 +485,41 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 	defer release()
 
 	out := &documents.Publication{}
+	var found bool
 	if err := conn.WithTx(false, func() error {
 		obj := conn.LookupPermanode(oid)
 		meLocal := conn.LookupIdentity(me)
 
 		var version vcsdb.LocalVersion
-		if in.Version == "" || in.Version == "main" {
+		if v.IsZero() {
 			version = conn.GetVersion(obj, "main", meLocal)
 		} else {
-			pubVer, err := vcs.ParseVersion(in.Version)
-			if err != nil {
-				return err
-			}
-
-			version = conn.PublicVersionToLocal(pubVer)
+			version = conn.PublicVersionToLocal(v)
 		}
 
-		if len(version) != 1 {
+		if len(version) == 0 {
+			return nil
+		}
+
+		if len(version) > 1 {
 			return fmt.Errorf("TODO(burdiyan): can only get publication with 1 leaf change, got: %d", len(version))
 		}
 		out.Document, err = api.getDocument(conn, obj, version)
 		if err != nil {
 			return err
 		}
+		found = true
 
 		out.Version = conn.LocalVersionToPublic(version).String()
+		out.Document.PublishTime = out.Document.UpdateTime
 		return nil
 	}); err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.NotFound, "failed to find object %q at version %q: %v", oid.String(), v.String(), err)
 	}
 
-	out.Document.PublishTime = out.Document.UpdateTime
+	if !found {
+		return nil, status.Errorf(codes.NotFound, "not found object %q at version %q", oid.String(), v.String())
+	}
 
 	return out, nil
 }
@@ -514,6 +571,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	for _, d := range docs {
 		draft, err := api.GetPublication(ctx, &documents.GetPublicationRequest{
 			DocumentId: cid.NewCidV1(uint64(d.PermanodeCodec), d.PermanodeMultihash).String(),
+			LocalOnly:  true,
 		})
 		if err != nil {
 			continue

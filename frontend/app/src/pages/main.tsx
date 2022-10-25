@@ -26,7 +26,7 @@ export default function Main() {
       <div className={classnames('main-root', {settings: isSettings})}>
         <main>
           <Switch>
-            {/* <Route path="/" component={Home} /> */}
+            <Route path="/" component={PublicationList} />
             <Route path="/inbox" component={PublicationList} />
             <Route path="/drafts" component={DraftList} />
             <Route
@@ -54,7 +54,7 @@ export default function Main() {
 function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
   return (
     <div role="alert" data-layout-section="main">
-      <p>Publication Error</p>
+      <p>Main Error</p>
       <pre>{error.message}</pre>
       <button onClick={resetErrorBoundary}>reload page</button>
     </div>

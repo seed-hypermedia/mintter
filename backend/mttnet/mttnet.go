@@ -294,8 +294,14 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 		return err
 	}
 
-	if !n.cfg.NoBootstrap {
-		res := n.p2p.Bootstrap(ctx, ipfs.DefaultBootstrapPeers())
+	if !n.cfg.NoBootstrap() {
+		bootInfo, err := peer.AddrInfosFromP2pAddrs(n.cfg.BootstrapPeers...)
+		if err != nil {
+			return fmt.Errorf("failed to parse bootstrap addresses %+v: %w", n.cfg.BootstrapPeers, err)
+		}
+
+		res := n.p2p.Bootstrap(ctx, bootInfo)
+
 		n.log.Info("BootstrapFinished",
 			zap.NamedError("dhtError", res.RoutingErr),
 			zap.Int("peersTotal", len(res.Peers)),
@@ -380,25 +386,21 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 	opts := []libp2p.Option{
 		libp2p.UserAgent(userAgent),
 		libp2p.Peerstore(ps),
-		libp2p.ForceReachabilityPrivate(),
+		libp2p.EnableNATService(),
 		// TODO: get rid of this when quic is known to work well. Find other places for `quic-support`.
 		libp2p.Transport(tcp.NewTCPTransport),
+		libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
+			if cfg.ExtraAddrs == nil {
+				return addrs
+			}
+			out := make([]multiaddr.Multiaddr, 0, len(addrs)+len(cfg.ExtraAddrs))
+			out = append(out, addrs...)
+			out = append(out, cfg.ExtraAddrs...)
+			return out
+		}),
 	}
 
-	if !cfg.ReportPrivateAddrs {
-		opts = append(opts,
-			libp2p.AddrsFactory(func(addrs []multiaddr.Multiaddr) []multiaddr.Multiaddr {
-				out := make([]multiaddr.Multiaddr, 0, len(addrs))
-
-				for _, a := range addrs {
-					out = append(out, a)
-				}
-
-				return out
-			}),
-		)
-	}
-
+	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
 		opts = append(opts,
 			libp2p.EnableHolePunching(),

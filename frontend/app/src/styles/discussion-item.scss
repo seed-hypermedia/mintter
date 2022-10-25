@@ -5,7 +5,7 @@
   grid-template-columns: auto 1fr;
   grid-template-rows: auto 1fr;
   gap: 0 1rem;
-  padding: 1rem 2rem;
+  padding: 1rem 2rem 1rem 3rem;
   border-bottom: 1px solid var(--base-border-subtle);
   grid-template-areas:
     'avatar info'
@@ -17,10 +17,10 @@
     content: '';
     position: absolute;
     top: 0;
-    left: calc(2rem + 16px);
+    left: calc(3rem + 16px);
     width: 1px;
     height: 100%;
-    border-inline-start: 2px dashed var(--base-border-hover);
+    border-inline-start: 2px dashed var(--base-border-subtle);
   }
 
   .item-section {
@@ -62,6 +62,11 @@
       height: calc(40px + 100%);
       top: -50px;
     }
+  }
+
+  &.activity-item {
+    background-color: var(--highlight-surface1);
+    border-block: 1px solid var(--base-border-subtle);
   }
 }
 

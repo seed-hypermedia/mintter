@@ -64,6 +64,8 @@ export default function PublicationWrapper() {
     },
   )
 
+  // return <PublicationShell />
+
   if (state.matches('publication.fetching')) {
     return <PublicationShell />
   }
@@ -92,21 +94,8 @@ export default function PublicationWrapper() {
               vertical={resizablePanelState.context.vertical}
               key={resizablePanelState.context.vertical}
               onChange={(values) => panelSend({type: 'RESIZE', values})}
-              defaultSizes={[40, 60]}
+              defaultSizes={[60, 40]}
             >
-              <Allotment.Pane visible={resizablePanelState.context.visible}>
-                <section className="discussion-section">
-                  <ScrollArea
-                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                  >
-                    <Discussion
-                      visible={resizablePanelState.context.visible}
-                      documentId={params?.id}
-                      version={params?.version}
-                    />
-                  </ScrollArea>
-                </section>
-              </Allotment.Pane>
               <Allotment.Pane>
                 <section
                   className="publication-section"
@@ -141,6 +130,7 @@ export default function PublicationWrapper() {
                               ? {
                                   top: `${top}px`,
                                   left: `${resizablePanelState.context.left}px`,
+                                  right: 'auto',
                                   transform: resizablePanelState.context
                                     .vertical
                                     ? 'translateY(50%)'
@@ -178,6 +168,18 @@ export default function PublicationWrapper() {
                   </ErrorBoundary>
                 </section>
               </Allotment.Pane>
+              <Allotment.Pane visible={resizablePanelState.context.visible}>
+                <section className="discussion-section">
+                  <ScrollArea
+                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                  >
+                    <Discussion
+                      visible={resizablePanelState.context.visible}
+                      publication={state.context.publication}
+                    />
+                  </ScrollArea>
+                </section>
+              </Allotment.Pane>
             </Allotment>
           </div>
         </BlockHighLighter>
@@ -192,14 +194,17 @@ function PublicationShell() {
   return (
     <Box
       css={{
+        marginTop: '60px',
         width: '$full',
-        padding: '$7',
-        paddingTop: '$9',
+        maxWidth: '$prose-width',
         display: 'flex',
         flexDirection: 'column',
         gap: '$7',
+        marginInline: 'auto',
       }}
     >
+      <BlockPlaceholder />
+      <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
       <BlockPlaceholder />
@@ -214,13 +219,13 @@ function BlockPlaceholder() {
         width: '$prose-width',
         display: 'flex',
         flexDirection: 'column',
-        gap: '$3',
+        gap: '$2',
       }}
     >
-      <Placeholder css={{height: 24, width: '$full'}} />
-      <Placeholder css={{height: 24, width: '92%'}} />
-      <Placeholder css={{height: 24, width: '84%'}} />
-      <Placeholder css={{height: 24, width: '90%'}} />
+      <Placeholder css={{height: 16, width: '$full'}} />
+      <Placeholder css={{height: 16, width: '92%'}} />
+      <Placeholder css={{height: 16, width: '84%'}} />
+      <Placeholder css={{height: 16, width: '90%'}} />
     </Box>
   )
 }
@@ -309,15 +314,13 @@ let resizablePanelMachine =
   )
 
 function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
+  // TODO: find a way to scroll to the block when clicking on a mintter link
   useEffect(() => {
     setTimeout(() => {
       if (blockId) {
         if (ref?.current) {
           let entry = getEditorBlock(editor, {id: blockId})
-          console.log(
-            '🚀 ~ file: publication.tsx ~ line 310 ~ useEffect ~ entry',
-            entry,
-          )
+
           if (entry) {
             let [block] = entry
             let elm = ReactEditor.toDOMNode(editor, block)
