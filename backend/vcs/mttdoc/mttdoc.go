@@ -16,18 +16,21 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
+// DocumentType is the IPLD type annotation for the document permanode.
 const DocumentType vcs.ObjectType = "https://schema.mintter.org/Document"
 
 func init() {
 	cbornode.RegisterCborType(DocumentPermanode{})
 }
 
+// DocumentPermanode is a vcs.Permanode for Mintter Documents.
 type DocumentPermanode struct {
 	vcs.BasePermanode
 
 	Nonce []byte
 }
 
+// NewDocumentPermanode creates a new Permanode for the Mintter Document.
 func NewDocumentPermanode(owner cid.Cid, at hlc.Time) DocumentPermanode {
 	p := DocumentPermanode{
 		BasePermanode: vcs.BasePermanode{

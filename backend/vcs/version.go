@@ -14,19 +14,21 @@ import (
 // Version defines a version of a Mintter Object.
 // It's a set of leaf nodes of the Time DAG.
 type Version struct {
-	totalCount uint64
-	cids       []cid.Cid
+	len  int
+	cids []cid.Cid
 }
 
-func NewVersion(totalCount uint64, cc ...cid.Cid) Version {
+// NewVersion creates a new version from CIDs.
+func NewVersion(cc ...cid.Cid) Version {
 	// TODO: sort and maybe copy the slice?
 
 	return Version{
-		totalCount: totalCount,
-		cids:       cc,
+		len:  len(cc),
+		cids: cc,
 	}
 }
 
+// ParseVersion parses string representation of the version.
 func ParseVersion(s string) (Version, error) {
 	if s == "" {
 		return Version{}, nil
@@ -61,13 +63,15 @@ func ParseVersion(s string) (Version, error) {
 	// TODO: check that sort is canonical
 
 	return Version{
-		totalCount: count,
-		cids:       cids,
+		len:  int(count),
+		cids: cids,
 	}, nil
 }
 
-func (v Version) TotalCount() uint64 { return v.totalCount }
+// Len returns the number of CIDs in the Version.
+func (v Version) Len() int { return v.len }
 
+// CIDs returns the copy of the CIDs that version consists of.
 func (v Version) CIDs() []cid.Cid {
 	if v.cids == nil {
 		return nil
@@ -78,17 +82,18 @@ func (v Version) CIDs() []cid.Cid {
 	return out
 }
 
+// String returns string representation of the version.
 func (v Version) String() string {
 	if v.cids == nil {
 		return ""
 	}
 
-	if v.totalCount == 0 {
+	if v.len == 0 {
 		panic("BUG: invalid version")
 	}
 
 	buf := make([]byte, binary.MaxVarintLen64)
-	n := binary.PutUvarint(buf, v.totalCount)
+	n := binary.PutUvarint(buf, uint64(v.len))
 
 	var b bytes.Buffer
 

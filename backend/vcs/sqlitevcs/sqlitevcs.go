@@ -764,7 +764,7 @@ func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
 		return cids[i].String() < cids[j].String()
 	})
 
-	return vcs.NewVersion(uint64(len(cids)), cids...)
+	return vcs.NewVersion(cids...)
 }
 
 // PublicVersionToLocal converts a public version into a local one. All changes

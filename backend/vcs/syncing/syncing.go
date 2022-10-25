@@ -429,7 +429,7 @@ func permanodeFromMap(v interface{}) (p vcs.Permanode, err error) {
 func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]vcs.VerifiedChange, error) {
 	queue := ver.CIDs()
 
-	visited := make(map[cid.Cid]struct{}, ver.TotalCount())
+	visited := make(map[cid.Cid]struct{}, ver.Len())
 
 	fetched := make([]vcs.VerifiedChange, 0, 10) // Arbitrary buffer to reduce allocations when buffer grows.
 

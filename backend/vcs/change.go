@@ -25,6 +25,7 @@ func init() {
 	cbornode.RegisterCborType(ChangeBody{})
 }
 
+// ChangeInfo is the metadata of the Change.
 type ChangeInfo struct {
 	Object    cid.Cid        `refmt:"object"`
 	Author    cid.Cid        `refmt:"author"` // TODO: should this be a DID instead?
@@ -45,6 +46,7 @@ type Change struct {
 	Body []byte     `refmt:"body"`
 }
 
+// Datoms returns the list of Datoms created by this Change.
 func (ch Change) Datoms() ([]Datom, error) {
 	if ch.Kind != ChangeKindV1 {
 		return nil, fmt.Errorf("change kind %q is invalid", ch.Kind)
@@ -101,6 +103,7 @@ func (ch Change) Datoms() ([]Datom, error) {
 	return out, nil
 }
 
+// ChangeBody is the body of the Change.
 type ChangeBody struct {
 	Entities []NodeID    `refmt:"e,omitempty"`
 	Strings  []string    `refmt:"s,omitempty"`
@@ -111,42 +114,42 @@ type ChangeBody struct {
 }
 
 // Less defines total order among changes.
-func (c Change) Less(other Change) bool {
-	if c.Time.Equal(other.Time) {
-		return c.Signer.KeyString() < other.Signer.KeyString()
+func (ch Change) Less(other Change) bool {
+	if ch.Time.Equal(other.Time) {
+		return ch.Signer.KeyString() < other.Signer.KeyString()
 	}
 
-	return c.Time.Before(other.Time)
+	return ch.Time.Before(other.Time)
 }
 
 // Sign the change with a given key.
 // The returned copy will contain the signature.
-func (c Change) Sign(k signer) Change {
-	if !c.Signer.Defined() {
-		c.Signer = k.CID()
+func (ch Change) Sign(k signer) Change {
+	if !ch.Signer.Defined() {
+		ch.Signer = k.CID()
 	}
 
-	if !c.Signer.Equals(k.CID()) {
+	if !ch.Signer.Equals(k.CID()) {
 		panic("BUG: change signer doesn't match the provided key")
 	}
 
-	if c.Signature != nil {
+	if ch.Signature != nil {
 		panic("BUG: change is already signed")
 	}
 
-	sig, err := k.Sign(c.signingBytes())
+	sig, err := k.Sign(ch.signingBytes())
 	if err != nil {
 		panic(err)
 	}
 
-	c.Signature = sig
+	ch.Signature = sig
 
-	return c
+	return ch
 }
 
 // Verify signature of a Change.
-func (c Change) Verify() error {
-	pid, err := peer.FromCid(c.Signer)
+func (ch Change) Verify() error {
+	pid, err := peer.FromCid(ch.Signer)
 	if err != nil {
 		return err
 	}
@@ -161,7 +164,7 @@ func (c Change) Verify() error {
 		return err
 	}
 
-	return pk.Verify(c.signingBytes(), c.Signature)
+	return pk.Verify(ch.signingBytes(), ch.Signature)
 }
 
 type signer interface {
@@ -169,13 +172,13 @@ type signer interface {
 	core.CIDer
 }
 
-func (c Change) signingBytes() []byte {
-	if !c.Signer.Defined() {
+func (ch Change) signingBytes() []byte {
+	if !ch.Signer.Defined() {
 		panic("BUG: signer is not defined")
 	}
-	c.Signature = nil
+	ch.Signature = nil
 
-	data, err := cbornode.DumpObject(c)
+	data, err := cbornode.DumpObject(ch)
 	if err != nil {
 		panic(err)
 	}

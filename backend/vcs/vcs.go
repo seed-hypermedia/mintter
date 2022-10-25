@@ -1,3 +1,8 @@
+// Package vcs provides the basis for the Mintter Version Control System.
+// VCS manages Mintter Objects which are identified by Permanodes.
+// Mintter Objects define a namespace/scope for various entities (Nodes).
+// Each entity consist of atomic attribute/value pairs (Datoms).
+// There's an implicit root Entity/Node in every Mintter Object.
 package vcs
 
 import (

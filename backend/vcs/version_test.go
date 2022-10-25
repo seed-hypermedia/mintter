@@ -19,12 +19,12 @@ func TestVersion(t *testing.T) {
 		ipfs.MustNewCID(cid.Raw, multihash.IDENTITY, []byte("world")),
 	}
 
-	v = NewVersion(10, cids...)
+	v = NewVersion(cids...)
 	require.Equal(t, "bbiavkaafnbswy3dpafkqablxn5zgyza", v.String())
 
 	v2, err := ParseVersion(v.String())
 	require.NoError(t, err)
 	require.Equal(t, v, v2)
-	require.Equal(t, uint64(10), v.TotalCount())
-	require.Equal(t, uint64(10), v2.TotalCount())
+	require.Equal(t, uint64(10), v.Len())
+	require.Equal(t, uint64(10), v2.Len())
 }
