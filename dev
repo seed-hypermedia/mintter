@@ -98,6 +98,7 @@ def main():
     def run_desktop(args):
         run("plz build //backend:mintterd //:pnpm")
         return run("cd desktop/app && cargo tauri dev", args=args)
+        # return run("cd desktop/app && cargo tauri dev --config tauri.linux.conf.json", args=args)
 
     @cmd(cmds, "release", "Cut a new release.")
     def release(args):

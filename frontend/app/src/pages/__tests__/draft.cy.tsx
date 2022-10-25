@@ -1,7 +1,7 @@
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {paragraph, statement, text} from '@app/mttast'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
-import Topbar from '@components/topbar'
+import Topbar from '@components/titlebar'
 import {Route} from 'wouter'
 import DraftPage from '../draft'
 describe('Draft Page', () => {

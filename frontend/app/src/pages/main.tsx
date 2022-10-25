@@ -1,4 +1,5 @@
 import {classnames} from '@app/utils/classnames'
+import {TitleBar} from '@components/titlebar'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Redirect} from 'wouter'
@@ -11,7 +12,6 @@ var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
-var Topbar = lazy(() => import('@components/topbar'))
 var Footer = lazy(() => import('@components/footer'))
 
 export default function Main() {
@@ -39,11 +39,12 @@ export default function Main() {
             <Route>{() => <Redirect to="/inbox" />}</Route>
           </Switch>
         </main>
+
         {!isSettings ? (
           <>
-            <Topbar />
-            <Footer />
+            <TitleBar />
             <QuickSwitcher />
+            <Footer />
           </>
         ) : null}
       </div>

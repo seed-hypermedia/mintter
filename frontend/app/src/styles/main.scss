@@ -1,9 +1,18 @@
 @use 'mixins/platform';
 @use 'variables' as *;
 
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+
+  @include platform.win32-or-linux {
+    border: 1px solid #777;
+  }
+}
+
 .main-root {
   position: absolute;
-  inset: 0;
   bottom: var(--footer-h);
   overflow: hidden;
   display: flex;
@@ -12,10 +21,15 @@
 
   @include platform.macos {
     top: $darwin-title-bar-height;
+    inset: 0;
   }
 
   @include platform.win32 {
     top: $win32-title-bar-height;
+  }
+
+  @include platform.linux {
+    top: $linux-title-bar-height;
   }
 
   &.settings {
