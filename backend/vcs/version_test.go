@@ -20,11 +20,11 @@ func TestVersion(t *testing.T) {
 	}
 
 	v = NewVersion(cids...)
-	require.Equal(t, "bbiavkaafnbswy3dpafkqablxn5zgyza", v.String())
+	require.Equal(t, "baiavkaafnbswy3dpafkqablxn5zgyza", v.String())
 
 	v2, err := ParseVersion(v.String())
 	require.NoError(t, err)
 	require.Equal(t, v, v2)
-	require.Equal(t, uint64(10), v.Len())
-	require.Equal(t, uint64(10), v2.Len())
+	require.Equal(t, 2, v.Len())
+	require.Equal(t, 2, v2.Len())
 }
