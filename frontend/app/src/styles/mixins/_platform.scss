@@ -18,3 +18,9 @@
     @content;
   }
 }
+
+@mixin win32-or-linux {
+  @if env.$TAURI_PLATFORM == 'windows' or env.$TAURI_PLATFORM == 'linux' {
+    @content;
+  }
+}

@@ -61,11 +61,17 @@
         "startDragging": true,
         "maximize": true,
         "unmaximize": true,
-        "close": true
+        "minimize": true,
+        "close": true,
+        "hide": true
       },
       "dialog": {
         "all": false,
         "message": true
+      },
+      "process": {
+        "all": false,
+        "exit": true
       }
     },
     "windows": [

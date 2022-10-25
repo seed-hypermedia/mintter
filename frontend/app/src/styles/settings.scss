@@ -4,6 +4,7 @@
 .settings-wrapper {
   position: fixed;
   inset: 0;
+  top: var(--topbar-h);
 
   .tabs {
     width: 100%;
@@ -57,13 +58,6 @@
     &[data-state='inactive'] {
       display: none;
     }
-  }
-
-  .drag-handle {
-    position: fixed;
-    z-index: 999;
-    width: 100vw;
-    height: $darwin-title-bar-height;
   }
 }
 

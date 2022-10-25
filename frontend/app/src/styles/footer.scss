@@ -1,7 +1,8 @@
+@use 'mixins/platform';
+
 .main-footer {
   position: fixed;
   height: var(--footer-h);
-  inset: auto 0 0 0;
   background-color: red;
   border-top: 1px solid var(--base-border-subtle);
   background-color: var(--base-background-subtle);
@@ -9,6 +10,16 @@
   align-items: center;
   justify-content: flex-end;
   padding-inline: 0.5rem;
+
+  @include platform.macos {
+    inset: auto 0 0 0;
+  }
+
+  @include platform.win32-or-linux {
+    bottom: 1px;
+    left: 1px;
+    right: 1px;
+  }
 }
 
 .button {

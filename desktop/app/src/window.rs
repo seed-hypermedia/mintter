@@ -50,25 +50,39 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
 
   let label = window_label();
 
-  WindowBuilder::new(&app_handle, label, WindowUrl::App(path.into()))
-    .min_inner_size(500.0, 500.0)
-    .build()?;
+  let win = WindowBuilder::new(&app_handle, label, WindowUrl::App(path.into()))
+    .title("Mintter")
+    .min_inner_size(500.0, 500.0);
+
+  #[cfg(not(target_os = "macocs"))]
+  let win = { win.decorations(false) };
+
+  win.build()?;
 
   Ok(())
 }
 
-pub fn new_window<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
+#[tauri::command(async)]
+#[tracing::instrument(skip(app_handle))]
+pub fn new_window<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
   let label = window_label();
 
-  WindowBuilder::new(manager, label, WindowUrl::App("index.html".into()))
-    .min_inner_size(500.0, 500.0)
-    .build()?;
+  let win = WindowBuilder::new(&app_handle, label, WindowUrl::App("index.html".into()))
+    .title("Mintter")
+    .min_inner_size(500.0, 500.0);
+
+  #[cfg(not(target_os = "macocs"))]
+  let win = { win.decorations(false) };
+
+  win.build()?;
 
   Ok(())
 }
 
-pub fn close_all_windows<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
-  for window in manager.windows().values() {
+#[tauri::command(async)]
+#[tracing::instrument(skip(app_handle))]
+pub fn close_all_windows<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
+  for window in app_handle.windows().values() {
     window.close()?;
   }
 
