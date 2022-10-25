@@ -139,6 +139,9 @@ message GetPublicationRequest {
 
   // Optional. Specific version of the published document. If empty, the latest one is returned.
   string version = 2;
+
+  // Optional. If true, only local publications will be found. False by default.
+  bool local_only = 3;
 }
 
 // Request for deleting a publication.
