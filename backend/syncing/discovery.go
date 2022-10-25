@@ -15,9 +15,9 @@ const defaultDiscoveryTimeout = time.Minute
 // DiscoverObject attempts to discover a given Mintter Object with an optional version specified.
 // If no version is specified it tries to find whatever is possible.
 func (s *Service) DiscoverObject(ctx context.Context, obj cid.Cid, version []cid.Cid) error {
-	// TODO: if we know the version, there's no need to finding provider peers for the permanode,
-	// we could be just looking for the leaf change CIDs, and walk up the change DAG.
-	// We are doing almost exactly that inside the syncFromVersion() method.
+	// TODO(burdiyan): if we know the version, there's no need to finding provider peers
+	// for the permanode, we could be just looking for the leaf change CIDs, and walk up the
+	// change DAG. We are doing almost exactly that inside the syncFromVersion() method.
 
 	ctx, cancel := context.WithTimeout(ctx, defaultDiscoveryTimeout)
 	defer cancel()
