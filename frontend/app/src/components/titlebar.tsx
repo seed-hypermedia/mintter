@@ -430,7 +430,7 @@ export function TitleBarLinux() {
       <Title />
 
       <ActionButtons />
-      <div className="titlebar-section">
+      <div className="titlebar-section" style={{paddingLeft: 0}}>
         <Menu />
       </div>
 
