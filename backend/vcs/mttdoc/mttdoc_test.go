@@ -1,26 +1,29 @@
 package mttdoc
 
 import (
-	"mintter/backend/vcs/vcsdb"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestDocumentSmoke(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	doc := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
 
 	require.True(t, doc.MoveBlock("b1", "", ""))
 	require.False(t, doc.MoveBlock("b1", "", ""))
 	require.False(t, doc.MoveBlock("b1", "", ""))
-	require.Len(t, doc.dw.Dirty(), 4, doc.err)
+	require.Len(t, doc.batch.Dirty(), 4, doc.err)
 
 	require.True(t, doc.MoveBlock("b2", "", "b1"))
 	require.False(t, doc.MoveBlock("b2", "", "b1"))
-	require.Len(t, doc.dw.Dirty(), 8, doc.err)
+	require.Len(t, doc.batch.Dirty(), 8, doc.err)
 
 	require.True(t, doc.MoveBlock("b2", "b1", ""), doc.err)
-	require.Len(t, doc.dw.Dirty(), 12, doc.err)
+	require.Len(t, doc.batch.Dirty(), 12, doc.err)
 
 	require.NoError(t, doc.err)
 
@@ -30,18 +33,23 @@ func TestDocumentSmoke(t *testing.T) {
 	}, doc)
 }
 
-func TestModeAncestor(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+func TestMoveAncestor(t *testing.T) {
+	batch := vcs.NewBatch(hlc.NewClock(), 123)
+	doc := New(batch)
 
 	require.True(t, doc.MoveBlock("b1", "", ""))
 	require.True(t, doc.MoveBlock("b2", "", "b1"))
 	require.True(t, doc.MoveBlock("b2", "b1", ""))
 	require.False(t, doc.MoveBlock("b1", "b2", ""))
 	require.Error(t, doc.err)
+
+	require.Equal(t, 3*4, len(doc.batch.Dirty()))
 }
 
 func TestReplicate(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	doc := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
 
 	/*
 		- b1
@@ -54,7 +62,7 @@ func TestReplicate(t *testing.T) {
 	require.True(t, doc.MoveBlock("b3", "", "b1"))
 	require.True(t, doc.MoveBlock("b2", "b3", ""))
 	require.True(t, doc.MoveBlock("b4", "b3", "b2"))
-	require.Len(t, doc.dw.Dirty(), 5*4, doc.err)
+	require.Len(t, doc.batch.Dirty(), 5*4, doc.err)
 
 	want := []contentBlockPosition{
 		{"b1", "$ROOT", ""},
@@ -65,14 +73,19 @@ func TestReplicate(t *testing.T) {
 
 	testHierarchy(t, want, doc)
 
-	r := New(vcsdb.NewDatomWriter(1, 1, doc.tracker.LastOp().Seq))
-	require.NoError(t, r.Replay(doc.dw.Dirty()))
+	r := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
+
+	require.NoError(t, r.Replay(doc.batch.Dirty()))
 
 	testHierarchy(t, want, r)
 }
 
 func TestDeleteBlock(t *testing.T) {
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	doc := New(
+		vcs.NewBatch(
+			hlc.NewClock(), 123))
 
 	/*
 		- b1
@@ -86,7 +99,7 @@ func TestDeleteBlock(t *testing.T) {
 	require.True(t, doc.MoveBlock("b2", "b3", ""))
 	require.True(t, doc.MoveBlock("b4", "b3", "b2"))
 	require.True(t, doc.DeleteBlock("b2"), doc.err)
-	require.Len(t, doc.dw.Dirty(), 6*4, doc.err)
+	require.Len(t, doc.batch.Dirty(), 6*4, doc.err)
 
 	want := []contentBlockPosition{
 		{"b1", "$ROOT", ""},
@@ -97,10 +110,13 @@ func TestDeleteBlock(t *testing.T) {
 	testHierarchy(t, want, doc)
 }
 
-func TestComplexWithMode(t *testing.T) {
+func TestComplexWithMove(t *testing.T) {
 	t.Parallel()
 
-	doc := New(vcsdb.NewDatomWriter(1, 1, 0))
+	clock := hlc.NewClock()
+	batch := vcs.NewBatch(clock, 123)
+
+	doc := New(batch)
 
 	doc.MoveBlock("b1", "", "")
 	doc.MoveBlock("b1.1", "b1", "")
@@ -110,6 +126,6 @@ func TestComplexWithMode(t *testing.T) {
 
 	require.NoError(t, doc.Err())
 
-	r := New(vcsdb.NewDatomWriter(1, 1, 0))
-	require.NoError(t, r.Replay(doc.dw.Dirty()))
+	r := New(vcs.NewBatch(hlc.NewClock(), 123))
+	require.NoError(t, r.Replay(doc.batch.Dirty()))
 }

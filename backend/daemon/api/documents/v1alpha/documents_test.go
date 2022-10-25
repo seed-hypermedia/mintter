@@ -8,6 +8,7 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
+	"mintter/backend/vcs/hlc"
 	"path/filepath"
 	"testing"
 	"time"
@@ -184,8 +185,14 @@ func TestAPIGetDraft(t *testing.T) {
 	api := newTestDocsAPI(t, "alice")
 	ctx := context.Background()
 
+	start := hlc.FromTime(time.Now().Add(-500 * time.Millisecond)).Pack()
+
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
+
+	require.Greater(t, draft.CreateTime.AsTime().UnixMicro(), start)
+	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), start)
+	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), draft.CreateTime.AsTime().UnixMicro())
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
@@ -197,10 +204,55 @@ func TestAPIGetDraft(t *testing.T) {
 			Text: "Hello world!",
 		}}},
 	})
+	require.Equal(t, draft.CreateTime, updated.CreateTime)
+	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
 
 	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
+
+	got, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
+}
+
+func TestListDrafts(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	start := hlc.FromTime(time.Now().Add(-500 * time.Millisecond)).Pack()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	require.Greater(t, draft.CreateTime.AsTime().UnixMicro(), start)
+	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), start)
+	require.Greater(t, draft.UpdateTime.AsTime().UnixMicro(), draft.CreateTime.AsTime().UnixMicro())
+
+	{
+		list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+		require.NoError(t, err)
+		testutil.ProtoEqual(t, draft, list.Documents[0], "must have draft in the list")
+	}
+
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	require.Equal(t, draft.CreateTime.AsTime().UnixMicro(), updated.CreateTime.AsTime().UnixMicro())
+	require.Greater(t, updated.UpdateTime.AsTime().UnixMicro(), draft.UpdateTime.AsTime().UnixMicro())
+
+	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updated, list.Documents[0], "must have draft in the list")
 }
 
 func TestUpdateDraftSmoke(t *testing.T) {

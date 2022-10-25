@@ -1,22 +1,20 @@
-// Package vcsdb provides version-control-system-related functionality.
+// Package sqlitevcs provides version-control-system-related functionality.
 // It's mostly a wrapper around SQLite with specific functions around
 // our graph/triple-store mode for Mintter Objects.
-package vcsdb
+package sqlitevcs
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"mintter/backend/core"
-	"mintter/backend/db/sqlitegen"
-	"mintter/backend/db/sqlitegen/qb"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/crdt"
+	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/vcssql"
 	"sort"
 	"time"
@@ -28,42 +26,17 @@ import (
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
+	"github.com/leporo/sqlf"
 	"go.uber.org/multierr"
 )
 
-const changeKindV1 = "mintter.vcsdb.v1"
+const changeKindV1 = vcs.ChangeKindV1
 
 // DB is a database of Mintter Objects.
 type DB struct {
 	pool *sqlitex.Pool
 
 	bs *blockStore
-}
-
-// Permanode is a common interface for different Permanode structs.
-type Permanode = vcs.Permanode
-
-// EncodedPermanode is a Permanode encoded in a canonical form.
-// The ID of the Permanode is the ID of a Mintter Object.
-type EncodedPermanode struct {
-	ID   cid.Cid
-	Data []byte
-
-	Permanode
-}
-
-// NewPermanode creates a new permanode in the encoded form.
-func NewPermanode(p Permanode) (ep EncodedPermanode, err error) {
-	blk, err := vcs.EncodeBlock(p)
-	if err != nil {
-		return ep, err
-	}
-
-	ep.ID = blk.Cid()
-	ep.Data = blk.RawData()
-	ep.Permanode = p
-
-	return ep, nil
 }
 
 // New creates a new DB.
@@ -99,8 +72,6 @@ type Conn struct {
 	bs   *blockStore
 
 	err error
-
-	lastLamport int
 }
 
 // InternalConn should not exist. It returns the underlying
@@ -113,8 +84,8 @@ func (conn *Conn) InternalConn() *sqlite.Conn {
 	return conn.conn
 }
 
-// Attribute is a type for predicate attributes.
-type Attribute string
+// Attribute is here during the refactoring.
+type Attribute = vcs.Attribute
 
 // Attr ensures an internal ID for an attribute.
 func (conn *Conn) Attr(s Attribute) LocalID {
@@ -147,7 +118,7 @@ func (conn *Conn) Attr(s Attribute) LocalID {
 }
 
 // NewObject creates a new object and returns it internal ID.
-func (conn *Conn) NewObject(p EncodedPermanode) (lid LocalID) {
+func (conn *Conn) NewObject(p vcs.EncodedPermanode) (lid LocalID) {
 	must.Maybe(&conn.err, func() error {
 		defer sqlitex.Save(conn.conn)(&conn.err)
 
@@ -164,11 +135,7 @@ func (conn *Conn) NewObject(p EncodedPermanode) (lid LocalID) {
 			return err
 		}
 
-		if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int(p.PermanodeCreateTime().Unix())); err != nil {
-			return err
-		}
-
-		if err := vcssql.PermanodeOwnersInsertOrIgnore(conn.conn, aid, res.IPFSBlocksID); err != nil {
+		if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int64(p.PermanodeCreateTime().Pack()), aid); err != nil {
 			return err
 		}
 
@@ -191,7 +158,7 @@ func (conn *Conn) LookupPermanode(c cid.Cid) LocalID {
 // GetObjectOwner returns the owner for the Mintter Object.
 func (conn *Conn) GetObjectOwner(id LocalID) (c cid.Cid) {
 	must.Maybe(&conn.err, func() error {
-		res, err := vcssql.PermanodeOwnersGetOne(conn.conn, int(id))
+		res, err := vcssql.PermanodeOwnersGetOne(conn.conn, int64(id))
 		if err != nil {
 			return err
 		}
@@ -203,7 +170,7 @@ func (conn *Conn) GetObjectOwner(id LocalID) (c cid.Cid) {
 }
 
 // EnsurePermanode ensures a permanode exist and returns it's local ID.
-func (conn *Conn) EnsurePermanode(p EncodedPermanode) (lid LocalID) {
+func (conn *Conn) EnsurePermanode(p vcs.EncodedPermanode) (lid LocalID) {
 	must.Maybe(&conn.err, func() error {
 		lid = conn.LookupPermanode(p.ID)
 		if lid == 0 {
@@ -289,18 +256,16 @@ func (conn *Conn) EnsureAccountDevice(acc, device cid.Cid) (li LocalIdentity) {
 		li.Account = LocalID(conn.ensureAccountID(acc))
 		li.Device = LocalID(conn.ensureDeviceID(device))
 
-		return vcssql.AccountDevicesInsertOrIgnore(conn.conn, int(li.Account), int(li.Device))
+		return vcssql.AccountDevicesInsertOrIgnore(conn.conn, int64(li.Account), int64(li.Device))
 	})
 	return li
 }
 
 // NewChange creates a new change to modify a given Mintter Object.
-func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, createTime time.Time) LocalID {
+func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, clock *hlc.Clock) LocalID {
 	if conn.err != nil {
 		return 0
 	}
-
-	lamportTime := 1
 
 	if base != nil {
 		data, err := json.Marshal(base)
@@ -309,20 +274,20 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, creat
 			return 0
 		}
 
-		baseRes, err := vcssql.ChangesGetBase(conn.conn, string(data), int(obj))
+		baseRes, err := vcssql.ChangesGetBase(conn.conn, int64(obj), string(data))
 		if err != nil {
 			conn.err = err
 			return 0
 		}
-		if baseRes.Count != len(base) {
+		if int(baseRes.Count) != len(base) {
 			conn.err = fmt.Errorf("invalid base length")
 			return 0
 		}
 
-		lamportTime = baseRes.MaxClock + 1
+		clock.Track(hlc.Unpack(int64(baseRes.MaxClock)))
 	}
 
-	conn.lastLamport = lamportTime
+	hlcTime := clock.Now().Pack()
 
 	res, err := vcssql.ChangesAllocateID(conn.conn)
 	if err != nil {
@@ -331,20 +296,13 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, creat
 	}
 	changeID := res.Seq
 
-	now := createTime.Unix()
-
-	if err := vcssql.ChangesInsertOrIgnore(conn.conn, changeID, int(obj), changeKindV1, lamportTime, int(now)); err != nil {
-		conn.err = err
-		return 0
-	}
-
-	if err := vcssql.ChangeAuthorsInsertOrIgnore(conn.conn, changeID, int(id.Account), int(id.Device)); err != nil {
+	if err := vcssql.ChangesInsertOrIgnore(conn.conn, changeID, int64(obj), int64(id.Account), int64(id.Device), changeKindV1, int64(hlcTime)); err != nil {
 		conn.err = err
 		return 0
 	}
 
 	for _, dep := range base {
-		if err := vcssql.ChangesInsertParent(conn.conn, changeID, int(dep)); err != nil {
+		if err := vcssql.ChangesInsertParent(conn.conn, changeID, int64(dep)); err != nil {
 			conn.err = err
 			return 0
 		}
@@ -353,140 +311,47 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, creat
 	return LocalID(changeID)
 }
 
-// GetChangeLamportTime returns lamport time for a given change.
-func (conn *Conn) GetChangeLamportTime(id LocalID) int {
+// GetChangeClock returns the clock instance with maximum timestamp for a given change.
+func (conn *Conn) GetChangeClock(object, change LocalID) (c *hlc.Clock) {
+	must.Maybe(&conn.err, func() error {
+		c = hlc.NewClockAt(hlc.Unpack(conn.GetChangeMaxTime(object, change)))
+		return nil
+	})
+
+	return c
+}
+
+// GetChangeMaxTime returns maximum Hybrid Logical Timestamp for a given change.
+func (conn *Conn) GetChangeMaxTime(object, change LocalID) int64 {
 	if conn.err != nil {
 		return 0
 	}
 
-	var out int
+	var out int64
 
 	onStmt := func(stmt *sqlite.Stmt) error {
-		out = stmt.ColumnInt(0)
+		out = stmt.ColumnInt64(0)
 		return nil
 	}
 
-	// TODO: convert to codegen query.
+	q := sqlf.From(string(sqliteschema.Datoms)).
+		Select("MAX("+sqliteschema.DatomsTime.ShortName()+")").
+		Where(sqliteschema.DatomsPermanode.ShortName()+" = ?", object).
+		Where(sqliteschema.DatomsChange.ShortName()+" = ?", change).
+		Limit(1)
+	defer q.Close()
 
-	if err := sqlitex.Exec(conn.conn, "SELECT lamport_time FROM changes WHERE id = ? LIMIT 1", onStmt, id); err != nil {
+	if err := sqlitex.Exec(conn.conn, q.String(), onStmt, q.Args()...); err != nil {
 		conn.err = err
 		return 0
 	}
 
 	if out == 0 {
-		conn.err = fmt.Errorf("not found lamport time for change %d", id)
+		conn.err = fmt.Errorf("not found lamport time for change %d", change)
 		return 0
 	}
 
 	return out
-}
-
-// LastLamportTime returns the lamport time of the most recently created change.
-func (conn *Conn) LastLamportTime() int { return conn.lastLamport }
-
-var (
-	qIterateChangeDatoms = qb.MakeQuery(sqliteschema.Schema, "iterateChangeDatoms", sqlitegen.QueryKindMany,
-		"SELECT", qb.Results(
-			qb.ResultCol(sqliteschema.DatomsChange),
-			qb.ResultCol(sqliteschema.DatomsSeq),
-			qb.ResultCol(sqliteschema.DatomsEntity),
-			qb.ResultCol(sqliteschema.DatomAttrsAttr),
-			qb.ResultCol(sqliteschema.DatomsValueType),
-			qb.ResultCol(sqliteschema.DatomsValue),
-		), '\n',
-		"FROM", sqliteschema.Datoms, '\n',
-		"JOIN", sqliteschema.DatomAttrs, "ON", sqliteschema.DatomAttrsID, "=", sqliteschema.DatomsAttr, '\n',
-		"WHERE", sqliteschema.DatomsChange, "=", qb.VarCol(sqliteschema.DatomsChange),
-	)
-)
-
-type changeBody struct {
-	Entities []NodeID    `refmt:"e,omitempty"`
-	Strings  []string    `refmt:"s,omitempty"`
-	Bytes    [][]byte    `refmt:"b,omitempty"`
-	Attrs    []Attribute `refmt:"a,omitempty"`
-	CIDs     []cid.Cid   `refmt:"c,omitempty"`
-	Datoms   [][5]int    `refmt:"d"` // seq, entity, attrIdx, valueType, stringIdx | entityIdx | bool | int
-}
-
-func datomsFromChange(changeLocal LocalID, ch vcs.Change) ([]Datom, error) {
-	if ch.Kind != changeKindV1 {
-		return nil, fmt.Errorf("change kind %q is invalid", ch.Kind)
-	}
-
-	var cb changeBody
-	if err := cbornode.DecodeInto(ch.Body, &cb); err != nil {
-		return nil, fmt.Errorf("failed to decode datoms from change body: %w", err)
-	}
-
-	out := make([]Datom, len(cb.Datoms))
-
-	for i, d := range cb.Datoms {
-		out[i] = Datom{
-			OpID: OpID{
-				LamportTime: int(ch.LamportTime),
-				Change:      changeLocal,
-				Seq:         d[0],
-			},
-			Entity:    cb.Entities[d[1]],
-			Attr:      cb.Attrs[d[2]],
-			ValueType: ValueType(d[3]),
-		}
-
-		switch out[i].ValueType {
-		case ValueTypeRef:
-			out[i].Value = cb.Entities[d[4]]
-		case ValueTypeString:
-			out[i].Value = cb.Strings[d[4]]
-		case ValueTypeInt:
-			out[i].Value = d[4]
-		case ValueTypeBool:
-			switch d[4] {
-			case 0:
-				out[i].Value = false
-			case 1:
-				out[i].Value = true
-			default:
-				return nil, fmt.Errorf("bad boolean value: %v", d[4])
-			}
-		case ValueTypeBytes:
-			out[i].Value = cb.Bytes[d[4]]
-		case ValueTypeCID:
-			out[i].Value = cb.CIDs[d[4]]
-		default:
-			return nil, fmt.Errorf("unsupported value type: %v", out[i].ValueType)
-		}
-	}
-
-	return out, nil
-}
-
-func init() {
-	cbornode.RegisterCborType(changeBody{})
-}
-
-// SignedChange is a type for Change with signature and signer information.
-type SignedChange = vcs.SignedCBOR[vcs.Change]
-
-// VerifiedChange is a change with a verified signature.
-type VerifiedChange struct {
-	blocks.Block
-
-	Decoded vcs.SignedCBOR[vcs.Change]
-}
-
-// VerifyChangeBlock ensures that a signature of a change IPLD block is valid.
-func VerifyChangeBlock(blk blocks.Block) (vc VerifiedChange, err error) {
-	sc, err := vcs.ParseChangeBlock(blk)
-	if err != nil {
-		return vc, err
-	}
-
-	if err := sc.Verify(); err != nil {
-		return vc, fmt.Errorf("failed to verify change %s: %w", blk.Cid(), err)
-	}
-
-	return VerifiedChange{Block: blk, Decoded: sc}, nil
 }
 
 // StoreRemoteChange stores the changes fetched from the remote peer,
@@ -494,12 +359,12 @@ func VerifyChangeBlock(blk blocks.Block) (vc VerifiedChange, err error) {
 // validated elsewhere. It also assumes that change parents already exist in the database.
 // It also expects that IPFS block of the incoming change is already in the blockstore, placed there
 // by the BitSwap session.
-func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func(conn *Conn, obj LocalID, d Datom) error) (change LocalID) {
+func (conn *Conn) StoreRemoteChange(obj LocalID, vc vcs.VerifiedChange, onDatom func(conn *Conn, obj, change LocalID, d Datom) error) (change LocalID) {
 	must.Maybe(&conn.err, func() error {
-		sc := vc.Decoded
+		ch := vc.Decoded
 
-		if sc.Payload.Kind != changeKindV1 {
-			panic("BUG: change kind is invalid: " + sc.Payload.Kind)
+		if ch.Kind != changeKindV1 {
+			panic("BUG: change kind is invalid: " + ch.Kind)
 		}
 
 		// TODO(burdiyan): validate lamport timestamp of the incoming change here, or elsewhere?
@@ -514,15 +379,9 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 		}
 		change = LocalID(res.IPFSBlocksID)
 
-		ch := sc.Payload
+		idLocal := conn.EnsureAccountDevice(ch.Author, ch.Signer)
 
-		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), ch.Kind, int(ch.LamportTime), int(ch.CreateTime.Unix())); err != nil {
-			return err
-		}
-
-		idLocal := conn.EnsureAccountDevice(ch.Author, sc.Signer)
-
-		if err := vcssql.ChangeAuthorsInsertOrIgnore(conn.conn, int(change), int(idLocal.Account), int(idLocal.Device)); err != nil {
+		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int64(change), int64(obj), int64(idLocal.Account), int64(idLocal.Device), ch.Kind, int64(ch.Time.Pack())); err != nil {
 			return err
 		}
 
@@ -532,20 +391,20 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc VerifiedChange, onDatom func
 				return err
 			}
 
-			if err := vcssql.ChangesInsertParent(conn.conn, int(change), res.IPFSBlocksID); err != nil {
+			if err := vcssql.ChangesInsertParent(conn.conn, int64(change), res.IPFSBlocksID); err != nil {
 				return err
 			}
 		}
 
-		datoms, err := datomsFromChange(change, ch)
+		datoms, err := ch.Datoms()
 		if err != nil {
 			return err
 		}
 
 		for _, d := range datoms {
-			conn.AddDatom(obj, d)
+			conn.AddDatom(obj, change, d)
 			if onDatom != nil {
-				if err := onDatom(conn, obj, d); err != nil {
+				if err := onDatom(conn, obj, change, d); err != nil {
 					return err
 				}
 			}
@@ -564,7 +423,7 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 	}
 
 	var (
-		body         changeBody
+		body         vcs.ChangeBody
 		attrLookup   lookup[Attribute, Attribute]
 		stringLookup lookup[string, string]
 		entityLookup lookup[NodeID, NodeID]
@@ -572,15 +431,15 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		cidsLookup   lookup[cid.Cid, cid.Cid]
 	)
 
-	var prevSeq int
+	var prevHLC int64
 	onStmt := func(stmt *sqlite.Stmt) error {
 		dr := DatomRow{stmt: stmt}
 
-		seq := dr.Seq()
-		if seq <= prevSeq {
-			return fmt.Errorf("BUG: unexpected seq order")
+		hlcTime := dr.Time()
+		if hlcTime <= prevHLC {
+			return fmt.Errorf("BUG: unexpected seq order: prev=%d cur=%d", prevHLC, hlcTime)
 		}
-		prevSeq = seq
+		prevHLC = hlcTime
 
 		entity := dr.Entity()
 		attr := dr.Attr()
@@ -593,34 +452,34 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		var val int
 
 		switch vtype {
-		case ValueTypeRef:
+		case vcs.ValueTypeRef:
 			data := v.(NodeID)
 			val = entityLookup.Put(data, data)
-		case ValueTypeString:
+		case vcs.ValueTypeString:
 			data := v.(string)
 			val = stringLookup.Put(data, data)
-		case ValueTypeInt:
+		case vcs.ValueTypeInt:
 			val = v.(int)
-		case ValueTypeBool:
+		case vcs.ValueTypeBool:
 			vb := v.(bool)
 			if vb {
 				val = 1
 			} else {
 				val = 0
 			}
-		case ValueTypeBytes:
+		case vcs.ValueTypeBytes:
 			data := v.([]byte)
 			// Can't use []byte as map's key, so doing zero-copy
 			// conversion to string to be used as a map key.
 			val = bytesLookup.Put(*(*string)(unsafe.Pointer(&data)), data)
-		case ValueTypeCID:
+		case vcs.ValueTypeCID:
 			val = cidsLookup.Put(v.(cid.Cid), v.(cid.Cid))
 		default:
 			return fmt.Errorf("BUG: invalid value type to encode")
 		}
 
 		body.Datoms = append(body.Datoms, [5]int{
-			seq,
+			int(hlcTime),
 			entityLookup.Put(entity, entity),
 			attrLookup.Put(attr, attr),
 			int(vtype),
@@ -630,7 +489,11 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		return nil
 	}
 
-	if err := sqlitex.Exec(conn.conn, qIterateChangeDatoms.SQL, onStmt, change); err != nil {
+	q := baseDatomQuery(false)
+	q.Where(sqliteschema.DatomsChange.String()+" = ?", change)
+	defer q.Close()
+
+	if err := sqlitex.Exec(conn.conn, q.String(), onStmt, change); err != nil {
 		conn.err = err
 		return nil
 	}
@@ -647,17 +510,13 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		return nil
 	}
 
-	authors, err := vcssql.ChangesGetWithAuthors(conn.conn, int(change))
+	changeInfo, err := vcssql.ChangesGetOne(conn.conn, int64(change))
 	if err != nil {
 		conn.err = err
 		return nil
 	}
 
-	if len(authors) != 1 {
-		panic("BUG: unimplemented changes with more than one author")
-	}
-
-	parents, err := vcssql.ChangesGetParents(conn.conn, int(change))
+	parents, err := vcssql.ChangesGetParents(conn.conn, int64(change))
 	if err != nil {
 		conn.err = err
 		return nil
@@ -676,26 +535,23 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		}
 	}
 
-	obj := cid.NewCidV1(uint64(authors[0].IPFSBlocksCodec), authors[0].IPFSBlocksMultihash)
-	author := cid.NewCidV1(core.CodecAccountKey, authors[0].AccountsMultihash)
+	obj := cid.NewCidV1(uint64(changeInfo.IPFSBlocksCodec), changeInfo.IPFSBlocksMultihash)
+	author := cid.NewCidV1(core.CodecAccountKey, changeInfo.AccountsMultihash)
 
 	c := vcs.Change{
-		Type:        vcs.ChangeType,
-		Object:      obj,
-		Author:      author,
-		Parents:     deps,
-		LamportTime: uint64(authors[0].ChangesLamportTime),
-		Kind:        authors[0].ChangesKind,
-		Body:        data,
-		Message:     "",
-		CreateTime:  time.Unix(int64(authors[0].ChangesCreateTime), 0),
+		ChangeInfo: vcs.ChangeInfo{
+			Object:  obj,
+			Author:  author,
+			Parents: deps,
+			Kind:    changeInfo.ChangesKind,
+			Message: "",
+			Time:    hlc.Unpack(int64(changeInfo.ChangesStartTime)),
+		},
+		Type: vcs.ChangeType,
+		Body: data,
 	}
 
-	sc, err := vcs.NewSignedCBOR(c, sig)
-	if err != nil {
-		conn.err = err
-		return nil
-	}
+	sc := c.Sign(sig)
 
 	signed, err := cbornode.DumpObject(sc)
 	if err != nil {
@@ -722,228 +578,52 @@ func (conn *Conn) PutBlock(blk blocks.Block) {
 	conn.err = conn.bs.putBlock(conn.conn, blk.Cid(), blk.RawData())
 }
 
-// NextChangeSeq returns the next seq that should be used for a change.
-// It assumes that nodes are never created without attributes, hence
-// it only looks for max seq inside the datoms table, ignoring the nodes table.
-func (conn *Conn) NextChangeSeq(obj, change LocalID) int {
-	if conn.err != nil {
-		return 0
-	}
-
-	res, err := vcssql.DatomsMaxSeq(conn.conn, int(obj), int(change))
-	if err != nil {
-		conn.err = err
-		return 0
-	}
-
-	return res.Max + 1
-}
-
-const nodeIDSize = 8
-
-// NodeID is an ID of a Graph Node within a Mintter Object.
-type NodeID [nodeIDSize]byte
-
-// NewNodeID creates a new random NodeID.
-func NewNodeID() (nid NodeID) {
-retry:
-	n, err := rand.Read(nid[:])
-	if err != nil {
-		panic(err)
-	}
-	if n != nodeIDSize {
-		panic("bad randomness for node ID")
-	}
-
-	if nid.IsZero() || nid.IsReserved() {
-		goto retry
-	}
-
-	return nid
-}
-
-// String implements fmt.Stringer.
-func (nid NodeID) String() string {
-	var notASCII bool
-	const maxASCII = 127
-
-	out := make([]byte, 0, len(nid))
-
-	for _, b := range nid {
-		if b == 0 {
-			continue
-		}
-
-		if b > maxASCII {
-			notASCII = true
-		}
-
-		out = append(out, b)
-	}
-
-	if notASCII {
-		return base64.RawStdEncoding.EncodeToString(out)
-	}
-
-	return string(out)
-}
-
-// NodeIDFromString converts a string into a NodeID.
-func NodeIDFromString(s string) NodeID {
-	if s == "" {
-		panic("BUG: empty string for node ID")
-	}
-
-	l := len(s)
-	if l > nodeIDSize {
-		panic("BUG: string length is larger than NodeID size")
-	}
-
-	var nid NodeID
-	if copy(nid[:], s) != l {
-		panic("BUG: couldn't copy all the string bytes into a NodeID")
-	}
-
-	return nid
-}
-
-// IsZero returns true if NodeID is zero.
-func (nid NodeID) IsZero() bool {
-	return nid == zeroNode
-}
-
-// IsReserved returns true if NodeID is a reserved ID.
-func (nid NodeID) IsReserved() bool {
-	return nid == RootNode || nid == TrashNode
-}
-
-// Bytes returns byte representation of the NodeID.
-func (nid NodeID) Bytes() []byte {
-	return nid[:]
-}
-
-var (
-	zeroNode = NodeID{}
-
-	// RootNode is a reserved node ID for root of the Object.
-	RootNode = NodeID{'$', 'R', 'O', 'O', 'T'}
-
-	// TrashNode is a reserved node ID for deleting other nodes.
-	TrashNode = NodeID{'$', 'T', 'R', 'A', 'S', 'H'}
-)
-
 // NewEntity creates a new NodeID.
-func (conn *Conn) NewEntity() (nid NodeID) {
+func (conn *Conn) NewEntity() (nid vcs.NodeID) {
 	if conn.err != nil {
 		return
 	}
 
-	return NewNodeID()
-}
-
-var addDatomQuery = qb.MakeQuery(sqliteschema.Schema, "insertDatom", sqlitegen.QueryKindExec,
-	"INSERT INTO", sqliteschema.Datoms, qb.ListColShort(
-		sqliteschema.DatomsPermanode,
-		sqliteschema.DatomsChange,
-		sqliteschema.DatomsSeq,
-		sqliteschema.DatomsEntity,
-		sqliteschema.DatomsAttr,
-		sqliteschema.DatomsValueType,
-		sqliteschema.DatomsValue,
-	), '\n',
-	"VALUES", qb.List(
-		qb.VarCol(sqliteschema.DatomsPermanode),
-		qb.VarCol(sqliteschema.DatomsChange),
-		qb.VarCol(sqliteschema.DatomsSeq),
-		qb.VarCol(sqliteschema.DatomsEntity),
-		qb.VarCol(sqliteschema.DatomsAttr),
-		qb.VarCol(sqliteschema.DatomsValueType),
-		qb.VarCol(sqliteschema.DatomsValue),
-	),
-)
-
-// ValueType is a type for Datom's value type.
-type ValueType byte
-
-// Supported value types.
-const (
-	ValueTypeRef    ValueType = 0
-	ValueTypeString ValueType = 1
-	ValueTypeInt    ValueType = 2
-	ValueTypeBool   ValueType = 3
-	ValueTypeBytes  ValueType = 4
-	ValueTypeCID    ValueType = 5
-)
-
-// GetValueType returns value type for v.
-func GetValueType(v any) ValueType {
-	switch v.(type) {
-	case NodeID:
-		return ValueTypeRef
-	case string:
-		return ValueTypeString
-	case int:
-		return ValueTypeInt
-	case bool:
-		return ValueTypeBool
-	case []byte:
-		return ValueTypeBytes
-	case cid.Cid:
-		return ValueTypeCID
-	default:
-		panic("BUG: unknown value type")
-	}
-}
-
-// NewDatom creates a new Datom.
-func NewDatom(change LocalID, seq int, entity NodeID, a Attribute, value any, lamportTime int) Datom {
-	return Datom{
-		OpID: OpID{
-			Change:      change,
-			Seq:         seq,
-			LamportTime: lamportTime,
-		},
-		Entity:    entity,
-		Attr:      a,
-		ValueType: GetValueType(value),
-		Value:     value,
-	}
+	return vcs.NewNodeIDv1(time.Now())
 }
 
 // AddDatoms is like add datom but allows adding more than one.
-func (conn *Conn) AddDatoms(object LocalID, dd ...Datom) {
+func (conn *Conn) AddDatoms(object, change LocalID, dd ...Datom) {
 	must.Maybe(&conn.err, func() error {
 		for _, d := range dd {
-			conn.AddDatom(object, d)
+			conn.AddDatom(object, change, d)
 		}
 		return nil
 	})
 }
 
 // AddDatom adds a triple into the database.
-func (conn *Conn) AddDatom(object LocalID, d Datom) (nextSeq int) {
+func (conn *Conn) AddDatom(object, change LocalID, d Datom) {
 	must.Maybe(&conn.err, func() error {
-		// sqlitex.Exec doesn't support array bind parameters.
-		// We convert array into slice here. Need to do better.
 		value := d.Value
-		if d.ValueType == ValueTypeRef {
-			nid := d.Value.(NodeID)
-			value = nid.Bytes()
-		}
-		if d.ValueType == ValueTypeCID {
+
+		// sqlitex.Exec doesn't support CIDs bind parameters.
+		if d.ValueType == vcs.ValueTypeCID {
 			value = d.Value.(cid.Cid).Bytes()
 		}
 
-		e := d.Entity.Bytes()
+		q := sqlf.InsertInto(string(sqliteschema.Datoms)).
+			Set(sqliteschema.DatomsPermanode.ShortName(), object).
+			Set(sqliteschema.DatomsEntity.ShortName(), d.Entity).
+			Set(sqliteschema.DatomsAttr.ShortName(), conn.Attr(d.Attr)).
+			Set(sqliteschema.DatomsValueType.ShortName(), d.ValueType).
+			Set(sqliteschema.DatomsValue.ShortName(), value).
+			Set(sqliteschema.DatomsChange.ShortName(), change).
+			Set(sqliteschema.DatomsTime.ShortName(), d.Time).
+			Set(sqliteschema.DatomsOrigin.ShortName(), d.Origin)
+		defer q.Close()
 
-		if err := sqlitex.Exec(conn.conn, addDatomQuery.SQL, nil, object, d.Change, d.Seq, e, conn.Attr(d.Attr), d.ValueType, value); err != nil {
+		if err := sqlitex.Exec(conn.conn, q.String(), nil, q.Args()...); err != nil {
 			return err
 		}
 
-		nextSeq = d.Seq + 1
 		return nil
 	})
-	return nextSeq
 }
 
 // DeleteDatoms removes all datoms with a given entity and attribute belonging to the given change.
@@ -953,7 +633,7 @@ func (conn *Conn) DeleteDatoms(object, change LocalID, entity NodeID, attribute 
 		return
 	}
 
-	if err := vcssql.DatomsDelete(conn.conn, int(object), entity.Bytes(), int(change), int(attribute)); err != nil {
+	if err := vcssql.DatomsDelete(conn.conn, int64(object), int64(entity), int64(change), int64(attribute)); err != nil {
 		conn.err = err
 		return
 	}
@@ -962,10 +642,15 @@ func (conn *Conn) DeleteDatoms(object, change LocalID, entity NodeID, attribute 
 }
 
 // DeleteDatomByID deletes one datom given its ID.
-func (conn *Conn) DeleteDatomByID(change LocalID, seq int) (deleted bool) {
-	const q = "DELETE FROM datoms WHERE change = ? AND seq = ?"
+func (conn *Conn) DeleteDatomByID(object, change LocalID, id crdt.OpID) (deleted bool) {
+	q := sqlf.DeleteFrom(string(sqliteschema.Datoms)).
+		Where(sqliteschema.DatomsPermanode.ShortName()+" = ?", object).
+		Where(sqliteschema.DatomsChange.ShortName()+" = ?", change).
+		Where(sqliteschema.DatomsTime.ShortName()+" = ?", id.Time()).
+		Where(sqliteschema.DatomsOrigin.ShortName()+" = ?", id.Origin())
+	defer q.Close()
 
-	if err := sqlitex.Exec(conn.conn, q, nil, change, seq); err != nil {
+	if err := sqlitex.Exec(conn.conn, q.String(), nil, q.Args()...); err != nil {
 		conn.err = err
 		return false
 	}
@@ -991,34 +676,11 @@ func (o OpID) IsZero() bool {
 	return o.Change == 0
 }
 
-// Datom is a fact about some entity within a Mintter Object.
-type Datom struct {
-	OpID
-	Entity    NodeID
-	Attr      Attribute
-	ValueType ValueType
-	Value     any
-}
+// NodeID is here during the refactoring.
+type NodeID = vcs.NodeID
 
-// DatomFactory is a function which returns new datoms
-// incrementing the seq internally.
-type DatomFactory func(entity NodeID, a Attribute, value any) Datom
-
-// MakeDatomFactory creates a new DatomFactory for a given change, its
-// lamport timestamp, and initial seq. Seq gets incremented *before*
-// the new datom is created, i.e. pass seq = 0 for the very first datom.
-func MakeDatomFactory(change LocalID, lamportTime, seq int) DatomFactory {
-	return func(entity NodeID, a Attribute, value any) Datom {
-		seq++
-		return NewDatom(change, seq, entity, a, value, lamportTime)
-	}
-}
-
-func handleDatoms(fn func(DatomRow) error) func(*sqlite.Stmt) error {
-	return func(stmt *sqlite.Stmt) error {
-		return fn(DatomRow{stmt: stmt})
-	}
-}
+// Datom is here during the refactoring.
+type Datom = vcs.Datom
 
 // LocalVersion is a set of leaf changes that becomes a version of an Object.
 type LocalVersion []LocalID
@@ -1041,7 +703,7 @@ func (conn *Conn) SaveVersion(object LocalID, name string, id LocalIdentity, hea
 			return err
 		}
 
-		if err := vcssql.NamedVersionsReplace(conn.conn, int(object), int(id.Account), int(id.Device), name, string(data)); err != nil {
+		if err := vcssql.NamedVersionsReplace(conn.conn, int64(object), int64(id.Account), int64(id.Device), name, string(data)); err != nil {
 			return err
 		}
 
@@ -1052,7 +714,7 @@ func (conn *Conn) SaveVersion(object LocalID, name string, id LocalIdentity, hea
 // GetVersion loads a named version.
 func (conn *Conn) GetVersion(object LocalID, name string, id LocalIdentity) (out LocalVersion) {
 	must.Maybe(&conn.err, func() error {
-		res, err := vcssql.NamedVersionsGet(conn.conn, int(object), int(id.Account), int(id.Device), name)
+		res, err := vcssql.NamedVersionsGet(conn.conn, int64(object), int64(id.Account), int64(id.Device), name)
 		if err != nil {
 			return err
 		}
@@ -1077,7 +739,7 @@ func (conn *Conn) DeleteVersion(object LocalID, name string, id LocalIdentity) {
 		return
 	}
 
-	if err := vcssql.NamedVersionsDelete(conn.conn, int(object), int(id.Account), int(id.Device), name); err != nil {
+	if err := vcssql.NamedVersionsDelete(conn.conn, int64(object), int64(id.Account), int64(id.Device), name); err != nil {
 		conn.err = err
 		return
 	}
@@ -1088,7 +750,7 @@ func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
 	cids := make([]cid.Cid, len(v))
 	must.Maybe(&conn.err, func() error {
 		for i, vv := range v {
-			res, err := vcssql.IPFSBlocksGetHash(conn.conn, int(vv))
+			res, err := vcssql.IPFSBlocksGetHash(conn.conn, int64(vv))
 			if err != nil {
 				return err
 			}
@@ -1102,7 +764,7 @@ func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
 		return cids[i].String() < cids[j].String()
 	})
 
-	return vcs.NewVersion(uint64(len(cids)), cids...)
+	return vcs.NewVersion(cids...)
 }
 
 // PublicVersionToLocal converts a public version into a local one. All changes
@@ -1153,7 +815,7 @@ func (conn *Conn) DeleteObject(object LocalID) {
 		return
 	}
 
-	conn.err = vcssql.IPFSBlocksDeleteByID(conn.conn, int(object))
+	conn.err = vcssql.IPFSBlocksDeleteByID(conn.conn, int64(object))
 }
 
 // DeleteChange from the database.
@@ -1162,7 +824,7 @@ func (conn *Conn) DeleteChange(change LocalID) {
 		return
 	}
 
-	conn.err = vcssql.ChangesDeleteByID(conn.conn, int(change))
+	conn.err = vcssql.ChangesDeleteByID(conn.conn, int64(change))
 }
 
 // LookupIdentity looks up local IDs for a given identity.
@@ -1186,7 +848,7 @@ func (conn *Conn) GetPermanodeCreateTime(obj LocalID) (t time.Time) {
 	const q = "SELECT create_time FROM permanodes WHERE id = ?"
 
 	onStmt := func(stmt *sqlite.Stmt) error {
-		t = time.Unix(stmt.ColumnInt64(0), 0)
+		t = hlc.AsTime(stmt.ColumnInt64(0))
 		return nil
 	}
 
@@ -1196,41 +858,6 @@ func (conn *Conn) GetPermanodeCreateTime(obj LocalID) (t time.Time) {
 	}
 
 	return t
-}
-
-// GetChangeCreateTime returns create time of a change.
-func (conn *Conn) GetChangeCreateTime(change LocalID) (t time.Time) {
-	if conn.err != nil {
-		return t
-	}
-
-	const q = "SELECT create_time FROM changes WHERE id = ?"
-
-	onStmt := func(stmt *sqlite.Stmt) error {
-		t = time.Unix(stmt.ColumnInt64(0), 0)
-		return nil
-	}
-
-	if err := sqlitex.Exec(conn.conn, q, onStmt, change); err != nil {
-		conn.err = err
-		return t
-	}
-
-	return t
-}
-
-// TouchChange updates the create time for a given change.
-func (conn *Conn) TouchChange(change LocalID, now time.Time) {
-	if conn.err != nil {
-		return
-	}
-
-	const q = "UPDATE changes SET create_time = ? WHERE id = ?"
-
-	if err := sqlitex.Exec(conn.conn, q, nil, now.Unix(), change); err != nil {
-		conn.err = err
-		return
-	}
 }
 
 // ListObjectsByType returns a list of all the known objects of a given type.
@@ -1256,7 +883,7 @@ func (conn *Conn) ListObjectsByType(otype vcs.ObjectType) (out []LocalID) {
 // GetObjectCID returns the CID of a Mintter Object given its local ID.
 func (conn *Conn) GetObjectCID(obj LocalID) (c cid.Cid) {
 	must.Maybe(&conn.err, func() error {
-		res, err := vcssql.IPFSBlocksLookupCID(conn.conn, int(obj))
+		res, err := vcssql.IPFSBlocksLookupCID(conn.conn, int64(obj))
 		if err != nil {
 			return err
 		}
@@ -1310,7 +937,7 @@ func (conn *Conn) lookupDevice(c cid.Cid) LocalID {
 	return LocalID(res.DevicesID)
 }
 
-func (conn *Conn) lookupObjectID(c cid.Cid) int {
+func (conn *Conn) lookupObjectID(c cid.Cid) int64 {
 	if conn.err != nil {
 		return 0
 	}
@@ -1329,7 +956,7 @@ func (conn *Conn) lookupObjectID(c cid.Cid) int {
 	return res.IPFSBlocksID
 }
 
-func (conn *Conn) ensureAccountID(c cid.Cid) int {
+func (conn *Conn) ensureAccountID(c cid.Cid) int64 {
 	if conn.err != nil {
 		return 0
 	}
@@ -1360,7 +987,7 @@ func (conn *Conn) ensureAccountID(c cid.Cid) int {
 	return insert.AccountsID
 }
 
-func (conn *Conn) ensureDeviceID(c cid.Cid) int {
+func (conn *Conn) ensureDeviceID(c cid.Cid) int64 {
 	if conn.err != nil {
 		return 0
 	}

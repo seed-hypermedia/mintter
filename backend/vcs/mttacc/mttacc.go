@@ -5,7 +5,9 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/core"
-	"mintter/backend/vcs/vcsdb"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -25,26 +27,29 @@ const (
 func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (c cid.Cid, err error) {
 	aid := acc.CID()
 
-	perma, err := vcsdb.NewPermanode(NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(NewAccountPermanode(aid))
 	if err != nil {
 		return c, err
 	}
 
 	obj := conn.NewObject(perma)
 	id := conn.EnsureIdentity(core.NewIdentity(acc.PublicKey, device))
-	change := conn.NewChange(obj, id, nil, time.Now().UTC())
-	newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
+	clock := hlc.NewClock()
+	change := conn.NewChange(obj, id, nil, clock)
 
 	proof, err := NewRegistrationProof(acc, device.CID())
 	if err != nil {
 		return c, err
 	}
 
-	reg := vcsdb.NewNodeID()
-	conn.AddDatom(obj, newDatom(reg, AttrDevice, device.CID()))
-	conn.AddDatom(obj, newDatom(reg, AttrProof, []byte(proof)))
-	conn.AddDatom(obj, newDatom(vcsdb.RootNode, AttrRegistration, reg))
+	reg := vcs.NewNodeIDv1(time.Now())
 
+	batch := vcs.NewBatch(clock, device.Abbrev())
+	batch.Add(reg, AttrDevice, device.CID())
+	batch.Add(reg, AttrProof, []byte(proof))
+	batch.Add(vcs.RootNode, AttrRegistration, reg)
+
+	conn.AddDatoms(obj, change, batch.Dirty()...)
 	conn.SaveVersion(obj, "main", id, vcsdb.LocalVersion{change})
 	conn.EncodeChange(change, device)
 
@@ -53,7 +58,7 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 
 // GetDeviceProof searches for a registration proof of a device under an account.
 func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid) (proof []byte, err error) {
-	perma, err := vcsdb.NewPermanode(NewAccountPermanode(account))
+	perma, err := vcs.EncodePermanode(NewAccountPermanode(account))
 	if err != nil {
 		return nil, err
 	}
@@ -63,9 +68,9 @@ func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid)
 	ver := conn.GetVersion(obj, "main", localMe)
 	cs := conn.ResolveChangeSet(obj, ver)
 
-	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, AttrRegistration)
+	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, AttrRegistration)
 	for regs.Next() {
-		rv := regs.Item().ValueAny().(vcsdb.NodeID)
+		rv := regs.Item().ValueAny().(vcs.NodeID)
 		dd := conn.QueryLastValue(obj, cs, rv, AttrDevice)
 		if !dd.Value.(cid.Cid).Equals(device) {
 			continue

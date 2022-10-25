@@ -1,4 +1,4 @@
-package vcsdb
+package sqlitevcs
 
 type lookupTable[T comparable] struct {
 	cache  []T

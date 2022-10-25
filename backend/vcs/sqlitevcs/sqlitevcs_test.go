@@ -1,4 +1,4 @@
-package vcsdb
+package sqlitevcs
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"testing"
 	"time"
 
@@ -25,10 +26,12 @@ func TestSmoke(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, hlc.Time{}))
 	require.NoError(t, err)
 
-	now := time.Time{}
+	clock := hlc.NewClockWithWall(func() time.Time {
+		return time.Time{}
+	})
 
 	// Create simple draft change.
 	{
@@ -36,14 +39,14 @@ func TestSmoke(t *testing.T) {
 		obj := conn.NewObject(perma)
 		aliceLocal := conn.EnsureIdentity(alice.Identity)
 
-		c1 := conn.NewChange(obj, aliceLocal, nil, now)
+		c1 := conn.NewChange(obj, aliceLocal, nil, clock)
 
-		lamportTime := conn.GetChangeLamportTime(c1)
-		root := RootNode
-		seq := 1
+		b := vcs.NewBatch(clock, 123)
 
-		seq = conn.AddDatom(obj, NewDatom(c1, seq, root, "document/title", "This is a title", lamportTime))
-		conn.AddDatom(obj, NewDatom(c1, seq, root, "document/subtitle", "This is a subtitle", lamportTime))
+		conn.AddDatoms(obj, c1,
+			b.New(vcs.RootNode, "document/title", "This is a title"),
+			b.New(vcs.RootNode, "document/subtitle", "This is a subtitle"),
+		)
 
 		conn.SaveVersion(obj, "draft", aliceLocal, []LocalID{c1})
 
@@ -64,16 +67,18 @@ func TestSmoke(t *testing.T) {
 		}
 
 		change := heads[0]
-		seq := conn.NextChangeSeq(obj, change)
-		lamport := conn.GetChangeLamportTime(change)
 
-		root := RootNode
+		root := vcs.RootNode
 
 		require.True(t, conn.DeleteDatoms(obj, change, root, attrTitle))
 		require.True(t, conn.DeleteDatoms(obj, change, root, attrSubtitle))
 
-		seq = conn.AddDatom(obj, NewDatom(change, seq, root, "document/title", "New Title", lamport))
-		conn.AddDatom(obj, NewDatom(change, seq, root, "document/subtitle", "New Subtitle", lamport))
+		b := vcs.NewBatch(clock, 123)
+
+		conn.AddDatoms(obj, change,
+			b.New(root, "document/title", "New Title"),
+			b.New(root, "document/subtitle", "New Subtitle"),
+		)
 
 		require.NoError(t, conn.Commit())
 	}
@@ -100,12 +105,10 @@ func TestSmoke(t *testing.T) {
 
 		// Canonical encoding must be deterministic.
 		// Hash is generated out of band.
-		checkSum(t, "97032be78aebe8fa01d41ba28d607a8c388b005c", data)
+		checkSum(t, "01ecfa07518fbd53a11ade86fccc937b46d6dbf5", data)
 	}
 
 	// Create a new change with base.
-	now = now.Add(time.Hour)
-
 	{
 		require.NoError(t, conn.BeginTx(true))
 
@@ -115,11 +118,9 @@ func TestSmoke(t *testing.T) {
 		heads := conn.GetVersion(obj, "main", aliceLocal)
 		require.Len(t, heads, 1)
 
-		change := conn.NewChange(obj, aliceLocal, heads, now)
-		lamport := conn.GetChangeLamportTime(change)
-		seq := 1
+		change := conn.NewChange(obj, aliceLocal, heads, clock)
 
-		conn.AddDatom(obj, NewDatom(change, seq, RootNode, "document/title", "This is a changed title", lamport))
+		conn.AddDatom(obj, change, vcs.NewDatom(vcs.RootNode, "document/title", "This is a changed title", clock.Now().Pack(), 123))
 
 		conn.EncodeChange(change, alice.Device)
 
@@ -144,10 +145,8 @@ func TestIterateObjectDatoms(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, hlc.Time{}))
 	require.NoError(t, err)
-
-	now := time.Time{}
 
 	var (
 		c1  LocalID
@@ -156,53 +155,48 @@ func TestIterateObjectDatoms(t *testing.T) {
 		c22 LocalID
 	)
 
+	clock := hlc.NewClockWithWall(func() time.Time { return time.Time{} })
+
+	var want [][]Datom
 	err = conn.WithTx(true, func() error {
 		obj := conn.NewObject(perma)
 		aliceLocal := conn.EnsureIdentity(alice.Identity)
 
-		c1 = conn.NewChange(obj, aliceLocal, nil, now)
-		conn.AddDatom(obj, NewDatom(c1, 1, RootNode, "title", "Title 1", conn.GetChangeLamportTime(c1)))
+		c1 = conn.NewChange(obj, aliceLocal, nil, clock)
+		title1 := vcs.NewDatom(vcs.RootNode, "title", "Title 1", clock.Now().Pack(), 123)
+		conn.AddDatom(obj, c1, title1)
 
-		c2 = conn.NewChange(obj, aliceLocal, LocalVersion{c1}, now.Add(time.Hour))
-		conn.AddDatom(obj, NewDatom(c2, 1, RootNode, "title", "Title 2", conn.GetChangeLamportTime(c2)))
+		c2 = conn.NewChange(obj, aliceLocal, LocalVersion{c1}, clock)
+		title2 := vcs.NewDatom(vcs.RootNode, "title", "Title 2", clock.Now().Pack(), 123)
+		conn.AddDatom(obj, c2, title2)
 
-		c21 = conn.NewChange(obj, aliceLocal, LocalVersion{c2}, now.Add(time.Hour*2))
-		conn.AddDatom(obj, NewDatom(c21, 1, RootNode, "title", "Concurrent Title 1", conn.GetChangeLamportTime(c21)))
+		c21 = conn.NewChange(obj, aliceLocal, LocalVersion{c2}, clock)
+		title21 := vcs.NewDatom(vcs.RootNode, "title", "Concurrent Title 1", clock.Now().Pack(), 123)
+		conn.AddDatom(obj, c21, title21)
 
-		c22 = conn.NewChange(obj, aliceLocal, LocalVersion{c2}, now.Add(time.Hour*2))
-		conn.AddDatom(obj, NewDatom(c22, 1, RootNode, "title", "Concurrent Title 2", conn.GetChangeLamportTime(c22)))
+		c22 = conn.NewChange(obj, aliceLocal, LocalVersion{c2}, clock)
+		title22 := vcs.NewDatom(vcs.RootNode, "title", "Concurrent Title 2", clock.Now().Pack(), 123)
+		conn.AddDatom(obj, c22, title22)
 
 		conn.SaveVersion(obj, "branch-1", aliceLocal, LocalVersion{c21})
 		conn.SaveVersion(obj, "branch-2", aliceLocal, LocalVersion{c22})
 		conn.SaveVersion(obj, "merged", aliceLocal, LocalVersion{c21, c22})
+
+		want = [][]Datom{
+			{title1, title2, title21},
+			{title1, title2, title22},
+			{title1, title2, title21, title22},
+		}
 
 		return nil
 	})
 	require.NoError(t, err)
 
 	versions := []string{"branch-1", "branch-2", "merged"}
-	want := [][]Datom{
-		{
-			NewDatom(c1, 1, RootNode, "title", "Title 1", 1),
-			NewDatom(c2, 1, RootNode, "title", "Title 2", 2),
-			NewDatom(c21, 1, RootNode, "title", "Concurrent Title 1", 3),
-		},
-		{
-			NewDatom(c1, 1, RootNode, "title", "Title 1", 1),
-			NewDatom(c2, 1, RootNode, "title", "Title 2", 2),
-			NewDatom(c22, 1, RootNode, "title", "Concurrent Title 2", 3),
-		},
-		{
-			NewDatom(c1, 1, RootNode, "title", "Title 1", 1),
-			NewDatom(c2, 1, RootNode, "title", "Title 2", 2),
-			NewDatom(c21, 1, RootNode, "title", "Concurrent Title 1", 3),
-			NewDatom(c22, 1, RootNode, "title", "Concurrent Title 2", 3),
-		},
-	}
+
 	got := make([][]Datom, len(want))
 
 	var g errgroup.Group
-
 	for i := range want {
 		i := i
 		g.Go(func() error {
@@ -216,8 +210,9 @@ func TestIterateObjectDatoms(t *testing.T) {
 				obj := conn.LookupPermanode(perma.ID)
 				aliceLocal := conn.EnsureIdentity(alice.Identity)
 				ver := conn.GetVersion(obj, versions[i], aliceLocal)
+				cs := conn.ResolveChangeSet(obj, ver)
 
-				it := conn.QueryObjectDatoms(obj, ver)
+				it := conn.QueryObjectDatoms(obj, cs)
 				got[i] = it.Slice()
 				require.NoError(t, it.Err())
 
@@ -232,18 +227,6 @@ func TestIterateObjectDatoms(t *testing.T) {
 	}
 }
 
-func TestNodeID2String(t *testing.T) {
-	require.Equal(t, "b1", NodeIDFromString("b1").String())
-	require.Equal(t, "$ROOT", RootNode.String())
-	require.Equal(t, "$TRASH", TrashNode.String())
-
-	nid := NodeID{234, 255, 135, 120, 50, 60, 70, 0}
-	require.Equal(t, "6v+HeDI8Rg", nid.String())
-
-	require.Equal(t, TrashNode, NodeIDFromString("$TRASH"))
-	require.Equal(t, RootNode, NodeIDFromString("$ROOT"))
-}
-
 func TestChangeEncoding(t *testing.T) {
 	db := New(sqliteschema.MakeTestDB(t))
 
@@ -254,31 +237,33 @@ func TestChangeEncoding(t *testing.T) {
 	require.NoError(t, err)
 	defer release()
 
-	perma, err := NewPermanode(vcs.NewPermanode("test", alice.AccountID, time.Time{}))
+	perma, err := vcs.EncodePermanode(vcs.NewPermanode("test", alice.AccountID, hlc.Time{}))
 	require.NoError(t, err)
-
-	now := time.Time{}
 
 	require.NoError(t, conn.BeginTx(true))
 
+	clock := hlc.NewClock()
+
 	obj := conn.NewObject(perma)
 	me := conn.EnsureIdentity(alice.Identity)
-	c1 := conn.NewChange(obj, me, nil, now)
-	newDatom := MakeDatomFactory(c1, conn.GetChangeLamportTime(c1), 0)
-	person1 := NewNodeID()
-	person2 := NewNodeID()
+	c1 := conn.NewChange(obj, me, nil, clock)
 
-	datoms := []Datom{
-		newDatom(RootNode, "person", person1),
-		newDatom(person1, "name", "Alice"),
-		newDatom(person1, "email", "alice@example.com"),
+	person1 := vcs.NewNodeIDv1(time.Unix(1, 0))
+	person2 := vcs.NewNodeIDv1(time.Unix(2, 0))
 
-		newDatom(RootNode, "person", person2),
-		newDatom(person2, "name", "Bob"),
-		newDatom(person2, "email", "bob@example.com"),
-	}
+	batch := vcs.NewBatch(clock, alice.Device.Abbrev())
 
-	conn.AddDatoms(obj, datoms...)
+	batch.Add(vcs.RootNode, "person", person1)
+	batch.Add(person1, "name", "Alice")
+	batch.Add(person1, "email", "alice@example.com")
+
+	batch.Add(vcs.RootNode, "person", person2)
+	batch.Add(person2, "name", "Bob")
+	batch.Add(person2, "email", "bob@example.com")
+
+	datoms := batch.Dirty()
+
+	conn.AddDatoms(obj, c1, datoms...)
 
 	conn.SaveVersion(obj, "main", me, LocalVersion{c1})
 
@@ -286,10 +271,10 @@ func TestChangeEncoding(t *testing.T) {
 
 	require.NoError(t, conn.Commit())
 
-	vc := must.Do2(VerifyChangeBlock(blk))
+	vc := must.Do2(vcs.VerifyChangeBlock(blk))
 	c2 := conn.StoreRemoteChange(obj, vc, nil)
 	require.Equal(t, c1, c2)
 
-	got := must.Do2(datomsFromChange(c1, vc.Decoded.Payload))
+	got := must.Do2(vc.Decoded.Datoms())
 	require.Equal(t, datoms, got)
 }

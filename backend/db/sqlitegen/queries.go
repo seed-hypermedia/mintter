@@ -9,9 +9,7 @@ import (
 )
 
 var typeToMethodSuffix = map[Type]string{
-	TypeInt:   "Int",
-	TypeInt32: "Int32",
-	TypeInt64: "Int64",
+	TypeInt:   "Int64",
 	TypeFloat: "Float",
 	TypeText:  "Text",
 	TypeBytes: "Bytes",

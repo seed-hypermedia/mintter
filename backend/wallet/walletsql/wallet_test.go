@@ -14,22 +14,22 @@ import (
 )
 
 const (
-	id1      = "2bd1fb78d1fbc89ea80629500b58b6f50da462b36c9fdc893776593f33cb6d46"
-	address1 = "https://lndhub.io"
-	name1    = "my LND wallet"
-	type1    = "LND"
-	balance1 = 0
+	id1            = "2bd1fb78d1fbc89ea80629500b58b6f50da462b36c9fdc893776593f33cb6d46"
+	address1       = "https://lndhub.io"
+	name1          = "my LND wallet"
+	type1          = "LND"
+	balance1 int64 = 0
 
-	id2      = "fcbe2645d60556c3842971934ee836eec07898fa8357597c37fd86377fa95478"
-	address2 = "https://lndhub.io"
-	name2    = "my LNDHub wallet"
-	type2    = "LNDHUB"
-	balance2 = 102345
+	id2            = "fcbe2645d60556c3842971934ee836eec07898fa8357597c37fd86377fa95478"
+	address2       = "https://lndhub.io"
+	name2          = "my LNDHub wallet"
+	type2          = "LNDHUB"
+	balance2 int64 = 102345
 
-	id3      = "6e703a77440228295fb18cfaf9ca5fcb80a110354d346a6ad8525464d7cd8178"
-	name3    = "my LNDHub.go wallet"
-	type3    = "lndhub.go"
-	balance3 = 102345
+	id3            = "6e703a77440228295fb18cfaf9ca5fcb80a110354d346a6ad8525464d7cd8178"
+	name3          = "my LNDHub.go wallet"
+	type3          = "lndhub.go"
+	balance3 int64 = 102345
 )
 
 var (
@@ -102,7 +102,7 @@ func TestQueries(t *testing.T) {
 
 		nwallets, err := getWalletCount(conn)
 		require.NoError(t, err)
-		require.Equal(t, 2, nwallets.Count)
+		require.Equal(t, int64(2), nwallets.Count)
 
 		require.NoError(t, RemoveWallet(conn, newDefaultWallet.ID))
 		defaultWallet, err = GetDefaultWallet(conn)
@@ -127,7 +127,7 @@ func TestQueries(t *testing.T) {
 
 		nwallets, err = getWalletCount(conn)
 		require.NoError(t, err)
-		require.Equal(t, 2, nwallets.Count)
+		require.Equal(t, int64(2), nwallets.Count)
 	}
 }
 

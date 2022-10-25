@@ -10,7 +10,7 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
 

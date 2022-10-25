@@ -5,6 +5,7 @@ import (
 	"encoding"
 	"errors"
 	"fmt"
+	"unsafe"
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -72,6 +73,8 @@ type PublicKey struct {
 	k     *crypto.Ed25519PublicKey
 	id    KeyID
 	codec uint64
+
+	abbrev uint64
 }
 
 // NewPublicKey creates a new public key from an existing Ed25519 public key.
@@ -81,11 +84,38 @@ func NewPublicKey(codec uint64, pub *crypto.Ed25519PublicKey) (pk PublicKey, err
 		return pk, err
 	}
 
+	raw, err := pub.Raw()
+	if err != nil {
+		return pk, err
+	}
+
+	var b [8]byte
+	if copy(b[:], raw) != 8 {
+		panic("didn't copy 8 bytes for abbreviating public key")
+	}
+
 	return PublicKey{
-		k:     pub,
-		id:    pid,
-		codec: codec,
+		k:      pub,
+		id:     pid,
+		codec:  codec,
+		abbrev: *(*uint64)(unsafe.Pointer(&b)),
 	}, nil
+}
+
+// PublicKeyFromCID attempts to extract a public key from CID.
+// This can only work with smaller keys like Ed25519.
+func PublicKeyFromCID(c cid.Cid) (pk PublicKey, err error) {
+	pid, err := peer.FromCid(c)
+	if err != nil {
+		return pk, err
+	}
+
+	pub, err := pid.ExtractPublicKey()
+	if err != nil {
+		return pk, err
+	}
+
+	return NewPublicKey(c.Prefix().Codec, pub.(*crypto.Ed25519PublicKey))
 }
 
 // ParsePublicKey parses existing libp2p-encoded key material.
@@ -100,6 +130,12 @@ func ParsePublicKey(codec uint64, data []byte) (pk PublicKey, err error) {
 	}
 
 	return NewPublicKey(codec, pub.(*crypto.Ed25519PublicKey))
+}
+
+// Abbrev returns the abbreviated form of the public key,
+// i.e. first 8 bytes of the key (or hash of the key).
+func (pk PublicKey) Abbrev() uint64 {
+	return pk.abbrev
 }
 
 // ID of the public key.

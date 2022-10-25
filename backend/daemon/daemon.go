@@ -23,10 +23,10 @@ import (
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
-	"mintter/backend/syncing"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
+	"mintter/backend/vcs/syncing"
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -282,13 +282,12 @@ func initNetwork(
 		}
 
 		// We assume registration already happened.
-		perma := mttacc.NewAccountPermanode(id.AccountID())
-		blk, err := vcs.EncodeBlock(perma)
+		perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(id.AccountID()))
 		if err != nil {
 			return err
 		}
 
-		n, err := mttnet.New(cfg, vcsh, blk.Cid(), id, logging.New("mintter/network", "debug"))
+		n, err := mttnet.New(cfg, vcsh, perma.ID, id, logging.New("mintter/network", "debug"))
 		if err != nil {
 			return err
 		}

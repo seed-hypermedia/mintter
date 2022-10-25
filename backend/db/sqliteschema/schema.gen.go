@@ -22,14 +22,6 @@ const (
 	AccountsPublicKey  sqlitegen.Column = "accounts.public_key"
 )
 
-// Table change_authors.
-const (
-	ChangeAuthors          sqlitegen.Table  = "change_authors"
-	ChangeAuthorsAccountID sqlitegen.Column = "change_authors.account_id"
-	ChangeAuthorsChangeID  sqlitegen.Column = "change_authors.change_id"
-	ChangeAuthorsDeviceID  sqlitegen.Column = "change_authors.device_id"
-)
-
 // Table change_deps.
 const (
 	ChangeDeps       sqlitegen.Table  = "change_deps"
@@ -40,11 +32,12 @@ const (
 // Table changes.
 const (
 	Changes            sqlitegen.Table  = "changes"
-	ChangesCreateTime  sqlitegen.Column = "changes.create_time"
+	ChangesAccountID   sqlitegen.Column = "changes.account_id"
+	ChangesDeviceID    sqlitegen.Column = "changes.device_id"
 	ChangesID          sqlitegen.Column = "changes.id"
 	ChangesKind        sqlitegen.Column = "changes.kind"
-	ChangesLamportTime sqlitegen.Column = "changes.lamport_time"
 	ChangesPermanodeID sqlitegen.Column = "changes.permanode_id"
+	ChangesStartTime   sqlitegen.Column = "changes.start_time"
 )
 
 // Table content_links.
@@ -72,8 +65,9 @@ const (
 	DatomsAttr      sqlitegen.Column = "datoms.attr"
 	DatomsChange    sqlitegen.Column = "datoms.change"
 	DatomsEntity    sqlitegen.Column = "datoms.entity"
+	DatomsOrigin    sqlitegen.Column = "datoms.origin"
 	DatomsPermanode sqlitegen.Column = "datoms.permanode"
-	DatomsSeq       sqlitegen.Column = "datoms.seq"
+	DatomsTime      sqlitegen.Column = "datoms.time"
 	DatomsValue     sqlitegen.Column = "datoms.value"
 	DatomsValueType sqlitegen.Column = "datoms.value_type"
 )
@@ -116,16 +110,10 @@ const (
 	NamedVersionsVersion   sqlitegen.Column = "named_versions.version"
 )
 
-// Table permanode_owners.
-const (
-	PermanodeOwners            sqlitegen.Table  = "permanode_owners"
-	PermanodeOwnersAccountID   sqlitegen.Column = "permanode_owners.account_id"
-	PermanodeOwnersPermanodeID sqlitegen.Column = "permanode_owners.permanode_id"
-)
-
 // Table permanodes.
 const (
 	Permanodes           sqlitegen.Table  = "permanodes"
+	PermanodesAccountID  sqlitegen.Column = "permanodes.account_id"
 	PermanodesCreateTime sqlitegen.Column = "permanodes.create_time"
 	PermanodesID         sqlitegen.Column = "permanodes.id"
 	PermanodesType       sqlitegen.Column = "permanodes.type"
@@ -170,16 +158,14 @@ var Schema = sqlitegen.Schema{
 		AccountsID:                   {Table: Accounts, SQLType: "INTEGER"},
 		AccountsMultihash:            {Table: Accounts, SQLType: "BLOB"},
 		AccountsPublicKey:            {Table: Accounts, SQLType: "BLOB"},
-		ChangeAuthorsAccountID:       {Table: ChangeAuthors, SQLType: "INTEGER"},
-		ChangeAuthorsChangeID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
-		ChangeAuthorsDeviceID:        {Table: ChangeAuthors, SQLType: "INTEGER"},
 		ChangeDepsChild:              {Table: ChangeDeps, SQLType: "INTEGER"},
 		ChangeDepsParent:             {Table: ChangeDeps, SQLType: "INTEGER"},
-		ChangesCreateTime:            {Table: Changes, SQLType: "INTEGER"},
+		ChangesAccountID:             {Table: Changes, SQLType: "INTEGER"},
+		ChangesDeviceID:              {Table: Changes, SQLType: "INTEGER"},
 		ChangesID:                    {Table: Changes, SQLType: "INTEGER"},
 		ChangesKind:                  {Table: Changes, SQLType: "TEXT"},
-		ChangesLamportTime:           {Table: Changes, SQLType: "INTEGER"},
 		ChangesPermanodeID:           {Table: Changes, SQLType: "INTEGER"},
+		ChangesStartTime:             {Table: Changes, SQLType: "INTEGER"},
 		ContentLinksSourceBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
 		ContentLinksSourceChangeID:   {Table: ContentLinks, SQLType: "INTEGER"},
 		ContentLinksSourceDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
@@ -191,9 +177,10 @@ var Schema = sqlitegen.Schema{
 		DatomAttrsID:                 {Table: DatomAttrs, SQLType: "INTEGER"},
 		DatomsAttr:                   {Table: Datoms, SQLType: "INTEGER"},
 		DatomsChange:                 {Table: Datoms, SQLType: "INTEGER"},
-		DatomsEntity:                 {Table: Datoms, SQLType: "BLOB"},
+		DatomsEntity:                 {Table: Datoms, SQLType: "INTEGER"},
+		DatomsOrigin:                 {Table: Datoms, SQLType: "INTEGER"},
 		DatomsPermanode:              {Table: Datoms, SQLType: "INTEGER"},
-		DatomsSeq:                    {Table: Datoms, SQLType: "INTEGER"},
+		DatomsTime:                   {Table: Datoms, SQLType: "INTEGER"},
 		DatomsValue:                  {Table: Datoms, SQLType: "BLOB"},
 		DatomsValueType:              {Table: Datoms, SQLType: "INTEGER"},
 		DevicesCreateTime:            {Table: Devices, SQLType: "INTEGER"},
@@ -214,8 +201,7 @@ var Schema = sqlitegen.Schema{
 		NamedVersionsName:            {Table: NamedVersions, SQLType: "TEXT"},
 		NamedVersionsObjectID:        {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsVersion:         {Table: NamedVersions, SQLType: "TEXT"},
-		PermanodeOwnersAccountID:     {Table: PermanodeOwners, SQLType: "INTEGER"},
-		PermanodeOwnersPermanodeID:   {Table: PermanodeOwners, SQLType: "INTEGER"},
+		PermanodesAccountID:          {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesCreateTime:         {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesID:                 {Table: Permanodes, SQLType: "INTEGER"},
 		PermanodesType:               {Table: Permanodes, SQLType: "TEXT"},

@@ -11,7 +11,7 @@ import (
 	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttdoc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 
 	"crawshaw.io/sqlite"
@@ -24,7 +24,7 @@ import (
 // It will be removed in Build 11 when we implement proper granular block CRDT.
 //
 // TODO(burdiyan): remove this. Search for other places with build11.
-func IndexDatom(conn *vcsdb.Conn, obj vcsdb.LocalID, d vcsdb.Datom) error {
+func IndexDatom(conn *vcsdb.Conn, obj, change vcsdb.LocalID, d vcsdb.Datom) error {
 	if d.Attr != mttdoc.AttrBlockState {
 		return nil
 	}
@@ -34,7 +34,7 @@ func IndexDatom(conn *vcsdb.Conn, obj vcsdb.LocalID, d vcsdb.Datom) error {
 		return fmt.Errorf("failed to unmarshal content block: %w", err)
 	}
 
-	return indexBacklinks(conn, obj, d.Change, blk)
+	return indexBacklinks(conn, obj, change, blk)
 }
 
 func indexBacklinks(conn *vcsdb.Conn, obj, change vcsdb.LocalID, blk *documents.Block) error {
@@ -72,11 +72,11 @@ func indexBacklinks(conn *vcsdb.Conn, obj, change vcsdb.LocalID, blk *documents.
 		}
 
 		if err := vcssql.ContentLinksInsert(conn.InternalConn(),
-			int(obj),
+			int64(obj),
 			blk.Id,
-			int(change),
+			int64(change),
 			ver.String(),
-			tdocid,
+			int64(tdocid),
 			link.TargetBlock,
 			link.TargetVersion,
 		); err != nil {
@@ -129,7 +129,7 @@ func parseLink(s string) (link, error) {
 	return out, nil
 }
 
-func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int, error) {
+func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int64, error) {
 	codec, hash := ipfs.DecodeCID(c)
 	res, err := vcssql.IPFSBlocksLookupPK(conn, hash)
 	if err != nil {
@@ -140,7 +140,7 @@ func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int, error) {
 		return res.IPFSBlocksID, nil
 	}
 
-	upsert, err := vcssql.IPFSBlocksUpsert(conn, hash, int(codec), nil, 0, 1)
+	upsert, err := vcssql.IPFSBlocksUpsert(conn, hash, int64(codec), nil, 0, 1)
 	if err != nil {
 		return 0, err
 	}
