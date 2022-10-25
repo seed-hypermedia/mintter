@@ -24,8 +24,6 @@ export default function Main() {
       }}
     >
       <div className={classnames('main-root', {settings: isSettings})}>
-        <TitleBar />
-
         <main>
           <Switch>
             <Route path="/" component={PublicationList} />
@@ -44,6 +42,7 @@ export default function Main() {
 
         {!isSettings ? (
           <>
+            <TitleBar />
             <QuickSwitcher />
             <Footer />
           </>

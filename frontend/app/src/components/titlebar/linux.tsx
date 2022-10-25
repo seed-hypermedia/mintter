@@ -12,7 +12,11 @@ import {
   MinimizeButton,
 } from './window-controls'
 
-export function TitleBarLinux() {
+interface TitleBarProps {
+  settings?: boolean
+}
+
+export function TitleBarLinux(props: TitleBarProps) {
   const [focus, setFocus] = useState(true)
 
   useEffect(() => {
@@ -27,6 +31,24 @@ export function TitleBarLinux() {
       window.removeEventListener('blur', blur)
     }
   }, [])
+
+  // in the settings window we render a stripped down version of the titlebar
+  if (props.settings) {
+    return (
+      <header
+        id="titlebar"
+        className="titlebar-row"
+        data-has-focus={focus}
+        data-tauri-drag-region
+      >
+        <span></span>
+
+        <div id="titlebar-window-controls">
+          <CloseButton />
+        </div>
+      </header>
+    )
+  }
 
   return (
     <header

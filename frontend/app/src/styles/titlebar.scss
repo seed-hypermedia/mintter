@@ -6,6 +6,9 @@
   position: fixed;
   top: 0;
   inset-inline: 0;
+  z-index: 999;
+  background-color: var(--base-background-subtle);
+  width: 100vw;
 
   .titlebar-button {
     --color: var(--base-text-low);
@@ -224,10 +227,10 @@
     }
 
     #titlebar-window-controls {
-      width: 125px;
+      padding-inline: 5px;
+      gap: 15px;
       align-items: center;
       display: flex;
-      justify-content: space-around;
     }
 
     &[data-has-focus='true'] button.window-control {
@@ -274,7 +277,7 @@
 }
 
 .titlebar-row {
-  block-size: 32px;
+  block-size: var(--topbar-h);
   display: flex;
   justify-content: space-between;
 
