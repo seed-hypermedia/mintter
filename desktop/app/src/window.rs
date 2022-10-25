@@ -57,18 +57,22 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
   Ok(())
 }
 
-pub fn new_window<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
+#[tauri::command]
+#[tracing::instrument(skip(app_handle))]
+pub fn new_window<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
   let label = window_label();
 
-  WindowBuilder::new(manager, label, WindowUrl::App("index.html".into()))
+  WindowBuilder::new(&app_handle, label, WindowUrl::App("index.html".into()))
     .min_inner_size(500.0, 500.0)
     .build()?;
 
   Ok(())
 }
 
-pub fn close_all_windows<R: Runtime, M: Manager<R>>(manager: &M) -> tauri::Result<()> {
-  for window in manager.windows().values() {
+#[tauri::command]
+#[tracing::instrument(skip(app_handle))]
+pub fn close_all_windows<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
+  for window in app_handle.windows().values() {
     window.close()?;
   }
 

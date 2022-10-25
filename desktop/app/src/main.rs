@@ -90,7 +90,9 @@ fn main() {
           menu::open_preferences,
           menu::open_documentation,
           menu::open_release_notes,
-          menu::open_acknowledgements
+          menu::open_acknowledgements,
+          window::new_window,
+          window::close_all_windows
         ])
         .setup(move |app| {
           app.manage(sentry_options);
