@@ -11,7 +11,7 @@ use log::error;
 #[cfg(target_os = "macos")]
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowMenuEvent};
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
   let package_info = app_handle.package_info();
   let message = format!(
@@ -33,7 +33,7 @@ pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
   tauri::api::dialog::message(Some(&window), &package_info.name, message);
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
   if let Some(window) = app_handle.get_window("preferences") {
     window.set_focus()?;
@@ -49,17 +49,17 @@ pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<(
   Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn open_documentation<R: Runtime>(app_handle: AppHandle<R>) {
   open(&app_handle.shell_scope(), "https://mintter.com", None).unwrap();
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn open_release_notes<R: Runtime>(app_handle: AppHandle<R>) {
   open(&app_handle.shell_scope(), "https://mintter.com", None).unwrap();
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn open_acknowledgements<R: Runtime>(_app_handle: AppHandle<R>) {
   todo!()
 }

@@ -77,7 +77,7 @@ pub fn new_window<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
   Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 #[tracing::instrument(skip(app_handle))]
 pub fn close_all_windows<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
   for window in app_handle.windows().values() {
