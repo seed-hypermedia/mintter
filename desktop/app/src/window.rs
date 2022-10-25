@@ -54,7 +54,7 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
     .title("Mintter")
     .min_inner_size(500.0, 500.0);
 
-  #[cfg(not(target_os = "macocs"))]
+  #[cfg(not(target_os = "macos"))]
   let win = { win.decorations(false) };
 
   win.build()?;
@@ -71,7 +71,7 @@ pub fn new_window<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
     .title("Mintter")
     .min_inner_size(500.0, 500.0);
 
-  #[cfg(not(target_os = "macocs"))]
+  #[cfg(not(target_os = "macos"))]
   let win = { win.decorations(false) };
 
   win.build()?;
