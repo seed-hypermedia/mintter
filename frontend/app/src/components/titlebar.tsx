@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {DraftActor} from '@app/draft-machine'
 import {Dropdown} from '@app/editor/dropdown'
@@ -49,7 +50,7 @@ interface MenuItemProps {
   title: string
   accelerator?: string
   disabled?: boolean
-  onClick: () => void
+  onSelect: () => void
 }
 
 function MenuItem(props: MenuItemProps) {
@@ -76,7 +77,7 @@ function MenuItem(props: MenuItemProps) {
     return (
       <NavigationMenu.Item
         className="item"
-        onClick={props.onClick}
+        onClick={props.onSelect}
         data-disabled={props.disabled}
       >
         {props.title}
@@ -87,7 +88,7 @@ function MenuItem(props: MenuItemProps) {
     )
   } else if (import.meta.env.TAURI_PLATFORM === 'linux') {
     return (
-      <Dropdown.Item onClick={props.onClick} disabled={props.disabled}>
+      <Dropdown.Item onSelect={props.onSelect} disabled={props.disabled}>
         {props.title}
         {props.accelerator && (
           <Dropdown.RightSlot>{props.accelerator}</Dropdown.RightSlot>
@@ -127,22 +128,22 @@ export function TitleBarWindows() {
                   <NavigationMenu.List className="content">
                     <MenuItem
                       title="About Mintter"
-                      onClick={() => invoke('open_about')}
+                      onSelect={() => invoke('open_about')}
                     />
                     <div className="separator"></div>
                     <MenuItem
                       title="Preferences..."
                       accelerator="Ctrl+,"
-                      onClick={() => invoke('open_preferences')}
+                      onSelect={() => invoke('open_preferences')}
                     />
                     <div className="separator"></div>
                     <MenuItem
                       title="Hide"
                       accelerator="Ctrl+H"
-                      onClick={() => getCurrent().hide()}
+                      onSelect={() => getCurrent().hide()}
                     />
                     <div className="separator"></div>
-                    <MenuItem title="Quit" onClick={() => process.exit(0)} />
+                    <MenuItem title="Quit" onSelect={() => process.exit(0)} />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
               </NavigationMenu.Content>
@@ -157,18 +158,18 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="New Window"
                       accelerator="Ctrl+N"
-                      onClick={() => invoke('new_window')}
+                      onSelect={() => invoke('new_window')}
                     />
                     <div className="separator"></div>
                     <MenuItem
                       title="Close"
                       accelerator="Ctrl+F4"
-                      onClick={() => getCurrent().close()}
+                      onSelect={() => getCurrent().close()}
                     />
                     <MenuItem
                       title="Close All Windows"
                       accelerator="Ctrl+Shift+Alt+W"
-                      onClick={() => invoke('close_all_windows')}
+                      onSelect={() => invoke('close_all_windows')}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -184,42 +185,42 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Undo"
                       accelerator="Ctrl+Z"
-                      onClick={() => {}}
+                      onSelect={() => {}}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Redo"
                       accelerator="Ctrl+Shift+Z"
-                      onClick={() => {}}
+                      onSelect={() => {}}
                       disabled={!editingEnabled}
                     />
                     <div className="separator"></div>
                     <MenuItem
                       title="Cut"
                       accelerator="Ctrl+X"
-                      onClick={() => {}}
+                      onSelect={() => {}}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Copy"
                       accelerator="Ctrl+C"
-                      onClick={() => {}}
+                      onSelect={() => {}}
                     />
                     <MenuItem
                       title="Paste"
                       accelerator="Ctrl+V"
-                      onClick={() => {}}
+                      onSelect={() => {}}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Select All"
                       accelerator="Ctrl+A"
-                      onClick={() => tauriEmit('select_all')}
+                      onSelect={() => tauriEmit('select_all')}
                     />
                     <MenuItem
                       title="Find..."
                       accelerator="Ctrl+F"
-                      onClick={() => tauriEmit('open_find')}
+                      onSelect={() => tauriEmit('open_find')}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -235,40 +236,40 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Strong"
                       accelerator="Ctrl+B"
-                      onClick={() => tauriEmit('format_mark', 'strong')}
+                      onSelect={() => tauriEmit('format_mark', 'strong')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Emphasis"
                       accelerator="Ctrl+I"
-                      onClick={() => tauriEmit('format_mark', 'emphasis')}
+                      onSelect={() => tauriEmit('format_mark', 'emphasis')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Code"
                       accelerator="Ctrl+E"
-                      onClick={() => tauriEmit('format_mark', 'code')}
+                      onSelect={() => tauriEmit('format_mark', 'code')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Underline"
                       accelerator="Ctrl+U"
-                      onClick={() => tauriEmit('format_mark', 'underline')}
+                      onSelect={() => tauriEmit('format_mark', 'underline')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Strikethrough"
-                      onClick={() => tauriEmit('format_mark', 'strikethrough')}
+                      onSelect={() => tauriEmit('format_mark', 'strikethrough')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Subscript"
-                      onClick={() => tauriEmit('format_mark', 'subscript')}
+                      onSelect={() => tauriEmit('format_mark', 'subscript')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Superscript"
-                      onClick={() => tauriEmit('format_mark', 'superscript')}
+                      onSelect={() => tauriEmit('format_mark', 'superscript')}
                       disabled={!editingEnabled}
                     />
 
@@ -277,25 +278,25 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Heading"
                       accelerator="Ctrl+Shift+H"
-                      onClick={() => tauriEmit('format_block', 'heading')}
+                      onSelect={() => tauriEmit('format_block', 'heading')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Statement"
                       accelerator="Ctrl+Shif+S"
-                      onClick={() => tauriEmit('format_block', 'statement')}
+                      onSelect={() => tauriEmit('format_block', 'statement')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Blockquote"
                       accelerator="Ctrl+Shift+Q"
-                      onClick={() => tauriEmit('format_block', 'blockquote')}
+                      onSelect={() => tauriEmit('format_block', 'blockquote')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Code Block"
                       accelerator="Ctrl+Shift+E"
-                      onClick={() => tauriEmit('format_block', 'codeblock')}
+                      onSelect={() => tauriEmit('format_block', 'codeblock')}
                       disabled={!editingEnabled}
                     />
 
@@ -304,19 +305,21 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Bullet List"
                       accelerator="Ctrl+Shift+7"
-                      onClick={() => tauriEmit('format_list', 'unordered_list')}
+                      onSelect={() =>
+                        tauriEmit('format_list', 'unordered_list')
+                      }
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Numbered List"
                       accelerator="Ctrl+Shift+8"
-                      onClick={() => tauriEmit('format_list', 'ordered_list')}
+                      onSelect={() => tauriEmit('format_list', 'ordered_list')}
                       disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Plain List"
                       accelerator="Ctrl+Shift+9"
-                      onClick={() => tauriEmit('format_list', 'group')}
+                      onSelect={() => tauriEmit('format_list', 'group')}
                       disabled={!editingEnabled}
                     />
                   </NavigationMenu.List>
@@ -333,12 +336,12 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="Reload"
                       accelerator="Ctrl+R"
-                      onClick={() => window.location.reload()}
+                      onSelect={() => window.location.reload()}
                     />
                     <MenuItem
                       title="Quick Switcher..."
                       accelerator="Ctrl+K"
-                      onClick={() => tauriEmit('open_quick_switcher')}
+                      onSelect={() => tauriEmit('open_quick_switcher')}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -353,15 +356,15 @@ export function TitleBarWindows() {
                   <NavigationMenu.List className="content">
                     <MenuItem
                       title="Documentation"
-                      onClick={() => invoke('open_documentation')}
+                      onSelect={() => invoke('open_documentation')}
                     />
                     <MenuItem
                       title="Release Notes"
-                      onClick={() => invoke('open_release_notes')}
+                      onSelect={() => invoke('open_release_notes')}
                     />
                     <MenuItem
                       title="Acknowledgements"
-                      onClick={() => invoke('open_acknowledgements')}
+                      onSelect={() => invoke('open_acknowledgements')}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -386,20 +389,40 @@ export function TitleBarWindows() {
       >
         <div className="titlebar-section">
           <NavigationButtons />
+          <Menu />
         </div>
 
         <div data-tauri-drag-region style={{flexGrow: 1}}></div>
 
         <ActionButtons />
-        <Menu />
       </div>
     </header>
   )
 }
 
 export function TitleBarLinux() {
+  const [focus, setFocus] = useState(true)
+
+  useEffect(() => {
+    const focus = () => setFocus(true)
+    const blur = () => setFocus(false)
+
+    window.addEventListener('focus', focus)
+    window.addEventListener('blur', blur)
+
+    return () => {
+      window.removeEventListener('focus', focus)
+      window.removeEventListener('blur', blur)
+    }
+  }, [])
+
   return (
-    <header id="titlebar" className="titlebar-row" data-tauri-drag-region>
+    <header
+      id="titlebar"
+      className="titlebar-row"
+      data-has-focus={focus}
+      data-tauri-drag-region
+    >
       <div className="titlebar-section">
         <NavigationButtons />
       </div>
@@ -407,9 +430,11 @@ export function TitleBarLinux() {
       <Title />
 
       <ActionButtons />
-      <Menu />
+      <div className="titlebar-section">
+        <Menu />
+      </div>
 
-      <div className="window-controls">
+      <div id="titlebar-window-controls">
         <MinimizeButton />
         <MaximizeOrRestoreButton />
         <CloseButton />
@@ -476,7 +501,11 @@ export function Menu() {
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
-        <button data-testid="titlebar-menu" className="titlebar-button">
+        <button
+          data-testid="titlebar-menu"
+          id="titlebar-menu"
+          className="titlebar-button"
+        >
           <Icon name="HamburgerMenu" size="2" color="muted" />
         </button>
       </Dropdown.Trigger>
@@ -499,132 +528,69 @@ export function Menu() {
             <span>Drafts</span>
           </Dropdown.Item>
 
+          <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
+            Quick Switcher
+            <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
+          </Dropdown.Item>
+
           {import.meta.env.TAURI_PLATFORM == 'linux' && (
             <>
               <Dropdown.Separator />
 
               <MenuItem
-                title="About Mintter"
-                onClick={() => invoke('open_about')}
+                title="New Window"
+                accelerator="Ctrl+N"
+                onSelect={() => invoke('new_invoke')}
               />
+
+              <Dropdown.Separator />
 
               <MenuItem
-                title="Preferences..."
-                accelerator="Ctrl+,"
-                onClick={() => invoke('open_preferences')}
+                title="Find..."
+                accelerator="Ctrl+F"
+                onSelect={() => tauriEmit('open_find')}
               />
 
               <Dropdown.Sub>
-                <Dropdown.SubTrigger>View...</Dropdown.SubTrigger>
-                <Dropdown.SubContent>
-                  <MenuItem
-                    title="New Window"
-                    accelerator="Ctrl+N"
-                    onClick={() => invoke('new_invoke')}
-                  />
-
-                  <Dropdown.Separator />
-
-                  <MenuItem
-                    title="Close"
-                    accelerator="Ctrl+F4"
-                    onClick={() => getCurrent().close()}
-                  />
-                  <MenuItem
-                    title="Close All Windows"
-                    accelerator="Ctrl+Shift+Alt+W"
-                    onClick={() => invoke('close_all_windows')}
-                  />
-                </Dropdown.SubContent>
-              </Dropdown.Sub>
-              <Dropdown.Sub>
-                <Dropdown.SubTrigger>Edit...</Dropdown.SubTrigger>
-                <Dropdown.SubContent>
-                  <MenuItem
-                    title="Undo"
-                    accelerator="Ctrl+Z"
-                    onClick={() => {}}
-                    disabled={!editingEnabled}
-                  />
-                  <MenuItem
-                    title="Redo"
-                    accelerator="Ctrl+Shift+Z"
-                    onClick={() => {}}
-                    disabled={!editingEnabled}
-                  />
-
-                  <Dropdown.Separator />
-
-                  <MenuItem
-                    title="Cut"
-                    accelerator="Ctrl+X"
-                    onClick={() => {}}
-                    disabled={!editingEnabled}
-                  />
-                  <MenuItem
-                    title="Copy"
-                    accelerator="Ctrl+C"
-                    onClick={() => {}}
-                  />
-                  <MenuItem
-                    title="Paste"
-                    accelerator="Ctrl+V"
-                    onClick={() => {}}
-                    disabled={!editingEnabled}
-                  />
-                  <MenuItem
-                    title="Select All"
-                    accelerator="Ctrl+A"
-                    onClick={() => tauriEmit('select_all')}
-                  />
-                  <MenuItem
-                    title="Find..."
-                    accelerator="Ctrl+F"
-                    onClick={() => tauriEmit('open_find')}
-                  />
-                </Dropdown.SubContent>
-              </Dropdown.Sub>
-
-              <Dropdown.Sub>
-                <Dropdown.SubTrigger>Format...</Dropdown.SubTrigger>
+                <Dropdown.SubTrigger>Format</Dropdown.SubTrigger>
                 <Dropdown.SubContent>
                   <MenuItem
                     title="Strong"
                     accelerator="Ctrl+B"
-                    onClick={() => tauriEmit('format_mark', 'strong')}
+                    onSelect={() => tauriEmit('format_mark', 'strong')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Emphasis"
                     accelerator="Ctrl+I"
-                    onClick={() => tauriEmit('format_mark', 'emphasis')}
+                    onSelect={() => tauriEmit('format_mark', 'emphasis')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Code"
                     accelerator="Ctrl+E"
-                    onClick={() => tauriEmit('format_mark', 'code')}
+                    onSelect={() => tauriEmit('format_mark', 'code')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Underline"
                     accelerator="Ctrl+U"
-                    onClick={() => tauriEmit('format_mark', 'underline')}
+                    onSelect={() => tauriEmit('format_mark', 'underline')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Strikethrough"
-                    onClick={() => tauriEmit('format_mark', 'strikethrough')}
+                    onSelect={() => tauriEmit('format_mark', 'strikethrough')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Subscript"
-                    onClick={() => tauriEmit('format_mark', 'subscript')}
+                    onSelect={() => tauriEmit('format_mark', 'subscript')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Superscript"
-                    onClick={() => tauriEmit('format_mark', 'superscript')}
+                    onSelect={() => tauriEmit('format_mark', 'superscript')}
                     disabled={!editingEnabled}
                   />
 
@@ -633,25 +599,25 @@ export function Menu() {
                   <MenuItem
                     title="Heading"
                     accelerator="Ctrl+Shift+H"
-                    onClick={() => tauriEmit('format_block', 'heading')}
+                    onSelect={() => tauriEmit('format_block', 'heading')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Statement"
                     accelerator="Ctrl+Shif+S"
-                    onClick={() => tauriEmit('format_block', 'statement')}
+                    onSelect={() => tauriEmit('format_block', 'statement')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Blockquote"
                     accelerator="Ctrl+Shift+Q"
-                    onClick={() => tauriEmit('format_block', 'blockquote')}
+                    onSelect={() => tauriEmit('format_block', 'blockquote')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Code Block"
                     accelerator="Ctrl+Shift+E"
-                    onClick={() => tauriEmit('format_block', 'codeblock')}
+                    onSelect={() => tauriEmit('format_block', 'codeblock')}
                     disabled={!editingEnabled}
                   />
 
@@ -660,61 +626,61 @@ export function Menu() {
                   <MenuItem
                     title="Bullet List"
                     accelerator="Ctrl+Shift+7"
-                    onClick={() => tauriEmit('format_list', 'unordered_list')}
+                    onSelect={() => tauriEmit('format_list', 'unordered_list')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Numbered List"
                     accelerator="Ctrl+Shift+8"
-                    onClick={() => tauriEmit('format_list', 'ordered_list')}
+                    onSelect={() => tauriEmit('format_list', 'ordered_list')}
                     disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Plain List"
                     accelerator="Ctrl+Shift+9"
-                    onClick={() => tauriEmit('format_list', 'group')}
+                    onSelect={() => tauriEmit('format_list', 'group')}
                     disabled={!editingEnabled}
                   />
                 </Dropdown.SubContent>
               </Dropdown.Sub>
 
               <Dropdown.Sub>
-                <Dropdown.SubTrigger>View...</Dropdown.SubTrigger>
+                <Dropdown.SubTrigger>View</Dropdown.SubTrigger>
                 <Dropdown.SubContent>
                   <MenuItem
                     title="Reload"
                     accelerator="Ctrl+R"
-                    onClick={() => window.location.reload()}
-                  />
-                  <MenuItem
-                    title="Quick Switcher..."
-                    accelerator="Ctrl+K"
-                    onClick={() => tauriEmit('open_quick_switcher')}
-                  />
-                </Dropdown.SubContent>
-              </Dropdown.Sub>
-
-              <Dropdown.Sub>
-                <Dropdown.SubTrigger>Help...</Dropdown.SubTrigger>
-                <Dropdown.SubContent>
-                  <MenuItem
-                    title="Documentation"
-                    onClick={() => invoke('open_documentation')}
-                  />
-                  <MenuItem
-                    title="Release Notes"
-                    onClick={() => invoke('open_release_notes')}
-                  />
-                  <MenuItem
-                    title="Acknowledgements"
-                    onClick={() => invoke('open_acknowledgements')}
+                    onSelect={() => window.location.reload()}
                   />
                 </Dropdown.SubContent>
               </Dropdown.Sub>
 
               <Dropdown.Separator />
 
-              <MenuItem title="Quit" onClick={() => process.exit(0)} />
+              <MenuItem
+                title="Preferences"
+                accelerator="Ctrl+,"
+                onSelect={() => invoke('open_preferences')}
+              />
+
+              <Dropdown.Separator />
+
+              <MenuItem
+                title="Documentation"
+                onSelect={() => invoke('open_documentation')}
+              />
+              <MenuItem
+                title="Release Notes"
+                onSelect={() => invoke('open_release_notes')}
+              />
+              <MenuItem
+                title="Acknowledgements"
+                onSelect={() => invoke('open_acknowledgements')}
+              />
+              <MenuItem
+                title="About Mintter"
+                onSelect={() => invoke('open_about')}
+              />
             </>
           )}
         </Dropdown.Content>
@@ -814,190 +780,6 @@ function DraftTitle({fileRef}: {fileRef: DraftActor}) {
   return <>{title}</>
 }
 
-// function PublicationTopbar() {
-//   let
-
-//   function onCopy() {
-//     if (current) {
-//       let context = current.getSnapshot().context
-//       let reference = `${MINTTER_LINK_PREFIX}${context.documentId}/${context.version}`
-//       copyTextToClipboard(reference)
-//       toast.success('Document reference copied!')
-//     }
-//   }
-//   return (
-//     <>
-//       <TopbarNavigation />
-//       <div className="titlebar-section main" {...draggableProps}>
-//         {current ? (
-//           <TopbarPublicationData fileRef={current as PublicationActor} />
-//         ) : (
-//           <span className="topbar-title">...</span>
-//         )}
-//       </div>
-//       <div className="titlebar-section actions" {...draggableProps}>
-//         <Find />
-//         <Tooltip content="Copy document reference">
-//           <button onClick={onCopy} className="topbar-button">
-//             <Icon name="Copy" />
-//           </button>
-//         </Tooltip>
-//         <div className="button-group">
-//           <button
-//             onClick={() => {
-//               // create new draft and open a new window
-//               mainService.send({type: 'COMMIT.OPEN.WINDOW'})
-//             }}
-//             className="topbar-button"
-//           >
-//             <Icon name="Add" />
-//             <span style={{marginRight: '0.3em'}}>Write</span>
-//           </button>
-//           {current && <WriteDropdown fileRef={current as PublicationActor} />}
-//         </div>
-//       </div>
-//     </>
-//   )
-// }
-
-// function TopbarPublicationData({fileRef}: {fileRef: PublicationActor}) {
-//   let title = useSelector(fileRef, (state) => state.context.title)
-//   let alias = useSelector(
-//     fileRef,
-//     (state) => state.context.author?.profile?.alias,
-//   )
-//   return (
-//     <h1 className="topbar-title" data-testid="topbar-title" {...draggableProps}>
-//       {title}
-//       <small>{alias}</small>
-//     </h1>
-//   )
-// }
-
-// function DraftTopbarWrapper() {
-//   /**
-//    * we need this component because I can't conditionally call the `isEditing` selector if the service is not available.
-//    * ...It sucks I know, but meh!
-//    */
-//   let mainService = useMain()
-//   let current = useSelector(
-//     mainService,
-//     (state) => state.context.current as DraftActor,
-//   )
-
-//   if (!current) return null
-//   return <DraftTopbar fileRef={current} mainService={mainService} />
-// }
-
-// function DraftTopbar({
-//   fileRef,
-//   mainService,
-// }: {
-//   fileRef: DraftActor
-//   mainService: MainService
-// }) {
-//   let isEditing = useSelector(fileRef, (state) => state.context.isEditing)
-//   return (
-//     <div className="topbar-inner" data-state={isEditing ? 'hidden' : 'visible'}>
-//       <TopbarNavigation />
-//       <div className="titlebar-section main" {...draggableProps}>
-//         <TopbarDraftData fileRef={fileRef} />
-//       </div>
-//       <div className="titlebar-section actions no-flex" {...draggableProps}>
-//         <Find />
-//         <PublishButton fileRef={fileRef} />
-//         <div className="button-group">
-//           <button
-//             onClick={() => {
-//               // create new draft and open a new window
-//               mainService.send({type: 'COMMIT.OPEN.WINDOW'})
-//             }}
-//             className="topbar-button"
-//           >
-//             <Icon name="Add" />
-//             <span style={{marginRight: '0.3em'}}>Write</span>
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
-// function TopbarDraftData({fileRef}: {fileRef: DraftActor}) {
-//   let title = useSelector(fileRef, (state) => state.context.title)
-//   return (
-//     <p className="topbar-title" data-testid="topbar-title" {...draggableProps}>
-//       {title}
-//     </p>
-//   )
-// }
-
-// function TopbarNavigation() {
-//   return (
-//     <div className="titlebar-section navigation" {...draggableProps}>
-//       <Menu />
-//       <HistoryButtons />
-//     </div>
-//   )
-// }
-
-// function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
-//   let mainService = useMain()
-//   let isReplying = useIsReplying()
-//   let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
-//   let [, params] = useRoute('/p/:id/:version/:block?')
-
-//   return (
-//     <Dropdown.Root>
-//       <Dropdown.Trigger asChild>
-//         <button className="topbar-button dropdown">
-//           <Icon name="CaretDown" />
-//         </button>
-//       </Dropdown.Trigger>
-//       <Dropdown.Portal>
-//         <Dropdown.Content>
-//           <Dropdown.Item
-//             onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
-//           >
-//             <Icon name="File" />
-//             <span>New Document</span>
-//           </Dropdown.Item>
-
-//           <Dropdown.Item
-//             onSelect={() => fileRef.send('PUBLICATION.REPLY')}
-//             disabled={isReplying}
-//           >
-//             <Icon name="MessageBubble" />
-//             <span>Reply</span>
-//           </Dropdown.Item>
-
-//           {canUpdate ? (
-//             <Dropdown.Item
-//               onSelect={() => {
-//                 fileRef.send({type: 'PUBLICATION.EDIT', params})
-//               }}
-//             >
-//               <Icon name="Pencil" />
-//               <span>Edit</span>
-//             </Dropdown.Item>
-//           ) : null}
-//           {/* <TippingModal fileRef={fileRef as PublicationRef} /> */}
-//           {/* )} */}
-
-//           <Dropdown.Item
-//             onSelect={() => {
-//               console.log('IMPLEMENT ME: Review document')
-//             }}
-//           >
-//             <Icon name="PencilAdd" />
-//             <span>Review</span>
-//           </Dropdown.Item>
-//         </Dropdown.Content>
-//       </Dropdown.Portal>
-//     </Dropdown.Root>
-//   )
-// }
-
 function CloseButton() {
   const win = getCurrent()
   return (
@@ -1008,7 +790,7 @@ function CloseButton() {
       className="window-control close"
       onClick={() => win.close()}
     >
-      <svg aria-hidden="true" version="1.1" width="10" height="10">
+      <svg aria-hidden="true" version="1.1" viewBox="0 0 10 10">
         <path d="M 0,0 0,0.7 4.3,5 0,9.3 0,10 0.7,10 5,5.7 9.3,10 10,10 10,9.3 5.7,5 10,0.7 10,0 9.3,0 5,4.3 0.7,0 Z" />
       </svg>
     </button>
@@ -1056,7 +838,7 @@ function MaximizeOrRestoreButton() {
       className={classnames('window-control', name)}
       onClick={cb}
     >
-      <svg aria-hidden="true" version="1.1" width="10" height="10">
+      <svg aria-hidden="true" version="1.1" viewBox="0 0 10 10">
         <path d={path} />
       </svg>
     </button>
@@ -1074,46 +856,9 @@ function MinimizeButton() {
       className="window-control minimize"
       onClick={() => win.minimize()}
     >
-      <svg aria-hidden="true" version="1.1" width="10" height="10">
+      <svg aria-hidden="true" version="1.1" viewBox="0 0 10 10">
         <path d="M 0,5 10,5 10,6 0,6 Z" />
       </svg>
     </button>
   )
 }
-
-// function WindowsTitleBar() {
-//   return (
-//     <div className="topbar-title-bar">
-//       <div className="titlebar-section title-menu">
-//         <Dropdown.Root>
-//           <Dropdown.Trigger asChild>
-//             <button className="topbar-button">File</button>
-//           </Dropdown.Trigger>
-//           <Dropdown.Portal>
-//             <Dropdown.Content>
-//               <Dropdown.Item>item 1</Dropdown.Item>
-//             </Dropdown.Content>
-//           </Dropdown.Portal>
-//         </Dropdown.Root>
-//         <Dropdown.Root>
-//           <Dropdown.Trigger asChild>
-//             <button className="topbar-button">File</button>
-//           </Dropdown.Trigger>
-//           <Dropdown.Portal>
-//             <Dropdown.Content>
-//               <Dropdown.Item>
-//                 <span>item 1</span>
-//                 <Dropdown.RightSlot>Ctrl++K</Dropdown.RightSlot>
-//               </Dropdown.Item>
-//             </Dropdown.Content>
-//           </Dropdown.Portal>
-//         </Dropdown.Root>
-//       </div>
-//       <div className="titlebar-section actions">
-//         <MinimizeButton />
-//         <MaximizeOrRestoreButton />
-//         <CloseButton />
-//       </div>
-//     </div>
-//   )
-// }

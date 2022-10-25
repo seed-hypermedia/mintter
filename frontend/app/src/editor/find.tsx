@@ -24,7 +24,7 @@ export function Find() {
   })
 
   return (
-    <label className="topbar-search">
+    <label className="titlebar-search">
       <Icon name="Search" />
       <input
         ref={searchInput}
