@@ -20,7 +20,7 @@
 }
 
 @mixin win32-or-linux {
-  @if env.$TAURI_PLATFORM == 'linux' or env.$TAURI_PLATFORM == 'linux' {
+  @if env.$TAURI_PLATFORM == 'windows' or env.$TAURI_PLATFORM == 'linux' {
     @content;
   }
 }

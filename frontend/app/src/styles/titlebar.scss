@@ -2,13 +2,11 @@
 @use 'variables' as *;
 
 #titlebar {
-  block-size: var(--topbar-h);
   position: fixed;
-  top: 0;
-  inset-inline: 0;
   z-index: 999;
   background-color: var(--base-background-subtle);
-  width: 100vw;
+  top: 1px;
+  width: calc(100% - 2px);
 
   .titlebar-button {
     --color: var(--base-text-low);
@@ -117,10 +115,16 @@
   }
 
   @include platform.macos {
+    top: 0;
+    width: 100%;
+
     padding-inline-start: 64px;
   }
 
   @include platform.win32 {
+    top: 1px;
+    width: calc(100% - 2px);
+
     .titlebar-section {
       padding-block: 0.5em;
     }
@@ -210,6 +214,8 @@
   }
 
   @include platform.linux {
+    block-size: var(--topbar-h);
+
     .titlebar-section {
       padding-block: 0.5em;
     }
