@@ -119,7 +119,7 @@
 
   @include platform.win32 {
     .titlebar-section {
-      padding-block: 0.3em;
+      padding-block: 0.5em;
     }
 
     #titlebar-icon {
@@ -208,7 +208,7 @@
 
   @include platform.linux {
     .titlebar-section {
-      padding-block: 0.2em;
+      padding-block: 0.5em;
     }
 
     #titlebar-menu,
