@@ -124,8 +124,18 @@
     }
 
     #titlebar-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       user-select: none;
-      width: 32px;
+      color: var(--base-text-low);
+      padding-inline: 0.5em;
+
+      svg {
+        width: 17px;
+        height: 17px;
+        fill: currentColor;
+      }
     }
 
     #titlebar-system-menu {
