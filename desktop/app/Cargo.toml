@@ -49,7 +49,7 @@ objc = "0.2.7"
 webkit2gtk = "0.18.2"
 
 [target."cfg(target_os = \"windows\")".dependencies]
-webview2-com = "0.21.0"
+webview2-com = "0.19.1"
 windows = "0.39.0"
 
 [features]
