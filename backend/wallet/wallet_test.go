@@ -162,9 +162,9 @@ func makeTestPeer(t *testing.T, u coretest.Tester, db *sqlitex.Pool) (*mttnet.No
 	require.NoError(t, err)
 
 	n, err := mttnet.New(config.P2P{
-		NoRelay:     true,
-		NoBootstrap: true,
-		NoMetrics:   true,
+		NoRelay:        true,
+		BootstrapPeers: nil,
+		NoMetrics:      true,
 	}, hvcs, reg, u.Identity, zap.NewNop())
 	require.NoError(t, err)
 

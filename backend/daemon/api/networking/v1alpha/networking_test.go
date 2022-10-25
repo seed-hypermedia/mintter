@@ -59,9 +59,8 @@ func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.Cancel
 	cfg := config.Default().P2P
 
 	cfg.Port = 0
-	cfg.ReportPrivateAddrs = true
 	cfg.NoRelay = true
-	cfg.NoBootstrap = true
+	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
 	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, zap.NewNop())
