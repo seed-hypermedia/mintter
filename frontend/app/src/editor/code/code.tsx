@@ -219,7 +219,7 @@ function Code({
       {data: {...newData, theme: codeTheme}},
       {at: path},
     )
-  }, [theme, editor, element, path])
+  }, [theme, editor])
 
   if (mode == EditorMode.Embed) {
     return (
