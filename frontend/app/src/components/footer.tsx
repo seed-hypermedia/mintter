@@ -250,7 +250,6 @@ function ContactItem({contact}: ContactItemProps) {
         </li>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" side="top">
-        contact-item
         <Avatar
           accountId={state.context.account.id}
           size={2}
