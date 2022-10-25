@@ -48,7 +48,7 @@ li::marker {
   --size-700: 2.36rem;
   --size-800: 3.15rem;
   --size-900: 4.2rem;
-  font-size: var(--size-400);
+  // font-size: var(--size-400);
 
   --flow-space: var(--size-700);
 
@@ -101,10 +101,30 @@ li::marker {
   }
 
   &.mode-discussion {
-    transform: translateX(-40px);
+    --inline-offset: 40px;
+    transform: translateX(calc(var(--inline-offset) * -1));
     display: block;
-    font-size: 0.8em;
     margin-inline: 0;
+    width: calc(100% + var(--inline-offset));
+    padding-inline-end: 0;
+
+    p {
+      font-family: var(--mtt-fonts-base);
+      font-size: 0.9em;
+    }
+
+    h2 {
+      font-size: 1.2em;
+    }
+
+    h3,
+    h4 {
+      font-size: 1.1em;
+    }
+
+    li::marker {
+      font-size: 0.8em;
+    }
   }
 
   a {
@@ -123,11 +143,14 @@ li::marker {
 q {
   // display: inline-block;
   display: inline;
-  span {
+
+  & > span {
     // font-style: italic;
-    color: var(--primary-normal);
-    text-shadow: 0 0 3px var(--primary-component-bg-hover);
+    // color: var(--primary-normal);
+    background-color: var(--highlight-surface1);
+    // text-shadow: 0 0 3px var(--highlight-surface3);
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-bottom: 2px solid var(--highlight-surface2);
   }
 
   &:before,
@@ -137,10 +160,10 @@ q {
 
   &:hover {
     cursor: pointer;
-    background-color: var(--primary-component-bg-hover);
-    span {
-      color: var(--primary-text-low);
-      text-shadow: 0 0 6px var(--primary-component-bg-active);
+
+    > span {
+      // text-shadow: 0 0 6px var(--primary-component-bg-active);
+      background-color: var(--highlight-surface2);
     }
   }
 
@@ -155,7 +178,7 @@ q {
 
 @keyframes yellowflash-bg {
   from {
-    background: yellow;
+    background: var(--highlight-surface4);
   }
   to {
     background: transparent;

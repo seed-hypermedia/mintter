@@ -2,10 +2,10 @@
 //@ts-nocheck
 /* eslint-disable */
 import { grpc } from "@improbable-eng/grpc-web";
-import { Empty } from "../../google/protobuf/empty";
 import { BrowserHeaders } from "browser-headers";
-import { Timestamp } from "../../google/protobuf/timestamp";
 import _m0 from "protobufjs/minimal";
+import { Empty } from "../../google/protobuf/empty";
+import { Timestamp } from "../../google/protobuf/timestamp";
 
 export interface GenMnemonicRequest {
   /** Number of mnemonic words to encode the seed */
@@ -29,9 +29,11 @@ export interface RegisterResponse {
   accountId: string;
 }
 
-export interface GetInfoRequest {}
+export interface GetInfoRequest {
+}
 
-export interface ForceSyncRequest {}
+export interface ForceSyncRequest {
+}
 
 /** Info is a generic information about the running node. */
 export interface Info {
@@ -48,10 +50,7 @@ function createBaseGenMnemonicRequest(): GenMnemonicRequest {
 }
 
 export const GenMnemonicRequest = {
-  encode(
-    message: GenMnemonicRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: GenMnemonicRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.mnemonicsLength !== 0) {
       writer.uint32(8).uint32(message.mnemonicsLength);
     }
@@ -77,23 +76,16 @@ export const GenMnemonicRequest = {
   },
 
   fromJSON(object: any): GenMnemonicRequest {
-    return {
-      mnemonicsLength: isSet(object.mnemonicsLength)
-        ? Number(object.mnemonicsLength)
-        : 0,
-    };
+    return { mnemonicsLength: isSet(object.mnemonicsLength) ? Number(object.mnemonicsLength) : 0 };
   },
 
   toJSON(message: GenMnemonicRequest): unknown {
     const obj: any = {};
-    message.mnemonicsLength !== undefined &&
-      (obj.mnemonicsLength = Math.round(message.mnemonicsLength));
+    message.mnemonicsLength !== undefined && (obj.mnemonicsLength = Math.round(message.mnemonicsLength));
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GenMnemonicRequest>, I>>(
-    object: I
-  ): GenMnemonicRequest {
+  fromPartial<I extends Exact<DeepPartial<GenMnemonicRequest>, I>>(object: I): GenMnemonicRequest {
     const message = createBaseGenMnemonicRequest();
     message.mnemonicsLength = object.mnemonicsLength ?? 0;
     return message;
@@ -105,10 +97,7 @@ function createBaseGenMnemonicResponse(): GenMnemonicResponse {
 }
 
 export const GenMnemonicResponse = {
-  encode(
-    message: GenMnemonicResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: GenMnemonicResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.mnemonic) {
       writer.uint32(10).string(v!);
     }
@@ -134,11 +123,7 @@ export const GenMnemonicResponse = {
   },
 
   fromJSON(object: any): GenMnemonicResponse {
-    return {
-      mnemonic: Array.isArray(object?.mnemonic)
-        ? object.mnemonic.map((e: any) => String(e))
-        : [],
-    };
+    return { mnemonic: Array.isArray(object?.mnemonic) ? object.mnemonic.map((e: any) => String(e)) : [] };
   },
 
   toJSON(message: GenMnemonicResponse): unknown {
@@ -151,9 +136,7 @@ export const GenMnemonicResponse = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GenMnemonicResponse>, I>>(
-    object: I
-  ): GenMnemonicResponse {
+  fromPartial<I extends Exact<DeepPartial<GenMnemonicResponse>, I>>(object: I): GenMnemonicResponse {
     const message = createBaseGenMnemonicResponse();
     message.mnemonic = object.mnemonic?.map((e) => e) || [];
     return message;
@@ -165,10 +148,7 @@ function createBaseRegisterRequest(): RegisterRequest {
 }
 
 export const RegisterRequest = {
-  encode(
-    message: RegisterRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: RegisterRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.mnemonic) {
       writer.uint32(10).string(v!);
     }
@@ -201,9 +181,7 @@ export const RegisterRequest = {
 
   fromJSON(object: any): RegisterRequest {
     return {
-      mnemonic: Array.isArray(object?.mnemonic)
-        ? object.mnemonic.map((e: any) => String(e))
-        : [],
+      mnemonic: Array.isArray(object?.mnemonic) ? object.mnemonic.map((e: any) => String(e)) : [],
       passphrase: isSet(object.passphrase) ? String(object.passphrase) : "",
     };
   },
@@ -219,9 +197,7 @@ export const RegisterRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<RegisterRequest>, I>>(
-    object: I
-  ): RegisterRequest {
+  fromPartial<I extends Exact<DeepPartial<RegisterRequest>, I>>(object: I): RegisterRequest {
     const message = createBaseRegisterRequest();
     message.mnemonic = object.mnemonic?.map((e) => e) || [];
     message.passphrase = object.passphrase ?? "";
@@ -234,10 +210,7 @@ function createBaseRegisterResponse(): RegisterResponse {
 }
 
 export const RegisterResponse = {
-  encode(
-    message: RegisterResponse,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(message: RegisterResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.accountId !== "") {
       writer.uint32(10).string(message.accountId);
     }
@@ -263,9 +236,7 @@ export const RegisterResponse = {
   },
 
   fromJSON(object: any): RegisterResponse {
-    return {
-      accountId: isSet(object.accountId) ? String(object.accountId) : "",
-    };
+    return { accountId: isSet(object.accountId) ? String(object.accountId) : "" };
   },
 
   toJSON(message: RegisterResponse): unknown {
@@ -274,9 +245,7 @@ export const RegisterResponse = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<RegisterResponse>, I>>(
-    object: I
-  ): RegisterResponse {
+  fromPartial<I extends Exact<DeepPartial<RegisterResponse>, I>>(object: I): RegisterResponse {
     const message = createBaseRegisterResponse();
     message.accountId = object.accountId ?? "";
     return message;
@@ -288,10 +257,7 @@ function createBaseGetInfoRequest(): GetInfoRequest {
 }
 
 export const GetInfoRequest = {
-  encode(
-    _: GetInfoRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(_: GetInfoRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer;
   },
 
@@ -319,9 +285,7 @@ export const GetInfoRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<GetInfoRequest>, I>>(
-    _: I
-  ): GetInfoRequest {
+  fromPartial<I extends Exact<DeepPartial<GetInfoRequest>, I>>(_: I): GetInfoRequest {
     const message = createBaseGetInfoRequest();
     return message;
   },
@@ -332,10 +296,7 @@ function createBaseForceSyncRequest(): ForceSyncRequest {
 }
 
 export const ForceSyncRequest = {
-  encode(
-    _: ForceSyncRequest,
-    writer: _m0.Writer = _m0.Writer.create()
-  ): _m0.Writer {
+  encode(_: ForceSyncRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer;
   },
 
@@ -363,9 +324,7 @@ export const ForceSyncRequest = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ForceSyncRequest>, I>>(
-    _: I
-  ): ForceSyncRequest {
+  fromPartial<I extends Exact<DeepPartial<ForceSyncRequest>, I>>(_: I): ForceSyncRequest {
     const message = createBaseForceSyncRequest();
     return message;
   },
@@ -384,10 +343,7 @@ export const Info = {
       writer.uint32(18).string(message.peerId);
     }
     if (message.startTime !== undefined) {
-      Timestamp.encode(
-        toTimestamp(message.startTime),
-        writer.uint32(26).fork()
-      ).ldelim();
+      Timestamp.encode(toTimestamp(message.startTime), writer.uint32(26).fork()).ldelim();
     }
     return writer;
   },
@@ -406,9 +362,7 @@ export const Info = {
           message.peerId = reader.string();
           break;
         case 3:
-          message.startTime = fromTimestamp(
-            Timestamp.decode(reader, reader.uint32())
-          );
+          message.startTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           break;
         default:
           reader.skipType(tag & 7);
@@ -422,9 +376,7 @@ export const Info = {
     return {
       accountId: isSet(object.accountId) ? String(object.accountId) : "",
       peerId: isSet(object.peerId) ? String(object.peerId) : "",
-      startTime: isSet(object.startTime)
-        ? fromJsonTimestamp(object.startTime)
-        : undefined,
+      startTime: isSet(object.startTime) ? fromJsonTimestamp(object.startTime) : undefined,
     };
   },
 
@@ -432,8 +384,7 @@ export const Info = {
     const obj: any = {};
     message.accountId !== undefined && (obj.accountId = message.accountId);
     message.peerId !== undefined && (obj.peerId = message.peerId);
-    message.startTime !== undefined &&
-      (obj.startTime = message.startTime.toISOString());
+    message.startTime !== undefined && (obj.startTime = message.startTime.toISOString());
     return obj;
   },
 
@@ -454,28 +405,16 @@ export interface Daemon {
    * mnemonic of 12-24 human-readable english words.
    * The seed could be reconstructed given these words and the passphrase.
    */
-  genMnemonic(
-    request: DeepPartial<GenMnemonicRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<GenMnemonicResponse>;
+  genMnemonic(request: DeepPartial<GenMnemonicRequest>, metadata?: grpc.Metadata): Promise<GenMnemonicResponse>;
   /**
    * After generating the seed, this call is used to commit the seed and
    * create an account binding between the device and account.
    */
-  register(
-    request: DeepPartial<RegisterRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<RegisterResponse>;
+  register(request: DeepPartial<RegisterRequest>, metadata?: grpc.Metadata): Promise<RegisterResponse>;
   /** Get generic information about the running node. */
-  getInfo(
-    request: DeepPartial<GetInfoRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Info>;
+  getInfo(request: DeepPartial<GetInfoRequest>, metadata?: grpc.Metadata): Promise<Info>;
   /** Force-trigger periodic background sync of Mintter objects. */
-  forceSync(
-    request: DeepPartial<ForceSyncRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty>;
+  forceSync(request: DeepPartial<ForceSyncRequest>, metadata?: grpc.Metadata): Promise<Empty>;
 }
 
 export class DaemonClientImpl implements Daemon {
@@ -489,54 +428,24 @@ export class DaemonClientImpl implements Daemon {
     this.forceSync = this.forceSync.bind(this);
   }
 
-  genMnemonic(
-    request: DeepPartial<GenMnemonicRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<GenMnemonicResponse> {
-    return this.rpc.unary(
-      DaemonGenMnemonicDesc,
-      GenMnemonicRequest.fromPartial(request),
-      metadata
-    );
+  genMnemonic(request: DeepPartial<GenMnemonicRequest>, metadata?: grpc.Metadata): Promise<GenMnemonicResponse> {
+    return this.rpc.unary(DaemonGenMnemonicDesc, GenMnemonicRequest.fromPartial(request), metadata);
   }
 
-  register(
-    request: DeepPartial<RegisterRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<RegisterResponse> {
-    return this.rpc.unary(
-      DaemonRegisterDesc,
-      RegisterRequest.fromPartial(request),
-      metadata
-    );
+  register(request: DeepPartial<RegisterRequest>, metadata?: grpc.Metadata): Promise<RegisterResponse> {
+    return this.rpc.unary(DaemonRegisterDesc, RegisterRequest.fromPartial(request), metadata);
   }
 
-  getInfo(
-    request: DeepPartial<GetInfoRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Info> {
-    return this.rpc.unary(
-      DaemonGetInfoDesc,
-      GetInfoRequest.fromPartial(request),
-      metadata
-    );
+  getInfo(request: DeepPartial<GetInfoRequest>, metadata?: grpc.Metadata): Promise<Info> {
+    return this.rpc.unary(DaemonGetInfoDesc, GetInfoRequest.fromPartial(request), metadata);
   }
 
-  forceSync(
-    request: DeepPartial<ForceSyncRequest>,
-    metadata?: grpc.Metadata
-  ): Promise<Empty> {
-    return this.rpc.unary(
-      DaemonForceSyncDesc,
-      ForceSyncRequest.fromPartial(request),
-      metadata
-    );
+  forceSync(request: DeepPartial<ForceSyncRequest>, metadata?: grpc.Metadata): Promise<Empty> {
+    return this.rpc.unary(DaemonForceSyncDesc, ForceSyncRequest.fromPartial(request), metadata);
   }
 }
 
-export const DaemonDesc = {
-  serviceName: "com.mintter.daemon.v1alpha.Daemon",
-};
+export const DaemonDesc = { serviceName: "com.mintter.daemon.v1alpha.Daemon" };
 
 export const DaemonGenMnemonicDesc: UnaryMethodDefinitionish = {
   methodName: "GenMnemonic",
@@ -626,8 +535,7 @@ export const DaemonForceSyncDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-interface UnaryMethodDefinitionishR
-  extends grpc.UnaryMethodDefinition<any, any> {
+interface UnaryMethodDefinitionishR extends grpc.UnaryMethodDefinition<any, any> {
   requestStream: any;
   responseStream: any;
 }
@@ -638,7 +546,7 @@ interface Rpc {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any>;
 }
 
@@ -660,7 +568,7 @@ export class GrpcWebImpl {
       debug?: boolean;
       metadata?: grpc.Metadata;
       upStreamRetryCodes?: number[];
-    }
+    },
   ) {
     this.host = host;
     this.options = options;
@@ -669,16 +577,12 @@ export class GrpcWebImpl {
   unary<T extends UnaryMethodDefinitionish>(
     methodDesc: T,
     _request: any,
-    metadata: grpc.Metadata | undefined
+    metadata: grpc.Metadata | undefined,
   ): Promise<any> {
     const request = { ..._request, ...methodDesc.requestType };
-    const maybeCombinedMetadata =
-      metadata && this.options.metadata
-        ? new BrowserHeaders({
-            ...this.options?.metadata.headersMap,
-            ...metadata?.headersMap,
-          })
-        : metadata || this.options.metadata;
+    const maybeCombinedMetadata = metadata && this.options.metadata
+      ? new BrowserHeaders({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
+      : metadata || this.options.metadata;
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {
         request,
@@ -690,9 +594,7 @@ export class GrpcWebImpl {
           if (response.status === grpc.Code.OK) {
             resolve(response.message);
           } else {
-            const err = new Error(response.statusMessage) as any;
-            err.code = response.status;
-            err.metadata = response.trailers;
+            const err = new GrpcWebError(response.statusMessage, response.status, response.trailers);
             reject(err);
           }
         },
@@ -701,36 +603,17 @@ export class GrpcWebImpl {
   }
 }
 
-type Builtin =
-  | Date
-  | Function
-  | Uint8Array
-  | string
-  | number
-  | boolean
-  | undefined;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-type DeepPartial<T> = T extends Builtin
-  ? T
-  : T extends Array<infer U>
-  ? Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string }
-  ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & {
-      $case: T["$case"];
-    }
-  : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends { $case: string } ? { [K in keyof Omit<T, "$case">]?: DeepPartial<T[K]> } & { $case: T["$case"] }
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-type Exact<P, I extends P> = P extends Builtin
-  ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & Record<
-        Exclude<keyof I, KeysOfUnion<P>>,
-        never
-      >;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
 
 function toTimestamp(date: Date): Timestamp {
   const seconds = date.getTime() / 1_000;
@@ -756,4 +639,10 @@ function fromJsonTimestamp(o: any): Date {
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
+}
+
+export class GrpcWebError extends Error {
+  constructor(message: string, public code: grpc.Code, public metadata: grpc.Metadata) {
+    super(message);
+  }
 }

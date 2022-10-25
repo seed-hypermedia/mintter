@@ -92,6 +92,7 @@ export default function PublicationWrapper() {
               vertical={resizablePanelState.context.vertical}
               key={resizablePanelState.context.vertical}
               onChange={(values) => panelSend({type: 'RESIZE', values})}
+              defaultSizes={[40, 60]}
             >
               <Allotment.Pane visible={resizablePanelState.context.visible}>
                 <section className="discussion-section">
@@ -99,6 +100,7 @@ export default function PublicationWrapper() {
                     onScroll={() => mouseService.send('DISABLE.SCROLL')}
                   >
                     <Discussion
+                      visible={resizablePanelState.context.visible}
                       documentId={params?.id}
                       version={params?.version}
                     />
@@ -129,7 +131,11 @@ export default function PublicationWrapper() {
                         onScroll={() => mouseService.send('DISABLE.SCROLL')}
                       >
                         <div
-                          className="discussion-toggle"
+                          className={`discussion-toggle ${
+                            resizablePanelState.context.visible
+                              ? 'visible'
+                              : undefined
+                          }`}
                           style={
                             resizablePanelState.context.visible
                               ? {
@@ -306,10 +312,6 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
   useEffect(() => {
     setTimeout(() => {
       if (blockId) {
-        console.log(
-          '🚀 ~ file: publication.tsx ~ line 309 ~ useEffect ~ ref?.current',
-          ref?.current,
-        )
         if (ref?.current) {
           let entry = getEditorBlock(editor, {id: blockId})
           console.log(
@@ -331,6 +333,6 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
           }
         }
       }
-    }, 1000)
+    }, 100)
   }, [ref, blockId, editor])
 }

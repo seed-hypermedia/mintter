@@ -146,6 +146,7 @@ export function toggleFormat(
   format: Mark,
   data: unknown = true,
 ) {
+  if (editor.readOnly) return
   const isActive = isFormatActive(editor, format)
 
   Transforms.setNodes(
@@ -364,6 +365,7 @@ export function setType(fn: any) {
       at: Path
     },
   ) {
+    if (editor.readOnly) return
     Editor.withoutNormalizing(editor, function () {
       MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
       const keys = ObjectKeys(opts.element).filter(
@@ -396,6 +398,7 @@ export function setList(fn: typeof ol | typeof ul | typeof group) {
     editor: Editor,
     opts: {element: FlowContent; at: Path},
   ) {
+    if (editor.readOnly) return
     Editor.withoutNormalizing(editor, () => {
       const list = Node.parent(editor, opts.at)
 
