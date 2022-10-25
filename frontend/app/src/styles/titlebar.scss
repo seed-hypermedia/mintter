@@ -205,6 +205,8 @@
       }
 
       svg {
+        width: 10px;
+        height: 10px;
         fill: currentColor;
       }
     }
@@ -213,6 +215,66 @@
   @include platform.linux {
     .titlebar-section {
       padding-block: 0.2em;
+    }
+
+    #titlebar-menu,
+    .titlebar-search {
+      --border-color: var(--base-border-normal);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      border-radius: 0.3em;
+    }
+
+    .titlebar-search {
+      padding-inline: 0.5em;
+    }
+
+    #titlebar-window-controls {
+      width: 125px;
+      align-items: center;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    &[data-has-focus='true'] button.window-control {
+      background-color: var(--base-component-bg-normal);
+    }
+
+    button.window-control {
+      display: inline-block;
+      position: relative;
+      width: 22px;
+      height: 22px;
+      line-height: 8px;
+      border-radius: 50px;
+
+      overflow: hidden;
+      background-color: transparent;
+
+      // Reset styles from global buttons
+      border: none;
+      box-shadow: none;
+      color: var(--mtt-colors-base-text-high);
+
+      transition: background-color 150ms;
+
+      &:focus {
+        outline: none;
+      }
+
+      &:hover {
+        background-color: var(--base-component-bg-hover);
+
+        &:active {
+          background-color: var(--base-component-bg-active);
+        }
+      }
+
+      svg {
+        width: 8px;
+        height: 8px;
+        fill: currentColor;
+      }
     }
   }
 }

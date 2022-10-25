@@ -6,8 +6,6 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 let isTest = process.env.NODE_ENV == 'test'
 
-process.env.TAURI_PLATFORM = 'windows'
-
 writeFileSync(
   path.resolve(__dirname, './src/styles/_env.scss'),
   `$TAURI_PLATFORM: '${process.env.TAURI_PLATFORM}';
