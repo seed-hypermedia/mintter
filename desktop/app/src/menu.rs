@@ -42,7 +42,8 @@ pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<(
       &app_handle,
       "preferences",
       WindowUrl::App("/settings".into()),
-    );
+    )
+    .title("Preferences");
 
     #[cfg(not(target_os = "macocs"))]
     let win = { win.decorations(false) };
