@@ -1,18 +1,25 @@
 import '../styles/discussion.scss'
 
-import {useDiscussion} from '@app/hooks'
+import {Publication} from '@app/client'
+import {useAuthor, useDiscussion} from '@app/hooks'
+import {formattedDate} from '@app/utils/get-format-date'
+import {Avatar} from '@components/avatar'
 import {DiscussionItem} from '@components/discussion-item'
 import {appWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
 
 export type DiscussionProps = {
-  documentId?: string
-  version?: string
+  publication: Publication
   visible: boolean
 }
 
-export function Discussion({documentId, visible = false}: DiscussionProps) {
-  const {data, refetch} = useDiscussion({documentId, visible})
+export function Discussion({publication, visible = false}: DiscussionProps) {
+  const {data, refetch} = useDiscussion({
+    documentId: publication.document.id,
+    visible,
+  })
+
+  const {data: author} = useAuthor(publication.document.author)
 
   useEffect(() => {
     let isSubscribed = true
@@ -39,6 +46,29 @@ export function Discussion({documentId, visible = false}: DiscussionProps) {
   return (
     <div className="discussions-wrapper">
       <ul className="discussion-list" data-testid="discussion-list">
+        <li className="discussion-item activity-item">
+          <div className="item-section item-avatar">
+            {author?.profile?.alias && (
+              <Avatar
+                accountId={publication.document.author}
+                alias={author.profile.alias}
+                size={2}
+              />
+            )}
+          </div>
+          <div className="item-section item-info">
+            {author?.profile?.alias && (
+              <p>{author.profile.alias} wrote the original document</p>
+            )}
+            {publication.document && (
+              <p className="date">
+                {publication.document.updateTime
+                  ? formattedDate(publication.document.updateTime)
+                  : '...'}
+              </p>
+            )}
+          </div>
+        </li>
         {data &&
           data.map((link) => (
             <DiscussionItem
