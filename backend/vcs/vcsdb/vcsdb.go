@@ -1109,6 +1109,10 @@ func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
 // of the public version must already be in the database.
 func (conn *Conn) PublicVersionToLocal(v vcs.Version) (out LocalVersion) {
 	must.Maybe(&conn.err, func() error {
+		if v.IsZero() {
+			return nil
+		}
+
 		cids := v.CIDs()
 		out = make(LocalVersion, len(cids))
 		for i, c := range cids {

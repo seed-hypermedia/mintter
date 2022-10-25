@@ -5,7 +5,7 @@ const loadingAnimation = keyframes({
 })
 const placeholderWrapperStyle = css({
   width: '$full',
-  backgroundColor: '$base-background-normal',
+  backgroundColor: '$base-component-bg-normal',
   position: 'relative',
   overflow: 'hidden',
   '&:after': {
@@ -18,8 +18,8 @@ const placeholderWrapperStyle = css({
     width: '100%',
     zIndex: '45',
     backgroundImage:
-      'linear-gradient(90deg, transparent, $colors$base-component-bg-normal, transparent)',
-    animation: `${loadingAnimation} 1.2s infinite`,
+      'linear-gradient(90deg, transparent, $colors$base-component-bg-active, transparent)',
+    animation: `${loadingAnimation} 1.6s infinite`,
   },
 })
 

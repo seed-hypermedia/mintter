@@ -5,10 +5,13 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"mintter/backend/ipfs"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/multiformats/go-multiaddr"
 )
 
 // Config for Mintter daemon. When adding or removing fields,
@@ -35,6 +38,7 @@ func Default() Config {
 		},
 
 		P2P: P2P{
+			BootstrapPeers:    ipfs.DefaultBootstrapPeers(),
 			Port:              55000,
 			RelayBackoffDelay: 21600 * time.Minute,
 			StaticRelayRescan: 1 * time.Minute,
@@ -48,8 +52,55 @@ func Default() Config {
 	}
 }
 
+type addrsFlag []multiaddr.Multiaddr
+
+func (al *addrsFlag) String() string {
+	if al == nil {
+		return ""
+	}
+
+	var sb strings.Builder
+	last := len(*al) - 1
+	for i, addr := range *al {
+		if _, err := sb.WriteString(addr.String()); err != nil {
+			panic(err)
+		}
+
+		if i < last {
+			sb.WriteRune(',')
+		}
+	}
+
+	return sb.String()
+}
+
+func (al *addrsFlag) Set(s string) error {
+	ss := strings.Split(s, ",")
+	out := make([]multiaddr.Multiaddr, len(ss))
+
+	for i, as := range ss {
+		addr, err := multiaddr.NewMultiaddr(as)
+		if err != nil {
+			return err
+		}
+		out[i] = addr
+	}
+
+	*al = out
+	return nil
+}
+
+func newAddrsFlag(val []multiaddr.Multiaddr, p *[]multiaddr.Multiaddr) flag.Value {
+	*p = val
+	return (*addrsFlag)(p)
+}
+
 // SetupFlags configures the given FlagSet with the existing values from the given Config
 // and prepares the FlagSet to parse the flags into the Config.
+//
+// This function is assumed to be called after some default values were set on the given config.
+// These values will be used as default values in flags.
+// See Default() for the default config values.
 func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.HTTPPort, "http-port", cfg.HTTPPort, "Port to expose HTTP Server (including grpc-web)")
 	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
@@ -59,12 +110,11 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 
 	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
 	fs.BoolVar(&cfg.P2P.NoRelay, "p2p.no-relay", cfg.P2P.NoRelay, "Disable libp2p circuit relay")
-	fs.BoolVar(&cfg.P2P.NoBootstrap, "p2p.no-bootstrap", cfg.P2P.NoBootstrap, "Disable IPFS bootstrapping")
+	fs.Var(newAddrsFlag(cfg.P2P.BootstrapPeers, &cfg.P2P.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
+	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoffDelay, "p2p.relay-backoff-delay", cfg.P2P.RelayBackoffDelay, "The time in which the autorelay will prune a relay if it cannot connect to it")
 	fs.DurationVar(&cfg.P2P.StaticRelayRescan, "p2p.static-relay-rescan", cfg.P2P.StaticRelayRescan, "The period for automatic static relay rescanning")
-	fs.BoolVar(&cfg.P2P.ReportPrivateAddrs, "p2p.report-private-addrs", cfg.P2P.ReportPrivateAddrs, "If true the node will report/announce addresses within private IP ranges")
-
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
@@ -97,13 +147,18 @@ type Syncing struct {
 
 // P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
-	Port               int
-	NoRelay            bool
-	NoBootstrap        bool
-	NoMetrics          bool
-	RelayBackoffDelay  time.Duration
-	StaticRelayRescan  time.Duration
-	ReportPrivateAddrs bool
+	Port              int
+	NoRelay           bool
+	BootstrapPeers    []multiaddr.Multiaddr
+	NoMetrics         bool
+	RelayBackoffDelay time.Duration
+	StaticRelayRescan time.Duration
+	ExtraAddrs        []multiaddr.Multiaddr
+}
+
+// NoBootstrap indicates whether bootstrap nodes are configured.
+func (p2p P2P) NoBootstrap() bool {
+	return len(p2p.BootstrapPeers) == 0
 }
 
 // EnsureConfigFile makes sure a config file exist.

@@ -108,7 +108,7 @@
 }
 
 .topbar-inner {
-  inline-size: calc(100% - 64px);
+  inline-size: 100%;
   block-size: var(--topbar-h, 40px);
   display: flex;
   align-items: stretch;

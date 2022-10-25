@@ -194,6 +194,10 @@ func ParseVersion(s string) (Version, error) {
 func (v Version) TotalCount() uint64 { return v.totalCount }
 
 func (v Version) CIDs() []cid.Cid {
+	if v.cids == nil {
+		return nil
+	}
+
 	out := make([]cid.Cid, len(v.cids))
 	copy(out, v.cids)
 	return out
