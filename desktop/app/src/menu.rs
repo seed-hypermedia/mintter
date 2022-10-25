@@ -6,6 +6,55 @@ use tauri::{
   Runtime, Submenu, Window, WindowMenuEvent, WindowUrl,
 };
 
+#[tauri::command]
+pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
+  let package_info = app_handle.package_info();
+  let message = format!(
+    r#"
+    {}
+
+    Version: {}
+    Commit: {}
+
+    Copyright © 2019-2022 {}.
+    Some rights reserved.
+  "#,
+    package_info.description,
+    package_info.version,
+    std::option_env!("GITHUB_SHA").unwrap_or("N/A"),
+    package_info.authors,
+  );
+
+  tauri::api::dialog::message(Some(&window), &package_info.name, message);
+}
+
+#[tauri::command]
+pub fn open_preferences<R: Runtime>(window: Window<R>) -> tauri::Result<()> {
+  if let Some(window) = window.get_window("preferences") {
+    window.set_focus()?;
+  } else {
+    WindowBuilder::new(&window, "preferences", WindowUrl::App("/settings".into())).build()?;
+  }
+
+  Ok(())
+}
+
+#[tauri::command]
+pub fn open_documentation<R: Runtime>(window: Window<R>) {
+  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
+}
+
+#[tauri::command]
+pub fn open_release_notes<R: Runtime>(window: Window<R>) {
+  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
+}
+
+#[tauri::command]
+pub fn open_acknowledgements<R: Runtime>(_window: Window<R>) {
+  todo!()
+}
+
+#[cfg(target_os = "macos")]
 pub fn get_menu() -> Menu {
   let app_menu = Menu::new()
     .add_item(CustomMenuItem::new("about", "About Mintter"))
@@ -78,60 +127,14 @@ pub fn get_menu() -> Menu {
     .add_submenu(Submenu::new("Help", help_menu))
 }
 
-#[tauri::command]
-pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
-  let package_info = app_handle.package_info();
-  let message = format!(
-    r#"
-    {}
-
-    Version: {}
-    Commit: {}
-
-    Copyright © 2019-2022 {}.
-    Some rights reserved.
-  "#,
-    package_info.description,
-    package_info.version,
-    std::option_env!("GITHUB_SHA").unwrap_or("N/A"),
-    package_info.authors,
-  );
-
-  tauri::api::dialog::message(Some(&window), &package_info.name, message);
-}
-
-#[tauri::command]
-pub fn open_preferences<R: Runtime>(window: Window<R>) -> tauri::Result<()> {
-  if let Some(window) = window.get_window("preferences") {
-    window.set_focus()?;
-  } else {
-    WindowBuilder::new(&window, "preferences", WindowUrl::App("/settings".into())).build()?;
-  }
-
-  Ok(())
-}
-
-#[tauri::command]
-pub fn open_documentation<R: Runtime>(window: Window<R>) {
-  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
-}
-
-#[tauri::command]
-pub fn open_release_notes<R: Runtime>(window: Window<R>) {
-  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
-}
-
-#[tauri::command]
-pub fn open_acknowledgements<R: Runtime>(window: Window<R>) {
-  todo!()
-}
-
+#[cfg(target_os = "macos")]
 pub fn event_handler(event: WindowMenuEvent) {
   if let Err(err) = event_handler_inner(event) {
     error!("Failed to handle menu event {}", err);
   }
 }
 
+#[cfg(target_os = "macos")]
 pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
   match event.menu_item_id() {
     "new_window" => {
