@@ -1,4 +1,5 @@
 import {getInfo} from '@app/client'
+import {queryKeys} from '@app/hooks'
 import {themeMachine, ThemeProvider} from '@app/theme'
 import {BrowserTracing} from '@sentry/tracing'
 import {
@@ -6,11 +7,12 @@ import {
   Hydrate,
   QueryClient,
   QueryClientProvider,
+  useQuery,
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {useInterpret} from '@xstate/react'
-import {lazy, Suspense, useLayoutEffect, useState} from 'react'
+import {lazy, Suspense} from 'react'
 import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
@@ -38,35 +40,14 @@ onUpdaterEvent(({error, status}) => {
 
 export function Root() {
   var themeService = useInterpret(() => themeMachine)
-  let [info, setInfo] = useState<undefined | boolean>(undefined)
-
   globalStyles()
-  useLayoutEffect(() => {
-    getInfo()
-      .then(() => {
-        setInfo(true)
-      })
-      .catch(() => {
-        setInfo(false)
-      })
-  }, [])
-
-  if (typeof info == 'undefined') {
-    return null
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Suspense fallback={<div></div>}>
+      <Suspense>
         <Hydrate state={dehydrateState}>
           <ThemeProvider value={themeService}>
-            {info ? (
-              <AppProvider>
-                <Main />
-              </AppProvider>
-            ) : (
-              <OnboardingPage />
-            )}
+            <App />
             <Toaster position="bottom-right" />
           </ThemeProvider>
         </Hydrate>
@@ -74,6 +55,35 @@ export function Root() {
       <ReactQueryDevtools />
     </QueryClientProvider>
   )
+}
+
+function App() {
+  let {status} = useQuery({
+    queryKey: [queryKeys.GET_ACCOUNT_INFO],
+    queryFn: () => getInfo(),
+    refetchOnWindowFocus: false,
+    onError: (err) => {
+      console.log(`useDiscussion error: ${err}`)
+    },
+    retry: 4,
+    retryDelay: (attempt) =>
+      Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
+    keepPreviousData: true,
+  })
+
+  if (status == 'success') {
+    return (
+      <AppProvider>
+        <Main />
+      </AppProvider>
+    )
+  }
+
+  if (status == 'error') {
+    return <OnboardingPage />
+  }
+
+  return <span>waiting...</span>
 }
 
 /**
@@ -106,10 +116,16 @@ var queryClient = new QueryClient({
       useErrorBoundary: true,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
-      retry: false,
       retryOnMount: false,
       staleTime: Infinity,
       refetchOnReconnect: false,
+      onError: (err) => {
+        console.log(`Query error: ${err}`)
+      },
+      retry: 4,
+      retryDelay: (attempt) =>
+        Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
+      keepPreviousData: true,
     },
   },
 })

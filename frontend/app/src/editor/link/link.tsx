@@ -129,11 +129,17 @@ export const createLinkPlugin = (): EditorPlugin => ({
 })
 
 function insertDocumentLink(editor: Editor, url: string) {
-  Transforms.insertNodes(editor, [
-    // we are setting the `void` data attribute to true as a temporary value in order to fetch for the document title and convert it to a normal link
-    link({url, data: {void: true}}, [text('')]),
-    text(''),
-  ])
+  let {selection} = editor
+  if (isCollapsed(selection)) {
+    Transforms.insertNodes(editor, [
+      // we are setting the `void` data attribute to true as a temporary value in order to fetch for the document title and convert it to a normal link
+      link({url, data: {void: true}}, [text('')]),
+      text(''),
+    ])
+  } else {
+    wrapLink(editor, url)
+    Transforms.insertNodes(editor, text(''))
+  }
 }
 
 type LinkProps = Omit<RenderElementProps, 'element'> & {

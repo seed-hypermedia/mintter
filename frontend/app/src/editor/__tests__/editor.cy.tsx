@@ -198,99 +198,13 @@ describe('Editor', () => {
     })
 
     it.skip('re-parent block and siblings (tab + shift)', () => {
-      // noop
-      /**
-       * let date = new Date()
-
-      let block2 = statement({id: 'block2'}, [paragraph([text('Child 1')])])
-      let block3 = statement({id: 'block3'}, [paragraph([text('Child 2')])])
-      let block4 = statement({id: 'block4'}, [paragraph([text('Child 3')])])
-      let block5 = statement({id: 'block5'}, [paragraph([text('Child 4')])])
-
-      let block1 = statement({id: 'block1'}, [
-        paragraph([text('Parent block')]),
-        group([block2, block3, block4, block5]),
-      ])
-
-      elClient.setQueryData<Document>([queryKeys.GET_DRAFT, 'foo'], {
-        id: 'foo',
-        title: '',
-        subtitle: '',
-        author: 'authortest',
-        content: '',
-        updateTime: date,
-        createTime: date,
-        publishTime: date,
-        children: [
-          {
-            block: blockToApi(block1),
-            children: [
-              {
-                block: blockToApi(block2),
-                children: [],
-              },
-              {
-                block: blockToApi(block3),
-                children: [],
-              },
-              {
-                block: blockToApi(block4),
-                children: [],
-              },
-              {
-                block: blockToApi(block5),
-                children: [],
-              },
-            ],
-          },
-        ],
-      })
-
-      let elEditor = buildEditorHook(plugins, EditorMode.Draft)
-      // elcy.mount(<EditorPage editor={elEditor} shouldAutosave={false} />)
-
-      cy.get('[data-testid="editor"]')
-        .focus()
-        .then(() => {
-          elEditor.apply({
-            type: 'set_selection',
-            properties: {
-              anchor: {
-                path: [0, 0, 0, 0],
-                offset: 0,
-              },
-              focus: {
-                path: [0, 0, 0, 0],
-                offset: 0,
-              },
-            },
-            newProperties: {
-              anchor: {
-                path: [0, 0, 1, 1, 0, 0],
-                offset: 0,
-              },
-              focus: {
-                path: [0, 0, 1, 1, 0, 0],
-                offset: 0,
-              },
-            },
-          })
-        })
-        // TODO: make sure cypress-plugin-tab works before enabling it again
-        // .tab({shift: true})
-
-        .then(() => {
-          let changes = editor.__mtt_changes
-          expect(changes).to.have.length(3)
-          let expected: Array<ChangeOperation> = [
-            ['moveBlock', block3.id],
-            ['moveBlock', block4.id],
-            ['moveBlock', block5.id],
-          ]
-
-          expect(changes).to.deep.equal(expected)
-        })
-       */
+      // TODO(horacio)
+    })
+    it.skip('should add a link to the current selected text', () => {
+      // TODO(horacio)
+    })
+    it.skip('should add a Mintter link to the current selected text', () => {
+      // TODO(horacio)
     })
   })
 

@@ -25,7 +25,7 @@
 
 .discussion-toggle {
   position: fixed;
-  left: 0;
+  inset-inline-end: 0;
   top: 100px;
   z-index: 1000;
   padding: 40px;
