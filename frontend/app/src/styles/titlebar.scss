@@ -81,7 +81,6 @@
     -webkit-user-select: none;
     font-size: 1rem;
 
-    // max-width: 40ch;
     max-width: calc(50vw - 135px);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -159,8 +158,7 @@
       position: relative;
       width: 45px;
       height: 100%;
-      // padding: 0;
-      // margin: 0;
+
       overflow: hidden;
       background-color: transparent;
 
@@ -180,10 +178,6 @@
         background-color: #e5e5e5;
         color: #000;
 
-        // Doing :hover:active as oposed to just :active is
-        // a conscious choice to match how the real Windows
-        // controls behave when someone hovers, clicks and then
-        // moves away from the hitbox.
         &:active {
           background-color: #cccccc;
 
@@ -282,8 +276,6 @@
 .titlebar-row {
   block-size: 32px;
   display: flex;
-  // flex-wrap: wrap;
-  // align-items: stretch;
   justify-content: space-between;
 
   border-bottom: 1px solid var(--base-border-subtle);
