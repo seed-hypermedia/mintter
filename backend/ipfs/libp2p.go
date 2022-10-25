@@ -69,8 +69,6 @@ func Bootstrap(ctx context.Context, h host.Host, rt routing.Routing, peers []pee
 	var wg sync.WaitGroup
 	wg.Add(len(peers))
 
-	peer.AddrInfosFromP2pAddrs()
-
 	for i, pinfo := range peers {
 		go func(i int, pinfo peer.AddrInfo) {
 			defer wg.Done()
