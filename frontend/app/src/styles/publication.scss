@@ -17,7 +17,7 @@
 }
 
 .discussion-section {
-  border-right: 1px solid var(--base-border-hover);
+  // border-right: 1px solid var(--base-border-hover);
   height: 100%;
   box-sizing: border-box;
   background-color: var(--base-background-normal);
@@ -32,6 +32,10 @@
 
   button {
     opacity: 0;
+  }
+
+  &.visible button {
+    opacity: 1;
   }
 
   @media (min-width: 768px) {

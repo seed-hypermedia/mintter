@@ -11,7 +11,7 @@ import {isMintterLink} from '@app/utils/is-mintter-link'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {useLocation} from '@components/router'
+import {useLocation, useRoute} from '@components/router'
 import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
@@ -159,6 +159,7 @@ function RenderMintterLink(
   const [, setLocation] = useLocation()
   const mainService = useMain()
   let mouseService = useMouse()
+  let [match, params] = useRoute('/p/:id/:version/:block')
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
@@ -167,19 +168,27 @@ function RenderMintterLink(
     if (isShiftKey) {
       setLocation(`/p/${docId}/${version}/${blockId}`)
     } else {
-      mainService.send({
-        type: 'COMMIT.OPEN.WINDOW',
-        path: `/p/${docId}/${version}/${blockId}`,
-      })
+      if (match && params?.id == docId && params?.version == version) {
+        console.log('LINK IN THE SAME PAGE')
+        setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
+      } else {
+        mainService.send({
+          type: 'COMMIT.OPEN.WINDOW',
+          path: `/p/${docId}/${version}/${blockId}`,
+        })
+      }
     }
   }
 
   function mouseEnter() {
-    mouseService.send({type: 'HIGHLIGHT.ENTER', ref: props.element.url})
+    mouseService.send({
+      type: 'HIGHLIGHT.ENTER',
+      ref: blockId ? `${docId}/${blockId}` : docId,
+    })
   }
 
   function mouseLeave() {
-    mouseService.send({type: 'HIGHLIGHT.LEAVE', ref: ''})
+    mouseService.send('HIGHLIGHT.LEAVE')
   }
 
   return (
@@ -189,7 +198,8 @@ function RenderMintterLink(
       onClick={onClick}
       onMouseEnter={mouseEnter}
       onMouseLeave={mouseLeave}
-      data-highlight={props.element.url}
+      data-highlight={blockId ? `${docId}/${blockId}` : docId}
+      data-reference={props.element.url}
     />
   )
 }

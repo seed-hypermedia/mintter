@@ -6,14 +6,14 @@
 }
 
 [cmdk-dialog] {
-  z-index: 9999;
+  z-index: 99999;
   height: var(--mtt-sizes-full);
   display: flex;
   align-items: center;
   justify-content: center;
 
   [cmdk-root] {
-    z-index: 1;
+    z-index: 100;
     max-width: var(--mtt-sizes-two-thirds);
     width: 100%;
     padding: var(--mtt-space-3);
