@@ -81,19 +81,8 @@ fn main() {
         .plugin(daemon::init())
         .plugin(window::init())
         // .plugin(exts::init())
-        .on_menu_event(menu::event_handler)
         .system_tray(system_tray::get_tray())
         .on_system_tray_event(system_tray::event_handler)
-        .invoke_handler(tauri::generate_handler![
-          emit_all,
-          menu::open_about,
-          menu::open_preferences,
-          menu::open_documentation,
-          menu::open_release_notes,
-          menu::open_acknowledgements,
-          window::new_window,
-          window::close_all_windows
-        ])
         .setup(move |app| {
           app.manage(sentry_options);
 
@@ -121,7 +110,26 @@ fn main() {
         });
 
       #[cfg(target_os = "macos")]
-      let win = { win.menu(menu::get_menu()) };
+      let win = {
+        win
+          .menu(menu::get_menu())
+          .on_menu_event(menu::event_handler)
+          .invoke_handler(tauri::generate_handler![emit_all])
+      };
+
+      #[cfg(not(target_os = "macos"))]
+      let win = {
+        win.invoke_handler(tauri::generate_handler![
+          emit_all,
+          menu::open_about,
+          menu::open_preferences,
+          menu::open_documentation,
+          menu::open_release_notes,
+          menu::open_acknowledgements,
+          window::new_window,
+          window::close_all_windows
+        ])
+      };
 
       win
         .run(tauri::generate_context!())
