@@ -75,8 +75,10 @@ func PeerIDFromCIDString(s string) (peer.ID, error) {
 }
 
 // Bitswap exposes the bitswap network and exchange interface.
+// It also conveniently embeds the routing interface.
 type Bitswap struct {
 	*bitswap.Bitswap
+	routing.ContentRouting
 	Net network.BitSwapNetwork
 
 	cancel context.CancelFunc
@@ -90,9 +92,10 @@ func NewBitswap(host host.Host, rt routing.ContentRouting, bs blockstore.Blockst
 	b := bitswap.New(ctx, net, bs, bitswap.ProvideEnabled(true))
 
 	return &Bitswap{
-		Bitswap: b,
-		Net:     net,
-		cancel:  cancel,
+		Bitswap:        b,
+		ContentRouting: rt,
+		Net:            net,
+		cancel:         cancel,
 	}, nil
 }
 

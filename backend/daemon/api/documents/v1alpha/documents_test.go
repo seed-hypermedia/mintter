@@ -735,7 +735,7 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	srv := NewServer(fut.ReadOnly, db)
+	srv := NewServer(fut.ReadOnly, db, nil)
 
 	_, err := srv.me.Await(context.Background())
 	require.NoError(t, err)

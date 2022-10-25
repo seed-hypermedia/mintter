@@ -16,6 +16,7 @@ import (
 	"mintter/backend/wallet"
 
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/go-cid"
 )
 
 // Server combines all the daemon API services into one thing.
@@ -54,7 +55,30 @@ func New(
 	return Server{
 		Accounts:   accounts.NewServer(id, v),
 		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
-		Documents:  documents.NewServer(id, db),
+		Documents:  documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}),
 		Networking: networking.NewServer(node),
 	}
+}
+
+type lazyDiscoverer struct {
+	sync *future.ReadOnly[*syncing.Service]
+	net  *future.ReadOnly[*mttnet.Node]
+}
+
+func (ld *lazyDiscoverer) DiscoverObject(ctx context.Context, obj cid.Cid, version []cid.Cid) error {
+	svc, err := ld.sync.Await(ctx)
+	if err != nil {
+		return err
+	}
+
+	return svc.DiscoverObject(ctx, obj, version)
+}
+
+func (ld *lazyDiscoverer) ProvideCID(c cid.Cid) error {
+	node, ok := ld.net.Get()
+	if !ok {
+		return fmt.Errorf("p2p node is not yet initialized")
+	}
+
+	return node.ProvideCID(c)
 }

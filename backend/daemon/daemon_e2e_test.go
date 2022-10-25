@@ -24,6 +24,62 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func TestAPIGetRemotePublication(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// Carol will be the DHT server
+	carol := makeTestApp(t, "carol", makeTestConfig(t), true)
+
+	var alice *App
+	{
+		cfg := makeTestConfig(t)
+		cfg.P2P.BootstrapPeers = carol.Net.MustGet().Libp2p().AddrsFull()
+		alice = makeTestApp(t, "alice", cfg, true)
+	}
+
+	var bob *App
+	{
+		cfg := makeTestConfig(t)
+		cfg.P2P.BootstrapPeers = carol.Net.MustGet().Libp2p().AddrsFull()
+		bob = makeTestApp(t, "bob", cfg, true)
+	}
+
+	// Make sure bob does't know anything about alice.
+	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(alice.Repo.Device().ID()))
+	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(alice.Repo.Device().ID())
+
+	draft, err := alice.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	updated, err := alice.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		DocumentId: draft.Id,
+		Changes: []*documents.DocumentChange{
+			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+			{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+				Id:   "b1",
+				Type: "statement",
+				Text: "Hello world!",
+			}}},
+		},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+
+	published, err := alice.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	// Sleeping just in case to make sure alices publication propagates.
+	time.Sleep(time.Second)
+
+	remotePublication, err := bob.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: published.Document.Id})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, published, remotePublication, "remote publication doesn't match")
+}
+
 func TestBug_SyncHangs(t *testing.T) {
 	// See: https://github.com/mintterteam/mintter/issues/712.
 	t.Parallel()
@@ -357,10 +413,9 @@ func makeTestConfig(t *testing.T) config.Config {
 	cfg.GRPCPort = 0
 	cfg.RepoPath = testutil.MakeRepoPath(t)
 	cfg.P2P.Port = 0
-	cfg.P2P.NoBootstrap = true
+	cfg.P2P.BootstrapPeers = nil
 	cfg.P2P.NoRelay = true
 	cfg.P2P.NoMetrics = true
-	cfg.P2P.ReportPrivateAddrs = true
 
 	return cfg
 }
