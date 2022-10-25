@@ -60,7 +60,9 @@ export function TitleBarWindows() {
 function SystemMenu() {
   const [location] = useLocation()
 
-  const editingEnabled = location.startsWith('/d/')
+  console.log(location)
+
+  const editingDisabled = !location.startsWith('/d/')
 
   return (
     <NavigationMenu.Root id="titlebar-system-menu">
@@ -132,20 +134,20 @@ function SystemMenu() {
                   title="Undo"
                   accelerator="Ctrl+Z"
                   onSelect={() => {}}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Redo"
                   accelerator="Ctrl+Shift+Z"
                   onSelect={() => {}}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <div className="separator"></div>
                 <MenuItem
                   title="Cut"
                   accelerator="Ctrl+X"
                   onSelect={() => {}}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Copy"
@@ -156,7 +158,7 @@ function SystemMenu() {
                   title="Paste"
                   accelerator="Ctrl+V"
                   onSelect={() => {}}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Select All"
@@ -183,40 +185,40 @@ function SystemMenu() {
                   title="Strong"
                   accelerator="Ctrl+B"
                   onSelect={() => tauriEmit('format_mark', 'strong')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Emphasis"
                   accelerator="Ctrl+I"
                   onSelect={() => tauriEmit('format_mark', 'emphasis')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Code"
                   accelerator="Ctrl+E"
                   onSelect={() => tauriEmit('format_mark', 'code')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Underline"
                   accelerator="Ctrl+U"
                   onSelect={() => tauriEmit('format_mark', 'underline')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Strikethrough"
                   onSelect={() => tauriEmit('format_mark', 'strikethrough')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Subscript"
                   onSelect={() => tauriEmit('format_mark', 'subscript')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Superscript"
                   onSelect={() => tauriEmit('format_mark', 'superscript')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
 
                 <div className="separator"></div>
@@ -225,25 +227,25 @@ function SystemMenu() {
                   title="Heading"
                   accelerator="Ctrl+Shift+H"
                   onSelect={() => tauriEmit('format_block', 'heading')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Statement"
                   accelerator="Ctrl+Shif+S"
                   onSelect={() => tauriEmit('format_block', 'statement')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Blockquote"
                   accelerator="Ctrl+Shift+Q"
                   onSelect={() => tauriEmit('format_block', 'blockquote')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Code Block"
                   accelerator="Ctrl+Shift+E"
                   onSelect={() => tauriEmit('format_block', 'codeblock')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
 
                 <div className="separator"></div>
@@ -252,19 +254,19 @@ function SystemMenu() {
                   title="Bullet List"
                   accelerator="Ctrl+Shift+7"
                   onSelect={() => tauriEmit('format_list', 'unordered_list')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Numbered List"
                   accelerator="Ctrl+Shift+8"
                   onSelect={() => tauriEmit('format_list', 'ordered_list')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
                 <MenuItem
                   title="Plain List"
                   accelerator="Ctrl+Shift+9"
                   onSelect={() => tauriEmit('format_list', 'group')}
-                  disabled={!editingEnabled}
+                  disabled={editingDisabled}
                 />
               </NavigationMenu.List>
             </NavigationMenu.Sub>

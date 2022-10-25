@@ -36,12 +36,12 @@
       cursor: pointer;
     }
 
-    &[data-disabled] {
+    &[data-disabled='true'] {
       cursor: default;
       opacity: 0.5;
     }
 
-    &:not([data-disabled]):hover {
+    &[data-disabled='false']:hover {
       background-color: var(--primary-component-bg-normal);
       color: var(--primary-text-low);
     }
