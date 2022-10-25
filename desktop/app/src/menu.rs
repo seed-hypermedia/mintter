@@ -34,28 +34,33 @@ pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
 }
 
 #[tauri::command]
-pub fn open_preferences<R: Runtime>(window: Window<R>) -> tauri::Result<()> {
-  if let Some(window) = window.get_window("preferences") {
+pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
+  if let Some(window) = app_handle.get_window("preferences") {
     window.set_focus()?;
   } else {
-    WindowBuilder::new(&window, "preferences", WindowUrl::App("/settings".into())).build()?;
+    WindowBuilder::new(
+      &app_handle,
+      "preferences",
+      WindowUrl::App("/settings".into()),
+    )
+    .build()?;
   }
 
   Ok(())
 }
 
 #[tauri::command]
-pub fn open_documentation<R: Runtime>(window: Window<R>) {
-  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
+pub fn open_documentation<R: Runtime>(app_handle: AppHandle<R>) {
+  open(&app_handle.shell_scope(), "https://mintter.com", None).unwrap();
 }
 
 #[tauri::command]
-pub fn open_release_notes<R: Runtime>(window: Window<R>) {
-  open(&window.shell_scope(), "https://mintter.com", None).unwrap();
+pub fn open_release_notes<R: Runtime>(app_handle: AppHandle<R>) {
+  open(&app_handle.shell_scope(), "https://mintter.com", None).unwrap();
 }
 
 #[tauri::command]
-pub fn open_acknowledgements<R: Runtime>(_window: Window<R>) {
+pub fn open_acknowledgements<R: Runtime>(_app_handle: AppHandle<R>) {
   todo!()
 }
 
@@ -152,16 +157,16 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
       close_all_windows(event.window().app_handle())?;
     }
     "documentation" => {
-      open_documentation(event.window().clone());
+      open_documentation(event.window().app_handle());
     }
     "release_notes" => {
-      open_release_notes(event.window().clone());
+      open_release_notes(event.window().app_handle());
     }
     "acknowledgements" => {
-      open_acknowledgements(event.window().clone());
+      open_acknowledgements(event.window().app_handle());
     }
     "preferences" => {
-      open_preferences(event.window().clone())?;
+      open_preferences(event.window().app_handle())?;
     }
     "about" => {
       open_about(event.window().app_handle(), event.window().clone());
