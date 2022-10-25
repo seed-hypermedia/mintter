@@ -1,10 +1,15 @@
-use crate::window::{close_all_windows, new_window};
-use anyhow::bail;
-use log::error;
 use tauri::{
-  api::shell::open, window::WindowBuilder, AppHandle, CustomMenuItem, Manager, Menu, MenuItem,
-  Runtime, Submenu, Window, WindowMenuEvent, WindowUrl,
+  api::shell::open, window::WindowBuilder, AppHandle, Manager, Runtime, Window, WindowUrl,
 };
+
+#[cfg(target_os = "macos")]
+use crate::window::{close_all_windows, new_window};
+#[cfg(target_os = "macos")]
+use anyhow::bail;
+#[cfg(target_os = "macos")]
+use log::error;
+#[cfg(target_os = "macos")]
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowMenuEvent};
 
 #[tauri::command]
 pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
