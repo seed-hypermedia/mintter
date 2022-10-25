@@ -41,7 +41,7 @@
       opacity: 0.5;
     }
 
-    &:hover {
+    &:not([data-disabled]):hover {
       background-color: var(--primary-component-bg-normal);
       color: var(--primary-text-low);
     }

@@ -48,6 +48,7 @@ export function TitleBarMacos() {
 interface MenuItemProps {
   title: string
   accelerator?: string
+  disabled?: boolean
   onClick: () => void
 }
 
@@ -73,7 +74,11 @@ function MenuItem(props: MenuItemProps) {
 
   if (import.meta.env.TAURI_PLATFORM === 'windows') {
     return (
-      <NavigationMenu.Item className="item" onClick={props.onClick}>
+      <NavigationMenu.Item
+        className="item"
+        onClick={props.onClick}
+        data-disabled={props.disabled}
+      >
         {props.title}
         {props.accelerator && (
           <div className="right-slot">{props.accelerator}</div>
@@ -82,7 +87,7 @@ function MenuItem(props: MenuItemProps) {
     )
   } else if (import.meta.env.TAURI_PLATFORM === 'linux') {
     return (
-      <Dropdown.Item onClick={props.onClick}>
+      <Dropdown.Item onClick={props.onClick} disabled={props.disabled}>
         {props.title}
         {props.accelerator && (
           <Dropdown.RightSlot>{props.accelerator}</Dropdown.RightSlot>
@@ -95,6 +100,10 @@ function MenuItem(props: MenuItemProps) {
 }
 
 export function TitleBarWindows() {
+  const [location] = useLocation()
+
+  const editingEnabled = location.startsWith('/d/')
+
   return (
     <header id="titlebar" data-tauri-drag-region>
       <div className="titlebar-row" data-tauri-drag-region>
@@ -142,18 +151,18 @@ export function TitleBarWindows() {
                     <MenuItem
                       title="New Window"
                       accelerator="Ctrl+N"
-                      onClick={() => {}}
+                      onClick={() => invoke('new_window')}
                     />
                     <div className="separator"></div>
                     <MenuItem
                       title="Close"
                       accelerator="Ctrl+F4"
-                      onClick={() => {}}
+                      onClick={() => getCurrent().close()}
                     />
                     <MenuItem
                       title="Close All Windows"
                       accelerator="Ctrl+Shift+Alt+W"
-                      onClick={() => {}}
+                      onClick={() => invoke('close_all_windows')}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -170,17 +179,20 @@ export function TitleBarWindows() {
                       title="Undo"
                       accelerator="Ctrl+Z"
                       onClick={() => {}}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Redo"
                       accelerator="Ctrl+Shift+Z"
                       onClick={() => {}}
+                      disabled={!editingEnabled}
                     />
                     <div className="separator"></div>
                     <MenuItem
                       title="Cut"
                       accelerator="Ctrl+X"
                       onClick={() => {}}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Copy"
@@ -191,6 +203,7 @@ export function TitleBarWindows() {
                       title="Paste"
                       accelerator="Ctrl+V"
                       onClick={() => {}}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Select All"
@@ -217,33 +230,40 @@ export function TitleBarWindows() {
                       title="Strong"
                       accelerator="Ctrl+B"
                       onClick={() => tauriEmit('format_mark', 'strong')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Emphasis"
                       accelerator="Ctrl+I"
                       onClick={() => tauriEmit('format_mark', 'emphasis')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Code"
                       accelerator="Ctrl+E"
                       onClick={() => tauriEmit('format_mark', 'code')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Underline"
                       accelerator="Ctrl+U"
                       onClick={() => tauriEmit('format_mark', 'underline')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Strikethrough"
                       onClick={() => tauriEmit('format_mark', 'strikethrough')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Subscript"
                       onClick={() => tauriEmit('format_mark', 'subscript')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Superscript"
                       onClick={() => tauriEmit('format_mark', 'superscript')}
+                      disabled={!editingEnabled}
                     />
 
                     <div className="separator"></div>
@@ -252,21 +272,25 @@ export function TitleBarWindows() {
                       title="Heading"
                       accelerator="Ctrl+Shift+H"
                       onClick={() => tauriEmit('format_block', 'heading')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Statement"
                       accelerator="Ctrl+Shif+S"
                       onClick={() => tauriEmit('format_block', 'statement')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Blockquote"
                       accelerator="Ctrl+Shift+Q"
                       onClick={() => tauriEmit('format_block', 'blockquote')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Code Block"
                       accelerator="Ctrl+Shift+E"
                       onClick={() => tauriEmit('format_block', 'codeblock')}
+                      disabled={!editingEnabled}
                     />
 
                     <div className="separator"></div>
@@ -275,16 +299,19 @@ export function TitleBarWindows() {
                       title="Bullet List"
                       accelerator="Ctrl+Shift+7"
                       onClick={() => tauriEmit('format_list', 'unordered_list')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Numbered List"
                       accelerator="Ctrl+Shift+8"
                       onClick={() => tauriEmit('format_list', 'ordered_list')}
+                      disabled={!editingEnabled}
                     />
                     <MenuItem
                       title="Plain List"
                       accelerator="Ctrl+Shift+9"
                       onClick={() => tauriEmit('format_list', 'group')}
+                      disabled={!editingEnabled}
                     />
                   </NavigationMenu.List>
                 </NavigationMenu.Sub>
@@ -438,6 +465,8 @@ function ActionButtons() {
 export function Menu() {
   let [location, setLocation] = useLocation()
 
+  const editingEnabled = location.startsWith('/d/')
+
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
@@ -485,7 +514,7 @@ export function Menu() {
                   <MenuItem
                     title="New Window"
                     accelerator="Ctrl+N"
-                    onClick={() => {}}
+                    onClick={() => invoke('new_invoke')}
                   />
 
                   <Dropdown.Separator />
@@ -493,12 +522,12 @@ export function Menu() {
                   <MenuItem
                     title="Close"
                     accelerator="Ctrl+F4"
-                    onClick={() => {}}
+                    onClick={() => getCurrent().close()}
                   />
                   <MenuItem
                     title="Close All Windows"
                     accelerator="Ctrl+Shift+Alt+W"
-                    onClick={() => {}}
+                    onClick={() => invoke('close_all_windows')}
                   />
                 </Dropdown.SubContent>
               </Dropdown.Sub>
@@ -509,11 +538,13 @@ export function Menu() {
                     title="Undo"
                     accelerator="Ctrl+Z"
                     onClick={() => {}}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Redo"
                     accelerator="Ctrl+Shift+Z"
                     onClick={() => {}}
+                    disabled={!editingEnabled}
                   />
 
                   <Dropdown.Separator />
@@ -522,6 +553,7 @@ export function Menu() {
                     title="Cut"
                     accelerator="Ctrl+X"
                     onClick={() => {}}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Copy"
@@ -532,6 +564,7 @@ export function Menu() {
                     title="Paste"
                     accelerator="Ctrl+V"
                     onClick={() => {}}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Select All"
@@ -553,33 +586,40 @@ export function Menu() {
                     title="Strong"
                     accelerator="Ctrl+B"
                     onClick={() => tauriEmit('format_mark', 'strong')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Emphasis"
                     accelerator="Ctrl+I"
                     onClick={() => tauriEmit('format_mark', 'emphasis')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Code"
                     accelerator="Ctrl+E"
                     onClick={() => tauriEmit('format_mark', 'code')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Underline"
                     accelerator="Ctrl+U"
                     onClick={() => tauriEmit('format_mark', 'underline')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Strikethrough"
                     onClick={() => tauriEmit('format_mark', 'strikethrough')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Subscript"
                     onClick={() => tauriEmit('format_mark', 'subscript')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Superscript"
                     onClick={() => tauriEmit('format_mark', 'superscript')}
+                    disabled={!editingEnabled}
                   />
 
                   <Dropdown.Separator />
@@ -588,21 +628,25 @@ export function Menu() {
                     title="Heading"
                     accelerator="Ctrl+Shift+H"
                     onClick={() => tauriEmit('format_block', 'heading')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Statement"
                     accelerator="Ctrl+Shif+S"
                     onClick={() => tauriEmit('format_block', 'statement')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Blockquote"
                     accelerator="Ctrl+Shift+Q"
                     onClick={() => tauriEmit('format_block', 'blockquote')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Code Block"
                     accelerator="Ctrl+Shift+E"
                     onClick={() => tauriEmit('format_block', 'codeblock')}
+                    disabled={!editingEnabled}
                   />
 
                   <Dropdown.Separator />
@@ -611,16 +655,19 @@ export function Menu() {
                     title="Bullet List"
                     accelerator="Ctrl+Shift+7"
                     onClick={() => tauriEmit('format_list', 'unordered_list')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Numbered List"
                     accelerator="Ctrl+Shift+8"
                     onClick={() => tauriEmit('format_list', 'ordered_list')}
+                    disabled={!editingEnabled}
                   />
                   <MenuItem
                     title="Plain List"
                     accelerator="Ctrl+Shift+9"
                     onClick={() => tauriEmit('format_list', 'group')}
+                    disabled={!editingEnabled}
                   />
                 </Dropdown.SubContent>
               </Dropdown.Sub>
