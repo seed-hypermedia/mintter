@@ -120,7 +120,7 @@
     "@types/is-hotkey": "0.1.7",
     "@types/is-url": "1.2.30",
     "@types/mdast": "3.0.10",
-    "@types/node": "18.7.14",
+    "@types/node": "18.11.5",
     "@types/react": "18.0.22",
     "@types/react-copy-to-clipboard": "5.0.4",
     "@types/react-dom": "18.0.7",
