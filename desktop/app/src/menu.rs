@@ -38,12 +38,16 @@ pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<(
   if let Some(window) = app_handle.get_window("preferences") {
     window.set_focus()?;
   } else {
-    WindowBuilder::new(
+    let win = WindowBuilder::new(
       &app_handle,
       "preferences",
       WindowUrl::App("/settings".into()),
-    )
-    .build()?;
+    );
+
+    #[cfg(not(target_os = "macocs"))]
+    let win = { win.decorations(false) };
+
+    win.build()?;
   }
 
   Ok(())

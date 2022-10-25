@@ -24,6 +24,8 @@ export default function Main() {
       }}
     >
       <div className={classnames('main-root', {settings: isSettings})}>
+        <TitleBar />
+
         <main>
           <Switch>
             <Route path="/" component={PublicationList} />
@@ -39,9 +41,9 @@ export default function Main() {
             <Route>{() => <Redirect to="/inbox" />}</Route>
           </Switch>
         </main>
+
         {!isSettings ? (
           <>
-            <TitleBar />
             <QuickSwitcher />
             <Footer />
           </>
