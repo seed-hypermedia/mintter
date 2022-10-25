@@ -12,7 +12,7 @@ import (
 
 var _ = errors.New
 
-func insertWallet(conn *sqlite.Conn, walletsID string, walletsAddress string, walletsType string, walletsLogin []byte, walletsPassword []byte, walletsToken []byte, walletsName string, walletsBalance int) error {
+func insertWallet(conn *sqlite.Conn, walletsID string, walletsAddress string, walletsType string, walletsLogin []byte, walletsPassword []byte, walletsToken []byte, walletsName string, walletsBalance int64) error {
 	const query = `INSERT INTO wallets (id, address, type, login, password, token, name, balance)
 VALUES (:walletsID, :walletsAddress, :walletsType, :walletsLogin, :walletsPassword, :walletsToken, :walletsName, :walletsBalance)`
 
@@ -24,7 +24,7 @@ VALUES (:walletsID, :walletsAddress, :walletsType, :walletsLogin, :walletsPasswo
 		stmt.SetBytes(":walletsPassword", walletsPassword)
 		stmt.SetBytes(":walletsToken", walletsToken)
 		stmt.SetText(":walletsName", walletsName)
-		stmt.SetInt(":walletsBalance", walletsBalance)
+		stmt.SetInt64(":walletsBalance", walletsBalance)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -43,7 +43,7 @@ type getWalletResult struct {
 	WalletsID      string
 	WalletsAddress string
 	WalletsName    string
-	WalletsBalance int
+	WalletsBalance int64
 	WalletsType    string
 }
 
@@ -65,7 +65,7 @@ FROM wallets WHERE wallets.id = :walletsID`
 		out.WalletsID = stmt.ColumnText(0)
 		out.WalletsAddress = stmt.ColumnText(1)
 		out.WalletsName = stmt.ColumnText(2)
-		out.WalletsBalance = stmt.ColumnInt(3)
+		out.WalletsBalance = stmt.ColumnInt64(3)
 		out.WalletsType = stmt.ColumnText(4)
 		return nil
 	}
@@ -83,17 +83,17 @@ type listWalletsResult struct {
 	WalletsAddress string
 	WalletsName    string
 	WalletsType    string
-	WalletsBalance int
+	WalletsBalance int64
 }
 
-func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResult, error) {
+func listWallets(conn *sqlite.Conn, cursor string, limit int64) ([]listWalletsResult, error) {
 	const query = `SELECT wallets.id, wallets.address, wallets.name, wallets.type, wallets.balance FROM wallets WHERE wallets.id > :cursor LIMIT :limit`
 
 	var out []listWalletsResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":cursor", cursor)
-		stmt.SetInt(":limit", limit)
+		stmt.SetInt64(":limit", limit)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -102,7 +102,7 @@ func listWallets(conn *sqlite.Conn, cursor string, limit int) ([]listWalletsResu
 			WalletsAddress: stmt.ColumnText(1),
 			WalletsName:    stmt.ColumnText(2),
 			WalletsType:    stmt.ColumnText(3),
-			WalletsBalance: stmt.ColumnInt(4),
+			WalletsBalance: stmt.ColumnInt64(4),
 		})
 
 		return nil
@@ -120,7 +120,7 @@ type getDefaultWalletResult struct {
 	WalletsID       string
 	WalletsAddress  string
 	WalletsName     string
-	WalletsBalance  int
+	WalletsBalance  int64
 	WalletsType     string
 	GlobalMetaValue string
 }
@@ -146,7 +146,7 @@ WHERE global_meta.key = :key )`
 		out.WalletsID = stmt.ColumnText(0)
 		out.WalletsAddress = stmt.ColumnText(1)
 		out.WalletsName = stmt.ColumnText(2)
-		out.WalletsBalance = stmt.ColumnInt(3)
+		out.WalletsBalance = stmt.ColumnInt64(3)
 		out.WalletsType = stmt.ColumnText(4)
 		out.GlobalMetaValue = stmt.ColumnText(5)
 		return nil
@@ -241,7 +241,7 @@ func removeWallet(conn *sqlite.Conn, walletsID string) error {
 }
 
 type getWalletCountResult struct {
-	Count int
+	Count int64
 }
 
 func getWalletCount(conn *sqlite.Conn) (getWalletCountResult, error) {
@@ -257,7 +257,7 @@ func getWalletCount(conn *sqlite.Conn) (getWalletCountResult, error) {
 			return errors.New("getWalletCount: more than one result return for a single-kind query")
 		}
 
-		out.Count = stmt.ColumnInt(0)
+		out.Count = stmt.ColumnInt64(0)
 		return nil
 	}
 

@@ -83,9 +83,7 @@ func (c Column) ShortName() string {
 type Table string
 
 var typeToGoType = map[Type]string{
-	TypeInt:   "int",
-	TypeInt32: "int32",
-	TypeInt64: "int64",
+	TypeInt:   "int64",
 	TypeFloat: "float64",
 	TypeText:  "string",
 	TypeBytes: "[]byte",
@@ -106,8 +104,6 @@ func (t Type) goString() string {
 // Supported types for inputs and outputs of a query.
 const (
 	TypeInt Type = iota
-	TypeInt32
-	TypeInt64
 	TypeFloat
 	TypeText
 	TypeBytes

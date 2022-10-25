@@ -72,11 +72,11 @@ func indexBacklinks(conn *vcsdb.Conn, obj, change vcsdb.LocalID, blk *documents.
 		}
 
 		if err := vcssql.ContentLinksInsert(conn.InternalConn(),
-			int(obj),
+			int64(obj),
 			blk.Id,
-			int(change),
+			int64(change),
 			ver.String(),
-			tdocid,
+			int64(tdocid),
 			link.TargetBlock,
 			link.TargetVersion,
 		); err != nil {
@@ -129,7 +129,7 @@ func parseLink(s string) (link, error) {
 	return out, nil
 }
 
-func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int, error) {
+func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int64, error) {
 	codec, hash := ipfs.DecodeCID(c)
 	res, err := vcssql.IPFSBlocksLookupPK(conn, hash)
 	if err != nil {
@@ -140,7 +140,7 @@ func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int, error) {
 		return res.IPFSBlocksID, nil
 	}
 
-	upsert, err := vcssql.IPFSBlocksUpsert(conn, hash, int(codec), nil, 0, 1)
+	upsert, err := vcssql.IPFSBlocksUpsert(conn, hash, int64(codec), nil, 0, 1)
 	if err != nil {
 		return 0, err
 	}

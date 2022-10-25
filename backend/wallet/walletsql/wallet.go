@@ -94,7 +94,7 @@ func InsertWallet(conn *sqlite.Conn, wallet Wallet, login, password, token []byt
 	}
 
 	if err := insertWallet(conn, wallet.ID, wallet.Address, strings.ToLower(wallet.Type),
-		login, password, token, wallet.Name, int(wallet.Balance)); err != nil {
+		login, password, token, wallet.Name, int64(wallet.Balance)); err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			return fmt.Errorf("couldn't insert wallet: %w", ErrDuplicateIndex)
 		}

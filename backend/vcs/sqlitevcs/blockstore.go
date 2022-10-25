@@ -123,7 +123,7 @@ func (b *blockStore) getSize(conn *sqlite.Conn, c cid.Cid) (int, error) {
 		return 0, format.ErrNotFound{Cid: c}
 	}
 
-	return res.IPFSBlocksSize, nil
+	return int(res.IPFSBlocksSize), nil
 }
 
 // Put implements blockstore.Blockstore interface.
@@ -149,14 +149,14 @@ func (b *blockStore) putBlockWithID(conn *sqlite.Conn, id LocalID, c cid.Cid, da
 	out := make([]byte, 0, len(data))
 	out = b.encoder.EncodeAll(data, out)
 
-	return vcssql.IPFSBlocksInsert(conn, int(id), c.Hash(), int(c.Prefix().Codec), out, len(data), 0)
+	return vcssql.IPFSBlocksInsert(conn, int64(id), c.Hash(), int64(c.Prefix().Codec), out, int64(len(data)), 0)
 }
 
 func (b *blockStore) putBlock(conn *sqlite.Conn, c cid.Cid, data []byte) error {
 	out := make([]byte, 0, len(data))
 	out = b.encoder.EncodeAll(data, out)
 
-	_, err := vcssql.IPFSBlocksUpsert(conn, c.Hash(), int(c.Prefix().Codec), out, len(data), 0)
+	_, err := vcssql.IPFSBlocksUpsert(conn, c.Hash(), int64(c.Prefix().Codec), out, int64(len(data)), 0)
 	return err
 }
 

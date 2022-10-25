@@ -135,7 +135,7 @@ func (conn *Conn) NewObject(p vcs.EncodedPermanode) (lid LocalID) {
 			return err
 		}
 
-		if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int(p.PermanodeCreateTime().Pack()), aid); err != nil {
+		if err := vcssql.PermanodesInsertOrIgnore(conn.conn, string(p.PermanodeType()), res.IPFSBlocksID, int64(p.PermanodeCreateTime().Pack()), aid); err != nil {
 			return err
 		}
 
@@ -158,7 +158,7 @@ func (conn *Conn) LookupPermanode(c cid.Cid) LocalID {
 // GetObjectOwner returns the owner for the Mintter Object.
 func (conn *Conn) GetObjectOwner(id LocalID) (c cid.Cid) {
 	must.Maybe(&conn.err, func() error {
-		res, err := vcssql.PermanodeOwnersGetOne(conn.conn, int(id))
+		res, err := vcssql.PermanodeOwnersGetOne(conn.conn, int64(id))
 		if err != nil {
 			return err
 		}
@@ -256,7 +256,7 @@ func (conn *Conn) EnsureAccountDevice(acc, device cid.Cid) (li LocalIdentity) {
 		li.Account = LocalID(conn.ensureAccountID(acc))
 		li.Device = LocalID(conn.ensureDeviceID(device))
 
-		return vcssql.AccountDevicesInsertOrIgnore(conn.conn, int(li.Account), int(li.Device))
+		return vcssql.AccountDevicesInsertOrIgnore(conn.conn, int64(li.Account), int64(li.Device))
 	})
 	return li
 }
@@ -274,12 +274,12 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, clock
 			return 0
 		}
 
-		baseRes, err := vcssql.ChangesGetBase(conn.conn, int(obj), string(data))
+		baseRes, err := vcssql.ChangesGetBase(conn.conn, int64(obj), string(data))
 		if err != nil {
 			conn.err = err
 			return 0
 		}
-		if baseRes.Count != len(base) {
+		if int(baseRes.Count) != len(base) {
 			conn.err = fmt.Errorf("invalid base length")
 			return 0
 		}
@@ -296,13 +296,13 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, clock
 	}
 	changeID := res.Seq
 
-	if err := vcssql.ChangesInsertOrIgnore(conn.conn, changeID, int(obj), int(id.Account), int(id.Device), changeKindV1, int(hlcTime)); err != nil {
+	if err := vcssql.ChangesInsertOrIgnore(conn.conn, changeID, int64(obj), int64(id.Account), int64(id.Device), changeKindV1, int64(hlcTime)); err != nil {
 		conn.err = err
 		return 0
 	}
 
 	for _, dep := range base {
-		if err := vcssql.ChangesInsertParent(conn.conn, changeID, int(dep)); err != nil {
+		if err := vcssql.ChangesInsertParent(conn.conn, changeID, int64(dep)); err != nil {
 			conn.err = err
 			return 0
 		}
@@ -381,7 +381,7 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc vcs.VerifiedChange, onDatom 
 
 		idLocal := conn.EnsureAccountDevice(ch.Author, ch.Signer)
 
-		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int(change), int(obj), int(idLocal.Account), int(idLocal.Device), ch.Kind, int(ch.Time.Pack())); err != nil {
+		if err := vcssql.ChangesInsertOrIgnore(conn.conn, int64(change), int64(obj), int64(idLocal.Account), int64(idLocal.Device), ch.Kind, int64(ch.Time.Pack())); err != nil {
 			return err
 		}
 
@@ -391,7 +391,7 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc vcs.VerifiedChange, onDatom 
 				return err
 			}
 
-			if err := vcssql.ChangesInsertParent(conn.conn, int(change), res.IPFSBlocksID); err != nil {
+			if err := vcssql.ChangesInsertParent(conn.conn, int64(change), res.IPFSBlocksID); err != nil {
 				return err
 			}
 		}
@@ -510,13 +510,13 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 		return nil
 	}
 
-	changeInfo, err := vcssql.ChangesGetOne(conn.conn, int(change))
+	changeInfo, err := vcssql.ChangesGetOne(conn.conn, int64(change))
 	if err != nil {
 		conn.err = err
 		return nil
 	}
 
-	parents, err := vcssql.ChangesGetParents(conn.conn, int(change))
+	parents, err := vcssql.ChangesGetParents(conn.conn, int64(change))
 	if err != nil {
 		conn.err = err
 		return nil
@@ -633,7 +633,7 @@ func (conn *Conn) DeleteDatoms(object, change LocalID, entity NodeID, attribute 
 		return
 	}
 
-	if err := vcssql.DatomsDelete(conn.conn, int(object), int(entity), int(change), int(attribute)); err != nil {
+	if err := vcssql.DatomsDelete(conn.conn, int64(object), int64(entity), int64(change), int64(attribute)); err != nil {
 		conn.err = err
 		return
 	}
@@ -703,7 +703,7 @@ func (conn *Conn) SaveVersion(object LocalID, name string, id LocalIdentity, hea
 			return err
 		}
 
-		if err := vcssql.NamedVersionsReplace(conn.conn, int(object), int(id.Account), int(id.Device), name, string(data)); err != nil {
+		if err := vcssql.NamedVersionsReplace(conn.conn, int64(object), int64(id.Account), int64(id.Device), name, string(data)); err != nil {
 			return err
 		}
 
@@ -714,7 +714,7 @@ func (conn *Conn) SaveVersion(object LocalID, name string, id LocalIdentity, hea
 // GetVersion loads a named version.
 func (conn *Conn) GetVersion(object LocalID, name string, id LocalIdentity) (out LocalVersion) {
 	must.Maybe(&conn.err, func() error {
-		res, err := vcssql.NamedVersionsGet(conn.conn, int(object), int(id.Account), int(id.Device), name)
+		res, err := vcssql.NamedVersionsGet(conn.conn, int64(object), int64(id.Account), int64(id.Device), name)
 		if err != nil {
 			return err
 		}
@@ -739,7 +739,7 @@ func (conn *Conn) DeleteVersion(object LocalID, name string, id LocalIdentity) {
 		return
 	}
 
-	if err := vcssql.NamedVersionsDelete(conn.conn, int(object), int(id.Account), int(id.Device), name); err != nil {
+	if err := vcssql.NamedVersionsDelete(conn.conn, int64(object), int64(id.Account), int64(id.Device), name); err != nil {
 		conn.err = err
 		return
 	}
@@ -750,7 +750,7 @@ func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
 	cids := make([]cid.Cid, len(v))
 	must.Maybe(&conn.err, func() error {
 		for i, vv := range v {
-			res, err := vcssql.IPFSBlocksGetHash(conn.conn, int(vv))
+			res, err := vcssql.IPFSBlocksGetHash(conn.conn, int64(vv))
 			if err != nil {
 				return err
 			}
@@ -815,7 +815,7 @@ func (conn *Conn) DeleteObject(object LocalID) {
 		return
 	}
 
-	conn.err = vcssql.IPFSBlocksDeleteByID(conn.conn, int(object))
+	conn.err = vcssql.IPFSBlocksDeleteByID(conn.conn, int64(object))
 }
 
 // DeleteChange from the database.
@@ -824,7 +824,7 @@ func (conn *Conn) DeleteChange(change LocalID) {
 		return
 	}
 
-	conn.err = vcssql.ChangesDeleteByID(conn.conn, int(change))
+	conn.err = vcssql.ChangesDeleteByID(conn.conn, int64(change))
 }
 
 // LookupIdentity looks up local IDs for a given identity.
@@ -883,7 +883,7 @@ func (conn *Conn) ListObjectsByType(otype vcs.ObjectType) (out []LocalID) {
 // GetObjectCID returns the CID of a Mintter Object given its local ID.
 func (conn *Conn) GetObjectCID(obj LocalID) (c cid.Cid) {
 	must.Maybe(&conn.err, func() error {
-		res, err := vcssql.IPFSBlocksLookupCID(conn.conn, int(obj))
+		res, err := vcssql.IPFSBlocksLookupCID(conn.conn, int64(obj))
 		if err != nil {
 			return err
 		}
@@ -937,7 +937,7 @@ func (conn *Conn) lookupDevice(c cid.Cid) LocalID {
 	return LocalID(res.DevicesID)
 }
 
-func (conn *Conn) lookupObjectID(c cid.Cid) int {
+func (conn *Conn) lookupObjectID(c cid.Cid) int64 {
 	if conn.err != nil {
 		return 0
 	}
@@ -956,7 +956,7 @@ func (conn *Conn) lookupObjectID(c cid.Cid) int {
 	return res.IPFSBlocksID
 }
 
-func (conn *Conn) ensureAccountID(c cid.Cid) int {
+func (conn *Conn) ensureAccountID(c cid.Cid) int64 {
 	if conn.err != nil {
 		return 0
 	}
@@ -987,7 +987,7 @@ func (conn *Conn) ensureAccountID(c cid.Cid) int {
 	return insert.AccountsID
 }
 
-func (conn *Conn) ensureDeviceID(c cid.Cid) int {
+func (conn *Conn) ensureDeviceID(c cid.Cid) int64 {
 	if conn.err != nil {
 		return 0
 	}
