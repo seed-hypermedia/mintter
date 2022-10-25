@@ -1,3 +1,4 @@
+// Package syncing syncs content with remote peers.
 package syncing
 
 import (
