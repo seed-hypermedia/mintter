@@ -9,7 +9,7 @@ import (
 	"mintter/backend/db/sqliteschema"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"

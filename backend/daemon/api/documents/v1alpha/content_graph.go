@@ -28,7 +28,7 @@ func (srv *Server) ListCitations(ctx context.Context, in *documents.ListCitation
 		return nil, err
 	}
 
-	list, err := vcssql.BacklinksListByTargetDocument(conn, docdb.IPFSBlocksID, int(in.Depth))
+	list, err := vcssql.BacklinksListByTargetDocument(conn, docdb.IPFSBlocksID, int64(in.Depth))
 	if err != nil {
 		return nil, err
 	}

@@ -8,7 +8,7 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/crdt"
-	"mintter/backend/vcs/vcsdb"
+	"mintter/backend/vcs/hlc"
 	"sort"
 	"time"
 
@@ -16,24 +16,27 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
+// DocumentType is the IPLD type annotation for the document permanode.
 const DocumentType vcs.ObjectType = "https://schema.mintter.org/Document"
 
 func init() {
 	cbornode.RegisterCborType(DocumentPermanode{})
 }
 
+// DocumentPermanode is a vcs.Permanode for Mintter Documents.
 type DocumentPermanode struct {
 	vcs.BasePermanode
 
 	Nonce []byte
 }
 
-func NewDocumentPermanode(owner cid.Cid) DocumentPermanode {
+// NewDocumentPermanode creates a new Permanode for the Mintter Document.
+func NewDocumentPermanode(owner cid.Cid, at hlc.Time) DocumentPermanode {
 	p := DocumentPermanode{
 		BasePermanode: vcs.BasePermanode{
 			Type:       DocumentType,
 			Owner:      owner,
-			CreateTime: time.Now().UTC().Round(time.Second),
+			CreateTime: at,
 		},
 		Nonce: make([]byte, 8),
 	}
@@ -48,44 +51,44 @@ func NewDocumentPermanode(owner cid.Cid) DocumentPermanode {
 
 // Attributes for document-related datoms.
 const (
-	AttrTitle    vcsdb.Attribute = "mintter.document/title"
-	AttrSubtitle vcsdb.Attribute = "mintter.document/subtitle"
-	AttrMove     vcsdb.Attribute = "mintter.document/move"
+	AttrTitle    vcs.Attribute = "mintter.document/title"
+	AttrSubtitle vcs.Attribute = "mintter.document/subtitle"
+	AttrMove     vcs.Attribute = "mintter.document/move"
 
-	AttrBlockState vcsdb.Attribute = "mintter.document/block-snapshot"
+	AttrBlockState vcs.Attribute = "mintter.document/block-snapshot"
 
-	AttrPosBlock  vcsdb.Attribute = "mintter.document.position/block"
-	AttrPosParent vcsdb.Attribute = "mintter.document.position/parent"
-	AttrPosLeft   vcsdb.Attribute = "mintter.document.position/left"
+	AttrPosBlock  vcs.Attribute = "mintter.document.position/block"
+	AttrPosParent vcs.Attribute = "mintter.document.position/parent"
+	AttrPosLeft   vcs.Attribute = "mintter.document.position/left"
 )
 
 // Document is an instance of a Mintter Document.
 type Document struct {
-	title    *crdt.LWW[vcsdb.Datom]
-	subtitle *crdt.LWW[vcsdb.Datom]
-	blocks   map[vcsdb.NodeID]*crdt.LWW[vcsdb.Datom]
+	title    *crdt.LWW[vcs.Datom]
+	subtitle *crdt.LWW[vcs.Datom]
+	blocks   map[vcs.NodeID]*crdt.LWW[vcs.Datom]
 	tree     *blockTree
-	dw       *vcsdb.DatomWriter
+	batch    *vcs.Batch
 	tracker  *crdt.OpTracker
 	err      error
 }
 
 // New creates a new Document.
-func New(dw *vcsdb.DatomWriter) *Document {
-	ot := crdt.NewOpTracker(lessComparator)
+func New(dw *vcs.Batch) *Document {
+	ot := crdt.NewOpTracker()
 
 	return &Document{
-		title:    crdt.NewLWW[vcsdb.Datom](lessComparator),
-		subtitle: crdt.NewLWW[vcsdb.Datom](lessComparator),
-		blocks:   make(map[vcsdb.NodeID]*crdt.LWW[vcsdb.Datom]),
+		title:    crdt.NewLWW[vcs.Datom](),
+		subtitle: crdt.NewLWW[vcs.Datom](),
+		blocks:   make(map[vcs.NodeID]*crdt.LWW[vcs.Datom]),
 		tree:     newBlockTree(ot, dw),
-		dw:       dw,
+		batch:    dw,
 		tracker:  ot,
 	}
 }
 
 // Replay existing sorted datoms to restore the state of the document.
-func (doc *Document) Replay(in []vcsdb.Datom) error {
+func (doc *Document) Replay(in []vcs.Datom) error {
 	if !doc.tracker.IsZero() {
 		return fmt.Errorf("document must be empty to replay existing state")
 	}
@@ -94,16 +97,16 @@ func (doc *Document) Replay(in []vcsdb.Datom) error {
 	for _, d := range in {
 		switch d.Attr {
 		case AttrTitle:
-			doc.title.Set(d.OpID, d)
+			doc.title.Set(d.OpID(), d)
 		case AttrSubtitle:
-			doc.subtitle.Set(d.OpID, d)
+			doc.subtitle.Set(d.OpID(), d)
 		case AttrBlockState:
 			lww := doc.blocks[d.Entity]
 			if lww == nil {
-				lww = crdt.NewLWW[vcsdb.Datom](lessComparator)
+				lww = crdt.NewLWW[vcs.Datom]()
 				doc.blocks[d.Entity] = lww
 			}
-			lww.Set(d.OpID, d)
+			lww.Set(d.OpID(), d)
 		}
 
 		m.handle(d)
@@ -117,7 +120,7 @@ func (doc *Document) Replay(in []vcsdb.Datom) error {
 		}
 	}
 
-	return nil
+	return doc.track(in[len(in)-1].OpID())
 }
 
 // Iterator creates a new document iterator to walk the document
@@ -126,14 +129,14 @@ func (doc *Document) Iterator() *Iterator {
 	return doc.tree.Iterator()
 }
 
-func (doc *Document) track(op vcsdb.OpID) error {
+func (doc *Document) track(op crdt.OpID) error {
 	return doc.tracker.Track(op)
 }
 
 type moves struct {
-	Blocks map[vcsdb.NodeID]struct{}
+	Blocks map[vcs.NodeID]struct{}
 
-	Moves map[vcsdb.NodeID]map[vcsdb.Attribute]vcsdb.Datom // moveNode => related datoms
+	Moves map[vcs.NodeID]map[vcs.Attribute]vcs.Datom // moveNode => related datoms
 }
 
 func (m *moves) Log() []moveOp {
@@ -145,13 +148,13 @@ func (m *moves) Log() []moveOp {
 		}
 		var move moveOp
 		move.ID = nid
-		move.Block = datoms[AttrPosBlock].Value.(vcsdb.NodeID)
-		move.Parent = datoms[AttrPosParent].Value.(vcsdb.NodeID)
-		move.Left = datoms[AttrPosLeft].Value.(vcsdb.NodeID)
-		move.Op = datoms[AttrPosLeft].OpID
+		move.Block = datoms[AttrPosBlock].Value.(vcs.NodeID)
+		move.Parent = datoms[AttrPosParent].Value.(vcs.NodeID)
+		move.Left = datoms[AttrPosLeft].Value.(vcs.NodeID)
+		move.Op = datoms[AttrPosLeft].OpID()
 
 		if leftMove := m.Moves[move.Left]; leftMove != nil {
-			move.Ref = leftMove[AttrPosLeft].OpID
+			move.Ref = leftMove[AttrPosLeft].OpID()
 		} else {
 			if _, ok := m.Blocks[move.Left]; ok {
 				move.Ref = crdt.ListStart
@@ -164,59 +167,60 @@ func (m *moves) Log() []moveOp {
 	}
 
 	sort.Slice(out, func(i, j int) bool {
-		return lessComparator(out[i].Op, out[j].Op)
+		return out[i].Op.Less(out[j].Op)
 	})
 
 	return out
 }
 
-var moveAttrs = map[vcsdb.Attribute]struct{}{
+var moveAttrs = map[vcs.Attribute]struct{}{
 	AttrMove:      {},
 	AttrPosBlock:  {},
 	AttrPosParent: {},
 	AttrPosLeft:   {},
 }
 
-func (m *moves) handle(d vcsdb.Datom) {
+func (m *moves) handle(d vcs.Datom) {
 	if m.Blocks == nil {
-		m.Blocks = make(map[vcsdb.NodeID]struct{})
-		m.Blocks[vcsdb.RootNode] = struct{}{}
-		m.Blocks[vcsdb.TrashNode] = struct{}{}
+		m.Blocks = make(map[vcs.NodeID]struct{})
+		m.Blocks[vcs.RootNode] = struct{}{}
+		m.Blocks[vcs.TrashNode] = struct{}{}
 	}
 
 	if m.Moves == nil {
-		m.Moves = make(map[vcsdb.NodeID]map[vcsdb.Attribute]vcsdb.Datom)
+		m.Moves = make(map[vcs.NodeID]map[vcs.Attribute]vcs.Datom)
 	}
 
 	if _, ok := moveAttrs[d.Attr]; !ok {
 		return
 	}
 
-	var nid vcsdb.NodeID
+	var moveID vcs.NodeID
+
 	if d.Attr == AttrMove {
-		nid = d.Value.(vcsdb.NodeID)
+		moveID = d.Value.(vcs.NodeID)
 	} else {
-		nid = d.Entity
+		moveID = d.Entity
 	}
 
 	if d.Attr == AttrPosBlock {
-		m.Blocks[d.Value.(vcsdb.NodeID)] = struct{}{}
+		m.Blocks[d.Value.(vcs.NodeID)] = struct{}{}
 	}
 
-	if m.Moves[nid] == nil {
-		m.Moves[nid] = make(map[vcsdb.Attribute]vcsdb.Datom, 4)
+	if m.Moves[moveID] == nil {
+		m.Moves[moveID] = make(map[vcs.Attribute]vcs.Datom, 4)
 	}
 
-	m.Moves[nid][d.Attr] = d
+	m.Moves[moveID][d.Attr] = d
 }
 
 type moveOp struct {
-	ID     vcsdb.NodeID // ID of the position node.
-	Op     vcsdb.OpID   // OpID of the "left" datom.
-	Block  vcsdb.NodeID // Block to move.
-	Parent vcsdb.NodeID // New parent.
-	Left   vcsdb.NodeID // Left position node. If same as parent, means beginning of the list.
-	Ref    vcsdb.OpID   // OpID of the previous move op.
+	ID     vcs.NodeID // ID of the position node.
+	Op     crdt.OpID  // OpID of the "left" datom.
+	Block  vcs.NodeID // Block to move.
+	Parent vcs.NodeID // New parent.
+	Left   vcs.NodeID // Left position node. If same as parent, means beginning of the list.
+	Ref    crdt.OpID  // OpID of the previous move op.
 }
 
 // EnsureBlockState ensures block is at the current state.
@@ -225,11 +229,11 @@ type moveOp struct {
 // TODO(burdiyan): implement block identity based on text.
 func (doc *Document) EnsureBlockState(blk string, state []byte) {
 	must.Maybe(&doc.err, func() error {
-		nid := vcsdb.NodeIDFromString(blk)
+		nid := vcs.NodeIDFromString(blk)
 
 		lww := doc.blocks[nid]
 		if lww == nil {
-			lww = crdt.NewLWW[vcsdb.Datom](lessComparator)
+			lww = crdt.NewLWW[vcs.Datom]()
 			doc.blocks[nid] = lww
 		}
 
@@ -239,30 +243,29 @@ func (doc *Document) EnsureBlockState(blk string, state []byte) {
 			old = v.([]byte)
 		}
 
-		if !oldDatom.IsZero() && bytes.Equal(old, state) {
+		if !oldDatom.OpID().IsZero() && bytes.Equal(old, state) {
 			return nil
 		}
 
-		d := doc.dw.NewAndAdd(nid, AttrBlockState, state)
-		lww.Set(d.OpID, d)
-
-		if oldDatom.Change == d.Change {
-			doc.dw.DeleteDatom(oldDatom.OpID)
+		d := doc.batch.Add(nid, AttrBlockState, state)
+		lww.Set(d.OpID(), d)
+		if !oldDatom.OpID().IsZero() {
+			doc.batch.Delete(oldDatom.OpID())
 		}
 
-		return doc.track(d.OpID)
+		return doc.track(d.OpID())
 	})
 }
 
 // BlockState returns the current block content.
-func (doc *Document) BlockState(block vcsdb.NodeID) (data []byte, ok bool) {
+func (doc *Document) BlockState(block vcs.NodeID) (data []byte, ok bool) {
 	lww := doc.blocks[block]
 	if lww == nil {
 		return nil, false
 	}
 
 	d := lww.Value()
-	if d.OpID.IsZero() {
+	if d.OpID().IsZero() {
 		return nil, false
 	}
 
@@ -278,25 +281,23 @@ func (doc *Document) EnsureTitle(s string) {
 			old = v.(string)
 		}
 
-		if !oldDatom.OpID.IsZero() && old == s {
+		if !oldDatom.OpID().IsZero() && old == s {
 			return nil
 		}
 
-		d := doc.dw.NewAndAdd(vcsdb.RootNode, AttrTitle, s)
-		doc.title.Set(d.OpID, d)
-
-		if oldDatom.Change == d.Change {
-			doc.dw.DeleteDatom(oldDatom.OpID)
+		d := doc.batch.Add(vcs.RootNode, AttrTitle, s)
+		doc.title.Set(d.OpID(), d)
+		if !oldDatom.OpID().IsZero() {
+			doc.batch.Delete(oldDatom.OpID())
 		}
-
-		return doc.track(d.OpID)
+		return doc.track(d.OpID())
 	})
 }
 
 // Title returns current document title.
 func (doc *Document) Title() string {
 	d := doc.title.Value()
-	if d.OpID.IsZero() {
+	if d.OpID().IsZero() {
 		return ""
 	}
 
@@ -306,7 +307,7 @@ func (doc *Document) Title() string {
 // Subtitle returns current document subtitle.
 func (doc *Document) Subtitle() string {
 	d := doc.subtitle.Value()
-	if d.OpID.IsZero() {
+	if d.OpID().IsZero() {
 		return ""
 	}
 
@@ -322,18 +323,16 @@ func (doc *Document) EnsureSubtitle(s string) {
 			old = v.(string)
 		}
 
-		if !oldDatom.OpID.IsZero() && old == s {
+		if !oldDatom.OpID().IsZero() && old == s {
 			return nil
 		}
 
-		d := doc.dw.NewAndAdd(vcsdb.RootNode, AttrSubtitle, s)
-		doc.subtitle.Set(d.OpID, d)
-
-		if oldDatom.Change == d.Change {
-			doc.dw.DeleteDatom(oldDatom.OpID)
+		d := doc.batch.Add(vcs.RootNode, AttrSubtitle, s)
+		doc.subtitle.Set(d.OpID(), d)
+		if !oldDatom.OpID().IsZero() {
+			doc.batch.Delete(oldDatom.OpID())
 		}
-
-		return doc.track(d.OpID)
+		return doc.track(d.OpID())
 	})
 }
 
@@ -343,14 +342,14 @@ func (doc *Document) EnsureSubtitle(s string) {
 // Left ID can also be empty which means beginning of the parent's list of children.
 func (doc *Document) MoveBlock(blockID, parentID, leftID string) (moved bool) {
 	must.Maybe(&doc.err, func() error {
-		block := vcsdb.NodeIDFromString(blockID)
-		parent := vcsdb.RootNode
+		block := vcs.NodeIDFromString(blockID)
+		parent := vcs.RootNode
 		if parentID != "" {
-			parent = vcsdb.NodeIDFromString(parentID)
+			parent = vcs.NodeIDFromString(parentID)
 		}
-		var left vcsdb.NodeID
+		var left vcs.NodeID
 		if leftID != "" {
-			left = vcsdb.NodeIDFromString(leftID)
+			left = vcs.NodeIDFromString(leftID)
 		}
 
 		ok, err := doc.tree.MoveBlock(block, parent, left)
@@ -366,21 +365,12 @@ func (doc *Document) DeleteBlock(blockID string) (deleted bool) {
 	return doc.MoveBlock(blockID, "$TRASH", "")
 }
 
-// DeletedDatoms returns the set of datoms to be deleted.
-func (doc *Document) DeletedDatoms() map[vcsdb.OpID]struct{} {
-	return doc.dw.Deleted()
-}
-
-// DirtyDatoms returns the list of datoms to be inserted into the database.
-func (doc *Document) DirtyDatoms() []vcsdb.Datom {
-	return doc.dw.Dirty()
+// UpdateTime returns the time this document was updated for the last time.
+func (doc *Document) UpdateTime() time.Time {
+	return time.UnixMicro(int64(doc.tracker.LastOp().Time()))
 }
 
 // Err returns the underlying document error.
 func (doc *Document) Err() error {
 	return doc.err
-}
-
-func lessComparator(i, j vcsdb.OpID) bool {
-	return vcsdb.BasicOpCompare(i, j) == -1
 }

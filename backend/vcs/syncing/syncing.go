@@ -8,7 +8,8 @@ import (
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcsdb"
+	"mintter/backend/vcs/hlc"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"sort"
 	"sync"
@@ -173,7 +174,7 @@ func (s *Service) Start(ctx context.Context) (err error) {
 // Calls will be de-duplicated as only one sync loop may be in progress at any given moment.
 // Returned error indicates a fatal error. The behavior of calling Sync again after a fatal error is undefined.
 func (s *Service) SyncAndLog(ctx context.Context) error {
-	log := s.log.With(zap.Int64("traceID", time.Now().Unix()))
+	log := s.log.With(zap.Int64("traceID", time.Now().UnixMicro()))
 
 	log.Info("SyncLoopStarted")
 
@@ -280,7 +281,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 
 	var permanode vcs.Permanode
 	var shouldStorePermanode bool
-	var ep vcsdb.EncodedPermanode
+	var ep vcs.EncodedPermanode
 	{
 		// Important to check before using bitswap, because it would add the fetched block into our blockstore,
 		// without any mintter-specific indexing.
@@ -312,7 +313,7 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 
 		if !has {
 			shouldStorePermanode = true
-			ep = vcsdb.EncodedPermanode{
+			ep = vcs.EncodedPermanode{
 				ID:        perma.Cid(),
 				Data:      perma.RawData(),
 				Permanode: permanode,
@@ -418,26 +419,19 @@ func permanodeFromMap(v interface{}) (p vcs.Permanode, err error) {
 
 	base.Type = vcs.ObjectType(v.(map[string]interface{})["@type"].(string))
 	base.Owner = v.(map[string]interface{})["owner"].(cid.Cid)
-	t := v.(map[string]interface{})["createTime"].(string)
+	t := v.(map[string]interface{})["createTime"].(int)
 
-	tt, err := time.ParseInLocation(time.RFC3339, t, time.UTC)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse permanode create time: %w", err)
-	}
-
-	base.CreateTime = tt
+	base.CreateTime = hlc.Unpack(int64(t))
 
 	return base, nil
 }
 
-type verifiedChange = vcsdb.VerifiedChange
-
-func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]verifiedChange, error) {
+func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]vcs.VerifiedChange, error) {
 	queue := ver.CIDs()
 
-	visited := make(map[cid.Cid]struct{}, ver.TotalCount())
+	visited := make(map[cid.Cid]struct{}, ver.Len())
 
-	fetched := make([]verifiedChange, 0, 10) // Arbitrary buffer to reduce allocations when buffer grows.
+	fetched := make([]vcs.VerifiedChange, 0, 10) // Arbitrary buffer to reduce allocations when buffer grows.
 
 	for len(queue) > 0 {
 		last := len(queue) - 1
@@ -459,22 +453,20 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 			return nil, fmt.Errorf("failed to fetch change %s: %w", id, err)
 		}
 
-		vc, err := vcsdb.VerifyChangeBlock(blk)
+		vc, err := vcs.VerifyChangeBlock(blk)
 		if err != nil {
 			return nil, err
 		}
 
-		if !vc.Decoded.Payload.Object.Equals(obj) {
-			return nil, fmt.Errorf("change for unrelated object: got = %s, want = %s", vc.Decoded.Payload.Object, obj)
+		if !vc.Decoded.Object.Equals(obj) {
+			return nil, fmt.Errorf("change for unrelated object: got = %s, want = %s", vc.Decoded.Object, obj)
 		}
 
 		fetched = append(fetched, vc)
 
 		visited[id] = struct{}{}
 
-		for _, p := range vc.Decoded.Payload.Parents {
-			queue = append(queue, p)
-		}
+		queue = append(queue, vc.Decoded.Parents...)
 	}
 
 	// Avoid returning preallocated slice if we never ended up discovering new blocks to fetch.
@@ -483,7 +475,7 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 	}
 
 	sort.Slice(fetched, func(i, j int) bool {
-		return fetched[i].Decoded.Payload.LamportTime < fetched[j].Decoded.Payload.LamportTime
+		return fetched[i].Decoded.Less(fetched[j].Decoded)
 	})
 
 	return fetched, nil

@@ -5,7 +5,7 @@ import (
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	sync "sync"
 	"time"
 

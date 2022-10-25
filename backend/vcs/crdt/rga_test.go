@@ -9,16 +9,16 @@ import (
 )
 
 func TestList(t *testing.T) {
-	l := NewRGA[string](opidLess)
+	l := NewRGA[string]()
 
 	in := []struct {
 		value string
 		posid OpID
 	}{
-		{value: "b1", posid: makeOpID("a", 1)},
-		{value: "b2", posid: makeOpID("a", 2)},
-		{value: "b3", posid: makeOpID("a", 3)},
-		{value: "b4", posid: makeOpID("a", 4)},
+		{value: "b1", posid: makeOpID(1, 1)},
+		{value: "b2", posid: makeOpID(1, 2)},
+		{value: "b3", posid: makeOpID(1, 3)},
+		{value: "b4", posid: makeOpID(1, 4)},
 	}
 
 	for _, tt := range in {
@@ -43,21 +43,21 @@ func TestRGA(t *testing.T) {
 	}
 
 	abc := []atom{
-		{id: makeOpID("a", 1), ref: ListStart, value: "A"},
-		{id: makeOpID("a", 2), ref: makeOpID("a", 1), value: "B"},
-		{id: makeOpID("a", 3), ref: makeOpID("a", 2), value: "C"},
+		{id: makeOpID(1, 1), ref: ListStart, value: "A"},
+		{id: makeOpID(1, 2), ref: makeOpID(1, 1), value: "B"},
+		{id: makeOpID(1, 3), ref: makeOpID(1, 2), value: "C"},
 	}
 
 	dog := []atom{
-		{id: makeOpID("b", 3), ref: makeOpID("a", 1), value: "D"},
-		{id: makeOpID("b", 4), ref: makeOpID("b", 3), value: "O"},
-		{id: makeOpID("b", 5), ref: makeOpID("b", 4), value: "G"},
+		{id: makeOpID(2, 3), ref: makeOpID(1, 1), value: "D"},
+		{id: makeOpID(2, 4), ref: makeOpID(2, 3), value: "O"},
+		{id: makeOpID(2, 5), ref: makeOpID(2, 4), value: "G"},
 	}
 
 	cat := []atom{
-		{id: makeOpID("c", 4), ref: makeOpID("a", 1), value: "C"},
-		{id: makeOpID("c", 5), ref: makeOpID("c", 4), value: "A"},
-		{id: makeOpID("c", 6), ref: makeOpID("c", 5), value: "T"},
+		{id: makeOpID(3, 4), ref: makeOpID(1, 1), value: "C"},
+		{id: makeOpID(3, 5), ref: makeOpID(3, 4), value: "A"},
+		{id: makeOpID(3, 6), ref: makeOpID(3, 5), value: "T"},
 	}
 
 	tests := [...][]atom{
@@ -74,7 +74,7 @@ func TestRGA(t *testing.T) {
 	want := "ACATDOGBC"
 
 	for _, tt := range tests {
-		rga := NewRGA[string](opidLess)
+		rga := NewRGA[string]()
 		for _, a := range tt {
 			p, err := rga.findPos(a.ref)
 			require.NoError(t, err)
@@ -91,10 +91,10 @@ func TestRGA(t *testing.T) {
 }
 
 func TestRGADelete(t *testing.T) {
-	l := NewRGA[string](opidLess)
+	l := NewRGA[string]()
 
-	a := must.Do2(l.Insert(makeOpID("a", 1), ListStart, "a"))
-	b := must.Do2(l.InsertAfter(makeOpID("a", 2), a, "b"))
+	a := must.Do2(l.Insert(makeOpID(1, 1), ListStart, "a"))
+	b := must.Do2(l.InsertAfter(makeOpID(1, 2), a, "b"))
 	must.Do(l.Delete(a))
 	require.Nil(t, b.PrevAlive())
 }

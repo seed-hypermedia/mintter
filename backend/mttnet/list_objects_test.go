@@ -3,8 +3,10 @@ package mttnet
 import (
 	"context"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/mttdoc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 	"time"
 
@@ -23,16 +25,17 @@ func TestListObjects(t *testing.T) {
 		require.NoError(t, err)
 
 		err = conn.WithTx(true, func() error {
-			perma, err := vcsdb.NewPermanode(mttdoc.NewDocumentPermanode(alice.me.AccountID()))
+			clock := hlc.NewClockWithWall(func() time.Time { return time.Time{} })
+			perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.me.AccountID(), clock.Now()))
 			if err != nil {
 				return err
 			}
+
 			obj := conn.NewObject(perma)
 			meLocal := conn.EnsureIdentity(alice.me)
-			change := conn.NewChange(obj, meLocal, nil, time.Time{})
-			newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
+			change := conn.NewChange(obj, meLocal, nil, clock)
 
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, "title", "This is a title"))
+			conn.AddDatom(obj, change, vcs.NewDatom(vcs.RootNode, "title", "This is a title", clock.Now().Pack(), alice.me.DeviceKey().Abbrev()))
 			conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
 			conn.EncodeChange(change, alice.me.DeviceKey())
 

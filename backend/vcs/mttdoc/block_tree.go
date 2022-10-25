@@ -2,30 +2,31 @@ package mttdoc
 
 import (
 	"fmt"
+	"mintter/backend/vcs"
 	"mintter/backend/vcs/crdt"
-	"mintter/backend/vcs/vcsdb"
+	"time"
 )
 
 type blockTree struct {
-	blockPos map[vcsdb.NodeID]*crdt.ListElement[BlockPosition] // block-id => current position
-	children map[vcsdb.NodeID]*crdt.RGA[BlockPosition]         // parent => children
+	blockPos map[vcs.NodeID]*crdt.ListElement[BlockPosition] // block-id => current position
+	children map[vcs.NodeID]*crdt.RGA[BlockPosition]         // parent => children
 	tracker  *crdt.OpTracker
-	dw       *vcsdb.DatomWriter
+	dw       *vcs.Batch
 }
 
-func newBlockTree(ot *crdt.OpTracker, dw *vcsdb.DatomWriter) *blockTree {
+func newBlockTree(ot *crdt.OpTracker, dw *vcs.Batch) *blockTree {
 	return &blockTree{
-		blockPos: make(map[vcsdb.NodeID]*crdt.ListElement[BlockPosition]),
-		children: map[vcsdb.NodeID]*crdt.RGA[BlockPosition]{
-			vcsdb.RootNode:  crdt.NewRGA[BlockPosition](lessComparator),
-			vcsdb.TrashNode: crdt.NewRGA[BlockPosition](lessComparator),
+		blockPos: make(map[vcs.NodeID]*crdt.ListElement[BlockPosition]),
+		children: map[vcs.NodeID]*crdt.RGA[BlockPosition]{
+			vcs.RootNode:  crdt.NewRGA[BlockPosition](),
+			vcs.TrashNode: crdt.NewRGA[BlockPosition](),
 		},
 		tracker: ot,
 		dw:      dw,
 	}
 }
 
-func (bt *blockTree) MoveBlock(block, parent, left vcsdb.NodeID) (moved bool, err error) {
+func (bt *blockTree) MoveBlock(block, parent, left vcs.NodeID) (moved bool, err error) {
 	if bt.isAncestor(block, parent) {
 		return false, fmt.Errorf("can't move: %s is ancestor of %s", block, parent)
 	}
@@ -41,22 +42,22 @@ func (bt *blockTree) MoveBlock(block, parent, left vcsdb.NodeID) (moved bool, er
 		leftPosNode = el.Value().ID
 	}
 
-	posNode := vcsdb.NewNodeID()
-	d1 := bt.dw.NewDatom(vcsdb.RootNode, AttrMove, posNode)
-	d2 := bt.dw.NewDatom(posNode, AttrPosBlock, block)
-	d3 := bt.dw.NewDatom(posNode, AttrPosParent, parent)
-	d4 := bt.dw.NewDatom(posNode, AttrPosLeft, leftPosNode)
+	posNode := vcs.NewNodeIDv1(time.Now())
+	ab := bt.dw.New(posNode, AttrPosBlock, block)
+	ap := bt.dw.New(posNode, AttrPosParent, parent)
+	aref := bt.dw.New(posNode, AttrPosLeft, leftPosNode)
+	move := bt.dw.New(vcs.RootNode, AttrMove, posNode)
 
-	moved, err = bt.integrateMove(d4.OpID, block, parent, posNode, refID)
+	moved, err = bt.integrateMove(aref.OpID(), block, parent, posNode, refID)
 	if moved && err == nil {
-		bt.dw.AddDatom(d1, d2, d3, d4)
+		bt.dw.AddDatom(ab, ap, aref, move)
 	}
 
 	return moved, err
 }
 
 func (bt *blockTree) Iterator() *Iterator {
-	l, ok := bt.children[vcsdb.RootNode]
+	l, ok := bt.children[vcs.RootNode]
 	if !ok {
 		panic("BUG: must have top-level root list of children")
 	}
@@ -67,7 +68,7 @@ func (bt *blockTree) Iterator() *Iterator {
 	}
 }
 
-func (bt *blockTree) integrateMove(id vcsdb.OpID, block, parent, posID vcsdb.NodeID, refID vcsdb.OpID) (moved bool, err error) {
+func (bt *blockTree) integrateMove(id crdt.OpID, block, parent, posID vcs.NodeID, refID crdt.OpID) (moved bool, err error) {
 	if block.IsReserved() {
 		return false, fmt.Errorf("can't move reserved nodes")
 	}
@@ -92,7 +93,7 @@ func (bt *blockTree) integrateMove(id vcsdb.OpID, block, parent, posID vcsdb.Nod
 	}
 
 	// We can safely update clock here, because we've checked all the invariants up to this point.
-	// Although we still have to make the ancestorship check, these invalid moves would still
+	// Although we still have to make the ancestry check, these invalid moves would still
 	// allocate a position, but won't perform the actual move.
 	if err := bt.tracker.Track(id); err != nil {
 		return false, err
@@ -112,16 +113,16 @@ func (bt *blockTree) integrateMove(id vcsdb.OpID, block, parent, posID vcsdb.Nod
 	return moved, nil
 }
 
-func (bt *blockTree) getChildren(parent vcsdb.NodeID) *crdt.RGA[BlockPosition] {
+func (bt *blockTree) getChildren(parent vcs.NodeID) *crdt.RGA[BlockPosition] {
 	l := bt.children[parent]
 	if l == nil {
-		l = crdt.NewRGA[BlockPosition](lessComparator)
+		l = crdt.NewRGA[BlockPosition]()
 		bt.children[parent] = l
 	}
 	return l
 }
 
-func (bt *blockTree) doMove(blk vcsdb.NodeID, li *crdt.ListElement[BlockPosition]) (moved bool) {
+func (bt *blockTree) doMove(blk vcs.NodeID, li *crdt.ListElement[BlockPosition]) (moved bool) {
 	if bt.isAncestor(blk, li.Value().Parent) {
 		return false
 	}
@@ -134,7 +135,7 @@ func (bt *blockTree) doMove(blk vcsdb.NodeID, li *crdt.ListElement[BlockPosition
 	return true
 }
 
-func (bt *blockTree) isAncestor(a, b vcsdb.NodeID) bool {
+func (bt *blockTree) isAncestor(a, b vcs.NodeID) bool {
 	// check if a is ancestor of b transitively.
 	cur := b
 
@@ -184,7 +185,7 @@ START:
 	return el
 }
 
-func (bt *blockTree) findBlockPosition(blk vcsdb.NodeID) (*crdt.ListElement[BlockPosition], error) {
+func (bt *blockTree) findBlockPosition(blk vcs.NodeID) (*crdt.ListElement[BlockPosition], error) {
 	el := bt.blockPos[blk]
 	if el == nil {
 		return nil, fmt.Errorf("block %s is not in the document", blk)
@@ -196,11 +197,11 @@ func (bt *blockTree) findBlockPosition(blk vcsdb.NodeID) (*crdt.ListElement[Bloc
 // within the hierarchy of content blocks.
 type BlockPosition struct {
 	// ID of the position node itself.
-	ID vcsdb.NodeID
+	ID vcs.NodeID
 	// Parent block ID where this position lives.
-	Parent vcsdb.NodeID
+	Parent vcs.NodeID
 	// Block is a content block that's supposed to be at this position.
 	// When blocks are moved their position are still there,
 	// although their RGA list elements are marked as deleted.
-	Block vcsdb.NodeID
+	Block vcs.NodeID
 }

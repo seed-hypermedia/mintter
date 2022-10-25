@@ -14,7 +14,7 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/wallet/walletsql"
 	"path/filepath"
 	"testing"

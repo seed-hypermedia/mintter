@@ -9,16 +9,14 @@ var ListStart = OpID{}
 
 // RGA is a Replicated Growable Array CRDT.
 type RGA[T any] struct {
-	isLess LessFunc
-	items  map[OpID]*ListElement[T]
-	root   ListElement[T]
+	items map[OpID]*ListElement[T]
+	root  ListElement[T]
 }
 
 // NewRGA creates a new list CRDT instance.
-func NewRGA[T any](less LessFunc) *RGA[T] {
+func NewRGA[T any]() *RGA[T] {
 	l := &RGA[T]{
-		isLess: less,
-		items:  map[OpID]*ListElement[T]{},
+		items: map[OpID]*ListElement[T]{},
 	}
 
 	l.root.left = &l.root
@@ -100,7 +98,7 @@ func (l *RGA[T]) integrate(id OpID, ref *ListElement[T], value T) (*ListElement[
 	// Only in case of concurrent inserts (the ones with the same ref as ours)
 	// we'd skip over them and their causal children.
 	for {
-		if ref.right == &l.root || l.isLess(ref.Next().id, id) {
+		if ref.right == &l.root || ref.Next().id.Less(id) {
 			break
 		}
 

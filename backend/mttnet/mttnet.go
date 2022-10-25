@@ -12,8 +12,7 @@ import (
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/must"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"strconv"
 	"sync"
@@ -80,7 +79,7 @@ type Node struct {
 	vcs             *vcsdb.DB
 	me              core.Identity
 	cfg             config.P2P
-	accountObjectID vcs.ObjectID
+	accountObjectID cid.Cid
 	invoicer        Invoicer
 	client          *Client
 
@@ -101,7 +100,7 @@ type Node struct {
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, vcs *vcsdb.DB, accountObj vcs.ObjectID, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, log *zap.Logger) (*Node, error) {
 	var clean cleanup.Stack
 
 	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), vcs.DB())

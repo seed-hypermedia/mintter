@@ -9,12 +9,12 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/mttacc"
 	"mintter/backend/vcs/mttdoc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -28,7 +28,7 @@ func TestPermanodeFromMap(t *testing.T) {
 	tests := []struct {
 		In vcs.Permanode
 	}{
-		{In: mttdoc.NewDocumentPermanode(alice.AccountID)},
+		{In: mttdoc.NewDocumentPermanode(alice.AccountID, hlc.NewClock().Now())},
 		{In: mttacc.NewAccountPermanode(alice.AccountID)},
 	}
 
@@ -81,29 +81,26 @@ func TestSync(t *testing.T) {
 
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
-	var alicePerma vcsdb.EncodedPermanode
+	var alicePerma vcs.EncodedPermanode
 	var wantDatoms []vcsdb.Datom
 	{
 		conn, release, err := alice.VCS().Conn(ctx)
 		require.NoError(t, err)
 
 		err = conn.WithTx(true, func() error {
-			perma, err := vcsdb.NewPermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID()))
+			clock := hlc.NewClock()
+			perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
 			alicePerma = perma
 			require.NoError(t, err)
 			obj := conn.NewObject(perma)
 			idLocal := conn.EnsureIdentity(alice.ID())
-			change := conn.NewChange(obj, idLocal, nil, time.Time{})
-			newDatom := vcsdb.MakeDatomFactory(change, 1, 0)
+			change := conn.NewChange(obj, idLocal, nil, clock)
 
 			wantDatoms = []vcsdb.Datom{
-				newDatom(vcsdb.RootNode, "title", "This is a title"),
+				vcs.NewDatom(vcs.RootNode, "title", "This is a title", clock.Now().Pack(), 123),
 			}
 
-			for _, d := range wantDatoms {
-				conn.AddDatom(obj, d)
-			}
-
+			conn.AddDatoms(obj, change, wantDatoms...)
 			conn.SaveVersion(obj, "main", idLocal, vcsdb.LocalVersion{change})
 			conn.EncodeChange(change, alice.ID().DeviceKey())
 
@@ -126,9 +123,10 @@ func TestSync(t *testing.T) {
 			obj := conn.LookupPermanode(alicePerma.ID)
 			idLocal := conn.LookupIdentity(bob.ID())
 			version := conn.GetVersion(obj, "main", idLocal)
+			cs := conn.ResolveChangeSet(obj, version)
 
 			var i int
-			it := conn.QueryObjectDatoms(obj, version)
+			it := conn.QueryObjectDatoms(obj, cs)
 			for it.Next() {
 				i++
 			}

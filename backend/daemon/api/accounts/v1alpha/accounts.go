@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"sort"
-	"time"
 
 	"mintter/backend/core"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/vcsdb"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 
 	"github.com/ipfs/go-cid"
@@ -53,7 +54,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		aid = acc
 	}
 
-	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
@@ -96,19 +97,19 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.Chan
 		Devices: make(map[string]*accounts.Device),
 	}
 
-	if alias := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrAlias); !alias.IsZero() {
+	if alias := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias); !alias.IsZero() {
 		acc.Profile.Alias = alias.Value.(string)
 	}
-	if bio := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrBio); !bio.IsZero() {
+	if bio := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio); !bio.IsZero() {
 		acc.Profile.Bio = bio.Value.(string)
 	}
-	if email := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrEmail); !email.IsZero() {
+	if email := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrEmail); !email.IsZero() {
 		acc.Profile.Email = email.Value.(string)
 	}
 
-	regs := conn.QueryValuesByAttr(obj, cs, vcsdb.RootNode, mttacc.AttrRegistration)
+	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, mttacc.AttrRegistration)
 	for regs.Next() {
-		d := conn.QueryLastValue(obj, cs, regs.Item().ValueAny().(vcsdb.NodeID), mttacc.AttrDevice)
+		d := conn.QueryLastValue(obj, cs, regs.Item().ValueAny().(vcs.NodeID), mttacc.AttrDevice)
 		if d.IsZero() {
 			panic("BUG: registration without a device")
 		}
@@ -134,7 +135,7 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	}
 	aid := me.AccountID()
 
-	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
@@ -151,35 +152,37 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 		obj := conn.LookupPermanode(perma.ID)
 		meLocal := conn.EnsureIdentity(me)
 		version := conn.GetVersion(obj, "main", meLocal)
+		clock := hlc.NewClock()
+		for _, v := range version {
+			vt := conn.GetChangeMaxTime(obj, v)
+			clock.Track(hlc.Unpack(vt))
+		}
 		cs := conn.ResolveChangeSet(obj, version)
-		change := conn.NewChange(obj, meLocal, version, time.Now().UTC())
-		newDatom := vcsdb.MakeDatomFactory(change, conn.GetChangeLamportTime(change), 0)
+		change := conn.NewChange(obj, meLocal, version, clock)
 
-		email := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrEmail)
-		alias := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrAlias)
-		bio := conn.QueryLastValue(obj, cs, vcsdb.RootNode, mttacc.AttrBio)
+		batch := vcs.NewBatch(clock, me.DeviceKey().Abbrev())
 
-		var dirty bool
+		email := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrEmail)
+		alias := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias)
+		bio := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio)
 
 		if email.IsZero() || email.Value.(string) != in.Email {
-			dirty = true
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrEmail, in.Email))
+			batch.Add(vcs.RootNode, mttacc.AttrEmail, in.Email)
 		}
 
 		if alias.IsZero() || alias.Value.(string) != in.Alias {
-			dirty = true
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrAlias, in.Alias))
+			batch.Add(vcs.RootNode, mttacc.AttrAlias, in.Alias)
 		}
 
 		if bio.IsZero() || bio.Value.(string) != in.Bio {
-			dirty = true
-			conn.AddDatom(obj, newDatom(vcsdb.RootNode, mttacc.AttrBio, in.Bio))
+			batch.Add(vcs.RootNode, mttacc.AttrBio, in.Bio)
 		}
 
-		if !dirty {
+		dirty := batch.Dirty()
+		if len(dirty) == 0 {
 			return errNoUpdate
 		}
-
+		conn.AddDatoms(obj, change, dirty...)
 		conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
 		conn.EncodeChange(change, me.DeviceKey())
 
@@ -208,7 +211,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 
 	resp := &accounts.ListAccountsResponse{}
 
-	perma, err := vcsdb.NewPermanode(mttacc.NewAccountPermanode(me.AccountID()))
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(me.AccountID()))
 	if err != nil {
 		return nil, err
 	}
