@@ -21,6 +21,7 @@ export default function QuickSwitcher() {
 
     listen('open_quick_switcher', () => {
       if (document.hasFocus()) {
+        // FIXME: this is a *hack* until we just send this event to the current window from tauri
         setOpen(true)
       }
     }).then((f) => (unlisten = f))

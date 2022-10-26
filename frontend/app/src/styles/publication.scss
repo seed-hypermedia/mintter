@@ -11,7 +11,7 @@
   height: 100%;
   width: 100%;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
 
   [data-radix-scroll-area-viewport] {
     scroll-behavior: smooth;
