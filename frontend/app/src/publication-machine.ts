@@ -113,6 +113,15 @@ export function createPublicationMachine({
                 id: 'fetchPublicationData',
               },
               tags: 'pending',
+              initial: 'normal',
+              states: {
+                normal: {
+                  after: {
+                    2000: 'extended',
+                  },
+                },
+                extended: {},
+              },
               on: {
                 'PUBLICATION.REPORT.SUCCESS': {
                   actions: [

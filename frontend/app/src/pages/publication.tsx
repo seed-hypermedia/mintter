@@ -1,4 +1,5 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
+import {classnames} from '@app/utils/classnames'
 import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
@@ -67,7 +68,19 @@ export default function PublicationWrapper() {
   // return <PublicationShell />
 
   if (state.matches('publication.fetching')) {
-    return <PublicationShell />
+    return (
+      <>
+        <PublicationShell />
+
+        <p
+          className={classnames('publication-fetching-message', {
+            visible: state.matches('publication.fetching.extended'),
+          })}
+        >
+          Looking up the network...
+        </p>
+      </>
+    )
   }
 
   if (state.matches('publication.errored')) {
@@ -94,7 +107,6 @@ export default function PublicationWrapper() {
               vertical={resizablePanelState.context.vertical}
               key={resizablePanelState.context.vertical}
               onChange={(values) => panelSend({type: 'RESIZE', values})}
-              defaultSizes={[60, 40]}
             >
               <Allotment.Pane>
                 <section
@@ -168,18 +180,20 @@ export default function PublicationWrapper() {
                   </ErrorBoundary>
                 </section>
               </Allotment.Pane>
-              <Allotment.Pane visible={resizablePanelState.context.visible}>
-                <section className="discussion-section">
-                  <ScrollArea
-                    onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                  >
-                    <Discussion
-                      visible={resizablePanelState.context.visible}
-                      publication={state.context.publication}
-                    />
-                  </ScrollArea>
-                </section>
-              </Allotment.Pane>
+              {resizablePanelState.context.visible && (
+                <Allotment.Pane preferredSize={'35%'}>
+                  <section className="discussion-section">
+                    <ScrollArea
+                      onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                    >
+                      <Discussion
+                        visible={resizablePanelState.context.visible}
+                        publication={state.context.publication}
+                      />
+                    </ScrollArea>
+                  </section>
+                </Allotment.Pane>
+              )}
             </Allotment>
           </div>
         </BlockHighLighter>
