@@ -1,16 +1,16 @@
-import { MINTTER_LINK_PREFIX } from '@app/constants'
-import { DraftActor } from '@app/draft-machine'
-import { Dropdown } from '@app/editor/dropdown'
-import { Find } from '@app/editor/find'
-import { useIsReplying, useMain } from '@app/main-context'
-import { PublicationActor } from '@app/publication-machine'
-import { Icon } from '@components/icon'
-import { Tooltip } from '@components/tooltip'
-import { emit as tauriEmit } from '@tauri-apps/api/event'
-import { useSelector } from '@xstate/react'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {DraftActor} from '@app/draft-machine'
+import {Dropdown} from '@app/editor/dropdown'
+import {Find} from '@app/editor/find'
+import {useIsReplying, useMain} from '@app/main-context'
+import {PublicationActor} from '@app/publication-machine'
+import {Icon} from '@components/icon'
+import {Tooltip} from '@components/tooltip'
+import {emit as tauriEmit} from '@tauri-apps/api/event'
+import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
-import { Route, Switch, useLocation, useRoute } from 'wouter'
+import {Route, Switch, useLocation, useRoute} from 'wouter'
 
 export function ActionButtons() {
   const mainService = useMain()
@@ -58,7 +58,7 @@ export function ActionButtons() {
           <span style={{marginRight: '0.3em'}}>Write</span>
         </button>
         <Route path="/p/:id/:version/:block?">
-        {current && <WriteDropdown fileRef={current as PublicationActor} />}
+          {current && <WriteDropdown fileRef={current as PublicationActor} />}
         </Route>
       </div>
     </div>

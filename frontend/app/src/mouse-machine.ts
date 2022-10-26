@@ -212,7 +212,7 @@ export var mouseMachine = createMachine(
       }),
     },
     guards: {
-      hoverNewBlockId: (c, e) => {
+      hoverNewBlockId: () => {
         // if (!c.currentBound?.[1]) return true
         // let {top, height} = c.currentBound[1]
         // return e.position < top && e.position > top + height
