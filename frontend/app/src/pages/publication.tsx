@@ -307,6 +307,7 @@ let resizablePanelMachine =
     },
   )
 
+// eslint-disable-next-line
 function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
   // TODO: find a way to scroll to the block when clicking on a mintter link
   useEffect(() => {

@@ -217,7 +217,3 @@ export function Editor({
     </span>
   )
 }
-
-function preventBackspaceNavigation(event: KeyboardEvent) {
-  console.log(event.key)
-}

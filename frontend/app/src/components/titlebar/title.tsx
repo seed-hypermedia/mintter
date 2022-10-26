@@ -11,6 +11,7 @@ export function Title() {
   return (
     <h1 id="titlebar-title" data-testid="titlebar-title" data-tauri-drag-region>
       <Switch>
+        <Route path="/">Inbox</Route>
         <Route path="/inbox">Inbox</Route>
         <Route path="/drafts">Drafts</Route>
         <Route path="/p/:id/:version/:block?">

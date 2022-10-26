@@ -8,7 +8,6 @@ import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Separator} from '@components/separator'
-import {TitleBar} from '@components/titlebar'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
@@ -26,8 +25,6 @@ export default function Settings({
   const auth = useInterpret(() => createAuthService(client, updateProfile))
   return (
     <div className="settings-wrapper">
-      <TitleBar settings />
-
       <TabsPrimitive.Root
         className="tabs"
         defaultValue="profile"
