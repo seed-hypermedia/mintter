@@ -7,15 +7,17 @@ interface TitleBarProps {
   settings?: boolean
 }
 
+var platform = {
+  macos: TitleBarMacos,
+  windows: TitleBarWindows,
+  linux: TitleBarLinux,
+}
+
 export function TitleBar(props: TitleBarProps) {
-  if (import.meta.env.TAURI_PLATFORM == 'macos')
-    return <TitleBarMacos {...props} />
+  let os: 'macos' | 'windows' | 'linux' = import.meta.env.TAURI_PLATFORM
+  let Component = platform[os]
 
-  if (import.meta.env.TAURI_PLATFORM == 'windows')
-    return <TitleBarWindows {...props} />
+  if (!Component) throw new Error('unsupported platform')
 
-  if (import.meta.env.TAURI_PLATFORM == 'linux')
-    return <TitleBarLinux {...props} />
-
-  throw new Error('unsupported platform')
+  return <Component {...props} />
 }

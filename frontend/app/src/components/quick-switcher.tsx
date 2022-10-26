@@ -18,10 +18,8 @@ export default function QuickSwitcher() {
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
     let unlisten: () => void | undefined
-    console.log('listening to quick switcher')
 
     listen('open_quick_switcher', () => {
-      console.log('LISTENED!!!!')
       setOpen(true)
     }).then((f) => (unlisten = f))
 

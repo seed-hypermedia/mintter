@@ -109,61 +109,55 @@ export default function PublicationWrapper() {
                   onMouseLeave={() => {
                     mouseService.send('DISABLE.CHANGE')
                   }}
+                  ref={scrollWrapperRef}
+                  onScroll={() => mouseService.send('DISABLE.SCROLL')}
                 >
                   <ErrorBoundary
                     fallback={<div>error</div>}
                     onReset={() => window.location.reload()}
                   >
                     <FileProvider value={state.context.publication}>
-                      <ScrollArea
-                        ref={scrollWrapperRef}
-                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                      >
-                        <div
-                          className={`discussion-toggle ${
-                            resizablePanelState.context.visible
-                              ? 'visible'
-                              : undefined
-                          }`}
-                          style={
-                            resizablePanelState.context.visible
-                              ? {
-                                  top: `${top}px`,
-                                  left: `${resizablePanelState.context.left}px`,
-                                  right: 'auto',
-                                  transform: resizablePanelState.context
-                                    .vertical
-                                    ? 'translateY(50%)'
-                                    : 'translateX(-50%)',
-                                }
-                              : undefined
-                          }
-                        >
-                          <Tooltip content="Toggle Activity">
-                            <button
-                              className="discussion-button"
-                              onClick={() => panelSend('DISCUSSION.TOGGLE')}
-                            >
-                              <Icon name="MessageBubble" />
-                            </button>
-                          </Tooltip>
-                        </div>
-                        {state.context.publication?.document?.content && (
-                          <Blocktools editor={editor}>
-                            <Editor
-                              editor={editor}
-                              mode={EditorMode.Publication}
-                              value={
-                                state.context.publication?.document.content
+                      <div
+                        className={`discussion-toggle ${
+                          resizablePanelState.context.visible
+                            ? 'visible'
+                            : undefined
+                        }`}
+                        style={
+                          resizablePanelState.context.visible
+                            ? {
+                                top: `${top}px`,
+                                left: `${resizablePanelState.context.left}px`,
+                                right: 'auto',
+                                transform: resizablePanelState.context.vertical
+                                  ? 'translateY(50%)'
+                                  : 'translateX(-50%)',
                               }
-                              onChange={() => {
-                                mouseService.send('DISABLE.CHANGE')
-                                // noop
-                              }}
-                            />
-                          </Blocktools>
-                        )}
-                      </ScrollArea>
+                            : undefined
+                        }
+                      >
+                        <Tooltip content="Toggle Activity">
+                          <button
+                            className="discussion-button"
+                            onClick={() => panelSend('DISCUSSION.TOGGLE')}
+                          >
+                            <Icon name="MessageBubble" />
+                          </button>
+                        </Tooltip>
+                      </div>
+                      {state.context.publication?.document?.content && (
+                        <Blocktools editor={editor}>
+                          <Editor
+                            editor={editor}
+                            mode={EditorMode.Publication}
+                            value={state.context.publication?.document.content}
+                            onChange={() => {
+                              mouseService.send('DISABLE.CHANGE')
+                              // noop
+                            }}
+                          />
+                        </Blocktools>
+                      )}
                     </FileProvider>
                   </ErrorBoundary>
                 </section>

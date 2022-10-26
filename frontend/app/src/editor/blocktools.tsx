@@ -235,7 +235,7 @@ function useBlocktoolsData(editor: Editor): BlockData {
 
   let show = useSelector(mouseService, (state) => state.matches('active'))
 
-  let topPlatform = import.meta.env.TAURI_PLATFORM == 'windows' ? 32 : 0
+  let topPlatform = import.meta.env.TAURI_PLATFORM == 'windows' ? 40 : 0
 
   return {
     mouseService,

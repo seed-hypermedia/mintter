@@ -1,15 +1,16 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {DraftActor} from '@app/draft-machine'
-import {Dropdown} from '@app/editor/dropdown'
-import {Find} from '@app/editor/find'
-import {useMain} from '@app/main-context'
-import {Icon} from '@components/icon'
-import {Tooltip} from '@components/tooltip'
-import {emit as tauriEmit} from '@tauri-apps/api/event'
-import {useSelector} from '@xstate/react'
+import { MINTTER_LINK_PREFIX } from '@app/constants'
+import { DraftActor } from '@app/draft-machine'
+import { Dropdown } from '@app/editor/dropdown'
+import { Find } from '@app/editor/find'
+import { useIsReplying, useMain } from '@app/main-context'
+import { PublicationActor } from '@app/publication-machine'
+import { Icon } from '@components/icon'
+import { Tooltip } from '@components/tooltip'
+import { emit as tauriEmit } from '@tauri-apps/api/event'
+import { useSelector } from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
-import {Route, Switch, useLocation} from 'wouter'
+import { Route, Switch, useLocation, useRoute } from 'wouter'
 
 export function ActionButtons() {
   const mainService = useMain()
@@ -56,6 +57,9 @@ export function ActionButtons() {
           <Icon name="Add" />
           <span style={{marginRight: '0.3em'}}>Write</span>
         </button>
+        <Route path="/p/:id/:version/:block?">
+        {current && <WriteDropdown fileRef={current as PublicationActor} />}
+        </Route>
       </div>
     </div>
   )
@@ -68,7 +72,7 @@ type Push = {
 
 export function NavigationButtons({push = history}: {push?: Push}) {
   return (
-    <div className="button-group" id="titlebar-navigation-buttons">
+    <div className="button-group">
       <button
         data-testid="history-back"
         onClick={() => push.back()}
@@ -79,7 +83,7 @@ export function NavigationButtons({push = history}: {push?: Push}) {
       <button
         data-testid="history-forward"
         onClick={() => push.forward()}
-        className="titlebar-button "
+        className="titlebar-button"
       >
         <Icon name="ArrowChevronRight" size="2" color="muted" />
       </button>
@@ -143,6 +147,63 @@ export function NavMenu() {
           <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
             Quick Switcher
             <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
+          </Dropdown.Item>
+        </Dropdown.Content>
+      </Dropdown.Portal>
+    </Dropdown.Root>
+  )
+}
+
+function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
+  let mainService = useMain()
+  let isReplying = useIsReplying()
+  let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
+  let [, params] = useRoute('/p/:id/:version/:block?')
+
+  return (
+    <Dropdown.Root>
+      <Dropdown.Trigger asChild>
+        <button className="titlebar-button dropdown">
+          <Icon name="CaretDown" />
+        </button>
+      </Dropdown.Trigger>
+      <Dropdown.Portal>
+        <Dropdown.Content>
+          <Dropdown.Item
+            onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
+          >
+            <Icon name="File" />
+            <span>New Document</span>
+          </Dropdown.Item>
+
+          <Dropdown.Item
+            onSelect={() => fileRef.send('PUBLICATION.REPLY')}
+            disabled={isReplying}
+          >
+            <Icon name="MessageBubble" />
+            <span>Reply</span>
+          </Dropdown.Item>
+
+          {canUpdate ? (
+            <Dropdown.Item
+              onSelect={() => {
+                fileRef.send({type: 'PUBLICATION.EDIT', params})
+              }}
+            >
+              <Icon name="Pencil" />
+              <span>Edit</span>
+            </Dropdown.Item>
+          ) : null}
+          {/* <TippingModal fileRef={fileRef as PublicationRef} /> */}
+          {/* )} */}
+
+          <Dropdown.Item
+            onSelect={() => {
+              console.log('IMPLEMENT ME: Review document')
+            }}
+          >
+            <Icon name="PencilAdd" />
+            <span>Review</span>
           </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Portal>

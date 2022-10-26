@@ -38,6 +38,7 @@ li::marker {
   right: 0;
   transform: translateY(-50%);
   opacity: 0;
+  z-index: 100;
 }
 
 .editor {
@@ -54,7 +55,7 @@ li::marker {
 
   padding-inline-end: var(--size-400);
   width: 100%;
-  max-width: 64ch;
+  max-width: 80ch;
   margin-inline: auto;
 
   @media (min-width: 768px) {
@@ -68,16 +69,19 @@ li::marker {
   p,
   q,
   blockquote {
-    max-width: 64ch;
+    max-width: 80ch;
+    width: 100%;
   }
 
   h1 {
     max-width: 15ch;
+    width: 100%;
   }
 
   h2,
   h3 {
     max-width: 25ch;
+    width: 100%;
   }
 
   :is(li h2, li h3) + * {
