@@ -72,3 +72,27 @@
     cursor: pointer;
   }
 }
+
+.publication-fetching-message {
+  font-size: var(--mtt-fontSizes-4);
+  color: var(--base-active);
+  font-family: var(--mtt-fonts-base);
+  padding: 1rem 2rem;
+  text-align: center;
+  background-color: var(--base-background-subtle);
+  position: absolute;
+  width: 40vw;
+  top: 60px;
+  border-radius: 1rem;
+  box-shadow: var(--mtt-shadows-menu);
+  left: 50%;
+  transform: translateY(100%) translateX(-50%);
+  opacity: 0;
+  z-index: 100;
+  transition: all 0.5s ease;
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0) translateX(-50%);
+  }
+}
