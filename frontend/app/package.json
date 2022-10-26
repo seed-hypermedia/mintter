@@ -143,7 +143,7 @@
     "sass": "1.55.0",
     "tiny-glob": "0.2.9",
     "ts-node": "10.9.1",
-    "ts-proto": "1.130.0",
+    "ts-proto": "1.131.0",
     "typescript": "4.8.4",
     "unified": "10.1.2",
     "vite": "3.1.8",
