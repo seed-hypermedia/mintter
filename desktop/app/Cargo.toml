@@ -18,7 +18,7 @@ tauri-build = {git = "https://github.com/tauri-apps/tauri", features = [] }
 anyhow = "1.0.66"
 env_logger = "0.9.1"
 log = "0.4.17"
-ringbuffer = "0.9.0"
+ringbuffer = "0.10.0"
 secmem-proc = "0.2.1"
 sentry = "0.27"
 sentry-tauri = {git = "https://github.com/JonasKruckenberg/sentry-tauri", branch = "next"}
