@@ -13,15 +13,16 @@ body {
 
 .main-root {
   position: absolute;
+  inset: 0;
   bottom: var(--footer-h);
   overflow: hidden;
   display: flex;
   gap: 0;
   background-color: var(--base-background-subtle);
+  width: 100vw;
 
   @include platform.macos {
     top: $darwin-title-bar-height;
-    inset: 0;
   }
 
   @include platform.win32 {
@@ -33,6 +34,7 @@ body {
   }
 
   &.settings {
+    top: 0 !important;
     padding-block-start: 0;
   }
 

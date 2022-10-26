@@ -9,6 +9,8 @@
 
 .publication-section {
   height: 100%;
+  width: 100%;
+  position: relative;
   overflow-y: auto;
 
   [data-radix-scroll-area-viewport] {
