@@ -2,6 +2,14 @@
 
 This is the main repository for the Mintter project.
 
+## ⚠️ Stability
+
+This is alpha-quality software. Have a copy of anything valuable you put into
+Mintter.
+
+We expect to make a breaking (incompatible) change to the data model in
+following weeks.
+
 ## Building
 
 You can build the project on Linux, macOS, and Windows. Although using Windows
