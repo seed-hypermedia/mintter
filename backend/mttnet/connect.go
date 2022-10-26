@@ -11,6 +11,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"go.uber.org/zap"
 	rpcpeer "google.golang.org/grpc/peer"
 )
@@ -42,10 +43,10 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 	// Since we're explicitly connecting to a peer, we want to clear any backoffs
 	// that the network might have at the moment.
 	{
-		// sw, ok := n.p2p.Host.Network().(*swarm.Swarm)
-		// if ok {
-		// 	sw.Backoff().Clear(info.ID)
-		// }
+		sw, ok := n.p2p.Host.Network().(*swarm.Swarm)
+		if ok {
+			sw.Backoff().Clear(info.ID)
+		}
 	}
 
 	if err := n.p2p.Host.Connect(ctx, info); err != nil {
