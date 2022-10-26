@@ -5,7 +5,7 @@
   position: fixed;
   z-index: 999;
   background-color: var(--base-background-subtle);
-  top: 1px;
+  // top: 1px;
   width: calc(100% - 2px);
 
   .titlebar-button {
@@ -74,21 +74,28 @@
     }
   }
 
-  #titlebar-title {
+  .titlebar-title {
     user-select: none;
     font-family: var(--mtt-fonts-base);
     font-weight: var(--mtt-fontWeights-medium);
     user-select: none;
     -webkit-user-select: none;
-    font-size: 1rem;
 
-    max-width: calc(50vw - 135px);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
     margin: auto;
+    display: flex;
+    align-items: baseline;
+
+    span {
+      font-size: 1rem;
+      display: inline-block;
+      max-width: 40ch;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
 
     small {
+      font-size: 0.7rem;
       color: var(--base-text-low);
       font-size: small;
       margin-inline: 0.5rem;
@@ -96,11 +103,6 @@
 
     &:hover {
       cursor: default;
-    }
-
-    & > * {
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
   }
 

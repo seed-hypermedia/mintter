@@ -320,8 +320,10 @@ export function createDraftMachine({
               context.editor,
             ).filter(Boolean)
 
-            // debug('contentChanges', contentChanges)
-            let newTitle = context.title
+            let newTitle =
+              context.title.length > 50
+                ? `${context.title.substring(0, 50)}...`
+                : context.title
             let changes: Array<DocumentChange> = newTitle
               ? [
                   ...contentChanges,
