@@ -20,7 +20,9 @@ export default function QuickSwitcher() {
     let unlisten: () => void | undefined
 
     listen('open_quick_switcher', () => {
-      setOpen(true)
+      if (document.hasFocus()) {
+        setOpen(true)
+      }
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
