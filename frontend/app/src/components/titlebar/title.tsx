@@ -16,13 +16,13 @@ export function Title() {
     >
       <Switch>
         <Route path="/">
-          <span>Inbox</span>
+          <span data-tauri-drag-region>Inbox</span>
         </Route>
         <Route path="/inbox">
-          <span>Inbox</span>
+          <span data-tauri-drag-region>Inbox</span>
         </Route>
         <Route path="/drafts">
-          <span>Drafts</span>
+          <span data-tauri-drag-region>Drafts</span>
         </Route>
         <Route path="/p/:id/:version/:block?">
           {current ? (
@@ -48,8 +48,8 @@ function PublicationTitle({fileRef}: {fileRef: PublicationActor}) {
 
   return (
     <>
-      <span>{title}</span>
-      <small>{alias}</small>
+      <span data-tauri-drag-region>{title}</span>
+      <small data-tauri-drag-region>{alias}</small>
     </>
   )
 }
@@ -57,5 +57,5 @@ function PublicationTitle({fileRef}: {fileRef: PublicationActor}) {
 function DraftTitle({fileRef}: {fileRef: DraftActor}) {
   const title = useSelector(fileRef, (state) => state.context.title)
 
-  return <span>{title}</span>
+  return <span data-tauri-drag-region>{title}</span>
 }
