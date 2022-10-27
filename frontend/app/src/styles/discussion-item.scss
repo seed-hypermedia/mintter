@@ -51,6 +51,7 @@
   }
 
   &:last-child {
+    border-bottom-color: transparent;
     &:before {
       height: calc(1rem + 20px) !important;
     }

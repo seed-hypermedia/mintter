@@ -159,7 +159,7 @@ export function useDiscussion({documentId, visible}: UseDiscussionParams) {
     queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
     queryFn: () => listCitations(documentId),
     enabled: !!documentId && visible,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   })
 
   let data = useMemo(() => {
