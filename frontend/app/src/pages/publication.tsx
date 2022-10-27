@@ -1,5 +1,4 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {classnames} from '@app/utils/classnames'
 import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
@@ -10,6 +9,7 @@ import {useMain} from '@app/main-context'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {createPublicationMachine} from '@app/publication-machine'
+import {classnames} from '@app/utils/classnames'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
@@ -154,7 +154,14 @@ export default function PublicationWrapper() {
                           <Tooltip content="Toggle Activity">
                             <button
                               className="discussion-button"
-                              onClick={() => panelSend('DISCUSSION.TOGGLE')}
+                              onClick={() => {
+                                panelSend('DISCUSSION.TOGGLE')
+                                mouseService.send('DISABLE.WINDOW.RESIZE')
+                                console.log(
+                                  'mouse service',
+                                  mouseService.getSnapshot().value,
+                                )
+                              }}
                             >
                               <Icon name="MessageBubble" />
                             </button>
@@ -180,20 +187,22 @@ export default function PublicationWrapper() {
                   </ErrorBoundary>
                 </section>
               </Allotment.Pane>
-              {resizablePanelState.context.visible && (
-                <Allotment.Pane preferredSize={'35%'}>
-                  <section className="discussion-section">
-                    <ScrollArea
-                      onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                    >
-                      <Discussion
-                        visible={resizablePanelState.context.visible}
-                        publication={state.context.publication}
-                      />
-                    </ScrollArea>
-                  </section>
-                </Allotment.Pane>
-              )}
+              {resizablePanelState.context.visible &&
+                !!state.context.publication && (
+                  <Allotment.Pane preferredSize={'35%'}>
+                    <section className="discussion-section">
+                      <ScrollArea
+                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                      >
+                        <Discussion
+                          visible={resizablePanelState.context.visible}
+                          publication={state.context.publication}
+                          onReply={() => send('PUBLICATION.REPLY')}
+                        />
+                      </ScrollArea>
+                    </section>
+                  </Allotment.Pane>
+                )}
             </Allotment>
           </div>
         </BlockHighLighter>

@@ -1,19 +1,25 @@
 import '../styles/discussion.scss'
 
-import {Publication} from '@app/client'
 import {useAuthor, useDiscussion} from '@app/hooks'
+import {ClientPublication} from '@app/publication-machine'
 import {formattedDate} from '@app/utils/get-format-date'
 import {Avatar} from '@components/avatar'
 import {DiscussionItem} from '@components/discussion-item'
+import {Icon} from '@components/icon'
 import {appWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
 
 export type DiscussionProps = {
-  publication: Publication
+  publication: ClientPublication
   visible: boolean
+  onReply: () => void
 }
 
-export function Discussion({publication, visible = false}: DiscussionProps) {
+export function Discussion({
+  publication,
+  visible = false,
+  onReply,
+}: DiscussionProps) {
   const {data, refetch} = useDiscussion({
     documentId: publication.document.id,
     visible,
@@ -76,6 +82,18 @@ export function Discussion({publication, visible = false}: DiscussionProps) {
               link={link}
             />
           ))}
+        <li className="discussion-item add-item" onClick={() => onReply()}>
+          <div className="item-section item-avatar">
+            <button className="item-button-add">
+              <Icon name="Add" />
+            </button>
+          </div>
+          <div className="item-section item-info">
+            <p>
+              {data && data.length > 0 ? 'Add a Reply' : 'Start a Discussion'}
+            </p>
+          </div>
+        </li>
       </ul>
     </div>
   )
