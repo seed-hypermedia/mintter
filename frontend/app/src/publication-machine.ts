@@ -117,7 +117,7 @@ export function createPublicationMachine({
               states: {
                 normal: {
                   after: {
-                    2000: 'extended',
+                    1000: 'extended',
                   },
                 },
                 extended: {},
