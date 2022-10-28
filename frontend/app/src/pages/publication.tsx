@@ -77,7 +77,7 @@ export default function PublicationWrapper() {
             visible: state.matches('publication.fetching.extended'),
           })}
         >
-          Looking up the network...
+          Searching the network...
         </p>
       </>
     )
