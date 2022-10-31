@@ -110,7 +110,7 @@
   },
   "devDependencies": {
     "@cypress/vite-dev-server": "3.3.1",
-    "@graphql-codegen/cli": "2.13.7",
+    "@graphql-codegen/cli": "2.13.8",
     "@graphql-codegen/typescript": "2.8.0",
     "@happy-dom/global-registrator": "7.6.6",
     "@radix-ui/react-navigation-menu": "1.1.1",
