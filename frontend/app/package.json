@@ -106,7 +106,7 @@
     "unist-util-visit": "4.1.1",
     "unist-util-visit-parents": "5.1.1",
     "wouter": "2.8.0-alpha.2",
-    "xstate": "4.33.6"
+    "xstate": "4.34.0"
   },
   "devDependencies": {
     "@cypress/vite-dev-server": "3.3.1",
