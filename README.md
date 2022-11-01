@@ -1,6 +1,10 @@
 # Mintter
 
-This is the main repository for the Mintter project.
+Mintter is a decentralized knowledge collaboration application for open
+communities powered by a knowledge graph.
+
+You can read more about the product and why we are here on our website:
+https://mintter.com
 
 ## ⚠️ Stability
 
