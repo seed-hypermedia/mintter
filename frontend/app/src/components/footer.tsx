@@ -55,13 +55,15 @@ function Contacts({
         </button>
       </HoverCard.Trigger>
       <HoverCard.Portal>
-        <HoverCard.Content side="top" align="end">
-          <ul className="contacts-content">
-            {online.map((contact) => (
-              <ContactItem key={contact.id} contact={contact} />
-            ))}
-          </ul>
-        </HoverCard.Content>
+        {online.length && (
+          <HoverCard.Content side="top" align="end">
+            <ul className="contacts-content">
+              {online.map((contact) => (
+                <ContactItem key={contact.id} contact={contact} />
+              ))}
+            </ul>
+          </HoverCard.Content>
+        )}
       </HoverCard.Portal>
     </HoverCard.Root>
   )
@@ -178,7 +180,7 @@ const slideLeftAndFade = keyframes({
 const HoverCardContentStyled = styled(HoverCard.Content, {
   minWidth: 130,
   maxWidth: 520,
-  zIndex: '$4',
+  zIndex: '$max',
   border: '1px solid $colors$base-border-normal',
   backgroundColor: '$base-background-normal',
   borderRadius: 6,
@@ -303,53 +305,3 @@ function ContactItem({contact}: ContactItemProps) {
     </HoverCard.Root>
   )
 }
-
-export var StyledItem = styled('li', {
-  //   $$bg: 'transparent',
-  //   $$bgHover: '$colors$base-component-bg-hover',
-  //   $$foreground: '$colors$base-text-high',
-  //   display: 'flex',
-  //   minHeight: 28,
-  //   gap: '1rem',
-  //   alignItems: 'center',
-  //   position: 'relative',
-  //   borderRadius: '$1',
-  //   backgroundColor: '$$bg',
-  //   paddingHorizontal: '$2',
-  //   '&:hover': {
-  //     cursor: 'pointer',
-  //     backgroundColor: '$$bgHover',
-  //     '.dropdown': {
-  //       opacity: 1,
-  //     },
-  //   },
-  //   '.title': {
-  //     userSelect: 'none',
-  //     letterSpacing: '0.01em',
-  //     lineHeight: '$2',
-  //     textOverflow: 'ellipsis',
-  //     whiteSpace: 'nowrap',
-  //     overflow: 'hidden',
-  //     color: '$$foreground',
-  //     flex: 1,
-  //     paddingHorizontal: '$3',
-  //     paddingVertical: '$2',
-  //   },
-  //   '.dropdown': {
-  //     opacity: 0,
-  //   },
-  // },
-  // {
-  //   defaultVariants: {
-  //     active: false,
-  //   },
-  //   variants: {
-  //     active: {
-  //       true: {
-  //         $$bg: '$colors$primary-normal',
-  //         $$bgHover: '$colors$primary-active',
-  //         $$foreground: '$colors$primary-text-opposite',
-  //       },
-  //     },
-  //   },
-})
