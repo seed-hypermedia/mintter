@@ -1,8 +1,7 @@
-import {updateProfile} from '@app/client'
+import {updateProfile as defaultUpdateProfile} from '@app/client'
 import {TextField} from '@components/text-field'
 import {useMutation} from '@tanstack/react-query'
-import {useCallback} from 'react'
-import {useForm} from 'react-hook-form'
+import {FormEvent} from 'react'
 import toast from 'react-hot-toast'
 import {
   IconContainer,
@@ -20,31 +19,34 @@ type ProfileInformationDataType = {
   bio: string
 }
 
-export function ProfileInformation({next}: OnboardingStepPropsType) {
-  const mutate = useMutation(updateProfile)
-  const {register, handleSubmit, formState} =
-    useForm<ProfileInformationDataType>({
-      mode: 'onChange',
-      defaultValues: {
-        alias: '',
-        bio: '',
-      },
-    })
-
-  const onSubmit = useCallback(
-    async (data: ProfileInformationDataType) => {
-      await toast.promise(mutate.mutateAsync(data), {
-        loading: 'Updating profile',
-        success: 'Profile updated',
-        error: 'Error updating profile',
-      })
+export function ProfileInformation({
+  next,
+  updateProfile = defaultUpdateProfile,
+}: OnboardingStepPropsType) {
+  const {mutate} = useMutation({
+    mutationFn: updateProfile,
+    onSuccess: () => {
+      toast.success('Profile Updated')
       next()
     },
-    [next, mutate],
-  )
+    onError: () => {
+      toast.error('Error updating profile')
+    },
+  })
+
+  function onSubmit(e: FormEvent<HTMLFormElement>) {
+    let formData = new FormData(e.currentTarget)
+    // @ts-ignore
+    let newProfile: ProfileInformationDataType = Object.fromEntries(
+      formData.entries(),
+    )
+    e.preventDefault()
+    // @ts-ignore
+    mutate(newProfile)
+  }
 
   return (
-    <OnboardingStep onSubmit={handleSubmit(onSubmit)}>
+    <OnboardingStep onSubmit={onSubmit}>
       <OnboardingStepTitle icon={<ProfileInformationIcon />}>
         Profile Information
       </OnboardingStepTitle>
@@ -59,26 +61,22 @@ export function ProfileInformation({next}: OnboardingStepPropsType) {
           type="text"
           label="Alias"
           id="alias"
-          {...register('alias')}
+          name="alias"
           data-testid="alias-input"
           placeholder="Readable alias or username. Doesn't have to be unique."
         />
         <TextField
           textarea
           id="bio"
+          name="bio"
           label="Bio"
           data-testid="bio-input"
-          {...register('bio')}
           rows={4}
           placeholder="A little bit about yourself..."
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton
-          type="submit"
-          data-testid="next-btn"
-          disabled={!formState.isValid || formState.isSubmitting}
-        >
+        <OnboardingStepButton type="submit" data-testid="next-btn">
           Next
         </OnboardingStepButton>
       </OnboardingStepActions>
