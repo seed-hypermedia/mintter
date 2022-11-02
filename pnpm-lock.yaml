@@ -39,7 +39,7 @@ importers:
       '@cypress/vite-dev-server': 3.4.0
       '@floating-ui/react-dom': 1.0.0
       '@floating-ui/react-dom-interactions': 0.10.3
-      '@graphql-codegen/cli': 2.13.10
+      '@graphql-codegen/cli': 2.13.11
       '@graphql-codegen/typescript': 2.8.1
       '@happy-dom/global-registrator': 7.6.6
       '@improbable-eng/grpc-web': 0.15.0
@@ -244,7 +244,7 @@ importers:
       xstate: 4.34.0
     devDependencies:
       '@cypress/vite-dev-server': 3.4.0
-      '@graphql-codegen/cli': 2.13.10_5r3mmcyz2qxsj6cwjz753kl35e
+      '@graphql-codegen/cli': 2.13.11_5r3mmcyz2qxsj6cwjz753kl35e
       '@graphql-codegen/typescript': 2.8.1_graphql@16.6.0
       '@happy-dom/global-registrator': 7.6.6
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
@@ -1328,8 +1328,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@graphql-codegen/cli/2.13.10_5r3mmcyz2qxsj6cwjz753kl35e:
-    resolution: {integrity: sha512-h0b/dr1yY0P3BzHXES9b40ADqCwzb5G8mPGGmYJyrJUrWbVBDHd7oLsYNZyUXrdNH2+OXSvRla0P+rE7Xtql5Q==}
+  /@graphql-codegen/cli/2.13.11_5r3mmcyz2qxsj6cwjz753kl35e:
+    resolution: {integrity: sha512-PJF36a1i6M7Btj1kB4PWWzBUO3u2BJzsd/6KXxRmEugcxrbaCnbTDDktopy0CZYKdqaFbXaowwbRY8Tk8DV99Q==}
     hasBin: true
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
@@ -1337,7 +1337,7 @@ packages:
       '@babel/generator': 7.19.6
       '@babel/template': 7.18.10
       '@babel/types': 7.19.4
-      '@graphql-codegen/core': 2.6.4_graphql@16.6.0
+      '@graphql-codegen/core': 2.6.5_graphql@16.6.0
       '@graphql-codegen/plugin-helpers': 2.7.2_graphql@16.6.0
       '@graphql-tools/apollo-engine-loader': 7.3.13_graphql@16.6.0
       '@graphql-tools/code-file-loader': 7.3.6_graphql@16.6.0
@@ -1384,8 +1384,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@graphql-codegen/core/2.6.4_graphql@16.6.0:
-    resolution: {integrity: sha512-gmiRJIkmzeODBpX5ATDLWBTAs2zl21cRqwOmcYtLY3RMxNa3SIpHFII6BIYLOo/ZO767+2DH8FOKWCR78w6cvQ==}
+  /@graphql-codegen/core/2.6.5_graphql@16.6.0:
+    resolution: {integrity: sha512-oSbM8vINFxcV1GUasJTDIemMpEG1t6NkBG8odQCt/3ZExCYmoviHhG9vJB89QqJeU5W06qQB6SJn/dg/gv5Aqg==}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     dependencies:
