@@ -36,7 +36,7 @@ require (
 	github.com/peterbourgon/ff/v3 v3.3.0
 	github.com/planetscale/vtprotobuf v0.3.0
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.13.1
 	github.com/sanity-io/litter v1.5.5
 	github.com/stretchr/testify v1.8.1
 	github.com/tyler-smith/go-bip39 v1.1.0
