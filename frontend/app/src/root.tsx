@@ -58,25 +58,6 @@ export function Root() {
 }
 
 function App() {
-  // let [status, setStatus] = useState<
-  //   'loading' | 'no_account' | 'error' | 'success'
-  // >('loading')
-
-  // useEffect(() => {
-  //   getInfo()
-  //     .then(() => {
-  //       setStatus('success')
-  //     })
-  //     .catch((error) => {
-  //       setStatus('no_account')
-  //       // if (contains('account is not initialized')) {
-  //       //   console.log('NO ACCOUNT'
-  //       // } else {
-  //       //   console.log('ERROR', error)
-  //       // }
-  //       // setStatus('error')
-  //     })
-  // }, [])
   let {data, status} = useQuery({
     queryKey: [queryKeys.GET_ACCOUNT_INFO],
     queryFn: () =>

@@ -8,7 +8,7 @@ import type {TextProps} from '@components/text'
 import {Text, textStyles} from '@components/text'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
-import {PropsWithChildren} from 'react'
+import {FormEvent, PropsWithChildren} from 'react'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void
@@ -72,7 +72,11 @@ const OnboardingStepStyled = styled(motion.form, {
   justifyContent: 'center',
 })
 
-export function OnboardingStep(props: PropsWithChildren<{onSubmit}>) {
+export function OnboardingStep(
+  props: PropsWithChildren<{
+    onSubmit?: (e: FormEvent<HTMLFormElement>) => void
+  }>,
+) {
   return (
     <OnboardingStepStyled
       variants={containerAnimationVariants}
