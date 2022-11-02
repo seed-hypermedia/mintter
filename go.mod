@@ -24,7 +24,7 @@ require (
 	github.com/ipfs/go-merkledag v0.8.0
 	github.com/klauspost/compress v1.15.12
 	github.com/leporo/sqlf v1.3.0
-	github.com/libp2p/go-libp2p v0.23.2
+	github.com/libp2p/go-libp2p v0.23.3
 	github.com/libp2p/go-libp2p-gostream v0.5.0
 	github.com/libp2p/go-libp2p-kad-dht v0.18.0
 	github.com/libp2p/go-libp2p-record v0.2.0
