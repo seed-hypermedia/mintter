@@ -38,7 +38,7 @@ export default function Main() {
             <Route>{() => <Redirect to="/inbox" />}</Route>
           </Switch>
         </main>
-        <TitleBar settings={isSettings} />
+        <TitleBar clean={isSettings} />
         {!isSettings ? (
           <>
             <QuickSwitcher />
