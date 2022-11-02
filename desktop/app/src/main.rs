@@ -63,7 +63,7 @@ fn main() {
 
   let sentry_options = sentry::ClientOptions {
     dsn:
-      "https://db7855f82cec4baca8a0d6ec8d8f5d88@o4503930427473920.ingest.sentry.io/4503931193851907"
+      "https://35b415b705dc4f41bc8a118759fc748a@o4504088793841664.ingest.sentry.io/4504088879169536"
         .into_dsn()
         .expect("failed to parse DSN"),
     release: sentry::release_name!(),
