@@ -1,4 +1,4 @@
-import {GenMnemonicResponse} from '@app/client'
+import {GenMnemonicResponse, updateProfile} from '@app/client'
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
@@ -12,6 +12,7 @@ import {PropsWithChildren} from 'react'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void
+  updateProfile?: typeof updateProfile
   generateMnemonic?: () => Promise<GenMnemonicResponse>
 }
 
