@@ -7,6 +7,9 @@ use tauri::{
   AppHandle, Manager, Runtime, WindowBuilder, WindowUrl, Wry,
 };
 
+const DEFAULT_WINDOW_WIDTH: f64 = 1000.0;
+const DEFAULT_WINDOW_HEIGHT: f64 = 800.0;
+
 #[derive(Debug, thiserror::Error)]
 enum Error {
   #[error(transparent)]
@@ -52,7 +55,7 @@ async fn open(app_handle: AppHandle, path: &str) -> Result<(), Error> {
 
   let win = WindowBuilder::new(&app_handle, label, WindowUrl::App(path.into()))
     .title("Mintter")
-    .min_inner_size(500.0, 500.0);
+    .min_inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
   #[cfg(not(target_os = "macos"))]
   let win = { win.decorations(false) };
@@ -69,7 +72,7 @@ pub fn new_window<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
 
   let win = WindowBuilder::new(&app_handle, label, WindowUrl::App("index.html".into()))
     .title("Mintter")
-    .min_inner_size(500.0, 500.0);
+    .min_inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
   #[cfg(not(target_os = "macos"))]
   let win = { win.decorations(false) };
