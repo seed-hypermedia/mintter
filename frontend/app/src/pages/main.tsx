@@ -26,7 +26,6 @@ export default function Main() {
       <div className={classnames('main-root', {settings: isSettings})}>
         <main>
           <Switch>
-            <Route path="/" component={PublicationList} />
             <Route path="/inbox" component={PublicationList} />
             <Route path="/drafts" component={DraftList} />
             <Route
