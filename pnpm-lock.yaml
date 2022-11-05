@@ -154,7 +154,7 @@ importers:
       vite-react-jsx: 1.1.2
       vite-tsconfig-paths: 3.5.2
       vitest: 0.24.5
-      wouter: 2.8.0
+      wouter: 2.8.1
       ws: 8.10.0
       xstate: 4.34.0
     dependencies:
@@ -238,7 +238,7 @@ importers:
       unist-util-to-string-with-nodes: 0.1.1
       unist-util-visit: 4.1.1
       unist-util-visit-parents: 5.1.1
-      wouter: 2.8.0_react@18.2.0
+      wouter: 2.8.1_react@18.2.0
       xstate: 4.34.0
     devDependencies:
       '@cypress/vite-dev-server': 3.4.0
@@ -9235,8 +9235,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /wouter/2.8.0_react@18.2.0:
-    resolution: {integrity: sha512-rdfcWljlSGRJQqefJg3Ea9VY77GNX6fG6FJk1o4lhUl3sYDUoNpsSJJKxkjZQmeDwoToZrm6LztT2vd1IswjZQ==}
+  /wouter/2.8.1_react@18.2.0:
+    resolution: {integrity: sha512-zLYdtGBUgcT/Qs0g/B3L9zVkOGAiqBzEh4zp6rZbeNVFWE0nERscpQDXY8kziFC7a3mQNFP6hd4wv+hoK3s4XQ==}
     peerDependencies:
       react: '>=16.8.0'
     dependencies:
