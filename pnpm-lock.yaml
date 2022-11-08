@@ -65,7 +65,7 @@ importers:
       '@stitches/react': 1.2.8
       '@tanstack/react-query': 4.14.5
       '@tanstack/react-query-devtools': 4.14.5
-      '@tauri-apps/api': 1.1.0
+      '@tauri-apps/api': 1.2.0
       '@types/autosize': 4.0.1
       '@types/google-protobuf': 3.15.6
       '@types/hast': 2.3.4
@@ -181,7 +181,7 @@ importers:
       '@stitches/core': 1.2.8
       '@stitches/react': 1.2.8_react@18.2.0
       '@tanstack/react-query': 4.14.5_biqbaboplfbrettd7655fr4n2y
-      '@tauri-apps/api': 1.1.0
+      '@tauri-apps/api': 1.2.0
       '@xstate/react': 3.0.1_ayelwdf2pp374qfpsc6eg4e7aa
       allotment: 1.17.0_biqbaboplfbrettd7655fr4n2y
       autosize: 5.0.1
@@ -2743,6 +2743,11 @@ packages:
   /@tauri-apps/api/1.1.0:
     resolution: {integrity: sha512-n13pIqdPd3KtaMmmAcrU7BTfdMtIlGNnfZD0dNX8L4p8dgmuNyikm6JAA+yCpl9gqq6I8x5cV2Y0muqdgD0cWw==}
     engines: {node: '>= 12.22.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
+    dev: false
+
+  /@tauri-apps/api/1.2.0:
+    resolution: {integrity: sha512-lsI54KI6HGf7VImuf/T9pnoejfgkNoXveP14pVV7XarrQ46rOejIVJLFqHI9sRReJMGdh2YuCoI3cc/yCWCsrw==}
+    engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
     dev: false
 
   /@tauri-apps/toml/2.2.4:
@@ -9492,7 +9497,7 @@ packages:
     version: 0.1.0
     dependencies:
       '@sentry/browser': 7.15.0
-      '@tauri-apps/api': 1.1.0
+      '@tauri-apps/api': 1.2.0
       tslib: 2.4.0
     dev: false
 
@@ -9501,7 +9506,7 @@ packages:
     name: tauri-plugin-log-api
     version: 0.1.0
     dependencies:
-      '@tauri-apps/api': 1.1.0
+      '@tauri-apps/api': 1.2.0
       tslib: 2.4.0
     dev: false
 
