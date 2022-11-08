@@ -33,6 +33,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
+	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
 	"github.com/multiformats/go-multiaddr"
 	"go.uber.org/multierr"
@@ -413,6 +414,16 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 		)
 	}
 
+	libp2p.SetDefaultServiceLimits(&rcmgr.ScalingLimitConfig{ServiceBaseLimit: rcmgr.BaseLimit{
+		Streams:         4096,
+		StreamsInbound:  3000,
+		StreamsOutbound: 1000,
+		Conns:           2200,
+		ConnsInbound:    2048,
+		ConnsOutbound:   128,
+		FD:              1,
+		Memory:          1 << 20,
+	}})
 	m := ipfs.NewLibp2pMetrics()
 
 	if !cfg.NoMetrics {
