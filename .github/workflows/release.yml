@@ -13,9 +13,24 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        with:
+          environment: 'nightly'
+          version: ${{steps.current_time.outputs.formattedTime}}
+          finalize: false
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
   build-binaries:
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 30
+    needs: get-version
     strategy:
       fail-fast: false
       matrix:
@@ -173,6 +188,18 @@ jobs:
           debug: true
           args: --verbose
 
+      - name: Upload Sourcemaps to Sentry
+        uses: getsentry/action-release@v1
+        with:
+          environment: 'production'
+          version: ${{ needs.get-version.outputs.version }}
+          finalize: false
+          sourcemaps: './frontend/app/dist'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.goarch }}
@@ -184,6 +211,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Upload Sourcemaps to Sentry
+        uses: getsentry/action-release@v1
+        with:
+          environment: 'production'
+          version: ${{ needs.get-version.outputs.version }}
+          finalize: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
 
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
