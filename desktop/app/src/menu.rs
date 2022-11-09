@@ -153,7 +153,7 @@ pub fn event_handler(event: WindowMenuEvent) {
 pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
   match event.menu_item_id() {
     "new_window" => {
-      new_window(event.window().app_handle())?;
+      new_window(event.window().clone())?;
     }
     "reload" => {
       event.window().eval("location.reload()")?;
