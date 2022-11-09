@@ -4,16 +4,17 @@ import {
   OnboardingStepActions,
   OnboardingStepButton,
   OnboardingStepDescription,
+  OnboardingStepPropsType,
   OnboardingStepTitle,
 } from './common'
 
-export function CrashReporting() {
+export function CrashReporting(props: OnboardingStepPropsType) {
   function reloadOnComplete() {
     window.location.reload()
   }
 
   return (
-    <OnboardingStep>
+    <OnboardingStep {...props}>
       <OnboardingStepTitle icon={<CrashReportingIcon />}>
         Crash Reporting
       </OnboardingStepTitle>

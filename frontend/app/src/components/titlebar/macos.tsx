@@ -1,12 +1,9 @@
+import {TitleBarProps} from '@components/titlebar'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import {Title} from './title'
 
-interface TitleBarProps {
-  settings?: boolean
-}
-
-export function TitleBarMacos(props: TitleBarProps) {
-  if (props.settings) {
+export default function TitleBarMacos(props: TitleBarProps) {
+  if (props.clean) {
     return (
       <header id="titlebar" className="titlebar-row" data-tauri-drag-region />
     )

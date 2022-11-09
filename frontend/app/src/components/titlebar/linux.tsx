@@ -1,5 +1,6 @@
 import {Dropdown} from '@app/editor/dropdown'
 import {Icon} from '@components/icon'
+import {TitleBarProps} from '@components/titlebar'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
@@ -12,11 +13,7 @@ import {
   MinimizeButton,
 } from './window-controls'
 
-interface TitleBarProps {
-  settings?: boolean
-}
-
-export function TitleBarLinux(props: TitleBarProps) {
+export default function TitleBarLinux(props: TitleBarProps) {
   const [focus, setFocus] = useState(true)
 
   useEffect(() => {
@@ -32,8 +29,8 @@ export function TitleBarLinux(props: TitleBarProps) {
     }
   }, [])
 
-  // in the settings window we render a stripped down version of the titlebar
-  if (props.settings) {
+  // in the clean window we render a stripped down version of the titlebar
+  if (props.clean) {
     return (
       <header
         id="titlebar"

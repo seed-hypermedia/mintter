@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import {TitleBarProps} from '@components/titlebar'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
@@ -14,13 +15,9 @@ import {
   MinimizeButton,
 } from './window-controls'
 
-interface TitleBarProps {
-  settings?: boolean
-}
-
-export function TitleBarWindows(props: TitleBarProps) {
+export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
-  if (props.settings) {
+  if (props.clean) {
     return (
       <header id="titlebar" data-tauri-drag-region>
         <div className="titlebar-row" data-tauri-drag-region>

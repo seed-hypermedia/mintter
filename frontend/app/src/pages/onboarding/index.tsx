@@ -1,5 +1,6 @@
 import {store} from '@app/client/store'
 import {Box} from '@components/box'
+import {TitleBar} from '@components/titlebar'
 import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
 import {createMachine, MachineOptionsFrom} from 'xstate'
@@ -83,46 +84,49 @@ export default function OnboardingPage({
   )
 
   return (
-    <Box
-      css={{
-        alignItems: 'center',
-        display: 'flex',
-        justifyContent: 'center',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '$full',
-        height: '$full',
-        backgroundColor: '$base-background-normal',
-      }}
-    >
+    <>
+      <TitleBar clean />
       <Box
         css={{
-          backgroundColor: '$base-background-subtle',
-          borderRadius: '24px',
-          boxShadow: '$3',
+          alignItems: 'center',
           display: 'flex',
-          maxWidth: 800,
-          minHeight: 745,
-          paddingBottom: 56,
-          paddingHorizontal: 80,
-          paddingTop: 112,
-          width: '100%',
+          justifyContent: 'center',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '$full',
+          height: '$full',
+          backgroundColor: '$base-background-normal',
         }}
       >
-        {onboardingMachineState.matches('welcome') && (
-          <Welcome {...onboardingStepProps} />
-        )}
-        {onboardingMachineState.matches('securityPack') && (
-          <SecurityPack {...onboardingStepProps} />
-        )}
-        {onboardingMachineState.matches('profileInformation') && (
-          <ProfileInformation {...onboardingStepProps} />
-        )}
-        {onboardingMachineState.matches('complete') && (
-          <CrashReporting {...onboardingStepProps} />
-        )}
+        <Box
+          css={{
+            backgroundColor: '$base-background-subtle',
+            borderRadius: '24px',
+            boxShadow: '$3',
+            display: 'flex',
+            maxWidth: 800,
+            minHeight: 745,
+            paddingBottom: 56,
+            paddingHorizontal: 80,
+            paddingTop: 112,
+            width: '100%',
+          }}
+        >
+          {onboardingMachineState.matches('welcome') && (
+            <Welcome {...onboardingStepProps} />
+          )}
+          {onboardingMachineState.matches('securityPack') && (
+            <SecurityPack {...onboardingStepProps} />
+          )}
+          {onboardingMachineState.matches('profileInformation') && (
+            <ProfileInformation {...onboardingStepProps} />
+          )}
+          {onboardingMachineState.matches('complete') && (
+            <CrashReporting {...onboardingStepProps} />
+          )}
+        </Box>
       </Box>
-    </Box>
+    </>
   )
 }
