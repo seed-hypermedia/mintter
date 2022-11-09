@@ -19,6 +19,8 @@ jobs:
       version: ${{ steps.current_time.outputs.formattedTime }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Get current time
         uses: srfrnk/current-time@master
@@ -208,6 +210,7 @@ jobs:
           version: ${{ needs.get-version.outputs.version }}
           finalize: false
           sourcemaps: './frontend/app/dist'
+          set_commits: 'skip'
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -233,6 +236,7 @@ jobs:
           environment: 'nightly'
           version: ${{ needs.get-version.outputs.version }}
           finalize: true
+          set_commits: 'skip'
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}

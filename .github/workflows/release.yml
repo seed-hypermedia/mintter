@@ -17,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Create Sentry release
         uses: getsentry/action-release@v1
         with:
@@ -195,6 +198,7 @@ jobs:
           version: ${{ needs.get-version.outputs.version }}
           finalize: false
           sourcemaps: './frontend/app/dist'
+          set_commits: 'skip'
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
@@ -218,6 +222,7 @@ jobs:
           environment: 'production'
           version: ${{ needs.get-version.outputs.version }}
           finalize: true
+          set_commits: 'skip'
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
