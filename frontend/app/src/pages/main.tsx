@@ -5,6 +5,7 @@ import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Redirect} from 'wouter'
 import {Route, Switch, useRoute} from '../components/router'
 import '../styles/main.scss'
+import './polyfills'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))
