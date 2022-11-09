@@ -186,12 +186,14 @@ jobs:
           debug: true
           args: --verbose
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload sourcemaps
+        uses: actions/upload-artifact@v3
         with:
           name: sourcemaps-${{ matrix.config.rust_target }}
-          path: frontend/app/dist/**.js.map
+          path: frontend/app/dist/**/*.js.map
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.goarch }}
           path:
