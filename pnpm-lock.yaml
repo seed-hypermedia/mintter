@@ -128,7 +128,7 @@ importers:
       rehype-parse: 8.0.4
       rehype-sanitize: 5.0.1
       rehype-stringify: 9.0.3
-      sass: 1.56.0
+      sass: 1.56.1
       shiki: 0.10.1
       show-keys: 1.1.2
       slate: https://gitpkg.now.sh/mintterteam/slate/packages/slate?4a136b50302aa869e8a8af548400597f5c6b6688
@@ -270,15 +270,15 @@ importers:
       happy-dom: 7.6.7
       is-hidden: 2.0.0
       prettier: 2.7.1
-      sass: 1.56.0
+      sass: 1.56.1
       tiny-glob: 0.2.9
       ts-node: 10.9.1_cbe7ovvae6zqfnmtgctpgpys54
       ts-proto: 1.131.0
       typescript: 4.8.4
-      vite: 3.2.3_ybfrah5imrtywho25u564barp4
+      vite: 3.2.3_ajklay5k626t46b6fyghkbup3i
       vite-react-jsx: 1.1.2_vite@3.2.3
       vite-tsconfig-paths: 3.5.2_vite@3.2.3
-      vitest: 0.25.1_m3o4cqqqy3oqqeduvg7f3naalm
+      vitest: 0.25.1_nvtrrpyzl2npvextx4c3hwww4q
       ws: 8.11.0
 
 packages:
@@ -3160,7 +3160,7 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.19.6_@babel+core@7.19.6
       magic-string: 0.26.7
       react-refresh: 0.14.0
-      vite: 3.2.3_ybfrah5imrtywho25u564barp4
+      vite: 3.2.3_ajklay5k626t46b6fyghkbup3i
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -8030,8 +8030,8 @@ packages:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
     dev: true
 
-  /sass/1.56.0:
-    resolution: {integrity: sha512-WFJ9XrpkcnqZcYuLRJh5qiV6ibQOR4AezleeEjTjMsCocYW59dEG19U3fwTTXxzi2Ed3yjPBp727hbbj53pHFw==}
+  /sass/1.56.1:
+    resolution: {integrity: sha512-VpEyKpyBPCxE7qGDtOcdJ6fFbcpOM+Emu7uZLxVrkX8KVU/Dp5UF7WLvzqRuUhB6mqqQt1xffLoG+AndxTZrCQ==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     dependencies:
@@ -9047,7 +9047,7 @@ packages:
       '@babel/plugin-syntax-typescript': 7.18.6_@babel+core@7.19.3
       '@babel/plugin-transform-react-jsx': 7.19.0_@babel+core@7.19.3
       resolve: 1.22.1
-      vite: 3.2.3_ybfrah5imrtywho25u564barp4
+      vite: 3.2.3_ajklay5k626t46b6fyghkbup3i
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -9061,12 +9061,12 @@ packages:
       globrex: 0.1.2
       recrawl-sync: 2.2.2
       tsconfig-paths: 4.1.0
-      vite: 3.2.3_ybfrah5imrtywho25u564barp4
+      vite: 3.2.3_ajklay5k626t46b6fyghkbup3i
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /vite/3.2.3_ybfrah5imrtywho25u564barp4:
+  /vite/3.2.3_ajklay5k626t46b6fyghkbup3i:
     resolution: {integrity: sha512-h8jl1TZ76eGs3o2dIBSsvXDLb1m/Ec1iej8ZMdz+PsaFUsftZeWe2CZOI3qogEsMNaywc17gu0q6cQDzh/weCQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -9096,12 +9096,12 @@ packages:
       postcss: 8.4.18
       resolve: 1.22.1
       rollup: 2.79.1
-      sass: 1.56.0
+      sass: 1.56.1
     optionalDependencies:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.25.1_m3o4cqqqy3oqqeduvg7f3naalm:
+  /vitest/0.25.1_nvtrrpyzl2npvextx4c3hwww4q:
     resolution: {integrity: sha512-eH74h6MkuEgsqR4mAQZeMK9O0PROiKY+i+1GMz/fBi5A3L2ml5U7JQs7LfPU7+uWUziZyLHagl+rkyfR8SLhlA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
@@ -9137,7 +9137,7 @@ packages:
       tinybench: 2.3.1
       tinypool: 0.3.0
       tinyspy: 1.0.2
-      vite: 3.2.3_ybfrah5imrtywho25u564barp4
+      vite: 3.2.3_ajklay5k626t46b6fyghkbup3i
     transitivePeerDependencies:
       - less
       - sass
