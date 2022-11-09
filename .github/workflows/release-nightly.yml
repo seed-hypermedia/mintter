@@ -190,7 +190,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: sourcemaps-${{ matrix.config.rust_target }}
-          path: frontend/app/dist/**/*.js.map
+          path: frontend/app/dist/**/*.map
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -215,7 +215,7 @@ jobs:
       - name: Create Sentry Release
         uses: getsentry/action-release@v1
         with:
-          environment: 'nightly'
+          environment: 'development'
           version: ${{ needs.get-version.outputs.version }}
           finalize: true
           sourcemaps: |

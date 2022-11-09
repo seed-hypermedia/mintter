@@ -13,27 +13,9 @@ env:
   AWS_REGION: us-east-1
 
 jobs:
-  create-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Create Sentry release
-        uses: getsentry/action-release@v1
-        with:
-          environment: 'nightly'
-          version: ${{steps.current_time.outputs.formattedTime}}
-          finalize: false
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
   build-binaries:
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 30
-    needs: get-version
     strategy:
       fail-fast: false
       matrix:
@@ -191,20 +173,14 @@ jobs:
           debug: true
           args: --verbose
 
-      - name: Upload Sourcemaps to Sentry
-        uses: getsentry/action-release@v1
+      - name: Upload sourcemaps
+        uses: actions/upload-artifact@v3
         with:
-          environment: 'production'
-          version: ${{ needs.get-version.outputs.version }}
-          finalize: false
-          sourcemaps: './frontend/app/dist'
-          set_commits: 'skip'
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          name: sourcemaps-${{ matrix.config.rust_target }}
+          path: frontend/app/dist/**/*.map
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.goarch }}
           path:
@@ -215,30 +191,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Upload Sourcemaps to Sentry
-        uses: getsentry/action-release@v1
         with:
-          environment: 'production'
-          version: ${{ needs.get-version.outputs.version }}
-          finalize: true
-          set_commits: 'skip'
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          fetch-depth: 0
 
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
         with:
-          name: artifacts-amd64
-          path: artifacts/amd64
+          path: artifacts
 
-      - name: Download arm64 artifacts
-        uses: actions/download-artifact@v3
+      - name: Create Sentry Release
+        uses: getsentry/action-release@v1
         with:
-          name: artifacts-arm64
-          path: artifacts/arm64
+          environment: 'development'
+          version: ${{ needs.get-version.outputs.version }}
+          finalize: true
+          sourcemaps: |
+            ./artifacts/sourcemaps-x86_64-unknown-linux-gnu
+            ./artifacts/sourcemaps-x86_64-apple-darwin
+            ./artifacts/sourcemaps-aarch64-apple-darwin
+            ./artifacts/sourcemaps-x86_64-pc-windows-msvc
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
 
       - name: Rename .app artifacts
         run: |
