@@ -1,3 +1,4 @@
+import {error} from '@app/utils/logger'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
 import {darkTheme, lightTheme} from './stitches.config'
 import {createInterpreterContext} from './utils/machine-utils'
@@ -97,12 +98,19 @@ export var themeMachine = createMachine(
           '(prefers-color-scheme: dark)',
         )
 
-        darkModeMediaQuery.addEventListener('change', (event) => {
+        function eventHandler(event: MediaQueryListEvent) {
           sendBack({
             type: 'CHANGE',
             theme: event.matches ? 'dark' : 'light',
           })
-        })
+        }
+        if (typeof darkModeMediaQuery.addEventListener == 'function') {
+          darkModeMediaQuery.addEventListener('change', eventHandler)
+        } else if (typeof darkModeMediaQuery.addListener == 'function') {
+          darkModeMediaQuery.addListener(eventHandler)
+        } else {
+          error('matchMedia support error', darkModeMediaQuery)
+        }
       },
       getPersistedTheme: () => (sendBack) => {
         const darkModeMediaQuery = window.matchMedia(

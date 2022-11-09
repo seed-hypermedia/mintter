@@ -24,6 +24,7 @@ import {
   video,
 } from '@app/mttast'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -175,7 +176,14 @@ function PublicationBlocktools(
 
   useEffect(() => {
     let responsiveMedia = window.matchMedia('(max-width: 768px)')
-    responsiveMedia.addEventListener('change', handler)
+    if (typeof responsiveMedia.addEventListener == 'function') {
+      responsiveMedia.addEventListener('change', handler)
+    } else if (typeof responsiveMedia.addListener == 'function') {
+      responsiveMedia.addListener(handler)
+    } else {
+      error('matchMedia support error', responsiveMedia)
+    }
+
     setMatch(responsiveMedia.matches)
     function handler(event: MediaQueryListEvent) {
       setMatch(event.matches)
