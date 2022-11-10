@@ -13,7 +13,7 @@ tauri = "1.2.0"
 thiserror = "1.0.37"
 tokio = "1.21.2"
 tracing = "0.1.37"
-wasmtime = "2.0.1"
+wasmtime = "2.0.2"
 wiggle = "2.0.1"
 workspace-hack = {version = "0.1", path = "../workspace-hack"}
 
