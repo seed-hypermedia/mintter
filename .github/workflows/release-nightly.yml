@@ -216,7 +216,7 @@ jobs:
         uses: getsentry/action-release@v1
         with:
           environment: 'development'
-          version: ${{ needs.get-version.outputs.version }}
+          version: mintter@${{ needs.get-version.outputs.version }}
           finalize: true
           sourcemaps: |
             ./artifacts/sourcemaps-x86_64-unknown-linux-gnu
