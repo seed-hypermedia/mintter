@@ -41,7 +41,7 @@ importers:
       '@floating-ui/react-dom-interactions': 0.10.3
       '@graphql-codegen/cli': 2.13.11
       '@graphql-codegen/typescript': 2.8.1
-      '@happy-dom/global-registrator': 7.6.7
+      '@happy-dom/global-registrator': 7.7.0
       '@improbable-eng/grpc-web': 0.15.0
       '@radix-ui/colors': 0.1.8
       '@radix-ui/react-accessible-icon': 1.0.1
@@ -244,7 +244,7 @@ importers:
       '@cypress/vite-dev-server': 3.4.0
       '@graphql-codegen/cli': 2.13.11_5r3mmcyz2qxsj6cwjz753kl35e
       '@graphql-codegen/typescript': 2.8.1_graphql@16.6.0
-      '@happy-dom/global-registrator': 7.6.7
+      '@happy-dom/global-registrator': 7.7.0
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
       '@tanstack/react-query-devtools': 4.14.8_shujuikkfktcni5nskojfartz4
       '@types/autosize': 4.0.1
@@ -1749,10 +1749,10 @@ packages:
     dependencies:
       graphql: 16.6.0
 
-  /@happy-dom/global-registrator/7.6.7:
-    resolution: {integrity: sha512-UImizOOPrE/x65j4znigEX11pbIGkB9HYcXpB4q6zQZ4nFYudYy6LC+lPj71/VQ3NFOUKj/ZGesIHObx3c1qYQ==}
+  /@happy-dom/global-registrator/7.7.0:
+    resolution: {integrity: sha512-p5e92rxAeyErSNG0+eOE6VWTtVfulQJA8ERc0g578vTfZLPfvmN+R6LbUzwnVinZPQoxshFZc/yH/pkrvhbmnA==}
     dependencies:
-      happy-dom: 7.6.7
+      happy-dom: 7.7.0
     transitivePeerDependencies:
       - encoding
     dev: true
@@ -5712,6 +5712,20 @@ packages:
 
   /happy-dom/7.6.7:
     resolution: {integrity: sha512-9pOslsClyF5JX9ZM3dzRhLjTHqc4dha7v+ZB94u4PHMVTdLplXAnh5e5WXtPUU1n0J4tDUavslJqitqt/1W45g==}
+    dependencies:
+      css.escape: 1.5.1
+      he: 1.2.0
+      node-fetch: 2.6.7
+      sync-request: 6.1.0
+      webidl-conversions: 7.0.0
+      whatwg-encoding: 2.0.0
+      whatwg-mimetype: 3.0.0
+    transitivePeerDependencies:
+      - encoding
+    dev: true
+
+  /happy-dom/7.7.0:
+    resolution: {integrity: sha512-U10JXl5qSaHswXT5kyE7lvSDoyK48GyPGpe74qI9KT29frt1AlS+jnwy77RUJIknx+4b52DK1NllXTgHH8k20w==}
     dependencies:
       css.escape: 1.5.1
       he: 1.2.0
