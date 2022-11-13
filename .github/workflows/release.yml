@@ -153,7 +153,7 @@ jobs:
           node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{
           github.ref_name }}
 
-      - uses: JonasKruckenberg/tauri-build@v1.1.1
+      - uses: JonasKruckenberg/tauri-build@v1.2.0
         id: tauri_build
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
@@ -173,7 +173,14 @@ jobs:
           debug: true
           args: --verbose
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload sourcemaps
+        uses: actions/upload-artifact@v3
+        with:
+          name: sourcemaps-${{ matrix.config.rust_target }}
+          path: frontend/app/dist/**/*.map
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.goarch }}
           path:
@@ -184,18 +191,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
         with:
-          name: artifacts-amd64
-          path: artifacts/amd64
+          path: artifacts
 
-      - name: Download arm64 artifacts
-        uses: actions/download-artifact@v3
+      - name: Create Sentry Release
+        uses: getsentry/action-release@v1
         with:
-          name: artifacts-arm64
-          path: artifacts/arm64
+          environment: 'development'
+          version: mintter@${{ needs.get-version.outputs.version }}
+          finalize: true
+          sourcemaps:
+            './artifacts/sourcemaps-aarch64-apple-darwin
+            ./artifacts/sourcemaps-x86_64-apple-darwin
+            ./artifacts/sourcemaps-x86_64-pc-windows-msvc
+            ./artifacts/sourcemaps-x86_64-unknown-linux-gnu'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
 
       - name: Rename .app artifacts
         run: |

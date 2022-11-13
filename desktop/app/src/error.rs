@@ -20,6 +20,8 @@ pub enum Error {
   InvalidSpecifier,
   #[error(transparent)]
   Tauri(#[from] tauri::Error),
+  #[error("Failed to get the current monitor")]
+  MonitorNotFound,
   // #[error(transparent)]
   // Other(#[from] anyhow::Error),
   // #[error(transparent)]

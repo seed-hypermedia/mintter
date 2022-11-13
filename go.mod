@@ -7,7 +7,7 @@ require (
 	github.com/99designs/gqlgen v0.17.20
 	github.com/btcsuite/btcd v0.23.3
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
-	github.com/getsentry/sentry-go v0.14.0
+	github.com/getsentry/sentry-go v0.15.0
 	github.com/gorilla/mux v1.8.0
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/ipfs/go-bitswap v0.10.2
@@ -24,19 +24,19 @@ require (
 	github.com/ipfs/go-merkledag v0.8.0
 	github.com/klauspost/compress v1.15.12
 	github.com/leporo/sqlf v1.3.0
-	github.com/libp2p/go-libp2p v0.23.3
+	github.com/libp2p/go-libp2p v0.23.4
 	github.com/libp2p/go-libp2p-gostream v0.5.0
 	github.com/libp2p/go-libp2p-kad-dht v0.18.0
 	github.com/libp2p/go-libp2p-record v0.2.0
 	github.com/lightningnetwork/lnd v0.15.1-beta.rc2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/multiformats/go-multiaddr v0.7.0
+	github.com/multiformats/go-multiaddr v0.8.0
 	github.com/multiformats/go-multibase v0.1.1
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/peterbourgon/ff/v3 v3.3.0
 	github.com/planetscale/vtprotobuf v0.3.0
 	github.com/polydawn/refmt v0.0.0-20201211092308-30ac6d18308e
-	github.com/prometheus/client_golang v1.13.1
+	github.com/prometheus/client_golang v1.14.0
 	github.com/sanity-io/litter v1.5.5
 	github.com/stretchr/testify v1.8.1
 	github.com/tyler-smith/go-bip39 v1.1.0
@@ -171,7 +171,7 @@ require (
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/raulk/go-watchdog v1.3.0 // indirect

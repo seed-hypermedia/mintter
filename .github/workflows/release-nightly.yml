@@ -49,8 +49,6 @@ jobs:
           #   rust_target: aarch64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.branch }}
 
       - name: 'Setup Rust'
         uses: actions-rs/toolchain@v1
@@ -167,7 +165,7 @@ jobs:
           node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{
           needs.get-version.outputs.version }}
 
-      - uses: JonasKruckenberg/tauri-build@v1.1.1
+      - uses: JonasKruckenberg/tauri-build@v1.2.0
         id: tauri_build
         env:
           VERSION: ${{ needs.get-version.outputs.version }}
@@ -188,7 +186,14 @@ jobs:
           debug: true
           args: --verbose
 
-      - uses: actions/upload-artifact@v3
+      - name: Upload sourcemaps
+        uses: actions/upload-artifact@v3
+        with:
+          name: sourcemaps-${{ matrix.config.rust_target }}
+          path: frontend/app/dist/**/*.map
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ matrix.config.goarch }}
           path:
@@ -200,26 +205,35 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.branch }}
+          fetch-depth: 0
 
       - name: Download amd64 artifacts
         uses: actions/download-artifact@v3
         with:
-          name: artifacts-amd64
-          path: artifacts/amd64
+          path: artifacts
 
-      - name: Download arm64 artifacts
-        uses: actions/download-artifact@v3
+      - name: Create Sentry Release
+        uses: getsentry/action-release@v1
         with:
-          name: artifacts-arm64
-          path: artifacts/arm64
+          environment: 'development'
+          version: mintter@${{ needs.get-version.outputs.version }}
+          finalize: true
+          sourcemaps:
+            './artifacts/sourcemaps-aarch64-apple-darwin
+            ./artifacts/sourcemaps-x86_64-apple-darwin
+            ./artifacts/sourcemaps-x86_64-pc-windows-msvc
+            ./artifacts/sourcemaps-x86_64-unknown-linux-gnu'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
 
       - name: Rename .app artifacts
         run: |
-          mv ./artifacts/amd64/macos/Mintter.app.tar.gz ./artifacts/amd64/macos/Mintter_x86.app.tar.gz
-          mv ./artifacts/arm64/macos/Mintter.app.tar.gz ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz
-          mv ./artifacts/amd64/macos/Mintter.app.tar.gz.sig ./artifacts/amd64/macos/Mintter_x86.app.tar.gz.sig
-          mv ./artifacts/arm64/macos/Mintter.app.tar.gz.sig ./artifacts/arm64/macos/Mintter_aarch64.app.tar.gz.sig
+          mv ./artifacts/artifacts-amd64/macos/Mintter.app.tar.gz ./artifacts/artifacts-amd64/macos/Mintter_x86.app.tar.gz
+          mv ./artifacts/artifacts-arm64/macos/Mintter.app.tar.gz ./artifacts/artifacts-arm64/macos/Mintter_aarch64.app.tar.gz
+          mv ./artifacts/artifacts-amd64/macos/Mintter.app.tar.gz.sig ./artifacts/artifacts-amd64/macos/Mintter_x86.app.tar.gz.sig
+          mv ./artifacts/artifacts-arm64/macos/Mintter.app.tar.gz.sig ./artifacts/artifacts-arm64/macos/Mintter_aarch64.app.tar.gz.sig
 
       - name: 'create release'
         uses: softprops/action-gh-release@master
@@ -229,7 +243,7 @@ jobs:
           tag_name: desktop-nightly/${{ needs.get-version.outputs.version }}
           prerelease: true
           generate_release_notes: true
-          files: ./artifacts/**/*
+          files: ./artifacts/artifacts-*/**/*
 
   publish-to-aws:
     needs: [get-version, build-binaries]
