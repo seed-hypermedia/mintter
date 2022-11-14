@@ -15,7 +15,6 @@ publish = false
 ### BEGIN HAKARI SECTION
 [dependencies]
 bytes = { version = "1", features = ["serde", "std"] }
-gimli = { version = "0.26", default-features = false, features = ["fallible-iterator", "indexmap", "read", "read-core", "stable_deref_trait", "std", "write"] }
 hashbrown = { version = "0.12", features = ["ahash", "inline-more", "raw"] }
 indexmap = { version = "1", default-features = false, features = ["serde", "serde-1", "std"] }
 log = { version = "0.4", default-features = false, features = ["kv_unstable", "std", "value-bag"] }
@@ -28,8 +27,9 @@ serde = { version = "1", features = ["alloc", "derive", "serde_derive", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
 smallvec = { version = "1", default-features = false, features = ["union"] }
 tao = { version = "0.15", default-features = false, features = ["dirs-next", "libappindicator", "serde", "tray"] }
-tauri-utils-90a44cf74ed4161 = { package = "tauri-utils", git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
-tauri-utils-dff4ba8e3ae991db = { package = "tauri-utils", version = "1", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
+tauri-runtime = { git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["system-tray"] }
+tauri-runtime-wry = { git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["objc-exception", "system-tray"] }
+tauri-utils = { git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 tokio = { version = "1", features = ["bytes", "fs", "io-util", "macros", "memchr", "num_cpus", "rt", "rt-multi-thread", "sync", "tokio-macros"] }
 tracing = { version = "0.1", features = ["attributes", "log", "std", "tracing-attributes"] }
 tracing-core = { version = "0.1", features = ["once_cell", "std"] }
@@ -49,8 +49,8 @@ serde = { version = "1", features = ["alloc", "derive", "serde_derive", "std"] }
 serde_json = { version = "1", features = ["raw_value", "std"] }
 smallvec = { version = "1", default-features = false, features = ["union"] }
 syn = { version = "1", features = ["clone-impls", "derive", "extra-traits", "fold", "full", "parsing", "printing", "proc-macro", "quote", "visit", "visit-mut"] }
-tauri-utils-90a44cf74ed4161 = { package = "tauri-utils", git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
-tauri-utils-dff4ba8e3ae991db = { package = "tauri-utils", version = "1", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
+tauri-codegen = { git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["brotli", "compression", "regex", "shell-scope"] }
+tauri-utils = { git = "https://github.com/tauri-apps/tauri", default-features = false, features = ["brotli", "build", "compression", "glob", "proc-macro2", "quote", "resources", "walkdir"] }
 uuid = { version = "1", features = ["getrandom", "rng", "serde", "std", "v4"] }
 
 [target.x86_64-unknown-linux-gnu.dependencies]
@@ -58,6 +58,9 @@ futures-core = { version = "0.3", features = ["alloc", "std"] }
 futures-util = { version = "0.3", features = ["alloc", "async-await", "async-await-macro", "futures-io", "futures-macro", "io", "memchr", "slab", "std"] }
 heck = { version = "0.4", features = ["unicode", "unicode-segmentation"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
+native-tls = { version = "0.2", default-features = false, features = ["vendored"] }
+openssl = { version = "0.10", features = ["vendored"] }
+openssl-sys = { version = "0.9", default-features = false, features = ["openssl-src", "vendored"] }
 tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time"] }
 
 [target.x86_64-unknown-linux-gnu.build-dependencies]
@@ -67,6 +70,7 @@ libc = { version = "0.2", features = ["extra_traits", "std"] }
 futures-core = { version = "0.3", features = ["alloc", "std"] }
 futures-util = { version = "0.3", features = ["alloc", "async-await", "async-await-macro", "futures-io", "futures-macro", "io", "memchr", "slab", "std"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
+native-tls = { version = "0.2", default-features = false, features = ["vendored"] }
 scopeguard = { version = "1", features = ["use_std"] }
 tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time"] }
 
@@ -78,6 +82,7 @@ scopeguard = { version = "1", features = ["use_std"] }
 futures-core = { version = "0.3", features = ["alloc", "std"] }
 futures-util = { version = "0.3", features = ["alloc", "async-await", "async-await-macro", "futures-io", "futures-macro", "io", "memchr", "slab", "std"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
+native-tls = { version = "0.2", default-features = false, features = ["vendored"] }
 scopeguard = { version = "1", features = ["use_std"] }
 tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time"] }
 
@@ -89,6 +94,7 @@ scopeguard = { version = "1", features = ["use_std"] }
 futures-core = { version = "0.3", features = ["alloc", "std"] }
 futures-util = { version = "0.3", features = ["alloc", "async-await", "async-await-macro", "futures-io", "futures-macro", "io", "memchr", "slab", "std"] }
 libc = { version = "0.2", features = ["extra_traits", "std"] }
+native-tls = { version = "0.2", default-features = false, features = ["vendored"] }
 num-integer = { version = "0.1", default-features = false, features = ["i128", "std"] }
 num-traits = { version = "0.2", default-features = false, features = ["i128"] }
 tokio = { version = "1", default-features = false, features = ["libc", "mio", "net", "socket2", "time", "winapi"] }
