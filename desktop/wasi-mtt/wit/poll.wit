@@ -1,0 +1,31 @@
+use { error } from error
+
+type userdata = u64
+
+record subscription-window-event {
+    event: string
+}
+
+/// The contents of a `subscription`.
+union subscription-inner {
+    subscription-window-event,
+}
+
+record subscription {
+    /// User-provided value that is attached to the subscription in the
+    /// implementation and returned through `event::userdata`.
+    userdata: userdata,
+    /// The type of the event to which to subscribe, and the contents of the subscription.
+    inner: subscription-inner,
+}
+
+variant event-inner {
+    window-event,
+}
+
+record event {
+    userdata: userdata,
+    inner: event-inner,
+}
+
+oneoff: func(in: list<subscription>) -> result<event, error>

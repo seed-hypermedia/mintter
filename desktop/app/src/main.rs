@@ -6,7 +6,7 @@
 
 mod daemon;
 mod error;
-// mod exts;
+mod exts;
 mod menu;
 mod system_tray;
 mod window;
@@ -18,6 +18,7 @@ use sentry::IntoDsn;
 use tauri::{AppHandle, Manager, Runtime, WindowEvent};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
+use tracing_subscriber::prelude::*;
 use window_ext::WindowExt as _;
 
 #[cfg(debug_assertions)]
@@ -67,6 +68,7 @@ fn main() {
         .into_dsn()
         .expect("failed to parse DSN"),
     release: sentry::release_name!(),
+    traces_sample_rate: 1.0,
     ..Default::default()
   };
   let init_opts = sentry_options.clone();
@@ -85,6 +87,10 @@ fn main() {
         .on_system_tray_event(system_tray::event_handler)
         .setup(move |app| {
           app.manage(sentry_options);
+
+          tracing_subscriber::registry()
+            // .with(sentry::integrations::tracing::layer())
+            .init();
 
           daemon::start_daemon(
             app.handle(),

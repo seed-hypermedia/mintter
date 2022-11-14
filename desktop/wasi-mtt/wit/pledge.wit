@@ -1,0 +1,38 @@
+use { error } from error
+
+flags promises {
+    /// Basic I/O
+    stdio,
+    /// „Read“ filesystem access
+    rpath,
+    /// „Write“ filesystem access
+    wpath,
+    /// „Create“ filesystem access
+    cpath,
+    /// Access to temporary files
+    tmppath,
+    /// IPv4 & IPv6 sockets
+    inet,
+    /// DNS network transactions
+    dns,
+    /// Access to `exit()`
+    proc,
+    /// Access to system device info (like CPU info)
+    sysinfo,
+    /// Audio devices
+    audio,
+    /// Video devices
+    video,
+    /// Access to the lightning API
+    lightning,
+    /// „Read“ content graph access
+    rgraph,
+    /// „Write“ content graph access
+    wgraph,
+    /// „Create“ content graph access
+    cgraph,
+    /// Access to the fetch API
+    fetch,
+}
+
+pledge: func(promises: promises) -> result<_, error>

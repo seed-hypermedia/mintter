@@ -22,14 +22,14 @@ pub enum Error {
   Tauri(#[from] tauri::Error),
   #[error("Failed to get the current monitor")]
   MonitorNotFound,
-  // #[error(transparent)]
-  // Other(#[from] anyhow::Error),
-  // #[error(transparent)]
-  // Version(#[from] semver::Error),
-  // #[error("WASM Trap: {0}")]
-  // Trap(#[from] wasmtime::Trap),
-  // #[error("Worker got terminated")]
-  // Aborted(#[from] futures_util::future::Aborted),
+  #[error(transparent)]
+  Other(#[from] anyhow::Error),
+  #[error(transparent)]
+  Version(#[from] semver::Error),
+  #[error("WASM Trap: {0}")]
+  Trap(#[from] wasmtime::Trap),
+  #[error("Worker got terminated")]
+  Aborted(#[from] futures_util::future::Aborted),
 }
 
 impl Serialize for Error {
