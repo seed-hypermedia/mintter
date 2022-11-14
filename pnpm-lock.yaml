@@ -139,7 +139,7 @@ importers:
       tauri-plugin-sentry-api: github:JonasKruckenberg/sentry-tauri#df123beb03104b6068b3bdd6fc509e3158f7dd30
       tauri-plugin-store-api: github:tauri-apps/tauri-plugin-store#9bd993aa67766596638bbfd91e79a1bf8f632014
       tiny-glob: 0.2.9
-      trim-trailing-lines: 2.0.0
+      trim-trailing-lines: 2.1.0
       ts-node: 10.9.1
       ts-proto: 1.131.2
       typescript: 4.8.4
@@ -230,7 +230,7 @@ importers:
       tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/b58475bbc410fa78eb69276c62d0b64c91c07914
       tauri-plugin-sentry-api: github.com/JonasKruckenberg/sentry-tauri/df123beb03104b6068b3bdd6fc509e3158f7dd30
       tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014
-      trim-trailing-lines: 2.0.0
+      trim-trailing-lines: 2.1.0
       unified: 10.1.2
       unist-builder: 3.0.0
       unist-util-is: 5.1.1
@@ -8558,8 +8558,8 @@ packages:
   /tr46/0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
-  /trim-trailing-lines/2.0.0:
-    resolution: {integrity: sha512-lyJ/STqmYO8k9aWZbodPTrVkRh/50yFwNZ/HxKp/30eM9zf898MgQCG/NxfMnx7fZSKbaEcuZ1V+QgWrXFH6rg==}
+  /trim-trailing-lines/2.1.0:
+    resolution: {integrity: sha512-5UR5Biq4VlVOtzqkm2AZlgvSlDJtME46uV0br0gENbwN4l5+mMKT4b9gJKqWtuL2zAIqajGJGuvbCbcAJUZqBg==}
     dev: false
 
   /trough/1.0.5:
