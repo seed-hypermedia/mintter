@@ -26,10 +26,10 @@ pub enum Error {
   Other(#[from] anyhow::Error),
   #[error(transparent)]
   Version(#[from] semver::Error),
-  #[error("WASM Trap: {0}")]
-  Trap(#[from] wasmtime::Trap),
-  #[error("Worker got terminated")]
-  Aborted(#[from] futures_util::future::Aborted),
+  // #[error("WASM Trap: {0}")]
+  // Trap(#[from] wasmtime::Trap),
+  // #[error("Worker got terminated")]
+  // Aborted(#[from] futures_util::future::Aborted),
 }
 
 impl Serialize for Error {

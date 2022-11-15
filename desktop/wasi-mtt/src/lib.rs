@@ -21,6 +21,7 @@ where
   r#impl::log::log::add_to_linker(linker, get_cx)?;
   r#impl::poll::poll::add_to_linker(linker, get_cx)?;
   r#impl::fetch::fetch::add_to_linker(linker, get_cx)?;
+  r#impl::pledge::pledge::add_to_linker(linker, get_cx)?;
 
   Ok(())
 }

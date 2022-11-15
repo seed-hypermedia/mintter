@@ -219,7 +219,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
       let wasm_dir = app_handle
         .path_resolver()
-        .app_dir()
+        .app_data_dir()
         .unwrap()
         .join("extensions");
 

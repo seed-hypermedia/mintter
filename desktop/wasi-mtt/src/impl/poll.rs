@@ -59,6 +59,7 @@ impl<R: Runtime> poll::Poll for Context<R> {
           let (tx, rx) = tokio::sync::oneshot::channel::<()>();
 
           ::log::debug!("Settung up listener for event {}...", weventsub.event);
+
           self.window.once(weventsub.event, move |_| {
             ::log::debug!("Received event!");
             tx.send(()).unwrap();
