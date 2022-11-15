@@ -54,7 +54,6 @@
   },
 
   "gopls": {
-    "build.experimentalWorkspaceModule": true,
     "build.directoryFilters": [
       "-",
       "-plz-out",
