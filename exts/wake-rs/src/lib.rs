@@ -1,29 +1,33 @@
-mod mtt_ephemeral_poll;
+wit_bindgen_guest_rust::generate!({
+  export: "../../desktop/wasi-mtt/wit/client.wit",
+  name: "client",
+});
 
-use mtt_ephemeral_poll::{
-  oneoff, Subscription, SubscriptionU, SubscriptionWindowEvent, WasiString,
-};
+wit_bindgen_guest_rust::generate!({
+  import: "../../desktop/wasi-mtt/wit/poll.wit",
+  name: "poll",
+});
 
 fn wait_for(event: &str) {
-  let str = WasiString::from(event);
-
-  println!("{:?}", str);
-
-  let sub = Subscription {
-    u: SubscriptionU::new_window_event(SubscriptionWindowEvent {
-      event: str.ptr,
-      event_len: str.len,
+  let sub = poll::Subscription {
+    userdata: 0,
+    inner: poll::SubscriptionInner::SubscriptionWindowEvent(poll::SubscriptionWindowEvent {
+      event,
     }),
   };
 
-  oneoff(&sub, 1).expect("failed poll");
+  poll::oneoff(&vec![sub]).expect("failed poll");
 }
 
-#[no_mangle]
-pub extern "C" fn _start() {
-  println!("going to sleep");
+struct Ext;
+impl client::Client for Ext {
+  fn start() -> () {
+    println!("going to sleep");
 
-  wait_for("exts://wake");
+    wait_for("exts://wake");
 
-  println!("awake again");
+    println!("awake again");
+  }
 }
+
+export_client!(Ext);

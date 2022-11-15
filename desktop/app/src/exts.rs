@@ -165,7 +165,7 @@ async fn instantiate_inner<R: Runtime>(
   let (client, _) = wasi_mtt::Client::instantiate_async(&mut store, &component, &linker).await?;
 
   debug!("Calling worker _start function...");
-  client.start(&mut store).await?;
+  client.client().start(&mut store).await?;
 
   Ok(())
 }
