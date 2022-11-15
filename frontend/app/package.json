@@ -24,7 +24,7 @@
     "test:ui:open": "pnpm run test:ui open --component"
   },
   "dependencies": {
-    "@floating-ui/react-dom": "1.0.0",
+    "@floating-ui/react-dom": "1.0.1",
     "@floating-ui/react-dom-interactions": "0.10.3",
     "@improbable-eng/grpc-web": "0.15.0",
     "@radix-ui/colors": "0.1.8",
