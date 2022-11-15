@@ -18,7 +18,6 @@ use sentry::IntoDsn;
 use tauri::{AppHandle, Manager, Runtime, WindowEvent};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 use tauri_plugin_store::PluginBuilder as StorePluginBuilder;
-use tracing_subscriber::prelude::*;
 use window_ext::WindowExt as _;
 
 #[cfg(debug_assertions)]
@@ -87,10 +86,6 @@ fn main() {
         .on_system_tray_event(system_tray::event_handler)
         .setup(move |app| {
           app.manage(sentry_options);
-
-          tracing_subscriber::registry()
-            // .with(sentry::integrations::tracing::layer())
-            .init();
 
           daemon::start_daemon(
             app.handle(),

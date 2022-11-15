@@ -2113,7 +2113,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "tracing-subscriber",
  "url",
  "webkit2gtk",
  "webview2-com",
