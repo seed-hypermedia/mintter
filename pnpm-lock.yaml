@@ -55,7 +55,7 @@ importers:
       '@radix-ui/react-navigation-menu': 1.1.1
       '@radix-ui/react-popover': 1.0.2
       '@radix-ui/react-portal': 1.0.1
-      '@radix-ui/react-scroll-area': 1.0.1
+      '@radix-ui/react-scroll-area': 1.0.2
       '@radix-ui/react-separator': 1.0.1
       '@radix-ui/react-slot': 1.0.1
       '@radix-ui/react-tabs': 1.0.1
@@ -172,7 +172,7 @@ importers:
       '@radix-ui/react-label': 2.0.0_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-popover': 1.0.2_2zx2umvpluuhvlq44va5bta2da
       '@radix-ui/react-portal': 1.0.1_biqbaboplfbrettd7655fr4n2y
-      '@radix-ui/react-scroll-area': 1.0.1_biqbaboplfbrettd7655fr4n2y
+      '@radix-ui/react-scroll-area': 1.0.2_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-separator': 1.0.1_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-slot': 1.0.1_react@18.2.0
       '@radix-ui/react-tabs': 1.0.1_biqbaboplfbrettd7655fr4n2y
@@ -2437,8 +2437,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@radix-ui/react-scroll-area/1.0.1_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-5OxAnuLUnrvJ183kVPAQUozWPbqufGP3l9SEnbicVnUniWkc5KQH4NFY4UBu1OTY9o3uZR97oBVSm7NgFOZvng==}
+  /@radix-ui/react-scroll-area/1.0.2_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-k8VseTxI26kcKJaX0HPwkvlNBPTs56JRdYzcZ/vzrNUkDlvXBy8sMc7WvCpYzZkHgb+hd72VW9MqkqecGtuNgg==}
     peerDependencies:
       react: ^16.8 || ^17.0 || ^18.0
       react-dom: ^16.8 || ^17.0 || ^18.0
