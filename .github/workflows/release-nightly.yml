@@ -164,8 +164,9 @@ jobs:
         if: "matrix.config.os == 'ubuntu-latest'"
         run: |
           echo $APPIMAGE_SIGN_PRIVKEY > ./private.pgp
-          gpg --import ./private.pgp --pinentry-mode loopback
+          gpg --import ./private.pgp
         env:
+          GPG_TTY: $(tty)
           APPIMAGE_SIGN_PRIVKEY: '${{ secrets.APPIMAGE_SIGN_PRIVKEY }}'
 
       - name: Set version in Cargo.toml
