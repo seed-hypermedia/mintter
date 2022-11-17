@@ -163,7 +163,7 @@ jobs:
       - name: create AppImage private key file
         if: "matrix.config.os == 'ubuntu-latest'"
         run: |
-          GPG_TTY=$(tty)
+          export GPG_TTY=$(tty)
           echo $APPIMAGE_SIGN_PRIVKEY > ./private.pgp
           gpg --import ./private.pgp
         env:
