@@ -160,6 +160,15 @@ jobs:
           APPLE_API_PRIVKEY: '${{ secrets.APPLE_API_PRIVKEY }}'
           APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
 
+      - name: create AppImage private key file
+        if: "matrix.config.os == 'ubuntu-latest'"
+        run: |
+          echo "$APPIMAGE_SIGN_PRIVKEY" > private.pgp
+          gpg --import private.pgp
+        env:
+          APPLE_API_PRIVKEY: '${{ secrets.APPLE_API_PRIVKEY }}'
+          APPLE_API_KEY: '${{ secrets.APPLE_API_KEY }}'
+
       - name: Set version in Cargo.toml
         run:
           node scripts/update-cargo-toml.mjs ./desktop/app/Cargo.toml ${{
@@ -179,6 +188,10 @@ jobs:
           APPLE_SIGNING_IDENTITY: '${{ secrets.APPLE_SIGNING_IDENTITY }}'
           TAURI_KEY_PASSWORD: '${{ secrets.TAURI_KEY_PASSWORD }}'
           TAURI_PRIVATE_KEY: '${{ secrets.TAURI_PRIVATE_KEY }}'
+          SIGN: '1'
+          SIGN_KEY: '${{ secrets.APPIMAGE_SIGN_KEYID }}'
+          APPIMAGETOOL_SIGN_PASSPHRASE:
+            '${{ secrets.APPIMAGE_SIGN_PASSPHRASE }}'
         with:
           configPath: nightly.tauri.conf.json
           projectPath: ./desktop/app
