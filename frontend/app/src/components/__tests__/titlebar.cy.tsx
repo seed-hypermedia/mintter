@@ -1,6 +1,6 @@
-import {TitleBarLinux} from '@components/titlebar/linux'
-import {TitleBarMacos} from '@components/titlebar/macos'
-import {TitleBarWindows} from '@components/titlebar/windows'
+import TitleBarLinux from '@components/titlebar/linux'
+import TitleBarMacos from '@components/titlebar/macos'
+import TitleBarWindows from '@components/titlebar/windows'
 
 // TODO: redo tests again!
 describe('Titlebar', () => {
