@@ -163,8 +163,8 @@ jobs:
       - name: create AppImage private key file
         if: "matrix.config.os == 'ubuntu-latest'"
         run: |
-          echo "$APPIMAGE_SIGN_PRIVKEY" > ./private.pgp
-          gpg --import ./private.pgp
+          echo $APPIMAGE_SIGN_PRIVKEY > ./private.pgp
+          gpg --import ./private.pgp --pinentry-mode loopback
         env:
           APPIMAGE_SIGN_PRIVKEY: '${{ secrets.APPIMAGE_SIGN_PRIVKEY }}'
 
