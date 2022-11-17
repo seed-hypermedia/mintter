@@ -55,6 +55,7 @@ jobs:
             goarch: arm64
             rust_target: aarch64-unknown-linux-gnu
             CC_FOR_TARGET: gcc-aarch64-linux-gnu
+            CC: aarch64-linux-gnu-gcc
           - os: macos-latest
             goarch: amd64
             rust_target: x86_64-apple-darwin
@@ -169,7 +170,7 @@ jobs:
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
-          CC: ${{ matrix.config.CC_FOR_TARGET }}
+          CC: ${{ matrix.config.CC }}
           CC_FOR_TARGET: ${{ matrix.config.CC_FOR_TARGET }}
 
       - name: Build Backend (Windows)
