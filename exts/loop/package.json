@@ -6,7 +6,7 @@
     "build": "asc --transform ../my-transform --outFile index.wasm"
   },
   "devDependencies": {
-    "assemblyscript": "0.24.0"
+    "assemblyscript": "0.24.1"
   },
   "dependencies": {
     "source-map-support": "0.5.21"
