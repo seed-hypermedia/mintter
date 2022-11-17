@@ -163,10 +163,10 @@ jobs:
       - name: create AppImage private key file
         if: "matrix.config.os == 'ubuntu-latest'"
         run: |
+          GPG_TTY=$(tty)
           echo $APPIMAGE_SIGN_PRIVKEY > ./private.pgp
           gpg --import ./private.pgp
         env:
-          GPG_TTY: $(tty)
           APPIMAGE_SIGN_PRIVKEY: '${{ secrets.APPIMAGE_SIGN_PRIVKEY }}'
 
       - name: Set version in Cargo.toml
