@@ -169,6 +169,7 @@ jobs:
         env:
           GOARCH: ${{ matrix.config.goarch }}
           CGO_ENABLED: 1
+          CC: ${{ matrix.config.CC_FOR_TARGET }}
           CC_FOR_TARGET: ${{ matrix.config.CC_FOR_TARGET }}
 
       - name: Build Backend (Windows)
