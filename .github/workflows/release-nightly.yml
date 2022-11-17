@@ -164,6 +164,7 @@ jobs:
         run: |
           export GPG_TTY=$(tty)
           echo "$APPIMAGE_SIGN_PRIVKEY" > ./private.pgp
+          cat ./private.pgp
           gpg --verbose --import ./private.pgp
         env:
           APPIMAGE_SIGN_PRIVKEY: '${{ secrets.APPIMAGE_SIGN_PRIVKEY }}'
