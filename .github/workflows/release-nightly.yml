@@ -163,7 +163,7 @@ jobs:
         if: "matrix.config.os == 'ubuntu-latest'"
         run: |
           export GPG_TTY=$(tty)
-          echo $APPIMAGE_SIGN_PRIVKEY > ./private.pgp
+          echo "$APPIMAGE_SIGN_PRIVKEY" > ./private.pgp
           gpg --import --armor ./private.pgp
         env:
           APPIMAGE_SIGN_PRIVKEY: '${{ secrets.APPIMAGE_SIGN_PRIVKEY }}'
