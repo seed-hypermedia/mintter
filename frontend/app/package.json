@@ -104,7 +104,7 @@
     "unist-util-to-string-with-nodes": "0.1.1",
     "unist-util-visit": "4.1.1",
     "unist-util-visit-parents": "5.1.1",
-    "wouter": "2.8.1",
+    "wouter": "2.9.0",
     "xstate": "4.34.0"
   },
   "devDependencies": {
