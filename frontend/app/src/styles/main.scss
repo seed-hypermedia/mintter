@@ -7,7 +7,17 @@ body {
   height: 100vh;
 
   @include platform.win32-or-linux {
-    border: 1px solid #777;
+    &::after {
+      content: '';
+      pointer-events: none;
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      background-color: transparent;
+      z-index: 1000000;
+      box-sizing: border-box;
+      border: 1px solid var(--base-border-subtle);
+    }
   }
 }
 
@@ -30,7 +40,7 @@ body {
   }
 
   @include platform.linux {
-    top: $linux-title-bar-height;
+    top: 0;
   }
 
   &.settings {
@@ -42,6 +52,14 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+
+    @include platform.win32 {
+      padding-top: $win32-title-bar-height;
+    }
+
+    @include platform.linux {
+      padding-top: $linux-title-bar-height;
+    }
   }
 }
 
