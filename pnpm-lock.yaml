@@ -84,7 +84,7 @@ importers:
       '@xstate/react': 3.0.1
       '@xstate/test': 0.5.1
       allotment: 1.17.0
-      autosize: 5.0.1
+      autosize: 5.0.2
       browser-headers: 0.4.1
       clipboardy: 3.0.0
       cmdk: 0.1.20
@@ -184,7 +184,7 @@ importers:
       '@tauri-apps/api': 1.2.0
       '@xstate/react': 3.0.1_ayelwdf2pp374qfpsc6eg4e7aa
       allotment: 1.17.0_biqbaboplfbrettd7655fr4n2y
-      autosize: 5.0.1
+      autosize: 5.0.2
       browser-headers: 0.4.1
       cmdk: 0.1.20_2zx2umvpluuhvlq44va5bta2da
       csstype: 3.1.1
@@ -3539,8 +3539,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /autosize/5.0.1:
-    resolution: {integrity: sha512-UIWUlE4TOVPNNj2jjrU39wI4hEYbneUypEqcyRmRFIx5CC2gNdg3rQr+Zh7/3h6egbBvm33TDQjNQKtj9Tk1HA==}
+  /autosize/5.0.2:
+    resolution: {integrity: sha512-FPVt5ynkqUAA9gcMZnJHka1XfQgr1WNd/yRfIjmj5WGmjua+u5Hl9hn8M2nU5CNy2bEIcj1ZUwXq7IOHsfZG9w==}
     dev: false
 
   /aws-sign2/0.7.0:
