@@ -5,12 +5,22 @@ import {Title} from './title'
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
     return (
-      <header id="titlebar" className="titlebar-row" data-tauri-drag-region />
+      <header
+        data-testid="titlebar"
+        id="titlebar"
+        className="titlebar-row"
+        data-tauri-drag-region
+      />
     )
   }
 
   return (
-    <header id="titlebar" className="titlebar-row" data-tauri-drag-region>
+    <header
+      id="titlebar"
+      data-testid="titlebar"
+      className="titlebar-row"
+      data-tauri-drag-region
+    >
       <div className="titlebar-section">
         <NavMenu />
         <NavigationButtons />

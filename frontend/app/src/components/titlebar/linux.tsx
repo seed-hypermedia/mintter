@@ -35,6 +35,7 @@ export default function TitleBarLinux(props: TitleBarProps) {
     return (
       <header
         id="titlebar"
+        data-testid="titlebar"
         className="titlebar-row"
         data-has-focus={focus}
         data-tauri-drag-region
@@ -52,6 +53,7 @@ export default function TitleBarLinux(props: TitleBarProps) {
   return (
     <header
       id="titlebar"
+      data-testid="titlebar"
       className="titlebar-row"
       data-has-focus={focus}
       data-tauri-drag-region

@@ -20,7 +20,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <header id="titlebar" data-tauri-drag-region>
+      <header id="titlebar" data-testid="titlebar" data-tauri-drag-region>
         <div className="titlebar-row" data-tauri-drag-region>
           <MintterIcon />
 
@@ -31,7 +31,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
   }
 
   return (
-    <header id="titlebar" data-tauri-drag-region>
+    <header id="titlebar" data-testid="titlebar" data-tauri-drag-region>
       <div className="titlebar-row" data-tauri-drag-region>
         <MintterIcon />
 
