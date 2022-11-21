@@ -20,10 +20,11 @@ import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Tooltip} from '@components/tooltip'
 import {useQueryClient} from '@tanstack/react-query'
+import {listen} from '@tauri-apps/api/event'
 import {useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import {useEffect, useMemo, useRef} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -35,6 +36,7 @@ export default function PublicationWrapper() {
   let mainService = useMain()
   let [, params] = useRoute('/p/:id/:version/:block?')
   let [, setLocation] = useLocation()
+  let [focusBlock, setFocusBlock] = useState(() => params?.block)
   let mouseService = useInterpret(() => mouseMachine)
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
@@ -42,7 +44,24 @@ export default function PublicationWrapper() {
   )
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
-  useScrollToBlock(editor, scrollWrapperRef, params?.block)
+  useScrollToBlock(editor, scrollWrapperRef, focusBlock)
+
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten: () => void
+
+    listen('update_focus_window_route', (event) => {
+      if (event.payload) {
+        let [tBlock, tVersion, tDoc] = event.payload.split('/').reverse()
+        setFocusBlock(tBlock)
+        // setLocation(`/p/${tDoc}/${tVersion}/${tBlock}`, {replace: true})
+      }
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
 
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
 
@@ -357,12 +376,7 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
           if (entry) {
             let [block] = entry
             let elm = ReactEditor.toDOMNode(editor, block)
-            console.log(
-              '🚀 ~ file: publication.tsx ~ line 313 ~ useEffect ~ elm',
-              elm,
-            )
 
-            console.log('SCROLL')
             let rect = elm.getBoundingClientRect()
             let wrapper = ref.current.getBoundingClientRect()
             ref.current.scrollTo({top: rect.top - wrapper.top - 24})

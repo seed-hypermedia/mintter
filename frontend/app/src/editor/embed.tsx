@@ -10,10 +10,11 @@ import {Embed as EmbedType, FlowContent, isEmbed} from '@app/mttast'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
-import {useMemo} from 'react'
+import {MouseEvent, useMemo} from 'react'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
+import {useLocation, useRoute} from 'wouter'
 import {assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
 
@@ -75,6 +76,8 @@ function Embed({
 }) {
   const mainService = useMain()
   const mouseService = useMouse()
+  const [, setLocation] = useLocation()
+  let [match, params] = useRoute('/p/:id/:version/:block')
   let [docId, version, blockId] = getIdsfromUrl(element.url)
   let client = useQueryClient()
   let [state] = useMachine(() => createEmbedMachine({url: element.url, client}))
@@ -82,11 +85,23 @@ function Embed({
   let selected = useSelected()
   let focused = useFocused()
 
-  async function onOpenInNewWindow() {
-    if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
+  async function onOpenInNewWindow(event: MouseEvent<HTMLElement>) {
+    let isShiftKey = event.shiftKey || event.metaKey
+    event.preventDefault()
+    // if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
 
-    let path = `p/${docId}/${version}/${blockId}`
-    mainService.send({type: 'COMMIT.OPEN.WINDOW', path})
+    if (isShiftKey) {
+      setLocation(`/p/${docId}/${version}/${blockId}`)
+    } else {
+      if (match && params?.id == docId && params?.version == version) {
+        setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
+      } else {
+        mainService.send({
+          type: 'COMMIT.OPEN.WINDOW',
+          path: `/p/${docId}/${version}/${blockId}`,
+        })
+      }
+    }
   }
 
   if (state.matches('errored')) {

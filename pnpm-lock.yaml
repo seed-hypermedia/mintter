@@ -16,7 +16,7 @@ importers:
       graphql-codegen: 0.4.0
       prettier: 2.7.1
       tiny-glob: 0.2.9
-      ts-proto: 1.132.1
+      ts-proto: 1.133.0
       typescript: 4.9.3
     devDependencies:
       '@typescript-eslint/eslint-plugin': 5.43.0_nqj4bdx4ekws7aecttskpih4py
@@ -31,7 +31,7 @@ importers:
       graphql-codegen: 0.4.0
       prettier: 2.7.1
       tiny-glob: 0.2.9
-      ts-proto: 1.132.1
+      ts-proto: 1.133.0
       typescript: 4.9.3
 
   frontend/app:
@@ -85,7 +85,7 @@ importers:
       '@xstate/react': 3.0.1
       '@xstate/test': 0.5.1
       allotment: 1.17.0
-      autosize: 5.0.1
+      autosize: 5.0.2
       browser-headers: 0.4.1
       clipboardy: 3.0.0
       cmdk: 0.1.20
@@ -142,7 +142,7 @@ importers:
       tiny-glob: 0.2.9
       trim-trailing-lines: 2.1.0
       ts-node: 10.9.1
-      ts-proto: 1.132.1
+      ts-proto: 1.133.0
       typescript: 4.9.3
       unified: 10.1.2
       unist-builder: 3.0.0
@@ -186,7 +186,7 @@ importers:
       '@tauri-apps/api': 1.2.0
       '@xstate/react': 3.0.1_ayelwdf2pp374qfpsc6eg4e7aa
       allotment: 1.17.0_biqbaboplfbrettd7655fr4n2y
-      autosize: 5.0.1
+      autosize: 5.0.2
       browser-headers: 0.4.1
       cmdk: 0.1.20_2zx2umvpluuhvlq44va5bta2da
       csstype: 3.1.1
@@ -275,7 +275,7 @@ importers:
       sass: 1.56.1
       tiny-glob: 0.2.9
       ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
-      ts-proto: 1.132.1
+      ts-proto: 1.133.0
       typescript: 4.9.3
       vite: 3.2.4_ajklay5k626t46b6fyghkbup3i
       vite-react-jsx: 1.1.2_vite@3.2.4
@@ -3546,8 +3546,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /autosize/5.0.1:
-    resolution: {integrity: sha512-UIWUlE4TOVPNNj2jjrU39wI4hEYbneUypEqcyRmRFIx5CC2gNdg3rQr+Zh7/3h6egbBvm33TDQjNQKtj9Tk1HA==}
+  /autosize/5.0.2:
+    resolution: {integrity: sha512-FPVt5ynkqUAA9gcMZnJHka1XfQgr1WNd/yRfIjmj5WGmjua+u5Hl9hn8M2nU5CNy2bEIcj1ZUwXq7IOHsfZG9w==}
     dev: false
 
   /aws-sign2/0.7.0:
@@ -8660,8 +8660,8 @@ packages:
       protobufjs: 6.11.3
     dev: true
 
-  /ts-proto/1.132.1:
-    resolution: {integrity: sha512-UgBcctydf1PX5VNioz+PdO+kAT4hW1tceWXQQRFZwkf+NuwsXk1xRDhbIs98gD8dtsijemFHD0hIi1aH0sl4NA==}
+  /ts-proto/1.133.0:
+    resolution: {integrity: sha512-01cbHLUmRZuPCQvkA76hdZQqJQ65x/8NEBvHMaoYzL0lOMdoxWhvt6kubqmhr9dnUcveBb/pwxKH/f9pRSc2zw==}
     hasBin: true
     dependencies:
       '@types/object-hash': 1.3.4

@@ -51,7 +51,9 @@ export const createLinkPlugin = (): EditorPlugin => ({
               attributes={attributes}
               element={element}
               mode={mode}
-            />
+            >
+              {children}
+            </MintterDocumentLink>
           )
         }
 
@@ -175,7 +177,6 @@ function RenderMintterLink(
       setLocation(`/p/${docId}/${version}/${blockId}`)
     } else {
       if (match && params?.id == docId && params?.version == version) {
-        console.log('LINK IN THE SAME PAGE')
         setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
       } else {
         mainService.send({

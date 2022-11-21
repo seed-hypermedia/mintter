@@ -51,6 +51,7 @@ async fn open(window: Window, path: &str) -> Result<(), Error> {
     );
     if left.eq(right) {
       // there's a window with the actual document opened
+      win.emit("update_focus_window_route", path)?;
       return win.set_focus().map_err(Into::into);
     }
   }
