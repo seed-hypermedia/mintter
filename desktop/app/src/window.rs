@@ -50,7 +50,7 @@ async fn open(window: Window, path: &str) -> Result<(), Error> {
       left.clone().eq(right.clone())
     );
     if left.eq(right) {
-      win.emit("update_focus_window_route", path);
+      win.emit("update_focus_window_route", path)?;
       return win.set_focus().map_err(Into::into);
     }
   }
