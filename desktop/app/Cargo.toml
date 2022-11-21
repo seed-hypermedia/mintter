@@ -16,11 +16,14 @@ tauri-build = {git = "https://github.com/tauri-apps/tauri", features = [] }
 
 [dependencies]
 anyhow = "1.0.66"
+# async-trait = "0.1.58"
 env_logger = "0.9.3"
+# futures-util = "0.3.25"
 log = "0.4.17"
 ringbuffer = "0.10.0"
 secmem-proc = "0.2.1"
-sentry = "0.27"
+semver = {version = "1.0.14", features = ["serde"] }
+sentry = {version = "0.27", features = ["tracing"] }
 sentry-tauri = {git = "https://github.com/JonasKruckenberg/sentry-tauri", branch = "next"}
 serde = {version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.87"
@@ -31,15 +34,12 @@ thiserror = "1.0.37"
 tokio = {version = "1.21.2", features = ["sync", "macros"] }
 tracing = "0.1.37"
 url = "2.3.1"
-workspace-hack = {version = "0.1", path = "../workspace-hack"}
-# async-trait = "0.1.56"
-# futures-util = "0.3.21"
-# semver = {version = "1.0.12", features = ["serde"] }
-# wasi-common = "0.38.1"
+# wasi-common = {git = "https://github.com/bytecodealliance/wasmtime"}
 # wasi-mtt = {path = "../wasi-mtt"}
 # wasmparser = "0.87.0"
-# wasmtime = "0.38.1"
-# wasmtime-wasi = "0.38.1"
+# wasmtime = {git = "https://github.com/bytecodealliance/wasmtime", features = ["component-model"] }
+# wasmtime-wasi = {git = "https://github.com/bytecodealliance/wasmtime"}
+workspace-hack = {version = "0.1", path = "../workspace-hack"}
 
 [target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.24.1"

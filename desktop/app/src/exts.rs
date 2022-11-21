@@ -13,10 +13,10 @@ use tauri::{
 };
 use tokio::sync::Mutex;
 use tracing::debug;
-use wasi_common::WasiCtx;
-use wasi_mtt::MttCtx;
-use wasmtime::{Config, Engine, Linker, Module, Store, TypedFunc};
-use wasmtime_wasi::WasiCtxBuilder;
+use wasmtime::{
+  component::{Component, Linker},
+  Config, Engine, Module, Store,
+};
 
 #[tauri::command]
 #[tracing::instrument(skip(engine, fs_loader, ext_table))]
@@ -95,8 +95,8 @@ async fn ids(ext_table: State<'_, ExtTable>) -> crate::Result<Vec<String>> {
 }
 
 struct Context<R: Runtime> {
-  mtt: MttCtx<R>,
-  wasi: WasiCtx,
+  mtt: wasi_mtt::Context<R>,
+  // wasi: WasiCtx,
 }
 
 #[derive(Debug)]
@@ -141,19 +141,19 @@ async fn instantiate_inner<R: Runtime>(
   debug!("Loading bytes...");
   let bytes = ext_table.get(id).await?;
 
-  debug!("Parsing WASM module...");
-  let module = Module::from_binary(&engine, &bytes)?;
+  debug!("Parsing WASM component...");
+  let component = Component::from_binary(&engine, &bytes)?;
 
   debug!("Setting up worker linking context...");
   let mut linker: Linker<Context<R>> = Linker::new(&engine);
 
   // now we add all available host APIs to the linker.
-  wasmtime_wasi::add_to_linker(&mut linker, |cx| &mut cx.wasi)?;
-  wasi_mtt::add_to_linker(&mut linker, |cx| &mut cx.mtt)?;
+  // wasmtime_wasi::add_to_linker(&mut linker, |cx| &mut cx.wasi)?;
+  wasi_mtt::add_to_linker(&mut linker, |cx: &mut Context<R>| &mut cx.mtt)?;
 
   let ctx = Context {
-    mtt: MttCtx::new(window),
-    wasi: WasiCtxBuilder::new().inherit_stdout().build(),
+    mtt: wasi_mtt::Context::new(window),
+    // wasi: WasiCtxBuilder::new().inherit_stdout().build(),
   };
 
   debug!("Setting up worker backing store...");
@@ -161,11 +161,11 @@ async fn instantiate_inner<R: Runtime>(
   store.epoch_deadline_async_yield_and_update(1);
 
   debug!("instantiating worker module...");
-  let instance = linker.instantiate_async(&mut store, &module).await?;
-  let start: TypedFunc<(), ()> = instance.get_typed_func(&mut store, "_start")?;
+
+  let (client, _) = wasi_mtt::Client::instantiate_async(&mut store, &component, &linker).await?;
 
   debug!("Calling worker _start function...");
-  start.call_async(&mut store, ()).await?;
+  client.client().start(&mut store).await?;
 
   Ok(())
 }
@@ -219,7 +219,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
       let wasm_dir = app_handle
         .path_resolver()
-        .app_dir()
+        .app_data_dir()
         .unwrap()
         .join("extensions");
 

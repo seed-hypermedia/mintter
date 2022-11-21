@@ -1,21 +1,27 @@
 mod ctx;
 mod error;
 mod r#impl;
-pub(crate) mod witx;
 
-pub use ctx::MttCtx;
-pub use error::{Error, ErrorExt};
 use tauri::Runtime;
-use wasmtime::Linker;
+use wasmtime::component::Linker;
+
+pub use ctx::Context;
+pub use error::Error;
+pub(crate) use error::{ErrorExt, ErrorKind};
 pub type Result<T> = std::result::Result<T, error::Error>;
+pub use r#impl::Client;
 
 pub fn add_to_linker<T, R: Runtime>(
   linker: &mut Linker<T>,
-  get_cx: impl Fn(&mut T) -> &mut crate::MttCtx<R> + Send + Sync + Copy + 'static,
+  get_cx: impl Fn(&mut T) -> &mut crate::Context<R> + Send + Sync + Copy + 'static,
 ) -> anyhow::Result<()>
 where
   T: Send,
 {
-  witx::mtt_ephemeral_poll::add_to_linker(linker, get_cx)?;
+  r#impl::log::log::add_to_linker(linker, get_cx)?;
+  r#impl::poll::poll::add_to_linker(linker, get_cx)?;
+  r#impl::fetch::fetch::add_to_linker(linker, get_cx)?;
+  r#impl::pledge::pledge::add_to_linker(linker, get_cx)?;
+
   Ok(())
 }

@@ -1,0 +1,9 @@
+enum log-level {
+  trace,
+  debug,
+  info,
+  warn,
+  error,
+}
+
+log: func(level: log-level, str: string)

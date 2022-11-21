@@ -67,6 +67,7 @@ fn main() {
         .into_dsn()
         .expect("failed to parse DSN"),
     release: sentry::release_name!(),
+    traces_sample_rate: 1.0,
     ..Default::default()
   };
   let init_opts = sentry_options.clone();

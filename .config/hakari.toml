@@ -23,8 +23,8 @@ platforms = [
 
 [final-excludes]
 third-party = [
-  {name = "tauri", version = "1"},
-  {name = "tauri-macros", version = "1"},
+  # {name = "tauri", version = "1"},
+  # {name = "tauri-macros", version = "1"},
   {name = "tauri", git = "https://github.com/tauri-apps/tauri"},
   {name = "tauri-macros", git = "https://github.com/tauri-apps/tauri"},
 ]

@@ -6,6 +6,7 @@ import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
 import {useLocation} from 'wouter'
 import {ActionButtons, NavigationButtons} from './common'
+import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
 import {
   CloseButton,
@@ -39,6 +40,7 @@ export default function TitleBarLinux(props: TitleBarProps) {
         data-has-focus={focus}
         data-tauri-drag-region
       >
+        <MintterIcon />
         <span></span>
 
         <div id="titlebar-window-controls">
@@ -57,15 +59,16 @@ export default function TitleBarLinux(props: TitleBarProps) {
       data-tauri-drag-region
     >
       <div className="titlebar-section">
+        <MintterIcon />
+        <Menu />
+      </div>
+      <div className="titlebar-section" style={{paddingLeft: 0}}>
         <NavigationButtons />
       </div>
 
       <Title />
 
       <ActionButtons />
-      <div className="titlebar-section" style={{paddingLeft: 0}}>
-        <Menu />
-      </div>
 
       <div id="titlebar-window-controls">
         <MinimizeButton />
