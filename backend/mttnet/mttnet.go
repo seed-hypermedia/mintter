@@ -16,7 +16,6 @@ import (
 	"mintter/backend/vcs/vcssql"
 	"strconv"
 	"sync"
-	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -31,7 +30,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
-	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
@@ -403,15 +401,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 
 	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
-		opts = append(opts,
-			libp2p.ForceReachabilityPrivate(),
-			libp2p.EnableHolePunching(),
-			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
-				autorelay.WithBootDelay(time.Second*10),
-				autorelay.WithNumRelays(1), // only one active relay at a time. If it fails, then connect to the other
-				autorelay.WithMinCandidates(1),
-				autorelay.WithBackoff(cfg.RelayBackoff)),
-		)
+		opts = append(opts, libp2p.ForceReachabilityPublic())
 	}
 
 	libp2p.SetDefaultServiceLimits(&rcmgr.ScalingLimitConfig{ServiceBaseLimit: rcmgr.BaseLimit{
