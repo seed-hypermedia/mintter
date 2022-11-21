@@ -25,12 +25,7 @@
     "**/.pnp.*": true,
     ".git/**": true
   },
-  "editor.formatOnSave": true,
   "editor.formatOnPaste": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.organizeImports": true
-  },
 
   // Please, don't set global editor tab size!
   // Keep the default and use per-language settings otherwise.
@@ -66,5 +61,6 @@
   "go.lintTool": "golangci-lint",
 
   "python.formatting.provider": "black",
-  "prettier.bracketSpacing": false
+  "prettier.bracketSpacing": false,
+  "editor.formatOnSave": false
 }
