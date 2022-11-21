@@ -29,7 +29,7 @@
     "graphql-codegen": "0.4.0",
     "prettier": "2.7.1",
     "tiny-glob": "0.2.9",
-    "ts-proto": "1.132.1",
+    "ts-proto": "1.133.0",
     "typescript": "4.9.3"
   }
 }
