@@ -23,13 +23,19 @@ pub struct Table {
   next_key: u32,
 }
 
-impl Table {
-  /// Create an empty table. New insertions will begin at 3, above stdio.
-  pub fn new() -> Self {
+impl Default for Table {
+  fn default() -> Self {
     Table {
       map: HashMap::new(),
       next_key: 3, // 0, 1 and 2 are reserved for stdio
     }
+  }
+}
+
+impl Table {
+  /// Create an empty table. New insertions will begin at 3, above stdio.
+  pub fn new() -> Self {
+    Self::default()
   }
 
   /// Insert a resource at a certain index.
