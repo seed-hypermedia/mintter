@@ -10,7 +10,7 @@ import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {createPublicationMachine} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
-import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Discussion} from '@components/discussion'
@@ -340,7 +340,15 @@ let resizablePanelMachine =
       services: {
         matchMediaService: () => (sendBack) => {
           let responsiveMedia = window.matchMedia('(max-width: 768px)')
-          responsiveMedia.addEventListener('change', handler)
+
+          if (typeof responsiveMedia.addEventListener == 'function') {
+            responsiveMedia.addEventListener('change', handler)
+          } else if (typeof responsiveMedia.addListener == 'function') {
+            responsiveMedia.addListener(handler)
+          } else {
+            error('matchMedia support error', responsiveMedia)
+          }
+
           // initial set
           sendBack({type: 'MATCHMEDIA.MATCH', match: responsiveMedia.matches})
 

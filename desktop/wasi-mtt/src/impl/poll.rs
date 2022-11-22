@@ -1,6 +1,5 @@
 use futures_util::future::select_ok;
-use std::future::Future;
-use std::pin::Pin;
+use std::{future::Future, pin::Pin};
 use tauri::Runtime;
 
 use crate::{Context, Error, ErrorKind};
