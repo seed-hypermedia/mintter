@@ -14,7 +14,7 @@ importers:
       eslint-plugin-react: 7.31.11
       eslint-plugin-react-hooks: 4.6.0
       graphql-codegen: 0.4.0
-      prettier: 2.7.1
+      prettier: 2.8.0
       tiny-glob: 0.2.9
       ts-proto: 1.133.0
       typescript: 4.9.3
@@ -29,7 +29,7 @@ importers:
       eslint-plugin-react: 7.31.11_eslint@8.28.0
       eslint-plugin-react-hooks: 4.6.0_eslint@8.28.0
       graphql-codegen: 0.4.0
-      prettier: 2.7.1
+      prettier: 2.8.0
       tiny-glob: 0.2.9
       ts-proto: 1.133.0
       typescript: 4.9.3
@@ -115,7 +115,7 @@ importers:
       long: 5.2.1
       nanoid: 4.0.0
       navaid: 1.2.0
-      prettier: 2.7.1
+      prettier: 2.8.0
       protobufjs: 7.1.2
       react: 18.2.0
       react-copy-to-clipboard: 5.1.0
@@ -262,7 +262,7 @@ importers:
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.2.0_vite@3.2.4
-      '@xstate/cli': 0.3.3_prettier@2.7.1
+      '@xstate/cli': 0.3.3_prettier@2.8.0
       '@xstate/inspect': 0.7.0_ws@8.11.0+xstate@4.34.0
       '@xstate/test': 0.5.1_xstate@4.34.0
       clipboardy: 3.0.0
@@ -271,7 +271,7 @@ importers:
       cypress: 10.11.0
       happy-dom: 7.7.0
       is-hidden: 2.0.1
-      prettier: 2.7.1
+      prettier: 2.8.0
       sass: 1.56.1
       tiny-glob: 0.2.9
       ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
@@ -3198,13 +3198,13 @@ packages:
       - encoding
     dev: true
 
-  /@xstate/cli/0.3.3_prettier@2.7.1:
+  /@xstate/cli/0.3.3_prettier@2.8.0:
     resolution: {integrity: sha512-yY0CyUP+ipeSKiklNAYfY51CZObVQ0y48TJHVPfxnfGbsqwj+6rZkC1mAg9yF/Zu56DCDZTtUBKmY4BsOVDLVw==}
     hasBin: true
     dependencies:
       '@babel/core': 7.19.3
       '@xstate/machine-extractor': 0.7.1_4htzgfq6q5adn5qspbrindod3y
-      '@xstate/tools-shared': 1.2.3_kq4vvmgmqeucmaflqgffsmfw2a
+      '@xstate/tools-shared': 1.2.3_66oltgtlpuaphj6rtwp4d6mlva
       chokidar: 3.5.3
       commander: 8.3.0
       xstate: 4.34.0
@@ -3276,14 +3276,14 @@ packages:
       xstate: 4.34.0
     dev: true
 
-  /@xstate/tools-shared/1.2.3_kq4vvmgmqeucmaflqgffsmfw2a:
+  /@xstate/tools-shared/1.2.3_66oltgtlpuaphj6rtwp4d6mlva:
     resolution: {integrity: sha512-6CL2Tz2S0+FSSP+940G9glMHG8g326amsVoU+b5wkY2KsbPrGga53r25PjiiP7bGrNtf4SCSsbYW/NClrHmZGQ==}
     peerDependencies:
       prettier: ^2.3.1
       xstate: ^4
     dependencies:
       '@xstate/machine-extractor': 0.7.1_4htzgfq6q5adn5qspbrindod3y
-      prettier: 2.7.1
+      prettier: 2.8.0
       xstate: 4.34.0
     transitivePeerDependencies:
       - '@babel/core'
@@ -7467,8 +7467,8 @@ packages:
     engines: {node: '>= 0.8.0'}
     dev: true
 
-  /prettier/2.7.1:
-    resolution: {integrity: sha512-ujppO+MkdPqoVINuDFDRLClm7D78qbDt0/NR+wp5FqEZOoTNAjPHWj17QRhu7geIHJfcNhRk1XVQmF8Bp3ye+g==}
+  /prettier/2.8.0:
+    resolution: {integrity: sha512-9Lmg8hTFZKG0Asr/kW9Bp8tJjRVluO8EJQVfY2T7FMw9T5jy4I/Uvx0Rca/XWf50QQ1/SS48+6IJWnrb+2yemA==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
