@@ -16,6 +16,7 @@ import (
 	"mintter/backend/vcs/vcssql"
 	"strconv"
 	"sync"
+	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
@@ -51,7 +52,7 @@ const (
 
 var userAgent = "mintter/<dev>"
 
-// DefaultRelays bootstrap mintter-owned relays so they can reserveslots to do holepunch.
+// DefaultRelays bootstrap mintter-owned relays so they can reserve slots to do holepunch.
 func DefaultRelays() []peer.AddrInfo {
 	return []peer.AddrInfo{
 		// Mintter prod server
@@ -402,11 +403,13 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
 		opts = append(opts,
+			libp2p.ForceReachabilityPrivate(),
 			libp2p.EnableHolePunching(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
-				autorelay.WithNumRelays(2),
-				autorelay.WithStaticRescan(cfg.StaticRelayRescan),
-				autorelay.WithBackoff(cfg.RelayBackoffDelay)),
+				autorelay.WithBootDelay(time.Second*10),
+				autorelay.WithNumRelays(1), // only one active relay at a time. If it fails, then connect to the other
+				autorelay.WithMinCandidates(1),
+				autorelay.WithBackoff(cfg.RelayBackoff)),
 		)
 	}
 

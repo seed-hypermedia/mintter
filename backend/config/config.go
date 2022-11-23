@@ -38,10 +38,9 @@ func Default() Config {
 		},
 
 		P2P: P2P{
-			BootstrapPeers:    ipfs.DefaultBootstrapPeers(),
-			Port:              55000,
-			RelayBackoffDelay: 21600 * time.Minute,
-			StaticRelayRescan: 1 * time.Minute,
+			BootstrapPeers: ipfs.DefaultBootstrapPeers(),
+			Port:           55000,
+			RelayBackoff:   time.Minute * 3,
 		},
 
 		Syncing: Syncing{
@@ -113,8 +112,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.Var(newAddrsFlag(cfg.P2P.BootstrapPeers, &cfg.P2P.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
 	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
-	fs.DurationVar(&cfg.P2P.RelayBackoffDelay, "p2p.relay-backoff-delay", cfg.P2P.RelayBackoffDelay, "The time in which the autorelay will prune a relay if it cannot connect to it")
-	fs.DurationVar(&cfg.P2P.StaticRelayRescan, "p2p.static-relay-rescan", cfg.P2P.StaticRelayRescan, "The period for automatic static relay rescanning")
+	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
@@ -147,13 +145,12 @@ type Syncing struct {
 
 // P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
-	Port              int
-	NoRelay           bool
-	BootstrapPeers    []multiaddr.Multiaddr
-	NoMetrics         bool
-	RelayBackoffDelay time.Duration
-	StaticRelayRescan time.Duration
-	ExtraAddrs        []multiaddr.Multiaddr
+	Port           int
+	NoRelay        bool
+	BootstrapPeers []multiaddr.Multiaddr
+	NoMetrics      bool
+	RelayBackoff   time.Duration
+	ExtraAddrs     []multiaddr.Multiaddr
 }
 
 // NoBootstrap indicates whether bootstrap nodes are configured.
