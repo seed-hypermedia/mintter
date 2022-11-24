@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const defaultDiscoveryTimeout = time.Minute
+const defaultDiscoveryTimeout = time.Second * 10
 
 // DiscoverObject attempts to discover a given Mintter Object with an optional version specified.
 // If no version is specified it tries to find whatever is possible.
