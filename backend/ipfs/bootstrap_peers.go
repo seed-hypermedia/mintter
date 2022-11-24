@@ -15,4 +15,5 @@ var DefaultBootstrapAddresses = []string{
 	"/dnsaddr/bootstrap.libp2p.io/p2p/QmcZf59bWwK5XFi76CZX8cbJ4BhTzzA3gU1ZjYZcYW3dwt",
 	"/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ",      // mars.i.ipfs.io
 	"/ip4/104.131.131.82/udp/4001/quic/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ", // mars.i.ipfs.io
+	"/ip4/52.22.139.174/tcp/55000/p2p/12D3KooWFCV4kKdegz8Wp4XPXSRS1ia8Z9CeupJPBMd6jUNot9wb",
 }
