@@ -30,6 +30,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
+	"github.com/libp2p/go-libp2p/p2p/host/autorelay"
 	"github.com/libp2p/go-libp2p/p2p/host/peerstore/pstoreds"
 	rcmgr "github.com/libp2p/go-libp2p/p2p/host/resource-manager"
 	"github.com/libp2p/go-libp2p/p2p/transport/tcp"
@@ -401,7 +402,14 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 
 	libp2p.ListenAddrStrings()
 	if !cfg.NoRelay {
-		opts = append(opts, libp2p.ForceReachabilityPublic())
+		opts = append(opts,
+			libp2p.EnableHolePunching(),
+			libp2p.ForceReachabilityPrivate(),
+			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
+				autorelay.WithNumRelays(1),
+				autorelay.WithMinCandidates(1),
+				autorelay.WithBackoff(cfg.RelayBackoff)),
+		)
 	}
 
 	libp2p.SetDefaultServiceLimits(&rcmgr.ScalingLimitConfig{ServiceBaseLimit: rcmgr.BaseLimit{
