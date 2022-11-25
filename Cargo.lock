@@ -1705,7 +1705,7 @@ checksum = "aae5bc6e2eb41c9def29a3e0f1306382807764b9b53112030eff57435667352d"
 dependencies = [
  "hermit-abi 0.2.6",
  "io-lifetimes 1.0.1",
- "rustix 0.36.1",
+ "rustix 0.36.3",
  "windows-sys 0.42.0",
 ]
 
@@ -2022,7 +2022,7 @@ version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b20a59d985586e4a5aef64564ac77299f8586d8be6cf9106a5a40207e8908efb"
 dependencies = [
- "rustix 0.36.1",
+ "rustix 0.36.3",
 ]
 
 [[package]]
@@ -3103,15 +3103,17 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.36.1"
+version = "0.36.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "812a2ec2043c4d6bc6482f5be2ab8244613cac2493d128d36c0759e52a626ab3"
+checksum = "0b1fbb4dfc4eb1d390c02df47760bb19a84bb80b301ecc947ab5406394d8223e"
 dependencies = [
  "bitflags",
  "errno",
  "io-lifetimes 1.0.1",
+ "itoa 1.0.4",
  "libc",
  "linux-raw-sys 0.1.2",
+ "once_cell",
  "windows-sys 0.42.0",
 ]
 
@@ -3186,14 +3188,16 @@ dependencies = [
 
 [[package]]
 name = "secmem-proc"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd96024bdbd05fcf4cb5f8cb6511fe804d5870d3ad25e8a0b4d239d09b0e4a10"
+checksum = "e1da19961cf7993af1accc104121777a15cb97e666dbc7727673ca82c9436cda"
 dependencies = [
+ "anyhow",
  "cfg-if",
  "libc",
+ "rustix 0.36.3",
  "thiserror",
- "windows 0.39.0",
+ "windows 0.43.0",
 ]
 
 [[package]]
@@ -4908,6 +4912,21 @@ dependencies = [
  "windows_i686_msvc 0.39.0",
  "windows_x86_64_gnu 0.39.0",
  "windows_x86_64_msvc 0.39.0",
+]
+
+[[package]]
+name = "windows"
+version = "0.43.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04662ed0e3e5630dfa9b26e4cb823b817f1a9addda855d973a9458c236556244"
+dependencies = [
+ "windows_aarch64_gnullvm",
+ "windows_aarch64_msvc 0.42.0",
+ "windows_i686_gnu 0.42.0",
+ "windows_i686_msvc 0.42.0",
+ "windows_x86_64_gnu 0.42.0",
+ "windows_x86_64_gnullvm",
+ "windows_x86_64_msvc 0.42.0",
 ]
 
 [[package]]
