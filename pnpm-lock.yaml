@@ -39,7 +39,7 @@ importers:
       '@cypress/vite-dev-server': 3.4.0
       '@floating-ui/react-dom': 1.0.1
       '@floating-ui/react-dom-interactions': 0.12.0
-      '@graphql-codegen/cli': 2.14.0
+      '@graphql-codegen/cli': 2.14.1
       '@graphql-codegen/typescript': 2.8.2
       '@happy-dom/global-registrator': 7.7.0
       '@improbable-eng/grpc-web': 0.15.0
@@ -244,7 +244,7 @@ importers:
       xstate: 4.34.0
     devDependencies:
       '@cypress/vite-dev-server': 3.4.0
-      '@graphql-codegen/cli': 2.14.0_kyz2oohkk3pblubgvvdpiwyc5a
+      '@graphql-codegen/cli': 2.14.1_kyz2oohkk3pblubgvvdpiwyc5a
       '@graphql-codegen/typescript': 2.8.2_graphql@16.6.0
       '@happy-dom/global-registrator': 7.7.0
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
@@ -1338,8 +1338,8 @@ packages:
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@graphql-codegen/cli/2.14.0_kyz2oohkk3pblubgvvdpiwyc5a:
-    resolution: {integrity: sha512-tiG8iJd2jklazcAkPC1yZ4THQZOBazHi4L8qtH212PydFfpZ3G+PQyilf9sOMqT6Fq/b6yirHvVi6Jy2b1smEw==}
+  /@graphql-codegen/cli/2.14.1_kyz2oohkk3pblubgvvdpiwyc5a:
+    resolution: {integrity: sha512-Z9EiX8yJ5xtNdw/1ApV8uKx6UjCNl/D28zTHU8Fa7BcCdi3ilGOKSiWCNZaH1mpwKr5EfX18kme2bIqKmohv/w==}
     hasBin: true
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
@@ -1374,7 +1374,6 @@ packages:
       json-to-pretty-yaml: 1.2.2
       listr2: 4.0.5
       log-symbols: 4.1.0
-      mkdirp: 1.0.4
       shell-quote: 1.7.4
       string-env-interpolation: 1.0.1
       ts-log: 2.2.5
@@ -3193,7 +3192,7 @@ packages:
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
       node-fetch: 2.6.7
-      undici: 5.11.0
+      undici: 5.12.0
       web-streams-polyfill: 3.2.1
     transitivePeerDependencies:
       - encoding
@@ -3208,7 +3207,7 @@ packages:
       form-data-encoder: 1.7.2
       formdata-node: 4.4.1
       node-fetch: 2.6.7
-      undici: 5.11.0
+      undici: 5.12.0
       web-streams-polyfill: 3.2.1
     transitivePeerDependencies:
       - encoding
@@ -6960,12 +6959,6 @@ packages:
       minimist: 1.2.7
     dev: true
 
-  /mkdirp/1.0.4:
-    resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dev: true
-
   /ms/2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
     dev: true
@@ -8790,13 +8783,6 @@ packages:
   /unc-path-regex/0.1.2:
     resolution: {integrity: sha512-eXL4nmJT7oCpkZsHZUOJo8hcX3GbsiDOa0Qu9F646fi8dT3XuSVopVqAcEiVzSKKH7UoDti23wNX3qGFxcW5Qg==}
     engines: {node: '>=0.10.0'}
-    dev: true
-
-  /undici/5.11.0:
-    resolution: {integrity: sha512-oWjWJHzFet0Ow4YZBkyiJwiK5vWqEYoH7BINzJAJOLedZ++JpAlCbUktW2GQ2DS2FpKmxD/JMtWUUWl1BtghGw==}
-    engines: {node: '>=12.18'}
-    dependencies:
-      busboy: 1.6.0
     dev: true
 
   /undici/5.12.0:
