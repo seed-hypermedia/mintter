@@ -16,7 +16,7 @@ importers:
       graphql-codegen: 0.4.0
       prettier: 2.8.0
       tiny-glob: 0.2.9
-      ts-proto: 1.133.0
+      ts-proto: 1.134.0
       typescript: 4.9.3
     devDependencies:
       '@typescript-eslint/eslint-plugin': 5.44.0_fnsv2sbzcckq65bwfk7a5xwslu
@@ -31,7 +31,7 @@ importers:
       graphql-codegen: 0.4.0
       prettier: 2.8.0
       tiny-glob: 0.2.9
-      ts-proto: 1.133.0
+      ts-proto: 1.134.0
       typescript: 4.9.3
 
   frontend/app:
@@ -142,7 +142,7 @@ importers:
       tiny-glob: 0.2.9
       trim-trailing-lines: 2.1.0
       ts-node: 10.9.1
-      ts-proto: 1.133.0
+      ts-proto: 1.134.0
       typescript: 4.9.3
       unified: 10.1.2
       unist-builder: 3.0.0
@@ -275,7 +275,7 @@ importers:
       sass: 1.56.1
       tiny-glob: 0.2.9
       ts-node: 10.9.1_wup25etrarvlqkprac7h35hj7u
-      ts-proto: 1.133.0
+      ts-proto: 1.134.0
       typescript: 4.9.3
       vite: 3.2.4_ajklay5k626t46b6fyghkbup3i
       vite-react-jsx: 1.1.2_vite@3.2.4
@@ -8679,8 +8679,8 @@ packages:
       protobufjs: 6.11.3
     dev: true
 
-  /ts-proto/1.133.0:
-    resolution: {integrity: sha512-01cbHLUmRZuPCQvkA76hdZQqJQ65x/8NEBvHMaoYzL0lOMdoxWhvt6kubqmhr9dnUcveBb/pwxKH/f9pRSc2zw==}
+  /ts-proto/1.134.0:
+    resolution: {integrity: sha512-XKC8ucrzLhMGbpnGP9baqWaTbsSpyFLNeNN3cWFflANaS7BEa5kNSAXeZ3dRUgv3fQsqmvFVE7iOrXxBwqucRg==}
     hasBin: true
     dependencies:
       '@types/object-hash': 1.3.4
