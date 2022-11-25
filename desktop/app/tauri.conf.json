@@ -8,7 +8,7 @@
     "devPath": "http://localhost:5173",
     "beforeDevCommand": "cd ../frontend/app && pnpm typegen && pnpm dev",
     "beforeBuildCommand": "cd ../frontend/app && pnpm typegen && pnpm build",
-    "withGlobalTauri": false
+    "withGlobalTauri": true
   },
   "tauri": {
     "bundle": {
@@ -46,9 +46,9 @@
     },
     "updater": {
       "active": false,
-      "dialog": true,
+      "dialog": false,
       "endpoints": ["https://mintterreleases.s3.amazonaws.com/manifest.json"],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM4N0Q3NDU0MTVFQzY0MkUKUldRdVpPd1ZWSFI5T0MrampqQytES1oyaUg1RWhEZjd1T0hvLzZrWktrbFZ0SHpMNzB2MjEwY0UK"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU0QzY0RUJBQjRDNzQyREEKUldUYVFzZTB1azdHVklXUkN2R2QrbmppTUdhTXFoWEtDcFhEcVdrKzZjanRaSUVHemVNWlFyNWgK"
     },
     "allowlist": {
       "all": false,
@@ -71,6 +71,7 @@
       },
       "process": {
         "all": false,
+        "relaunch": true,
         "exit": true
       }
     },

@@ -17,20 +17,24 @@ import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
 import * as TauriSentry from 'tauri-plugin-sentry-api'
-import {globalStyles} from './stitches.config'
-import './styles/root.scss'
+import {css, globalStyles} from './stitches.config'
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 const AppProvider = lazy(() => import('./components/app-provider'))
 const Main = lazy(() => import('./pages/main'))
 
-TauriSentry.init({
-  integrations: [new BrowserTracing()],
+import './styles/root.scss'
+import './styles/toaster.scss'
 
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-})
+import('./updater')
+
+// TauriSentry.init({
+//   integrations: [new BrowserTracing()],
+
+//   // Set tracesSampleRate to 1.0 to capture 100%
+//   // of transactions for performance monitoring.
+//   // We recommend adjusting this value in production
+//   tracesSampleRate: 1.0,
+// })
 
 attachConsole()
 
@@ -48,7 +52,10 @@ export function Root() {
         <Hydrate state={dehydrateState}>
           <ThemeProvider value={themeService}>
             <App />
-            <Toaster position="bottom-right" />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{ className: 'toaster' }}
+            />
           </ThemeProvider>
         </Hydrate>
       </Suspense>
