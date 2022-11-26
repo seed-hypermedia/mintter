@@ -21,7 +21,7 @@ env_logger = "0.10.0"
 # futures-util = "0.3.25"
 log = "0.4.17"
 ringbuffer = "0.10.0"
-secmem-proc = "0.3.0"
+secmem-proc = "0.2.1"
 semver = {version = "1.0.14", features = ["serde"] }
 sentry = {version = "0.27", features = ["tracing"] }
 sentry-tauri = {git = "https://github.com/JonasKruckenberg/sentry-tauri", branch = "next"}
