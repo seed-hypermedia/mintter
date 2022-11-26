@@ -66,7 +66,7 @@ const StyledSeparator = styled(DropdownMenuPrimitive.Separator, {
 var RightSlot = styled('div', {
   marginLeft: 'auto',
   paddingLeft: 20,
-  color: '$base-active',
+  color: '$base-text-low',
   '[data-highlighted] > &': {color: '$primary-active'},
   '[data-disabled] &': {color: '$primary-component-bg-normal'},
 })
