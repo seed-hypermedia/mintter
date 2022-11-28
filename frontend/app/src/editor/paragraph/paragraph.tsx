@@ -8,7 +8,9 @@ import {
   isPhrasingContent,
   Paragraph as ParagraphType,
 } from '@app/mttast'
+import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
+import {MutableRefObject, useRef} from 'react'
 import {Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
@@ -64,7 +66,11 @@ function Paragraph({
   let editor = useSlateStatic()
   let {elementProps, parentNode} = usePhrasingProps(editor, element)
 
-  useBlockObserve(mode, attributes.ref)
+  let pRef = useRef<HTMLElement | undefined>()
+  let otherProps = {
+    ref: mergeRefs([attributes.ref, pRef]),
+  }
+  useBlockObserve(mode, pRef)
   let mouseService = useMouse()
 
   let mouseProps =
@@ -84,7 +90,7 @@ function Paragraph({
 
   if (mode == EditorMode.Embed) {
     return (
-      <Box as="span" {...attributes} {...elementProps}>
+      <Box as="span" {...attributes} {...elementProps} {...otherProps}>
         {children}
       </Box>
     )
@@ -92,7 +98,13 @@ function Paragraph({
 
   if (isCode(parentNode)) {
     return (
-      <Box as="pre" {...attributes} {...elementProps} {...mouseProps}>
+      <Box
+        as="pre"
+        {...attributes}
+        {...elementProps}
+        {...mouseProps}
+        {...otherProps}
+      >
         <code>{children}</code>
       </Box>
     )
@@ -100,14 +112,20 @@ function Paragraph({
 
   if (isBlockquote(parentNode)) {
     return (
-      <Box as="blockquote" {...attributes} {...elementProps} {...mouseProps}>
+      <Box
+        as="blockquote"
+        {...attributes}
+        {...elementProps}
+        {...mouseProps}
+        {...otherProps}
+      >
         <p>{children}</p>
       </Box>
     )
   }
 
   return (
-    <p {...attributes} {...elementProps} {...mouseProps}>
+    <p {...attributes} {...elementProps} {...mouseProps} {...otherProps}>
       {children}
     </p>
   )

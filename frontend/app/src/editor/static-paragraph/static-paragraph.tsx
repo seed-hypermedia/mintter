@@ -6,8 +6,9 @@ import {
   StaticParagraph as StaticParagraphType,
 } from '@app/mttast'
 import {css} from '@app/stitches.config'
+import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
-import {useMemo} from 'react'
+import {MutableRefObject, useMemo, useRef} from 'react'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import type {EditorPlugin} from '../types'
 
@@ -46,7 +47,11 @@ function StaticParagraph({
   let editor = useSlateStatic()
   let {elementProps, parentPath} = usePhrasingProps(editor, element)
 
-  useBlockObserve(mode, attributes.ref)
+  let pRef = useRef<HTMLElement | undefined>()
+  let otherProps = {
+    ref: mergeRefs([attributes.ref, pRef]),
+  }
+  useBlockObserve(mode, pRef)
 
   let mouseService = useMouse()
 
@@ -82,14 +87,20 @@ function StaticParagraph({
 
   if (mode == EditorMode.Embed) {
     return (
-      <Box as="span" {...attributes}>
+      <Box as="span" {...attributes} {...otherProps}>
         {children}
       </Box>
     )
   }
 
   return (
-    <Box as={as} {...attributes} {...elementProps} {...mouseProps}>
+    <Box
+      as={as}
+      {...attributes}
+      {...elementProps}
+      {...mouseProps}
+      {...otherProps}
+    >
       {children}
     </Box>
   )

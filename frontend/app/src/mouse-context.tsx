@@ -12,9 +12,10 @@ export {MouseProvider, useMouse}
 
 export function useBlockObserve(
   mode: EditorMode,
-  entry?: MutableRefObject<HTMLElement>,
+  entry?: MutableRefObject<HTMLElement | undefined>,
 ) {
   let service = useMouse()
+
   useEffect(() => {
     if (mode != EditorMode.Embed && mode != EditorMode.Mention) {
       if (entry && entry.current) {
