@@ -1,4 +1,3 @@
-import {EditorMode} from '@app/editor/plugin-utils'
 import {Transforms} from 'slate'
 import {createBlockquotePlugin} from './blockquote'
 import {createCodePlugin} from './code'

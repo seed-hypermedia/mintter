@@ -3,12 +3,12 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
 import {
   isStaticParagraph,
-  StaticParagraph as StaticParagraphType,
+  StaticParagraph as StaticParagraphType
 } from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
-import {MutableRefObject, useMemo, useRef} from 'react'
+import {useMemo, useRef} from 'react'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import type {EditorPlugin} from '../types'
 

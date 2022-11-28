@@ -47,12 +47,12 @@ export default function PublicationWrapper() {
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
   useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
+    var isSubscribed = true
+    var unlisten: () => void
 
     listen('update_focus_window_route', (event) => {
-      if (event.payload) {
-        let [tBlock, tVersion, tDoc] = event.payload.split('/').reverse()
+      if (event.payload && typeof event.payload == 'string') {
+        let [tBlock] = event.payload.split('/').reverse()
         setFocusBlock(tBlock)
         // setLocation(`/p/${tDoc}/${tVersion}/${tBlock}`, {replace: true})
       }
@@ -70,8 +70,8 @@ export default function PublicationWrapper() {
       createPublicationMachine({
         client,
         editor,
-        documentId: params?.id,
-        version: params?.version,
+        documentId: params?.id!,
+        version: params?.version!,
       }),
     {
       actions: {

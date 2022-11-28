@@ -1,7 +1,14 @@
 import {imageMachine} from '@app/editor/image/image-machine'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {isValidUrl} from '@app/editor/utils'
-import {Image as ImageType, isImage} from '@app/mttast'
+import {findPath, isValidUrl} from '@app/editor/utils'
+import {
+  Image as ImageType,
+  isFlowContent,
+  isImage,
+  paragraph,
+  statement,
+  text,
+} from '@app/mttast'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -9,8 +16,8 @@ import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {useActor, useInterpret} from '@xstate/react'
-import {FormEvent} from 'react'
-import {Transforms} from 'slate'
+import {FormEvent, useMemo} from 'react'
+import {Editor, Path, Transforms} from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
@@ -119,6 +126,7 @@ function ImageComponent({service, element}: InnerImageProps) {
   const editor = useSlateStatic()
   const selected = useSelected()
   const focused = useFocused()
+  const path = useMemo(() => findPath(element), [element])
 
   return (
     <Box
@@ -173,6 +181,31 @@ function ImageComponent({service, element}: InnerImageProps) {
             onChange={(e) =>
               send({type: 'CAPTION.UPDATE', value: e.target.value})
             }
+            onKeyDown={(event) => {
+              if (event.key == 'Enter') {
+                // This will create a new block below the image and focus on it
+
+                event.preventDefault()
+
+                let parentBlock = Editor.above(editor, {
+                  match: isFlowContent,
+                  at: path,
+                })
+
+                if (parentBlock) {
+                  let [, pPath] = parentBlock
+                  let newBlock = statement([paragraph([text('')])])
+                  let newPath = Path.next(pPath)
+                  Editor.withoutNormalizing(editor, () => {
+                    Transforms.insertNodes(editor, newBlock, {at: newPath})
+                    ReactEditor.focus(editor)
+                    setTimeout(() => {
+                      Transforms.select(editor, newPath)
+                    }, 10)
+                  })
+                }
+              }
+            }}
           />
         </Box>
       ) : null}
