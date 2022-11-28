@@ -1,3 +1,4 @@
+import {EditorMode} from '@app/editor/plugin-utils'
 import {Transforms} from 'slate'
 import {createBlockquotePlugin} from './blockquote'
 import {createCodePlugin} from './code'
@@ -35,27 +36,23 @@ export const plugins: EditorPlugin[] = [
   createSubscriptPlugin(),
   createColorPlugin(),
   createInlineCodePlugin(),
-
   createLinkPlugin(),
   createEmbedPlugin(),
   createVideoPlugin(),
   createImagePlugin(),
-
   createStaticParagraphPlugin(),
   createParagraphPlugin(),
-
   createHeadingPlugin(),
   createStatementPlugin(),
-
   createBlockquotePlugin(),
   createCodePlugin(),
-
   createGroupPlugin(),
-
   createTabPlugin(),
   createMarkdownShortcutsPlugin(),
   createPlainTextPastePlugin(),
   createMintterChangesPlugin(),
+  createFindPlugin(),
+  // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
   {
     name: 'selectAllPlugin',
     onKeyDown: (editor) => (event) => {
@@ -66,9 +63,6 @@ export const plugins: EditorPlugin[] = [
       }
     },
   },
-
-  createFindPlugin(),
-  // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
   {
     name: 'prevent double accent letters',
     onCompositionEnd: () => (e) => {

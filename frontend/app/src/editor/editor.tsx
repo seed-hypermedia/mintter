@@ -18,8 +18,8 @@ import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'
 import {Event, listen} from '@tauri-apps/api/event'
 import {PropsWithChildren, useEffect, useMemo} from 'react'
-import {Descendant, Editor as EditorType} from 'slate'
-import {Editable, Slate} from 'slate-react'
+import {Descendant, Editor as EditorType, Transforms} from 'slate'
+import {Editable, ReactEditor, Slate} from 'slate-react'
 import {
   buildDecorateHook,
   buildEventHandlerHooks,
@@ -70,6 +70,30 @@ export function Editor({
     () => buildEventHandlerHooks(plugins, editor),
     [plugins, editor],
   )
+
+  useEffect(() => {
+    if (editor && mode == EditorMode.Publication) {
+      document.addEventListener('keydown', applySelectAll)
+    }
+
+    return () => {
+      if (editor && mode == EditorMode.Publication) {
+        document.removeEventListener('keydown', applySelectAll)
+      }
+    }
+
+    function applySelectAll(event) {
+      if (editor && event.metaKey && event.key == 'a') {
+        event.preventDefault()
+        ReactEditor.focus(editor!)
+        setTimeout(() => {
+          Transforms.select(editor, [])
+        }, 10)
+
+        return
+      }
+    }
+  }, [])
 
   useEffect(() => {
     let isSubscribed = true
