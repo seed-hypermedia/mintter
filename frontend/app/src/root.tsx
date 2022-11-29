@@ -7,7 +7,7 @@ import {
   Hydrate,
   QueryClient,
   QueryClientProvider,
-  useQuery,
+  useQuery
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
@@ -127,6 +127,7 @@ if (window.Cypress) {
 var queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      networkMode: 'always',
       useErrorBoundary: true,
       refetchOnMount: false,
       refetchOnWindowFocus: false,

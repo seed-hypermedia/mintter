@@ -4,7 +4,7 @@ import {
   Info,
   ListDraftsResponse,
   ListPublicationsResponse,
-  Publication,
+  Publication
 } from '@app/client'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
@@ -41,6 +41,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   let client = new QueryClient({
     defaultOptions: {
       queries: {
+        networkMode: 'always',
         refetchOnMount: false,
         refetchOnWindowFocus: false,
         retry: false,
