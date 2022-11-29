@@ -252,7 +252,7 @@ export function createDraftMachine({
           }
 
           if (event.data.children?.length) {
-            // TODO: use the parent list type instead
+            // TODO: use the parent list type from the document object instead
             newValue.content = [blockNodeToSlate(event.data.children, 'group')]
           } else {
             newValue.content = defaultContent

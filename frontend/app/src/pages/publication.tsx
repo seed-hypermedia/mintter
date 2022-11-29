@@ -70,8 +70,8 @@ export default function PublicationWrapper() {
       createPublicationMachine({
         client,
         editor,
-        documentId: params?.id!,
-        version: params?.version!,
+        documentId: params?.id,
+        version: params?.version,
       }),
     {
       actions: {

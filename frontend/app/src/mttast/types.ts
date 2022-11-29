@@ -41,6 +41,7 @@ export interface OrderedList extends Parent {
 
 export interface UnorderedList extends Parent {
   type: 'unorderedList'
+  start: number
   children: FlowContent[]
 }
 

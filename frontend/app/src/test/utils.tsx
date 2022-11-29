@@ -4,7 +4,7 @@ import {
   Info,
   ListDraftsResponse,
   ListPublicationsResponse,
-  Publication
+  Publication,
 } from '@app/client'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'

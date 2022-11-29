@@ -5,7 +5,6 @@ import {createColorPlugin} from './color'
 import {createEmbedPlugin} from './embed'
 import {createEmphasisPlugin} from './emphasis'
 // import {extensionsPlugin} from './extensions-plugin'
-import {createFindPlugin} from './find'
 import {createGroupPlugin} from './group'
 import {createHeadingPlugin} from './heading'
 import {createImagePlugin} from './image/image'
@@ -50,7 +49,7 @@ export const plugins: EditorPlugin[] = [
   createMarkdownShortcutsPlugin(),
   createPlainTextPastePlugin(),
   createMintterChangesPlugin(),
-  createFindPlugin(),
+  // createFindPlugin(),
   // extensionsPlugin(['./ext_twitter.wasm', './ext_youtube.wasm']),
   {
     name: 'selectAllPlugin',

@@ -41,6 +41,9 @@ export default function DraftWrapper({
   let [, params] = useRoute('/d/:id')
   let [, setLocation] = useLocation()
   let mouseService = useInterpret(() => mouseMachine)
+
+  // @ts-ignore
+  window.mouseService = mouseService
   let localEditor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Draft),
     [],

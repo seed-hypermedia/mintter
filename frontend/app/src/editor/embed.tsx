@@ -70,7 +70,6 @@ function Embed({
   element,
   attributes,
   children,
-  mode,
 }: RenderElementProps & {
   mode: EditorMode
 }) {

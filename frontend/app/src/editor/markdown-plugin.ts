@@ -8,6 +8,7 @@ import {
   ul,
 } from '@app/mttast'
 
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {Ancestor, Editor, Range, Transforms} from 'slate'
 import {ELEMENT_CODE} from './code'
 import {ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST} from './group'
@@ -59,6 +60,14 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                   {match: isGroupContent},
                 )
               })
+              let groupParent = Editor.above(editor, {
+                match: isFlowContent,
+                mode: 'highest',
+              })
+              if (groupParent) {
+                let [gpNode] = groupParent
+                MintterEditor.addChange(editor, ['replaceBlock', gpNode.id])
+              }
               return
             } else {
               Editor.withoutNormalizing(editor, () => {
@@ -70,7 +79,12 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                     at: abovePath,
                   }) || []
 
-                if (!prev || !prevPath) throw new Error('bug')
+                if (!prev || !prevPath)
+                  throw new Error(
+                    '[markdown-plugin]: No prev or prevPath for unordered list',
+                  )
+
+                MintterEditor.addChange(editor, ['replaceBlock', prev.id])
 
                 if (isGroupContent(prev.children[1])) {
                   Transforms.moveNodes(editor, {
@@ -90,10 +104,8 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
               return
             }
           }
-        }
-
-        // turn Group into OrderedList
-        if (/^\d+\./.test(beforeText)) {
+          // turn Group into OrderedList
+        } else if (/^\d+\./.test(beforeText)) {
           const [above, abovePath] =
             Editor.above(editor, {
               match: isStatement,
@@ -114,6 +126,14 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                   {match: isGroupContent},
                 )
               })
+              let groupParent = Editor.above(editor, {
+                match: isFlowContent,
+                mode: 'highest',
+              })
+              if (groupParent) {
+                let [gpNode] = groupParent
+                MintterEditor.addChange(editor, ['replaceBlock', gpNode.id])
+              }
               return
             } else {
               Editor.withoutNormalizing(editor, () => {
@@ -125,7 +145,12 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 const [prev, prevPath] =
                   Editor.previous<Ancestor>(editor, {at: abovePath}) || []
 
-                if (!prev || !prevPath) throw new Error('bug')
+                if (!prev || !prevPath)
+                  throw new Error(
+                    '[markdown-plugin]: no prev or prevPath for ordered lists',
+                  )
+
+                MintterEditor.addChange(editor, ['replaceBlock', prev.id])
 
                 if (isGroupContent(prev.children[1])) {
                   Transforms.moveNodes(editor, {
@@ -145,10 +170,8 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
               return
             }
           }
-        }
-
-        // turn Statement into Heading
-        if (beforeText === '#') {
+          // turn Statement into Heading
+        } else if (beforeText === '#') {
           const above = Editor.above(editor, {
             match: isStatement,
             mode: 'lowest',
@@ -171,15 +194,12 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
             })
             return
           }
-        }
-
-        // turn Statement into Codeblock
-        if (/```\w*/.test(beforeText)) {
+          // turn Statement into Codeblock
+        } else if (/```\w*/.test(beforeText)) {
           const lang =
             LANGUAGE_SHORTCUTS[beforeText.slice(3)] ||
             beforeText.slice(3) ||
             undefined
-
           const above = Editor.above(editor, {
             match: isStatement,
             mode: 'lowest',

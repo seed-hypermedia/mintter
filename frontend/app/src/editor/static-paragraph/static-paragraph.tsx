@@ -3,7 +3,7 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
 import {
   isStaticParagraph,
-  StaticParagraph as StaticParagraphType
+  StaticParagraph as StaticParagraphType,
 } from '@app/mttast'
 import {css} from '@app/stitches.config'
 import {mergeRefs} from '@app/utils/mege-refs'

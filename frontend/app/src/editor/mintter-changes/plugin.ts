@@ -20,8 +20,7 @@ import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'
 
 type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
-
-export type ChangeOperation = [ChangeType, string]
+export type ChangeOperation = [ChangeType, string] | ['setRoot', string]
 
 export function createMintterChangesPlugin(): EditorPlugin {
   return {
@@ -64,10 +63,11 @@ export function createMintterChangesPlugin(): EditorPlugin {
                   at: op.path,
                   match: isFlowContent,
                 }) || []
-
-              if (!_node) throw new Error('bug')
-
-              node = _node
+              if (_node) {
+                node = _node
+              } else {
+                addOperation(editor, 'setRoot', node)
+              }
             }
 
             if (node) {
@@ -144,8 +144,6 @@ export const MintterEditor: MintterEditor = {
       }
 
       if (type == 'setTitle') {
-        console.log('IS TITLE!', change)
-
         result.push({
           op: {
             $case: type,
@@ -193,7 +191,14 @@ function replaceText(editor: Editor, path: Path) {
   }
 }
 
-function addOperation(editor: Editor, opType: ChangeType, node: Node) {
+function addOperation(
+  editor: Editor,
+  opType: ChangeType | 'setRoot',
+  node: Node,
+) {
+  if (opType == 'setRoot') {
+    editor.__mtt_changes.push(['setRoot', node.type])
+  }
   if (isFlowContent(node)) {
     let newChange: ChangeOperation = [opType, node.id]
     if (
@@ -276,6 +281,7 @@ function orderChanges(editor: Editor) {
 
   let pushItems = changes.filter(([type]) => type == 'deleteBlock')
   newList.push(...pushItems)
+  let rootChanges = changes.filter(([type]) => type == 'setRoot')
 
   return newList
 }
