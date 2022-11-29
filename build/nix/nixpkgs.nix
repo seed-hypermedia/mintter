@@ -15,8 +15,8 @@ let
   rustOverlay = import (pkgs.fetchFromGitHub {
     owner = "oxalica";
     repo = "rust-overlay";
-    rev = "79b6e66bb76537c96707703f08630765e46148d1";
-    sha256 = "sha256-MUJa0T8j5cy3eE70hoL1KW52VfTcXm4VbwvdF5scs1g=";
+    rev = "4e093ce661a63aca4bcbace33695225eae4ef4e4";
+    sha256 = "sha256-YsWu3C9IGbH3+xguTzEDyQorFe/igr6FGZ+Q5T2ocxE=";
   });
   mintterOverlay = import ./overlay.nix;
 in
