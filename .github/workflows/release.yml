@@ -179,7 +179,7 @@ jobs:
           APPIMAGETOOL_SIGN_PASSPHRASE:
             '${{ secrets.APPIMAGE_SIGN_PASSPHRASE }}'
         with:
-          configPath: release.tauri.conf.json
+          configPath: release.tauri.conf.json5
           projectPath: ./desktop/app
           target: ${{ matrix.config.rust_target }}
           debug: true

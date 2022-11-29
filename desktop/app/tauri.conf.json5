@@ -1,3 +1,6 @@
+// This is the main configuration file of the App, most integration relevant settings are defined here.
+//
+// You can learn more about this file here: https://tauri.app/v1/api/config
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
   "package": {
@@ -13,6 +16,7 @@
   "tauri": {
     "bundle": {
       "active": true,
+      // .dmg builds are slow, so we skip them when building locally (they are enabled for nightly and release builds).
       "targets": ["app", "msi", "appimage"],
       "identifier": "com.mintter.dev",
       "icon": [
@@ -96,6 +100,7 @@
         "object-src": "'none'"
       }
     },
+    // configuration for the system tray
     "systemTray": {
       "iconPath": "./icons/tray_icon_with_transparency.png",
       "iconAsTemplate": true

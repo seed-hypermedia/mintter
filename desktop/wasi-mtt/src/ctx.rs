@@ -2,9 +2,14 @@ use crate::{r#impl::pledge::pledge::Promises, Error, ErrorExt};
 use std::{any::Any, collections::HashMap};
 use tauri::{Runtime, Window};
 
+/// This is a struct that keeps the state of each running extension and that all interface implementations have access to (it's the `self` type of all exposed functions).
 pub struct Context<R: Runtime> {
+  /// The window that originally spawned the extension // TODO maybe extensions don't need to be scoped to a single window?
   pub window: Window<R>,
+  /// All resources owned by an extension, currently this only stores http responses, but in the future can include files handles and the like.
   pub resource_table: Table,
+  /// All the permissions the running extension has. 
+  /// This value can be changed by the `pledge` API and **must** be checked before each function implementation.
   pub promises: Promises,
 }
 

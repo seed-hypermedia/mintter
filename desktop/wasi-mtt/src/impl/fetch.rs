@@ -1,9 +1,12 @@
-use crate::{ctx::Table, Context, Error, ErrorKind};
+use super::pledge::contains;
+use crate::{ctx::Table, Context, Error, ErrorKind, Promises};
 use std::time::Duration;
 use tauri::{
   api::http::{Body, HttpRequestBuilder, ResponseType},
+  http::Response,
   Runtime,
 };
+use wit_bindgen_host_wasmtime_rust::Result as HostResult;
 
 wit_bindgen_host_wasmtime_rust::generate!({
   tracing: true,
@@ -49,10 +52,102 @@ impl<R: Runtime> fetch::Fetch for Context<R> {
     &mut self,
     url: String,
     opts: std::option::Option<fetch::FetchOptions>,
-  ) -> wit_bindgen_host_wasmtime_rust::Result<u32, fetch::Error> {
+  ) -> HostResult<u32, fetch::Error> {
+    if !contains(self.promises, Promises::FETCH) {
+      Err(fetch::Error::Perm)?
+    }
+
     fetch_inner(&mut self.resource_table, url, opts)
       .await
       .map_err(Into::into)
+  }
+
+  async fn body(&mut self, response: fetch::Response) -> anyhow::Result<Vec<u8>> {
+    if !contains(self.promises, Promises::FETCH) {
+      Err(fetch::Error::Perm)?
+    }
+
+    Ok(
+      self
+        .resource_table
+        .get::<Response>(response)?
+        .body()
+        .to_vec(),
+    )
+  }
+
+  async fn headers(&mut self, response: fetch::Response) -> anyhow::Result<Vec<(String, String)>> {
+    if !contains(self.promises, Promises::FETCH) {
+      Err(fetch::Error::Perm)?
+    }
+
+    let headers = self.resource_table.get::<Response>(response)?.headers();
+
+    let mut out = vec![];
+    for (key, value) in headers.iter() {
+      out.push((
+        key.to_string(),
+        value.to_str().map_err(|_| fetch::Error::Ilseq)?.to_string(),
+      ));
+    }
+
+    Ok(out)
+  }
+
+  async fn ok(&mut self, response: fetch::Response) -> anyhow::Result<bool> {
+    if !contains(self.promises, Promises::FETCH) {
+      Err(fetch::Error::Perm)?
+    }
+
+    Ok(
+      self
+        .resource_table
+        .get::<Response>(response)?
+        .status()
+        .is_success(),
+    )
+  }
+
+  async fn redirected(&mut self, response: fetch::Response) -> anyhow::Result<bool> {
+    if !contains(self.promises, Promises::FETCH) {
+      Err(fetch::Error::Perm)?
+    }
+
+    Ok(
+      self
+        .resource_table
+        .get::<Response>(response)?
+        .status()
+        .is_redirection(),
+    )
+  }
+
+  async fn status(&mut self, response: fetch::Response) -> anyhow::Result<u16> {
+    if !contains(self.promises, Promises::FETCH) {
+      Err(fetch::Error::Perm)?
+    }
+
+    Ok(
+      self
+        .resource_table
+        .get::<Response>(response)?
+        .status()
+        .as_u16(),
+    )
+  }
+
+  async fn status_text(&mut self, response: fetch::Response) -> anyhow::Result<String> {
+    if !contains(self.promises, Promises::FETCH) {
+      Err(fetch::Error::Perm)?
+    }
+    
+    Ok(
+      self
+        .resource_table
+        .get::<Response>(response)?
+        .status()
+        .to_string(),
+    )
   }
 }
 

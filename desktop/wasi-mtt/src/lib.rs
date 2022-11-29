@@ -9,7 +9,7 @@ pub use ctx::Context;
 pub use error::Error;
 pub(crate) use error::{ErrorExt, ErrorKind};
 pub type Result<T> = std::result::Result<T, error::Error>;
-pub use r#impl::Client;
+pub use r#impl::{Client, pledge::pledge::Promises};
 
 pub fn add_to_linker<T, R: Runtime>(
   linker: &mut Linker<T>,

@@ -1,3 +1,7 @@
+// This file contains specific Tauri configuration for release builds, 
+// such as setting the correct updater S3 bucket and signing key.
+//
+// This file will be merged with the base configuration, so it makes more sense to define shared behavior there than replicate it across files.
 {
   "tauri": {
     "bundle": {

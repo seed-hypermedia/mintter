@@ -12,7 +12,7 @@ version = "0.0.0" # don't touch! This gets overriden with the correct version by
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = {git = "https://github.com/tauri-apps/tauri", features = [] }
+tauri-build = {git = "https://github.com/tauri-apps/tauri", features = ["config-json5"] }
 
 [dependencies]
 anyhow = "1.0.66"
