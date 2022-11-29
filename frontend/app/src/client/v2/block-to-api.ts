@@ -7,7 +7,8 @@ import {AnnotationSet} from './classes'
 // like `codeblock(text, text, link(text, text))` or something like that.
 export function blockToApi(
   slateBlock: FlowContent,
-  childrenType = 'group',
+  childrenType?: string,
+  start?: number,
 ): Block {
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
   let leaves = flattenLeaves(slateBlock.children[0].children)
@@ -20,11 +21,16 @@ export function blockToApi(
     id,
     type,
     annotations: [],
-    attributes: {
-      childrenType,
-      ...attributes,
-    },
+    attributes,
     text: '',
+  }
+
+  if (childrenType) {
+    out.attributes.childrenType = childrenType
+  }
+
+  if (start) {
+    out.attributes.start = String(start)
   }
 
   const annotations = new AnnotationSet()

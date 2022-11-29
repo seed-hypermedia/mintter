@@ -12,7 +12,7 @@ import {
   paragraph,
   statement,
   staticParagraph,
-  text
+  text,
 } from '@app/mttast'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
 import {Route} from '@components/router'

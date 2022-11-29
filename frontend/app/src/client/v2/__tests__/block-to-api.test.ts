@@ -25,9 +25,6 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'Hello world',
-      attributes: {
-        childrenType: 'group',
-      },
     }
 
     expect(blockToApi(input)).toEqual(output)
@@ -42,9 +39,6 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'heading',
       text: 'Hello world',
-      attributes: {
-        childrenType: 'group',
-      },
     }
 
     expect(blockToApi(input)).toEqual(output)
@@ -66,9 +60,6 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'A B C D E F',
-      attributes: {
-        childrenType: 'group',
-      },
       annotations: [
         {type: 'strong', starts: [0], ends: [2], attributes: {}},
         {type: 'emphasis', starts: [2], ends: [4], attributes: {}},
@@ -95,9 +86,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'Mintter is Awesome',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {type: 'strong', starts: [0], ends: [10], attributes: {}},
         {type: 'emphasis', starts: [8], ends: [18], attributes: {}},
@@ -116,9 +105,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello from 👨‍👩‍👧‍👦 family',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [{type: 'strong', starts: [6], ends: [25], attributes: {}}],
     }
 
@@ -137,9 +124,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello Mintter',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'link',
@@ -165,9 +150,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'Mintterdemo',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'link',
@@ -202,9 +185,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello Mintter team!',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'link',
@@ -230,9 +211,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'image',
@@ -257,9 +236,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'image',
@@ -286,9 +263,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello block with \uFFFC this image in between content',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'image',
@@ -313,9 +288,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'video',
@@ -340,9 +313,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'video',
@@ -369,9 +340,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'hello block with \uFFFC this video in between content',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'video',
@@ -394,9 +363,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'embed',
@@ -422,9 +389,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC\uFFFC',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'embed',
@@ -459,9 +424,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'This \uFFFC and also this are very important: \uFFFC',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'embed',
@@ -491,9 +454,7 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: '😀 😎 👨‍👩‍👧‍👦',
-      attributes: {
-        childrenType: 'group',
-      },
+
       annotations: [
         {
           type: 'emphasis',
@@ -520,15 +481,12 @@ describe('Transform: blockToApi', () => {
       id: 'blockId',
       type: 'statement',
       text: 'Alice, Bob and Carol',
-      attributes: {
-        childrenType: 'group',
-      },
       annotations: [
         {
+          attributes: {},
           type: 'strong',
           starts: [0, 15],
           ends: [5, 20],
-          attributes: {},
         },
       ],
     }

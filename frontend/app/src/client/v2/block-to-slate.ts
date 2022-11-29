@@ -9,7 +9,7 @@ import {annotationContains} from './classes'
 export function blockToSlate(blk: Block): FlowContent {
   // we dont need to pass `childrenType to `out`, but we don't need it for anything for now.
   // eslint-disable-next-line
-  const {childrenType, ...attributes} = blk.attributes
+  const {childrenType, ...attributes} = blk.attributes || {}
 
   const out = {
     id: blk.id,
@@ -276,25 +276,32 @@ function isSurrogate(s: string, i: number): boolean {
 export function blockNodeToSlate(
   entry: Array<BlockNode>,
   childrenType: string,
+  start?: string,
 ): GroupingContent {
-  // TODO: use the correct group type for the return here
   let fn =
     childrenType == 'orderedList'
       ? ol
       : childrenType == 'unorderedList'
       ? ul
       : group
-  return fn(
+  let res = fn(
     entry.map(({block, children}) => {
+      // TODO(horacio): fix types, block should always be a block, not undefined
+      // @ts-ignore
       let slateBlock = blockToSlate(block)
       if (children.length) {
         slateBlock.children[1] = blockNodeToSlate(
           children,
-          (block?.attributes.childrenType as string) ?? 'group',
+          block?.attributes.childrenType as string,
+          block?.attributes.start,
         )
       }
-
       return slateBlock
     }),
   )
+
+  if (start) {
+    res.start = start
+  }
+  return res
 }

@@ -1,7 +1,7 @@
 import {DocumentChange} from '@app/client'
 import {blockToApi} from '@app/client/v2/block-to-api'
 import {getEditorBlock} from '@app/editor/utils'
-import {FlowContent, isGroupContent} from '@app/mttast'
+import {FlowContent, GroupingContent, isOrderedList} from '@app/mttast'
 import {Editor, Node, Path} from 'slate'
 
 export function createMoveChange(
@@ -44,14 +44,20 @@ export function createReplaceChange(
 
   if (blockEntry) {
     let [block] = blockEntry
-    let childrenType: string | undefined = isGroupContent(block.children[1])
-      ? block.children[1].type
-      : undefined
+    var childrenType
+    var start
+    if (block.children.length > 1) {
+      let groupChild = block.children[1] as GroupingContent
+      childrenType = groupChild.type
+      if (isOrderedList(groupChild)) {
+        start = groupChild.start
+      }
+    }
     return {
       op: {
         $case: 'replaceBlock',
         //TODO: fix parent types
-        replaceBlock: blockToApi(blockEntry[0], childrenType),
+        replaceBlock: blockToApi(blockEntry[0], childrenType, start),
       },
     }
   } else {
