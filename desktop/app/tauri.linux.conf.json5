@@ -1,19 +1,19 @@
-// This file contains specific Tauri configuration for linux builds. 
+// This file contains specific Tauri configuration for linux builds.
 // Mainly used for the custom titlebar right now.
 //
 // This file will be merged with the base configuration, so it makes more sense to define shared behavior there than replicate it across files.
 {
-  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
-  "tauri": {
-    "windows": [
+  $schema: 'https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json',
+  tauri: {
+    windows: [
       {
-        "title": "Mintter",
-        "width": 1000,
-        "height": 800,
-        "minWidth": 640,
-        "minHeight": 480,
-        "decorations": false
-      }
-    ]
-  }
+        title: 'Mintter',
+        width: 1000,
+        height: 800,
+        minWidth: 640,
+        minHeight: 480,
+        decorations: false,
+      },
+    ],
+  },
 }

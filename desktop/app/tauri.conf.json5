@@ -2,9 +2,9 @@
 //
 // You can learn more about this file here: https://tauri.app/v1/api/config
 {
-  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
-  "package": {
-    "productName": "Mintter"
+  $schema: 'https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json',
+  package: {
+    productName: 'Mintter',
   },
   "build": {
     "distDir": "../../frontend/app/dist",
@@ -13,97 +13,96 @@
     "beforeBuildCommand": "cd ../frontend/app && pnpm build",
     "withGlobalTauri": true
   },
-  "tauri": {
-    "bundle": {
-      "active": true,
+  tauri: {
+    bundle: {
+      active: true,
       // .dmg builds are slow, so we skip them when building locally (they are enabled for nightly and release builds).
-      "targets": ["app", "msi", "appimage"],
-      "identifier": "com.mintter.dev",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
+      targets: ['app', 'msi', 'appimage'],
+      identifier: 'com.mintter.dev',
+      icon: [
+        'icons/32x32.png',
+        'icons/128x128.png',
+        'icons/128x128@2x.png',
+        'icons/icon.icns',
+        'icons/icon.ico',
       ],
-      "resources": [],
-      "externalBin": ["../../plz-out/bin/backend/mintterd"],
-      "copyright": "",
-      "category": "DeveloperTool",
-      "shortDescription": "",
-      "longDescription": "",
-      "deb": {
-        "depends": []
+      resources: [],
+      externalBin: ['../../plz-out/bin/backend/mintterd'],
+      copyright: '',
+      category: 'DeveloperTool',
+      shortDescription: '',
+      longDescription: '',
+      deb: {
+        depends: [],
       },
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "",
-        "exceptionDomain": "localhost",
-        "signingIdentity": null,
-        "entitlements": "macOS.entitlements"
+      macOS: {
+        frameworks: [],
+        minimumSystemVersion: '',
+        exceptionDomain: 'localhost',
+        signingIdentity: null,
+        entitlements: 'macOS.entitlements',
       },
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": ""
-      }
+      windows: {
+        certificateThumbprint: null,
+        digestAlgorithm: 'sha256',
+        timestampUrl: '',
+      },
     },
-    "updater": {
-      "active": false,
-      "dialog": false,
-      "endpoints": ["https://mintterreleases.s3.amazonaws.com/manifest.json"],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU0QzY0RUJBQjRDNzQyREEKUldUYVFzZTB1azdHVklXUkN2R2QrbmppTUdhTXFoWEtDcFhEcVdrKzZjanRaSUVHemVNWlFyNWgK"
+    updater: {
+      active: false,
+      dialog: true,
+      endpoints: ['https://mintterreleases.s3.amazonaws.com/manifest.json'],
+      pubkey: 'dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM4N0Q3NDU0MTVFQzY0MkUKUldRdVpPd1ZWSFI5T0MrampqQytES1oyaUg1RWhEZjd1T0hvLzZrWktrbFZ0SHpMNzB2MjEwY0UK',
     },
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "execute": true,
-        "open": true
+    allowlist: {
+      all: false,
+      shell: {
+        execute: true,
+        open: true,
       },
-      "window": {
-        "all": false,
-        "startDragging": true,
-        "maximize": true,
-        "unmaximize": true,
-        "minimize": true,
-        "close": true,
-        "hide": true
+      window: {
+        all: false,
+        startDragging: true,
+        maximize: true,
+        unmaximize: true,
+        minimize: true,
+        close: true,
+        hide: true,
       },
-      "dialog": {
-        "all": false,
-        "message": true
+      dialog: {
+        all: false,
+        message: true,
       },
-      "process": {
-        "all": false,
-        "relaunch": true,
-        "exit": true
-      }
+      process: {
+        all: false,
+        exit: true,
+      },
     },
-    "windows": [
+    windows: [
       {
-        "title": "Mintter",
-        "width": 1000,
-        "height": 900,
-        "minWidth": 640,
-        "minHeight": 480
-      }
+        title: 'Mintter',
+        width: 1000,
+        height: 900,
+        minWidth: 640,
+        minHeight: 480,
+      },
     ],
-    "security": {
-      "csp": {
-        "default-src": "'none'",
-        "script-src": "'unsafe-eval'",
-        "style-src": "'self' 'unsafe-inline'",
-        "connect-src": "'self' http://localhost:55001",
-        "img-src": "https:",
-        "media-src": "https:",
-        "frame-src": "https:",
-        "object-src": "'none'"
-      }
+    security: {
+      csp: {
+        'default-src': "'none'",
+        'script-src': "'unsafe-eval'",
+        'style-src': "'self' 'unsafe-inline'",
+        'connect-src': "'self' http://localhost:55001",
+        'img-src': 'https:',
+        'media-src': 'https:',
+        'frame-src': 'https:',
+        'object-src': "'none'",
+      },
     },
     // configuration for the system tray
-    "systemTray": {
-      "iconPath": "./icons/tray_icon_with_transparency.png",
-      "iconAsTemplate": true
-    }
-  }
+    systemTray: {
+      iconPath: './icons/tray_icon_with_transparency.png',
+      iconAsTemplate: true,
+    },
+  },
 }
