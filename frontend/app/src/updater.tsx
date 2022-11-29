@@ -19,7 +19,7 @@ listen('tauri://update-available', (res: Event<UpdateManifest>) => {
     <UpdateAvailable version={res.payload.version} body={res.payload.body} />,
     {duration: Infinity, id: TOAST_ID},
   )
-}).then(ul => ul1 = ul)
+}).then((ul) => (ul1 = ul))
 
 let ul2: () => void
 onUpdaterEvent(({error, status}) => {
@@ -37,7 +37,7 @@ onUpdaterEvent(({error, status}) => {
       toast.error(<UpdateError error={error} />, {duration: 8000, id: TOAST_ID})
       break
   }
-}).then(ul => ul2 = ul)
+}).then((ul) => (ul2 = ul))
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {

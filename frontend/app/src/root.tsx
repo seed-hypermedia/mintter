@@ -54,7 +54,7 @@ export function Root() {
             <App />
             <Toaster
               position="bottom-right"
-              toastOptions={{ className: 'toaster' }}
+              toastOptions={{className: 'toaster'}}
             />
           </ThemeProvider>
         </Hydrate>
