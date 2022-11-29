@@ -11,6 +11,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"mintter/backend/config"
@@ -62,6 +63,72 @@ type App struct {
 	Syncing      *future.ReadOnly[*syncing.Service]
 	VCSDB        *vcsdb.DB
 	Wallet       *wallet.Service
+}
+
+// LoadGateway loads a pruned version of the mintterd only with web gateway functionalities.
+func LoadGateway(ctx context.Context, cfg config.Config) (a *App, err error) {
+	r, err := initRepo(cfg, nil)
+	if err != nil {
+		return nil, err
+	}
+	a = &App{
+		log:  logging.New("mintter/gateway", "debug"),
+		Repo: r,
+	}
+	a.g, ctx = errgroup.WithContext(ctx)
+
+	// If errors occurred during loading, we need to close everything
+	// we managed to initialize so far, and wait for all the goroutines
+	// to finish. If everything booted correctly, we need to close the cleanup stack
+	// when the context is canceled, so the app is shut down gracefully.
+	defer func() {
+		if err != nil {
+			err = multierr.Combine(err, a.clean.Close(), a.g.Wait())
+		} else {
+			a.g.Go(func() error {
+				<-ctx.Done()
+				return a.clean.Close()
+			})
+		}
+	}()
+
+	a.DB, err = initSQLite(ctx, &a.clean, a.Repo.SQLitePath())
+	if err != nil {
+		return nil, err
+	}
+
+	a.VCSDB = vcsdb.New(a.DB)
+
+	a.Me, err = initRegistration(ctx, a.g, a.Repo)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCSDB, a.Me, a.Net)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
+
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, withMiddleware(getPublicationOnly))
+	if err != nil {
+		return nil, err
+	}
+
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet)
+	if err != nil {
+		return nil, err
+	}
+
+	a.setupLogging(ctx, cfg)
+
+	return
 }
 
 // Load all of the dependencies for the app, and start
@@ -132,7 +199,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, 
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -379,13 +446,14 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
+	opt grpc.ServerOption,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
 
-	srv = grpc.NewServer()
+	srv = grpc.NewServer(opt)
 
 	rpc = api.New(id, repo, pool, v, node, sync, wallet)
 	rpc.Register(srv)
@@ -495,4 +563,23 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 			fmt.Fprintf(w, `<p><a href="%s">%s</a></p>`, r, r)
 		}
 	})
+}
+
+func withMiddleware(i grpc.UnaryServerInterceptor) grpc.ServerOption {
+	return grpc.UnaryInterceptor(i)
+}
+
+func getPublicationOnly(ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+	methodSplitted := strings.Split(info.FullMethod, "/")
+	if len(methodSplitted) < 2 || strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" {
+		return nil, fmt.Errorf("Method: %s not allowed. GetPublication only", info.FullMethod)
+	}
+
+	// Calls the handler
+	h, err := handler(ctx, req)
+
+	return h, err
 }

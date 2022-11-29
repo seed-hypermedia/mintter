@@ -2,6 +2,7 @@ package daemon
 
 import (
 	context "context"
+	"errors"
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/vcs/mttacc"
@@ -60,6 +61,10 @@ func (srv *Server) GenMnemonic(ctx context.Context, req *daemon.GenMnemonicReque
 	return &daemon.GenMnemonicResponse{Mnemonic: words}, nil
 }
 
+// ErrAccAlreadyRegistered errror to make it easy to indentify this common error which is
+// not technically an error.
+var ErrAccAlreadyRegistered = errors.New("account is already registered")
+
 // Register implement the corresponding gRPC method.
 func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*daemon.RegisterResponse, error) {
 	srv.mu.Lock()
@@ -69,7 +74,7 @@ func (srv *Server) Register(ctx context.Context, req *daemon.RegisterRequest) (*
 	{
 		_, err := srv.repo.Account()
 		if err == nil {
-			return nil, status.Errorf(codes.AlreadyExists, "account is already registered")
+			return nil, ErrAccAlreadyRegistered
 		}
 	}
 
