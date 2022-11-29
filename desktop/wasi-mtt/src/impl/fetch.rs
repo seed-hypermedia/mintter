@@ -140,7 +140,7 @@ impl<R: Runtime> fetch::Fetch for Context<R> {
     if !contains(self.promises, Promises::FETCH) {
       Err(fetch::Error::Perm)?
     }
-    
+
     Ok(
       self
         .resource_table

@@ -1,7 +1,6 @@
 /// This module defines all the menu items and associated functions that are present in the top level menu.
 ///
 /// All event handlers are all also commands, so they can be reused from the frontend when replicating the titlebar and menu using HTML, CSS, and JS.
-
 use tauri::{
   api::shell::open, window::WindowBuilder, AppHandle, Manager, Runtime, Window, WindowUrl,
 };
@@ -60,20 +59,30 @@ pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<(
   Ok(())
 }
 
-/// Opens the Mintter documentation. 
-/// 
+/// Opens the Mintter documentation.
+///
 /// This current just point to the Website.
 #[tauri::command(async)]
 pub fn open_documentation<R: Runtime>(app_handle: AppHandle<R>) {
-  open(&app_handle.shell_scope(), "https://github.com/mintterteam/mintter", None).unwrap();
+  open(
+    &app_handle.shell_scope(),
+    "https://github.com/mintterteam/mintter",
+    None,
+  )
+  .unwrap();
 }
 
-/// Opens the Mintter release notes. 
-/// 
+/// Opens the Mintter release notes.
+///
 /// Since we don't have a CHANGELOG.md file this just points the Releases section on GitHub.
 #[tauri::command(async)]
 pub fn open_release_notes<R: Runtime>(app_handle: AppHandle<R>) {
-  open(&app_handle.shell_scope(), "https://github.com/mintterteam/mintter/releases", None).unwrap();
+  open(
+    &app_handle.shell_scope(),
+    "https://github.com/mintterteam/mintter/releases",
+    None,
+  )
+  .unwrap();
 }
 
 /// Opens the acknowledgements. This currently panics since it is not implemented yet.

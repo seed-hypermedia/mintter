@@ -1,8 +1,8 @@
+use crate::{r#impl::pledge::contains, Context, Error, ErrorKind, Promises};
 use futures_util::future::select_ok;
 use std::{future::Future, pin::Pin};
 use tauri::Runtime;
 use wit_bindgen_host_wasmtime_rust::Result as HostResult;
-use crate::{Context, Error, ErrorKind, Promises, r#impl::pledge::contains};
 
 wit_bindgen_host_wasmtime_rust::generate!({
     tracing: true,

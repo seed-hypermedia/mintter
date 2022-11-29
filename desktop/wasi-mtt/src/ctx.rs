@@ -8,7 +8,7 @@ pub struct Context<R: Runtime> {
   pub window: Window<R>,
   /// All resources owned by an extension, currently this only stores http responses, but in the future can include files handles and the like.
   pub resource_table: Table,
-  /// All the permissions the running extension has. 
+  /// All the permissions the running extension has.
   /// This value can be changed by the `pledge` API and **must** be checked before each function implementation.
   pub promises: Promises,
 }

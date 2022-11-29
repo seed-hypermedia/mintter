@@ -49,10 +49,7 @@ pub fn contains(a: pledge::Promises, b: pledge::Promises) -> bool {
 }
 
 impl<R: Runtime> pledge::Pledge for Context<R> {
-  fn pledge(
-    &mut self,
-    promises: pledge::Promises,
-  ) -> HostResult<(), pledge::Error> {
+  fn pledge(&mut self, promises: pledge::Promises) -> HostResult<(), pledge::Error> {
     if !contains(self.promises, promises) {
       Err(Error::perm().context("attempted to escalate privileges"))?;
     }

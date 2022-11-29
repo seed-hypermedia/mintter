@@ -67,7 +67,7 @@ async fn open(window: Window, path: &str) -> Result<()> {
   Ok(())
 }
 
-/// This command explicitly creates a new window, fully bypassing the window focusing behavior. 
+/// This command explicitly creates a new window, fully bypassing the window focusing behavior.
 /// This is used when the user wants to explicitly open something in a new window.
 #[tauri::command(async)]
 #[tracing::instrument(skip(window))]
