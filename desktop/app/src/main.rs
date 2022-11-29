@@ -122,7 +122,7 @@ fn main() {
 
       // Set the native menu only on macOS, on Linux and Windows we're replicating it using HTML,CSS, and JS.
       #[cfg(target_os = "macos")]
-      let win = {
+      let app = {
         app
           .menu(menu::get_menu())
           .on_menu_event(menu::event_handler)
@@ -131,8 +131,8 @@ fn main() {
 
       // Expose a couple commands from the menu module that are needed to replicate the titplebar menu.
       #[cfg(not(target_os = "macos"))]
-      let win = {
-        win.invoke_handler(tauri::generate_handler![
+      let app = {
+        app.invoke_handler(tauri::generate_handler![
           emit_all,
           menu::open_about,
           menu::open_preferences,
@@ -145,7 +145,7 @@ fn main() {
       };
 
       // Run the app!
-      win
+      app
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
     },
