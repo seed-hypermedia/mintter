@@ -9,8 +9,10 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/daemon"
-	apidaemon "mintter/backend/daemon/api/daemon/v1alpha"
 	protodaemon "mintter/backend/genproto/daemon/v1alpha"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/burdiyan/go/mainutil"
 	"github.com/peterbourgon/ff/v3"
@@ -72,7 +74,8 @@ func main() {
 			Mnemonic:   mnemonic,
 			Passphrase: "",
 		})
-		if err != nil && !errors.Is(err, apidaemon.ErrAccAlreadyRegistered) {
+		stat, ok := status.FromError(err)
+		if !ok && stat.Code() != codes.AlreadyExists {
 			return err
 		}
 
