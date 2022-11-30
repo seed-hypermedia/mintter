@@ -70,7 +70,7 @@ func TestSync(t *testing.T) {
 		t.Cleanup(stop)
 		n.Node = peer
 
-		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap(), peer.Client)
+		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap(), peer.Client, false)
 
 		return n
 	}

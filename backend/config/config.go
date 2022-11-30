@@ -44,9 +44,10 @@ func Default() Config {
 		},
 
 		Syncing: Syncing{
-			WarmupDuration: time.Minute,
-			Interval:       time.Minute,
-			TimeoutPerPeer: time.Minute * 2,
+			WarmupDuration:  time.Minute,
+			Interval:        time.Minute,
+			TimeoutPerPeer:  time.Minute * 2,
+			OutboundDisable: false,
 		},
 	}
 }
@@ -116,6 +117,8 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
+	fs.BoolVar(&cfg.Syncing.OutboundDisable, "syncing.disable-outbound", cfg.Syncing.OutboundDisable, "Not syncing outbound content, only accepts documents")
+
 }
 
 // ExpandRepoPath is used to expand the home directory in the repo path.
@@ -141,6 +144,9 @@ type Syncing struct {
 	WarmupDuration time.Duration
 	Interval       time.Duration
 	TimeoutPerPeer time.Duration
+	// OutboundDisable disables syncing content from our peer to the remote peer.
+	// If false, then documents get synced in both directions.
+	OutboundDisable bool
 }
 
 // P2P configuration. For field descriptions see SetupFlags().

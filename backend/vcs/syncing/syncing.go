@@ -57,7 +57,10 @@ type Service struct {
 	bitswap Bitswap
 	client  NetDialFunc
 
-	mu sync.Mutex // Ensures only one sync loop is running at a time.
+	// OutboundDisable disables syncing content from our peer to the remote peer.
+	// If false, then documents get synced in both directions.
+	outboundDisable bool
+	mu              sync.Mutex // Ensures only one sync loop is running at a time.
 }
 
 const (
@@ -67,17 +70,18 @@ const (
 )
 
 // NewService creates a new syncing service. Users must call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap Bitswap, client NetDialFunc) *Service {
+func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap Bitswap, client NetDialFunc, outDisable bool) *Service {
 	svc := &Service{
 		warmupDuration:  defaultWarmupDuration,
 		syncInterval:    defaultSyncInterval,
 		peerSyncTimeout: defaultPeerSyncTimeout,
 
-		log:     log,
-		vcs:     vcs,
-		me:      me,
-		bitswap: bitswap,
-		client:  client,
+		log:             log,
+		vcs:             vcs,
+		me:              me,
+		bitswap:         bitswap,
+		client:          client,
+		outboundDisable: outDisable,
 	}
 
 	return svc
@@ -386,7 +390,9 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
 	if err != nil {
 		return err
 	}
-
+	if s.outboundDisable {
+		resp = &p2p.ListObjectsResponse{}
+	}
 	sess := s.bitswap.NewSession(ctx)
 	for _, obj := range resp.Objects {
 		oid, err := cid.Decode(obj.Id)
