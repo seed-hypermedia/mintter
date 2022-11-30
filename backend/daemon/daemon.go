@@ -199,7 +199,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, 
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, nil)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -414,7 +414,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client, cfg.OutboundDisable)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
@@ -446,14 +446,14 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
-	opt grpc.ServerOption,
+	opt ...grpc.ServerOption,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
 
-	srv = grpc.NewServer(opt)
+	srv = grpc.NewServer(opt...)
 
 	rpc = api.New(id, repo, pool, v, node, sync, wallet)
 	rpc.Register(srv)
