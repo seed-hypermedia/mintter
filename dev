@@ -98,6 +98,11 @@ def main():
         run("plz build //:pnpm")
         return run("cd frontend/app && exec pnpm dev", args=args)
 
+    @cmd(cmds, "run-gateway", "Run frontend web app for development.")
+    def run_frontend(args):
+        run("plz build //:pnpm")
+        return run("cd frontend/gateway && exec pnpm dev", args=args)
+
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):
         run("plz build //backend:mintterd //:pnpm")
