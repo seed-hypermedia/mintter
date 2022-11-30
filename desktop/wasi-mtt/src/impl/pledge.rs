@@ -1,3 +1,5 @@
+/// The implementation of the fetch API defined in the `pledge.wit` file.
+/// For details on the defined functions see that file.
 use crate::{Context, Error, ErrorExt, ErrorKind};
 use tauri::Runtime;
 use wit_bindgen_host_wasmtime_rust::Result as HostResult;

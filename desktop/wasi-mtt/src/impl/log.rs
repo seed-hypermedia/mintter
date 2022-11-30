@@ -1,3 +1,5 @@
+/// The implementation of the logging API defined in the `log.wit` file.
+/// For details on the defined functions see that file.
 use super::pledge::contains;
 use crate::{Context, Promises};
 use tauri::Runtime;

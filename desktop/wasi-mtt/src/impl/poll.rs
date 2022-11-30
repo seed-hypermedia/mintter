@@ -1,3 +1,5 @@
+/// The implementation of the fetch API defined in the `poll.wit` file.
+/// For details on the defined functions see that file.
 use crate::{r#impl::pledge::contains, Context, Error, ErrorKind, Promises};
 use futures_util::future::select_ok;
 use std::{future::Future, pin::Pin};

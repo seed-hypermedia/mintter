@@ -1,3 +1,5 @@
+/// The implementation of the fetch API defined in the `fetch.wit` file.
+/// For details on the defined functions see that file.
 use super::pledge::contains;
 use crate::{ctx::Table, Context, Error, ErrorKind, Promises};
 use std::time::Duration;

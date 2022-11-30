@@ -5,8 +5,24 @@ folder structure see https://tauri.app.
 
 ## Building
 
-You should run `./dev run-desktop` or `./dev build-desktop` from the repos root
-to run this app.
+To run the app, use the `dev` utility in the repo's root:
+
+```
+./dev run-desktop
+```
+
+To run the app with different flags for the daemon you have to pass the arguments through like this:
+
+```
+./dev run-desktop -- -- -- -grpc-port 56002
+```
+
+Note that the number of double dashes is important.
+
+To build the app you can run
+```
+./dev build-desktop
+```
 
 ## Logging
 
