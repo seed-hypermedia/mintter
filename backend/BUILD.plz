@@ -32,3 +32,24 @@ go_binary(
     package = "./cmd/pingp2p",
     visibility = ["PUBLIC"],
 )
+
+go_binary(
+    name = "gateway",
+    srcs = glob(
+        ["**/*.go"],
+        exclude = ["**/*_test.go"],
+    ) + [
+        "//backend/lndhub/lndhubsql:go_library",
+        "//backend/wallet/walletsql:go_library",
+        "//backend/vcs/vcssql:go_library",
+        "//backend/db/sqliteschema:go_library",
+    ],
+    out = "gateway-" + target_platform_triple(),
+    cgo = True,
+    gomod = "//:gomod",
+    package = "./cmd/gateway",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third_party:sqlite",
+    ],
+)
