@@ -11,7 +11,7 @@ interface Node {
 }
 
 export interface Literal extends Node {
-  value: string
+  text: string
 }
 
 export interface Parent extends Node {

@@ -40,7 +40,7 @@ export function blockToApi(
   // Iterate over all the leaves.
   for (let leaf of leaves) {
     const start = pos
-    const charCount = codePointLength(leaf.value)
+    const charCount = codePointLength(leaf.text)
     const end = start + charCount
 
     // Here in real implementation you'd have to determine all the annotations
@@ -100,7 +100,7 @@ export function blockToApi(
 
     // Apparently there's no buffer or a string builder option in javascript, and there's nothing better than straight +=.
     // Slate does the same for every key stroke, so I guess it's fine.
-    out.text += leaf.value
+    out.text += leaf.text
     pos += charCount
   }
 
@@ -157,7 +157,7 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
         result.push({
           url: leaves[i].url ?? '',
           alt: leaves[i].alt ?? '',
-          value: '\uFFFC',
+          text: '\uFFFC',
           type: 'image',
         })
       }
@@ -166,7 +166,7 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
         result.push({
           url: leaves[i].url ?? '',
           alt: leaves[i].alt ?? '',
-          value: '\uFFFC',
+          text: '\uFFFC',
           type: 'video',
         })
       }
@@ -177,7 +177,7 @@ function flattenLeaves(leaves: Array<any>): Array<any> {
           ...leaf[0],
           type: 'embed',
           url: leaves[i].url,
-          value: '\uFFFC',
+          text: '\uFFFC',
         })
       }
 

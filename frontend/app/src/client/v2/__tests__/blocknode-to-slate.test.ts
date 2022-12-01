@@ -1,6 +1,6 @@
 import {
   Block,
-  BlockNode,
+  BlockNode
 } from '@app/client/.generated/documents/v1alpha/documents'
 import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
 import {group, ol, paragraph, statement, text} from '@app/mttast'

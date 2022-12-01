@@ -6,7 +6,7 @@ import {
   isParagraph,
   paragraph,
   statement,
-  text,
+  text
 } from '@app/mttast'
 import {useCurrentTheme} from '@app/theme'
 import {useEffect} from 'react'
@@ -15,7 +15,7 @@ import {
   getHighlighter,
   Highlighter,
   Lang,
-  setCDN,
+  setCDN
 } from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
@@ -119,6 +119,8 @@ export const createCodePlugin = (): EditorPlugin => {
               {data: {...node.data, [HIGHLIGHTER]: highlighter}},
               {at: path},
             )
+          }).catch(error => {
+            console.error('Decorate error', error)
           })
         }
 

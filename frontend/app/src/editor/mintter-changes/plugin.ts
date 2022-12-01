@@ -2,7 +2,7 @@ import {DocumentChange} from '@app/client'
 import {
   createDeleteChange,
   createMoveChange,
-  createReplaceChange,
+  createReplaceChange
 } from '@app/client/v2/change-creators'
 import {
   FlowContent,
@@ -12,7 +12,7 @@ import {
   isGroupContent,
   isPhrasingContent,
   isStaticContent,
-  isStaticPhrasingContent,
+  isStaticPhrasingContent
 } from '@app/mttast'
 import {error} from '@app/utils/logger'
 import {Editor, MoveNodeOperation, Node, Path} from 'slate'

@@ -9,7 +9,7 @@ import {
   statement,
   staticParagraph,
   text,
-  video,
+  video
 } from '@app/mttast'
 import {describe, expect, test} from 'vitest'
 import {blockToSlate} from '../block-to-slate'

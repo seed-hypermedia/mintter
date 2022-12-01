@@ -4,7 +4,7 @@ import {
   isText,
   MttastNode,
   paragraph,
-  PhrasingContent,
+  PhrasingContent
 } from '../..'
 
 export function wrap(nodes: Array<MttastNode>) {
