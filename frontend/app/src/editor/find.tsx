@@ -23,6 +23,26 @@ export function Find() {
     return () => unlisten?.()
   })
 
+  useEffect(() => {
+    let input = searchInput.current
+    if (input) {
+      document.addEventListener('keydown', listenToSelectAll)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', listenToSelectAll)
+    }
+
+    function listenToSelectAll(event: KeyboardEvent) {
+      if (event.metaKey && event.key == 'a') {
+        if (input && document.activeElement === input) {
+          event.preventDefault()
+          input.select()
+        }
+      }
+    }
+  }, [searchInput])
+
   return (
     <label className="titlebar-search">
       <Icon name="Search" />
