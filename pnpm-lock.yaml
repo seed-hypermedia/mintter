@@ -40,7 +40,7 @@ importers:
       '@floating-ui/react-dom': 1.0.1
       '@floating-ui/react-dom-interactions': 0.12.0
       '@graphql-codegen/cli': 2.15.0
-      '@graphql-codegen/typescript': 2.8.2
+      '@graphql-codegen/typescript': 2.8.3
       '@happy-dom/global-registrator': 7.7.0
       '@improbable-eng/grpc-web': 0.15.0
       '@juggle/resize-observer': ^3.4.0
@@ -245,7 +245,7 @@ importers:
     devDependencies:
       '@cypress/vite-dev-server': 3.4.0
       '@graphql-codegen/cli': 2.15.0_ofw6cz5y3hft5ph3vdv3ryk77y
-      '@graphql-codegen/typescript': 2.8.2_graphql@16.6.0
+      '@graphql-codegen/typescript': 2.8.3_graphql@16.6.0
       '@happy-dom/global-registrator': 7.7.0
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
       '@tanstack/react-query-devtools': 4.18.0_2ryzfomli4bbns3rdhwnpgjdhm
@@ -1310,14 +1310,14 @@ packages:
       tslib: 2.4.1
     dev: true
 
-  /@graphql-codegen/typescript/2.8.2_graphql@16.6.0:
-    resolution: {integrity: sha512-FWyEcJTHSxkImNgDRfsg4yBMJ11qPA6sPJ7v8Kviv5MaOFybclVSZ8WWfp7D8Dc6ix4zWfMd4dIl9ZIL/AJu8A==}
+  /@graphql-codegen/typescript/2.8.3_graphql@16.6.0:
+    resolution: {integrity: sha512-ch8Lzjp8XnN8P70uYBmsjv7FWJQ47qletlShPHk7n4RRsnLkah3J9iSEUIALqM25Wl6EjEmHlxoAgSBILz+sjg==}
     peerDependencies:
       graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     dependencies:
       '@graphql-codegen/plugin-helpers': 2.7.2_graphql@16.6.0
       '@graphql-codegen/schema-ast': 2.5.1_graphql@16.6.0
-      '@graphql-codegen/visitor-plugin-common': 2.13.2_graphql@16.6.0
+      '@graphql-codegen/visitor-plugin-common': 2.13.3_graphql@16.6.0
       auto-bind: 4.0.0
       graphql: 16.6.0
       tslib: 2.4.1
@@ -1326,8 +1326,8 @@ packages:
       - supports-color
     dev: true
 
-  /@graphql-codegen/visitor-plugin-common/2.13.2_graphql@16.6.0:
-    resolution: {integrity: sha512-qCZ4nfI1YjDuPz4lqGi0s4/5lOqHxdiQPFSwrXDENjHW+Z0oAiNYj6CFqob9ai2tLtXXKSUzMh/eeZDPmTrfhQ==}
+  /@graphql-codegen/visitor-plugin-common/2.13.3_graphql@16.6.0:
+    resolution: {integrity: sha512-5gFDQGuCE5tIBo9KtDPZ8kL6cf1VJwDGj6nO9ERa0HJNk5osT50NhSf6H61LEnM3Gclbo96Ib1GCp3KdLwHoGg==}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     dependencies:
