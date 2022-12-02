@@ -11,10 +11,11 @@
   height: 100%;
   width: 100%;
   position: relative;
-  overflow: hidden;
+  // overflow: hidden;
 
   [data-radix-scroll-area-viewport] {
     scroll-behavior: smooth;
+    padding-inline-end: 6rem;
   }
 }
 
