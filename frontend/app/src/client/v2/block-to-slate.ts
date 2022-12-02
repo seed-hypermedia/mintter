@@ -60,7 +60,7 @@ export function blockToSlate(blk: Block): FlowContent {
   const leafAnnotations = new Set<Annotation>()
 
   if (blk.text == '') {
-    leaves.push({type: 'text', value: blk.text})
+    leaves.push({type: 'text', text: blk.text})
     return out as FlowContent
   }
 
@@ -96,13 +96,12 @@ export function blockToSlate(blk: Block): FlowContent {
 
       if (inlineBlockContent) {
         if (!isText(leaves[leaves.length - 1])) {
-          leaves.push({type: 'text', value: ''})
+          leaves.push({type: 'text', text: ''})
         }
         leaves.push(inlineBlockContent)
-        leaves.push({type: 'text', value: ''})
+        leaves.push({type: 'text', text: ''})
         inlineBlockContent = null
       }
-
       return out as FlowContent
     }
 
@@ -138,7 +137,7 @@ export function blockToSlate(blk: Block): FlowContent {
   function startLeaf(posAnnotations: Set<Annotation>) {
     leaf = {
       type: 'text',
-      value: '',
+      text: '',
     }
 
     // this var keeps track if in the current annotations there's a link or embed annotation or not. this is important to make sure we are adding items to the correct array
@@ -178,10 +177,10 @@ export function blockToSlate(blk: Block): FlowContent {
       if (inlineBlockContent) {
         if (linkChangedIdentity(linkAnnotation)) {
           if (!isText(leaves[leaves.length - 1])) {
-            leaves.push({type: 'text', value: ''})
+            leaves.push({type: 'text', text: ''})
           }
           leaves.push(inlineBlockContent)
-          leaves.push({type: 'text', value: ''})
+          leaves.push({type: 'text', text: ''})
           inlineBlockContent = {
             type: (linkAnnotation as Annotation).type,
             ...(linkAnnotation as Annotation).attributes,
@@ -198,10 +197,10 @@ export function blockToSlate(blk: Block): FlowContent {
     } else {
       if (inlineBlockContent) {
         if (!isText(leaves[leaves.length - 1])) {
-          leaves.push({type: 'text', value: ''})
+          leaves.push({type: 'text', text: ''})
         }
         leaves.push(inlineBlockContent)
-        leaves.push({type: 'text', value: ''})
+        leaves.push({type: 'text', text: ''})
         inlineBlockContent = null
       }
     }
@@ -215,7 +214,7 @@ export function blockToSlate(blk: Block): FlowContent {
 
   function finishLeaf(low: number, high: number) {
     let newValue = blk.text.substring(low, high)
-    if (leaf) leaf.value = newValue
+    if (leaf) leaf.text = newValue
 
     textStart = high
 
@@ -223,7 +222,7 @@ export function blockToSlate(blk: Block): FlowContent {
       if (inlineBlockContent.type == 'link') {
         inlineBlockContent.children.push(leaf)
       } else {
-        inlineBlockContent.children.push({...leaf, value: ''})
+        inlineBlockContent.children.push({...leaf, text: ''})
       }
     } else {
       if (leaf) {

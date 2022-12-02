@@ -1,5 +1,5 @@
-import toast from 'react-hot-toast'
-import {listen, Event} from '@tauri-apps/api/event'
+import {Button} from '@components/button'
+import {Event, listen} from '@tauri-apps/api/event'
 import {relaunch} from '@tauri-apps/api/process'
 import {
   checkUpdate,
@@ -7,7 +7,7 @@ import {
   onUpdaterEvent,
   UpdateManifest,
 } from '@tauri-apps/api/updater'
-import {Button} from '@components/button'
+import toast from 'react-hot-toast'
 
 checkUpdate()
 
@@ -51,8 +51,6 @@ window.addEventListener('beforeunload', () => {
 })
 
 function UpdateAvailable({version, body}: {version: string; body: string}) {
-  console.log(body)
-
   return (
     <div>
       <div>Mintter version {version} is available!</div>

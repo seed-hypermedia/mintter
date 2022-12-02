@@ -57,7 +57,7 @@ function createParent<N extends Parent>(
 }
 
 export function createId() {
-  const id = nanoid(8)
+  let id = nanoid(8)
   return id
 }
 
@@ -97,10 +97,10 @@ export const image = createParent<Image>('image')
 export const video = createParent<Video>('video')
 
 export const text = (
-  value: string,
-  options: Omit<Text, 'type' | 'value'> = {},
+  text: string,
+  options: Omit<Text, 'type' | 'text'> = {},
 ): Text => ({
   type: 'text',
-  value,
+  text,
   ...options,
 })

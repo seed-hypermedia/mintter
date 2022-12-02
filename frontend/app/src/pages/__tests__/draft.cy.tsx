@@ -56,7 +56,6 @@ describe('Draft Page', () => {
       .get('[data-testid="button-publish"]')
       .click()
       .then(() => {
-        console.log(mockPublish.getCalls())
         // expect(mockPublish).to.be.calledOnceWith(draft?.id)
       })
   })

@@ -132,10 +132,10 @@ importers:
       sass: 1.56.1
       shiki: 0.10.1
       show-keys: 1.1.2
-      slate: https://gitpkg.now.sh/mintterteam/slate/packages/slate?e71cb591df570e663ad1db10435c605769b74afb
-      slate-history: https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?e71cb591df570e663ad1db10435c605769b74afb
-      slate-hyperscript: https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?e71cb591df570e663ad1db10435c605769b74afb
-      slate-react: https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?e71cb591df570e663ad1db10435c605769b74afb
+      slate: ^0.86.0
+      slate-history: ^0.86.0
+      slate-hyperscript: ^0.77.0
+      slate-react: ^0.86.0
       tauri-plugin-log-api: github:tauri-apps/tauri-plugin-log#b58475bbc410fa78eb69276c62d0b64c91c07914
       tauri-plugin-sentry-api: github:JonasKruckenberg/sentry-tauri#df123beb03104b6068b3bdd6fc509e3158f7dd30
       tauri-plugin-store-api: github:tauri-apps/tauri-plugin-store#9bd993aa67766596638bbfd91e79a1bf8f632014
@@ -225,10 +225,10 @@ importers:
       rehype-stringify: 9.0.3
       shiki: 0.10.1
       show-keys: 1.1.2
-      slate: '@gitpkg.now.sh/mintterteam/slate/packages/slate?e71cb591df570e663ad1db10435c605769b74afb'
-      slate-history: '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?e71cb591df570e663ad1db10435c605769b74afb_slate@0.86.0'
-      slate-hyperscript: '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?e71cb591df570e663ad1db10435c605769b74afb_slate@0.86.0'
-      slate-react: '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?e71cb591df570e663ad1db10435c605769b74afb_g37k7sf7urqqfksvh3hvwmvue4'
+      slate: 0.86.0
+      slate-history: 0.86.0_slate@0.86.0
+      slate-hyperscript: 0.77.0_slate@0.86.0
+      slate-react: 0.86.0_g37k7sf7urqqfksvh3hvwmvue4
       tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/b58475bbc410fa78eb69276c62d0b64c91c07914
       tauri-plugin-sentry-api: github.com/JonasKruckenberg/sentry-tauri/df123beb03104b6068b3bdd6fc509e3158f7dd30
       tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/9bd993aa67766596638bbfd91e79a1bf8f632014
@@ -2704,6 +2704,7 @@ packages:
 
   /@tanstack/query-core/4.19.0:
     resolution: {integrity: sha512-q+4GvS05nG2UXDE4ng0NU5SQNhT+VqhRTLNVtgVw1tIKJfG3CyYQpP/JwAdzMB7NEqC8L5oo9NAaORxEQN53dg==}
+    dev: false
 
   /@tanstack/react-query-devtools/4.19.0_budcsmmktl2xfbndofa5sinodm:
     resolution: {integrity: sha512-j9Md4xaWRRt/mKZe+sv+M41LfymtzdFcYNPIttGdBV4IQKnCSfuFMztBlIxTPbPGjMz2vTzx4QbYKeIyJxDysg==}
@@ -2736,6 +2737,7 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
+    dev: false
 
   /@tauri-apps/api/1.1.0:
     resolution: {integrity: sha512-n13pIqdPd3KtaMmmAcrU7BTfdMtIlGNnfZD0dNX8L4p8dgmuNyikm6JAA+yCpl9gqq6I8x5cV2Y0muqdgD0cWw==}
@@ -2879,6 +2881,7 @@ packages:
 
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
+    dev: true
 
   /@types/qs/6.9.7:
     resolution: {integrity: sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw==}
@@ -2908,9 +2911,11 @@ packages:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
       csstype: 3.1.1
+    dev: true
 
   /@types/scheduler/0.16.2:
     resolution: {integrity: sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==}
+    dev: true
 
   /@types/semver/7.3.13:
     resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
@@ -5759,6 +5764,7 @@ packages:
   /graphql/16.6.0:
     resolution: {integrity: sha512-KPIBPDlW7NxrbT/eh4qPXz5FiFdL5UbaA0XUNz2Rp3Z3hqBSkbj0GVjwFDztsWVauZUWsbKHgMg++sk8UX0bkw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
+    dev: false
 
   /happy-dom/7.7.0:
     resolution: {integrity: sha512-U10JXl5qSaHswXT5kyE7lvSDoyK48GyPGpe74qI9KT29frt1AlS+jnwy77RUJIknx+4b52DK1NllXTgHH8k20w==}
@@ -7637,6 +7643,7 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
+    dev: false
 
   /react-error-boundary/3.1.4_react@18.2.0:
     resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
@@ -7786,6 +7793,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
+    dev: false
 
   /read-pkg-up/1.0.1:
     resolution: {integrity: sha512-WD9MTlNtI55IwYUS27iHh9tK3YoIVhxis8yKhLpTqWtml739uXc9NWTpxoHkfZf3+DkCCsXox94/VWZniuZm6A==}
@@ -8102,6 +8110,7 @@ packages:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
     dependencies:
       loose-envify: 1.4.0
+    dev: false
 
   /scroll-into-view-if-needed/2.2.29:
     resolution: {integrity: sha512-hxpAR6AN+Gh53AdAimHM6C8oTN1ppwVZITihix+WqalywBeFcQ6LdQP5ABNl26nX8GTEL7VT+b8lKpdqq65wXg==}
@@ -8214,6 +8223,52 @@ packages:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
     dev: true
+
+  /slate-history/0.86.0_slate@0.86.0:
+    resolution: {integrity: sha512-OxObL9tbhgwvSlnKSCpGIh7wnuaqvOj5jRExGjEyCU2Ke8ctf22HjT+jw7GEi9ttLzNTUmTEU3YIzqKGeqN+og==}
+    peerDependencies:
+      slate: '>=0.65.3'
+    dependencies:
+      is-plain-object: 5.0.0
+      slate: 0.86.0
+    dev: false
+
+  /slate-hyperscript/0.77.0_slate@0.86.0:
+    resolution: {integrity: sha512-M6uRpttwKnosniQORNPYQABHQ9XWC7qaSr/127LWWPjTOR5MSSwrHGrghN81BhZVqpICHrI7jkPA2813cWdHNA==}
+    peerDependencies:
+      slate: '>=0.65.3'
+    dependencies:
+      is-plain-object: 5.0.0
+      slate: 0.86.0
+    dev: false
+
+  /slate-react/0.86.0_g37k7sf7urqqfksvh3hvwmvue4:
+    resolution: {integrity: sha512-FlzG0CL1MtpZk7DRH6a101FdqdhTi+vZ23SbY5hQudIdgLo7QnUBv97BRe30VctqsL9L+Z2OsFHSCmWpIIxJAw==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+      slate: '>=0.65.3'
+    dependencies:
+      '@types/is-hotkey': 0.1.7
+      '@types/lodash': 4.14.190
+      direction: 1.0.4
+      is-hotkey: 0.1.8
+      is-plain-object: 5.0.0
+      lodash: 4.17.21
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      scroll-into-view-if-needed: 2.2.29
+      slate: 0.86.0
+      tiny-invariant: 1.0.6
+    dev: false
+
+  /slate/0.86.0:
+    resolution: {integrity: sha512-aexL720Tpqx6St5oz0jo0/wZWCT7z8lChKkVJo2eiFkSNmoSnCGR62d2itAvmse7dEXkl4DbfAxRQPj8JDuGTg==}
+    dependencies:
+      immer: 9.0.16
+      is-plain-object: 5.0.0
+      tiny-warning: 1.0.3
+    dev: false
 
   /slice-ansi/3.0.0:
     resolution: {integrity: sha512-pSyv7bSTC7ig9Dcgbw9AuRNUb5k5V6oDudjZoMBSr13qpLBG7tB+zgCkARjq7xIUgdz5P1Qe8u+rSGdouOOIyQ==}
@@ -9529,63 +9584,6 @@ packages:
   /zwitch/1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
     dev: true
-
-  '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?e71cb591df570e663ad1db10435c605769b74afb_slate@0.86.0':
-    resolution: {tarball: https://gitpkg.now.sh/mintterteam/slate/packages/slate-history?e71cb591df570e663ad1db10435c605769b74afb}
-    id: '@gitpkg.now.sh/mintterteam/slate/packages/slate-history?e71cb591df570e663ad1db10435c605769b74afb'
-    name: slate-history
-    version: 0.86.0
-    peerDependencies:
-      slate: '>=0.65.3'
-    dependencies:
-      is-plain-object: 5.0.0
-      slate: '@gitpkg.now.sh/mintterteam/slate/packages/slate?e71cb591df570e663ad1db10435c605769b74afb'
-    dev: false
-
-  '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?e71cb591df570e663ad1db10435c605769b74afb_slate@0.86.0':
-    resolution: {tarball: https://gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?e71cb591df570e663ad1db10435c605769b74afb}
-    id: '@gitpkg.now.sh/mintterteam/slate/packages/slate-hyperscript?e71cb591df570e663ad1db10435c605769b74afb'
-    name: slate-hyperscript
-    version: 0.81.3
-    peerDependencies:
-      slate: '>=0.65.3'
-    dependencies:
-      is-plain-object: 5.0.0
-      slate: '@gitpkg.now.sh/mintterteam/slate/packages/slate?e71cb591df570e663ad1db10435c605769b74afb'
-    dev: false
-
-  '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?e71cb591df570e663ad1db10435c605769b74afb_g37k7sf7urqqfksvh3hvwmvue4':
-    resolution: {tarball: https://gitpkg.now.sh/mintterteam/slate/packages/slate-react?e71cb591df570e663ad1db10435c605769b74afb}
-    id: '@gitpkg.now.sh/mintterteam/slate/packages/slate-react?e71cb591df570e663ad1db10435c605769b74afb'
-    name: slate-react
-    version: 0.86.0
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-      slate: '>=0.65.3'
-    dependencies:
-      '@types/is-hotkey': 0.1.7
-      '@types/lodash': 4.14.190
-      direction: 1.0.4
-      is-hotkey: 0.1.8
-      is-plain-object: 5.0.0
-      lodash: 4.17.21
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-      scroll-into-view-if-needed: 2.2.29
-      slate: '@gitpkg.now.sh/mintterteam/slate/packages/slate?e71cb591df570e663ad1db10435c605769b74afb'
-      tiny-invariant: 1.0.6
-    dev: false
-
-  '@gitpkg.now.sh/mintterteam/slate/packages/slate?e71cb591df570e663ad1db10435c605769b74afb':
-    resolution: {tarball: https://gitpkg.now.sh/mintterteam/slate/packages/slate?e71cb591df570e663ad1db10435c605769b74afb}
-    name: slate
-    version: 0.86.0
-    dependencies:
-      immer: 9.0.16
-      is-plain-object: 5.0.0
-      tiny-warning: 1.0.3
-    dev: false
 
   github.com/JonasKruckenberg/sentry-tauri/df123beb03104b6068b3bdd6fc509e3158f7dd30:
     resolution: {tarball: https://codeload.github.com/JonasKruckenberg/sentry-tauri/tar.gz/df123beb03104b6068b3bdd6fc509e3158f7dd30}

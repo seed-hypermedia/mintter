@@ -91,7 +91,7 @@ function ontext(node: Text, index: number | null, parent: {children: any[]}) {
   const previous = parent.children[previousIndex]
 
   if (previous && hasSameProps(previous, node)) {
-    previous.value += node.value
+    previous.text += node.value
     parent.children.splice(index, 1)
 
     // if (previous.position && node.position) {
@@ -102,7 +102,12 @@ function ontext(node: Text, index: number | null, parent: {children: any[]}) {
     return index - 1
   }
 
-  node.value = node.value.replace(/[\t ]*(\r?\n|\r)[\t ]*/, '$1')
+  let text = node.value ?? node.text
+
+  node.value = text.replace(/[\t ]*(\r?\n|\r)[\t ]*/, '$1')
+
+  node.text = node.value
+  delete node.value
 
   // We don’t care about other phrasing nodes in between (e.g., `[ asd ]()`),
   // as there the whitespace matters.
@@ -123,7 +128,7 @@ function ontext(node: Text, index: number | null, parent: {children: any[]}) {
 }
 
 function hasSameProps(one: Text, two: Text): boolean {
-  const {value: n1, ...props1} = one
+  const {text: n1, ...props1} = one
   const {value: n2, ...props2} = two
   return JSON.stringify(props1) === JSON.stringify(props2)
 }

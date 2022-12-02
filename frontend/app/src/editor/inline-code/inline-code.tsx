@@ -16,7 +16,7 @@ export const createInlineCodePlugin = (): EditorPlugin => ({
   renderLeaf:
     () =>
     ({attributes, children, leaf}) => {
-      if (leaf[MARK_CODE] && leaf.value) {
+      if (leaf[MARK_CODE] && leaf.text) {
         return (
           <code className={codeStyles()} {...attributes}>
             {children}

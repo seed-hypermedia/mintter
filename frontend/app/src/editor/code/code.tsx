@@ -69,7 +69,7 @@ export const createCodePlugin = (): EditorPlugin => {
     renderLeaf:
       () =>
       ({attributes, children, leaf}) => {
-        if (leaf[LEAF_TOKEN] && leaf.value) {
+        if (leaf[LEAF_TOKEN] && leaf.text) {
           return (
             <span style={{color: leaf[LEAF_TOKEN]}} {...attributes}>
               {children}
@@ -113,13 +113,17 @@ export const createCodePlugin = (): EditorPlugin => {
           getHighlighter({
             themes: Object.values(THEMES),
             langs: [node.lang],
-          }).then((highlighter) => {
-            Transforms.setNodes(
-              editor,
-              {data: {...node.data, [HIGHLIGHTER]: highlighter}},
-              {at: path},
-            )
           })
+            .then((highlighter) => {
+              Transforms.setNodes(
+                editor,
+                {data: {...node.data, [HIGHLIGHTER]: highlighter}},
+                {at: path},
+              )
+            })
+            .catch((error) => {
+              console.error('Decorate error', error)
+            })
         }
 
         // tokenize & decorate the paragraph inside codeblock

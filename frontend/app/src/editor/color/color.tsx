@@ -8,7 +8,7 @@ export const createColorPlugin = (): EditorPlugin => ({
   renderLeaf:
     () =>
     ({attributes, children, leaf}) => {
-      if (leaf[MARK_COLOR] && leaf.value) {
+      if (leaf[MARK_COLOR] && leaf.text) {
         return (
           <span style={{color: leaf[MARK_COLOR]}} {...attributes}>
             {children}

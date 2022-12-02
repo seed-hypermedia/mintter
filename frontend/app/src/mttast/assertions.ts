@@ -55,18 +55,31 @@ export const isGroupContent = isOneOfTypes<GroupingContent>([
   'orderedList',
   'unorderedList',
 ])
-export const isStaticPhrasingContent = isOneOfTypes<StaticPhrasingContent>([
-  'text',
-  'video',
-  'image',
-])
-export const isPhrasingContent = isOneOfTypes<PhrasingContent>([
-  'text',
-  'link',
-  'embed',
-  'video',
-  'image',
-])
+export const isStaticPhrasingContent = <T extends MttastContent>(
+  value: unknown,
+): value is T => {
+  return (
+    (isPlainObject(value) &&
+      ['text', 'video', 'image'].includes((value as Node).type)) ||
+    (isPlainObject(value) && isPlainText(value))
+  )
+}
+export const isPhrasingContent = <T extends MttastContent>(
+  value: unknown,
+): value is T => {
+  return (
+    (isPlainObject(value) &&
+      ['text', 'link', 'embed', 'video', 'image'].includes(
+        (value as Node).type,
+      )) ||
+    (isPlainObject(value) && isPlainText(value))
+  )
+}
+
+function isPlainText(value) {
+  return typeof value.text == 'string' && typeof value.type == 'undefined'
+}
+
 export const isContent = isOneOfTypes<Content>(['paragraph'])
 export const isStaticContent = isOneOfTypes<StaticContent>(['staticParagraph'])
 
@@ -85,7 +98,8 @@ export const isVideo = isType<Video>('video')
 export const isImage = isType<Image>('image')
 export const isEmbed = isType<Embed>('embed')
 export const isLink = isType<Link>('link')
-export const isText = isType<Text>('text')
+export const isText = (value) =>
+  isPlainObject(value) && typeof value.text == 'string'
 
 export const isMark = (maybeMark: string): maybeMark is Mark => {
   return [

@@ -33,44 +33,11 @@ export function createPlainTextPastePlugin(): EditorPlugin {
          * would be nice to catch the slate-fragment content here
          */
 
-        // var html = data.getData('text/html')
-
-        // if (html) {
-        //   let hast = processor.runSync(processor.parse(html))
-        //   debug('HAST:', hast)
-        //   let mttast = toMttast(hast)
-        //   debug('MTTAST:', mttast)
-        //   let fragment = removeEmptyText(mttast)
-
-        //   debug('paste mttast', fragment)
-        //   let [parentBlock, parentPath] =
-        //     Editor.above(editor, {match: isFlowContent}) || []
-        //   if (parentBlock && parentPath) {
-        //     debug('parent block:', parentBlock)
-        //     Editor.withoutNormalizing(editor, () => {
-        //       /**
-        //        * we are inserting nodes here because this will push the current block below what we are pasting
-        //        * check the difference between insertFragment and insertNodes here:
-
-        //        * https://slate-explorer.glitch.me/#eyJpbnB1dCI6IjxlZGl0b3I+XG4gIDx1bD5cbiAgICA8bGk+Zm9vPGN1cnNvci8+PC9saT5cbiAgPC91bD5cbjwvZWRpdG9yPiIsInNsYXRlIjpbeyJ0eXBlIjoidWwiLCJjaGlsZHJlbiI6W3sidHlwZSI6ImxpIiwiY2hpbGRyZW4iOlt7InRleHQiOiJmb28ifV19XX1dLCJ0cmFuc2Zvcm0iOiJjb25zdCBub2RlcyA9IFtcbiAgeyB0eXBlOiAndWwnLCBjaGlsZHJlbjogW1xuICAgIHsgdHlwZTogJ2xpJywgY2hpbGRyZW46IFtcbiAgICAgIHsgdGV4dDogJ2JhcicgfVxuICAgIF0gfVxuICBdIH1cbl1cbi8vIFRyYW5zZm9ybXMuaW5zZXJ0RnJhZ21lbnQoZWRpdG9yLCBub2RlcylcblRyYW5zZm9ybXMuaW5zZXJ0Tm9kZXMoZWRpdG9yLCBub2RlcylcbiIsInNob3dIZWxwIjpmYWxzZX0=
-        //        */
-        //       Transforms.insertNodes(editor, fragment.children, {
-        //         at: parentPath,
-        //       })
-        //     })
-        //   } else {
-        //     error('Paste Plugin: No block found above', editor.selection)
-        //   }
-
-        //   // Transforms.insertFragment(editor, mttast.children, {at: [0, 0]})
-
-        //   return
-        // }
-
         const html = transfer.getData('text/html')
 
         if (html) {
           const hast = processor.runSync(processor.parse(html))
+          window.hast = hast
           const mttast = toMttast(hast)
           const fragment = removeEmptyText(mttast)
 
@@ -112,7 +79,7 @@ export function createPlainTextPastePlugin(): EditorPlugin {
 
 function removeEmptyText(tree: MttRoot) {
   visit(tree, 'text', (node, index, parent) => {
-    if (node.value === '') {
+    if (node.text === '') {
       if (!isImage(parent)) {
         parent!.children.splice(index!, 1, ...node.children)
       }

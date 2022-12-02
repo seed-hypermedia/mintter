@@ -199,9 +199,6 @@ export function Editor({
         >
           <EditorHoveringToolbar />
           <Editable
-            autoCorrect="false"
-            autoCapitalize="false"
-            spellCheck="false"
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
@@ -230,6 +227,9 @@ export function Editor({
           ) : null} */}
         <Editable
           as={as}
+          autoCorrect="false"
+          autoCapitalize="false"
+          spellCheck="false"
           data-testid="editor"
           readOnly
           renderElement={renderElement}
