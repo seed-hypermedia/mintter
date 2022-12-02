@@ -43,9 +43,9 @@ jobs:
           - os: windows-latest
             goarch: amd64
             rust_target: x86_64-pc-windows-msvc
-          - os: windows-latest
-            goarch: arm64
-            rust_target: aarch64-pc-windows-msvc
+          #- os: windows-latest
+          #  goarch: arm64
+          #  rust_target: aarch64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v3
 
@@ -233,7 +233,6 @@ jobs:
             './artifacts/sourcemaps-aarch64-apple-darwin
             ./artifacts/sourcemaps-x86_64-apple-darwin
             ./artifacts/sourcemaps-x86_64-pc-windows-msvc
-            ./artifacts/sourcemaps-aarch64-pc-windows-msvc
             ./artifacts/sourcemaps-x86_64-unknown-linux-gnu'
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
