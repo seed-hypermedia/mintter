@@ -109,7 +109,7 @@
     "xstate": "4.34.0"
   },
   "devDependencies": {
-    "@cypress/vite-dev-server": "3.4.0",
+    "@cypress/vite-dev-server": "4.0.1",
     "@graphql-codegen/cli": "2.15.0",
     "@graphql-codegen/typescript": "2.8.3",
     "@happy-dom/global-registrator": "7.7.0",
