@@ -1,4 +1,5 @@
 import {all} from '../all'
+import {wrapChildren} from '../util/wrap-children'
 import {a} from './a'
 import {base} from './base'
 import {blockquote} from './blockquote'
@@ -152,7 +153,7 @@ export const handlers = {
   // aside: wrapChildren,
   // body: wrapChildren,
   // center: wrapChildren,
-  // div: wrapChildren,
+  div: wrapChildren,
   // fieldset: wrapChildren,
   figcaption: p,
   // figure,

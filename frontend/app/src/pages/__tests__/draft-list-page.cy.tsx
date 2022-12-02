@@ -92,7 +92,6 @@ describe('Draft List', () => {
         .click()
         .then(() => {
           expect(setLocation).to.be.calledTwice
-          console.log()
           expect(setLocation.args).to.deep.equal([['/d/d1'], ['/d/d1']])
         })
     })

@@ -2,7 +2,7 @@ import {DocumentChange} from '@app/client'
 import {
   createDeleteChange,
   createMoveChange,
-  createReplaceChange
+  createReplaceChange,
 } from '@app/client/v2/change-creators'
 import {
   FlowContent,
@@ -12,7 +12,7 @@ import {
   isGroupContent,
   isPhrasingContent,
   isStaticContent,
-  isStaticPhrasingContent
+  isStaticPhrasingContent,
 } from '@app/mttast'
 import {error} from '@app/utils/logger'
 import {Editor, MoveNodeOperation, Node, Path} from 'slate'
@@ -242,12 +242,12 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
     addOperation(editor, 'moveBlock', parent)
     addOperation(editor, 'replaceBlock', parent)
   } else if (isPhrasingContent(node) || isStaticPhrasingContent(node)) {
-    let [block, blockPath] =
+    let [block] =
       Editor.above<FlowContent>(editor, {
         at: operation.path,
         match: isFlowContent,
       }) || []
-    if (block && blockPath) {
+    if (block) {
       addOperation(editor, 'moveBlock', block)
       addOperation(editor, 'replaceBlock', block)
     } else {

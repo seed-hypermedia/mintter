@@ -11,7 +11,7 @@ export function createSuperscriptPlugin(): EditorPlugin {
     renderLeaf:
       () =>
       ({attributes, children, leaf}) => {
-        if (leaf[MARK_SUPERSCRIPT] && leaf.value) {
+        if (leaf[MARK_SUPERSCRIPT] && leaf.text) {
           return <Superscript {...attributes}>{children}</Superscript>
         }
       },

@@ -177,10 +177,6 @@ export default function PublicationWrapper() {
                               onClick={() => {
                                 panelSend('DISCUSSION.TOGGLE')
                                 mouseService.send('DISABLE.WINDOW.RESIZE')
-                                console.log(
-                                  'mouse service',
-                                  mouseService.getSnapshot().value,
-                                )
                               }}
                             >
                               <Icon name="MessageBubble" />

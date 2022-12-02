@@ -6,7 +6,7 @@ import {
   isParagraph,
   paragraph,
   statement,
-  text
+  text,
 } from '@app/mttast'
 import {useCurrentTheme} from '@app/theme'
 import {useEffect} from 'react'
@@ -15,7 +15,7 @@ import {
   getHighlighter,
   Highlighter,
   Lang,
-  setCDN
+  setCDN,
 } from 'shiki'
 import {Editor, Node, Path, Range, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
@@ -69,7 +69,7 @@ export const createCodePlugin = (): EditorPlugin => {
     renderLeaf:
       () =>
       ({attributes, children, leaf}) => {
-        if (leaf[LEAF_TOKEN] && leaf.value) {
+        if (leaf[LEAF_TOKEN] && leaf.text) {
           return (
             <span style={{color: leaf[LEAF_TOKEN]}} {...attributes}>
               {children}
@@ -113,15 +113,17 @@ export const createCodePlugin = (): EditorPlugin => {
           getHighlighter({
             themes: Object.values(THEMES),
             langs: [node.lang],
-          }).then((highlighter) => {
-            Transforms.setNodes(
-              editor,
-              {data: {...node.data, [HIGHLIGHTER]: highlighter}},
-              {at: path},
-            )
-          }).catch(error => {
-            console.error('Decorate error', error)
           })
+            .then((highlighter) => {
+              Transforms.setNodes(
+                editor,
+                {data: {...node.data, [HIGHLIGHTER]: highlighter}},
+                {at: path},
+              )
+            })
+            .catch((error) => {
+              console.error('Decorate error', error)
+            })
         }
 
         // tokenize & decorate the paragraph inside codeblock

@@ -91,7 +91,6 @@ function ontext(node: Text, index: number | null, parent: {children: any[]}) {
   const previous = parent.children[previousIndex]
 
   if (previous && hasSameProps(previous, node)) {
-    
     previous.text += node.value
     parent.children.splice(index, 1)
 
@@ -103,7 +102,6 @@ function ontext(node: Text, index: number | null, parent: {children: any[]}) {
     return index - 1
   }
 
-  
   let text = node.value ?? node.text
 
   node.value = text.replace(/[\t ]*(\r?\n|\r)[\t ]*/, '$1')

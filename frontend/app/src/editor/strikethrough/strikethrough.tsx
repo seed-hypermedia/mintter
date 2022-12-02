@@ -10,7 +10,7 @@ export const createStrikethroughPlugin = (): EditorPlugin => ({
   renderLeaf:
     () =>
     ({attributes, children, leaf}) => {
-      if (leaf[MARK_STRIKETHROUGH] && leaf.value) {
+      if (leaf[MARK_STRIKETHROUGH] && leaf.text) {
         return <Strikethrough {...attributes}>{children}</Strikethrough>
       }
     },

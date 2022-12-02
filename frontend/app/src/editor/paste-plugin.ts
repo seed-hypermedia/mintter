@@ -4,7 +4,7 @@ import {
   isPhrasingContent,
   MttRoot,
   sanitizeSchema,
-  toMttast
+  toMttast,
 } from '@app/mttast'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {error} from '@app/utils/logger'
@@ -37,6 +37,7 @@ export function createPlainTextPastePlugin(): EditorPlugin {
 
         if (html) {
           const hast = processor.runSync(processor.parse(html))
+          window.hast = hast
           const mttast = toMttast(hast)
           const fragment = removeEmptyText(mttast)
 

@@ -10,7 +10,7 @@ import {
   statement,
   staticParagraph,
   text,
-  video
+  video,
 } from '@app/mttast'
 import {describe, expect, test} from 'vitest'
 import {blockToApi} from '../block-to-api'

@@ -11,7 +11,7 @@ export function createSubscriptPlugin(): EditorPlugin {
     renderLeaf:
       () =>
       ({attributes, children, leaf}) => {
-        if (leaf[MARK_SUBSCRIPT] && leaf.value) {
+        if (leaf[MARK_SUBSCRIPT] && leaf.text) {
           return <Subscript {...attributes}>{children}</Subscript>
         }
       },

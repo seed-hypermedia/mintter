@@ -66,7 +66,6 @@ export const plugins: EditorPlugin[] = [
     onCompositionEnd: () => (e) => {
       // this plugin prevents to add extra characters when "composing"
       // when we add accents we are composing
-      console.log('onCompositionEnd', e.data)
       e.preventDefault()
       e.stopPropagation()
     },

@@ -16,7 +16,7 @@ import type {
   StaticParagraph,
   Text,
   UnorderedList,
-  Video
+  Video,
 } from '.'
 
 export type ChildrenOf<N extends Parent> = N['children'] | (() => N['children'])

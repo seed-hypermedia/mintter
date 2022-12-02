@@ -123,7 +123,6 @@ describe('Publications List', () => {
         .click()
         .then(() => {
           expect(setLocation).to.be.calledThrice
-          console.log()
           expect(setLocation.args).to.deep.equal([
             ['/p/d1/v1'],
             ['/p/d1/v1'],
