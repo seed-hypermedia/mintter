@@ -99,7 +99,7 @@ importers:
       google-protobuf: 3.21.2
       graphql: 16.6.0
       graphql-request: 5.0.0
-      happy-dom: 7.7.0
+      happy-dom: 7.7.2
       hast: 1.0.0
       hast-util-has-property: 2.0.0
       hast-util-is-element: 2.1.2
@@ -269,7 +269,7 @@ importers:
       copy-text-to-clipboard: 3.0.1
       covector: 0.7.3
       cypress: 10.11.0
-      happy-dom: 7.7.0
+      happy-dom: 7.7.2
       is-hidden: 2.0.1
       prettier: 2.8.0
       sass: 1.56.1
@@ -280,7 +280,7 @@ importers:
       vite: 3.2.4_clvymlzunojxjbv3h6i2warera
       vite-react-jsx: 1.1.2_vite@3.2.4
       vite-tsconfig-paths: 3.6.0_vite@3.2.4
-      vitest: 0.25.3_oawptfov672ujacze42asuyd6i
+      vitest: 0.25.3_4p2q4kownwn34nmyur4w4cbbre
       ws: 8.11.0
 
 packages:
@@ -5760,20 +5760,6 @@ packages:
     resolution: {integrity: sha512-KPIBPDlW7NxrbT/eh4qPXz5FiFdL5UbaA0XUNz2Rp3Z3hqBSkbj0GVjwFDztsWVauZUWsbKHgMg++sk8UX0bkw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
-  /happy-dom/7.7.0:
-    resolution: {integrity: sha512-U10JXl5qSaHswXT5kyE7lvSDoyK48GyPGpe74qI9KT29frt1AlS+jnwy77RUJIknx+4b52DK1NllXTgHH8k20w==}
-    dependencies:
-      css.escape: 1.5.1
-      he: 1.2.0
-      node-fetch: 2.6.7
-      sync-request: 6.1.0
-      webidl-conversions: 7.0.0
-      whatwg-encoding: 2.0.0
-      whatwg-mimetype: 3.0.0
-    transitivePeerDependencies:
-      - encoding
-    dev: true
-
   /happy-dom/7.7.2:
     resolution: {integrity: sha512-xJhDLvS7jCie2sgU00HzyNFfdRSUOxm/ndE1gT++aNDo4ffXtn6/WI/Vf3IooDEC770AQ3J8fJvnakPZFEsLpg==}
     dependencies:
@@ -9257,7 +9243,7 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.25.3_oawptfov672ujacze42asuyd6i:
+  /vitest/0.25.3_4p2q4kownwn34nmyur4w4cbbre:
     resolution: {integrity: sha512-/UzHfXIKsELZhL7OaM2xFlRF8HRZgAHtPctacvNK8H4vOcbJJAMEgbWNGSAK7Y9b1NBe5SeM7VTuz2RsTHFJJA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
@@ -9286,7 +9272,7 @@ packages:
       acorn-walk: 8.2.0
       chai: 4.3.7
       debug: 4.3.4
-      happy-dom: 7.7.0
+      happy-dom: 7.7.2
       local-pkg: 0.4.2
       source-map: 0.6.1
       strip-literal: 0.4.2
