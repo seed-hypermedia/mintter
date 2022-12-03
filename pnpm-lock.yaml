@@ -38,7 +38,7 @@ importers:
     specifiers:
       '@cypress/vite-dev-server': 3.4.0
       '@floating-ui/react-dom': 1.0.1
-      '@floating-ui/react-dom-interactions': 0.12.0
+      '@floating-ui/react-dom-interactions': 0.13.0
       '@graphql-codegen/cli': 2.15.0
       '@graphql-codegen/typescript': 2.8.3
       '@happy-dom/global-registrator': 7.7.0
@@ -160,7 +160,7 @@ importers:
       xstate: 4.34.0
     dependencies:
       '@floating-ui/react-dom': 1.0.1_biqbaboplfbrettd7655fr4n2y
-      '@floating-ui/react-dom-interactions': 0.12.0_ib3m5ricvtkl2cll7qpr2f6lvq
+      '@floating-ui/react-dom-interactions': 0.13.0_ib3m5ricvtkl2cll7qpr2f6lvq
       '@improbable-eng/grpc-web': 0.15.0_google-protobuf@3.21.2
       '@juggle/resize-observer': 3.4.0
       '@radix-ui/colors': 0.1.8
@@ -1177,8 +1177,8 @@ packages:
       '@floating-ui/core': 1.0.2
     dev: false
 
-  /@floating-ui/react-dom-interactions/0.12.0_ib3m5ricvtkl2cll7qpr2f6lvq:
-    resolution: {integrity: sha512-UBC37z3BvAZ4r3QzD6pDBn8v1S0xSNGLiqdueDM2Tgl/E1bPvEiSpu71uwOTm5qXM22mDGmohJfX/SXF/nQ8nw==}
+  /@floating-ui/react-dom-interactions/0.13.0_ib3m5ricvtkl2cll7qpr2f6lvq:
+    resolution: {integrity: sha512-R+jXsv3eJ8LQn879NMO9ONvk9Hy0XQiPvBWK+wdWADZsrvu7FmmlSq5xG/qid745g+uNs3xvhf+lNnCIlEZpEA==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
