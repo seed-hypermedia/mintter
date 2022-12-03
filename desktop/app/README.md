@@ -11,7 +11,8 @@ To run the app, use the `dev` utility in the repo's root:
 ./dev run-desktop
 ```
 
-To run the app with different flags for the daemon you have to pass the arguments through like this:
+To run the app with different flags for the daemon you have to pass the
+arguments through like this:
 
 ```
 ./dev run-desktop -- -- -- -grpc-port 56002
@@ -20,6 +21,7 @@ To run the app with different flags for the daemon you have to pass the argument
 Note that the number of double dashes is important.
 
 To build the app you can run
+
 ```
 ./dev build-desktop
 ```
