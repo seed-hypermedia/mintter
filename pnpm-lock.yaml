@@ -41,7 +41,7 @@ importers:
       '@floating-ui/react-dom-interactions': 0.13.0
       '@graphql-codegen/cli': 2.15.0
       '@graphql-codegen/typescript': 2.8.3
-      '@happy-dom/global-registrator': 7.7.0
+      '@happy-dom/global-registrator': 7.7.2
       '@improbable-eng/grpc-web': 0.15.0
       '@juggle/resize-observer': ^3.4.0
       '@radix-ui/colors': 0.1.8
@@ -246,7 +246,7 @@ importers:
       '@cypress/vite-dev-server': 3.4.0
       '@graphql-codegen/cli': 2.15.0_ofw6cz5y3hft5ph3vdv3ryk77y
       '@graphql-codegen/typescript': 2.8.3_graphql@16.6.0
-      '@happy-dom/global-registrator': 7.7.0
+      '@happy-dom/global-registrator': 7.7.2
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
       '@tanstack/react-query-devtools': 4.19.0_budcsmmktl2xfbndofa5sinodm
       '@types/autosize': 4.0.1
@@ -1742,10 +1742,10 @@ packages:
     dependencies:
       graphql: 16.6.0
 
-  /@happy-dom/global-registrator/7.7.0:
-    resolution: {integrity: sha512-p5e92rxAeyErSNG0+eOE6VWTtVfulQJA8ERc0g578vTfZLPfvmN+R6LbUzwnVinZPQoxshFZc/yH/pkrvhbmnA==}
+  /@happy-dom/global-registrator/7.7.2:
+    resolution: {integrity: sha512-wi7ADYPMl4JVZr6Ky6ab/x7eOv3kIy11lef389XxvJvPDXto5xta5kV6oLOYixktOkdwl2SeLZoJe92Xd44k9w==}
     dependencies:
-      happy-dom: 7.7.0
+      happy-dom: 7.7.2
     transitivePeerDependencies:
       - encoding
     dev: true
@@ -5762,6 +5762,20 @@ packages:
 
   /happy-dom/7.7.0:
     resolution: {integrity: sha512-U10JXl5qSaHswXT5kyE7lvSDoyK48GyPGpe74qI9KT29frt1AlS+jnwy77RUJIknx+4b52DK1NllXTgHH8k20w==}
+    dependencies:
+      css.escape: 1.5.1
+      he: 1.2.0
+      node-fetch: 2.6.7
+      sync-request: 6.1.0
+      webidl-conversions: 7.0.0
+      whatwg-encoding: 2.0.0
+      whatwg-mimetype: 3.0.0
+    transitivePeerDependencies:
+      - encoding
+    dev: true
+
+  /happy-dom/7.7.2:
+    resolution: {integrity: sha512-xJhDLvS7jCie2sgU00HzyNFfdRSUOxm/ndE1gT++aNDo4ffXtn6/WI/Vf3IooDEC770AQ3J8fJvnakPZFEsLpg==}
     dependencies:
       css.escape: 1.5.1
       he: 1.2.0
