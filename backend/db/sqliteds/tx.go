@@ -2,6 +2,7 @@ package sqliteds
 
 import (
 	"context"
+	"fmt"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -10,9 +11,10 @@ import (
 )
 
 type tx struct {
-	ds      *Datastore
-	conn    *sqlite.Conn
-	release func()
+	ds       *Datastore
+	readOnly bool
+	conn     *sqlite.Conn
+	release  func()
 }
 
 // NewTransaction creates a new transaction. It must be committed or discarded to release the connection.
@@ -36,9 +38,10 @@ func (ds *Datastore) NewTransaction(ctx context.Context, readOnly bool) (datasto
 	}
 
 	return &tx{
-		ds:      ds,
-		conn:    conn,
-		release: release,
+		ds:       ds,
+		readOnly: readOnly,
+		conn:     conn,
+		release:  release,
 	}, nil
 }
 
@@ -47,10 +50,16 @@ func (tx *tx) Get(ctx context.Context, key datastore.Key) ([]byte, error) {
 }
 
 func (tx *tx) Put(ctx context.Context, key datastore.Key, value []byte) error {
+	if tx.readOnly {
+		return fmt.Errorf("can't Put using read-only transaction")
+	}
 	return tx.ds.put(tx.conn, key, value)
 }
 
 func (tx *tx) Delete(ctx context.Context, key datastore.Key) error {
+	if tx.readOnly {
+		return fmt.Errorf("can't Delete using read-only transaction")
+	}
 	return tx.ds.delete(tx.conn, key)
 }
 
