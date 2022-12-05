@@ -146,7 +146,7 @@
     "ts-proto": "1.135.0",
     "typescript": "4.9.3",
     "unified": "10.1.2",
-    "vite": "3.2.4",
+    "vite": "3.2.5",
     "vite-react-jsx": "1.1.2",
     "vite-tsconfig-paths": "3.6.0",
     "vitest": "0.25.3",
