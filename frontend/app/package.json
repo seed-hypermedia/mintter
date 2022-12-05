@@ -90,7 +90,7 @@
     "rehype-stringify": "9.0.3",
     "shiki": "0.10.1",
     "show-keys": "1.1.2",
-    "slate": "^0.86.0",
+    "slate": "^0.87.0",
     "slate-history": "^0.86.0",
     "slate-hyperscript": "^0.77.0",
     "slate-react": "^0.87.0",
