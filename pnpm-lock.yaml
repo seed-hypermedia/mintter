@@ -80,7 +80,7 @@ importers:
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.2.0
-      '@xstate/cli': 0.3.3
+      '@xstate/cli': 0.4.0
       '@xstate/inspect': 0.7.0
       '@xstate/react': 3.0.1
       '@xstate/test': 0.5.1
@@ -262,7 +262,7 @@ importers:
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.2.0_vite@3.2.5
-      '@xstate/cli': 0.3.3_prettier@2.8.0
+      '@xstate/cli': 0.4.0_prettier@2.8.0
       '@xstate/inspect': 0.7.0_ws@8.11.0+xstate@4.35.0
       '@xstate/test': 0.5.1_xstate@4.35.0
       clipboardy: 3.0.0
@@ -3194,13 +3194,13 @@ packages:
       - encoding
     dev: true
 
-  /@xstate/cli/0.3.3_prettier@2.8.0:
-    resolution: {integrity: sha512-yY0CyUP+ipeSKiklNAYfY51CZObVQ0y48TJHVPfxnfGbsqwj+6rZkC1mAg9yF/Zu56DCDZTtUBKmY4BsOVDLVw==}
+  /@xstate/cli/0.4.0_prettier@2.8.0:
+    resolution: {integrity: sha512-BnAxRxNSDQgsD89dKxKJjEbByZhntw412Oc9XEUhQ/DXBYKTz0mMUKGgSItiADhd1zGa9gXH4qTTDq/Ww7JxHA==}
     hasBin: true
     dependencies:
       '@babel/core': 7.20.5
-      '@xstate/machine-extractor': 0.7.1_nhgmmrajsvxkfgqqxqwts5h4lm
-      '@xstate/tools-shared': 1.2.3_zteccunyknctbjb6xsfbw3qeae
+      '@xstate/machine-extractor': 0.8.0_xstate@4.35.0
+      '@xstate/tools-shared': 2.0.0_beqc2zgqd2xoahrpyoqcm747s4
       chokidar: 3.5.3
       commander: 8.3.0
       xstate: 4.35.0
@@ -3232,14 +3232,18 @@ packages:
       xstate: 4.35.0
     dev: true
 
-  /@xstate/machine-extractor/0.7.1_nhgmmrajsvxkfgqqxqwts5h4lm:
-    resolution: {integrity: sha512-dQEt6enmHXtD93vDcMefhb5bh1zh0mLCRT8CvYJjCpTjaTth7sXqlU6ri1qP0HDR6IbU9s2/WVNw7Oy7O/Sqfg==}
+  /@xstate/machine-extractor/0.8.0_xstate@4.35.0:
+    resolution: {integrity: sha512-uSn1EdgbisdbBGrIwDVsVOdhImUWtbcMUiRs+uEo/K9AGXN8rMamaKYeBbs1re1hf/2TqllAIc4/UdDrtJyP9A==}
     peerDependencies:
-      '@babel/core': ^7
       xstate: ^4
     dependencies:
-      '@babel/core': 7.20.5
+      '@babel/parser': 7.20.5
+      '@babel/traverse': 7.20.5
+      '@babel/types': 7.20.5
+      recast: 0.21.5
       xstate: 4.35.0
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /@xstate/react/3.0.1_jxlbbcdnowciznag5x5yc5bb5i:
@@ -3272,17 +3276,17 @@ packages:
       xstate: 4.35.0
     dev: true
 
-  /@xstate/tools-shared/1.2.3_zteccunyknctbjb6xsfbw3qeae:
-    resolution: {integrity: sha512-6CL2Tz2S0+FSSP+940G9glMHG8g326amsVoU+b5wkY2KsbPrGga53r25PjiiP7bGrNtf4SCSsbYW/NClrHmZGQ==}
+  /@xstate/tools-shared/2.0.0_beqc2zgqd2xoahrpyoqcm747s4:
+    resolution: {integrity: sha512-vozMMOwIvihBqISRsxbj4bEJpLs7n7QHT3yKkQPFoaEUZ5mOKBhqmVs4mIbbh0zZsgv8YrgUrwkcHERevVbGNg==}
     peerDependencies:
       prettier: ^2.3.1
       xstate: ^4
     dependencies:
-      '@xstate/machine-extractor': 0.7.1_nhgmmrajsvxkfgqqxqwts5h4lm
+      '@xstate/machine-extractor': 0.8.0_xstate@4.35.0
       prettier: 2.8.0
       xstate: 4.35.0
     transitivePeerDependencies:
-      - '@babel/core'
+      - supports-color
     dev: true
 
   /abort-controller/3.0.0:
@@ -3506,6 +3510,13 @@ packages:
     resolution: {integrity: sha512-OkMLzd8xelb3gmnp6ToFvvsHLtS6CbagTkFQvQ+ZYFe3/AIl9iKikNR9G7pY3GfOR/2Xc222hwBjzI7HLkE76Q==}
     dependencies:
       '@mdn/browser-compat-data': 3.3.14
+    dev: true
+
+  /ast-types/0.15.2:
+    resolution: {integrity: sha512-c27loCv9QkZinsa5ProX751khO9DJl/AcB5c2KNtA6NRvHKS0PgLfcftz72KVq504vB0Gku5s2kUZzDBvQWvHg==}
+    engines: {node: '>=4'}
+    dependencies:
+      tslib: 2.4.1
     dev: true
 
   /astral-regex/2.0.0:
@@ -5131,6 +5142,12 @@ packages:
       acorn: 8.8.1
       acorn-jsx: 5.3.2_acorn@8.8.1
       eslint-visitor-keys: 3.3.0
+    dev: true
+
+  /esprima/4.0.1:
+    resolution: {integrity: sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==}
+    engines: {node: '>=4'}
+    hasBin: true
     dev: true
 
   /esquery/1.4.0:
@@ -7830,6 +7847,16 @@ packages:
     engines: {node: '>=8.10.0'}
     dependencies:
       picomatch: 2.3.1
+    dev: true
+
+  /recast/0.21.5:
+    resolution: {integrity: sha512-hjMmLaUXAm1hIuTqOdeYObMslq/q+Xff6QE3Y2P+uoHAg2nmVlLBps2hzh1UJDdMtDTMXOFewK6ky51JQIeECg==}
+    engines: {node: '>= 4'}
+    dependencies:
+      ast-types: 0.15.2
+      esprima: 4.0.1
+      source-map: 0.6.1
+      tslib: 2.4.1
     dev: true
 
   /recrawl-sync/2.2.3:
