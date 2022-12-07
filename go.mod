@@ -7,7 +7,7 @@ require (
 	github.com/99designs/gqlgen v0.17.21
 	github.com/btcsuite/btcd v0.23.3
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
-	github.com/getsentry/sentry-go v0.15.0
+	github.com/getsentry/sentry-go v0.16.0
 	github.com/gorilla/mux v1.8.0
 	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/ipfs/go-bitswap v0.10.2
