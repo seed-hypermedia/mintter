@@ -19,6 +19,7 @@ import {
 import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'
+import {invoke} from '@tauri-apps/api'
 import {Editor} from 'slate'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
 import {MintterEditor} from './editor/mintter-changes/plugin'
@@ -185,7 +186,12 @@ export function createDraftMachine({
                 onDone: [
                   {
                     target: 'idle',
-                    actions: ['resetChanges', 'assignDraft', 'resetQueryData'],
+                    actions: [
+                      'resetChanges',
+                      'assignDraft',
+                      'resetQueryData',
+                      'refetchDraftList',
+                    ],
                   },
                 ],
                 onError: [
@@ -308,6 +314,11 @@ export function createDraftMachine({
         },
         resetQueryData: (context) => {
           resetQueryData(client, context.documentId)
+        },
+        refetchDraftList: () => {
+          invoke('emit_all', {
+            event: 'update_draft',
+          })
         },
       },
       services: {

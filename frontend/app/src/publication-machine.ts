@@ -17,6 +17,7 @@ import {queryKeys} from '@app/hooks'
 import {GroupingContent, link, paragraph, statement, text} from '@app/mttast'
 import {openWindow} from '@app/utils/open-window'
 import {QueryClient} from '@tanstack/react-query'
+import {invoke} from '@tauri-apps/api'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
@@ -176,7 +177,7 @@ export function createPublicationMachine({
                     src: 'createDraft',
                     id: 'createDraft',
                     onDone: {
-                      actions: ['openWindow'],
+                      actions: ['refetchDraftList', 'openWindow'],
                       target: 'idle',
                     },
                     onError: {
@@ -325,6 +326,11 @@ export function createPublicationMachine({
           openWindow(
             `/d/${event.data.id}?replyto=${context.documentId}/${context.version}`,
           )
+        },
+        refetchDraftList: () => {
+          invoke('emit_all', {
+            event: 'new_draft',
+          })
         },
         // prefetchPublication: (context) => {
         //   client.prefetchQuery(

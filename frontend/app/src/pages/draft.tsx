@@ -17,6 +17,7 @@ import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {useQueryClient} from '@tanstack/react-query'
+import {invoke} from '@tauri-apps/api'
 import {appWindow} from '@tauri-apps/api/window'
 import {useInterpret, useMachine} from '@xstate/react'
 import {useEffect, useMemo} from 'react'
@@ -63,6 +64,9 @@ export default function DraftWrapper({
           mainService.send({type: 'COMMIT.CURRENT.DRAFT', service})
         },
         afterPublish: (_, event) => {
+          invoke('emit_all', {
+            event: 'document_published',
+          })
           let searchParams = new URLSearchParams(window.location.search)
           let replyToParams = searchParams.get('replyto')
           if (replyToParams) {

@@ -2,6 +2,7 @@ import {createDraft, Document} from '@app/client'
 import {DraftActor} from '@app/draft-machine'
 import {PublicationActor} from '@app/publication-machine'
 import {openWindow} from '@app/utils/open-window'
+import {invoke} from '@tauri-apps/api'
 import {assign, createMachine} from 'xstate'
 
 type MainMachineContext = {
@@ -53,7 +54,7 @@ export var mainMachine = createMachine(
           id: 'createDraft',
           onDone: {
             target: 'idle',
-            actions: ['navigateToDraft'],
+            actions: ['refetchDraftList', 'navigateToDraft'],
           },
           onError: {
             actions: ['assignError'],
@@ -86,6 +87,11 @@ export var mainMachine = createMachine(
       assignError: assign({
         errorMessage: (c, event) => JSON.stringify(event),
       }),
+      refetchDraftList: () => {
+        invoke('emit_all', {
+          event: 'new_draft',
+        })
+      },
     },
     services: {
       createDraft: () => createDraft(),
