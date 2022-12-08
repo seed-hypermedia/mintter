@@ -19,10 +19,8 @@ import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {useQueryClient} from '@tanstack/react-query'
-import {Event, listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useEffect} from 'react'
 import Highlighter from 'react-highlight-words'
 import toast from 'react-hot-toast'
 import '../styles/file-list.scss'
@@ -31,23 +29,7 @@ export default PublicationList
 
 function PublicationList() {
   let mainService = useMain()
-  let {data, isInitialLoading, refetch} = usePublicationList()
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('document_published', (event: Event<string>) => {
-      refetch()
-      if (!isSubscribed) {
-        return unlisten()
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
+  let {data, isInitialLoading} = usePublicationList()
 
   return (
     <div className="page-wrapper">

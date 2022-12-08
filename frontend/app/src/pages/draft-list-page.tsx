@@ -13,9 +13,7 @@ import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {useQueryClient} from '@tanstack/react-query'
-import {Event, listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret} from '@xstate/react'
-import {useEffect} from 'react'
 import Highlighter from 'react-highlight-words'
 import '../styles/file-list.scss'
 
@@ -23,42 +21,8 @@ export default DraftList
 
 function DraftList() {
   let mainService = useMain()
-  let {data, isInitialLoading, refetch} = useDraftList()
+  let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('new_draft', (event: Event<string>) => {
-      refetch()
-
-      if (!isSubscribed) {
-        return unlisten()
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('update_draft', (event: Event<string>) => {
-      refetch()
-
-      if (!isSubscribed) {
-        return unlisten()
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
 
   return (
     <div className="page-wrapper">

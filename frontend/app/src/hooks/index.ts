@@ -11,7 +11,8 @@ import {
   Publication,
 } from '@app/client'
 import {QueryClient, useQuery} from '@tanstack/react-query'
-import {useMemo} from 'react'
+import {Event, listen} from '@tauri-apps/api/event'
+import {useMemo, useEffect} from 'react'
 
 export * from './types'
 
@@ -46,6 +47,22 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
   let publications = useMemo(() => {
     return queryResult.data?.publications.sort(sortPublications) || []
   }, [queryResult.data])
+
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten: () => void
+
+    listen('document_published', () => {
+      queryResult.refetch()
+      if (!isSubscribed) {
+        return unlisten()
+      }
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
 
   return {
     ...queryResult,
@@ -86,6 +103,40 @@ export function useDraftList({
       return dateB - dateA
     }
   }, [queryResult.data])
+
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten: () => void
+
+    listen('new_draft', () => {
+      queryResult.refetch()
+
+      if (!isSubscribed) {
+        return unlisten()
+      }
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
+
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten: () => void
+
+    listen('update_draft', () => {
+      queryResult.refetch()
+
+      if (!isSubscribed) {
+        return unlisten()
+      }
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
 
   return {
     ...queryResult,
