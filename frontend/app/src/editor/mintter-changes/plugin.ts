@@ -281,8 +281,6 @@ function orderChanges(editor: Editor) {
 
   let pushItems = changes.filter(([type]) => type == 'deleteBlock')
   newList.push(...pushItems)
-  let rootChanges = changes.filter(([type]) => type == 'setRoot')
-
   return newList
 }
 

@@ -10,7 +10,7 @@ import {
 } from '@app/mttast'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
-import {MutableRefObject, useRef} from 'react'
+import {useRef} from 'react'
 import {Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {EditorMode} from '../plugin-utils'

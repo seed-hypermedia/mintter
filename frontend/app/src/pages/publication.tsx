@@ -47,8 +47,8 @@ export default function PublicationWrapper() {
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
   useEffect(() => {
-    var isSubscribed = true
-    var unlisten: () => void
+    let isSubscribed = true
+    let unlisten: () => void
 
     listen('update_focus_window_route', (event) => {
       if (event.payload && typeof event.payload == 'string') {

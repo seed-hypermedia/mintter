@@ -2032,8 +2032,8 @@ describe.skip('real hast usecase', () => {
         },
       },
     }
-    const expected = u('root', [])
-    const result = toMttast(hast)
+    // const expected = u('root', [])
+    // const result = toMttast(hast)
     // expect(result).toEqual(expected)
   })
 })

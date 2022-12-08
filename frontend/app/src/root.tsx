@@ -1,7 +1,6 @@
 import {getInfo} from '@app/client'
 import {queryKeys} from '@app/hooks'
 import {themeMachine, ThemeProvider} from '@app/theme'
-import {BrowserTracing} from '@sentry/tracing'
 import {
   dehydrate,
   Hydrate,
@@ -16,8 +15,7 @@ import {lazy, Suspense} from 'react'
 import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
-import * as TauriSentry from 'tauri-plugin-sentry-api'
-import {css, globalStyles} from './stitches.config'
+import {globalStyles} from './stitches.config'
 const OnboardingPage = lazy(() => import('./pages/onboarding'))
 const AppProvider = lazy(() => import('./components/app-provider'))
 const Main = lazy(() => import('./pages/main'))
