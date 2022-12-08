@@ -1,4 +1,8 @@
-html,
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* html,
 body {
   padding: 0;
   margin: 0;
@@ -23,4 +27,4 @@ a {
     color: white;
     background: black;
   }
-}
+} */

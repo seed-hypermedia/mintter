@@ -1,0 +1,72 @@
+import React from 'react'
+import {MainLayout} from '../main-layout.tsx'
+
+export const meta = {
+	title: 'Explore the frontiers of knowledge, together.'
+}
+
+[Github](https://github.com/mintterteam/mintter) - [Twitter](https://twitter.com/mintterteam) - [Discord](https://discord.gg/mcUnKENdKX)
+
+Mintter is a decentralized knowledge collaboration application for open communities powered by a knowledge graph.
+
+## Why Mintter?
+
+Humans need better collaboration and thought tools to solve ever more complex problems. However, the goal of most content companies today, basically social media or click-bait media, is to generate advertising by competing for our attention through emotional manipulation.
+
+More than ever, the public sphere has become a platform for advertising instead of a platform for constructive dialogue and critical debate. Conversations are fragmented, divisive, and plagued with disinformation, leading us to polarization.
+
+An example of how the world of publishing works nowadays:
+
+An epidemiologist expert writes an article about COVID-19 in your city's online newspaper. Many people will read it. Some trolls will comment on the article, and others will share it through a messenger app, igniting heated conversations.
+
+The expert's knowledge will slowly fade away without any educative reviews, challenging responses, or other informative perspectives. No one will learn anything—the policymakers, the audience, or even the author. The article will become another failed opportunity for society to solve a complex problem.
+
+The main drawback is the actual silence of the expert, which will shy away from all the noise. The social dialogue that brings learning and progress to society is impossible with current digital tools.
+
+### Decentralized knowledge collaboration
+
+In Mintter, we believe a decentralized knowledge collaboration network can spark human cooperation to solve our most challenging problems.
+
+### Decentralized access and participation
+
+The application uses decentralized identity with public key cryptography instead of any logins. Decentralized identity allows users to sign their content and maintain their attribution in a network of computers without needing a central server; consequently, other users can reuse content while keeping the original authorship.
+
+A computer network stores the user's information, providing open access to permanent and immutable information through a DAG of changes.-- we use IPFS Framework.
+Users can connect to the network without asking permission and contribute to the existing knowledge base or public conversations.
+
+### Immutable intertwingled knowledge
+
+We have developed a decentralized knowledge graph that allows users to change their content on top of an immutable set of changes inspired by the version control system git. Content immutability gives confidence to the knowledge experts that they can work on others' author work without the common web broken links.
+
+This versionable knowledge graph based on CRDTs brings about the uncensorship character of Mintter, as the collaboration happens without a central server by allowing peer-to-peer direct human interactions.
+
+We also provide a complete set of hypertext properties, such as fine-grained linking, transclusion, visible connections, parallel pages, and hierarchical documents, allowing the software to express and play how humans think and collaborate. Also, a star-structured discussion functionality brings the system a whole discussion experience.
+
+### Open collaboration
+
+Build your knowledge open communities: for tech discussions across your development community, for academics, their group's discussions, and for public servants to have their open deliberation.
+Mintter makes your ideas exponential through a better collaboration dialogue within your community, with syncable and signed libraries of material that produce unique knowledge bases.
+
+## Tech Stack
+
+We are building an application, a protocol, and a decentralized network for content creation and publishing for which we lean heavily on libp2p and IPFS.
+
+We derive significant inspirations from SSB, Dat, BitTorrent, and other P2P protocols. We like the great possibilities of the gossip protocol together with the nature of social connections.
+
+The backend is in Go. The frontend is in TypeScript with React, and for the Editor, we are using Slate JS.
+
+## Who are we
+
+We are a team of five founders, [Alex](https://twitter.com/burdiyan), [Gabriel](https://twitter.com/GaboHBeaumont), [Horacio](https://twitter.com/hhg2288) and [Julio](https://twitter.com/juligasa1). We are passionate about innovation, social progress, and open protocols.
+
+Previously, we have created socks, advertising, solar, and sustainable mobility companies. We are committed to many open-source software projects, education, and mentoring.
+
+We work remotely, and we come from distant places in the world: Iberia, Siberia, and Central America. We are always looking for nomads all over the world to become part of the Mintter Revolution.
+
+## Building a Team
+
+We are a small team with a strong vision and highly execution-oriented capacity. We work remotely and asynchronously. We are technologists, always fascinated by the latest technologies out there.
+
+We are looking for people that share our vision and our strong feeling of purpose in building a critical collective intelligence through reliable, collaborative networks of knowledge. If you feel inspired by our mission, please, we would love you to contact us to team@mintter.com.
+
+export default ({children}) => <MainLayout meta={meta}>{children}</MainLayout>
