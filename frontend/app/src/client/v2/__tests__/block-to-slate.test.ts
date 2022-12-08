@@ -541,26 +541,77 @@ describe('Transform: blockToSlate', () => {
     })
   })
 
-  test.skip('emojis', () => {
-    let input = Block.fromPartial({
-      id: 'blockId',
-      type: 'statement',
-      text: '😀 😎 👨‍👩‍👧‍👦',
-      annotations: [
-        {
-          type: 'emphasis',
-          starts: [4],
-          ends: [11],
-          attributes: {},
-        },
-      ],
+  describe('Emojis', () => {
+    test('Single Emoji', () => {
+      let input = Block.fromPartial({
+        id: 'blockId',
+        type: 'statement',
+        text: '😅',
+        annotations: [],
+      })
+
+      let output = statement({id: 'blockId'}, [paragraph([text('😅')])])
+      let result = blockToSlate(input as Block)
+      expect(result).toEqual(output)
     })
 
-    let output = statement({id: 'blockId'}, [
-      paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', {emphasis: true})]),
-    ])
+    test('Single Emoji with Mark', () => {
+      let input = Block.fromPartial({
+        id: 'blockId',
+        type: 'statement',
+        text: '😅',
+        annotations: [
+          {
+            type: 'emphasis',
+            starts: [0],
+            ends: [1],
+            attributes: {},
+          },
+        ],
+      })
 
-    expect(blockToSlate(input as Block)).toEqual(output)
+      let output = statement({id: 'blockId'}, [
+        paragraph([text('😅', {emphasis: true})]),
+      ])
+      let result = blockToSlate(input as Block)
+      console.log(JSON.stringify({result}))
+      expect(result).toEqual(output)
+    })
+
+    test('Multiple emojis', () => {
+      let input = Block.fromPartial({
+        id: 'blockId',
+        type: 'statement',
+        text: '😀 😎 👨‍👩‍👧‍👦',
+        annotations: [
+          {
+            type: 'emphasis',
+            starts: [4],
+            ends: [11],
+            attributes: {},
+          },
+        ],
+      })
+
+      let output = statement({id: 'blockId'}, [
+        paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', {emphasis: true})]),
+      ])
+
+      expect(blockToSlate(input as Block)).toEqual(output)
+    })
+
+    test('Text + Emojis', () => {
+      let input = Block.fromPartial({
+        id: 'blockId',
+        type: 'statement',
+        text: 'hello 😅',
+        annotations: [],
+      })
+
+      let output = statement({id: 'blockId'}, [paragraph([text('hello 😅')])])
+      let result = blockToSlate(input as Block)
+      expect(result).toEqual(output)
+    })
   })
 
   test('combining layers', () => {

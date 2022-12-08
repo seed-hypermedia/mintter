@@ -59,6 +59,7 @@ export function blockToSlate(blk: Block): FlowContent {
   // Here we track annotations enabled for the current leaf.
   const leafAnnotations = new Set<Annotation>()
 
+  // if there's no text in the block, early return it
   if (blk.text == '') {
     leaves.push({type: 'text', text: blk.text})
     return out as FlowContent
@@ -70,18 +71,41 @@ export function blockToSlate(blk: Block): FlowContent {
     // This tracks how many UTF-16 code units we need to "consume", i.e. advance our position forward.
     // It's mostly 1, but we skip the second half of the surrogate pair when we see the first one.
     let ul = 1
-    let surrogate = isSurrogate(blk.text, i)
-    if (surrogate) {
-      ul++
-    }
 
     // We have to check each code point position whether it belongs to any of the annotations of the block.
     let annotationsChanged = trackPosAnnotations(pos)
+
+    let surrogate = isSurrogate(blk.text, i)
+    if (surrogate) {
+      ul++
+
+      let onlyOneSurrogate = pos + ul
+      if (onlyOneSurrogate == blk.text.length) {
+        // we enter here if the only character in the block is a Surrogate,
+        // This means that we need to wrap up the transformation (same as in the end of the while loop)
+        if (!leaf) {
+          startLeaf(leafAnnotations)
+        }
+
+        finishLeaf(textStart, i + 2)
+
+        if (inlineBlockContent) {
+          if (!isText(leaves[leaves.length - 1])) {
+            leaves.push({type: 'text', text: ''})
+          }
+          leaves.push(inlineBlockContent)
+          leaves.push({type: 'text', text: ''})
+          inlineBlockContent = null
+        }
+        return out as FlowContent
+      }
+    }
 
     // When we reach the stop point, we need to finish the current leaf before returning.
     if (stopPoint < 0) {
       debug('STOP IS LESS THAN ZERO', blk)
     }
+
     if (i == stopPoint) {
       if (annotationsChanged) {
         if (leaf) {
@@ -119,6 +143,13 @@ export function blockToSlate(blk: Block): FlowContent {
     }
 
     advance(ul)
+
+    // we check here if the new value of `i` is the same as the text's block length.
+    // This means that th last character is Surrogate, and we just finished the transformation
+    if (i == blk.text.length) {
+      finishLeaf(textStart, i)
+      return out as FlowContent
+    }
   }
 
   // We should never get here, because we would returned when we reach the stop point.
@@ -268,8 +299,9 @@ export function blockToSlate(blk: Block): FlowContent {
 
 // Checks if a UTF-16 code unit i in string s is start of a surrogate pair.
 function isSurrogate(s: string, i: number): boolean {
-  const code = s.charCodeAt(i)
-  return 0xd800 <= code && code <= 0xdbff
+  var code = s.charCodeAt(i)
+  var res = 0xd800 <= code && code <= 0xdbff
+  return res
 }
 
 export function blockNodeToSlate(
