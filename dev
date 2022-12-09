@@ -85,7 +85,7 @@ def main():
     def ping_p2p(args):
         return run("plz run //backend:pingp2p", args=args)
 
-    @cmd(cmds, "run-gateway", "Build and run mintter web gateway.")
+    @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
     def run_gateway(args):
         return run("plz run //backend:gateway", args=args)
 
