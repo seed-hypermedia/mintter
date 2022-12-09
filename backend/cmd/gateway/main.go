@@ -60,10 +60,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		_, err = app.Me.Await(ctx)
-		if err != nil {
-			return err
-		}
+
 		const mnemonicWords = 12
 		mnemonic, err := core.NewMnemonic(mnemonicWords)
 		if err != nil {
@@ -76,6 +73,11 @@ func main() {
 		})
 		stat, ok := status.FromError(err)
 		if !ok && stat.Code() != codes.AlreadyExists {
+			return err
+		}
+
+		_, err = app.Me.Await(ctx)
+		if err != nil {
 			return err
 		}
 
