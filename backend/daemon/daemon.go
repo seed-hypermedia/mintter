@@ -414,7 +414,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client, cfg.OutboundDisable)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client, cfg.InboundDisable)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)

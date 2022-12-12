@@ -37,7 +37,7 @@ func (n *Node) Connect(ctx context.Context, info peer.AddrInfo) (err error) {
 
 	log.Debug("ConnectStarted")
 	defer func() {
-		log.Debug("ConnectFinished", zap.Error(err), zap.Bool("isMintterPeer", isMintterPeer))
+		log.Debug("ConnectFinished", zap.Error(err), zap.Bool("isMintterPeer", isMintterPeer), zap.String("Info", info.String()))
 	}()
 
 	// Since we're explicitly connecting to a peer, we want to clear any backoffs

@@ -6,6 +6,9 @@ import (
 )
 
 func (n *rpcHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
+	if n.cfg.DisableListing {
+		return &p2p.ListObjectsResponse{}, nil
+	}
 	conn, release, err := n.vcs.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -15,7 +18,6 @@ func (n *rpcHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest
 	if err := conn.BeginTx(false); err != nil {
 		return nil, err
 	}
-
 	refs := conn.ListAllVersions("main")
 
 	out := &p2p.ListObjectsResponse{

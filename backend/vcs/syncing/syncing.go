@@ -57,10 +57,10 @@ type Service struct {
 	bitswap Bitswap
 	client  NetDialFunc
 
-	// OutboundDisable disables syncing content from our peer to the remote peer.
+	// inboundDisable disables syncing content from the remote peer to our peer.
 	// If false, then documents get synced in both directions.
-	outboundDisable bool
-	mu              sync.Mutex // Ensures only one sync loop is running at a time.
+	inboundDisable bool
+	mu             sync.Mutex // Ensures only one sync loop is running at a time.
 }
 
 const (
@@ -70,18 +70,18 @@ const (
 )
 
 // NewService creates a new syncing service. Users must call Start() to start the periodic syncing.
-func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap Bitswap, client NetDialFunc, outDisable bool) *Service {
+func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap Bitswap, client NetDialFunc, inDisable bool) *Service {
 	svc := &Service{
 		warmupDuration:  defaultWarmupDuration,
 		syncInterval:    defaultSyncInterval,
 		peerSyncTimeout: defaultPeerSyncTimeout,
 
-		log:             log,
-		vcs:             vcs,
-		me:              me,
-		bitswap:         bitswap,
-		client:          client,
-		outboundDisable: outDisable,
+		log:            log,
+		vcs:            vcs,
+		me:             me,
+		bitswap:        bitswap,
+		client:         client,
+		inboundDisable: inDisable,
 	}
 
 	return svc
@@ -386,15 +386,15 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
 		return err
 	}
 
-	resp, err := c.ListObjects(ctx, &p2p.ListObjectsRequest{})
+	remoteObjs, err := c.ListObjects(ctx, &p2p.ListObjectsRequest{})
 	if err != nil {
 		return err
 	}
-	if s.outboundDisable {
-		resp = &p2p.ListObjectsResponse{}
+	if s.inboundDisable {
+		remoteObjs = &p2p.ListObjectsResponse{}
 	}
 	sess := s.bitswap.NewSession(ctx)
-	for _, obj := range resp.Objects {
+	for _, obj := range remoteObjs.Objects {
 		oid, err := cid.Decode(obj.Id)
 		if err != nil {
 			return err

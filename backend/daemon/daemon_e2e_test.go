@@ -33,7 +33,7 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	// Carol will be the DHT server
 	dhtProvider := makeTestApp(t, "carol", makeTestConfig(t), true)
 
-	requester, publishedDocument := makeRemotePublication(t, ctx, dhtProvider)
+	requester, publishedDocument, _ := makeRemotePublication(t, ctx, dhtProvider)
 
 	remotePublication, err := requester.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: publishedDocument.Document.Id})
 	require.NoError(t, err)
@@ -45,7 +45,9 @@ func TestGateway(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
 
-	gw, err := LoadGateway(ctx, makeTestConfig(t))
+	gwConf := makeTestConfig(t)
+	gwConf.P2P.DisableListing = true
+	gw, err := LoadGateway(ctx, gwConf)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		cancel()
@@ -66,10 +68,31 @@ func TestGateway(t *testing.T) {
 
 	_, err = gw.Me.Await(ctx)
 	require.NoError(t, err)
-	requester, publishedDocument := makeRemotePublication(t, ctx, gw)
-	remotePublication, err := requester.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: publishedDocument.Document.Id})
+	// Create new document so the gateway owns at least 1. This one must not be transferred to the requester, since the
+	// gateway only syncs in one direction (in order not to flood requesters with documents from everybody)
+	publishDocument(t, ctx, gw)
+	res, err := gw.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Equal(t, 1, len(res.Publications))
+	// Create the publication that will be gotten by the gateway
+	_, publishedDocument, publisher := makeRemotePublication(t, ctx, gw)
+	remotePublication, err := gw.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: publishedDocument.Document.Id})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, publishedDocument, remotePublication, "remote publication doesn't match")
+	// Gateway now should have two publications, the one created by itself and the one gotten from publisher
+	pubsGw, err := gw.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Equal(t, 2, len(pubsGw.Publications))
+	pubPublisher, err := publisher.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Equal(t, 1, len(pubPublisher.Publications))
+	// We force the publisher to sync all the content to see if it does not get the gateway's own article.
+	_, err = publisher.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(time.Second)
+	pubPublisher, err = publisher.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Equal(t, 1, len(pubPublisher.Publications))
 }
 func TestBug_SyncHangs(t *testing.T) {
 	// See: https://github.com/mintterteam/mintter/issues/712.
@@ -397,12 +420,12 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 	return app
 }
 
-func makeRemotePublication(t *testing.T, ctx context.Context, dhtProvider *App) (*App, *documents.Publication) {
-	var alice *App
+func makeRemotePublication(t *testing.T, ctx context.Context, dhtProvider *App) (*App, *documents.Publication, *App) {
+	var publisher *App
 	{
 		cfg := makeTestConfig(t)
 		cfg.P2P.BootstrapPeers = dhtProvider.Net.MustGet().Libp2p().AddrsFull()
-		alice = makeTestApp(t, "alice", cfg, true)
+		publisher = makeTestApp(t, "alice", cfg, true)
 	}
 
 	var bob *App
@@ -412,14 +435,22 @@ func makeRemotePublication(t *testing.T, ctx context.Context, dhtProvider *App) 
 		bob = makeTestApp(t, "bob", cfg, true)
 	}
 
-	// Make sure bob does't know anything about alice.
-	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(alice.Repo.Device().ID()))
-	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(alice.Repo.Device().ID())
+	// Make sure bob does't know anything about publisher.
+	require.NoError(t, bob.Net.MustGet().Libp2p().Network().ClosePeer(publisher.Repo.Device().ID()))
+	bob.Net.MustGet().Libp2p().Peerstore().RemovePeer(publisher.Repo.Device().ID())
 
-	draft, err := alice.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	publishedDocument := publishDocument(t, ctx, publisher)
+
+	// Sleeping just in case to make sure alices publication propagates.
+	time.Sleep(time.Second)
+	return bob, publishedDocument, publisher
+}
+
+func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documents.Publication {
+	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
 
-	updated, err := alice.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+	updated, err := publisher.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
@@ -434,15 +465,10 @@ func makeRemotePublication(t *testing.T, ctx context.Context, dhtProvider *App) 
 	})
 	require.NoError(t, err)
 	require.NotNil(t, updated)
-
-	published, err := alice.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	published, err := publisher.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
-
-	// Sleeping just in case to make sure alices publication propagates.
-	time.Sleep(time.Second)
-	return bob, published
+	return published
 }
-
 func makeTestConfig(t *testing.T) config.Config {
 	cfg := config.Default()
 

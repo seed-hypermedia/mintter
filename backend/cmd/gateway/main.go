@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"os"
 
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/daemon"
+	accounts "mintter/backend/genproto/accounts/v1alpha"
 	protodaemon "mintter/backend/genproto/daemon/v1alpha"
 
 	"google.golang.org/grpc/codes"
@@ -27,6 +29,7 @@ func main() {
 		fs := flag.NewFlagSet("gateway", flag.ExitOnError)
 
 		cfg := config.Default()
+		cfg.P2P.DisableListing = true
 		config.SetupFlags(fs, &cfg)
 
 		// We parse flags twice here, once without the config file setting, and then with it.
@@ -80,7 +83,18 @@ func main() {
 		if err != nil {
 			return err
 		}
-
+		const alias = "Web gateway"
+		const bio = "Found me at https://www.mintter.com"
+		acc, err := app.RPC.Accounts.UpdateProfile(ctx, &accounts.Profile{
+			Alias: alias,
+			Bio:   bio,
+		})
+		if err != nil {
+			return err
+		}
+		if acc.Profile.Alias != alias || acc.Profile.Bio != bio {
+			return fmt.Errorf("unexpected alias/bio. %s", acc.Profile.Alias+". "+acc.Profile.Bio)
+		}
 		err = app.Wait()
 		if errors.Is(err, context.Canceled) {
 			return nil
