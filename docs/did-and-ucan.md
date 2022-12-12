@@ -2,7 +2,7 @@
 
 People often ask us whether we use some of the emerging specifications related to our work, such as [DID](https://www.w3.org/TR/did-core/) and [UCAN](https://ucan.xyz). This document aims to explain why we are not *currently* using them.
 
-Mintter started in 2019. When we were working on our multi-device identity approach, DID specification was just starting to take form, and UCAN specification didn't exist yet.
+Mintter started in 2019. When we were working on our multi-device identity approach, DID specification was just starting to take form, and UCAN specification didn't exist yet. We briefly described our Identity system in our [IPFS Camp 2022 talk](https://youtu.be/UaK5HRnyCEY?t=388).
 
 One of the main properties we wanted to achieve for our identity system is to support multiple devices without having to share and permanently store any private key materials on all of them. We were not aware of any existing solution with these properties, so we had to come up with something ourselves. We took inspiration from things like [Object-Capability Model](https://en.wikipedia.org/wiki/Object-capability_model), [Macaroon Credentials](https://research.google/pubs/pub41892/), [BIP-39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki), [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md), [Ed25519](https://ed25519.cr.yp.to), and others.
 
