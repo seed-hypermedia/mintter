@@ -21,9 +21,10 @@ type Config struct {
 	GRPCPort int
 	RepoPath string
 
-	Lndhub  Lndhub
-	P2P     P2P
-	Syncing Syncing
+	Identity Identity
+	Lndhub   Lndhub
+	P2P      P2P
+	Syncing  Syncing
 }
 
 // Default creates a new default config.
@@ -35,6 +36,10 @@ func Default() Config {
 
 		Lndhub: Lndhub{
 			Mainnet: false,
+		},
+
+		Identity: Identity{
+			DeviceKeyPath: "",
 		},
 
 		P2P: P2P{
@@ -106,6 +111,8 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
 
+	fs.StringVar(&cfg.Identity.DeviceKeyPath, "identity-path", cfg.Identity.DeviceKeyPath, "Path to to read fixed device private key from")
+
 	fs.BoolVar(&cfg.Lndhub.Mainnet, "lndhub.mainnet", cfg.Lndhub.Mainnet, "Connect to the mainnet lndhub.go server")
 
 	fs.IntVar(&cfg.P2P.Port, "p2p.port", cfg.P2P.Port, "Port to listen for incoming P2P connections")
@@ -134,6 +141,11 @@ func (c *Config) ExpandRepoPath() error {
 		c.RepoPath = strings.Replace(c.RepoPath, "~", homedir, 1)
 	}
 	return nil
+}
+
+// Identity related config. For field descriptions see SetupFlags().
+type Identity struct {
+	DeviceKeyPath string
 }
 
 // Lndhub related config. For field descriptions see SetupFlags().

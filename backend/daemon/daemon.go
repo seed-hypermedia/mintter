@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -260,11 +261,25 @@ func (a *App) Wait() error {
 
 func initRepo(cfg config.Config, device crypto.PrivKey) (r *ondisk.OnDisk, err error) {
 	log := logging.New("mintter/repo", "debug")
-
-	if device == nil {
+	var deviceKey crypto.PrivKey = device
+	if deviceKey == nil && cfg.Identity.DeviceKeyPath != "" {
+		if _, err := os.Stat(cfg.Identity.DeviceKeyPath); err == nil {
+			bytes, err := ioutil.ReadFile(cfg.Identity.DeviceKeyPath)
+			if err != nil {
+				return nil, err
+			}
+			deviceKey, err = crypto.UnmarshalPrivateKey(bytes)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+	if deviceKey == nil {
 		r, err = ondisk.NewOnDisk(cfg.RepoPath, log)
 	} else {
-		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, device)
+		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, deviceKey)
 	}
 
 	if err == nil {

@@ -3,6 +3,7 @@ package daemon
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
@@ -41,12 +42,19 @@ func TestAPIGetRemotePublication(t *testing.T) {
 }
 
 func TestGateway(t *testing.T) {
-	//t.Skip("under construction")
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	gwConf := makeTestConfig(t)
 	gwConf.P2P.DisableListing = true
+
+	gwConf.Identity.DeviceKeyPath = ("./device.key")
+	var deviceKeyBytes = []byte{8, 1, 18, 64, 213, 180, 8, 59, 161, 75, 15, 92, 212, 94, 225, 82, 81, 11, 32, 200, 62, 46, 190, 105, 121, 14, 176, 107, 195, 113, 153, 176, 198, 163, 215, 226, 79, 46, 215, 228, 133, 153, 14, 142, 52, 115, 21, 73, 202, 121, 204, 223, 53, 117, 164, 225, 248, 106, 231, 151, 180, 246, 107, 137, 227, 212, 98, 140}
+	err := ioutil.WriteFile(gwConf.Identity.DeviceKeyPath, deviceKeyBytes, 0644)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		os.Remove(gwConf.Identity.DeviceKeyPath)
+	})
 	gw, err := LoadGateway(ctx, gwConf)
 	require.NoError(t, err)
 	t.Cleanup(func() {
