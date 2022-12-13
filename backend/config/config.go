@@ -111,7 +111,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.IntVar(&cfg.GRPCPort, "grpc-port", cfg.GRPCPort, "Port to expose gRPC server")
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
 
-	fs.StringVar(&cfg.Identity.DeviceKeyPath, "identity-path", cfg.Identity.DeviceKeyPath, "Path to to read fixed device private key from")
+	fs.StringVar(&cfg.Identity.DeviceKeyPath, "identity.devicekey-path", cfg.Identity.DeviceKeyPath, "Path to to read fixed device private key from")
 
 	fs.BoolVar(&cfg.Lndhub.Mainnet, "lndhub.mainnet", cfg.Lndhub.Mainnet, "Connect to the mainnet lndhub.go server")
 
