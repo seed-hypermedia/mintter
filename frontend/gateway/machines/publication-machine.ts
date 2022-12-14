@@ -50,8 +50,11 @@ export const publicationMachine = createMachine({
 	},
 	services: {
 		transformPublication: (context, event) => (sendBack) => {
-			let value = blockNodeToSlate(context.publication?.document.children, 'group')
-			console.log("🚀 ~ file: publication-machine.ts:54 ~ value", value)
+			if (context.publication?.document.children) {
+				let value = blockNodeToSlate(context.publication?.document.children, 'group')
+				sendBack({type:'PUBLICATION.TRANSFORM.SUCCESS', value})
+			}
+			
 		}
 	}
 })
