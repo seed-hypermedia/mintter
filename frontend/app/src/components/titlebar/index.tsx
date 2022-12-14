@@ -1,3 +1,4 @@
+import {warn} from '@app/utils/logger'
 import {lazy} from 'react'
 import '../../styles/titlebar.scss'
 
@@ -18,6 +19,8 @@ export function TitleBar(props: TitleBarProps) {
 
   if (import.meta.env.TAURI_PLATFORM == 'linux')
     return <TitleBarLinux {...props} />
+  // throw new Error(`Titlebar: unsupported platform: ${import.meta.env.TAURI_PLATFORM}`)
+  warn(`Titlebar: unsupported platform: ${import.meta.env.TAURI_PLATFORM}`)
+  return <TitleBarMacos {...props} />
 
-  throw new Error('unsupported platform')
 }

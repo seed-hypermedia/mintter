@@ -4,7 +4,7 @@
 /* Global styles */
 body {
   /* padding: var(--space-size-2) var(--space-size-1); */
-  @apply bg-light-surface-100 text-light-text-100 font-sans;
+  @apply text-light-text-100 font-sans;
 }
 
 h1,

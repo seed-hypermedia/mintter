@@ -164,7 +164,6 @@ function createBurgerMenuMachine({maxWidth}: BurgerMenuMachineConfig) {
             })
 
             if (observer) {
-              console.log('observer', observer)
               sendBack({type: 'MENU.OBSERVER.READY', observer})
             }
           } catch (error) {
