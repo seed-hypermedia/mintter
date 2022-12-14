@@ -15,6 +15,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "protobufjs": "7.1.2",
     "@improbable-eng/grpc-web": "0.15.0",
     "@mdx-js/loader": "2.1.5",
     "@mdx-js/react": "2.1.5",
