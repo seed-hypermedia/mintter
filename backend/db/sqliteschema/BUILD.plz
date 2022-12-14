@@ -9,6 +9,7 @@ generated(
     srcs = [
         "gen.go",
         "sqliteschema.go",
+        "migrations.go",
     ],
     outs = ["schema.gen.go"],
     cmd = """
