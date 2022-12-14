@@ -1,7 +1,8 @@
 import Footer from '../footer'
 import {SiteHead} from '../site-head'
 
-export default function DownloadPage() {
+export default function DownloadPage({manifest = null}) {
+  console.log('manifest:', manifest)
   return (
     <>
       <SiteHead />
@@ -28,4 +29,15 @@ export default function DownloadPage() {
       <Footer />
     </>
   )
+}
+
+export async function getStaticProps() {
+  let req = await fetch(`https://mintternightlies.s3.amazonaws.com/manifest.json`)
+  let manifest = await req.json()
+
+  return {
+    props: {
+      manifest
+    }
+  }
 }
