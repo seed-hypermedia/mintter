@@ -117,7 +117,7 @@ func LoadGateway(ctx context.Context, cfg config.Config) (a *App, err error) {
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, withMiddleware(getPublicationOnly))
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, withMiddleware(gwEssentials))
 	if err != nil {
 		return nil, err
 	}
@@ -591,6 +591,23 @@ func getPublicationOnly(ctx context.Context,
 	methodSplitted := strings.Split(info.FullMethod, "/")
 	if len(methodSplitted) < 2 || strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" {
 		return nil, fmt.Errorf("Method: %s not allowed. GetPublication only", info.FullMethod)
+	}
+
+	// Calls the handler
+	h, err := handler(ctx, req)
+
+	return h, err
+}
+
+func gwEssentials(ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+	methodSplitted := strings.Split(info.FullMethod, "/")
+	if len(methodSplitted) < 2 || (strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" &&
+		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "listcitations" &&
+		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getaccount") {
+		return nil, fmt.Errorf("Method: %s not allowed.", info.FullMethod)
 	}
 
 	// Calls the handler
