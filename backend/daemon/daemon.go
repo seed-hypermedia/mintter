@@ -66,72 +66,6 @@ type App struct {
 	Wallet       *wallet.Service
 }
 
-// LoadGateway loads a pruned version of the mintterd only with web gateway functionalities.
-func LoadGateway(ctx context.Context, cfg config.Config) (a *App, err error) {
-	r, err := initRepo(cfg, nil)
-	if err != nil {
-		return nil, err
-	}
-	a = &App{
-		log:  logging.New("mintter/gateway", "debug"),
-		Repo: r,
-	}
-	a.g, ctx = errgroup.WithContext(ctx)
-
-	// If errors occurred during loading, we need to close everything
-	// we managed to initialize so far, and wait for all the goroutines
-	// to finish. If everything booted correctly, we need to close the cleanup stack
-	// when the context is canceled, so the app is shut down gracefully.
-	defer func() {
-		if err != nil {
-			err = multierr.Combine(err, a.clean.Close(), a.g.Wait())
-		} else {
-			a.g.Go(func() error {
-				<-ctx.Done()
-				return a.clean.Close()
-			})
-		}
-	}()
-
-	a.DB, err = initSQLite(ctx, &a.clean, a.Repo.SQLitePath())
-	if err != nil {
-		return nil, err
-	}
-
-	a.VCSDB = vcsdb.New(a.DB)
-
-	a.Me, err = initRegistration(ctx, a.g, a.Repo)
-	if err != nil {
-		return nil, err
-	}
-
-	a.Net, err = initNetwork(&a.clean, a.g, a.Me, cfg.P2P, a.VCSDB)
-	if err != nil {
-		return nil, err
-	}
-
-	a.Syncing, err = initSyncing(cfg.Syncing, &a.clean, a.g, a.DB, a.VCSDB, a.Me, a.Net)
-	if err != nil {
-		return nil, err
-	}
-
-	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
-
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, withMiddleware(gwEssentials))
-	if err != nil {
-		return nil, err
-	}
-
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet)
-	if err != nil {
-		return nil, err
-	}
-
-	a.setupLogging(ctx, cfg)
-
-	return
-}
-
 // Load all of the dependencies for the app, and start
 // all the background goroutines.
 //
@@ -145,16 +79,16 @@ func LoadGateway(ctx context.Context, cfg config.Config) (a *App, err error) {
 // futures might not be resolved yet.
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
-func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
+func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) (a *App, err error) {
 	r, err := initRepo(cfg, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return loadApp(ctx, cfg, r)
+	return loadApp(ctx, cfg, r, grpcOpt...)
 }
 
-func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, err error) {
+func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt ...grpc.ServerOption) (a *App, err error) {
 	a = &App{
 		log:  logging.New("mintter/daemon", "debug"),
 		Repo: r,
@@ -200,7 +134,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, 
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, grpcOpt...)
 	if err != nil {
 		return nil, err
 	}
@@ -580,11 +514,13 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 	})
 }
 
-func withMiddleware(i grpc.UnaryServerInterceptor) grpc.ServerOption {
+// WithMiddleware generates an grpc option with the given middleware
+func WithMiddleware(i grpc.UnaryServerInterceptor) grpc.ServerOption {
 	return grpc.UnaryInterceptor(i)
 }
 
-func getPublicationOnly(ctx context.Context,
+// GetPublicationOnly is a middleware to restrict rpc incoming calls to be getpublication only
+func GetPublicationOnly(ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
@@ -599,7 +535,8 @@ func getPublicationOnly(ctx context.Context,
 	return h, err
 }
 
-func gwEssentials(ctx context.Context,
+// GwEssentials is a middleware to restrict incoming grpc calls to bare minimum for the gateway to work
+func GwEssentials(ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {

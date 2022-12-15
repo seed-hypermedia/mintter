@@ -59,7 +59,7 @@ func main() {
 			return err
 		}
 
-		app, err := daemon.LoadGateway(ctx, cfg)
+		app, err := daemon.Load(ctx, cfg, daemon.WithMiddleware(daemon.GwEssentials))
 		if err != nil {
 			return err
 		}

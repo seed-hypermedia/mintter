@@ -55,7 +55,7 @@ func TestGateway(t *testing.T) {
 	t.Cleanup(func() {
 		os.Remove(gwConf.Identity.DeviceKeyPath)
 	})
-	gw, err := LoadGateway(ctx, gwConf)
+	gw, err := Load(ctx, gwConf, WithMiddleware(GwEssentials))
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		cancel()
