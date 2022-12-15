@@ -312,6 +312,7 @@ importers:
       postcss-partial-import: 4.1.0
       postcss-preset-env: 7.8.3
       prettier: 2.8.1
+      protobufjs: 7.1.2
       react: 18.2.0
       react-dom: 18.2.0
       shiki: 0.10.1
@@ -335,6 +336,7 @@ importers:
       eslint-config-next: 13.0.6_ha6vam6werchizxrnqvarmz2zu
       google-protobuf: 3.21.2
       next: 13.0.6_biqbaboplfbrettd7655fr4n2y
+      protobufjs: 7.1.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       shiki: 0.10.1
