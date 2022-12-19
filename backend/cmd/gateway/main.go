@@ -1,3 +1,4 @@
+// Package main implements main script to run gateway daemon.
 package main
 
 import (

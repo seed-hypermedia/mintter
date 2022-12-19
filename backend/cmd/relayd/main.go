@@ -1,3 +1,4 @@
+// Package main implements main script to run relay daemon.
 package main
 
 import (

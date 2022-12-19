@@ -514,12 +514,12 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 	})
 }
 
-// WithMiddleware generates an grpc option with the given middleware
+// WithMiddleware generates an grpc option with the given middleware.
 func WithMiddleware(i grpc.UnaryServerInterceptor) grpc.ServerOption {
 	return grpc.UnaryInterceptor(i)
 }
 
-// GetPublicationOnly is a middleware to restrict rpc incoming calls to be getpublication only
+// GetPublicationOnly is a middleware to restrict rpc incoming calls to be getpublication only.
 func GetPublicationOnly(ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,
@@ -535,7 +535,7 @@ func GetPublicationOnly(ctx context.Context,
 	return h, err
 }
 
-// GwEssentials is a middleware to restrict incoming grpc calls to bare minimum for the gateway to work
+// GwEssentials is a middleware to restrict incoming grpc calls to bare minimum for the gateway to work.
 func GwEssentials(ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,
@@ -544,7 +544,7 @@ func GwEssentials(ctx context.Context,
 	if len(methodSplitted) < 2 || (strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" &&
 		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "listcitations" &&
 		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getaccount") {
-		return nil, fmt.Errorf("Method: %s not allowed.", info.FullMethod)
+		return nil, fmt.Errorf("method: %s not allowed", info.FullMethod)
 	}
 
 	// Calls the handler

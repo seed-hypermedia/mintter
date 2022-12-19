@@ -50,7 +50,7 @@ func TestGateway(t *testing.T) {
 
 	gwConf.Identity.DeviceKeyPath = ("./device.key")
 	var deviceKeyBytes = []byte{8, 1, 18, 64, 213, 180, 8, 59, 161, 75, 15, 92, 212, 94, 225, 82, 81, 11, 32, 200, 62, 46, 190, 105, 121, 14, 176, 107, 195, 113, 153, 176, 198, 163, 215, 226, 79, 46, 215, 228, 133, 153, 14, 142, 52, 115, 21, 73, 202, 121, 204, 223, 53, 117, 164, 225, 248, 106, 231, 151, 180, 246, 107, 137, 227, 212, 98, 140}
-	err := ioutil.WriteFile(gwConf.Identity.DeviceKeyPath, deviceKeyBytes, 0644)
+	err := ioutil.WriteFile(gwConf.Identity.DeviceKeyPath, deviceKeyBytes, 0600)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		os.Remove(gwConf.Identity.DeviceKeyPath)
