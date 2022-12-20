@@ -1,10 +1,8 @@
-import fs from 'fs'
-import prettier from 'prettier'
-import config from './tailwind.config'
+// @ts-nocheck
 
-// const fs = require('fs')
-// const prettier = require('prettier')
-// const config = require('./tailwind.config.js')
+const fs = require('fs')
+const prettier = require('prettier')
+const config = require('./tailwind.config.js')
 
 /*
   Converts the tailwind config elements into custom props.
