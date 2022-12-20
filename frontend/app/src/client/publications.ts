@@ -50,10 +50,8 @@ export async function getPublication(
   version = '',
   rpc: GrpcClient = client,
 ): Promise<Publication> {
-  console.log("🚀 ~ file: publications.ts:53 ~ rpc", rpc)
   const request = GetPublicationRequest.fromPartial({documentId, version})
   const result = await new PublicationsClientImpl(rpc).getPublication(request)
-  console.log("🚀 ~ file: publications.ts:56 ~ result", {request, result})
   return result
 }
 

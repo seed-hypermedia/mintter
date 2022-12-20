@@ -1,4 +1,16 @@
-import {GroupingContent, Text, FlowContent, group, isText, ol, PhrasingContent, ul} from '../../mttast'
+import {isPlainObject} from 'is-plain-object'
+import {
+  GroupingContent,
+  Text,
+  FlowContent,
+  group,
+  isText,
+  ol,
+  PhrasingContent,
+  ul,
+  isStaticParagraph,
+  isHeading,
+} from '../../mttast'
 // import { toSlateMachine } from "@app/client/v2/block-to-slate-machine";
 import {Annotation, Block, BlockNode} from '../'
 // import { interpret } from "xstate";
@@ -302,10 +314,13 @@ function isSurrogate(s: string, i: number): boolean {
   return res
 }
 
+let level = 0
+
 export function blockNodeToSlate(
   entry: Array<BlockNode>,
   childrenType: string,
   start?: string,
+  level = 1,
 ): GroupingContent {
   let fn =
     childrenType == 'orderedList'
@@ -318,11 +333,23 @@ export function blockNodeToSlate(
       // TODO(horacio): fix types, block should always be a block, not undefined
       // @ts-ignore
       let slateBlock = blockToSlate(block)
+      if (isHeading(slateBlock)) {
+        if (isPlainObject(slateBlock.data)) {
+          slateBlock.data.level = level
+        } else {
+          slateBlock.data = {
+            level,
+          }
+        }
+      }
+
       if (children.length) {
+        let newLevel = level + 1
         slateBlock.children[1] = blockNodeToSlate(
           children,
           block?.attributes.childrenType as string,
           block?.attributes.start,
+          newLevel,
         )
       }
       return slateBlock

@@ -31,10 +31,7 @@ export {ConnectionStatus} from './.generated/networking/v1alpha/networking'
 export * from './.generated/types'
 export {createGrpcClient, MINTTER_API_URL_DEFAULT} from './grpc-client'
 export type {GrpcClient} from './grpc-client'
-export {
-  getPublication,
-  listCitations,
-} from './publications'
+export {getPublication, listCitations} from './publications'
 import {
   Document,
   Publication as APIPublication,

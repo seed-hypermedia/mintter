@@ -2,7 +2,6 @@ import Footer from '../footer'
 import {SiteHead} from '../site-head'
 
 export default function DownloadPage({manifest = null}) {
-  console.log('manifest:', manifest)
   return (
     <>
       <SiteHead />
@@ -11,18 +10,19 @@ export default function DownloadPage({manifest = null}) {
         tabIndex={-1}
         className="main-content wrapper text-size-1"
       >
-        <section className="flow">
+        <section>
           <h1>Download Mintter</h1>
           <div className="cluster">
-            <a className="download-item">
-							<span className='title'>MacOS (M1)</span>
-							<span className='description'>41mb</span>
-						</a>
-            <a className="download-item">But stack where space is limited</a>
-            <a className="download-item">Aenean Commodo Vestibulum</a>
-            <a className="download-item">Ornare Lorem Pharetra</a>
-            <a className="download-item">Fusce dapibus, tellus ac cursus commodo</a>
-            <a className="download-item">Ipsum Etiam Tristique Quam</a>
+            {manifest?.platforms.map((item) => (
+              <a
+                key={item.url}
+                className="download-item"
+                href={item.url}
+                download
+              >
+                {item.platform}
+              </a>
+            ))}
           </div>
         </section>
       </main>
@@ -32,12 +32,27 @@ export default function DownloadPage({manifest = null}) {
 }
 
 export async function getStaticProps() {
-  let req = await fetch(`https://mintternightlies.s3.amazonaws.com/manifest.json`)
+  let req = await fetch(
+    `https://mintternightlies.s3.amazonaws.com/manifest.json`,
+  )
   let manifest = await req.json()
+
+  let platforms = {
+    'darwin-aarch64': 'Apple (M1)',
+    'darwin-x86_64': 'Apple (Intel)',
+    'linux-x86_64': 'Linux (AppImage)',
+    'windows-x86_64': 'Windows',
+  }
 
   return {
     props: {
-      manifest
-    }
+      manifest: {
+        ...manifest,
+        platforms: Object.entries(manifest.platforms).map(([key, value]) => ({
+          platform: platforms[key],
+          url: value.url,
+        })),
+      },
+    },
   }
 }

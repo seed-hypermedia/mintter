@@ -23,10 +23,13 @@ export async function getPublication(
   localOnly = false,
   rpc: GrpcClient = client,
 ): Promise<Publication> {
-
-  const request = GetPublicationRequest.fromPartial({documentId, version, localOnly})
+  const request = GetPublicationRequest.fromPartial({
+    documentId,
+    version,
+    localOnly,
+  })
   const result = await new PublicationsClientImpl(rpc).getPublication(request)
-  
+
   return result
 }
 
@@ -39,7 +42,6 @@ export function listCitations(
   let result = new ContentGraphClientImpl(rpc).listCitations(request)
   return result
 }
-
 
 /**
  *

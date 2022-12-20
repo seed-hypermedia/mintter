@@ -1,4 +1,4 @@
-/* VARIABLES GENERATED WITH TAILWIND CONFIG ON 12/14/2022.
+/* VARIABLES GENERATED WITH TAILWIND CONFIG ON 12/19/2022.
     Tokens location: ./tailwind.config.js */
 
 :root {
@@ -17,6 +17,10 @@
   --color-dark-surface-200: #16191d;
   --color-dark-surface-300: #212529;
   --color-dark-surface-400: #343a40;
+  --color-highlight-surface1: rgba(255, 212, 0, 0.14);
+  --color-highlight-surface2: rgba(255, 212, 0, 0.4);
+  --color-highlight-surface3: rgba(255, 212, 0, 0.8);
+  --color-highlight-surface4: rgba(255, 212, 0, 0.95);
   --space-size-0: clamp(0.83rem, 0.9rem + -0.32vw, 0.67rem);
   --space-base: clamp(1rem, 1rem + 0vw, 1rem);
   --space-size-1: clamp(1.2rem, 1.08rem + 0.59vw, 1.5rem);

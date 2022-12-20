@@ -26,17 +26,26 @@ export function SiteHead() {
                   <a
                     href="https://github.com/mintterteam/mintter"
                     target="_blank"
+                    rel="noreferrer"
                   >
                     Github
                   </a>
                 </li>
                 <li>
-                  <a href="https://discord.gg/mcUnKENdKX" target="_blank">
+                  <a
+                    href="https://discord.gg/mcUnKENdKX"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Discord
                   </a>
                 </li>
                 <li>
-                  <a href="https://twitter.com/mintterteam" target="_blank">
+                  <a
+                    href="https://twitter.com/mintterteam"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Twitter
                   </a>
                 </li>

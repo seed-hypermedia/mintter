@@ -7,8 +7,5 @@
 /* Utilities */
 @import 'utilities/*';
 
-/* open-props */
-@import "https://unpkg.com/open-props";
-
 /* Tailwind utilities */
 @tailwind utilities;

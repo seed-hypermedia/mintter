@@ -22,5 +22,4 @@ export function TitleBar(props: TitleBarProps) {
   // throw new Error(`Titlebar: unsupported platform: ${import.meta.env.TAURI_PLATFORM}`)
   warn(`Titlebar: unsupported platform: ${import.meta.env.TAURI_PLATFORM}`)
   return <TitleBarMacos {...props} />
-
 }

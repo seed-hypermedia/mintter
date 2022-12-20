@@ -7,7 +7,3 @@ var [MainProvider, useMain, createMainSelector] =
   createInterpreterContext<InterpreterFrom<typeof mainMachine>>('Main')
 
 export {MainProvider, useMain}
-
-export const useIsReplying = createMainSelector((state) =>
-  state.matches('replying'),
-)

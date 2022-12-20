@@ -5,22 +5,19 @@ import Footer from '../footer'
 import {SiteHead} from '../site-head'
 import {publicationMachine} from '../machines/publication-machine'
 import {SlateReactPresentation} from '../slate-react-presentation'
-import {useCallback} from 'react'
-import {RenderElementProps, RenderLeafProps} from 'slate-react'
+import {useRenderElement} from '../slate-react-presentation/render-element'
+import {useRenderLeaf} from '../slate-react-presentation/render-leaf'
+import {StateFrom} from 'xstate'
 
 export default function IndexPage({document}: any) {
   let [state, send] = useMachine(() => publicationMachine)
-  let renderElement = useRenderElement()
-  let renderLeaf = useRenderLeaf()
+
   useQuery({
     queryKey: [
       'PUBLICATION',
       'bafy2bzacecmqasguedv5vsyzydni3rbmlde5ud4lwpsesaad3utvdfpw24mmw',
     ],
-    queryFn: () =>
-      getPublication(
-        'bafy2bzacecmqasguedv5vsyzydni3rbmlde5ud4lwpsesaad3utvdfpw24mmw',
-      ),
+    queryFn: ({queryKey}) => getPublication(queryKey[1]),
     onSettled: (publication, error) => {
       if (publication) {
         send({type: 'PUBLICATION.FETCH.SUCCESS', publication})
@@ -41,27 +38,36 @@ export default function IndexPage({document}: any) {
         tabIndex={-1}
         className="main-content wrapper text-size-1"
       >
-        <article className="flow">
-          {state.context.editorValue ? (
-            <SlateReactPresentation
-              value={[state.context.editorValue]}
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-            />
-          ) : null}
-
-          <pre>
-            {JSON.stringify(
-              {value: state.value, context: state.context},
-              null,
-              3,
-            )}
-          </pre>
-        </article>
+        <Content state={state} />
       </main>
       <Footer />
     </>
   )
+}
+
+function Content({state}: {state: StateFrom<typeof publicationMachine>}) {
+  let renderElement = useRenderElement()
+  let renderLeaf = useRenderLeaf()
+
+  if (state.matches('fetching')) {
+    return <RootPlaceholder />
+  }
+
+  if (state.matches('settled') && state.context.editorValue) {
+    return (
+      <SlateReactPresentation
+        value={[state.context.editorValue]}
+        renderElement={renderElement}
+        renderLeaf={renderLeaf}
+      />
+    )
+  }
+
+  return null
+}
+
+function RootPlaceholder() {
+  return null
 }
 
 export async function getStaticProps() {
@@ -77,34 +83,4 @@ export async function getStaticProps() {
   return {
     props: {document: ''},
   }
-}
-
-function useRenderElement() {
-  return useCallback(({attributes, children, element}: RenderElementProps) => {
-    switch (element.type) {
-      case 'h1':
-        return <h1 {...attributes}>{children}</h1>
-
-      // ...
-
-      default:
-        return <p {...attributes}>{children}</p>
-    }
-  }, [])
-}
-
-function useRenderLeaf() {
-  return useCallback(({attributes, children, leaf}: RenderLeafProps) => {
-    if (leaf.emphasis) {
-      children = <i>{children}</i>
-    }
-
-    if (leaf.strong) {
-      children = <b>{children}</b>
-    }
-
-    // ...
-
-    return <span {...attributes}>{children}</span>
-  }, [])
 }

@@ -379,6 +379,6 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
           }
         }
       }
-    }, 100)
+    }, 1000)
   }, [ref, blockId, editor])
 }

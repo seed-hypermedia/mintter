@@ -6,7 +6,12 @@ import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
-import {Embed as EmbedType, FlowContent, isEmbed, isFlowContent} from '@app/mttast'
+import {
+  Embed as EmbedType,
+  FlowContent,
+  isEmbed,
+  isFlowContent,
+} from '@app/mttast'
 import {getBlock} from '@app/utils/get-block'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'

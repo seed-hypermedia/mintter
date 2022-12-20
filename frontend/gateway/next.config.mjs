@@ -26,5 +26,5 @@ export default withMDX({
     // your project has type errors.
     // !! WARN !!
     ignoreBuildErrors: true,
-  }
+  },
 })

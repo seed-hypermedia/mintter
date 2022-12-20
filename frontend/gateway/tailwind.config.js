@@ -32,16 +32,16 @@ const Blue = {
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./**/*.{tsx,mdx}",],
+  content: ['./**/*.{tsx,mdx}'],
   darkMode: 'media',
   presets: [],
   theme: {
     screens: {
-      'sm': '640px',
-      'md': '768px',
-      'lg': '1024px',
-      'xl': '1280px',
-      '2xl': '1536px'
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
     },
     colors: {
       brand: '#3B00FF',
@@ -52,7 +52,7 @@ module.exports = {
       'light-surface-200': Gray['--gray-3'],
       'light-surface-300': Gray['--gray-4'],
       'light-surface-400': Gray['--gray-5'],
-      
+
       'dark-text-100': Gray['--gray-4'],
       'dark-text-200': Gray['--gray-3'],
       'dark-text-300': Gray['--gray-2'],
@@ -60,36 +60,47 @@ module.exports = {
       'dark-surface-200': Gray['--gray-10'],
       'dark-surface-300': Gray['--gray-9'],
       'dark-surface-400': Gray['--gray-8'],
+      'highlight-surface1': 'rgba(255, 212, 0, 0.14)',
+      'highlight-surface2': 'rgba(255, 212, 0, 0.4)',
+      'highlight-surface3': 'rgba(255, 212, 0, 0.8)',
+      'highlight-surface4': 'rgba(255, 212, 0, 0.95)',
     },
     backgroundColor: ({theme}) => theme('colors'),
     spacing: {
       'size-0': 'clamp(0.83rem, 0.90rem + -0.32vw, 0.67rem)',
-      'base': 'clamp(1.00rem, 1.00rem + 0.00vw, 1.00rem)',
+      base: 'clamp(1.00rem, 1.00rem + 0.00vw, 1.00rem)',
       'size-1': 'clamp(1.20rem, 1.08rem + 0.59vw, 1.50rem)',
       'size-2': 'clamp(1.44rem, 1.12rem + 1.58vw, 2.25rem)',
       'size-3': 'clamp(1.73rem, 1.09rem + 3.21vw, 3.38rem)',
       'size-4': 'clamp(2.07rem, 0.91rem + 5.83vw, 5.06rem)',
-      'size-5': 'clamp(2.49rem, 0.50rem + 9.96vw, 7.59rem)'
+      'size-5': 'clamp(2.49rem, 0.50rem + 9.96vw, 7.59rem)',
     },
     fontSize: {
       'size-0': 'clamp(0.83rem, 0.90rem + -0.32vw, 0.67rem)',
-      'base': 'clamp(1.00rem, 1.00rem + 0.00vw, 1.00rem)',
+      base: 'clamp(1.00rem, 1.00rem + 0.00vw, 1.00rem)',
       'size-1': 'clamp(1.20rem, 1.08rem + 0.59vw, 1.50rem)',
       'size-2': 'clamp(1.44rem, 1.12rem + 1.58vw, 2.25rem)',
       'size-3': 'clamp(1.73rem, 1.09rem + 3.21vw, 3.38rem)',
       'size-4': 'clamp(2.07rem, 0.91rem + 5.83vw, 5.06rem)',
-      'size-5': 'clamp(2.49rem, 0.50rem + 9.96vw, 7.59rem)'
+      'size-5': 'clamp(2.49rem, 0.50rem + 9.96vw, 7.59rem)',
     },
     fontFamily: {
-      sans: ['"Inter"', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif']
+      sans: [
+        '"Inter"',
+        '"Segoe UI"',
+        'Roboto',
+        '"Helvetica Neue"',
+        'Arial',
+        'sans-serif',
+      ],
     },
     gap: ({theme}) => theme('spacing'),
     margin: ({theme}) => ({
       auto: 'auto',
-      ...theme('spacing')
+      ...theme('spacing'),
     }),
     scrollMargin: ({theme}) => ({
-      ...theme('spacing')
+      ...theme('spacing'),
     }),
     textColor: ({theme}) => theme('colors'),
     zIndex: {
@@ -100,8 +111,8 @@ module.exports = {
       30: '30',
       40: '40',
       50: '50',
-      max: '9999'
-    }
+      max: '9999',
+    },
   },
   variantOrder: [
     'first',
@@ -119,7 +130,7 @@ module.exports = {
     'focus',
     'focus-visible',
     'active',
-    'disabled'
+    'disabled',
   ],
-  plugins: []
-};
+  plugins: [],
+}
