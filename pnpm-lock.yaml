@@ -2,7 +2,7 @@ lockfileVersion: 5.4
 
 importers:
 
-  ../../../../Library/pnpm/store/v3/tmp/dlx-23018:
+  ../../../../Library/pnpm/store/v3/tmp/dlx-26002:
     specifiers:
       '@cloudflare/next-on-pages': ^0.2.0
     dependencies:
