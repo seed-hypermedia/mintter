@@ -57,9 +57,9 @@ type Service struct {
 	bitswap Bitswap
 	client  NetDialFunc
 
-	// NoListing disables syncing content from the remote peer to our peer.
+	// NoInbound disables syncing content from the remote peer to our peer.
 	// If false, then documents get synced in both directions.
-	NoListing bool
+	NoInbound bool
 	mu        sync.Mutex // Ensures only one sync loop is running at a time.
 }
 
@@ -81,7 +81,7 @@ func NewService(log *zap.Logger, me core.Identity, vcs *vcsdb.DB, bitswap Bitswa
 		me:        me,
 		bitswap:   bitswap,
 		client:    client,
-		NoListing: inDisable,
+		NoInbound: inDisable,
 	}
 
 	return svc
@@ -381,6 +381,11 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
 		return nil
 	}
 
+	// If we don't want to sync incoming documents.
+	if s.NoInbound {
+		return nil
+	}
+
 	c, err := s.client(ctx, device)
 	if err != nil {
 		return err
@@ -390,9 +395,7 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
 	if err != nil {
 		return err
 	}
-	if s.NoListing {
-		remoteObjs = &p2p.ListObjectsResponse{}
-	}
+
 	sess := s.bitswap.NewSession(ctx)
 	for _, obj := range remoteObjs.Objects {
 		oid, err := cid.Decode(obj.Id)
