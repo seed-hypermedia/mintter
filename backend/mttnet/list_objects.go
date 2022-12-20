@@ -6,7 +6,7 @@ import (
 )
 
 func (n *rpcHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
-	if n.cfg.DisableListing {
+	if n.cfg.NoListing {
 		return &p2p.ListObjectsResponse{}, nil
 	}
 	conn, release, err := n.vcs.Conn(ctx)

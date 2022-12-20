@@ -34,7 +34,7 @@ go_binary(
 )
 
 go_binary(
-    name = "gateway",
+    name = "minttergw",
     srcs = glob(
         ["**/*.go"],
         exclude = ["**/*_test.go"],
@@ -44,10 +44,10 @@ go_binary(
         "//backend/vcs/vcssql:go_library",
         "//backend/db/sqliteschema:go_library",
     ],
-    out = "gateway-" + target_platform_triple(),
+    out = "minttergw-" + target_platform_triple(),
     cgo = True,
     gomod = "//:gomod",
-    package = "./cmd/gateway",
+    package = "./cmd/minttergw",
     visibility = ["PUBLIC"],
     deps = [
         "//third_party:sqlite",

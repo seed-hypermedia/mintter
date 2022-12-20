@@ -1,4 +1,4 @@
-// Package main implements main script to run gateway daemon.
+// Package main implements main script to run mintter-gateway daemon.
 package main
 
 import (
@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"mintter/backend/config"
 	"mintter/backend/core"
@@ -14,6 +15,7 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	protodaemon "mintter/backend/genproto/daemon/v1alpha"
 
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -30,7 +32,7 @@ func main() {
 		fs := flag.NewFlagSet("gateway", flag.ExitOnError)
 
 		cfg := config.Default()
-		cfg.P2P.DisableListing = true
+		cfg.P2P.NoListing = true
 		config.SetupFlags(fs, &cfg)
 
 		// We parse flags twice here, once without the config file setting, and then with it.
@@ -60,7 +62,7 @@ func main() {
 			return err
 		}
 
-		app, err := daemon.Load(ctx, cfg, daemon.WithMiddleware(daemon.GwEssentials))
+		app, err := daemon.Load(ctx, cfg, daemon.WithMiddleware(gwEssentials))
 		if err != nil {
 			return err
 		}
@@ -85,7 +87,7 @@ func main() {
 			return err
 		}
 		const alias = "Web gateway"
-		const bio = "Found me at https://www.mintter.com"
+		const bio = "Find me at https://www.mintter.com"
 		acc, err := app.RPC.Accounts.UpdateProfile(ctx, &accounts.Profile{
 			Alias: alias,
 			Bio:   bio,
@@ -103,4 +105,22 @@ func main() {
 
 		return err
 	})
+}
+
+// GwEssentials is a middleware to restrict incoming grpc calls to bare minimum for the gateway to work.
+func gwEssentials(ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+	methodSplitted := strings.Split(info.FullMethod, "/")
+	if len(methodSplitted) < 2 || (strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" &&
+		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "listcitations" &&
+		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getaccount") {
+		return nil, fmt.Errorf("method: %s not allowed", info.FullMethod)
+	}
+
+	// Calls the handler
+	h, err := handler(ctx, req)
+
+	return h, err
 }

@@ -80,7 +80,22 @@ type App struct {
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
 func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) (a *App, err error) {
-	r, err := initRepo(cfg, nil)
+	var deviceKey crypto.PrivKey
+	if cfg.Identity.DeviceKeyPath != "" {
+		if _, err := os.Stat(cfg.Identity.DeviceKeyPath); err == nil {
+			bytes, err := ioutil.ReadFile(cfg.Identity.DeviceKeyPath)
+			if err != nil {
+				return nil, err
+			}
+			deviceKey, err = crypto.UnmarshalPrivateKey(bytes)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+	r, err := initRepo(cfg, deviceKey)
 	if err != nil {
 		return nil, err
 	}
@@ -195,25 +210,10 @@ func (a *App) Wait() error {
 
 func initRepo(cfg config.Config, device crypto.PrivKey) (r *ondisk.OnDisk, err error) {
 	log := logging.New("mintter/repo", "debug")
-	var deviceKey crypto.PrivKey = device
-	if deviceKey == nil && cfg.Identity.DeviceKeyPath != "" {
-		if _, err := os.Stat(cfg.Identity.DeviceKeyPath); err == nil {
-			bytes, err := ioutil.ReadFile(cfg.Identity.DeviceKeyPath)
-			if err != nil {
-				return nil, err
-			}
-			deviceKey, err = crypto.UnmarshalPrivateKey(bytes)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
-		}
-	}
-	if deviceKey == nil {
+	if device == nil {
 		r, err = ondisk.NewOnDisk(cfg.RepoPath, log)
 	} else {
-		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, deviceKey)
+		r, err = ondisk.NewOnDiskWithDeviceKey(cfg.RepoPath, log, device)
 	}
 
 	if err == nil {
@@ -363,7 +363,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client, cfg.InboundDisable)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client, cfg.NoInbound)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
@@ -517,22 +517,6 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 // WithMiddleware generates an grpc option with the given middleware.
 func WithMiddleware(i grpc.UnaryServerInterceptor) grpc.ServerOption {
 	return grpc.UnaryInterceptor(i)
-}
-
-// GetPublicationOnly is a middleware to restrict rpc incoming calls to be getpublication only.
-func GetPublicationOnly(ctx context.Context,
-	req interface{},
-	info *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler) (interface{}, error) {
-	methodSplitted := strings.Split(info.FullMethod, "/")
-	if len(methodSplitted) < 2 || strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" {
-		return nil, fmt.Errorf("Method: %s not allowed. GetPublication only", info.FullMethod)
-	}
-
-	// Calls the handler
-	h, err := handler(ctx, req)
-
-	return h, err
 }
 
 // GwEssentials is a middleware to restrict incoming grpc calls to bare minimum for the gateway to work.

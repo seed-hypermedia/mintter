@@ -52,7 +52,7 @@ func Default() Config {
 			WarmupDuration: time.Minute,
 			Interval:       time.Minute,
 			TimeoutPerPeer: time.Minute * 2,
-			InboundDisable: false,
+			NoInbound:      false,
 		},
 	}
 }
@@ -120,13 +120,13 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.Var(newAddrsFlag(cfg.P2P.BootstrapPeers, &cfg.P2P.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
 	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
 
-	fs.BoolVar(&cfg.P2P.DisableListing, "p2p.disable-listing", cfg.P2P.DisableListing, "Disable listing documents when requested (stealth mode)")
+	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
-	fs.BoolVar(&cfg.Syncing.InboundDisable, "syncing.disable-inbound", cfg.Syncing.InboundDisable, "Not syncing inbound content, only syncs to remote peers")
+	fs.BoolVar(&cfg.Syncing.NoInbound, "syncing.disable-inbound", cfg.Syncing.NoInbound, "Not syncing inbound content, only syncs to remote peers")
 }
 
 // ExpandRepoPath is used to expand the home directory in the repo path.
@@ -157,18 +157,17 @@ type Syncing struct {
 	WarmupDuration time.Duration
 	Interval       time.Duration
 	TimeoutPerPeer time.Duration
-	// InboundDisable disables syncing content to the remote peer from our peer.
+	// NoInbound disables syncing content to the remote peer from our peer.
 	// If false, then documents get synced in both directions.
-	InboundDisable bool
+	NoInbound bool
 }
 
 // P2P configuration. For field descriptions see SetupFlags().
 type P2P struct {
 	Port           int
 	NoRelay        bool
-	NoDocumentsOut bool
 	BootstrapPeers []multiaddr.Multiaddr
-	DisableListing bool
+	NoListing      bool
 	NoMetrics      bool
 	RelayBackoff   time.Duration
 	ExtraAddrs     []multiaddr.Multiaddr

@@ -87,7 +87,7 @@ def main():
 
     @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
     def run_gateway(args):
-        return run("plz run //backend:gateway", args=args)
+        return run("plz run //backend:minttergw", args=args)
 
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
     def run_backend(args):
