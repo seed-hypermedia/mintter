@@ -69,18 +69,3 @@ function Content({state}: {state: StateFrom<typeof publicationMachine>}) {
 function RootPlaceholder() {
   return null
 }
-
-export async function getStaticProps() {
-  // mintter://bafy2bzacecmqasguedv5vsyzydni3rbmlde5ud4lwpsesaad3utvdfpw24mmw/baeaxdiheaiqix5ix4cu4obn6arq6oqupdqchb6k46uph45cfiv5k7ypswaf77la
-
-  // let document = await getPublication(
-  //   'bafy2bzacecmqasguedv5vsyzydni3rbmlde5ud4lwpsesaad3utvdfpw24mmw',
-  //   undefined,
-  //   true,
-  // )
-  // console.log("🚀 ~ file: index.tsx:27 ~ getStaticProps ~ document", document)
-
-  return {
-    props: {document: ''},
-  }
-}
