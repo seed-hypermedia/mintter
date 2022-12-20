@@ -8,9 +8,11 @@ import {SlateReactPresentation} from '../../slate-react-presentation'
 import {useRenderElement} from '../../slate-react-presentation/render-element'
 import {useRenderLeaf} from '../../slate-react-presentation/render-leaf'
 import {PublicationMetadata} from '../../author'
+import {useRouter} from 'next/router'
 
-export default function PublicationPage(props) {
-  let [docId, version] = props.params.ids
+export default function PublicationPage() {
+  const router = useRouter()
+  let [docId, version] = router.query.ids || []
 
   let [state, send] = useMachine(() => publicationMachine)
   let renderElement = useRenderElement()
@@ -53,41 +55,34 @@ export default function PublicationPage(props) {
             ) : null}
           </div>
         </article>
-        <pre>
-          {JSON.stringify(
-            {value: state.value, context: state.context},
-            null,
-            3,
-          )}
-        </pre>
       </main>
       <Footer />
     </>
   )
 }
 
-export async function getStaticProps({params}) {
-  console.log('🚀 ~ file: [...ids].tsx:75 ~ getStaticProps ~ params', params)
-  // const { tweet } = params
+// export async function getStaticProps({params}) {
+//   console.log('🚀 ~ file: [...ids].tsx:75 ~ getStaticProps ~ params', params)
+//   // const { tweet } = params
 
-  // if (tweet.length > 40 || !TWEET_ID.test(tweet)) {
-  //   return { notFound: true }
-  // }
+//   // if (tweet.length > 40 || !TWEET_ID.test(tweet)) {
+//   //   return { notFound: true }
+//   // }
 
-  // try {
-  //   const ast = await fetchTweetAst(tweet)
-  //   return ast ? { props: { ast } } : { notFound: true }
-  // } catch (error) {
-  //   // The Twitter API most likely died
-  //   console.error(error)
-  //   return { notFound: true }
-  // }
+//   // try {
+//   //   const ast = await fetchTweetAst(tweet)
+//   //   return ast ? { props: { ast } } : { notFound: true }
+//   // } catch (error) {
+//   //   // The Twitter API most likely died
+//   //   console.error(error)
+//   //   return { notFound: true }
+//   // }
 
-  return {
-    props: {params},
-  }
-}
+//   return {
+//     props: {params},
+//   }
+// }
 
-export async function getStaticPaths() {
-  return {paths: [], fallback: true}
-}
+// export async function getStaticPaths() {
+//   return {paths: [], fallback: true}
+// }

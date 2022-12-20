@@ -31,7 +31,7 @@ export default function DownloadPage({manifest = null}) {
   )
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   let req = await fetch(
     `https://mintternightlies.s3.amazonaws.com/manifest.json`,
   )
