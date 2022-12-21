@@ -52,6 +52,7 @@
     "concurrently": "7.6.0",
     "cssnano": "5.1.14",
     "eslint-plugin-storybook": "0.6.8",
+    "eslint-plugin-tailwindcss": "^3.7.1",
     "nodemon": "2.0.20",
     "postcss": "8.4.19",
     "postcss-flexbugs-fixes": "5.0.2",

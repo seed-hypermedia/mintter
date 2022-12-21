@@ -1,5 +1,5 @@
 {
-  "extends": ["next/core-web-vitals", "plugin:storybook/recommended"],
+  "extends": ["plugin:tailwindcss/recommended", "next/core-web-vitals"],
   "rules": {
     "@typescript-eslint/no-var-requires": "off"
   }

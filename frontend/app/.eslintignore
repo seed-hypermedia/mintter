@@ -4,7 +4,6 @@ dist
 build
 dist-ssr
 *.local
-cypress/plugins/index.js
 .generated
 *.typegen.*
 exts/wake-asc/mtt_ephemeral_poll.ts
