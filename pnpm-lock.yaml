@@ -322,7 +322,6 @@ importers:
       protobufjs: 7.1.2
       react: 18.2.0
       react-dom: 18.2.0
-      shiki: 0.10.1
       shiki-es: ^0.1.2
       slate: ^0.87.0
       slate-react: ^0.87.0
@@ -357,7 +356,6 @@ importers:
       protobufjs: 7.1.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-      shiki: 0.10.1
       shiki-es: 0.1.2
       slate: 0.87.0
       slate-react: 0.87.1_n2cfbellevwxpal743zx3kzaym
