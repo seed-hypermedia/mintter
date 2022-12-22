@@ -303,10 +303,12 @@ importers:
       cssnano: 5.1.14
       eslint: 8.29.0
       eslint-config-next: 13.0.6
+      eslint-config-prettier: 8.5.0
       eslint-plugin-storybook: 0.6.8
       eslint-plugin-tailwindcss: ^3.7.1
       google-protobuf: 3.21.2
       is-plain-object: 5.0.0
+      js-video-url-parser: 0.5.1
       long: 5.2.1
       nanoid: 4.0.0
       next: 13.0.6
@@ -321,6 +323,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       shiki: 0.10.1
+      shiki-es: ^0.1.2
       slate: ^0.87.0
       slate-react: ^0.87.0
       tailwindcss: 3.2.4
@@ -347,6 +350,7 @@ importers:
       eslint-config-next: 13.0.6_ha6vam6werchizxrnqvarmz2zu
       google-protobuf: 3.21.2
       is-plain-object: 5.0.0
+      js-video-url-parser: 0.5.1
       long: 5.2.1
       nanoid: 4.0.0
       next: 13.0.6_biqbaboplfbrettd7655fr4n2y
@@ -354,6 +358,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       shiki: 0.10.1
+      shiki-es: 0.1.2
       slate: 0.87.0
       slate-react: 0.87.1_n2cfbellevwxpal743zx3kzaym
       typescript: 4.9.4
@@ -366,6 +371,7 @@ importers:
       autoprefixer: 10.4.13_postcss@8.4.19
       concurrently: 7.6.0
       cssnano: 5.1.14_postcss@8.4.19
+      eslint-config-prettier: 8.5.0_eslint@8.29.0
       eslint-plugin-storybook: 0.6.8_ha6vam6werchizxrnqvarmz2zu
       eslint-plugin-tailwindcss: 3.7.1
       nodemon: 2.0.20
@@ -11545,6 +11551,10 @@ packages:
   /shellwords/0.1.1:
     resolution: {integrity: sha512-vFwSUfQvqybiICwZY5+DAWIPLKsWO31Q91JSKl3UYv+K5c2QRPzn0qzec6QPu1Qc9eHYItiP3NdJqNVqetYAww==}
     dev: true
+
+  /shiki-es/0.1.2:
+    resolution: {integrity: sha512-eqtfk8idlYlSLAn0gp0Ly2+FbKc2d78IddigHSS4iHAnpXoY2kdRzyFGZOdi6TvemYMnRhZBi1HsSqZc5eNKqg==}
+    dev: false
 
   /shiki/0.10.1:
     resolution: {integrity: sha512-VsY7QJVzU51j5o1+DguUd+6vmCmZ5v/6gYu4vyYAhzjuNQU6P/vmSy4uQaOhvje031qQMiW0d2BwgMH52vqMng==}

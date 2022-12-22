@@ -80,20 +80,22 @@ export const createCodePlugin = (): EditorPlugin => {
     onKeyDown: (editor) => {
       return (ev) => {
         if (ev.key == 'Enter') {
+          // TODO horacio: cancel this when inside block that is a child of a code block
           const code = Editor.above(editor, {match: isCode})
           if (code) {
             ev.preventDefault()
             if (ev.shiftKey) {
               const [, codePath] = code
               Editor.withoutNormalizing(editor, () => {
+                let newPath = Path.next(codePath)
                 Transforms.insertNodes(
                   editor,
                   statement({id: createId()}, [paragraph([text('')])]),
                   {
-                    at: Path.next(codePath),
+                    at: newPath,
                   },
                 )
-                Transforms.select(editor, Path.next(codePath))
+                Transforms.select(editor, newPath)
                 Transforms.collapse(editor, {edge: 'start'})
               })
             } else {

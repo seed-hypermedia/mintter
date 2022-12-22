@@ -36,7 +36,7 @@ export default function IndexPage({document}: any) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="main-content wrapper text-size-1"
+        className="main-content wrapper text-size-100"
       >
         <Content state={state} />
       </main>

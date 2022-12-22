@@ -142,8 +142,6 @@ type InnerVideoProps = {
 }
 
 function VideoComponent({service, element, mode}: InnerVideoProps) {
-  const videoData = useMemo(() => parseVideoUrl(element.url), [element.url])
-
   if (videoData?.provider) {
     return <VideoEmbed mode={mode} service={service} videoData={videoData} />
   }

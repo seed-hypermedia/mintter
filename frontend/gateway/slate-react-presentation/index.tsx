@@ -89,7 +89,7 @@ export function Leaf({leaf = {text: ''}}) {
     <React.Fragment>
       {renderLeaf?.({
         attributes: {},
-        children: <ChildrenLeaf>{leaf.text}</ChildrenLeaf>,
+        children: <>{leaf.text}</>,
         leaf,
         text: leaf.text,
       })}

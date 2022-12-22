@@ -18,7 +18,7 @@ export function MainLayout({children, meta}: PropsWithChildren<{meta: Meta}>) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="main-content wrapper text-size-1"
+        className="main-content wrapper text-size-100"
       >
         <article className="flow">
           <h1>{title}</h1>

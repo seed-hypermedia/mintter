@@ -103,7 +103,6 @@ let staticParagraphMachine =
         getParent: (context) =>
           new Promise((res, rej) => {
             let parent = (context.currentRef as HTMLParagraphElement).parentNode
-            console.log('getParent', context, parent)
             if (parent) {
               res(parent)
             } else {

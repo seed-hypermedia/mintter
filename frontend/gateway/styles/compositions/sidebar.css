@@ -1,7 +1,7 @@
 .sidebar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-size-1);
+  gap: var(--space-size-100);
 }
 
 .sidebar > :last-child {

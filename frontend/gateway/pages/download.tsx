@@ -8,7 +8,7 @@ export default function DownloadPage({manifest = null}) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="main-content wrapper text-size-1"
+        className="main-content wrapper text-size-100"
       >
         <section>
           <h1>Download Mintter</h1>

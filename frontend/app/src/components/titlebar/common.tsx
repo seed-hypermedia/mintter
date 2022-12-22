@@ -30,7 +30,7 @@ export function ActionButtons() {
       let context = current.getSnapshot().context
       let reference = `${MINTTER_GATEWAY_URL}${context.documentId}/${context.version}`
       copyTextToClipboard(reference)
-      toast.success('Document reference copied!')
+      toast.success('Public web link copied!')
     }
   }
 

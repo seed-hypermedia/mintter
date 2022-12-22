@@ -13,7 +13,7 @@ const generateCSSProps = () => {
   const groups = [
     {key: 'colors', prefix: 'color'},
     {key: 'spacing', prefix: 'space'},
-    {key: 'fontSize', prefix: 'size'},
+    {key: 'fontSize', prefix: 'font'},
   ]
 
   // Add a note that this is auto generated

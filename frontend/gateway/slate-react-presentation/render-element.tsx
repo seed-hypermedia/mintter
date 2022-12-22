@@ -1,11 +1,19 @@
 import {useCallback, useEffect, useRef} from 'react'
 import {RenderElementProps} from 'slate-react'
 import {EditorType, useSlatePresentation} from '.'
-import {Embed, Link, MttastNode} from '../mttast'
+import {
+  Code,
+  Embed,
+  Image,
+  Link,
+  MttastNode,
+  Video as VideoType,
+} from '../mttast'
 import {ElementLink} from './link'
 import {Paragraph} from './paragraph'
 import {StaticParagraph} from './static-paragraph'
 import {Transclusion} from './transclusion'
+import {Video} from './video'
 
 export function useRenderElement() {
   return useCallback(({children, element, attributes}: RenderElementProps) => {
@@ -19,7 +27,11 @@ export function useRenderElement() {
       case 'unorderedList':
         return <ul {...elementProps}>{children}</ul>
       case 'orderedList':
-        return <ol {...elementProps}>{children}</ol>
+        return (
+          <ol {...elementProps} start={element.start || '1'}>
+            {children}
+          </ol>
+        )
       case 'statement':
         return (
           <li data-type="p" id={element.id}>
@@ -33,9 +45,14 @@ export function useRenderElement() {
           </li>
         )
       case 'blockquote':
-      case 'code':
         return (
           <li {...elementProps} id={element.id}>
+            {children}
+          </li>
+        )
+      case 'code':
+        return (
+          <li {...elementProps} id={element.id} lang={(element as Code).lang}>
             {children}
           </li>
         )
@@ -50,7 +67,12 @@ export function useRenderElement() {
       case 'embed':
         return <Transclusion element={element as Embed} />
       case 'link':
+        console.log('ELEMENT LINK', element)
         return <ElementLink element={element as Link} {...elementProps} />
+      case 'image':
+        return <img src={(element as Image).url} alt={(element as Image).alt} />
+      case 'video':
+        return <Video element={element as VideoType} />
       // ...
       default:
         return <span {...elementProps}>{children}</span>

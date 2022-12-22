@@ -1,5 +1,5 @@
 .download-item {
-  padding: var(--space-size-2);
+  padding: var(--space-size-200);
   background-color: var(--color-brand);
   color: white;
   text-decoration: none;

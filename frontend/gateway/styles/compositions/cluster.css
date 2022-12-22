@@ -16,10 +16,10 @@ Can be any acceptable flexbox alignment value.
 */
 
 .cluster {
-  padding: var(--space-size-2) 0;
+  padding: var(--space-size-200) 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--gutter, var(--space-size-1));
+  gap: var(--gutter, var(--space-size-100));
   justify-content: var(--cluster-horizontal-alignment, flex-start);
   align-items: var(--cluster-vertical-alignment, center);
 }

@@ -185,11 +185,11 @@ export function createTransclusionMachine({
         clearPublication: assign({
           publication: undefined,
         }),
-        setLink: assign({
-          webLink: (context) => {
-            console.log('LINK', context.url)
-          },
-        }),
+        // setLink: assign({
+        //   webLink: (context) => {
+        //     console.log('LINK', context.url)
+        //   },
+        // }),
       },
     },
   )

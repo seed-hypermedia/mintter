@@ -5,5 +5,5 @@ A common wrapper/container
 .wrapper {
   margin-inline: auto;
   width: clamp(16rem, 95vw, 85rem);
-  padding-inline: var(--space-size-1);
+  padding-inline: var(--space-size-100);
 }

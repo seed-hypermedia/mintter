@@ -10,17 +10,21 @@
 
   & li:has(h2),
   & li:has(h3) {
-    margin-top: var(--space-size-3);
+    margin-top: var(--space-size-300);
   }
 
   & li:has(h4),
   & li:has(h5) {
-    margin-top: var(--space-size-2);
+    margin-top: var(--space-size-200);
   }
 
   & li:has(p),
   & li:has(h6) {
-    margin-top: var(--space-size-1);
+    margin-top: var(--space-size-100);
+  }
+
+  & img {
+    width: 100%;
   }
 }
 
@@ -44,4 +48,10 @@ q {
     text-shadow: 0 0 6px var(--primary-component-bg-active);
     background-color: var(--color-highlight-surface2);
   }
+}
+
+.youtube-video {
+  position: relative;
+  width: 100%;
+  padding-top: 56%;
 }
