@@ -85,7 +85,7 @@ importers:
       '@xstate/inspect': 0.7.0
       '@xstate/react': 3.0.1
       '@xstate/test': 0.5.1
-      allotment: 1.17.0
+      allotment: 1.17.1
       autosize: 5.0.2
       browser-headers: 0.4.1
       clipboardy: 3.0.0
@@ -184,7 +184,7 @@ importers:
       '@tanstack/react-query': 4.19.1_biqbaboplfbrettd7655fr4n2y
       '@tauri-apps/api': 1.2.0
       '@xstate/react': 3.0.1_jxlbbcdnowciznag5x5yc5bb5i
-      allotment: 1.17.0_biqbaboplfbrettd7655fr4n2y
+      allotment: 1.17.1_biqbaboplfbrettd7655fr4n2y
       autosize: 5.0.2
       browser-headers: 0.4.1
       cmdk: 0.1.20_ib3m5ricvtkl2cll7qpr2f6lvq
@@ -4199,8 +4199,8 @@ packages:
       uri-js: 4.4.1
     dev: true
 
-  /allotment/1.17.0_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-Iab4GCVLb9/2R5D2PFlbhR2OWZrGLpYqF6YgmonLmwc9BrA+PEMt2BkltdYaySh7vfG73tuMdBB5R7AdTuMJEA==}
+  /allotment/1.17.1_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-3/blHxKZfP441IZRwoOJaaNfDOx9XtvQQaeRYYrn7xjQWF7ZhYZCfR7oNxudwx2ga21tIskvfytbZF2P/ydE3A==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
