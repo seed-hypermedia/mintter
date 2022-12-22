@@ -81,7 +81,7 @@ importers:
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.2.0
-      '@xstate/cli': 0.4.0
+      '@xstate/cli': 0.4.1
       '@xstate/inspect': 0.7.0
       '@xstate/react': 3.0.1
       '@xstate/test': 0.5.1
@@ -260,7 +260,7 @@ importers:
       '@types/react-highlight-words': 0.16.4
       '@types/unist': 2.0.6
       '@vitejs/plugin-react': 2.2.0_vite@3.2.5
-      '@xstate/cli': 0.4.0_prettier@2.8.1
+      '@xstate/cli': 0.4.1_prettier@2.8.1
       '@xstate/inspect': 0.7.0_ws@8.11.0+xstate@4.35.0
       '@xstate/test': 0.5.1_xstate@4.35.0
       clipboardy: 3.0.0
@@ -4044,12 +4044,12 @@ packages:
       - encoding
     dev: true
 
-  /@xstate/cli/0.4.0_prettier@2.8.1:
-    resolution: {integrity: sha512-BnAxRxNSDQgsD89dKxKJjEbByZhntw412Oc9XEUhQ/DXBYKTz0mMUKGgSItiADhd1zGa9gXH4qTTDq/Ww7JxHA==}
+  /@xstate/cli/0.4.1_prettier@2.8.1:
+    resolution: {integrity: sha512-pArdkCOj5wBt2Ctn1nnWF7DAt9ms1XAFLdVndn2Pn3rShbgd8kxAYZ7MN9FWb1P8BH4AyVFrVgpTjPp8y7yLsg==}
     hasBin: true
     dependencies:
       '@babel/core': 7.20.7
-      '@xstate/machine-extractor': 0.8.0_xstate@4.35.0
+      '@xstate/machine-extractor': 0.9.0_xstate@4.35.0
       '@xstate/tools-shared': 2.0.1_xdpaacevwhtt3wx62r6b3ocsj4
       chokidar: 3.5.3
       commander: 8.3.0
@@ -4080,20 +4080,6 @@ packages:
       fast-safe-stringify: 2.1.1
       ws: 8.11.0
       xstate: 4.35.0
-    dev: true
-
-  /@xstate/machine-extractor/0.8.0_xstate@4.35.0:
-    resolution: {integrity: sha512-uSn1EdgbisdbBGrIwDVsVOdhImUWtbcMUiRs+uEo/K9AGXN8rMamaKYeBbs1re1hf/2TqllAIc4/UdDrtJyP9A==}
-    peerDependencies:
-      xstate: ^4
-    dependencies:
-      '@babel/parser': 7.20.7
-      '@babel/traverse': 7.20.8
-      '@babel/types': 7.20.7
-      recast: 0.21.5
-      xstate: 4.35.0
-    transitivePeerDependencies:
-      - supports-color
     dev: true
 
   /@xstate/machine-extractor/0.9.0_xstate@4.35.0:
