@@ -73,5 +73,5 @@ import {
   Publication as APIPublication,
 } from './.generated/documents/v1alpha/documents'
 export type Publication = APIPublication & {
-  document: Document
+  document?: Document
 }

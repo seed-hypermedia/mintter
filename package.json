@@ -8,7 +8,7 @@
   "packageManager": "pnpm@7.18.1",
   "scripts": {
     "build": "pnpm run --recursive build",
-    "lint": "prettier --check --plugin-search-dir=. . && eslint .",
+    "lint": "pnpm run --recursive lint",
     "format": "prettier --write --plugin-search-dir=. .",
     "test": "pnpm run --recursive test",
     "test:unit": "pnpm run --recursive test:unit",

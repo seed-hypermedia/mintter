@@ -100,15 +100,14 @@
     "trim-trailing-lines": "2.1.0",
     "unified": "10.1.2",
     "unist-builder": "3.0.0",
-    "unist-util-is": "5.1.1",
     "unist-util-remove-position": "4.0.1",
-    "unist-util-to-string-with-nodes": "0.1.1",
     "unist-util-visit": "4.1.1",
     "unist-util-visit-parents": "5.1.1",
     "wouter": "2.9.0",
     "xstate": "4.35.0"
   },
   "devDependencies": {
+    "@babel/core": "7.20.5",
     "@cypress/vite-dev-server": "3.4.0",
     "@graphql-codegen/cli": "2.16.1",
     "@graphql-codegen/typescript": "2.8.5",

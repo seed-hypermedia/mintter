@@ -1,0 +1,6 @@
+.aside-content {
+  padding: var(--space-base) var(--space-size-100);
+  margin-top: var(--space-size-300);
+  background-color: var(--color-light-surface-100);
+  box-shadow: 4px 4px 0 0 black;
+}

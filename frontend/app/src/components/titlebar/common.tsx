@@ -1,8 +1,8 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {MINTTER_GATEWAY_URL, MINTTER_LINK_PREFIX} from '@app/constants'
 import {DraftActor} from '@app/draft-machine'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
-import {useIsReplying, useMain} from '@app/main-context'
+import {useMain} from '@app/main-context'
 import {PublicationActor} from '@app/publication-machine'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
@@ -25,6 +25,15 @@ export function ActionButtons() {
     }
   }
 
+  function onCopyWeblink() {
+    if (current) {
+      let context = current.getSnapshot().context
+      let reference = `${MINTTER_GATEWAY_URL}${context.documentId}/${context.version}`
+      copyTextToClipboard(reference)
+      toast.success('Public web link copied!')
+    }
+  }
+
   return (
     <div
       id="titlebar-action-buttons"
@@ -38,6 +47,11 @@ export function ActionButtons() {
           <Tooltip content="Copy document reference">
             <button onClick={onCopy} className="titlebar-button">
               <Icon name="Copy" />
+            </button>
+          </Tooltip>
+          <Tooltip content="Share in the web">
+            <button onClick={onCopyWeblink} className="titlebar-button">
+              <Icon name="Globe" />
             </button>
           </Tooltip>
         </Route>
@@ -57,10 +71,11 @@ export function ActionButtons() {
           <Icon name="Add" />
           <span style={{marginRight: '0.3em'}}>Write</span>
         </button>
-        <Route path="/p/:id/:version/:block?">
-          {current && <WriteDropdown fileRef={current as PublicationActor} />}
-        </Route>
       </div>
+      <Route path="/p/:id/:version/:block?">
+        {/* {current && <WriteDropdown fileRef={current as PublicationActor} />} */}
+        {current && <WriteActions fileRef={current as PublicationActor} />}
+      </Route>
     </div>
   )
 }
@@ -156,7 +171,6 @@ export function NavMenu() {
 
 function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
   let mainService = useMain()
-  let isReplying = useIsReplying()
   let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
   let [, params] = useRoute('/p/:id/:version/:block?')
 
@@ -174,14 +188,6 @@ function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
           >
             <Icon name="File" />
             <span>New Document</span>
-          </Dropdown.Item>
-
-          <Dropdown.Item
-            onSelect={() => fileRef.send('PUBLICATION.REPLY')}
-            disabled={isReplying}
-          >
-            <Icon name="MessageBubble" />
-            <span>Reply</span>
           </Dropdown.Item>
 
           {canUpdate ? (
@@ -208,5 +214,28 @@ function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>
+  )
+}
+
+function WriteActions({fileRef}: {fileRef: PublicationActor}) {
+  let mainService = useMain()
+  let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
+  let [, params] = useRoute('/p/:id/:version/:block?')
+
+  return (
+    <>
+      {canUpdate && (
+        <div className="button-group">
+          <button
+            className="titlebar-button"
+            onClick={() => {
+              fileRef.send({type: 'PUBLICATION.EDIT', params})
+            }}
+          >
+            <span style={{marginInline: '0.3em'}}>Edit</span>
+          </button>
+        </div>
+      )}
+    </>
   )
 }

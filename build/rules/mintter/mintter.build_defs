@@ -37,7 +37,7 @@ $TOOLS_PROTOC -I proto \
 $TOOLS_PROTOC -I proto \
     --plugin=protoc-gen-ts_proto=$TOOLS_PROTOC_GEN_TS_PROTO \
     --ts_proto_opt=esModuleInterop=true \
-    --ts_proto_opt=env=browser \
+    --ts_proto_opt=env=both \
     --ts_proto_opt=lowerCaseServiceMethods=true \
     --ts_proto_opt=addGrpcMetadata=true \
     --ts_proto_opt=outputClientImpl=grpc-web \

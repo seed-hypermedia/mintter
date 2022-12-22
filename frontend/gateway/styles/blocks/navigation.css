@@ -1,0 +1,25 @@
+.navigation ul {
+  @apply text-base;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.8rem;
+  padding: 0;
+  margin: 0;
+}
+
+.navigation li {
+  margin: 0.1rem;
+}
+
+.navigation a {
+  /* font-weight: 600; */
+  /* text-transform: uppercase; */
+  display: inline-block;
+  text-decoration: none;
+  color: currentColor;
+}
+
+.navigation a:hover {
+  color: var(--color-brand);
+}

@@ -24,3 +24,7 @@ exts/wake-asc/mtt_ephemeral_poll.ts
 pnpm-lock.yaml
 .vite
 *.typegen.*
+
+# Gateway
+frontend/gateway/.next
+frontend/gateway/.vercel

@@ -11,6 +11,7 @@ import {
 } from './.generated/daemon/v1alpha/daemon'
 import {client} from './client'
 import type {GrpcClient} from './grpc-client'
+
 /**
  *
  * @param rpc

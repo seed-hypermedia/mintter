@@ -11,6 +11,12 @@ filegroup(
         "app/src",
         "app/tsconfig.json",
         "app/vite.config.ts",
+
+        "gateway/package.json",
+        "gateway/public",
+        "gateway/src",
+        "gateway/tsconfig.json",
+        "gateway/next.config.ts",
     ],
 )
 
@@ -23,4 +29,15 @@ pnpm_script(
     pnpm_deps = "//:pnpm",
     script_name = "build",
     workdir = "./app",
+)
+
+pnpm_script(
+    name = "gateway",
+    srcs = [
+        ":srcs",
+    ],
+    outs = ["dist"],
+    pnpm_deps = "//:pnpm",
+    script_name = "build",
+    workdir = "./gateway",
 )

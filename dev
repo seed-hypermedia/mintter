@@ -85,6 +85,10 @@ def main():
     def ping_p2p(args):
         return run("plz run //backend:pingp2p", args=args)
 
+    @cmd(cmds, "run-gw-backend", "Build and run backend for mintter web gateway.")
+    def run_gateway(args):
+        return run("plz run //backend:minttergw", args=args)
+
     @cmd(cmds, "run-backend", "Build and run mintterd binary for the current platform.")
     def run_backend(args):
         return run("plz run //backend:mintterd", args=args)
@@ -93,6 +97,11 @@ def main():
     def run_frontend(args):
         run("plz build //:pnpm")
         return run("cd frontend/app && exec pnpm dev", args=args)
+
+    @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
+    def run_frontend(args):
+        run("plz build //:pnpm")
+        return run("cd frontend/gateway && exec pnpm dev", args=args)
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):

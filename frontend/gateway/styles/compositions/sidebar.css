@@ -1,0 +1,22 @@
+.sidebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-size-100);
+}
+
+.sidebar > :last-child {
+  flex-basis: 0;
+  flex-grow: 999;
+  min-inline-size: 50%;
+}
+
+.sidebar > :first-child {
+  flex-basis: 320px;
+  flex-grow: 1;
+}
+
+@media (min-width: 768px) {
+  .sidebar {
+    flex-direction: row-reverse;
+  }
+}

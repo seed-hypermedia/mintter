@@ -1,0 +1,112 @@
+.burger-menu__trigger {
+  display: none;
+}
+
+.burger-menu__bar,
+.burger-menu__bar::before,
+.burger-menu__bar::after {
+  display: block;
+  width: 24px;
+  height: 3px;
+  /* background: var(--color-light); */
+  background: black;
+  /* border: 1px solid var(--color-light); */
+  border: 1px solid back;
+  position: absolute;
+  border-radius: 3px;
+  left: 50%;
+  margin-left: -12px;
+  transition: transform 350ms ease-in-out;
+}
+
+.burger-menu__bar {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.burger-menu__bar::before,
+.burger-menu__bar::after {
+  content: '';
+}
+
+.burger-menu__bar::before {
+  top: -8px;
+}
+
+.burger-menu__bar::after {
+  bottom: -8px;
+}
+
+/* Exceptions */
+
+.burger-menu[data-enable='true'] .burger-menu__trigger {
+  display: block;
+  width: 2rem;
+  height: 2rem; /* Nice big tap target */
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.burger-menu[data-enable='true'] .burger-menu__panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 5rem 1.5rem 2rem 1.5rem;
+  width: 100%;
+  height: 100%;
+  visibility: hidden;
+  opacity: 0;
+  /* background: var(--color-primary-shade); */
+  background: white;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.burger-menu[data-enable='true'] .navigation ul {
+  display: block;
+}
+
+.burger-menu[data-enable='true'] .navigation ul > * + * {
+  margin-top: 2rem;
+}
+
+.burger-menu[data-enable='true'] .navigation li {
+  font-size: 1.5rem;
+}
+
+.burger-menu[data-enable='true'][data-status='open'] .burger-menu__panel {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 400ms ease;
+}
+
+.burger-menu[data-enable='true'][data-status='close'] .burger-menu__panel > * {
+  opacity: 0;
+  transform: translateY(5rem);
+}
+
+.burger-menu[data-enable='true'][data-status='open'] .burger-menu__panel > * {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 250ms cubic-bezier(0.17, 0.67, 0, 0.87) 350ms,
+    opacity 250ms ease 400ms;
+}
+
+.burger-menu[data-enable='true'][data-status='open'] .burger-menu__bar::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.burger-menu[data-enable='true'][data-status='open'] .burger-menu__bar::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+.burger-menu[data-enable='true'][data-status='open'] .burger-menu__bar {
+  background: transparent;
+  border-color: transparent;
+  transform: rotate(180deg);
+}

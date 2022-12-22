@@ -6,11 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"mintter/backend/config"
@@ -77,16 +79,31 @@ type App struct {
 // futures might not be resolved yet.
 //
 // To shut down the app gracefully cancel the provided context and call Wait().
-func Load(ctx context.Context, cfg config.Config) (a *App, err error) {
-	r, err := initRepo(cfg, nil)
+func Load(ctx context.Context, cfg config.Config, grpcOpt ...grpc.ServerOption) (a *App, err error) {
+	var deviceKey crypto.PrivKey
+	if cfg.Identity.DeviceKeyPath != "" {
+		if _, err := os.Stat(cfg.Identity.DeviceKeyPath); err == nil {
+			bytes, err := ioutil.ReadFile(cfg.Identity.DeviceKeyPath)
+			if err != nil {
+				return nil, err
+			}
+			deviceKey, err = crypto.UnmarshalPrivateKey(bytes)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+	r, err := initRepo(cfg, deviceKey)
 	if err != nil {
 		return nil, err
 	}
 
-	return loadApp(ctx, cfg, r)
+	return loadApp(ctx, cfg, r, grpcOpt...)
 }
 
-func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, err error) {
+func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt ...grpc.ServerOption) (a *App, err error) {
 	a = &App{
 		log:  logging.New("mintter/daemon", "debug"),
 		Repo: r,
@@ -132,7 +149,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk) (a *App, 
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, grpcOpt...)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +210,6 @@ func (a *App) Wait() error {
 
 func initRepo(cfg config.Config, device crypto.PrivKey) (r *ondisk.OnDisk, err error) {
 	log := logging.New("mintter/repo", "debug")
-
 	if device == nil {
 		r, err = ondisk.NewOnDisk(cfg.RepoPath, log)
 	} else {
@@ -347,7 +363,7 @@ func initSyncing(
 			return err
 		}
 
-		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client)
+		svc := syncing.NewService(logging.New("mintter/syncing", "debug"), id, vcs, node.Bitswap(), node.Client, cfg.NoInbound)
 		svc.SetWarmupDuration(cfg.WarmupDuration)
 		svc.SetPeerSyncTimeout(cfg.TimeoutPerPeer)
 		svc.SetSyncInterval(cfg.Interval)
@@ -379,13 +395,14 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
+	opt ...grpc.ServerOption,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		return
 	}
 
-	srv = grpc.NewServer()
+	srv = grpc.NewServer(opt...)
 
 	rpc = api.New(id, repo, pool, v, node, sync, wallet)
 	rpc.Register(srv)
@@ -495,4 +512,27 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 			fmt.Fprintf(w, `<p><a href="%s">%s</a></p>`, r, r)
 		}
 	})
+}
+
+// WithMiddleware generates an grpc option with the given middleware.
+func WithMiddleware(i grpc.UnaryServerInterceptor) grpc.ServerOption {
+	return grpc.UnaryInterceptor(i)
+}
+
+// GwEssentials is a middleware to restrict incoming grpc calls to bare minimum for the gateway to work.
+func GwEssentials(ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+	methodSplitted := strings.Split(info.FullMethod, "/")
+	if len(methodSplitted) < 2 || (strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getpublication" &&
+		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "listcitations" &&
+		strings.ToLower(methodSplitted[len(methodSplitted)-1]) != "getaccount") {
+		return nil, fmt.Errorf("method: %s not allowed", info.FullMethod)
+	}
+
+	// Calls the handler
+	h, err := handler(ctx, req)
+
+	return h, err
 }

@@ -50,7 +50,6 @@ export type PublicationMachineEvent =
   | {type: 'FILE.DELETE.CANCEL'}
   | {type: 'FILE.DELETE.CONFIRM'}
   | {type: 'PUBLICATION.EDIT'}
-  | {type: 'PUBLICATION.REPLY'}
 
 type PublicationMachineServices = {
   createDraft: {
@@ -154,7 +153,6 @@ export function createPublicationMachine({
                 idle: {
                   on: {
                     'PUBLICATION.EDIT': 'editing',
-                    'PUBLICATION.REPLY': 'replying',
                   },
                 },
                 editing: {
@@ -170,20 +168,6 @@ export function createPublicationMachine({
                         target: 'idle',
                       },
                     ],
-                  },
-                },
-                replying: {
-                  invoke: {
-                    src: 'createDraft',
-                    id: 'createDraft',
-                    onDone: {
-                      actions: ['refetchDraftList', 'openWindow'],
-                      target: 'idle',
-                    },
-                    onError: {
-                      actions: ['assignError'],
-                      target: 'idle',
-                    },
                   },
                 },
               },
@@ -227,12 +211,7 @@ export function createPublicationMachine({
     {
       services: {
         createDraft: (context, event) => {
-          if (event.type == 'PUBLICATION.EDIT') {
-            return createDraft(context.documentId)
-          }
-
-          // reply
-          return createReply(context)
+          return createDraft(context.documentId)
         },
         fetchAuthor: (context) => {
           let author = context.publication?.document?.author || ''
@@ -352,62 +331,4 @@ export function createPublicationMachine({
       },
     },
   )
-}
-
-async function createReply(
-  context: PublicationMachineContext,
-): Promise<Document> {
-  /**
-   * - create draft
-   * - create block with link
-   * - update draft
-   * - return draft
-   */
-  let currentUrl = `${MINTTER_LINK_PREFIX}${context.documentId}/${context.version}?type=reply`
-  let doc = await createDraft()
-  let block = statement([
-    paragraph([
-      text('RE: '),
-      link(
-        {
-          url: currentUrl,
-        },
-        [text(context.title || currentUrl)],
-      ),
-      text(': '),
-    ]),
-  ])
-  try {
-    await updateDraft({
-      documentId: doc.id,
-      changes: [
-        {
-          op: {
-            $case: 'setTitle',
-            setTitle: `RE: ${context.title || currentUrl}`,
-          },
-        },
-        {
-          op: {
-            $case: 'moveBlock',
-            moveBlock: {
-              parent: '',
-              leftSibling: '',
-              blockId: block.id,
-            },
-          },
-        },
-        {
-          op: {
-            $case: 'replaceBlock',
-            replaceBlock: blockToApi(block),
-          },
-        },
-      ],
-    })
-    // TODO: change to use the query client
-    return getDraft(doc.id)
-  } catch (err) {
-    throw Error(`[REPLYTO ERROR]: ${JSON.stringify(err)}`)
-  }
 }
