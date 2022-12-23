@@ -39,7 +39,7 @@ export default function PublicationPage() {
       <Head>
         <meta
           property="og:image"
-          content={`${process.env.VERCEL_URL || ''}/api/og?title=${
+          content={`https://mintter.com/api/og?title=${
             state.context.publication?.document.title || 'Untitled Document'
           }`}
         />

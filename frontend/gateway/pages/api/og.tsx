@@ -19,7 +19,7 @@ export default function handler(req: NextRequest) {
       (
         <div
           style={{
-            backgroundColor: 'black',
+            backgroundColor: 'white',
             backgroundSize: '150px 150px',
             height: '100%',
             width: '100%',
