@@ -2,6 +2,7 @@
   & > ul,
   & > ol {
     padding-inline-start: 0;
+    border-inline-start: none;
   }
 
   & [data-type='group'] {
@@ -26,6 +27,11 @@
   & img {
     width: 100%;
   }
+}
+
+ul, ol {
+  padding-inline-start: var(--space-base);
+  /* border-inline-start: 1px solid var(--color-light-surface-100); */
 }
 
 q {

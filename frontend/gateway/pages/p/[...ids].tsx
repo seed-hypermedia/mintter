@@ -60,29 +60,3 @@ export default function PublicationPage() {
     </>
   )
 }
-
-// export async function getStaticProps({params}) {
-//   console.log('🚀 ~ file: [...ids].tsx:75 ~ getStaticProps ~ params', params)
-//   // const { tweet } = params
-
-//   // if (tweet.length > 40 || !TWEET_ID.test(tweet)) {
-//   //   return { notFound: true }
-//   // }
-
-//   // try {
-//   //   const ast = await fetchTweetAst(tweet)
-//   //   return ast ? { props: { ast } } : { notFound: true }
-//   // } catch (error) {
-//   //   // The Twitter API most likely died
-//   //   console.error(error)
-//   //   return { notFound: true }
-//   // }
-
-//   return {
-//     props: {params},
-//   }
-// }
-
-// export async function getStaticPaths() {
-//   return {paths: [], fallback: true}
-// }
