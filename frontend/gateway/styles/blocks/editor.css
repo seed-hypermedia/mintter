@@ -29,7 +29,8 @@
   }
 }
 
-ul, ol {
+ul,
+ol {
   padding-inline-start: var(--space-base);
   /* border-inline-start: 1px solid var(--color-light-surface-100); */
 }

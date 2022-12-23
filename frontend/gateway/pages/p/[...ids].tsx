@@ -9,6 +9,7 @@ import {useRenderElement} from '../../slate-react-presentation/render-element'
 import {useRenderLeaf} from '../../slate-react-presentation/render-leaf'
 import {PublicationMetadata} from '../../author'
 import {useRouter} from 'next/router'
+import Head from 'next/head'
 
 export default function PublicationPage() {
   const router = useRouter()
@@ -35,6 +36,14 @@ export default function PublicationPage() {
 
   return (
     <>
+      <Head>
+        <meta
+          property="og:image"
+          content={`${process.env.VERCEL_URL || ''}/api/og?title=${
+            state.context.publication?.document.title || 'Untitled Document'
+          }`}
+        />
+      </Head>
       <SiteHead />
       <main
         id="main-content"
