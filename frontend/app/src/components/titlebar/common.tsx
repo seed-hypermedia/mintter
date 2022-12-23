@@ -1,12 +1,20 @@
-import {MINTTER_GATEWAY_URL, MINTTER_LINK_PREFIX} from '@app/constants'
+import {
+  isProduction,
+  MINTTER_GATEWAY_URL,
+  MINTTER_LINK_PREFIX,
+} from '@app/constants'
 import {DraftActor} from '@app/draft-machine'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {useMain} from '@app/main-context'
-import {PublicationActor} from '@app/publication-machine'
+import {
+  PublicationActor,
+  PublicationMachineContext,
+} from '@app/publication-machine'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
+import {open} from '@tauri-apps/api/shell'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
@@ -19,7 +27,9 @@ export function ActionButtons() {
   function onCopy() {
     if (current) {
       let context = current.getSnapshot().context
-      let reference = `${MINTTER_LINK_PREFIX}${context.documentId}/${context.version}`
+      let reference = `${MINTTER_LINK_PREFIX}${context.documentId}/${
+        (context as PublicationMachineContext).version
+      }`
       copyTextToClipboard(reference)
       toast.success('Document reference copied!')
     }
@@ -27,10 +37,11 @@ export function ActionButtons() {
 
   function onCopyWeblink() {
     if (current) {
-      let context = current.getSnapshot().context
-      let reference = `${MINTTER_GATEWAY_URL}${context.documentId}/${context.version}`
-      copyTextToClipboard(reference)
-      toast.success('Public web link copied!')
+      let context = current.getSnapshot().context as PublicationMachineContext
+      let reference = `${
+        isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
+      }/p/${context.documentId}/${context.version}`
+      open(reference)
     }
   }
 
@@ -60,6 +71,11 @@ export function ActionButtons() {
         </Route>
       </Switch>
 
+      <Route path="/p/:id/:version/:block?">
+        {/* {current && <WriteDropdown fileRef={current as PublicationActor} />} */}
+        {current && <WriteActions fileRef={current as PublicationActor} />}
+      </Route>
+
       <div className="button-group">
         <button
           className="titlebar-button"
@@ -72,10 +88,6 @@ export function ActionButtons() {
           <span style={{marginRight: '0.3em'}}>Write</span>
         </button>
       </div>
-      <Route path="/p/:id/:version/:block?">
-        {/* {current && <WriteDropdown fileRef={current as PublicationActor} />} */}
-        {current && <WriteActions fileRef={current as PublicationActor} />}
-      </Route>
     </div>
   )
 }

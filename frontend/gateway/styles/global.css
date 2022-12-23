@@ -42,7 +42,9 @@ h3 {
 
 a {
   color: currentcolor;
-  text-decoration-color: var(--color-primary);
+  text-decoration-color: transparent;
+  display: inline-block;
+  color: var(--color-brand);
 }
 
 a:hover {
