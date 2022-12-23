@@ -124,7 +124,7 @@ importers:
       react-error-boundary: 3.1.4
       react-highlight-words: 0.18.0
       react-hot-toast: 2.4.0
-      react-qr-code: 2.0.8
+      react-qr-code: 2.0.11
       rehype: 12.0.1
       rehype-minify-whitespace: 5.0.1
       rehype-parse: 8.0.4
@@ -216,7 +216,7 @@ importers:
       react-error-boundary: 3.1.4_react@18.2.0
       react-highlight-words: 0.18.0_react@18.2.0
       react-hot-toast: 2.4.0_owo25xnefcwdq3zjgtohz6dbju
-      react-qr-code: 2.0.8_react@18.2.0
+      react-qr-code: 2.0.11_react@18.2.0
       rehype: 12.0.1
       rehype-minify-whitespace: 5.0.1
       rehype-parse: 8.0.4
@@ -10908,8 +10908,8 @@ packages:
     resolution: {integrity: sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==}
     dev: false
 
-  /react-qr-code/2.0.8_react@18.2.0:
-    resolution: {integrity: sha512-zYO9EAPQU8IIeD6c6uAle7NlKOiVKs8ji9hpbWPTGxO+FLqBN2on+XCXQvnhm91nrRd306RvNXUkUNcXXSfhWA==}
+  /react-qr-code/2.0.11_react@18.2.0:
+    resolution: {integrity: sha512-P7mvVM5vk9NjGdHMt4Z0KWeeJYwRAtonHTghZT2r+AASinLUUKQ9wfsGH2lPKsT++gps7hXmaiMGRvwTDEL9OA==}
     peerDependencies:
       react: ^16.x || ^17.x || ^18.x
       react-native-svg: '*'
