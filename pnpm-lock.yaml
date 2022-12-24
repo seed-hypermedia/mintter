@@ -100,7 +100,7 @@ importers:
       google-protobuf: 3.21.2
       graphql: 16.6.0
       graphql-request: 5.0.0
-      happy-dom: 7.8.1
+      happy-dom: 8.1.1
       hast: 1.0.0
       hast-util-has-property: 2.0.0
       hast-util-is-element: 2.1.2
@@ -267,7 +267,7 @@ importers:
       copy-text-to-clipboard: 3.0.1
       covector: 0.7.3
       cypress: 10.11.0
-      happy-dom: 7.8.1
+      happy-dom: 8.1.1
       is-hidden: 2.0.1
       prettier: 2.8.1
       sass: 1.56.1
@@ -278,7 +278,7 @@ importers:
       vite: 3.2.5_lsvry4w5nj6evwofoi5nudk2oa
       vite-react-jsx: 1.1.2_vite@3.2.5
       vite-tsconfig-paths: 3.6.0_vite@3.2.5
-      vitest: 0.25.5_izzknvj72gtvpvbltmrsm64tpa
+      vitest: 0.25.5_3sv2zd7oo2j373nrdgaun7zmc4
       ws: 8.11.0
 
   frontend/gateway:
@@ -7570,6 +7570,19 @@ packages:
       - encoding
     dev: true
 
+  /happy-dom/8.1.1:
+    resolution: {integrity: sha512-uI8NneN2B0D+vwIhjQVKtIUYOSh/zymfj61bU/fxkoAw+Aktn0ewG6dYKyFPOvyBoFLPg3S8fsn2OqSoYCqJeQ==}
+    dependencies:
+      css.escape: 1.5.1
+      he: 1.2.0
+      node-fetch: 2.6.7
+      webidl-conversions: 7.0.0
+      whatwg-encoding: 2.0.0
+      whatwg-mimetype: 3.0.0
+    transitivePeerDependencies:
+      - encoding
+    dev: true
+
   /has-bigints/1.0.2:
     resolution: {integrity: sha512-tSvCKtBr9lkF0Ex0aQiP9N+OpV4zi2r/Nee5VkRDbaqv35RLYMzbwQfFSZZH0kR+Rd6302UJZ2p/bJCEoR3VoQ==}
 
@@ -12881,7 +12894,7 @@ packages:
       - terser
     dev: true
 
-  /vitest/0.25.5_izzknvj72gtvpvbltmrsm64tpa:
+  /vitest/0.25.5_3sv2zd7oo2j373nrdgaun7zmc4:
     resolution: {integrity: sha512-lFKSTZV+AjuL44/yNC0aDPKTiasYSqOQ97Gg2G4P2LnjyzQ21ZUs4rQOscHK3lrSnVuir3+1QavHzbDgH4tWQA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
@@ -12910,7 +12923,7 @@ packages:
       acorn-walk: 8.2.0
       chai: 4.3.7
       debug: 4.3.4
-      happy-dom: 7.8.1
+      happy-dom: 8.1.1
       local-pkg: 0.4.2
       source-map: 0.6.1
       strip-literal: 1.0.0
