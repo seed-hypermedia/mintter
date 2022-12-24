@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 # These dependencies are necessary for the witx-generation macros to work:
-anyhow = "1.0.66"
+anyhow = "1.0.68"
 futures-util = "0.3.25"
 log = "0.4.17"
 tauri = {git = "https://github.com/tauri-apps/tauri", features = ["http-all"]}
