@@ -37,7 +37,7 @@ importers:
   frontend/app:
     specifiers:
       '@babel/core': 7.20.7
-      '@cypress/vite-dev-server': 3.4.0
+      '@cypress/vite-dev-server': 5.0.2
       '@floating-ui/react-dom': 1.0.1
       '@floating-ui/react-dom-interactions': 0.13.3
       '@graphql-codegen/cli': 2.16.1
@@ -241,7 +241,7 @@ importers:
       xstate: 4.35.1
     devDependencies:
       '@babel/core': 7.20.7
-      '@cypress/vite-dev-server': 3.4.0
+      '@cypress/vite-dev-server': 5.0.2
       '@graphql-codegen/cli': 2.16.1_4yljpvs352kvpu3ns7pukat7mi
       '@graphql-codegen/typescript': 2.8.5_graphql@16.6.0
       '@happy-dom/global-registrator': 7.8.1
@@ -1325,14 +1325,12 @@ packages:
       uuid: 8.3.2
     dev: true
 
-  /@cypress/vite-dev-server/3.4.0:
-    resolution: {integrity: sha512-mrqJlzQUSUCNHVshApTOCUT83W9M+B0ivr1JY1UkPlWoeQD6ZFFgvdg6Ov8G/gpWhV0oYDe2QNOwLvAd9szgOA==}
+  /@cypress/vite-dev-server/5.0.2:
+    resolution: {integrity: sha512-bhG5P0p423SiucYnFyGjQrPkIfNDKF+R0pwcB78y71soHXzh0cJ6dSAn67c8moU5YtQnAGgO3FKQmWcx8LFubw==}
     dependencies:
-      debug: 4.3.3
+      debug: 4.3.4
       find-up: 6.3.0
-      local-pkg: 0.4.1
       node-html-parser: 5.3.3
-      pathe: 0.2.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5593,18 +5591,6 @@ packages:
       supports-color: 8.1.1
     dev: true
 
-  /debug/4.3.3:
-    resolution: {integrity: sha512-/zxw5+vh1Tfv+4Qn7a5nsbcJKPaSvCDhojn6FEl9vupwK2VCSDtEiEtqr8DFtzYFOdz63LBkxec7DYuc2jon6Q==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-    dependencies:
-      ms: 2.1.2
-    dev: true
-
   /debug/4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
     engines: {node: '>=6.0'}
@@ -8561,11 +8547,6 @@ packages:
     resolution: {integrity: sha512-3R/1M+yS3j5ou80Me59j7F9IMs4PXs3VqRrm0TU3AbKPxlmpoY1TNscJV/oGJXo8qCatFGTfDbY6W6ipGOYXfg==}
     engines: {node: '>=6.11.5'}
 
-  /local-pkg/0.4.1:
-    resolution: {integrity: sha512-lL87ytIGP2FU5PWwNDo0w3WhIo2gopIAxPg9RxDYF7m4rr5ahuZxP22xnJHIvaLTe4Z9P6uKKY2UHiwyB4pcrw==}
-    engines: {node: '>=14'}
-    dev: true
-
   /local-pkg/0.4.2:
     resolution: {integrity: sha512-mlERgSPrbxU3BP4qBqAvvwlgW4MTg78iwJdGGnv7kibKjWcJksrG3t6LB5lXI93wXRDvG4NpUgJFmTG4T6rdrg==}
     engines: {node: '>=14'}
@@ -9893,10 +9874,6 @@ packages:
   /path-type/4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
-
-  /pathe/0.2.0:
-    resolution: {integrity: sha512-sTitTPYnn23esFR3RlqYBWn4c45WGeLcsKzQiUpXJAyfcWkolvlYpV8FLo7JishK946oQwMFUCHXQ9AjGPKExw==}
-    dev: true
 
   /pathval/1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
