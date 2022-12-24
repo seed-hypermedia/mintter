@@ -5,7 +5,7 @@ go 1.18
 require (
 	crawshaw.io/sqlite v0.3.2
 	github.com/99designs/gqlgen v0.17.22
-	github.com/btcsuite/btcd v0.23.3
+	github.com/btcsuite/btcd v0.23.4
 	github.com/burdiyan/go/mainutil v0.0.0-20200124222818-6f87e0e684b6
 	github.com/getsentry/sentry-go v0.16.0
 	github.com/gorilla/mux v1.8.0
