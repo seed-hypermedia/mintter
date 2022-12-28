@@ -39,12 +39,23 @@ var migrations = []string{
 		-- Actual content of the block. Compressed with zstd.
 		data BLOB,
 		-- Byte size of the original uncompressed data.
-		size INTEGER DEFAULT (0) NOT NULL,
+		-- Size 0 indicates that data is stored inline in the CID.
+		-- Size -1 indicates that we somehow know about this hash, but don't have the data yet.
+		size INTEGER DEFAULT (-1) NOT NULL,
 		-- Subjective (locally perceived) time when this block was inserted into the table for the first time.
-		insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-		-- Pending blocks are those for which we know the hash, but we don't have the content yet.
-		pending INTEGER DEFAULT (0) NOT NULL CHECK (pending IN (0, 1))
+		insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 	);`,
+
+	// Stores IPLD links between ipfs_blocks for those nodes which are IPLD.
+	`CREATE TABLE ipld_links (
+		child INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		parent INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		path TEXT NOT NULL,
+		PRIMARY KEY (child, parent)
+	) WITHOUT ROWID;`,
+
+	// Index to query IPLD links from parent to child.
+	`CREATE INDEX idx_ipld_links_reverse ON ipld_links (parent, child);`,
 
 	// Stores data about Mintter Accounts.
 	`CREATE TABLE accounts (
@@ -154,7 +165,7 @@ var migrations = []string{
 		time INTEGER NOT NULL CHECK (time > 0),
 		-- Abbreviated device ID that authored the change.
 		origin INTEGER NOT NULL CHECK (origin != 0),
-		PRIMARY KEY (permanode, change, time)
+		PRIMARY KEY (permanode, time, change, origin)
 	) WITHOUT ROWID;`,
 
 	`CREATE INDEX datoms_eavt ON datoms (permanode, entity, attr);

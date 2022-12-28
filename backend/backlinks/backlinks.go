@@ -25,7 +25,7 @@ import (
 //
 // TODO(burdiyan): remove this. Search for other places with build11.
 func IndexDatom(conn *vcsdb.Conn, obj, change vcsdb.LocalID, d vcsdb.Datom) error {
-	if d.Attr != mttdoc.AttrBlockState {
+	if d.Attr != mttdoc.AttrBlockSnapshot {
 		return nil
 	}
 
@@ -140,7 +140,7 @@ func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int64, error) {
 		return res.IPFSBlocksID, nil
 	}
 
-	upsert, err := vcssql.IPFSBlocksUpsert(conn, hash, int64(codec), nil, 0, 1)
+	upsert, err := vcssql.IPFSBlocksUpsert(conn, hash, int64(codec), nil, -1)
 	if err != nil {
 		return 0, err
 	}

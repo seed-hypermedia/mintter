@@ -2,6 +2,7 @@ package vcs
 
 import (
 	"mintter/backend/vcs/crdt"
+	"reflect"
 
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
@@ -42,7 +43,7 @@ func GetValueType(v any) ValueType {
 	case CBORMarshaler:
 		return ValueTypeCBOR
 	default:
-		panic("BUG: unknown value type")
+		panic("BUG: unknown value type " + reflect.TypeOf(v).String())
 	}
 }
 

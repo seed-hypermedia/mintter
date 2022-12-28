@@ -76,7 +76,7 @@ export interface ListDraftsResponse {
    * Content is omitted.
    */
   documents: Document[];
-  /** Token for the next page if there're any. */
+  /** Token for the next page if there's any. */
   nextPageToken: string;
 }
 
@@ -208,6 +208,11 @@ export interface Block {
   attributes: { [key: string]: string };
   /** Annotation "layers" of the block. */
   annotations: Annotation[];
+  /**
+   * Output only. Current revision of the block. It's the ID of the last Change that modified this block.
+   * Additional information about the Change can be obtained using the Changes service.
+   */
+  revision: string;
 }
 
 export interface Block_AttributesEntry {
@@ -1405,7 +1410,7 @@ export const BlockNode = {
 };
 
 function createBaseBlock(): Block {
-  return { id: "", type: "", text: "", attributes: {}, annotations: [] };
+  return { id: "", type: "", text: "", attributes: {}, annotations: [], revision: "" };
 }
 
 export const Block = {
@@ -1424,6 +1429,9 @@ export const Block = {
     });
     for (const v of message.annotations) {
       Annotation.encode(v!, writer.uint32(42).fork()).ldelim();
+    }
+    if (message.revision !== "") {
+      writer.uint32(50).string(message.revision);
     }
     return writer;
   },
@@ -1453,6 +1461,9 @@ export const Block = {
         case 5:
           message.annotations.push(Annotation.decode(reader, reader.uint32()));
           break;
+        case 6:
+          message.revision = reader.string();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1473,6 +1484,7 @@ export const Block = {
         }, {})
         : {},
       annotations: Array.isArray(object?.annotations) ? object.annotations.map((e: any) => Annotation.fromJSON(e)) : [],
+      revision: isSet(object.revision) ? String(object.revision) : "",
     };
   },
 
@@ -1492,6 +1504,7 @@ export const Block = {
     } else {
       obj.annotations = [];
     }
+    message.revision !== undefined && (obj.revision = message.revision);
     return obj;
   },
 
@@ -1510,6 +1523,7 @@ export const Block = {
       {},
     );
     message.annotations = object.annotations?.map((e) => Annotation.fromPartial(e)) || [];
+    message.revision = object.revision ?? "";
     return message;
   },
 };
