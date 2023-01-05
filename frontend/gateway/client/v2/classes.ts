@@ -1,4 +1,4 @@
-import {Annotation} from '@app/client'
+import {Annotation} from '../'
 
 // AnnotationSet wraps multiple annotations in a single structure.
 export class AnnotationSet {

@@ -111,7 +111,7 @@ let staticParagraphMachine =
           }),
         getLevel: (context) =>
           new Promise((res, rej) => {
-            let level = context.parentRef?.dataset.level
+            let level = context.parentRef?.dataset?.level || 2
 
             if (level) {
               res(parseInt(level))
@@ -122,6 +122,15 @@ let staticParagraphMachine =
       },
     },
   )
+
+var headingLevel = {
+  1: 'h1',
+  2: 'h2',
+  3: 'h3',
+  4: 'h4',
+  5: 'h5',
+  6: 'h6',
+}
 
 type StaticParagraphMachineContext = {
   currentRef?: HTMLElement
@@ -142,13 +151,4 @@ type StaticParagraphMachineServices = {
   getLevel: {
     data: number
   }
-}
-
-var headingLevel = {
-  1: 'h1',
-  2: 'h2',
-  3: 'h3',
-  4: 'h4',
-  5: 'h5',
-  6: 'h6',
 }

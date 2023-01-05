@@ -10,18 +10,18 @@ import {PublicationPlaceholder} from './publication-placeholder'
 
 type PublicationContentProps = {
   service: InterpreterFrom<typeof publicationMachine>
-	onlyContent?: boolean
+  onlyContent?: boolean
 }
 
 export function PublicationContent({
   service,
-	onlyContent = false,
+  onlyContent = false,
 }: PublicationContentProps) {
   let renderElement = useRenderElement()
   let renderLeaf = useRenderLeaf()
 
-	let publication = useSelector(service, state => state.context.publication)
-	let value = useSelector(service, state => state.context.editorValue)
+  let publication = useSelector(service, (state) => state.context.publication)
+  let value = useSelector(service, (state) => state.context.editorValue)
 
   return publication && value ? (
     <>
@@ -35,7 +35,9 @@ export function PublicationContent({
       </Head>
       <article className="sidebar">
         <div>
-          {!onlyContent ? <PublicationMetadata publication={publication} /> : null}
+          {!onlyContent ? (
+            <PublicationMetadata publication={publication} />
+          ) : null}
         </div>
         <div>
           <SlateReactPresentation
@@ -47,6 +49,6 @@ export function PublicationContent({
       </article>
     </>
   ) : (
-		<PublicationPlaceholder />
-	)
+    <PublicationPlaceholder />
+  )
 }

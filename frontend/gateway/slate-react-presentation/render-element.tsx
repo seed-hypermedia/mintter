@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useRef} from 'react'
 import {RenderElementProps} from 'slate-react'
-import {EditorType, useSlatePresentation} from '.'
 import {
   Code,
   Embed,
@@ -14,6 +13,8 @@ import {Paragraph} from './paragraph'
 import {StaticParagraph} from './static-paragraph'
 import {Transclusion} from './transclusion'
 import {Video} from './video'
+
+let firstHeading = true
 
 export function useRenderElement() {
   return useCallback(({children, element, attributes}: RenderElementProps) => {
@@ -40,7 +41,11 @@ export function useRenderElement() {
         )
       case 'heading':
         return (
-          <li {...elementProps} id={element.id} data-level={element.data.level}>
+          <li
+            {...elementProps}
+            id={element.id}
+            data-level={element.data?.level || '2'}
+          >
             {children}
           </li>
         )
@@ -67,7 +72,6 @@ export function useRenderElement() {
       case 'embed':
         return <Transclusion element={element as Embed} />
       case 'link':
-        console.log('ELEMENT LINK', element)
         return <ElementLink element={element as Link} {...elementProps} />
       case 'image':
         return <img src={(element as Image).url} alt={(element as Image).alt} />

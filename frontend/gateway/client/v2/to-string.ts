@@ -7,7 +7,7 @@ export function toString(node: MttastContent, separator = ''): string {
     throw new Error(`Expected node, not ' ${node} '`)
   }
 
-  if (isText(node)) return node.text
+  if (isText(node)) return node.value
 
   const children = (Array.isArray(node) ? node : node.children) || []
 
