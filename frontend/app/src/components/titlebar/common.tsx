@@ -126,14 +126,13 @@ function PublishButton({fileRef}: {fileRef: DraftActor}) {
   return (
     <button
       onClick={() => {
-        console.log('PUBLISH!', fileRef)
         fileRef.send('DRAFT.PUBLISH')
       }}
       className="titlebar-button success outlined"
       data-testid="button-publish"
       disabled={isSaving}
     >
-      Done
+      Publish
     </button>
   )
 }
