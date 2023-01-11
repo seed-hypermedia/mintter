@@ -132,7 +132,7 @@ function PublishButton({fileRef}: {fileRef: DraftActor}) {
       data-testid="button-publish"
       disabled={isSaving}
     >
-      Publish
+      Share
     </button>
   )
 }
