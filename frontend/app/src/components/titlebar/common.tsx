@@ -40,7 +40,7 @@ export function ActionButtons() {
       let context = current.getSnapshot().context as PublicationMachineContext
       let reference = `${
         isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
-      }/p/${context.documentId}/${context.version}`
+      }/p/${context.documentId}`
       open(reference)
     }
   }
