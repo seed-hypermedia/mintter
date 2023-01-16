@@ -5,8 +5,8 @@ import {
   getDraft,
   Publication,
   updateDraftV2 as apiUpdateDraft,
-} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
+  blockNodeToSlate,
+} from '@mintter/client'
 import {queryKeys} from '@app/hooks'
 import {
   createId,
@@ -15,7 +15,7 @@ import {
   paragraph,
   statement,
   text,
-} from '@app/mttast'
+} from '@mintter/mttast'
 import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'

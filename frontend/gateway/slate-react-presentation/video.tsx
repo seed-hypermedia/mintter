@@ -1,6 +1,6 @@
 import videoParser from 'js-video-url-parser'
 import {useMemo} from 'react'
-import {Video} from '../mttast'
+import {Video} from '@mintter/mttast'
 
 type VideoType = 'youtube' | 'vimeo' | 'none'
 

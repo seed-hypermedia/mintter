@@ -1,4 +1,4 @@
-import {Document} from '@app/client'
+import {Document} from '@mintter/client'
 import {createTestQueryClient} from '@app/test/utils'
 import DraftList, {DraftListItem} from '../draft-list-page'
 

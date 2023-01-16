@@ -4,9 +4,8 @@ import Link from 'next/link'
 import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
 import {SlateReactPresentation} from '.'
-import {getPublication, Publication} from '../client'
-import {blockNodeToSlate} from '../client/v2/block-to-slate'
-import {Embed, FlowContent} from '../mttast'
+import {getPublication, Publication, blockNodeToSlate} from '@mintter/client'
+import {Embed, FlowContent} from '@mintter/mttast'
 import {getIdsfromUrl} from '../utils/get-ids-from-url'
 import {useRenderElement} from './render-element'
 import {useRenderLeaf} from './render-leaf'
@@ -22,7 +21,7 @@ export function Transclusion({element}: {element: Embed}) {
   if (state.matches('idle') && state.context.block) {
     return (
       <Link
-        href={`/p/${state.context.publication?.document.id}/${state.context.publication?.version}/${state.context.blockId}`}
+        href={`/p/${state.context.publication?.document?.id}/${state.context.publication?.version}/${state.context.blockId}`}
       >
         <q>
           <SlateReactPresentation
@@ -59,6 +58,7 @@ export function createTransclusionMachine({
         publication: undefined,
         block: undefined,
         errorMessage: '',
+        webLink: '',
       },
       entry: ['setLink'],
       initial: 'fetchingPublication',
@@ -185,11 +185,9 @@ export function createTransclusionMachine({
         clearPublication: assign({
           publication: undefined,
         }),
-        // setLink: assign({
-        //   webLink: (context) => {
-        //     console.log('LINK', context.url)
-        //   },
-        // }),
+        setLink: assign({
+          webLink: (context) => context.url,
+        }),
       },
     },
   )

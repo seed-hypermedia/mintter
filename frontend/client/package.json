@@ -1,0 +1,58 @@
+{
+  "name": "@mintter/client",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsc -w",
+    "build": "tsc ",
+    "test": "exit 0;",
+    "lint:eslint": "eslint .",
+    "lint:prettier": "prettier --check \"**/*.{css,md,js,jsx,json,ts,tsx}\"",
+    "lint": "pnpm run lint:prettier && pnpm run lint:eslint"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/hast": "2.3.4",
+    "@types/unist": "2.0.6",
+    "typescript": "4.9.4",
+    "vitest": "0.25.5"
+  },
+  "dependencies": {
+    "@improbable-eng/grpc-web": "0.15.0",
+    "@mintter/mttast": "workspace:*",
+    "browser-headers": "0.4.1",
+    "deepmerge": "4.2.2",
+    "google-protobuf": "3.21.2",
+    "hast": "1.0.0",
+    "hast-util-has-property": "2.0.0",
+    "hast-util-is-element": "2.1.2",
+    "hast-util-to-text": "3.1.1",
+    "hastscript": "7.1.0",
+    "is-hidden": "2.0.1",
+    "is-plain-object": "5.0.0",
+    "long": "5.2.1",
+    "nanoid": "4.0.0",
+    "protobufjs": "7.1.2",
+    "rehype": "12.0.1",
+    "rehype-minify-whitespace": "5.0.1",
+    "rehype-parse": "8.0.4",
+    "rehype-sanitize": "5.0.1",
+    "shiki": "0.10.1",
+    "slate": "^0.87.0",
+    "trim-trailing-lines": "2.1.0",
+    "unified": "10.1.2",
+    "unist": "^8.0.11",
+    "unist-builder": "3.0.0",
+    "unist-util-remove-position": "4.0.1",
+    "unist-util-visit": "4.1.1"
+  }
+}

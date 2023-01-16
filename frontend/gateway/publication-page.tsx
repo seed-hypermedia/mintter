@@ -1,6 +1,6 @@
 import {useQuery} from '@tanstack/react-query'
 import {useInterpret, useMachine} from '@xstate/react'
-import {getPublication} from './client'
+import {getPublication} from '@mintter/client'
 import Footer from './footer'
 import {SiteHead} from './site-head'
 import {publicationMachine} from './machines/publication-machine'

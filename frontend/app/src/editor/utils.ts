@@ -17,8 +17,8 @@ import {
   text,
   ul,
   video,
-} from '@app/mttast'
-import {Mark} from '@app/mttast/types'
+} from '@mintter/mttast'
+import {Mark} from '@mintter/mttast/types'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {useRoute} from '@components/router'
 import videoParser from 'js-video-url-parser'
@@ -253,6 +253,7 @@ type GetBlockOptions = Omit<
   'match'
 >
 
+// TODO: there's a copy of this function inside the client package (frontend/client/src/v2/change-creators.ts)
 export function getEditorBlock(
   editor: Editor,
   options: GetBlockOptions,

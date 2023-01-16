@@ -1,4 +1,4 @@
-import {publishDraft, updateDraftV2} from '@app/client'
+import {publishDraft, updateDraftV2} from '@mintter/client'
 import {Editor} from 'slate'
 
 export type EditorPageProps = {

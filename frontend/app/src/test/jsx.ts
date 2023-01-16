@@ -17,7 +17,7 @@ import type {
   Text,
   UnorderedList,
   Video,
-} from '@app/mttast'
+} from '@mintter/mttast'
 import {
   blockquote,
   callout,
@@ -34,7 +34,7 @@ import {
   text,
   ul,
   video,
-} from '@app/mttast'
+} from '@mintter/mttast'
 import {createEditor} from 'slate'
 import {createHyperscript} from 'slate-hyperscript'
 import type {Parent} from 'unist'
