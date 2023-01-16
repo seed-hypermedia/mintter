@@ -5,7 +5,7 @@ import {
   ListDraftsResponse,
   ListPublicationsResponse,
   Publication,
-} from '@app/client'
+} from '@mintter/client'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
 import {queryKeys} from '@app/hooks'

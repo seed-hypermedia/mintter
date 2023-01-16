@@ -1,4 +1,4 @@
-import {deleteDraft, Document} from '@app/client'
+import {deleteDraft, Document} from '@mintter/client'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'

@@ -1,4 +1,4 @@
-import {store} from '@app/client/store'
+import {store} from '@app/app-store'
 import {error} from '@app/utils/logger'
 import {assign, createMachine} from 'xstate'
 

@@ -1,4 +1,4 @@
-import {store} from '@app/client/store'
+import {store} from '@app/app-store'
 import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
 import {useMachine} from '@xstate/react'

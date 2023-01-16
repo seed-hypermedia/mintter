@@ -1,4 +1,4 @@
-import {Account, ConnectionStatus, getPeerInfo, PeerInfo} from '@app/client'
+import {Account, ConnectionStatus, getPeerInfo, PeerInfo} from '@mintter/client'
 import {queryKeys} from '@app/hooks'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine, sendParent} from 'xstate'

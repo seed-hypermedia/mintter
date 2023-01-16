@@ -5,7 +5,7 @@ import {
   MttRoot,
   sanitizeSchema,
   toMttast,
-} from '@app/mttast'
+} from '@mintter/mttast'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {error} from '@app/utils/logger'
 import rehypeParse from 'rehype-parse'

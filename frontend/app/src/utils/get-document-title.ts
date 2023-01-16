@@ -1,5 +1,5 @@
 import {EditorDocument} from '@app/draft-machine'
-import {GroupingContent} from '@app/mttast'
+import {GroupingContent} from '@mintter/mttast'
 import {Node} from 'slate'
 
 export function getTitleFromContent(entry: {

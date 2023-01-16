@@ -22,7 +22,7 @@ import {
   statement,
   ul,
   video,
-} from '@app/mttast'
+} from '@mintter/mttast'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {error} from '@app/utils/logger'
 import {Box} from '@components/box'

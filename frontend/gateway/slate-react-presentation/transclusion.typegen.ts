@@ -16,7 +16,7 @@
 "getPublication": "done.invoke.getPublication";
         };
         missingImplementations: {
-          actions: "setLink";
+          actions: never;
           delays: never;
           guards: never;
           services: never;

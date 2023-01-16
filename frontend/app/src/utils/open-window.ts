@@ -1,4 +1,4 @@
-import {createDraft} from '@app/client'
+import {createDraft} from '@mintter/client'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 
 export function openWindow(path?: string) {

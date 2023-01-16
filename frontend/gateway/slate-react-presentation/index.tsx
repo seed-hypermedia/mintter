@@ -1,5 +1,5 @@
-import React, {useMemo, useState} from 'react'
-import {isParent, MttastContent} from '../mttast'
+import React from 'react'
+import {isParent, MttastContent} from '@mintter/mttast'
 import {
   RenderElementProps as SlateRenderElementProps,
   RenderLeafProps as SlateRenderLeafProps,

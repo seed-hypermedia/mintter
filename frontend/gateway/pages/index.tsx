@@ -1,9 +1,6 @@
-import {useEffect} from 'react'
-import {getPublication} from '../client'
 import {PublicationPage} from '../publication-page'
 
 export default function IndexPage({document}: any) {
-  
   return (
     <PublicationPage
       documentId="bafy2bzaceb5cnsnhyrwfx22xqixh4qmphj6k6a3gqxpfu6s7euk5bovurmrhk"

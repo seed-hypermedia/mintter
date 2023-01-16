@@ -7,7 +7,7 @@ import {
   isParagraph,
   isPhrasingContent,
   Paragraph as ParagraphType,
-} from '@app/mttast'
+} from '@mintter/mttast'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
 import {useRef} from 'react'

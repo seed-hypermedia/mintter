@@ -6,7 +6,7 @@ import {
   isStatement,
   ol,
   ul,
-} from '@app/mttast'
+} from '@mintter/mttast'
 
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {Ancestor, Editor, Range, Transforms} from 'slate'

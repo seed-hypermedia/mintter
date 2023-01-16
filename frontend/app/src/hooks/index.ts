@@ -9,7 +9,8 @@ import {
   listDrafts,
   listPublications,
   Publication,
-} from '@app/client'
+} from '@mintter/shared'
+
 import {
   QueryClient,
   useMutation,

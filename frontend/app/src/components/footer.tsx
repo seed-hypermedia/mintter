@@ -1,4 +1,4 @@
-import {connect as apiConnect, ConnectionStatus} from '@app/client'
+import {connect as apiConnect, ConnectionStatus} from '@mintter/client'
 import {
   AccountWithRef,
   createContactListMachine,

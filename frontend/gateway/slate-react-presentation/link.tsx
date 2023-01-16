@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import {useMemo, useRef} from 'react'
+import {useMemo} from 'react'
 import {Leaf} from '.'
-import {Link as LinkType} from '../mttast'
+import {Link as LinkType} from '@mintter/mttast'
 import {getIdsfromUrl, MINTTER_LINK_PREFIX} from '../utils/get-ids-from-url'
 
 type ElementLinkProps = {

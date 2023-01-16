@@ -1,4 +1,4 @@
-import {Account, listAccounts, ListAccountsResponse} from '@app/client'
+import {Account, listAccounts, ListAccountsResponse} from '@mintter/client'
 import {queryKeys} from '@app/hooks'
 import {QueryClient} from '@tanstack/react-query'
 import {ActorRefFrom, assign, createMachine, spawn} from 'xstate'

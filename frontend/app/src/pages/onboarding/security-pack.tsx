@@ -1,7 +1,7 @@
 import {
   generateMnemonic as defaultGenerateMnemonic,
   registerAccount,
-} from '@app/client'
+} from '@mintter/client'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'

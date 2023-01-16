@@ -1,3 +1,5 @@
 packages:
   - frontend/app
   - frontend/gateway
+  - frontend/client
+  - frontend/mttast
