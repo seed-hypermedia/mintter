@@ -10,7 +10,13 @@ import {
   listPublications,
   Publication,
 } from '@app/client'
-import {QueryClient, useQuery} from '@tanstack/react-query'
+import {
+  QueryClient,
+  useMutation,
+  UseMutationOptions,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import {Event, listen} from '@tauri-apps/api/event'
 import {useMemo, useEffect} from 'react'
 
@@ -30,6 +36,7 @@ export const queryKeys = {
   GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
   GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
   GET_PEER_INFO: 'GET_PEER_INFO',
+  GET_SITES_LIST: 'GET_SITES_LIST',
 }
 
 type QueryOptions = {
@@ -71,6 +78,85 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
       publications,
     },
   }
+}
+
+export type Site = {
+  id: string
+  hostname: string
+}
+
+export function useSiteList({rpc}: QueryOptions = {}) {
+  return useQuery({
+    queryKey: [queryKeys.GET_SITES_LIST],
+    queryFn: async () => {
+      //listSites(rpc),
+      return [] as Site[]
+    },
+  })
+}
+export function useAddSite() {
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    async (hostname: string) => {
+      // call rpc. for now this insta-succeeds
+      return null
+    },
+    {
+      onSuccess: (_result, hostname) => {
+        queryClient.setQueryData(
+          [queryKeys.GET_SITES_LIST],
+          (oldSites: Site[] | undefined) => {
+            const site = {id: `${Date.now()}`, hostname}
+            if (oldSites) return [...oldSites, site]
+            return [site]
+          },
+        )
+      },
+    },
+  )
+}
+export function useDeleteSite(siteId: string, opts: UseMutationOptions) {
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    async () => {
+      // call rpc. for now this insta-succeeds
+      return null
+    },
+    {
+      ...opts,
+      onSuccess: (response, input, ctx) => {
+        queryClient.setQueryData(
+          [queryKeys.GET_SITES_LIST],
+          (oldSites: Site[] | undefined) => {
+            if (oldSites) return oldSites.filter((site) => site.id !== siteId)
+            return undefined
+          },
+        )
+        opts?.onSuccess?.(response, input, ctx)
+      },
+    },
+  )
+}
+
+type SiteConfig = {
+  title: string
+  description: string
+  editors: string[]
+}
+export function useWriteSiteConfig(sietId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    async (config: SiteConfig) => {
+      // call rpc. for now this insta-succeeds
+      return null
+    },
+    {
+      onSuccess: (_result, config) => {},
+    },
+  )
 }
 
 type UseDraftListParams = {

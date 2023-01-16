@@ -6,12 +6,14 @@ import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
+import {Site, useAddSite, useDeleteSite, useSiteList} from '@app/hooks'
 import {ObjectKeys} from '@app/utils/object-keys'
+import {Icon} from '@components/icon'
 import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {FormEvent} from 'react'
+import {FormEvent, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
@@ -66,6 +68,13 @@ export default function Settings({
           >
             Verified Accounts
           </TabsPrimitive.Trigger>
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="sites"
+            data-testid="tab-sites"
+          >
+            Web Sites
+          </TabsPrimitive.Trigger>
         </TabsPrimitive.List>
         <TabsPrimitive.Content
           className="settings-tab-content tab-content"
@@ -102,6 +111,13 @@ export default function Settings({
           data-tauri-drag-region
         >
           <ComingSoon />
+        </TabsPrimitive.Content>
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="sites"
+          data-tauri-drag-region
+        >
+          <SitesSettings />
         </TabsPrimitive.Content>
       </TabsPrimitive.Root>
     </div>
@@ -291,5 +307,140 @@ function ComingSoon() {
     <div className="settings-tab-content">
       <code>coming soon!</code>
     </div>
+  )
+}
+
+function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
+  return (
+    <Button onClick={onDone} className="settings-nav-button">
+      <Icon name="ArrowChevronLeft" size="2" color="muted" />
+      <span style={{marginLeft: '0.3em'}}>{title}</span>
+    </Button>
+  )
+}
+
+function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
+  const deleteSite = useDeleteSite(siteId, {
+    onSuccess: () => onDone(),
+  })
+  return (
+    <>
+      <SettingsNavBack title="Web Sites" onDone={onDone} />
+      <h1>{siteId}</h1>
+      <label htmlFor="site-title">Public Title</label>
+      <input id="site-title" />
+      <label htmlFor="site-description">Public Description</label>
+      <input id="site-description" />
+      <label>Editors</label>
+      <Button>
+        Save Site
+      </Button>
+
+      <Button
+        color="danger"
+        size="1"
+        variant="outlined"
+        onClick={(e) => {
+          deleteSite.mutate()
+        }}
+      >
+        Remove Site
+      </Button>
+    </>
+  )
+}
+function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
+  const addSite = useAddSite()
+  const [siteUrl, setSiteUrl] = useState<string | null>(null)
+  return (
+    <>
+      {addSite.isLoading ? <div>loading...</div> : null}
+      <SettingsNavBack title="Cancel" onDone={() => onDone(null)} />
+      <h1>Add Site</h1>
+      <p>
+        Follow the self-hosting guide The Site must accept you
+        (bahezrj4iaqacicabciqdj6agpjhzuqo3...) as an admin or editor
+      </p>
+      <label for="host">self-hosted site url</label>
+      <input
+        type="text"
+        id="host"
+        value={siteUrl}
+        onChange={(e) => {
+          setSiteUrl(e.target.value)
+        }}
+      />
+      <Button onClick={() => addSite.mutate(siteUrl, {onSuccess: onDone})}>
+        Connect + Add Site
+      </Button>
+    </>
+  )
+}
+
+const NewSitePage = Symbol('NewSitePage')
+function SitesSettings() {
+  const [activeSitePage, setActiveSitePage] = useState<
+    string | typeof NewSitePage | null
+  >(null)
+
+  if (activeSitePage === NewSitePage) {
+    return <NewSite onDone={(s: string | null) => setActiveSitePage(s)} />
+  }
+  if (typeof activeSitePage === 'string') {
+    return (
+      <SiteSettings
+        siteId={activeSitePage}
+        onDone={() => setActiveSitePage(null)}
+      />
+    )
+  }
+  return (
+    <>
+      <SitesList onSelectSite={(siteId: string) => setActiveSitePage(siteId)} />
+      <Button
+        type="button"
+        size="2"
+        shape="pill"
+        color="success"
+        data-testid="submit"
+        onClick={() => {
+          setActiveSitePage(NewSitePage)
+        }}
+        css={{alignSelf: 'flex-start'}}
+      >
+        New Site
+      </Button>
+    </>
+  )
+}
+
+function EmptySiteList() {
+  return <div>no sites yet</div>
+}
+
+function SiteItem({site, onSelect}: {site: Site; onSelect: () => void}) {
+  return (
+    <Button className="settings-list-item" onClick={onSelect}>
+      {site.hostname}
+    </Button>
+  )
+}
+
+function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
+  const {data: sites, isLoading} = useSiteList()
+  return (
+    <>
+      {isLoading && <div>loading...</div>}
+      {sites && sites.length === 0 && <EmptySiteList />}
+      {sites?.map((site) => (
+        <SiteItem
+          key={site.hostname}
+          site={site}
+          onSelect={() => {
+            onSelectSite(site.id)
+          }}
+        />
+      ))}
+    </>
   )
 }
