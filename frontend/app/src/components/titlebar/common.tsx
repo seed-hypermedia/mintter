@@ -1,6 +1,4 @@
-import {
-  MINTTER_LINK_PREFIX,
-} from '@app/constants'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {useMain} from '@app/main-context'

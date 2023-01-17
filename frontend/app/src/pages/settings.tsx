@@ -11,7 +11,7 @@ import {Separator} from '@components/separator'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {FormEvent, useState} from 'react'
+import {FormEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
@@ -324,31 +324,56 @@ function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
     <>
       <SettingsNavBack title="Web Sites" onDone={onDone} />
       <h1>{siteId}</h1>
-      <label htmlFor="site-title">Public Title</label>
-      <input id="site-title" />
-      <label htmlFor="site-description">Public Description</label>
-      <input id="site-description" />
-      <label>Editors</label>
-      <Button>
-        Save Site
-      </Button>
-
-      <Button
-        color="danger"
-        size="1"
-        variant="outlined"
-        onClick={(e) => {
-          deleteSite.mutate()
+      <TextField id="site-title" name="site-title" label="Public Title" />
+      <TextField
+        id="site-description"
+        name="site-description"
+        label="Public Description"
+      />
+      <TextField
+        textarea
+        id="site-editors"
+        name="site-editors"
+        label="Editors"
+        rows={4}
+      />
+      <Box
+        css={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
-        Remove Site
-      </Button>
+        <Button size="2" color="success">
+          Save Site
+        </Button>
+
+        <Button
+          color="danger"
+          size="1"
+          variant="outlined"
+          onClick={(e) => {
+            deleteSite.mutate()
+          }}
+        >
+          Remove Site
+        </Button>
+      </Box>
     </>
   )
 }
 function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   const addSite = useAddSite()
   const [siteUrl, setSiteUrl] = useState<string | null>(null)
+  const hostRef = useRef<HTMLInputElement>()
+
+  // focus input on first render
+  useEffect(() => {
+    if (hostRef.current) {
+      hostRef.current.focus()
+    }
+  }, [])
+
   return (
     <>
       {addSite.isLoading ? <div>loading...</div> : null}
@@ -358,16 +383,19 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         Follow the self-hosting guide The Site must accept you
         (bahezrj4iaqacicabciqdj6agpjhzuqo3...) as an admin or editor
       </p>
-      <label for="host">self-hosted site url</label>
-      <input
-        type="text"
+      <TextField
+        ref={hostRef}
         id="host"
+        name="host"
+        label="self-hosted site url"
+        onChange={(e) => setSiteUrl(e.target.value)}
         value={siteUrl}
-        onChange={(e) => {
-          setSiteUrl(e.target.value)
-        }}
       />
-      <Button onClick={() => addSite.mutate(siteUrl, {onSuccess: onDone})}>
+      <Button
+        onClick={() => addSite.mutate(siteUrl, {onSuccess: onDone})}
+        size="2"
+        color="success"
+      >
         Connect + Add Site
       </Button>
     </>

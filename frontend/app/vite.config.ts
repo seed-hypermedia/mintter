@@ -28,10 +28,10 @@ export default defineConfig({
     fs: {
       /**
        * we need to allow from the workspace root because we depend on other packages in this workspace, and pnpm does not pull files from the colocated node_modules but from the root.
-       * 
+       *
        * reference: https://vitejs.dev/config/server-options.html#server-fs-allow
        */
-      
+
       allow: [searchForWorkspaceRoot(process.cwd())],
     },
   },
