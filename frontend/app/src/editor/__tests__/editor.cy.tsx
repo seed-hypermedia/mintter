@@ -798,7 +798,7 @@ type TestEditorProps = {
 
 function TestEditor({editor}: TestEditorProps) {
   return (
-    <Route path="/d/:id">
+    <Route path="/d/:id/:tag?">
       {() => <DraftPage shouldAutosave={false} editor={editor} />}
     </Route>
   )

@@ -35,6 +35,12 @@
       cursor: pointer;
     }
 
+    &.active {
+      background-color: var(--surface-hover);
+      color: var(--color-hover);
+      cursor: pointer;
+    }
+
     &.primary {
       --color: var(--primary-active);
       --color-hover: white;

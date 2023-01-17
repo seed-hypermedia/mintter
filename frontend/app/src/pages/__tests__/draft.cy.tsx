@@ -17,7 +17,9 @@ describe('Draft Page', () => {
       }),
     })
     cy.mount(
-      <Route path="/d/:id">{() => <DraftPage shouldAutosave={false} />}</Route>,
+      <Route path="/d/:id/:tag?">
+        {() => <DraftPage shouldAutosave={false} />}
+      </Route>,
       {
         client,
         path: `/d/${draft?.id}`,
@@ -43,7 +45,7 @@ describe('Draft Page', () => {
     })
     let mockPublish = cy.stub()
     cy.mount(
-      <Route path="/d/:id">
+      <Route path="/d/:id/:tag?">
         {() => <DraftPage publishDraft={mockPublish} shouldAutosave={false} />}
       </Route>,
       {

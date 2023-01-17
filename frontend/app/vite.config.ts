@@ -26,13 +26,12 @@ export default defineConfig({
   server: {
     strictPort: true,
     fs: {
+      allow: [searchForWorkspaceRoot(process.cwd())],
       /**
        * we need to allow from the workspace root because we depend on other packages in this workspace, and pnpm does not pull files from the colocated node_modules but from the root.
-       * 
+       *
        * reference: https://vitejs.dev/config/server-options.html#server-fs-allow
        */
-      
-      allow: [searchForWorkspaceRoot(process.cwd())],
     },
   },
   // to make use of `TAURI_PLATFORM`, `TAURI_ARCH`, `TAURI_FAMILY`, `TAURI_PLATFORM_VERSION`, `TAURI_PLATFORM_TYPE` and `TAURI_DEBUG` env variables

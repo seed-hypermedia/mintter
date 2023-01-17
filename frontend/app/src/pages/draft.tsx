@@ -44,7 +44,7 @@ export default function DraftWrapper({
 }: DraftPageProps) {
   let client = useQueryClient()
   let mainService = useMain()
-  let [, params] = useRoute('/d/:id')
+  let [, params] = useRoute('/d/:id/:tag?')
   let [, setLocation] = useLocation()
   let mouseService = useInterpret(() => mouseMachine)
 
