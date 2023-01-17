@@ -12,7 +12,7 @@ import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
-import {Route, Switch, useLocation, useRoute, useRouter} from 'wouter'
+import {Route, Switch, useLocation, useRoute} from 'wouter'
 import {PublishShareButton} from './publish-share'
 
 export function ActionButtons() {

@@ -63,25 +63,17 @@ function PublishButtons() {
   )
 }
 
-function ShareSaveTextLOL({actor}: {actor: DraftActor | PublicationActor}) {
-  // const s = useSelector(actor, (state) => state.context)
-
-  // want to return "Save" when the user is editing. how to determine that?
-  // if (?) return 'Save'
-
-  return 'Share'
-}
-
 export function PublishShareButton() {
-  const [isPublic, publicParams] = useRoute('/p/:id/:version/:block?')
-  const [draft, draftParams] = useRoute('/d/:id')
+  const [isPublic, pubParams] = useRoute('/p/:id/:version')
+  const [isPublicB, pubParamsB] = useRoute('/p/:id/:version/:block')
+  const [draft, draftParams] = useRoute('/d/:id/:tag?')
   const [isOpen, setIsOpen] = useState(false)
   const mainService = useMain()
   const docActor = useSelector(mainService, (state) => state.context.current)
   // const isSaving = useSelector(docActor, (state) =>
   //   state.matches('DRAFT.PUBLISH')
   // )
-  if (!draft && !isPublic) return null
+  if (!draft && !isPublic && !isPublicB) return null
   return (
     <>
       <PopoverPrimitive.Root
@@ -113,7 +105,11 @@ export function PublishShareButton() {
             // disabled={isSaving}
           >
             {docActor?.id === 'editor' ? (
-              <ShareSaveTextLOL actor={docActor} />
+              draftParams?.tag === 'new' ? (
+                'Share'
+              ) : (
+                'Save'
+              )
             ) : (
               <>
                 <Icon name="Globe" />
