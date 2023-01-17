@@ -344,10 +344,6 @@ function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
           justifyContent: 'space-between',
         }}
       >
-        <Button size="2" color="success">
-          Save Site
-        </Button>
-
         <Button
           color="danger"
           size="1"
@@ -357,6 +353,10 @@ function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
           }}
         >
           Remove Site
+        </Button>
+
+        <Button size="2" color="success">
+          Save Config
         </Button>
       </Box>
     </>
@@ -379,15 +379,12 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
       {addSite.isLoading ? <div>loading...</div> : null}
       <SettingsNavBack title="Cancel" onDone={() => onDone(null)} />
       <h1>Add Site</h1>
-      <p>
-        Follow the self-hosting guide The Site must accept you
-        (bahezrj4iaqacicabciqdj6agpjhzuqo3...) as an admin or editor
-      </p>
+      <p>Follow the self-hosting guide and copy the invite URL:</p>
       <TextField
         ref={hostRef}
         id="host"
         name="host"
-        label="self-hosted site url"
+        label="site domain or invite url"
         onChange={(e) => setSiteUrl(e.target.value)}
         value={siteUrl}
       />
@@ -446,7 +443,7 @@ function EmptySiteList() {
 function SiteItem({site, onSelect}: {site: Site; onSelect: () => void}) {
   return (
     <Button className="settings-list-item" onClick={onSelect}>
-      {site.hostname}
+      {site.id}
     </Button>
   )
 }
@@ -459,7 +456,7 @@ function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
       {sites && sites.length === 0 && <EmptySiteList />}
       {sites?.map((site) => (
         <SiteItem
-          key={site.hostname}
+          key={site.id}
           site={site}
           onSelect={() => {
             onSelectSite(site.id)

@@ -34,7 +34,11 @@ export default function Main() {
               component={Publication}
               key={window.location.href}
             />
-            <Route path="/d/:id" component={Draft} key={window.location.href} />
+            <Route
+              path="/d/:id/:tag?"
+              component={Draft}
+              key={window.location.href}
+            />
             <Route path="/settings" component={Settings} />
             <Route>{() => <Redirect to="/inbox" />}</Route>
           </Switch>

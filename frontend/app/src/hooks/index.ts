@@ -82,7 +82,15 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
 
 export type Site = {
   id: string
-  hostname: string
+}
+
+export function useDocPublications(docId: string) {
+  return useQuery({
+    queryKey: ['queryKeys.GET_DOC_PUBLICATIONS'],
+    queryFn: async () => {
+      return []
+    },
+  })
 }
 
 export function useSiteList({rpc}: QueryOptions = {}) {
@@ -92,7 +100,7 @@ export function useSiteList({rpc}: QueryOptions = {}) {
       //listSites(rpc),
 
       // temp init sites include this:
-      return [{hostname: 'ethosphera.org', id: 'test'}] as Site[]
+      return [{id: 'ethosphera.org'}] as Site[]
     },
   })
 }
@@ -109,7 +117,7 @@ export function useAddSite() {
         queryClient.setQueryData(
           [queryKeys.GET_SITES_LIST],
           (oldSites: Site[] | undefined) => {
-            const site = {id: `${Date.now()}`, hostname}
+            const site = {id: hostname}
             if (oldSites) return [...oldSites, site]
             return [site]
           },

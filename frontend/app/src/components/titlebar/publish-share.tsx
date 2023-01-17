@@ -7,43 +7,38 @@ import {Box} from '@components/box'
 import {useSelector} from '@xstate/react'
 import {Icon} from '@components/icon'
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
-import {
-  PublicationActor,
-  PublicationMachineContext,
-} from '@app/publication-machine'
-import {open} from '@tauri-apps/api/shell'
-import {useSiteList} from '@app/hooks'
+import {PublicationActor} from '@app/publication-machine'
+import {useDocPublications, useSiteList} from '@app/hooks'
 import {Button} from '@components/button'
+import {styled} from '@app/stitches.config'
+import {AccessURLRow} from '@components/url'
+import {usePublicationDialog} from './publication-dialog'
 
-// function onCopyWeblink() {
-//     if (current) {
-//       let context = current.getSnapshot().context as PublicationMachineContext
-//       let reference = `${
-//         isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
-//       }/p/${context.documentId}/${context.version}`
-//       open(reference)
-//     }
-//   }
-
-function CopyMintterLinkRow({doc}: {doc: PublicationActor}) {
-  const reference = useSelector(doc, (state) => {
+function MintterURLRow({doc}: {doc: PublicationActor}) {
+  const {title, url} = useSelector(doc, (state) => {
     const {documentId, version} = state.context
-    return `${
-      isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
-    }/p/${documentId}/${version}`
+    return {
+      title: `mintter.com/p/${documentId}/${version}`,
+      url: `${
+        isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
+      }/p/${documentId}/${version}`,
+    }
   })
+  return <AccessURLRow url={url} title={title} />
+}
+
+function PublishedURLs({docId}: {docId: string}) {
+  const publications = useDocPublications(docId)
   return (
-    <button
-      onClick={() => {
-        open(reference)
-      }}
-    >
-      {reference}
-    </button>
+    <>
+      {publications.data?.map((pub) => {
+        return <AccessURLRow key={pub.id} url={'title'} title="pub url" />
+      })}
+    </>
   )
 }
 
-function PublishButtons() {
+function PublishButtons({onPublish}: {onPublish: (siteId: string) => void}) {
   const sites = useSiteList()
   return (
     <>
@@ -52,16 +47,22 @@ function PublishButtons() {
           <Button
             key={site.id}
             onClick={() => {
-              // uh
+              onPublish(site.id)
             }}
           >
-            {site.hostname}
+            {site.id}
+            <ButtonIcon>
+              <Icon name="ExternalLink" />
+            </ButtonIcon>
           </Button>
         )
       })}
     </>
   )
 }
+const ButtonIcon = styled('span', {
+  marginHorizontal: 12,
+})
 
 export function PublishShareButton() {
   const [isPublic, pubParams] = useRoute('/p/:id/:version')
@@ -70,6 +71,9 @@ export function PublishShareButton() {
   const [isOpen, setIsOpen] = useState(false)
   const mainService = useMain()
   const docActor = useSelector(mainService, (state) => state.context.current)
+  const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
+  const publicationDialog = usePublicationDialog(docId)
+
   // const isSaving = useSelector(docActor, (state) =>
   //   state.matches('DRAFT.PUBLISH')
   // )
@@ -90,6 +94,10 @@ export function PublishShareButton() {
           <button
             onClick={(e) => {
               e.preventDefault()
+              if (isOpen) {
+                setIsOpen(false)
+                return
+              }
               const docActor = mainService.getSnapshot().context.current as
                 | DraftActor
                 | PublicationActor
@@ -100,7 +108,9 @@ export function PublishShareButton() {
                 setIsOpen(true)
               }
             }}
-            className="titlebar-button success outlined"
+            className={`titlebar-button success outlined ${
+              isOpen ? 'active' : ''
+            }`}
             data-testid="button-publish"
             // disabled={isSaving}
           >
@@ -117,28 +127,53 @@ export function PublishShareButton() {
             )}
           </button>
         </PopoverPrimitive.Trigger>
-        <PopoverPrimitive.Portal>
-          <PopoverPrimitive.Content>
+        <PopoverPrimitive.Portal style={{}}>
+          <PopoverPrimitive.Content
+            style={{
+              zIndex: 200000,
+            }}
+          >
             <Box
               css={{
-                padding: '$5',
                 width: '300px',
-                backgroundColor: '$base-component-bg-normal',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '$4',
+                padding: '$4',
+                margin: '$2',
                 boxShadow: '$3',
-                zIndex: 15000099,
+                borderRadius: '$2',
+                backgroundColor: '$primary-background-subtle',
+                border: '1px solid blue',
+                borderColor: '$primary-border-subtle',
+                gap: '$4',
               }}
             >
-              <h3>Copy Link:</h3>
-              <CopyMintterLinkRow doc={docActor} />
-              <h3>Publish to Web:</h3>
-              <PublishButtons />
+              <Subheading>Public on the Web:</Subheading>
+              <MintterURLRow doc={docActor} />
+              <AccessURLRow // getridofme after you fix PublishedURLs
+                title="ethosphera.org/p/comingsoon"
+                url="https://ethosphera.org/p/comingsoon"
+              />
+              {docId && <PublishedURLs docId={docId} />}
+              <Subheading>Publish to:</Subheading>
+              <PublishButtons
+                onPublish={(siteId) => {
+                  setIsOpen(false)
+                  publicationDialog.open(siteId)
+                }}
+              />
             </Box>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
+      {publicationDialog.content}
     </>
   )
 }
+
+const Subheading = styled('h3', {
+  color: '$primary-text-low',
+  fontSize: '$3',
+  fontWeight: 300,
+  margin: 0,
+})
