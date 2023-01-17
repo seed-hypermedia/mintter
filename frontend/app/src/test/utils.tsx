@@ -1,11 +1,3 @@
-import {
-  Account,
-  Document,
-  Info,
-  ListDraftsResponse,
-  ListPublicationsResponse,
-  Publication,
-} from '@mintter/client'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
 import {queryKeys} from '@app/hooks'
@@ -14,6 +6,14 @@ import {mouseMachine} from '@app/mouse-machine'
 import {globalStyles} from '@app/stitches.config'
 import {themeMachine, ThemeProvider} from '@app/theme'
 import AppProvider from '@components/app-provider'
+import {
+  Account,
+  Document,
+  Info,
+  ListDraftsResponse,
+  ListPublicationsResponse,
+  Publication,
+} from '@mintter/shared'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
 import {useInterpret} from '@xstate/react'

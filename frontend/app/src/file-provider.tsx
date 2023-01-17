@@ -1,4 +1,4 @@
-import {Document} from '@mintter/client'
+import {Document} from '@mintter/shared'
 import {ClientPublication} from '@app/publication-machine'
 import {createContext, useContext, useMemo} from 'react'
 

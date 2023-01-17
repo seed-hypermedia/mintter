@@ -7,7 +7,7 @@ import {
   paragraph,
   statement,
   text,
-} from '@mintter/mttast'
+} from '@mintter/shared'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import type {EditorPlugin} from '../types'

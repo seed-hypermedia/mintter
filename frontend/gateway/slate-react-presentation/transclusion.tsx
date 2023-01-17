@@ -4,8 +4,13 @@ import Link from 'next/link'
 import {visit} from 'unist-util-visit'
 import {assign, createMachine} from 'xstate'
 import {SlateReactPresentation} from '.'
-import {getPublication, Publication, blockNodeToSlate} from '@mintter/client'
-import {Embed, FlowContent} from '@mintter/mttast'
+import {
+  Embed,
+  FlowContent,
+  getPublication,
+  Publication,
+  blockNodeToSlate,
+} from '@mintter/shared'
 import {getIdsfromUrl} from '../utils/get-ids-from-url'
 import {useRenderElement} from './render-element'
 import {useRenderLeaf} from './render-leaf'

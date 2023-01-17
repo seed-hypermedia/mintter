@@ -1,4 +1,4 @@
-import type {GrpcClient} from '@mintter/client'
+import type {GrpcClient} from '@mintter/shared'
 import type {UseQueryOptions} from '@tanstack/react-query'
 
 export interface HookOptions<T>

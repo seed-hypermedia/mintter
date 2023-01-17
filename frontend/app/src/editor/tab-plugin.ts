@@ -1,6 +1,10 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
-import type {GroupingContent} from '@mintter/mttast'
-import {isFlowContent, isGroupContent, isParent} from '@mintter/mttast'
+import {
+  isFlowContent,
+  isGroupContent,
+  isParent,
+  GroupingContent,
+} from '@mintter/shared'
 import {Editor, Node, Path, Transforms} from 'slate'
 import type {EditorPlugin} from './types'
 

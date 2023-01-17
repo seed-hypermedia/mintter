@@ -1,6 +1,5 @@
 import {assign, createMachine} from 'xstate'
-import {Publication, blockNodeToSlate} from '@mintter/client'
-import {GroupingContent} from '@mintter/mttast'
+import {Publication, blockNodeToSlate, GroupingContent} from '@mintter/shared'
 
 export const publicationMachine = createMachine(
   {

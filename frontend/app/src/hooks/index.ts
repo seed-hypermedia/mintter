@@ -9,7 +9,7 @@ import {
   listDrafts,
   listPublications,
   Publication,
-} from '@mintter/client'
+} from '@mintter/shared'
 import {QueryClient, useQuery} from '@tanstack/react-query'
 import {Event, listen} from '@tauri-apps/api/event'
 import {useMemo, useEffect} from 'react'

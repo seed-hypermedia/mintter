@@ -1,7 +1,5 @@
 import {createAuthService} from '@app/auth-machine'
-import * as localApi from '@mintter/client'
-import {updateProfile as apiUpdateProfile} from '@mintter/client'
-import {forceSync} from '@mintter/client'
+import * as localApi from '@mintter/shared'
 import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
 import {Text} from '@app/components/text'
@@ -17,9 +15,9 @@ import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
 
 export default function Settings({
-  updateProfile = apiUpdateProfile,
+  updateProfile = localApi.updateProfile,
 }: {
-  updateProfile?: typeof apiUpdateProfile
+  updateProfile?: typeof localApi.updateProfile
 }) {
   const client = useQueryClient()
   const auth = useInterpret(() => createAuthService(client, updateProfile))
@@ -262,7 +260,6 @@ function AppSettings() {
   // let activityService = useActivity()
 
   async function onReloadSync() {
-    await forceSync()
     toast.success('reload sync successful!')
   }
 
@@ -280,7 +277,7 @@ function AppSettings() {
         Reset Activity
       </Button>
       <Button size="1" variant="outlined" onClick={onReloadSync}>
-        Reload Database Sync
+        Reload Database localApi.updateProfile
       </Button>
     </div>
   )

@@ -6,7 +6,7 @@ import {
   updateProfile as apiUpdateProfile,
   getInfo,
   Info,
-} from '@mintter/client'
+} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {QueryClient} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'

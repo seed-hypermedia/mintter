@@ -5,7 +5,7 @@ import {
   Link,
   Publication,
   blockNodeToSlate,
-} from '@mintter/client'
+} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/publication-machine'
 import {QueryClient} from '@tanstack/react-query'

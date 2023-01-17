@@ -1,5 +1,5 @@
 import {useQuery} from '@tanstack/react-query'
-import {Publication, getAccount} from '@mintter/client'
+import {Publication, getAccount} from '@mintter/shared'
 import {formattedDate} from './utils/get-format-date'
 
 export function PublicationMetadata({

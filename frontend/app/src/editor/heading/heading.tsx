@@ -7,7 +7,7 @@ import {
   isHeading,
   isStaticParagraph,
   statement,
-} from '@mintter/mttast'
+} from '@mintter/shared'
 import {Editor, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {MintterEditor} from '../mintter-changes/plugin'

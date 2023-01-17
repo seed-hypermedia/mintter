@@ -1,4 +1,4 @@
-import {createDraft, Document} from '@mintter/client'
+import {createDraft, Document} from '@mintter/shared'
 import {DraftActor} from '@app/draft-machine'
 import {PublicationActor} from '@app/publication-machine'
 import {openWindow} from '@app/utils/open-window'

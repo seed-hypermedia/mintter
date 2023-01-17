@@ -21,8 +21,7 @@
     "test:ui:open": "pnpm run test:ui open --component"
   },
   "dependencies": {
-    "@mintter/client": "workspace:*",
-    "@mintter/mttast": "workspace:*",
+    "@mintter/shared": "workspace:*",
     "@floating-ui/react-dom": "1.0.1",
     "@floating-ui/react-dom-interactions": "0.13.3",
     "@improbable-eng/grpc-web": "0.15.0",

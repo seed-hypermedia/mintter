@@ -9,7 +9,7 @@ import type {
   StaticParagraph,
   Text,
   Video,
-} from '@mintter/mttast'
+} from '@mintter/shared'
 import React from 'react'
 import type {BaseEditor, Editor, NodeEntry, Range} from 'slate'
 import type {HistoryEditor} from 'slate-history'

@@ -7,10 +7,10 @@ import {
   getPublication,
   Publication,
   blockNodeToSlate,
-} from '@mintter/client'
+  GroupingContent,
+} from '@mintter/shared'
 import {EditorDocument} from '@app/draft-machine'
 import {queryKeys} from '@app/hooks'
-import {GroupingContent} from '@mintter/mttast'
 import {openWindow} from '@app/utils/open-window'
 import {QueryClient} from '@tanstack/react-query'
 import {invoke} from '@tauri-apps/api'

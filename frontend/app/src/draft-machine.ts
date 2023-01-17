@@ -1,21 +1,19 @@
 import {
   Account,
-  Document,
+  MttDocument,
   DocumentChange,
   getDraft,
   Publication,
   updateDraftV2 as apiUpdateDraft,
   blockNodeToSlate,
-} from '@mintter/client'
-import {queryKeys} from '@app/hooks'
-import {
   createId,
   group,
   GroupingContent,
   paragraph,
   statement,
   text,
-} from '@mintter/mttast'
+} from '@mintter/shared'
+import {queryKeys} from '@app/hooks'
 import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'
@@ -26,7 +24,7 @@ import {MintterEditor} from './editor/mintter-changes/plugin'
 
 export type DraftActor = InterpreterFrom<ReturnType<typeof createDraftMachine>>
 
-export type EditorDocument = Partial<Document> & {
+export type EditorDocument = Partial<MttDocument> & {
   id?: string
   content: Array<GroupingContent>
 }

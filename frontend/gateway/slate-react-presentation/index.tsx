@@ -1,5 +1,5 @@
 import React from 'react'
-import {isParent, MttastContent} from '@mintter/mttast'
+import {isParent, MttastContent} from '@mintter/shared'
 import {
   RenderElementProps as SlateRenderElementProps,
   RenderLeafProps as SlateRenderLeafProps,

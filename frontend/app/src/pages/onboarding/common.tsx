@@ -1,4 +1,4 @@
-import {GenMnemonicResponse, updateProfile} from '@mintter/client'
+import {GenMnemonicResponse, updateProfile} from '@mintter/shared'
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'

@@ -15,8 +15,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@mintter/client": "workspace:*",
-    "@mintter/mttast": "workspace:*",
+    "@mintter/shared": "workspace:*",
     "@improbable-eng/grpc-web": "0.15.0",
     "@mdx-js/loader": "2.1.5",
     "@mdx-js/react": "2.1.5",
