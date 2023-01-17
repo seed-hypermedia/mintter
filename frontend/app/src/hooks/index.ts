@@ -90,7 +90,9 @@ export function useSiteList({rpc}: QueryOptions = {}) {
     queryKey: [queryKeys.GET_SITES_LIST],
     queryFn: async () => {
       //listSites(rpc),
-      return [] as Site[]
+
+      // temp init sites include this:
+      return [{hostname: 'ethosphera.org', id: 'test'}] as Site[]
     },
   })
 }
