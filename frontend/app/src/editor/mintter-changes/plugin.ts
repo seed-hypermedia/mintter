@@ -3,8 +3,6 @@ import {
   createDeleteChange,
   createMoveChange,
   createReplaceChange,
-} from '@mintter/client'
-import {
   FlowContent,
   GroupingContent,
   isContent,
@@ -13,7 +11,7 @@ import {
   isPhrasingContent,
   isStaticContent,
   isStaticPhrasingContent,
-} from '@mintter/mttast'
+} from '@mintter/shared'
 import {error} from '@app/utils/logger'
 import {Editor, MoveNodeOperation, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'

@@ -17,8 +17,8 @@ import {
   text,
   ul,
   video,
-} from '@mintter/mttast'
-import {Mark} from '@mintter/mttast/types'
+  Mark,
+} from '@mintter/shared'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {useRoute} from '@components/router'
 import videoParser from 'js-video-url-parser'

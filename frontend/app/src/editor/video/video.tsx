@@ -7,7 +7,7 @@ import {
   parseVideoUrl,
 } from '@app/editor/utils'
 import {videoMachine} from '@app/editor/video/video-machine'
-import {isVideo, text, video, Video as VideoType} from '@mintter/mttast'
+import {isVideo, text, video, Video as VideoType} from '@mintter/shared'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'

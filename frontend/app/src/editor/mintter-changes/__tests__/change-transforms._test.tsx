@@ -1,8 +1,7 @@
 /** @jsx jsx */
-import {DocumentChange, blockToApi} from '@mintter/client'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {getEditorBlock} from '@app/editor/utils'
-import {FlowContent} from '@mintter/mttast'
+import {FlowContent, DocumentChange, blockToApi} from '@mintter/shared'
 import {jsx} from '@app/test/jsx'
 import {Editor} from 'slate'
 import {beforeEach, describe, expect, test} from 'vitest'

@@ -3,8 +3,8 @@ import {
   LinkNode,
   Publication,
   blockNodeToSlate,
-} from '@mintter/client'
-import {FlowContent} from '@mintter/mttast'
+} from '@mintter/shared'
+import {FlowContent} from '@mintter/shared'
 import {visit} from 'unist-util-visit'
 
 export type GetBlockResult = {

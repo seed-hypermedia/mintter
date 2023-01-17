@@ -7,7 +7,7 @@ import {
   Link,
   MttastNode,
   Video as VideoType,
-} from '@mintter/mttast'
+} from '@mintter/shared'
 import {ElementLink} from './link'
 import {Paragraph} from './paragraph'
 import {StaticParagraph} from './static-paragraph'

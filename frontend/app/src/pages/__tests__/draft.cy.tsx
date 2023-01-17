@@ -1,5 +1,4 @@
-import {blockToApi} from '@mintter/client'
-import {paragraph, statement, text} from '@mintter/mttast'
+import {paragraph, statement, text, blockToApi} from '@mintter/shared'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
 import {Route} from 'wouter'
 import DraftPage from '../draft'

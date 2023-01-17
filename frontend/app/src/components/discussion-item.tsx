@@ -1,4 +1,4 @@
-import {Link as LinkType} from '@mintter/client'
+import {Link as LinkType} from '@mintter/shared'
 import {createDiscussionMachine} from '@app/discussion-machine'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'

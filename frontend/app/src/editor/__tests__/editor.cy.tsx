@@ -1,9 +1,3 @@
-import {
-  Document,
-  Publication,
-  blockToApi,
-  ListCitationsResponse,
-} from '@mintter/client'
 import {ChangeOperation} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -17,7 +11,11 @@ import {
   staticParagraph,
   text,
   Group,
-} from '@mintter/mttast'
+  Document,
+  Publication,
+  blockToApi,
+  ListCitationsResponse,
+} from '@mintter/shared'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
 import {Route} from '@components/router'
 import {Editor as EditorType} from 'slate'

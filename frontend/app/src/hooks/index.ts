@@ -10,7 +10,6 @@ import {
   listPublications,
   Publication,
 } from '@mintter/shared'
-
 import {
   QueryClient,
   useMutation,
@@ -18,8 +17,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
-import {Event, listen} from '@tauri-apps/api/event'
-import {useMemo, useEffect} from 'react'
+import {listen} from '@tauri-apps/api/event'
+import {useEffect, useMemo} from 'react'
 
 export * from './types'
 

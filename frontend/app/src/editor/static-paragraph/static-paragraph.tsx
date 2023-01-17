@@ -4,7 +4,7 @@ import {useBlockObserve, useMouse} from '@app/mouse-context'
 import {
   isStaticParagraph,
   StaticParagraph as StaticParagraphType,
-} from '@mintter/mttast'
+} from '@mintter/shared'
 import {css} from '@app/stitches.config'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'

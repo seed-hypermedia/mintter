@@ -1,4 +1,4 @@
-import {ListCitationsResponse, Publication} from '@mintter/client'
+import {ListCitationsResponse, Publication} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
 import PublicationList, {PublicationListItem} from '../publication-list-page'

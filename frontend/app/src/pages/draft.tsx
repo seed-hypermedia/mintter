@@ -1,5 +1,4 @@
 // import 'show-keys'
-import {Document, publishDraft as apiPublishDraft} from '@mintter/client'
 import {createDraftMachine} from '@app/draft-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
@@ -10,7 +9,11 @@ import {FileProvider} from '@app/file-provider'
 import {useMain} from '@app/main-context'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {ChildrenOf} from '@mintter/mttast'
+import {
+  ChildrenOf,
+  Document,
+  publishDraft as apiPublishDraft,
+} from '@mintter/shared'
 import {AppError} from '@app/root'
 import {openWindow} from '@app/utils/open-window'
 import {Box} from '@components/box'
