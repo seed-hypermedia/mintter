@@ -156,7 +156,9 @@ export function useWriteSiteConfig(sietId: string) {
       return null
     },
     {
-      onSuccess: (_result, config) => {},
+      onSuccess: (_result, config) => {
+        //noop
+      },
     },
   )
 }
