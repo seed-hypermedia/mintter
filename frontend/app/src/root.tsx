@@ -4,7 +4,6 @@ import {themeMachine, ThemeProvider} from '@app/theme'
 import {
   dehydrate,
   Hydrate,
-  QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
@@ -22,6 +21,7 @@ const Main = lazy(() => import('./pages/main'))
 
 import './styles/root.scss'
 import './styles/toaster.scss'
+import {appQueryClient} from './query-client'
 
 import('./updater')
 
@@ -45,7 +45,7 @@ export function Root() {
   globalStyles()
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={appQueryClient}>
       <Suspense>
         <Hydrate state={dehydrateState}>
           <ThemeProvider value={themeService}>
@@ -129,28 +129,7 @@ if (window.Cypress) {
   }
 }
 
-var queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      networkMode: 'always',
-      useErrorBoundary: true,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      retryOnMount: false,
-      staleTime: Infinity,
-      refetchOnReconnect: false,
-      onError: (err) => {
-        console.log(`Query error: ${err}`)
-      },
-      retry: 4,
-      retryDelay: (attempt) =>
-        Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
-      keepPreviousData: true,
-    },
-  },
-})
-
-var dehydrateState = dehydrate(queryClient)
+var dehydrateState = dehydrate(appQueryClient)
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (
