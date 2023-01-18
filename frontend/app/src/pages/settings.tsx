@@ -4,7 +4,13 @@ import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
-import {Site, useAddSite, useDeleteSite, useSiteList} from '@app/hooks'
+import {
+  useAddSite,
+  useRemoveSite,
+  useSiteInfo,
+  useSiteList,
+  useWriteSiteInfo,
+} from '@app/hooks/sites'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Icon} from '@components/icon'
 import {Separator} from '@components/separator'
@@ -15,6 +21,8 @@ import {FormEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
+import {SiteInfo} from '@mintter/shared/dist/client/.generated/site/v1alpha/site'
+import {SiteConfig} from '@mintter/shared/dist/client/.generated/daemon/v1alpha/sites'
 
 export default function Settings({
   updateProfile = localApi.updateProfile,
@@ -316,19 +324,32 @@ function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
   )
 }
 
-function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
-  const deleteSite = useDeleteSite(siteId, {
-    onSuccess: () => onDone(),
-  })
+function SiteInfoForm({
+  info,
+  onSubmit,
+  onRemove,
+}: {
+  info: SiteInfo
+  onSubmit: (s: Partial<SiteInfo>) => void
+  onRemove: () => void
+}) {
+  const [title, setTitle] = useState(info.title)
+  const [description, setDescription] = useState(info.description)
   return (
     <>
-      <SettingsNavBack title="Web Sites" onDone={onDone} />
-      <h1>{siteId}</h1>
-      <TextField id="site-title" name="site-title" label="Public Title" />
+      <TextField
+        id="site-title"
+        name="site-title"
+        label="Public Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       <TextField
         id="site-description"
         name="site-description"
         label="Public Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
       />
       <TextField
         textarea
@@ -344,21 +365,41 @@ function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
           justifyContent: 'space-between',
         }}
       >
-        <Button
-          color="danger"
-          size="1"
-          variant="outlined"
-          onClick={(e) => {
-            deleteSite.mutate()
-          }}
-        >
+        <Button color="danger" size="1" variant="outlined" onClick={onRemove}>
           Remove Site
         </Button>
 
-        <Button size="2" color="success">
+        <Button
+          size="2"
+          color="success"
+          onClick={() => {
+            onSubmit({title, description})
+          }}
+        >
           Save Config
         </Button>
       </Box>
+    </>
+  )
+}
+
+function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
+  const removeSite = useRemoveSite(siteId, {
+    onSuccess: () => onDone(),
+  })
+  const siteInfo = useSiteInfo(siteId)
+  const writeSiteInfo = useWriteSiteInfo(siteId)
+  return (
+    <>
+      <SettingsNavBack title="Web Sites" onDone={onDone} />
+      <h1>{siteId}</h1>
+      {siteInfo?.data ? (
+        <SiteInfoForm
+          info={siteInfo.data}
+          onSubmit={(info) => writeSiteInfo.mutate(info)}
+          onRemove={() => removeSite.mutate()}
+        />
+      ) : null}
     </>
   )
 }
@@ -389,7 +430,10 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         value={siteUrl ?? undefined}
       />
       <Button
-        onClick={() => addSite.mutate(siteUrl, {onSuccess: onDone})}
+        onClick={() => {
+          if (siteUrl) addSite.mutate(siteUrl, {onSuccess: onDone})
+        }}
+        disabled={!siteUrl}
         size="2"
         color="success"
       >
@@ -440,7 +484,7 @@ function EmptySiteList() {
   return <div>no sites yet</div>
 }
 
-function SiteItem({site, onSelect}: {site: Site; onSelect: () => void}) {
+function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
   return (
     <Button className="settings-list-item" onClick={onSelect}>
       {site.hostname}

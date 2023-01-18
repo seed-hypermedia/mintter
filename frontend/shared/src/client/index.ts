@@ -68,7 +68,6 @@ export {
   listCitations,
   listPublications,
 } from './publications'
-export {addSite, listSites} from './sites'
 import {
   Document,
   Publication as APIPublication,
@@ -77,6 +76,7 @@ export type Publication = APIPublication & {
   document?: Document
 }
 export {Document}
+export * from './sites'
 export * from './block-to-slate'
 export * from './block-to-api'
 export * from './client'
