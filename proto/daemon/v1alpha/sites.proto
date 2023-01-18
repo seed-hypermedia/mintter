@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package com.mintter.daemon.v1alpha;
+
+import "site/v1alpha/site.proto";
+
+option go_package = "mintter/backend/genproto/daemon/v1alpha;daemon";
+
+// Sites API allows to configure the remote Mintter Sites inside the local app.
+// To interact with the existing site, the local daemon will expose the Site API
+// interface as well (see /proto/site/v1alpha/site.proto), requiring a gRPC metadata
+// header with the hostname of the actual site to know the endpoint where to proxy the request.
+service Sites {
+  // Adds a site configuration to the local app.
+  rpc AddSite(AddSiteRequest) returns (SiteConfig);
+
+  // Lists configured sites.
+  rpc ListSites(ListSitesRequest) returns (ListSitesResponse);
+}
+
+// Request to add a site.
+message AddSiteRequest {
+  // Required. Site hostname.
+  string hostname = 1;
+
+  // Optional. Invite token for the site. Not needed
+  // if the site already knows our Account ID.
+  string invite_token = 2;
+}
+
+// Request to list configures sites.
+message ListSitesRequest {
+  // Optional. Number of items per page.
+  int32 page_size = 1;
+
+  // Optional. Token for a specific page.
+  string page_token = 2;
+}
+
+// Response with a list of sites.
+message ListSitesResponse {
+  // List of sites.
+  repeated SiteConfig sites = 1;
+
+  // Token for the next page if any.
+  string next_page_token = 2;
+}
+
+// Local site configuration.
+message SiteConfig {
+  // Hostname of the site.
+  string hostname = 1;
+
+  // Our role on this site.
+  com.mintter.site.v1alpha.Member.Role role = 2;
+}

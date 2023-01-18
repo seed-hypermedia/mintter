@@ -1,0 +1,207 @@
+syntax = "proto3";
+
+package com.mintter.site.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "mintter/backend/genproto/site/v1alpha;site";
+
+// Site API service allows to configure a remote Mintter Site.
+// The server exposing this API should take care about authenticating the caller.
+service Site {
+  // Creates a new invite token for registering a new member.
+  rpc CreateInviteToken(CreateInviteTokenRequest) returns (InviteToken);
+
+  // Redeem a previously created invite token to register a new member.
+  rpc RedeemInviteToken(RedeemInviteTokenRequest) returns (RedeemInviteTokenResponse);
+
+  // Gets public-facing site information.
+  rpc GetSiteInfo(GetSiteInfoRequest) returns (SiteInfo);
+
+  // Updates public-facing site information. Doesn't support partial updates,
+  // hence all the fields must be provided.
+  rpc UpdateSiteInfo(UpdateSiteInfoRequest) returns (SiteInfo);
+
+  // Lists registered members on the site.
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
+
+  // Gets information about a specific member.
+  rpc GetMember(GetMemberRequest) returns (Member);
+
+  // Deletes an existing member.
+  rpc DeleteMember(DeleteMemberRequest) returns (google.protobuf.Empty);
+
+  // Blocks a given Mintter Account.
+  rpc BlockAccount(BlockAccountRequest) returns (BlockAccountResponse);
+
+  // Unblock a previously blocked Mintter Account.
+  rpc UnblockAccount(UnblockAccountRequest) returns (UnblockAccountResponse);
+
+  // Lists currently blocked Mintter Accounts.
+  rpc ListBlockedAccounts(ListBlockedAccountsRequest) returns (ListBlockedAccountsResponse);
+}
+
+// Request to create a new invite token.
+message CreateInviteTokenRequest {
+  // Required. The role to be associated with the new member after invite is redeemed.
+  // The server might be configured to limit invites for certain roles, but it's not
+  // restricted in this API definition.
+  Member.Role role = 1;
+
+  // Optional. The timestamp after which the invite token will expire if not redeemed.
+  // If not provided, the server will decide the deadline based on the internal configuration.
+  google.protobuf.Timestamp expire_time = 2;
+}
+
+// Request to redeem an invite token. This is the most security-sensitive request,
+// because it allows to register new members on the site. The server must obtain
+// and verify the relation of the communicating peer with a corresponding Mintter Account.
+// After the token is redeemed, a new member on the site must be created, associating
+// the Mintter Account of the caller with the role invite token was created for.
+message RedeemInviteTokenRequest {
+  // Value of the invite token.
+  string token = 1;
+
+  // TODO: might not need these, because can be inferred from the communication channel.
+
+  // Mintter Account ID of the new member.
+  string account_id = 2;
+
+  // Mintter Device ID of the new member.
+  string device_id = 3;
+}
+
+// Response after the token is redeemed.
+message RedeemInviteTokenResponse {}
+
+// Request to get the site info.
+message GetSiteInfoRequest {}
+
+// Request to update site info. Doesn't support partial updates.
+message UpdateSiteInfoRequest {
+  // Title of the site.
+  string title = 1;
+
+  // Description of the site.
+  string description = 2;
+}
+
+// Request to list site members.
+message ListMembersRequest {
+  // Optional. Number of items per page.
+  int32 page_size = 1;
+
+  // Optional. Token for a specific page.
+  string page_token = 2;
+}
+
+// Response listing site members.
+message ListMembersResponse {
+  // List of members.
+  repeated Member members = 1;
+
+  // Optional token for the next page.
+  string next_page_token = 2;
+}
+
+// Request to get information about a specific member.
+message GetMemberRequest {
+  // Required. Mintter Account ID to get the information for.
+  string account_id = 1;
+}
+
+// Request to delete an existing member.
+message DeleteMemberRequest {
+  // Required. Mintter Account ID of the member to be deleted.
+  string account_id = 1;
+}
+
+// Request to block a specific Mintter Account.
+// The server is free to decide how the block list is handled,
+// and what happens when an existing member is being blocked.
+message BlockAccountRequest {
+  // Required. Mintter Account ID to be blocked.
+  string account_id = 1;
+}
+
+// Response after blocking an Account.
+message BlockAccountResponse {}
+
+// Request to unblock an Account.
+message UnblockAccountRequest {
+  // Required. Mintter Account ID to be unblocked.
+  string account_id = 1;
+}
+
+// Response after unblocking an Account.
+message UnblockAccountResponse {}
+
+// Request to list blocked accounts.
+message ListBlockedAccountsRequest {
+  // Optional. Number of items per page.
+  int32 page_size = 1;
+
+  // Options. Token for a specific page if any.
+  string next_page_token = 2;
+}
+
+// Response with a list of blocked accounts.
+message ListBlockedAccountsResponse {
+  // List of blocked accounts.
+  repeated string accounts = 1;
+
+  // Token for the next page if any.
+  string next_page_token = 2;
+}
+
+// Invite token is produced by the owner of the site to invite new members.
+message InviteToken {
+  // The value of the invite token.
+  string token = 1;
+
+  // Timestamp after which the token will not be recognized by the site.
+  google.protobuf.Timestamp expire_time = 2;
+}
+
+// Public-facing information about the Mintter Site.
+message SiteInfo {
+  // Hostname under which this site is exposed.
+  string hostname = 1;
+
+  // Title of this site.
+  string title = 2;
+
+  // Description of this site.
+  string description = 3;
+
+  // Mintter Account ID that is configured as the owner of this site.
+  string owner = 4;
+}
+
+// Member of the site.
+message Member {
+  // Roles a member of the Mintter Site can have.
+  enum Role {
+    // Invalid default value.
+    ROLE_UNSPECIFIED = 0;
+
+    // Currently there can only be one owner of the site.
+    OWNER = 1;
+
+    // Editors are allowed to push content to the site.
+    EDITOR = 2;
+  }
+
+  // Mintter Account ID of the member.
+  string account_id = 1;
+
+  // Member's role on the site.
+  Role role = 2;
+}
+
+// Response for the /.well-known discovery HTTP page.
+// TODO: define the actual /.well-known path.
+message DiscoveryConfig {
+  // TODO: add the necessary fields to export under the /.well-known HTTP discovery path.
+}
