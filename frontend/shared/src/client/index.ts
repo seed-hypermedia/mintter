@@ -68,6 +68,7 @@ export {
   listCitations,
   listPublications,
 } from './publications'
+export {addSite, listSites} from './sites'
 import {
   Document,
   Publication as APIPublication,

@@ -5,10 +5,12 @@ import {
   getPublication,
   GrpcClient,
   MttLink,
+  listSites,
   listCitations,
   listDrafts,
   listPublications,
   Publication,
+  addSite,
 } from '@mintter/shared'
 import {
   QueryClient,
@@ -97,19 +99,24 @@ export function useSiteList({rpc}: QueryOptions = {}) {
   return useQuery({
     queryKey: [queryKeys.GET_SITES_LIST],
     queryFn: async () => {
+      console.log('start')
+      const s = await listSites()
+      console.log('sites', s)
+
       //listSites(rpc),
 
       // temp init sites include this:
-      return [{id: 'ethosphera.org'}] as Site[]
+      // return [{id: 'ethosphera.org'}] as Site[]
     },
   })
 }
+
 export function useAddSite() {
   const queryClient = useQueryClient()
 
   return useMutation(
-    async (hostname: string) => {
-      // call rpc. for now this insta-succeeds
+    async (hostname: string, token?: string) => {
+      await addSite(hostname, token)
       return null
     },
     {
@@ -126,6 +133,7 @@ export function useAddSite() {
     },
   )
 }
+
 export function useDeleteSite(siteId: string, opts: UseMutationOptions) {
   const queryClient = useQueryClient()
 
