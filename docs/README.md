@@ -10,7 +10,7 @@ Because the Mintter Data structure is not production-ready yet, we are creating 
 
 - [Frontend App Architecture](./frontend-app.md)
 - [Frontend Gateway Architecture](./frontend-gateway.md)
-- [Frontend Shared Packages Architecture](./frontend-shared-packages.md.md)
+- [Frontend Shared Packages Architecture](./frontend-shared-packages.md)
 - [Frontend Testing](./frontend-testing.md)
 
 ## Backend Technical Documentation
