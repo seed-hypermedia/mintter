@@ -574,7 +574,6 @@ describe('Transform: blockToSlate', () => {
         paragraph([text('😅', {emphasis: true})]),
       ])
       let result = blockToSlate(input as Block)
-      console.log(JSON.stringify({result}))
       expect(result).toEqual(output)
     })
 
