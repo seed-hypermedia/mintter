@@ -2,13 +2,13 @@
 # defined in overlay.nix. This file can be imported in place of normal <nixpkgs>.
 let
   pkgs = import <nixpkgs> {};
-  # Nixpkgs as of 2022-05-23.
+  # Nixpkgs as of 2023-01-24.
   # Update sha256 with `nix-prefetch fetchFromGitHub --owner NixOS --repo nixpkgs --rev <commit>`.
   pinnedNixpkgs = pkgs.fetchFromGitHub {
     owner = "NixOS";
     repo = "nixpkgs";
-    rev = "f4dfed73ee886b115a99e5b85fdfbeb683290d83";
-    sha256 = "sha256-5uUrHeHBIaySBTrRExcCoW8fBBYVSDjDYDU5A6iOl+k=";
+    rev = "f32319e7ba8f03ea2f1c66a5ffe43b4e771108f5";
+    sha256 = "sha256-HGoDKtOXIKvU72/4gL3VUYla/YExhS0oPoiIuDjlTrg=";
   };
   # Rust overlay as of 2022-01-24.
   # Update sha256 with `nix-prefetch fetchFromGitHub --owner oxalica --repo rust-overlay --rev <commit>`.
