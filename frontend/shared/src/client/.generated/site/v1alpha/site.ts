@@ -182,6 +182,10 @@ export interface PublishRequest {
   docId: string;
   /** (optional) pretty path to publish at. Empty string === home doc. */
   path: string;
+  /** version of the doc to publish */
+  version: string;
+  /** list of doc ids that are referenced by this doc via links or transclusions */
+  referencedDocIds: string[];
 }
 
 /** Response when publishing a document. */
@@ -218,11 +222,11 @@ export interface ListedWebPublication {
 }
 
 /** Request to list "web publications", (pinned/published docs on the server) */
-export interface ListPublicationsRequest {
+export interface ListWebPublicationsRequest {
 }
 
 /** Response of all "web publications" on the server */
-export interface ListPublicationsResponse {
+export interface ListWebPublicationsResponse {
   publications: ListedWebPublication[];
 }
 
@@ -1053,7 +1057,7 @@ export const DiscoveryConfig = {
 };
 
 function createBasePublishRequest(): PublishRequest {
-  return { docId: "", path: "" };
+  return { docId: "", path: "", version: "", referencedDocIds: [] };
 }
 
 export const PublishRequest = {
@@ -1063,6 +1067,12 @@ export const PublishRequest = {
     }
     if (message.path !== "") {
       writer.uint32(18).string(message.path);
+    }
+    if (message.version !== "") {
+      writer.uint32(26).string(message.version);
+    }
+    for (const v of message.referencedDocIds) {
+      writer.uint32(34).string(v!);
     }
     return writer;
   },
@@ -1080,6 +1090,12 @@ export const PublishRequest = {
         case 2:
           message.path = reader.string();
           break;
+        case 3:
+          message.version = reader.string();
+          break;
+        case 4:
+          message.referencedDocIds.push(reader.string());
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1092,6 +1108,10 @@ export const PublishRequest = {
     return {
       docId: isSet(object.docId) ? String(object.docId) : "",
       path: isSet(object.path) ? String(object.path) : "",
+      version: isSet(object.version) ? String(object.version) : "",
+      referencedDocIds: Array.isArray(object?.referencedDocIds)
+        ? object.referencedDocIds.map((e: any) => String(e))
+        : [],
     };
   },
 
@@ -1099,6 +1119,12 @@ export const PublishRequest = {
     const obj: any = {};
     message.docId !== undefined && (obj.docId = message.docId);
     message.path !== undefined && (obj.path = message.path);
+    message.version !== undefined && (obj.version = message.version);
+    if (message.referencedDocIds) {
+      obj.referencedDocIds = message.referencedDocIds.map((e) => e);
+    } else {
+      obj.referencedDocIds = [];
+    }
     return obj;
   },
 
@@ -1106,6 +1132,8 @@ export const PublishRequest = {
     const message = createBasePublishRequest();
     message.docId = object.docId ?? "";
     message.path = object.path ?? "";
+    message.version = object.version ?? "";
+    message.referencedDocIds = object.referencedDocIds?.map((e) => e) || [];
     return message;
   },
 };
@@ -1337,19 +1365,19 @@ export const ListedWebPublication = {
   },
 };
 
-function createBaseListPublicationsRequest(): ListPublicationsRequest {
+function createBaseListWebPublicationsRequest(): ListWebPublicationsRequest {
   return {};
 }
 
-export const ListPublicationsRequest = {
-  encode(_: ListPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ListWebPublicationsRequest = {
+  encode(_: ListWebPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListWebPublicationsRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseListPublicationsRequest();
+    const message = createBaseListWebPublicationsRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1361,37 +1389,37 @@ export const ListPublicationsRequest = {
     return message;
   },
 
-  fromJSON(_: any): ListPublicationsRequest {
+  fromJSON(_: any): ListWebPublicationsRequest {
     return {};
   },
 
-  toJSON(_: ListPublicationsRequest): unknown {
+  toJSON(_: ListWebPublicationsRequest): unknown {
     const obj: any = {};
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListPublicationsRequest>, I>>(_: I): ListPublicationsRequest {
-    const message = createBaseListPublicationsRequest();
+  fromPartial<I extends Exact<DeepPartial<ListWebPublicationsRequest>, I>>(_: I): ListWebPublicationsRequest {
+    const message = createBaseListWebPublicationsRequest();
     return message;
   },
 };
 
-function createBaseListPublicationsResponse(): ListPublicationsResponse {
+function createBaseListWebPublicationsResponse(): ListWebPublicationsResponse {
   return { publications: [] };
 }
 
-export const ListPublicationsResponse = {
-  encode(message: ListPublicationsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const ListWebPublicationsResponse = {
+  encode(message: ListWebPublicationsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.publications) {
       ListedWebPublication.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListWebPublicationsResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseListPublicationsResponse();
+    const message = createBaseListWebPublicationsResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -1406,7 +1434,7 @@ export const ListPublicationsResponse = {
     return message;
   },
 
-  fromJSON(object: any): ListPublicationsResponse {
+  fromJSON(object: any): ListWebPublicationsResponse {
     return {
       publications: Array.isArray(object?.publications)
         ? object.publications.map((e: any) => ListedWebPublication.fromJSON(e))
@@ -1414,7 +1442,7 @@ export const ListPublicationsResponse = {
     };
   },
 
-  toJSON(message: ListPublicationsResponse): unknown {
+  toJSON(message: ListWebPublicationsResponse): unknown {
     const obj: any = {};
     if (message.publications) {
       obj.publications = message.publications.map((e) => e ? ListedWebPublication.toJSON(e) : undefined);
@@ -1424,8 +1452,8 @@ export const ListPublicationsResponse = {
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<ListPublicationsResponse>, I>>(object: I): ListPublicationsResponse {
-    const message = createBaseListPublicationsResponse();
+  fromPartial<I extends Exact<DeepPartial<ListWebPublicationsResponse>, I>>(object: I): ListWebPublicationsResponse {
+    const message = createBaseListWebPublicationsResponse();
     message.publications = object.publications?.map((e) => ListedWebPublication.fromPartial(e)) || [];
     return message;
   },
@@ -1466,10 +1494,10 @@ export interface Site {
   /** un-pin the document */
   unpublish(request: DeepPartial<UnpublishRequest>, metadata?: grpc.Metadata): Promise<UnpublishResponse>;
   /** list all the published documents */
-  listPublications(
-    request: DeepPartial<ListPublicationsRequest>,
+  listWebPublications(
+    request: DeepPartial<ListWebPublicationsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<ListPublicationsResponse>;
+  ): Promise<ListWebPublicationsResponse>;
 }
 
 export class SiteClientImpl implements Site {
@@ -1487,7 +1515,7 @@ export class SiteClientImpl implements Site {
     this.listBlockedAccounts = this.listBlockedAccounts.bind(this);
     this.publish = this.publish.bind(this);
     this.unpublish = this.unpublish.bind(this);
-    this.listPublications = this.listPublications.bind(this);
+    this.listWebPublications = this.listWebPublications.bind(this);
   }
 
   createInviteToken(request: DeepPartial<CreateInviteTokenRequest>, metadata?: grpc.Metadata): Promise<InviteToken> {
@@ -1536,11 +1564,11 @@ export class SiteClientImpl implements Site {
     return this.rpc.unary(SiteUnpublishDesc, UnpublishRequest.fromPartial(request), metadata);
   }
 
-  listPublications(
-    request: DeepPartial<ListPublicationsRequest>,
+  listWebPublications(
+    request: DeepPartial<ListWebPublicationsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<ListPublicationsResponse> {
-    return this.rpc.unary(SiteListPublicationsDesc, ListPublicationsRequest.fromPartial(request), metadata);
+  ): Promise<ListWebPublicationsResponse> {
+    return this.rpc.unary(SiteListWebPublicationsDesc, ListWebPublicationsRequest.fromPartial(request), metadata);
   }
 }
 
@@ -1766,20 +1794,20 @@ export const SiteUnpublishDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const SiteListPublicationsDesc: UnaryMethodDefinitionish = {
-  methodName: "ListPublications",
+export const SiteListWebPublicationsDesc: UnaryMethodDefinitionish = {
+  methodName: "ListWebPublications",
   service: SiteDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return ListPublicationsRequest.encode(this).finish();
+      return ListWebPublicationsRequest.encode(this).finish();
     },
   } as any,
   responseType: {
     deserializeBinary(data: Uint8Array) {
       return {
-        ...ListPublicationsResponse.decode(data),
+        ...ListWebPublicationsResponse.decode(data),
         toObject() {
           return this;
         },

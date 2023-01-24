@@ -42,7 +42,7 @@ service Site {
   rpc Unpublish(UnpublishRequest) returns (UnpublishResponse);
 
   // list all the published documents
-  rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
+  rpc ListWebPublications(ListWebPublicationsRequest) returns (ListWebPublicationsResponse);
 }
 
 // Request to create a new invite token.
@@ -196,6 +196,12 @@ message PublishRequest {
 
   // (optional) pretty path to publish at. Empty string === home doc.
   string path = 2;
+
+  // version of the doc to publish
+  string version = 3;
+
+  // list of doc ids that are referenced by this doc via links or transclusions
+  repeated string referenced_doc_ids = 4;
 }
 
 // Response when publishing a document.
@@ -234,10 +240,10 @@ message ListedWebPublication {
 }
 
 // Request to list "web publications", (pinned/published docs on the server)
-message ListPublicationsRequest {
+message ListWebPublicationsRequest {
 }
 
 // Response of all "web publications" on the server
-message ListPublicationsResponse {
+message ListWebPublicationsResponse {
   repeated ListedWebPublication publications = 1;
 }

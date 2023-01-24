@@ -1,16 +1,19 @@
 import {appQueryClient} from '@app/query-client'
 import {
-  addSite,
-  listWebPublications,
-  listSites,
-  removeSite,
-  siteGetSiteInfo,
-  siteUpdateSiteInfo,
-  publishDoc,
-  unpublish,
+  client,
+  AddSiteRequest,
+  DeleteSiteRequest,
+  ListSitesRequest,
+  SiteConfig,
+  SitesClientImpl,
+  SiteClientImpl,
+  GetSiteInfoRequest,
+  PublishRequest,
+  SiteInfo,
+  UnpublishRequest,
+  UpdateSiteInfoRequest,
+  ListWebPublicationsRequest,
 } from '@mintter/shared'
-import {SiteConfig} from '@mintter/shared/dist/client/.generated/daemon/v1alpha/sites'
-import {SiteInfo} from '@mintter/shared/dist/client/.generated/site/v1alpha/site'
 import {
   useMutation,
   UseMutationOptions,
@@ -18,6 +21,17 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import {queryKeys} from './index'
+
+const sitesClient = new SitesClientImpl(client)
+
+async function sendSiteRequest<Result>(
+  hostname: string,
+  perform: (client: SiteClientImpl) => Promise<Result>,
+) {
+  const siteClient = new SiteClientImpl(client)
+  // todo: set hostname header
+  return await perform(siteClient)
+}
 
 export function useDocPublications(docId: string) {
   return useQuery({
@@ -32,10 +46,20 @@ export function useSiteList() {
   return useQuery<SiteConfig[]>({
     queryKey: [queryKeys.GET_SITES],
     queryFn: async () => {
-      const result = await listSites()
+      // EV TESTING:
+      // return {
+      //   sites: [
+      //     {
+      //       hostname: 'temp-test.org',
+      //       role: Member_Role.OWNER,
+      //     },
+      //   ],
+      //   nextPageToken: '',
+      // }
+      const result = await sitesClient.listSites(
+        ListSitesRequest.fromPartial({}),
+      )
       return result.sites
-      // temp init sites include this:
-      // return [{id: 'ethosphera.org'}] as Site[]
     },
   })
 }
@@ -45,7 +69,12 @@ export function useAddSite() {
 
   return useMutation(
     async (hostname: string, token?: string) => {
-      await addSite(hostname, token)
+      await sitesClient.addSite(
+        AddSiteRequest.fromPartial({
+          hostname,
+          inviteToken: token,
+        }),
+      )
       return null
     },
     {
@@ -64,11 +93,13 @@ export function useAddSite() {
   )
 }
 
-export function useSiteInfo(siteId: string) {
+export function useSiteInfo(hostname: string) {
   return useQuery<SiteInfo>({
-    queryKey: [queryKeys.GET_SITE_INFO, siteId],
+    queryKey: [queryKeys.GET_SITE_INFO, hostname],
     queryFn: async () => {
-      return await siteGetSiteInfo(siteId)
+      return await sendSiteRequest(hostname, (client) =>
+        client.getSiteInfo(GetSiteInfoRequest.fromPartial({})),
+      )
     },
   })
 }
@@ -79,7 +110,14 @@ export function useWriteSiteInfo(
 ) {
   return useMutation(
     async (info: Partial<SiteInfo>) => {
-      await siteUpdateSiteInfo(hostname, info.title, info.description)
+      return await sendSiteRequest(hostname, (client) =>
+        client.updateSiteInfo(
+          UpdateSiteInfoRequest.fromPartial({
+            description: info.description,
+            title: info.title,
+          }),
+        ),
+      )
     },
     {
       ...opts,
@@ -96,7 +134,9 @@ export function useRemoveSite(siteId: string, opts: UseMutationOptions) {
 
   return useMutation(
     async () => {
-      await removeSite(siteId)
+      await sitesClient.deleteSite(
+        DeleteSiteRequest.fromPartial({hostname: siteId}),
+      )
     },
     {
       ...opts,
@@ -121,7 +161,39 @@ export function useSitePublications(hostname: string | undefined) {
     queryKey: [queryKeys.GET_WEB_PUBLICATIONS, hostname],
     queryFn: async () => {
       if (!hostname) return {publications: []}
-      return await listWebPublications(hostname)
+
+      // EV TESTING:
+      // return {
+      //   publications: [
+      //     {
+      //       docId: 'lol',
+      //       authorName: 'Horacio',
+      //       publicationId: '123',
+      //       updateTime: new Date(),
+      //       docTitle: 'The Home Document',
+      //       path: '',
+      //     },
+      //     {
+      //       docId: '1',
+      //       authorName: 'Eric',
+      //       publicationId: '1233',
+      //       updateTime: new Date(),
+      //       docTitle: 'The Title at Thepath',
+      //       path: 'thepath',
+      //     },
+      //     {
+      //       docId: '2',
+      //       authorName: 'Eric',
+      //       publicationId: '1234',
+      //       updateTime: new Date(),
+      //       docTitle: 'The Unlisted Title',
+      //     },
+      //   ] as ListedWebPublication[],
+      // }
+
+      return await sendSiteRequest(hostname, (client) =>
+        client.listWebPublications(ListWebPublicationsRequest.fromPartial({})),
+      )
     },
   })
 }
@@ -138,7 +210,16 @@ export function useSitePublish() {
       docId: string
       path: string
     }) => {
-      await publishDoc(hostname, docId, path)
+      await sendSiteRequest(hostname, (client) =>
+        client.publish(
+          PublishRequest.fromPartial({
+            docId,
+            path,
+            version: 'soon',
+            referencedDocIds: [],
+          }),
+        ),
+      )
     },
     {
       onSuccess: (a, input) => {
@@ -161,7 +242,13 @@ export function useSiteUnpublish() {
       hostname: string
       publicationId: string
     }) => {
-      await unpublish(hostname, publicationId)
+      await sendSiteRequest(hostname, (client) =>
+        client.unpublish(
+          UnpublishRequest.fromPartial({
+            publicationId,
+          }),
+        ),
+      )
     },
     {
       onSuccess: (a, input) => {

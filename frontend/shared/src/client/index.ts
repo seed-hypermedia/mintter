@@ -76,8 +76,25 @@ export type Publication = APIPublication & {
   document?: Document
 }
 export {Document}
-export * from './sites'
 export * from './block-to-slate'
 export * from './block-to-api'
 export * from './client'
 export * from './change-creators'
+
+export {
+  SitesClientImpl,
+  AddSiteRequest,
+  DeleteSiteRequest,
+  ListSitesRequest,
+  ListSitesResponse,
+  SiteConfig,
+} from './.generated/daemon/v1alpha/sites'
+export {
+  SiteClientImpl,
+  GetSiteInfoRequest,
+  PublishRequest,
+  SiteInfo,
+  UnpublishRequest,
+  UpdateSiteInfoRequest,
+  ListWebPublicationsRequest,
+} from './.generated/site/v1alpha/site'

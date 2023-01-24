@@ -45,7 +45,7 @@ type SiteClient interface {
 	// un-pin the document
 	Unpublish(ctx context.Context, in *UnpublishRequest, opts ...grpc.CallOption) (*UnpublishResponse, error)
 	// list all the published documents
-	ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error)
+	ListWebPublications(ctx context.Context, in *ListWebPublicationsRequest, opts ...grpc.CallOption) (*ListWebPublicationsResponse, error)
 }
 
 type siteClient struct {
@@ -146,9 +146,9 @@ func (c *siteClient) Unpublish(ctx context.Context, in *UnpublishRequest, opts .
 	return out, nil
 }
 
-func (c *siteClient) ListPublications(ctx context.Context, in *ListPublicationsRequest, opts ...grpc.CallOption) (*ListPublicationsResponse, error) {
-	out := new(ListPublicationsResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.site.v1alpha.Site/ListPublications", in, out, opts...)
+func (c *siteClient) ListWebPublications(ctx context.Context, in *ListWebPublicationsRequest, opts ...grpc.CallOption) (*ListWebPublicationsResponse, error) {
+	out := new(ListWebPublicationsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.site.v1alpha.Site/ListWebPublications", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ type SiteServer interface {
 	// un-pin the document
 	Unpublish(context.Context, *UnpublishRequest) (*UnpublishResponse, error)
 	// list all the published documents
-	ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error)
+	ListWebPublications(context.Context, *ListWebPublicationsRequest) (*ListWebPublicationsResponse, error)
 }
 
 // UnimplementedSiteServer should be embedded to have forward compatible implementations.
@@ -218,8 +218,8 @@ func (UnimplementedSiteServer) Publish(context.Context, *PublishRequest) (*Publi
 func (UnimplementedSiteServer) Unpublish(context.Context, *UnpublishRequest) (*UnpublishResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Unpublish not implemented")
 }
-func (UnimplementedSiteServer) ListPublications(context.Context, *ListPublicationsRequest) (*ListPublicationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListPublications not implemented")
+func (UnimplementedSiteServer) ListWebPublications(context.Context, *ListWebPublicationsRequest) (*ListWebPublicationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListWebPublications not implemented")
 }
 
 // UnsafeSiteServer may be embedded to opt out of forward compatibility for this service.
@@ -413,20 +413,20 @@ func _Site_Unpublish_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Site_ListPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListPublicationsRequest)
+func _Site_ListWebPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListWebPublicationsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SiteServer).ListPublications(ctx, in)
+		return srv.(SiteServer).ListWebPublications(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/com.mintter.site.v1alpha.Site/ListPublications",
+		FullMethod: "/com.mintter.site.v1alpha.Site/ListWebPublications",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SiteServer).ListPublications(ctx, req.(*ListPublicationsRequest))
+		return srv.(SiteServer).ListWebPublications(ctx, req.(*ListWebPublicationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -479,8 +479,8 @@ var Site_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Site_Unpublish_Handler,
 		},
 		{
-			MethodName: "ListPublications",
-			Handler:    _Site_ListPublications_Handler,
+			MethodName: "ListWebPublications",
+			Handler:    _Site_ListWebPublications_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
