@@ -73,6 +73,14 @@ $bg: transparent;
   white-space: nowrap;
   overflow: hidden;
   color: $foreground;
+
+  &.low {
+    color: var(--base-text-low);
+  }
+}
+.item-sub-title {
+  margin: 0 .5rem;
+  color: var(--base-text-low);
 }
 .item-controls {
   opacity: 0;

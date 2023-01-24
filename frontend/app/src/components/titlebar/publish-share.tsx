@@ -38,19 +38,19 @@ function PublishedURLs({docId}: {docId: string}) {
   )
 }
 
-function PublishButtons({onPublish}: {onPublish: (siteId: string) => void}) {
+function PublishButtons({onPublish}: {onPublish: (hostname: string) => void}) {
   const sites = useSiteList()
   return (
     <>
       {sites.data?.map((site) => {
         return (
           <Button
-            key={site.id}
+            key={site.hostname}
             onClick={() => {
-              onPublish(site.id)
+              onPublish(site.hostname)
             }}
           >
-            {site.id}
+            {site.hostname}
             <ButtonIcon>
               <Icon name="ExternalLink" />
             </ButtonIcon>
@@ -74,9 +74,6 @@ export function PublishShareButton() {
   const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
   const publicationDialog = usePublicationDialog(docId)
 
-  // const isSaving = useSelector(docActor, (state) =>
-  //   state.matches('DRAFT.PUBLISH')
-  // )
   if (!draft && !isPublic && !isPublicB) return null
   return (
     <>
@@ -112,7 +109,6 @@ export function PublishShareButton() {
               isOpen ? 'active' : ''
             }`}
             data-testid="button-publish"
-            // disabled={isSaving}
           >
             {docActor?.id === 'editor' ? (
               draftParams?.tag === 'new' ? (
@@ -157,9 +153,9 @@ export function PublishShareButton() {
               {docId && <PublishedURLs docId={docId} />}
               <Subheading>Publish to:</Subheading>
               <PublishButtons
-                onPublish={(siteId) => {
+                onPublish={(hostname) => {
                   setIsOpen(false)
-                  publicationDialog.open(siteId)
+                  publicationDialog.open(hostname)
                 }}
               />
             </Box>

@@ -4,6 +4,7 @@
 import { grpc } from "@improbable-eng/grpc-web";
 import { BrowserHeaders } from "browser-headers";
 import _m0 from "protobufjs/minimal";
+import { Empty } from "../../google/protobuf/empty";
 import { Member_Role, member_RoleFromJSON, member_RoleToJSON } from "../../site/v1alpha/site";
 
 /** Request to add a site. */
@@ -15,6 +16,12 @@ export interface AddSiteRequest {
    * if the site already knows our Account ID.
    */
   inviteToken: string;
+}
+
+/** Request to remove a site from local server */
+export interface RemoveSiteRequest {
+  /** Required. Site hostname. */
+  hostname: string;
 }
 
 /** Request to list configures sites. */
@@ -95,6 +102,53 @@ export const AddSiteRequest = {
     const message = createBaseAddSiteRequest();
     message.hostname = object.hostname ?? "";
     message.inviteToken = object.inviteToken ?? "";
+    return message;
+  },
+};
+
+function createBaseRemoveSiteRequest(): RemoveSiteRequest {
+  return { hostname: "" };
+}
+
+export const RemoveSiteRequest = {
+  encode(message: RemoveSiteRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.hostname !== "") {
+      writer.uint32(10).string(message.hostname);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): RemoveSiteRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRemoveSiteRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.hostname = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): RemoveSiteRequest {
+    return { hostname: isSet(object.hostname) ? String(object.hostname) : "" };
+  },
+
+  toJSON(message: RemoveSiteRequest): unknown {
+    const obj: any = {};
+    message.hostname !== undefined && (obj.hostname = message.hostname);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<RemoveSiteRequest>, I>>(object: I): RemoveSiteRequest {
+    const message = createBaseRemoveSiteRequest();
+    message.hostname = object.hostname ?? "";
     return message;
   },
 };
@@ -286,6 +340,8 @@ export const SiteConfig = {
 export interface Sites {
   /** Adds a site configuration to the local app. */
   addSite(request: DeepPartial<AddSiteRequest>, metadata?: grpc.Metadata): Promise<SiteConfig>;
+  /** Adds a site configuration to the local app. */
+  removeSite(request: DeepPartial<RemoveSiteRequest>, metadata?: grpc.Metadata): Promise<Empty>;
   /** Lists configured sites. */
   listSites(request: DeepPartial<ListSitesRequest>, metadata?: grpc.Metadata): Promise<ListSitesResponse>;
 }
@@ -296,11 +352,16 @@ export class SitesClientImpl implements Sites {
   constructor(rpc: Rpc) {
     this.rpc = rpc;
     this.addSite = this.addSite.bind(this);
+    this.removeSite = this.removeSite.bind(this);
     this.listSites = this.listSites.bind(this);
   }
 
   addSite(request: DeepPartial<AddSiteRequest>, metadata?: grpc.Metadata): Promise<SiteConfig> {
     return this.rpc.unary(SitesAddSiteDesc, AddSiteRequest.fromPartial(request), metadata);
+  }
+
+  removeSite(request: DeepPartial<RemoveSiteRequest>, metadata?: grpc.Metadata): Promise<Empty> {
+    return this.rpc.unary(SitesRemoveSiteDesc, RemoveSiteRequest.fromPartial(request), metadata);
   }
 
   listSites(request: DeepPartial<ListSitesRequest>, metadata?: grpc.Metadata): Promise<ListSitesResponse> {
@@ -324,6 +385,28 @@ export const SitesAddSiteDesc: UnaryMethodDefinitionish = {
     deserializeBinary(data: Uint8Array) {
       return {
         ...SiteConfig.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
+
+export const SitesRemoveSiteDesc: UnaryMethodDefinitionish = {
+  methodName: "RemoveSite",
+  service: SitesDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return RemoveSiteRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...Empty.decode(data),
         toObject() {
           return this;
         },

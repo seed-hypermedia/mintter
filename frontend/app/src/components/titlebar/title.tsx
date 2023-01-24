@@ -2,11 +2,12 @@ import {DraftActor} from '@app/draft-machine'
 import {useMain} from '@app/main-context'
 import {PublicationActor} from '@app/publication-machine'
 import {useSelector} from '@xstate/react'
-import {Route, Switch} from 'wouter'
+import {Route, Switch, useRoute} from 'wouter'
 
 export function Title() {
   const mainService = useMain()
   const current = useSelector(mainService, (state) => state.context.current)
+  let [, siteHomeParams] = useRoute('/sites/:hostname')
 
   return (
     <h1
@@ -24,6 +25,10 @@ export function Title() {
         <Route path="/drafts">
           <span data-tauri-drag-region>Drafts</span>
         </Route>
+        <Route path="/sites/:hostname">
+          <span data-tauri-drag-region>{siteHomeParams?.hostname}</span>
+        </Route>
+
         <Route path="/p/:id/:version/:block?">
           {current ? (
             <PublicationTitle fileRef={current as PublicationActor} />

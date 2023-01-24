@@ -8,6 +8,7 @@ import '../styles/main.scss'
 import './polyfills'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
+var Site = lazy(() => import('@app/pages/site-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))
 var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
@@ -29,6 +30,7 @@ export default function Main() {
           <Switch>
             <Route path="/inbox" component={PublicationList} />
             <Route path="/drafts" component={DraftList} />
+            <Route path="/sites/:hostname" component={Site} />
             <Route
               path="/p/:id/:version/:block?"
               component={Publication}

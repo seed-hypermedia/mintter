@@ -1,10 +1,13 @@
 import {appQueryClient} from '@app/query-client'
 import {
   addSite,
+  listWebPublications,
   listSites,
   removeSite,
   siteGetSiteInfo,
   siteUpdateSiteInfo,
+  publishDoc,
+  unpublish,
 } from '@mintter/shared'
 import {SiteConfig} from '@mintter/shared/dist/client/.generated/daemon/v1alpha/sites'
 import {SiteInfo} from '@mintter/shared/dist/client/.generated/site/v1alpha/site'
@@ -27,7 +30,7 @@ export function useDocPublications(docId: string) {
 
 export function useSiteList() {
   return useQuery<SiteConfig[]>({
-    queryKey: [queryKeys.SITES_LIST],
+    queryKey: [queryKeys.GET_SITES],
     queryFn: async () => {
       const result = await listSites()
       return result.sites
@@ -47,9 +50,9 @@ export function useAddSite() {
     },
     {
       onSuccess: (_result, _hostname) => {
-        queryClient.invalidateQueries([queryKeys.SITES_LIST])
+        queryClient.invalidateQueries([queryKeys.GET_SITES])
         // queryClient.setQueryData(
-        //   [queryKeys.SITES_LIST],
+        //   [queryKeys.GET_SITES],
         //   (oldSites: Site[] | undefined) => {
         //     const site = {id: hostname}
         //     if (oldSites) return [...oldSites, site]
@@ -98,16 +101,74 @@ export function useRemoveSite(siteId: string, opts: UseMutationOptions) {
     {
       ...opts,
       onSuccess: (response, input, ctx) => {
-        queryClient.invalidateQueries([queryKeys.SITES_LIST])
+        queryClient.invalidateQueries([queryKeys.GET_SITES])
 
         // queryClient.setQueryData(
-        //   [queryKeys.SITES_LIST],
+        //   [queryKeys.GET_SITES],
         //   (oldSites: any[] | undefined) => {
         //     if (oldSites) return oldSites.filter((site) => site.id !== siteId)
         //     return undefined
         //   },
         // )
         opts?.onSuccess?.(response, input, ctx)
+      },
+    },
+  )
+}
+
+export function useSitePublications(hostname: string | undefined) {
+  return useQuery({
+    queryKey: [queryKeys.GET_WEB_PUBLICATIONS, hostname],
+    queryFn: async () => {
+      if (!hostname) return {publications: []}
+      return await listWebPublications(hostname)
+    },
+  })
+}
+
+export function useSitePublish() {
+  const queryClient = useQueryClient()
+  return useMutation(
+    async ({
+      hostname,
+      docId,
+      path,
+    }: {
+      hostname: string
+      docId: string
+      path: string
+    }) => {
+      await publishDoc(hostname, docId, path)
+    },
+    {
+      onSuccess: (a, input) => {
+        queryClient.invalidateQueries([
+          queryKeys.GET_WEB_PUBLICATIONS,
+          input.hostname,
+        ])
+      },
+    },
+  )
+}
+
+export function useSiteUnpublish() {
+  const queryClient = useQueryClient()
+  return useMutation(
+    async ({
+      hostname,
+      publicationId,
+    }: {
+      hostname: string
+      publicationId: string
+    }) => {
+      await unpublish(hostname, publicationId)
+    },
+    {
+      onSuccess: (a, input) => {
+        queryClient.invalidateQueries([
+          queryKeys.GET_WEB_PUBLICATIONS,
+          input.hostname,
+        ])
       },
     },
   )

@@ -40,6 +40,15 @@ service Site {
 
   // Lists currently blocked Mintter Accounts.
   rpc ListBlockedAccounts(ListBlockedAccountsRequest) returns (ListBlockedAccountsResponse);
+
+  // pin and publish the document to the public web site
+  rpc Publish(PublishRequest) returns (PublishResponse);
+
+  // un-pin the document
+  rpc Unpublish(UnpublishRequest) returns (UnpublishResponse);
+
+  // list all the published documents
+  rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
 }
 
 // Request to create a new invite token.
@@ -204,4 +213,57 @@ message Member {
 // TODO: define the actual /.well-known path.
 message DiscoveryConfig {
   // TODO: add the necessary fields to export under the /.well-known HTTP discovery path.
+}
+
+// Request the server to pin+publish a document.
+message PublishRequest {
+  // id of the doc to publish
+  string doc_id = 1;
+
+  // (optional) pretty path to publish at. Empty string === home doc.
+  string path = 2;
+}
+
+// Response when publishing a document.
+message PublishResponse {
+  // id of the web publication on this server
+  string publication_id = 1;
+}
+
+// Request Unpin/Unpublish a document from the site.
+message UnpublishRequest {
+  // id of web publication on this server to unpublish
+  string publication_id   = 1;
+}
+
+message UnpublishResponse {}
+
+// Object representing a "web publication" row on this server, including fields for user presentation (doc_title, author_name, update_time)
+message ListedWebPublication {
+  // id of web publication on this server
+  string publication_id = 1;
+
+  // id of published doc
+  string doc_id = 2;
+
+  // (optional) Pretty path of the publication. Empty string === home doc.
+  string path = 3;
+
+  // Timestamp of the last update to the published doc
+  google.protobuf.Timestamp update_time = 4;
+
+  // name of the last editor to update the doc
+  string author_name= 5;
+
+  // current title if the doc
+  string doc_title = 6;
+}
+
+// Request to list "web publications", (pinned/published docs on the server)
+message ListPublicationsRequest {
+}
+
+// Response of all "web publications" on the server
+message ListPublicationsResponse {
+  repeated ListedWebPublication publications = 1;
 }

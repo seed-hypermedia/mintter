@@ -1,6 +1,7 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
+import {useSiteList} from '@app/hooks/sites'
 import {useMain} from '@app/main-context'
 import {
   PublicationActor,
@@ -97,6 +98,27 @@ export function NavigationButtons({push = history}: {push?: Push}) {
   )
 }
 
+export function SitesNavDropdownItems() {
+  const sites = useSiteList()
+  let [, setLocation] = useLocation()
+
+  if (!sites.data) return null
+  return (
+    <>
+      <Dropdown.Separator />
+      {sites.data.map((site) => (
+        <Dropdown.Item
+          key={site.hostname}
+          onSelect={() => setLocation(`/sites/${site.hostname}`)}
+        >
+          <Icon name="Globe" />
+          <span>{site.hostname}</span>
+        </Dropdown.Item>
+      ))}
+    </>
+  )
+}
+
 export function NavMenu() {
   let [location, setLocation] = useLocation()
 
@@ -129,6 +151,8 @@ export function NavMenu() {
             <Icon name="PencilAdd" />
             <span>Drafts</span>
           </Dropdown.Item>
+          <SitesNavDropdownItems />
+          <Dropdown.Separator />
 
           <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
             Quick Switcher

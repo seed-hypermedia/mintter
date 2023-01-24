@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,6 +25,8 @@ const _ = grpc.SupportPackageIsVersion7
 type SitesClient interface {
 	// Adds a site configuration to the local app.
 	AddSite(ctx context.Context, in *AddSiteRequest, opts ...grpc.CallOption) (*SiteConfig, error)
+	// Adds a site configuration to the local app.
+	RemoveSite(ctx context.Context, in *RemoveSiteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists configured sites.
 	ListSites(ctx context.Context, in *ListSitesRequest, opts ...grpc.CallOption) (*ListSitesResponse, error)
 }
@@ -45,6 +48,15 @@ func (c *sitesClient) AddSite(ctx context.Context, in *AddSiteRequest, opts ...g
 	return out, nil
 }
 
+func (c *sitesClient) RemoveSite(ctx context.Context, in *RemoveSiteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/com.mintter.daemon.v1alpha.Sites/RemoveSite", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *sitesClient) ListSites(ctx context.Context, in *ListSitesRequest, opts ...grpc.CallOption) (*ListSitesResponse, error) {
 	out := new(ListSitesResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.daemon.v1alpha.Sites/ListSites", in, out, opts...)
@@ -60,6 +72,8 @@ func (c *sitesClient) ListSites(ctx context.Context, in *ListSitesRequest, opts 
 type SitesServer interface {
 	// Adds a site configuration to the local app.
 	AddSite(context.Context, *AddSiteRequest) (*SiteConfig, error)
+	// Adds a site configuration to the local app.
+	RemoveSite(context.Context, *RemoveSiteRequest) (*emptypb.Empty, error)
 	// Lists configured sites.
 	ListSites(context.Context, *ListSitesRequest) (*ListSitesResponse, error)
 }
@@ -70,6 +84,9 @@ type UnimplementedSitesServer struct {
 
 func (UnimplementedSitesServer) AddSite(context.Context, *AddSiteRequest) (*SiteConfig, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddSite not implemented")
+}
+func (UnimplementedSitesServer) RemoveSite(context.Context, *RemoveSiteRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveSite not implemented")
 }
 func (UnimplementedSitesServer) ListSites(context.Context, *ListSitesRequest) (*ListSitesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListSites not implemented")
@@ -104,6 +121,24 @@ func _Sites_AddSite_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Sites_RemoveSite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveSiteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SitesServer).RemoveSite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.daemon.v1alpha.Sites/RemoveSite",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SitesServer).RemoveSite(ctx, req.(*RemoveSiteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Sites_ListSites_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListSitesRequest)
 	if err := dec(in); err != nil {
@@ -132,6 +167,10 @@ var Sites_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddSite",
 			Handler:    _Sites_AddSite_Handler,
+		},
+		{
+			MethodName: "RemoveSite",
+			Handler:    _Sites_RemoveSite_Handler,
 		},
 		{
 			MethodName: "ListSites",

@@ -17,7 +17,7 @@ import {useEffect, useMemo} from 'react'
 export * from './types'
 
 export const queryKeys = {
-  SITES_LIST: 'SITES_LIST',
+  GET_SITES: 'GET_SITES',
   GET_SITE_INFO: 'GET_SITE_INFO', // , siteId: string
   GET_SITE_MEMBERS: 'GET_SITE_MEMBERS', // , siteId: string
   GET_DOC_PUBLICATIONS: 'GET_DOC_PUBLICATIONS', // , siteId: string
@@ -32,6 +32,7 @@ export const queryKeys = {
   GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
   GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
   GET_PEER_INFO: 'GET_PEER_INFO',
+  GET_WEB_PUBLICATIONS: 'GET_WEB_PUBLICATIONS',
 }
 
 type QueryOptions = {

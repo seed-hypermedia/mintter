@@ -200,6 +200,56 @@ export function member_RoleToJSON(object: Member_Role): string {
 export interface DiscoveryConfig {
 }
 
+/** Request the server to pin+publish a document. */
+export interface PublishRequest {
+  /** id of the doc to publish */
+  docId: string;
+  /** (optional) pretty path to publish at. Empty string === home doc. */
+  path: string;
+}
+
+/** Response when publishing a document. */
+export interface PublishResponse {
+  /** id of the web publication on this server */
+  publicationId: string;
+}
+
+/** Request Unpin/Unpublish a document from the site. */
+export interface UnpublishRequest {
+  /** id of web publication on this server to unpublish */
+  publicationId: string;
+}
+
+export interface UnpublishResponse {
+}
+
+/** Object representing a "web publication" row on this server, including fields for user presentation (doc_title, author_name, update_time) */
+export interface ListedWebPublication {
+  /** id of web publication on this server */
+  publicationId: string;
+  /** id of published doc */
+  docId: string;
+  /** (optional) Pretty path of the publication. Empty string === home doc. */
+  path: string;
+  /** Timestamp of the last update to the published doc */
+  updateTime:
+    | Date
+    | undefined;
+  /** name of the last editor to update the doc */
+  authorName: string;
+  /** current title if the doc */
+  docTitle: string;
+}
+
+/** Request to list "web publications", (pinned/published docs on the server) */
+export interface ListPublicationsRequest {
+}
+
+/** Response of all "web publications" on the server */
+export interface ListPublicationsResponse {
+  publications: ListedWebPublication[];
+}
+
 function createBaseCreateInviteTokenRequest(): CreateInviteTokenRequest {
   return { role: 0, expireTime: undefined };
 }
@@ -1198,6 +1248,385 @@ export const DiscoveryConfig = {
   },
 };
 
+function createBasePublishRequest(): PublishRequest {
+  return { docId: "", path: "" };
+}
+
+export const PublishRequest = {
+  encode(message: PublishRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.docId !== "") {
+      writer.uint32(10).string(message.docId);
+    }
+    if (message.path !== "") {
+      writer.uint32(18).string(message.path);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): PublishRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePublishRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.docId = reader.string();
+          break;
+        case 2:
+          message.path = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PublishRequest {
+    return {
+      docId: isSet(object.docId) ? String(object.docId) : "",
+      path: isSet(object.path) ? String(object.path) : "",
+    };
+  },
+
+  toJSON(message: PublishRequest): unknown {
+    const obj: any = {};
+    message.docId !== undefined && (obj.docId = message.docId);
+    message.path !== undefined && (obj.path = message.path);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<PublishRequest>, I>>(object: I): PublishRequest {
+    const message = createBasePublishRequest();
+    message.docId = object.docId ?? "";
+    message.path = object.path ?? "";
+    return message;
+  },
+};
+
+function createBasePublishResponse(): PublishResponse {
+  return { publicationId: "" };
+}
+
+export const PublishResponse = {
+  encode(message: PublishResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.publicationId !== "") {
+      writer.uint32(10).string(message.publicationId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): PublishResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePublishResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.publicationId = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PublishResponse {
+    return { publicationId: isSet(object.publicationId) ? String(object.publicationId) : "" };
+  },
+
+  toJSON(message: PublishResponse): unknown {
+    const obj: any = {};
+    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<PublishResponse>, I>>(object: I): PublishResponse {
+    const message = createBasePublishResponse();
+    message.publicationId = object.publicationId ?? "";
+    return message;
+  },
+};
+
+function createBaseUnpublishRequest(): UnpublishRequest {
+  return { publicationId: "" };
+}
+
+export const UnpublishRequest = {
+  encode(message: UnpublishRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.publicationId !== "") {
+      writer.uint32(10).string(message.publicationId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UnpublishRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUnpublishRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.publicationId = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): UnpublishRequest {
+    return { publicationId: isSet(object.publicationId) ? String(object.publicationId) : "" };
+  },
+
+  toJSON(message: UnpublishRequest): unknown {
+    const obj: any = {};
+    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UnpublishRequest>, I>>(object: I): UnpublishRequest {
+    const message = createBaseUnpublishRequest();
+    message.publicationId = object.publicationId ?? "";
+    return message;
+  },
+};
+
+function createBaseUnpublishResponse(): UnpublishResponse {
+  return {};
+}
+
+export const UnpublishResponse = {
+  encode(_: UnpublishResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): UnpublishResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUnpublishResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): UnpublishResponse {
+    return {};
+  },
+
+  toJSON(_: UnpublishResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<UnpublishResponse>, I>>(_: I): UnpublishResponse {
+    const message = createBaseUnpublishResponse();
+    return message;
+  },
+};
+
+function createBaseListedWebPublication(): ListedWebPublication {
+  return { publicationId: "", docId: "", path: "", updateTime: undefined, authorName: "", docTitle: "" };
+}
+
+export const ListedWebPublication = {
+  encode(message: ListedWebPublication, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.publicationId !== "") {
+      writer.uint32(10).string(message.publicationId);
+    }
+    if (message.docId !== "") {
+      writer.uint32(18).string(message.docId);
+    }
+    if (message.path !== "") {
+      writer.uint32(26).string(message.path);
+    }
+    if (message.updateTime !== undefined) {
+      Timestamp.encode(toTimestamp(message.updateTime), writer.uint32(34).fork()).ldelim();
+    }
+    if (message.authorName !== "") {
+      writer.uint32(42).string(message.authorName);
+    }
+    if (message.docTitle !== "") {
+      writer.uint32(50).string(message.docTitle);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListedWebPublication {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListedWebPublication();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.publicationId = reader.string();
+          break;
+        case 2:
+          message.docId = reader.string();
+          break;
+        case 3:
+          message.path = reader.string();
+          break;
+        case 4:
+          message.updateTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          break;
+        case 5:
+          message.authorName = reader.string();
+          break;
+        case 6:
+          message.docTitle = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListedWebPublication {
+    return {
+      publicationId: isSet(object.publicationId) ? String(object.publicationId) : "",
+      docId: isSet(object.docId) ? String(object.docId) : "",
+      path: isSet(object.path) ? String(object.path) : "",
+      updateTime: isSet(object.updateTime) ? fromJsonTimestamp(object.updateTime) : undefined,
+      authorName: isSet(object.authorName) ? String(object.authorName) : "",
+      docTitle: isSet(object.docTitle) ? String(object.docTitle) : "",
+    };
+  },
+
+  toJSON(message: ListedWebPublication): unknown {
+    const obj: any = {};
+    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
+    message.docId !== undefined && (obj.docId = message.docId);
+    message.path !== undefined && (obj.path = message.path);
+    message.updateTime !== undefined && (obj.updateTime = message.updateTime.toISOString());
+    message.authorName !== undefined && (obj.authorName = message.authorName);
+    message.docTitle !== undefined && (obj.docTitle = message.docTitle);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ListedWebPublication>, I>>(object: I): ListedWebPublication {
+    const message = createBaseListedWebPublication();
+    message.publicationId = object.publicationId ?? "";
+    message.docId = object.docId ?? "";
+    message.path = object.path ?? "";
+    message.updateTime = object.updateTime ?? undefined;
+    message.authorName = object.authorName ?? "";
+    message.docTitle = object.docTitle ?? "";
+    return message;
+  },
+};
+
+function createBaseListPublicationsRequest(): ListPublicationsRequest {
+  return {};
+}
+
+export const ListPublicationsRequest = {
+  encode(_: ListPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListPublicationsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): ListPublicationsRequest {
+    return {};
+  },
+
+  toJSON(_: ListPublicationsRequest): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ListPublicationsRequest>, I>>(_: I): ListPublicationsRequest {
+    const message = createBaseListPublicationsRequest();
+    return message;
+  },
+};
+
+function createBaseListPublicationsResponse(): ListPublicationsResponse {
+  return { publications: [] };
+}
+
+export const ListPublicationsResponse = {
+  encode(message: ListPublicationsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.publications) {
+      ListedWebPublication.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): ListPublicationsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseListPublicationsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.publications.push(ListedWebPublication.decode(reader, reader.uint32()));
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): ListPublicationsResponse {
+    return {
+      publications: Array.isArray(object?.publications)
+        ? object.publications.map((e: any) => ListedWebPublication.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: ListPublicationsResponse): unknown {
+    const obj: any = {};
+    if (message.publications) {
+      obj.publications = message.publications.map((e) => e ? ListedWebPublication.toJSON(e) : undefined);
+    } else {
+      obj.publications = [];
+    }
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<ListPublicationsResponse>, I>>(object: I): ListPublicationsResponse {
+    const message = createBaseListPublicationsResponse();
+    message.publications = object.publications?.map((e) => ListedWebPublication.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 /**
  * Site API service allows to configure a remote Mintter Site.
  * The server exposing this API should take care about authenticating the caller.
@@ -1235,6 +1664,15 @@ export interface Site {
     request: DeepPartial<ListBlockedAccountsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<ListBlockedAccountsResponse>;
+  /** pin and publish the document to the public web site */
+  publish(request: DeepPartial<PublishRequest>, metadata?: grpc.Metadata): Promise<PublishResponse>;
+  /** un-pin the document */
+  unpublish(request: DeepPartial<UnpublishRequest>, metadata?: grpc.Metadata): Promise<UnpublishResponse>;
+  /** list all the published documents */
+  listPublications(
+    request: DeepPartial<ListPublicationsRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<ListPublicationsResponse>;
 }
 
 export class SiteClientImpl implements Site {
@@ -1252,6 +1690,9 @@ export class SiteClientImpl implements Site {
     this.blockAccount = this.blockAccount.bind(this);
     this.unblockAccount = this.unblockAccount.bind(this);
     this.listBlockedAccounts = this.listBlockedAccounts.bind(this);
+    this.publish = this.publish.bind(this);
+    this.unpublish = this.unpublish.bind(this);
+    this.listPublications = this.listPublications.bind(this);
   }
 
   createInviteToken(request: DeepPartial<CreateInviteTokenRequest>, metadata?: grpc.Metadata): Promise<InviteToken> {
@@ -1301,6 +1742,21 @@ export class SiteClientImpl implements Site {
     metadata?: grpc.Metadata,
   ): Promise<ListBlockedAccountsResponse> {
     return this.rpc.unary(SiteListBlockedAccountsDesc, ListBlockedAccountsRequest.fromPartial(request), metadata);
+  }
+
+  publish(request: DeepPartial<PublishRequest>, metadata?: grpc.Metadata): Promise<PublishResponse> {
+    return this.rpc.unary(SitePublishDesc, PublishRequest.fromPartial(request), metadata);
+  }
+
+  unpublish(request: DeepPartial<UnpublishRequest>, metadata?: grpc.Metadata): Promise<UnpublishResponse> {
+    return this.rpc.unary(SiteUnpublishDesc, UnpublishRequest.fromPartial(request), metadata);
+  }
+
+  listPublications(
+    request: DeepPartial<ListPublicationsRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<ListPublicationsResponse> {
+    return this.rpc.unary(SiteListPublicationsDesc, ListPublicationsRequest.fromPartial(request), metadata);
   }
 }
 
@@ -1518,6 +1974,72 @@ export const SiteListBlockedAccountsDesc: UnaryMethodDefinitionish = {
     deserializeBinary(data: Uint8Array) {
       return {
         ...ListBlockedAccountsResponse.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
+
+export const SitePublishDesc: UnaryMethodDefinitionish = {
+  methodName: "Publish",
+  service: SiteDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return PublishRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...PublishResponse.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
+
+export const SiteUnpublishDesc: UnaryMethodDefinitionish = {
+  methodName: "Unpublish",
+  service: SiteDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return UnpublishRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...UnpublishResponse.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
+
+export const SiteListPublicationsDesc: UnaryMethodDefinitionish = {
+  methodName: "ListPublications",
+  service: SiteDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return ListPublicationsRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...ListPublicationsResponse.decode(data),
         toObject() {
           return this;
         },

@@ -3,6 +3,7 @@ syntax = "proto3";
 package com.mintter.daemon.v1alpha;
 
 import "site/v1alpha/site.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "mintter/backend/genproto/daemon/v1alpha;daemon";
 
@@ -13,6 +14,9 @@ option go_package = "mintter/backend/genproto/daemon/v1alpha;daemon";
 service Sites {
   // Adds a site configuration to the local app.
   rpc AddSite(AddSiteRequest) returns (SiteConfig);
+
+  // Adds a site configuration to the local app.
+  rpc RemoveSite(RemoveSiteRequest) returns (google.protobuf.Empty);
 
   // Lists configured sites.
   rpc ListSites(ListSitesRequest) returns (ListSitesResponse);
@@ -26,6 +30,12 @@ message AddSiteRequest {
   // Optional. Invite token for the site. Not needed
   // if the site already knows our Account ID.
   string invite_token = 2;
+}
+
+// Request to remove a site from local server
+message RemoveSiteRequest {
+  // Required. Site hostname.
+  string hostname = 1;
 }
 
 // Request to list configures sites.

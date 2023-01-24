@@ -1,3 +1,4 @@
+import {useSitePublish} from '@app/hooks/sites'
 import {useMain} from '@app/main-context'
 import {styled} from '@app/stitches.config'
 import {Button} from '@components/button'
@@ -5,6 +6,7 @@ import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {TextField} from '@components/text-field'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'
+import {toast} from 'react-hot-toast'
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
@@ -25,9 +27,11 @@ function PublishDialogForm({
   onDone,
 }: {
   siteId: string
-  docId?: string
+  docId: string
   onDone?: () => void
 }) {
+  const publish = useSitePublish()
+
   const main = useMain()
   const init = useMemo(() => {
     const doc = main.getSnapshot().context.current
@@ -36,9 +40,8 @@ function PublishDialogForm({
     const path = title ? writePathState(title) : 'untitled'
 
     return {path, docId: docState?.context.documentId}
-  }, [])
+  }, [main])
   const [path, setPath] = useState<string>(init.path)
-
   return (
     <>
       <Heading>Publish to {siteId}</Heading>
@@ -56,8 +59,21 @@ function PublishDialogForm({
         https://{siteId}/{path === '' ? `p/${init.docId}` : readPathState(path)}
       </URLPreview>
       <Button
+        disabled={publish.isLoading}
         onClick={() => {
-          onDone?.()
+          publish
+            .mutateAsync({
+              hostname: siteId,
+              docId,
+              path,
+            })
+            .then(() => {
+              onDone?.()
+            })
+            .catch((e) => {
+              console.error(e)
+              toast('Error publishing document', {})
+            })
         }}
       >
         Publish Document
@@ -66,27 +82,27 @@ function PublishDialogForm({
   )
 }
 export function usePublicationDialog(docId?: string) {
-  const [openSiteId, setOpenSiteId] = useState<null | string>(null)
-  function open(siteId: string) {
-    setOpenSiteId(siteId)
+  const [openSiteHostname, setOpenSiteHostname] = useState<null | string>(null)
+  function open(hostname: string) {
+    setOpenSiteHostname(hostname)
   }
   return {
     content: (
       <DialogPrimitive.Root
-        open={!!openSiteId}
+        open={!!openSiteHostname}
         onOpenChange={(isOpen) => {
-          if (!isOpen) setOpenSiteId(null)
+          if (!isOpen) setOpenSiteHostname(null)
         }}
       >
         <DialogPrimitive.Portal>
           <StyledOverlay />
           <StyledContent>
-            {openSiteId && (
+            {openSiteHostname && docId && (
               <PublishDialogForm
                 docId={docId}
-                siteId={openSiteId}
+                siteId={openSiteHostname}
                 onDone={() => {
-                  setOpenSiteId(null)
+                  setOpenSiteHostname(null)
                 }}
               />
             )}

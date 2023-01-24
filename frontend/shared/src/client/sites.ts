@@ -2,6 +2,8 @@ import {client} from './client'
 import {
   AddSiteRequest,
   ListSitesRequest,
+  ListSitesResponse,
+  RemoveSiteRequest,
   SitesClientImpl,
 } from './.generated/daemon/v1alpha/sites'
 import {
@@ -17,7 +19,10 @@ import {
   RedeemInviteTokenRequest,
   UnblockAccountRequest,
   UpdateSiteInfoRequest,
+  PublishRequest,
+  UnpublishRequest,
 } from './.generated/site/v1alpha/site'
+import {ListPublicationsRequest} from './.generated/documents/v1alpha/documents'
 
 export async function addSite(hostname: string, inviteToken?: string) {
   return await new SitesClientImpl(client).addSite(
@@ -28,15 +33,28 @@ export async function addSite(hostname: string, inviteToken?: string) {
   )
 }
 
-export async function listSites() {
+export async function listSites(): Promise<ListSitesResponse> {
+  // EV TESTING:
+  // return {
+  //   sites: [
+  //     {
+  //       hostname: 'temp-test.org',
+  //       role: Member_Role.OWNER,
+  //     },
+  //   ],
+  //   nextPageToken: '',
+  // }
   return await new SitesClientImpl(client).listSites(
     ListSitesRequest.fromPartial({}),
   )
 }
 
 export async function removeSite(hostname: string) {
-  // TODO
-  return
+  return await new SitesClientImpl(client).removeSite(
+    RemoveSiteRequest.fromPartial({
+      hostname,
+    }),
+  )
 }
 
 async function sendSiteRequest<Result>(
@@ -135,6 +153,66 @@ export async function siteUpdateSiteInfo(
       UpdateSiteInfoRequest.fromPartial({
         description,
         title,
+      }),
+    ),
+  )
+}
+
+export async function listWebPublications(hostname: string) {
+  // EV TESTING:
+  // return {
+  //   publications: [
+  //     {
+  //       docId: 'lol',
+  //       authorName: 'Horacio',
+  //       publicationId: '123',
+  //       updateTime: new Date(),
+  //       docTitle: 'The Home Document',
+  //       path: '',
+  //     },
+  //     {
+  //       docId: '1',
+  //       authorName: 'Eric',
+  //       publicationId: '1233',
+  //       updateTime: new Date(),
+  //       docTitle: 'The Title at Thepath',
+  //       path: 'thepath',
+  //     },
+  //     {
+  //       docId: '2',
+  //       authorName: 'Eric',
+  //       publicationId: '1234',
+  //       updateTime: new Date(),
+  //       docTitle: 'The Unlisted Title',
+  //     },
+  //   ] as ListedWebPublication[],
+  // }
+
+  return await sendSiteRequest(hostname, (client) =>
+    client.listPublications(ListPublicationsRequest.fromPartial({})),
+  )
+}
+
+export async function publishDoc(
+  hostname: string,
+  docId: string,
+  path: string,
+) {
+  return await sendSiteRequest(hostname, (client) =>
+    client.publish(
+      PublishRequest.fromPartial({
+        docId,
+        path,
+      }),
+    ),
+  )
+}
+
+export async function unpublish(hostname: string, publicationId: string) {
+  return await sendSiteRequest(hostname, (client) =>
+    client.unpublish(
+      UnpublishRequest.fromPartial({
+        publicationId,
       }),
     ),
   )
