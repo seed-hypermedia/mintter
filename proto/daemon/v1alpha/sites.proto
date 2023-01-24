@@ -15,8 +15,8 @@ service Sites {
   // Adds a site configuration to the local app.
   rpc AddSite(AddSiteRequest) returns (SiteConfig);
 
-  // Adds a site configuration to the local app.
-  rpc RemoveSite(RemoveSiteRequest) returns (google.protobuf.Empty);
+  // Deletes the site configuration from the local app.
+  rpc DeleteSite(DeleteSiteRequest) returns (google.protobuf.Empty);
 
   // Lists configured sites.
   rpc ListSites(ListSitesRequest) returns (ListSitesResponse);
@@ -32,8 +32,8 @@ message AddSiteRequest {
   string invite_token = 2;
 }
 
-// Request to remove a site from local server
-message RemoveSiteRequest {
+// Request to delete a site from local server
+message DeleteSiteRequest {
   // Required. Site hostname.
   string hostname = 1;
 }

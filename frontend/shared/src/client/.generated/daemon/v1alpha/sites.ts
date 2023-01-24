@@ -18,8 +18,8 @@ export interface AddSiteRequest {
   inviteToken: string;
 }
 
-/** Request to remove a site from local server */
-export interface RemoveSiteRequest {
+/** Request to delete a site from local server */
+export interface DeleteSiteRequest {
   /** Required. Site hostname. */
   hostname: string;
 }
@@ -106,22 +106,22 @@ export const AddSiteRequest = {
   },
 };
 
-function createBaseRemoveSiteRequest(): RemoveSiteRequest {
+function createBaseDeleteSiteRequest(): DeleteSiteRequest {
   return { hostname: "" };
 }
 
-export const RemoveSiteRequest = {
-  encode(message: RemoveSiteRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const DeleteSiteRequest = {
+  encode(message: DeleteSiteRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.hostname !== "") {
       writer.uint32(10).string(message.hostname);
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): RemoveSiteRequest {
+  decode(input: _m0.Reader | Uint8Array, length?: number): DeleteSiteRequest {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseRemoveSiteRequest();
+    const message = createBaseDeleteSiteRequest();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -136,18 +136,18 @@ export const RemoveSiteRequest = {
     return message;
   },
 
-  fromJSON(object: any): RemoveSiteRequest {
+  fromJSON(object: any): DeleteSiteRequest {
     return { hostname: isSet(object.hostname) ? String(object.hostname) : "" };
   },
 
-  toJSON(message: RemoveSiteRequest): unknown {
+  toJSON(message: DeleteSiteRequest): unknown {
     const obj: any = {};
     message.hostname !== undefined && (obj.hostname = message.hostname);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<RemoveSiteRequest>, I>>(object: I): RemoveSiteRequest {
-    const message = createBaseRemoveSiteRequest();
+  fromPartial<I extends Exact<DeepPartial<DeleteSiteRequest>, I>>(object: I): DeleteSiteRequest {
+    const message = createBaseDeleteSiteRequest();
     message.hostname = object.hostname ?? "";
     return message;
   },
@@ -340,8 +340,8 @@ export const SiteConfig = {
 export interface Sites {
   /** Adds a site configuration to the local app. */
   addSite(request: DeepPartial<AddSiteRequest>, metadata?: grpc.Metadata): Promise<SiteConfig>;
-  /** Adds a site configuration to the local app. */
-  removeSite(request: DeepPartial<RemoveSiteRequest>, metadata?: grpc.Metadata): Promise<Empty>;
+  /** Deletes the site configuration from the local app. */
+  deleteSite(request: DeepPartial<DeleteSiteRequest>, metadata?: grpc.Metadata): Promise<Empty>;
   /** Lists configured sites. */
   listSites(request: DeepPartial<ListSitesRequest>, metadata?: grpc.Metadata): Promise<ListSitesResponse>;
 }
@@ -352,7 +352,7 @@ export class SitesClientImpl implements Sites {
   constructor(rpc: Rpc) {
     this.rpc = rpc;
     this.addSite = this.addSite.bind(this);
-    this.removeSite = this.removeSite.bind(this);
+    this.deleteSite = this.deleteSite.bind(this);
     this.listSites = this.listSites.bind(this);
   }
 
@@ -360,8 +360,8 @@ export class SitesClientImpl implements Sites {
     return this.rpc.unary(SitesAddSiteDesc, AddSiteRequest.fromPartial(request), metadata);
   }
 
-  removeSite(request: DeepPartial<RemoveSiteRequest>, metadata?: grpc.Metadata): Promise<Empty> {
-    return this.rpc.unary(SitesRemoveSiteDesc, RemoveSiteRequest.fromPartial(request), metadata);
+  deleteSite(request: DeepPartial<DeleteSiteRequest>, metadata?: grpc.Metadata): Promise<Empty> {
+    return this.rpc.unary(SitesDeleteSiteDesc, DeleteSiteRequest.fromPartial(request), metadata);
   }
 
   listSites(request: DeepPartial<ListSitesRequest>, metadata?: grpc.Metadata): Promise<ListSitesResponse> {
@@ -393,14 +393,14 @@ export const SitesAddSiteDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const SitesRemoveSiteDesc: UnaryMethodDefinitionish = {
-  methodName: "RemoveSite",
+export const SitesDeleteSiteDesc: UnaryMethodDefinitionish = {
+  methodName: "DeleteSite",
   service: SitesDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return RemoveSiteRequest.encode(this).finish();
+      return DeleteSiteRequest.encode(this).finish();
     },
   } as any,
   responseType: {

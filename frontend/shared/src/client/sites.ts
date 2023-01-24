@@ -3,7 +3,7 @@ import {
   AddSiteRequest,
   ListSitesRequest,
   ListSitesResponse,
-  RemoveSiteRequest,
+  DeleteSiteRequest,
   SitesClientImpl,
 } from './.generated/daemon/v1alpha/sites'
 import {
@@ -49,9 +49,9 @@ export async function listSites(): Promise<ListSitesResponse> {
   )
 }
 
-export async function removeSite(hostname: string) {
-  return await new SitesClientImpl(client).removeSite(
-    RemoveSiteRequest.fromPartial({
+export async function deleteSite(hostname: string) {
+  return await new SitesClientImpl(client).deleteSite(
+    DeleteSiteRequest.fromPartial({
       hostname,
     }),
   )
