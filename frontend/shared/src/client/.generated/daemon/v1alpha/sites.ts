@@ -48,6 +48,20 @@ export interface SiteConfig {
   role: Member_Role;
 }
 
+export interface GetDocWebPublicationsRequest {
+  docId: string;
+}
+
+export interface DocWebPublication {
+  hostname: string;
+  publicationId: string;
+  path: string;
+}
+
+export interface GetDocWebPublicationsResponse {
+  publications: DocWebPublication[];
+}
+
 function createBaseAddSiteRequest(): AddSiteRequest {
   return { hostname: "", inviteToken: "" };
 }
@@ -331,6 +345,177 @@ export const SiteConfig = {
   },
 };
 
+function createBaseGetDocWebPublicationsRequest(): GetDocWebPublicationsRequest {
+  return { docId: "" };
+}
+
+export const GetDocWebPublicationsRequest = {
+  encode(message: GetDocWebPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.docId !== "") {
+      writer.uint32(10).string(message.docId);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetDocWebPublicationsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetDocWebPublicationsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.docId = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetDocWebPublicationsRequest {
+    return { docId: isSet(object.docId) ? String(object.docId) : "" };
+  },
+
+  toJSON(message: GetDocWebPublicationsRequest): unknown {
+    const obj: any = {};
+    message.docId !== undefined && (obj.docId = message.docId);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<GetDocWebPublicationsRequest>, I>>(object: I): GetDocWebPublicationsRequest {
+    const message = createBaseGetDocWebPublicationsRequest();
+    message.docId = object.docId ?? "";
+    return message;
+  },
+};
+
+function createBaseDocWebPublication(): DocWebPublication {
+  return { hostname: "", publicationId: "", path: "" };
+}
+
+export const DocWebPublication = {
+  encode(message: DocWebPublication, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.hostname !== "") {
+      writer.uint32(10).string(message.hostname);
+    }
+    if (message.publicationId !== "") {
+      writer.uint32(18).string(message.publicationId);
+    }
+    if (message.path !== "") {
+      writer.uint32(26).string(message.path);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): DocWebPublication {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDocWebPublication();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.hostname = reader.string();
+          break;
+        case 2:
+          message.publicationId = reader.string();
+          break;
+        case 3:
+          message.path = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DocWebPublication {
+    return {
+      hostname: isSet(object.hostname) ? String(object.hostname) : "",
+      publicationId: isSet(object.publicationId) ? String(object.publicationId) : "",
+      path: isSet(object.path) ? String(object.path) : "",
+    };
+  },
+
+  toJSON(message: DocWebPublication): unknown {
+    const obj: any = {};
+    message.hostname !== undefined && (obj.hostname = message.hostname);
+    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
+    message.path !== undefined && (obj.path = message.path);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<DocWebPublication>, I>>(object: I): DocWebPublication {
+    const message = createBaseDocWebPublication();
+    message.hostname = object.hostname ?? "";
+    message.publicationId = object.publicationId ?? "";
+    message.path = object.path ?? "";
+    return message;
+  },
+};
+
+function createBaseGetDocWebPublicationsResponse(): GetDocWebPublicationsResponse {
+  return { publications: [] };
+}
+
+export const GetDocWebPublicationsResponse = {
+  encode(message: GetDocWebPublicationsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.publications) {
+      DocWebPublication.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): GetDocWebPublicationsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetDocWebPublicationsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.publications.push(DocWebPublication.decode(reader, reader.uint32()));
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): GetDocWebPublicationsResponse {
+    return {
+      publications: Array.isArray(object?.publications)
+        ? object.publications.map((e: any) => DocWebPublication.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: GetDocWebPublicationsResponse): unknown {
+    const obj: any = {};
+    if (message.publications) {
+      obj.publications = message.publications.map((e) => e ? DocWebPublication.toJSON(e) : undefined);
+    } else {
+      obj.publications = [];
+    }
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<GetDocWebPublicationsResponse>, I>>(
+    object: I,
+  ): GetDocWebPublicationsResponse {
+    const message = createBaseGetDocWebPublicationsResponse();
+    message.publications = object.publications?.map((e) => DocWebPublication.fromPartial(e)) || [];
+    return message;
+  },
+};
+
 /**
  * Sites API allows to configure the remote Mintter Sites inside the local app.
  * To interact with the existing site, the local daemon will expose the Site API
@@ -344,6 +529,10 @@ export interface Sites {
   deleteSite(request: DeepPartial<DeleteSiteRequest>, metadata?: grpc.Metadata): Promise<Empty>;
   /** Lists configured sites. */
   listSites(request: DeepPartial<ListSitesRequest>, metadata?: grpc.Metadata): Promise<ListSitesResponse>;
+  getDocWebPublications(
+    request: DeepPartial<GetDocWebPublicationsRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<GetDocWebPublicationsResponse>;
 }
 
 export class SitesClientImpl implements Sites {
@@ -354,6 +543,7 @@ export class SitesClientImpl implements Sites {
     this.addSite = this.addSite.bind(this);
     this.deleteSite = this.deleteSite.bind(this);
     this.listSites = this.listSites.bind(this);
+    this.getDocWebPublications = this.getDocWebPublications.bind(this);
   }
 
   addSite(request: DeepPartial<AddSiteRequest>, metadata?: grpc.Metadata): Promise<SiteConfig> {
@@ -366,6 +556,13 @@ export class SitesClientImpl implements Sites {
 
   listSites(request: DeepPartial<ListSitesRequest>, metadata?: grpc.Metadata): Promise<ListSitesResponse> {
     return this.rpc.unary(SitesListSitesDesc, ListSitesRequest.fromPartial(request), metadata);
+  }
+
+  getDocWebPublications(
+    request: DeepPartial<GetDocWebPublicationsRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<GetDocWebPublicationsResponse> {
+    return this.rpc.unary(SitesGetDocWebPublicationsDesc, GetDocWebPublicationsRequest.fromPartial(request), metadata);
   }
 }
 
@@ -429,6 +626,28 @@ export const SitesListSitesDesc: UnaryMethodDefinitionish = {
     deserializeBinary(data: Uint8Array) {
       return {
         ...ListSitesResponse.decode(data),
+        toObject() {
+          return this;
+        },
+      };
+    },
+  } as any,
+};
+
+export const SitesGetDocWebPublicationsDesc: UnaryMethodDefinitionish = {
+  methodName: "GetDocWebPublications",
+  service: SitesDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return GetDocWebPublicationsRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      return {
+        ...GetDocWebPublicationsResponse.decode(data),
         toObject() {
           return this;
         },

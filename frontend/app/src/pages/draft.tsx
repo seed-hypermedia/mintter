@@ -9,11 +9,7 @@ import {FileProvider} from '@app/file-provider'
 import {useMain} from '@app/main-context'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {
-  ChildrenOf,
-  Document,
-  publishDraft as apiPublishDraft,
-} from '@mintter/shared'
+import {ChildrenOf, Document, publishDraft} from '@mintter/shared'
 import {AppError} from '@app/root'
 import {openWindow} from '@app/utils/open-window'
 import {Box} from '@components/box'
@@ -30,16 +26,15 @@ import {ErrorBoundary} from 'react-error-boundary'
 import toast from 'react-hot-toast'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {useDocRepublish} from '@app/hooks/sites'
 
 type DraftPageProps = {
   shouldAutosave?: boolean
-  publishDraft?: typeof apiPublishDraft
   editor?: SlateEditor
 }
 
 export default function DraftWrapper({
   shouldAutosave = true,
-  publishDraft = apiPublishDraft,
   editor,
 }: DraftPageProps) {
   let client = useQueryClient()
@@ -47,6 +42,8 @@ export default function DraftWrapper({
   let [, params] = useRoute('/d/:id/:tag?')
   let [, setLocation] = useLocation()
   let mouseService = useInterpret(() => mouseMachine)
+
+  const republishDoc = useDocRepublish()
 
   // @ts-ignore
   window.mouseService = mouseService
@@ -88,8 +85,10 @@ export default function DraftWrapper({
       },
       services: {
         // @ts-ignore
-        publishDraft: (context) => {
-          return publishDraft(context.documentId)
+        publishDraft: async (context) => {
+          const pub = await publishDraft(context.documentId)
+          await republishDoc.mutateAsync(pub)
+          return pub
         },
       },
     }),

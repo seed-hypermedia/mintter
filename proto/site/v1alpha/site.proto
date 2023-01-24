@@ -194,14 +194,17 @@ message PublishRequest {
   // id of the doc to publish
   string doc_id = 1;
 
+  // (optional) id of the web publication that is being updated. If empty, a new publication is being created.
+  string publication_id = 2;
+
   // (optional) pretty path to publish at. Empty string === home doc.
-  string path = 2;
+  string path = 3;
 
   // version of the doc to publish
-  string version = 3;
+  string version = 4;
 
   // list of doc ids that are referenced by this doc via links or transclusions
-  repeated string referenced_doc_ids = 4;
+  repeated string referenced_doc_ids = 5;
 }
 
 // Response when publishing a document.

@@ -33,7 +33,7 @@ export const queryKeys = {
   GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
   GET_PEER_INFO: 'GET_PEER_INFO',
   GET_WEB_PUBLICATIONS: 'GET_WEB_PUBLICATIONS',
-}
+} as const
 
 type QueryOptions = {
   rpc?: GrpcClient

@@ -180,6 +180,8 @@ export interface DiscoveryConfig {
 export interface PublishRequest {
   /** id of the doc to publish */
   docId: string;
+  /** (optional) id of the web publication that is being updated. If empty, a new publication is being created. */
+  publicationId: string;
   /** (optional) pretty path to publish at. Empty string === home doc. */
   path: string;
   /** version of the doc to publish */
@@ -1057,7 +1059,7 @@ export const DiscoveryConfig = {
 };
 
 function createBasePublishRequest(): PublishRequest {
-  return { docId: "", path: "", version: "", referencedDocIds: [] };
+  return { docId: "", publicationId: "", path: "", version: "", referencedDocIds: [] };
 }
 
 export const PublishRequest = {
@@ -1065,14 +1067,17 @@ export const PublishRequest = {
     if (message.docId !== "") {
       writer.uint32(10).string(message.docId);
     }
+    if (message.publicationId !== "") {
+      writer.uint32(18).string(message.publicationId);
+    }
     if (message.path !== "") {
-      writer.uint32(18).string(message.path);
+      writer.uint32(26).string(message.path);
     }
     if (message.version !== "") {
-      writer.uint32(26).string(message.version);
+      writer.uint32(34).string(message.version);
     }
     for (const v of message.referencedDocIds) {
-      writer.uint32(34).string(v!);
+      writer.uint32(42).string(v!);
     }
     return writer;
   },
@@ -1088,12 +1093,15 @@ export const PublishRequest = {
           message.docId = reader.string();
           break;
         case 2:
-          message.path = reader.string();
+          message.publicationId = reader.string();
           break;
         case 3:
-          message.version = reader.string();
+          message.path = reader.string();
           break;
         case 4:
+          message.version = reader.string();
+          break;
+        case 5:
           message.referencedDocIds.push(reader.string());
           break;
         default:
@@ -1107,6 +1115,7 @@ export const PublishRequest = {
   fromJSON(object: any): PublishRequest {
     return {
       docId: isSet(object.docId) ? String(object.docId) : "",
+      publicationId: isSet(object.publicationId) ? String(object.publicationId) : "",
       path: isSet(object.path) ? String(object.path) : "",
       version: isSet(object.version) ? String(object.version) : "",
       referencedDocIds: Array.isArray(object?.referencedDocIds)
@@ -1118,6 +1127,7 @@ export const PublishRequest = {
   toJSON(message: PublishRequest): unknown {
     const obj: any = {};
     message.docId !== undefined && (obj.docId = message.docId);
+    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
     message.path !== undefined && (obj.path = message.path);
     message.version !== undefined && (obj.version = message.version);
     if (message.referencedDocIds) {
@@ -1131,6 +1141,7 @@ export const PublishRequest = {
   fromPartial<I extends Exact<DeepPartial<PublishRequest>, I>>(object: I): PublishRequest {
     const message = createBasePublishRequest();
     message.docId = object.docId ?? "";
+    message.publicationId = object.publicationId ?? "";
     message.path = object.path ?? "";
     message.version = object.version ?? "";
     message.referencedDocIds = object.referencedDocIds?.map((e) => e) || [];

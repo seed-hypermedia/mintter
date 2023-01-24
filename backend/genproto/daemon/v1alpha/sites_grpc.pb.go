@@ -29,6 +29,7 @@ type SitesClient interface {
 	DeleteSite(ctx context.Context, in *DeleteSiteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists configured sites.
 	ListSites(ctx context.Context, in *ListSitesRequest, opts ...grpc.CallOption) (*ListSitesResponse, error)
+	GetDocWebPublications(ctx context.Context, in *GetDocWebPublicationsRequest, opts ...grpc.CallOption) (*GetDocWebPublicationsResponse, error)
 }
 
 type sitesClient struct {
@@ -66,6 +67,15 @@ func (c *sitesClient) ListSites(ctx context.Context, in *ListSitesRequest, opts 
 	return out, nil
 }
 
+func (c *sitesClient) GetDocWebPublications(ctx context.Context, in *GetDocWebPublicationsRequest, opts ...grpc.CallOption) (*GetDocWebPublicationsResponse, error) {
+	out := new(GetDocWebPublicationsResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.daemon.v1alpha.Sites/GetDocWebPublications", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SitesServer is the server API for Sites service.
 // All implementations should embed UnimplementedSitesServer
 // for forward compatibility
@@ -76,6 +86,7 @@ type SitesServer interface {
 	DeleteSite(context.Context, *DeleteSiteRequest) (*emptypb.Empty, error)
 	// Lists configured sites.
 	ListSites(context.Context, *ListSitesRequest) (*ListSitesResponse, error)
+	GetDocWebPublications(context.Context, *GetDocWebPublicationsRequest) (*GetDocWebPublicationsResponse, error)
 }
 
 // UnimplementedSitesServer should be embedded to have forward compatible implementations.
@@ -90,6 +101,9 @@ func (UnimplementedSitesServer) DeleteSite(context.Context, *DeleteSiteRequest) 
 }
 func (UnimplementedSitesServer) ListSites(context.Context, *ListSitesRequest) (*ListSitesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListSites not implemented")
+}
+func (UnimplementedSitesServer) GetDocWebPublications(context.Context, *GetDocWebPublicationsRequest) (*GetDocWebPublicationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDocWebPublications not implemented")
 }
 
 // UnsafeSitesServer may be embedded to opt out of forward compatibility for this service.
@@ -157,6 +171,24 @@ func _Sites_ListSites_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Sites_GetDocWebPublications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDocWebPublicationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SitesServer).GetDocWebPublications(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.daemon.v1alpha.Sites/GetDocWebPublications",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SitesServer).GetDocWebPublications(ctx, req.(*GetDocWebPublicationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Sites_ServiceDesc is the grpc.ServiceDesc for Sites service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -175,6 +207,10 @@ var Sites_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListSites",
 			Handler:    _Sites_ListSites_Handler,
+		},
+		{
+			MethodName: "GetDocWebPublications",
+			Handler:    _Sites_GetDocWebPublications_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

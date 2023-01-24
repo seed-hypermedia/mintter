@@ -13,6 +13,13 @@ import {
   UnpublishRequest,
   UpdateSiteInfoRequest,
   ListWebPublicationsRequest,
+  Document,
+  GetPublicationRequest,
+  PublicationsClientImpl,
+  Member_Role,
+  Block,
+  Publication,
+  GetDocWebPublicationsRequest,
 } from '@mintter/shared'
 import {
   useMutation,
@@ -23,6 +30,37 @@ import {
 import {queryKeys} from './index'
 
 const sitesClient = new SitesClientImpl(client)
+const publicationsClient = new PublicationsClientImpl(client)
+
+function blockExtractReferencedDocIds(block: Block) {
+  const docIds: string[] = []
+  block.annotations.forEach((annotation) => {
+    if (annotation.type === 'embed') {
+      docIds.push(annotation.attributes.url)
+    }
+    if (annotation.type === 'link') {
+      docIds.push(annotation.attributes.url)
+    }
+  })
+  return docIds
+}
+
+function extractReferencedDocIds(doc: Document) {
+  return doc.children
+    .map((child) =>
+      child.block ? blockExtractReferencedDocIds(child.block) : [],
+    )
+    .flat()
+}
+
+async function getDocWebPublications(docId: string) {
+  const result = await sitesClient.getDocWebPublications(
+    GetDocWebPublicationsRequest.fromPartial({
+      docId,
+    }),
+  )
+  return result.publications
+}
 
 async function sendSiteRequest<Result>(
   hostname: string,
@@ -35,27 +73,24 @@ async function sendSiteRequest<Result>(
 
 export function useDocPublications(docId: string) {
   return useQuery({
-    queryKey: [queryKeys.GET_DOC_PUBLICATIONS],
+    queryKey: [queryKeys.GET_DOC_PUBLICATIONS, docId],
     queryFn: async () => {
-      return []
+      return await getDocWebPublications(docId)
     },
   })
 }
 
 export function useSiteList() {
   return useQuery<SiteConfig[]>({
-    queryKey: [queryKeys.GET_SITES],
+    queryKey: ['hgyg'],
     queryFn: async () => {
       // EV TESTING:
-      // return {
-      //   sites: [
-      //     {
-      //       hostname: 'temp-test.org',
-      //       role: Member_Role.OWNER,
-      //     },
-      //   ],
-      //   nextPageToken: '',
-      // }
+      // return [
+      //   {
+      //     hostname: 'temp-test.org',
+      //     role: Member_Role.OWNER,
+      //   },
+      // ]
       const result = await sitesClient.listSites(
         ListSitesRequest.fromPartial({}),
       )
@@ -210,13 +245,19 @@ export function useSitePublish() {
       docId: string
       path: string
     }) => {
+      const {version, document} = await publicationsClient.getPublication(
+        GetPublicationRequest.fromPartial({documentId: docId}),
+      )
+      if (!document)
+        throw new Error('Cannot publish document that is not available locally')
+      const referencedDocIds = extractReferencedDocIds(document)
       await sendSiteRequest(hostname, (client) =>
         client.publish(
           PublishRequest.fromPartial({
-            docId,
+            docId: document.id,
             path,
-            version: 'soon',
-            referencedDocIds: [],
+            version: version,
+            referencedDocIds,
           }),
         ),
       )
@@ -227,6 +268,37 @@ export function useSitePublish() {
           queryKeys.GET_WEB_PUBLICATIONS,
           input.hostname,
         ])
+      },
+    },
+  )
+}
+
+export function useDocRepublish() {
+  return useMutation(
+    async ({document, version}: Publication) => {
+      if (!document)
+        throw new Error('Cannot publish document that is not available locally')
+      const referencedDocIds = extractReferencedDocIds(document)
+      const webPubs = await getDocWebPublications(document.id)
+      await Promise.all(
+        webPubs.map(async (webPub) => {
+          await sendSiteRequest(webPub.hostname, (client) =>
+            client.publish(
+              PublishRequest.fromPartial({
+                publicationId: webPub.publicationId,
+                docId: document.id,
+                path: webPub.path,
+                version: version,
+                referencedDocIds,
+              }),
+            ),
+          )
+        }),
+      )
+    },
+    {
+      onSuccess: (a, input) => {
+        appQueryClient.invalidateQueries([queryKeys.GET_WEB_PUBLICATIONS])
       },
     },
   )

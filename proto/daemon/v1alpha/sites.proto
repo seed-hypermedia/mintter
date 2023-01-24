@@ -20,6 +20,8 @@ service Sites {
 
   // Lists configured sites.
   rpc ListSites(ListSitesRequest) returns (ListSitesResponse);
+
+  rpc GetDocWebPublications(GetDocWebPublicationsRequest) returns (GetDocWebPublicationsResponse);
 }
 
 // Request to add a site.
@@ -63,4 +65,18 @@ message SiteConfig {
 
   // Our role on this site.
   com.mintter.site.v1alpha.Member.Role role = 2;
+}
+
+message GetDocWebPublicationsRequest {
+  string doc_id = 1;
+}
+
+message DocWebPublication {
+  string hostname = 1;
+  string publication_id = 2;
+  string path = 3;
+}
+
+message GetDocWebPublicationsResponse {
+  repeated DocWebPublication publications = 1;
 }

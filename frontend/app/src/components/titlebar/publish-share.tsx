@@ -31,8 +31,14 @@ function PublishedURLs({docId}: {docId: string}) {
   const publications = useDocPublications(docId)
   return (
     <>
-      {publications.data?.map((pub) => {
-        return <AccessURLRow key={pub.id} url={'title'} title="pub url" />
+      {publications.data?.map(({publicationId, hostname, path}) => {
+        return (
+          <AccessURLRow
+            key={publicationId}
+            url={`https://${publicationId}/${path}`}
+            title={`${hostname}/${path}`}
+          />
+        )
       })}
     </>
   )
@@ -146,10 +152,6 @@ export function PublishShareButton() {
             >
               <Subheading>Public on the Web:</Subheading>
               <MintterURLRow doc={docActor} />
-              <AccessURLRow // getridofme after you fix PublishedURLs
-                title="ethosphera.org/p/comingsoon"
-                url="https://ethosphera.org/p/comingsoon"
-              />
               {docId && <PublishedURLs docId={docId} />}
               <Subheading>Publish to:</Subheading>
               <PublishButtons

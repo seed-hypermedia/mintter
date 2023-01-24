@@ -88,11 +88,14 @@ export {
   ListSitesRequest,
   ListSitesResponse,
   SiteConfig,
+  GetDocWebPublicationsRequest,
 } from './.generated/daemon/v1alpha/sites'
+export {PublicationsClientImpl} from './.generated/documents/v1alpha/documents'
 export {
   SiteClientImpl,
   GetSiteInfoRequest,
   PublishRequest,
+  Member_Role,
   SiteInfo,
   UnpublishRequest,
   UpdateSiteInfoRequest,
