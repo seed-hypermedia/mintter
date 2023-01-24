@@ -38,10 +38,6 @@ type SiteClient interface {
 	GetMember(ctx context.Context, in *GetMemberRequest, opts ...grpc.CallOption) (*Member, error)
 	// Deletes an existing member.
 	DeleteMember(ctx context.Context, in *DeleteMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Blocks a given Mintter Account.
-	BlockAccount(ctx context.Context, in *BlockAccountRequest, opts ...grpc.CallOption) (*BlockAccountResponse, error)
-	// Unblock a previously blocked Mintter Account.
-	UnblockAccount(ctx context.Context, in *UnblockAccountRequest, opts ...grpc.CallOption) (*UnblockAccountResponse, error)
 	// Lists currently blocked Mintter Accounts.
 	ListBlockedAccounts(ctx context.Context, in *ListBlockedAccountsRequest, opts ...grpc.CallOption) (*ListBlockedAccountsResponse, error)
 	// pin and publish the document to the public web site
@@ -123,24 +119,6 @@ func (c *siteClient) DeleteMember(ctx context.Context, in *DeleteMemberRequest, 
 	return out, nil
 }
 
-func (c *siteClient) BlockAccount(ctx context.Context, in *BlockAccountRequest, opts ...grpc.CallOption) (*BlockAccountResponse, error) {
-	out := new(BlockAccountResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.site.v1alpha.Site/BlockAccount", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *siteClient) UnblockAccount(ctx context.Context, in *UnblockAccountRequest, opts ...grpc.CallOption) (*UnblockAccountResponse, error) {
-	out := new(UnblockAccountResponse)
-	err := c.cc.Invoke(ctx, "/com.mintter.site.v1alpha.Site/UnblockAccount", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *siteClient) ListBlockedAccounts(ctx context.Context, in *ListBlockedAccountsRequest, opts ...grpc.CallOption) (*ListBlockedAccountsResponse, error) {
 	out := new(ListBlockedAccountsResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.site.v1alpha.Site/ListBlockedAccounts", in, out, opts...)
@@ -196,10 +174,6 @@ type SiteServer interface {
 	GetMember(context.Context, *GetMemberRequest) (*Member, error)
 	// Deletes an existing member.
 	DeleteMember(context.Context, *DeleteMemberRequest) (*emptypb.Empty, error)
-	// Blocks a given Mintter Account.
-	BlockAccount(context.Context, *BlockAccountRequest) (*BlockAccountResponse, error)
-	// Unblock a previously blocked Mintter Account.
-	UnblockAccount(context.Context, *UnblockAccountRequest) (*UnblockAccountResponse, error)
 	// Lists currently blocked Mintter Accounts.
 	ListBlockedAccounts(context.Context, *ListBlockedAccountsRequest) (*ListBlockedAccountsResponse, error)
 	// pin and publish the document to the public web site
@@ -234,12 +208,6 @@ func (UnimplementedSiteServer) GetMember(context.Context, *GetMemberRequest) (*M
 }
 func (UnimplementedSiteServer) DeleteMember(context.Context, *DeleteMemberRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMember not implemented")
-}
-func (UnimplementedSiteServer) BlockAccount(context.Context, *BlockAccountRequest) (*BlockAccountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BlockAccount not implemented")
-}
-func (UnimplementedSiteServer) UnblockAccount(context.Context, *UnblockAccountRequest) (*UnblockAccountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnblockAccount not implemented")
 }
 func (UnimplementedSiteServer) ListBlockedAccounts(context.Context, *ListBlockedAccountsRequest) (*ListBlockedAccountsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListBlockedAccounts not implemented")
@@ -391,42 +359,6 @@ func _Site_DeleteMember_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Site_BlockAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BlockAccountRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SiteServer).BlockAccount(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.site.v1alpha.Site/BlockAccount",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SiteServer).BlockAccount(ctx, req.(*BlockAccountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Site_UnblockAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnblockAccountRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SiteServer).UnblockAccount(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/com.mintter.site.v1alpha.Site/UnblockAccount",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SiteServer).UnblockAccount(ctx, req.(*UnblockAccountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Site_ListBlockedAccounts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListBlockedAccountsRequest)
 	if err := dec(in); err != nil {
@@ -533,14 +465,6 @@ var Site_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMember",
 			Handler:    _Site_DeleteMember_Handler,
-		},
-		{
-			MethodName: "BlockAccount",
-			Handler:    _Site_BlockAccount_Handler,
-		},
-		{
-			MethodName: "UnblockAccount",
-			Handler:    _Site_UnblockAccount_Handler,
 		},
 		{
 			MethodName: "ListBlockedAccounts",

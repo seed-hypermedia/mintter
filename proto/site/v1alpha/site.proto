@@ -32,12 +32,6 @@ service Site {
   // Deletes an existing member.
   rpc DeleteMember(DeleteMemberRequest) returns (google.protobuf.Empty);
 
-  // Blocks a given Mintter Account.
-  rpc BlockAccount(BlockAccountRequest) returns (BlockAccountResponse);
-
-  // Unblock a previously blocked Mintter Account.
-  rpc UnblockAccount(UnblockAccountRequest) returns (UnblockAccountResponse);
-
   // Lists currently blocked Mintter Accounts.
   rpc ListBlockedAccounts(ListBlockedAccountsRequest) returns (ListBlockedAccountsResponse);
 
@@ -126,26 +120,6 @@ message DeleteMemberRequest {
   string account_id = 1;
 }
 
-// Request to block a specific Mintter Account.
-// The server is free to decide how the block list is handled,
-// and what happens when an existing member is being blocked.
-message BlockAccountRequest {
-  // Required. Mintter Account ID to be blocked.
-  string account_id = 1;
-}
-
-// Response after blocking an Account.
-message BlockAccountResponse {}
-
-// Request to unblock an Account.
-message UnblockAccountRequest {
-  // Required. Mintter Account ID to be unblocked.
-  string account_id = 1;
-}
-
-// Response after unblocking an Account.
-message UnblockAccountResponse {}
-
 // Request to list blocked accounts.
 message ListBlockedAccountsRequest {
   // Optional. Number of items per page.
@@ -233,7 +207,7 @@ message PublishResponse {
 // Request Unpin/Unpublish a document from the site.
 message UnpublishRequest {
   // id of web publication on this server to unpublish
-  string publication_id   = 1;
+  string publication_id = 1;
 }
 
 message UnpublishResponse {}
@@ -253,7 +227,7 @@ message ListedWebPublication {
   google.protobuf.Timestamp update_time = 4;
 
   // name of the last editor to update the doc
-  string author_name= 5;
+  string author_name = 5;
 
   // current title if the doc
   string doc_title = 6;

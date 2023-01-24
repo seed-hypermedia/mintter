@@ -82,30 +82,6 @@ export interface DeleteMemberRequest {
   accountId: string;
 }
 
-/**
- * Request to block a specific Mintter Account.
- * The server is free to decide how the block list is handled,
- * and what happens when an existing member is being blocked.
- */
-export interface BlockAccountRequest {
-  /** Required. Mintter Account ID to be blocked. */
-  accountId: string;
-}
-
-/** Response after blocking an Account. */
-export interface BlockAccountResponse {
-}
-
-/** Request to unblock an Account. */
-export interface UnblockAccountRequest {
-  /** Required. Mintter Account ID to be unblocked. */
-  accountId: string;
-}
-
-/** Response after unblocking an Account. */
-export interface UnblockAccountResponse {
-}
-
 /** Request to list blocked accounts. */
 export interface ListBlockedAccountsRequest {
   /** Optional. Number of items per page. */
@@ -721,178 +697,6 @@ export const DeleteMemberRequest = {
   fromPartial<I extends Exact<DeepPartial<DeleteMemberRequest>, I>>(object: I): DeleteMemberRequest {
     const message = createBaseDeleteMemberRequest();
     message.accountId = object.accountId ?? "";
-    return message;
-  },
-};
-
-function createBaseBlockAccountRequest(): BlockAccountRequest {
-  return { accountId: "" };
-}
-
-export const BlockAccountRequest = {
-  encode(message: BlockAccountRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accountId !== "") {
-      writer.uint32(10).string(message.accountId);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): BlockAccountRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseBlockAccountRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.accountId = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): BlockAccountRequest {
-    return { accountId: isSet(object.accountId) ? String(object.accountId) : "" };
-  },
-
-  toJSON(message: BlockAccountRequest): unknown {
-    const obj: any = {};
-    message.accountId !== undefined && (obj.accountId = message.accountId);
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<BlockAccountRequest>, I>>(object: I): BlockAccountRequest {
-    const message = createBaseBlockAccountRequest();
-    message.accountId = object.accountId ?? "";
-    return message;
-  },
-};
-
-function createBaseBlockAccountResponse(): BlockAccountResponse {
-  return {};
-}
-
-export const BlockAccountResponse = {
-  encode(_: BlockAccountResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): BlockAccountResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseBlockAccountResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(_: any): BlockAccountResponse {
-    return {};
-  },
-
-  toJSON(_: BlockAccountResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<BlockAccountResponse>, I>>(_: I): BlockAccountResponse {
-    const message = createBaseBlockAccountResponse();
-    return message;
-  },
-};
-
-function createBaseUnblockAccountRequest(): UnblockAccountRequest {
-  return { accountId: "" };
-}
-
-export const UnblockAccountRequest = {
-  encode(message: UnblockAccountRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.accountId !== "") {
-      writer.uint32(10).string(message.accountId);
-    }
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UnblockAccountRequest {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUnblockAccountRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1:
-          message.accountId = reader.string();
-          break;
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(object: any): UnblockAccountRequest {
-    return { accountId: isSet(object.accountId) ? String(object.accountId) : "" };
-  },
-
-  toJSON(message: UnblockAccountRequest): unknown {
-    const obj: any = {};
-    message.accountId !== undefined && (obj.accountId = message.accountId);
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<UnblockAccountRequest>, I>>(object: I): UnblockAccountRequest {
-    const message = createBaseUnblockAccountRequest();
-    message.accountId = object.accountId ?? "";
-    return message;
-  },
-};
-
-function createBaseUnblockAccountResponse(): UnblockAccountResponse {
-  return {};
-}
-
-export const UnblockAccountResponse = {
-  encode(_: UnblockAccountResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    return writer;
-  },
-
-  decode(input: _m0.Reader | Uint8Array, length?: number): UnblockAccountResponse {
-    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
-    let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseUnblockAccountResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        default:
-          reader.skipType(tag & 7);
-          break;
-      }
-    }
-    return message;
-  },
-
-  fromJSON(_: any): UnblockAccountResponse {
-    return {};
-  },
-
-  toJSON(_: UnblockAccountResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
-
-  fromPartial<I extends Exact<DeepPartial<UnblockAccountResponse>, I>>(_: I): UnblockAccountResponse {
-    const message = createBaseUnblockAccountResponse();
     return message;
   },
 };
@@ -1652,13 +1456,6 @@ export interface Site {
   getMember(request: DeepPartial<GetMemberRequest>, metadata?: grpc.Metadata): Promise<Member>;
   /** Deletes an existing member. */
   deleteMember(request: DeepPartial<DeleteMemberRequest>, metadata?: grpc.Metadata): Promise<Empty>;
-  /** Blocks a given Mintter Account. */
-  blockAccount(request: DeepPartial<BlockAccountRequest>, metadata?: grpc.Metadata): Promise<BlockAccountResponse>;
-  /** Unblock a previously blocked Mintter Account. */
-  unblockAccount(
-    request: DeepPartial<UnblockAccountRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<UnblockAccountResponse>;
   /** Lists currently blocked Mintter Accounts. */
   listBlockedAccounts(
     request: DeepPartial<ListBlockedAccountsRequest>,
@@ -1687,8 +1484,6 @@ export class SiteClientImpl implements Site {
     this.listMembers = this.listMembers.bind(this);
     this.getMember = this.getMember.bind(this);
     this.deleteMember = this.deleteMember.bind(this);
-    this.blockAccount = this.blockAccount.bind(this);
-    this.unblockAccount = this.unblockAccount.bind(this);
     this.listBlockedAccounts = this.listBlockedAccounts.bind(this);
     this.publish = this.publish.bind(this);
     this.unpublish = this.unpublish.bind(this);
@@ -1724,17 +1519,6 @@ export class SiteClientImpl implements Site {
 
   deleteMember(request: DeepPartial<DeleteMemberRequest>, metadata?: grpc.Metadata): Promise<Empty> {
     return this.rpc.unary(SiteDeleteMemberDesc, DeleteMemberRequest.fromPartial(request), metadata);
-  }
-
-  blockAccount(request: DeepPartial<BlockAccountRequest>, metadata?: grpc.Metadata): Promise<BlockAccountResponse> {
-    return this.rpc.unary(SiteBlockAccountDesc, BlockAccountRequest.fromPartial(request), metadata);
-  }
-
-  unblockAccount(
-    request: DeepPartial<UnblockAccountRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<UnblockAccountResponse> {
-    return this.rpc.unary(SiteUnblockAccountDesc, UnblockAccountRequest.fromPartial(request), metadata);
   }
 
   listBlockedAccounts(
@@ -1908,50 +1692,6 @@ export const SiteDeleteMemberDesc: UnaryMethodDefinitionish = {
     deserializeBinary(data: Uint8Array) {
       return {
         ...Empty.decode(data),
-        toObject() {
-          return this;
-        },
-      };
-    },
-  } as any,
-};
-
-export const SiteBlockAccountDesc: UnaryMethodDefinitionish = {
-  methodName: "BlockAccount",
-  service: SiteDesc,
-  requestStream: false,
-  responseStream: false,
-  requestType: {
-    serializeBinary() {
-      return BlockAccountRequest.encode(this).finish();
-    },
-  } as any,
-  responseType: {
-    deserializeBinary(data: Uint8Array) {
-      return {
-        ...BlockAccountResponse.decode(data),
-        toObject() {
-          return this;
-        },
-      };
-    },
-  } as any,
-};
-
-export const SiteUnblockAccountDesc: UnaryMethodDefinitionish = {
-  methodName: "UnblockAccount",
-  service: SiteDesc,
-  requestStream: false,
-  responseStream: false,
-  requestType: {
-    serializeBinary() {
-      return UnblockAccountRequest.encode(this).finish();
-    },
-  } as any,
-  responseType: {
-    deserializeBinary(data: Uint8Array) {
-      return {
-        ...UnblockAccountResponse.decode(data),
         toObject() {
           return this;
         },

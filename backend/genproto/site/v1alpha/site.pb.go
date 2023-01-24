@@ -72,7 +72,7 @@ func (x Member_Role) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Member_Role.Descriptor instead.
 func (Member_Role) EnumDescriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{17, 0}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{13, 0}
 }
 
 // Request to create a new invite token.
@@ -557,184 +557,6 @@ func (x *DeleteMemberRequest) GetAccountId() string {
 	return ""
 }
 
-// Request to block a specific Mintter Account.
-// The server is free to decide how the block list is handled,
-// and what happens when an existing member is being blocked.
-type BlockAccountRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Required. Mintter Account ID to be blocked.
-	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-}
-
-func (x *BlockAccountRequest) Reset() {
-	*x = BlockAccountRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[9]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BlockAccountRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BlockAccountRequest) ProtoMessage() {}
-
-func (x *BlockAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[9]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BlockAccountRequest.ProtoReflect.Descriptor instead.
-func (*BlockAccountRequest) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *BlockAccountRequest) GetAccountId() string {
-	if x != nil {
-		return x.AccountId
-	}
-	return ""
-}
-
-// Response after blocking an Account.
-type BlockAccountResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *BlockAccountResponse) Reset() {
-	*x = BlockAccountResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[10]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BlockAccountResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BlockAccountResponse) ProtoMessage() {}
-
-func (x *BlockAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[10]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BlockAccountResponse.ProtoReflect.Descriptor instead.
-func (*BlockAccountResponse) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{10}
-}
-
-// Request to unblock an Account.
-type UnblockAccountRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Required. Mintter Account ID to be unblocked.
-	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-}
-
-func (x *UnblockAccountRequest) Reset() {
-	*x = UnblockAccountRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[11]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *UnblockAccountRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnblockAccountRequest) ProtoMessage() {}
-
-func (x *UnblockAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[11]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnblockAccountRequest.ProtoReflect.Descriptor instead.
-func (*UnblockAccountRequest) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{11}
-}
-
-func (x *UnblockAccountRequest) GetAccountId() string {
-	if x != nil {
-		return x.AccountId
-	}
-	return ""
-}
-
-// Response after unblocking an Account.
-type UnblockAccountResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *UnblockAccountResponse) Reset() {
-	*x = UnblockAccountResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *UnblockAccountResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UnblockAccountResponse) ProtoMessage() {}
-
-func (x *UnblockAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UnblockAccountResponse.ProtoReflect.Descriptor instead.
-func (*UnblockAccountResponse) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{12}
-}
-
 // Request to list blocked accounts.
 type ListBlockedAccountsRequest struct {
 	state         protoimpl.MessageState
@@ -750,7 +572,7 @@ type ListBlockedAccountsRequest struct {
 func (x *ListBlockedAccountsRequest) Reset() {
 	*x = ListBlockedAccountsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[13]
+		mi := &file_site_v1alpha_site_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -763,7 +585,7 @@ func (x *ListBlockedAccountsRequest) String() string {
 func (*ListBlockedAccountsRequest) ProtoMessage() {}
 
 func (x *ListBlockedAccountsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[13]
+	mi := &file_site_v1alpha_site_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -776,7 +598,7 @@ func (x *ListBlockedAccountsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBlockedAccountsRequest.ProtoReflect.Descriptor instead.
 func (*ListBlockedAccountsRequest) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{13}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListBlockedAccountsRequest) GetPageSize() int32 {
@@ -808,7 +630,7 @@ type ListBlockedAccountsResponse struct {
 func (x *ListBlockedAccountsResponse) Reset() {
 	*x = ListBlockedAccountsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[14]
+		mi := &file_site_v1alpha_site_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -821,7 +643,7 @@ func (x *ListBlockedAccountsResponse) String() string {
 func (*ListBlockedAccountsResponse) ProtoMessage() {}
 
 func (x *ListBlockedAccountsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[14]
+	mi := &file_site_v1alpha_site_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -834,7 +656,7 @@ func (x *ListBlockedAccountsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBlockedAccountsResponse.ProtoReflect.Descriptor instead.
 func (*ListBlockedAccountsResponse) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{14}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListBlockedAccountsResponse) GetAccounts() []string {
@@ -866,7 +688,7 @@ type InviteToken struct {
 func (x *InviteToken) Reset() {
 	*x = InviteToken{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[15]
+		mi := &file_site_v1alpha_site_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -879,7 +701,7 @@ func (x *InviteToken) String() string {
 func (*InviteToken) ProtoMessage() {}
 
 func (x *InviteToken) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[15]
+	mi := &file_site_v1alpha_site_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -892,7 +714,7 @@ func (x *InviteToken) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InviteToken.ProtoReflect.Descriptor instead.
 func (*InviteToken) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{15}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *InviteToken) GetToken() string {
@@ -928,7 +750,7 @@ type SiteInfo struct {
 func (x *SiteInfo) Reset() {
 	*x = SiteInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[16]
+		mi := &file_site_v1alpha_site_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -941,7 +763,7 @@ func (x *SiteInfo) String() string {
 func (*SiteInfo) ProtoMessage() {}
 
 func (x *SiteInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[16]
+	mi := &file_site_v1alpha_site_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -954,7 +776,7 @@ func (x *SiteInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SiteInfo.ProtoReflect.Descriptor instead.
 func (*SiteInfo) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{16}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *SiteInfo) GetHostname() string {
@@ -1000,7 +822,7 @@ type Member struct {
 func (x *Member) Reset() {
 	*x = Member{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[17]
+		mi := &file_site_v1alpha_site_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1013,7 +835,7 @@ func (x *Member) String() string {
 func (*Member) ProtoMessage() {}
 
 func (x *Member) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[17]
+	mi := &file_site_v1alpha_site_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1026,7 +848,7 @@ func (x *Member) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Member.ProtoReflect.Descriptor instead.
 func (*Member) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{17}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *Member) GetAccountId() string {
@@ -1054,7 +876,7 @@ type DiscoveryConfig struct {
 func (x *DiscoveryConfig) Reset() {
 	*x = DiscoveryConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[18]
+		mi := &file_site_v1alpha_site_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1067,7 +889,7 @@ func (x *DiscoveryConfig) String() string {
 func (*DiscoveryConfig) ProtoMessage() {}
 
 func (x *DiscoveryConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[18]
+	mi := &file_site_v1alpha_site_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1080,7 +902,7 @@ func (x *DiscoveryConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DiscoveryConfig.ProtoReflect.Descriptor instead.
 func (*DiscoveryConfig) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{18}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{14}
 }
 
 // Request the server to pin+publish a document.
@@ -1098,7 +920,7 @@ type PublishRequest struct {
 func (x *PublishRequest) Reset() {
 	*x = PublishRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[19]
+		mi := &file_site_v1alpha_site_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1111,7 +933,7 @@ func (x *PublishRequest) String() string {
 func (*PublishRequest) ProtoMessage() {}
 
 func (x *PublishRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[19]
+	mi := &file_site_v1alpha_site_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1124,7 +946,7 @@ func (x *PublishRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishRequest.ProtoReflect.Descriptor instead.
 func (*PublishRequest) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{19}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PublishRequest) GetDocId() string {
@@ -1154,7 +976,7 @@ type PublishResponse struct {
 func (x *PublishResponse) Reset() {
 	*x = PublishResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[20]
+		mi := &file_site_v1alpha_site_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1167,7 +989,7 @@ func (x *PublishResponse) String() string {
 func (*PublishResponse) ProtoMessage() {}
 
 func (x *PublishResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[20]
+	mi := &file_site_v1alpha_site_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1180,7 +1002,7 @@ func (x *PublishResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishResponse.ProtoReflect.Descriptor instead.
 func (*PublishResponse) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{20}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *PublishResponse) GetPublicationId() string {
@@ -1203,7 +1025,7 @@ type UnpublishRequest struct {
 func (x *UnpublishRequest) Reset() {
 	*x = UnpublishRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[21]
+		mi := &file_site_v1alpha_site_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1216,7 +1038,7 @@ func (x *UnpublishRequest) String() string {
 func (*UnpublishRequest) ProtoMessage() {}
 
 func (x *UnpublishRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[21]
+	mi := &file_site_v1alpha_site_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1229,7 +1051,7 @@ func (x *UnpublishRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnpublishRequest.ProtoReflect.Descriptor instead.
 func (*UnpublishRequest) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{21}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UnpublishRequest) GetPublicationId() string {
@@ -1248,7 +1070,7 @@ type UnpublishResponse struct {
 func (x *UnpublishResponse) Reset() {
 	*x = UnpublishResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[22]
+		mi := &file_site_v1alpha_site_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1261,7 +1083,7 @@ func (x *UnpublishResponse) String() string {
 func (*UnpublishResponse) ProtoMessage() {}
 
 func (x *UnpublishResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[22]
+	mi := &file_site_v1alpha_site_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1274,7 +1096,7 @@ func (x *UnpublishResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnpublishResponse.ProtoReflect.Descriptor instead.
 func (*UnpublishResponse) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{22}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{18}
 }
 
 // Object representing a "web publication" row on this server, including fields for user presentation (doc_title, author_name, update_time)
@@ -1300,7 +1122,7 @@ type ListedWebPublication struct {
 func (x *ListedWebPublication) Reset() {
 	*x = ListedWebPublication{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[23]
+		mi := &file_site_v1alpha_site_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1313,7 +1135,7 @@ func (x *ListedWebPublication) String() string {
 func (*ListedWebPublication) ProtoMessage() {}
 
 func (x *ListedWebPublication) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[23]
+	mi := &file_site_v1alpha_site_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1326,7 +1148,7 @@ func (x *ListedWebPublication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListedWebPublication.ProtoReflect.Descriptor instead.
 func (*ListedWebPublication) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{23}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListedWebPublication) GetPublicationId() string {
@@ -1381,7 +1203,7 @@ type ListPublicationsRequest struct {
 func (x *ListPublicationsRequest) Reset() {
 	*x = ListPublicationsRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[24]
+		mi := &file_site_v1alpha_site_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1394,7 +1216,7 @@ func (x *ListPublicationsRequest) String() string {
 func (*ListPublicationsRequest) ProtoMessage() {}
 
 func (x *ListPublicationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[24]
+	mi := &file_site_v1alpha_site_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1407,7 +1229,7 @@ func (x *ListPublicationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPublicationsRequest.ProtoReflect.Descriptor instead.
 func (*ListPublicationsRequest) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{24}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{20}
 }
 
 // Response of all "web publications" on the server
@@ -1422,7 +1244,7 @@ type ListPublicationsResponse struct {
 func (x *ListPublicationsResponse) Reset() {
 	*x = ListPublicationsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_site_v1alpha_site_proto_msgTypes[25]
+		mi := &file_site_v1alpha_site_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1435,7 +1257,7 @@ func (x *ListPublicationsResponse) String() string {
 func (*ListPublicationsResponse) ProtoMessage() {}
 
 func (x *ListPublicationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_site_v1alpha_site_proto_msgTypes[25]
+	mi := &file_site_v1alpha_site_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1448,7 +1270,7 @@ func (x *ListPublicationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPublicationsResponse.ProtoReflect.Descriptor instead.
 func (*ListPublicationsResponse) Descriptor() ([]byte, []int) {
-	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{25}
+	return file_site_v1alpha_site_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ListPublicationsResponse) GetPublications() []*ListedWebPublication {
@@ -1511,17 +1333,7 @@ var file_site_v1alpha_site_proto_rawDesc = []byte{
 	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x34, 0x0a, 0x13, 0x44, 0x65, 0x6c, 0x65,
 	0x74, 0x65, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
 	0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x34,
-	0x0a, 0x13, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75,
-	0x6e, 0x74, 0x49, 0x64, 0x22, 0x16, 0x0a, 0x14, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x41, 0x63, 0x63,
-	0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x36, 0x0a, 0x15,
-	0x55, 0x6e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74,
-	0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75,
-	0x6e, 0x74, 0x49, 0x64, 0x22, 0x18, 0x0a, 0x16, 0x55, 0x6e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x41,
-	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x61,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x49, 0x64, 0x22, 0x61,
 	0x0a, 0x1a, 0x4c, 0x69, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x41, 0x63, 0x63,
 	0x6f, 0x75, 0x6e, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09,
 	0x70, 0x61, 0x67, 0x65, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52,
@@ -1594,7 +1406,7 @@ var file_site_v1alpha_site_proto_rawDesc = []byte{
 	0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c,
 	0x69, 0x73, 0x74, 0x65, 0x64, 0x57, 0x65, 0x62, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74,
 	0x69, 0x6f, 0x6e, 0x52, 0x0c, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x32, 0x84, 0x0b, 0x0a, 0x04, 0x53, 0x69, 0x74, 0x65, 0x12, 0x6e, 0x0a, 0x11, 0x43, 0x72,
+	0x73, 0x32, 0xa0, 0x09, 0x0a, 0x04, 0x53, 0x69, 0x74, 0x65, 0x12, 0x6e, 0x0a, 0x11, 0x43, 0x72,
 	0x65, 0x61, 0x74, 0x65, 0x49, 0x6e, 0x76, 0x69, 0x74, 0x65, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x12,
 	0x32, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69,
 	0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74,
@@ -1639,53 +1451,39 @@ var file_site_v1alpha_site_proto_rawDesc = []byte{
 	0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70,
 	0x68, 0x61, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4d, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x52,
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x6d,
-	0x0a, 0x0c, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x2d,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74,
-	0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x41,
-	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2e, 0x2e,
-	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65,
-	0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x41, 0x63,
-	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x73, 0x0a,
-	0x0e, 0x55, 0x6e, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12,
-	0x2f, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69,
-	0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x55, 0x6e, 0x62, 0x6c, 0x6f,
-	0x63, 0x6b, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x30, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73,
-	0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x55, 0x6e, 0x62, 0x6c,
-	0x6f, 0x63, 0x6b, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x82, 0x01, 0x0a, 0x13, 0x4c, 0x69, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
-	0x65, 0x64, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x12, 0x34, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31,
-	0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x65,
-	0x64, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x35, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73,
-	0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74,
-	0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x5e, 0x0a, 0x07, 0x50, 0x75, 0x62, 0x6c, 0x69,
-	0x73, 0x68, 0x12, 0x28, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72,
-	0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50, 0x75,
-	0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x29, 0x2e, 0x63,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x82,
+	0x01, 0x0a, 0x13, 0x4c, 0x69, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x41, 0x63,
+	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x12, 0x34, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e,
+	0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68,
+	0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x65, 0x64, 0x41, 0x63, 0x63,
+	0x6f, 0x75, 0x6e, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x35, 0x2e, 0x63,
 	0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e,
-	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x64, 0x0a, 0x09, 0x55, 0x6e, 0x70, 0x75, 0x62,
-	0x6c, 0x69, 0x73, 0x68, 0x12, 0x2a, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74,
-	0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e,
-	0x55, 0x6e, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x2b, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73,
+	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x63,
+	0x6b, 0x65, 0x64, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x5e, 0x0a, 0x07, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x12, 0x28,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74,
+	0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73,
+	0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x29, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d,
+	0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c,
+	0x70, 0x68, 0x61, 0x2e, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x64, 0x0a, 0x09, 0x55, 0x6e, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68,
+	0x12, 0x2a, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73,
 	0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x55, 0x6e, 0x70, 0x75,
-	0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x79, 0x0a,
-	0x10, 0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x12, 0x31, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e,
-	0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73,
-	0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x32, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74,
-	0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e,
-	0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x2c, 0x5a, 0x2a, 0x6d, 0x69, 0x6e, 0x74,
-	0x74, 0x65, 0x72, 0x2f, 0x62, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x67, 0x65, 0x6e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x73, 0x69, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68,
-	0x61, 0x3b, 0x73, 0x69, 0x74, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x62, 0x6c, 0x69, 0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2b, 0x2e, 0x63,
+	0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65, 0x2e,
+	0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x55, 0x6e, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x73,
+	0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x79, 0x0a, 0x10, 0x4c, 0x69, 0x73,
+	0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x31, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73, 0x69, 0x74, 0x65,
+	0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x50, 0x75, 0x62,
+	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x32, 0x2e, 0x63, 0x6f, 0x6d, 0x2e, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2e, 0x73,
+	0x69, 0x74, 0x65, 0x2e, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x2e, 0x4c, 0x69, 0x73, 0x74,
+	0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x42, 0x2c, 0x5a, 0x2a, 0x6d, 0x69, 0x6e, 0x74, 0x74, 0x65, 0x72, 0x2f,
+	0x62, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x2f, 0x67, 0x65, 0x6e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2f, 0x73, 0x69, 0x74, 0x65, 0x2f, 0x76, 0x31, 0x61, 0x6c, 0x70, 0x68, 0x61, 0x3b, 0x73, 0x69,
+	0x74, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1701,7 +1499,7 @@ func file_site_v1alpha_site_proto_rawDescGZIP() []byte {
 }
 
 var file_site_v1alpha_site_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_site_v1alpha_site_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_site_v1alpha_site_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_site_v1alpha_site_proto_goTypes = []interface{}{
 	(Member_Role)(0),                    // 0: com.mintter.site.v1alpha.Member.Role
 	(*CreateInviteTokenRequest)(nil),    // 1: com.mintter.site.v1alpha.CreateInviteTokenRequest
@@ -1713,34 +1511,30 @@ var file_site_v1alpha_site_proto_goTypes = []interface{}{
 	(*ListMembersResponse)(nil),         // 7: com.mintter.site.v1alpha.ListMembersResponse
 	(*GetMemberRequest)(nil),            // 8: com.mintter.site.v1alpha.GetMemberRequest
 	(*DeleteMemberRequest)(nil),         // 9: com.mintter.site.v1alpha.DeleteMemberRequest
-	(*BlockAccountRequest)(nil),         // 10: com.mintter.site.v1alpha.BlockAccountRequest
-	(*BlockAccountResponse)(nil),        // 11: com.mintter.site.v1alpha.BlockAccountResponse
-	(*UnblockAccountRequest)(nil),       // 12: com.mintter.site.v1alpha.UnblockAccountRequest
-	(*UnblockAccountResponse)(nil),      // 13: com.mintter.site.v1alpha.UnblockAccountResponse
-	(*ListBlockedAccountsRequest)(nil),  // 14: com.mintter.site.v1alpha.ListBlockedAccountsRequest
-	(*ListBlockedAccountsResponse)(nil), // 15: com.mintter.site.v1alpha.ListBlockedAccountsResponse
-	(*InviteToken)(nil),                 // 16: com.mintter.site.v1alpha.InviteToken
-	(*SiteInfo)(nil),                    // 17: com.mintter.site.v1alpha.SiteInfo
-	(*Member)(nil),                      // 18: com.mintter.site.v1alpha.Member
-	(*DiscoveryConfig)(nil),             // 19: com.mintter.site.v1alpha.DiscoveryConfig
-	(*PublishRequest)(nil),              // 20: com.mintter.site.v1alpha.PublishRequest
-	(*PublishResponse)(nil),             // 21: com.mintter.site.v1alpha.PublishResponse
-	(*UnpublishRequest)(nil),            // 22: com.mintter.site.v1alpha.UnpublishRequest
-	(*UnpublishResponse)(nil),           // 23: com.mintter.site.v1alpha.UnpublishResponse
-	(*ListedWebPublication)(nil),        // 24: com.mintter.site.v1alpha.ListedWebPublication
-	(*ListPublicationsRequest)(nil),     // 25: com.mintter.site.v1alpha.ListPublicationsRequest
-	(*ListPublicationsResponse)(nil),    // 26: com.mintter.site.v1alpha.ListPublicationsResponse
-	(*timestamppb.Timestamp)(nil),       // 27: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),               // 28: google.protobuf.Empty
+	(*ListBlockedAccountsRequest)(nil),  // 10: com.mintter.site.v1alpha.ListBlockedAccountsRequest
+	(*ListBlockedAccountsResponse)(nil), // 11: com.mintter.site.v1alpha.ListBlockedAccountsResponse
+	(*InviteToken)(nil),                 // 12: com.mintter.site.v1alpha.InviteToken
+	(*SiteInfo)(nil),                    // 13: com.mintter.site.v1alpha.SiteInfo
+	(*Member)(nil),                      // 14: com.mintter.site.v1alpha.Member
+	(*DiscoveryConfig)(nil),             // 15: com.mintter.site.v1alpha.DiscoveryConfig
+	(*PublishRequest)(nil),              // 16: com.mintter.site.v1alpha.PublishRequest
+	(*PublishResponse)(nil),             // 17: com.mintter.site.v1alpha.PublishResponse
+	(*UnpublishRequest)(nil),            // 18: com.mintter.site.v1alpha.UnpublishRequest
+	(*UnpublishResponse)(nil),           // 19: com.mintter.site.v1alpha.UnpublishResponse
+	(*ListedWebPublication)(nil),        // 20: com.mintter.site.v1alpha.ListedWebPublication
+	(*ListPublicationsRequest)(nil),     // 21: com.mintter.site.v1alpha.ListPublicationsRequest
+	(*ListPublicationsResponse)(nil),    // 22: com.mintter.site.v1alpha.ListPublicationsResponse
+	(*timestamppb.Timestamp)(nil),       // 23: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),               // 24: google.protobuf.Empty
 }
 var file_site_v1alpha_site_proto_depIdxs = []int32{
 	0,  // 0: com.mintter.site.v1alpha.CreateInviteTokenRequest.role:type_name -> com.mintter.site.v1alpha.Member.Role
-	27, // 1: com.mintter.site.v1alpha.CreateInviteTokenRequest.expire_time:type_name -> google.protobuf.Timestamp
-	18, // 2: com.mintter.site.v1alpha.ListMembersResponse.members:type_name -> com.mintter.site.v1alpha.Member
-	27, // 3: com.mintter.site.v1alpha.InviteToken.expire_time:type_name -> google.protobuf.Timestamp
+	23, // 1: com.mintter.site.v1alpha.CreateInviteTokenRequest.expire_time:type_name -> google.protobuf.Timestamp
+	14, // 2: com.mintter.site.v1alpha.ListMembersResponse.members:type_name -> com.mintter.site.v1alpha.Member
+	23, // 3: com.mintter.site.v1alpha.InviteToken.expire_time:type_name -> google.protobuf.Timestamp
 	0,  // 4: com.mintter.site.v1alpha.Member.role:type_name -> com.mintter.site.v1alpha.Member.Role
-	27, // 5: com.mintter.site.v1alpha.ListedWebPublication.update_time:type_name -> google.protobuf.Timestamp
-	24, // 6: com.mintter.site.v1alpha.ListPublicationsResponse.publications:type_name -> com.mintter.site.v1alpha.ListedWebPublication
+	23, // 5: com.mintter.site.v1alpha.ListedWebPublication.update_time:type_name -> google.protobuf.Timestamp
+	20, // 6: com.mintter.site.v1alpha.ListPublicationsResponse.publications:type_name -> com.mintter.site.v1alpha.ListedWebPublication
 	1,  // 7: com.mintter.site.v1alpha.Site.CreateInviteToken:input_type -> com.mintter.site.v1alpha.CreateInviteTokenRequest
 	2,  // 8: com.mintter.site.v1alpha.Site.RedeemInviteToken:input_type -> com.mintter.site.v1alpha.RedeemInviteTokenRequest
 	4,  // 9: com.mintter.site.v1alpha.Site.GetSiteInfo:input_type -> com.mintter.site.v1alpha.GetSiteInfoRequest
@@ -1748,27 +1542,23 @@ var file_site_v1alpha_site_proto_depIdxs = []int32{
 	6,  // 11: com.mintter.site.v1alpha.Site.ListMembers:input_type -> com.mintter.site.v1alpha.ListMembersRequest
 	8,  // 12: com.mintter.site.v1alpha.Site.GetMember:input_type -> com.mintter.site.v1alpha.GetMemberRequest
 	9,  // 13: com.mintter.site.v1alpha.Site.DeleteMember:input_type -> com.mintter.site.v1alpha.DeleteMemberRequest
-	10, // 14: com.mintter.site.v1alpha.Site.BlockAccount:input_type -> com.mintter.site.v1alpha.BlockAccountRequest
-	12, // 15: com.mintter.site.v1alpha.Site.UnblockAccount:input_type -> com.mintter.site.v1alpha.UnblockAccountRequest
-	14, // 16: com.mintter.site.v1alpha.Site.ListBlockedAccounts:input_type -> com.mintter.site.v1alpha.ListBlockedAccountsRequest
-	20, // 17: com.mintter.site.v1alpha.Site.Publish:input_type -> com.mintter.site.v1alpha.PublishRequest
-	22, // 18: com.mintter.site.v1alpha.Site.Unpublish:input_type -> com.mintter.site.v1alpha.UnpublishRequest
-	25, // 19: com.mintter.site.v1alpha.Site.ListPublications:input_type -> com.mintter.site.v1alpha.ListPublicationsRequest
-	16, // 20: com.mintter.site.v1alpha.Site.CreateInviteToken:output_type -> com.mintter.site.v1alpha.InviteToken
-	3,  // 21: com.mintter.site.v1alpha.Site.RedeemInviteToken:output_type -> com.mintter.site.v1alpha.RedeemInviteTokenResponse
-	17, // 22: com.mintter.site.v1alpha.Site.GetSiteInfo:output_type -> com.mintter.site.v1alpha.SiteInfo
-	17, // 23: com.mintter.site.v1alpha.Site.UpdateSiteInfo:output_type -> com.mintter.site.v1alpha.SiteInfo
-	7,  // 24: com.mintter.site.v1alpha.Site.ListMembers:output_type -> com.mintter.site.v1alpha.ListMembersResponse
-	18, // 25: com.mintter.site.v1alpha.Site.GetMember:output_type -> com.mintter.site.v1alpha.Member
-	28, // 26: com.mintter.site.v1alpha.Site.DeleteMember:output_type -> google.protobuf.Empty
-	11, // 27: com.mintter.site.v1alpha.Site.BlockAccount:output_type -> com.mintter.site.v1alpha.BlockAccountResponse
-	13, // 28: com.mintter.site.v1alpha.Site.UnblockAccount:output_type -> com.mintter.site.v1alpha.UnblockAccountResponse
-	15, // 29: com.mintter.site.v1alpha.Site.ListBlockedAccounts:output_type -> com.mintter.site.v1alpha.ListBlockedAccountsResponse
-	21, // 30: com.mintter.site.v1alpha.Site.Publish:output_type -> com.mintter.site.v1alpha.PublishResponse
-	23, // 31: com.mintter.site.v1alpha.Site.Unpublish:output_type -> com.mintter.site.v1alpha.UnpublishResponse
-	26, // 32: com.mintter.site.v1alpha.Site.ListPublications:output_type -> com.mintter.site.v1alpha.ListPublicationsResponse
-	20, // [20:33] is the sub-list for method output_type
-	7,  // [7:20] is the sub-list for method input_type
+	10, // 14: com.mintter.site.v1alpha.Site.ListBlockedAccounts:input_type -> com.mintter.site.v1alpha.ListBlockedAccountsRequest
+	16, // 15: com.mintter.site.v1alpha.Site.Publish:input_type -> com.mintter.site.v1alpha.PublishRequest
+	18, // 16: com.mintter.site.v1alpha.Site.Unpublish:input_type -> com.mintter.site.v1alpha.UnpublishRequest
+	21, // 17: com.mintter.site.v1alpha.Site.ListPublications:input_type -> com.mintter.site.v1alpha.ListPublicationsRequest
+	12, // 18: com.mintter.site.v1alpha.Site.CreateInviteToken:output_type -> com.mintter.site.v1alpha.InviteToken
+	3,  // 19: com.mintter.site.v1alpha.Site.RedeemInviteToken:output_type -> com.mintter.site.v1alpha.RedeemInviteTokenResponse
+	13, // 20: com.mintter.site.v1alpha.Site.GetSiteInfo:output_type -> com.mintter.site.v1alpha.SiteInfo
+	13, // 21: com.mintter.site.v1alpha.Site.UpdateSiteInfo:output_type -> com.mintter.site.v1alpha.SiteInfo
+	7,  // 22: com.mintter.site.v1alpha.Site.ListMembers:output_type -> com.mintter.site.v1alpha.ListMembersResponse
+	14, // 23: com.mintter.site.v1alpha.Site.GetMember:output_type -> com.mintter.site.v1alpha.Member
+	24, // 24: com.mintter.site.v1alpha.Site.DeleteMember:output_type -> google.protobuf.Empty
+	11, // 25: com.mintter.site.v1alpha.Site.ListBlockedAccounts:output_type -> com.mintter.site.v1alpha.ListBlockedAccountsResponse
+	17, // 26: com.mintter.site.v1alpha.Site.Publish:output_type -> com.mintter.site.v1alpha.PublishResponse
+	19, // 27: com.mintter.site.v1alpha.Site.Unpublish:output_type -> com.mintter.site.v1alpha.UnpublishResponse
+	22, // 28: com.mintter.site.v1alpha.Site.ListPublications:output_type -> com.mintter.site.v1alpha.ListPublicationsResponse
+	18, // [18:29] is the sub-list for method output_type
+	7,  // [7:18] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -1889,54 +1679,6 @@ func file_site_v1alpha_site_proto_init() {
 			}
 		}
 		file_site_v1alpha_site_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BlockAccountRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_site_v1alpha_site_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BlockAccountResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_site_v1alpha_site_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UnblockAccountRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_site_v1alpha_site_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UnblockAccountResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_site_v1alpha_site_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListBlockedAccountsRequest); i {
 			case 0:
 				return &v.state
@@ -1948,7 +1690,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListBlockedAccountsResponse); i {
 			case 0:
 				return &v.state
@@ -1960,7 +1702,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*InviteToken); i {
 			case 0:
 				return &v.state
@@ -1972,7 +1714,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SiteInfo); i {
 			case 0:
 				return &v.state
@@ -1984,7 +1726,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Member); i {
 			case 0:
 				return &v.state
@@ -1996,7 +1738,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DiscoveryConfig); i {
 			case 0:
 				return &v.state
@@ -2008,7 +1750,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PublishRequest); i {
 			case 0:
 				return &v.state
@@ -2020,7 +1762,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*PublishResponse); i {
 			case 0:
 				return &v.state
@@ -2032,7 +1774,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UnpublishRequest); i {
 			case 0:
 				return &v.state
@@ -2044,7 +1786,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UnpublishResponse); i {
 			case 0:
 				return &v.state
@@ -2056,7 +1798,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListedWebPublication); i {
 			case 0:
 				return &v.state
@@ -2068,7 +1810,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListPublicationsRequest); i {
 			case 0:
 				return &v.state
@@ -2080,7 +1822,7 @@ func file_site_v1alpha_site_proto_init() {
 				return nil
 			}
 		}
-		file_site_v1alpha_site_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+		file_site_v1alpha_site_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListPublicationsResponse); i {
 			case 0:
 				return &v.state
@@ -2099,7 +1841,7 @@ func file_site_v1alpha_site_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_site_v1alpha_site_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   26,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
