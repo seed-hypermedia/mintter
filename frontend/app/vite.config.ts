@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react'
 import {writeFileSync} from 'fs'
 import path from 'path'
-import {defineConfig} from 'vite'
+import {defineConfig, searchForWorkspaceRoot} from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 let isTest = process.env.NODE_ENV == 'test'
@@ -25,6 +25,14 @@ export default defineConfig({
   // tauri expects a fixed port, fail if that port is not available
   server: {
     strictPort: true,
+    fs: {
+      allow: [searchForWorkspaceRoot(process.cwd())],
+      /**
+       * we need to allow from the workspace root because we depend on other packages in this workspace, and pnpm does not pull files from the colocated node_modules but from the root.
+       *
+       * reference: https://vitejs.dev/config/server-options.html#server-fs-allow
+       */
+    },
   },
   // to make use of `TAURI_PLATFORM`, `TAURI_ARCH`, `TAURI_FAMILY`, `TAURI_PLATFORM_VERSION`, `TAURI_PLATFORM_TYPE` and `TAURI_DEBUG` env variables
   envPrefix: ['VITE_', 'TAURI_'],

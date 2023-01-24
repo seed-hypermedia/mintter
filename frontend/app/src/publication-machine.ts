@@ -3,18 +3,14 @@ import {
   createDraft,
   Document,
   getAccount,
-  getDraft,
   getInfo,
   getPublication,
   Publication,
-  updateDraftV2 as updateDraft,
-} from '@app/client'
-import {blockToApi} from '@app/client/v2/block-to-api'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
+  blockNodeToSlate,
+  GroupingContent,
+} from '@mintter/shared'
 import {EditorDocument} from '@app/draft-machine'
 import {queryKeys} from '@app/hooks'
-import {GroupingContent, link, paragraph, statement, text} from '@app/mttast'
 import {openWindow} from '@app/utils/open-window'
 import {QueryClient} from '@tanstack/react-query'
 import {invoke} from '@tauri-apps/api'

@@ -12,7 +12,7 @@ import {
   ol,
   statement,
   ul,
-} from '@app/mttast'
+} from '@mintter/shared'
 import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'

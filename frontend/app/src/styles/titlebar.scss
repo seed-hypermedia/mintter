@@ -17,7 +17,7 @@
     min-inline-size: 1em;
     min-block-size: 1em;
     padding-block: 0.1em;
-    padding-inline: 0.2em;
+    padding-inline: 0.5em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -30,6 +30,12 @@
     border: 1px solid transparent;
 
     &:hover {
+      background-color: var(--surface-hover);
+      color: var(--color-hover);
+      cursor: pointer;
+    }
+
+    &.active {
       background-color: var(--surface-hover);
       color: var(--color-hover);
       cursor: pointer;

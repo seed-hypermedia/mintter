@@ -14,7 +14,7 @@ import {
   statement,
   Statement as StatementType,
   text,
-} from '@app/mttast'
+} from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import {EditorMode} from '../plugin-utils'

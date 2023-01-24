@@ -4,12 +4,13 @@ import {
   listPeerAddrs,
   Profile,
   updateProfile as apiUpdateProfile,
-} from '@app/client'
+  getInfo,
+  Info,
+} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {QueryClient} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {assign, createMachine, MachineOptions} from 'xstate'
-import {getInfo, Info} from './client'
 
 type AuthContext = {
   accountInfo?: Info

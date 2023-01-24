@@ -1,8 +1,12 @@
-import {Publication} from '@app/client'
-import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
-import {blockToApi} from '@app/client/v2/block-to-api'
 import {queryKeys} from '@app/hooks'
-import {paragraph, statement, text} from '@app/mttast'
+import {
+  paragraph,
+  statement,
+  text,
+  Publication,
+  ListCitationsResponse,
+  blockToApi,
+} from '@mintter/shared'
 import {createTestQueryClient, TestPublicationProvider} from '@app/test/utils'
 import {DiscussionItem} from '@components/discussion-item'
 

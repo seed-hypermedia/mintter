@@ -8,7 +8,7 @@ import {
   ol,
   statement,
   ul,
-} from '@app/mttast'
+} from '@mintter/shared'
 import {useMemo} from 'react'
 import {Editor, Element, Node, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'

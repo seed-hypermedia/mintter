@@ -1,4 +1,4 @@
-import {isParagraph} from '@app/mttast'
+import {isParagraph} from '@mintter/shared'
 import {Icon} from '@components/icon'
 import {listen} from '@tauri-apps/api/event'
 import {createContext, useContext, useEffect, useRef} from 'react'

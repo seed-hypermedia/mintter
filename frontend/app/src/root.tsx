@@ -1,4 +1,4 @@
-import {getInfo} from '@app/client'
+import {getInfo} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {themeMachine, ThemeProvider} from '@app/theme'
 import {

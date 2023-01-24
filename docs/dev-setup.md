@@ -2,6 +2,8 @@
 
 ## Building On Unix-Like Systems
 
+> Checkout the [Build System Document](./build-system.md)
+
 The setup is simplified by using the [Nix Package Manager](https://nixos.org/nix), and [Direnv](https://direnv.net). You should use this setup on Unix-like systems, instead of trying to manually install the required tools.
 
 ### Prerequisites
@@ -9,6 +11,8 @@ The setup is simplified by using the [Nix Package Manager](https://nixos.org/nix
 You must have the C toolchain installed globally on your machine. It can be `gcc` or `clang` with their corresponding linkers.
 
 ### Install Nix
+
+> checkout the [Nix](./nix.md) documentation for more context
 
 Nix is a package manger for Unix-like systems, which is very strict about isolating packages. It will not mess around with your existing system packages. Ideally Nix would be the only piece of software needed to build Mintter, but unfortunately some OpenGL packages, and some system libraries don't work quite well. We still leverage Nix to manage other tools and runtimes required to work with Mintter.
 

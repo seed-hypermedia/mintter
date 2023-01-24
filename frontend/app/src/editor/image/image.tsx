@@ -8,7 +8,7 @@ import {
   paragraph,
   statement,
   text,
-} from '@app/mttast'
+} from '@mintter/shared'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Button} from '@components/button'

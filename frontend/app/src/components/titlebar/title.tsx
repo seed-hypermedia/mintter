@@ -31,7 +31,7 @@ export function Title() {
             <>...</>
           )}
         </Route>
-        <Route path="/d/:id">
+        <Route path="/d/:id/:tag?">
           {current ? <DraftTitle fileRef={current as DraftActor} /> : <>...</>}
         </Route>
       </Switch>

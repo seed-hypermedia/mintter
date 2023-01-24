@@ -17,6 +17,10 @@ filegroup(
         "gateway/src",
         "gateway/tsconfig.json",
         "gateway/next.config.ts",
+
+        "shared/package.json",
+        "shared/src",
+        "shared/tsconfig.json",
     ],
 )
 
@@ -40,4 +44,15 @@ pnpm_script(
     pnpm_deps = "//:pnpm",
     script_name = "build",
     workdir = "./gateway",
+)
+
+pnpm_script(
+    name = "shared",
+    srcs = [
+        ":srcs",
+    ],
+    outs = ["dist"],
+    pnpm_deps = "//:pnpm",
+    script_name = "build",
+    workdir = "./shared",
 )

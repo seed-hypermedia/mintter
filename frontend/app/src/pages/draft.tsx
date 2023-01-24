@@ -1,5 +1,4 @@
 // import 'show-keys'
-import {Document, publishDraft as apiPublishDraft} from '@app/client'
 import {createDraftMachine} from '@app/draft-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
@@ -10,9 +9,15 @@ import {FileProvider} from '@app/file-provider'
 import {useMain} from '@app/main-context'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {ChildrenOf} from '@app/mttast'
+import {
+  ChildrenOf,
+  Document,
+  publishDraft as apiPublishDraft,
+} from '@mintter/shared'
 import {AppError} from '@app/root'
 import {openWindow} from '@app/utils/open-window'
+import {Box} from '@components/box'
+import {Placeholder} from '@components/placeholder-box'
 import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
@@ -39,7 +44,7 @@ export default function DraftWrapper({
 }: DraftPageProps) {
   let client = useQueryClient()
   let mainService = useMain()
-  let [, params] = useRoute('/d/:id')
+  let [, params] = useRoute('/d/:id/:tag?')
   let [, setLocation] = useLocation()
   let mouseService = useInterpret(() => mouseMachine)
 
@@ -92,10 +97,6 @@ export default function DraftWrapper({
 
   if (state.matches('errored')) {
     return <Text>ERROR: {state.context.errorMessage}</Text>
-  }
-
-  if (state.matches('fetching')) {
-    return <DraftShell />
   }
 
   if (state.matches('editing')) {
@@ -152,7 +153,7 @@ export default function DraftWrapper({
     )
   }
 
-  return null
+  return <DraftShell />
 }
 
 function useInitialFocus(editor: SlateEditor) {
@@ -171,5 +172,42 @@ function useInitialFocus(editor: SlateEditor) {
 }
 
 function DraftShell() {
-  return null
+  // TODO: update shell
+  return (
+    <Box
+      css={{
+        marginTop: '60px',
+        width: '$full',
+        maxWidth: '$prose-width',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$7',
+        marginInline: 'auto',
+      }}
+    >
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+      <BlockPlaceholder />
+    </Box>
+  )
+}
+
+function BlockPlaceholder() {
+  return (
+    <Box
+      css={{
+        width: '$prose-width',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$2',
+      }}
+    >
+      <Placeholder css={{height: 16, width: '$full'}} />
+      <Placeholder css={{height: 16, width: '92%'}} />
+      <Placeholder css={{height: 16, width: '84%'}} />
+      <Placeholder css={{height: 16, width: '90%'}} />
+    </Box>
+  )
 }

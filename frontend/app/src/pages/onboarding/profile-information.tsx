@@ -1,4 +1,4 @@
-import {updateProfile as defaultUpdateProfile} from '@app/client'
+import {updateProfile as defaultUpdateProfile} from '@mintter/shared'
 import {TextField} from '@components/text-field'
 import {useMutation} from '@tanstack/react-query'
 import {FormEvent} from 'react'

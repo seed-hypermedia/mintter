@@ -1,20 +1,22 @@
 {
-  "name": "gateway",
+  "name": "@mintter/gateway",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -n POSTCSS,NEXT -c bgGreen,bgMagenta 'pnpm dev:styles' 'pnpm dev:front'",
+    "dev": "concurrently --kill-others --kill-others-on-fail -n POSTCSS,NEXT -c bgGreen,bgMagenta 'pnpm dev:styles' 'pnpm dev:front'",
     "dev:styles": "nodemon css-props-generator.js",
     "dev:front": "next dev",
-    "build": "concurrently -n POSTCSS,NEXT -c bgGreen,bgMagenta 'pnpm build:styles' 'pnpm build:front'",
+    "build": "pnpm build:styles && pnpm build:front",
     "build:styles": "node css-props-generator.js",
     "build:front": "next build",
-    "start": "next start",
     "lint": "next lint",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "format": "prettier --write .",
+    "test": "echo 'NO TESTS YET';",
+    "validate": "pnpm lint && pnpm test",
+    "start": "next start"
   },
   "dependencies": {
+    "@mintter/shared": "workspace:*",
     "@improbable-eng/grpc-web": "0.15.0",
     "@mdx-js/loader": "2.1.5",
     "@mdx-js/react": "2.1.5",

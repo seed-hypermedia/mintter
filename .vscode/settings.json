@@ -62,5 +62,5 @@
 
   "python.formatting.provider": "black",
   "prettier.bracketSpacing": false,
-  "editor.formatOnSave": false
+  "editor.formatOnSave": true
 }

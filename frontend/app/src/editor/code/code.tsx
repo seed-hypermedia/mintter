@@ -7,7 +7,7 @@ import {
   paragraph,
   statement,
   text,
-} from '@app/mttast'
+} from '@mintter/shared'
 import {useCurrentTheme} from '@app/theme'
 import {useEffect} from 'react'
 import {

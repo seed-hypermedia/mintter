@@ -87,3 +87,25 @@
     // text-align: left;
   }
 }
+
+.settings-nav-button {
+  align-self: flex-start;
+  border: 1px solid var(--base-border-subtle);
+  color: var(--base-text-low);
+  background: transparent;
+}
+.settings-nav-button:hover {
+  color: var(--color-hover);
+  background: transparent;
+}
+
+.settings-list-item {
+  display: flex;
+  align-self: stretch;
+  color: var(--base-text-high);
+  background: transparent;
+}
+.settings-list-item:hover {
+  color: var(--color-hover);
+  background: white;
+}

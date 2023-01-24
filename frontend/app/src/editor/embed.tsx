@@ -1,5 +1,4 @@
-import {getPublication, Publication} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
+import {getPublication, Publication, blockNodeToSlate} from '@mintter/shared'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -11,7 +10,7 @@ import {
   FlowContent,
   isEmbed,
   isFlowContent,
-} from '@app/mttast'
+} from '@mintter/shared'
 import {getBlock} from '@app/utils/get-block'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'

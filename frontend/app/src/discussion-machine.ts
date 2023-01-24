@@ -4,8 +4,8 @@ import {
   getPublication,
   Link,
   Publication,
-} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
+  blockNodeToSlate,
+} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/publication-machine'
 import {QueryClient} from '@tanstack/react-query'

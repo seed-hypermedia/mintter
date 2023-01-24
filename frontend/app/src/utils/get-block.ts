@@ -1,6 +1,10 @@
-import {getPublication, LinkNode, Publication} from '@app/client'
-import {blockNodeToSlate} from '@app/client/v2/block-to-slate'
-import {FlowContent} from '@app/mttast'
+import {
+  getPublication,
+  LinkNode,
+  Publication,
+  blockNodeToSlate,
+} from '@mintter/shared'
+import {FlowContent} from '@mintter/shared'
 import {visit} from 'unist-util-visit'
 
 export type GetBlockResult = {

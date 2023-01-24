@@ -1,9 +1,4 @@
-import {
-  isProduction,
-  MINTTER_GATEWAY_URL,
-  MINTTER_LINK_PREFIX,
-} from '@app/constants'
-import {DraftActor} from '@app/draft-machine'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {useMain} from '@app/main-context'
@@ -14,11 +9,11 @@ import {
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
-import {open} from '@tauri-apps/api/shell'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {Route, Switch, useLocation, useRoute} from 'wouter'
+import {PublishShareButton} from './publish-share'
 
 export function ActionButtons() {
   const mainService = useMain()
@@ -32,16 +27,6 @@ export function ActionButtons() {
       }`
       copyTextToClipboard(reference)
       toast.success('Document reference copied!')
-    }
-  }
-
-  function onCopyWeblink() {
-    if (current) {
-      let context = current.getSnapshot().context as PublicationMachineContext
-      let reference = `${
-        isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
-      }/p/${context.documentId}/${context.version}`
-      open(reference)
     }
   }
 
@@ -60,14 +45,6 @@ export function ActionButtons() {
               <Icon name="Copy" />
             </button>
           </Tooltip>
-          <Tooltip content="Share in the web">
-            <button onClick={onCopyWeblink} className="titlebar-button">
-              <Icon name="Globe" />
-            </button>
-          </Tooltip>
-        </Route>
-        <Route path="/d/:id">
-          {current && <PublishButton fileRef={current as DraftActor} />}
         </Route>
       </Switch>
 
@@ -75,6 +52,8 @@ export function ActionButtons() {
         {/* {current && <WriteDropdown fileRef={current as PublicationActor} />} */}
         {current && <WriteActions fileRef={current as PublicationActor} />}
       </Route>
+
+      <PublishShareButton />
 
       <div className="button-group">
         <button
@@ -115,26 +94,6 @@ export function NavigationButtons({push = history}: {push?: Push}) {
         <Icon name="ArrowChevronRight" size="2" color="muted" />
       </button>
     </div>
-  )
-}
-
-function PublishButton({fileRef}: {fileRef: DraftActor}) {
-  const isSaving = useSelector(fileRef, (state) =>
-    state.matches('editing.saving'),
-  )
-
-  return (
-    <button
-      onClick={() => {
-        console.log('PUBLISH!', fileRef)
-        fileRef.send('DRAFT.PUBLISH')
-      }}
-      className="titlebar-button success outlined"
-      data-testid="button-publish"
-      disabled={isSaving}
-    >
-      Done
-    </button>
   )
 }
 
@@ -230,13 +189,12 @@ function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
 }
 
 function WriteActions({fileRef}: {fileRef: PublicationActor}) {
-  let mainService = useMain()
   let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
+  let errorMessage = useSelector(fileRef, (state) => state.context.errorMessage)
   let [, params] = useRoute('/p/:id/:version/:block?')
-
   return (
     <>
-      {canUpdate && (
+      {canUpdate && fileRef && (
         <div className="button-group">
           <button
             className="titlebar-button"
@@ -245,6 +203,7 @@ function WriteActions({fileRef}: {fileRef: PublicationActor}) {
             }}
           >
             <span style={{marginInline: '0.3em'}}>Edit</span>
+            {errorMessage ? ' (failed)' : null}
           </button>
         </div>
       )}

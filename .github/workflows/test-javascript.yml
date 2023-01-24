@@ -55,8 +55,8 @@ jobs:
         with:
           run_install: true
 
-      - name: Run unit tests
-        run: pnpm test:unit
-
-      - name: Run UI tests
-        run: pnpm test:ui
+      - name: Build Frontend Shared packages
+        run: pnpm shared:build
+        
+      - name: Run Frontend packages tests
+        run: pnpm test

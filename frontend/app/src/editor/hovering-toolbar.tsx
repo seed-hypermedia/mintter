@@ -1,5 +1,5 @@
-import {image, isCode, text} from '@app/mttast'
-import {Mark} from '@app/mttast/types'
+import {image, isCode, text} from '@mintter/shared'
+import {Mark} from '@mintter/shared'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'

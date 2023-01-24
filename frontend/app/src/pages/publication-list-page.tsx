@@ -1,4 +1,4 @@
-import {deletePublication, Publication} from '@app/client'
+import {deletePublication, Publication} from '@mintter/shared'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'

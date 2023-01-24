@@ -1,5 +1,4 @@
-import {blockToApi} from '@app/client/v2/block-to-api'
-import {paragraph, statement, text} from '@app/mttast'
+import {paragraph, statement, text, blockToApi} from '@mintter/shared'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
 import {Route} from 'wouter'
 import DraftPage from '../draft'
@@ -18,7 +17,9 @@ describe('Draft Page', () => {
       }),
     })
     cy.mount(
-      <Route path="/d/:id">{() => <DraftPage shouldAutosave={false} />}</Route>,
+      <Route path="/d/:id/:tag?">
+        {() => <DraftPage shouldAutosave={false} />}
+      </Route>,
       {
         client,
         path: `/d/${draft?.id}`,
@@ -44,7 +45,7 @@ describe('Draft Page', () => {
     })
     let mockPublish = cy.stub()
     cy.mount(
-      <Route path="/d/:id">
+      <Route path="/d/:id/:tag?">
         {() => <DraftPage publishDraft={mockPublish} shouldAutosave={false} />}
       </Route>,
       {

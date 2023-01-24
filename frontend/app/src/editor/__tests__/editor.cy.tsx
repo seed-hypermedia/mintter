@@ -1,6 +1,3 @@
-import {Document, Publication} from '@app/client'
-import {blockToApi} from '@app/client/v2/block-to-api'
-
 import {ChangeOperation} from '@app/editor/mintter-changes/plugin'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -13,15 +10,17 @@ import {
   statement,
   staticParagraph,
   text,
-} from '@app/mttast'
+  Group,
+  Document,
+  Publication,
+  blockToApi,
+  ListCitationsResponse,
+} from '@mintter/shared'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
 import {Route} from '@components/router'
 import {Editor as EditorType} from 'slate'
-
-import {ListCitationsResponse} from '@app/client/.generated/documents/v1alpha/documents'
 import {queryKeys} from '@app/hooks'
 import {mouseMachine} from '@app/mouse-machine'
-import {Group} from '@app/mttast'
 import DraftPage from '@app/pages/draft'
 import {InterpreterFrom} from 'xstate'
 
@@ -799,7 +798,7 @@ type TestEditorProps = {
 
 function TestEditor({editor}: TestEditorProps) {
   return (
-    <Route path="/d/:id">
+    <Route path="/d/:id/:tag?">
       {() => <DraftPage shouldAutosave={false} editor={editor} />}
     </Route>
   )

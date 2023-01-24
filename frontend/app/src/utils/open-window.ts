@@ -1,4 +1,4 @@
-import {createDraft} from '@app/client'
+import {createDraft} from '@mintter/shared'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 
 export function openWindow(path?: string) {
@@ -7,7 +7,7 @@ export function openWindow(path?: string) {
     tauriInvoke('plugin:window|open', {path})
   } else {
     createDraft().then((doc) => {
-      let path = `/d/${doc.id}`
+      let path = `/d/${doc.id}/new`
       // open window with new path
       tauriInvoke('emit_all', {
         event: 'new_draft',

@@ -1,7 +1,13 @@
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {createId, isBlockquote, paragraph, statement, text} from '@app/mttast'
+import {
+  createId,
+  isBlockquote,
+  paragraph,
+  statement,
+  text,
+} from '@mintter/shared'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
 import type {EditorPlugin} from '../types'

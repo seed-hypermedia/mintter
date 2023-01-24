@@ -1,5 +1,5 @@
-import type {Document} from '@app/client'
-import {EditorDocument} from '@app/editor/use-editor-draft'
+import {EditorDocument} from '../draft-machine'
+import type {Document} from '@mintter/shared'
 
 type KeyOfType<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never

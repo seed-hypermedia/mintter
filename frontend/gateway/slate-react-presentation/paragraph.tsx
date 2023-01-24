@@ -4,7 +4,7 @@ import {PropsWithChildren, useRef, useEffect, useState} from 'react'
 import {assign, createMachine} from 'xstate'
 import {useMachine, useSelector} from '@xstate/react'
 import {useSlatePresentation} from '.'
-import {Paragraph as ParagraphType} from '../mttast'
+import {Paragraph as ParagraphType} from '@mintter/shared'
 import {Node} from 'slate'
 
 export function Paragraph({element, ...props}: ParagraphProps) {

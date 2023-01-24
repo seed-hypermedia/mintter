@@ -4,15 +4,21 @@ import {
   getDraft,
   getPublication,
   GrpcClient,
-  Link,
+  MttLink,
   listCitations,
   listDrafts,
   listPublications,
   Publication,
-} from '@app/client'
-import {QueryClient, useQuery} from '@tanstack/react-query'
-import {Event, listen} from '@tauri-apps/api/event'
-import {useMemo, useEffect} from 'react'
+} from '@mintter/shared'
+import {
+  QueryClient,
+  useMutation,
+  UseMutationOptions,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import {listen} from '@tauri-apps/api/event'
+import {useEffect, useMemo} from 'react'
 
 export * from './types'
 
@@ -30,6 +36,7 @@ export const queryKeys = {
   GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
   GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
   GET_PEER_INFO: 'GET_PEER_INFO',
+  GET_SITES_LIST: 'GET_SITES_LIST',
 }
 
 type QueryOptions = {
@@ -71,6 +78,97 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
       publications,
     },
   }
+}
+
+export type Site = {
+  id: string
+}
+
+export function useDocPublications(docId: string) {
+  return useQuery({
+    queryKey: ['queryKeys.GET_DOC_PUBLICATIONS'],
+    queryFn: async () => {
+      return []
+    },
+  })
+}
+
+export function useSiteList({rpc}: QueryOptions = {}) {
+  return useQuery({
+    queryKey: [queryKeys.GET_SITES_LIST],
+    queryFn: async () => {
+      //listSites(rpc),
+
+      // temp init sites include this:
+      return [{id: 'ethosphera.org'}] as Site[]
+    },
+  })
+}
+export function useAddSite() {
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    async (hostname: string) => {
+      // call rpc. for now this insta-succeeds
+      return null
+    },
+    {
+      onSuccess: (_result, hostname) => {
+        queryClient.setQueryData(
+          [queryKeys.GET_SITES_LIST],
+          (oldSites: Site[] | undefined) => {
+            const site = {id: hostname}
+            if (oldSites) return [...oldSites, site]
+            return [site]
+          },
+        )
+      },
+    },
+  )
+}
+export function useDeleteSite(siteId: string, opts: UseMutationOptions) {
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    async () => {
+      // call rpc. for now this insta-succeeds
+      return null
+    },
+    {
+      ...opts,
+      onSuccess: (response, input, ctx) => {
+        queryClient.setQueryData(
+          [queryKeys.GET_SITES_LIST],
+          (oldSites: Site[] | undefined) => {
+            if (oldSites) return oldSites.filter((site) => site.id !== siteId)
+            return undefined
+          },
+        )
+        opts?.onSuccess?.(response, input, ctx)
+      },
+    },
+  )
+}
+
+type SiteConfig = {
+  title: string
+  description: string
+  editors: string[]
+}
+export function useWriteSiteConfig(sietId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation(
+    async (config: SiteConfig) => {
+      // call rpc. for now this insta-succeeds
+      return null
+    },
+    {
+      onSuccess: (_result, config) => {
+        //noop
+      },
+    },
+  )
 }
 
 type UseDraftListParams = {
@@ -208,7 +306,8 @@ type UseDiscussionParams = {
 export function useDiscussion({documentId, visible}: UseDiscussionParams) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
-    queryFn: () => listCitations(documentId),
+    // we are using the `enabled` attr, so `documentId` _should_ set at this point
+    queryFn: () => listCitations(documentId as string),
     enabled: !!documentId && visible,
     refetchOnWindowFocus: true,
   })
@@ -225,7 +324,7 @@ export function useDiscussion({documentId, visible}: UseDiscussionParams) {
   }
 }
 
-function createDedupeLinks(entry: Array<Link>): Array<Link> {
+function createDedupeLinks(entry: Array<MttLink>): Array<MttLink> {
   let sourceSet = new Set<string>()
 
   return entry.filter((link) => {

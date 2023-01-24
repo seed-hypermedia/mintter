@@ -85,24 +85,6 @@ export default function PublicationWrapper() {
     },
   )
 
-  // return <PublicationShell />
-
-  if (state.matches('publication.fetching')) {
-    return (
-      <>
-        <PublicationShell />
-
-        <p
-          className={classnames('publication-fetching-message', {
-            visible: state.matches('publication.fetching.extended'),
-          })}
-        >
-          Searching the network...
-        </p>
-      </>
-    )
-  }
-
   if (state.matches('publication.errored')) {
     return (
       <div data-testid="publication-section" className="page-wrapper">
@@ -225,7 +207,20 @@ export default function PublicationWrapper() {
       </MouseProvider>
     )
   }
-  return null
+
+  return (
+    <>
+      <PublicationShell />
+
+      <p
+        className={classnames('publication-fetching-message', {
+          visible: state.matches('publication.fetching.extended'),
+        })}
+      >
+        Searching the network...
+      </p>
+    </>
+  )
 }
 
 function PublicationShell() {
