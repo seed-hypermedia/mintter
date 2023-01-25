@@ -48,16 +48,19 @@ export interface SiteConfig {
   role: Member_Role;
 }
 
+/** request the list of all sites that this document has been published on */
 export interface GetDocWebPublicationsRequest {
-  docId: string;
+  documentId: string;
 }
 
 export interface DocWebPublication {
+  /** hostname/id of site */
   hostname: string;
-  publicationId: string;
+  /** optional. if missing, the doc is unlisted */
   path: string;
 }
 
+/** all sites that this doc has been published on */
 export interface GetDocWebPublicationsResponse {
   publications: DocWebPublication[];
 }
@@ -346,13 +349,13 @@ export const SiteConfig = {
 };
 
 function createBaseGetDocWebPublicationsRequest(): GetDocWebPublicationsRequest {
-  return { docId: "" };
+  return { documentId: "" };
 }
 
 export const GetDocWebPublicationsRequest = {
   encode(message: GetDocWebPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.docId !== "") {
-      writer.uint32(10).string(message.docId);
+    if (message.documentId !== "") {
+      writer.uint32(10).string(message.documentId);
     }
     return writer;
   },
@@ -365,7 +368,7 @@ export const GetDocWebPublicationsRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.docId = reader.string();
+          message.documentId = reader.string();
           break;
         default:
           reader.skipType(tag & 7);
@@ -376,33 +379,30 @@ export const GetDocWebPublicationsRequest = {
   },
 
   fromJSON(object: any): GetDocWebPublicationsRequest {
-    return { docId: isSet(object.docId) ? String(object.docId) : "" };
+    return { documentId: isSet(object.documentId) ? String(object.documentId) : "" };
   },
 
   toJSON(message: GetDocWebPublicationsRequest): unknown {
     const obj: any = {};
-    message.docId !== undefined && (obj.docId = message.docId);
+    message.documentId !== undefined && (obj.documentId = message.documentId);
     return obj;
   },
 
   fromPartial<I extends Exact<DeepPartial<GetDocWebPublicationsRequest>, I>>(object: I): GetDocWebPublicationsRequest {
     const message = createBaseGetDocWebPublicationsRequest();
-    message.docId = object.docId ?? "";
+    message.documentId = object.documentId ?? "";
     return message;
   },
 };
 
 function createBaseDocWebPublication(): DocWebPublication {
-  return { hostname: "", publicationId: "", path: "" };
+  return { hostname: "", path: "" };
 }
 
 export const DocWebPublication = {
   encode(message: DocWebPublication, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.hostname !== "") {
       writer.uint32(10).string(message.hostname);
-    }
-    if (message.publicationId !== "") {
-      writer.uint32(18).string(message.publicationId);
     }
     if (message.path !== "") {
       writer.uint32(26).string(message.path);
@@ -420,9 +420,6 @@ export const DocWebPublication = {
         case 1:
           message.hostname = reader.string();
           break;
-        case 2:
-          message.publicationId = reader.string();
-          break;
         case 3:
           message.path = reader.string();
           break;
@@ -437,7 +434,6 @@ export const DocWebPublication = {
   fromJSON(object: any): DocWebPublication {
     return {
       hostname: isSet(object.hostname) ? String(object.hostname) : "",
-      publicationId: isSet(object.publicationId) ? String(object.publicationId) : "",
       path: isSet(object.path) ? String(object.path) : "",
     };
   },
@@ -445,7 +441,6 @@ export const DocWebPublication = {
   toJSON(message: DocWebPublication): unknown {
     const obj: any = {};
     message.hostname !== undefined && (obj.hostname = message.hostname);
-    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
     message.path !== undefined && (obj.path = message.path);
     return obj;
   },
@@ -453,7 +448,6 @@ export const DocWebPublication = {
   fromPartial<I extends Exact<DeepPartial<DocWebPublication>, I>>(object: I): DocWebPublication {
     const message = createBaseDocWebPublication();
     message.hostname = object.hostname ?? "";
-    message.publicationId = object.publicationId ?? "";
     message.path = object.path ?? "";
     return message;
   },

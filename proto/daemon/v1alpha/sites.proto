@@ -67,16 +67,20 @@ message SiteConfig {
   com.mintter.site.v1alpha.Member.Role role = 2;
 }
 
+// request the list of all sites that this document has been published on
 message GetDocWebPublicationsRequest {
-  string doc_id = 1;
+  string document_id = 1;
 }
 
 message DocWebPublication {
+  // hostname/id of site
   string hostname = 1;
-  string publication_id = 2;
+
+  // optional. if missing, the doc is unlisted
   string path = 3;
 }
 
+// all sites that this doc has been published on
 message GetDocWebPublicationsResponse {
   repeated DocWebPublication publications = 1;
 }

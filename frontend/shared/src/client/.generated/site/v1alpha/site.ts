@@ -178,27 +178,21 @@ export interface DiscoveryConfig {
 /** Request the server to pin+publish a document. */
 export interface PublishRequest {
   /** id of the doc to publish */
-  docId: string;
-  /** (optional) id of the web publication that is being updated. If empty, a new publication is being created. */
-  publicationId: string;
+  documentId: string;
   /** (optional) pretty path to publish at. Empty string === home doc. */
   path: string;
   /** version of the doc to publish */
   version: string;
   /** list of doc ids that are referenced by this doc via links or transclusions */
-  referencedDocIds: string[];
+  referencedDocumentIds: string[];
 }
 
 /** Response when publishing a document. */
 export interface PublishResponse {
-  /** id of the web publication on this server */
-  publicationId: string;
 }
 
 /** Request Unpin/Unpublish a document from the site. */
 export interface UnpublishRequest {
-  /** id of web publication on this server to unpublish */
-  publicationId: string;
 }
 
 export interface UnpublishResponse {
@@ -206,10 +200,7 @@ export interface UnpublishResponse {
 
 /** Object representing a "web publication" row on this server, including fields for user presentation (doc_title, author_name, update_time) */
 export interface ListedWebPublication {
-  /** id of published doc */
-  docId: string;
-  /** version of the doc to publish */
-  version: string;
+  documentId: string;
   /** (optional) Pretty path of the publication. If not provided, then the document is unlisted (automatic doc_id+version). If Empty string === home doc. */
   path: string;
   /** Timestamp of the last update to the published doc */
@@ -1066,25 +1057,22 @@ export const DiscoveryConfig = {
 };
 
 function createBasePublishRequest(): PublishRequest {
-  return { docId: "", publicationId: "", path: "", version: "", referencedDocIds: [] };
+  return { documentId: "", path: "", version: "", referencedDocumentIds: [] };
 }
 
 export const PublishRequest = {
   encode(message: PublishRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.docId !== "") {
-      writer.uint32(10).string(message.docId);
-    }
-    if (message.publicationId !== "") {
-      writer.uint32(18).string(message.publicationId);
+    if (message.documentId !== "") {
+      writer.uint32(10).string(message.documentId);
     }
     if (message.path !== "") {
-      writer.uint32(26).string(message.path);
+      writer.uint32(18).string(message.path);
     }
     if (message.version !== "") {
-      writer.uint32(34).string(message.version);
+      writer.uint32(26).string(message.version);
     }
-    for (const v of message.referencedDocIds) {
-      writer.uint32(42).string(v!);
+    for (const v of message.referencedDocumentIds) {
+      writer.uint32(34).string(v!);
     }
     return writer;
   },
@@ -1097,19 +1085,16 @@ export const PublishRequest = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.docId = reader.string();
+          message.documentId = reader.string();
           break;
         case 2:
-          message.publicationId = reader.string();
-          break;
-        case 3:
           message.path = reader.string();
           break;
-        case 4:
+        case 3:
           message.version = reader.string();
           break;
-        case 5:
-          message.referencedDocIds.push(reader.string());
+        case 4:
+          message.referencedDocumentIds.push(reader.string());
           break;
         default:
           reader.skipType(tag & 7);
@@ -1121,50 +1106,44 @@ export const PublishRequest = {
 
   fromJSON(object: any): PublishRequest {
     return {
-      docId: isSet(object.docId) ? String(object.docId) : "",
-      publicationId: isSet(object.publicationId) ? String(object.publicationId) : "",
+      documentId: isSet(object.documentId) ? String(object.documentId) : "",
       path: isSet(object.path) ? String(object.path) : "",
       version: isSet(object.version) ? String(object.version) : "",
-      referencedDocIds: Array.isArray(object?.referencedDocIds)
-        ? object.referencedDocIds.map((e: any) => String(e))
+      referencedDocumentIds: Array.isArray(object?.referencedDocumentIds)
+        ? object.referencedDocumentIds.map((e: any) => String(e))
         : [],
     };
   },
 
   toJSON(message: PublishRequest): unknown {
     const obj: any = {};
-    message.docId !== undefined && (obj.docId = message.docId);
-    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
+    message.documentId !== undefined && (obj.documentId = message.documentId);
     message.path !== undefined && (obj.path = message.path);
     message.version !== undefined && (obj.version = message.version);
-    if (message.referencedDocIds) {
-      obj.referencedDocIds = message.referencedDocIds.map((e) => e);
+    if (message.referencedDocumentIds) {
+      obj.referencedDocumentIds = message.referencedDocumentIds.map((e) => e);
     } else {
-      obj.referencedDocIds = [];
+      obj.referencedDocumentIds = [];
     }
     return obj;
   },
 
   fromPartial<I extends Exact<DeepPartial<PublishRequest>, I>>(object: I): PublishRequest {
     const message = createBasePublishRequest();
-    message.docId = object.docId ?? "";
-    message.publicationId = object.publicationId ?? "";
+    message.documentId = object.documentId ?? "";
     message.path = object.path ?? "";
     message.version = object.version ?? "";
-    message.referencedDocIds = object.referencedDocIds?.map((e) => e) || [];
+    message.referencedDocumentIds = object.referencedDocumentIds?.map((e) => e) || [];
     return message;
   },
 };
 
 function createBasePublishResponse(): PublishResponse {
-  return { publicationId: "" };
+  return {};
 }
 
 export const PublishResponse = {
-  encode(message: PublishResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.publicationId !== "") {
-      writer.uint32(10).string(message.publicationId);
-    }
+  encode(_: PublishResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer;
   },
 
@@ -1175,9 +1154,6 @@ export const PublishResponse = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1:
-          message.publicationId = reader.string();
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1186,32 +1162,27 @@ export const PublishResponse = {
     return message;
   },
 
-  fromJSON(object: any): PublishResponse {
-    return { publicationId: isSet(object.publicationId) ? String(object.publicationId) : "" };
+  fromJSON(_: any): PublishResponse {
+    return {};
   },
 
-  toJSON(message: PublishResponse): unknown {
+  toJSON(_: PublishResponse): unknown {
     const obj: any = {};
-    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<PublishResponse>, I>>(object: I): PublishResponse {
+  fromPartial<I extends Exact<DeepPartial<PublishResponse>, I>>(_: I): PublishResponse {
     const message = createBasePublishResponse();
-    message.publicationId = object.publicationId ?? "";
     return message;
   },
 };
 
 function createBaseUnpublishRequest(): UnpublishRequest {
-  return { publicationId: "" };
+  return {};
 }
 
 export const UnpublishRequest = {
-  encode(message: UnpublishRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.publicationId !== "") {
-      writer.uint32(10).string(message.publicationId);
-    }
+  encode(_: UnpublishRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     return writer;
   },
 
@@ -1222,9 +1193,6 @@ export const UnpublishRequest = {
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
-        case 1:
-          message.publicationId = reader.string();
-          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -1233,19 +1201,17 @@ export const UnpublishRequest = {
     return message;
   },
 
-  fromJSON(object: any): UnpublishRequest {
-    return { publicationId: isSet(object.publicationId) ? String(object.publicationId) : "" };
+  fromJSON(_: any): UnpublishRequest {
+    return {};
   },
 
-  toJSON(message: UnpublishRequest): unknown {
+  toJSON(_: UnpublishRequest): unknown {
     const obj: any = {};
-    message.publicationId !== undefined && (obj.publicationId = message.publicationId);
     return obj;
   },
 
-  fromPartial<I extends Exact<DeepPartial<UnpublishRequest>, I>>(object: I): UnpublishRequest {
+  fromPartial<I extends Exact<DeepPartial<UnpublishRequest>, I>>(_: I): UnpublishRequest {
     const message = createBaseUnpublishRequest();
-    message.publicationId = object.publicationId ?? "";
     return message;
   },
 };
@@ -1290,28 +1256,25 @@ export const UnpublishResponse = {
 };
 
 function createBaseListedWebPublication(): ListedWebPublication {
-  return { docId: "", version: "", path: "", updateTime: undefined, authorName: "", docTitle: "" };
+  return { documentId: "", path: "", updateTime: undefined, authorName: "", docTitle: "" };
 }
 
 export const ListedWebPublication = {
   encode(message: ListedWebPublication, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.docId !== "") {
-      writer.uint32(10).string(message.docId);
-    }
-    if (message.version !== "") {
-      writer.uint32(18).string(message.version);
+    if (message.documentId !== "") {
+      writer.uint32(10).string(message.documentId);
     }
     if (message.path !== "") {
-      writer.uint32(26).string(message.path);
+      writer.uint32(18).string(message.path);
     }
     if (message.updateTime !== undefined) {
-      Timestamp.encode(toTimestamp(message.updateTime), writer.uint32(34).fork()).ldelim();
+      Timestamp.encode(toTimestamp(message.updateTime), writer.uint32(26).fork()).ldelim();
     }
     if (message.authorName !== "") {
-      writer.uint32(42).string(message.authorName);
+      writer.uint32(34).string(message.authorName);
     }
     if (message.docTitle !== "") {
-      writer.uint32(50).string(message.docTitle);
+      writer.uint32(42).string(message.docTitle);
     }
     return writer;
   },
@@ -1324,21 +1287,18 @@ export const ListedWebPublication = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.docId = reader.string();
+          message.documentId = reader.string();
           break;
         case 2:
-          message.version = reader.string();
-          break;
-        case 3:
           message.path = reader.string();
           break;
-        case 4:
+        case 3:
           message.updateTime = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           break;
-        case 5:
+        case 4:
           message.authorName = reader.string();
           break;
-        case 6:
+        case 5:
           message.docTitle = reader.string();
           break;
         default:
@@ -1351,8 +1311,7 @@ export const ListedWebPublication = {
 
   fromJSON(object: any): ListedWebPublication {
     return {
-      docId: isSet(object.docId) ? String(object.docId) : "",
-      version: isSet(object.version) ? String(object.version) : "",
+      documentId: isSet(object.documentId) ? String(object.documentId) : "",
       path: isSet(object.path) ? String(object.path) : "",
       updateTime: isSet(object.updateTime) ? fromJsonTimestamp(object.updateTime) : undefined,
       authorName: isSet(object.authorName) ? String(object.authorName) : "",
@@ -1362,8 +1321,7 @@ export const ListedWebPublication = {
 
   toJSON(message: ListedWebPublication): unknown {
     const obj: any = {};
-    message.docId !== undefined && (obj.docId = message.docId);
-    message.version !== undefined && (obj.version = message.version);
+    message.documentId !== undefined && (obj.documentId = message.documentId);
     message.path !== undefined && (obj.path = message.path);
     message.updateTime !== undefined && (obj.updateTime = message.updateTime.toISOString());
     message.authorName !== undefined && (obj.authorName = message.authorName);
@@ -1373,8 +1331,7 @@ export const ListedWebPublication = {
 
   fromPartial<I extends Exact<DeepPartial<ListedWebPublication>, I>>(object: I): ListedWebPublication {
     const message = createBaseListedWebPublication();
-    message.docId = object.docId ?? "";
-    message.version = object.version ?? "";
+    message.documentId = object.documentId ?? "";
     message.path = object.path ?? "";
     message.updateTime = object.updateTime ?? undefined;
     message.authorName = object.authorName ?? "";

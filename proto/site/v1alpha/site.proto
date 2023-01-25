@@ -192,54 +192,43 @@ message DiscoveryConfig {
 // Request the server to pin+publish a document.
 message PublishRequest {
   // id of the doc to publish
-  string doc_id = 1;
-
-  // (optional) id of the web publication that is being updated. If empty, a new publication is being created.
-  string publication_id = 2;
+  string document_id = 1;
 
   // (optional) pretty path to publish at. Empty string === home doc.
-  string path = 3;
+  string path = 2;
 
   // version of the doc to publish
-  string version = 4;
+  string version = 3;
 
   // list of doc ids that are referenced by this doc via links or transclusions
-  repeated string referenced_doc_ids = 5;
+  repeated string referenced_document_ids = 4;
 }
 
 // Response when publishing a document.
 message PublishResponse {
-  // id of the web publication on this server
-  string publication_id = 1;
 }
 
 // Request Unpin/Unpublish a document from the site.
 message UnpublishRequest {
-  // id of web publication on this server to unpublish
-  string publication_id = 1;
 }
 
 message UnpublishResponse {}
 
 // Object representing a "web publication" row on this server, including fields for user presentation (doc_title, author_name, update_time)
-message ListedWebPublication {
-  // id of published doc
-  string doc_id = 1;
-
-  // version of the doc to publish
-  string version = 2;
+message ListedWebPublication {  // unique id of published doc
+  string document_id = 1;
 
   // (optional) Pretty path of the publication. If not provided, then the document is unlisted (automatic doc_id+version). If Empty string === home doc.
-  string path = 3;
+  string path = 2;
 
   // Timestamp of the last update to the published doc
-  google.protobuf.Timestamp update_time = 4;
+  google.protobuf.Timestamp update_time = 3;
 
   // name of the last editor to update the doc
-  string author_name = 5;
+  string author_name = 4;
 
   // current title if the doc
-  string doc_title = 6;
+  string doc_title = 5;
 }
 
 // Request to list "web publications", (pinned/published docs on the server)
