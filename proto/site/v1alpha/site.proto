@@ -184,9 +184,9 @@ message Member {
 }
 
 // Response for the /.well-known discovery HTTP page.
-// TODO: define the actual /.well-known path.
 message DiscoveryConfig {
-  // TODO: add the necessary fields to export under the /.well-known HTTP discovery path.
+  // p2p address of the remote p2p server. Ex. /ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w
+  string address = 1;
 }
 
 // Request the server to pin+publish a document.
@@ -223,13 +223,13 @@ message UnpublishResponse {}
 
 // Object representing a "web publication" row on this server, including fields for user presentation (doc_title, author_name, update_time)
 message ListedWebPublication {
-  // id of web publication on this server
-  string publication_id = 1;
-
   // id of published doc
-  string doc_id = 2;
+  string doc_id = 1;
 
-  // (optional) Pretty path of the publication. Empty string === home doc.
+  // version of the doc to publish
+  string version = 2;
+
+  // (optional) Pretty path of the publication. If not provided, then the document is unlisted (automatic doc_id+version). If Empty string === home doc.
   string path = 3;
 
   // Timestamp of the last update to the published doc

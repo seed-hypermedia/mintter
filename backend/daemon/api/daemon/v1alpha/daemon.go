@@ -2,8 +2,11 @@ package daemon
 
 import (
 	context "context"
+	"fmt"
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
+	"mintter/backend/site"
+
 	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	sync "sync"
@@ -140,4 +143,27 @@ func (srv *Server) ForceSync(ctx context.Context, in *daemon.ForceSyncRequest) (
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+// AddSite checks if the provided site hostname is a valid Mintter site and if so, add it to the database.
+func (srv *Server) AddSite(ctx context.Context, req *daemon.AddSiteRequest) (*daemon.SiteConfig, error) {
+	role, err := site.AddSite(req.Hostname, req.InviteToken)
+	if err != nil {
+		return nil, err
+	}
+	return &daemon.SiteConfig{
+		Hostname: req.Hostname,
+		Role:     role,
+	}, nil
+}
+
+func (srv *Server) DeleteSite(ctx context.Context, req *daemon.DeleteSiteRequest) (*emptypb.Empty, error) {
+	return nil, fmt.Errorf("Not yet implemented")
+}
+
+func (srv *Server) ListSites(ctx context.Context, req *daemon.ListSitesRequest) (*daemon.ListSitesResponse, error) {
+	return &daemon.ListSitesResponse{}, fmt.Errorf("Not yet implemented")
+}
+func (srv *Server) GetDocWebPublications(ctx context.Context, req *daemon.GetDocWebPublicationsRequest) (*daemon.GetDocWebPublicationsResponse, error) {
+	return &daemon.GetDocWebPublicationsResponse{}, fmt.Errorf("Not yet implemented")
 }
