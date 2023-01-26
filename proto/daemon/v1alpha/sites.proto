@@ -21,6 +21,7 @@ service Sites {
   // Lists configured sites.
   rpc ListSites(ListSitesRequest) returns (ListSitesResponse);
 
+  // Given a docuement, lists all the sites it's been published to.
   rpc GetDocWebPublications(GetDocWebPublicationsRequest) returns (GetDocWebPublicationsResponse);
 }
 
@@ -69,7 +70,11 @@ message SiteConfig {
 
 // request the list of all sites that this document has been published on
 message GetDocWebPublicationsRequest {
+  // DocumentID of the document we want to know about
   string document_id = 1;
+
+  // Version of the document we want to know about
+  string version = 2;
 }
 
 message DocWebPublication {
@@ -77,7 +82,7 @@ message DocWebPublication {
   string hostname = 1;
 
   // optional. if missing, the doc is unlisted
-  string path = 3;
+  string path = 2;
 }
 
 // all sites that this doc has been published on

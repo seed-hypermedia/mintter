@@ -29,6 +29,7 @@ type SitesClient interface {
 	DeleteSite(ctx context.Context, in *DeleteSiteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Lists configured sites.
 	ListSites(ctx context.Context, in *ListSitesRequest, opts ...grpc.CallOption) (*ListSitesResponse, error)
+	// Given a docuement, lists all the sites it's been published to.
 	GetDocWebPublications(ctx context.Context, in *GetDocWebPublicationsRequest, opts ...grpc.CallOption) (*GetDocWebPublicationsResponse, error)
 }
 
@@ -86,6 +87,7 @@ type SitesServer interface {
 	DeleteSite(context.Context, *DeleteSiteRequest) (*emptypb.Empty, error)
 	// Lists configured sites.
 	ListSites(context.Context, *ListSitesRequest) (*ListSitesResponse, error)
+	// Given a docuement, lists all the sites it's been published to.
 	GetDocWebPublications(context.Context, *GetDocWebPublicationsRequest) (*GetDocWebPublicationsResponse, error)
 }
 

@@ -50,7 +50,10 @@ export interface SiteConfig {
 
 /** request the list of all sites that this document has been published on */
 export interface GetDocWebPublicationsRequest {
+  /** DocumentID of the document we want to know about */
   documentId: string;
+  /** Version of the document we want to know about */
+  version: string;
 }
 
 export interface DocWebPublication {
@@ -349,13 +352,16 @@ export const SiteConfig = {
 };
 
 function createBaseGetDocWebPublicationsRequest(): GetDocWebPublicationsRequest {
-  return { documentId: "" };
+  return { documentId: "", version: "" };
 }
 
 export const GetDocWebPublicationsRequest = {
   encode(message: GetDocWebPublicationsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.documentId !== "") {
       writer.uint32(10).string(message.documentId);
+    }
+    if (message.version !== "") {
+      writer.uint32(18).string(message.version);
     }
     return writer;
   },
@@ -370,6 +376,9 @@ export const GetDocWebPublicationsRequest = {
         case 1:
           message.documentId = reader.string();
           break;
+        case 2:
+          message.version = reader.string();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -379,18 +388,23 @@ export const GetDocWebPublicationsRequest = {
   },
 
   fromJSON(object: any): GetDocWebPublicationsRequest {
-    return { documentId: isSet(object.documentId) ? String(object.documentId) : "" };
+    return {
+      documentId: isSet(object.documentId) ? String(object.documentId) : "",
+      version: isSet(object.version) ? String(object.version) : "",
+    };
   },
 
   toJSON(message: GetDocWebPublicationsRequest): unknown {
     const obj: any = {};
     message.documentId !== undefined && (obj.documentId = message.documentId);
+    message.version !== undefined && (obj.version = message.version);
     return obj;
   },
 
   fromPartial<I extends Exact<DeepPartial<GetDocWebPublicationsRequest>, I>>(object: I): GetDocWebPublicationsRequest {
     const message = createBaseGetDocWebPublicationsRequest();
     message.documentId = object.documentId ?? "";
+    message.version = object.version ?? "";
     return message;
   },
 };
@@ -405,7 +419,7 @@ export const DocWebPublication = {
       writer.uint32(10).string(message.hostname);
     }
     if (message.path !== "") {
-      writer.uint32(26).string(message.path);
+      writer.uint32(18).string(message.path);
     }
     return writer;
   },
@@ -420,7 +434,7 @@ export const DocWebPublication = {
         case 1:
           message.hostname = reader.string();
           break;
-        case 3:
+        case 2:
           message.path = reader.string();
           break;
         default:
@@ -523,6 +537,7 @@ export interface Sites {
   deleteSite(request: DeepPartial<DeleteSiteRequest>, metadata?: grpc.Metadata): Promise<Empty>;
   /** Lists configured sites. */
   listSites(request: DeepPartial<ListSitesRequest>, metadata?: grpc.Metadata): Promise<ListSitesResponse>;
+  /** Given a docuement, lists all the sites it's been published to. */
   getDocWebPublications(
     request: DeepPartial<GetDocWebPublicationsRequest>,
     metadata?: grpc.Metadata,

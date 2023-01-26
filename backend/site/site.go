@@ -1,3 +1,4 @@
+// site implements all the logic to get site information (both local and remote).
 package site
 
 import (
@@ -6,11 +7,6 @@ import (
 	site_proto "mintter/backend/genproto/site/v1alpha"
 	"strings"
 )
-
-type ListSites struct {
-	hostname string
-	role     site_proto.Member_Role
-}
 
 // Service wraps everything necessary to deliver a site service.
 type siteInfo struct {
@@ -29,6 +25,7 @@ func New() *Service {
 	}
 }
 
+// AddSite adds a site locally with the role specified in the invitation link
 func (srv *Service) AddSite(hostname, link string) (site_proto.Member_Role, error) {
 	if hostname == "" {
 		return site_proto.Member_ROLE_UNSPECIFIED, fmt.Errorf("empty hostname")

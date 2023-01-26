@@ -158,6 +158,7 @@ func (srv *Server) AddSite(ctx context.Context, req *daemon.AddSiteRequest) (*da
 	}, nil
 }
 
+// DeleteSite removes locally a previously added site.
 func (srv *Server) DeleteSite(ctx context.Context, req *daemon.DeleteSiteRequest) (*emptypb.Empty, error) {
 	err := srv.site.DeleteSite(req.Hostname)
 	if err != nil {
@@ -166,6 +167,7 @@ func (srv *Server) DeleteSite(ctx context.Context, req *daemon.DeleteSiteRequest
 	return &emptypb.Empty{}, nil
 }
 
+// ListSites lists all the added sites.
 func (srv *Server) ListSites(ctx context.Context, req *daemon.ListSitesRequest) (*daemon.ListSitesResponse, error) {
 	sites, err := srv.site.ListSites()
 	return &daemon.ListSitesResponse{
@@ -173,6 +175,8 @@ func (srv *Server) ListSites(ctx context.Context, req *daemon.ListSitesRequest) 
 	}, err
 
 }
+
+// GetDocWebPublications returns all the sites a given a docuement has been published to.
 func (srv *Server) GetDocWebPublications(ctx context.Context, req *daemon.GetDocWebPublicationsRequest) (*daemon.GetDocWebPublicationsResponse, error) {
 	return &daemon.GetDocWebPublicationsResponse{}, fmt.Errorf("Not yet implemented")
 }
