@@ -1,8 +1,6 @@
 import {Publication} from './.generated/documents/v1alpha/documents_pb'
-import {
-  ContentGraph,
-  Publications,
-} from './.generated/documents/v1alpha/documents_connectweb'
+import {Publications} from './.generated/documents/v1alpha/documents_connectweb'
+import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connectweb'
 import {transport} from './client'
 import {Transport, createPromiseClient} from '@bufbuild/connect-web'
 
