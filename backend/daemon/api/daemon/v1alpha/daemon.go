@@ -167,7 +167,11 @@ func (srv *Server) DeleteSite(ctx context.Context, req *daemon.DeleteSiteRequest
 }
 
 func (srv *Server) ListSites(ctx context.Context, req *daemon.ListSitesRequest) (*daemon.ListSitesResponse, error) {
-	return &daemon.ListSitesResponse{}, fmt.Errorf("Not yet implemented")
+	sites, err := srv.site.ListSites()
+	return &daemon.ListSitesResponse{
+		Sites: sites,
+	}, err
+
 }
 func (srv *Server) GetDocWebPublications(ctx context.Context, req *daemon.GetDocWebPublicationsRequest) (*daemon.GetDocWebPublicationsResponse, error) {
 	return &daemon.GetDocWebPublicationsResponse{}, fmt.Errorf("Not yet implemented")

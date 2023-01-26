@@ -2,45 +2,58 @@ package site
 
 import (
 	"fmt"
-	v1alpha "mintter/backend/genproto/site/v1alpha"
+	daemon_proto "mintter/backend/genproto/daemon/v1alpha"
+	site_proto "mintter/backend/genproto/site/v1alpha"
 	"strings"
 )
 
+type ListSites struct {
+	hostname string
+	role     site_proto.Member_Role
+}
+
+// Service wraps everything necessary to deliver a site service.
+type siteInfo struct {
+	role        int
+	invite_link string
+}
+
 // Service wraps everything necessary to deliver a site service.
 type Service struct {
-	sitesDB map[string]string
+	sitesDB map[string]siteInfo
 }
 
 func New() *Service {
 	return &Service{
-		sitesDB: map[string]string{}, //TODO: remove when mocking is done
+		sitesDB: map[string]siteInfo{}, //TODO: remove when mocking is done
 	}
 }
 
-func (srv *Service) AddSite(hostname, link string) (v1alpha.Member_Role, error) {
+func (srv *Service) AddSite(hostname, link string) (site_proto.Member_Role, error) {
 	if hostname == "" {
-		return v1alpha.Member_ROLE_UNSPECIFIED, fmt.Errorf("empty hostname")
+		return site_proto.Member_ROLE_UNSPECIFIED, fmt.Errorf("empty hostname")
 	}
 	if strings.Contains(strings.ToLower(hostname), "notallow") {
-		return v1alpha.Member_ROLE_UNSPECIFIED, fmt.Errorf("site " + hostname + " is not a valid site")
+		return site_proto.Member_ROLE_UNSPECIFIED, fmt.Errorf("site " + hostname + " is not a valid site")
 	}
 	if strings.Contains(strings.ToLower(hostname), "taken") {
-		return v1alpha.Member_ROLE_UNSPECIFIED, fmt.Errorf("site " + hostname + " already taken")
+		return site_proto.Member_ROLE_UNSPECIFIED, fmt.Errorf("site " + hostname + " already taken")
 	}
 	//TODO: substitute with proper remote calls
 	_, added := srv.sitesDB[hostname]
 	if added {
-		return v1alpha.Member_ROLE_UNSPECIFIED, fmt.Errorf("site " + hostname + " already added")
+		return site_proto.Member_ROLE_UNSPECIFIED, fmt.Errorf("site " + hostname + " already added")
 	}
-
-	srv.sitesDB[hostname] = link
 
 	if strings.Contains(strings.ToLower(link), "unspecified") {
-		return v1alpha.Member_ROLE_UNSPECIFIED, nil
+		srv.sitesDB[hostname] = siteInfo{invite_link: link, role: int(site_proto.Member_ROLE_UNSPECIFIED)}
 	} else if strings.Contains(strings.ToLower(link), "owner") {
-		return v1alpha.Member_OWNER, nil
+		srv.sitesDB[hostname] = siteInfo{invite_link: link, role: int(site_proto.Member_OWNER)}
+	} else {
+		srv.sitesDB[hostname] = siteInfo{invite_link: link, role: int(site_proto.Member_EDITOR)}
 	}
-	return v1alpha.Member_EDITOR, nil
+
+	return site_proto.Member_Role(srv.sitesDB[hostname].role), nil
 }
 
 func (srv *Service) DeleteSite(hostname string) error {
@@ -54,4 +67,15 @@ func (srv *Service) DeleteSite(hostname string) error {
 	}
 	delete(srv.sitesDB, hostname)
 	return nil
+}
+
+func (srv *Service) ListSites() ([]*daemon_proto.SiteConfig, error) {
+	var s []*daemon_proto.SiteConfig
+	for hostname, info := range srv.sitesDB {
+		s = append(s, &daemon_proto.SiteConfig{
+			Hostname: hostname,
+			Role:     site_proto.Member_Role(info.role),
+		})
+	}
+	return s, nil
 }
