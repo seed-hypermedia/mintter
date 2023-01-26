@@ -100,7 +100,7 @@ export function useSiteList({rpc}: QueryOptions = {}) {
       //listSites(rpc),
 
       // temp init sites include this:
-      return [{id: 'ethosphera.org'}] as Site[]
+      return [{id: 'opinion.ethosfera.org'}] as Site[]
     },
   })
 }
