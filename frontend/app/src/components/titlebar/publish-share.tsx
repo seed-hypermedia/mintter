@@ -151,8 +151,8 @@ export function PublishShareButton() {
               <Subheading>Public on the Web:</Subheading>
               <MintterURLRow doc={docActor} />
               <AccessURLRow // getridofme after you fix PublishedURLs
-                title="ethosphera.org/p/comingsoon"
-                url="https://ethosphera.org/p/comingsoon"
+                title="opinion.ethosfera.org/p/comingsoon"
+                url="https://opinion.ethosfera.org/p/comingsoon"
               />
               {docId && <PublishedURLs docId={docId} />}
               <Subheading>Publish to:</Subheading>
