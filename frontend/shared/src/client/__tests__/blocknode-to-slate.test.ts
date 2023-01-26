@@ -1,4 +1,4 @@
-import {Block, BlockNode} from '../.generated/documents/v1alpha/documents_pb'
+import {Block, BlockNode} from '../.generated/documents/v1alpha/documents'
 import {blockNodeToSlate} from '../block-to-slate'
 import {group, ol, paragraph, statement, text} from '../../mttast'
 import {describe, expect, test} from 'vitest'
@@ -6,8 +6,8 @@ import {describe, expect, test} from 'vitest'
 describe('blockNodeToSlate', () => {
   test('default group', () => {
     let input: Array<BlockNode> = [
-      new BlockNode({
-        block: new Block({
+      {
+        block: Block.fromPartial({
           id: 'b1',
           type: 'statement',
           text: 'Hello world',
@@ -15,7 +15,7 @@ describe('blockNodeToSlate', () => {
           annotations: [],
         }),
         children: [],
-      }),
+      },
     ]
 
     let output = group([
@@ -27,8 +27,8 @@ describe('blockNodeToSlate', () => {
 
   test('ordered group', () => {
     let input: Array<BlockNode> = [
-      new BlockNode({
-        block: new Block({
+      {
+        block: Block.fromPartial({
           id: 'b1',
           type: 'statement',
           text: 'Hello world',
@@ -38,8 +38,8 @@ describe('blockNodeToSlate', () => {
           annotations: [],
         }),
         children: [
-          new BlockNode({
-            block: new Block({
+          {
+            block: Block.fromPartial({
               id: 'b2',
               type: 'statement',
               text: 'Nested item',
@@ -49,9 +49,9 @@ describe('blockNodeToSlate', () => {
               annotations: [],
             }),
             children: [],
-          }),
+          },
         ],
-      }),
+      },
     ]
 
     let output = group([

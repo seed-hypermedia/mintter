@@ -1,4 +1,4 @@
-import {DocumentChange} from './.generated/documents/v1alpha/documents_pb'
+import {DocumentChange} from './.generated/documents/v1alpha/documents'
 import {blockToApi} from './block-to-api'
 import {
   FlowContent,
@@ -25,16 +25,16 @@ export function createMoveChange(
         ? ''
         : (Node.get(editor, Path.previous(path)) as FlowContent).id
 
-    new DocumentChange({
+    return {
       op: {
-        case: 'moveBlock',
-        value: {
+        $case: 'moveBlock',
+        moveBlock: {
           parent,
           leftSibling,
           blockId,
         },
       },
-    })
+    }
   } else {
     return
   }
@@ -57,31 +57,31 @@ export function createReplaceChange(
         start = groupChild.start
       }
     }
-    return new DocumentChange({
+    return {
       op: {
-        case: 'replaceBlock',
+        $case: 'replaceBlock',
         //TODO: fix parent types
-        value: blockToApi(blockEntry[0], childrenType, start),
+        replaceBlock: blockToApi(blockEntry[0], childrenType, start),
       },
-    })
+    }
   } else {
     // the block is removed since we take the editor as truth, so if there's no block in the editor, we should delete it
-    return new DocumentChange({
+    return {
       op: {
-        case: 'deleteBlock',
-        value: blockId,
+        $case: 'deleteBlock',
+        deleteBlock: blockId,
       },
-    })
+    }
   }
 }
 
 export function createDeleteChange(blockId: string): DocumentChange {
-  return new DocumentChange({
+  return {
     op: {
-      case: 'deleteBlock',
-      value: blockId,
+      $case: 'deleteBlock',
+      deleteBlock: blockId,
     },
-  })
+  }
 }
 
 // TODO: this function and types below is copied from utils.ts inside the app. need to define where this function should live.

@@ -1,11 +1,17 @@
-import type {
-  Document,
-  ListDraftsResponse,
+import type {Document} from './.generated/documents/v1alpha/documents'
+import {
+  CreateDraftRequest,
+  DeleteDraftRequest,
   DocumentChange,
-} from './.generated/documents/v1alpha/documents_pb'
-import {Drafts} from './.generated/documents/v1alpha/documents_connectweb'
-import {transport} from './client'
-import {Transport, createPromiseClient} from '@bufbuild/connect-web'
+  DraftsClientImpl,
+  GetDraftRequest,
+  ListDraftsRequest,
+  ListDraftsResponse,
+  PublishDraftRequest,
+  UpdateDraftRequestV2,
+} from './.generated/documents/v1alpha/documents'
+import {client} from './client'
+import type {GrpcClient} from './grpc-client'
 
 /**
  *
@@ -14,11 +20,12 @@ import {Transport, createPromiseClient} from '@bufbuild/connect-web'
  */
 export async function createDraft(
   publicationId = '',
-  rpc: Transport = transport,
+  rpc: GrpcClient = client,
 ): Promise<Document> {
-  return await createPromiseClient(Drafts, rpc).createDraft({
+  const request = CreateDraftRequest.fromPartial({
     existingDocumentId: publicationId,
   })
+  return await new DraftsClientImpl(rpc).createDraft(request)
 }
 
 /**
@@ -26,8 +33,9 @@ export async function createDraft(
  * @param draftId
  * @param rpc
  */
-export function deleteDraft(documentId: string, rpc: Transport = transport) {
-  return createPromiseClient(Drafts, rpc).deleteDraft({documentId: documentId})
+export function deleteDraft(documentId: string, rpc: GrpcClient = client) {
+  const request = DeleteDraftRequest.fromPartial({documentId})
+  return new DraftsClientImpl(rpc).deleteDraft(request)
 }
 
 /**
@@ -41,9 +49,14 @@ export function deleteDraft(documentId: string, rpc: Transport = transport) {
 export function listDrafts(
   pageSize?: number,
   pageToken?: string,
-  rpc: Transport = transport,
+  rpc: GrpcClient = client,
 ): Promise<ListDraftsResponse> {
-  return createPromiseClient(Drafts, rpc).listDrafts({pageSize, pageToken})
+  const request = ListDraftsRequest.fromPartial({
+    pageSize,
+    pageToken,
+  })
+
+  return new DraftsClientImpl(rpc).listDrafts(request)
 }
 
 /**
@@ -52,8 +65,9 @@ export function listDrafts(
  * @param rpc
  * @returns
  */
-export function publishDraft(documentId: string, rpc: Transport = transport) {
-  return createPromiseClient(Drafts, rpc).publishDraft({documentId})
+export function publishDraft(documentId: string, rpc: GrpcClient = client) {
+  const request = PublishDraftRequest.fromPartial({documentId})
+  return new DraftsClientImpl(rpc).publishDraft(request)
 }
 
 /**
@@ -64,9 +78,11 @@ export function publishDraft(documentId: string, rpc: Transport = transport) {
  */
 export async function getDraft(
   documentId: string,
-  rpc: Transport = transport,
+  rpc: GrpcClient = client,
 ): Promise<Document> {
-  return await createPromiseClient(Drafts, rpc).getDraft({documentId})
+  const request = GetDraftRequest.fromPartial({documentId})
+  const doc = await new DraftsClientImpl(rpc).getDraft(request)
+  return doc
 }
 
 export type DocumentChanges = {
@@ -76,7 +92,8 @@ export type DocumentChanges = {
 
 export async function updateDraftV2(
   documentChanges: DocumentChanges,
-  rpc: Transport = transport,
+  rpc: GrpcClient = client,
 ) {
-  return await createPromiseClient(Drafts, rpc).updateDraftV2(documentChanges)
+  const request = UpdateDraftRequestV2.fromPartial(documentChanges)
+  return await new DraftsClientImpl(rpc).updateDraftV2(request)
 }
