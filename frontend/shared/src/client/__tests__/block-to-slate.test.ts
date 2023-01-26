@@ -1,4 +1,4 @@
-import {Block} from '../.generated/documents/v1alpha/documents'
+import {Block} from '../.generated/documents/v1alpha/documents_pb'
 import {
   embed,
   heading,
@@ -16,7 +16,7 @@ import {blockToSlate} from '../block-to-slate'
 
 describe('Transform: blockToSlate', () => {
   test('should return an empty annotations list', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'Hello world',
@@ -30,7 +30,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should return a heading block', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'heading',
       text: 'Hello world',
@@ -46,7 +46,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should return a block with a single letter and no annotations', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'h',
@@ -60,7 +60,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('basic marks with no trailing space', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'A',
@@ -79,7 +79,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should return all the possible marks', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'A B C D E F',
@@ -109,7 +109,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should generate overlapping marks', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'Mintter is Awesome',
@@ -132,7 +132,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should transform no ASCII characters (emojis)', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'hello from 👨‍👩‍👧‍👦 family',
@@ -148,7 +148,7 @@ describe('Transform: blockToSlate', () => {
 
   describe('Links', () => {
     test('Links: simple', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'hello Mintter',
@@ -174,7 +174,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Links: simple 2', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'AB',
@@ -202,7 +202,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Links: multiple links together', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'Mintterdemo',
@@ -236,7 +236,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Links: with marks', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'hello Mintter team!',
@@ -267,7 +267,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Images: simple', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -282,7 +282,7 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+    })
 
     let output: Statement = statement({id: 'blockId'}, [
       paragraph([
@@ -296,7 +296,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Images: simple + alt', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -311,7 +311,7 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+    })
 
     let output: Statement = statement({id: 'blockId'}, [
       paragraph([
@@ -325,7 +325,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Images: with more content', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'hello block with \uFFFC this image in between content',
@@ -340,7 +340,7 @@ describe('Transform: blockToSlate', () => {
           ends: [18],
         },
       ],
-    }
+    })
 
     let output: Statement = statement({id: 'blockId'}, [
       paragraph([
@@ -355,7 +355,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Videos: simple', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -370,7 +370,7 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+    })
 
     let output: Statement = statement({id: 'blockId'}, [
       paragraph([
@@ -384,7 +384,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Videos: simple + alt', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -399,7 +399,7 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+    })
 
     let output: Statement = statement({id: 'blockId'}, [
       paragraph([
@@ -413,7 +413,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Videos: with more content', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'hello block with \uFFFC this video in between content',
@@ -428,7 +428,7 @@ describe('Transform: blockToSlate', () => {
           ends: [18],
         },
       ],
-    }
+    })
 
     let output: Statement = statement({id: 'blockId'}, [
       paragraph([
@@ -444,7 +444,7 @@ describe('Transform: blockToSlate', () => {
 
   describe('Embeds', () => {
     test('Embeds: simple', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '\uFFFC',
@@ -470,7 +470,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Embeds: multiple embeds together', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '\uFFFC\uFFFC',
@@ -504,7 +504,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Embeds: multiple embeds separated by marks', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'This \uFFFC and also this are very important: \uFFFC',
@@ -543,7 +543,7 @@ describe('Transform: blockToSlate', () => {
 
   describe('Emojis', () => {
     test('Single Emoji', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '😅',
@@ -556,7 +556,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Single Emoji with Mark', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '😅',
@@ -578,7 +578,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Multiple emojis', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '😀 😎 👨‍👩‍👧‍👦',
@@ -600,7 +600,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Text + Emojis', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'hello 😅',
@@ -614,7 +614,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('combining layers', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'Alice, Bob and Carol',

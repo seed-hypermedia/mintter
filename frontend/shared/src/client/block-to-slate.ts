@@ -2,7 +2,7 @@ import {
   Annotation,
   Block,
   BlockNode,
-} from './.generated/documents/v1alpha/documents'
+} from './.generated/documents/v1alpha/documents_pb'
 import {
   GroupingContent,
   Text,
