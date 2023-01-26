@@ -32,11 +32,11 @@ type Wallet interface {
 
 // Server implements the Daemon gRPC API.
 type Server struct {
-	vcs       *vcsdb.DB
-	repo      Repo
-	startTime time.Time
-	wallet    Wallet
-
+	vcs           *vcsdb.DB
+	repo          Repo
+	startTime     time.Time
+	wallet        Wallet
+	site          *site.Service
 	forceSyncFunc func() error
 
 	mu sync.Mutex // we only want one register request at a time.
@@ -49,6 +49,7 @@ func NewServer(r Repo, vcs *vcsdb.DB, w Wallet, syncFunc func() error) *Server {
 		repo:          r,
 		startTime:     time.Now(),
 		wallet:        w,
+		site:          site.New(),
 		forceSyncFunc: syncFunc,
 	}
 }
@@ -147,7 +148,7 @@ func (srv *Server) ForceSync(ctx context.Context, in *daemon.ForceSyncRequest) (
 
 // AddSite checks if the provided site hostname is a valid Mintter site and if so, add it to the database.
 func (srv *Server) AddSite(ctx context.Context, req *daemon.AddSiteRequest) (*daemon.SiteConfig, error) {
-	role, err := site.AddSite(req.Hostname, req.InviteToken)
+	role, err := srv.site.AddSite(req.Hostname, req.InviteToken)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +159,11 @@ func (srv *Server) AddSite(ctx context.Context, req *daemon.AddSiteRequest) (*da
 }
 
 func (srv *Server) DeleteSite(ctx context.Context, req *daemon.DeleteSiteRequest) (*emptypb.Empty, error) {
-	return nil, fmt.Errorf("Not yet implemented")
+	err := srv.site.DeleteSite(req.Hostname)
+	if err != nil {
+		return &emptypb.Empty{}, err
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (srv *Server) ListSites(ctx context.Context, req *daemon.ListSitesRequest) (*daemon.ListSitesResponse, error) {
