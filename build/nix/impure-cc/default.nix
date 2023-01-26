@@ -8,6 +8,6 @@ stdenv.mkDerivation {
   phases = ["installPhase"];
   installPhase = ''
     mkdir -p $out/bin
-    ln -s /usr/bin/gcc /usr/bin/clang /usr/bin/cc $out/bin/
+    ln -s /usr/bin/gcc /usr/bin/clang /usr/bin/cc /usr/bin/ld $out/bin/
   '';
 }

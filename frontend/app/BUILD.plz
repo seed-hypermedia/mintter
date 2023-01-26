@@ -1,0 +1,17 @@
+subinclude("//build/rules/js:defs")
+
+pnpm_script(
+    name = "dist",
+    srcs = [
+        "index.html",
+        "package.json",
+        "public",
+        "src",
+        "tsconfig.json",
+        "vite.config.ts",
+        "//frontend/shared",
+    ],
+    outs = ["dist"],
+    pnpm_deps = "//:pnpm",
+    script_name = "build",
+)

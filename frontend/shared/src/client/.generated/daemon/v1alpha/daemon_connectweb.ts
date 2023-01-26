@@ -15,8 +15,8 @@ export const Daemon = {
   typeName: "com.mintter.daemon.v1alpha.Daemon",
   methods: {
     /**
-     * Generates a set of mnemonics words used to derive Mintter Account Key, and the underlying 
-     * mintter lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a 
+     * Generates a set of mnemonic words used to derive Mintter Account Key, and the underlying
+     * mintter lndhub wallet. The cipher schema is BIP-39 and the entropy is encoded as a
      * mnemonic of 12-24 human-readable english words.
      * The seed could be reconstructed given these words and the passphrase.
      *
