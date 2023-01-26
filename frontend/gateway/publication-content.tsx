@@ -25,14 +25,6 @@ export function PublicationContent({
 
   return publication && value ? (
     <>
-      <Head>
-        <meta
-          property="og:image"
-          content={`https://mintter.com/api/og?title=${
-            publication?.document.title || 'Untitled Document'
-          }`}
-        />
-      </Head>
       <article className="sidebar">
         <div>
           {!onlyContent ? (
