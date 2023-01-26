@@ -1,19 +1,14 @@
-import {
-  DaemonClientImpl,
-  ForceSyncRequest,
-  GetInfoRequest,
-} from './.generated/daemon/v1alpha/daemon'
-import {client} from './client'
-import type {GrpcClient} from './grpc-client'
+import {Daemon} from './.generated/daemon/v1alpha/daemon_connectweb'
+import {transport} from './client'
+import {Transport, createPromiseClient} from '@bufbuild/connect-web'
 
 /**
  *
  * @param rpc
  * @returns
  */
-export function getInfo(rpc: GrpcClient = client) {
-  const request = GetInfoRequest.fromPartial({})
-  return new DaemonClientImpl(rpc).getInfo(request)
+export function getInfo(rpc: Transport = transport) {
+  return createPromiseClient(Daemon, rpc).getInfo({})
 }
 
 /**
@@ -21,7 +16,6 @@ export function getInfo(rpc: GrpcClient = client) {
  * @param rpc
  * @returns
  */
-export function forceSync(rpc: GrpcClient = client) {
-  const request = ForceSyncRequest.fromPartial({})
-  return new DaemonClientImpl(rpc).forceSync(request)
+export function forceSync(rpc: Transport = transport) {
+  return createPromiseClient(Daemon, rpc).forceSync({})
 }

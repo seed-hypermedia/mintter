@@ -13,4 +13,7 @@ export default {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  experimental: {
+    runtime: 'experimental-edge',
+  },
 }

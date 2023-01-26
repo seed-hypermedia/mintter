@@ -1,12 +1,11 @@
 export type {
   Account,
-  Account_DevicesEntry,
   Device,
   GetAccountRequest,
   ListAccountsRequest,
   ListAccountsResponse,
   Profile,
-} from './.generated/accounts/v1alpha/accounts'
+} from './.generated/accounts/v1alpha/accounts_pb'
 export type {
   GenMnemonicRequest,
   GenMnemonicResponse,
@@ -14,7 +13,7 @@ export type {
   Info,
   RegisterRequest,
   RegisterResponse,
-} from './.generated/daemon/v1alpha/daemon'
+} from './.generated/daemon/v1alpha/daemon_pb'
 export {
   Annotation,
   Block,
@@ -34,14 +33,14 @@ export {
   PublishDraftRequest,
   UpdateDraftRequestV2,
   ListCitationsResponse,
-} from './.generated/documents/v1alpha/documents'
-export {ConnectionStatus} from './.generated/networking/v1alpha/networking'
+} from './.generated/documents/v1alpha/documents_pb'
+export {ConnectionStatus} from './.generated/networking/v1alpha/networking_pb'
 export type {
   ConnectRequest,
   ConnectResponse,
   GetPeerInfoRequest,
   PeerInfo,
-} from './.generated/networking/v1alpha/networking'
+} from './.generated/networking/v1alpha/networking_pb'
 export * from './.generated/types'
 export {
   generateMnemonic,
@@ -59,8 +58,6 @@ export {
   publishDraft,
   updateDraftV2,
 } from './drafts'
-export {createGrpcClient, MINTTER_API_URL_DEFAULT} from './grpc-client'
-export type {GrpcClient} from './grpc-client'
 export {connect, getPeerInfo, listPeerAddrs} from './networking'
 export {
   deletePublication,
@@ -71,7 +68,7 @@ export {
 import {
   Document,
   Publication as APIPublication,
-} from './.generated/documents/v1alpha/documents'
+} from './.generated/documents/v1alpha/documents_pb'
 export type Publication = APIPublication & {
   document?: Document
 }

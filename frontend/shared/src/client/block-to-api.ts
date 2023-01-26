@@ -1,4 +1,4 @@
-import {Block} from './.generated/documents/v1alpha/documents'
+import {Block} from './.generated/documents/v1alpha/documents_pb'
 import {AnnotationSet} from './classes'
 import {FlowContent} from '../mttast'
 
