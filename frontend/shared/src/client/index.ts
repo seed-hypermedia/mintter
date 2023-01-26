@@ -24,16 +24,17 @@ export {
   DocumentChange,
   GetDraftRequest,
   GetPublicationRequest,
-  Link as MttLink,
-  LinkNode,
   ListDraftsRequest,
   ListDraftsResponse,
   ListPublicationsRequest,
   ListPublicationsResponse,
   PublishDraftRequest,
-  UpdateDraftRequestV2,
-  ListCitationsResponse,
 } from './.generated/documents/v1alpha/documents_pb'
+export {
+  Link as MttLink,
+  LinkNode,
+  ListCitationsResponse,
+} from './.generated/documents/v1alpha/content_graph_pb'
 export {ConnectionStatus} from './.generated/networking/v1alpha/networking_pb'
 export type {
   ConnectRequest,
