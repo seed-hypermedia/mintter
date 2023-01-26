@@ -1,4 +1,4 @@
-import {Annotation} from './.generated/documents/v1alpha/documents'
+import {Annotation} from './.generated/documents/v1alpha/documents_pb'
 
 // AnnotationSet wraps multiple annotations in a single structure.
 export class AnnotationSet {
@@ -23,12 +23,12 @@ export class AnnotationSet {
 
     let annotation = this.annotations.get(id)
     if (!annotation) {
-      annotation = {
+      annotation = new Annotation({
         type,
         attributes: attributes ?? {},
         starts: [],
         ends: [],
-      }
+      })
 
       this.annotations.set(id, annotation)
     }

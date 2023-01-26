@@ -1,3 +1,5 @@
-import {createGrpcClient} from './grpc-client'
+import {createGrpcWebTransport} from '@bufbuild/connect-web'
 
-export var client = createGrpcClient()
+export const transport = createGrpcWebTransport({
+  baseUrl: 'http://localhost:55001',
+})

@@ -30,7 +30,12 @@ go_binary(
 )
 
 pnpm_binary(
-    name = "protoc-gen-ts_proto",
+    name = "protoc-gen-es",
+    pnpm_deps = "//:pnpm",
+)
+
+pnpm_binary(
+    name = "protoc-gen-connect-web",
     pnpm_deps = "//:pnpm",
 )
 

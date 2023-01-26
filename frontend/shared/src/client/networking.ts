@@ -1,15 +1,11 @@
-import type {Device} from './.generated/accounts/v1alpha/accounts'
+import type {Device} from './.generated/accounts/v1alpha/accounts_pb'
 import type {
   ConnectResponse,
   PeerInfo,
-} from './.generated/networking/v1alpha/networking'
-import {
-  ConnectRequest,
-  GetPeerInfoRequest,
-  NetworkingClientImpl,
-} from './.generated/networking/v1alpha/networking'
-import {client} from './client'
-import type {GrpcClient} from './grpc-client'
+} from './.generated/networking/v1alpha/networking_pb'
+import {Networking} from './.generated/networking/v1alpha/networking_connectweb'
+import {transport} from './client'
+import {Transport, createPromiseClient} from '@bufbuild/connect-web'
 
 /**
  *
@@ -19,22 +15,21 @@ import type {GrpcClient} from './grpc-client'
  */
 export async function listPeerAddrs(
   peerId: string,
-  rpc: GrpcClient = client,
+  rpc: Transport = transport,
 ): Promise<PeerInfo['addrs']> {
-  const request = GetPeerInfoRequest.fromPartial({peerId})
-  const info = await new NetworkingClientImpl(rpc).getPeerInfo(request)
+  const info = await createPromiseClient(Networking, rpc).getPeerInfo({peerId})
   return info.addrs
 }
 
 export function connect(
   addrs: Array<string>,
-  rpc: GrpcClient = client,
+  rpc: Transport = transport,
 ): Promise<ConnectResponse> {
-  const request = ConnectRequest.fromPartial({addrs: addrs})
-  return new NetworkingClientImpl(rpc).connect(request)
+  return createPromiseClient(Networking, rpc).connect({addrs: addrs})
 }
 
-export function getPeerInfo(device: Device, rpc: GrpcClient = client) {
-  const request = GetPeerInfoRequest.fromPartial({peerId: device.peerId})
-  return new NetworkingClientImpl(rpc).getPeerInfo(request)
+export function getPeerInfo(device: Device, rpc: Transport = transport) {
+  return createPromiseClient(Networking, rpc).getPeerInfo({
+    peerId: device.peerId,
+  })
 }
