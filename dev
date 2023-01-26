@@ -72,7 +72,7 @@ def main():
 
     @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
     def build_frontend(args):
-        return run("plz build //frontend:app")
+        return run("pnpm build")
 
     @cmd(
         cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
