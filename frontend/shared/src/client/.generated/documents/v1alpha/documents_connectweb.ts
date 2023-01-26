@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListCitationsRequest, ListCitationsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequestV2 } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequestV2 } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -122,26 +122,6 @@ export const Publications = {
       name: "ListPublications",
       I: ListPublicationsRequest,
       O: ListPublicationsResponse,
-      kind: MethodKind.Unary,
-    },
-  }
-} as const;
-
-/**
- * Content graph service provides access to citations (backlinks).
- *
- * @generated from service com.mintter.documents.v1alpha.ContentGraph
- */
-export const ContentGraph = {
-  typeName: "com.mintter.documents.v1alpha.ContentGraph",
-  methods: {
-    /**
-     * @generated from rpc com.mintter.documents.v1alpha.ContentGraph.ListCitations
-     */
-    listCitations: {
-      name: "ListCitations",
-      I: ListCitationsRequest,
-      O: ListCitationsResponse,
       kind: MethodKind.Unary,
     },
   }
