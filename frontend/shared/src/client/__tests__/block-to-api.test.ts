@@ -11,7 +11,7 @@ import {
   text,
   video,
 } from '../../mttast'
-import {Block} from '../.generated/documents/v1alpha/documents'
+import {Block} from '../.generated/documents/v1alpha/documents_pb'
 import {describe, expect, test} from 'vitest'
 import {blockToApi} from '../block-to-api'
 

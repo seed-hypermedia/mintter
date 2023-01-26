@@ -41,6 +41,7 @@ importers:
   frontend/app:
     specifiers:
       '@babel/core': 7.20.7
+      '@bufbuild/connect-web': ^0.6.0
       '@bufbuild/protobuf': ^1.0.0
       '@cypress/vite-dev-server': 3.4.0
       '@floating-ui/react-dom': 1.0.1
@@ -160,6 +161,7 @@ importers:
       ws: 8.11.0
       xstate: 4.35.1
     dependencies:
+      '@bufbuild/connect-web': 0.6.0_@bufbuild+protobuf@1.0.0
       '@bufbuild/protobuf': 1.0.0
       '@floating-ui/react-dom': 1.0.1_biqbaboplfbrettd7655fr4n2y
       '@floating-ui/react-dom-interactions': 0.13.3_ib3m5ricvtkl2cll7qpr2f6lvq
@@ -283,6 +285,8 @@ importers:
 
   frontend/gateway:
     specifiers:
+      '@bufbuild/connect-web': ^0.6.0
+      '@bufbuild/protobuf': ^1.0.0
       '@mdx-js/loader': 2.1.5
       '@mdx-js/react': 2.1.5
       '@mintter/shared': workspace:*
@@ -331,6 +335,8 @@ importers:
       webpack: '>=5.0.0 <6.0.0'
       xstate: 4.35.1
     dependencies:
+      '@bufbuild/connect-web': 0.6.0_@bufbuild+protobuf@1.0.0
+      '@bufbuild/protobuf': 1.0.0
       '@mdx-js/loader': 2.1.5_webpack@5.75.0
       '@mdx-js/react': 2.1.5_react@18.2.0
       '@mintter/shared': link:../shared
@@ -382,6 +388,7 @@ importers:
 
   frontend/shared:
     specifiers:
+      '@bufbuild/connect-web': ^0.6.0
       '@bufbuild/protobuf': ^1.0.0
       '@types/hast': 2.3.4
       '@types/unist': 2.0.6
@@ -412,6 +419,7 @@ importers:
       unist-util-visit: 4.1.1
       vitest: 0.25.5
     dependencies:
+      '@bufbuild/connect-web': 0.6.0_@bufbuild+protobuf@1.0.0
       '@bufbuild/protobuf': 1.0.0
       browser-headers: 0.4.1
       deepmerge: 4.2.2
@@ -1177,6 +1185,14 @@ packages:
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
     dev: true
+
+  /@bufbuild/connect-web/0.6.0_@bufbuild+protobuf@1.0.0:
+    resolution: {integrity: sha512-dfiXt7ye/sC1MwBtCyR1XYZHjKvVpCxLP/HcnHYoa6POi+Ey1t058bCc14HdT2EpYEZYN7SW1M2tuZ5SnabmhA==}
+    peerDependencies:
+      '@bufbuild/protobuf': ^1.0.0
+    dependencies:
+      '@bufbuild/protobuf': 1.0.0
+    dev: false
 
   /@bufbuild/protobuf/1.0.0:
     resolution: {integrity: sha512-oH3jHBrZ6to8Qf4zLg7O8KqSY42kQZNBRXJRMp5uSi0mqE4L8NbyMnZHeOsbXmTb0xpptRyH11LfS+KeVhXzAA==}

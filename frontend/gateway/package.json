@@ -16,9 +16,11 @@
     "start": "next start"
   },
   "dependencies": {
-    "@mintter/shared": "workspace:*",
+    "@bufbuild/connect-web": "^0.6.0",
+    "@bufbuild/protobuf": "^1.0.0",
     "@mdx-js/loader": "2.1.5",
     "@mdx-js/react": "2.1.5",
+    "@mintter/shared": "workspace:*",
     "@next/mdx": "13.0.6",
     "@tanstack/react-query": "4.19.1",
     "@tanstack/react-query-devtools": "4.19.1",

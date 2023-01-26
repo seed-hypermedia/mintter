@@ -49,6 +49,7 @@
     "vitest": "0.25.5"
   },
   "dependencies": {
+    "@bufbuild/connect-web": "^0.6.0",
     "@bufbuild/protobuf": "^1.0.0",
     "browser-headers": "0.4.1",
     "deepmerge": "4.2.2",
