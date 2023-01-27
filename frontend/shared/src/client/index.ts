@@ -1,3 +1,4 @@
+import {PartialMessage} from '@bufbuild/protobuf'
 export type {
   Account,
   Device,
@@ -71,9 +72,9 @@ import {
   Publication as APIPublication,
 } from './.generated/documents/v1alpha/documents_pb'
 export type Publication = APIPublication & {
-  document?: Document
+  document?: PartialMessage<Document>
 }
-export {Document}
+export type {Document}
 export * from './block-to-slate'
 export * from './block-to-api'
 export * from './client'

@@ -1,11 +1,15 @@
 import {EditorDocument} from '../draft-machine'
 import type {Document} from '@mintter/shared'
+import {Timestamp} from '@bufbuild/protobuf'
 
 type KeyOfType<T, U> = {
   [P in keyof T]: T[P] extends U ? P : never
 }[keyof T]
 
-export type DateKeys = KeyOfType<Document, Date | undefined>
+export type DateKeys = Exclude<
+  KeyOfType<Document, Timestamp | undefined>,
+  undefined
+>
 
 var months = [
   'Jan',
@@ -35,9 +39,12 @@ export function getDateFormat(
   } ${date.getDate()}, ${date.getFullYear()} at ${date.getHours()}:${date.getMinutes()}`
 }
 
-export function formattedDate(value: Date) {
+export function formattedDate(value: Timestamp) {
+  console.log('🚀 ~ file: get-format-date.ts:43 ~ formattedDate ~ value', value)
+  let _value = value.toDate()
+
   var now = new Date()
-  var date = new Date(value)
+  var date = new Date(_value)
 
   var result = difference(date, now)
 

@@ -1,22 +1,22 @@
-import {getPublication, Publication, blockNodeToSlate} from '@mintter/shared'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
+import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {
+  blockNodeToSlate,
   Embed as EmbedType,
   FlowContent,
+  getPublication,
   isEmbed,
-  isFlowContent,
+  Publication,
 } from '@mintter/shared'
-import {getBlock} from '@app/utils/get-block'
-import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {MouseEvent, useMemo} from 'react'
-import {Editor as SlateEditor, Node, Transforms} from 'slate'
+import {Editor as SlateEditor, Transforms} from 'slate'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {useLocation, useRoute} from 'wouter'

@@ -142,21 +142,25 @@ export const MintterEditor: MintterEditor = {
       }
 
       if (type == 'setTitle') {
-        result.push({
-          op: {
-            $case: type,
-            setTitle: value,
-          },
-        })
+        result.push(
+          new DocumentChange({
+            op: {
+              case: 'setTitle',
+              value,
+            },
+          }),
+        )
       }
 
       if (type == 'setSubtitle') {
-        result.push({
-          op: {
-            $case: 'setSubtitle',
-            setSubtitle: value,
-          },
-        })
+        result.push(
+          new DocumentChange({
+            op: {
+              case: 'setSubtitle',
+              value,
+            },
+          }),
+        )
       }
     })
 
