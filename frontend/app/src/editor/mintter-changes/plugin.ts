@@ -17,7 +17,7 @@ import {Editor, MoveNodeOperation, Node, Path} from 'slate'
 import {EditorPlugin} from '../types'
 import {getEditorBlock} from '../utils'
 
-type ChangeType = NonNullable<DocumentChange['op']>['$case'] | undefined
+type ChangeType = NonNullable<DocumentChange['op']>['case'] | undefined
 export type ChangeOperation = [ChangeType, string] | ['setRoot', string]
 
 export function createMintterChangesPlugin(): EditorPlugin {
