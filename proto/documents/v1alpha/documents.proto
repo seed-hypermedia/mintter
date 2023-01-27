@@ -108,7 +108,7 @@ message ListDraftsResponse {
   // Content is omitted.
   repeated Document documents = 1;
 
-  // Token for the next page if there're any.
+  // Token for the next page if there's any.
   string next_page_token = 2;
 }
 
@@ -243,6 +243,10 @@ message Block {
 
   // Annotation "layers" of the block.
   repeated Annotation annotations = 5;
+
+  // Output only. Current revision of the block. It's the ID of the last Change that modified this block.
+  // Additional information about the Change can be obtained using the Changes service.
+  string revision = 6;
 }
 
 // Conceptual annotation "layer" that is applied to arbitrary spans of block text.

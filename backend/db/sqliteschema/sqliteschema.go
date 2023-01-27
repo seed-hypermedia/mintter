@@ -17,6 +17,7 @@ func init() {
 		"IPFS",
 		"CID",
 		"SQLite",
+		"IPLD",
 	)
 }
 

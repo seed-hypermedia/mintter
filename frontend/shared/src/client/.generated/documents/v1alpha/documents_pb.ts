@@ -386,7 +386,7 @@ export class ListDraftsResponse extends Message<ListDraftsResponse> {
   documents: Document[] = [];
 
   /**
-   * Token for the next page if there're any.
+   * Token for the next page if there's any.
    *
    * @generated from field: string next_page_token = 2;
    */
@@ -906,6 +906,14 @@ export class Block extends Message<Block> {
    */
   annotations: Annotation[] = [];
 
+  /**
+   * Output only. Current revision of the block. It's the ID of the last Change that modified this block.
+   * Additional information about the Change can be obtained using the Changes service.
+   *
+   * @generated from field: string revision = 6;
+   */
+  revision = "";
+
   constructor(data?: PartialMessage<Block>) {
     super();
     proto3.util.initPartial(data, this);
@@ -919,6 +927,7 @@ export class Block extends Message<Block> {
     { no: 3, name: "text", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "attributes", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
     { no: 5, name: "annotations", kind: "message", T: Annotation, repeated: true },
+    { no: 6, name: "revision", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Block {

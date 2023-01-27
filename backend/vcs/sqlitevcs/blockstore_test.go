@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/db/sqliteschema"
+	"mintter/backend/ipfs"
+	"mintter/backend/pkg/must"
 	"testing"
 
 	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	format "github.com/ipfs/go-ipld-format"
 	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
@@ -74,7 +77,7 @@ func TestHas(t *testing.T) {
 
 	bs := makeBlockstore(t)
 
-	orig := blocks.NewBlock([]byte("some data"))
+	orig := ipfs.NewBlock(cid.Raw, []byte("some data"))
 	err := bs.Put(context.Background(), orig)
 	require.NoError(t, err)
 
@@ -82,7 +85,7 @@ func TestHas(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, ok)
 
-	ok, err = bs.Has(context.Background(), blocks.NewBlock([]byte("another thing")).Cid())
+	ok, err = bs.Has(context.Background(), ipfs.NewBlock(cid.Raw, []byte("another thing")).Cid())
 	require.NoError(t, err)
 	require.False(t, ok)
 }
@@ -92,7 +95,7 @@ func TestCidv0v1(t *testing.T) {
 
 	bs := makeBlockstore(t)
 
-	orig := blocks.NewBlock([]byte("some data"))
+	orig := ipfs.NewBlock(cid.Raw, []byte("some data"))
 
 	err := bs.Put(context.Background(), orig)
 	require.NoError(t, err)
@@ -152,10 +155,11 @@ func TestPutMany(t *testing.T) {
 	bs := makeBlockstore(t)
 
 	blks := []blocks.Block{
-		blocks.NewBlock([]byte("foo1")),
-		blocks.NewBlock([]byte("foo2")),
-		blocks.NewBlock([]byte("foo3")),
+		ipfs.NewBlock(cid.Raw, []byte("foo1")),
+		ipfs.NewBlock(cid.Raw, []byte("foo2")),
+		ipfs.NewBlock(cid.Raw, []byte("foo3")),
 	}
+
 	err := bs.PutMany(context.Background(), blks)
 	require.NoError(t, err)
 
@@ -203,9 +207,9 @@ func TestDelete(t *testing.T) {
 	bs := makeBlockstore(t)
 
 	blks := []blocks.Block{
-		blocks.NewBlock([]byte("foo1")),
-		blocks.NewBlock([]byte("foo2")),
-		blocks.NewBlock([]byte("foo3")),
+		ipfs.NewBlock(cid.Raw, []byte("foo1")),
+		ipfs.NewBlock(cid.Raw, []byte("foo2")),
+		ipfs.NewBlock(cid.Raw, []byte("foo3")),
 	}
 	err := bs.PutMany(context.Background(), blks)
 	require.NoError(t, err)
@@ -219,13 +223,38 @@ func TestDelete(t *testing.T) {
 	cids := collect(ch)
 	require.Len(t, cids, 2)
 	require.ElementsMatch(t, cids, []cid.Cid{
-		cid.NewCidV1(cid.DagProtobuf, blks[0].Cid().Hash()),
-		cid.NewCidV1(cid.DagProtobuf, blks[2].Cid().Hash()),
+		blks[0].Cid(),
+		blks[2].Cid(),
 	})
 
 	has, err := bs.Has(context.Background(), blks[1].Cid())
 	require.NoError(t, err)
 	require.False(t, has)
+}
+
+func TestIPLDIndex(t *testing.T) {
+	t.Parallel()
+
+	bs := makeBlockstore(t)
+	ctx := context.Background()
+
+	alice := ipfs.NewBlock(cid.DagCBOR, must.Do2(cbornode.DumpObject(map[string]any{"name": "Alice"})))
+	bob := ipfs.NewBlock(cid.DagCBOR, must.Do2(cbornode.DumpObject(map[string]any{"name": "Bob", "nested": map[string]any{
+		"friend": alice.Cid(),
+	}})))
+
+	// Putting bob first to ensure we can index links even for data we don't yet have.
+	require.NoError(t, bs.Put(ctx, bob))
+
+	require.False(t, must.Do2(bs.Has(ctx, alice.Cid())), "must not have alice until we put it")
+
+	require.NoError(t, bs.Put(ctx, alice))
+
+	require.True(t, must.Do2(bs.Has(ctx, alice.Cid())), "must have alice after we put it")
+	require.True(t, must.Do2(bs.Has(ctx, bob.Cid())), "must have bob")
+
+	require.Equal(t, alice.RawData(), must.Do2(bs.Get(ctx, alice.Cid())).RawData(), "must get alice data")
+	require.Equal(t, bob.RawData(), must.Do2(bs.Get(ctx, bob.Cid())).RawData(), "must get bob data")
 }
 
 func makeBlockstore(t testing.TB) *blockStore {

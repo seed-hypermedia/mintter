@@ -8,11 +8,14 @@ import (
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/crdt"
+	"strconv"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/leporo/sqlf"
+	"github.com/multiformats/go-multihash"
 	"go.uber.org/multierr"
 )
 
@@ -104,6 +107,73 @@ func (conn *Conn) QueryValuesByAttr(object LocalID, cs ChangeSet, entity NodeID,
 	})
 
 	return it
+}
+
+// ChangeInfoForOp returns ChangeInfo given a Datom Op ID.
+func (conn *Conn) ChangeInfoForOp(obj LocalID, id crdt.OpID) (info ChangeInfo) {
+	must.Maybe(&conn.err, func() error {
+		q := sqlf.
+			Select(sqliteschema.DatomsChange.String()).
+			Select(sqliteschema.IPFSBlocksMultihash.String()).
+			Select(sqliteschema.IPFSBlocksCodec.String()).
+			From(string(sqliteschema.Datoms)).
+			LeftJoin(string(sqliteschema.IPFSBlocks), sqliteschema.DatomsChange.String()+" = "+sqliteschema.IPFSBlocksID.String()).
+			Where(sqliteschema.DatomsOrigin.String()+" = ?", id.Origin()).
+			Where(sqliteschema.DatomsTime.String()+" = ?", id.Time()).
+			Where(sqliteschema.DatomsPermanode.String()+" = ?", obj).
+			Limit(1)
+		defer q.Close()
+
+		if err := sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
+			info.LocalID = LocalID(stmt.ColumnInt(0))
+
+			hash := stmt.ColumnBytes(1)
+			if len(hash) == 0 {
+				return nil
+			}
+
+			codec := stmt.ColumnInt(2)
+
+			mh, err := multihash.Cast(hash)
+			if err != nil {
+				return fmt.Errorf("failed to cast multihash: %w", err)
+			}
+
+			info.CID = cid.NewCidV1(uint64(codec), mh)
+
+			return nil
+		}, q.Args()...); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return info
+}
+
+// ChangeInfo contains metadata about a given Change.
+type ChangeInfo struct {
+	LocalID LocalID
+	CID     cid.Cid
+}
+
+// IsZero indicates whether it's a zero value.
+func (ci ChangeInfo) IsZero() bool {
+	return ci.LocalID == 0
+}
+
+// StringID returns ChangeID as a string. Including for in-progress changes.
+func (ci ChangeInfo) StringID() string {
+	if ci.IsZero() {
+		return ""
+	}
+
+	if ci.CID.Defined() {
+		return ci.CID.String()
+	}
+
+	return "$LOCAL$:" + strconv.Itoa(int(ci.LocalID))
 }
 
 func baseDatomQuery(reverse bool) *sqlf.Stmt {
@@ -236,6 +306,11 @@ func (dr DatomRow) Datom() Datom {
 		Time:      dr.Time(),
 		Origin:    dr.Origin(),
 	}
+}
+
+// OpID returns the operation ID of the datom.
+func (dr DatomRow) OpID() crdt.OpID {
+	return crdt.OpID{uint64(dr.Time()), dr.Origin()}
 }
 
 // Entity returns entity column value.

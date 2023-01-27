@@ -96,8 +96,15 @@ const (
 	IPFSBlocksID         sqlitegen.Column = "ipfs_blocks.id"
 	IPFSBlocksInsertTime sqlitegen.Column = "ipfs_blocks.insert_time"
 	IPFSBlocksMultihash  sqlitegen.Column = "ipfs_blocks.multihash"
-	IPFSBlocksPending    sqlitegen.Column = "ipfs_blocks.pending"
 	IPFSBlocksSize       sqlitegen.Column = "ipfs_blocks.size"
+)
+
+// Table ipld_links.
+const (
+	IPLDLinks       sqlitegen.Table  = "ipld_links"
+	IPLDLinksChild  sqlitegen.Column = "ipld_links.child"
+	IPLDLinksParent sqlitegen.Column = "ipld_links.parent"
+	IPLDLinksPath   sqlitegen.Column = "ipld_links.path"
 )
 
 // Table named_versions.
@@ -194,8 +201,10 @@ var Schema = sqlitegen.Schema{
 		IPFSBlocksID:                 {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksInsertTime:         {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksMultihash:          {Table: IPFSBlocks, SQLType: "BLOB"},
-		IPFSBlocksPending:            {Table: IPFSBlocks, SQLType: "INTEGER"},
 		IPFSBlocksSize:               {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPLDLinksChild:               {Table: IPLDLinks, SQLType: "INTEGER"},
+		IPLDLinksParent:              {Table: IPLDLinks, SQLType: "INTEGER"},
+		IPLDLinksPath:                {Table: IPLDLinks, SQLType: "TEXT"},
 		NamedVersionsAccountID:       {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsDeviceID:        {Table: NamedVersions, SQLType: "INTEGER"},
 		NamedVersionsName:            {Table: NamedVersions, SQLType: "TEXT"},
