@@ -6,7 +6,7 @@
     "dev": "concurrently --kill-others --kill-others-on-fail -n POSTCSS,NEXT -c bgGreen,bgMagenta 'pnpm dev:styles' 'pnpm dev:front'",
     "dev:styles": "nodemon css-props-generator.js",
     "dev:front": "next dev",
-    "build": "pnpm build:styles && pnpm build:front",
+    "build": "cd ../.. && pnpm shared:build && cd frontend/gateway && pnpm build:styles && pnpm build:front",
     "build:styles": "node css-props-generator.js",
     "build:front": "next build",
     "lint": "next lint",
