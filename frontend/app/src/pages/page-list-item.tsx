@@ -1,5 +1,8 @@
-import {DraftRef, PublicationRef} from '@app/main-machine'
-import {PublicationContext} from '@app/publication-machine'
+import {DraftActor} from '@app/draft-machine'
+import {
+  PublicationActor,
+  PublicationMachineContext,
+} from '@app/publication-machine'
 import {css} from '@app/stitches.config'
 import {Box} from '@components/box'
 import {Text} from '@components/text'
@@ -8,7 +11,7 @@ import {useMemo} from 'react'
 
 type PageListItemProps = {
   isNew: boolean
-  fileRef: PublicationRef | DraftRef
+  fileRef: PublicationActor | DraftActor
 }
 
 export function PageListItem(props: PageListItemProps) {
@@ -21,7 +24,7 @@ export function PageListItem(props: PageListItemProps) {
   let date =
     isPublication && state.context
       ? (
-          state.context as PublicationContext
+          state.context as PublicationMachineContext
         ).publication?.document?.createTime?.toISOString()
       : null
 

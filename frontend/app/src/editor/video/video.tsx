@@ -7,15 +7,15 @@ import {
   parseVideoUrl,
 } from '@app/editor/utils'
 import {videoMachine} from '@app/editor/video/video-machine'
-import {isVideo, text, video, Video as VideoType} from '@mintter/shared'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
+import {isVideo, text, video, Video as VideoType} from '@mintter/shared'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import isUrl from 'is-url'
-import {FormEvent, useMemo} from 'react'
+import {FormEvent} from 'react'
 import {Editor, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -85,7 +85,7 @@ function Video({element, attributes, children}: RenderElementProps) {
     actions: {
       assignError: assign({
         errorMessage: () =>
-          `Image error: image url is not a valid URL: ${
+          `Video error: video url is not a valid URL: ${
             (element as VideoType).url
           }`,
       }),
@@ -95,13 +95,6 @@ function Video({element, attributes, children}: RenderElementProps) {
       updateCaption: (_, event) => {
         Transforms.setNodes<VideoType>(editor, {alt: event.value}, {at: path})
       },
-      assignCaptionVisibility: assign({
-        captionVisibility: () => {
-          return editor.mode == EditorMode.Draft
-            ? true
-            : !!(element as VideoType).alt
-        },
-      }),
     },
     guards: {
       hasVideoUrl: () => !!(element as VideoType).url,

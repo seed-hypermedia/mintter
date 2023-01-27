@@ -22,6 +22,10 @@ export const videoMachine =
       tsTypes: {} as import('./video-machine.typegen').Typegen0,
       schema: {context: {} as VideoContext, events: {} as VideoEvent},
       initial: 'init',
+      context: {
+        errorMessage: '',
+        captionVisibility: true,
+      },
       states: {
         init: {
           always: [

@@ -237,7 +237,7 @@ export function createPublicationMachine({
                   publication: Object.assign(publication, {
                     document: {
                       ...publication.document,
-                      content: [content] as [GroupingContent],
+                      content: [content],
                     },
                   }),
                   canUpdate: info.accountId == publication.document.author,

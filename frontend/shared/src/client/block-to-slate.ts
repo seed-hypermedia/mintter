@@ -313,9 +313,11 @@ function isSurrogate(s: string, i: number): boolean {
   return res
 }
 
+type childrenType = 'group' | 'unorderedList' | 'orderedList'
+
 export function blockNodeToSlate(
   entry: Array<BlockNode>,
-  childrenType: string,
+  childrenType: childrenType,
   start?: string,
 ): GroupingContent {
   let fn =
@@ -332,7 +334,7 @@ export function blockNodeToSlate(
       if (children.length) {
         slateBlock.children[1] = blockNodeToSlate(
           children,
-          block?.attributes.childrenType as string,
+          block ? (block.attributes.childrenType as childrenType) : 'group',
           block?.attributes.start,
         )
       }

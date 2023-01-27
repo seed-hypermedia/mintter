@@ -337,12 +337,12 @@ export function createDraftMachine({
             let changes: Array<DocumentChange> = newTitle
               ? [
                   ...contentChanges,
-                  {
+                  new DocumentChange({
                     op: {
-                      $case: 'setTitle',
-                      setTitle: newTitle,
+                      case: 'setTitle',
+                      value: newTitle,
                     },
-                  },
+                  }),
                 ]
               : contentChanges
 
