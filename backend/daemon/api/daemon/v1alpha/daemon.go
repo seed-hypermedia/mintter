@@ -176,7 +176,7 @@ func (srv *Server) ListSites(ctx context.Context, req *daemon.ListSitesRequest) 
 
 }
 
-// GetDocWebPublications returns all the sites a given a docuement has been published to.
+// GetDocWebPublications returns all the sites a given a document has been published to.
 func (srv *Server) GetDocWebPublications(ctx context.Context, req *daemon.GetDocWebPublicationsRequest) (*daemon.GetDocWebPublicationsResponse, error) {
 	return &daemon.GetDocWebPublicationsResponse{}, fmt.Errorf("Not yet implemented")
 }

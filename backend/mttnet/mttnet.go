@@ -9,6 +9,7 @@ import (
 	"mintter/backend/core"
 	"mintter/backend/db/sqliteds"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	site "mintter/backend/genproto/site/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/must"
@@ -148,6 +149,7 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, lo
 		}
 
 		p2p.RegisterP2PServer(n.grpc, handler)
+		site.RegisterSiteServer(n.grpc, handler)
 	}
 
 	return n, nil
@@ -407,7 +409,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 			libp2p.EnableHolePunching(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
 				autorelay.WithBootDelay(time.Second*10),
-				autorelay.WithNumRelays(2), 
+				autorelay.WithNumRelays(2),
 				autorelay.WithMinCandidates(2),
 				autorelay.WithBackoff(cfg.RelayBackoff)),
 		)
