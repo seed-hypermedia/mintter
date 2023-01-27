@@ -187,7 +187,7 @@ message Publication {
   // it doesn't really matter if different version strings point to the same document.
   string version = 1;
 
-  // Document metadata.
+  // Published document.
   Document document = 2;
 }
 

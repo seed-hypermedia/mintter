@@ -776,7 +776,7 @@ type Publication struct {
 	// On the other hand, if API consumers never compare versions as plain strings
 	// it doesn't really matter if different version strings point to the same document.
 	Version string `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
-	// Document metadata.
+	// Published document.
 	Document *Document `protobuf:"bytes,2,opt,name=document,proto3" json:"document,omitempty"`
 }
 
