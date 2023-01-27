@@ -689,9 +689,9 @@ WHERE ipfs_blocks.id = :ipfsBlocksID
 	return out, err
 }
 
-func IPFSBlocksInsert(conn *sqlite.Conn, ipfsBlocksID int64, ipfsBlocksMultihash []byte, ipfsBlocksCodec int64, ipfsBlocksData []byte, ipfsBlocksSize int64, ipfsBlocksPending int64) error {
-	const query = `INSERT INTO ipfs_blocks (id, multihash, codec, data, size, pending)
-VALUES (:ipfsBlocksID, :ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, :ipfsBlocksSize, :ipfsBlocksPending)`
+func IPFSBlocksInsert(conn *sqlite.Conn, ipfsBlocksID int64, ipfsBlocksMultihash []byte, ipfsBlocksCodec int64, ipfsBlocksData []byte, ipfsBlocksSize int64) error {
+	const query = `INSERT INTO ipfs_blocks (id, multihash, codec, data, size)
+VALUES (:ipfsBlocksID, :ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, :ipfsBlocksSize)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetInt64(":ipfsBlocksID", ipfsBlocksID)
@@ -699,7 +699,6 @@ VALUES (:ipfsBlocksID, :ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, 
 		stmt.SetInt64(":ipfsBlocksCodec", ipfsBlocksCodec)
 		stmt.SetBytes(":ipfsBlocksData", ipfsBlocksData)
 		stmt.SetInt64(":ipfsBlocksSize", ipfsBlocksSize)
-		stmt.SetInt64(":ipfsBlocksPending", ipfsBlocksPending)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -718,12 +717,12 @@ type IPFSBlocksUpsertResult struct {
 	IPFSBlocksID int64
 }
 
-func IPFSBlocksUpsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, ipfsBlocksCodec int64, ipfsBlocksData []byte, ipfsBlocksSize int64, ipfsBlocksPending int64) (IPFSBlocksUpsertResult, error) {
-	const query = `INSERT INTO ipfs_blocks (multihash, codec, data, size, pending)
-VALUES (:ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, :ipfsBlocksSize, :ipfsBlocksPending)
+func IPFSBlocksUpsert(conn *sqlite.Conn, ipfsBlocksMultihash []byte, ipfsBlocksCodec int64, ipfsBlocksData []byte, ipfsBlocksSize int64) (IPFSBlocksUpsertResult, error) {
+	const query = `INSERT INTO ipfs_blocks (multihash, codec, data, size)
+VALUES (:ipfsBlocksMultihash, :ipfsBlocksCodec, :ipfsBlocksData, :ipfsBlocksSize)
 ON CONFLICT (multihash)
-DO UPDATE SET codec = excluded.codec, data = excluded.data, size = excluded.size, pending = excluded.pending
-WHERE pending = 1 AND excluded.pending = 0
+DO UPDATE SET codec = excluded.codec, data = excluded.data, size = excluded.size
+WHERE size = -1
 RETURNING ipfs_blocks.id`
 
 	var out IPFSBlocksUpsertResult
@@ -733,7 +732,6 @@ RETURNING ipfs_blocks.id`
 		stmt.SetInt64(":ipfsBlocksCodec", ipfsBlocksCodec)
 		stmt.SetBytes(":ipfsBlocksData", ipfsBlocksData)
 		stmt.SetInt64(":ipfsBlocksSize", ipfsBlocksSize)
-		stmt.SetInt64(":ipfsBlocksPending", ipfsBlocksPending)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -762,7 +760,7 @@ type IPFSBlocksListValidResult struct {
 func IPFSBlocksListValid(conn *sqlite.Conn) ([]IPFSBlocksListValidResult, error) {
 	const query = `SELECT ipfs_blocks.id, ipfs_blocks.multihash, ipfs_blocks.codec
 FROM ipfs_blocks
-WHERE ipfs_blocks.pending = 0`
+WHERE ipfs_blocks.size >= 0`
 
 	var out []IPFSBlocksListValidResult
 
@@ -795,7 +793,7 @@ func IPFSBlocksHas(conn *sqlite.Conn, ipfsBlocksMultihash []byte) (IPFSBlocksHas
 	const query = `SELECT 1 AS has
 FROM ipfs_blocks
 WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
-AND ipfs_blocks.pending = 0`
+AND ipfs_blocks.size >= 0`
 
 	var out IPFSBlocksHasResult
 
@@ -831,7 +829,7 @@ type IPFSBlocksGetResult struct {
 func IPFSBlocksGet(conn *sqlite.Conn, ipfsBlocksMultihash []byte) (IPFSBlocksGetResult, error) {
 	const query = `SELECT ipfs_blocks.id, ipfs_blocks.multihash, ipfs_blocks.codec, ipfs_blocks.data, ipfs_blocks.size
 FROM ipfs_blocks
-WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash AND ipfs_blocks.pending = 0`
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash AND ipfs_blocks.size >= 0`
 
 	var out IPFSBlocksGetResult
 
@@ -868,7 +866,7 @@ type IPFSBlocksGetSizeResult struct {
 func IPFSBlocksGetSize(conn *sqlite.Conn, ipfsBlocksMultihash []byte) (IPFSBlocksGetSizeResult, error) {
 	const query = `SELECT ipfs_blocks.id, ipfs_blocks.size
 FROM ipfs_blocks
-WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash AND ipfs_blocks.pending = 0`
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash AND ipfs_blocks.size >= 0`
 
 	var out IPFSBlocksGetSizeResult
 
@@ -967,6 +965,82 @@ LIMIT 1`
 	}
 
 	return out, err
+}
+
+func IPFSBlocksUpdate(conn *sqlite.Conn, ipfsBlocksMultihash []byte) error {
+	const query = `UPDATE ipfs_blocks
+SET (data, size) = ()
+WHERE ipfs_blocks.multihash = :ipfsBlocksMultihash
+AND ipfs_blocks.size = -1`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":ipfsBlocksMultihash", ipfsBlocksMultihash)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksUpdate: %w", err)
+	}
+
+	return err
+}
+
+type IPFSBlocksNewIDResult struct {
+	Seq int64
+}
+
+func IPFSBlocksNewID(conn *sqlite.Conn) (IPFSBlocksNewIDResult, error) {
+	const query = `UPDATE sqlite_sequence
+SET seq = seq + 1
+WHERE name = 'ipfs_blocks'
+RETURNING seq`
+
+	var out IPFSBlocksNewIDResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("IPFSBlocksNewID: more than one result return for a single-kind query")
+		}
+
+		out.Seq = stmt.ColumnInt64(0)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPFSBlocksNewID: %w", err)
+	}
+
+	return out, err
+}
+
+func IPLDLinksInsertOrIgnore(conn *sqlite.Conn, ipldLinksChild int64, ipldLinksParent int64, ipldLinksPath string) error {
+	const query = `INSERT OR IGNORE INTO ipld_links (child, parent, path)
+VALUES (:ipldLinksChild, :ipldLinksParent, :ipldLinksPath)`
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetInt64(":ipldLinksChild", ipldLinksChild)
+		stmt.SetInt64(":ipldLinksParent", ipldLinksParent)
+		stmt.SetText(":ipldLinksPath", ipldLinksPath)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: IPLDLinksInsertOrIgnore: %w", err)
+	}
+
+	return err
 }
 
 func PermanodesInsertOrIgnore(conn *sqlite.Conn, permanodesType string, permanodesID int64, permanodesCreateTime int64, permanodesAccountID int64) error {
@@ -1285,38 +1359,6 @@ VALUES (:changeDepsChild, :changeDepsParent)`
 	}
 
 	return err
-}
-
-type ChangesAllocateIDResult struct {
-	Seq int64
-}
-
-func ChangesAllocateID(conn *sqlite.Conn) (ChangesAllocateIDResult, error) {
-	const query = `UPDATE sqlite_sequence
-SET seq = seq + 1
-WHERE name = 'ipfs_blocks'
-RETURNING seq`
-
-	var out ChangesAllocateIDResult
-
-	before := func(stmt *sqlite.Stmt) {
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("ChangesAllocateID: more than one result return for a single-kind query")
-		}
-
-		out.Seq = stmt.ColumnInt64(0)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: ChangesAllocateID: %w", err)
-	}
-
-	return out, err
 }
 
 func ChangesDeleteByID(conn *sqlite.Conn, changesID int64) error {

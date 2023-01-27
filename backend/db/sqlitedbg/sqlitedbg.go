@@ -3,7 +3,7 @@ package sqlitedbg
 
 import (
 	"context"
-	"encoding/hex"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"text/tabwriter"
@@ -24,7 +24,7 @@ func Exec(conn *sqlite.Conn, w io.Writer, query string) {
 			var txt string
 			if stmt.ColumnType(n) == sqlite.SQLITE_BLOB {
 				data := stmt.ColumnBytes(n)
-				txt = hex.EncodeToString(data)
+				txt = base64.RawStdEncoding.EncodeToString(data)
 			} else {
 				txt = stmt.ColumnText(n)
 			}

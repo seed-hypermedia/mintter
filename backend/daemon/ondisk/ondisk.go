@@ -23,22 +23,17 @@ Repo layout v1 file tree:
 -- libp2p_id_ed25519 => device private key
 -- mintter_id_ed25519.pub => account public key
 - /db/
--- providing.db => BoltDB database for DHT provider
 - /autocert-cache/ => directory with autocert cache
 */
 
 const (
 	// This is changed when breaking changes are made. Eventually we'd want
 	// to support some migration mechanisms to help with backward-compatibility.
-	compatibilityVersion = "2022-10-18.01"
+	compatibilityVersion = "2022-12-07.01"
 
-	keysDir     = "keys"
-	dbDir       = "db"
-	autocertDir = "autocert-cache"
+	keysDir = "keys"
+	dbDir   = "db"
 
-	sqliteDirPath = dbDir + "/mintter"
-
-	providingDBPath    = dbDir + "/providing.db"
 	privKeyFilePath    = keysDir + "/libp2p_id_ed25519"
 	accountKeyFilePath = keysDir + "/mintter_id_ed25519.pub"
 
@@ -108,8 +103,6 @@ func prepareRepo(path string, log *zap.Logger) (r *OnDisk, err error) {
 		path,
 		filepath.Join(path, keysDir),
 		filepath.Join(path, dbDir),
-		filepath.Join(path, sqliteDirPath),
-		filepath.Join(path, autocertDir),
 	}
 
 	for _, d := range dirs {
@@ -187,16 +180,9 @@ func (r *OnDisk) setAccount(k core.PublicKey) error {
 	return nil
 }
 
+// SQLitePath returns the file path to create the SQLite database.
 func (r *OnDisk) SQLitePath() string {
-	return filepath.Join(r.path, sqliteDirPath, "db.sqlite")
-}
-
-func (r *OnDisk) ProvidingDBPath() string {
-	return filepath.Join(r.path, providingDBPath)
-}
-
-func (r *OnDisk) AutocertDir() string {
-	return filepath.Join(r.path, autocertDir)
+	return filepath.Join(r.path, dbDir, "db.sqlite")
 }
 
 func (r *OnDisk) deviceKeyFromFile() (crypto.PrivKey, error) {
