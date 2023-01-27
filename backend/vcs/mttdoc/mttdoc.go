@@ -16,8 +16,11 @@ import (
 	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
-// DocumentType is the IPLD type annotation for the document permanode.
-const DocumentType vcs.ObjectType = "https://schema.mintter.org/Document"
+// Permanode types.
+const (
+	DocumentType     vcs.ObjectType = "https://schema.mintter.org/Document"
+	ConversationType vcs.ObjectType = "https://schema.mintter.org/Conversation"
+)
 
 func init() {
 	cbornode.RegisterCborType(DocumentPermanode{})
@@ -53,14 +56,15 @@ func NewDocumentPermanode(owner cid.Cid, at hlc.Time) DocumentPermanode {
 const (
 	AttrTitle    vcs.Attribute = "mintter.document/title"
 	AttrSubtitle vcs.Attribute = "mintter.document/subtitle"
-	AttrMove     vcs.Attribute = "mintter.document/move"
 
-	AttrBlockState vcs.Attribute = "mintter.document/block-snapshot"
+	AttrBlockSnapshot vcs.Attribute = "mintter.document.block/snapshot"
 
-	AttrPosBlock  vcs.Attribute = "mintter.document.position/block"
-	AttrPosParent vcs.Attribute = "mintter.document.position/parent"
-	AttrPosLeft   vcs.Attribute = "mintter.document.position/left"
+	AttrTreePos   vcs.Attribute = "mintter.document.tree/position"
+	AttrTreeRef   vcs.Attribute = "mintter.document.tree/ref"
+	AttrTreeBlock vcs.Attribute = "mintter.document.tree/block"
 )
+
+const datomsPerMove = 3
 
 // Document is an instance of a Mintter Document.
 type Document struct {
@@ -94,13 +98,18 @@ func (doc *Document) Replay(in []vcs.Datom) error {
 	}
 
 	var m moves
+	var last vcs.Datom
 	for _, d := range in {
+		if d.OpID().Less(last.OpID()) {
+			return fmt.Errorf("replaying datoms out of order: last=%v, incoming=%v", last.OpID(), d.OpID())
+		}
+
 		switch d.Attr {
 		case AttrTitle:
 			doc.title.Set(d.OpID(), d)
 		case AttrSubtitle:
 			doc.subtitle.Set(d.OpID(), d)
-		case AttrBlockState:
+		case AttrBlockSnapshot:
 			lww := doc.blocks[d.Entity]
 			if lww == nil {
 				lww = crdt.NewLWW[vcs.Datom]()
@@ -109,6 +118,7 @@ func (doc *Document) Replay(in []vcs.Datom) error {
 			lww.Set(d.OpID(), d)
 		}
 
+		last = d
 		m.handle(d)
 	}
 
@@ -143,18 +153,18 @@ func (m *moves) Log() []moveOp {
 	out := make([]moveOp, 0, len(m.Moves))
 
 	for nid, datoms := range m.Moves {
-		if len(datoms) != 4 {
+		if len(datoms) != datomsPerMove {
 			panic("BUG: incomplete move operation")
 		}
 		var move moveOp
 		move.ID = nid
-		move.Block = datoms[AttrPosBlock].Value.(vcs.NodeID)
-		move.Parent = datoms[AttrPosParent].Value.(vcs.NodeID)
-		move.Left = datoms[AttrPosLeft].Value.(vcs.NodeID)
-		move.Op = datoms[AttrPosLeft].OpID()
+		move.Block = datoms[AttrTreeBlock].Value.(vcs.NodeID)
+		move.Parent = datoms[AttrTreePos].Entity
+		move.Left = datoms[AttrTreeRef].Value.(vcs.NodeID)
+		move.Op = datoms[AttrTreeRef].OpID()
 
 		if leftMove := m.Moves[move.Left]; leftMove != nil {
-			move.Ref = leftMove[AttrPosLeft].OpID()
+			move.Ref = leftMove[AttrTreeRef].OpID()
 		} else {
 			if _, ok := m.Blocks[move.Left]; ok {
 				move.Ref = crdt.ListStart
@@ -174,10 +184,13 @@ func (m *moves) Log() []moveOp {
 }
 
 var moveAttrs = map[vcs.Attribute]struct{}{
-	AttrMove:      {},
-	AttrPosBlock:  {},
-	AttrPosParent: {},
-	AttrPosLeft:   {},
+	// AttrMove:      {},
+	// AttrPosBlock:  {},
+	// AttrPosParent: {},
+	// AttrPosLeft:   {},
+	AttrTreeBlock: {},
+	AttrTreeRef:   {},
+	AttrTreePos:   {},
 }
 
 func (m *moves) handle(d vcs.Datom) {
@@ -196,19 +209,18 @@ func (m *moves) handle(d vcs.Datom) {
 	}
 
 	var moveID vcs.NodeID
-
-	if d.Attr == AttrMove {
+	if d.Attr == AttrTreePos {
 		moveID = d.Value.(vcs.NodeID)
 	} else {
 		moveID = d.Entity
 	}
 
-	if d.Attr == AttrPosBlock {
+	if d.Attr == AttrTreeBlock {
 		m.Blocks[d.Value.(vcs.NodeID)] = struct{}{}
 	}
 
 	if m.Moves[moveID] == nil {
-		m.Moves[moveID] = make(map[vcs.Attribute]vcs.Datom, 4)
+		m.Moves[moveID] = make(map[vcs.Attribute]vcs.Datom, datomsPerMove)
 	}
 
 	m.Moves[moveID][d.Attr] = d
@@ -247,7 +259,7 @@ func (doc *Document) EnsureBlockState(blk string, state []byte) {
 			return nil
 		}
 
-		d := doc.batch.Add(nid, AttrBlockState, state)
+		d := doc.batch.Add(nid, AttrBlockSnapshot, state)
 		lww.Set(d.OpID(), d)
 		if !oldDatom.OpID().IsZero() {
 			doc.batch.Delete(oldDatom.OpID())
@@ -270,6 +282,21 @@ func (doc *Document) BlockState(block vcs.NodeID) (data []byte, ok bool) {
 	}
 
 	return d.Value.([]byte), true
+}
+
+// BlockDatomID returns the ID of the datom for the current state of a block.
+func (doc *Document) BlockDatomID(block vcs.NodeID) (id crdt.OpID, ok bool) {
+	lww := doc.blocks[block]
+	if lww == nil {
+		return crdt.OpID{}, false
+	}
+
+	d := lww.Value()
+	if d.OpID().IsZero() {
+		return crdt.OpID{}, false
+	}
+
+	return d.OpID(), true
 }
 
 // EnsureTitle will change document title if it's different.

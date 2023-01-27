@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/ipfs/go-cid"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
@@ -211,6 +213,8 @@ func TestAPIGetDraft(t *testing.T) {
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
 
+	require.Equal(t, "$LOCAL$:2", got.Children[0].Block.Revision, "block must have last change id")
+
 	got, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, updated, got, "must get draft that was updated")
@@ -314,7 +318,7 @@ func TestAPIUpdateDraft(t *testing.T) {
 					Id:          "b1",
 					Type:        "statement",
 					Text:        "Hello world!",
-					Attributes:  map[string]string{},
+					Attributes:  nil,
 					Annotations: nil,
 				},
 				Children: nil,
@@ -325,7 +329,10 @@ func TestAPIUpdateDraft(t *testing.T) {
 		PublishTime: nil,
 	}
 
-	testutil.ProtoEqual(t, want, updated, "UpdateDraft should return the updated document")
+	diff := cmp.Diff(want, updated, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
+	if diff != "" {
+		t.Fatal(diff)
+	}
 
 	list, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err)
@@ -365,20 +372,16 @@ func TestUpdateDraft_Annotations(t *testing.T) {
 		}},
 		{Op: &documents.DocumentChange_ReplaceBlock{
 			ReplaceBlock: &documents.Block{
-				Id:   "b1",
-				Type: "statement",
-				Text: "This is the first paragraph.",
-				Attributes: map[string]string{
-					"childrenListStyle": "bullet",
-				},
+				Id:         "b1",
+				Type:       "statement",
+				Text:       "This is the first paragraph.",
+				Attributes: map[string]string{"childrenListStyle": "bullet"},
 				Annotations: []*documents.Annotation{
 					{
-						Type: "link",
-						Attributes: map[string]string{
-							"url": "https://exmaple.com",
-						},
-						Starts: []int32{0},
-						Ends:   []int32{5},
+						Type:       "link",
+						Attributes: map[string]string{"url": "https://exmaple.com"},
+						Starts:     []int32{0},
+						Ends:       []int32{5},
 					},
 				},
 			},
@@ -388,24 +391,16 @@ func TestUpdateDraft_Annotations(t *testing.T) {
 	want := []*documents.BlockNode{
 		{
 			Block: &documents.Block{
-				Id:   "b1",
-				Type: "statement",
-				Text: "This is the first paragraph.",
-				Attributes: map[string]string{
-					"childrenListStyle": "bullet",
-				},
+				Id:         "b1",
+				Type:       "statement",
+				Text:       "This is the first paragraph.",
+				Attributes: map[string]string{"childrenListStyle": "bullet"},
 				Annotations: []*documents.Annotation{
 					{
-						Type: "link",
-						Attributes: map[string]string{
-							"url": "https://exmaple.com",
-						},
-						Starts: []int32{
-							0,
-						},
-						Ends: []int32{
-							5,
-						},
+						Type:       "link",
+						Attributes: map[string]string{"url": "https://exmaple.com"},
+						Starts:     []int32{0},
+						Ends:       []int32{5},
 					},
 				},
 			},
@@ -414,7 +409,10 @@ func TestUpdateDraft_Annotations(t *testing.T) {
 	}
 
 	require.Len(t, updated.Children, 1)
-	testutil.ProtoEqual(t, want[0], updated.Children[0], "updated draft does't match")
+	for i := range want {
+		want[i].Block.Revision = updated.Children[i].Block.Revision
+		testutil.ProtoEqual(t, want[i], updated.Children[i], "updated draft block %d does't match", i)
+	}
 }
 
 func TestAPIUpdateDraft_Complex(t *testing.T) {
@@ -515,7 +513,10 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 			},
 		}
 
-		testutil.ProtoEqual(t, want, doc, "draft doesn't match after the first update")
+		diff := cmp.Diff(want, doc, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
+		if diff != "" {
+			t.Fatal(diff)
+		}
 	}
 
 	// === Now reparent b1.1 ===
@@ -566,7 +567,10 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 			},
 		}
 
-		testutil.ProtoEqual(t, want, doc, "draft doesn't match after the first update")
+		diff := cmp.Diff(want, doc, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
+		if diff != "" {
+			t.Fatal(diff, "draft doesn't match after the first update")
+		}
 	}
 
 	// === Now delete b1.1 ===
@@ -607,7 +611,10 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 			},
 		}
 
-		testutil.ProtoEqual(t, want, doc, "draft doesn't match after the first update")
+		diff := cmp.Diff(want, doc, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
+		if diff != "" {
+			t.Fatal(diff)
+		}
 	}
 }
 
@@ -661,7 +668,11 @@ func TestAPIPublishDraft(t *testing.T) {
 	require.NoError(t, err)
 	updated.UpdateTime = published.Document.UpdateTime
 	updated.PublishTime = published.Document.PublishTime // This is the only field that should differ.
-	testutil.ProtoEqual(t, updated, published.Document, "published document doesn't match")
+
+	diff := cmp.Diff(updated, published.Document, testutil.ExportedFieldsFilter(), cmpopts.IgnoreFields(documents.Block{}, "Revision"))
+	if diff != "" {
+		t.Fatal(diff, "published document doesn't match")
+	}
 
 	require.NotEqual(t, "", published.Document.Id, "publication must have id")
 	require.NotEqual(t, "", published.Version, "publication must have version")

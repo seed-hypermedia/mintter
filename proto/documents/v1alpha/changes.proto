@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package com.mintter.documents.v1alpha;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "mintter/backend/genproto/documents/v1alpha;documents";
+
+// Changes service provides information about the atomic version controlled changes of Mintter objects.
+service Changes {
+  // Returns information about a single change.
+  rpc GetChangeInfo(GetChangeInfoRequest) returns (ChangeInfo);
+
+  // List changes of a given object.
+  rpc ListChanges(ListChangesRequest) returns (ListChangesResponse);
+}
+
+// Request for getting change info.
+message GetChangeInfoRequest {
+  // ID of the Change.
+  string id = 1;
+}
+
+// Request to list changes.
+message ListChangesRequest {
+  // Required. ID of the Mintter object to list changes for.
+  string object_id = 1;
+
+  // Optional. Number of results per page.
+  int32 page_size = 2;
+
+  // Optional. Token for the page to return.
+  string page_token = 3;
+}
+
+// Response with a list of changes.
+message ListChangesResponse {
+  // List of changes matching the request.
+  repeated ChangeInfo changes = 1;
+
+  // Token for the next page if there's any.
+  string next_page_token = 2;
+}
+
+// Metadata about a single Change.
+message ChangeInfo {
+  // ID of the Change.
+  string id = 1;
+
+  // Author of the Change.
+  string author = 2;
+
+  // Time when this change was recorded by the author.
+  google.protobuf.Timestamp create_time = 3;
+}
