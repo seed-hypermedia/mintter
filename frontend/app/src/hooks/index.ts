@@ -1,13 +1,14 @@
+import {Transport} from '@bufbuild/connect-web'
+import {Timestamp} from '@bufbuild/protobuf'
 import {
   Document,
   getAccount,
   getDraft,
   getPublication,
-  GrpcClient,
-  MttLink,
   listCitations,
   listDrafts,
   listPublications,
+  MttLink,
   Publication,
 } from '@mintter/shared'
 import {
@@ -40,7 +41,7 @@ export const queryKeys = {
 }
 
 type QueryOptions = {
-  rpc?: GrpcClient
+  rpc?: Transport
 }
 export function usePublicationList({rpc}: QueryOptions = {}) {
   let queryResult = useQuery({
@@ -52,7 +53,11 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
   })
 
   let publications = useMemo(() => {
-    return queryResult.data?.publications.sort(sortPublications) || []
+    return (
+      queryResult.data?.publications.sort((a, b) =>
+        sortDocuments(a.document?.updateTime, b.document?.updateTime),
+      ) || []
+    )
   }, [queryResult.data])
 
   useEffect(() => {
@@ -191,11 +196,15 @@ export function useDraftList({
   })
 
   let documents = useMemo(() => {
-    return queryResult.data?.documents.sort(sort) || []
+    return (
+      queryResult.data?.documents.sort((a, b) =>
+        sortDocuments(a.updateTime, b.updateTime),
+      ) || []
+    )
 
     function sort(a: Document, b: Document) {
-      let dateA = a.updateTime ? new Date(a.updateTime) : 0
-      let dateB = b.updateTime ? new Date(b.updateTime) : 1
+      let dateA = a.updateTime ? a.updateTime.toDate() : 0
+      let dateB = b.updateTime ? b.updateTime.toDate() : 1
 
       // @ts-ignore
       return dateB - dateA
@@ -341,9 +350,9 @@ function createDedupeLinks(entry: Array<MttLink>): Array<MttLink> {
   })
 }
 
-function sortPublications(a: Publication, b: Publication) {
-  let dateA = a.document?.updateTime ? new Date(a.document?.updateTime) : 0
-  let dateB = b.document?.updateTime ? new Date(b.document?.updateTime) : 1
+function sortDocuments(a?: Timestamp, b?: Timestamp) {
+  let dateA = a ? a.toDate() : 0
+  let dateB = b ? b.toDate() : 1
 
   // @ts-ignore
   return dateB - dateA

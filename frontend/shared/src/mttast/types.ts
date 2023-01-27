@@ -26,6 +26,9 @@ export interface MttDocument extends Parent {
   schema?: string
   stylesheet?: string
   children: [GroupingContent]
+  createTime?: Date
+  updateTime?: Date
+  publishTime?: Date
 }
 
 export interface Group extends Parent {

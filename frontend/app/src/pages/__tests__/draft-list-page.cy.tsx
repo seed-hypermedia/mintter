@@ -1,6 +1,7 @@
 import {Document} from '@mintter/shared'
 import {createTestQueryClient} from '@app/test/utils'
 import DraftList, {DraftListItem} from '../draft-list-page'
+import {Timestamp} from '@bufbuild/protobuf'
 
 // TODO: FIXME
 describe('Draft List', () => {
@@ -19,19 +20,19 @@ describe('Draft List', () => {
           title: 'document 1',
           subtitle: '',
           author: 'testauthor',
-          createTime: new Date(),
-          updateTime: new Date(),
-          publishTime: new Date(),
+          createTime: new Timestamp(),
+          updateTime: new Timestamp(),
+          publishTime: new Timestamp(),
           children: [],
-        },
+        } as Document,
         {
           id: 'd2',
           title: 'document 2',
           subtitle: '',
           author: 'testauthor',
-          createTime: new Date(),
-          updateTime: new Date(),
-          publishTime: new Date(),
+          createTime: new Timestamp(),
+          updateTime: new Timestamp(),
+          publishTime: new Timestamp(),
           children: [],
         },
       ],
@@ -52,9 +53,9 @@ describe('Draft List', () => {
       title: 'document 1',
       subtitle: '',
       author: 'testauthor',
-      createTime: new Date(),
-      updateTime: new Date(),
-      publishTime: new Date(),
+      createTime: new Timestamp(),
+      updateTime: new Timestamp(),
+      publishTime: new Timestamp(),
       children: [],
     }
 
@@ -72,7 +73,7 @@ describe('Draft List', () => {
         .get('[data-testid="list-item-title"]')
         .contains(draft.title)
         .get('[data-testid="list-item-date"]')
-        .contains('just now')
+        .contains('Jan 1, 1970')
     })
 
     it('should navigate to draft', () => {

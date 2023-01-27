@@ -25,7 +25,7 @@ export function createMoveChange(
         ? ''
         : (Node.get(editor, Path.previous(path)) as FlowContent).id
 
-    new DocumentChange({
+    return new DocumentChange({
       op: {
         case: 'moveBlock',
         value: {
