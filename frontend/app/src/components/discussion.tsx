@@ -5,21 +5,15 @@ import {ClientPublication} from '@app/publication-machine'
 import {formattedDate} from '@app/utils/get-format-date'
 import {Avatar} from '@components/avatar'
 import {DiscussionItem} from '@components/discussion-item'
-import {Icon} from '@components/icon'
 import {appWindow} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
 
 export type DiscussionProps = {
   publication: ClientPublication
   visible: boolean
-  onReply: () => void
 }
 
-export function Discussion({
-  publication,
-  visible = false,
-  onReply,
-}: DiscussionProps) {
+export function Discussion({publication, visible = false}: DiscussionProps) {
   const {data, refetch} = useDiscussion({
     documentId: publication.document.id,
     visible,
@@ -82,7 +76,7 @@ export function Discussion({
               link={link}
             />
           ))}
-        <li className="discussion-item add-item" onClick={() => onReply()}>
+        {/* <li className="discussion-item add-item" onClick={() => onReply()}>
           <div className="item-section item-avatar">
             <button className="item-button-add">
               <Icon name="Add" />
@@ -93,7 +87,7 @@ export function Discussion({
               {data && data.length > 0 ? 'Add a Reply' : 'Start a Discussion'}
             </p>
           </div>
-        </li>
+        </li> */}
       </ul>
     </div>
   )

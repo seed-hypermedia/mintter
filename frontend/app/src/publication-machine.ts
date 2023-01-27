@@ -1,19 +1,17 @@
+import {EditorDocument} from '@app/draft-machine'
+import {queryKeys} from '@app/hooks'
 import {
   Account,
+  blockNodeToSlate,
   createDraft,
   Document,
   getAccount,
   getInfo,
   getPublication,
-  Publication,
-  blockNodeToSlate,
   GroupingContent,
+  Publication,
 } from '@mintter/shared'
-import {EditorDocument} from '@app/draft-machine'
-import {queryKeys} from '@app/hooks'
-import {openWindow} from '@app/utils/open-window'
 import {QueryClient} from '@tanstack/react-query'
-import {invoke} from '@tauri-apps/api'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
@@ -297,16 +295,16 @@ export function createPublicationMachine({
         clearError: assign({
           errorMessage: '',
         }),
-        openWindow: (context, event) => {
-          openWindow(
-            `/d/${event.data.id}?replyto=${context.documentId}/${context.version}`,
-          )
-        },
-        refetchDraftList: () => {
-          invoke('emit_all', {
-            event: 'new_draft',
-          })
-        },
+        // openWindow: (context, event) => {
+        //   openWindow(
+        //     `/d/${event.data.id}?replyto=${context.documentId}/${context.version}`,
+        //   )
+        // },
+        // refetchDraftList: () => {
+        //   invoke('emit_all', {
+        //     event: 'new_draft',
+        //   })
+        // },
         // prefetchPublication: (context) => {
         //   client.prefetchQuery(
         //     [

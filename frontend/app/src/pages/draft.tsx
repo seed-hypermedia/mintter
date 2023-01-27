@@ -72,17 +72,11 @@ export default function DraftWrapper({
           invoke('emit_all', {
             event: 'document_published',
           })
-          let searchParams = new URLSearchParams(window.location.search)
-          let replyToParams = searchParams.get('replyto')
-          if (replyToParams) {
-            let [docId, version] = replyToParams.split('/')
-            openWindow(`/p/${docId}/${version}`)
-            appWindow.close()
-          } else {
-            setLocation(`/p/${event.data.document?.id}/${event.data.version}`, {
-              replace: true,
-            })
-          }
+
+          setLocation(`/p/${event.data.document?.id}/${event.data.version}`, {
+            replace: true,
+          })
+
           toast.success('Draft published Successfully!')
         },
       },

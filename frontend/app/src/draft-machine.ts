@@ -12,6 +12,7 @@ import {
   paragraph,
   statement,
   text,
+  Document,
 } from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {createSelectAllActor} from '@app/selectall-machine'

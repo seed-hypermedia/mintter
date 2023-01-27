@@ -2,9 +2,9 @@ import {
   Account,
   getAccount,
   getPublication,
-  Link,
   Publication,
   blockNodeToSlate,
+  MttLink,
 } from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/publication-machine'
@@ -13,11 +13,11 @@ import {assign, createMachine} from 'xstate'
 
 type CreateDiscussionMachineProps = {
   client: QueryClient
-  link: Link
+  link: MttLink
 }
 
 type DiscussionMachineContext = {
-  link: Link
+  link: MttLink
   source: ClientPublication | null
   publication: Publication | null
   errorMessage: string
@@ -97,6 +97,8 @@ export function createDiscussionMachine({
             ],
             queryFn: () =>
               getPublication(
+                // this should not be undefined ever. but not sure how to force this.
+                // @ts-ignore
                 context.link.source?.documentId,
                 context.link.source?.version,
               ),

@@ -3,10 +3,10 @@ import {PublicationPage} from '../publication-page'
 export default function IndexPage({document}: any) {
   return (
     <PublicationPage
-      documentId="bafy2bzaceb5cnsnhyrwfx22xqixh4qmphj6k6a3gqxpfu6s7euk5bovurmrhk"
+      documentId="bafy2bzacebhlxpfnz2qju2zruckm2ueamioabjj532hidrlxgbgucr44tmewc"
       onlyContent
     />
   )
 }
 
-// mintter://bafy2bzaceb5cnsnhyrwfx22xqixh4qmphj6k6a3gqxpfu6s7euk5bovurmrhk/baeaxdiheaiqpazrdmjji6xifvr5nuky2ibn6fic3ktayrycudsasfephqprna5a
+// mintter://bafy2bzacebhlxpfnz2qju2zruckm2ueamioabjj532hidrlxgbgucr44tmewc/baeaxdiheaiqjuqjo4f34bu52tbzn3cfc4uu6m6imv2ildn4qkgl7jmnag7itcsq

@@ -195,7 +195,6 @@ export default function PublicationWrapper() {
                         <Discussion
                           visible={resizablePanelState.context.visible}
                           publication={state.context.publication}
-                          onReply={() => send('PUBLICATION.REPLY')}
                         />
                       </ScrollArea>
                     </section>

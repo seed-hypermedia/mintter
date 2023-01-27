@@ -199,9 +199,6 @@ describe('Titlebar', () => {
       // noop
     })
 
-    it('should call reply', () => {
-      // noop
-    })
     it('should call review', () => {
       // noop
     })

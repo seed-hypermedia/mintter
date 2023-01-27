@@ -1,4 +1,4 @@
-import {Link as LinkType} from '@mintter/shared'
+import {MttLink} from '@mintter/shared'
 import {createDiscussionMachine} from '@app/discussion-machine'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
@@ -14,7 +14,7 @@ import {useInterpret, useSelector} from '@xstate/react'
 import {useMemo} from 'react'
 import '../styles/discussion-item.scss'
 
-export function DiscussionItem({link}: {link: LinkType}) {
+export function DiscussionItem({link}: {link: MttLink}) {
   let client = useQueryClient()
   let service = useInterpret(() =>
     createDiscussionMachine({
@@ -36,7 +36,7 @@ export function DiscussionItem({link}: {link: LinkType}) {
   )
 
   let {data: discussions} = useDiscussion({
-    documentId: publication?.document.id,
+    documentId: publication?.document?.id,
     visible: true,
   })
 
@@ -57,7 +57,7 @@ export function DiscussionItem({link}: {link: LinkType}) {
         <p className="alias">{author?.profile?.alias || '...'}</p>
         {publication ? (
           <p className="date">
-            {publication.document.updateTime
+            {publication.document?.updateTime
               ? formattedDate(publication.document.updateTime)
               : '...'}
           </p>
