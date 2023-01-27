@@ -1,6 +1,6 @@
+import {Video} from '@mintter/shared'
 import videoParser from 'js-video-url-parser'
 import {useMemo} from 'react'
-import {Video} from '@mintter/shared'
 
 type VideoType = 'youtube' | 'vimeo' | 'none'
 

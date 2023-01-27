@@ -44,12 +44,12 @@ describe('Change Transforms', () => {
   test('should deleteBlock (block should not exist in the editor', () => {
     MintterEditor.addChange(editor, ['deleteBlock', 'not-in-editor'])
     let expected: Array<DocumentChange> = [
-      {
+      new DocumentChange({
         op: {
-          $case: 'deleteBlock',
-          deleteBlock: 'not-in-editor',
+          case: 'deleteBlock',
+          value: 'not-in-editor',
         },
-      },
+      }),
     ]
 
     expect(MintterEditor.transformChanges(editor)).toEqual(expected)
@@ -58,16 +58,16 @@ describe('Change Transforms', () => {
   test('moveBlock', () => {
     MintterEditor.addChange(editor, ['moveBlock', 'b2'])
     let expected: Array<DocumentChange> = [
-      {
+      new DocumentChange({
         op: {
-          $case: 'moveBlock',
-          moveBlock: {
+          case: 'moveBlock',
+          value: {
             blockId: 'b2',
             parent: '',
             leftSibling: 'b1',
           },
         },
-      },
+      }),
     ]
 
     expect(MintterEditor.transformChanges(editor)).toEqual(expected)
@@ -77,12 +77,12 @@ describe('Change Transforms', () => {
     MintterEditor.addChange(editor, ['replaceBlock', 'b1'])
     let blockEntry = getEditorBlock(editor, {id: 'b1'})
     let expected: Array<DocumentChange> = [
-      {
+      new DocumentChange({
         op: {
-          $case: 'replaceBlock',
-          replaceBlock: blockToApi(blockEntry?.[0] as FlowContent),
+          case: 'replaceBlock',
+          value: blockToApi(blockEntry?.[0] as FlowContent),
         },
-      },
+      }),
     ]
 
     expect(MintterEditor.transformChanges(editor)).toEqual(expected)
@@ -95,12 +95,12 @@ describe('Change Transforms', () => {
      */
     MintterEditor.addChange(editor, ['setTitle', 'new title'])
     let expected: Array<DocumentChange> = [
-      {
+      new DocumentChange({
         op: {
-          $case: 'setTitle',
-          setTitle: 'new title',
+          case: 'setTitle',
+          value: 'new title',
         },
-      },
+      }),
     ]
 
     expect(MintterEditor.transformChanges(editor)).toEqual(expected)
@@ -112,28 +112,28 @@ describe('Change Transforms', () => {
     MintterEditor.addChange(editor, ['deleteBlock', 'not-in-editor'])
 
     let expected: Array<DocumentChange> = [
-      {
+      new DocumentChange({
         op: {
-          $case: 'replaceBlock',
-          replaceBlock: blockToApi(blockEntry?.[0] as FlowContent),
+          case: 'replaceBlock',
+          value: blockToApi(blockEntry?.[0] as FlowContent),
         },
-      },
-      {
+      }),
+      new DocumentChange({
         op: {
-          $case: 'moveBlock',
-          moveBlock: {
+          case: 'moveBlock',
+          value: {
             blockId: 'b2',
             parent: '',
             leftSibling: 'b1',
           },
         },
-      },
-      {
+      }),
+      new DocumentChange({
         op: {
-          $case: 'deleteBlock',
-          deleteBlock: 'not-in-editor',
+          case: 'deleteBlock',
+          value: 'not-in-editor',
         },
-      },
+      }),
     ]
     let res = MintterEditor.transformChanges(editor)
     expect(res).toStrictEqual(expected)
