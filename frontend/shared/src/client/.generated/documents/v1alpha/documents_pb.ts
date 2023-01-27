@@ -684,7 +684,7 @@ export class Publication extends Message<Publication> {
   version = "";
 
   /**
-   * Document metadata.
+   * Published document.
    *
    * @generated from field: com.mintter.documents.v1alpha.Document document = 2;
    */
