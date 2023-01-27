@@ -14,7 +14,7 @@ type PublicationPageProps = {
 
 export function PublicationPage({
   documentId,
-  version,
+  version = '',
   onlyContent = false,
 }: PublicationPageProps) {
   let service = useInterpret(() => publicationMachine)
