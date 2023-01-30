@@ -67,12 +67,11 @@ function App() {
     queryKey: [queryKeys.GET_ACCOUNT_INFO],
     queryFn: () =>
       getInfo().catch((err) => {
-        let message = err.metadata?.headersMap?.['grpc-message']
-        // console.log('message', message)
-        if (message?.[0] == 'account is not initialized') {
+        if (
+          err.message === '[failed_precondition] account is not initialized'
+        ) {
           return 'no account'
         }
-
         return new Error(err)
       }),
     refetchOnWindowFocus: false,
