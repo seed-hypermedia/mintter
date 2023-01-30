@@ -19,6 +19,7 @@ export * from './types'
 
 export const queryKeys = {
   GET_SITES: 'GET_SITES',
+  SITES_LIST: 'SITES_LIST',
   GET_SITE_INFO: 'GET_SITE_INFO', // , siteId: string
   GET_SITE_MEMBERS: 'GET_SITE_MEMBERS', // , siteId: string
   GET_DOC_PUBLICATIONS: 'GET_DOC_PUBLICATIONS', // , siteId: string
