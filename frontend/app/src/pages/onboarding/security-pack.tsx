@@ -28,17 +28,12 @@ export function SecurityPack({
 }: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
-  const mnemonics = useQuery<string[], Error>(
-    ['onboarding', 'mnemonics'],
-    async () => {
-      const resp = await generateMnemonic()
-      return resp.mnemonic
-    },
-    {
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    },
-  )
+  const mnemonics = useQuery({
+    queryKey: ['onboarding', 'mnemonics'],
+    queryFn: () => generateMnemonic(),
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  })
 
   const handleSubmit = useCallback(async () => {
     const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data
