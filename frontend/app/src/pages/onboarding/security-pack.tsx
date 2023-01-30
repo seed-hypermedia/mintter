@@ -30,7 +30,10 @@ export function SecurityPack({
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery({
     queryKey: ['onboarding', 'mnemonics'],
-    queryFn: () => generateMnemonic(),
+    queryFn: async () => {
+      const data = await generateMnemonic()
+      return data.mnemonic
+    },
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   })
