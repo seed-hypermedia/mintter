@@ -10,7 +10,7 @@ import {Transport, createPromiseClient} from '@bufbuild/connect-web'
  * @returns
  */
 export function generateMnemonic(rpc: Transport = transport) {
-  return createPromiseClient(Daemon, rpc).genMnemonic({})
+  return createPromiseClient(Daemon, rpc).genMnemonic({mnemonicsLength: 12})
 }
 
 /**
