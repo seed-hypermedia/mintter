@@ -13,38 +13,68 @@ import (
 type siteInfo struct {
 	role       int
 	inviteLink string
+	address    string
 }
 
 // AddSite checks if the provided site hostname is a valid Mintter site and if so, add it to the database.
-func (api *Server) AddSite(ctx context.Context, req *documents.AddSiteRequest) (*documents.SiteConfig, error) {
+func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*documents.SiteConfig, error) {
 	ret := documents.SiteConfig{
 		Hostname: "",
 		Role:     documents.Member_ROLE_UNSPECIFIED,
 	}
-	if req.Hostname == "" {
+	if in.Hostname == "" {
 		return &ret, fmt.Errorf("empty hostname")
 	}
-	if strings.Contains(strings.ToLower(req.Hostname), "notallow") {
-		return &ret, fmt.Errorf("site " + req.Hostname + " is not a valid site")
+	if strings.Contains(strings.ToLower(in.Hostname), "notallow") {
+		return &ret, fmt.Errorf("site " + in.Hostname + " is not a valid site")
 	}
-	if strings.Contains(strings.ToLower(req.Hostname), "taken") {
-		return &ret, fmt.Errorf("site " + req.Hostname + " already taken")
-	}
-	//TODO: substitute with proper remote calls
-	_, added := api.sitesDB[req.Hostname]
-	if added {
-		return &ret, fmt.Errorf("site " + req.Hostname + " already added")
+	if strings.Contains(strings.ToLower(in.Hostname), "taken") {
+		return &ret, fmt.Errorf("site " + in.Hostname + " already taken")
 	}
 
-	if strings.Contains(strings.ToLower(req.InviteToken), "unspecified") {
-		api.sitesDB[req.Hostname] = siteInfo{inviteLink: req.InviteToken, role: int(documents.Member_ROLE_UNSPECIFIED)}
-	} else if strings.Contains(strings.ToLower(req.InviteToken), "owner") {
-		api.sitesDB[req.Hostname] = siteInfo{inviteLink: req.InviteToken, role: int(documents.Member_OWNER)}
-	} else {
-		api.sitesDB[req.Hostname] = siteInfo{inviteLink: req.InviteToken, role: int(documents.Member_EDITOR)}
+	// TODO (juligasa): uncomment when site is ready
+	/*
+		requestURL := fmt.Sprintf("https://%s/.well-known", in.Hostname)
+
+		req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+		if err != nil {
+			return &ret, fmt.Errorf("could not create request to well-known site: %w ", err)
+		}
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return &ret, fmt.Errorf("could not contact to provided site: %w ", err)
+		}
+		defer res.Body.Close()
+		if res.StatusCode < 200 || res.StatusCode > 299 {
+			return &ret, fmt.Errorf("Wrong status code from site %d", res.StatusCode)
+		}
+		var response map[string]string
+		err = json.NewDecoder(res.Body).Decode(&response)
+		if err != nil{
+			return &ret, fmt.Errorf("Unrecognized response format %w", err)
+		}
+		address, ok := response["address"]
+		if !ok {
+			return &ret, fmt.Errorf("address not found in payload")
+		}
+	*/
+	address := "/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"
+
+	_, added := api.sitesDB[in.Hostname]
+	if added {
+		return &ret, fmt.Errorf("site " + in.Hostname + " already added")
 	}
-	ret.Hostname = req.Hostname
-	ret.Role = documents.Member_Role(api.sitesDB[req.Hostname].role)
+
+	if strings.Contains(strings.ToLower(in.InviteToken), "unspecified") {
+		api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(documents.Member_ROLE_UNSPECIFIED)}
+	} else if strings.Contains(strings.ToLower(in.InviteToken), "owner") {
+		api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(documents.Member_OWNER)}
+	} else {
+		api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(documents.Member_EDITOR)}
+	}
+	ret.Hostname = in.Hostname
+	ret.Role = documents.Member_Role(api.sitesDB[in.Hostname].role)
 	return &ret, nil
 }
 
