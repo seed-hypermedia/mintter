@@ -75,6 +75,12 @@ func DefaultRelays() []peer.AddrInfo {
 	}
 }
 
+// RPCHandler holds the p2p functionality to be accessed via gRPC.
+type RPCHandler struct {
+	*Node
+	*Site
+}
+
 // Node is a Mintter P2P node.
 type Node struct {
 	log             *zap.Logger
@@ -350,11 +356,6 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-type RPCHandler struct {
-	*Node
-	*Site
 }
 
 // AddrInfoToStrings returns address as string.
