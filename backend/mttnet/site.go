@@ -3,8 +3,9 @@ package mttnet
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base32"
 	"fmt"
-	"math/rand"
 	site "mintter/backend/genproto/documents/v1alpha"
 	"time"
 
@@ -51,7 +52,7 @@ func (n *RPCHandler) RedeemInviteToken(ctx context.Context, in *site.RedeemInvit
 	if in.AccountId != "" && acc.String() != in.AccountId {
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("provided account ID does not match with observed p2p accountID")
 	}
-	if in.Token == "" { //TODO substitute with proper regexp match
+	if in.Token == "" { // TODO(juligasa) substitute with proper regexp match
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("invalid token format")
 	}
 
@@ -149,13 +150,11 @@ func (n *RPCHandler) getDeviceRole(ctx context.Context, remoteDeviceID cid.Cid) 
 	return role, nil
 }
 
-func randStr(nchar int) string {
-	rand.Seed(time.Now().UnixNano())
-	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-	b := make([]rune, nchar)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+func randStr(length int) string {
+	randomBytes := make([]byte, 32)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		panic(err)
 	}
-	return string(b)
+	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }
