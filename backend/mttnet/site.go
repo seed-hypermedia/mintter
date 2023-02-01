@@ -16,19 +16,11 @@ import (
 )
 
 // CreateInviteToken creates a new invite token for registering a new member.
-func (n *rpcHandler) CreateInviteToken(ctx context.Context, in *site.CreateInviteTokenRequest) (*site.InviteToken, error) {
+func (n *RPCHandler) CreateInviteToken(ctx context.Context, in *site.CreateInviteTokenRequest) (*site.InviteToken, error) {
 	// generate random number string for the token. Substitute for proper signed jwt
 	randomStr := randStr(6)
 	var newToken = n.hostname + ":" + randomStr
-	/*
-		if in.Role == site.Member_EDITOR {
-			newToken += "_editor"
-		} else if in.Role == site.Member_OWNER {
-			newToken += "_owner"
-		} else {
-			newToken += "_unspecified"
-		}
-	*/
+
 	if in.ExpireTime != nil && in.ExpireTime.AsTime().Before(time.Now()) {
 		return &site.InviteToken{}, fmt.Errorf("expiration time must be in the future")
 	}
@@ -47,7 +39,7 @@ func (n *rpcHandler) CreateInviteToken(ctx context.Context, in *site.CreateInvit
 }
 
 // RedeemInviteToken redeems a previously created invite token to register a new member.
-func (n *rpcHandler) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
+func (n *RPCHandler) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
 	remoteDeviceID, err := getRemoteID(ctx)
 	if err != nil {
 		return &site.RedeemInviteTokenResponse{}, err
@@ -80,32 +72,32 @@ func (n *rpcHandler) RedeemInviteToken(ctx context.Context, in *site.RedeemInvit
 }
 
 // GetSiteInfo Gets public-facing site information.
-func (n *rpcHandler) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest) (*site.SiteInfo, error) {
+func (n *RPCHandler) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest) (*site.SiteInfo, error) {
 	return &site.SiteInfo{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
 // UpdateSiteInfo updates public-facing site information. Doesn't support partial updates, hence all the fields must be provided.
-func (n *rpcHandler) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRequest) (*site.SiteInfo, error) {
+func (n *RPCHandler) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRequest) (*site.SiteInfo, error) {
 	return &site.SiteInfo{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
 // ListMembers lists registered members on the site.
-func (n *rpcHandler) ListMembers(ctx context.Context, in *site.ListMembersRequest) (*site.ListMembersResponse, error) {
+func (n *RPCHandler) ListMembers(ctx context.Context, in *site.ListMembersRequest) (*site.ListMembersResponse, error) {
 	return &site.ListMembersResponse{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
 // GetMember gets information about a specific member.
-func (n *rpcHandler) GetMember(ctx context.Context, in *site.GetMemberRequest) (*site.Member, error) {
+func (n *RPCHandler) GetMember(ctx context.Context, in *site.GetMemberRequest) (*site.Member, error) {
 	return &site.Member{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
 // DeleteMember deletes an existing member.
-func (n *rpcHandler) DeleteMember(ctx context.Context, in *site.DeleteMemberRequest) (*emptypb.Empty, error) {
+func (n *RPCHandler) DeleteMember(ctx context.Context, in *site.DeleteMemberRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
 // PublishDocument publishes and lists the document to the public web site.
-func (n *rpcHandler) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
+func (n *RPCHandler) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
 	device, err := getRemoteID(ctx)
 	if err != nil {
 		return nil, err
@@ -115,18 +107,18 @@ func (n *rpcHandler) PublishDocument(ctx context.Context, in *site.PublishDocume
 		return &site.PublishDocumentResponse{}, err
 	}
 	if role == site.Member_ROLE_UNSPECIFIED {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Your current role does not allow to publish")
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Your current role does not allow you to publish")
 	}
 	return &site.PublishDocumentResponse{}, nil
 }
 
 // UnpublishDocument un-publishes (un-lists) a given document.
-func (n *rpcHandler) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
+func (n *RPCHandler) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
 	return &site.UnpublishDocumentResponse{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
 // ListWebPublications lists all the published documents.
-func (n *rpcHandler) ListWebPublications(ctx context.Context, in *site.ListWebPublicationsRequest) (*site.ListWebPublicationsResponse, error) {
+func (n *RPCHandler) ListWebPublications(ctx context.Context, in *site.ListWebPublicationsRequest) (*site.ListWebPublicationsResponse, error) {
 	return &site.ListWebPublicationsResponse{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
@@ -145,7 +137,7 @@ func getRemoteID(ctx context.Context) (cid.Cid, error) {
 	return peer.ToCid(pid), nil
 }
 
-func (n *rpcHandler) getDeviceRole(ctx context.Context, remoteDeviceID cid.Cid) (site.Member_Role, error) {
+func (n *RPCHandler) getDeviceRole(ctx context.Context, remoteDeviceID cid.Cid) (site.Member_Role, error) {
 	acc, err := n.Node.AccountForDevice(ctx, remoteDeviceID)
 	if err != nil {
 		return site.Member_ROLE_UNSPECIFIED, err

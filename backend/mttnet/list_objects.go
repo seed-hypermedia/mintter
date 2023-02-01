@@ -5,7 +5,7 @@ import (
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 )
 
-func (n *rpcHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
+func (n *RPCHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
 	if n.cfg.NoListing {
 		return &p2p.ListObjectsResponse{}, nil
 	}

@@ -14,7 +14,7 @@ type Invoicer interface {
 	CreateLocalInvoice(ctx context.Context, amountSats int64, memo *string) (string, error)
 }
 
-func (n *rpcHandler) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {
+func (n *RPCHandler) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {
 	if n.invoicer == nil {
 		return nil, status.Errorf(codes.Unimplemented, "method RequestInvoice not ready yet")
 	}

@@ -115,7 +115,7 @@ func (n *Node) verifyHandshake(ctx context.Context, device cid.Cid, pb *p2p.Hand
 var errDialSelf = errors.New("can't dial self")
 
 // Handshake gets called by the remote peer who initiates the connection.
-func (n *rpcHandler) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.HandshakeInfo, error) {
+func (n *RPCHandler) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.HandshakeInfo, error) {
 	info, ok := rpcpeer.FromContext(ctx)
 	if !ok {
 		panic("BUG: no peer info in context for grpc")
