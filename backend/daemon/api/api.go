@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"mintter/backend/config"
 	"mintter/backend/core"
 	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	daemon "mintter/backend/daemon/api/daemon/v1alpha"
@@ -10,7 +11,6 @@ import (
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/mttnet"
-	site "mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/syncing"
@@ -26,11 +26,12 @@ type Server struct {
 	Daemon     *daemon.Server
 	Documents  *documents.Server
 	Networking *networking.Server
-	Site       *site.RPCHandler
+	Site       *mttnet.Server
 }
 
 // New creates a new API server.
 func New(
+	ctx context.Context,
 	id *future.ReadOnly[core.Identity],
 	repo *ondisk.OnDisk,
 	db *sqlitex.Pool,
@@ -38,6 +39,7 @@ func New(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
+	cfg config.Site,
 ) Server {
 	doSync := func() error {
 		s, ok := sync.Get()
@@ -59,6 +61,7 @@ func New(
 		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
 		Documents:  documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}),
 		Networking: networking.NewServer(node),
+		Site:       mttnet.NewServer(ctx, cfg, node),
 	}
 }
 

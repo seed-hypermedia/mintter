@@ -6,6 +6,7 @@ import (
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
@@ -163,6 +164,9 @@ func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) 
 
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
+	f := future.New[*mttnet.Node]()
+	_ = mttnet.NewServer(ctx, config.Default().Site, f.ReadOnly)
+	require.NoError(t, f.Resolve(n))
 	go func() {
 		errc <- n.Start(ctx)
 	}()
