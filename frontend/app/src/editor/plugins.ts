@@ -1,4 +1,8 @@
-import {Transforms} from 'slate'
+import {createCommentsPlugin} from '@app/editor/comments/comments'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {isFlowContent} from '@mintter/shared'
+import {Editor, Path, Range, Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
 import {createBlockquotePlugin} from './blockquote'
 import {createCodePlugin} from './code'
 import {createColorPlugin} from './color'
@@ -70,4 +74,5 @@ export const plugins: EditorPlugin[] = [
       e.stopPropagation()
     },
   },
+  createCommentsPlugin(),
 ]

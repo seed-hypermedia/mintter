@@ -147,22 +147,31 @@ export function toggleFormat(
   data: unknown = true,
 ) {
   if (editor.readOnly) return
-  const isActive = isFormatActive(editor, format)
+  const isActive = isMarkActive(editor, format)
 
-  Transforms.setNodes(
-    editor,
-    {[format]: isActive ? null : data},
-    {match: Text.isText, split: true, mode: 'highest'},
-  )
+  if (isActive) {
+    Editor.removeMark(editor, format)
+  } else {
+    Editor.addMark(editor, format, true)
+  }
 }
 
-export function isFormatActive(editor: Editor, format: Mark) {
+export function isMarkActive(editor: Editor, format: Mark) {
   const [match] = Editor.nodes(editor, {
     match: (n) => isText(n) && !!n[format],
     mode: 'all',
   })
 
   return !!match
+}
+
+export function getCurrentConversations(editor: Editor) {
+  const [match] = Editor.nodes(editor, {
+    match: (n) => isText(n) && !!n['conversations'],
+    mode: 'all',
+  })
+
+  return match
 }
 
 export function resetFlowContent(editor: Editor): boolean | undefined {

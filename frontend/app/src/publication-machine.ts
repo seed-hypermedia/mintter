@@ -9,14 +9,15 @@ import {
   getInfo,
   getPublication,
   group,
-  GroupingContent,
   paragraph,
   Publication,
   statement,
   text,
 } from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
-import {assign, createMachine, InterpreterFrom} from 'xstate'
+import {assign, createMachine, InterpreterFrom, actions} from 'xstate'
+
+let {send} = actions
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -71,7 +72,7 @@ export function createPublicationMachine({
   documentId,
   version,
 }: CreatePublicationMachineProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6CbWXVWWUs57CJjABiADIB5AIIARRChI9i5OSAAeiAIwA2AKzMtAFh0AOAEw6txjQGZTATmsGANCACeiazoDszL9Y1eWgAMdjrWdhqmGgC+0S5oWHhEvNS0DEys7JzcvMwAZmCE9IxQwtIAkgDKAMIAqpWV5eIAcswASgCiAAribQAqzB1tbb0qyArYSmQq6gg6QVrMdn4Rxo4adqaezm6IXl56wVoHBkamxjo6MXEgCTgEU6nFGWwcXDzk+YXPpRU19Y0Wu1ur0BpVatVqh0GmMJlMZoh5otluENGsDBstjodu4EMYtBpmFdrEENEFTF4ySZTLF4hh7slyE90ixXtkPnwAE5gfAQVzMBgQCBgMhlKp1BpNVqVAAS4gA6rDFLwEQhQot5ld5kEDKZTEYXLiyVtmOsNAZHBcNBsvLTbvSko8aM9WVl3rlubz+YLhaK-hLAa0+uIAOIh0QdJWTFVINSIOwY016i744xBEnaQ2IYxeOxE866WzWY5BHQ0m53R0pZ0szJvHKfT185gAN3Y2CwIn9AKlzBl5Wkkdj42VyljswThNs5xMlnTpK0WbVFOYBi0BIMdjs+ICxztlYe1bSjFd9Y5zCb-LbPE7Yv+kqBwbDEaj8PH8cT05Tc4zi92aoOVd00MY5PEMMx9wdQ8mRrE863ZD0eT5YRamaCQZFfGNQFmHMl2WHw7GArRzACUs9UgxJoMoWCXjdBs+DATlORIbkIDvANewAMQ6PpqhlZhpEkPpJEwsdsMRBYlhWNF1k2bYly8Fd102bwvHTaw1ltCsoMZajjwyA9dP4QQRHQ2RhzhLC4wQTdCRRVZZKxHFNAJQkLmU45ziCKwdAohknX0lhDKmYyhGELpOm43iZVE6Z3wQWwk2I0lCK8Wy7D-I15h8Uwji2LYFlJa46Uo3TmTg4LckY5jWPC2oACFRHKaohK4ni+IEoSRIs0c4vEuZrGsJZzQWNLjhMLwl0iDZmH1NKFn8NYyy0kr-KPF1mEqz4CiKdJSi6Bqmpavpe06Hp+mYcFIWhSpYtVWypNRdFMXk-9zVMIJmB1XVDAMSlwnOPyqxgwLNp0kKdp+OrGua1qgTO0FBmGUYeujMTrIe+yZIxOTsSmwaDGYGw028ws0WWIGqPKgzwcQr0ULQqRzPkXrVXXIa-ACXL01y-FrCmiwhoiYWty8fEQjsSmypokQIHIFhGBbEgAGsWEhuhJFQQg6BYu74p0Bwkw0bx7ATYs8f-A2lmsNKMttv7zWMKWApdYRqpYzbMCIPIWKoL5ds17XddRt9+oNwnggxS5Qg++xjCm8sbjIEhhXgYdaZBja2XdT4BCEPX+v2Jdizc-YJpJIJFLSgxnfW2ts-o-2fgL6zjQUzcie80tjGMP7vA2WvM-rujz0vAUBF9FvZmtYivt0dMVg0j6NDw85Zr+3VcwsYwHGsQe9Kzke6eba8O3zkOrJwtEvuxLRBu0avAiXHuCOAgw1gTSx8X36nTwQxskK4hZmjPq1lcyE1LGue+xxThP3-GmHw0cHBmHCCSSkP8ZbwRzgxJiLFIBTz2JYXwalczuRzMEeO-5ObMB8iEC4CwN4YNBg3DkBCBpLhnL4Yi25NwUgcNaGu2lSou1rFtPgecwBsMxElZeqV0qZU0PMQkFJiK6E5oRciQi1pDwqhnHBNV8EX3RrMMWn1jhojCGWHUGx+ZvXMIsfEywLhGDFkiJhG0xFNz2mwoudjwizQfhcRS6Ye6+S0cDA+oi9EXkAT4tM+hKQXE8B9HGtisomCAsk8kY1vLFXtMIuuuiCnoxHCA1UxgZEpUrvI5yCABE5VcYYCwmwUHuJZGwigxsEk223CEcwXdixTVnr3YsakPo9PJLEWIQA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6AMzEPsagGIAFAKoAhADIBJAMIBBACpiA8gDlmAJQCifeSpnMAygIkS1u3QG0ADAF1EKErGzFyNkAA9EAFgCsn5gEYAHL7uvubuAJxhof6eADQgAJ6IAMwA7P5+-klJAGyeAExh7llBngC+pXFoWHhEpJQ0XExsHI28gqKSsgrK6prazGoqKloW1kggyHYOdc5uCF4+AUEh4ZHu0XGJCNnrzCm+IWEpeSme2Slh5ZUYOASO9bQMTeycT1DMZCQATjSYPC6wQhEFj4ViEMBfAAUIXM5gAlDwqrdauRqI9GCwXq0Pt9fqNnJN7PdZohfClsn4Ltl-OYwklfGdAklNohsr4Kbkcnlaf5wp5MlcJjcavc0Y0WF8wPgIPEeBByCxGAA3EgAa0xLToUlQhDo33x40J0yc4zmYX8FLC3iKR0CaVpLIQvjy6XcaSSeSC7jdKTS2UFSJFdTFTwlUplzGwEEwYH4wnE0jkSgGABExDIDbYiTNTYhoot3OdudkIu5zLEEohPOYUswwjtQsFPObeZcKkLqndgw1Q8xJdL4sxINMyLx5U1lWqWLh++CU19QYRMxMpsTc07fFlmNFPUlaScLRtKwgku48ntuTWDgVC54Uu4A8Ku6iexi++HB8PiKOeBCvt9mGQTAiFYXFmBnKU5wXMFlyNNdQDNWE9j3JIIkKLw8lSR0cnST1jm5JJ-DyTlfEfTsUQecUhy+f9JQgOMOkTbpmAAMTUGQJAACWYFNZCkWDVxzBCPG8DJllCCIogrLZ8g5WlnVSQpUn8cp20+CA4AJJ8KJDDECUEk1hIQCg8ncR0KB8c1YXLF0Dn8FIULI5FRVfZ5NW4fTs0M1xEFMx1C3PAJ7wZLI6QPf120DZ9KN7LE3hxH58EwTzjTIEkEGOR02R8HZPByWFIiyc4nKDF90Tc15uCHFxwTIDSIBS+CfIQApa2bfxCkiXJPGCIosoZZhcvy2lzCKlISui3Smn7GVGqE5r73MZhMNCUzzDyTDzmyR1uVwtl729Ubq3MCLrnIlzyrDAdI2jMA5u8uY0lwvczzLDacnJfy8uYMt8zdBkdmIspIu0i6qJmz8IBHKB7rS9cQjSbdzQuckNqtI8tkO5hq1Pe9qTWgoJp01yWD-b5IFh9KHLk8ImTpFYsuyCkTnyQiOr3Gk8lU0ogA */
   return createMachine(
     {
       predictableActionArguments: true,
@@ -91,117 +92,82 @@ export function createPublicationMachine({
         services: {} as PublicationMachineServices,
       },
       id: 'publication-machine',
-      type: 'parallel',
       entry: ['sendActorToParent'],
+      initial: 'fetching',
       states: {
-        publication: {
-          initial: 'fetching',
+        fetching: {
+          invoke: {
+            src: 'fetchPublicationData',
+            id: 'fetchPublicationData',
+          },
+          tags: 'pending',
+          initial: 'normal',
           states: {
-            errored: {
-              on: {
-                'PUBLICATION.FETCH.DATA': {
-                  actions: ['clearError', 'clearLinks'],
-                  target: 'fetching',
-                },
+            normal: {
+              after: {
+                1000: 'extended',
               },
             },
-            fetching: {
-              invoke: {
-                src: 'fetchPublicationData',
-                id: 'fetchPublicationData',
-              },
-              tags: 'pending',
-              initial: 'normal',
-              states: {
-                normal: {
-                  after: {
-                    1000: 'extended',
-                  },
-                },
-                extended: {},
-              },
-              on: {
-                'PUBLICATION.REPORT.SUCCESS': {
-                  actions: [
-                    'assignPublication',
-                    'assignCanUpdate',
-                    'assignTitle',
-                  ],
-                  target: 'ready',
-                },
-                'PUBLICATION.REPORT.ERROR': {
-                  actions: 'assignError',
-                  target: 'errored',
-                },
+            extended: {},
+          },
+          on: {
+            'PUBLICATION.REPORT.SUCCESS': {
+              actions: ['assignPublication', 'assignCanUpdate', 'assignTitle'],
+              target: 'ready',
+            },
+            'PUBLICATION.REPORT.ERROR': {
+              actions: 'assignError',
+              target: 'errored',
+            },
+          },
+        },
+        ready: {
+          invoke: [
+            {
+              src: 'fetchAuthor',
+              id: 'fetchAuthor',
+              onDone: {
+                actions: 'assignAuthor',
               },
             },
-            ready: {
+            // {
+            //   src: 'fetchConversations',
+            //   id: 'fetchConversations',
+            //   onDone: {
+            //     actions: ['applyConversations'],
+            //   },
+            // },
+          ],
+          initial: 'idle',
+          states: {
+            idle: {
+              on: {
+                'PUBLICATION.EDIT': 'editing',
+              },
+            },
+            editing: {
               invoke: {
-                src: 'fetchAuthor',
-                id: 'fetchAuthor',
-                onDone: [
+                id: 'createDraft',
+                src: 'createDraft',
+                onDone: {
+                  actions: ['onEditSuccess'],
+                },
+                onError: [
                   {
-                    actions: 'assignAuthor',
+                    actions: ['assignError'],
+                    target: 'idle',
                   },
                 ],
-                onError: [{}],
-              },
-              initial: 'idle',
-              states: {
-                idle: {
-                  on: {
-                    'PUBLICATION.EDIT': 'editing',
-                  },
-                },
-                editing: {
-                  invoke: {
-                    id: 'createDraft',
-                    src: 'createDraft',
-                    onDone: {
-                      actions: ['onEditSuccess'],
-                    },
-                    onError: [
-                      {
-                        actions: ['assignError'],
-                        target: 'idle',
-                      },
-                    ],
-                  },
-                },
               },
             },
           },
         },
-        discussion: {
-          initial: 'ready',
-          states: {
-            ready: {
-              tags: 'ready',
-              initial: 'visible',
-              states: {
-                hidden: {
-                  on: {
-                    'DISCUSSION.SHOW': {
-                      target: 'visible',
-                    },
-                    'DISCUSSION.TOGGLE': {
-                      target: 'visible',
-                    },
-                  },
-                },
-                visible: {
-                  on: {
-                    'DISCUSSION.HIDE': {
-                      target: 'hidden',
-                    },
-                    'DISCUSSION.TOGGLE': {
-                      target: 'hidden',
-                    },
-                  },
-                },
-              },
+        errored: {
+          on: {
+            'PUBLICATION.FETCH.DATA': {
+              actions: ['clearError', 'clearLinks'],
+              target: 'fetching',
             },
-            errored: {},
           },
         },
       },
@@ -277,6 +243,19 @@ export function createPublicationMachine({
               })
             })
         },
+        // fetchConversations: (context) => (sendBack) => {
+        //   client.fetchQuery({
+        //     queryKey: [
+        //       queryKeys.GET_PUBLICATION_CONVERSATIONS,
+        //       context.documentId,
+        //       context.version,
+        //     ],
+        //     // queryFn: () => getConversationsList()
+        //     queryFn: async () => {
+        //       // TODO: add conversations fetch
+        //     },
+        //   })
+        // },
       },
       actions: {
         assignTitle: assign({
@@ -303,39 +282,12 @@ export function createPublicationMachine({
         }),
         // @ts-ignore
         clearLinks: assign({
-          links: [],
+          links: () => [],
         }),
         // @ts-ignore
         clearError: assign({
-          errorMessage: '',
+          errorMessage: () => '',
         }),
-        // openWindow: (context, event) => {
-        //   openWindow(
-        //     `/d/${event.data.id}?replyto=${context.documentId}/${context.version}`,
-        //   )
-        // },
-        // refetchDraftList: () => {
-        //   invoke('emit_all', {
-        //     event: 'new_draft',
-        //   })
-        // },
-        // prefetchPublication: (context) => {
-        //   client.prefetchQuery(
-        //     [
-        //       queryKeys.GET_PUBLICATION,
-        //       context.publication?.document?.id,
-        //       context.publication?.version,
-        //     ],
-        //     () =>
-        //       getPublication(
-        //         context.publication?.document?.id,
-        //         context.publication?.version,
-        //       ),
-        //     {
-        //       staleTime: 10 * 1000, // only prefetch if older than 10 seconds
-        //     },
-        //   )
-        // },
       },
     },
   )

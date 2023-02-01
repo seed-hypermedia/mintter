@@ -81,6 +81,15 @@ export function blockToApi(
       annotations.addSpan('color', {color: leaf.color}, start, end)
     }
 
+    if (leaf.conversations) {
+      annotations.addSpan(
+        'conversation',
+        {conversations: leaf.conversations[0]},
+        start,
+        end,
+      )
+    }
+
     // inline block elements check
 
     if (leaf.type == 'image') {

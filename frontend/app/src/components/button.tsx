@@ -7,6 +7,7 @@ export const buttonStyles = css({
   cursor: 'pointer',
   fontFamily: '$base',
   fontWeight: '$medium',
+  alignItems: 'center',
   textAlign: 'center',
   '&:disabled': {
     opacity: 0.5,

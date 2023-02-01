@@ -1,5 +1,6 @@
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {
   createId,
   FlowContent,
@@ -249,8 +250,15 @@ function Statement({
       {...attributes}
       {...blockProps}
       className={inRoute ? 'flash' : undefined}
+      style={{position: 'relative'}}
     >
       {children}
+      <ConversationBlockBubble
+        blockId={element.id}
+        onClick={() => {
+          console.log(`clicked in conversation bubble for ${element.id}`)
+        }}
+      />
     </li>
   )
 }

@@ -1,5 +1,7 @@
+import {useBlockConversations} from '@app/editor/comments/conversations-context'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
+import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {
   createId,
   Heading as HeadingType,
@@ -109,7 +111,6 @@ function Heading({
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
   let {blockProps} = useBlockProps(element)
-
   let inRoute = useBlockFlash(attributes.ref, element.id)
   if (mode == EditorMode.Embed) {
     return (
@@ -126,6 +127,12 @@ function Heading({
       className={inRoute ? 'flash' : undefined}
     >
       {children}
+      <ConversationBlockBubble
+        blockId={element.id}
+        onClick={() => {
+          console.log(`clicked in conversation bubble for ${element.id}`)
+        }}
+      />
     </li>
   )
 }

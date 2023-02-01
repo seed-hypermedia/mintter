@@ -25,6 +25,8 @@ import {MARK_STRONG} from '../strong'
 import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
 import {findPath, lowerPoint, resetFlowContent, useBlockFlash} from '../utils'
+import {useBlockConversations} from '@app/editor/comments/conversations-context'
+import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
@@ -259,6 +261,12 @@ function Code({
           </select>
         </div>
       ) : null}
+      <ConversationBlockBubble
+        blockId={element.id}
+        onClick={() => {
+          console.log(`clicked in conversation bubble for ${element.id}`)
+        }}
+      />
     </li>
   )
 }
