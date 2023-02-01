@@ -1,6 +1,7 @@
 import {isLink, isPhrasingContent, isText} from '../../mttast/assertions'
 import {paragraph} from '../../mttast/builder'
 import {MttastNode, PhrasingContent} from '../../mttast/types'
+import extend from 'extend'
 
 export function wrap(nodes: Array<MttastNode>) {
   return runs(nodes, onphrasing)
@@ -79,6 +80,13 @@ function split(node: MttastNode) {
   // @ts-expect-error Assume parent.
   return runs(node.children, onphrasing, onnonphrasing)
 
+  function onphrasing(nodes) {
+    const newParent = cloneWithoutChildren(node)
+    newParent.children = nodes
+    // @ts-expect-error Assume fine.
+    return [newParent]
+  }
+
   /**
    * Use `child`, add `parent` as its first child, put the original children
    * into `parent`.
@@ -121,4 +129,8 @@ export function wrapNeeded(nodes: Array<MttastNode>): boolean {
 // eslint-disable-next-line
 function identity(n: any) {
   return n
+}
+
+function cloneWithoutChildren(node) {
+  return extend(true, {}, {...node, children: []})
 }

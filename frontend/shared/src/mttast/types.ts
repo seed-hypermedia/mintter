@@ -61,18 +61,21 @@ export interface StaticParagraph extends Parent {
 export interface Statement extends Parent {
   type: 'statement'
   id: string
+  revision: string
   children: [Content] | [Content, GroupingContent]
 }
 
 export interface Heading extends Parent {
   type: 'heading'
   id: string
+  revision: string
   children: [StaticContent] | [StaticContent, GroupingContent]
 }
 
 export interface Blockquote extends Parent {
   type: 'blockquote'
   id: string
+  revision: string
   children: [Content] | [Content, GroupingContent]
 }
 
@@ -81,12 +84,7 @@ export interface Code extends Parent {
   id: string
   lang?: Lang
   meta?: string
-  children: [Content] | [Content, GroupingContent]
-}
-
-export interface Callout extends Parent {
-  type: 'callout'
-  id: string
+  revision: string
   children: [Content] | [Content, GroupingContent]
 }
 
@@ -120,6 +118,7 @@ export interface Text extends Literal {
   // implementation relevant marks. not persistent
   codeToken?: string
   'find-highlight'?: boolean
+  conversations?: Array<string>
 }
 
 export type Mark = keyof Omit<Text, 'type' | 'value'>
@@ -152,7 +151,7 @@ export type StaticContent = StaticParagraph
 export type GroupingContent = Group | OrderedList | UnorderedList
 
 // The statements of a document
-export type FlowContent = Statement | Heading | Blockquote | Code | Callout
+export type FlowContent = Statement | Heading | Blockquote | Code
 
 // the text and markup of a document that's not intended for
 export type StaticPhrasingContent = Text | Video | Image
