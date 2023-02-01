@@ -1,4 +1,15 @@
-import {image, isCode, text} from '@mintter/shared'
+import {
+  blockToApi,
+  Comments,
+  image,
+  isCode,
+  isFlowContent,
+  paragraph,
+  Selector,
+  statement,
+  text,
+  transport,
+} from '@mintter/shared'
 import {Mark} from '@mintter/shared'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -6,7 +17,7 @@ import {Icon, icons} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
 import {css} from '@stitches/react'
-import {PropsWithChildren, useEffect, useMemo, useState} from 'react'
+import {FormEvent, PropsWithChildren, useEffect, useMemo, useState} from 'react'
 import {Editor, Range, Text, Transforms} from 'slate'
 import {ReactEditor, useFocused, useSlate} from 'slate-react'
 import {MARK_EMPHASIS} from './emphasis'
@@ -14,7 +25,17 @@ import {MARK_CODE} from './inline-code'
 import {InsertLinkButton} from './link'
 import {MARK_STRONG} from './strong'
 import {MARK_UNDERLINE} from './underline'
-import {isFormatActive, toggleFormat} from './utils'
+import {isMarkActive, toggleFormat} from './utils'
+import {useActor, useInterpret, useSelector} from '@xstate/react'
+import {toolbarMachine} from '@app/editor/toolbar-machine'
+import {assign} from 'xstate'
+import {TextField} from '@components/text-field'
+import {OutsideClick} from '@app/editor/outside-click'
+import {createPromiseClient} from '@bufbuild/connect-web'
+import {useRoute} from 'wouter'
+import {useConversations} from '@app/editor/comments/conversations-context'
+import {useQueryClient} from '@tanstack/react-query'
+import {queryKeys} from '@app/hooks'
 
 export function EditorHoveringToolbar() {
   const editor = useSlate()
@@ -87,10 +108,6 @@ export function EditorHoveringToolbar() {
   )
 }
 
-export function PublicationHoveringToolbar() {
-  return <HoveringToolbar>copy reference</HoveringToolbar>
-}
-
 const textSelectorStyles = css({
   '$$outlined-border-size': '1px',
   width: '1.5em',
@@ -120,7 +137,7 @@ function FormatButton({
       size="0"
       color="muted"
       css={
-        isFormatActive(editor, format)
+        isMarkActive(editor, format)
           ? {
               backgroundColor: '$base-component-bg-active',
               color: '$base-text-high',
@@ -221,5 +238,196 @@ function HoveringToolbar({children}: PropsWithChildren) {
     >
       {children}
     </Box>
+  )
+}
+
+export function PublicationToolbar() {
+  let client = useQueryClient()
+  let [, params] = useRoute('/p/:id/:version/:block?')
+  let editor = useSlate()
+  const {x, y, reference, floating, strategy} = useFloating({
+    placement: 'top',
+    middleware: [inline(), offset(8), shift(), flip()],
+  })
+
+  let convContext = useConversations()
+
+  let service = useInterpret(() => toolbarMachine, {
+    guards: {
+      isNotValid: (_, event) =>
+        !editor.selection ||
+        Range.isCollapsed(editor.selection) ||
+        Editor.string(editor, editor.selection) === '',
+    },
+    actions: {
+      assignDefaultSelection: () => {
+        reference(defaultVirtualEl)
+      },
+      assignSelection: assign((_, e) => {
+        return {
+          selection: e.selection,
+          domRange: e.selection
+            ? ReactEditor.toDOMRange(editor, e.selection)
+            : null,
+        }
+      }),
+      setSelectorMark: (context) => {
+        console.log('setSelectorMark', context)
+        Editor.addMark(editor, 'conversations', ['current'])
+      },
+      removeSelectorMark: (context) => {
+        Editor.removeMark(editor, 'conversations')
+      },
+      restoreDOMSelection: (context) => {
+        let selection = window.getSelection()
+        if (selection) {
+          selection.addRange(context.domRange)
+        }
+      },
+      removeDOMSelection: () => {
+        let selection = window.getSelection()
+
+        if (selection) {
+          selection.removeAllRanges()
+        }
+      },
+    },
+  })
+
+  async function createConversation(event: FormEvent) {
+    event.preventDefault()
+    /**
+     * - get block selected
+     * - convert conversation mark to selector
+     * - create comment block
+     * - create conversation with initial comment
+     */
+
+    // get block selected
+    let currentEntry = Editor.nodes(editor, {
+      match: isFlowContent,
+    })
+
+    if (!currentEntry) return
+
+    // get block from entry
+    // TODO: get all the blocks from selection, now it's capped by just one block.
+    let [block] = [...currentEntry][0]
+
+    // convert conversation to selector
+    let apiBlock = blockToApi(block)
+
+    let commentAnnotation = apiBlock.annotations.find(
+      (annotation) =>
+        annotation.type == 'conversation' &&
+        annotation.attributes.conversations == 'current',
+    )
+
+    if (!commentAnnotation) return
+
+    let selector = new Selector({
+      blockId: block.id,
+      blockRevision: block.revision,
+      start: commentAnnotation.starts[0],
+      end: commentAnnotation.ends[0],
+    })
+
+    let data = new FormData(event.currentTarget)
+    let commentValue = data.get('comment')?.toString()
+    if (!commentValue) return
+    let initialComment = blockToApi(
+      statement([paragraph([text(commentValue)])]),
+    )
+
+    let commentsClient = createPromiseClient(Comments, transport)
+
+    commentsClient
+      .createConversation({
+        documentId: params?.id,
+        initialComment,
+        selectors: [selector],
+      })
+      .then((res) => {
+        service.send('TOOLBAR.DISMISS')
+        client.invalidateQueries({
+          queryKey: [queryKeys.GET_PUBLICATION_CONVERSATIONS],
+        })
+      })
+  }
+
+  let isToolbarActive = useSelector(service, (state) => state.matches('active'))
+  let toolbarSelection = useSelector(service, (state) => state.context.domRange)
+  let isCommentActive = useSelector(service, (state) =>
+    state.matches('active.commenting'),
+  )
+
+  useEffect(() => {
+    const {selection} = editor
+
+    if (selection) {
+      service.send({type: 'TOOLBAR.SELECT', selection})
+    } else {
+      service.send('TOOLBAR.DISMISS')
+    }
+  }, [editor, editor.selection])
+
+  useEffect(() => {
+    if (isToolbarActive) {
+      reference(toolbarSelection)
+    }
+  }, [isToolbarActive, toolbarSelection])
+
+  return (
+    <OutsideClick onClose={() => service.send('TOOLBAR.DISMISS')}>
+      <Box
+        ref={floating}
+        css={{
+          position: strategy,
+          top: y ?? -1000,
+          left: x ?? -1000,
+          zIndex: '$max',
+        }}
+      >
+        <Box
+          css={{
+            zIndex: '$max',
+            boxShadow: '$menu',
+            padding: '$2',
+            backgroundColor: '$base-background-normal',
+            borderRadius: '2px',
+            transition: 'opacity 0.5s',
+            display: 'flex',
+            gap: '$2',
+            paddingHorizontal: '$2',
+            '& > *': {
+              display: 'inline-block',
+            },
+            '& > * + *': {
+              marginLeft: 2,
+            },
+          }}
+        >
+          <Button
+            variant="ghost"
+            size="0"
+            color="muted"
+            onClick={() => service.send('START.CONVERSATION')}
+          >
+            <Icon name="MessageBubble" size="2" />
+            <span>Add comment</span>
+          </Button>
+        </Box>
+        {isCommentActive ? (
+          <Box as="form" onSubmit={createConversation}>
+            <TextField
+              name="comment"
+              textarea
+              placeholder="initial comment here"
+            />
+            <button>submit</button>
+          </Box>
+        ) : null}
+      </Box>
+    </OutsideClick>
   )
 }

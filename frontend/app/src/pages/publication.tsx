@@ -1,5 +1,6 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
+import {ConversationsProvider} from '@app/editor/comments/conversations-context'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -10,10 +11,9 @@ import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {createPublicationMachine} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
-import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {Discussion} from '@components/discussion'
+import {Conversations} from '@components/conversations'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {useLocation, useRoute} from '@components/router'
@@ -26,7 +26,7 @@ import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor} from 'slate'
+import {Editor as SlateEditor, Path, Range} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
@@ -34,16 +34,20 @@ import '../styles/publication.scss'
 export default function PublicationWrapper() {
   let client = useQueryClient()
   let mainService = useMain()
-  let [, params] = useRoute('/p/:id/:version/:block?')
+
   let [, setLocation] = useLocation()
-  let [focusBlock, setFocusBlock] = useState(() => params?.block)
-  let mouseService = useInterpret(() => mouseMachine)
+  let [, params] = useRoute('/p/:id/:version/:block?')
+
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
     [],
   )
+
+  let mouseService = useInterpret(() => mouseMachine)
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
+  // this checks if there's a block in the url, so we can highlight and scroll into the selected block
+  let [focusBlock, setFocusBlock] = useState(() => params?.block)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
   useEffect(() => {
@@ -85,7 +89,7 @@ export default function PublicationWrapper() {
     },
   )
 
-  if (state.matches('publication.errored')) {
+  if (state.matches('errored')) {
     return (
       <div data-testid="publication-section" className="page-wrapper">
         <p>Publication ERROR</p>
@@ -97,114 +101,108 @@ export default function PublicationWrapper() {
     )
   }
 
-  let topOffset = resizablePanelState.context.vertical ? 82 : 0
-  let top = resizablePanelState.context.top - topOffset
-
-  if (state.matches('publication.ready')) {
+  if (state.matches('ready')) {
     return (
-      <MouseProvider value={mouseService}>
-        <BlockHighLighter>
-          <div className="page-wrapper publication-wrapper">
-            <Allotment
-              defaultSizes={[100]}
-              vertical={resizablePanelState.context.vertical}
-              key={resizablePanelState.context.vertical}
-              onChange={(values) => panelSend({type: 'RESIZE', values})}
-            >
-              <Allotment.Pane>
-                <section
-                  className="publication-section"
-                  data-testid="publication-section"
-                  onMouseMove={(event) =>
-                    mouseService.send({
-                      type: 'MOUSE.MOVE',
-                      position: event.clientY,
-                    })
-                  }
-                  onMouseLeave={() => {
-                    mouseService.send('DISABLE.CHANGE')
-                  }}
-                >
-                  <ErrorBoundary
-                    fallback={<div>error</div>}
-                    onReset={() => window.location.reload()}
+      <ConversationsProvider documentId={params?.id}>
+        <MouseProvider value={mouseService}>
+          <BlockHighLighter>
+            <div className="page-wrapper publication-wrapper">
+              <Allotment
+                defaultSizes={[100, 0]}
+                onChange={(values) => panelSend({type: 'RESIZE', values})}
+              >
+                <Allotment.Pane>
+                  <section
+                    className="publication-section"
+                    data-testid="publication-section"
+                    onMouseMove={(event) =>
+                      mouseService.send({
+                        type: 'MOUSE.MOVE',
+                        position: event.clientY,
+                      })
+                    }
+                    onMouseLeave={() => {
+                      mouseService.send('DISABLE.CHANGE')
+                    }}
                   >
-                    <FileProvider value={state.context.publication}>
-                      <ScrollArea
-                        ref={scrollWrapperRef}
-                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                      >
-                        <div
-                          className={`discussion-toggle ${
-                            resizablePanelState.context.visible
-                              ? 'visible'
-                              : undefined
-                          }`}
-                          style={
-                            resizablePanelState.context.visible
-                              ? {
-                                  top: `${top}px`,
-                                  left: `${resizablePanelState.context.left}px`,
-                                  right: 'auto',
-                                  transform: resizablePanelState.context
-                                    .vertical
-                                    ? 'translateY(50%)'
-                                    : 'translateX(-50%)',
-                                }
-                              : undefined
-                          }
+                    <ErrorBoundary
+                      fallback={<div>error</div>}
+                      onReset={() => window.location.reload()}
+                    >
+                      <FileProvider value={state.context.publication}>
+                        <ScrollArea
+                          ref={scrollWrapperRef}
+                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
                         >
-                          <Tooltip content="Toggle Activity">
-                            <button
-                              className="discussion-button"
-                              onClick={() => {
-                                panelSend('DISCUSSION.TOGGLE')
-                                mouseService.send('DISABLE.WINDOW.RESIZE')
-                              }}
-                            >
-                              <Icon name="MessageBubble" />
-                            </button>
-                          </Tooltip>
-                        </div>
-                        {state.context.publication?.document?.content && (
-                          <Blocktools editor={editor}>
-                            <Editor
-                              editor={editor}
-                              mode={EditorMode.Publication}
-                              value={
-                                state.context.publication?.document.content
-                              }
-                              onChange={() => {
-                                mouseService.send('DISABLE.CHANGE')
-                                // noop
-                              }}
-                            />
-                          </Blocktools>
-                        )}
-                      </ScrollArea>
-                    </FileProvider>
-                  </ErrorBoundary>
-                </section>
-              </Allotment.Pane>
-              {resizablePanelState.context.visible &&
-                !!state.context.publication && (
-                  <Allotment.Pane preferredSize="35%">
-                    <section className="discussion-section">
-                      <ScrollArea
-                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                      >
-                        <Discussion
-                          visible={resizablePanelState.context.visible}
-                          publication={state.context.publication}
-                        />
-                      </ScrollArea>
-                    </section>
-                  </Allotment.Pane>
-                )}
-            </Allotment>
-          </div>
-        </BlockHighLighter>
-      </MouseProvider>
+                          <div
+                            className={`discussion-toggle ${
+                              resizablePanelState.context.visible
+                                ? 'visible'
+                                : undefined
+                            }`}
+                            style={
+                              resizablePanelState.context.visible
+                                ? {
+                                    top: 100,
+                                    left: `${resizablePanelState.context.left}px`,
+                                    right: 'auto',
+                                    transform: 'translateX(-50%)',
+                                  }
+                                : undefined
+                            }
+                          >
+                            <Tooltip content="Toggle Activity">
+                              <button
+                                className="discussion-button"
+                                onClick={() => {
+                                  panelSend('DISCUSSION.TOGGLE')
+                                  mouseService.send('DISABLE.WINDOW.RESIZE')
+                                }}
+                              >
+                                <Icon name="MessageBubble" />
+                              </button>
+                            </Tooltip>
+                          </div>
+                          {state.context.publication?.document?.content && (
+                            <Blocktools editor={editor}>
+                              <Editor
+                                editor={editor}
+                                mode={EditorMode.Publication}
+                                value={
+                                  state.context.publication?.document.content
+                                }
+                                onChange={() => {
+                                  mouseService.send('DISABLE.CHANGE')
+                                  // noop
+                                }}
+                              />
+                            </Blocktools>
+                          )}
+                        </ScrollArea>
+                      </FileProvider>
+                    </ErrorBoundary>
+                  </section>
+                </Allotment.Pane>
+                {resizablePanelState.context.visible &&
+                  !!state.context.publication && (
+                    <Allotment.Pane preferredSize={0}>
+                      <section className="discussion-section">
+                        <ScrollArea
+                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                        >
+                          <Conversations
+                            publication={state.context.publication}
+                            visible={resizablePanelState.context.visible}
+                          />
+                        </ScrollArea>
+                      </section>
+                    </Allotment.Pane>
+                  )}
+              </Allotment>
+            </div>
+          </BlockHighLighter>
+        </MouseProvider>
+      </ConversationsProvider>
     )
   }
 
@@ -214,7 +212,7 @@ export default function PublicationWrapper() {
 
       <p
         className={classnames('publication-fetching-message', {
-          visible: state.matches('publication.fetching.extended'),
+          visible: state.matches('fetching.extended'),
         })}
       >
         Searching the network...
@@ -265,16 +263,13 @@ function BlockPlaceholder() {
 }
 
 type ResizablePanelMachineContext = {
-  top: number
-  left: number
-  vertical: boolean
   visible: boolean
+  left: number
 }
 
 type ResizablePanelMachineEvent =
   | {type: 'DISCUSSION.TOGGLE'}
   | {type: 'RESIZE'; values: Array<number>}
-  | {type: 'MATCHMEDIA.MATCH'; match: boolean}
 
 type ResizablePanelMachineServices = {
   matchMediaService: {
@@ -285,73 +280,38 @@ let resizablePanelMachine =
   /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAlAUQGUBJALToG0AGAXUVGID2sNABc0AsnxAAPRADZOAOgAsARgAcAZk3KAnAt2aA7AFYANCACeiQhrmLOGncqOH1qgEyGAvt4uphbHwiUgpqAFkAQQAVAGEACXC6ABEmSMUouPiuXiQQQWExCSlZBE97Tj0PdRN1OrkjDXULazKTZUUFdU5HI051XXVlTXVfPxAyAQg4KQDMXAISckopAtFxSTzSwmUlRzkTVR7OXSMDuQ9zKxs1B2U1WsMTdrl1UzHvIA */
   createMachine(
     {
-      predictableActionArguments: true,
-      context: {top: 100, left: 100, vertical: false, visible: false},
+      context: {visible: false, left: 100},
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
         context: {} as ResizablePanelMachineContext,
         events: {} as ResizablePanelMachineEvent,
         services: {} as ResizablePanelMachineServices,
       },
-      invoke: {
-        src: 'matchMediaService',
-        id: 'matchMediaService',
-      },
       on: {
         'DISCUSSION.TOGGLE': {
-          actions: 'setDiscussionVisibility',
+          actions: 'setVisibility',
         },
         RESIZE: {
           actions: 'updateHandlePosition',
-        },
-        'MATCHMEDIA.MATCH': {
-          actions: ['setOrientation'],
         },
       },
       id: 'resizable-panel',
     },
     {
       actions: {
-        setOrientation: assign({
-          vertical: (_, event) => event.match,
-        }),
         updateHandlePosition: assign((context, event) => {
           // hardcoded value to apply to the controls
           let newValue = event.values[0]
+          console.log(
+            '🚀 ~ file: publication.tsx:308 ~ updateHandlePosition:assign ~ newValue',
+            newValue,
+          )
 
-          if (context.vertical) {
-            return {top: newValue, left: 0}
-          } else {
-            return {left: newValue, top: 100}
-          }
+          return {left: newValue}
         }),
-        setDiscussionVisibility: assign({
+        setVisibility: assign({
           visible: (context) => !context.visible,
         }),
-      },
-      services: {
-        matchMediaService: () => (sendBack) => {
-          let responsiveMedia = window.matchMedia('(max-width: 768px)')
-
-          if (typeof responsiveMedia.addEventListener == 'function') {
-            responsiveMedia.addEventListener('change', handler)
-          } else if (typeof responsiveMedia.addListener == 'function') {
-            responsiveMedia.addListener(handler)
-          } else {
-            error('matchMedia support error', responsiveMedia)
-          }
-
-          // initial set
-          sendBack({type: 'MATCHMEDIA.MATCH', match: responsiveMedia.matches})
-
-          return () => {
-            responsiveMedia.removeEventListener('change', handler)
-          }
-
-          function handler(event: MediaQueryListEvent) {
-            sendBack({type: 'MATCHMEDIA.MATCH', match: event.matches})
-          }
-        },
       },
     },
   )

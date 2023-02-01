@@ -71,6 +71,15 @@ import {
   Document,
   Publication as APIPublication,
 } from './.generated/documents/v1alpha/documents_pb'
+
+export {
+  ListConversationsRequest,
+  CreateConversationRequest,
+  Selector,
+  Conversation,
+} from './.generated/documents/v1alpha/comments_pb'
+export {Comments} from './.generated/documents/v1alpha/comments_connectweb'
+
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>
 }

@@ -390,11 +390,14 @@ importers:
     specifiers:
       '@bufbuild/connect-web': ^0.6.0
       '@bufbuild/protobuf': ^1.0.0
+      '@types/extend': ^3.0.1
       '@types/hast': 2.3.4
       '@types/unist': 2.0.6
       browser-headers: 0.4.1
       concurrently: 7.6.0
       deepmerge: 4.2.2
+      extend: ^3.0.2
+      google-protobuf: 3.21.2
       hast: 1.0.0
       hast-util-has-property: 2.0.0
       hast-util-is-element: 2.1.2
@@ -423,6 +426,8 @@ importers:
       '@bufbuild/protobuf': 1.0.0
       browser-headers: 0.4.1
       deepmerge: 4.2.2
+      extend: 3.0.2
+      google-protobuf: 3.21.2
       hast: 1.0.0
       hast-util-has-property: 2.0.0
       hast-util-is-element: 2.1.2
@@ -445,6 +450,7 @@ importers:
       unist-util-remove-position: 4.0.1
       unist-util-visit: 4.1.1
     devDependencies:
+      '@types/extend': 3.0.1
       '@types/hast': 2.3.4
       '@types/unist': 2.0.6
       concurrently: 7.6.0
@@ -3513,6 +3519,10 @@ packages:
   /@types/estree/1.0.0:
     resolution: {integrity: sha512-WulqXMDUTYAXCjZnk6JtIHPigp55cVtDgDrO2gHRwhyJto21+1zbVCtOYB2L1F9w4qCQ0rOGWBnBe0FNTiEJIQ==}
     dev: false
+
+  /@types/extend/3.0.1:
+    resolution: {integrity: sha512-R1g/VyKFFI2HLC1QGAeTtCBWCo6n75l41OnsVYNbmKG+kempOESaodf6BeJyUM3Q0rKa/NQcTHbB2+66lNnxLw==}
+    dev: true
 
   /@types/hast/2.3.4:
     resolution: {integrity: sha512-wLEm0QvaoawEDoTRwzTXp4b4jpwiJDvR5KMnFnVodm3scufTlBOWRD6N1OBf9TZMhjlNsSfcO5V+7AF4+Vy+9g==}
@@ -7529,6 +7539,10 @@ packages:
       csstype: ^3.0.10
     dependencies:
       csstype: 3.1.1
+    dev: false
+
+  /google-protobuf/3.21.2:
+    resolution: {integrity: sha512-3MSOYFO5U9mPGikIYCzK0SaThypfGgS6bHqrUGXG3DPHCrb+txNqeEcns1W0lkGfk0rCyNXm7xB9rMxnCiZOoA==}
     dev: false
 
   /gopd/1.0.1:
