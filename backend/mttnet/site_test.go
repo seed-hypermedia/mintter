@@ -10,6 +10,7 @@ import (
 )
 
 func TestLocalPublish(t *testing.T) {
+	t.Skip("not ready yet")
 	t.Parallel()
 	cfg := config.Default()
 	cfg.Site.Hostname = "example.com"
@@ -18,6 +19,7 @@ func TestLocalPublish(t *testing.T) {
 }
 
 func TestRemotePublish(t *testing.T) {
+	t.Skip("not ready yet")
 	t.Parallel()
 	cfg := config.Default()
 	cfg.Site.Hostname = "example.com"

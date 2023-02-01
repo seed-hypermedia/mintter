@@ -2,11 +2,16 @@ package mttnet
 
 import (
 	"context"
+	"fmt"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 )
 
 // ListObjects lists all the local objects.
-func (n *RPCHandler) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
+func (srv *Server) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) (*p2p.ListObjectsResponse, error) {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return nil, fmt.Errorf("Node not ready yet")
+	}
 	if n.cfg.NoListing {
 		return &p2p.ListObjectsResponse{}, nil
 	}

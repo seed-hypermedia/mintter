@@ -149,7 +149,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, grpcOpt...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
 	if err != nil {
 		return nil, err
 	}
@@ -385,6 +385,7 @@ func initSyncing(
 }
 
 func initGRPC(
+	ctx context.Context,
 	port int,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
@@ -395,6 +396,7 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
+	cfg config.Site,
 	opt ...grpc.ServerOption,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
@@ -404,7 +406,7 @@ func initGRPC(
 
 	srv = grpc.NewServer(opt...)
 
-	rpc = api.New(id, repo, pool, v, node, sync, wallet)
+	rpc = api.New(ctx, id, repo, pool, v, node, sync, wallet, cfg)
 	rpc.Register(srv)
 	reflection.Register(srv)
 

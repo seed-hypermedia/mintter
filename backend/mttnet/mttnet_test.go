@@ -6,6 +6,7 @@ import (
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs/mttacc"
@@ -18,7 +19,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ p2p.P2PServer = (*RPCHandler)(nil)
+var _ p2p.P2PServer = (*Server)(nil)
 
 func TestAddrs(t *testing.T) {
 	addrs := []string{
@@ -56,11 +57,15 @@ func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, con
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
-	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name), siteCfg...)
+	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
+	f := future.New[*Node]()
+	NewServer(ctx, config.Default().Site, f.ReadOnly)
+	require.NoError(t, f.Resolve(n))
+
 	go func() {
 		errc <- n.Start(ctx)
 	}()
