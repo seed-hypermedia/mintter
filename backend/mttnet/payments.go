@@ -2,6 +2,7 @@ package mttnet
 
 import (
 	"context"
+	"fmt"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 
 	"google.golang.org/grpc/codes"
@@ -15,7 +16,11 @@ type Invoicer interface {
 }
 
 // RequestInvoice creates a local invoice.
-func (n *RPCHandler) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {
+func (srv *Server) RequestInvoice(ctx context.Context, in *p2p.RequestInvoiceRequest) (*p2p.RequestInvoiceResponse, error) {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return nil, fmt.Errorf("Node not ready yet")
+	}
 	if n.invoicer == nil {
 		return nil, status.Errorf(codes.Unimplemented, "method RequestInvoice not ready yet")
 	}

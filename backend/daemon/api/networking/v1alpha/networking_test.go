@@ -68,6 +68,9 @@ func makeTestPeer(t *testing.T, u coretest.Tester) (*mttnet.Node, context.Cancel
 
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
+	f := future.New[*mttnet.Node]()
+	_ = mttnet.NewServer(ctx, config.Default().Site, f.ReadOnly)
+	require.NoError(t, f.Resolve(n))
 	go func() {
 		errc <- n.Start(ctx)
 	}()
