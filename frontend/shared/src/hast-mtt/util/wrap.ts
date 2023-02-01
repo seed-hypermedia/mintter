@@ -80,10 +80,9 @@ function split(node: MttastNode) {
   // @ts-expect-error Assume parent.
   return runs(node.children, onphrasing, onnonphrasing)
 
-  function onphrasing(nodes) {
+  function onphrasing(nodes: any) {
     const newParent = cloneWithoutChildren(node)
     newParent.children = nodes
-    // @ts-expect-error Assume fine.
     return [newParent]
   }
 
@@ -131,6 +130,6 @@ function identity(n: any) {
   return n
 }
 
-function cloneWithoutChildren(node) {
+function cloneWithoutChildren(node: any) {
   return extend(true, {}, {...node, children: []})
 }

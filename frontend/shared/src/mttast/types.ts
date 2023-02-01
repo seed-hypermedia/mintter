@@ -61,21 +61,21 @@ export interface StaticParagraph extends Parent {
 export interface Statement extends Parent {
   type: 'statement'
   id: string
-  revision: string
+  revision?: string
   children: [Content] | [Content, GroupingContent]
 }
 
 export interface Heading extends Parent {
   type: 'heading'
   id: string
-  revision: string
+  revision?: string
   children: [StaticContent] | [StaticContent, GroupingContent]
 }
 
 export interface Blockquote extends Parent {
   type: 'blockquote'
   id: string
-  revision: string
+  revision?: string
   children: [Content] | [Content, GroupingContent]
 }
 
@@ -84,7 +84,7 @@ export interface Code extends Parent {
   id: string
   lang?: Lang
   meta?: string
-  revision: string
+  revision?: string
   children: [Content] | [Content, GroupingContent]
 }
 

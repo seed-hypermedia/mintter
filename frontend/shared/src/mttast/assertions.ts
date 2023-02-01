@@ -2,7 +2,6 @@ import {isPlainObject} from 'is-plain-object'
 import type {Node, Parent} from 'unist'
 import type {
   Blockquote,
-  Callout,
   Code,
   Content,
   Embed,
@@ -93,7 +92,6 @@ export const isStatement = isType<Statement>('statement')
 export const isHeading = isType<Heading>('heading')
 export const isBlockquote = isType<Blockquote>('blockquote')
 export const isCode = isType<Code>('code')
-export const isCallout = isType<Callout>('callout')
 export const isVideo = isType<Video>('video')
 export const isImage = isType<Image>('image')
 export const isEmbed = isType<Embed>('embed')
@@ -111,5 +109,6 @@ export const isMark = (maybeMark: string): maybeMark is Mark => {
     'subscript',
     'code',
     'color',
+    'conversations',
   ].includes(maybeMark)
 }
