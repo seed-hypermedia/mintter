@@ -10,6 +10,7 @@ import (
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/mttnet"
+	site "mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/syncing"
@@ -25,6 +26,7 @@ type Server struct {
 	Daemon     *daemon.Server
 	Documents  *documents.Server
 	Networking *networking.Server
+	Site       *site.RPCHandler
 }
 
 // New creates a new API server.
