@@ -72,7 +72,7 @@ export const WebPublishing = {
  * The local application backend would require a special metadata header specifying the hostname
  * of the Mintter Site to proxy the request to.
  *
- * TODO(burdiyan): Document name of the required metadata header.
+ * Metadata Header: x-mintter-site-hostname
  *
  * @generated from service com.mintter.documents.v1alpha.WebSite
  */
