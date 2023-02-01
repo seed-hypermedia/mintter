@@ -192,7 +192,7 @@ function PublicationBlocktools(
 
   let blockStyle = match
     ? {top: `calc(${props.top} - 40px)`, right: '0.5rem'}
-    : {top: `calc(${props.top} - 40px)`, left: props.right}
+    : {top: `calc(${props.top} - 40px)`, left: `calc(${props.right} + 16px)`}
 
   return (
     <Box className="blocktools" css={blockStyle}>
@@ -206,6 +206,8 @@ function PublicationBlocktools(
           display: 'flex',
           alignItems: 'center',
           gap: '$2',
+          // this is needed to not render on top of the comments number.
+          transform: 'translateX(30px)',
           '&:hover': {
             background: '$base-background-normal',
           },

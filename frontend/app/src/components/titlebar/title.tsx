@@ -26,23 +26,23 @@ export function Title() {
         </Route>
         <Route path="/p/:id/:version/:block?">
           {current ? (
-            <PublicationTitle fileRef={current as PublicationActor} />
+            <PublicationTitle publication={current as PublicationActor} />
           ) : (
             <>...</>
           )}
         </Route>
         <Route path="/d/:id/:tag?">
-          {current ? <DraftTitle fileRef={current as DraftActor} /> : <>...</>}
+          {current ? <DraftTitle draft={current as DraftActor} /> : <>...</>}
         </Route>
       </Switch>
     </h1>
   )
 }
 
-function PublicationTitle({fileRef}: {fileRef: PublicationActor}) {
-  const title = useSelector(fileRef, (state) => state.context.title)
+function PublicationTitle({publication}: {publication: PublicationActor}) {
+  const title = useSelector(publication, (state) => state.context.title)
   const alias = useSelector(
-    fileRef,
+    publication,
     (state) => state.context.author?.profile?.alias,
   )
 
@@ -54,8 +54,8 @@ function PublicationTitle({fileRef}: {fileRef: PublicationActor}) {
   )
 }
 
-function DraftTitle({fileRef}: {fileRef: DraftActor}) {
-  const title = useSelector(fileRef, (state) => state.context.title)
+function DraftTitle({draft}: {draft: DraftActor}) {
+  const title = useSelector(draft, (state) => state.context.title)
 
   return <span data-tauri-drag-region>{title}</span>
 }

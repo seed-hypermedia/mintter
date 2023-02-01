@@ -1,5 +1,9 @@
-import {EditorHoveringToolbar} from '@app/editor/hovering-toolbar'
 import {
+  EditorHoveringToolbar,
+  PublicationToolbar,
+} from '@app/editor/hovering-toolbar'
+import {
+  Block,
   blockquote,
   ChildrenOf,
   code,
@@ -12,6 +16,8 @@ import {
   ol,
   statement,
   ul,
+  Selector,
+  CreateConversationRequest,
 } from '@mintter/shared'
 import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
@@ -31,6 +37,7 @@ import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
 import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
+
 interface EditorProps {
   mode?: EditorMode
   value: ChildrenOf<Document> | Array<FlowContent>
@@ -70,6 +77,32 @@ export function Editor({
     () => buildEventHandlerHooks(plugins, editor),
     [plugins, editor],
   )
+
+  // async function createDummyComment(event: any) {
+  //   event.preventDefault()
+  //   // revision: bafy2bzacea243a2yqianaubbxtcy2zf7onupotwarh5jlmbsbs2dhb6q3km4m
+  //   let selector: Selector = {
+  //     blockId: 'fOShPYr6',
+  //     blockRevision:
+  //       'bafy2bzacea243a2yqianaubbxtcy2zf7onupotwarh5jlmbsbs2dhb6q3km4m',
+  //     start: 0,
+  //     end: 8,
+  //   }
+
+  //   let request = CreateConversationRequest.fromPartial({
+  //     documentId:
+  //       'bafy2bzacebcf32766lmlgrj7in6cbvjskk3prv6amyrtqmtgxw3ric22f4ghk',
+  //     selectors: [selector],
+  //     initialComment: {
+  //       id: 'foobar',
+  //       type: 'comment',
+  //       text: "Hello I'm a comment",
+  //     },
+  //   })
+
+  //   let res = await new CommentsClientImpl(client).createConversation(request)
+  //   console.log('🚀 ~ file: editor.tsx:102 ~ createDummyComment ~ res', res)
+  // }
 
   useEffect(() => {
     if (editor && mode == EditorMode.Publication) {
@@ -222,22 +255,27 @@ export function Editor({
         value={value as Array<Descendant>}
         onChange={onChange}
       >
-        {/* {mode == EditorMode.Publication ? (
-            <PublicationHoveringToolbar />
-          ) : null} */}
+        {mode == EditorMode.Publication ? (
+          <>
+            <PublicationToolbar />
+            {/* <button onClick={createDummyComment}>add dummy comment</button> */}
+          </>
+        ) : null}
         <Editable
           as={as}
           autoCorrect="false"
           autoCapitalize="false"
           spellCheck="false"
           data-testid="editor"
-          readOnly
           renderElement={renderElement}
           renderLeaf={renderLeaf}
           decorate={decorate}
           {...eventHandlers}
         />
       </Slate>
+      <code>
+        <pre>{JSON.stringify(value, null, 3)}</pre>
+      </code>
     </span>
   )
 }

@@ -30,6 +30,7 @@ export function useBlockProps(element: FlowContent) {
         'data-element-type': element.type,
         'data-block-id': element.id,
         'data-parent-group': parentGroup?.[0].type,
+        'data-revision': element.revision,
       },
       parentNode: parentGroup?.[0],
       parentPath: parentGroup?.[1],

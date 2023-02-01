@@ -11,7 +11,7 @@ import {ClientPublication} from '@app/publication-machine'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine} from 'xstate'
 
-type CreateDiscussionMachineProps = {
+type CreateConversationMachineProps = {
   client: QueryClient
   link: MttLink
 }
@@ -41,12 +41,12 @@ type DiscussionMachineServices = {
 export function createDiscussionMachine({
   client,
   link,
-}: CreateDiscussionMachineProps) {
+}: CreateConversationMachineProps) {
   return createMachine(
     {
       id: `discussion-machine-${link.source?.documentId}-${link.source?.version}`,
       predictableActionArguments: true,
-      tsTypes: {} as import('./discussion-machine.typegen').Typegen0,
+      tsTypes: {} as import('./conversation-machine.typegen').Typegen0,
       schema: {
         context: {} as DiscussionMachineContext,
         services: {} as DiscussionMachineServices,

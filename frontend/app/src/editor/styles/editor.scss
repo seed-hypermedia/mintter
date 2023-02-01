@@ -17,7 +17,7 @@ li::marker {
 
 [data-element-type='code'] {
   position: relative;
-  max-width: var(--editor-width, 64ch);
+  max-width: var(--editor-width, 59ch);
   pre {
     width: 100%;
     overflow: hidden;
@@ -50,12 +50,12 @@ li::marker {
   --size-800: 3.15rem;
   --size-900: 4.2rem;
   // font-size: var(--size-400);
-  --editor-width: 64ch;
+  --editor-width: 59ch;
   --flow-space: var(--size-700);
 
   padding-inline-end: var(--size-400);
   width: 100%;
-  max-width: var(--editor-width, 64ch);
+  max-width: var(--editor-width, 59ch);
   margin-inline: auto;
 
   @media (min-width: 768px) {
@@ -69,13 +69,12 @@ li::marker {
   p,
   q,
   blockquote {
-    max-width: var(--editor-width, 64ch);
+    max-width: var(--editor-width, 59ch);
     width: 100%;
   }
 
   h1 {
     // max-width: 15ch;
-
     width: 100%;
   }
 
