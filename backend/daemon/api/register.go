@@ -24,5 +24,4 @@ func (s Server) Register(srv *grpc.Server) {
 	documents.RegisterWebSiteServer(srv, s.Site)
 
 	networking.RegisterNetworkingServer(srv, s.Networking)
-
 }
