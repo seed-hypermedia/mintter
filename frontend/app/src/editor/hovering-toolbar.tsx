@@ -431,15 +431,3 @@ export function PublicationToolbar() {
     </OutsideClick>
   )
 }
-
-export function getRectByCurrentSelection(): DOMRect | undefined {
-  const domSelection = window.getSelection()
-  if (!domSelection) return
-
-  try {
-    const domRange = domSelection.getRangeAt(0)
-    const rect = domRange.getBoundingClientRect()
-
-    return rect
-  } catch (error) {}
-}

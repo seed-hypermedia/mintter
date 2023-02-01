@@ -57,7 +57,7 @@ li::marker {
   width: 100%;
   max-width: var(--editor-width, 59ch);
   margin-inline: auto;
-  
+
   @media (min-width: 768px) {
     padding-inline-end: var(--size-700);
   }

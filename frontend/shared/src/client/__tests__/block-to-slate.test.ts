@@ -22,9 +22,12 @@ describe('Transform: blockToSlate', () => {
       text: 'Hello world',
       attributes: {},
       annotations: [],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [paragraph([text('Hello world')])])
+    let output = statement({id: 'blockId', revision: ''}, [
+      paragraph([text('Hello world')]),
+    ])
 
     expect(blockToSlate(input)).toEqual(output)
   })
@@ -36,9 +39,10 @@ describe('Transform: blockToSlate', () => {
       text: 'Hello world',
       attributes: {},
       annotations: [],
+      revision: '',
     })
 
-    let output = heading({id: 'blockId'}, [
+    let output = heading({id: 'blockId', revision: ''}, [
       staticParagraph([text('Hello world')]),
     ])
 
@@ -52,9 +56,12 @@ describe('Transform: blockToSlate', () => {
       text: 'h',
       attributes: {},
       annotations: [],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [paragraph([text('h')])])
+    let output = statement({id: 'blockId', revision: ''}, [
+      paragraph([text('h')]),
+    ])
 
     expect(blockToSlate(input)).toEqual(output)
   })
@@ -69,9 +76,10 @@ describe('Transform: blockToSlate', () => {
         // { type: "emphasis", starts: [1], ends: [2], attributes: {} },
       ],
       attributes: {},
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([text('A', {strong: true})]),
     ])
 
@@ -92,9 +100,10 @@ describe('Transform: blockToSlate', () => {
         {type: 'subscript', starts: [10], ends: [11], attributes: {}},
       ],
       attributes: {},
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('A ', {subscript: true}),
         text('B ', {emphasis: true}),
@@ -118,9 +127,10 @@ describe('Transform: blockToSlate', () => {
         {type: 'emphasis', starts: [8], ends: [18], attributes: {}},
       ],
       attributes: {},
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('Mintter ', {strong: true}),
         text('is', {strong: true, emphasis: true}),
@@ -137,9 +147,10 @@ describe('Transform: blockToSlate', () => {
       type: 'statement',
       text: 'hello from 👨‍👩‍👧‍👦 family',
       annotations: [{type: 'strong', starts: [6], ends: [25], attributes: {}}],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([text('hello '), text('from 👨‍👩‍👧‍👦 family', {strong: true})]),
     ])
 
@@ -160,9 +171,10 @@ describe('Transform: blockToSlate', () => {
             ends: [13],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text('hello '),
           link({url: 'https://mintter.com'}, [text('Mintter')]),
@@ -187,9 +199,10 @@ describe('Transform: blockToSlate', () => {
           },
           {type: 'strong', attributes: {}, starts: [0], ends: [1]},
         ],
+        revision: '',
       })
 
-      let output: Statement = statement({id: 'blockId'}, [
+      let output: Statement = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           link({url: 'https://hola.com'}, [text('A', {strong: true})]),
@@ -220,9 +233,10 @@ describe('Transform: blockToSlate', () => {
             ends: [11],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           link({url: 'https://mintter.com'}, [text('Mintter')]),
@@ -249,9 +263,10 @@ describe('Transform: blockToSlate', () => {
           },
           {type: 'strong', starts: [14], ends: [19], attributes: {}},
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text('hello '),
           link({url: 'https://mintter.com'}, [
@@ -282,9 +297,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
+      revision: '',
     })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
@@ -311,9 +327,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
+      revision: '',
     })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         image({url: 'https://mintter.com/image', alt: 'hello alt'}, [text('')]),
@@ -340,9 +357,10 @@ describe('Transform: blockToSlate', () => {
           ends: [18],
         },
       ],
+      revision: '',
     })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('hello block with '),
         image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
@@ -370,9 +388,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
+      revision: '',
     })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
@@ -399,9 +418,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
+      revision: '',
     })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         video({url: 'https://mintter.com/video', alt: 'hello alt'}, [text('')]),
@@ -428,9 +448,10 @@ describe('Transform: blockToSlate', () => {
           ends: [18],
         },
       ],
+      revision: '',
     })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('hello block with '),
         video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
@@ -456,9 +477,10 @@ describe('Transform: blockToSlate', () => {
             ends: [1],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           embed({url: 'mintter://doc1/block1'}, [text('')]),
@@ -488,9 +510,10 @@ describe('Transform: blockToSlate', () => {
             ends: [2],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           embed({url: 'mintter://doc1/block1'}, [text('')]),
@@ -523,9 +546,10 @@ describe('Transform: blockToSlate', () => {
             ends: [42],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text('This '),
           embed({url: 'mintter://doc1/block1'}, [text('')]),
@@ -548,9 +572,12 @@ describe('Transform: blockToSlate', () => {
         type: 'statement',
         text: '😅',
         annotations: [],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [paragraph([text('😅')])])
+      let output = statement({id: 'blockId', revision: ''}, [
+        paragraph([text('😅')]),
+      ])
       let result = blockToSlate(input as Block)
       expect(result).toEqual(output)
     })
@@ -568,9 +595,10 @@ describe('Transform: blockToSlate', () => {
             attributes: {},
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([text('😅', {emphasis: true})]),
       ])
       let result = blockToSlate(input as Block)
@@ -590,9 +618,10 @@ describe('Transform: blockToSlate', () => {
             attributes: {},
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', {emphasis: true})]),
       ])
 
@@ -605,9 +634,12 @@ describe('Transform: blockToSlate', () => {
         type: 'statement',
         text: 'hello 😅',
         annotations: [],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [paragraph([text('hello 😅')])])
+      let output = statement({id: 'blockId', revision: ''}, [
+        paragraph([text('hello 😅')]),
+      ])
       let result = blockToSlate(input as Block)
       expect(result).toEqual(output)
     })
@@ -626,9 +658,10 @@ describe('Transform: blockToSlate', () => {
           attributes: {},
         },
       ],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('Alice', {strong: true}),
         text(', Bob and '),
