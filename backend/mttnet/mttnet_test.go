@@ -18,7 +18,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var _ p2p.P2PServer = (*rpcHandler)(nil)
+var _ p2p.P2PServer = (*RPCHandler)(nil)
 
 func TestAddrs(t *testing.T) {
 	addrs := []string{

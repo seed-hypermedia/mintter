@@ -169,7 +169,7 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, lo
 	}
 	// rpc handler is how we respond to remote RPCs over libp2p.
 	{
-		handler := &rpcHandler{
+		handler := &RPCHandler{
 			Node: n,
 			Site: s,
 		}
@@ -352,7 +352,7 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	return nil
 }
 
-type rpcHandler struct {
+type RPCHandler struct {
 	*Node
 	*Site
 }

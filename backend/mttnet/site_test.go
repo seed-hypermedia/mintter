@@ -9,12 +9,20 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func TestP2PCall(t *testing.T) {
+func TestLocalPublish(t *testing.T) {
 	t.Parallel()
 	cfg := config.Default()
 	cfg.Site.Hostname = "example.com"
-	site, stopalice := makeTestPeer(t, "alice", cfg.Site)
-	defer stopalice()
+	_, stopSite := makeTestPeer(t, "alice", cfg.Site)
+	defer stopSite()
+}
+
+func TestRemotePublish(t *testing.T) {
+	t.Parallel()
+	cfg := config.Default()
+	cfg.Site.Hostname = "example.com"
+	site, stopSite := makeTestPeer(t, "alice", cfg.Site)
+	defer stopSite()
 
 	bob, stopbob := makeTestPeer(t, "bob")
 	defer stopbob()
