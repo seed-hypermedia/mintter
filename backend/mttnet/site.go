@@ -66,6 +66,7 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	if !valid {
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("token not valid (nonexisting, already redeemed or expired)")
 	}
+
 	if tokenInfo.expirationTime.Before(time.Now()) {
 		delete(srv.tokensDB, in.Token)
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("expired token")
@@ -103,29 +104,58 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 	return &emptypb.Empty{}, fmt.Errorf("Endpoint not implemented yet")
 }
 
-// PublishDocument publishes and lists the document to the public web site.
+// PublishDocument publishes and pins the document to the public web site.
 func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
 	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
 	if err != nil {
 		return &site.PublishDocumentResponse{}, err
 	}
-	srv.WebPublicationRecordDB[randStr(8)] = PublicationRecord{
-		documentID:      in.DocumentId,
-		documentVersion: in.Version,
-		path:            in.Path,
-		hostname:        srv.hostname,
+
+	var refs []docInfo
+	for _, ref := range in.ReferencedDocuments {
+		refs = append(refs, docInfo{ID: ref.DocumentId, Version: ref.Version})
+	}
+
+	srv.webPublicationRecordDB[randStr(8)] = PublicationRecord{
+		document:   docInfo{ID: in.DocumentId, Version: in.Version},
+		path:       in.Path,
+		hostname:   srv.hostname,
+		references: refs,
 	}
 	return &site.PublishDocumentResponse{}, nil
 }
 
 // UnpublishDocument un-publishes (un-lists) a given document.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
-	return &site.UnpublishDocumentResponse{}, fmt.Errorf("Endpoint not implemented yet")
+	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	if err != nil {
+		return &site.UnpublishDocumentResponse{}, err
+	}
+	for key, record := range srv.webPublicationRecordDB {
+		if record.document.ID == in.DocumentId && (in.Version == "" || in.Version == record.document.Version) {
+			delete(srv.webPublicationRecordDB, key)
+		}
+	}
+
+	return &site.UnpublishDocumentResponse{}, nil
 }
 
 // ListWebPublications lists all the published documents.
 func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPublicationsRequest) (*site.ListWebPublicationsResponse, error) {
-	return &site.ListWebPublicationsResponse{}, fmt.Errorf("Endpoint not implemented yet")
+	_, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	if err != nil {
+		return &site.ListWebPublicationsResponse{}, err
+	}
+	var publications []*site.WebPublicationRecord
+	for _, record := range srv.webPublicationRecordDB {
+		publications = append(publications, &site.WebPublicationRecord{
+			DocumentId: record.document.ID,
+			Version:    record.document.Version,
+			Hostname:   srv.hostname,
+			Path:       record.path,
+		})
+	}
+	return &site.ListWebPublicationsResponse{Publications: publications}, nil
 }
 
 func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
@@ -192,7 +222,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 
 	if requiredRole == site.Member_OWNER && acc.String() != srv.ownerID {
 		return cid.Cid{}, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
-	} else if requiredRole == site.Member_EDITOR {
+	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.ownerID {
 		role, ok := srv.Site.accountsDB[acc.String()]
 		if !ok || (ok && role != requiredRole) {
 			return cid.Cid{}, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
