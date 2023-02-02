@@ -24,6 +24,7 @@ type Config struct {
 	Identity Identity
 	Lndhub   Lndhub
 	P2P      P2P
+	Site     Site
 	Syncing  Syncing
 }
 
@@ -47,7 +48,7 @@ func Default() Config {
 			Port:           55000,
 			RelayBackoff:   time.Minute * 3,
 		},
-
+		Site: Site{InviteTokenExpirationDelay: time.Hour * 24 * 7},
 		Syncing: Syncing{
 			WarmupDuration: time.Minute,
 			Interval:       time.Minute,
@@ -120,6 +121,9 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.Var(newAddrsFlag(cfg.P2P.BootstrapPeers, &cfg.P2P.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
 	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
 
+	fs.StringVar(&cfg.Site.Hostname, "site.hostname", cfg.Site.Hostname, "Hostname of the site. If not provided then the daemon does not work as a site")
+	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
+
 	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
@@ -160,6 +164,13 @@ type Syncing struct {
 	// NoInbound disables syncing content to the remote peer from our peer.
 	// If false, then documents get synced in both directions.
 	NoInbound bool
+}
+
+// Site configuration. In case the daemon is deployed in a site.
+// For field descriptions see SetupFlags().
+type Site struct {
+	Hostname                   string
+	InviteTokenExpirationDelay time.Duration
 }
 
 // P2P configuration. For field descriptions see SetupFlags().

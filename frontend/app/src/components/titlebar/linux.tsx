@@ -68,7 +68,7 @@ export default function TitleBarLinux(props: TitleBarProps) {
 
       <Title />
 
-      <ActionButtons />
+      <ActionButtons {...props} />
 
       <div id="titlebar-window-controls">
         <MinimizeButton />

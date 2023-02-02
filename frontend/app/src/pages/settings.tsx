@@ -4,7 +4,13 @@ import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
-import {Site, useAddSite, useDeleteSite, useSiteList} from '@app/hooks'
+import {
+  useAddSite,
+  useRemoveSite,
+  useSiteInfo,
+  useSiteList,
+  useWriteSiteInfo,
+} from '@app/hooks/sites'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Icon} from '@components/icon'
 import {Separator} from '@components/separator'
@@ -15,6 +21,7 @@ import {FormEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
+import {SiteConfig, SiteInfo} from '@mintter/shared'
 
 export default function Settings({
   updateProfile = localApi.updateProfile,
@@ -316,19 +323,32 @@ function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
   )
 }
 
-function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
-  const deleteSite = useDeleteSite(siteId, {
-    onSuccess: () => onDone(),
-  })
+function SiteInfoForm({
+  info,
+  onSubmit,
+  onRemove,
+}: {
+  info: SiteInfo
+  onSubmit: (s: Partial<SiteInfo>) => void
+  onRemove: () => void
+}) {
+  const [title, setTitle] = useState(info.title)
+  const [description, setDescription] = useState(info.description)
   return (
     <>
-      <SettingsNavBack title="Web Sites" onDone={onDone} />
-      <h1>{siteId}</h1>
-      <TextField id="site-title" name="site-title" label="Public Title" />
+      <TextField
+        id="site-title"
+        name="site-title"
+        label="Public Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       <TextField
         id="site-description"
         name="site-description"
         label="Public Description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
       />
       <TextField
         textarea
@@ -344,26 +364,48 @@ function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
           justifyContent: 'space-between',
         }}
       >
-        <Button
-          color="danger"
-          size="1"
-          variant="outlined"
-          onClick={(e) => {
-            deleteSite.mutate()
-          }}
-        >
+        <Button color="danger" size="1" variant="outlined" onClick={onRemove}>
           Remove Site
         </Button>
 
-        <Button size="2" color="success">
+        <Button
+          size="2"
+          color="success"
+          onClick={() => {
+            onSubmit({title, description})
+          }}
+        >
           Save Config
         </Button>
       </Box>
     </>
   )
 }
+
+function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
+  const removeSite = useRemoveSite(siteId, {
+    onSuccess: () => onDone(),
+  })
+  const siteInfo = useSiteInfo(siteId)
+  const writeSiteInfo = useWriteSiteInfo(siteId)
+  return (
+    <>
+      <SettingsNavBack title="Web Sites" onDone={onDone} />
+      <h1>{siteId}</h1>
+      {siteInfo?.data ? (
+        <SiteInfoForm
+          info={siteInfo.data}
+          onSubmit={(info) => writeSiteInfo.mutate(info)}
+          onRemove={() => removeSite.mutate()}
+        />
+      ) : null}
+    </>
+  )
+}
 function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
-  const addSite = useAddSite()
+  const addSite = useAddSite({
+    onSuccess: (result, hostname) => onDone(hostname),
+  })
   const [siteUrl, setSiteUrl] = useState<string | null>(null)
   const hostRef = useRef<HTMLInputElement>(null)
 
@@ -373,28 +415,36 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
       hostRef.current.focus()
     }
   }, [])
-
   return (
     <>
       {addSite.isLoading ? <div>loading...</div> : null}
       <SettingsNavBack title="Cancel" onDone={() => onDone(null)} />
       <h1>Add Site</h1>
       <p>Follow the self-hosting guide and copy the invite URL:</p>
-      <TextField
-        ref={hostRef}
-        id="host"
-        name="host"
-        label="site domain or invite url"
-        onChange={(e) => setSiteUrl(e.target.value)}
-        value={siteUrl ?? undefined}
-      />
-      <Button
-        onClick={() => addSite.mutate(siteUrl, {onSuccess: onDone})}
-        size="2"
-        color="success"
+      <Box
+        as={'form'}
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (siteUrl) addSite.mutate(siteUrl)
+        }}
+        css={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1em',
+        }}
       >
-        Connect + Add Site
-      </Button>
+        <TextField
+          ref={hostRef}
+          id="host"
+          name="host"
+          label="site domain or invite url"
+          onChange={(e) => setSiteUrl(e.target.value)}
+          value={siteUrl ?? undefined}
+        />
+        <Button disabled={!siteUrl} size="2" color="success">
+          Connect + Add Site
+        </Button>
+      </Box>
     </>
   )
 }
@@ -440,7 +490,7 @@ function EmptySiteList() {
   return <div>no sites yet</div>
 }
 
-function SiteItem({site, onSelect}: {site: Site; onSelect: () => void}) {
+function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
   return (
     <Button className="settings-list-item" onClick={onSelect}>
       {site.hostname}
@@ -459,7 +509,7 @@ function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
           key={site.hostname}
           site={site}
           onSelect={() => {
-            onSelectSite(site.id)
+            onSelectSite(site.hostname)
           }}
         />
       ))}

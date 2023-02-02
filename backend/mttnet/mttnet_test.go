@@ -37,7 +37,7 @@ func TestAddrs(t *testing.T) {
 	require.Equal(t, addrs, AddrInfoToStrings(info))
 }
 
-func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
+func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, context.CancelFunc) {
 	u := coretest.NewTester(name)
 
 	db := makeTestSQLite(t)
@@ -56,7 +56,7 @@ func makeTestPeer(t *testing.T, name string) (*Node, context.CancelFunc) {
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
 
-	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
+	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name), siteCfg...)
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)

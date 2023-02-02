@@ -56,17 +56,15 @@ Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
     account,
     path,
     setLocation = cy.stub(),
-    mainMachineOptions,
     ...mountOptions
   } = options
   let client = customClient ?? createTestQueryClient({account}).client
+
   globalStyles()
 
   const wrapped = (
     <Router hook={() => [path ?? '/', setLocation]}>
-      <TestProvider client={client} mainMachineOptions={mainMachineOptions}>
-        {component}
-      </TestProvider>
+      <TestProvider client={client}>{component}</TestProvider>
     </Router>
   )
   // const wrapped = <div>{component}</div>
