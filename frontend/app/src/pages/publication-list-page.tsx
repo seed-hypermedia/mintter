@@ -9,7 +9,6 @@ import {
   useAuthor,
   usePublicationList,
 } from '@app/hooks'
-import {useMain} from '@app/main-context'
 import {formattedDate} from '@app/utils/get-format-date'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
@@ -24,11 +23,11 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import Highlighter from 'react-highlight-words'
 import toast from 'react-hot-toast'
 import '../styles/file-list.scss'
+import {openNewDraft, openPublication} from '@app/utils/navigation'
 
 export default PublicationList
 
 function PublicationList() {
-  let mainService = useMain()
   let {data, isInitialLoading} = usePublicationList()
 
   return (
@@ -49,8 +48,7 @@ function PublicationList() {
           <EmptyList
             description="You have no Publications yet."
             action={() => {
-              // TODO: create a new draft
-              mainService.send('COMMIT.NEW.DRAFT')
+              openNewDraft()
             }}
           />
         )}
@@ -71,7 +69,6 @@ export function PublicationListItem({
   const client = useQueryClient()
   const title = publication.document?.title || 'Untitled Document'
   const {data: author} = useAuthor(publication.document?.author)
-  const mainService = useMain()
 
   const deleteService = useInterpret(
     () =>
@@ -180,10 +177,7 @@ export function PublicationListItem({
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() =>
-                  mainService.send({
-                    type: 'COMMIT.OPEN.WINDOW',
-                    path: `/p/${publication.document.id}/${publication.version}`,
-                  })
+                  openPublication(publication.document.id, publication.version)
                 }
               >
                 <Icon name="OpenInNewWindow" />

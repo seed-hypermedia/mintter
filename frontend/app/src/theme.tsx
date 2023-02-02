@@ -44,10 +44,10 @@ export var themeMachine = createMachine(
       current: 'light',
     },
     initial: 'loading',
-    invoke: {
-      src: 'colorShemeListener',
-      id: 'colorShemeListener',
-    },
+    // invoke: {
+    //   src: 'colorShemeListener',
+    //   id: 'colorShemeListener',
+    // },
     states: {
       loading: {
         invoke: {

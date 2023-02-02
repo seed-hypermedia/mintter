@@ -1,5 +1,3 @@
-import {DraftActor} from '@app/draft-machine'
-import {useMain} from '@app/main-context'
 import {useState} from 'react'
 import {useRoute} from 'wouter'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
@@ -8,11 +6,12 @@ import {useSelector} from '@xstate/react'
 import {Icon} from '@components/icon'
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
 import {PublicationActor} from '@app/publication-machine'
-import {useDocPublications, useSiteList} from '@app/hooks'
+import {useDocPublications, useSiteList} from '@app/hooks/sites'
 import {Button} from '@components/button'
 import {styled} from '@app/stitches.config'
 import {AccessURLRow} from '@components/url'
 import {usePublicationDialog} from './publication-dialog'
+import {MainActor} from '@app/hooks/main-actor'
 
 function MintterURLRow({doc}: {doc: PublicationActor}) {
   const {title, url} = useSelector(doc, (state) => {
@@ -38,19 +37,19 @@ function PublishedURLs({docId}: {docId: string}) {
   )
 }
 
-function PublishButtons({onPublish}: {onPublish: (siteId: string) => void}) {
+function PublishButtons({onPublish}: {onPublish: (hostname: string) => void}) {
   const sites = useSiteList()
   return (
     <>
       {sites.data?.map((site) => {
         return (
           <Button
-            key={site.id}
+            key={site.hostname}
             onClick={() => {
-              onPublish(site.id)
+              onPublish(site.hostname)
             }}
           >
-            {site.id}
+            {site.hostname}
             <ButtonIcon>
               <Icon name="ExternalLink" />
             </ButtonIcon>
@@ -64,20 +63,16 @@ const ButtonIcon = styled('span', {
   marginHorizontal: 12,
 })
 
-export function PublishShareButton() {
+export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const [isPublic, pubParams] = useRoute('/p/:id/:version')
-  const [isPublicB, pubParamsB] = useRoute('/p/:id/:version/:block')
-  const [draft, draftParams] = useRoute('/d/:id/:tag?')
-  const [isOpen, setIsOpen] = useState(false)
-  const mainService = useMain()
-  const docActor = useSelector(mainService, (state) => state.context.current)
-  const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
-  const publicationDialog = usePublicationDialog(docId)
+  const [isPublicB, pubParamsB] = useRoute('/p/:id/:version/:block?')
+  const [isDraft, draftParams] = useRoute('/d/:id')
 
-  // const isSaving = useSelector(docActor, (state) =>
-  //   state.matches('DRAFT.PUBLISH')
-  // )
-  if (!draft && !isPublic && !isPublicB) return null
+  const [isOpen, setIsOpen] = useState(false)
+  const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
+  const publicationDialog = usePublicationDialog(mainActor)
+
+  if (!isDraft && !isPublic && !isPublicB) return null
   return (
     <>
       <PopoverPrimitive.Root
@@ -94,27 +89,23 @@ export function PublishShareButton() {
           <button
             onClick={(e) => {
               e.preventDefault()
+              console.log('PUBLISH??', mainActor)
               if (isOpen) {
                 setIsOpen(false)
                 return
               }
-              const docActor = mainService.getSnapshot().context.current as
-                | DraftActor
-                | PublicationActor
-              if (docActor.id === 'publishDraft' || docActor.id === 'editor') {
-                ;(docActor as DraftActor).send('DRAFT.PUBLISH')
-                setIsOpen(true)
-              } else if (docActor.id === 'publication-machine') {
-                setIsOpen(true)
+
+              if (mainActor.type == 'draft') {
+                mainActor.actor.send('DRAFT.PUBLISH')
               }
+              setIsOpen(true)
             }}
             className={`titlebar-button success outlined ${
               isOpen ? 'active' : ''
             }`}
             data-testid="button-publish"
-            // disabled={isSaving}
           >
-            {docActor?.id === 'editor' ? (
+            {mainActor.actor?.id === 'editor' ? (
               draftParams?.tag === 'new' ? (
                 'Share'
               ) : (
@@ -149,7 +140,7 @@ export function PublishShareButton() {
               }}
             >
               <Subheading>Public on the Web:</Subheading>
-              <MintterURLRow doc={docActor} />
+              <MintterURLRow doc={mainActor.actor} />
               <AccessURLRow // getridofme after you fix PublishedURLs
                 title="opinion.ethosfera.org/p/comingsoon"
                 url="https://opinion.ethosfera.org/p/comingsoon"
@@ -157,9 +148,9 @@ export function PublishShareButton() {
               {docId && <PublishedURLs docId={docId} />}
               <Subheading>Publish to:</Subheading>
               <PublishButtons
-                onPublish={(siteId) => {
+                onPublish={(hostname) => {
                   setIsOpen(false)
-                  publicationDialog.open(siteId)
+                  publicationDialog.open(hostname)
                 }}
               />
             </Box>

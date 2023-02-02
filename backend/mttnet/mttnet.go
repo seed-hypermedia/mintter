@@ -8,6 +8,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/db/sqliteds"
+	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/cleanup"
@@ -99,9 +100,23 @@ type Node struct {
 	ctx context.Context // will be set after calling Start()
 }
 
+type tokenInfo struct {
+	role           site.Member_Role
+	expirationTime time.Time
+}
+
+// Site is a hosted site.
+type Site struct {
+	hostname                   string
+	InviteTokenExpirationDelay time.Duration
+	// Mockup DBs remove when finished with the mockup
+	tokensDB   map[string]tokenInfo        // tokens -> Role mapping and expiration tipe
+	accountsDB map[string]site.Member_Role // accountIDs -> Role mapping
+}
+
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
 // for when the node is ready to use.
-func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, log *zap.Logger) (*Node, error) {
+func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, log *zap.Logger, siteCfg ...config.Site) (*Node, error) {
 	var clean cleanup.Stack
 
 	host, closeHost, err := newLibp2p(cfg, me.DeviceKey().Wrapped(), vcs.DB())
@@ -140,14 +155,27 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, lo
 		quit:            &clean,
 		ready:           make(chan struct{}),
 	}
-
+	hostname := ""
+	expirationDelay := time.Hour * 24 * 7 // A week
+	if len(siteCfg) == 1 {
+		hostname = siteCfg[0].Hostname
+		expirationDelay = siteCfg[0].InviteTokenExpirationDelay
+	}
+	s := &Site{
+		hostname:                   hostname,
+		InviteTokenExpirationDelay: expirationDelay,
+		tokensDB:                   map[string]tokenInfo{},
+		accountsDB:                 map[string]site.Member_Role{},
+	}
 	// rpc handler is how we respond to remote RPCs over libp2p.
 	{
 		handler := &rpcHandler{
 			Node: n,
+			Site: s,
 		}
 
 		p2p.RegisterP2PServer(n.grpc, handler)
+		site.RegisterWebSiteServer(n.grpc, handler)
 	}
 
 	return n, nil
@@ -326,6 +354,7 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 
 type rpcHandler struct {
 	*Node
+	*Site
 }
 
 // AddrInfoToStrings returns address as string.
@@ -407,7 +436,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 			libp2p.EnableHolePunching(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
 				autorelay.WithBootDelay(time.Second*10),
-				autorelay.WithNumRelays(2), 
+				autorelay.WithNumRelays(2),
 				autorelay.WithMinCandidates(2),
 				autorelay.WithBackoff(cfg.RelayBackoff)),
 		)

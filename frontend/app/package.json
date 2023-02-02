@@ -17,11 +17,11 @@
     "typegen": "xstate typegen \"src/**/*.(ts|tsx)\""
   },
   "dependencies": {
-    "@bufbuild/connect-web": "^0.6.0",
-    "@bufbuild/protobuf": "^1.0.0",
+    "@bufbuild/connect-web": "0.6.0",
+    "@bufbuild/protobuf": "1.0.0",
     "@floating-ui/react-dom": "1.0.1",
     "@floating-ui/react-dom-interactions": "0.13.3",
-    "@juggle/resize-observer": "^3.4.0",
+    "@juggle/resize-observer": "3.4.0",
     "@mintter/shared": "workspace:*",
     "@radix-ui/colors": "0.1.8",
     "@radix-ui/react-accessible-icon": "1.0.1",
@@ -44,7 +44,7 @@
     "@stitches/react": "1.2.8",
     "@tanstack/react-query": "4.19.1",
     "@tauri-apps/api": "1.2.0",
-    "@xstate/react": "3.0.1",
+    "@xstate/react": "3.1.1",
     "allotment": "1.17.1",
     "autosize": "5.0.2",
     "browser-headers": "0.4.1",
@@ -83,10 +83,10 @@
     "rehype-stringify": "9.0.3",
     "shiki": "0.10.1",
     "show-keys": "1.1.2",
-    "slate": "^0.87.0",
-    "slate-history": "^0.86.0",
-    "slate-hyperscript": "^0.77.0",
-    "slate-react": "^0.87.0",
+    "slate": "0.87.0",
+    "slate-history": "0.86.0",
+    "slate-hyperscript": "0.77.0",
+    "slate-react": "0.87.0",
     "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#b58475bbc410fa78eb69276c62d0b64c91c07914",
     "tauri-plugin-sentry-api": "github:JonasKruckenberg/sentry-tauri#df123beb03104b6068b3bdd6fc509e3158f7dd30",
     "tauri-plugin-store-api": "github:tauri-apps/tauri-plugin-store#9bd993aa67766596638bbfd91e79a1bf8f632014",
@@ -97,7 +97,7 @@
     "unist-util-visit": "4.1.1",
     "unist-util-visit-parents": "5.1.1",
     "wouter": "2.9.0",
-    "xstate": "4.35.1"
+    "xstate": "4.35.4"
   },
   "devDependencies": {
     "@babel/core": "7.20.7",

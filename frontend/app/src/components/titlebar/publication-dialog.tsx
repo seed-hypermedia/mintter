@@ -1,10 +1,13 @@
-import {useMain} from '@app/main-context'
+import {MainActor} from '@app/hooks/main-actor'
+import {useSitePublish} from '@app/hooks/sites'
+import {PublicationActor} from '@app/publication-machine'
 import {styled} from '@app/stitches.config'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {TextField} from '@components/text-field'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'
+import {toast} from 'react-hot-toast'
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
@@ -13,7 +16,7 @@ function writePathState(s: string) {
   return s.replace(/[^a-z0-9]/gi, '_')
 }
 function readPathState(s: string) {
-  return s.replace(/_+$/, '')
+  return s.replace(/_+$/, '').toLocaleLowerCase()
 }
 const Heading = styled('h2', {
   margin: 0,
@@ -21,24 +24,23 @@ const Heading = styled('h2', {
 })
 function PublishDialogForm({
   siteId,
-  docId,
   onDone,
+  publicationActor,
 }: {
   siteId: string
-  docId?: string
   onDone?: () => void
+  publicationActor: PublicationActor
 }) {
-  const main = useMain()
+  const publish = useSitePublish()
+
   const init = useMemo(() => {
-    const doc = main.getSnapshot().context.current
-    const docState = doc?.getSnapshot()
-    const title = docState?.context.title
+    const docState = publicationActor.getSnapshot()
+    const title = docState.context.title
     const path = title ? writePathState(title) : 'untitled'
 
-    return {path, docId: docState?.context.documentId}
+    return {path, docId: docState.context.documentId}
   }, [])
   const [path, setPath] = useState<string>(init.path)
-
   return (
     <>
       <Heading>Publish to {siteId}</Heading>
@@ -56,8 +58,21 @@ function PublishDialogForm({
         https://{siteId}/{path === '' ? `p/${init.docId}` : readPathState(path)}
       </URLPreview>
       <Button
+        disabled={publish.isLoading}
         onClick={() => {
-          onDone?.()
+          publish
+            .mutateAsync({
+              hostname: siteId,
+              documentId: init.docId,
+              path: readPathState(path),
+            })
+            .then(() => {
+              onDone?.()
+            })
+            .catch((e) => {
+              console.error(e)
+              toast('Error publishing document', {})
+            })
         }}
       >
         Publish Document
@@ -65,28 +80,28 @@ function PublishDialogForm({
     </>
   )
 }
-export function usePublicationDialog(docId?: string) {
-  const [openSiteId, setOpenSiteId] = useState<null | string>(null)
-  function open(siteId: string) {
-    setOpenSiteId(siteId)
+export function usePublicationDialog(mainActor?: MainActor) {
+  const [openSiteHostname, setOpenSiteHostname] = useState<null | string>(null)
+  function open(hostname: string) {
+    setOpenSiteHostname(hostname)
   }
   return {
     content: (
       <DialogPrimitive.Root
-        open={!!openSiteId}
+        open={!!openSiteHostname}
         onOpenChange={(isOpen) => {
-          if (!isOpen) setOpenSiteId(null)
+          if (!isOpen) setOpenSiteHostname(null)
         }}
       >
         <DialogPrimitive.Portal>
           <StyledOverlay />
           <StyledContent>
-            {openSiteId && (
+            {openSiteHostname && mainActor?.type === 'publication' && (
               <PublishDialogForm
-                docId={docId}
-                siteId={openSiteId}
+                siteId={openSiteHostname}
+                publicationActor={mainActor.actor}
                 onDone={() => {
-                  setOpenSiteId(null)
+                  setOpenSiteHostname(null)
                 }}
               />
             )}

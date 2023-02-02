@@ -6,10 +6,9 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
-import {useMain} from '@app/main-context'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {createPublicationMachine} from '@app/publication-machine'
+import {PublicationActor} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
@@ -21,7 +20,7 @@ import {ScrollArea} from '@components/scroll-area'
 import {Tooltip} from '@components/tooltip'
 import {useQueryClient} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
-import {useInterpret, useMachine} from '@xstate/react'
+import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useEffect, useMemo, useRef, useState} from 'react'
@@ -31,11 +30,11 @@ import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
 
-export default function PublicationWrapper() {
-  let client = useQueryClient()
-  let mainService = useMain()
-
-  let [, setLocation] = useLocation()
+export default function PublicationPage({
+  publicationActor,
+}: {
+  publicationActor: PublicationActor
+}) {
   let [, params] = useRoute('/p/:id/:version/:block?')
 
   let editor = useMemo(
@@ -69,25 +68,27 @@ export default function PublicationWrapper() {
 
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
 
-  let [state, send, service] = useMachine(
-    () =>
-      createPublicationMachine({
-        client,
-        editor,
-        documentId: params?.id,
-        version: params?.version,
-      }),
-    {
-      actions: {
-        sendActorToParent: () => {
-          mainService.send({type: 'COMMIT.CURRENT.PUBLICATION', service})
-        },
-        onEditSuccess: (_, event) => {
-          setLocation(`/d/${event.data.id}`)
-        },
-      },
-    },
-  )
+  let [state, send] = useActor(publicationActor)
+
+  //  useMachine(
+  //   () =>
+  //     createPublicationMachine({
+  //       client,
+  //       editor,
+  //       documentId: params?.id,
+  //       version: params?.version,
+  //     }),
+  //   {
+  //     actions: {
+  //       sendActorToParent: () => {
+  //         mainService.send({type: 'COMMIT.CURRENT.PUBLICATION', service})
+  //       },
+  //       onEditSuccess: (_, event) => {
+  //         setLocation(`/d/${event.data.id}`)
+  //       },
+  //     },
+  //   },
+  // )
 
   if (state.matches('errored')) {
     return (

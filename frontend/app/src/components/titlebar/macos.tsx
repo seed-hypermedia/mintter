@@ -22,13 +22,13 @@ export default function TitleBarMacos(props: TitleBarProps) {
       data-tauri-drag-region
     >
       <div className="titlebar-section">
-        <NavMenu />
+        <NavMenu mainActor={props.mainActor} />
         <NavigationButtons />
       </div>
 
       <Title />
 
-      <ActionButtons />
+      <ActionButtons {...props} />
     </header>
   )
 }

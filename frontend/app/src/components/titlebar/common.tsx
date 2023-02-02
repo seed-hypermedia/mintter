@@ -1,27 +1,29 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
-import {useMain} from '@app/main-context'
+import {MainActor} from '@app/hooks/main-actor'
+import {useSiteList} from '@app/hooks/sites'
 import {
   PublicationActor,
   PublicationMachineContext,
 } from '@app/publication-machine'
+import {openWindow} from '@app/utils/open-window'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
+import {createDraft} from '@mintter/shared'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {Route, Switch, useLocation, useRoute} from 'wouter'
+import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
 
-export function ActionButtons() {
-  const mainService = useMain()
-  const current = useSelector(mainService, (state) => state.context.current)
-
+export function ActionButtons(props: TitleBarProps) {
+  let [, setLocation] = useLocation()
   function onCopy() {
-    if (current) {
-      let context = current.getSnapshot().context
+    if (props.mainActor?.actor) {
+      let context = props.mainActor.actor.getSnapshot().context
       let reference = `${MINTTER_LINK_PREFIX}${context.documentId}/${
         (context as PublicationMachineContext).version
       }`
@@ -49,18 +51,29 @@ export function ActionButtons() {
       </Switch>
 
       <Route path="/p/:id/:version/:block?">
-        {/* {current && <WriteDropdown fileRef={current as PublicationActor} />} */}
-        {current && <WriteActions fileRef={current as PublicationActor} />}
+        {props.mainActor?.type === 'publication' && (
+          <WriteActions publicationActor={props.mainActor.actor} />
+        )}
       </Route>
 
-      <PublishShareButton />
+      {props.mainActor ? (
+        <PublishShareButton mainActor={props.mainActor} />
+      ) : null}
 
       <div className="button-group">
         <button
           className="titlebar-button"
-          onClick={() => {
-            // create new draft and open a new window
-            mainService.send({type: 'COMMIT.OPEN.WINDOW'})
+          onClick={(e) => {
+            e.preventDefault()
+
+            createDraft().then((res) => {
+              let path = `/d/${res.id}`
+              if (e.shiftKey) {
+                setLocation(path)
+              } else {
+                openWindow(path)
+              }
+            })
           }}
         >
           <Icon name="Add" />
@@ -97,7 +110,30 @@ export function NavigationButtons({push = history}: {push?: Push}) {
   )
 }
 
-export function NavMenu() {
+export function SitesNavDropdownItems() {
+  const sites = useSiteList()
+
+  let [, setLocation] = useLocation()
+
+  if (!sites.data) return null
+  if (sites.data.length == 0) return null
+  return (
+    <>
+      <Dropdown.Separator />
+      {sites.data.map((site) => (
+        <Dropdown.Item
+          key={site.hostname}
+          onSelect={() => setLocation(`/sites/${site.hostname}`)}
+        >
+          <Icon name="Globe" />
+          <span>{site.hostname}</span>
+        </Dropdown.Item>
+      ))}
+    </>
+  )
+}
+
+export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   let [location, setLocation] = useLocation()
 
   return (
@@ -129,6 +165,8 @@ export function NavMenu() {
             <Icon name="PencilAdd" />
             <span>Drafts</span>
           </Dropdown.Item>
+          <SitesNavDropdownItems />
+          <Dropdown.Separator />
 
           <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
             Quick Switcher
@@ -140,66 +178,27 @@ export function NavMenu() {
   )
 }
 
-function WriteDropdown({fileRef}: {fileRef: PublicationActor}) {
-  let mainService = useMain()
-  let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
-  let [, params] = useRoute('/p/:id/:version/:block?')
-
-  return (
-    <Dropdown.Root>
-      <Dropdown.Trigger asChild>
-        <button className="titlebar-button dropdown">
-          <Icon name="CaretDown" />
-        </button>
-      </Dropdown.Trigger>
-      <Dropdown.Portal>
-        <Dropdown.Content>
-          <Dropdown.Item
-            onSelect={() => mainService.send('COMMIT.OPEN.WINDOW')}
-          >
-            <Icon name="File" />
-            <span>New Document</span>
-          </Dropdown.Item>
-
-          {canUpdate ? (
-            <Dropdown.Item
-              onSelect={() => {
-                fileRef.send({type: 'PUBLICATION.EDIT', params})
-              }}
-            >
-              <Icon name="Pencil" />
-              <span>Edit</span>
-            </Dropdown.Item>
-          ) : null}
-          {/* <TippingModal fileRef={fileRef as PublicationRef} /> */}
-          {/* )} */}
-
-          <Dropdown.Item
-            onSelect={() => {
-              console.log('IMPLEMENT ME: Review document')
-            }}
-          >
-            <Icon name="PencilAdd" />
-            <span>Review</span>
-          </Dropdown.Item>
-        </Dropdown.Content>
-      </Dropdown.Portal>
-    </Dropdown.Root>
+function WriteActions({
+  publicationActor,
+}: {
+  publicationActor: PublicationActor
+}) {
+  let canUpdate = useSelector(
+    publicationActor,
+    (state) => state.context.canUpdate,
   )
-}
-
-function WriteActions({fileRef}: {fileRef: PublicationActor}) {
-  let canUpdate = useSelector(fileRef, (state) => state.context.canUpdate)
-  let errorMessage = useSelector(fileRef, (state) => state.context.errorMessage)
-  let [, params] = useRoute('/p/:id/:version/:block?')
+  let errorMessage = useSelector(
+    publicationActor,
+    (state) => state.context.errorMessage,
+  )
   return (
     <>
-      {canUpdate && fileRef && (
+      {canUpdate && publicationActor && (
         <div className="button-group">
           <button
             className="titlebar-button"
             onClick={() => {
-              fileRef.send({type: 'PUBLICATION.EDIT', params})
+              publicationActor.send({type: 'PUBLICATION.EDIT'})
             }}
           >
             <span style={{marginInline: '0.3em'}}>Edit</span>

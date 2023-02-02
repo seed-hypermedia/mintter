@@ -2,9 +2,9 @@ import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
-import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {openPublication} from '@app/utils/navigation'
 import {
   blockNodeToSlate,
   Embed as EmbedType,
@@ -78,7 +78,6 @@ function Embed({
 }: RenderElementProps & {
   mode: EditorMode
 }) {
-  const mainService = useMain()
   const mouseService = useMouse()
   const [, setLocation] = useLocation()
   let [match, params] = useRoute('/p/:id/:version/:block')
@@ -100,10 +99,7 @@ function Embed({
       if (match && params?.id == docId && params?.version == version) {
         setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
       } else {
-        mainService.send({
-          type: 'COMMIT.OPEN.WINDOW',
-          path: `/p/${docId}/${version}/${blockId}`,
-        })
+        openPublication(docId, version, blockId)
       }
     }
   }

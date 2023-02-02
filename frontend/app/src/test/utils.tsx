@@ -203,17 +203,11 @@ export type CustomMountOptions = {
   path?: string
   setLocation?: () => void
   client?: QueryClient
-  mainMachineOptions?: MachineOptionsFrom<
-    ReturnType<typeof createMainPageService>
-  >
 }
 
 export type TestProviderProps = CustomMountOptions & {
   children: React.ReactNode
   client: QueryClient
-  mainMachineOptions?: MachineOptionsFrom<
-    ReturnType<typeof createMainPageService>
-  >
 }
 
 export function TestPublicationProvider({children}) {
