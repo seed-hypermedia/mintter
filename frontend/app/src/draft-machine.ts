@@ -88,6 +88,7 @@ export function createDraftMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdAMzDQGMALFAOygGIINywcKA3DAawYOJIBEsBDPGgDaABgC6iUAAcMsdCjqSQAD0QBmAEwacAVgDsGgBwaAnABY9ZtSb0A2ADQgAnoj2Wca22f0bNO24aGJgC+wY6omLicpBTUYFhY2DhSADZ8aHjYALb4hKS8AsLiSjJyaArkSqoImto+xuaW1naOLggAjCI6IrpqeiImJiK2g+3thqHhEOhJEbGMEClgVNwASgCCAGIAKjgAqgAK3OvbAKKiEkggpfKKV9WdhmY4g2aGah8DZhq2eq2IOneHk6gM6GmGdg0k3A00iODmlAWSxWGx2OAOewAQgAZACSAGUABIXEqyW6Ve6IdomQE4H5qTqWDTtNQiDQ6f4IMy2do4YwiNQ6dmCrqGFnQiKzWHzCBgABGGAAruQiPNSHxKJAqCSrjdyndQA8AjpgWoxXZ9CJ2pZOXoTNoTO0NG5vG4RN8QmEYTNcAioDhZQrlarEShFstlLA0OkGIV4gAKboiACUVElvuliMDSpV8zDSx10jJ+ophsQ7x63SGQTsv387U59u0I3t-lsmhpbwlsKl8iz8pzIeoay2u0OxzOheuxYqVSpajMvOdlnaZm8b0XDmcrh0Js6vzM5ntnj0Om7Pvhmf9sD4TFiNDoDGYbAYN6YYAKginetnlIQ-N0AYRBrWw6x5Tl-BMF4hmdLQ9EMU97XPOE-RwN973iRJcFSdJMiwHI3w-fgv2KXUZwNFRy06QDqxsUDT3A7cuX6HB+h0J0tFZD52h0MxkN7cpEXQygUVHfYjhOc5SKLMpfzLf9WRo4C6LAhsmPgnpF2XV1+g9fiMz7ahVlOfFTl2ABhQl1gAOQAcRM79yNLSiOnZE1nRMQUdBMWwBh8Tl2l+HBfPYnkfmNHyzy9dNkkVOUUhQWAyBE2h6EYcgWHYWL4sSnhiKKS4ZPJOdXPc3d3WAryRFPMwAr6XljF8IwWSePR9OyhKkowhIkhwjJsg63LPwK0lZIo6oPkMVj2StQFPCeCwAu6Z52VAx1-HdAJ2sw7AtWM7ZVgATUcsbnIeDQAqhaKeywKhTm4XFtlxOyTuKv8AFoNEXXQvFsXcvpMII+kMTkxSg90zXtIYnTcNroXIDBZXgK4YuiZKoFGt75O+AK2T0HBvAZEUjF3GxtqvJEwExksSs6Vc+R+Gw9FZfwhT+JjDD+4LPPbb47DXcZycMgMB2DNUSA1GAIGpuSXJ4oLSabP7DG85nbU8gmYcsfRdNMIXBP9bMxdDcMZfGql4OecZT2qq0nU0NS2jtNRNe0nX3T166L1Qo3c0oM2zqpUwXe01d1yeQLOVA2wcBZEQIWsarHn1+ZhIxsjTpK3ipu8cYBh80CBQujn3AZNdfhse2jBT-2M6xlykwJ9jDHz6OBR4zkPhdywBVscE7U5-R2qkOLOvRgOSsWpiePdTXD3BPoLTJr2UJ6rBIAnv8dE8DwxU0CubDZJbFKGIY3F8x1PamC88D4FAlmluuab-HGmILgmW2Zs1mjNfTN-k96nhOTvSdM8HybxrDWmGGyWwoRQhAA */
   return createMachine(
     {
+      predictableActionArguments: true,
       context: {
         documentId,
         draft: null,
@@ -104,7 +105,6 @@ export function createDraftMachine({
         events: {} as DraftMachineEvent,
         services: {} as DraftMachineServices,
       },
-      predictableActionArguments: true,
       entry: 'sendActorToParent',
       on: {
         'EDITING.START': {

@@ -31,10 +31,10 @@ type MouseContext = {
 
 export var mouseMachine = createMachine(
   {
+    predictableActionArguments: true,
     context: {visibleBounds: [], visibleBlocks: [], highlightRef: ''},
     tsTypes: {} as import('./mouse-machine.typegen').Typegen0,
     schema: {context: {} as MouseContext, events: {} as MouseEvent},
-    predictableActionArguments: true,
     invoke: [
       {
         src: 'boundsListener',
