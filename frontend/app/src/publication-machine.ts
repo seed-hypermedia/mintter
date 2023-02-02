@@ -8,8 +8,12 @@ import {
   getAccount,
   getInfo,
   getPublication,
+  group,
   GroupingContent,
+  paragraph,
   Publication,
+  statement,
+  text,
 } from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
@@ -245,8 +249,18 @@ export function createPublicationMachine({
               } else {
                 if (publication.document?.children.length == 0) {
                   sendBack({
-                    type: 'PUBLICATION.REPORT.ERROR',
-                    errorMessage: 'Content is Empty',
+                    type: 'PUBLICATION.REPORT.SUCCESS',
+                    publication: Object.assign(publication, {
+                      document: {
+                        ...publication.document,
+                        content: [
+                          group({data: {parent: ''}}, [
+                            statement({id: ''}, [paragraph([text('')])]),
+                          ]),
+                        ],
+                      },
+                    }),
+                    canUpdate: info.accountId == publication.document.author,
                   })
                 } else {
                   sendBack({
