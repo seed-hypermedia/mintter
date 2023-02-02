@@ -243,19 +243,6 @@ export function createPublicationMachine({
               })
             })
         },
-        // fetchConversations: (context) => (sendBack) => {
-        //   client.fetchQuery({
-        //     queryKey: [
-        //       queryKeys.GET_PUBLICATION_CONVERSATIONS,
-        //       context.documentId,
-        //       context.version,
-        //     ],
-        //     // queryFn: () => getConversationsList()
-        //     queryFn: async () => {
-        //       // TODO: add conversations fetch
-        //     },
-        //   })
-        // },
       },
       actions: {
         assignTitle: assign({
