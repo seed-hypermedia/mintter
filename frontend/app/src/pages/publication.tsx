@@ -106,6 +106,7 @@ export default function PublicationWrapper() {
         <BlockHighLighter>
           <div className="page-wrapper publication-wrapper">
             <Allotment
+              defaultSizes={[100]}
               vertical={resizablePanelState.context.vertical}
               key={resizablePanelState.context.vertical}
               onChange={(values) => panelSend({type: 'RESIZE', values})}
@@ -187,7 +188,7 @@ export default function PublicationWrapper() {
               </Allotment.Pane>
               {resizablePanelState.context.visible &&
                 !!state.context.publication && (
-                  <Allotment.Pane preferredSize={'35%'}>
+                  <Allotment.Pane preferredSize="35%">
                     <section className="discussion-section">
                       <ScrollArea
                         onScroll={() => mouseService.send('DISABLE.SCROLL')}
