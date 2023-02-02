@@ -76,13 +76,23 @@ func DefaultRelays() []peer.AddrInfo {
 	}
 }
 
+// PublicationRecord holds the information of a published document (record) on a site
+type PublicationRecord struct {
+	documentID      string
+	documentVersion string
+	path            string
+	hostname        string
+}
+
 // Site is a hosted site.
 type Site struct {
 	hostname                   string
 	InviteTokenExpirationDelay time.Duration
+	ownerID                    string
 	// Mockup DBs remove when finished with the mockup
-	tokensDB   map[string]tokenInfo        // tokens -> Role mapping and expiration tipe
-	accountsDB map[string]site.Member_Role // accountIDs -> Role mapping
+	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration tipe
+	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
+	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
 // Server holds the p2p functionality to be accessed via gRPC.
@@ -130,17 +140,21 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		InviteTokenExpirationDelay: expirationDelay,
 		tokensDB:                   map[string]tokenInfo{},
 		accountsDB:                 map[string]site.Member_Role{},
+		ownerID:                    siteCfg.OwnerID,
 	}, Node: node}
 
 	go func() {
-		node, err := node.Await(ctx)
+		n, err := node.Await(ctx)
 		if err == nil {
 			// this is how we respond to remote RPCs over libp2p.
-			p2p.RegisterP2PServer(node.grpc, srv)
-			site.RegisterWebSiteServer(node.grpc, srv)
+			p2p.RegisterP2PServer(n.grpc, srv)
+			site.RegisterWebSiteServer(n.grpc, srv)
+			if srv.ownerID == "" {
+				srv.ownerID = n.me.AccountID().String()
+			}
 		}
 		// Indicate we can now serve the already registered endpoints.
-		close(node.registered)
+		close(n.registered)
 
 	}()
 	return srv
@@ -297,7 +311,6 @@ func (n *Node) Start(ctx context.Context) (err error) {
 	}
 
 	// Indicate that node is ready to work with.
-	//<-n.registered
 	close(n.ready)
 
 	werr := g.Wait()

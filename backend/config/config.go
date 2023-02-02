@@ -48,7 +48,9 @@ func Default() Config {
 			Port:           55000,
 			RelayBackoff:   time.Minute * 3,
 		},
-		Site: Site{InviteTokenExpirationDelay: time.Hour * 24 * 7},
+		Site: Site{
+			InviteTokenExpirationDelay: time.Hour * 24 * 7,
+		},
 		Syncing: Syncing{
 			WarmupDuration: time.Minute,
 			Interval:       time.Minute,
@@ -122,6 +124,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
 
 	fs.StringVar(&cfg.Site.Hostname, "site.hostname", cfg.Site.Hostname, "Hostname of the site. If not provided then the daemon does not work as a site")
+	fs.StringVar(&cfg.Site.OwnerID, "site.owner-id", cfg.Site.OwnerID, "Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID")
 	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
 
 	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
@@ -171,6 +174,7 @@ type Syncing struct {
 type Site struct {
 	Hostname                   string
 	InviteTokenExpirationDelay time.Duration
+	OwnerID                    string
 }
 
 // P2P configuration. For field descriptions see SetupFlags().
