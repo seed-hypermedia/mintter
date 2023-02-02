@@ -545,20 +545,6 @@ export class RedeemInviteTokenRequest extends Message<RedeemInviteTokenRequest> 
    */
   token = "";
 
-  /**
-   * Mintter Account ID of the new member.
-   *
-   * @generated from field: string account_id = 2;
-   */
-  accountId = "";
-
-  /**
-   * Mintter Device ID of the new member.
-   *
-   * @generated from field: string device_id = 3;
-   */
-  deviceId = "";
-
   constructor(data?: PartialMessage<RedeemInviteTokenRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -568,8 +554,6 @@ export class RedeemInviteTokenRequest extends Message<RedeemInviteTokenRequest> 
   static readonly typeName = "com.mintter.documents.v1alpha.RedeemInviteTokenRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "token", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "device_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RedeemInviteTokenRequest {
