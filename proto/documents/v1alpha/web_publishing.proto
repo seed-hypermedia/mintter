@@ -185,13 +185,6 @@ message RedeemInviteTokenRequest {
   // Value of the invite token.
   string token = 1;
 
-  // TODO: might not need these, because can be inferred from the communication channel.
-
-  // Mintter Account ID of the new member.
-  string account_id = 2;
-
-  // Mintter Device ID of the new member.
-  string device_id = 3;
 }
 
 // Response after the token is redeemed.
