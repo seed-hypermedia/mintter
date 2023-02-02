@@ -108,7 +108,7 @@ export default function PublicationWrapper() {
           <BlockHighLighter>
             <div className="page-wrapper publication-wrapper">
               <Allotment
-                defaultSizes={[100, 0]}
+                defaultSizes={[100]}
                 onChange={(values) => panelSend({type: 'RESIZE', values})}
               >
                 <Allotment.Pane>
@@ -185,7 +185,7 @@ export default function PublicationWrapper() {
                 </Allotment.Pane>
                 {resizablePanelState.context.visible &&
                   !!state.context.publication && (
-                    <Allotment.Pane preferredSize={0}>
+                    <Allotment.Pane preferredSize="35%">
                       <section className="discussion-section">
                         <ScrollArea
                           onScroll={() => mouseService.send('DISABLE.SCROLL')}
@@ -302,10 +302,6 @@ let resizablePanelMachine =
         updateHandlePosition: assign((context, event) => {
           // hardcoded value to apply to the controls
           let newValue = event.values[0]
-          console.log(
-            '🚀 ~ file: publication.tsx:308 ~ updateHandlePosition:assign ~ newValue',
-            newValue,
-          )
 
           return {left: newValue}
         }),
