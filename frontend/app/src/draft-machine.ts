@@ -88,6 +88,7 @@ export function createDraftMachine({
   /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdAMzDQGMALFAOygGIINywcKA3DAawYOJIBEsBDPGgDaABgC6iUAAcMsdCjqSQAD0QAmACwB2HCI0BWAByG9agGwBGbQGZrAGhABPRIYM591-WY1qR+g2oeAL5BDqiYuJykFNRgWFjYOFIANnxoeNgAtviEpLwCwuJKMnJoCuRKqgi2FjhaIn7aWhYthloOzggaGmY4PvpaGhZa+gCcZqMi1lohYRDoieExVABKAKIAymsAKjgAwgASAIIAcgDim6ISSCAl8oo3Va21aq9mWmq2GiITZh2I+haOGMxjManGGlGhkCGlm4HmERwS0ojAgyTAVG4KyOADFdgBVAAK3CO2zWV2KsnuFUeiChajq4x+LTMIjUbUM-wQhgs+ncIl5Wlso2sItscPCiwRMVR6Mx2LxOEJ+IAQgAZACSGwOFJudzKD1AT2sFkMOFFUOmfl5hjM+i5Fj8DMd7Oh1m69UMEoRUvkKJQaIxWNxuz2AHkALIRjW7DZHABq5KKeqpBppRsQnpwr2+IpEWkM4ztDoFfO62isouhQq9oXhC1wyKgOFgfCYy1o9EY5BY7BbbbA+UEuukqfKlQB3Rwo2aJhMngmAq5PJ0DVeVh5XgGZm9DaR0pRrfblCocQSuBSaQyWGyR8H-GHydHpXHtO5o1GODBZneFk0Jo0aw-icOkRhwP9DHdAxulGLw1F3REm37Y9qGDRUiRJMkR1uMdDRURAfwZEQoRnUV9ECSsuXGMtDHI8xyP0BogIQxIpAAVwAI2SFBYBIGg6AYZg2AYdiuJ4ngH0Ka5n2pCcEEBM1bCMICc2GfMHTGPkRELfNSPBMFrBYi9OO43jT3iVjUnSLIkhM8ShykykXzwqoC0-axNECLQJnBCx3gdLRYN0KFjG6dkPFNIykQsrBIFWHYVgATWw-VXwzBAIPcT5AJnD9QQsB1TU-MweRnXzRmGDyotE0ySGQjsBO7XsGDvByUtw9N8IQMERC-fQvC0At+sLcEHWhPlNAMZS1GGW0dzrSVjLE3j6pPM9LKvGzWsk9rnM6qpbGsbMJi8UYNFcRifjGoCvyAwEjHBM7-BCOtyAwCA4CURanNkt8AFoCpA6ogTOgsf0dIwC08KKojISgfrTOTtBLAU6gFVxRTU6w2iipsEbSrrIV6GdTW0qZToaYDOhK2o2WmGw2g-AZcYPZsA3RfGXMzMDjCmUVAM0Eblx-bNujZV4+YtFm-WbI8Yk5-bucUx6cx8Rn7SBlpeXcZo1EG3kPKg6q7N4hW5JhYE7UdWDeX6PyHQmWpvPZd0-Mgz1cZiyAzbfd53LMbGA-qAYPQdIYzRMQaRgqiwKqmY3lrquX4ZTPa5OsNlLcBYj7rtqnEFNW1dDBAZBp6SEDAT2rbMT+XU9+9Kg+BCxRQac6hT89pNcmWo-L0EZfJGbSXqCIA */
   return createMachine(
     {
+      predictableActionArguments: true,
       context: {
         documentId,
         draft: null,
@@ -103,7 +104,6 @@ export function createDraftMachine({
         events: {} as DraftMachineEvent,
         services: {} as DraftMachineServices,
       },
-      predictableActionArguments: true,
       entry: 'sendActorToParent',
       id: 'editor',
       initial: 'fetching',
