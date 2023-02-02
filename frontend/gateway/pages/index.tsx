@@ -1,4 +1,3 @@
-import {getPublication} from '@mintter/shared'
 import {PublicationPage} from '../publication-page'
 
 export default function IndexPage({document}: any) {

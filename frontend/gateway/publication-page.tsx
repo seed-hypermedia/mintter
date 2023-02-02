@@ -5,6 +5,7 @@ import Footer from './footer'
 import {SiteHead} from './site-head'
 import {publicationMachine} from './machines/publication-machine'
 import {PublicationContent} from './publication-content'
+import {client} from './client'
 
 type PublicationPageProps = {
   documentId: string
@@ -21,7 +22,7 @@ export function PublicationPage({
 
   useQuery({
     queryKey: ['PUBLICATION', documentId, version],
-    queryFn: () => getPublication(documentId, version),
+    queryFn: () => getPublication(documentId, version, client),
     onError: (props) => {
       console.log('ERROR', props)
     },
