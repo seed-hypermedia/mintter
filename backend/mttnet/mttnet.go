@@ -76,12 +76,17 @@ func DefaultRelays() []peer.AddrInfo {
 	}
 }
 
+type docInfo struct {
+	ID      string
+	Version string
+}
+
 // PublicationRecord holds the information of a published document (record) on a site
 type PublicationRecord struct {
-	documentID      string
-	documentVersion string
-	path            string
-	hostname        string
+	document   docInfo
+	path       string
+	hostname   string
+	references []docInfo
 }
 
 // Site is a hosted site.
@@ -92,7 +97,7 @@ type Site struct {
 	// Mockup DBs remove when finished with the mockup
 	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration tipe
 	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
-	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
+	webPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
 // Server holds the p2p functionality to be accessed via gRPC.
@@ -140,6 +145,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		InviteTokenExpirationDelay: expirationDelay,
 		tokensDB:                   map[string]tokenInfo{},
 		accountsDB:                 map[string]site.Member_Role{},
+		webPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
 	}, Node: node}
 
