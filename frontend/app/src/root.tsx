@@ -4,24 +4,24 @@ import {themeMachine, ThemeProvider} from '@app/theme'
 import {
   dehydrate,
   Hydrate,
-  QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {useInterpret} from '@xstate/react'
-import {lazy, Suspense} from 'react'
+import {Suspense} from 'react'
 import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
 import {globalStyles} from './stitches.config'
-const OnboardingPage = lazy(() => import('./pages/onboarding'))
-const AppProvider = lazy(() => import('./components/app-provider'))
-const Main = lazy(() => import('./pages/main'))
+import OnboardingPage from '@app/pages/onboarding'
+import AppProvider from '@components/app-provider'
+import Main from '@app/pages/main'
 
 import './styles/root.scss'
 import './styles/toaster.scss'
+import {appQueryClient} from './query-client'
 
 import('./updater')
 
@@ -41,11 +41,12 @@ onUpdaterEvent(({error, status}) => {
 })
 
 export function Root() {
-  var themeService = useInterpret(() => themeMachine)
+  const themeService = useInterpret(themeMachine)
+
   globalStyles()
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={appQueryClient}>
       <Suspense>
         <Hydrate state={dehydrateState}>
           <ThemeProvider value={themeService}>
@@ -128,28 +129,7 @@ if (window.Cypress) {
   }
 }
 
-var queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      networkMode: 'always',
-      useErrorBoundary: true,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      retryOnMount: false,
-      staleTime: Infinity,
-      refetchOnReconnect: false,
-      onError: (err) => {
-        console.log(`Query error: ${err}`)
-      },
-      retry: 4,
-      retryDelay: (attempt) =>
-        Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
-      keepPreviousData: true,
-    },
-  },
-})
-
-var dehydrateState = dehydrate(queryClient)
+var dehydrateState = dehydrate(appQueryClient)
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (

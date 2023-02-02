@@ -146,7 +146,9 @@ function FormatButton({
                 color: '$base-text-high !important',
               },
             }
-          : {}
+          : {
+              // noop
+            }
       }
       onClick={() => toggleFormat(editor, format)}
     >

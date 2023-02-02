@@ -1,3 +1,4 @@
+import {MainActor} from '@app/hooks/main-actor'
 import {warn} from '@app/utils/logger'
 import {lazy} from 'react'
 import '../../styles/titlebar.scss'
@@ -8,6 +9,7 @@ var TitleBarLinux = lazy(() => import('./linux'))
 
 export interface TitleBarProps {
   clean?: boolean
+  mainActor?: MainActor
 }
 
 export function TitleBar(props: TitleBarProps) {

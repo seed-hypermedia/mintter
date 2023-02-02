@@ -1,12 +1,12 @@
-import {DraftActor} from '@app/draft-machine'
-import {useMain} from '@app/main-context'
-import {PublicationActor} from '@app/publication-machine'
-import {useSelector} from '@xstate/react'
-import {Route, Switch} from 'wouter'
+import {queryKeys, useAuthor} from '@app/hooks'
+import {getDraft, getPublication} from '@mintter/shared'
+import {useQuery} from '@tanstack/react-query'
+import {listen} from '@tauri-apps/api/event'
+import {useEffect} from 'react'
+import {Route, ExtractRouteParams, Switch, useRoute} from 'wouter'
 
 export function Title() {
-  const mainService = useMain()
-  const current = useSelector(mainService, (state) => state.context.current)
+  let [, siteHomeParams] = useRoute('/sites/:hostname')
 
   return (
     <h1
@@ -24,38 +24,61 @@ export function Title() {
         <Route path="/drafts">
           <span data-tauri-drag-region>Drafts</span>
         </Route>
-        <Route path="/p/:id/:version/:block?">
-          {current ? (
-            <PublicationTitle publication={current as PublicationActor} />
-          ) : (
-            <>...</>
-          )}
+        <Route path="/sites/:hostname">
+          <span data-tauri-drag-region>{siteHomeParams?.hostname}</span>
         </Route>
-        <Route path="/d/:id/:tag?">
-          {current ? <DraftTitle draft={current as DraftActor} /> : <>...</>}
-        </Route>
+
+        <Route path="/p/:id/:version/:block?" component={PublicationTitle} />
+        <Route path="/d/:id/:tag?" component={DraftTitle} />
       </Switch>
     </h1>
   )
 }
 
-function PublicationTitle({publication}: {publication: PublicationActor}) {
-  const title = useSelector(publication, (state) => state.context.title)
-  const alias = useSelector(
-    publication,
-    (state) => state.context.author?.profile?.alias,
-  )
+function PublicationTitle({
+  params,
+}: {
+  params: ExtractRouteParams<'/p/:id/:version/:block?'>
+}) {
+  let {data: pub} = useQuery({
+    queryKey: [queryKeys.GET_PUBLICATION, params.id, params.version],
+    enabled: !!params.id,
+    queryFn: () => getPublication(params.id, params.version),
+  })
+
+  let {data: author} = useAuthor(pub?.document?.author)
 
   return (
     <>
-      <span data-tauri-drag-region>{title}</span>
-      <small data-tauri-drag-region>{alias}</small>
+      <span data-tauri-drag-region>{pub?.document?.title || '...'}</span>
+      <small data-tauri-drag-region>{author?.profile?.alias || ''}</small>
     </>
   )
 }
 
-function DraftTitle({draft}: {draft: DraftActor}) {
-  const title = useSelector(draft, (state) => state.context.title)
+function DraftTitle({params}: {params: ExtractRouteParams<'/d/:id/:tag?'>}) {
+  let {data: draft, refetch} = useQuery({
+    queryKey: [queryKeys.GET_DRAFT, params.id],
+    enabled: !!params.id,
+    queryFn: () => getDraft(params.id),
+  })
 
-  return <span data-tauri-drag-region>{title}</span>
+  useEffect(() => {
+    let isSubscribed = true
+    let unlisten: () => void
+
+    listen('update_draft', () => {
+      refetch()
+
+      if (!isSubscribed) {
+        return unlisten()
+      }
+    }).then((_unlisten) => (unlisten = _unlisten))
+
+    return () => {
+      isSubscribed = false
+    }
+  })
+
+  return <span data-tauri-drag-region>{draft?.title}</span>
 }

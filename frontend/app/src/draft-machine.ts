@@ -104,7 +104,6 @@ export function createDraftMachine({
         events: {} as DraftMachineEvent,
         services: {} as DraftMachineServices,
       },
-      entry: 'sendActorToParent',
       id: 'editor',
       initial: 'fetching',
       states: {
@@ -270,6 +269,7 @@ export function createDraftMachine({
         }),
         updateTitle: assign({
           title: (_, event) => {
+            console.log('UPDATE TITLE', event)
             if (event.payload.content) {
               return getTitleFromContent({children: event.payload.content})
             }
@@ -305,7 +305,9 @@ export function createDraftMachine({
         resetQueryData: (context) => {
           resetQueryData(client, context.documentId)
         },
-        refetchDraftList: () => {
+        refetchDraftList: (context) => {
+          console.log('update draft:', context)
+
           invoke('emit_all', {
             event: 'update_draft',
           })

@@ -2,8 +2,8 @@ import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
 import {prefetchDraft, queryKeys, useDraftList} from '@app/hooks'
-import {useMain} from '@app/main-context'
 import {formattedDate} from '@app/utils/get-format-date'
+import {openDraft, openNewDraft} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
@@ -20,7 +20,6 @@ import '../styles/file-list.scss'
 export default DraftList
 
 function DraftList() {
-  let mainService = useMain()
   let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
 
@@ -39,8 +38,7 @@ function DraftList() {
           <EmptyList
             description="You have no Drafts yet."
             action={() => {
-              // TODO: create a new draft
-              mainService.send('COMMIT.NEW.DRAFT')
+              openNewDraft()
             }}
           />
         )}
@@ -52,7 +50,6 @@ function DraftList() {
 export function DraftListItem({draft}: {draft: Document}) {
   let {search} = useFind()
   let [, setLocation] = useLocation()
-  let mainService = useMain()
   let client = useQueryClient()
   let title = draft.title || 'Untitled Document'
 
@@ -137,12 +134,9 @@ export function DraftListItem({draft}: {draft: Document}) {
               </Dropdown.Item>
               <Dropdown.Item
                 data-testid="new-window-item"
-                onSelect={() =>
-                  mainService.send({
-                    type: 'COMMIT.OPEN.WINDOW',
-                    path: `/d/${draft.id}`,
-                  })
-                }
+                onSelect={() => {
+                  openDraft(draft.id)
+                }}
               >
                 <Icon name="OpenInNewWindow" />
                 <Text size="2">Open in new Window</Text>

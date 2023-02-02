@@ -5,7 +5,6 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {FileProvider} from '@app/file-provider'
 import {useDiscussion} from '@app/hooks'
-import {useMain} from '@app/main-context'
 import {formattedDate} from '@app/utils/get-format-date'
 import {Avatar} from '@components/avatar'
 import {Link} from '@components/router'
@@ -13,6 +12,7 @@ import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useSelector} from '@xstate/react'
 import {useMemo} from 'react'
 import '../styles/discussion-item.scss'
+import {openWindow} from '@app/utils/open-window'
 
 export function DiscussionItem({link}: {link: MttLink}) {
   let client = useQueryClient()
@@ -23,7 +23,7 @@ export function DiscussionItem({link}: {link: MttLink}) {
     }),
   )
   let isFetching = useSelector(service, (state) => state.matches('fetching'))
-  let main = useMain()
+
   const editorValue = useSelector(
     service,
     (state) => state.context.source?.document.content,
@@ -79,10 +79,9 @@ export function DiscussionItem({link}: {link: MttLink}) {
         {discussions && discussions.length > 0 ? (
           <button
             onClick={() =>
-              main.send({
-                type: 'COMMIT.OPEN.WINDOW',
-                path: `/p/${link.source?.documentId}/${link.source?.version}`,
-              })
+              openWindow(
+                `/p/${link.source?.documentId}/${link.source?.version}`,
+              )
             }
             className="item-control"
           >

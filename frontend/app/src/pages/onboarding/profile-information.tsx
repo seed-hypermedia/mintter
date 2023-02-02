@@ -1,4 +1,4 @@
-import {updateProfile as defaultUpdateProfile} from '@mintter/shared'
+import {Profile, updateProfile as defaultUpdateProfile} from '@mintter/shared'
 import {TextField} from '@components/text-field'
 import {useMutation} from '@tanstack/react-query'
 import {FormEvent} from 'react'
@@ -41,8 +41,7 @@ export function ProfileInformation({
       formData.entries(),
     )
     e.preventDefault()
-    // @ts-ignore
-    mutate(newProfile)
+    mutate(newProfile as Profile)
   }
 
   return (

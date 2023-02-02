@@ -1,7 +1,6 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {queryKeys} from '@app/hooks'
-import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
 import type {Embed, Link as LinkType} from '@mintter/shared'
 import {embed, isLink, link, text, getPublication} from '@mintter/shared'
@@ -35,6 +34,7 @@ import {
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
 import {findPath, getEditorBlock, isCollapsed} from '../utils'
+import {openPublication} from '@app/utils/navigation'
 
 export const ELEMENT_LINK = 'link'
 
@@ -164,7 +164,6 @@ function RenderMintterLink(
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
   const [, setLocation] = useLocation()
-  const mainService = useMain()
   let mouseService = useMouse()
   let [match, params] = useRoute('/p/:id/:version/:block')
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
@@ -178,10 +177,7 @@ function RenderMintterLink(
       if (match && params?.id == docId && params?.version == version) {
         setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
       } else {
-        mainService.send({
-          type: 'COMMIT.OPEN.WINDOW',
-          path: `/p/${docId}/${version}/${blockId}`,
-        })
+        openPublication(docId, version, blockId)
       }
     }
   }

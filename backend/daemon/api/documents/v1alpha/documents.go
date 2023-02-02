@@ -36,19 +36,21 @@ type Discoverer interface {
 
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db    *sqlitex.Pool
-	vcsdb *sqlitevcs.DB
-	me    *future.ReadOnly[core.Identity]
-	disc  Discoverer
+	db      *sqlitex.Pool
+	vcsdb   *sqlitevcs.DB
+	me      *future.ReadOnly[core.Identity]
+	sitesDB map[string]siteInfo //TODO: remove when finished with the mockup
+	disc    Discoverer
 }
 
 // NewServer creates a new RPC handler.
 func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
 	srv := &Server{
-		db:    db,
-		vcsdb: sqlitevcs.New(db),
-		me:    me,
-		disc:  disc,
+		db:      db,
+		vcsdb:   sqlitevcs.New(db),
+		me:      me,
+		sitesDB: map[string]siteInfo{},
+		disc:    disc,
 	}
 
 	return srv

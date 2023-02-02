@@ -273,9 +273,6 @@ export function Editor({
           {...eventHandlers}
         />
       </Slate>
-      <code>
-        <pre>{JSON.stringify(value, null, 3)}</pre>
-      </code>
     </span>
   )
 }

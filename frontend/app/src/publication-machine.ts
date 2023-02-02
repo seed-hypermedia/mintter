@@ -60,7 +60,6 @@ type CreatePublicationMachineProps = {
   client: QueryClient
   documentId: string
   version: string
-  blockId?: string
 }
 
 export type PublicationActor = InterpreterFrom<
@@ -72,7 +71,6 @@ export function createPublicationMachine({
   documentId,
   version,
 }: CreatePublicationMachineProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5QAcCuAjANgSwMYEMAXbAewDsBaAW31wAtsywA6AMzEPsagGIAFAKoAhADIBJAMIBBACpiA8gDlmAJQCifeSpnMAygIkS1u3QG0ADAF1EKErGzFyNkAA9EAFgCsn5gEYAHL7uvubuAJxhof6eADQgAJ6IAMwA7P5+-klJAGyeAExh7llBngC+pXFoWHhEpJQ0XExsHI28gqKSsgrK6prazGoqKloW1kggyHYOdc5uCF4+AUEh4ZHu0XGJCNnrzCm+IWEpeSme2Slh5ZUYOASO9bQMTeycT1DMZCQATjSYPC6wQhEFj4ViEMBfAAUIXM5gAlDwqrdauRqI9GCwXq0Pt9fqNnJN7PdZohfClsn4Ltl-OYwklfGdAklNohsr4Kbkcnlaf5wp5MlcJjcavc0Y0WF8wPgIPEeBByCxGAA3EgAa0xLToUlQhDo33x40J0yc4zmYX8FLC3iKR0CaVpLIQvjy6XcaSSeSC7jdKTS2UFSJFdTFTwlUplzGwEEwYH4wnE0jkSgGABExDIDbYiTNTYhoot3OdudkIu5zLEEohPOYUswwjtQsFPObeZcKkLqndgw1Q8xJdL4sxINMyLx5U1lWqWLh++CU19QYRMxMpsTc07fFlmNFPUlaScLRtKwgku48ntuTWDgVC54Uu4A8Ku6iexi++HB8PiKOeBCvt9mGQTAiFYXFmBnKU5wXMFlyNNdQDNWE9j3JIIkKLw8lSR0cnST1jm5JJ-DyTlfEfTsUQecUhy+f9JQgOMOkTbpmAAMTUGQJAACWYFNZCkWDVxzBCPG8DJllCCIogrLZ8g5WlnVSQpUn8cp20+CA4AJJ8KJDDECUEk1hIQCg8ncR0KB8c1YXLF0Dn8FIULI5FRVfZ5NW4fTs0M1xEFMx1C3PAJ7wZLI6QPf120DZ9KN7LE3hxH58EwTzjTIEkEGOR02R8HZPByWFIiyc4nKDF90Tc15uCHFxwTIDSIBS+CfIQApa2bfxCkiXJPGCIosoZZhcvy2lzCKlISui3Smn7GVGqE5r73MZhMNCUzzDyTDzmyR1uVwtl729Ubq3MCLrnIlzyrDAdI2jMA5u8uY0lwvczzLDacnJfy8uYMt8zdBkdmIspIu0i6qJmz8IBHKB7rS9cQjSbdzQuckNqtI8tkO5hq1Pe9qTWgoJp01yWD-b5IFh9KHLk8ImTpFYsuyCkTnyQiOr3Gk8lU0ogA */
   return createMachine(
     {
       predictableActionArguments: true,
@@ -92,7 +90,6 @@ export function createPublicationMachine({
         services: {} as PublicationMachineServices,
       },
       id: 'publication-machine',
-      entry: ['sendActorToParent'],
       initial: 'fetching',
       states: {
         fetching: {
