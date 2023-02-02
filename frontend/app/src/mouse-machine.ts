@@ -29,48 +29,57 @@ type MouseContext = {
   highlightRef: string
 }
 
-export var mouseMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QFsD2BXWYC0yCGAxgBYCWAdmAMQCSActQCoB0A8gEIDKAogEoBqvANoAGALqJQAB1SwSAFxKoyEkAA9EAdgCsWpgBYAnACYAHAGYtBy2b0m9AGhABPRAEYjAXw+O0mHPmJyKjYAGRYAYQBpJgBBABE4kXEkEGlZBSUVdQRtXW0zIy0NADYDM1LzRxcEV2ETJiNCwr1XC2KtVtcvHwwsXEJSCkpQiOieLgBZFgEklTT5RWUU7I09XWLDYTKzYTWDdqrEAo19Vz1hVwNtEw0Sg26QXz6AweCwqNZOXhmxOZkFzLLTSGfRbIyuLSGIzFXYGQ41EzFYr6EyFYoaExaGGuDQPJ7+AZBShxagcGKhLhMADqdDiLCpTFCAFUeLMUvMMktQNlXLz6sINMIzAYRec9Md4SZXMicVijCUdjstGY8b0CYEhiSyRTqbT6UxxhxqAAtLhsqT-TlZTTKphYtatYwYxqS6VMWXFeXFRXCZWqvz9DVUAAS1AA4sGQuHg8wuLQGEJfuzLYtrTlxXbShc6rz9lojPCjLt9FpfXV5a1hNDPN5HmrA69KKGI1GI8wQlwYj9khb0qmgTVecjLEWzKjDAZpfDXDcjPoDCZ9qZDFpMf7noShs3I9HmAAxHgsCa62h0qkcc2pFOA7lHcFMXa1GGC6Uw4TFaeT4QPwwmTE2OpV1xWt8QbIImEIBQADcwCYWA5FQSRJEgYlSXJDtGXeSIGBYFgQg4JhwjCbhLw5ftbwQfMTgXKwTAFEUNBdZw3GVAwGjsc4NF5X1lWAnoAxecDIJIGCmAAJzAPAICcSgpiZbgmCmbs-j7G81DcApp0MaiNH2Oi9CLRF5XXdVXggghoNgiSpJkuSFKUs1XB7K9VK5dSEVcO0Z0aAwyyuMxWi0vQTk2XlWjMDQzAKYoTLAihzMs8TJOk1DtQw8JgxiWgwzNJNewBNyeSffQ9G9bQizKydpwKXQBR0VcbkYgo9FiwT4uE0TrJSrV0MpDhwkPEIQlI69CsQUUmBhdEjFKnQpRnadLmRHZzgXDYYRmlqQPrNrYI6qzkpknqdRGKIcLwgiWAABTjEbXLTNY5y4xFyvcf90WnSKzCYScDIFYoblKowVW2gTN1g8h9tklh5MpBy7oKtMrmnd9h1uCKdF+iKvFrMhUAgOAVFA3aVMRgdynhUtvsadwthKEo5Ri0GNyDBKRLAUmrQHOxFsXB95T-PQhdFUrWvBtnRPgxDkIgTnyPcqU51KwHMRaeVSundoTlfJUooipEQf4lmzP2pKbLltTsnlOctZ0YGkX2b0HGYmp2m-ItakKW40S6ZnTPAyGLPZi2xpqCxPJ0AU6LOYpajqFGdjtcxGnlY4NhrLwgA */
-  createMachine(
-    {
-      context: {visibleBounds: [], visibleBlocks: [], highlightRef: ''},
-      tsTypes: {} as import('./mouse-machine.typegen').Typegen0,
-      schema: {context: {} as MouseContext, events: {} as MouseEvent},
-      predictableActionArguments: true,
-      invoke: [
-        {
-          src: 'boundsListener',
-          id: 'boundsListener',
-        },
-        {
-          src: 'windowListener',
-          id: 'windowListener',
-        },
-        {
-          src: 'windowBlurService',
-          id: 'windowBlurService',
-        },
-        {
-          src: 'windowResizeService',
-          id: 'windowResizeService',
-        },
-      ],
-      id: 'mouse-machine',
-      description:
-        '## services\n- **boundsListener**: this will create the intersection observer to get all the bounds from the visible blocks',
-      initial: 'inactive',
-      states: {
-        active: {
-          entry: ['getBlockBounds', 'assignCurrentBound'],
-          description:
-            'actions:\n- **getBlockBounds**: this will calculate the current position of all the visible blocks in the viewport\n- **assignBlockRef**: stores the current hovered block in context',
-          initial: 'ready',
-          states: {
-            stopped: {
-              on: {
-                'DISABLE.BLOCKTOOLS.CLOSE': {
-                  actions: ['getBlockBounds', 'assignCurrentBound'],
-                  target: 'ready',
+export var mouseMachine = createMachine(
+  {
+    predictableActionArguments: true,
+    context: {visibleBounds: [], visibleBlocks: [], highlightRef: ''},
+    tsTypes: {} as import('./mouse-machine.typegen').Typegen0,
+    schema: {context: {} as MouseContext, events: {} as MouseEvent},
+    invoke: [
+      {
+        src: 'boundsListener',
+        id: 'boundsListener',
+      },
+      {
+        src: 'windowListener',
+        id: 'windowListener',
+      },
+      {
+        src: 'windowBlurService',
+        id: 'windowBlurService',
+      },
+      {
+        src: 'windowResizeService',
+        id: 'windowResizeService',
+      },
+    ],
+    id: 'mouse-machine',
+    description:
+      '## services\n- **boundsListener**: this will create the intersection observer to get all the bounds from the visible blocks',
+    initial: 'inactive',
+    states: {
+      active: {
+        entry: ['getBlockBounds', 'assignCurrentBound'],
+        description:
+          'actions:\n- **getBlockBounds**: this will calculate the current position of all the visible blocks in the viewport\n- **assignBlockRef**: stores the current hovered block in context',
+        initial: 'ready',
+        states: {
+          stopped: {
+            on: {
+              'DISABLE.BLOCKTOOLS.CLOSE': {
+                actions: ['getBlockBounds', 'assignCurrentBound'],
+                target: 'ready',
+              },
+            },
+          },
+          ready: {
+            on: {
+              'MOUSE.MOVE': [
+                {
+                  actions: 'assignCurrentBound',
+                  description:
+                    'will capture the mouse movement on the pag emain component and store in in context',
+                  cond: 'hoverNewBlockId',
                 },
               },
             },
