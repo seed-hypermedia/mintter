@@ -2,15 +2,16 @@ import {useBlockConversations} from '@app/editor/comments/conversations-context'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
 import {Icon} from '@components/icon'
+import {FlowContent} from '@mintter/shared'
 
 export function ConversationBlockBubble({
-  blockId,
+  block,
   onClick,
 }: {
-  blockId: string
+  block: FlowContent
   onClick: () => void
 }) {
-  let conversations = useBlockConversations(blockId)
+  let conversations = useBlockConversations(block.id, block.revision)
 
   if (conversations.length) {
     return (

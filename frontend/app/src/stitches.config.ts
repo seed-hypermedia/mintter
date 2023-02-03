@@ -104,6 +104,11 @@ const stitches = createStitches({
       'danger-text-low': red.red11,
       'danger-text-high': red.red12,
       'danger-text-opposite': red.red1,
+
+      'highlight-surface1': 'rgba(255, 212, 0, 0.14)',
+      'highlight-surface2': 'rgba(255, 212, 0, 0.4)',
+      'highlight-surface3': 'rgba(255, 212, 0, 0.8)',
+      'highlight-surface4': 'rgba(255, 212, 0, 0.95)',
     },
     fonts: {
       base: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
@@ -297,6 +302,11 @@ export const lightTheme = createTheme('light-theme', {
     'danger-text-low': red.red11,
     'danger-text-high': red.red12,
     'danger-text-opposite': red.red1,
+
+    'highlight-surface1': 'rgba(255, 212, 0, 0.14)',
+    'highlight-surface2': 'rgba(255, 212, 0, 0.4)',
+    'highlight-surface3': 'rgba(255, 212, 0, 0.8)',
+    'highlight-surface4': 'rgba(255, 212, 0, 0.95)',
   },
 })
 
@@ -385,6 +395,11 @@ export const darkTheme = createTheme('dark-theme', {
     'danger-text-low': redDark.red11,
     'danger-text-high': redDark.red12,
     'danger-text-opposite': redDark.red1,
+
+    'highlight-surface1': 'rgba(255, 212, 0, 0.14)',
+    'highlight-surface2': 'rgba(255, 212, 0, 0.4)',
+    'highlight-surface3': 'rgba(255, 212, 0, 0.8)',
+    'highlight-surface4': 'rgba(255, 212, 0, 0.95)',
   },
 })
 
