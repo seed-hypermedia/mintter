@@ -208,7 +208,7 @@ export function usePublication(
 ) {
   return useQuery({
     queryKey: [queryKeys.GET_PUBLICATION, documentId, version],
-    enabled: !!documentId && !!version,
+    enabled: !!documentId,
     queryFn: () => getPublication(documentId, version, opts.rpc),
     onError: (err) => {
       console.log(`usePublication error: ${err}`)

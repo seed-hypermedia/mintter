@@ -3,6 +3,7 @@ import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {
+  Blockquote as BlockquoteType,
   createId,
   isBlockquote,
   paragraph,
@@ -72,9 +73,9 @@ function BlockQuote({
   children,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
-  let {blockProps} = useBlockProps(element)
+  let {blockProps} = useBlockProps(element as BlockquoteType)
 
-  let inRoute = useBlockFlash(attributes.ref, element.id)
+  let inRoute = useBlockFlash(attributes.ref, (element as BlockquoteType).id)
 
   if (mode == EditorMode.Embed) {
     return (
@@ -91,12 +92,14 @@ function BlockQuote({
       className={inRoute ? 'flash' : undefined}
     >
       {children}
-      <ConversationBlockBubble
-        blockId={element.id}
-        onClick={() => {
-          console.log(`clicked in conversation bubble for ${element.id}`)
-        }}
-      />
+      <span contentEditable={false}>
+        <ConversationBlockBubble
+          block={element as BlockquoteType}
+          onClick={() => {
+            console.log(`clicked in conversation bubble for ${element.id}`)
+          }}
+        />
+      </span>
     </li>
   )
 }

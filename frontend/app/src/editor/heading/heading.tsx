@@ -127,12 +127,14 @@ function Heading({
       className={inRoute ? 'flash' : undefined}
     >
       {children}
-      <ConversationBlockBubble
-        blockId={element.id}
-        onClick={() => {
-          console.log(`clicked in conversation bubble for ${element.id}`)
-        }}
-      />
+      <span contentEditable={false}>
+        <ConversationBlockBubble
+          block={element as HeadingType}
+          onClick={() => {
+            console.log(`clicked in conversation bubble for ${element.id}`)
+          }}
+        />
+      </span>
     </li>
   )
 }
