@@ -335,7 +335,7 @@ export function PublicationToolbar() {
     })
 
     let data = new FormData(event.currentTarget)
-    let commentValue = data.get('comment')?.toString()
+    let commentValue = data.get('comment')?.toString().replace(/\s/g, ' ')
     if (!commentValue) return
     let initialComment = blockToApi(
       statement([paragraph([text(commentValue)])]),

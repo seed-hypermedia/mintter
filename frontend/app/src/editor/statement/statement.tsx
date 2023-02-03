@@ -253,12 +253,14 @@ function Statement({
       style={{position: 'relative'}}
     >
       {children}
-      <ConversationBlockBubble
-        blockId={element.id}
-        onClick={() => {
-          console.log(`clicked in conversation bubble for ${element.id}`)
-        }}
-      />
+      <span contentEditable={false}>
+        <ConversationBlockBubble
+          block={element as StatementType}
+          onClick={() => {
+            console.log(`clicked in conversation bubble for ${element.id}`)
+          }}
+        />
+      </span>
     </li>
   )
 }
