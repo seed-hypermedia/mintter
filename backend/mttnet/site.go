@@ -81,12 +81,37 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 
 // GetSiteInfo Gets public-facing site information.
 func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest) (*site.SiteInfo, error) {
-	return &site.SiteInfo{}, fmt.Errorf("Endpoint not implemented yet")
+	_, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	if err != nil {
+		return &site.SiteInfo{}, err
+	}
+	return &site.SiteInfo{
+		Hostname:    srv.hostname,
+		Title:       srv.title,
+		Description: srv.description,
+		Owner:       srv.ownerID,
+	}, nil
 }
 
 // UpdateSiteInfo updates public-facing site information. Doesn't support partial updates, hence all the fields must be provided.
 func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRequest) (*site.SiteInfo, error) {
-	return &site.SiteInfo{}, fmt.Errorf("Endpoint not implemented yet")
+	_, err := srv.checkPermissions(ctx, site.Member_OWNER)
+	if err != nil {
+		return &site.SiteInfo{}, err
+	}
+	if in.Title != "" {
+		srv.title = in.Title
+	}
+	if in.Description != "" {
+		srv.description = in.Description
+	}
+
+	return &site.SiteInfo{
+		Hostname:    srv.hostname,
+		Title:       srv.title,
+		Description: srv.description,
+		Owner:       srv.ownerID,
+	}, nil
 }
 
 // ListMembers lists registered members on the site.
