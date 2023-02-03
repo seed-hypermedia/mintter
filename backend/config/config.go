@@ -124,6 +124,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
 
 	fs.StringVar(&cfg.Site.Hostname, "site.hostname", cfg.Site.Hostname, "Hostname of the site. If not provided then the daemon does not work as a site")
+	fs.StringVar(&cfg.Site.Title, "site.title", cfg.Site.Title, "Title of the site. Something brief and human readable to help understand the site")
 	fs.StringVar(&cfg.Site.OwnerID, "site.owner-id", cfg.Site.OwnerID, "Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID")
 	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
 
@@ -175,6 +176,7 @@ type Site struct {
 	Hostname                   string
 	InviteTokenExpirationDelay time.Duration
 	OwnerID                    string
+	Title                      string
 }
 
 // P2P configuration. For field descriptions see SetupFlags().
