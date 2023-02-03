@@ -94,6 +94,8 @@ type Site struct {
 	hostname                   string
 	InviteTokenExpirationDelay time.Duration
 	ownerID                    string
+	title                      string
+	description                string
 	// Mockup DBs remove when finished with the mockup
 	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration tipe
 	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
@@ -147,6 +149,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		accountsDB:                 map[string]site.Member_Role{},
 		webPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
+		title:                      siteCfg.Title,
 	}, Node: node}
 
 	go func() {
