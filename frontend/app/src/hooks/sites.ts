@@ -187,7 +187,7 @@ export function useSitePublish() {
     },
     {
       onSuccess: (a, input) => {
-        appQueryClient.invalidateQueries([
+        appQueryClient.refetchQueries([
           queryKeys.GET_WEB_PUBLICATIONS,
           input.hostname,
         ])
@@ -217,7 +217,7 @@ export function useDocRepublish() {
     },
     {
       onSuccess: (a, input) => {
-        appQueryClient.invalidateQueries([queryKeys.GET_WEB_PUBLICATIONS])
+        appQueryClient.refetchQueries([queryKeys.GET_WEB_PUBLICATIONS])
       },
     },
   )
@@ -233,7 +233,7 @@ export function useSiteUnpublish() {
     },
     {
       onSuccess: (a, input) => {
-        appQueryClient.invalidateQueries([
+        appQueryClient.refetchQueries([
           queryKeys.GET_WEB_PUBLICATIONS,
           input.hostname,
         ])

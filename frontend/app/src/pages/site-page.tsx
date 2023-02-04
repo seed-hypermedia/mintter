@@ -1,5 +1,6 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {usePublication, useAuthor} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
 import {formattedDate} from '@app/utils/get-format-date'
 import {openNewDraft} from '@app/utils/navigation'
@@ -7,7 +8,7 @@ import {EmptyList} from '@components/empty-list'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
-import {ListedWebPublication} from '@mintter/shared/dist/client/.generated/site/v1alpha/site'
+import {WebPublicationRecord} from '@mintter/shared'
 import {ScrollArea} from '@radix-ui/react-scroll-area'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {toast} from 'react-hot-toast'
@@ -30,8 +31,8 @@ export default function SitePage() {
           <ul className="file-list" data-testid="files-list">
             {data.publications.map((publication) => (
               <WebPublicationListItem
-                key={publication.docId}
-                publication={publication}
+                key={publication.documentId}
+                webPub={publication}
                 hostname={host}
               />
             ))}
@@ -50,34 +51,40 @@ export default function SitePage() {
 }
 
 function WebPublicationListItem({
-  publication,
+  webPub,
   hostname,
 }: {
   hostname: string
-  publication: ListedWebPublication
+  webPub: WebPublicationRecord
 }) {
   const [, setLocation] = useLocation()
   function goToItem() {
-    setLocation(`/p/${publication.docId}`)
+    setLocation(`/p/${webPub.documentId}/${webPub.version}`)
   }
   const [unpublishDialog, onUnpublishClick] = useUnpublishDialog(
     hostname,
-    publication,
+    webPub,
   )
+  const {data: publication} = usePublication(
+    webPub.documentId,
+    webPub.version,
+    {},
+  )
+  const {data: author} = useAuthor(publication?.document?.author)
   return (
     <li className="list-item">
-      {publication.path == null ? (
+      {webPub.path == null ? (
         <p onClick={goToItem} className="item-title low">
-          {publication.docTitle}
+          {publication?.document?.title}
         </p>
-      ) : publication.path === '' ? (
+      ) : webPub.path === '' ? (
         <p onClick={goToItem} className="item-title">
-          {publication.docTitle}
+          {publication?.document?.title}
         </p>
       ) : (
         <p onClick={goToItem} className="item-title">
-          /{publication.path}
-          <span className="item-sub-title">{publication.docTitle}</span>
+          /{webPub.path}
+          <span className="item-sub-title">{publication?.document?.title}</span>
         </p>
       )}
       <span
@@ -85,14 +92,16 @@ function WebPublicationListItem({
         data-testid="list-item-author"
         className={`item-author`}
       >
-        {publication.authorName}
+        {author?.profile?.alias}
       </span>
       <span
         onClick={goToItem}
         className="item-date"
         data-testid="list-item-date"
       >
-        {publication.updateTime ? formattedDate(publication.updateTime) : '...'}
+        {publication?.document?.updateTime
+          ? formattedDate(publication?.document?.updateTime)
+          : '...'}
       </span>
       <span className="item-controls">
         <Dropdown.Root>
@@ -120,7 +129,7 @@ function WebPublicationListItem({
                 data-testid="copy-item"
                 onSelect={() => {
                   copyTextToClipboard(
-                    `${MINTTER_LINK_PREFIX}${publication.docId}`,
+                    `${MINTTER_LINK_PREFIX}${webPub.documentId}/${webPub.version}`,
                   )
                   toast.success('Document ID copied successfully')
                 }}
