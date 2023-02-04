@@ -46,7 +46,7 @@ export function useUnpublishDialog(
                   })
               }}
             >
-              Delete
+              Remove Publication
             </Alert.Action>
           </Alert.Actions>
         </Alert.Content>
