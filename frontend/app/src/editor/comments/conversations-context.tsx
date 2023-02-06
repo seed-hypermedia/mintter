@@ -38,7 +38,7 @@ export function ConversationsProvider({
 export function useConversations() {
   let context = useContext(conversationsContext)
 
-  if (!context) throw Error('no conversation context')
+  // if (!context) throw Error('no conversation context')
 
   return context
 }
