@@ -141,11 +141,11 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		refs = append(refs, docInfo{ID: ref.DocumentId, Version: ref.Version})
 	}
 
-	srv.webPublicationRecordDB[randStr(8)] = PublicationRecord{
-		document:   docInfo{ID: in.DocumentId, Version: in.Version},
-		path:       in.Path,
-		hostname:   srv.hostname,
-		references: refs,
+	srv.WebPublicationRecordDB[randStr(8)] = PublicationRecord{
+		Document:   docInfo{ID: in.DocumentId, Version: in.Version},
+		Path:       in.Path,
+		Hostname:   srv.hostname,
+		References: refs,
 	}
 	return &site.PublishDocumentResponse{}, nil
 }
@@ -156,9 +156,9 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 	if err != nil {
 		return &site.UnpublishDocumentResponse{}, err
 	}
-	for key, record := range srv.webPublicationRecordDB {
-		if record.document.ID == in.DocumentId && (in.Version == "" || in.Version == record.document.Version) {
-			delete(srv.webPublicationRecordDB, key)
+	for key, record := range srv.WebPublicationRecordDB {
+		if record.Document.ID == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version) {
+			delete(srv.WebPublicationRecordDB, key)
 		}
 	}
 
@@ -172,12 +172,12 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 		return &site.ListWebPublicationsResponse{}, err
 	}
 	var publications []*site.WebPublicationRecord
-	for _, record := range srv.webPublicationRecordDB {
+	for _, record := range srv.WebPublicationRecordDB {
 		publications = append(publications, &site.WebPublicationRecord{
-			DocumentId: record.document.ID,
-			Version:    record.document.Version,
+			DocumentId: record.Document.ID,
+			Version:    record.Document.Version,
 			Hostname:   srv.hostname,
-			Path:       record.path,
+			Path:       record.Path,
 		})
 	}
 	return &site.ListWebPublicationsResponse{Publications: publications}, nil

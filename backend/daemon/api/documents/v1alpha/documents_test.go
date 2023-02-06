@@ -6,6 +6,7 @@ import (
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs/hlc"
@@ -798,7 +799,7 @@ func newTestDocsAPI(t *testing.T, name string) *Server {
 	fut := future.New[core.Identity]()
 	require.NoError(t, fut.Resolve(u.Identity))
 
-	srv := NewServer(fut.ReadOnly, db, nil)
+	srv := NewServer(fut.ReadOnly, db, nil, &map[string]mttnet.PublicationRecord{})
 
 	_, err := srv.me.Await(context.Background())
 	require.NoError(t, err)

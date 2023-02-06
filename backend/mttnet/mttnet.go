@@ -83,10 +83,10 @@ type docInfo struct {
 
 // PublicationRecord holds the information of a published document (record) on a site
 type PublicationRecord struct {
-	document   docInfo
-	path       string
-	hostname   string
-	references []docInfo
+	Document   docInfo
+	Path       string
+	Hostname   string
+	References []docInfo
 }
 
 // Site is a hosted site.
@@ -99,7 +99,7 @@ type Site struct {
 	// Mockup DBs remove when finished with the mockup
 	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration tipe
 	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
-	webPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
+	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
 // Server holds the p2p functionality to be accessed via gRPC.
@@ -147,7 +147,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		InviteTokenExpirationDelay: expirationDelay,
 		tokensDB:                   map[string]tokenInfo{},
 		accountsDB:                 map[string]site.Member_Role{},
-		webPublicationRecordDB:     map[string]PublicationRecord{},
+		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
 		title:                      siteCfg.Title,
 	}, Node: node}
