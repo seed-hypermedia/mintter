@@ -109,5 +109,19 @@ func (api *Server) ListSites(ctx context.Context, req *documents.ListSitesReques
 
 // ListWebPublicationRecords returns all the sites a given a document has been published to.
 func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents.ListWebPublicationRecordsRequest) (*documents.ListWebPublicationRecordsResponse, error) {
-	return &documents.ListWebPublicationRecordsResponse{}, fmt.Errorf("Not yet implemented")
+	var ret []*documents.WebPublicationRecord
+	// TODO(juligasa): replace with a proper remote call to all known sites in the api.sitesDB
+	for _, v := range *api.localWebPublicationRecordDB {
+		if req.DocumentId == v.Document.ID && (req.Version == "" || req.Version == v.Document.Version) {
+			ret = append(ret, &documents.WebPublicationRecord{
+				DocumentId: v.Document.ID,
+				Version:    v.Document.Version,
+				Hostname:   v.Hostname,
+				Path:       v.Path,
+			})
+		}
+	}
+	return &documents.ListWebPublicationRecordsResponse{
+		Publications: ret,
+	}, nil
 }

@@ -55,13 +55,13 @@ func New(
 
 		return nil
 	}
-
+	siteSrv := mttnet.NewServer(ctx, cfg, node)
 	return Server{
 		Accounts:   accounts.NewServer(id, v),
 		Daemon:     daemon.NewServer(repo, v, wallet, doSync),
-		Documents:  documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}),
+		Documents:  documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}, &siteSrv.WebPublicationRecordDB),
 		Networking: networking.NewServer(node),
-		Site:       mttnet.NewServer(ctx, cfg, node),
+		Site:       siteSrv,
 	}
 }
 

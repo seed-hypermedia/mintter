@@ -7,6 +7,7 @@ import (
 	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/crdt"
@@ -36,21 +37,23 @@ type Discoverer interface {
 
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db      *sqlitex.Pool
-	vcsdb   *sqlitevcs.DB
-	me      *future.ReadOnly[core.Identity]
-	sitesDB map[string]siteInfo //TODO: remove when finished with the mockup
-	disc    Discoverer
+	db                          *sqlitex.Pool
+	vcsdb                       *sqlitevcs.DB
+	me                          *future.ReadOnly[core.Identity]
+	sitesDB                     map[string]siteInfo                  //TODO: remove when finished with the mockup
+	localWebPublicationRecordDB *map[string]mttnet.PublicationRecord //TODO: remove when finished with the mockup
+	disc                        Discoverer
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, recordsDB *map[string]mttnet.PublicationRecord) *Server {
 	srv := &Server{
-		db:      db,
-		vcsdb:   sqlitevcs.New(db),
-		me:      me,
-		sitesDB: map[string]siteInfo{},
-		disc:    disc,
+		db:                          db,
+		vcsdb:                       sqlitevcs.New(db),
+		me:                          me,
+		sitesDB:                     map[string]siteInfo{},
+		disc:                        disc,
+		localWebPublicationRecordDB: recordsDB,
 	}
 
 	return srv
