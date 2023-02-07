@@ -29,8 +29,7 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 	}
 
 	// generate random number string for the token. Substitute for proper signed jwt
-	randomStr := randStr(6)
-	var newToken = srv.hostname + ":" + randomStr
+	newToken := randStr(6)
 
 	if in.ExpireTime != nil && in.ExpireTime.AsTime().Before(time.Now()) {
 		return &site.InviteToken{}, fmt.Errorf("expiration time must be in the future")
@@ -53,7 +52,7 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 
 // RedeemInviteToken redeems a previously created invite token to register a new member.
 func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
-	acc, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	acc, err := srv.checkPermissions(ctx, site.Member_EDITOR)
 	if err != nil {
 		return &site.RedeemInviteTokenResponse{}, err
 	}
