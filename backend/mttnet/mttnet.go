@@ -81,7 +81,7 @@ type docInfo struct {
 	Version string
 }
 
-// PublicationRecord holds the information of a published document (record) on a site
+// PublicationRecord holds the information of a published document (record) on a site.
 type PublicationRecord struct {
 	Document   docInfo
 	Path       string
@@ -106,6 +106,7 @@ type Site struct {
 type Server struct {
 	Node *future.ReadOnly[*Node]
 	*Site
+	publicationGetter PublicationGetter
 }
 
 // Node is a Mintter P2P node.
@@ -138,8 +139,14 @@ type tokenInfo struct {
 	expirationTime time.Time
 }
 
+// PublicationGetter is an interface for not having to pass a full-fledged documents service,
+// just the getPublication that is what we need to call in getPath
+type PublicationGetter interface {
+	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
+}
+
 // NewServer returns a new mttnet API server.
-func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node]) *Server {
+func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], publicationGetter PublicationGetter) *Server {
 	hostname := siteCfg.Hostname
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
 	srv := &Server{Site: &Site{
@@ -150,7 +157,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
 		title:                      siteCfg.Title,
-	}, Node: node}
+	}, Node: node, publicationGetter: publicationGetter}
 
 	go func() {
 		n, err := node.Await(ctx)
@@ -164,7 +171,6 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		}
 		// Indicate we can now serve the already registered endpoints.
 		close(n.registered)
-
 	}()
 	return srv
 }

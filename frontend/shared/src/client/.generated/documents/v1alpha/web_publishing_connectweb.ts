@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { AddSiteRequest, CreateInviteTokenRequest, DeleteMemberRequest, GetMemberRequest, GetSiteInfoRequest, InviteToken, ListMembersRequest, ListMembersResponse, ListSitesRequest, ListSitesResponse, ListWebPublicationRecordsRequest, ListWebPublicationRecordsResponse, ListWebPublicationsRequest, ListWebPublicationsResponse, Member, PublishDocumentRequest, PublishDocumentResponse, RedeemInviteTokenRequest, RedeemInviteTokenResponse, RemoveSiteRequest, SiteConfig, SiteInfo, UnpublishDocumentRequest, UnpublishDocumentResponse, UpdateSiteInfoRequest } from "./web_publishing_pb";
+import { AddSiteRequest, CreateInviteTokenRequest, DeleteMemberRequest, GetMemberRequest, GetPathRequest, GetPathResponse, GetSiteInfoRequest, InviteToken, ListMembersRequest, ListMembersResponse, ListSitesRequest, ListSitesResponse, ListWebPublicationRecordsRequest, ListWebPublicationRecordsResponse, ListWebPublicationsRequest, ListWebPublicationsResponse, Member, PublishDocumentRequest, PublishDocumentResponse, RedeemInviteTokenRequest, RedeemInviteTokenResponse, RemoveSiteRequest, SiteConfig, SiteInfo, UnpublishDocumentRequest, UnpublishDocumentResponse, UpdateSiteInfoRequest } from "./web_publishing_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -193,6 +193,17 @@ export const WebSite = {
       name: "ListWebPublications",
       I: ListWebPublicationsRequest,
       O: ListWebPublicationsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Get the document published at a given path.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.WebSite.GetPath
+     */
+    getPath: {
+      name: "GetPath",
+      I: GetPathRequest,
+      O: GetPathResponse,
       kind: MethodKind.Unary,
     },
   }
