@@ -1,4 +1,3 @@
-import {deletePublication, Publication} from '@mintter/shared'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
@@ -10,6 +9,7 @@ import {
   usePublicationList,
 } from '@app/hooks'
 import {formattedDate} from '@app/utils/get-format-date'
+import {openPublication} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
@@ -17,18 +17,19 @@ import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
+import {createDraft, deletePublication, Publication} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import Highlighter from 'react-highlight-words'
 import toast from 'react-hot-toast'
 import '../styles/file-list.scss'
-import {openNewDraft, openPublication} from '@app/utils/navigation'
 
 export default PublicationList
 
 function PublicationList() {
   let {data, isInitialLoading} = usePublicationList()
+  let [, setLocation] = useLocation()
 
   return (
     <div className="page-wrapper">
@@ -48,7 +49,10 @@ function PublicationList() {
           <EmptyList
             description="You have no Publications yet."
             action={() => {
-              openNewDraft()
+              createDraft().then((doc) => {
+                let path = `/d/${doc.id}/new`
+                setLocation(path)
+              })
             }}
           />
         )}
