@@ -1,4 +1,4 @@
-import {appQueryClient} from '@app/query-client'
+import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {
   getWebPublishingClient,
   getWebSiteClient,
@@ -78,19 +78,8 @@ export function useAddSite(
     {
       ...options,
       onSuccess: (_result, _hostname, ctx) => {
-        appQueryClient.invalidateQueries({
-          queryKey: [queryKeys.GET_SITES],
-        })
+        appInvalidateQueries([queryKeys.GET_SITES])
         options?.onSuccess?.(_result, _hostname, ctx)
-        // appQueryClient.refetchQueries([queryKeys.GET_SITES])
-        // queryClient.setQueryData(
-        //   [queryKeys.GET_SITES],
-        //   (oldSites: Site[] | undefined) => {
-        //     const site = {id: hostname}
-        //     if (oldSites) return [...oldSites, site]
-        //     return [site]
-        //   },
-        // )
       },
     },
   )
@@ -116,7 +105,7 @@ export function useWriteSiteInfo(
     {
       ...opts,
       onSuccess: (response, input, ctx) => {
-        appQueryClient.invalidateQueries([queryKeys.GET_SITE_INFO, hostname])
+        appInvalidateQueries([queryKeys.GET_SITE_INFO, hostname])
         opts?.onSuccess?.(response, input, ctx)
       },
     },
@@ -164,15 +153,7 @@ export function useRemoveSite(hostname: string, opts: UseMutationOptions) {
     {
       ...opts,
       onSuccess: (response, input, ctx) => {
-        appQueryClient.refetchQueries([queryKeys.GET_SITES])
-
-        // queryClient.setQueryData(
-        //   [queryKeys.GET_SITES],
-        //   (oldSites: any[] | undefined) => {
-        //     if (oldSites) return oldSites.filter((site) => site.id !== hostname)
-        //     return undefined
-        //   },
-        // )
+        appInvalidateQueries([queryKeys.GET_SITES])
         opts?.onSuccess?.(response, input, ctx)
       },
     },
@@ -215,14 +196,8 @@ export function useSitePublish() {
     },
     {
       onSuccess: (a, input) => {
-        appQueryClient.refetchQueries([
-          queryKeys.GET_WEB_PUBLICATIONS,
-          input.hostname,
-        ])
-        appQueryClient.refetchQueries([
-          queryKeys.GET_DOC_PUBLICATIONS,
-          input.documentId,
-        ])
+        appInvalidateQueries([queryKeys.GET_WEB_PUBLICATIONS, input.hostname])
+        appInvalidateQueries([queryKeys.GET_DOC_PUBLICATIONS, input.documentId])
       },
     },
   )
@@ -249,7 +224,7 @@ export function useDocRepublish() {
     },
     {
       onSuccess: (a, input) => {
-        appQueryClient.refetchQueries([queryKeys.GET_WEB_PUBLICATIONS])
+        appInvalidateQueries([queryKeys.GET_WEB_PUBLICATIONS])
       },
     },
   )
@@ -265,10 +240,7 @@ export function useSiteUnpublish() {
     },
     {
       onSuccess: (a, input) => {
-        appQueryClient.refetchQueries([
-          queryKeys.GET_WEB_PUBLICATIONS,
-          input.hostname,
-        ])
+        appInvalidateQueries([queryKeys.GET_WEB_PUBLICATIONS, input.hostname])
       },
     },
   )
