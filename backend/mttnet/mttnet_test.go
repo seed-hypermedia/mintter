@@ -63,7 +63,7 @@ func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, con
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
 	f := future.New[*Node]()
-	NewServer(ctx, config.Default().Site, f.ReadOnly)
+	NewServer(ctx, config.Default().Site, f.ReadOnly, nil)
 	require.NoError(t, f.Resolve(n))
 
 	go func() {
