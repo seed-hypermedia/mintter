@@ -9,6 +9,7 @@ import {
   Publication,
   getPublication,
   ReferencedDocument,
+  Member,
 } from '@mintter/shared'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from './index'
@@ -42,7 +43,6 @@ function extractReferencedDocs(doc: Document) {
 }
 
 async function getDocWebPublications(documentId: string) {
-  return [] // @horacioh remove after implementing
   const result = await webPub.listWebPublicationRecords({documentId})
   return result.publications
 }
@@ -99,13 +99,7 @@ export function useSiteInfo(hostname: string) {
   return useQuery<SiteInfo>({
     queryKey: [queryKeys.GET_SITE_INFO, hostname],
     queryFn: async () => {
-      // return await getWebSiteClient(hostname).getSiteInfo({})  // @horacioh use after implementing
-      return {
-        hostname,
-        title: '',
-        description: '',
-        owner: '',
-      } as SiteInfo
+      return await getWebSiteClient(hostname).getSiteInfo({})
     },
   })
 }
@@ -122,6 +116,35 @@ export function useWriteSiteInfo(
       ...opts,
       onSuccess: (response, input, ctx) => {
         appQueryClient.invalidateQueries([queryKeys.GET_SITE_INFO, hostname])
+        opts?.onSuccess?.(response, input, ctx)
+      },
+    },
+  )
+}
+
+export function useSiteMembers(hostname: string) {
+  return useQuery<Member[]>({
+    queryKey: [queryKeys.GET_SITE_MEMBERS, hostname],
+    queryFn: async () => {
+      return await (
+        await getWebSiteClient(hostname).listMembers({})
+      ).members
+    },
+  })
+}
+
+export function useInviteMember(
+  hostname: string,
+  opts?: UseMutationOptions<unknown, unknown, void>,
+) {
+  return useMutation(
+    async () => {
+      await getWebSiteClient(hostname).createInviteToken({})
+    },
+    {
+      ...opts,
+      onSuccess: (response, input, ctx) => {
+        // invalidate, refetch? members list probably wont change yet
         opts?.onSuccess?.(response, input, ctx)
       },
     },
