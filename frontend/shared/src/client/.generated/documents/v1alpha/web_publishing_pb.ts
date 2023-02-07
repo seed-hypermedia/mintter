@@ -5,6 +5,7 @@
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, Timestamp } from "@bufbuild/protobuf";
+import { Publication } from "./documents_pb";
 
 /**
  * Request to add a site.
@@ -579,6 +580,13 @@ export class RedeemInviteTokenRequest extends Message<RedeemInviteTokenRequest> 
  * @generated from message com.mintter.documents.v1alpha.RedeemInviteTokenResponse
  */
 export class RedeemInviteTokenResponse extends Message<RedeemInviteTokenResponse> {
+  /**
+   * The role associated with the redeemed token
+   *
+   * @generated from field: com.mintter.documents.v1alpha.Member.Role role = 1;
+   */
+  role = Member_Role.ROLE_UNSPECIFIED;
+
   constructor(data?: PartialMessage<RedeemInviteTokenResponse>) {
     super();
     proto3.util.initPartial(data, this);
@@ -587,6 +595,7 @@ export class RedeemInviteTokenResponse extends Message<RedeemInviteTokenResponse
   static readonly runtime = proto3;
   static readonly typeName = "com.mintter.documents.v1alpha.RedeemInviteTokenResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "role", kind: "enum", T: proto3.getEnumType(Member_Role) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RedeemInviteTokenResponse {
@@ -1339,6 +1348,84 @@ export class ReferencedDocument extends Message<ReferencedDocument> {
 
   static equals(a: ReferencedDocument | PlainMessage<ReferencedDocument> | undefined, b: ReferencedDocument | PlainMessage<ReferencedDocument> | undefined): boolean {
     return proto3.util.equals(ReferencedDocument, a, b);
+  }
+}
+
+/**
+ * @generated from message com.mintter.documents.v1alpha.GetPathRequest
+ */
+export class GetPathRequest extends Message<GetPathRequest> {
+  /**
+   * Get doc by path. Empty string === home/root doc.
+   *
+   * @generated from field: string path = 1;
+   */
+  path = "";
+
+  constructor(data?: PartialMessage<GetPathRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.GetPathRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPathRequest {
+    return new GetPathRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPathRequest {
+    return new GetPathRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPathRequest {
+    return new GetPathRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPathRequest | PlainMessage<GetPathRequest> | undefined, b: GetPathRequest | PlainMessage<GetPathRequest> | undefined): boolean {
+    return proto3.util.equals(GetPathRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message com.mintter.documents.v1alpha.GetPathResponse
+ */
+export class GetPathResponse extends Message<GetPathResponse> {
+  /**
+   * Publication
+   *
+   * @generated from field: com.mintter.documents.v1alpha.Publication publication = 1;
+   */
+  publication?: Publication;
+
+  constructor(data?: PartialMessage<GetPathResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.GetPathResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "publication", kind: "message", T: Publication },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetPathResponse {
+    return new GetPathResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetPathResponse {
+    return new GetPathResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetPathResponse {
+    return new GetPathResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetPathResponse | PlainMessage<GetPathResponse> | undefined, b: GetPathResponse | PlainMessage<GetPathResponse> | undefined): boolean {
+    return proto3.util.equals(GetPathResponse, a, b);
   }
 }
 

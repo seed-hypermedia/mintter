@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	// MttHeader is the headers bearing the remote site hostname to proxy calls to
+	// MttHeader is the headers bearing the remote site hostname to proxy calls to.
 	MttHeader = "x-mintter-site-hostname"
 )
 
@@ -76,7 +76,7 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 
 	// We upsert the new role
 	srv.accountsDB[acc.String()] = tokenInfo.role
-	return &site.RedeemInviteTokenResponse{}, nil
+	return &site.RedeemInviteTokenResponse{Role: tokenInfo.role}, nil
 }
 
 // GetSiteInfo Gets public-facing site information.
@@ -152,7 +152,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 
 // UnpublishDocument un-publishes (un-lists) a given document.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	_, err := srv.checkPermissions(ctx, site.Member_OWNER)
 	if err != nil {
 		return &site.UnpublishDocumentResponse{}, err
 	}
@@ -181,6 +181,28 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 		})
 	}
 	return &site.ListWebPublicationsResponse{Publications: publications}, nil
+}
+
+// GetPath gets a publication given the path it has been publish to.
+func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.GetPathResponse, error) {
+	_, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	if err != nil {
+		return &site.GetPathResponse{}, err
+	}
+	ret := &site.Publication{}
+	// TODO(juligasa): replace with a proper remote call to all known sites in the api.sitesDB
+	err = fmt.Errorf("No publication was found in provided path")
+	for _, v := range srv.WebPublicationRecordDB { // we first look in the db because we may have the document but was unpublished (removed from the database but not from the storage)
+		if in.Path == v.Path {
+			ret, err = srv.publicationGetter.GetPublication(ctx, &site.GetPublicationRequest{
+				DocumentId: v.Document.ID,
+				LocalOnly:  true,
+			})
+			ret.Version = v.Document.Version
+			break
+		}
+	}
+	return &site.GetPathResponse{Publication: ret}, err
 }
 
 func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
@@ -228,10 +250,10 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	if err != nil && srv.hostname == "" { // no headers and not a local site
 		return cid.Cid{}, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a proper remote site")
 	}
-	if err == nil && srv.hostname != remoteHostname {
-		// proxy to remote
-		// return &site.InviteToken{}, fmt.Errorf("Remote proxying not ready yet. Please remove header to make it a local call")
-	}
+	//if err == nil && srv.hostname != remoteHostname {
+	// proxy to remote
+	// return &site.InviteToken{}, fmt.Errorf("Remote proxying not ready yet. Please remove header to make it a local call")
+	//}
 	acc := n.me.AccountID()
 
 	if srv.hostname == remoteHostname { // proxyed call

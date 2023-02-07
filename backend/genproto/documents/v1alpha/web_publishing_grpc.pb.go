@@ -249,6 +249,8 @@ type WebSiteClient interface {
 	UnpublishDocument(ctx context.Context, in *UnpublishDocumentRequest, opts ...grpc.CallOption) (*UnpublishDocumentResponse, error)
 	// list all the published documents
 	ListWebPublications(ctx context.Context, in *ListWebPublicationsRequest, opts ...grpc.CallOption) (*ListWebPublicationsResponse, error)
+	// Get the document published at a given path.
+	GetPath(ctx context.Context, in *GetPathRequest, opts ...grpc.CallOption) (*GetPathResponse, error)
 }
 
 type webSiteClient struct {
@@ -349,6 +351,15 @@ func (c *webSiteClient) ListWebPublications(ctx context.Context, in *ListWebPubl
 	return out, nil
 }
 
+func (c *webSiteClient) GetPath(ctx context.Context, in *GetPathRequest, opts ...grpc.CallOption) (*GetPathResponse, error) {
+	out := new(GetPathResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.documents.v1alpha.WebSite/GetPath", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebSiteServer is the server API for WebSite service.
 // All implementations should embed UnimplementedWebSiteServer
 // for forward compatibility
@@ -379,6 +390,8 @@ type WebSiteServer interface {
 	UnpublishDocument(context.Context, *UnpublishDocumentRequest) (*UnpublishDocumentResponse, error)
 	// list all the published documents
 	ListWebPublications(context.Context, *ListWebPublicationsRequest) (*ListWebPublicationsResponse, error)
+	// Get the document published at a given path.
+	GetPath(context.Context, *GetPathRequest) (*GetPathResponse, error)
 }
 
 // UnimplementedWebSiteServer should be embedded to have forward compatible implementations.
@@ -414,6 +427,9 @@ func (UnimplementedWebSiteServer) UnpublishDocument(context.Context, *UnpublishD
 }
 func (UnimplementedWebSiteServer) ListWebPublications(context.Context, *ListWebPublicationsRequest) (*ListWebPublicationsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListWebPublications not implemented")
+}
+func (UnimplementedWebSiteServer) GetPath(context.Context, *GetPathRequest) (*GetPathResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPath not implemented")
 }
 
 // UnsafeWebSiteServer may be embedded to opt out of forward compatibility for this service.
@@ -607,6 +623,24 @@ func _WebSite_ListWebPublications_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebSite_GetPath_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPathRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebSiteServer).GetPath(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.documents.v1alpha.WebSite/GetPath",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebSiteServer).GetPath(ctx, req.(*GetPathRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WebSite_ServiceDesc is the grpc.ServiceDesc for WebSite service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -653,6 +687,10 @@ var WebSite_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListWebPublications",
 			Handler:    _WebSite_ListWebPublications_Handler,
+		},
+		{
+			MethodName: "GetPath",
+			Handler:    _WebSite_GetPath_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

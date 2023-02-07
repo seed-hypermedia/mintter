@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package com.mintter.documents.v1alpha;
-
+import "documents/v1alpha/documents.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
@@ -162,6 +162,9 @@ service WebSite {
 
   // list all the published documents
   rpc ListWebPublications(ListWebPublicationsRequest) returns (ListWebPublicationsResponse);
+
+  // Get the document published at a given path.
+  rpc GetPath(GetPathRequest) returns (GetPathResponse);
 }
 
 // Request to create a new invite token.
@@ -188,7 +191,11 @@ message RedeemInviteTokenRequest {
 }
 
 // Response after the token is redeemed.
-message RedeemInviteTokenResponse {}
+message RedeemInviteTokenResponse {
+  // The role associated with the redeemed token
+  Member.Role role = 1;
+
+}
 
 // Request to get the site info.
 message GetSiteInfoRequest {}
@@ -320,4 +327,15 @@ message ReferencedDocument {
 
   // Required. Specific version of the document.
   string version = 2;
+}
+
+message GetPathRequest {
+  // Get doc by path. Empty string === home/root doc.
+  string path = 1;
+}
+
+message GetPathResponse {
+  // Publication
+  Publication publication = 1;
+
 }
