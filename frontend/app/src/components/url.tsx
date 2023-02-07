@@ -5,13 +5,23 @@ import {useState} from 'react'
 import {Box} from './box'
 import {Icon} from './icon'
 
-export function AccessURLRow({url, title}: {url: string; title?: string}) {
+export function AccessURLRow({
+  url,
+  title,
+  enableLink = true,
+}: {
+  url: string
+  title?: string
+  enableLink?: boolean
+}) {
   const [isClipboardCopied, setIsClipboardCopied] = useState(false)
 
   return (
     <URLRow>
       <URLButton
+        disabled={!enableLink}
         onClick={() => {
+          if (!enableLink) return
           open(url)
         }}
       >

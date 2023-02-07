@@ -6,9 +6,11 @@ import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
 import {
   useAddSite,
+  useInviteMember,
   useRemoveSite,
   useSiteInfo,
   useSiteList,
+  useSiteMembers,
   useWriteSiteInfo,
 } from '@app/hooks/sites'
 import {ObjectKeys} from '@app/utils/object-keys'
@@ -21,7 +23,15 @@ import {FormEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
-import {SiteConfig, SiteInfo} from '@mintter/shared'
+import {Member_Role, SiteConfig, SiteInfo} from '@mintter/shared'
+import {styled} from '@stitches/react'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
+import {StyledOverlay, Prompt} from '@components/prompt'
+import {AccessURLRow} from '@components/url'
+
+// const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
+// const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
 export default function Settings({
   updateProfile = localApi.updateProfile,
@@ -322,15 +332,113 @@ function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
     </Button>
   )
 }
+function InviteMemberDialog({
+  hostname,
+  onDone,
+}: {
+  hostname: string
+  onDone: () => void
+}) {
+  const invite = useInviteMember(hostname)
+  const [url, setURL] = useState<null | string>(null)
+  useEffect(() => {
+    invite.mutateAsync().then((inviteToken) => {
+      setURL(`https://${hostname}/invite/${inviteToken}`)
+    })
+  }, [hostname, invite])
+  if (invite.isLoading) return <div>Creating Invite..</div>
+
+  return (
+    <div>
+      <p>Copy and send this secret editor invite URL</p>
+      {url && <AccessURLRow url={url} title={url} enableLink={false} />}
+      <Button onClick={onDone}>Done</Button>
+    </div>
+  )
+}
+export function useInviteDialog(hostname: string) {
+  const [isOpen, setIsOpen] = useState(false)
+  function open() {
+    setIsOpen(true)
+  }
+  return {
+    content: (
+      <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+        <DialogPrimitive.Portal>
+          <StyledOverlay />
+          <Prompt.Content>
+            <InviteMemberDialog
+              hostname={hostname}
+              onDone={() => setIsOpen(false)}
+            />
+          </Prompt.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    ),
+    open,
+  }
+}
+
+function getNameOfRole(role: Member_Role): string {
+  if (role === Member_Role.OWNER) return 'Owner'
+  if (role === Member_Role.EDITOR) return 'Editor'
+  return 'Unauthorized'
+}
+
+function SiteMembers({hostname}: {hostname: string}) {
+  const {content, open} = useInviteDialog(hostname)
+  const {data: members} = useSiteMembers(hostname)
+  return (
+    <>
+      {members?.map((member) => (
+        <div key={member.accountId}>
+          {member.accountId} - {getNameOfRole(member.role)}
+        </div>
+      ))}
+      {content}
+      <SettingsSection title="Members">
+        <Button
+          type="button"
+          size="2"
+          data-testid="submit"
+          onClick={open}
+          css={{alignSelf: 'flex-start'}}
+        >
+          Invite Editor
+        </Button>
+      </SettingsSection>
+    </>
+  )
+}
+
+function SettingsSection({
+  title,
+  children,
+}: {
+  title?: string
+  children: React.ReactNode
+}) {
+  return (
+    <Box
+      css={{
+        borderTop: '1px solid blue',
+        borderColor: '$base-border-subtle',
+        paddingTop: '$5',
+        paddingBottom: '$5',
+      }}
+    >
+      <h3>{title}</h3>
+      {children}
+    </Box>
+  )
+}
 
 function SiteInfoForm({
   info,
   onSubmit,
-  onRemove,
 }: {
   info: SiteInfo
   onSubmit: (s: Partial<SiteInfo>) => void
-  onRemove: () => void
 }) {
   const [title, setTitle] = useState(info.title)
   const [description, setDescription] = useState(info.description)
@@ -339,69 +447,87 @@ function SiteInfoForm({
       <TextField
         id="site-title"
         name="site-title"
-        label="Public Title"
+        label="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
       <TextField
+        textarea
         id="site-description"
         name="site-description"
-        label="Public Description"
+        label="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
-      <TextField
-        textarea
-        id="site-editors"
-        name="site-editors"
-        label="Editors"
-        rows={4}
-      />
-      <Box
+      <Button
+        size="2"
+        color="success"
+        onClick={() => {
+          onSubmit({title, description})
+        }}
+      >
+        Save Site Info
+      </Button>
+      {/* <Box
         css={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
       >
-        <Button color="danger" size="1" variant="outlined" onClick={onRemove}>
-          Remove Site
-        </Button>
-
-        <Button
-          size="2"
-          color="success"
-          onClick={() => {
-            onSubmit({title, description})
-          }}
-        >
-          Save Config
-        </Button>
-      </Box>
+       
+      </Box> */}
     </>
   )
 }
 
-function SiteSettings({siteId, onDone}: {siteId: string; onDone: () => void}) {
-  const removeSite = useRemoveSite(siteId, {
-    onSuccess: () => onDone(),
-  })
-  const siteInfo = useSiteInfo(siteId)
-  const writeSiteInfo = useWriteSiteInfo(siteId)
+function SiteSettings({
+  hostname,
+  onDone,
+}: {
+  hostname: string
+  onDone: () => void
+}) {
   return (
     <>
-      <SettingsNavBack title="Web Sites" onDone={onDone} />
-      <h1>{siteId}</h1>
+      <SettingsHeader>
+        <SettingsNavBack title="Web Sites" onDone={onDone} />
+        <h2>{hostname}</h2>
+      </SettingsHeader>
+
+      <SiteInfoSection hostname={hostname} />
+      <SiteMembers hostname={hostname} />
+      <SiteAdmin hostname={hostname} onDone={onDone} />
+    </>
+  )
+}
+
+function SiteInfoSection({hostname}: {hostname: string}) {
+  const siteInfo = useSiteInfo(hostname)
+  const writeSiteInfo = useWriteSiteInfo(hostname)
+  return (
+    <SettingsSection title="Public SEO Info">
       {siteInfo?.data ? (
         <SiteInfoForm
           info={siteInfo.data}
           onSubmit={(info) => writeSiteInfo.mutate(info)}
-          onRemove={() => removeSite.mutate()}
         />
       ) : null}
-    </>
+    </SettingsSection>
   )
 }
+
+const SettingsHeader = styled('div', {
+  display: 'flex',
+  gap: '1rem',
+  position: 'relative',
+  '>h2': {
+    flexGrow: 1,
+    margin: 0,
+    fontSize: '1.5em',
+  },
+})
+
 function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   const addSite = useAddSite({
     onSuccess: (result, hostname) => onDone(hostname),
@@ -418,8 +544,10 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   return (
     <>
       {addSite.isLoading ? <div>loading...</div> : null}
-      <SettingsNavBack title="Cancel" onDone={() => onDone(null)} />
-      <h1>Add Site</h1>
+      <SettingsHeader>
+        <SettingsNavBack title="Cancel" onDone={() => onDone(null)} />
+        <h2>Add Mintter Web Site</h2>
+      </SettingsHeader>
       <p>Follow the self-hosting guide and copy the invite URL:</p>
       <Box
         as={'form'}
@@ -461,7 +589,7 @@ function SitesSettings() {
   if (typeof activeSitePage === 'string') {
     return (
       <SiteSettings
-        siteId={activeSitePage}
+        hostname={activeSitePage}
         onDone={() => setActiveSitePage(null)}
       />
     )
@@ -480,7 +608,7 @@ function SitesSettings() {
         }}
         css={{alignSelf: 'flex-start'}}
       >
-        New Site
+        Add Site
       </Button>
     </>
   )
@@ -495,6 +623,24 @@ function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
     <Button className="settings-list-item" onClick={onSelect}>
       {site.hostname}
     </Button>
+  )
+}
+
+function SiteAdmin({hostname, onDone}: {hostname: string; onDone: () => void}) {
+  const removeSite = useRemoveSite(hostname, {
+    onSuccess: () => onDone(),
+  })
+  return (
+    <SettingsSection>
+      <Button
+        color="danger"
+        size="1"
+        variant="outlined"
+        onClick={() => removeSite.mutate()}
+      >
+        Remove Site
+      </Button>
+    </SettingsSection>
   )
 }
 
