@@ -332,22 +332,7 @@ function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
     </Button>
   )
 }
-function InviteMemberDialog({
-  hostname,
-  onDone,
-}: {
-  hostname: string
-  onDone: () => void
-}) {
-  const invite = useInviteMember(hostname)
-  const [url, setURL] = useState<null | string>(null)
-  useEffect(() => {
-    invite.mutateAsync().then((inviteToken) => {
-      setURL(`https://${hostname}/invite/${inviteToken}`)
-    })
-  }, [hostname, invite])
-  if (invite.isLoading) return <div>Creating Invite..</div>
-
+function InviteMemberDialog({url, onDone}: {url: string; onDone: () => void}) {
   return (
     <div>
       <p>Copy and send this secret editor invite URL</p>
@@ -357,20 +342,26 @@ function InviteMemberDialog({
   )
 }
 export function useInviteDialog(hostname: string) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState<null | string>(null)
+  const invite = useInviteMember(hostname)
+
   function open() {
-    setIsOpen(true)
+    invite.mutateAsync().then((inviteToken) => {
+      setIsOpen(`https://${hostname}/invite/${inviteToken}`)
+    })
   }
   return {
     content: (
-      <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+      <DialogPrimitive.Root
+        open={!!isOpen}
+        onOpenChange={() => setIsOpen(null)}
+      >
         <DialogPrimitive.Portal>
           <StyledOverlay />
           <Prompt.Content>
-            <InviteMemberDialog
-              hostname={hostname}
-              onDone={() => setIsOpen(false)}
-            />
+            {isOpen && (
+              <InviteMemberDialog url={isOpen} onDone={() => setIsOpen(null)} />
+            )}
           </Prompt.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
