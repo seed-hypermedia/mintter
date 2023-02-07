@@ -35,6 +35,12 @@ type Discoverer interface {
 	ProvideCID(cid.Cid) error
 }
 
+// TokenRedeemer is an interface for not having to pass a full-fledged sites service,
+// just the RedeemInviteToken that is what we need to call in in add site.
+type TokenRedeemer interface {
+	RedeemInviteToken(context.Context, *documents.RedeemInviteTokenRequest) (*documents.RedeemInviteTokenResponse, error)
+}
+
 // Server implements DocumentsServer gRPC API.
 type Server struct {
 	db                          *sqlitex.Pool
@@ -43,10 +49,11 @@ type Server struct {
 	sitesDB                     map[string]siteInfo                  //TODO: remove when finished with the mockup
 	localWebPublicationRecordDB *map[string]mttnet.PublicationRecord //TODO: remove when finished with the mockup
 	disc                        Discoverer
+	TokenRedeemer               TokenRedeemer
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, recordsDB *map[string]mttnet.PublicationRecord) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, recordsDB *map[string]mttnet.PublicationRecord, tokenRedeemer TokenRedeemer) *Server {
 	srv := &Server{
 		db:                          db,
 		vcsdb:                       sqlitevcs.New(db),
@@ -54,6 +61,7 @@ func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discov
 		sitesDB:                     map[string]siteInfo{},
 		disc:                        disc,
 		localWebPublicationRecordDB: recordsDB,
+		TokenRedeemer:               tokenRedeemer,
 	}
 
 	return srv
