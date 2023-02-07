@@ -126,20 +126,24 @@ export function useSiteMembers(hostname: string) {
   return useQuery<Member[]>({
     queryKey: [queryKeys.GET_SITE_MEMBERS, hostname],
     queryFn: async () => {
-      return await (
-        await getWebSiteClient(hostname).listMembers({})
-      ).members
+      const site = await getWebSiteClient(hostname)
+      const result = await site.listMembers({}).catch((e) => {
+        console.error(e)
+        throw e
+      })
+      return result.members
     },
   })
 }
 
 export function useInviteMember(
   hostname: string,
-  opts?: UseMutationOptions<unknown, unknown, void>,
+  opts?: UseMutationOptions<string, unknown, void>,
 ) {
   return useMutation(
     async () => {
-      await getWebSiteClient(hostname).createInviteToken({})
+      const token = await getWebSiteClient(hostname).createInviteToken({})
+      return token.token
     },
     {
       ...opts,
