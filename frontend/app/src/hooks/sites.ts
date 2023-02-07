@@ -69,11 +69,16 @@ export function useSiteList() {
 }
 
 export function useAddSite(
-  options?: UseMutationOptions<null, void, string, unknown>,
+  options?: UseMutationOptions<
+    null,
+    void,
+    {hostname: string; inviteToken?: string},
+    unknown
+  >,
 ) {
   return useMutation(
-    async (hostname: string, inviteToken?: string) => {
-      await webPub.addSite({hostname, inviteToken})
+    async (input: {hostname: string; inviteToken?: string}) => {
+      await webPub.addSite(input)
       return null
     },
     {
@@ -120,7 +125,7 @@ export function useSiteMembers(hostname: string) {
       const site = await getWebSiteClient(hostname)
       const result = await site.listMembers({}).catch((e) => {
         console.error(e)
-        throw e
+        return {members: []}
       })
       return result.members
     },
