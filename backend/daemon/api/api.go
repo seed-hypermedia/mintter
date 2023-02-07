@@ -57,8 +57,9 @@ func New(
 	}
 
 	publicationsDB := map[string]mttnet.PublicationRecord{}
-	documentsSrv := documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}, &publicationsDB)
+	documentsSrv := documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}, &publicationsDB, nil)
 	siteSrv := mttnet.NewServer(ctx, cfg, node, documentsSrv)
+	documentsSrv.TokenRedeemer = siteSrv
 	publicationsDB = siteSrv.WebPublicationRecordDB
 	return Server{
 		Accounts:   accounts.NewServer(id, v),

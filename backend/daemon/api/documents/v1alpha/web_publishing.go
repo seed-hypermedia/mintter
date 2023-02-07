@@ -65,14 +65,24 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	if added {
 		return &ret, fmt.Errorf("site " + in.Hostname + " already added")
 	}
-
-	if strings.Contains(strings.ToLower(in.InviteToken), "unspecified") {
-		api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(documents.Member_ROLE_UNSPECIFIED)}
-	} else if strings.Contains(strings.ToLower(in.InviteToken), "owner") {
-		api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(documents.Member_OWNER)}
+	role := documents.Member_EDITOR
+	if in.InviteToken != "" {
+		res, err := api.TokenRedeemer.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{
+			Token: in.InviteToken,
+		})
+		if err != nil {
+			return &ret, fmt.Errorf("Couldn't redeem the attached token: %w", err)
+		}
+		role = res.Role
 	} else {
-		api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(documents.Member_EDITOR)}
+		if strings.Contains(strings.ToLower(in.InviteToken), "unspecified") {
+			role = documents.Member_ROLE_UNSPECIFIED
+		} else if strings.Contains(strings.ToLower(in.InviteToken), "owner") {
+			role = documents.Member_OWNER
+		}
 	}
+
+	api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(role)}
 	ret.Hostname = in.Hostname
 	ret.Role = documents.Member_Role(api.sitesDB[in.Hostname].role)
 	return &ret, nil
