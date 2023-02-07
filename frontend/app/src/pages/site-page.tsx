@@ -3,7 +3,7 @@ import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {usePublication, useAuthor} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
 import {formattedDate} from '@app/utils/get-format-date'
-import {openNewDraft} from '@app/utils/navigation'
+import {useNavigation} from '@app/utils/navigation'
 import {EmptyList} from '@components/empty-list'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
@@ -19,7 +19,7 @@ export default function SitePage() {
   const host = params?.hostname
 
   let {data, isInitialLoading} = useSitePublications(host)
-
+  const nav = useNavigation()
   if (!host) throw new Error('Hostname not found for SitePage')
 
   return (
@@ -41,7 +41,7 @@ export default function SitePage() {
           <EmptyList
             description={`Nothing published on ${host} yet.`}
             action={() => {
-              openNewDraft()
+              nav.openNewDraft(false)
             }}
           />
         )}

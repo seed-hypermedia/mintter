@@ -7,20 +7,19 @@ import {
   PublicationActor,
   PublicationMachineContext,
 } from '@app/publication-machine'
-import {openWindow} from '@app/utils/open-window'
+import {useNavigation} from '@app/utils/navigation'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
-import {createDraft} from '@mintter/shared'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
-import {Route, Switch, useLocation, useRoute} from 'wouter'
+import {Route, Switch, useLocation} from 'wouter'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
 
 export function ActionButtons(props: TitleBarProps) {
-  let [, setLocation] = useLocation()
+  const nav = useNavigation()
   function onCopy() {
     if (props.mainActor?.actor) {
       let context = props.mainActor.actor.getSnapshot().context
@@ -65,15 +64,7 @@ export function ActionButtons(props: TitleBarProps) {
           className="titlebar-button"
           onClick={(e) => {
             e.preventDefault()
-
-            createDraft().then((res) => {
-              let path = `/d/${res.id}`
-              if (e.shiftKey) {
-                setLocation(path)
-              } else {
-                openWindow(path)
-              }
-            })
+            nav.openNewDraft(!e.shiftKey)
           }}
         >
           <Icon name="Add" />

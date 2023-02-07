@@ -3,7 +3,7 @@ import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
 import {prefetchDraft, queryKeys, useDraftList} from '@app/hooks'
 import {formattedDate} from '@app/utils/get-format-date'
-import {openDraft} from '@app/utils/navigation'
+import {openDraft, useNavigation} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
@@ -11,7 +11,7 @@ import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
-import {createDraft, deleteDraft, Document} from '@mintter/shared'
+import {deleteDraft, Document} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import Highlighter from 'react-highlight-words'
@@ -22,8 +22,7 @@ export default DraftList
 function DraftList() {
   let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
-  let [, setLocation] = useLocation()
-
+  const nav = useNavigation()
   return (
     <div className="page-wrapper">
       <ScrollArea>
@@ -39,10 +38,7 @@ function DraftList() {
           <EmptyList
             description="You have no Drafts yet."
             action={() => {
-              createDraft().then((doc) => {
-                let path = `/d/${doc.id}/new`
-                setLocation(path)
-              })
+              nav.openNewDraft(false)
             }}
           />
         )}
