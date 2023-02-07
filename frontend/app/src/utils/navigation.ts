@@ -1,20 +1,31 @@
 import {createDraft} from '@mintter/shared'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import {toast} from 'react-hot-toast'
+import {useLocation} from 'wouter'
 import {openWindow} from './open-window'
 
-export function openNewDraft() {
-  createDraft()
-    .then((doc) => {
-      let path = `/d/${doc.id}/new`
-      tauriInvoke('emit_all', {
-        event: 'new_draft',
+export function useNavigation() {
+  const [, setLocation] = useLocation()
+  function openNewDraft(newWindow = true) {
+    createDraft()
+      .then((doc) => {
+        let path = `/d/${doc.id}/new`
+        tauriInvoke('emit_all', {
+          event: 'new_draft',
+        })
+        if (newWindow) {
+          openWindow(path)
+        } else {
+          setLocation(path)
+        }
       })
-      openWindow(path)
-    })
-    .catch(() => {
-      toast.error('Failed to create new draft')
-    })
+      .catch(() => {
+        toast.error('Failed to create new draft')
+      })
+  }
+  return {
+    openNewDraft,
+  }
 }
 
 export function openPublication(

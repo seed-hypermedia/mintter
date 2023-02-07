@@ -9,7 +9,7 @@ import {
   usePublicationList,
 } from '@app/hooks'
 import {formattedDate} from '@app/utils/get-format-date'
-import {openPublication} from '@app/utils/navigation'
+import {openPublication, useNavigation} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
@@ -17,7 +17,7 @@ import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
-import {createDraft, deletePublication, Publication} from '@mintter/shared'
+import {deletePublication, Publication} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -29,7 +29,7 @@ export default PublicationList
 
 function PublicationList() {
   let {data, isInitialLoading} = usePublicationList()
-  let [, setLocation] = useLocation()
+  let nav = useNavigation()
 
   return (
     <div className="page-wrapper">
@@ -49,10 +49,7 @@ function PublicationList() {
           <EmptyList
             description="You have no Publications yet."
             action={() => {
-              createDraft().then((doc) => {
-                let path = `/d/${doc.id}/new`
-                setLocation(path)
-              })
+              nav.openNewDraft(false)
             }}
           />
         )}
