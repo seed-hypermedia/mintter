@@ -521,7 +521,7 @@ const SettingsHeader = styled('div', {
 
 function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   const addSite = useAddSite({
-    onSuccess: (result, hostname) => onDone(hostname),
+    onSuccess: (result, input) => onDone(input.hostname),
   })
   const [siteUrl, setSiteUrl] = useState<string | null>(null)
   const hostRef = useRef<HTMLInputElement>(null)
@@ -534,17 +534,25 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   }, [])
   return (
     <>
-      {addSite.isLoading ? <div>loading...</div> : null}
       <SettingsHeader>
         <SettingsNavBack title="Cancel" onDone={() => onDone(null)} />
         <h2>Add Mintter Web Site</h2>
       </SettingsHeader>
+      {addSite.error ? (
+        <Text color={'danger'}>{addSite.error?.message}</Text>
+      ) : null}
+      {addSite.isLoading ? <div>loading...</div> : null}
       <p>Follow the self-hosting guide and copy the invite URL:</p>
       <Box
         as={'form'}
         onSubmit={(e) => {
           e.preventDefault()
-          if (siteUrl) addSite.mutate(siteUrl)
+          const matchedURL = siteUrl?.match(
+            /^(https:\/\/)?([^/]*)(\/invite\/(.*))?$/,
+          )
+          const hostname = matchedURL?.[2]
+          const inviteToken = matchedURL?.[4]
+          if (hostname) addSite.mutate({hostname, inviteToken})
         }}
         css={{
           display: 'flex',
