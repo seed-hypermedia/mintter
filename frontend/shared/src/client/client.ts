@@ -11,7 +11,9 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
+console.log(import.meta.env?.DEV ? '🦾 Development mode' : '🚀 Production mode')
+
 export const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:55001',
-  interceptors: import.meta.env.DEV ? [loggingInterceptor] : [],
+  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
 })
