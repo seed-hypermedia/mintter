@@ -47,10 +47,11 @@ async function getDocWebPublications(documentId: string) {
   return result.publications
 }
 
-export function useDocPublications(docId: string) {
+export function useDocPublications(docId?: string) {
   return useQuery({
     queryKey: [queryKeys.GET_DOC_PUBLICATIONS, docId],
     queryFn: async () => {
+      if (!docId) return []
       return await getDocWebPublications(docId)
     },
   })
@@ -217,6 +218,10 @@ export function useSitePublish() {
         appQueryClient.refetchQueries([
           queryKeys.GET_WEB_PUBLICATIONS,
           input.hostname,
+        ])
+        appQueryClient.refetchQueries([
+          queryKeys.GET_DOC_PUBLICATIONS,
+          input.documentId,
         ])
       },
     },

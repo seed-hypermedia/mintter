@@ -12,6 +12,7 @@ import {styled} from '@app/stitches.config'
 import {AccessURLRow} from '@components/url'
 import {usePublicationDialog} from './publication-dialog'
 import {MainActor} from '@app/hooks/main-actor'
+import {WebPublicationRecord} from '@mintter/shared'
 
 function MintterURLRow({doc}: {doc: PublicationActor}) {
   const {title, url} = useSelector(doc, (state) => {
@@ -26,22 +27,50 @@ function MintterURLRow({doc}: {doc: PublicationActor}) {
   return <AccessURLRow url={url} title={title} />
 }
 
-function PublishedURLs({docId}: {docId: string}) {
-  const publications = useDocPublications(docId)
+function PublishedURLs({
+  publications,
+  doc,
+}: {
+  publications?: WebPublicationRecord[]
+  doc: MainActor['actor']
+}) {
+  if (publications && publications.length === 0)
+    return <MintterURLRow doc={doc} />
   return (
     <>
-      {publications.data?.map((pub) => {
-        return <AccessURLRow key={pub.id} url={'title'} title="pub url" />
+      {publications?.map((pub) => {
+        const shortURL = pub.path
+          ? `${pub.hostname}/${pub.path}`
+          : `${pub.hostname}/p/${pub.documentId}/${pub.version}`
+        return (
+          <AccessURLRow
+            key={`${pub.documentId}/${pub.version}`}
+            url={`https://${shortURL}`}
+            title={shortURL}
+          />
+        )
       })}
     </>
   )
 }
 
-function PublishButtons({onPublish}: {onPublish: (hostname: string) => void}) {
+function PublishButtons({
+  onPublish,
+  publications,
+}: {
+  onPublish: (hostname: string) => void
+  publications?: WebPublicationRecord[]
+}) {
   const sites = useSiteList()
+  const sitesList = sites.data?.filter(({hostname}) => {
+    if (publications?.find((pub) => pub.hostname === hostname)) return false
+    return true
+  })
+  if (sitesList?.length === 0) return null
   return (
     <>
-      {sites.data?.map((site) => {
+      <Subheading>Publish to:</Subheading>
+      {sitesList?.map((site) => {
         return (
           <Button
             key={site.hostname}
@@ -71,6 +100,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const [isOpen, setIsOpen] = useState(false)
   const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
   const publicationDialog = usePublicationDialog(mainActor)
+  const publications = useDocPublications(docId)
 
   if (!isDraft && !isPublic && !isPublicB) return null
   return (
@@ -140,14 +170,14 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
               }}
             >
               <Subheading>Public on the Web:</Subheading>
-              <MintterURLRow doc={mainActor.actor} />
-              <AccessURLRow // getridofme after you fix PublishedURLs
-                title="opinion.ethosfera.org/p/comingsoon"
-                url="https://opinion.ethosfera.org/p/comingsoon"
-              />
-              {docId && <PublishedURLs docId={docId} />}
-              <Subheading>Publish to:</Subheading>
+              {docId && (
+                <PublishedURLs
+                  publications={publications.data}
+                  doc={mainActor.actor}
+                />
+              )}
               <PublishButtons
+                publications={publications.data}
                 onPublish={(hostname) => {
                   setIsOpen(false)
                   publicationDialog.open(hostname)
