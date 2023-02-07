@@ -87,6 +87,8 @@ fn main() {
         .setup(move |app| {
           app.manage(sentry_options);
 
+          // println!("========= DAEMON FLAGS: {:#?}", app.state::<daemon::Flags>());
+
           daemon::start_daemon(
             app.handle(),
             app.state::<daemon::Connection>(),

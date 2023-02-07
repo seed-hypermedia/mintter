@@ -103,8 +103,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
       let mut flags: Vec<String> = std::env::args().skip(1).collect();
 
+      if flags.len() > 0 {
+        flags = flags[..flags.len()-1].to_vec();
+      }
+
+      
+
+      // println!("FLAGS AFTER! ==== {:#?}", flags);
+
       let repo_path = app_handle.path_resolver().app_data_dir().unwrap();
       flags.push(format!("--repo-path={}", repo_path.as_path().display()));
+
+      
 
       app_handle.manage(Flags(flags));
 
