@@ -198,7 +198,9 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 				DocumentId: v.Document.ID,
 				LocalOnly:  true,
 			})
-			ret.Version = v.Document.Version
+			if err != nil {
+				return &site.GetPathResponse{}, fmt.Errorf("Could not get local document although was found in the list of published documents: %w", err)
+			}
 			break
 		}
 	}

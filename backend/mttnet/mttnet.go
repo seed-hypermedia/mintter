@@ -140,7 +140,7 @@ type tokenInfo struct {
 }
 
 // PublicationGetter is an interface for not having to pass a full-fledged documents service,
-// just the getPublication that is what we need to call in getPath
+// just the getPublication that is what we need to call in getPath.
 type PublicationGetter interface {
 	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
 }
