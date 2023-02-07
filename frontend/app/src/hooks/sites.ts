@@ -10,6 +10,7 @@ import {
   getPublication,
   ReferencedDocument,
   Member,
+  Member_Role,
 } from '@mintter/shared'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from './index'
@@ -132,7 +133,9 @@ export function useInviteMember(
 ) {
   return useMutation(
     async () => {
-      const token = await getWebSiteClient(hostname).createInviteToken({})
+      const token = await getWebSiteClient(hostname).createInviteToken({
+        role: Member_Role.EDITOR,
+      })
       return token.token
     },
     {
