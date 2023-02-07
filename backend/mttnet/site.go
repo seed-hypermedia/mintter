@@ -135,6 +135,16 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return &site.PublishDocumentResponse{}, err
 	}
 
+	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
+	for key, record := range srv.WebPublicationRecordDB {
+		if record.Path == in.Path {
+			if record.Document.ID != in.DocumentId {
+				return &site.PublishDocumentResponse{}, fmt.Errorf("Path already taken by a different Document ID")
+			}
+			delete(srv.WebPublicationRecordDB, key)
+		}
+	}
+
 	var refs []docInfo
 	for _, ref := range in.ReferencedDocuments {
 		refs = append(refs, docInfo{ID: ref.DocumentId, Version: ref.Version})
