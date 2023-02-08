@@ -15,7 +15,7 @@ import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {ScrollArea} from '@radix-ui/react-scroll-area'
+import {ScrollArea} from '@app/components/scroll-area'
 import {Box} from '@components/box'
 
 type DraftPageProps = {
