@@ -169,6 +169,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				srv.ownerID = n.me.AccountID().String()
 			}
 		}
+		srv.accountsDB[srv.ownerID] = site.Member_OWNER
 		// Indicate we can now serve the already registered endpoints.
 		close(n.registered)
 	}()
