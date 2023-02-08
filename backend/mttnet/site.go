@@ -159,18 +159,36 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	return &site.PublishDocumentResponse{}, nil
 }
 
-// UnpublishDocument un-publishes (un-lists) a given document.
+// UnpublishDocument un-publishes (un-lists) a given document. Only the author of that document or the owner can unpublish.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_OWNER)
+	acc, err := srv.checkPermissions(ctx, site.Member_EDITOR)
 	if err != nil {
 		return &site.UnpublishDocumentResponse{}, err
 	}
+	var toDelete []string
 	for key, record := range srv.WebPublicationRecordDB {
 		if record.Document.ID == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version) {
-			delete(srv.WebPublicationRecordDB, key)
+			doc, err := srv.publicationGetter.GetPublication(ctx, &site.GetPublicationRequest{
+				DocumentId: record.Document.ID,
+				Version:    record.Document.Version,
+				LocalOnly:  true,
+			})
+			if err != nil {
+				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't find the actual document to unpublish although it was found in the database: %w", err)
+			}
+			docAcc, err := cid.Decode(doc.Document.Author)
+			if err != nil {
+				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't parse doc cid: %w", err)
+			}
+			if acc.String() != docAcc.String() && srv.ownerID != acc.String() {
+				return &site.UnpublishDocumentResponse{}, fmt.Errorf("You are not the author of the document, nor site owner")
+			}
+			toDelete = append(toDelete, key)
 		}
 	}
-
+	for _, record := range toDelete {
+		delete(srv.WebPublicationRecordDB, record)
+	}
 	return &site.UnpublishDocumentResponse{}, nil
 }
 
