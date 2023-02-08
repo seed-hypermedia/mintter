@@ -252,8 +252,6 @@ export function PublicationToolbar() {
     middleware: [inline(), offset(8), shift(), flip()],
   })
 
-  let convContext = useConversations()
-
   let service = useInterpret(() => toolbarMachine, {
     guards: {
       isNotValid: (_, event) =>
