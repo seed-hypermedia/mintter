@@ -15,17 +15,16 @@ import {Button} from '@components/button'
 import {Conversations} from '@components/conversations'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
-import {useLocation, useRoute} from '@components/router'
+import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Tooltip} from '@components/tooltip'
-import {useQueryClient} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor, Path, Range} from 'slate'
+import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
@@ -67,7 +66,6 @@ export default function PublicationPage({
   })
 
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
-  panelSend('DISCUSSION.TOGGLE')
   let [state, send] = useActor(publicationActor)
 
   //  useMachine(
