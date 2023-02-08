@@ -178,6 +178,7 @@ function WriteActions({
     publicationActor,
     (state) => state.context.canUpdate,
   )
+
   let errorMessage = useSelector(
     publicationActor,
     (state) => state.context.errorMessage,
