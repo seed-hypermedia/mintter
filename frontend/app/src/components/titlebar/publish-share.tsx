@@ -95,7 +95,7 @@ const ButtonIcon = styled('span', {
 export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const [isPublic, pubParams] = useRoute('/p/:id/:version')
   const [isPublicB, pubParamsB] = useRoute('/p/:id/:version/:block?')
-  const [isDraft, draftParams] = useRoute('/d/:id')
+  const [isDraft, draftParams] = useRoute('/d/:id/:tag?')
 
   const [isOpen, setIsOpen] = useState(false)
   const docId = pubParams?.id || pubParamsB?.id || draftParams?.id

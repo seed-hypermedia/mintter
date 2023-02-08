@@ -149,6 +149,7 @@ function Embed({
         onChange={() => {
           // noop
         }}
+        readOnly
       />
       {children}
     </q>

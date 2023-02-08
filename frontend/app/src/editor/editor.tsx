@@ -46,6 +46,7 @@ interface EditorProps {
   plugins?: Array<EditorPlugin>
   as?: unknown
   className?: string
+  readOnly?: boolean
 }
 
 export function Editor({
@@ -56,6 +57,7 @@ export function Editor({
   editor,
   plugins = defaultPlugins,
   as = 'div',
+  readOnly = false,
 }: PropsWithChildren<EditorProps>) {
   if (!editor) {
     throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
@@ -241,6 +243,7 @@ export function Editor({
           />
           {children}
         </Slate>
+        {/* <pre>{JSON.stringify(editor.children, null, 2)}</pre> */}
       </div>
     )
   }
@@ -270,9 +273,11 @@ export function Editor({
           renderElement={renderElement}
           renderLeaf={renderLeaf}
           decorate={decorate}
+          readOnly={readOnly}
           {...eventHandlers}
         />
       </Slate>
+      {/* <pre>{JSON.stringify(value, null, 2)}</pre> */}
     </span>
   )
 }

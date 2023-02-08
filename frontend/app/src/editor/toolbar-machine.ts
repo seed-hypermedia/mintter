@@ -37,7 +37,12 @@ export const toolbarMachine = createMachine(
             on: {
               'TOOLBAR.DISMISS': {
                 target: '#toolbar-machine.idle',
-                actions: ['assignDefaultSelection'],
+                actions: [
+                  'removeSelectorMark',
+                  'clearSelection',
+                  'assignDefaultSelection',
+                  'restoreDOMSelection',
+                ],
               },
               'START.CONVERSATION': {
                 actions: ['setSelectorMark', 'removeDOMSelection'],
