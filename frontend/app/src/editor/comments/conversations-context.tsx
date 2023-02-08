@@ -5,18 +5,26 @@ import {ListConversationsResponse} from '@mintter/shared/client/.generated/docum
 import {useQuery, UseQueryResult} from '@tanstack/react-query'
 import {createContext, PropsWithChildren, useContext, useMemo} from 'react'
 
-export type ConversationsContext =
-  | (UseQueryResult<ListConversationsResponse> & {
-      documentId?: string
-    })
-  | null
+export type ConversationsContext = {
+  documentId?: string
+  conversations: UseQueryResult<ListConversationsResponse> | null
+  onConversationsOpen: (conversationIds: string[]) => void
+}
 
-let conversationsContext = createContext<ConversationsContext>(null)
+let conversationsContext = createContext<ConversationsContext>({
+  conversations: null,
+  onConversationsOpen: () => {},
+  documentId: undefined,
+})
 
 export function ConversationsProvider({
   children,
   documentId,
-}: PropsWithChildren<{documentId?: string}>) {
+  onConversationsOpen,
+}: PropsWithChildren<{
+  documentId?: string
+  onConversationsOpen: (conversationIds: string[]) => void
+}>) {
   let queryResult = useQuery({
     queryFn: () =>
       createPromiseClient(Comments, transport).listConversations({documentId}),
@@ -26,8 +34,9 @@ export function ConversationsProvider({
   return (
     <conversationsContext.Provider
       value={{
-        ...queryResult,
         documentId,
+        onConversationsOpen,
+        conversations: queryResult,
       }}
     >
       {children}
@@ -47,9 +56,9 @@ export function useBlockConversations(blockId: string, revision?: string) {
   let context = useConversations()
 
   return useMemo(() => {
-    if (!context?.data?.conversations) return []
+    if (!context?.conversations?.data?.conversations) return []
 
-    return context.data.conversations.filter((conv) => {
+    return context.conversations.data.conversations.filter((conv) => {
       let filteredSelectors = conv.selectors.filter(
         (sel) => sel.blockId == blockId && sel.blockRevision == revision,
       )

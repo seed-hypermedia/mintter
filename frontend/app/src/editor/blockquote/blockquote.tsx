@@ -93,12 +93,7 @@ function BlockQuote({
     >
       {children}
       <span contentEditable={false}>
-        <ConversationBlockBubble
-          block={element as BlockquoteType}
-          onClick={() => {
-            console.log(`clicked in conversation bubble for ${element.id}`)
-          }}
-        />
+        <ConversationBlockBubble block={element as BlockquoteType} />
       </span>
     </li>
   )
