@@ -67,7 +67,7 @@ export default function PublicationPage({
   })
 
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
-
+  panelSend('DISCUSSION.TOGGLE')
   let [state, send] = useActor(publicationActor)
 
   //  useMachine(
@@ -266,10 +266,12 @@ function BlockPlaceholder() {
 type ResizablePanelMachineContext = {
   visible: boolean
   left: number
+  highlightConversations: Array<string>
 }
 
 type ResizablePanelMachineEvent =
   | {type: 'DISCUSSION.TOGGLE'}
+  | {type: 'DISCUSSION.HIGHLIGHT.CONVERSATIONS'; conversations: Array<string>}
   | {type: 'RESIZE'; values: Array<number>}
 
 type ResizablePanelMachineServices = {
@@ -282,7 +284,7 @@ let resizablePanelMachine =
   createMachine(
     {
       predictableActionArguments: true,
-      context: {visible: false, left: 100},
+      context: {visible: false, left: 100, highlightConversations: []},
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
         context: {} as ResizablePanelMachineContext,
@@ -292,6 +294,9 @@ let resizablePanelMachine =
       on: {
         'DISCUSSION.TOGGLE': {
           actions: 'setVisibility',
+        },
+        'DISCUSSION.HIGHLIGHT.CONVERSATIONS': {
+          actions: 'setHighlightConversations',
         },
         RESIZE: {
           actions: 'updateHandlePosition',
@@ -309,6 +314,9 @@ let resizablePanelMachine =
         }),
         setVisibility: assign({
           visible: (context) => !context.visible,
+        }),
+        setHighlightConversations: assign({
+          highlightConversations: (_, event) => event.conversations,
         }),
       },
     },
