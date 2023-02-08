@@ -27,7 +27,8 @@ import {FormEvent, useEffect, useMemo, useState} from 'react'
 export function Conversations() {
   const context = useConversations()
 
-  const {documentId, data, refetch} = context
+  const {documentId, conversations} = context
+  const {data, refetch} = conversations || {}
 
   useEffect(() => {
     let isSubscribed = true
@@ -40,7 +41,7 @@ export function Conversations() {
         }
 
         if (focused) {
-          refetch()
+          refetch?.()
         }
       })
       .then((_unlisten) => (unlisten = _unlisten))
@@ -49,8 +50,6 @@ export function Conversations() {
       isSubscribed = false
     }
   })
-
-  let conversations = data?.conversations || []
 
   return (
     <Box
@@ -68,7 +67,7 @@ export function Conversations() {
         data-testid="conversations-list"
       >
         {documentId
-          ? conversations.map((conversation) => (
+          ? (data?.conversations || []).map((conversation) => (
               <ConversationItem
                 key={conversation.id}
                 documentId={documentId}

@@ -102,7 +102,15 @@ export default function PublicationPage({
 
   if (state.matches('ready')) {
     return (
-      <ConversationsProvider documentId={params?.id}>
+      <ConversationsProvider
+        documentId={params?.id}
+        onConversationsOpen={(conversations: string[]) => {
+          panelSend({
+            type: 'DISCUSSION.HIGHLIGHT.CONVERSATIONS',
+            conversations,
+          })
+        }}
+      >
         <MouseProvider value={mouseService}>
           <BlockHighLighter>
             <div className="page-wrapper publication-wrapper">
@@ -291,7 +299,7 @@ let resizablePanelMachine =
       },
       on: {
         'DISCUSSION.TOGGLE': {
-          actions: 'setVisibility',
+          actions: 'toggleVisibility',
         },
         'DISCUSSION.HIGHLIGHT.CONVERSATIONS': {
           actions: 'setHighlightConversations',
@@ -310,12 +318,13 @@ let resizablePanelMachine =
 
           return {left: newValue}
         }),
-        setVisibility: assign({
+        toggleVisibility: assign({
           visible: (context) => !context.visible,
         }),
-        setHighlightConversations: assign({
-          highlightConversations: (_, event) => event.conversations,
-        }),
+        setHighlightConversations: (context, event) => {
+          context.highlightConversations = event.conversations
+          context.visible = true
+        },
       },
     },
   )

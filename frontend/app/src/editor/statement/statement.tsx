@@ -254,12 +254,7 @@ function Statement({
     >
       {children}
       <span contentEditable={false}>
-        <ConversationBlockBubble
-          block={element as StatementType}
-          onClick={() => {
-            console.log(`clicked in conversation bubble for ${element.id}`)
-          }}
-        />
+        <ConversationBlockBubble block={element as StatementType} />
       </span>
     </li>
   )
