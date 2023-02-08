@@ -27,7 +27,9 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 	if _, err := srv.checkPermissions(ctx, site.Member_OWNER); err != nil {
 		return &site.InviteToken{}, err
 	}
-
+	if in.Role == site.Member_OWNER {
+		return &site.InviteToken{}, fmt.Errorf("Cannot create owner token, please update the owner manually in site config")
+	}
 	// generate random number string for the token. Substitute for proper signed jwt
 	newToken := randStr(6)
 
@@ -52,12 +54,12 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 
 // RedeemInviteToken redeems a previously created invite token to register a new member.
 func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
-	acc, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	acc, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
 	if err != nil {
 		return &site.RedeemInviteTokenResponse{}, err
 	}
 
-	if in.Token == "" { // TODO(juligasa) substitute with proper regexp match
+	if in.Token == "" { // TODO(juligasa): substitute with proper regexp match
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("invalid token format")
 	}
 
@@ -70,6 +72,11 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 		delete(srv.tokensDB, in.Token)
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("expired token")
 	}
+	/* TODO(juligasa): Uncomment when remote site is ready
+	if acc.String() == srv.ownerID {
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("cannot update site owner role, please change site owner manually in site config")
+	}*/
+
 	// redeem the token
 	delete(srv.tokensDB, in.Token)
 
@@ -115,17 +122,48 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 
 // ListMembers lists registered members on the site.
 func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest) (*site.ListMembersResponse, error) {
-	return &site.ListMembersResponse{}, fmt.Errorf("Endpoint not implemented yet")
+	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	if err != nil {
+		return &site.ListMembersResponse{}, err
+	}
+	var members []*site.Member
+	for accID, role := range srv.accountsDB {
+		members = append(members, &site.Member{
+			AccountId: accID,
+			Role:      role,
+		})
+	}
+	return &site.ListMembersResponse{Members: members}, nil
 }
 
 // GetMember gets information about a specific member.
 func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*site.Member, error) {
-	return &site.Member{}, fmt.Errorf("Endpoint not implemented yet")
+	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	if err != nil {
+		return &site.Member{}, err
+	}
+	role, ok := srv.accountsDB[in.AccountId]
+	if !ok {
+		return &site.Member{}, fmt.Errorf("Member not found")
+	}
+	return &site.Member{AccountId: in.AccountId, Role: role}, nil
 }
 
 // DeleteMember deletes an existing member.
 func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, fmt.Errorf("Endpoint not implemented yet")
+	_, err := srv.checkPermissions(ctx, site.Member_OWNER)
+	if err != nil {
+		return &emptypb.Empty{}, err
+	}
+	roleToDelete, ok := srv.accountsDB[in.AccountId]
+	if !ok {
+		return &emptypb.Empty{}, fmt.Errorf("Member not found")
+	}
+	if roleToDelete == site.Member_OWNER {
+		return &emptypb.Empty{}, fmt.Errorf("Site owner cannot be deleted, please, change it manually in site config")
+	}
+	delete(srv.accountsDB, in.AccountId)
+	return &emptypb.Empty{}, nil
 }
 
 // PublishDocument publishes and pins the document to the public web site.
