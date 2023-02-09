@@ -50,7 +50,6 @@ func Default() Config {
 		},
 		Site: Site{
 			InviteTokenExpirationDelay: time.Hour * 24 * 7,
-			Hostname:                   "example.com", // TODO(juligasa): Just a conf to eric. Remove after mockups
 		},
 		Syncing: Syncing{
 			WarmupDuration: time.Minute,
