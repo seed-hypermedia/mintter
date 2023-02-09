@@ -9,20 +9,24 @@ import {TextField} from '@components/text-field'
 import {
   Block,
   blockToApi,
+  blockToSlate,
   Comments,
   Conversation,
   Document,
   getPublication,
+  isText,
   paragraph,
+  PhrasingContent,
   Publication,
   statement,
   text,
   transport,
 } from '@mintter/shared'
-import {ListConversationsResponse} from '@mintter/shared/client/.generated/documents/v1alpha/comments_pb'
+import {ListConversationsResponse, Selector} from '@mintter/shared'
 import {useQuery, UseQueryResult} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useMemo, useState} from 'react'
+import {Text as SlateText, Node, Element} from 'slate'
 
 export function Conversations() {
   const context = useConversations()
@@ -67,7 +71,7 @@ export function Conversations() {
         data-testid="conversations-list"
       >
         {documentId
-          ? (data?.conversations || []).map((conversation) => (
+          ? data?.map((conversation) => (
               <ConversationItem
                 key={conversation.id}
                 documentId={documentId}
@@ -84,6 +88,7 @@ export function Conversations() {
 function ConversationItem({
   conversation,
   refetch,
+  documentId,
 }: {
   conversation: Conversation
   documentId: string
@@ -120,11 +125,16 @@ function ConversationItem({
     >
       <Box as="ul" css={{margin: 0, padding: 0}}>
         <CommentItem
+          conversationId={conversation.id}
           comment={firstComment}
           selectors={conversation.selectors}
         />
         {comments.map((item) => (
-          <CommentItem key={`${item.id}-${item.revision}`} comment={item} />
+          <CommentItem
+            key={`${item.id}-${item.revision}`}
+            comment={item}
+            conversationId={conversation.id}
+          />
         ))}
       </Box>
       <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
@@ -156,11 +166,13 @@ function ConversationItem({
 }
 
 function CommentItem({
+  conversationId,
   comment,
   selectors,
 }: {
+  conversationId: string
   comment: Block
-  selectors?: Conversation['selectors']
+  selectors?: Array<Selector>
 }) {
   return (
     <Box
@@ -215,7 +227,12 @@ function CommentItem({
             flex: 1,
           }}
         >
-          {selectors ? <ConversationSelectors selectors={selectors} /> : null}
+          {selectors ? (
+            <ConversationSelectors
+              conversationId={conversationId}
+              selectors={selectors}
+            />
+          ) : null}
           <CommentBlock comment={comment} />
         </Box>
       </Box>
@@ -225,9 +242,31 @@ function CommentItem({
 
 function ConversationSelectors({
   selectors,
+  conversationId,
 }: {
-  selectors: Conversation['selectors']
+  selectors: Array<Selector>
+  conversationId: string
 }) {
+  let convContext = useConversations()
+
+  let selectorText = useMemo(() => {
+    let leafs: Array<PhrasingContent> = []
+    selectors.forEach((sel) => {
+      let p = convContext.clientSelectors[sel.blockId].children[0]
+
+      p.children.forEach((leaf) => {
+        if (
+          Array.isArray(leaf.conversations) &&
+          leaf.conversations.includes(conversationId)
+        ) {
+          leafs.push(leaf)
+        }
+      })
+    })
+
+    return leafs.map((l) => l.text).join('')
+  }, [convContext.clientSelectors, conversationId, selectors])
+
   return (
     <Box
       css={{
@@ -250,7 +289,7 @@ function ConversationSelectors({
         }}
       />
       <Text size="2" color="muted">
-        conversation selector HERE
+        {selectorText}
       </Text>
     </Box>
   )
@@ -266,57 +305,6 @@ function CommentBlock({comment}: {comment: Block}) {
       <Text alt>{comment.text}</Text>
     </Box>
   )
-}
-
-type UseQueryBlockParams = {
-  documentId: string
-  blockId: string
-  version?: string
-  revision?: string
-}
-
-function useQueryBlock({
-  documentId,
-  version,
-  blockId,
-  revision,
-}: UseQueryBlockParams) {
-  let pubQuery = useQuery({
-    queryFn: async () => getPublication(documentId, version),
-    queryKey: [queryKeys.GET_PUBLICATION, documentId],
-    enabled: !!documentId && !!blockId,
-  })
-
-  return useMemo(() => {
-    let {data} = pubQuery
-
-    if (data) {
-      let blockDict = flattenPublicationBlocks(data)
-
-      // TODO: add the revision as another parameter
-      return blockDict[blockId]
-    }
-
-    return
-  }, [pubQuery.data])
-}
-
-function flattenPublicationBlocks(publication: Publication) {
-  let res: {[key: string]: Block} = {}
-
-  if (publication.document) loopOverList(publication.document.children)
-
-  function loopOverList(list: Document['children']) {
-    list.forEach((bn) => {
-      if (bn.block) {
-        res[bn.block!.id] = bn.block
-      }
-
-      if (bn.children.length) loopOverList(bn.children)
-    })
-  }
-
-  return res
 }
 
 function CommentSeparator() {

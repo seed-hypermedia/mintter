@@ -34,6 +34,7 @@ import {Fragment, ReactNode, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
 import './styles/blocktools.scss'
+import {ReactEditor} from 'slate-react'
 
 let toolsByMode = {
   [EditorMode.Draft]: DraftBlocktools,

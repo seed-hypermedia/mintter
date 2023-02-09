@@ -3,6 +3,7 @@ import {queryKeys} from '@app/hooks'
 import {
   Account,
   blockNodeToSlate,
+  Conversation,
   createDraft,
   Document,
   getAccount,
@@ -13,11 +14,11 @@ import {
   Publication,
   statement,
   text,
+  FlowContent,
+  GroupingContent,
 } from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
-import {assign, createMachine, InterpreterFrom, actions} from 'xstate'
-
-let {send} = actions
+import {actions, assign, createMachine, InterpreterFrom} from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -194,6 +195,11 @@ export function createPublicationMachine({
             .then(([publication, info]) => {
               if (publication.document?.children.length) {
                 // TODO: use the parent list type instead
+
+                // let mixedContent = applySelectors({
+                //   publication,
+                //   conversations,
+                // })
 
                 let content = blockNodeToSlate(
                   publication.document.children,

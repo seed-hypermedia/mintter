@@ -31,6 +31,7 @@ import {
   RenderElementProps,
   useSlate,
   useSlateStatic,
+  useSlateWithV,
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
 import {findPath, getEditorBlock, isCollapsed} from '../utils'
@@ -400,7 +401,7 @@ function isUrl(value: string): boolean {
 
 export function InsertLinkButton() {
   const [link, setLink] = useState('')
-  const editor = useSlate()
+  const {editor} = useSlateWithV()
   const isLink = isLinkActive(editor)
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
