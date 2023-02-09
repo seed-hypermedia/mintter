@@ -1,5 +1,6 @@
 import {EditorMode} from '@app/editor/plugin-utils'
 import {EditorPlugin} from '@app/editor/types'
+import {isParagraph} from '@mintter/shared'
 import {useContext} from 'react'
 import {Range} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -16,10 +17,22 @@ export function createCommentsPlugin(): EditorPlugin {
         if ('conversations' in leaf && leaf.text) {
           return (
             <span
-              style={{
-                backgroundColor: 'var(--highlight-surface2)',
-                borderBottom: '2px solid var(--highlight-surface2)',
-              }}
+              style={
+                leaf.conversations?.length >= 3
+                  ? {
+                      backgroundColor: 'var(--highlight-surface4)',
+                      borderBottom: '2px solid var(--highlight-surface4)',
+                    }
+                  : leaf.conversations?.length == 2
+                  ? {
+                      backgroundColor: 'var(--highlight-surface3)',
+                      borderBottom: '2px solid var(--highlight-surface3)',
+                    }
+                  : {
+                      backgroundColor: 'var(--highlight-surface1)',
+                      borderBottom: '2px solid var(--highlight-surface2)',
+                    }
+              }
               {...attributes}
             >
               {children}
@@ -31,7 +44,6 @@ export function createCommentsPlugin(): EditorPlugin {
       const {apply} = editor
 
       editor.apply = (op) => {
-        console.log('🚀 ~ file: comments.tsx:66 ~ configureEditor ~ op', op)
         /**
          * In order to receive just one particular type of event in the editor (set_selection), we need to override the `apply` hook in the editor
          */
@@ -59,6 +71,10 @@ export function createCommentsPlugin(): EditorPlugin {
           }
         } else if (op.type == 'split_node') {
           apply(op)
+        } else if (op.type == 'insert_node' || op.type == 'remove_node') {
+          if (isParagraph(op.node)) {
+            apply(op)
+          }
         } else {
           ReactEditor.blur(editor)
         }

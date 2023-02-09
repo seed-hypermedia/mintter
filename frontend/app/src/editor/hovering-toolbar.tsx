@@ -1,44 +1,49 @@
+import {OutsideClick} from '@app/editor/outside-click'
+import {toolbarMachine} from '@app/editor/toolbar-machine'
+import {queryKeys} from '@app/hooks'
+import {createPromiseClient} from '@bufbuild/connect-web'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon, icons} from '@components/icon'
+import {TextField} from '@components/text-field'
+import {Tooltip} from '@components/tooltip'
+import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
 import {
   blockToApi,
   Comments,
   image,
   isCode,
   isFlowContent,
+  Mark,
   paragraph,
   Selector,
   statement,
   text,
   transport,
 } from '@mintter/shared'
-import {Mark} from '@mintter/shared'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon, icons} from '@components/icon'
-import {Tooltip} from '@components/tooltip'
-import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
 import {css} from '@stitches/react'
+import {useQueryClient} from '@tanstack/react-query'
+import {useInterpret, useSelector} from '@xstate/react'
 import {FormEvent, PropsWithChildren, useEffect, useMemo, useState} from 'react'
 import {Editor, Range, Text, Transforms} from 'slate'
-import {ReactEditor, useFocused, useSlate} from 'slate-react'
+import {
+  ReactEditor,
+  useFocused,
+  useSlate,
+  useSlateSelection,
+  useSlateWithV,
+} from 'slate-react'
+import {useRoute} from 'wouter'
+import {assign} from 'xstate'
 import {MARK_EMPHASIS} from './emphasis'
 import {MARK_CODE} from './inline-code'
 import {InsertLinkButton} from './link'
 import {MARK_STRONG} from './strong'
 import {MARK_UNDERLINE} from './underline'
 import {isMarkActive, toggleFormat} from './utils'
-import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {toolbarMachine} from '@app/editor/toolbar-machine'
-import {assign} from 'xstate'
-import {TextField} from '@components/text-field'
-import {OutsideClick} from '@app/editor/outside-click'
-import {createPromiseClient} from '@bufbuild/connect-web'
-import {useRoute} from 'wouter'
-import {useConversations} from '@app/editor/comments/conversations-context'
-import {useQueryClient} from '@tanstack/react-query'
-import {queryKeys} from '@app/hooks'
 
 export function EditorHoveringToolbar() {
-  const editor = useSlate()
+  const {editor} = useSlateWithV()
   const [selectionColor, setSelectionColor] = useState<string>('')
 
   useEffect(() => {
@@ -129,7 +134,7 @@ function FormatButton({
   format: Mark
   icon: keyof typeof icons
 }) {
-  const editor = useSlate()
+  const {editor} = useSlateWithV()
 
   return (
     <Button
@@ -158,7 +163,7 @@ function FormatButton({
 }
 
 function InsertImageButton() {
-  const editor = useSlate()
+  const {editor} = useSlateWithV()
 
   function insertImageHandler(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -202,8 +207,9 @@ const defaultVirtualEl = {
 }
 
 function HoveringToolbar({children}: PropsWithChildren) {
-  const editor = useSlate()
+  const {editor} = useSlateWithV()
   const inFocus = useFocused()
+  const selection = useSlateSelection()
 
   const {x, y, reference, floating, strategy} = useFloating({
     placement: 'top',
@@ -211,7 +217,6 @@ function HoveringToolbar({children}: PropsWithChildren) {
   })
 
   useEffect(() => {
-    const {selection} = editor
     if (
       !selection ||
       !inFocus ||
@@ -222,7 +227,7 @@ function HoveringToolbar({children}: PropsWithChildren) {
     }
     const domRange = ReactEditor.toDOMRange(editor, selection)
     reference(domRange)
-  }, [reference, editor, inFocus, editor.selection])
+  }, [reference, inFocus, selection])
 
   return (
     <Box
@@ -246,7 +251,8 @@ function HoveringToolbar({children}: PropsWithChildren) {
 export function PublicationToolbar() {
   let client = useQueryClient()
   let [, params] = useRoute('/p/:id/:version/:block?')
-  let editor = useSlate()
+  const editor = useSlate()
+  let selection = useSlateSelection()
   const {x, y, reference, floating, strategy} = useFloating({
     placement: 'top',
     middleware: [inline(), offset(8), shift(), flip()],
@@ -255,9 +261,9 @@ export function PublicationToolbar() {
   let service = useInterpret(() => toolbarMachine, {
     guards: {
       isNotValid: (_, event) =>
-        !editor.selection ||
-        Range.isCollapsed(editor.selection) ||
-        Editor.string(editor, editor.selection) === '',
+        !selection ||
+        Range.isCollapsed(selection) ||
+        Editor.string(editor, selection) === '',
     },
     actions: {
       assignDefaultSelection: () => {
@@ -276,7 +282,12 @@ export function PublicationToolbar() {
         Editor.addMark(editor, 'conversations', ['current'])
       },
       removeSelectorMark: (context) => {
-        Editor.removeMark(editor, 'conversations')
+        console.log('REMOVE SELECTOR')
+        ReactEditor.focus(editor)
+        setTimeout(() => {
+          Transforms.setSelection(editor, context.selection)
+          Editor.removeMark(editor, 'conversations')
+        }, 10)
       },
       restoreDOMSelection: (context) => {
         let selection = window.getSelection()
@@ -320,7 +331,7 @@ export function PublicationToolbar() {
     let commentAnnotation = apiBlock.annotations.find(
       (annotation) =>
         annotation.type == 'conversation' &&
-        annotation.attributes.conversations == 'current',
+        annotation.attributes.conversationId == 'current',
     )
 
     if (!commentAnnotation) return
@@ -339,9 +350,7 @@ export function PublicationToolbar() {
       statement([paragraph([text(commentValue)])]),
     )
 
-    let commentsClient = createPromiseClient(Comments, transport)
-
-    commentsClient
+    createPromiseClient(Comments, transport)
       .createConversation({
         documentId: params?.id,
         initialComment,
@@ -349,6 +358,7 @@ export function PublicationToolbar() {
       })
       .then((res) => {
         service.send('TOOLBAR.DISMISS')
+        ReactEditor.blur(editor)
         client.invalidateQueries({
           queryKey: [queryKeys.GET_PUBLICATION_CONVERSATIONS],
         })
@@ -362,14 +372,12 @@ export function PublicationToolbar() {
   )
 
   useEffect(() => {
-    const {selection} = editor
-
     if (selection) {
       service.send({type: 'TOOLBAR.SELECT', selection})
     } else {
       service.send('TOOLBAR.DISMISS')
     }
-  }, [editor, editor.selection])
+  }, [selection])
 
   useEffect(() => {
     if (isToolbarActive) {
@@ -418,13 +426,27 @@ export function PublicationToolbar() {
           </Button>
         </Box>
         {isCommentActive ? (
-          <Box as="form" onSubmit={createConversation}>
+          <Box
+            as="form"
+            onSubmit={createConversation}
+            css={{
+              display: 'flex',
+              gap: '$3',
+              padding: '$3',
+              borderRadius: '$3',
+              background: '$base-background-normal',
+              flexDirection: 'column',
+              boxShadow: '$menu',
+            }}
+          >
             <TextField
               name="comment"
               textarea
               placeholder="initial comment here"
             />
-            <button>submit</button>
+            <Button variant="solid" color="muted" size="2">
+              submit
+            </Button>
           </Box>
         ) : null}
       </Box>

@@ -40,7 +40,6 @@ export function getDateFormat(
 }
 
 export function formattedDate(value: Timestamp) {
-  console.log('🚀 ~ file: get-format-date.ts:43 ~ formattedDate ~ value', value)
   let _value = value.toDate()
 
   var now = new Date()

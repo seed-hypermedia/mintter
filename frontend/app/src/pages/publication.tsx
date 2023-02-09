@@ -110,6 +110,7 @@ export default function PublicationPage({
             conversations,
           })
         }}
+        publication={state.context.publication}
       >
         <MouseProvider value={mouseService}>
           <BlockHighLighter>
