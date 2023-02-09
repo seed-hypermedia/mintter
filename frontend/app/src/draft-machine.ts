@@ -26,7 +26,7 @@ import {MintterEditor} from './editor/mintter-changes/plugin'
 let {send, cancel} = actions
 export type DraftActor = InterpreterFrom<ReturnType<typeof createDraftMachine>>
 
-export type EditorDocument = Partial<MttDocument> & {
+export type EditorDocument = Partial<Document> & {
   id?: string
   content: Array<GroupingContent>
 }
@@ -269,7 +269,6 @@ export function createDraftMachine({
         }),
         updateTitle: assign({
           title: (_, event) => {
-            console.log('UPDATE TITLE', event)
             if (event.payload.content) {
               return getTitleFromContent({children: event.payload.content})
             }
@@ -306,8 +305,6 @@ export function createDraftMachine({
           resetQueryData(client, context.documentId)
         },
         refetchDraftList: (context) => {
-          console.log('update draft:', context)
-
           invoke('emit_all', {
             event: 'update_draft',
           })

@@ -74,6 +74,7 @@ import {
 
 export {
   ListConversationsRequest,
+  ListConversationsResponse,
   CreateConversationRequest,
   Selector,
   Conversation,

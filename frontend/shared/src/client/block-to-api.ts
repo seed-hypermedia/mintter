@@ -82,12 +82,12 @@ export function blockToApi(
     }
 
     if (leaf.conversations) {
-      annotations.addSpan(
-        'conversation',
-        {conversations: leaf.conversations[0]},
-        start,
-        end,
-      )
+      if (Array.isArray(leaf.conversations)) {
+        leaf.conversations.forEach((conversationId: string) => {
+          annotations.addSpan('conversation', {conversationId}, start, end)
+        })
+      }
+      
     }
 
     // inline block elements check
