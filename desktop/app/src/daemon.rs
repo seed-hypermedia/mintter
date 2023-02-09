@@ -1,3 +1,5 @@
+/// This file contains all the code that is responsible for starting and stopping the daemon,
+/// as well as collecting it's logs into the shared logging system.
 use log::{error, info};
 use ringbuffer::{ConstGenericRingBuffer, RingBufferExt, RingBufferWrite};
 use std::{collections::HashMap, sync::Mutex};
@@ -11,7 +13,8 @@ use tauri::{
 };
 use tokio::sync::mpsc::{self, Sender};
 
-#[tracing::instrument]
+/// This function starts the daemon with the given `Flags` and `sentry::ClientOptions` to hook into sentry error reporting.
+#[tracing::instrument(skip(connection))]
 pub fn start_daemon<R: Runtime>(
   app_handle: AppHandle<R>,
   connection: tauri::State<Connection>,
@@ -21,6 +24,8 @@ pub fn start_daemon<R: Runtime>(
   let mut lock = connection.0.lock().unwrap();
   let (tx, mut rx) = mpsc::channel::<()>(1);
 
+  // building up all the environment variables exposed to the daemon.
+  // These are used for th daemon to enable sentry error reporting.
   let mut envs = HashMap::new();
   if let Some(dsn) = &sentry_options.dsn {
     envs.insert("SENTRY_DSN".to_string(), dsn.to_string().replace(":@", "@"));
@@ -32,6 +37,7 @@ pub fn start_daemon<R: Runtime>(
     envs.insert("SENTRY_ENVIRONMENT".to_string(), environment.to_string());
   }
 
+  // spawn the actual process
   let (mut cx, child) = Command::new_sidecar("mintterd")
     .expect("failed to create `mintterd` binary command")
     .args(daemon_flags.inner().0.iter())
@@ -40,10 +46,13 @@ pub fn start_daemon<R: Runtime>(
     .expect("failed to spawn sidecar");
 
   tauri::async_runtime::spawn(async move {
+    // keep a ringbuffer of the last 32 daemon logs around so we can include them in crash messages.
     let mut messages = ConstGenericRingBuffer::<_, 32>::new();
 
+    // loop over the received messages.
     loop {
       tokio::select! {
+        // if the channel is dropped (by the `terminate` command later on, we immeditately terminate the daemon)
         _ = rx.recv() => {
             child.kill().unwrap();
             break;
@@ -62,6 +71,8 @@ pub fn start_daemon<R: Runtime>(
               error!("{}", err);
               messages.push(err);
             },
+            // If the daemon terminated we prompt the user to restart the app, since Mintter just cannot work without the daemon
+            // and it silently breaking in the background is a bad user experience-
             CommandEvent::Terminated(reason) => {
               match reason.code {
                 Some(code) if code == 0 => error!("daemon terminated"),
@@ -84,6 +95,7 @@ pub fn start_daemon<R: Runtime>(
   *lock = Some(tx);
 }
 
+/// This command just drops the sending half of a channel to notify the loop running our end of the daemon handling to terminate it.
 #[tracing::instrument]
 pub fn stop_daemon(connection: tauri::State<'_, Connection>) {
   let mut lock = connection.0.lock().unwrap();
@@ -103,6 +115,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
       let mut flags: Vec<String> = std::env::args().skip(1).collect();
 
+      // set the `--repo-path` daemon CLI flag to point to the correct directory on each OS
       let repo_path = app_handle.path_resolver().app_data_dir().unwrap();
       flags.push(format!("--repo-path={}", repo_path.as_path().display()));
 

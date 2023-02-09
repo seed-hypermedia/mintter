@@ -1,5 +1,6 @@
 pub use anyhow::{Context, Error};
 
+// Errors that can be returned to the WASM guest.
 #[derive(Debug, thiserror::Error)]
 pub enum ErrorKind {
   /// Errno::Ilseq: Illegal byte sequence
