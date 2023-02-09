@@ -1,6 +1,7 @@
 import {useQuery} from '@tanstack/react-query'
 import {Publication, getAccount} from '@mintter/shared'
 import {formattedDate} from './utils/get-format-date'
+import {client} from './client'
 
 export function PublicationMetadata({
   publication,
@@ -34,7 +35,7 @@ export function PublicationMetadata({
 function Author({id}: {id: string}) {
   let {data, status} = useQuery({
     queryKey: ['AUTHOR', id],
-    queryFn: ({queryKey}) => getAccount(queryKey[1]),
+    queryFn: ({queryKey}) => getAccount(queryKey[1], client),
     retry: false,
   })
   if (status == 'loading') {
