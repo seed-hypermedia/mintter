@@ -5,8 +5,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base32"
+	"encoding/json"
 	"fmt"
 	site "mintter/backend/genproto/documents/v1alpha"
+	"net/http"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -57,6 +59,11 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	acc, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
 	if err != nil {
 		return &site.RedeemInviteTokenResponse{}, err
+	}
+
+	// check if that account was already redeemed in the past
+	if _, ok := srv.accountsDB[acc.String()]; ok {
+		return &site.RedeemInviteTokenResponse{}, nil
 	}
 
 	if in.Token == "" { // TODO(juligasa): substitute with proper regexp match
@@ -206,7 +213,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 	var toDelete []string
 	for key, record := range srv.WebPublicationRecordDB {
 		if record.Document.ID == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version) {
-			doc, err := srv.publicationGetter.GetPublication(ctx, &site.GetPublicationRequest{
+			doc, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
 				DocumentId: record.Document.ID,
 				Version:    record.Document.Version,
 				LocalOnly:  true,
@@ -259,7 +266,7 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 	err = fmt.Errorf("No publication was found in provided path")
 	for _, v := range srv.WebPublicationRecordDB { // we first look in the db because we may have the document but was unpublished (removed from the database but not from the storage)
 		if in.Path == v.Path {
-			ret, err = srv.publicationGetter.GetPublication(ctx, &site.GetPublicationRequest{
+			ret, err = srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
 				DocumentId: v.Document.ID,
 				LocalOnly:  true,
 			})
@@ -317,10 +324,12 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	if err != nil && srv.hostname == "" { // no headers and not a local site
 		return cid.Cid{}, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a proper remote site")
 	}
-	//if err == nil && srv.hostname != remoteHostname {
-	// proxy to remote
-	// return &site.InviteToken{}, fmt.Errorf("Remote proxying not ready yet. Please remove header to make it a local call")
-	//}
+	/*
+		if err == nil && srv.hostname != remoteHostname {
+			// proxy to remote
+			return &site.InviteToken{}, fmt.Errorf("Remote proxying not ready yet. Please remove header to make it a local call")
+		}
+	*/
 	acc := n.me.AccountID()
 
 	if srv.hostname == remoteHostname { // proxyed call
@@ -344,3 +353,82 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	}
 	return acc, nil
 }
+
+// ServeHTTP serves the content for the well-known path.
+func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	encoder := json.NewEncoder(w)
+	w.Header().Set("Content-Type", "application/json")
+	var siteInfo wellKnownInfo
+	n, ok := srv.Node.Get()
+	if !ok {
+		w.Header().Set("Retry-After", "30")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		_ = encoder.Encode("Error: site p2p node not ready yet")
+		return
+	}
+
+	siteInfo.AccountID = n.me.AccountID().String()
+	for _, addr := range n.AddrInfo().Addrs {
+		siteInfo.Addresses = append(siteInfo.Addresses, addr.String())
+	}
+	_ = encoder.Encode(siteInfo)
+}
+
+/*
+func (srv *Server) proxyToSite(ctx context.Context, hostname string, in interface{}) (interface{}, error) {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return nil, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
+	}
+
+	siteAccount, err := srv.localFunctions.GetSiteAccount(hostname)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot get site accountID: %w", err)
+	}
+
+	conn, release, err := n.VCS().DB().Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	all, err := vcssql.ListAccountDevices(conn)
+	if err != nil {
+		n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
+		return nil, fmt.Errorf("couldn't list devices from account ID %s", siteAccount)
+	}
+	//TODO: transform accoindID string into a proper cid.Cid
+	if devices, found := all[siteAccount]; found {
+		for _, deviceID := range devices {
+			p2pc, err := net.Client(ctx, deviceID)
+			if err != nil {
+				continue
+			}
+
+			remoteInvoice, err := p2pc.RequestInvoice(ctx, &p2p.RequestInvoiceRequest{
+				AmountSats:   request.AmountSats,
+				Memo:         request.Memo,
+				HoldInvoice:  request.HoldInvoice,
+				PreimageHash: request.PreimageHash,
+			})
+
+			if err != nil {
+				srv.log.Debug("p2p invoice request failed", zap.String("msg", err.Error()))
+				return "", fmt.Errorf("p2p invoice request failed")
+			}
+
+			if remoteInvoice.PayReq == "" {
+				return "", fmt.Errorf("received an empty invoice from remote peer")
+			}
+
+			return remoteInvoice.PayReq, nil
+		}
+		err = fmt.Errorf("none of the devices associated with the provided account were reachable")
+		srv.log.Debug(err.Error())
+		return "", err
+	}
+	err = fmt.Errorf("couln't find account %s", account.String())
+	srv.log.Debug(err.Error())
+	return "", err
+}
+*/

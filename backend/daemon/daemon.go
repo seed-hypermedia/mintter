@@ -154,7 +154,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		return nil, err
 	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site)
 	if err != nil {
 		return nil, err
 	}
@@ -431,6 +431,7 @@ func initHTTP(
 	node *future.ReadOnly[*mttnet.Node],
 	me *future.ReadOnly[core.Identity],
 	wallet *wallet.Service,
+	wellKnownHandler http.Handler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
 	{
@@ -444,7 +445,7 @@ func initHTTP(
 		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
-
+		router.PathPrefix("/.well-known").Handler(wellKnownHandler)
 		nav := newNavigationHandler(router)
 
 		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
