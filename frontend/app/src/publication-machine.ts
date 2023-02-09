@@ -3,7 +3,6 @@ import {queryKeys} from '@app/hooks'
 import {
   Account,
   blockNodeToSlate,
-  Conversation,
   createDraft,
   Document,
   getAccount,
@@ -14,11 +13,9 @@ import {
   Publication,
   statement,
   text,
-  FlowContent,
-  GroupingContent,
 } from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
-import {actions, assign, createMachine, InterpreterFrom} from 'xstate'
+import {assign, createMachine, InterpreterFrom} from 'xstate'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
