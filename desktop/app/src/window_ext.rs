@@ -17,6 +17,8 @@ use webview2_com::take_pwstr;
 #[cfg(windows)]
 use windows::core::PWSTR;
 
+/// This trait defines additional function in Tauris `Window` type that we make use of in other parts of the app.
+/// Ideally this will be upstreamed and replaced with official implemetations.
 pub trait WindowExt {
   fn set_transparent_titlebar(&self, transparent: bool);
   fn is_transparent_titlebar(&self) -> bool;

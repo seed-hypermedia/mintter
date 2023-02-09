@@ -1,7 +1,16 @@
-/// Todo explain
+/// This API allows guests to listen to a set of events happening in the app. 
+/// Listening to events is a blocking operation for the guest, 
+/// i.e. guest's execution will be suspended until the first event matching the given subscription happened.
+/// 
+/// Currently this API is functionally equivalent to the window.listen method exposed by the Tauri API: https://tauri.app/v1/api/js/window#listen
+/// meaning guests can listen to any window events (Without receving the event's payload yet). 
+/// But a more domain-specific set of possible events may be defined in the future.
 
 use { error } from error
 
+/// A custom identifier that guests can attach to the subscription, so they can match received events to issued subscriptions later.
+/// This is only a u64 number so we don't spend much time serializing, 
+/// but the u64 can be used for example as a HashMap key to associate more complex data with a subscription.
 type userdata = u64
 
 record subscription-window-event {
@@ -30,4 +39,5 @@ record event {
     inner: event-inner,
 }
 
+/// Listen to a set of events. This function will return once the first event happened that matches the given subscription.
 oneoff: func(in: list<subscription>) -> result<event, error>

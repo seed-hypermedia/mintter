@@ -3,6 +3,7 @@ use tauri::{
   AppHandle, CustomMenuItem, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
 
+/// This function crates the system tray entry that will be attached in `main.rs`.
 pub fn get_tray() -> SystemTray {
   let tray = SystemTray::new();
   let tray_menu = SystemTrayMenu::new();
@@ -15,6 +16,7 @@ pub fn get_tray() -> SystemTray {
   tray.with_menu(tray_menu)
 }
 
+/// This is the event listener that handles clicks on the system tray menu.
 pub fn event_handler<R: Runtime>(app_handle: &AppHandle<R>, event: SystemTrayEvent) {
   if let SystemTrayEvent::MenuItemClick { id, .. } = event {
     match id.as_str() {

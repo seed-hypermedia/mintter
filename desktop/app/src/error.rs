@@ -1,5 +1,6 @@
 use serde::Serialize;
 
+// All possible errors that can happen in the app.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
   #[error("JSON: {0}")]
@@ -32,6 +33,8 @@ pub enum Error {
   // Aborted(#[from] futures_util::future::Aborted),
 }
 
+// A very crude implementation of `Serialize` for the error just so we can pass it to the frontend.
+// In the future it maybe makes sense to serialize this into a structured format that the frontend can make sense of.
 impl Serialize for Error {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
