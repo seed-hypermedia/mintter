@@ -1267,13 +1267,24 @@ export class SiteInfo extends Message<SiteInfo> {
 
 /**
  * Response for the /.well-known discovery HTTP page.
- * TODO: define the actual /.well-known path.
- *
- * TODO: add the necessary fields to export under the /.well-known HTTP discovery path.
  *
  * @generated from message com.mintter.documents.v1alpha.SiteDiscoveryConfig
  */
 export class SiteDiscoveryConfig extends Message<SiteDiscoveryConfig> {
+  /**
+   * The addresses to connect to the remote site via p2p. In multiaddress format.
+   *
+   * @generated from field: repeated string addresses = 1;
+   */
+  addresses: string[] = [];
+
+  /**
+   * Mintter Account ID of the site.
+   *
+   * @generated from field: string account_id = 2;
+   */
+  accountId = "";
+
   constructor(data?: PartialMessage<SiteDiscoveryConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1282,6 +1293,8 @@ export class SiteDiscoveryConfig extends Message<SiteDiscoveryConfig> {
   static readonly runtime = proto3;
   static readonly typeName = "com.mintter.documents.v1alpha.SiteDiscoveryConfig";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "addresses", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 2, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SiteDiscoveryConfig {
