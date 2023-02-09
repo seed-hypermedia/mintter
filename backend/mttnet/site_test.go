@@ -21,13 +21,18 @@ func TestLocalPublish(t *testing.T) {
 func TestRemotePublish(t *testing.T) {
 	t.Skip("not ready yet")
 	t.Parallel()
-	cfg := config.Default()
-	cfg.Site.Hostname = "example.com"
-	site, stopSite := makeTestPeer(t, "alice", cfg.Site)
-	defer stopSite()
+	owner, stopowner := makeTestPeer(t, "alice")
+	defer stopowner()
 
-	bob, stopbob := makeTestPeer(t, "bob")
-	defer stopbob()
+	//editor, stopeditor := makeTestPeer(t, "bob")
+	//defer stopeditor()
+
+	cfg := config.Default()
+	cfg.Site.Hostname = "mintter.com"
+
+	cfg.Site.OwnerID = owner.accountObjectID.String()
+	site, stopSite := makeTestPeer(t, "carol", cfg.Site)
+	defer stopSite()
 
 	ctx := context.Background()
 
@@ -40,13 +45,14 @@ func TestRemotePublish(t *testing.T) {
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		require.NoError(t, site.Connect(ctx, bob.AddrInfo()))
-		checkExchange(t, site, bob)
-		checkExchange(t, bob, site)
+		require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
+		checkExchange(t, site, owner)
+		checkExchange(t, owner, site)
 		return nil
 	})
 
 	require.NoError(t, g.Wait())
 
-	require.NoError(t, site.Connect(ctx, bob.AddrInfo()), "connecting twice must not fail")
+	require.NoError(t, owner.Connect(ctx, site.AddrInfo()), "connecting twice must not fail")
+
 }

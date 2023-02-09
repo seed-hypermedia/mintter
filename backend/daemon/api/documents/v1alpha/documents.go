@@ -19,6 +19,7 @@ import (
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -33,6 +34,7 @@ type Discoverer interface {
 	// TODO: this is here temporarily. Eventually we need to provide from the vcs
 	// so every time we save a main version, we need to provide the leaf changes.
 	ProvideCID(cid.Cid) error
+	Connect(context.Context, peer.AddrInfo) error
 }
 
 // TokenRedeemer is an interface for not having to pass a full-fledged sites service,
