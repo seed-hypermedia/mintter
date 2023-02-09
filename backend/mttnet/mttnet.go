@@ -76,6 +76,11 @@ func DefaultRelays() []peer.AddrInfo {
 	}
 }
 
+type wellKnownInfo struct {
+	Addresses []string `json:"addresses,omitempty"`
+	AccountID string   `json:"account_id,omitempty"`
+}
+
 type docInfo struct {
 	ID      string
 	Version string
@@ -106,7 +111,7 @@ type Site struct {
 type Server struct {
 	Node *future.ReadOnly[*Node]
 	*Site
-	publicationGetter PublicationGetter
+	localFunctions LocalFunctions
 }
 
 // Node is a Mintter P2P node.
@@ -139,14 +144,18 @@ type tokenInfo struct {
 	expirationTime time.Time
 }
 
-// PublicationGetter is an interface for not having to pass a full-fledged documents service,
-// just the getPublication that is what we need to call in getPath.
-type PublicationGetter interface {
+// LocalFunctions is an interface for not having to pass a full-fledged documents service,
+// just the getPublication that is what we need to call in getPath, and a way to query the
+// sites database.
+type LocalFunctions interface {
+	// GetPublication gets a local publication.
 	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
+	// GetSiteAccount gets a site's accountID.
+	GetSiteAccount(hostname string) (string, error)
 }
 
 // NewServer returns a new mttnet API server.
-func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], publicationGetter PublicationGetter) *Server {
+func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions) *Server {
 	hostname := siteCfg.Hostname
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
 	srv := &Server{Site: &Site{
@@ -157,7 +166,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
 		title:                      siteCfg.Title,
-	}, Node: node, publicationGetter: publicationGetter}
+	}, Node: node, localFunctions: localFunctions}
 
 	go func() {
 		n, err := node.Await(ctx)
