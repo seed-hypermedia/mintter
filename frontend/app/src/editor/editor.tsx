@@ -36,7 +36,7 @@ import {
 import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
 import type {EditorPlugin} from './types'
-import {setList, setType, toggleFormat} from './utils'
+import {findPath, setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
   mode?: EditorMode

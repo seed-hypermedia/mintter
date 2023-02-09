@@ -17,6 +17,7 @@ import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {ScrollArea} from '@app/components/scroll-area'
 import {Box} from '@components/box'
+import {NodeSettingsProvider} from '@app/editor/drag-context'
 
 type DraftPageProps = {
   draftActor: DraftActor
@@ -32,7 +33,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
   useInitialFocus(editor)
 
   const [state, send] = useActor(draftActor)
-  console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
+  // console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
 
   if (state.matches('errored')) {
     return <Text>ERROR: {state.context.errorMessage}</Text>
@@ -68,6 +69,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
             <MouseProvider value={mouseService}>
               <BlockHighLighter>
                 <FileProvider value={state.context.draft}>
+                  {/* <NodeSettingsProvider> */}
                   <Blocktools editor={editor}>
                     {state.context.localDraft?.content ? (
                       <Editor
@@ -83,6 +85,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
                       />
                     ) : null}
                   </Blocktools>
+                  {/* </NodeSettingsProvider> */}
                 </FileProvider>
               </BlockHighLighter>
             </MouseProvider>

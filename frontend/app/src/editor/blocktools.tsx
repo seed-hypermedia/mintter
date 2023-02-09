@@ -1,16 +1,27 @@
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {ElementDropdown} from '@app/editor/dropdown'
 import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ELEMENT_STATEMENT} from '@app/editor/statement'
-import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
+import {
+  getEditorBlock,
+  getNodePath,
+  insertInline,
+  setList,
+  setType,
+} from '@app/editor/utils'
 import {
   MouseInterpret,
   useCurrentBound,
   useCurrentTarget,
   useMouse,
 } from '@app/mouse-context'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {error} from '@app/utils/logger'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon, icons} from '@components/icon'
 import {
   blockquote,
   code,
@@ -23,18 +34,19 @@ import {
   ul,
   video,
 } from '@mintter/shared'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {error} from '@app/utils/logger'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon, icons} from '@components/icon'
-import {Text} from '@components/text'
 import {useSelector} from '@xstate/react'
-import {Fragment, ReactNode, useEffect, useMemo, useState} from 'react'
+import {
+  MouseEvent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
+import {useNodeSettingsContext} from './drag-context'
 import './styles/blocktools.scss'
-import {ReactEditor} from 'slate-react'
 
 let toolsByMode = {
   [EditorMode.Draft]: DraftBlocktools,
@@ -73,7 +85,7 @@ export function Blocktools({
 }
 
 function DraftBlocktools(props: BlockData) {
-  let {mouseService, element} = props
+  let {element} = props
   let target = useCurrentTarget()
   let leftOffset = useMemo(() => {
     if (!target) return '-2rem'
@@ -91,6 +103,64 @@ function DraftBlocktools(props: BlockData) {
 
   let topOffset = useTopOffset(element)
 
+  const dragRef = useRef<HTMLDivElement>(null)
+
+  const [{dndState}, handlers] = useNodeSettingsContext()
+  const {hoverIn, hoverOut, onDrop, onDragEnd, onDragStart} = handlers
+  const editor = props.editor
+
+  const dragState = useMemo(() => {
+    if (dndState.fromPath === null || dndState.toPath === null) {
+      return {
+        isDragging: false,
+        isOver: false,
+        isOverSelf: false,
+      }
+    }
+    const nodePath = getNodePath(editor, element?.[0])
+    const isDragging = dndState.fromPath.toString() === nodePath.toString()
+    const isOver = dndState.toPath.toString() === nodePath.toString()
+    const isOverSelf = isDragging && isOver
+
+    return {
+      isDragging,
+      isOver,
+      isOverSelf,
+    }
+  }, [dndState.fromPath, dndState.toPath])
+
+  const {isDragging, isOver, isOverSelf} = dragState
+
+  const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation()
+
+    const handler = dragRef.current
+    const target = document.querySelector<HTMLDivElement>(
+      `[data-block-id="${element?.[0].id}"]`,
+    )
+
+    handler?.setAttribute('draggable', 'false')
+    if (target) {
+      target.setAttribute('draggable', 'true')
+
+      target.ondragstart = (event) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        if (element && element[0] && element[0].id) {
+          onDragStart(event, element[0].id, element?.[1])
+        }
+      }
+      target.ondragend = onDragEnd
+      target.ondrop = onDrop
+    }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const onMouseEnter = (e: MouseEvent<HTMLDivElement>) => {
+    hoverIn(e, element?.[0] as any)
+  }
+  const onMouseLeave = (e: MouseEvent<HTMLDivElement>) => {
+    hoverOut(e, element?.[0] as any)
+  }
+
   return (
     <Box
       className="blocktools"
@@ -99,8 +169,11 @@ function DraftBlocktools(props: BlockData) {
         left: `calc(${props.left} + ${leftOffset})`,
         transform: `translateY(${topOffset})`,
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onMouseDown={onMouseDown}
     >
-      <Dropdown.Root
+      {/* <Dropdown.Root
         onOpenChange={(isOpen) => {
           mouseService.send(
             isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
@@ -149,7 +222,10 @@ function DraftBlocktools(props: BlockData) {
             })}
           </Dropdown.Content>
         </Dropdown.Portal>
-      </Dropdown.Root>
+      </Dropdown.Root> */}
+      <ElementDropdown data-testid="blocktools-trigger" contentEditable={false}>
+        <Icon name="Grid4" color="muted" />
+      </ElementDropdown>
     </Box>
   )
 }
