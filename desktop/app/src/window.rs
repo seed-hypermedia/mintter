@@ -1,6 +1,7 @@
+/// This module defines functions that are relevant for window management.
 use crate::window_ext::WindowExt;
+use crate::Result;
 use log::debug;
-use serde::Serialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{
   plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -13,24 +14,11 @@ const DEFAULT_MIN_WINDOW_WIDTH: f64 = 640.0;
 const DEFAULT_MIN_WINDOW_HEIGHT: f64 = 480.0;
 const DEFAULT_OFFSET: f64 = 64.0;
 
-#[derive(Debug, thiserror::Error)]
-enum Error {
-  #[error(transparent)]
-  Tauri(#[from] tauri::Error),
-}
-
-impl Serialize for Error {
-  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-  where
-    S: serde::Serializer,
-  {
-    serializer.serialize_str(&self.to_string())
-  }
-}
-
+/// This command is called by the frontend when the user clicks to open a new window.
+/// If a window with the given document is already opened it will be focused instead.
 #[tauri::command]
 #[tracing::instrument(skip(window))]
-async fn open(window: Window, path: &str) -> Result<(), Error> {
+async fn open(window: Window, path: &str) -> Result<()> {
   for (_, win) in window.windows() {
     let win_url = win.url()?;
 
@@ -40,6 +28,7 @@ async fn open(window: Window, path: &str) -> Result<(), Error> {
       url
     };
 
+    // only compare the first 2 segments of the URL (wether the window has a draft or publication and the document ID)
     let left = win_url.path_segments().unwrap().take(2);
     let right = requested_url.path_segments().unwrap().take(2);
 
@@ -56,6 +45,7 @@ async fn open(window: Window, path: &str) -> Result<(), Error> {
     }
   }
 
+  // lets construct a new window
   let label = window_label();
 
   let win = WindowBuilder::new(&window, label, WindowUrl::App(path.into()))
@@ -77,9 +67,11 @@ async fn open(window: Window, path: &str) -> Result<(), Error> {
   Ok(())
 }
 
+/// This command explicitly creates a new window, fully bypassing the window focusing behavior.
+/// This is used when the user wants to explicitly open something in a new window.
 #[tauri::command(async)]
 #[tracing::instrument(skip(window))]
-pub fn new_window<R: Runtime>(window: Window<R>) -> tauri::Result<()> {
+pub fn new_window<R: Runtime>(window: Window<R>) -> Result<()> {
   let label = window_label();
 
   let win = WindowBuilder::new(&window, label, WindowUrl::App("index.html".into()))
@@ -101,9 +93,10 @@ pub fn new_window<R: Runtime>(window: Window<R>) -> tauri::Result<()> {
   Ok(())
 }
 
+/// This command is used by the menus to let the user close all open windows at once.
 #[tauri::command(async)]
 #[tracing::instrument(skip(app_handle))]
-pub fn close_all_windows<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
+pub fn close_all_windows<R: Runtime>(app_handle: AppHandle<R>) -> Result<()> {
   for window in app_handle.windows().values() {
     window.close()?;
   }
@@ -111,6 +104,8 @@ pub fn close_all_windows<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<
   Ok(())
 }
 
+/// Window labels must be unique, so we generate a cheap unique-enough label here by taking the current time in milliseconds.
+#[inline]
 fn window_label() -> String {
   SystemTime::now()
     .duration_since(UNIX_EPOCH)
@@ -119,7 +114,11 @@ fn window_label() -> String {
     .to_string()
 }
 
-fn get_new_position<R: Runtime>(window: &Window<R>) -> crate::Result<(f64, f64)> {
+/// This function calculates the position of a new window based in the position of it's parent window.
+///
+/// This is used to avoif created window completely on top of one another when repeatedly clicking the open window button.
+/// This replicates the default behavior of of macOS as closley as possible.
+fn get_new_position<R: Runtime>(window: &Window<R>) -> Result<(f64, f64)> {
   let current_pos = window.outer_position()?;
   let current_monitor = window
     .current_monitor()?

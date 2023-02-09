@@ -1,8 +1,10 @@
+/// The implementation of the fetch API defined in the `poll.wit` file.
+/// For details on the defined functions see that file.
+use crate::{r#impl::pledge::contains, Context, Error, ErrorKind, Promises};
 use futures_util::future::select_ok;
 use std::{future::Future, pin::Pin};
 use tauri::Runtime;
-
-use crate::{Context, Error, ErrorKind};
+use wit_bindgen_host_wasmtime_rust::Result as HostResult;
 
 wit_bindgen_host_wasmtime_rust::generate!({
     tracing: true,
@@ -47,7 +49,11 @@ impl<R: Runtime> poll::Poll for Context<R> {
   async fn oneoff(
     &mut self,
     subs: Vec<poll::Subscription>,
-  ) -> wit_bindgen_host_wasmtime_rust::Result<poll::Event, poll::Error> {
+  ) -> HostResult<poll::Event, poll::Error> {
+    if !contains(self.promises, Promises::STDIO) {
+      Err(poll::Error::Perm)?
+    }
+
     ::log::debug!("{:?}", subs);
 
     let mut futs: Vec<Pin<Box<dyn Future<Output = crate::Result<poll::Event>> + Send>>> = vec![];
