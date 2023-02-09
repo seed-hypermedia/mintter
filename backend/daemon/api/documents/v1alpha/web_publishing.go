@@ -13,7 +13,8 @@ import (
 type siteInfo struct {
 	role       int
 	inviteLink string
-	address    string
+	addresses  []string
+	accID      string
 }
 
 // AddSite checks if the provided site hostname is a valid Mintter site and if so, add it to the database.
@@ -32,9 +33,13 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		return &ret, fmt.Errorf("site " + in.Hostname + " already taken")
 	}
 
-	// TODO (juligasa): uncomment when site is ready
+	addresses := []string{"/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"}
+	accountID := "bahezrj4iaqacicabciqeoo2zi3sktlvzwxiqwilwfpm2hucu2ihsa7zzqtrkmbeoef6lagy"
+
+	// TODO (juligasa): uncomment when remote site is ready
 	/*
-		requestURL := fmt.Sprintf("https://%s/.well-known", in.Hostname)
+		TODO(juligasa): https instead of http
+		requestURL := fmt.Sprintf("http://%s/.well-known", in.Hostname)
 
 		req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 		if err != nil {
@@ -49,18 +54,29 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		if res.StatusCode < 200 || res.StatusCode > 299 {
 			return &ret, fmt.Errorf("Wrong status code from site %d", res.StatusCode)
 		}
-		var response map[string]string
+		var response map[string][]string
 		err = json.NewDecoder(res.Body).Decode(&response)
 		if err != nil{
 			return &ret, fmt.Errorf("Unrecognized response format %w", err)
 		}
-		address, ok := response["address"]
+		addresses, ok := response["addresses"]
 		if !ok {
 			return &ret, fmt.Errorf("address not found in payload")
 		}
-	*/
-	address := "/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"
+		account_id, ok := response["account_id"]
+		if !ok {
+			return &ret, fmt.Errorf("account_id not found in payload")
+		}
 
+		info, err := mttnet.AddrInfoFromStrings(addresses...)
+		if err != nil {
+			return &ret, fmt.Errorf("Couldn't parse multiaddress: %w", err)
+		}
+
+		if err = api.disc.Connect(ctx, info); err != nil {
+			return &ret, fmt.Errorf("Couldn't connect to the remote site via p2p: %w", err)
+		}
+	*/
 	_, added := api.sitesDB[in.Hostname]
 	if added {
 		return &ret, fmt.Errorf("site " + in.Hostname + " already added")
@@ -82,7 +98,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		}
 	}
 
-	api.sitesDB[in.Hostname] = siteInfo{address: address, inviteLink: in.InviteToken, role: int(role)}
+	api.sitesDB[in.Hostname] = siteInfo{addresses: addresses, inviteLink: in.InviteToken, role: int(role), accID: accountID}
 	ret.Hostname = in.Hostname
 	ret.Role = documents.Member_Role(api.sitesDB[in.Hostname].role)
 	return &ret, nil
@@ -134,4 +150,15 @@ func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents
 	return &documents.ListWebPublicationRecordsResponse{
 		Publications: ret,
 	}, nil
+}
+
+// GetSiteAccount returns a site's accountID so other gRPC can use it.
+// TODO(juligasa): remove when database schema is ready since SiteInfo will be available there.
+func (api *Server) GetSiteAccount(hostname string) (string, error) {
+	siteInfo, ok := api.sitesDB[hostname]
+
+	if !ok {
+		return "", fmt.Errorf("site %s not found. Please add it first", hostname)
+	}
+	return siteInfo.accID, nil
 }
