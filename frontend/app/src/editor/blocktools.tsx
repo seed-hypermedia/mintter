@@ -1,4 +1,4 @@
-import {DragInterpret, useDrag, useDragDrop} from '@app/drag-context'
+import {useDrag} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
 import {ElementDropdown} from '@app/editor/dropdown'
@@ -30,14 +30,7 @@ import {
   video,
 } from '@mintter/shared'
 import {useSelector} from '@xstate/react'
-import {
-  MouseEvent,
-  ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import {MouseEvent, ReactNode, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
 import './styles/blocktools.scss'
@@ -79,7 +72,8 @@ export function Blocktools({
 }
 
 function DraftBlocktools(props: BlockData) {
-  let {mouseService, dragService, element} = props
+  let {mouseService, element} = props
+  let dragService = useDrag()
   let target = useCurrentTarget()
   let leftOffset = useMemo(() => {
     if (!target) return '-2rem'
@@ -107,7 +101,7 @@ function DraftBlocktools(props: BlockData) {
     console.log('ELEMENT', element)
     const [, fromPath] = element
 
-    if (fromPath) {
+    if (fromPath && dragService) {
       mouseService.send('DISABLE.DRAG.START')
       dragService.send({type: 'DRAG.START', fromPath: fromPath})
     }
@@ -249,7 +243,6 @@ function PublicationBlocktools(
 
 type BlockData = {
   mouseService: MouseInterpret
-  dragService: DragInterpret
   editor: Editor
   show: boolean
   mode: EditorMode
@@ -262,7 +255,6 @@ type BlockData = {
 
 function useBlocktoolsData(editor: Editor): BlockData {
   let mouseService = useMouse()
-  let dragService = useDrag()
   let [id, rect] = useCurrentBound() || []
 
   let element = useMemo(
@@ -279,7 +271,6 @@ function useBlocktoolsData(editor: Editor): BlockData {
 
   return {
     mouseService,
-    dragService,
     editor,
     show,
     mode: editor.mode,

@@ -1,6 +1,8 @@
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
-
+import {useDrag} from '@app/drag-context'
+import {mergeRefs} from '@app/utils/mege-refs'
+import {Box} from '@components/box'
 import {
   isBlockquote,
   isCode,
@@ -8,14 +10,11 @@ import {
   isPhrasingContent,
   Paragraph as ParagraphType,
 } from '@mintter/shared'
-import {mergeRefs} from '@app/utils/mege-refs'
-import {Box} from '@components/box'
 import {useRef} from 'react'
 import {Node, Path, Transforms} from 'slate'
-import {RenderElementProps, useSlateStatic} from 'slate-react'
+import {RenderElementProps, useSlate} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import { useDrag } from '@app/drag-context'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -64,7 +63,8 @@ function Paragraph({
   attributes,
   mode,
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
-  let editor = useSlateStatic()
+  let editor = useSlate()
+  let dragService = useDrag()
   let {elementProps, parentNode, parentPath} = usePhrasingProps(editor, element)
 
   let pRef = useRef<HTMLElement | undefined>()
@@ -73,7 +73,12 @@ function Paragraph({
   }
   useBlockObserve(mode, pRef)
   let mouseService = useMouse()
-  let dragService = useDrag()
+
+  let dragProps = {
+    onMouseOver: () => {
+      dragService?.send({type: 'DRAG.OVER', toPath: parentPath})
+    },
+  }
 
   let mouseProps =
     mode != EditorMode.Discussion
@@ -106,6 +111,7 @@ function Paragraph({
         {...elementProps}
         {...mouseProps}
         {...otherProps}
+        {...dragProps}
       >
         <code>{children}</code>
       </Box>
@@ -120,6 +126,7 @@ function Paragraph({
         {...elementProps}
         {...mouseProps}
         {...otherProps}
+        {...dragProps}
       >
         <p>{children}</p>
       </Box>
@@ -127,7 +134,13 @@ function Paragraph({
   }
 
   return (
-    <p {...attributes} {...elementProps} {...mouseProps} {...otherProps} onMouseOver={() => {dragService.send({type: 'DRAG.OVER', toPath: parentPath})}}>
+    <p
+      {...attributes}
+      {...elementProps}
+      {...mouseProps}
+      {...otherProps}
+      {...dragProps}
+    >
       {children}
     </p>
   )
