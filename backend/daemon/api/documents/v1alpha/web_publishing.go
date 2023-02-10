@@ -3,10 +3,14 @@ package documents
 
 import (
 	context "context"
+	"encoding/json"
 	"fmt"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/mttnet"
+	"net/http"
 	"strings"
 
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -33,55 +37,78 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		return &ret, fmt.Errorf("site " + in.Hostname + " already taken")
 	}
 
-	addresses := []string{"/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"}
-	accountID := "bahezrj4iaqacicabciqeoo2zi3sktlvzwxiqwilwfpm2hucu2ihsa7zzqtrkmbeoef6lagy"
+	//addresses := []string{"/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"}
+	//accountID := "bahezrj4iaqacicabciqeoo2zi3sktlvzwxiqwilwfpm2hucu2ihsa7zzqtrkmbeoef6lagy"
 
 	// TODO (juligasa): uncomment when remote site is ready
-	/*
-		TODO(juligasa): https instead of http
-		requestURL := fmt.Sprintf("http://%s/.well-known", in.Hostname)
 
-		req, err := http.NewRequest(http.MethodGet, requestURL, nil)
-		if err != nil {
-			return &ret, fmt.Errorf("could not create request to well-known site: %w ", err)
-		}
+	//TODO(juligasa): https instead of http
+	requestURL := fmt.Sprintf("http://%s/.well-known", in.Hostname)
 
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return &ret, fmt.Errorf("could not contact to provided site: %w ", err)
-		}
-		defer res.Body.Close()
-		if res.StatusCode < 200 || res.StatusCode > 299 {
-			return &ret, fmt.Errorf("Wrong status code from site %d", res.StatusCode)
-		}
-		var response map[string][]string
-		err = json.NewDecoder(res.Body).Decode(&response)
-		if err != nil{
-			return &ret, fmt.Errorf("Unrecognized response format %w", err)
-		}
-		addresses, ok := response["addresses"]
+	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+	if err != nil {
+		return &ret, fmt.Errorf("could not create request to well-known site: %w ", err)
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return &ret, fmt.Errorf("could not contact to provided site: %w ", err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return &ret, fmt.Errorf("Wrong status code from site %d", res.StatusCode)
+	}
+	var response map[string]interface{}
+	err = json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		return &ret, fmt.Errorf("Unrecognized response format %w", err)
+	}
+	addressesRes, ok := response["addresses"]
+	if !ok {
+		return &ret, fmt.Errorf("address not found in payload")
+	}
+
+	var addresses []string
+	addressesList, ok := addressesRes.([]interface{})
+	if !ok {
+		return &ret, fmt.Errorf("Error getting p2p addresses from site, wrong format: addresses must be a list of multiaddresses even if only one provided")
+	}
+	for _, addrs := range addressesList {
+		addr, ok := addrs.(string)
 		if !ok {
-			return &ret, fmt.Errorf("address not found in payload")
+			return &ret, fmt.Errorf("Error getting p2p addresses from site, wrong format: individual multiaddresses must be a string")
 		}
-		account_id, ok := response["account_id"]
-		if !ok {
-			return &ret, fmt.Errorf("account_id not found in payload")
-		}
+		addresses = append(addresses, addr)
+	}
 
-		info, err := mttnet.AddrInfoFromStrings(addresses...)
-		if err != nil {
-			return &ret, fmt.Errorf("Couldn't parse multiaddress: %w", err)
-		}
+	accountRes, ok := response["account_id"]
+	if !ok {
+		return &ret, fmt.Errorf("account_id not found in payload")
+	}
 
-		if err = api.disc.Connect(ctx, info); err != nil {
-			return &ret, fmt.Errorf("Couldn't connect to the remote site via p2p: %w", err)
-		}
-	*/
+	accountID, ok := accountRes.(string)
+	if !ok {
+		return &ret, fmt.Errorf("Error getting account_id from site, wrong format: account id must me a string")
+	}
+
+	info, err := mttnet.AddrInfoFromStrings(addresses...)
+	if err != nil {
+		return &ret, fmt.Errorf("Couldn't parse multiaddress: %w", err)
+	}
+
+	if err = api.disc.Connect(ctx, info); err != nil {
+		return &ret, fmt.Errorf("Couldn't connect to the remote site via p2p: %w", err)
+	}
+
 	_, added := api.sitesDB[in.Hostname]
 	if added {
 		return &ret, fmt.Errorf("site " + in.Hostname + " already added")
 	}
-	role := documents.Member_EDITOR
+	var role documents.Member_Role
+	// make it a proxy call since we want to talk with the site by attaching headers
+	header := metadata.New(map[string]string{mttnet.MttHeader: in.Hostname})
+	ctx = metadata.NewOutgoingContext(ctx, header)
+	ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, accountID)
 	if in.InviteToken != "" {
 		res, err := api.TokenRedeemer.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{
 			Token: in.InviteToken,
@@ -91,11 +118,11 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		}
 		role = res.Role
 	} else {
-		if strings.Contains(strings.ToLower(in.InviteToken), "unspecified") {
-			role = documents.Member_ROLE_UNSPECIFIED
-		} else if strings.Contains(strings.ToLower(in.InviteToken), "owner") {
-			role = documents.Member_OWNER
+		res, err := api.TokenRedeemer.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{})
+		if err != nil {
+			return &ret, fmt.Errorf("Please, contact to the site owner to get an invite token: %w", err)
 		}
+		role = res.Role
 	}
 
 	api.sitesDB[in.Hostname] = siteInfo{addresses: addresses, inviteLink: in.InviteToken, role: int(role), accID: accountID}

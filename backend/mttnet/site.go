@@ -8,11 +8,16 @@ import (
 	"encoding/json"
 	"fmt"
 	site "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/vcs/vcssql"
 	"net/http"
+	"reflect"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 	rpcpeer "google.golang.org/grpc/peer"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -22,11 +27,14 @@ import (
 const (
 	// MttHeader is the headers bearing the remote site hostname to proxy calls to.
 	MttHeader = "x-mintter-site-hostname"
+	// SiteAccountIDCtxKey is the key to pass the account id via context down to a proxied call
+	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
+	SiteAccountIDCtxKey = "x-mintter-site-account-id"
 )
 
 // CreateInviteToken creates a new invite token for registering a new member.
 func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteTokenRequest) (*site.InviteToken, error) {
-	if _, err := srv.checkPermissions(ctx, site.Member_OWNER); err != nil {
+	if _, _, _, err := srv.checkPermissions(ctx, site.Member_OWNER); err != nil {
 		return &site.InviteToken{}, err
 	}
 	if in.Role == site.Member_OWNER {
@@ -56,9 +64,18 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 
 // RedeemInviteToken redeems a previously created invite token to register a new member.
 func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
-	acc, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	acc, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return &site.RedeemInviteTokenResponse{}, err
+	}
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Node not ready yet")
+	}
+	n.log.Debug("REDEEM CALLED", zap.String("Site Owner", srv.ownerID))
+	if acc.String() == srv.ownerID {
+		srv.accountsDB[acc.String()] = site.Member_OWNER
+		return &site.RedeemInviteTokenResponse{Role: site.Member_OWNER}, nil
 	}
 
 	// check if that account was already redeemed in the past
@@ -79,10 +96,6 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 		delete(srv.tokensDB, in.Token)
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("expired token")
 	}
-	/* TODO(juligasa): Uncomment when remote site is ready
-	if acc.String() == srv.ownerID {
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("cannot update site owner role, please change site owner manually in site config")
-	}*/
 
 	// redeem the token
 	delete(srv.tokensDB, in.Token)
@@ -94,7 +107,7 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 
 // GetSiteInfo Gets public-facing site information.
 func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest) (*site.SiteInfo, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
 	if err != nil {
 		return &site.SiteInfo{}, err
 	}
@@ -108,7 +121,7 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest)
 
 // UpdateSiteInfo updates public-facing site information. Doesn't support partial updates, hence all the fields must be provided.
 func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRequest) (*site.SiteInfo, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_OWNER)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_OWNER)
 	if err != nil {
 		return &site.SiteInfo{}, err
 	}
@@ -129,7 +142,7 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 
 // ListMembers lists registered members on the site.
 func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest) (*site.ListMembersResponse, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
 	if err != nil {
 		return &site.ListMembersResponse{}, err
 	}
@@ -145,7 +158,7 @@ func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest)
 
 // GetMember gets information about a specific member.
 func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*site.Member, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
 	if err != nil {
 		return &site.Member{}, err
 	}
@@ -158,7 +171,7 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 
 // DeleteMember deletes an existing member.
 func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberRequest) (*emptypb.Empty, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_OWNER)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_OWNER)
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
@@ -175,7 +188,7 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 
 // PublishDocument publishes and pins the document to the public web site.
 func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
 	if err != nil {
 		return &site.PublishDocumentResponse{}, err
 	}
@@ -206,7 +219,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 
 // UnpublishDocument un-publishes (un-lists) a given document. Only the author of that document or the owner can unpublish.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
-	acc, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	acc, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
 	if err != nil {
 		return &site.UnpublishDocumentResponse{}, err
 	}
@@ -239,7 +252,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 
 // ListWebPublications lists all the published documents.
 func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPublicationsRequest) (*site.ListWebPublicationsResponse, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
 	if err != nil {
 		return &site.ListWebPublicationsResponse{}, err
 	}
@@ -257,7 +270,7 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 
 // GetPath gets a publication given the path it has been publish to.
 func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.GetPathResponse, error) {
-	_, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	_, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
 	if err != nil {
 		return &site.GetPathResponse{}, err
 	}
@@ -280,7 +293,7 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 }
 
 func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
+	md, ok := metadata.FromOutgoingContext(ctx)
 	if !ok {
 		return "", fmt.Errorf("metadata not found in context")
 	}
@@ -315,43 +328,73 @@ func randStr(length int) string {
 	return base32.StdEncoding.EncodeToString(randomBytes)[:length]
 }
 
-func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Member_Role) (cid.Cid, error) {
+// Client dials a remote peer if necessary and returns the RPC client handle.
+func (srv *Server) Client(ctx context.Context, device cid.Cid) (site.WebSiteClient, error) {
 	n, ok := srv.Node.Get()
 	if !ok {
-		return cid.Cid{}, fmt.Errorf("Node not ready yet")
+		return nil, fmt.Errorf("Node not ready yet")
 	}
+	pid, err := peer.FromCid(device)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := n.Connect(ctx, n.p2p.Peerstore().PeerInfo(pid)); err != nil {
+		return nil, err
+	}
+	return n.client.DialSite(ctx, pid)
+}
+
+func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Member_Role, params ...interface{}) (cid.Cid, bool, interface{}, error) {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return cid.Cid{}, false, nil, fmt.Errorf("Node not ready yet")
+	}
+
 	remoteHostname, err := getRemoteSiteFromHeader(ctx)
-	if err != nil && srv.hostname == "" { // no headers and not a local site
-		return cid.Cid{}, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a proper remote site")
+	if err != nil && srv.hostname == "" { // no headers and not a site
+		return cid.Cid{}, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a proper remote site")
 	}
-	/*
-		if err == nil && srv.hostname != remoteHostname {
-			// proxy to remote
-			return &site.InviteToken{}, fmt.Errorf("Remote proxying not ready yet. Please remove header to make it a local call")
-		}
-	*/
+
 	acc := n.me.AccountID()
 
-	if srv.hostname == remoteHostname { // proxyed call
+	if err == nil && srv.hostname != remoteHostname { //This call is intended to be proxied so its site's duty to check permission
+		// proxy to remote
+		if len(params) == 0 {
+			n.log.Error("Headers found, meaning this call should be proxied, but remote function params not provided")
+			return acc, false, nil, fmt.Errorf("In order to proxy a call (headers found) you need to provide a valid proxy func and a params")
+		}
+		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the site", zap.String(MttHeader, remoteHostname))
+
+		pc, _, _, _ := runtime.Caller(1)
+		proxyFcnList := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+		proxyFcn := proxyFcnList[len(proxyFcnList)-1]
+		res, err := srv.proxyToSite(ctx, remoteHostname, proxyFcn, params)
+		return acc, true, res, err
+	}
+
+	if (srv.hostname == remoteHostname && srv.hostname != "") || err != nil { // this would mean this is a proxied call so we take the account from the remote caller ID
 		remoteDeviceID, err := getRemoteID(ctx)
 		if err != nil {
-			return cid.Cid{}, fmt.Errorf("couldn't get remote device ID from p2p context: %w", err)
+			return cid.Cid{}, false, nil, fmt.Errorf("couldn't get remote device ID from p2p context: %w", err)
 		}
-		acc, err = n.AccountForDevice(ctx, remoteDeviceID)
+		remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
 		if err != nil {
-			return cid.Cid{}, fmt.Errorf("couldn't get account ID from device ID: %w", err)
+			return cid.Cid{}, false, nil, fmt.Errorf("couldn't get account ID from device ID: %w", err)
 		}
+		n.log.Debug("THIS IS A PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()))
+		acc = remotAcc
 	}
 
 	if requiredRole == site.Member_OWNER && acc.String() != srv.ownerID {
-		return cid.Cid{}, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
+		return cid.Cid{}, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.ownerID {
 		role, ok := srv.Site.accountsDB[acc.String()]
 		if !ok || (ok && role != requiredRole) {
-			return cid.Cid{}, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
+			return cid.Cid{}, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 		}
 	}
-	return acc, nil
+	return acc, false, nil, nil
 }
 
 // ServeHTTP serves the content for the well-known path.
@@ -368,14 +411,24 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	siteInfo.AccountID = n.me.AccountID().String()
-	for _, addr := range n.AddrInfo().Addrs {
+
+	pid := n.me.DeviceKey().ID()
+	addrinfo := n.Libp2p().Peerstore().PeerInfo(pid)
+	mas, err := peer.AddrInfoToP2pAddrs(&addrinfo)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = encoder.Encode("Error: failed to get own site addresses")
+		return
+	}
+
+	for _, addr := range mas {
 		siteInfo.Addresses = append(siteInfo.Addresses, addr.String())
 	}
 	_ = encoder.Encode(siteInfo)
 }
 
-/*
-func (srv *Server) proxyToSite(ctx context.Context, hostname string, in interface{}) (interface{}, error) {
+// proxyToSite calls a remote site function over libp2p.
+func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn string, params ...interface{}) (interface{}, error) {
 	n, ok := srv.Node.Get()
 	if !ok {
 		return nil, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
@@ -383,7 +436,14 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, in interfac
 
 	siteAccount, err := srv.localFunctions.GetSiteAccount(hostname)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot get site accountID: %w", err)
+		siteAccountCtx := ctx.Value(SiteAccountIDCtxKey)
+		if siteAccountCtx == nil {
+			return nil, fmt.Errorf("Cannot get site accountID: %w", err)
+		}
+		siteAccount, ok = siteAccountCtx.(string)
+		if !ok {
+			return nil, fmt.Errorf("Cannot get site accountID")
+		}
 	}
 
 	conn, release, err := n.VCS().DB().Conn(ctx)
@@ -397,38 +457,36 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, in interfac
 		n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
 		return nil, fmt.Errorf("couldn't list devices from account ID %s", siteAccount)
 	}
-	//TODO: transform accoindID string into a proper cid.Cid
-	if devices, found := all[siteAccount]; found {
-		for _, deviceID := range devices {
-			p2pc, err := net.Client(ctx, deviceID)
-			if err != nil {
-				continue
-			}
 
-			remoteInvoice, err := p2pc.RequestInvoice(ctx, &p2p.RequestInvoiceRequest{
-				AmountSats:   request.AmountSats,
-				Memo:         request.Memo,
-				HoldInvoice:  request.HoldInvoice,
-				PreimageHash: request.PreimageHash,
-			})
-
-			if err != nil {
-				srv.log.Debug("p2p invoice request failed", zap.String("msg", err.Error()))
-				return "", fmt.Errorf("p2p invoice request failed")
-			}
-
-			if remoteInvoice.PayReq == "" {
-				return "", fmt.Errorf("received an empty invoice from remote peer")
-			}
-
-			return remoteInvoice.PayReq, nil
-		}
-		err = fmt.Errorf("none of the devices associated with the provided account were reachable")
-		srv.log.Debug(err.Error())
-		return "", err
+	siteAccountID, err := cid.Decode(siteAccount)
+	if err != nil {
+		return nil, fmt.Errorf("Could not decode site account ID: %w", err)
 	}
-	err = fmt.Errorf("couln't find account %s", account.String())
-	srv.log.Debug(err.Error())
-	return "", err
+	devices, found := all[siteAccountID]
+	if !found {
+		return nil, fmt.Errorf("couldn't find account %s", siteAccount)
+	}
+
+	for _, deviceID := range devices {
+		sitec, err := srv.Client(ctx, deviceID)
+		if err != nil {
+			continue
+		}
+
+		n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn))
+		in := []reflect.Value{reflect.ValueOf(ctx)}
+		for _, param := range params {
+			in = append(in, reflect.ValueOf(param))
+		}
+
+		response, err := sitec.RedeemInviteToken(ctx, &site.RedeemInviteTokenRequest{})
+		if err != nil {
+			return nil, fmt.Errorf("Error in remote call: %w", err)
+		}
+		n.log.Debug("GOT A REMOTE RESPONSE", zap.Int("Role", int(response.Role)))
+		return response, nil
+		res := reflect.ValueOf(&sitec).MethodByName(proxyFcn).Call(in)
+		return res[0].Interface(), nil
+	}
+	return nil, fmt.Errorf("none of the devices associated with the provided account were reachable")
 }
-*/
