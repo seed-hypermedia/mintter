@@ -1,23 +1,24 @@
 // import 'show-keys'
+import {ScrollArea} from '@app/components/scroll-area'
 import {DraftActor} from '@app/draft-machine'
+import {DragProvider} from '@app/drag-context'
+import {dragMachine} from '@app/drag-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {ChildrenOf, Document} from '@mintter/shared'
 import {AppError} from '@app/root'
+import {Box} from '@components/box'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
+import {ChildrenOf, Document} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {ScrollArea} from '@app/components/scroll-area'
-import {Box} from '@components/box'
-import {NodeSettingsProvider} from '@app/editor/drag-context'
 
 type DraftPageProps = {
   draftActor: DraftActor
@@ -25,14 +26,29 @@ type DraftPageProps = {
 }
 
 export default function DraftPage({draftActor, editor}: DraftPageProps) {
+  const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
-
+  let dragService = useInterpret(() =>
+    dragMachine.withConfig({
+      actions: {
+        performMove: (context) => {
+          const {fromPath, toPath} = context
+          if (fromPath && toPath) {
+            Transforms.moveNodes(state.context.editor, {
+              at: fromPath,
+              to: toPath,
+              mode: 'highest',
+            })
+          }
+        },
+      },
+    }),
+  )
   // @ts-ignore
   window.mouseService = mouseService
 
   useInitialFocus(editor)
 
-  const [state, send] = useActor(draftActor)
   // console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
 
   if (state.matches('errored')) {
@@ -52,6 +68,10 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         onMouseLeave={() => {
           mouseService.send('DISABLE.CHANGE')
         }}
+        onMouseUp={() => {
+          dragService.send('DROPPED')
+          mouseService.send('DISABLE.DRAG.END')
+        }}
       >
         <ErrorBoundary
           FallbackComponent={AppError}
@@ -67,27 +87,27 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
             }}
           >
             <MouseProvider value={mouseService}>
-              <BlockHighLighter>
-                <FileProvider value={state.context.draft}>
-                  {/* <NodeSettingsProvider> */}
-                  <Blocktools editor={editor}>
-                    {state.context.localDraft?.content ? (
-                      <Editor
-                        editor={editor}
-                        value={state.context.localDraft.content}
-                        //@ts-ignore
-                        onChange={(content: ChildrenOf<Document>) => {
-                          if (!content && typeof content == 'string') return
-                          mouseService.send('DISABLE.CHANGE')
-                          draftActor.send('EDITING.START')
-                          send({type: 'DRAFT.UPDATE', payload: {content}})
-                        }}
-                      />
-                    ) : null}
-                  </Blocktools>
-                  {/* </NodeSettingsProvider> */}
-                </FileProvider>
-              </BlockHighLighter>
+              <DragProvider value={dragService}>
+                <BlockHighLighter>
+                  <FileProvider value={state.context.draft}>
+                    <Blocktools editor={editor}>
+                      {state.context.localDraft?.content ? (
+                        <Editor
+                          editor={editor}
+                          value={state.context.localDraft.content}
+                          //@ts-ignore
+                          onChange={(content: ChildrenOf<Document>) => {
+                            if (!content && typeof content == 'string') return
+                            mouseService.send('DISABLE.CHANGE')
+                            draftActor.send('EDITING.START')
+                            send({type: 'DRAFT.UPDATE', payload: {content}})
+                          }}
+                        />
+                      ) : null}
+                    </Blocktools>
+                  </FileProvider>
+                </BlockHighLighter>
+              </DragProvider>
             </MouseProvider>
           </ScrollArea>
         </ErrorBoundary>

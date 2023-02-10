@@ -20,6 +20,8 @@ type MouseEvent =
   | {type: 'HIGHLIGHT.ENTER'; ref: string}
   | {type: 'HIGHLIGHT.LEAVE'}
   | {type: 'HIGHLIGHT.FROM.WINDOWS'; ref: string}
+  | {type: 'DISABLE.DRAG.START'}
+  | {type: 'DISABLE.DRAG.END'}
 
 type MouseContext = {
   visibleBounds: Array<Bound>
@@ -29,48 +31,65 @@ type MouseContext = {
   highlightRef: string
 }
 
-export var mouseMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QFsD2BXWYC0yCGAxgBYCWAdmAMQCSActQCoB0A8gEIDKAogEoBqvANoAGALqJQAB1SwSAFxKoyEkAA9EAdgBsADiYBmLUYCcAFh1bhu41oA0IAJ6IAjACYAvu-tpMOfMXIqNgAZFgBhAGkmAEEAEViRcSQQaVkFJRV1BG1jJh19AFYCjWMNZy0NfWcNeycEZ2FcnWdjV1djYXLhNtd9T28MLFxCUgpKEPConi4AWRYBRJVU+UVlZKyNAtyC027hDXzq3TtHRH19VyYtVx1Tc+cC4X0dAqN+kB8h-1Gg0MjWTi8BZiJYyFYZdaaa5MYRbZwWMyuUzOfSmWouZq5FFaLbdDRPVqmd6fPwjQKUWLUDjREJcJgAdTosRY9KYIQAqjxFslluk1qAsjoaqdssYsdcdMZivCbPtiYNSQExpTqbSGUyWUxphxqAAtLjcqRgvmZRBC9EIDqXUwaVz7R6dYq2+W+YZKqgACWoAHEPcEfR7mFxaAwhCCecbVqbsq8rqZes5djorA99Ba7Rors9TI84c58zcXV8yWMvb7-b7mMEuNFgUkjWko5CY5nXlp4U9TKYtMY3BaWuUmFLil2hfidK4CkXFT9KGW-QHmAAxHgsGbq2jM+kcQ0pSMQgWIIz6JgFZ6vbo2AoNNEiu3Ioc55oVVybIoeLwfBVun5MQgKAA3MAmFgORUEkSRIApKkaWrNk-giBgWBYYIOCYMJQm4XdeSbQ8EDPAomF2XoDhue8u37ApkzyEpugsZ5jmcacf0CP8CEA4CACcwDwCAHEoOZ2W4Jg5jrUFGwPNQXGvK4UTKMwSnhHF+y0fRM30YRhC7KV4xxKjmO+Vj-xIICmG43j+ME4TRINZx6z3CT+Sk+oLn7cxMzuYwNN2bQDgsAyS2A4zTPMviBJYIS6RswRXHsnDJKyeETxRNwpS03RCmFOpE0MJhqhaIoKguF4p0-EkWIoNiOLMniwpVWC6TCD1olob0DXDBtwScrJSkzCwGl6TTbjcE5soKVwtBhc52wnEoxRtAL3SqkyuNq-j6rVDgwlXYJgmw-dusQXq8nbboNOEYaJrctomFtLtnjFSoDkW39gtWizoNVOCJkiJCULQlgAAVg32xzowIoiztIictIokVqlhE7e008xeyojQXtY8g3vCyKRPmdq4oO6NSn7e0420V5CjtfY+neMhUAgOAVHKwyKHErro0MC1zEm9oNNtcbHjFN4yu-NmgvYlaOZNZtbn7apMwOFFr06VTJ0xyq3pAsCIMgGXcOcidJpeLzeqlHT+3xYQ406Sddl7KodE1yXqtCupOtlvDX0IqpleMIVWi0O403hnsT1eDQNHjFFe0sJixddCWmGxqWgINhKXDUvnVN2VKtOKUPsqePRJXjCbX3yEpPE8IA */
-  createMachine(
-    {
-      predictableActionArguments: true,
-      context: {visibleBounds: [], visibleBlocks: [], highlightRef: ''},
-      tsTypes: {} as import('./mouse-machine.typegen').Typegen0,
-      schema: {context: {} as MouseContext, events: {} as MouseEvent},
-      invoke: [
-        {
-          src: 'boundsListener',
-          id: 'boundsListener',
-        },
-        {
-          src: 'windowListener',
-          id: 'windowListener',
-        },
-        {
-          src: 'windowBlurService',
-          id: 'windowBlurService',
-        },
-        {
-          src: 'windowResizeService',
-          id: 'windowResizeService',
-        },
-      ],
-      id: 'mouse-machine',
-      description:
-        '## services\n- **boundsListener**: this will create the intersection observer to get all the bounds from the visible blocks',
-      initial: 'inactive',
-      states: {
-        active: {
-          entry: ['getBlockBounds', 'assignCurrentBound'],
-          description:
-            'actions:\n- **getBlockBounds**: this will calculate the current position of all the visible blocks in the viewport\n- **assignBlockRef**: stores the current hovered block in context',
-          initial: 'ready',
-          states: {
-            stopped: {
-              on: {
-                'DISABLE.BLOCKTOOLS.CLOSE': {
-                  actions: ['getBlockBounds', 'assignCurrentBound'],
-                  target: 'ready',
+export var mouseMachine = createMachine(
+  {
+    predictableActionArguments: true,
+    context: {visibleBounds: [], visibleBlocks: [], highlightRef: ''},
+    tsTypes: {} as import('./mouse-machine.typegen').Typegen0,
+    schema: {context: {} as MouseContext, events: {} as MouseEvent},
+    invoke: [
+      {
+        src: 'boundsListener',
+        id: 'boundsListener',
+      },
+      {
+        src: 'windowListener',
+        id: 'windowListener',
+      },
+      {
+        src: 'windowBlurService',
+        id: 'windowBlurService',
+      },
+      {
+        src: 'windowResizeService',
+        id: 'windowResizeService',
+      },
+      {
+        src: 'dragListener',
+        id: 'dragListener',
+      },
+    ],
+    id: 'mouse-machine',
+    description:
+      '## services\n- **boundsListener**: this will create the intersection observer to get all the bounds from the visible blocks',
+    initial: 'inactive',
+    states: {
+      active: {
+        entry: ['getBlockBounds', 'assignCurrentBound'],
+        description:
+          'actions:\n- **getBlockBounds**: this will calculate the current position of all the visible blocks in the viewport\n- **assignBlockRef**: stores the current hovered block in context',
+        initial: 'ready',
+        states: {
+          stopped: {
+            on: {
+              'DISABLE.BLOCKTOOLS.CLOSE': {
+                actions: ['getBlockBounds', 'assignCurrentBound'],
+                target: 'ready',
+              },
+              'DISABLE.DRAG.END': {
+                actions: ['getBlockBounds', 'assignCurrentBound'],
+                target: 'ready',
+              },
+            },
+          },
+          ready: {
+            on: {
+              'MOUSE.MOVE': [
+                {
+                  actions: 'assignCurrentBound',
+                  description:
+                    'will capture the mouse movement on the pag emain component and store in in context',
+                  cond: 'hoverNewBlockId',
                 },
               },
             },
@@ -98,7 +117,11 @@ export var mouseMachine =
                 'DISABLE.BLOCKTOOLS.OPEN': {
                   target: 'stopped',
                 },
+                'DISABLE.DRAG.START': {
+                  target: 'stopped',
+                },
               },
+              
             },
           },
         },

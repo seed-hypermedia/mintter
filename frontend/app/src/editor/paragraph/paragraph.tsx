@@ -15,6 +15,7 @@ import {Node, Path, Transforms} from 'slate'
 import {RenderElementProps, useSlateStatic} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
+import { useDrag } from '@app/drag-context'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -64,7 +65,7 @@ function Paragraph({
   mode,
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
   let editor = useSlateStatic()
-  let {elementProps, parentNode} = usePhrasingProps(editor, element)
+  let {elementProps, parentNode, parentPath} = usePhrasingProps(editor, element)
 
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
@@ -72,6 +73,7 @@ function Paragraph({
   }
   useBlockObserve(mode, pRef)
   let mouseService = useMouse()
+  let dragService = useDrag()
 
   let mouseProps =
     mode != EditorMode.Discussion
@@ -125,7 +127,7 @@ function Paragraph({
   }
 
   return (
-    <p {...attributes} {...elementProps} {...mouseProps} {...otherProps}>
+    <p {...attributes} {...elementProps} {...mouseProps} {...otherProps} onMouseOver={() => {dragService.send({type: 'DRAG.OVER', toPath: parentPath})}}>
       {children}
     </p>
   )

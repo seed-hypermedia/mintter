@@ -1,16 +1,11 @@
+import {DragInterpret, useDrag, useDragDrop} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
 import {ElementDropdown} from '@app/editor/dropdown'
 import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ELEMENT_STATEMENT} from '@app/editor/statement'
-import {
-  getEditorBlock,
-  getNodePath,
-  insertInline,
-  setList,
-  setType,
-} from '@app/editor/utils'
+import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
 import {
   MouseInterpret,
   useCurrentBound,
@@ -45,7 +40,6 @@ import {
 } from 'react'
 import toast from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
-import {useNodeSettingsContext} from './drag-context'
 import './styles/blocktools.scss'
 
 let toolsByMode = {
@@ -85,7 +79,7 @@ export function Blocktools({
 }
 
 function DraftBlocktools(props: BlockData) {
-  let {element} = props
+  let {mouseService, dragService, element} = props
   let target = useCurrentTarget()
   let leftOffset = useMemo(() => {
     if (!target) return '-2rem'
@@ -98,67 +92,25 @@ function DraftBlocktools(props: BlockData) {
 
     let {dataset} = target
 
-    return values[dataset.parentGroup]
+    return values[dataset?.parentGroup]
   }, [target])
 
   let topOffset = useTopOffset(element)
 
-  const dragRef = useRef<HTMLDivElement>(null)
+  // const dragRef = useRef<HTMLDivElement>(null)
 
-  const [{dndState}, handlers] = useNodeSettingsContext()
-  const {hoverIn, hoverOut, onDrop, onDragEnd, onDragStart} = handlers
-  const editor = props.editor
-
-  const dragState = useMemo(() => {
-    if (dndState.fromPath === null || dndState.toPath === null) {
-      return {
-        isDragging: false,
-        isOver: false,
-        isOverSelf: false,
-      }
-    }
-    const nodePath = getNodePath(editor, element?.[0])
-    const isDragging = dndState.fromPath.toString() === nodePath.toString()
-    const isOver = dndState.toPath.toString() === nodePath.toString()
-    const isOverSelf = isDragging && isOver
-
-    return {
-      isDragging,
-      isOver,
-      isOverSelf,
-    }
-  }, [dndState.fromPath, dndState.toPath])
-
-  const {isDragging, isOver, isOverSelf} = dragState
+  // const editor = props.editor
+  // const [dndValues, dndHandlers] = useDragDrop(editor)
+  // const {onDrop, onDragEnd, onDragStart} = dndHandlers
 
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
+    console.log('ELEMENT', element)
+    const [, fromPath] = element
 
-    const handler = dragRef.current
-    const target = document.querySelector<HTMLDivElement>(
-      `[data-block-id="${element?.[0].id}"]`,
-    )
-
-    handler?.setAttribute('draggable', 'false')
-    if (target) {
-      target.setAttribute('draggable', 'true')
-
-      target.ondragstart = (event) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        if (element && element[0] && element[0].id) {
-          onDragStart(event, element[0].id, element?.[1])
-        }
-      }
-      target.ondragend = onDragEnd
-      target.ondrop = onDrop
+    if (fromPath) {
+      mouseService.send('DISABLE.DRAG.START')
+      dragService.send({type: 'DRAG.START', fromPath: fromPath})
     }
-  }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const onMouseEnter = (e: MouseEvent<HTMLDivElement>) => {
-    hoverIn(e, element?.[0] as any)
-  }
-  const onMouseLeave = (e: MouseEvent<HTMLDivElement>) => {
-    hoverOut(e, element?.[0] as any)
   }
 
   return (
@@ -169,9 +121,8 @@ function DraftBlocktools(props: BlockData) {
         left: `calc(${props.left} + ${leftOffset})`,
         transform: `translateY(${topOffset})`,
       }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
       onMouseDown={onMouseDown}
+      // onDrop={onDrop}
     >
       {/* <Dropdown.Root
         onOpenChange={(isOpen) => {
@@ -298,6 +249,7 @@ function PublicationBlocktools(
 
 type BlockData = {
   mouseService: MouseInterpret
+  dragService: DragInterpret
   editor: Editor
   show: boolean
   mode: EditorMode
@@ -310,6 +262,7 @@ type BlockData = {
 
 function useBlocktoolsData(editor: Editor): BlockData {
   let mouseService = useMouse()
+  let dragService = useDrag()
   let [id, rect] = useCurrentBound() || []
 
   let element = useMemo(
@@ -326,6 +279,7 @@ function useBlocktoolsData(editor: Editor): BlockData {
 
   return {
     mouseService,
+    dragService,
     editor,
     show,
     mode: editor.mode,
