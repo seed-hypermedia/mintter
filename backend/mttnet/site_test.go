@@ -28,7 +28,7 @@ func TestRemotePublish(t *testing.T) {
 	//defer stopeditor()
 
 	cfg := config.Default()
-	cfg.Site.Hostname = "mintter.com"
+	cfg.Site.Hostname = "127.0.0.1:55001"
 
 	cfg.Site.OwnerID = owner.accountObjectID.String()
 	site, stopSite := makeTestPeer(t, "carol", cfg.Site)
