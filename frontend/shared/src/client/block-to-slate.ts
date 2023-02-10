@@ -213,7 +213,8 @@ export function blockToSlate(blk: Block): FlowContent {
         leaf['color'] = l.attributes.color
       }
       if (l.type == 'conversation') {
-        if (Array.isArray(leaf.conversations)) {
+
+        if (leaf && Array.isArray(leaf.conversations)) {
           if (!leaf.conversations.includes(l.attributes.conversationId)) {
             leaf!['conversations'].push(l.attributes.conversationId)
           }
