@@ -18,6 +18,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	rpcpeer "google.golang.org/grpc/peer"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
@@ -30,6 +31,8 @@ const (
 	// SiteAccountIDCtxKey is the key to pass the account id via context down to a proxied call
 	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
 	SiteAccountIDCtxKey = "x-mintter-site-account-id"
+	// WellKnownPath is the path (to be completed with http(s)+domain) to call to get data from site.
+	WellKnownPath = ".well-known"
 )
 
 // CreateInviteToken creates a new invite token for registering a new member.
@@ -102,6 +105,7 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 
 	// We upsert the new role
 	srv.accountsDB[acc.String()] = tokenInfo.role
+
 	return &site.RedeemInviteTokenResponse{Role: tokenInfo.role}, nil
 }
 
@@ -353,7 +357,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 
 	remoteHostname, err := getRemoteSiteFromHeader(ctx)
 	if err != nil && srv.hostname == "" { // no headers and not a site
-		return cid.Cid{}, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a proper remote site")
+		return cid.Cid{}, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a remote site")
 	}
 
 	acc := n.me.AccountID()
@@ -364,26 +368,30 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 			n.log.Error("Headers found, meaning this call should be proxied, but remote function params not provided")
 			return acc, false, nil, fmt.Errorf("In order to proxy a call (headers found) you need to provide a valid proxy func and a params")
 		}
-		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the site", zap.String(MttHeader, remoteHostname))
+		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the remote site", zap.String(MttHeader, remoteHostname))
 
 		pc, _, _, _ := runtime.Caller(1)
 		proxyFcnList := strings.Split(runtime.FuncForPC(pc).Name(), ".")
 		proxyFcn := proxyFcnList[len(proxyFcnList)-1]
-		res, err := srv.proxyToSite(ctx, remoteHostname, proxyFcn, params)
+		res, err := srv.proxyToSite(ctx, remoteHostname, proxyFcn, params...)
 		return acc, true, res, err
 	}
 
-	if (srv.hostname == remoteHostname && srv.hostname != "") || err != nil { // this would mean this is a proxied call so we take the account from the remote caller ID
+	if srv.hostname == remoteHostname || err != nil { //either a proxied call or a direct call without headers (nodejs)
+		// this would mean this is a proxied call so we take the account from the remote caller ID
 		remoteDeviceID, err := getRemoteID(ctx)
-		if err != nil {
-			return cid.Cid{}, false, nil, fmt.Errorf("couldn't get remote device ID from p2p context: %w", err)
+		if err == nil {
+			// this would mean this is a proxied call so we take the account from the remote caller ID
+			remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
+			if err != nil {
+				return cid.Cid{}, false, nil, fmt.Errorf("couldn't get account ID from device ID: %w", err)
+			}
+			n.log.Debug("Proxied call", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()))
+			acc = remotAcc
+		} else {
+			// this would mean we cannot get remote ID it must be a local call
+			n.log.Debug("Local call", zap.String("Local AccountID", acc.String()))
 		}
-		remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
-		if err != nil {
-			return cid.Cid{}, false, nil, fmt.Errorf("couldn't get account ID from device ID: %w", err)
-		}
-		n.log.Debug("THIS IS A PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()))
-		acc = remotAcc
 	}
 
 	if requiredRole == site.Member_OWNER && acc.String() != srv.ownerID {
@@ -474,18 +482,25 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		}
 
 		n.log.Debug("Remote site contacted, now try to call a remote function", zap.String("Function name", proxyFcn))
+
 		in := []reflect.Value{reflect.ValueOf(ctx)}
 		for _, param := range params {
 			in = append(in, reflect.ValueOf(param))
 		}
+		in = append(in, reflect.ValueOf([]grpc.CallOption{}))
 
-		response, err := sitec.RedeemInviteToken(ctx, &site.RedeemInviteTokenRequest{})
-		if err != nil {
-			return nil, fmt.Errorf("Error in remote call: %w", err)
+		f := reflect.ValueOf(sitec).MethodByName(proxyFcn)
+		if !f.IsValid() {
+			return nil, fmt.Errorf("Won't call %s since it does not exist", proxyFcn)
 		}
-		n.log.Debug("GOT A REMOTE RESPONSE", zap.Int("Role", int(response.Role)))
-		return response, nil
-		res := reflect.ValueOf(&sitec).MethodByName(proxyFcn).Call(in)
+		if f.Type().NumOut() != 2 {
+			return nil, fmt.Errorf("Proxied call %s expected to return 2 (return value + error) param but returns %d", proxyFcn, f.Type().NumOut())
+		}
+		if len(params) != f.Type().NumIn()-2 {
+			return nil, fmt.Errorf("function %s needs %d params, %d provided", proxyFcn, f.Type().NumIn(), len(params)+2)
+		}
+		res := f.CallSlice(in)
+		n.log.Debug("Remote call finished successfully", zap.String("First param type", res[0].Kind().String()), zap.String("Second param type", res[1].Kind().String()))
 		return res[0].Interface(), nil
 	}
 	return nil, fmt.Errorf("none of the devices associated with the provided account were reachable")

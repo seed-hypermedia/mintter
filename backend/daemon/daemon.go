@@ -445,7 +445,7 @@ func initHTTP(
 		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
-		router.PathPrefix("/.well-known").Handler(wellKnownHandler)
+		router.PathPrefix("/" + mttnet.WellKnownPath).Handler(wellKnownHandler)
 		nav := newNavigationHandler(router)
 
 		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
