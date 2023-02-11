@@ -40,10 +40,8 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	//addresses := []string{"/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"}
 	//accountID := "bahezrj4iaqacicabciqeoo2zi3sktlvzwxiqwilwfpm2hucu2ihsa7zzqtrkmbeoef6lagy"
 
-	// TODO (juligasa): uncomment when remote site is ready
-
 	//TODO(juligasa): https instead of http
-	requestURL := fmt.Sprintf("http://%s/.well-known", in.Hostname)
+	requestURL := fmt.Sprintf("http://%s/%s", in.Hostname, mttnet.WellKnownPath)
 
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
