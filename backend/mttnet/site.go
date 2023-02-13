@@ -52,7 +52,7 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 		return &site.InviteToken{}, fmt.Errorf("Cannot create owner token, please update the owner manually in site config")
 	}
 	// generate random number string for the token. Substitute for proper signed jwt
-	newToken := randStr(6)
+	newToken := randStr(12)
 
 	if in.ExpireTime != nil && in.ExpireTime.AsTime().Before(time.Now()) {
 		return &site.InviteToken{}, fmt.Errorf("expiration time must be in the future")
@@ -254,11 +254,16 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		}
 		return retValue, nil
 	}
+	// TODO(juligasa): match that matches URL path (https://pkg.go.dev/net/url#Parse)
+	/*
+		if in.Path == "" {
+			return &site.PublishDocumentResponse{}, fmt.Errorf("Path cannot be an empty string")
+		}*/
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
 	for key, record := range srv.WebPublicationRecordDB {
 		if record.Path == in.Path {
 			if record.Document.ID != in.DocumentId {
-				return &site.PublishDocumentResponse{}, fmt.Errorf("Path already taken by a different Document ID")
+				return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] already taken by a different Document ID", in.Path)
 			}
 			delete(srv.WebPublicationRecordDB, key)
 		}
