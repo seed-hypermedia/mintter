@@ -20,6 +20,7 @@ import (
 	"mintter/backend/daemon/api"
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
+	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/graphql"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
@@ -152,6 +153,17 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.Identity.NoAccountWait {
+		res, err := a.RPC.Daemon.GenMnemonic(ctx, &daemon.GenMnemonicRequest{MnemonicsLength: 12})
+		if err != nil {
+			return nil, fmt.Errorf("Cannot create automatic mnemonics: %w", err)
+		}
+		_, err = a.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{Mnemonic: res.Mnemonic, Passphrase: ""})
+		if err != nil {
+			return nil, fmt.Errorf("Cannot create register automatic account: %w", err)
+		}
 	}
 
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site)
