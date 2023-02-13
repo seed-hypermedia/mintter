@@ -10,6 +10,7 @@ import (
 	site "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/vcs/vcssql"
 	"net/http"
+	"net/url"
 	"reflect"
 	"runtime"
 	"strings"
@@ -254,11 +255,11 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		}
 		return retValue, nil
 	}
-	// TODO(juligasa): match that matches URL path (https://pkg.go.dev/net/url#Parse)
-	/*
-		if in.Path == "" {
-			return &site.PublishDocumentResponse{}, fmt.Errorf("Path cannot be an empty string")
-		}*/
+	_, err = url.Parse(in.Path)
+	if err != nil {
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] is not a valid path", in.Path)
+	}
+
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
 	for key, record := range srv.WebPublicationRecordDB {
 		if record.Path == in.Path {
