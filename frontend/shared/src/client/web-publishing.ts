@@ -26,3 +26,7 @@ export function getWebSiteClient(hostname: string, rpc: Transport = transport) {
     }),
   ) as typeof client
 }
+
+export function getLocalWebSiteClient(rpc: Transport = transport) {
+  return createPromiseClient(WebSite, rpc)
+}
