@@ -37,8 +37,16 @@ const (
 
 // CreateInviteToken creates a new invite token for registering a new member.
 func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteTokenRequest) (*site.InviteToken, error) {
-	if _, _, _, err := srv.checkPermissions(ctx, site.Member_OWNER); err != nil {
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
+	if err != nil {
 		return &site.InviteToken{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.InviteToken)
+		if !ok {
+			return &site.InviteToken{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	if in.Role == site.Member_OWNER {
 		return &site.InviteToken{}, fmt.Errorf("Cannot create owner token, please update the owner manually in site config")
@@ -58,7 +66,6 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 		role:           in.Role,
 		expirationTime: expirationTime,
 	}
-
 	return &site.InviteToken{
 		Token:      newToken,
 		ExpireTime: &timestamppb.Timestamp{Seconds: expirationTime.UnixNano(), Nanos: int32(expirationTime.Unix())},
@@ -67,16 +74,23 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 
 // RedeemInviteToken redeems a previously created invite token to register a new member.
 func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteTokenRequest) (*site.RedeemInviteTokenResponse, error) {
-	acc, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
+	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return &site.RedeemInviteTokenResponse{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.RedeemInviteTokenResponse)
+		if !ok {
+			return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	n, ok := srv.Node.Get()
 	if !ok {
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Node not ready yet")
 	}
-	n.log.Debug("REDEEM CALLED", zap.String("Site Owner", srv.ownerID))
 	if acc.String() == srv.ownerID {
+		n.log.Debug("TOKEN REDEEMED", zap.String("Site Owner", srv.ownerID), zap.String("Role", "OWNER"))
 		srv.accountsDB[acc.String()] = site.Member_OWNER
 		return &site.RedeemInviteTokenResponse{Role: site.Member_OWNER}, nil
 	}
@@ -87,11 +101,12 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	}
 
 	if in.Token == "" { // TODO(juligasa): substitute with proper regexp match
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("invalid token format")
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
 	}
 
 	tokenInfo, valid := srv.tokensDB[in.Token]
 	if !valid {
+		n.log.Debug("TOKEN NOT VALID", zap.String("Provided token", in.Token))
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("token not valid (nonexisting, already redeemed or expired)")
 	}
 
@@ -106,14 +121,22 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	// We upsert the new role
 	srv.accountsDB[acc.String()] = tokenInfo.role
 
+	n.log.Debug("TOKEN REDEEMED", zap.String("Caller account", acc.String()), zap.String("Site Owner", srv.ownerID), zap.String("Role", "EDITOR"))
 	return &site.RedeemInviteTokenResponse{Role: tokenInfo.role}, nil
 }
 
 // GetSiteInfo Gets public-facing site information.
 func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest) (*site.SiteInfo, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return &site.SiteInfo{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.SiteInfo)
+		if !ok {
+			return &site.SiteInfo{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	return &site.SiteInfo{
 		Hostname:    srv.hostname,
@@ -125,9 +148,16 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest)
 
 // UpdateSiteInfo updates public-facing site information. Doesn't support partial updates, hence all the fields must be provided.
 func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRequest) (*site.SiteInfo, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_OWNER)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
 		return &site.SiteInfo{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.SiteInfo)
+		if !ok {
+			return &site.SiteInfo{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	if in.Title != "" {
 		srv.title = in.Title
@@ -146,9 +176,16 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 
 // ListMembers lists registered members on the site.
 func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest) (*site.ListMembersResponse, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return &site.ListMembersResponse{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.ListMembersResponse)
+		if !ok {
+			return &site.ListMembersResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	var members []*site.Member
 	for accID, role := range srv.accountsDB {
@@ -162,9 +199,16 @@ func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest)
 
 // GetMember gets information about a specific member.
 func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*site.Member, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return &site.Member{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.Member)
+		if !ok {
+			return &site.Member{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	role, ok := srv.accountsDB[in.AccountId]
 	if !ok {
@@ -175,9 +219,16 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 
 // DeleteMember deletes an existing member.
 func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberRequest) (*emptypb.Empty, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_OWNER)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_OWNER, in)
 	if err != nil {
 		return &emptypb.Empty{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*emptypb.Empty)
+		if !ok {
+			return &emptypb.Empty{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	roleToDelete, ok := srv.accountsDB[in.AccountId]
 	if !ok {
@@ -192,11 +243,17 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 
 // PublishDocument publishes and pins the document to the public web site.
 func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return &site.PublishDocumentResponse{}, err
 	}
-
+	if proxied {
+		retValue, ok := res.(*site.PublishDocumentResponse)
+		if !ok {
+			return &site.PublishDocumentResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
+	}
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
 	for key, record := range srv.WebPublicationRecordDB {
 		if record.Path == in.Path {
@@ -223,9 +280,16 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 
 // UnpublishDocument un-publishes (un-lists) a given document. Only the author of that document or the owner can unpublish.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
-	acc, _, _, err := srv.checkPermissions(ctx, site.Member_EDITOR)
+	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return &site.UnpublishDocumentResponse{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.UnpublishDocumentResponse)
+		if !ok {
+			return &site.UnpublishDocumentResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	var toDelete []string
 	for key, record := range srv.WebPublicationRecordDB {
@@ -256,9 +320,16 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 
 // ListWebPublications lists all the published documents.
 func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPublicationsRequest) (*site.ListWebPublicationsResponse, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return &site.ListWebPublicationsResponse{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.ListWebPublicationsResponse)
+		if !ok {
+			return &site.ListWebPublicationsResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	var publications []*site.WebPublicationRecord
 	for _, record := range srv.WebPublicationRecordDB {
@@ -274,9 +345,16 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 
 // GetPath gets a publication given the path it has been publish to.
 func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.GetPathResponse, error) {
-	_, _, _, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED)
+	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_ROLE_UNSPECIFIED, in)
 	if err != nil {
 		return &site.GetPathResponse{}, err
+	}
+	if proxied {
+		retValue, ok := res.(*site.GetPathResponse)
+		if !ok {
+			return &site.GetPathResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+		}
+		return retValue, nil
 	}
 	ret := &site.Publication{}
 	// TODO(juligasa): replace with a proper remote call to all known sites in the api.sitesDB
@@ -297,7 +375,7 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 }
 
 func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
-	md, ok := metadata.FromOutgoingContext(ctx)
+	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return "", fmt.Errorf("metadata not found in context")
 	}
@@ -357,7 +435,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 
 	remoteHostname, err := getRemoteSiteFromHeader(ctx)
 	if err != nil && srv.hostname == "" { // no headers and not a site
-		return cid.Cid{}, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a remote site")
+		return cid.Cid{}, false, nil, fmt.Errorf("This node is not a site, please provide a proper headers to proxy the call to a remote site: %w", err)
 	}
 
 	acc := n.me.AccountID()
@@ -373,8 +451,15 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 		pc, _, _, _ := runtime.Caller(1)
 		proxyFcnList := strings.Split(runtime.FuncForPC(pc).Name(), ".")
 		proxyFcn := proxyFcnList[len(proxyFcnList)-1]
-		res, err := srv.proxyToSite(ctx, remoteHostname, proxyFcn, params...)
-		return acc, true, res, err
+		res, errInterface := srv.proxyToSite(ctx, remoteHostname, proxyFcn, params...)
+		if errInterface != nil {
+			err, ok := errInterface.(error)
+			if !ok {
+				return acc, true, res, fmt.Errorf("Proxied call returned unknown second parameter. Error type expected")
+			}
+			return acc, true, res, err
+		}
+		return acc, true, res, nil
 	}
 
 	if srv.hostname == remoteHostname || err != nil { //either a proxied call or a direct call without headers (nodejs)
@@ -386,11 +471,11 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 			if err != nil {
 				return cid.Cid{}, false, nil, fmt.Errorf("couldn't get account ID from device ID: %w", err)
 			}
-			n.log.Debug("Proxied call", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()))
+			n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()))
 			acc = remotAcc
 		} else {
 			// this would mean we cannot get remote ID it must be a local call
-			n.log.Debug("Local call", zap.String("Local AccountID", acc.String()))
+			n.log.Debug("LOCAL CALL", zap.String("Local AccountID", acc.String()))
 		}
 	}
 
@@ -436,7 +521,7 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // proxyToSite calls a remote site function over libp2p.
-func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn string, params ...interface{}) (interface{}, error) {
+func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn string, params ...interface{}) (interface{}, interface{}) {
 	n, ok := srv.Node.Get()
 	if !ok {
 		return nil, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
@@ -501,7 +586,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		}
 		res := f.CallSlice(in)
 		n.log.Debug("Remote call finished successfully", zap.String("First param type", res[0].Kind().String()), zap.String("Second param type", res[1].Kind().String()))
-		return res[0].Interface(), nil
+		return res[0].Interface(), res[1].Interface()
 	}
 	return nil, fmt.Errorf("none of the devices associated with the provided account were reachable")
 }
