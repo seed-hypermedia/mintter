@@ -12,14 +12,28 @@ import {useUnpublishDialog} from '@components/unpublish-dialog'
 import {WebPublicationRecord} from '@mintter/shared'
 import {ScrollArea} from '@radix-ui/react-scroll-area'
 import copyTextToClipboard from 'copy-text-to-clipboard'
+import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {useLocation, useRoute} from 'wouter'
+import '../styles/file-list.scss'
 
 export default function SitePage() {
   let [, params] = useRoute('/sites/:hostname')
   const host = tauriDecodeParam(params?.hostname)
 
   let {data, isInitialLoading} = useSitePublications(host)
+
+  const sortedPubs = useMemo(() => {
+    // sort path === '/' to the top
+    // sort path === '' to the bottom
+    return data?.publications.sort((a, b) => {
+      if (a.path === '/') return -1
+      if (b.path === '/') return 1
+      if (a.path === '') return 1
+      if (b.path === '') return -1
+      return 0
+    })
+  }, [data])
   const nav = useNavigation()
   if (!host) throw new Error('Hostname not found for SitePage')
 
@@ -28,9 +42,9 @@ export default function SitePage() {
       <ScrollArea>
         {isInitialLoading ? (
           <p>loading...</p>
-        ) : data && data.publications.length ? (
+        ) : sortedPubs?.length ? (
           <ul className="file-list" data-testid="files-list">
-            {data.publications.map((publication) => (
+            {sortedPubs.map((publication) => (
               <WebPublicationListItem
                 key={publication.documentId}
                 webPub={publication}
@@ -74,11 +88,11 @@ function WebPublicationListItem({
   const {data: author} = useAuthor(publication?.document?.author)
   return (
     <li className="list-item">
-      {webPub.path == null ? (
+      {webPub.path === '' ? (
         <p onClick={goToItem} className="item-title low">
           {publication?.document?.title}
         </p>
-      ) : webPub.path === '' ? (
+      ) : webPub.path === '/' ? (
         <p onClick={goToItem} className="item-title">
           {publication?.document?.title}
         </p>
