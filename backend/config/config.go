@@ -41,6 +41,7 @@ func Default() Config {
 
 		Identity: Identity{
 			DeviceKeyPath: "",
+			NoAccountWait: false,
 		},
 
 		P2P: P2P{
@@ -115,6 +116,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
 
 	fs.StringVar(&cfg.Identity.DeviceKeyPath, "identity.devicekey-path", cfg.Identity.DeviceKeyPath, "Path to to read fixed device private key from")
+	fs.BoolVar(&cfg.Identity.NoAccountWait, "identity.no-account-wait", cfg.Identity.NoAccountWait, "If set, the daemon auto generates a random Account ID (if not found any in the database) and starts right away")
 
 	fs.BoolVar(&cfg.Lndhub.Mainnet, "lndhub.mainnet", cfg.Lndhub.Mainnet, "Connect to the mainnet lndhub.go server")
 
@@ -153,6 +155,7 @@ func (c *Config) ExpandRepoPath() error {
 // Identity related config. For field descriptions see SetupFlags().
 type Identity struct {
 	DeviceKeyPath string
+	NoAccountWait bool
 }
 
 // Lndhub related config. For field descriptions see SetupFlags().
