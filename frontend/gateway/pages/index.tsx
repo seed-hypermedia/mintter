@@ -1,19 +1,45 @@
-import {getPublication} from '@mintter/shared'
-import {PublicationPage} from '../publication-page'
+import {getLocalWebSiteClient} from '@mintter/shared'
+import {transport} from '../client'
+import {Publication} from '@mintter/shared'
+import {GetServerSideProps} from 'next'
+import PublicationPage from '../ssr-publication-page'
 
-export default function IndexPage({document}: any) {
+function DefaultHomePage() {
   return (
-    <PublicationPage
-      documentId="bafy2bzacebhlxpfnz2qju2zruckm2ueamioabjj532hidrlxgbgucr44tmewc"
-      onlyContent
-    />
+    <>
+      <h1>Welcome.</h1>
+      <h2>
+        This is the default home page. You haven&apos;t published anything here.
+      </h2>
+    </>
   )
 }
 
-// mintter://bafy2bzacebhlxpfnz2qju2zruckm2ueamioabjj532hidrlxgbgucr44tmewc/baeaxdiheaiqjuqjo4f34bu52tbzn3cfc4uu6m6imv2ildn4qkgl7jmnag7itcsq
+export default function HomePage({
+  publication,
+}: {
+  publication?: Publication | null
+}) {
+  if (!publication) return <DefaultHomePage />
+  return <PublicationPage publication={publication} />
+}
 
-// export async function getServerSideProps() {
-//   return await getPublication(
-//     'bafy2bzacec67bkejkhjcfomg7o72vgdkwrto3ry72zcb72sfb4cphuvtgiuny',
-//   )
-// }
+async function getHomePublication(): Promise<Publication | null> {
+  const site = getLocalWebSiteClient(transport)
+  try {
+    const pathRecord = await site.getPath({path: '/'})
+    const publication = pathRecord.publication
+    return publication || null
+  } catch (e) {
+    return null
+  }
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const publication = await getHomePublication()
+  return {
+    props: {
+      publication: publication?.toJson(),
+    },
+  }
+}
