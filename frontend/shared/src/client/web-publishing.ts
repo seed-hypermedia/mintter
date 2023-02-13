@@ -18,8 +18,7 @@ export function getWebSiteClient(hostname: string, rpc: Transport = transport) {
         async (input: Parameters<typeof rpcHandler>[0]) => {
           return rpcHandler(input, {
             headers: {
-              // @horacio, @julio, add this header back when the gateway is ready to proxy:
-              // 'x-mintter-site-hostname': hostname,
+              'x-mintter-site-hostname': hostname,
             },
           })
         },
