@@ -4,6 +4,7 @@ import {usePublication, useAuthor} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
 import {formattedDate} from '@app/utils/get-format-date'
 import {useNavigation} from '@app/utils/navigation'
+import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
 import {EmptyList} from '@components/empty-list'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
@@ -16,7 +17,7 @@ import {useLocation, useRoute} from 'wouter'
 
 export default function SitePage() {
   let [, params] = useRoute('/sites/:hostname')
-  const host = params?.hostname
+  const host = tauriDecodeParam(params?.hostname)
 
   let {data, isInitialLoading} = useSitePublications(host)
   const nav = useNavigation()

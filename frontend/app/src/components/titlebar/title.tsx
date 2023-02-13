@@ -1,4 +1,5 @@
 import {queryKeys, useAuthor} from '@app/hooks'
+import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
 import {getDraft, getPublication} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
@@ -25,7 +26,9 @@ export function Title() {
           <span data-tauri-drag-region>Drafts</span>
         </Route>
         <Route path="/sites/:hostname">
-          <span data-tauri-drag-region>{siteHomeParams?.hostname}</span>
+          <span data-tauri-drag-region>
+            {tauriDecodeParam(siteHomeParams?.hostname)}
+          </span>
         </Route>
 
         <Route path="/p/:id/:version/:block?" component={PublicationTitle} />

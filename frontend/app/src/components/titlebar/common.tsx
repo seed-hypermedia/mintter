@@ -8,6 +8,7 @@ import {
   PublicationMachineContext,
 } from '@app/publication-machine'
 import {useNavigation} from '@app/utils/navigation'
+import {tauriEncodeParam} from '@app/utils/tauri-param-hackaround'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
@@ -114,7 +115,9 @@ export function SitesNavDropdownItems() {
       {sites.data.map((site) => (
         <Dropdown.Item
           key={site.hostname}
-          onSelect={() => setLocation(`/sites/${site.hostname}`)}
+          onSelect={() =>
+            setLocation(`/sites/${tauriEncodeParam(site.hostname)}`)
+          }
         >
           <Icon name="Globe" />
           <span>{site.hostname}</span>
