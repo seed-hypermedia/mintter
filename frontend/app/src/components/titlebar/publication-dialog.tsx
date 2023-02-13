@@ -13,10 +13,15 @@ const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
 
 function writePathState(s: string) {
-  return s.replace(/[^a-z0-9]/gi, '_')
+  if (s === '/') return '/'
+  const basicPath = s.replace(/[^a-z0-9]/gi, '_')
+  if (basicPath === 'home') return '/'
+  return basicPath
 }
 function readPathState(s: string) {
-  return s.replace(/_+$/, '').toLocaleLowerCase()
+  if (s === '/') return '/'
+  const basicPath = s.replace(/_+$/, '').toLocaleLowerCase()
+  return basicPath
 }
 const Heading = styled('h2', {
   margin: 0,
@@ -55,7 +60,12 @@ function PublishDialogForm({
         }}
       />
       <URLPreview>
-        https://{siteId}/{path === '' ? `p/${init.docId}` : readPathState(path)}
+        https://{siteId}/
+        {path === '/'
+          ? ''
+          : path === ''
+          ? `p/${init.docId}`
+          : readPathState(path)}
       </URLPreview>
       <Button
         disabled={publish.isLoading}
