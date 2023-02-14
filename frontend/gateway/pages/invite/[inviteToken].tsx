@@ -13,7 +13,7 @@ export default function InvitePage({hostname}: {hostname: string}) {
         tabIndex={-1}
         className="main-content wrapper text-size-100"
       >
-        <h1>You're invited to "{hostname}"</h1>
+        <h1>Youre invited to {hostname}</h1>
         <ol>
           <li>Download Mintter</li>
           <li>Add Site</li>
