@@ -547,12 +547,18 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         as={'form'}
         onSubmit={(e) => {
           e.preventDefault()
-          const matchedURL = siteUrl?.match(
-            /^(https:\/\/)?([^/]*)(\/invite\/(.*))?$/,
+          const matchedHostProtocol = siteUrl?.match(
+            /^(https?:\/\/)?([^/]*)\/?$/,
           )
-          const hostname = matchedURL?.[2]
-          const inviteToken = matchedURL?.[4]
-          if (hostname) addSite.mutate({hostname, inviteToken})
+          const matchedInviteURL = siteUrl?.match(
+            /^(https?:\/\/)?([^/]*)(\/invite\/(.*))?$/,
+          )
+          const protocol = matchedHostProtocol?.[1] ?? 'https://'
+          const hostname = matchedHostProtocol?.[2] || matchedInviteURL?.[2]
+          const inviteToken = matchedInviteURL?.[4]
+          const fullHostname = protocol + hostname
+          console.log({fullHostname})
+          if (hostname) addSite.mutate({hostname: fullHostname, inviteToken})
         }}
         css={{
           display: 'flex',
