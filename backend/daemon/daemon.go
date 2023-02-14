@@ -42,7 +42,9 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 // App is the main Mintter Daemon application, holding all of its dependencies
@@ -161,9 +163,12 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 			return nil, fmt.Errorf("Cannot create automatic mnemonics: %w", err)
 		}
 		_, err = a.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{Mnemonic: res.Mnemonic, Passphrase: ""})
-		if err != nil {
-			return nil, fmt.Errorf("Cannot create register automatic account: %w", err)
+		stat, ok := status.FromError(err)
+
+		if !ok && stat.Code() != codes.AlreadyExists {
+			return nil, fmt.Errorf("Cannot register automatic account: %w", err)
 		}
+
 	}
 
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site)
