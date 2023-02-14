@@ -1,5 +1,4 @@
 import {useConversations} from '@app/editor/comments/conversations-context'
-import {queryKeys} from '@app/hooks'
 import {createPromiseClient} from '@bufbuild/connect-web'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
@@ -9,24 +8,19 @@ import {TextField} from '@components/text-field'
 import {
   Block,
   blockToApi,
-  blockToSlate,
   Comments,
   Conversation,
-  Document,
-  getPublication,
-  isText,
+  ListConversationsResponse,
   paragraph,
   PhrasingContent,
-  Publication,
+  Selector,
   statement,
   text,
   transport,
 } from '@mintter/shared'
-import {ListConversationsResponse, Selector} from '@mintter/shared'
-import {useQuery, UseQueryResult} from '@tanstack/react-query'
+import {UseQueryResult} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useMemo, useState} from 'react'
-import {Text as SlateText, Node, Element} from 'slate'
 
 export function Conversations() {
   const context = useConversations()
@@ -118,6 +112,7 @@ function ConversationItem({
         borderBottom: '1px solid rgba(0,0,0,0.1)',
         transition: 'all 150ms ease',
         paddingBlock: '$5',
+        paddingLeft: 60,
         '&:hover': {
           backgroundColor: '$base-background-subtle',
         },
@@ -129,16 +124,44 @@ function ConversationItem({
           comment={firstComment}
           selectors={conversation.selectors}
         />
-        {comments.map((item) => (
-          <CommentItem
-            key={`${item.id}-${item.revision}`}
-            comment={item}
-            conversationId={conversation.id}
-          />
-        ))}
+        {!!comments.length ? (
+          <Box
+            as="li"
+            css={{
+              listStyle: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '$3',
+              // paddingTop: selectors ? '$5' : '$3',
+              width: '$full',
+              paddingTop: '$5',
+              marginRight: '$4',
+              position: 'relative',
+              paddingLeft: 48,
+              '&:hover': {
+                cursor: 'default',
+              },
+            }}
+          >
+            <Box
+              as="ul"
+              css={{
+                margin: 0,
+                padding: 0,
+              }}
+            >
+              {comments.map((item) => (
+                <CommentItem
+                  key={`${item.id}-${item.revision}`}
+                  comment={item}
+                  conversationId={conversation.id}
+                />
+              ))}
+            </Box>
+          </Box>
+        ) : null}
       </Box>
       <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
-        <CommentSeparator />
         <Box
           as="form"
           onSubmit={submitReply}
@@ -179,7 +202,11 @@ function CommentItem({
       as="li"
       css={{
         listStyle: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '$3',
         paddingTop: selectors ? '$5' : '$3',
+        position: 'relative',
         '&:hover': {
           cursor: 'default',
         },
@@ -187,55 +214,38 @@ function CommentItem({
     >
       <Box
         css={{
-          display: 'flex',
-          alignItems: 'center',
-          paddingRight: '$5',
+          position: 'absolute',
+          top: selectors ? 8 : 0,
+          left: -12,
+          transform: 'translateX(-100%)',
+          paddingBottom: 0,
+          paddingLeft: '$5',
         }}
       >
-        <Box
-          css={{
-            // paddingTop: '$3',
-            paddingBottom: 0,
-            paddingLeft: '$5',
-          }}
-        >
-          <Avatar accountId="" size={2} alias="demo alias" />
-        </Box>
-        <Box
-          css={{
-            display: 'flex',
-            gap: '$6',
-            paddingInline: '$4',
-            flex: 1,
-          }}
-        >
-          <Text size="2" fontWeight="bold">
-            Demo alias
-          </Text>
-          <Text size="2" color="muted">
-            time here
-          </Text>
-        </Box>
+        <Avatar accountId="" size={2} alias="demo alias" />
       </Box>
-      <Box css={{display: 'flex'}}>
-        <CommentSeparator />
-        <Box
-          css={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '$4',
-            flex: 1,
-          }}
-        >
-          {selectors ? (
-            <ConversationSelectors
-              conversationId={conversationId}
-              selectors={selectors}
-            />
-          ) : null}
-          <CommentBlock comment={comment} />
-        </Box>
+      <Box
+        css={{
+          display: 'flex',
+          gap: '$6',
+          flex: 1,
+        }}
+      >
+        <Text size="2" fontWeight="bold">
+          Demo alias
+        </Text>
+        <Text size="2" color="muted">
+          time here
+        </Text>
       </Box>
+
+      {selectors ? (
+        <ConversationSelectors
+          conversationId={conversationId}
+          selectors={selectors}
+        />
+      ) : null}
+      <CommentBlock comment={comment} />
     </Box>
   )
 }
@@ -304,17 +314,5 @@ function CommentBlock({comment}: {comment: Block}) {
     >
       <Text alt>{comment.text}</Text>
     </Box>
-  )
-}
-
-function CommentSeparator() {
-  return (
-    <Box
-      css={{
-        width: 60,
-        padding: '$5',
-        height: '$full',
-      }}
-    />
   )
 }
