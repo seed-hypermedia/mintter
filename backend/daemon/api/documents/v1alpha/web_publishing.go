@@ -54,7 +54,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	}
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return &ret, fmt.Errorf("Wrong status code from site %d", res.StatusCode)
+		return &ret, fmt.Errorf("Site [%s] not reachable. Status code: %d", in.Hostname, res.StatusCode)
 	}
 	var response map[string]interface{}
 	err = json.NewDecoder(res.Body).Decode(&response)
@@ -109,7 +109,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, accountID)
 	if in.InviteToken != "" {
-		res, err := api.TokenRedeemer.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{
+		res, err := api.RemoteCaller.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{
 			Token: in.InviteToken,
 		})
 		if err != nil {
@@ -117,7 +117,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		}
 		role = res.Role
 	} else {
-		res, err := api.TokenRedeemer.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{})
+		res, err := api.RemoteCaller.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{})
 		if err != nil {
 			return &ret, fmt.Errorf("Please, contact to the site owner to get an invite token: %w", err)
 		}
@@ -162,15 +162,27 @@ func (api *Server) ListSites(ctx context.Context, req *documents.ListSitesReques
 // ListWebPublicationRecords returns all the sites a given a document has been published to.
 func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents.ListWebPublicationRecordsRequest) (*documents.ListWebPublicationRecordsResponse, error) {
 	var ret []*documents.WebPublicationRecord
-	// TODO(juligasa): replace with a proper remote call to all known sites in the api.sitesDB
-	for _, v := range *api.localWebPublicationRecordDB {
-		if req.DocumentId == v.Document.ID && (req.Version == "" || req.Version == v.Document.Version) {
-			ret = append(ret, &documents.WebPublicationRecord{
-				DocumentId: v.Document.ID,
-				Version:    v.Document.Version,
-				Hostname:   v.Hostname,
-				Path:       v.Path,
-			})
+
+	for hostname, siteInfo := range api.sitesDB {
+		header := metadata.New(map[string]string{mttnet.MttHeader: hostname})
+		ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
+		ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, siteInfo.accID)
+		docs, err := api.RemoteCaller.ListWebPublications(ctx, &documents.ListWebPublicationsRequest{})
+		if err != nil {
+			continue
+		}
+		for _, doc := range docs.Publications {
+			if req.DocumentId == doc.DocumentId && (req.Version == "" || req.Version == doc.Version) {
+				if doc.Hostname != hostname {
+					continue
+				}
+				ret = append(ret, &documents.WebPublicationRecord{
+					DocumentId: doc.DocumentId,
+					Version:    doc.Version,
+					Hostname:   doc.Hostname,
+					Path:       doc.Path,
+				})
+			}
 		}
 	}
 	return &documents.ListWebPublicationRecordsResponse{

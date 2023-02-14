@@ -7,7 +7,6 @@ import (
 	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
-	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/crdt"
@@ -37,33 +36,32 @@ type Discoverer interface {
 	Connect(context.Context, peer.AddrInfo) error
 }
 
-// TokenRedeemer is an interface for not having to pass a full-fledged sites service,
-// just the RedeemInviteToken that is what we need to call in in add site.
-type TokenRedeemer interface {
+// RemoteCaller is an interface for not having to pass a full-fledged sites service,
+// just the remote functions that need to be called from the local server.
+type RemoteCaller interface {
 	RedeemInviteToken(context.Context, *documents.RedeemInviteTokenRequest) (*documents.RedeemInviteTokenResponse, error)
+	ListWebPublications(ctx context.Context, in *documents.ListWebPublicationsRequest) (*documents.ListWebPublicationsResponse, error)
 }
 
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db                          *sqlitex.Pool
-	vcsdb                       *sqlitevcs.DB
-	me                          *future.ReadOnly[core.Identity]
-	sitesDB                     map[string]siteInfo                  //TODO: remove when finished with the mockup
-	localWebPublicationRecordDB *map[string]mttnet.PublicationRecord //TODO: remove when finished with the mockup
-	disc                        Discoverer
-	TokenRedeemer               TokenRedeemer
+	db           *sqlitex.Pool
+	vcsdb        *sqlitevcs.DB
+	me           *future.ReadOnly[core.Identity]
+	sitesDB      map[string]siteInfo // hostname -> Site info (addresses, AccID, ...) TODO: remove when finished with the mockup
+	disc         Discoverer
+	RemoteCaller RemoteCaller
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, recordsDB *map[string]mttnet.PublicationRecord, tokenRedeemer TokenRedeemer) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, remoteCaller RemoteCaller) *Server {
 	srv := &Server{
-		db:                          db,
-		vcsdb:                       sqlitevcs.New(db),
-		me:                          me,
-		sitesDB:                     map[string]siteInfo{},
-		disc:                        disc,
-		localWebPublicationRecordDB: recordsDB,
-		TokenRedeemer:               tokenRedeemer,
+		db:           db,
+		vcsdb:        sqlitevcs.New(db),
+		me:           me,
+		sitesDB:      map[string]siteInfo{},
+		disc:         disc,
+		RemoteCaller: remoteCaller,
 	}
 
 	return srv
