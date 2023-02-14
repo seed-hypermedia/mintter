@@ -102,7 +102,7 @@ type Site struct {
 	title                      string
 	description                string
 	// Mockup DBs remove when finished with the mockup
-	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration tipe
+	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration type
 	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
 	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
@@ -156,10 +156,9 @@ type LocalFunctions interface {
 
 // NewServer returns a new mttnet API server.
 func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions) *Server {
-	hostname := siteCfg.Hostname
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
 	srv := &Server{Site: &Site{
-		hostname:                   hostname,
+		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
 		tokensDB:                   map[string]tokenInfo{},
 		accountsDB:                 map[string]site.Member_Role{},
