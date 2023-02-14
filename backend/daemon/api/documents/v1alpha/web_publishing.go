@@ -40,8 +40,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	//addresses := []string{"/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"}
 	//accountID := "bahezrj4iaqacicabciqeoo2zi3sktlvzwxiqwilwfpm2hucu2ihsa7zzqtrkmbeoef6lagy"
 
-	//TODO(juligasa): https instead of http
-	requestURL := fmt.Sprintf("http://%s/%s", in.Hostname, mttnet.WellKnownPath)
+	requestURL := fmt.Sprintf("%s/%s", in.Hostname, mttnet.WellKnownPath)
 
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
@@ -162,7 +161,6 @@ func (api *Server) ListSites(ctx context.Context, req *documents.ListSitesReques
 // ListWebPublicationRecords returns all the sites a given a document has been published to.
 func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents.ListWebPublicationRecordsRequest) (*documents.ListWebPublicationRecordsResponse, error) {
 	var ret []*documents.WebPublicationRecord
-
 	for hostname, siteInfo := range api.sitesDB {
 		header := metadata.New(map[string]string{mttnet.MttHeader: hostname})
 		ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
@@ -174,7 +172,7 @@ func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents
 		for _, doc := range docs.Publications {
 			if req.DocumentId == doc.DocumentId && (req.Version == "" || req.Version == doc.Version) {
 				if doc.Hostname != hostname {
-					continue
+					return &documents.ListWebPublicationRecordsResponse{}, fmt.Errorf("Fund document [%s] in remote site [%s], but the site was added locally as [%s]", req.DocumentId, doc.Hostname, hostname)
 				}
 				ret = append(ret, &documents.WebPublicationRecord{
 					DocumentId: doc.DocumentId,
