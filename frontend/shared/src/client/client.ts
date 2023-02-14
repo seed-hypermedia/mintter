@@ -4,7 +4,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
-    console.log(`🔃 to ${req.method.name} `, req.message, result.message)
+    // console.log(`🔃 to ${req.method.name} `, req.message, result.message)
     return result
   } catch (e) {
     console.error(`🚨 to ${req.method.name} `, e)
@@ -18,7 +18,7 @@ const prodInter: Interceptor = (next) => async (req) => {
 }
 
 // @ts-ignore
-console.log(import.meta.env?.DEV ? '🦾 Development mode' : '🚀 Production mode')
+// console.log(import.meta.env?.DEV ? '🦾 Development mode' : '🚀 Production mode')
 
 export const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:55001',

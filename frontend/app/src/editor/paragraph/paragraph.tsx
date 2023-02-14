@@ -1,6 +1,6 @@
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
-import {useDrag} from '@app/drag-context'
+import {useDrag, useDragToPath} from '@app/drag-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
 import {
@@ -10,11 +10,13 @@ import {
   isPhrasingContent,
   Paragraph as ParagraphType,
 } from '@mintter/shared'
-import {useRef} from 'react'
+import {useEffect, useMemo, useRef} from 'react'
 import {Node, Path, Transforms} from 'slate'
-import {RenderElementProps, useSlate} from 'slate-react'
+import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
+import { red } from '@radix-ui/colors'
+import { useActor, useSelector } from '@xstate/react'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -64,21 +66,14 @@ function Paragraph({
   mode,
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
   let editor = useSlate()
-  let dragService = useDrag()
-  let {elementProps, parentNode, parentPath} = usePhrasingProps(editor, element)
+  let {elementProps, parentNode, parentPath, dragProps} = usePhrasingProps(editor, element)
 
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
     ref: mergeRefs([attributes.ref, pRef]),
   }
   useBlockObserve(mode, pRef)
-  let mouseService = useMouse()
-
-  let dragProps = {
-    onMouseOver: () => {
-      dragService?.send({type: 'DRAG.OVER', toPath: parentPath})
-    },
-  }
+  let mouseService = useMouse();
 
   let mouseProps =
     mode != EditorMode.Discussion

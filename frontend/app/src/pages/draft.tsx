@@ -17,7 +17,7 @@ import {ChildrenOf, Document} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor, Transforms} from 'slate'
+import {Editor as SlateEditor, Path, Transforms, Node, NodeEntry, Descendant} from 'slate'
 import {ReactEditor} from 'slate-react'
 
 type DraftPageProps = {
@@ -28,19 +28,19 @@ type DraftPageProps = {
 export default function DraftPage({draftActor, editor}: DraftPageProps) {
   const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
-  let dragService = useInterpret(() =>
-    dragMachine.withConfig({
-      actions: {
-        performMove: (context) => {
-          const {fromPath, toPath} = context
-          if (fromPath && toPath) {
-            Transforms.moveNodes(state.context.editor, {
-              at: fromPath,
-              to: toPath,
-              mode: 'highest',
-            })
-          }
-        },
+  let dragService = useInterpret(() => dragMachine.withConfig({
+    actions: {
+      performMove: (context) => {
+        const { fromPath, toPath, dragRef } = context;
+        dragRef?.removeAttribute('data-action');
+        if (fromPath && toPath) {
+          if (fromPath === toPath || toPath === null) return;
+          Transforms.moveNodes(state.context.editor, {
+            at: fromPath,
+            to: toPath,
+            mode: 'highest'
+          });
+        }
       },
     }),
   )

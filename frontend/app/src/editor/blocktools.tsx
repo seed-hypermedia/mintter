@@ -32,7 +32,8 @@ import {
 import {useSelector} from '@xstate/react'
 import {MouseEvent, ReactNode, useEffect, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {Editor, NodeEntry} from 'slate'
+import {Editor, NodeEntry, Node} from 'slate'
+import {ReactEditor} from 'slate-react'
 import './styles/blocktools.scss'
 
 let toolsByMode = {
@@ -72,7 +73,7 @@ export function Blocktools({
 }
 
 function DraftBlocktools(props: BlockData) {
-  let {mouseService, element} = props
+  let {mouseService, element, editor} = props
   let dragService = useDrag()
   let target = useCurrentTarget()
   let leftOffset = useMemo(() => {
@@ -91,19 +92,14 @@ function DraftBlocktools(props: BlockData) {
 
   let topOffset = useTopOffset(element)
 
-  // const dragRef = useRef<HTMLDivElement>(null)
-
-  // const editor = props.editor
-  // const [dndValues, dndHandlers] = useDragDrop(editor)
-  // const {onDrop, onDragEnd, onDragStart} = dndHandlers
-
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    console.log('ELEMENT', element)
-    const [, fromPath] = element
+    const [node, fromPath] = element as NodeEntry<FlowContent>;
+    const child = Node.get(node, [0]);
+    const domChild = ReactEditor.toDOMNode(editor, child);
 
     if (fromPath && dragService) {
       mouseService.send('DISABLE.DRAG.START')
-      dragService.send({type: 'DRAG.START', fromPath: fromPath})
+      dragService.send({type: 'DRAG.START', fromPath: fromPath, element: domChild});
     }
   }
 

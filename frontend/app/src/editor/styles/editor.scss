@@ -32,6 +32,19 @@ li::marker {
   }
 }
 
+[data-action='dragged'] {
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -7px;
+    height: 3px;
+    width: 100%;
+    background-color: #007AFF;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 .code-selector-wrapper {
   position: absolute;
   top: 0;
