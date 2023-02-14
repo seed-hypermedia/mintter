@@ -383,11 +383,11 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return "", fmt.Errorf("metadata not found in context")
+		return "", fmt.Errorf("There is no metadata provided in context")
 	}
 	token := md.Get(MttHeader)
 	if len(token) != 1 {
-		return "", fmt.Errorf("wrong metadata format")
+		return "", fmt.Errorf("Header [%s] not found in metadata", MttHeader)
 	}
 	return token[0], nil
 }
@@ -445,8 +445,12 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	}
 
 	acc := n.me.AccountID()
+	n.log.Debug("Check permissions", zap.String("Site hostname", srv.hostname), zap.String("remoteHostname", remoteHostname), zap.Error(err))
+	if err == nil && srv.hostname != remoteHostname && srv.hostname != "" {
+		return acc, false, nil, fmt.Errorf("Hostnames don't match. This site's hostname is [%s] but called with headers [%s]", srv.hostname, remoteHostname)
+	}
 
-	if err == nil && srv.hostname != remoteHostname { //This call is intended to be proxied so its site's duty to check permission
+	if err == nil && srv.hostname != remoteHostname && srv.hostname == "" { //This call is intended to be proxied so its site's duty to check permission
 		// proxy to remote
 		if len(params) == 0 {
 			n.log.Error("Headers found, meaning this call should be proxied, but remote function params not provided")
@@ -468,7 +472,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 		return acc, true, res, nil
 	}
 
-	if srv.hostname == remoteHostname || err != nil { //either a proxied call or a direct call without headers (nodejs)
+	if err != nil || srv.hostname == remoteHostname { //either a proxied call or a direct call without headers (nodejs)
 		// this would mean this is a proxied call so we take the account from the remote caller ID
 		remoteDeviceID, err := getRemoteID(ctx)
 		if err == nil {
@@ -477,11 +481,12 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 			if err != nil {
 				return cid.Cid{}, false, nil, fmt.Errorf("couldn't get account ID from device ID: %w", err)
 			}
-			n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()))
+
+			n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()), zap.Error(err))
 			acc = remotAcc
 		} else {
 			// this would mean we cannot get remote ID it must be a local call
-			n.log.Debug("LOCAL CALL", zap.String("Local AccountID", acc.String()))
+			n.log.Debug("LOCAL CALL", zap.String("Local AccountID", acc.String()), zap.String("remoteHostname", remoteHostname), zap.Error(err))
 		}
 	}
 
@@ -565,7 +570,8 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	if !found {
 		return nil, fmt.Errorf("couldn't find account %s", siteAccount)
 	}
-
+	remoteHostname, err := getRemoteSiteFromHeader(ctx)
+	ctx = metadata.AppendToOutgoingContext(ctx, MttHeader, remoteHostname)
 	for _, deviceID := range devices {
 		sitec, err := srv.Client(ctx, deviceID)
 		if err != nil {
