@@ -17,10 +17,18 @@ let host =
     ? 'http://localhost:56001'
     : 'https://gateway.mintter.com'
 
-console.log('🚀 ~ file: client.ts:16 ~ host', host)
+function getHost() {
+  if (process.env.GW_GRPC_ENDPOINT) {
+    return process.env.GW_GRPC_ENDPOINT
+  } else if (process.env.VERCEL_ENV == 'development') {
+    return 'http://localhost:56001'
+  }
+  return 'https://gateway.mintter.com'
+}
+
 export const transport = createGrpcWebTransport({
   // baseUrl: host,
-  baseUrl: 'https://gateway.mintter.com',
+  baseUrl: getHost(),
   // @ts-ignore
   interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
 })

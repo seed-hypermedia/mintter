@@ -16,7 +16,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@bufbuild/connect-web": "0.6.0",
+    "@bufbuild/connect-web": "0.7.0",
     "@bufbuild/protobuf": "1.0.0",
     "@mdx-js/loader": "2.1.5",
     "@mdx-js/react": "2.1.5",

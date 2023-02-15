@@ -17,7 +17,7 @@
     "typegen": "xstate typegen \"src/**/*.(ts|tsx)\""
   },
   "dependencies": {
-    "@bufbuild/connect-web": "0.6.0",
+    "@bufbuild/connect-web": "0.7.0",
     "@bufbuild/protobuf": "1.0.0",
     "@floating-ui/react-dom": "1.0.1",
     "@floating-ui/react-dom-interactions": "0.13.3",
