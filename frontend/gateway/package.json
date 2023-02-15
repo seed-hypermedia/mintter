@@ -41,8 +41,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "shiki-es": "0.1.2",
-    "slate": "0.87.0",
-    "slate-react": "0.87.0",
+    "slate": "0.90.0",
+    "slate-react": "0.90.0",
     "typescript": "4.9.4",
     "unist-util-visit": "4.1.1",
     "xstate": "4.35.1"
