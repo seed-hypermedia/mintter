@@ -328,8 +328,8 @@ type childrenType = 'group' | 'unorderedList' | 'orderedList'
 
 export function blockNodeToSlate(
   entry: Array<BlockNode>,
-  childrenType: childrenType,
-  start?: string,
+  childrenType: childrenType = 'group',
+  start: string = '1',
 ): GroupingContent {
   let fn =
     childrenType === 'orderedList'
@@ -345,8 +345,8 @@ export function blockNodeToSlate(
       if (children?.length) {
         slateBlock.children[1] = blockNodeToSlate(
           children,
-          block ? (block.attributes.childrenType as childrenType) : 'group',
-          block?.attributes.start,
+          block?.attributes?.childrenType as childrenType,
+          block?.attributes?.start,
         )
       }
       return slateBlock
