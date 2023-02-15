@@ -106,7 +106,7 @@ def main():
         return run(
             "exec pnpm gw:dev",
             args=args,
-            env={**os.environ, "NEXT_HOST": "test.mintter.com"},
+            env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
