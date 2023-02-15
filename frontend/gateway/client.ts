@@ -13,7 +13,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 }
 
 let host =
-  process.env.NODE_ENV == 'development'
+  process.env.GW_GRPC_ENDPOINT || process.env.NODE_ENV == 'development'
     ? 'http://localhost:56001'
     : 'https://gateway.mintter.com'
 
