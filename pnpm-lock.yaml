@@ -323,8 +323,8 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       shiki-es: 0.1.2
-      slate: 0.87.0
-      slate-react: 0.87.0
+      slate: 0.90.0
+      slate-react: 0.90.0
       tailwindcss: 3.2.4
       typescript: 4.9.4
       unist-util-visit: 4.1.1
@@ -358,8 +358,8 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       shiki-es: 0.1.2
-      slate: 0.87.0
-      slate-react: 0.87.0_n2cfbellevwxpal743zx3kzaym
+      slate: 0.90.0
+      slate-react: 0.90.0_vfkxdgngtm5gosdcaawdsu5ur4
       typescript: 4.9.4
       unist-util-visit: 4.1.1
       xstate: 4.35.1
@@ -410,7 +410,7 @@ importers:
       rehype-parse: 8.0.4
       rehype-sanitize: 5.0.1
       shiki: 0.10.1
-      slate: ^0.87.0
+      slate: 0.90.0
       trim-trailing-lines: 2.1.0
       typescript: 4.9.4
       unified: 10.1.2
@@ -440,7 +440,7 @@ importers:
       rehype-parse: 8.0.4
       rehype-sanitize: 5.0.1
       shiki: 0.10.1
-      slate: 0.87.0
+      slate: 0.90.0
       trim-trailing-lines: 2.1.0
       unified: 10.1.2
       unist: 8.0.11
@@ -1972,7 +1972,7 @@ packages:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
     dependencies:
       graphql: 16.6.0
-      tslib: 2.4.1
+      tslib: 2.5.0
     dev: true
 
   /@graphql-tools/prisma-loader/7.2.62_cra75ky6nasod3lqlqzw65fjtq:
@@ -2016,7 +2016,7 @@ packages:
       '@ardatan/relay-compiler': 12.0.0_graphql@16.6.0
       '@graphql-tools/utils': 9.2.1_graphql@16.6.0
       graphql: 16.6.0
-      tslib: 2.4.1
+      tslib: 2.5.0
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -7615,7 +7615,7 @@ packages:
       graphql: ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
     dependencies:
       graphql: 16.6.0
-      tslib: 2.4.1
+      tslib: 2.5.0
     dev: true
 
   /graphql-ws/5.11.3_graphql@16.6.0:
@@ -11699,26 +11699,6 @@ packages:
       slate: 0.90.0
     dev: false
 
-  /slate-react/0.87.0_n2cfbellevwxpal743zx3kzaym:
-    resolution: {integrity: sha512-3ujWBdsMqCY2wRHjBYkbh44gkhIgEPjwvFnrzMporbgIRXUVdlAeQM3DevHZnS+Cvja9XTH9nI4Q0vChzzQPfQ==}
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-      slate: '>=0.65.3'
-    dependencies:
-      '@types/is-hotkey': 0.1.7
-      '@types/lodash': 4.14.191
-      direction: 1.0.4
-      is-hotkey: 0.1.8
-      is-plain-object: 5.0.0
-      lodash: 4.17.21
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-      scroll-into-view-if-needed: 2.2.31
-      slate: 0.87.0
-      tiny-invariant: 1.0.6
-    dev: false
-
   /slate-react/0.90.0_vfkxdgngtm5gosdcaawdsu5ur4:
     resolution: {integrity: sha512-z6pGd6jjU5VazLxlDi6zL3a6yaPBPJ+A2VyIlE/h/rvDywaLYGvk0xcrA9NrK71Dr47HK5ZN2zFEZNleh6wlPA==}
     peerDependencies:
@@ -11740,18 +11720,10 @@ packages:
       tiny-invariant: 1.0.6
     dev: false
 
-  /slate/0.87.0:
-    resolution: {integrity: sha512-m+IWERpdtb7Zna09MxHlUYIAoo4WVdxp2fSf7c+jSV9pDmJ4QvUTuHghX/TVrxtr+8BKGhyQCWIerZt32B1Ysg==}
-    dependencies:
-      immer: 9.0.19
-      is-plain-object: 5.0.0
-      tiny-warning: 1.0.3
-    dev: false
-
   /slate/0.90.0:
     resolution: {integrity: sha512-dv8idv0JjYyHiAJcVKf5yWKPDMTDi+PSZyfjsnquEI8VB5nmTVGjeJab06lc3o69O7aN05ROwO9/OY8mU1IUPA==}
     dependencies:
-      immer: 9.0.16
+      immer: 9.0.19
       is-plain-object: 5.0.0
       tiny-warning: 1.0.3
     dev: false

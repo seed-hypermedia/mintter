@@ -9,8 +9,10 @@ import {useRenderLeaf} from './slate-react-presentation/render-leaf'
 
 export default function PublicationPage({
   publication,
+  metadata = true,
 }: {
   publication?: Publication
+  metadata?: boolean
 }) {
   const router = useRouter()
   // const [docId, version] = router.query.ids || []
@@ -20,6 +22,7 @@ export default function PublicationPage({
   const slateChildren = blockChildren
     ? blockNodeToSlate(blockChildren, 'group')
     : undefined
+
   return (
     <>
       <SiteHead />
@@ -30,7 +33,9 @@ export default function PublicationPage({
       >
         <article className="sidebar">
           <div>
-            <PublicationMetadata publication={publication} />
+            {metadata ? (
+              <PublicationMetadata publication={publication} />
+            ) : null}
           </div>
           <div>
             {slateChildren ? (
