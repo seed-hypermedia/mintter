@@ -16,4 +16,5 @@ export default {
   experimental: {
     runtime: 'experimental-edge',
   },
+  output: 'standalone',
 }
