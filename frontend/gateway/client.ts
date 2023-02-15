@@ -28,7 +28,7 @@ function getHost() {
 
 export const transport = createGrpcWebTransport({
   // baseUrl: host,
-  baseUrl: getHost(),
+  baseUrl: 'https://gateway.mintter.com',
   // @ts-ignore
   interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
 })
