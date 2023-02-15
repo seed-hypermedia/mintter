@@ -40,3 +40,4 @@ target
 plz-out
 .plzconfig.local
 ./private_keys
+.vercel
