@@ -7,7 +7,6 @@ import (
 	"io"
 	"mintter/backend/config"
 	"mintter/backend/core"
-	"mintter/backend/db/sqliteds"
 	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/ipfs"
@@ -22,6 +21,8 @@ import (
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-datastore"
+	dssync "github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	provider "github.com/ipfs/go-ipfs-provider"
 	"github.com/ipfs/go-ipfs-provider/simple"
@@ -443,12 +444,9 @@ func AddrInfoFromStrings(addrs ...string) (out peer.AddrInfo, err error) {
 
 func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs.Libp2p, io.Closer, error) {
 	var clean cleanup.Stack
-	ds := sqliteds.New(pool, "datastore")
-	clean.Add(ds)
 
-	if err := ds.InitTable(context.Background()); err != nil {
-		return nil, nil, err
-	}
+	ds := dssync.MutexWrap(datastore.NewMapDatastore())
+	clean.Add(ds)
 
 	ps, err := pstoreds.NewPeerstore(context.Background(), ds, pstoreds.DefaultOpts())
 	if err != nil {
