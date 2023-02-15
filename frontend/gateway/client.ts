@@ -13,14 +13,14 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 }
 
 let host =
-  process.env.GW_GRPC_ENDPOINT || process.env.NODE_ENV == 'development'
+  process.env.GW_GRPC_ENDPOINT || process.env.VERCEL_ENV == 'development'
     ? 'http://localhost:56001'
     : 'https://gateway.mintter.com'
 
-    console.log('🚀 ~ file: client.ts:16 ~ host', host)
-    export const transport = createGrpcWebTransport({
-      baseUrl: host,
-      // baseUrl: 'https://gateway.mintter.com',
-      // @ts-ignore
-      interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
-    })
+console.log('🚀 ~ file: client.ts:16 ~ host', host)
+export const transport = createGrpcWebTransport({
+  // baseUrl: host,
+  baseUrl: 'https://gateway.mintter.com',
+  // @ts-ignore
+  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
+})
