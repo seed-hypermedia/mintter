@@ -62,7 +62,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         className="page-wrapper"
         onMouseMove={(event) => {
           mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-
+          console.log('mouse moving')
           draftActor.send('EDITING.STOP')
         }}
         onMouseLeave={() => {
@@ -90,21 +90,19 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
               <DragProvider value={dragService}>
                 <BlockHighLighter>
                   <FileProvider value={state.context.draft}>
-                    <Blocktools editor={editor}>
-                      {state.context.localDraft?.content ? (
-                        <Editor
-                          editor={editor}
-                          value={state.context.localDraft.content}
-                          //@ts-ignore
-                          onChange={(content: ChildrenOf<Document>) => {
-                            if (!content && typeof content == 'string') return
-                            mouseService.send('DISABLE.CHANGE')
-                            draftActor.send('EDITING.START')
-                            send({type: 'DRAFT.UPDATE', payload: {content}})
-                          }}
-                        />
-                      ) : null}
-                    </Blocktools>
+                    {state.context.localDraft?.content ? (
+                      <Editor
+                        editor={editor}
+                        value={state.context.localDraft.content}
+                        //@ts-ignore
+                        onChange={(content: ChildrenOf<Document>) => {
+                          if (!content && typeof content == 'string') return
+                          mouseService.send('DISABLE.CHANGE')
+                          draftActor.send('EDITING.START')
+                          send({type: 'DRAFT.UPDATE', payload: {content}})
+                        }}
+                      />
+                    ) : null}
                   </FileProvider>
                 </BlockHighLighter>
               </DragProvider>

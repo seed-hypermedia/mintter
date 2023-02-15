@@ -106,7 +106,7 @@ function Paragraph({
         {...elementProps}
         {...mouseProps}
         {...otherProps}
-        {...dragProps}
+        // {...dragProps}
       >
         <code>{children}</code>
       </Box>
@@ -121,7 +121,7 @@ function Paragraph({
         {...elementProps}
         {...mouseProps}
         {...otherProps}
-        {...dragProps}
+        // {...dragProps}
       >
         <p>{children}</p>
       </Box>

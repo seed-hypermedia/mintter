@@ -27,6 +27,7 @@ import {MARK_UNDERLINE} from '../underline'
 import {findPath, lowerPoint, resetFlowContent, useBlockFlash} from '../utils'
 import {useBlockConversations} from '@app/editor/comments/conversations-context'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
+import {BlockTools} from '@app/editor/blocktools'
 
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
@@ -244,6 +245,7 @@ function Code({
       className={inRoute ? 'flash' : undefined}
     >
       {children}
+      <BlockTools block={element as CodeType} />
       {mode == EditorMode.Draft ? (
         <div className="code-selector-wrapper" contentEditable={false}>
           <select

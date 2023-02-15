@@ -1,3 +1,4 @@
+import {BlockTools} from '@app/editor/blocktools'
 import {useBlockConversations} from '@app/editor/comments/conversations-context'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -127,6 +128,7 @@ function Heading({
       className={inRoute ? 'flash' : undefined}
     >
       {children}
+      <BlockTools block={element as HeadingType} />
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as HeadingType} />
       </span>

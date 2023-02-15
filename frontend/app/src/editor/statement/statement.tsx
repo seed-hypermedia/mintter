@@ -1,3 +1,4 @@
+import {Blocktools, BlockTools} from '@app/editor/blocktools'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
@@ -250,9 +251,10 @@ function Statement({
       {...attributes}
       {...blockProps}
       className={inRoute ? 'flash' : undefined}
-      style={{position: 'relative'}}
+      style={{position: 'relative', border: '1px solid red'}}
     >
       {children}
+      <BlockTools block={element as FlowContent} />
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as StatementType} />
       </span>

@@ -1,3 +1,4 @@
+import {BlockTools} from '@app/editor/blocktools'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -92,6 +93,7 @@ function BlockQuote({
       className={inRoute ? 'flash' : undefined}
     >
       {children}
+      <BlockTools block={element as BlockquoteType} />
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as BlockquoteType} />
       </span>

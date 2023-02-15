@@ -181,19 +181,17 @@ export default function PublicationPage({
                             </Tooltip>
                           </div>
                           {state.context.publication?.document?.content && (
-                            <Blocktools editor={editor}>
-                              <Editor
-                                editor={editor}
-                                mode={EditorMode.Publication}
-                                value={
-                                  state.context.publication?.document.content
-                                }
-                                onChange={() => {
-                                  mouseService.send('DISABLE.CHANGE')
-                                  // noop
-                                }}
-                              />
-                            </Blocktools>
+                            <Editor
+                              editor={editor}
+                              mode={EditorMode.Publication}
+                              value={
+                                state.context.publication?.document.content
+                              }
+                              onChange={() => {
+                                mouseService.send('DISABLE.CHANGE')
+                                // noop
+                              }}
+                            />
                           )}
                         </ScrollArea>
                       </FileProvider>

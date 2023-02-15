@@ -84,6 +84,8 @@ li::marker {
   blockquote {
     max-width: var(--editor-width, 59ch);
     width: 100%;
+    margin: 0;
+    padding-block: 0.5em;
   }
 
   h1 {
