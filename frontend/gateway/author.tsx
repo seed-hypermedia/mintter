@@ -1,7 +1,7 @@
 import {useQuery} from '@tanstack/react-query'
 import {Publication, getAccount} from '@mintter/shared'
 import {formattedDate} from './utils/get-format-date'
-import {client} from './client'
+import {transport} from './client'
 
 export function PublicationMetadata({
   publication,
@@ -19,13 +19,13 @@ export function PublicationMetadata({
       <p>
         Published at:{' '}
         {publication?.document?.publishTime
-          ? formattedDate(publication.document.publishTime as Date)
+          ? formattedDate(publication.document.publishTime as any)
           : null}
       </p>
       <p>
         Last update:{' '}
         {publication?.document?.updateTime
-          ? formattedDate(publication.document.updateTime as Date)
+          ? formattedDate(publication.document.updateTime as any)
           : null}
       </p>
     </aside>
@@ -35,7 +35,7 @@ export function PublicationMetadata({
 function Author({id}: {id: string}) {
   let {data, status} = useQuery({
     queryKey: ['AUTHOR', id],
-    queryFn: ({queryKey}) => getAccount(queryKey[1], client),
+    queryFn: ({queryKey}) => getAccount(queryKey[1], transport),
     retry: false,
   })
   if (status == 'loading') {

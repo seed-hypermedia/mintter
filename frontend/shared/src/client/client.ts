@@ -17,6 +17,7 @@ console.log(import.meta.env?.DEV ? '🦾 Development mode' : '🚀 Production mo
 
 export const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:55001',
+  // baseUrl: 'https://gateway.mintter.com',
   // @ts-ignore
   interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
 })

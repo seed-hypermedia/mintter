@@ -17,8 +17,10 @@ let host =
     ? 'http://localhost:56001'
     : 'https://gateway.mintter.com'
 
-export const transport = createGrpcWebTransport({
-  baseUrl: host,
-  // @ts-ignore
-  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
-})
+    console.log('🚀 ~ file: client.ts:16 ~ host', host)
+    export const transport = createGrpcWebTransport({
+      baseUrl: host,
+      // baseUrl: 'https://gateway.mintter.com',
+      // @ts-ignore
+      interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
+    })
