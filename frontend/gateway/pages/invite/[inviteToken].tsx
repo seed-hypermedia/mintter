@@ -18,7 +18,7 @@ export default function InvitePage({hostname}: {hostname: string}) {
           <li>Download Mintter</li>
           <li>Add Site</li>
           <li>
-            Paste this URL: https://{hostname}/invite/{inviteToken}
+            Paste this URL: {hostname}/invite/{inviteToken}
           </li>
         </ol>
       </main>
@@ -30,7 +30,7 @@ export default function InvitePage({hostname}: {hostname: string}) {
 export const getServerSideProps: GetServerSideProps = async () => {
   return {
     props: {
-      hostname: process.env.NEXT_HOST,
+      hostname: process.env.GW_NEXT_HOST,
     },
   }
 }
