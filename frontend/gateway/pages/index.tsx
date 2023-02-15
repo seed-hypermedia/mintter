@@ -42,7 +42,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const publication = await getPublication(
     'bafy2bzacedq36zy5yrhutg5pocnpv2lzxr6xwfs6eeng7saoe7syxkeiq3zsm',
     'baeaxdiheaiqjrcwamuudzuc7vmzfnebn6xs45fcbgorb4vfkc44aehc3eevt25q',
-    // transport,
+    transport,
   )
   // const publication = await getHomePublication()
   return {
