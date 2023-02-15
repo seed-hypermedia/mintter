@@ -259,7 +259,14 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	if err != nil {
 		return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] is not a valid path", in.Path)
 	}
-
+	// TODO(juligasa): call getPublication on the site for the document published and all of the referenced documents
+	// GetPublication is going to call discover object that calls sync, and it'll sync everything. Instead, since site and editor already connected, call
+	// a new function to pull the document directly from the editor, without syncyng
+	/*doc, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{DocumentId: in.DocumentId, Version: in.Version, LocalOnly: false})
+	if err != nil {
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Cannot pull document [%s] version [%s]", in.DocumentId, in.Version)
+	}
+	*/
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
 	for key, record := range srv.WebPublicationRecordDB {
 		if record.Path == in.Path {
