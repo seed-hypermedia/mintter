@@ -35,6 +35,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         dragRef?.removeAttribute('data-action');
         if (fromPath && toPath) {
           if (fromPath === toPath || toPath === null) return;
+          if (Path.isAncestor(fromPath, toPath)) return;
           Transforms.moveNodes(state.context.editor, {
             at: fromPath,
             to: toPath,
