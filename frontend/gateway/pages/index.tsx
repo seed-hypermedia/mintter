@@ -26,12 +26,12 @@ export default function HomePage() {
     queryKey: [
       'pub',
       'bafy2bzacedq36zy5yrhutg5pocnpv2lzxr6xwfs6eeng7saoe7syxkeiq3zsm',
-      'baeaxdiheaiqjrcwamuudzuc7vmzfnebn6xs45fcbgorb4vfkc44aehc3eevt25q',
+      'baeaxdiheaiqnlfxtkzqobiqcsrwh6kncz2qeowqmwnjjbokmczxuxyimg6r7dta',
     ],
     queryFn: () =>
       getPublication(
         'bafy2bzacedq36zy5yrhutg5pocnpv2lzxr6xwfs6eeng7saoe7syxkeiq3zsm',
-        'baeaxdiheaiqjrcwamuudzuc7vmzfnebn6xs45fcbgorb4vfkc44aehc3eevt25q',
+        'baeaxdiheaiqnlfxtkzqobiqcsrwh6kncz2qeowqmwnjjbokmczxuxyimg6r7dta',
         transport,
       ),
   })
