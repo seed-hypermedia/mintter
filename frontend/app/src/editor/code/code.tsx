@@ -28,6 +28,7 @@ import {findPath, lowerPoint, resetFlowContent, useBlockFlash} from '../utils'
 import {useBlockConversations} from '@app/editor/comments/conversations-context'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {BlockTools} from '@app/editor/blocktools'
+import { ElementDrag } from '../drag-section'
 
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
@@ -239,13 +240,13 @@ function Code({
   }
 
   return (
-    <li
-      {...attributes}
-      {...blockProps}
-      className={inRoute ? 'flash' : undefined}
+    <ElementDrag
+      element={element}
+      attributes={attributes}
+      mode={mode}
     >
       {children}
-      <BlockTools block={element as CodeType} />
+      {/* <BlockTools block={element as CodeType} /> */}
       {mode == EditorMode.Draft ? (
         <div className="code-selector-wrapper" contentEditable={false}>
           <select
@@ -266,6 +267,6 @@ function Code({
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as CodeType} />
       </span>
-    </li>
+    </ElementDrag>
   )
 }

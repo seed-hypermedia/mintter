@@ -61,15 +61,14 @@ function DraftBlocktools(props: BlockData) {
 
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     const [node, fromPath] = element as NodeEntry<FlowContent>
-    const child = Node.get(node, [0])
-    const domChild = ReactEditor.toDOMNode(editor, child)
+    const domNode = ReactEditor.toDOMNode(editor, node)
 
-    if (fromPath && dragService) {
+    if (fromPath && dragService && target) {
       mouseService.send('DISABLE.DRAG.START')
       dragService.send({
         type: 'DRAG.START',
         fromPath: fromPath,
-        element: domChild,
+        element: domNode as HTMLLIElement,
       })
     }
   }
@@ -90,6 +89,7 @@ function DraftBlocktools(props: BlockData) {
         justifyContent: 'center',
         gap: '$3',
       }}
+      onMouseDown = {onMouseDown}
     >
       <ElementDropdown data-testid="blocktools-trigger">
         <Icon name="Grid4" color="muted" />

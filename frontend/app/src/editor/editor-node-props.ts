@@ -70,28 +70,12 @@ export function usePhrasingProps(
       'data-reference': version
         ? `${MINTTER_LINK_PREFIX}${docId}/${version}/${parentBlock?.[0].id}`
         : undefined,
-      'data-action': '',
     }
 
     return {
       elementProps,
       parentNode: parentBlock?.[0],
       parentPath: parentBlock?.[1],
-      dragProps: {
-        onMouseOver: (e: MouseEvent) => {
-          const childPath = ReactEditor.findPath(editor, element)
-          const toPath = Path.parent(childPath)
-          if (dragService?.state.value === 'active') {
-            dragService?.send({
-              type: 'DRAG.OVER',
-              toPath: toPath,
-              element: e.target as HTMLElement,
-            })
-          }
-        },
-        // onMouseLeave: (e: MouseEvent) => {
-        // },
-      },
     }
   }
 

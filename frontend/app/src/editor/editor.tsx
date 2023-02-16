@@ -234,6 +234,7 @@ export function Editor({
         >
           <EditorHoveringToolbar />
           <Editable
+            id="editor"
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
@@ -265,6 +266,7 @@ export function Editor({
           </>
         ) : null}
         <Editable
+          id="editor"
           as={as}
           autoCorrect="false"
           autoCapitalize="false"

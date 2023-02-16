@@ -19,6 +19,7 @@ import {
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import { ElementDrag } from '../drag-section'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, useBlockFlash} from '../utils'
@@ -247,18 +248,16 @@ function Statement({
   }
 
   return (
-    <li
-      {...attributes}
-      {...blockProps}
-      className={inRoute ? 'flash' : undefined}
-      style={{position: 'relative', border: '1px solid red'}}
+    <ElementDrag
+      element={element}
+      attributes={attributes}
+      mode={mode}
     >
       {children}
-      <BlockTools block={element as FlowContent} />
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as StatementType} />
       </span>
-    </li>
+    </ElementDrag>
   )
 }
 

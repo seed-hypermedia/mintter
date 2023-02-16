@@ -46,6 +46,7 @@ export const createParagraphPlugin = (): EditorPlugin => ({
       if (isParagraph(node)) {
         for (const [child, childPath] of Node.children(editor, path)) {
           if (!isPhrasingContent(child)) {
+            console.log('moving phrasing content', child, childPath)
             Transforms.moveNodes(editor, {at: childPath, to: Path.next(path)})
             return
           }
@@ -66,7 +67,7 @@ function Paragraph({
   mode,
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
   let editor = useSlate()
-  let {elementProps, parentNode, parentPath, dragProps} = usePhrasingProps(editor, element)
+  let {elementProps, parentNode, parentPath} = usePhrasingProps(editor, element)
 
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
@@ -106,7 +107,6 @@ function Paragraph({
         {...elementProps}
         {...mouseProps}
         {...otherProps}
-        // {...dragProps}
       >
         <code>{children}</code>
       </Box>
@@ -121,7 +121,6 @@ function Paragraph({
         {...elementProps}
         {...mouseProps}
         {...otherProps}
-        // {...dragProps}
       >
         <p>{children}</p>
       </Box>
@@ -134,7 +133,6 @@ function Paragraph({
       {...elementProps}
       {...mouseProps}
       {...otherProps}
-      {...dragProps}
     >
       {children}
     </p>

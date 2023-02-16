@@ -17,7 +17,14 @@ import {ChildrenOf, Document} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor, Path, Transforms, Node, NodeEntry, Descendant} from 'slate'
+import {
+  Editor as SlateEditor,
+  Path,
+  Transforms,
+  Node,
+  NodeEntry,
+  Descendant,
+} from 'slate'
 import {ReactEditor} from 'slate-react'
 
 type DraftPageProps = {
@@ -28,23 +35,7 @@ type DraftPageProps = {
 export default function DraftPage({draftActor, editor}: DraftPageProps) {
   const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
-  let dragService = useInterpret(() => dragMachine.withConfig({
-    actions: {
-      performMove: (context) => {
-        const { fromPath, toPath, dragRef } = context;
-        dragRef?.removeAttribute('data-action');
-        if (fromPath && toPath) {
-          if (fromPath === toPath || toPath === null) return;
-          if (Path.isAncestor(fromPath, toPath)) return;
-          Transforms.moveNodes(state.context.editor, {
-            at: fromPath,
-            to: toPath,
-            mode: 'highest'
-          });
-        }
-      },
-    }),
-  )
+  let dragService = useInterpret(() => dragMachine)
   // @ts-ignore
   window.mouseService = mouseService
 
@@ -63,7 +54,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         className="page-wrapper"
         onMouseMove={(event) => {
           mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-          console.log('mouse moving')
+          // console.log('mouse moving')
           draftActor.send('EDITING.STOP')
         }}
         onMouseLeave={() => {

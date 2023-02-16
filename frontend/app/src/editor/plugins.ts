@@ -72,4 +72,15 @@ export const plugins: EditorPlugin[] = [
     },
   },
   createCommentsPlugin(),
+  {
+    name: 'log',
+    configureEditor: (editor) => {
+      const {apply} = editor
+      editor.apply = (operation) => {
+        console.log(operation)
+        apply(operation)
+      }
+      return editor
+    },
+  },
 ]
