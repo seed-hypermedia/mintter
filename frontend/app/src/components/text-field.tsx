@@ -141,8 +141,8 @@ const inputStyles = css({
   },
 })
 
-const Input = styled('input', inputStyles)
-const Textarea = styled('textarea', inputStyles)
+export const Input = styled('input', inputStyles)
+export const Textarea = styled('textarea', inputStyles)
 
 export type InputVariants = Stitches.VariantProps<typeof inputStyles>
 

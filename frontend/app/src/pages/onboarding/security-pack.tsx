@@ -20,6 +20,18 @@ import {
   OnboardingStepPropsType,
   OnboardingStepTitle,
 } from './common'
+// import {bech32m, bech32} from 'bech32'
+// import BIP32Factory from 'bip32'
+import {mnemonicToSeed, getDefaultWordlist, wordlists} from 'bip39'
+// import * as ecc from 'tiny-secp256k1'
+// You must wrap a tiny-secp256k1 compatible implementation
+// const bip32 = BIP32Factory(ecc)
+import {Buffer} from 'buffer'
+
+global.Buffer = global.Buffer || Buffer
+
+const wl = (global.wl = wordlists['english'])
+console.log({wl})
 
 export function SecurityPack({
   prev,
@@ -31,7 +43,20 @@ export function SecurityPack({
   const mnemonics = useQuery({
     queryKey: ['onboarding', 'mnemonics'],
     queryFn: async () => {
+      console.log('hi')
       const data = await generateMnemonic()
+      console.log('hah', data?.mnemonic)
+
+      mnemonicToSeed(data.mnemonic.join(' '))
+        .then((seed) => {
+          // console.log({seed, len: seed.length})
+          // const outKey = bech32.encode('nsec', seed)
+          console.log({seed})
+        })
+        .catch((e) => {
+          console.error('yep: ', e)
+        })
+      // console.log({seed})
       return data.mnemonic
     },
     refetchOnReconnect: false,
@@ -42,6 +67,8 @@ export function SecurityPack({
     const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data
     if (words) {
       try {
+        // words are here.
+
         await registerAccount(words)
         next()
       } catch (error) {

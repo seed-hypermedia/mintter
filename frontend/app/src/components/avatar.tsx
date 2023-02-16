@@ -3,15 +3,19 @@ import {useMemo} from 'react'
 import '../styles/avatar.scss'
 
 export function Avatar({
+  url,
   accountId,
   alias,
   size = 2,
+  color,
 }: {
+  url?: string
   accountId?: string
   alias: string
   size: 1 | 2 | 3
+  color?: string
 }) {
-  let {data: color} = useQuery({
+  let {data: avatarColor} = useQuery({
     queryKey: ['avatarColor', accountId],
     queryFn: () => getRandomColor(accountId),
     enabled: !!accountId,
@@ -22,15 +26,15 @@ export function Avatar({
   return (
     <div
       className="avatar-circle"
-      style={{backgroundColor: color}}
+      style={{backgroundColor: color || avatarColor}}
       data-size={size}
     >
-      <span className="initials">{initials}</span>
+      {url ? <img src={url} /> : <span className="initials">{initials}</span>}
     </div>
   )
 }
 
-function getRandomColor(id: string) {
+export function getRandomColor(id: string) {
   let hash = 0
   for (let i = 0; i < id.length; i++) {
     hash = id.charCodeAt(i) + ((hash << 6) - hash)

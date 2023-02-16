@@ -87,7 +87,6 @@ export function blockToApi(
           annotations.addSpan('conversation', {conversationId}, start, end)
         })
       }
-      
     }
 
     // inline block elements check
