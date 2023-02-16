@@ -258,6 +258,8 @@ export function PublicationToolbar() {
     middleware: [inline(), offset(8), shift(), flip()],
   })
 
+  let [currentComment, setCurrentComment] = useState('')
+
   let service = useInterpret(() => toolbarMachine, {
     guards: {
       isNotValid: (_, event) =>
@@ -307,6 +309,7 @@ export function PublicationToolbar() {
 
   async function createConversation(event: FormEvent) {
     event.preventDefault()
+    if (!currentComment) return
     /**
      * - get block selected
      * - convert conversation mark to selector
@@ -317,9 +320,13 @@ export function PublicationToolbar() {
     // get block selected
     let currentEntry = Editor.nodes(editor, {
       match: isFlowContent,
+      mode: 'lowest',
     })
 
-    if (!currentEntry) return
+    invariant(
+      currentEntry,
+      `"currentEntry" is not available - ${JSON.stringify(currentEntry)}`,
+    )
 
     // get block from entry
     // TODO: get all the blocks from selection, now it's capped by just one block.
@@ -328,12 +335,15 @@ export function PublicationToolbar() {
     // convert conversation to selector
     let apiBlock = blockToApi(block)
 
+    invariant(apiBlock.annotations, `the "apiBlock" does not have annotations`)
+
     let commentAnnotation = apiBlock.annotations.find(
       (annotation) =>
         annotation.type == 'conversation' &&
         annotation.attributes.conversationId == 'current',
     )
 
+    // invariant(commentAnnotation, 'No commentAnnotation available')
     if (!commentAnnotation) return
 
     let selector = new Selector({
@@ -343,9 +353,7 @@ export function PublicationToolbar() {
       end: commentAnnotation.ends[0],
     })
 
-    let data = new FormData(event.currentTarget)
-    let commentValue = data.get('comment')?.toString().replace(/\s/g, ' ')
-    if (!commentValue) return
+    let commentValue = currentComment.replace(/\s/g, ' ')
     let initialComment = blockToApi(
       statement([paragraph([text(commentValue)])]),
     )
@@ -358,6 +366,7 @@ export function PublicationToolbar() {
       })
       .then((res) => {
         service.send('TOOLBAR.DISMISS')
+        setCurrentComment('')
         ReactEditor.blur(editor)
         client.invalidateQueries({
           queryKey: [queryKeys.GET_PUBLICATION_CONVERSATIONS],
@@ -443,6 +452,8 @@ export function PublicationToolbar() {
               name="comment"
               textarea
               placeholder="initial comment here"
+              value={currentComment}
+              onChange={(e) => setCurrentComment(e.target.value)}
             />
             <Button variant="solid" color="muted" size="2">
               submit
@@ -452,4 +463,10 @@ export function PublicationToolbar() {
       </Box>
     </OutsideClick>
   )
+}
+
+function invariant(value: unknown, message: string) {
+  if (!value) {
+    throw new Error(`Error: ${message}`)
+  }
 }
