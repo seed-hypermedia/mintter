@@ -1,7 +1,6 @@
 import {EditorMode} from '@app/editor/plugin-utils'
 import {EditorPlugin} from '@app/editor/types'
 import {isParagraph} from '@mintter/shared'
-import {useContext} from 'react'
 import {Range} from 'slate'
 import {ReactEditor} from 'slate-react'
 
@@ -14,11 +13,11 @@ export function createCommentsPlugin(): EditorPlugin {
     renderLeaf:
       () =>
       ({attributes, children, leaf}) => {
-        if ('conversations' in leaf && leaf.text) {
+        if (typeof leaf.conversations !== 'undefined' && leaf.text) {
           return (
             <span
               style={
-                leaf.conversations?.length >= 3
+                leaf.conversations.length >= 3
                   ? {
                       backgroundColor: 'var(--highlight-surface4)',
                       borderBottom: '2px solid var(--highlight-surface4)',
@@ -80,20 +79,5 @@ export function createCommentsPlugin(): EditorPlugin {
         }
       }
     },
-    // onMouseUp(editor) {
-    //   return (event) => {
-    //     if (editor.selection && !Range.isCollapsed(editor.selection)) {
-    //       let blocks = Editor.nodes(editor, {
-    //         at: editor.selection,
-    //         match: isFlowContent,
-    //       })
-
-    //       if (blocks) {
-    //         console.log('BLOCKS', [...blocks])
-    //         console.log('EDGES', Editor.edges(editor, editor.selection))
-    //       }
-    //     }
-    //   }
-    // },
   }
 }

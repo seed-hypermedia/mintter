@@ -21,6 +21,7 @@ import {
 import {UseQueryResult} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useMemo, useState} from 'react'
+import toast from 'react-hot-toast'
 
 export function Conversations() {
   const context = useConversations()
@@ -82,29 +83,11 @@ export function Conversations() {
 function ConversationItem({
   conversation,
   refetch,
-  documentId,
 }: {
   conversation: Conversation
-  documentId: string
   refetch: UseQueryResult<ListConversationsResponse>['refetch']
 }) {
-  let [newComment, setNewComment] = useState('')
   let [firstComment, ...comments] = conversation.comments
-
-  function submitReply(e: FormEvent) {
-    e.preventDefault()
-    let comment = newComment.replace(/\s/g, ' ')
-
-    createPromiseClient(Comments, transport)
-      .addComment({
-        conversationId: conversation.id,
-        comment: blockToApi(statement([paragraph([text(comment)])])),
-      })
-      .then((res) => {
-        console.log('REPLY ADDED!', res)
-        refetch()
-      })
-  }
 
   return (
     <Box
@@ -137,7 +120,7 @@ function ConversationItem({
               paddingTop: '$5',
               marginRight: '$4',
               position: 'relative',
-              paddingLeft: 48,
+              // paddingLeft: 48,
               '&:hover': {
                 cursor: 'default',
               },
@@ -161,6 +144,45 @@ function ConversationItem({
           </Box>
         ) : null}
       </Box>
+      <MintterReplyForm
+        conversationId={conversation.id}
+        onSuccess={() => {
+          toast.success('Reply success!')
+          refetch()
+        }}
+      />
+    </Box>
+  )
+}
+
+function MintterReplyForm({
+  conversationId,
+  onSuccess,
+}: {
+  conversationId: string
+  onSuccess: () => void
+}) {
+  const [isReplying, setIsReplying] = useState(false)
+  const [draft, setDraft] = useState('')
+
+  function submitReply(e: FormEvent) {
+    e.preventDefault()
+    let comment = draft.replace(/\s/g, ' ')
+
+    createPromiseClient(Comments, transport)
+      .addComment({
+        conversationId,
+        comment: blockToApi(statement([paragraph([text(comment)])])),
+      })
+      .then((res) => {
+        onSuccess()
+        setDraft('')
+        setIsReplying(false)
+      })
+  }
+
+  if (isReplying)
+    return (
       <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
         <Box
           as="form"
@@ -174,16 +196,46 @@ function ConversationItem({
           }}
         >
           <TextField
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            name="replyContent"
             textarea
-            name="reply"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
           />
-          <Button color="muted" size="1" variant="outlined">
-            Reply
-          </Button>
+          <Box
+            css={{
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              onClick={() => {
+                setIsReplying(false)
+              }}
+              color="muted"
+              size="1"
+              variant="ghost"
+            >
+              Cancel
+            </Button>
+            <Button size="1" type="submit" variant="outlined">
+              Reply
+            </Button>
+          </Box>
         </Box>
       </Box>
+    )
+  return (
+    <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
+      <Button
+        onClick={() => {
+          setIsReplying(true)
+        }}
+        color="muted"
+        size="1"
+        variant="outlined"
+      >
+        Reply
+      </Button>
     </Box>
   )
 }
@@ -197,6 +249,16 @@ function CommentItem({
   comment: Block
   selectors?: Array<Selector>
 }) {
+  function deleteComment() {
+    createPromiseClient(Comments, transport)
+      .deleteComment({
+        conversationId,
+        blockId: comment.id,
+      })
+      .then((res) => {
+        console.log('Comment deleted!', res)
+      })
+  }
   return (
     <Box
       as="li"
