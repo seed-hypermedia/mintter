@@ -1,3 +1,4 @@
+import {Timestamp} from '@bufbuild/protobuf'
 import {Document} from '../client'
 
 type KeyOfType<T, U> = {
@@ -31,9 +32,11 @@ export function getDateFormat(document: Document | undefined, key: DateKeys) {
   } ${date.getDate()}, ${date.getFullYear()} at ${date.getHours()}:${date.getMinutes()}`
 }
 
-export function formattedDate(value: Date) {
+export function formattedDate(value: Timestamp) {
+  let _value = value.toDate()
+
   var now = new Date()
-  var date = new Date(value)
+  var date = new Date(_value)
 
   var result = difference(date, now)
 
