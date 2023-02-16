@@ -1,5 +1,4 @@
 import {createAuthService} from '@app/auth-machine'
-import * as localApi from '@mintter/shared'
 import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
 import {Text} from '@app/components/text'
@@ -13,25 +12,34 @@ import {
   useSiteMembers,
   useWriteSiteInfo,
 } from '@app/hooks/sites'
+import {EXPERIMENTS} from '@app/utils/experimental'
+import {
+  NostrUserProfile,
+  useAddRelay,
+  useMyNostrProfile,
+  useNostrKeypair,
+  useNostrPublishProfile,
+  useNostrRelayList,
+  useRemoveRelay,
+  useSetKeyPair,
+} from '@app/utils/nostr'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Icon} from '@components/icon'
+import {Prompt, StyledOverlay} from '@components/prompt'
 import {Separator} from '@components/separator'
+import {Input} from '@components/text-field'
+import {AccessURLRow} from '@components/url'
+import * as localApi from '@mintter/shared'
+import {Member_Role, SiteConfig, SiteInfo} from '@mintter/shared'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
+import {styled} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {FormEvent, useEffect, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
-import {Member_Role, SiteConfig, SiteInfo} from '@mintter/shared'
-import {styled} from '@stitches/react'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
-import {StyledOverlay, Prompt} from '@components/prompt'
-import {AccessURLRow} from '@components/url'
-
-// const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
-// const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
 export default function Settings({
   updateProfile = localApi.updateProfile,
@@ -90,6 +98,15 @@ export default function Settings({
           >
             Web Sites
           </TabsPrimitive.Trigger>
+          {EXPERIMENTS.nostr && (
+            <TabsPrimitive.Trigger
+              className="tab-trigger"
+              value="nostr"
+              data-testid="tab-nostr"
+            >
+              Nostr
+            </TabsPrimitive.Trigger>
+          )}
         </TabsPrimitive.List>
         <TabsPrimitive.Content
           className="settings-tab-content tab-content"
@@ -133,6 +150,13 @@ export default function Settings({
           data-tauri-drag-region
         >
           <SitesSettings />
+        </TabsPrimitive.Content>
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="nostr"
+          data-tauri-drag-region
+        >
+          <NostrSettings />
         </TabsPrimitive.Content>
       </TabsPrimitive.Root>
     </div>
@@ -615,6 +639,353 @@ function SitesSettings() {
       >
         Add Site
       </Button>
+    </>
+  )
+}
+
+function NostrPubKeyRow({pubId}: {pubId: string}) {
+  return <AccessURLRow url={`nostr://${pubId}`} title={pubId} />
+}
+const VisibilityButton = styled('button', {
+  background: 'white',
+  position: 'absolute',
+  border: '1px solid #fff',
+  //   borderColor: props.active ? '$success-border-normal' : '$base-border-subtle',
+  '&:hover': {
+    borderColor: '$base-text-low',
+  },
+  variants: {
+    active: {
+      true: {
+        borderColor: '$success-border-normal',
+        color: '$success-border-normal',
+        '&:hover': {
+          borderColor: '$success-border-normal',
+        },
+      },
+    },
+  },
+  right: 2,
+  top: 0,
+  bottom: 0,
+  borderRadius: '$2',
+  width: 36,
+  cursor: 'pointer',
+})
+function PrivateField({value}: {value: string}) {
+  const [isHiding, setIsHiding] = useState(true)
+  return (
+    <Box css={{position: 'relative'}}>
+      <Input value={value} type={isHiding ? 'password' : 'text'}></Input>
+      <VisibilityButton
+        onClick={() => {
+          setIsHiding((isH) => !isH)
+        }}
+      >
+        <Icon name="Visibility" />
+      </VisibilityButton>
+    </Box>
+  )
+}
+
+function ResetNostrIdForm({onDone}: {onDone: () => void}) {
+  const setKeyPair = useSetKeyPair({
+    onSuccess: onDone,
+  })
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        const formData = new FormData(e.nativeEvent.target)
+        const key = formData.get('secret_key')?.toString() ?? ''
+        setKeyPair.mutate(key)
+      }}
+    >
+      {setKeyPair.error && (
+        <Text color="danger">{setKeyPair.error.message}</Text>
+      )}
+      <TextField name="secret_key" label="Nostr Secret Key" />
+      <Button type="submit">Set Private Key & Identity</Button>
+    </form>
+  )
+}
+
+export function useResetNostrIdDialog() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  function open() {
+    setIsOpen(true)
+  }
+  return {
+    content: (
+      <DialogPrimitive.Root open={!!isOpen} onOpenChange={setIsOpen}>
+        <DialogPrimitive.Portal>
+          <StyledOverlay />
+          <Prompt.Content>
+            <Prompt.Title>Reset Nostr Identity</Prompt.Title>
+
+            <ResetNostrIdForm onDone={() => setIsOpen(false)} />
+          </Prompt.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    ),
+    open,
+  }
+}
+
+function ResetNostrIdentityButton() {
+  const {open, content} = useResetNostrIdDialog()
+  return (
+    <>
+      {content}
+      <Button
+        type="button"
+        size="2"
+        shape="pill"
+        color="success"
+        data-testid="submit"
+        onClick={open}
+        css={{alignSelf: 'flex-start'}}
+      >
+        Reset Nostr Identity
+      </Button>
+    </>
+  )
+}
+
+function NostrInfo() {
+  const keyPair = useNostrKeypair()
+  return (
+    <SettingsSection title="Key & Identity">
+      <Box css={{marginBottom: '$2'}}>
+        <Text>Private Key</Text>
+        {keyPair.data && <PrivateField value={keyPair.data?.sec} />}
+      </Box>
+      <Box css={{marginBottom: '$2'}}>
+        <Text>Public Key</Text>
+        {keyPair.data && <NostrPubKeyRow pubId={keyPair.data?.pub} />}
+      </Box>
+      <ResetNostrIdentityButton />
+    </SettingsSection>
+  )
+}
+
+function AddRelayForm({onDone}: {onDone: () => void}) {
+  const addRelay = useAddRelay({
+    onSuccess: onDone,
+  })
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        const formData = new FormData(e.nativeEvent.target)
+        const url = formData.get('relay-url')?.toString() ?? ''
+        addRelay.mutate(url)
+      }}
+    >
+      {addRelay.error && <Text color="danger">{addRelay.error.message}</Text>}
+      <TextField name="relay-url" label="Nostr Relay URL" />
+      <Button type="submit">Create Relay</Button>
+    </form>
+  )
+}
+
+export function useAddRelayDialog() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  function open() {
+    setIsOpen(true)
+  }
+  return {
+    content: (
+      <DialogPrimitive.Root open={!!isOpen} onOpenChange={setIsOpen}>
+        <DialogPrimitive.Portal>
+          <StyledOverlay />
+          <Prompt.Content>
+            <Prompt.Title>Add a Nostr Relay</Prompt.Title>
+            <Prompt.Description>
+              Enter the URL of your nostr relay, beginning with wss://
+            </Prompt.Description>
+            <AddRelayForm onDone={() => setIsOpen(false)} />
+          </Prompt.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    ),
+    open,
+  }
+}
+
+function AddRelayButton() {
+  const {open, content} = useAddRelayDialog()
+  return (
+    <>
+      {content}
+      <Button
+        type="button"
+        size="2"
+        shape="pill"
+        color="success"
+        data-testid="submit"
+        onClick={open}
+        css={{alignSelf: 'flex-start'}}
+      >
+        Add Relay
+      </Button>
+    </>
+  )
+}
+function RemoveRelayButton({relay}: {relay: string}) {
+  const removeRelay = useRemoveRelay()
+  return (
+    <Button
+      color="danger"
+      variant="outlined"
+      size="1"
+      onClick={() => {
+        removeRelay.mutate(relay)
+      }}
+    >
+      Remove
+    </Button>
+  )
+}
+function NostrRelays() {
+  const {data} = useNostrRelayList()
+  const addRelay = useAddRelay()
+  return (
+    <SettingsSection title="Relays">
+      {data?.length ? (
+        data.map((relay) => (
+          <div key={relay}>
+            {relay}
+            <RemoveRelayButton relay={relay} />
+          </div>
+        ))
+      ) : (
+        <div>No relays?!</div>
+      )}
+      <AddRelayButton />
+    </SettingsSection>
+  )
+}
+
+function NostrProfileForm({
+  profile,
+  onDone,
+}: {
+  onDone: () => void
+  profile: NostrUserProfile
+}) {
+  const publishProfile = useNostrPublishProfile()
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        const formData = new FormData(e.target)
+        publishProfile
+          .mutateAsync({
+            ...(profile || {}),
+            display_name: formData.get('display_name')?.toString() || '',
+            about: formData.get('about')?.toString() || '',
+          })
+          .then(() => {
+            onDone()
+          })
+          .catch((e) => {
+            console.error('Failed to publish profile', e)
+            toast.error('Failed to publish profile')
+          })
+      }}
+    >
+      <TextField
+        name="display_name"
+        label="Display Name"
+        defaultValue={profile.display_name}
+      />
+      <TextField
+        name="about"
+        label="About"
+        textarea
+        defaultValue={profile.about}
+      />
+      <Button type="submit">Publish Profile Changes</Button>
+    </form>
+  )
+}
+
+export function useChangeProfileDialog() {
+  const [openProfile, setOpenProfile] = useState<false | NostrUserProfile>(
+    false,
+  )
+
+  function open(profile: NostrUserProfile) {
+    setOpenProfile(profile)
+  }
+  return {
+    content: (
+      <DialogPrimitive.Root
+        open={!!openProfile}
+        onOpenChange={() => setOpenProfile(false)}
+      >
+        <DialogPrimitive.Portal>
+          <StyledOverlay />
+          <Prompt.Content>
+            <Prompt.Title>Edit Nostr Profile</Prompt.Title>
+            {openProfile && (
+              <NostrProfileForm
+                profile={openProfile}
+                onDone={() => setOpenProfile(false)}
+              />
+            )}
+          </Prompt.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    ),
+    open,
+  }
+}
+function ChangeProfileButton({profile}: {profile?: NostrUserProfile}) {
+  const {open, content} = useChangeProfileDialog()
+  return (
+    <>
+      {content}
+      <Button
+        type="button"
+        size="2"
+        onClick={() => {
+          if (!profile) throw new Error('profile not loaded yet')
+          open(profile)
+        }}
+        css={{alignSelf: 'flex-start'}}
+      >
+        Edit Profile
+      </Button>
+    </>
+  )
+}
+function NostrProfile() {
+  const profile = useMyNostrProfile()
+  return (
+    <SettingsSection title="Public Profile">
+      <Text css={{fontWeight: 'bold'}}>Display Name</Text>
+      <Text>{profile.data?.display_name}</Text>
+      <Text css={{fontWeight: 'bold'}}>About</Text>
+      <Text>{profile.data?.about}</Text>
+      <ChangeProfileButton profile={profile.data} />
+    </SettingsSection>
+  )
+}
+
+function NostrSettings() {
+  return (
+    <>
+      <SettingsHeader>
+        <h2>Nostr</h2>
+      </SettingsHeader>
+      <NostrProfile />
+      <NostrInfo />
+      <NostrRelays />
     </>
   )
 }

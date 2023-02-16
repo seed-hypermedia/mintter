@@ -13,15 +13,119 @@ import {AccessURLRow} from '@components/url'
 import {usePublicationDialog} from './publication-dialog'
 import {MainActor} from '@app/hooks/main-actor'
 import {WebPublicationRecord} from '@mintter/shared'
+import {EXPERIMENTS} from '@app/utils/experimental'
+import {useNostr} from '@app/utils/nostr'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import {toast} from 'react-hot-toast'
+import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
+import {TextField} from '@components/text-field'
+
+const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
+const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
+
+function NostrPublishButton({
+  onClick,
+  doc,
+}: {
+  onClick: (url: string) => void
+  doc: PublicationActor
+}) {
+  const url = useSelector(doc, (state) => {
+    const {documentId, version} = state.context
+    return getMintterPublicURL(documentId, version)
+  })
+  return (
+    <Button
+      onClick={() => {
+        onClick(url)
+      }}
+    >
+      Share on Nostr
+    </Button>
+  )
+}
+
+function NostrPostForm({
+  onDone,
+  docMainURL,
+}: {
+  onDone: () => void
+  docMainURL: string
+}) {
+  const nostr = useNostr()
+  const [content, setContent] = useState(`${docMainURL} on Mintter`)
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        nostr?.publish(content).then(() => {
+          toast.success('Shared on Nostr.')
+        })
+        onDone()
+      }}
+    >
+      <TextField
+        name="content"
+        textarea
+        value={content}
+        onChange={(e) => {
+          setContent(e.target.value)
+        }}
+      />
+      <Button type="submit">Post</Button>
+    </form>
+  )
+}
+
+const Heading = styled('h2', {
+  margin: 0,
+  fontSize: '$4',
+})
+
+function useNostrPostDialog() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [mainUrl, setMainUrl] = useState('')
+  function open(url: string) {
+    setMainUrl(url)
+    setIsOpen(true)
+  }
+  return {
+    open,
+    content: (
+      <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+        <DialogPrimitive.Portal>
+          <StyledOverlay />
+          <StyledContent>
+            <Heading>Post to Nostr</Heading>
+            <NostrPostForm
+              docMainURL={mainUrl}
+              onDone={() => {
+                setIsOpen(false)
+              }}
+            />
+          </StyledContent>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    ),
+  }
+}
+
+const forceProductionURL = true
+
+function getMintterPublicURL(docId: string, version: string) {
+  return `${
+    isProduction || forceProductionURL
+      ? MINTTER_GATEWAY_URL
+      : 'http://localhost:3000'
+  }/p/${docId}/${version}`
+}
 
 function MintterURLRow({doc}: {doc: PublicationActor}) {
   const {title, url} = useSelector(doc, (state) => {
     const {documentId, version} = state.context
     return {
       title: `mintter.com/p/${documentId}/${version}`,
-      url: `${
-        isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
-      }/p/${documentId}/${version}`,
+      url: getMintterPublicURL(documentId, version),
     }
   })
   return <AccessURLRow url={url} title={title} />
@@ -100,6 +204,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const [isOpen, setIsOpen] = useState(false)
   const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
   const publicationDialog = usePublicationDialog(mainActor)
+  const nostrPostDialog = useNostrPostDialog()
   const publications = useDocPublications(docId)
 
   if (!isDraft && !isPublic && !isPublicB) return null
@@ -119,7 +224,6 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
           <button
             onClick={(e) => {
               e.preventDefault()
-              console.log('PUBLISH??', mainActor)
               if (isOpen) {
                 setIsOpen(false)
                 return
@@ -183,11 +287,21 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
                   publicationDialog.open(hostname)
                 }}
               />
+              {EXPERIMENTS.nostr && (
+                <>
+                  <Subheading>Nostr Network</Subheading>
+                  <NostrPublishButton
+                    doc={mainActor.actor as PublicationActor}
+                    onClick={nostrPostDialog.open}
+                  />
+                </>
+              )}
             </Box>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
       {publicationDialog.content}
+      {nostrPostDialog.content}
     </>
   )
 }

@@ -1,0 +1,1 @@
+export {formattedDate} from './date'
