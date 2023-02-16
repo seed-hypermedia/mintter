@@ -194,16 +194,16 @@ export default function PublicationPage({
                 {resizablePanelState.context.visible &&
                   !!state.context.publication && (
                     <Allotment.Pane preferredSize="35%">
-                      <section className="discussion-section">
-                        <ScrollArea
-                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                        >
-                          <Conversations
-                            publication={state.context.publication}
-                            visible={resizablePanelState.context.visible}
-                          />
-                        </ScrollArea>
-                      </section>
+                      {/* <section className="discussion-section"> */}
+                      <ScrollArea
+                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                      >
+                        <Conversations
+                          publication={state.context.publication}
+                          visible={resizablePanelState.context.visible}
+                        />
+                      </ScrollArea>
+                      {/* </section> */}
                     </Allotment.Pane>
                   )}
               </Allotment>

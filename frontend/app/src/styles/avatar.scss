@@ -5,6 +5,7 @@
   height: var(--avatar-size);
   text-align: center;
   width: var(--avatar-size);
+  overflow: hidden;
 
   .initials {
     text-transform: capitalize;

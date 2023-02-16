@@ -29,7 +29,9 @@ export type ConversationsContext = {
 
 let conversationsContext = createContext<ConversationsContext>({
   conversations: null,
-  onConversationsOpen: () => {},
+  onConversationsOpen: () => {
+    //noop
+  },
   documentId: undefined,
   blocks: {},
   clientSelectors: {},

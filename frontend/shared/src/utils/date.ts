@@ -1,5 +1,4 @@
-import {EditorDocument} from '../draft-machine'
-import type {Document} from '@mintter/shared'
+import type {Document} from '../client'
 import {Timestamp} from '@bufbuild/protobuf'
 
 type KeyOfType<T, U> = {
@@ -25,19 +24,6 @@ var months = [
   'Nov',
   'Dec',
 ]
-
-export function getDateFormat(
-  document: EditorDocument | Document | undefined,
-  key: DateKeys,
-) {
-  if (!document) return ''
-
-  var date = new Date(document[key])
-
-  return `${
-    months[date.getMonth()]
-  } ${date.getDate()}, ${date.getFullYear()} at ${date.getHours()}:${date.getMinutes()}`
-}
 
 export function formattedDate(value: Timestamp) {
   let _value = value.toDate()

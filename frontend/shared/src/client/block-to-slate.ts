@@ -213,7 +213,6 @@ export function blockToSlate(blk: Block): FlowContent {
         leaf['color'] = l.attributes.color
       }
       if (l.type == 'conversation') {
-
         if (leaf && Array.isArray(leaf.conversations)) {
           if (!leaf.conversations.includes(l.attributes.conversationId)) {
             leaf!['conversations'].push(l.attributes.conversationId)
@@ -329,7 +328,7 @@ type childrenType = 'group' | 'unorderedList' | 'orderedList'
 export function blockNodeToSlate(
   entry: Array<BlockNode>,
   childrenType: childrenType = 'group',
-  start: string = '1',
+  start?: string,
 ): GroupingContent {
   let fn =
     childrenType === 'orderedList'
