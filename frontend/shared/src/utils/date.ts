@@ -25,8 +25,12 @@ var months = [
   'Dec',
 ]
 
-export function formattedDate(value: Timestamp) {
-  let _value = value.toDate()
+export function formattedDate(value: string | Date | Timestamp) {
+  let _value =
+    typeof value == 'string' ||
+    (value instanceof Date && !isNaN(value.valueOf()))
+      ? value
+      : (value as Timestamp).toDate()
 
   var now = new Date()
   var date = new Date(_value)
