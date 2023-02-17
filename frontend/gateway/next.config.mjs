@@ -4,8 +4,8 @@
 export default {
   // Append the default value with md extensions
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
-  reactStrictMode: true,
-  swcMinify: true,
+  // reactStrictMode: true,
+  // swcMinify: true,
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
