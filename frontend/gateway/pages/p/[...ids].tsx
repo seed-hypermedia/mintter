@@ -1,6 +1,6 @@
 import {getPublication, Publication} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
-import {GetServerSideProps} from 'next'
+import {GetServerSidePropsContext, GetServerSidePropsResult} from 'next'
 import {useRouter} from 'next/router'
 import {transport} from '../../client'
 import {PublicationPlaceholder} from '../../publication-placeholder'
@@ -15,14 +15,34 @@ export default function CIDPublicationPage({
   return <PublicationPage publication={publication} />
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const [documentId, version] = context.params?.ids || []
-  const publication = await getPublication(documentId, version)
+export const getServerSideProps = async ({
+  params,
+  res,
+}: GetServerSidePropsContext) => {
+  const [documentId, version] = params?.ids || []
+  res.setHeader(
+    'Cache-Control',
+    `public, s-maxage=${
+      version ? '2592000, stale-while-revalidate=3599' : '86400'
+    }`,
+  )
+
+  const publication = await getPublication(documentId, version, transport)
+
+  if (!publication) {
+    return {
+      notFound: true,
+    }
+  }
   return {
     props: {
       publication: publication.toJson(),
     },
   }
+}
+
+export const config = {
+  runtime: 'nodejs',
 }
 
 // export default function CIDPublicationPage() {
