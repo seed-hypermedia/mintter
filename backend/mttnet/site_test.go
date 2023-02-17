@@ -3,10 +3,20 @@ package mttnet
 import (
 	"context"
 	"mintter/backend/config"
+	"mintter/backend/core/coretest"
+	documents "mintter/backend/genproto/documents/v1alpha"
+	siteproto "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/pkg/future"
+	"mintter/backend/pkg/must"
+	"mintter/backend/vcs/mttacc"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
-	"golang.org/x/sync/errgroup"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestLocalPublish(t *testing.T) {
@@ -18,41 +28,156 @@ func TestLocalPublish(t *testing.T) {
 	defer stopSite()
 }
 
-func TestRemotePublish(t *testing.T) {
+func TestGenerateToken(t *testing.T) {
 	t.Skip("not ready yet")
 	t.Parallel()
-	owner, stopowner := makeTestPeer(t, "alice")
+	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
+	owner, ok := ownerSrv.Node.Get()
+	require.True(t, ok)
 	defer stopowner()
 
-	//editor, stopeditor := makeTestPeer(t, "bob")
-	//defer stopeditor()
+	editorSrv, _, stopeditor := makeTestSrv(t, "bob")
+
+	require.True(t, ok)
+	defer stopeditor()
 
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
 
 	cfg.Site.OwnerID = owner.accountObjectID.String()
-	site, stopSite := makeTestPeer(t, "carol", cfg.Site)
+	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
+	site, ok := siteSrv.Node.Get()
+	require.True(t, ok)
 	defer stopSite()
 
+	docSrv.SetSiteAccount(site.accountObjectID.String())
+
+	owner2Srv, _, stopowner2 := makeTestSrv(t, "alice-2")
+	require.True(t, ok)
+	defer stopowner2()
+
 	ctx := context.Background()
+	tsFuture := time.Now().Add(48 * time.Hour).Unix()
+	_, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_EDITOR,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
+	})
+	require.Error(t, err)
 
-	checkExchange := func(t *testing.T, a, b *Node) {
-		acc, err := a.AccountForDevice(ctx, b.me.DeviceKey().CID())
-		require.NoError(t, err)
-		require.Equal(t, b.me.AccountID().String(), acc.String())
-	}
+	_, err = siteSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_EDITOR,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
+	})
+	require.Error(t, err)
 
-	g, ctx := errgroup.WithContext(ctx)
+	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
+	header := metadata.New(map[string]string{MttHeader: cfg.Site.Hostname})
+	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
+	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_EDITOR,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
+	})
+	require.NoError(t, err)
+	require.Equal(t, tsFuture, token.ExpireTime.Seconds)
 
-	g.Go(func() error {
-		require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-		checkExchange(t, site, owner)
-		checkExchange(t, owner, site)
-		return nil
+	tsPast := time.Now().Add(-48 * time.Hour).Unix()
+	_, err = ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_EDITOR,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsPast},
+	})
+	require.Error(t, err)
+
+	_, err = ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_OWNER,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
+	})
+	require.Error(t, err)
+
+	_, err = ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_ROLE_UNSPECIFIED,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
+	})
+	require.Error(t, err)
+
+	_, err = editorSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_EDITOR,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
+	})
+	require.Error(t, err)
+
+	_, err = owner2Srv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_EDITOR,
+		ExpireTime: &timestamppb.Timestamp{Seconds: tsFuture},
+	})
+	require.Error(t, err)
+}
+
+func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *simulatedDocs, context.CancelFunc) {
+	u := coretest.NewTester(name)
+
+	db := makeTestSQLite(t)
+
+	hvcs := vcsdb.New(db)
+
+	conn, release, err := hvcs.Conn(context.Background())
+	require.NoError(t, err)
+	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	release()
+	require.NoError(t, err)
+
+	cfg := config.Default().P2P
+	cfg.Port = 0
+	cfg.NoRelay = true
+	cfg.BootstrapPeers = nil
+	cfg.NoMetrics = true
+
+	n, err := New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
+	require.NoError(t, err)
+
+	errc := make(chan error, 1)
+	ctx, cancel := context.WithCancel(context.Background())
+	f := future.New[*Node]()
+	docsSrv := newSimulatedDocs(&siteproto.Publication{}, "")
+	srv := NewServer(ctx, config.Default().Site, f.ReadOnly, docsSrv)
+	require.NoError(t, f.Resolve(n))
+
+	go func() {
+		errc <- n.Start(ctx)
+	}()
+
+	t.Cleanup(func() {
+		require.NoError(t, <-errc)
 	})
 
-	require.NoError(t, g.Wait())
+	select {
+	case <-n.Ready():
+	case err := <-errc:
+		require.NoError(t, err)
+	}
 
-	require.NoError(t, owner.Connect(ctx, site.AddrInfo()), "connecting twice must not fail")
+	return srv, docsSrv, cancel
+}
 
+type simulatedDocs struct {
+	siteAccount string
+	publication *siteproto.Publication
+}
+
+func newSimulatedDocs(pub *siteproto.Publication, siteAccount string) *simulatedDocs {
+	return &simulatedDocs{
+		siteAccount: siteAccount,
+		publication: pub,
+	}
+}
+
+func (s *simulatedDocs) SetSiteAccount(acc string) {
+	s.siteAccount = acc
+}
+
+func (s *simulatedDocs) GetPublication(ctx context.Context, in *siteproto.GetPublicationRequest) (*siteproto.Publication, error) {
+	return s.publication, nil
+}
+
+func (s *simulatedDocs) GetSiteAccount(hostname string) (string, error) {
+	return s.siteAccount, nil
 }
