@@ -575,9 +575,9 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	}
 	devices, found := all[siteAccountID]
 	if !found {
-		return nil, fmt.Errorf("couldn't find account %s", siteAccount)
+		return nil, fmt.Errorf("couldn't find devices information of the account %s. Please connect to the remote peer first ", siteAccount)
 	}
-	remoteHostname, err := getRemoteSiteFromHeader(ctx)
+	remoteHostname, _ := getRemoteSiteFromHeader(ctx)
 	ctx = metadata.AppendToOutgoingContext(ctx, MttHeader, remoteHostname)
 	for _, deviceID := range devices {
 		sitec, err := srv.Client(ctx, deviceID)
