@@ -197,8 +197,8 @@ var migrations = []string{
 	CREATE INDEX content_links_by_source ON content_links (source_document_id, source_block_id);`,
 
 	// Stores Lightning wallets both externals (imported wallets like bluewallet
-	`-- based on lndhub) and internals (based on the LND embedded node).
-	CREATE TABLE wallets (
+	// based on lndhub) and internals (based on the LND embedded node).
+	`CREATE TABLE wallets (
 		-- Wallet unique ID. Is the connection uri hash.
 		id TEXT PRIMARY KEY,
 		-- The type of the wallet.
@@ -209,7 +209,7 @@ var migrations = []string{
 		-- The login to access the wallet. Login in case lndhub and the macaroon 
 		-- bytes in case lnd.
 		login BLOB NOT NULL,
-		-- The password to access the wallet. Passphrase in case of lndhub and the encrytion 
+		-- The password to access the wallet. Passphrase in case of lndhub and the encryption 
 		-- key to unlock the internal wallet in case of LND.
 		password BLOB NOT NULL,
 		-- The Authentication token of the wallet. api token in case of lndhub
@@ -218,5 +218,67 @@ var migrations = []string{
 		name TEXT NOT NULL,
 		-- The balance in satoshis
 		balance INTEGER DEFAULT 0
+	);`,
+
+	// Stores sites that user has manually added
+	`CREATE TABLE sites (
+		-- Site unique identification. The hostname of the site with protocol https://example.com
+		hostname TEXT PRIMARY KEY,
+		-- The role we play in the site ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
+		role INT NOT NULL DEFAULT 0,
+		-- Address of the LND node backing up this wallet. In case lndhub, this will be the 
+		-- P2P addresses to connect to that site in the format of multiaddresses. Space separated.
+		addresses TEXT NOT NULL,
+		-- The account ID of the site. We need a previous connection to the site so the 
+		-- actual account is inserted in the accounts table when handshake.
+		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL
+	) WITHOUT ROWID;`,
+
+	// Table that stores all the tokens not yet redeemed inside a site. Although this table is relevant only
+	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+	`CREATE TABLE unredeemed_invite_links (
+		-- Unique token identification. Random 8 char words
+		token TEXT PRIMARY KEY,
+		-- The role the token will allow ROLE_UNSPECIFIED = 0 OWNER = 1 EDITOR = 2
+		role INT NOT NULL DEFAULT 2,
+		-- Timestamp since the token will no longer be eligible to be redeemed. Seconds since  Jan 1, 1970
+		expiration_time INTEGER NOT NULL CHECK (expiration_time > 0)
+	) WITHOUT ROWID;`,
+
+	// Table that stores the role each account has inside a site. Although this table is relevant only
+	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+	`CREATE TABLE redeemed_invite_links (
+		-- The account id that has been linked to a role on this site
+		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL PRIMARY KEY,
+		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
+		role INT NOT NULL
+	) WITHOUT ROWID;`,
+
+	// Stores all the records published on this site. Although this table is relevant only
+	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+	`CREATE TABLE web_publication_records (
+		-- Unique identifier
+		id INTEGER PRIMARY KEY,
+		-- doc id of the base document published. Not its references.
+		document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		-- doc version of the base document published. Not its references.
+		document_version TEXT NOT NULL,
+		-- Path this publication is published. If NULL then its not pinned. If / is root document.
+		path TEXT
+		
+	);`,
+
+	// Stores all the references a published record has. When the user publishes a document it may contain
+	// links and transcluded documents. Those documents must be stored as well to properly render the base document.
+	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+	`CREATE TABLE web_publication_references (
+		-- Unique identifier
+		id INTEGER PRIMARY KEY,
+		-- doc id of the referenced document.
+		document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		-- doc version of the reference document.
+		document_version TEXT NOT NULL,
+		-- the published document this document is referenced in.
+		source_document_id INTEGER REFERENCES web_publication_records(id) ON DELETE CASCADE NOT NULL
 	);`,
 }
