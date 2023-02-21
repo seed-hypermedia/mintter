@@ -183,7 +183,6 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		if n != nil {
 			close(n.registered)
 		}
-
 	}()
 	return srv
 }
