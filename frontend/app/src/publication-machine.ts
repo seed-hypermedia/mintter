@@ -41,7 +41,7 @@ export type PublicationMachineEvent =
   | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
   | {type: 'DISCUSSION.SHOW'}
   | {type: 'DISCUSSION.HIDE'}
-  | {type: 'DISCUSSION.TOGGLE'}
+  | {type: 'CONVERSATIONS.TOGGLE'}
   | {type: 'FILE.DELETE.OPEN'}
   | {type: 'FILE.DELETE.CLOSE'}
   | {type: 'FILE.DELETE.CANCEL'}
