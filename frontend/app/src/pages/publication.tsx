@@ -35,6 +35,7 @@ export default function PublicationPage({
   publicationActor: PublicationActor
 }) {
   let [, params] = useRoute('/p/:id/:version/:block?')
+  const [highlights, setHighlights] = useState<Array<string>>([])
 
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
@@ -64,6 +65,24 @@ export default function PublicationPage({
       isSubscribed = false
     }
   })
+
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    listen<{conversations: Array<string>}>('selector_click', (event) => {
+      console.log('🚀 ~ file: publication.tsx:85 ~ useEffect ~ event:', event)
+      panelSend('CONVERSATIONS.OPEN')
+      setHighlights(event.payload.conversations)
+      // if (resizablePanelState.context.visible) {
+      //   setHighlights(event.payload.conversations)
+      // } else {
+      //   panelSend('CONVERSATIONS.OPEN')
+      //   setHighlights(event.payload.conversations)
+      // }
+    }).then((f) => (unlisten = f))
+
+    return () => unlisten?.()
+  }, [])
 
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
   let [state, send] = useActor(publicationActor)
@@ -106,7 +125,7 @@ export default function PublicationPage({
         documentId={params?.id}
         onConversationsOpen={(conversations: string[]) => {
           panelSend({
-            type: 'DISCUSSION.HIGHLIGHT.CONVERSATIONS',
+            type: 'CONVERSATIONS.HIGHLIGHT.CONVERSATIONS',
             conversations,
           })
         }}
@@ -163,7 +182,7 @@ export default function PublicationPage({
                               <button
                                 className="discussion-button"
                                 onClick={() => {
-                                  panelSend('DISCUSSION.TOGGLE')
+                                  panelSend('CONVERSATIONS.TOGGLE')
                                   mouseService.send('DISABLE.WINDOW.RESIZE')
                                 }}
                               >
@@ -198,10 +217,7 @@ export default function PublicationPage({
                       <ScrollArea
                         onScroll={() => mouseService.send('DISABLE.SCROLL')}
                       >
-                        <Conversations
-                          publication={state.context.publication}
-                          visible={resizablePanelState.context.visible}
-                        />
+                        <Conversations highlights={highlights} />
                       </ScrollArea>
                       {/* </section> */}
                     </Allotment.Pane>
@@ -277,8 +293,12 @@ type ResizablePanelMachineContext = {
 }
 
 type ResizablePanelMachineEvent =
-  | {type: 'DISCUSSION.TOGGLE'}
-  | {type: 'DISCUSSION.HIGHLIGHT.CONVERSATIONS'; conversations: Array<string>}
+  | {type: 'CONVERSATIONS.TOGGLE'}
+  | {type: 'CONVERSATIONS.OPEN'}
+  | {
+      type: 'CONVERSATIONS.HIGHLIGHT.CONVERSATIONS'
+      conversations: Array<string>
+    }
   | {type: 'RESIZE'; values: Array<number>}
 
 type ResizablePanelMachineServices = {
@@ -299,14 +319,17 @@ let resizablePanelMachine =
         services: {} as ResizablePanelMachineServices,
       },
       on: {
-        'DISCUSSION.TOGGLE': {
+        'CONVERSATIONS.TOGGLE': {
           actions: 'toggleVisibility',
         },
-        'DISCUSSION.HIGHLIGHT.CONVERSATIONS': {
+        'CONVERSATIONS.HIGHLIGHT.CONVERSATIONS': {
           actions: 'setHighlightConversations',
         },
         RESIZE: {
           actions: 'updateHandlePosition',
+        },
+        'CONVERSATIONS.OPEN': {
+          actions: ['openPanel'],
         },
       },
       id: 'resizable-panel',
@@ -326,6 +349,9 @@ let resizablePanelMachine =
           context.highlightConversations = event.conversations
           context.visible = true
         },
+        openPanel: assign({
+          visible: (c) => (!c.visible ? true : c.visible),
+        }),
       },
     },
   )

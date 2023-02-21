@@ -29,13 +29,20 @@ import {
   formattedDate,
 } from '@mintter/shared'
 import {UseQueryResult} from '@tanstack/react-query'
+import {listen} from '@tauri-apps/api/event'
 import {appWindow} from '@tauri-apps/api/window'
 import {Event} from 'nostr-relaypool/event'
-import {FormEvent, useEffect, useMemo, useState} from 'react'
+import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 
-export function Conversations() {
+export function Conversations({highlights = []}: {highlights: Array<string>}) {
   const context = useConversations()
+
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    return () => unlisten?.()
+  }, [])
 
   const {documentId, conversations} = context
   const nostrPosts = useNostrPostsOnDoc(documentId)
@@ -94,6 +101,7 @@ export function Conversations() {
         {documentId
           ? data?.map((conversation) => (
               <ConversationItem
+                isHighlighted={highlights.includes(conversation.id)}
                 key={conversation.id}
                 conversation={conversation}
               />
@@ -104,17 +112,34 @@ export function Conversations() {
   )
 }
 
-function ConversationItem({conversation}: {conversation: Conversation}) {
+function ConversationItem({
+  conversation,
+  isHighlighted = false,
+}: {
+  conversation: Conversation
+  isHighlighted: boolean
+}) {
+  let elRef = useRef<HTMLDivElement>(null)
   let context = useConversations()
   let [firstComment, ...comments] = conversation.comments
 
+  useEffect(() => {
+    // setTimeout(() => {
+    if (!elRef.current) return
+
+    elRef.current.scrollIntoView({behavior: 'smooth'})
+    // }, 500)
+  }, [isHighlighted])
+
   return (
     <Box
+      ref={elRef}
       css={{
         borderBottom: '1px solid rgba(0,0,0,0.1)',
         transition: 'all 150ms ease',
         paddingBlock: '$5',
         paddingLeft: 60,
+        backgroundColor: isHighlighted ? '$highlight-surface1' : 'transparent',
         '&:hover': {
           backgroundColor: '$base-background-subtle',
         },

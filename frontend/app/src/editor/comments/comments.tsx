@@ -3,6 +3,8 @@ import {EditorPlugin} from '@app/editor/types'
 import {isParagraph} from '@mintter/shared'
 import {Range} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {appWindow} from '@tauri-apps/api/window'
+import {MouseEventHandler} from 'react'
 
 const MARK_CONVERSATIONS = 'conversations'
 
@@ -14,8 +16,15 @@ export function createCommentsPlugin(): EditorPlugin {
       () =>
       ({attributes, children, leaf}) => {
         if (typeof leaf.conversations !== 'undefined' && leaf.text) {
+          function emitSelectorClick(e) {
+            e.preventDefault()
+            appWindow.emit('selector_click', {
+              conversations: leaf.conversations,
+            })
+          }
           return (
             <span
+              onClick={emitSelectorClick}
               style={
                 leaf.conversations.length >= 3
                   ? {
