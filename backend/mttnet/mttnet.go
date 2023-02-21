@@ -331,7 +331,7 @@ func (n *Node) Start(ctx context.Context) (err error) {
 			case <-n.registered:
 				return n.grpc.Serve(lis)
 			case <-ctx.Done():
-				return ctx.Err()
+				return nil
 			}
 		})
 
