@@ -496,7 +496,6 @@ export function useBlockFlash(ref: any, id: string) {
     setTimeout(() => {
       if (ref.current) {
         if (match && params?.block == id) {
-          console.log('done')
           setActive(true)
         }
       }
