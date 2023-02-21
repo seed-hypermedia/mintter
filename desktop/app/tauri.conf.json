@@ -89,7 +89,7 @@
         "default-src": "'none'",
         "script-src": "'unsafe-eval'",
         "style-src": "'self' 'unsafe-inline'",
-        "connect-src": "'self' http://localhost:55001",
+        "connect-src": "'self' http://localhost:55001 wss://*",
         "img-src": "https:",
         "media-src": "https:",
         "frame-src": "https:",
