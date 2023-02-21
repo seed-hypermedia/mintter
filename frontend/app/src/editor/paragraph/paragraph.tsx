@@ -4,14 +4,16 @@ import {useDrag, useDragToPath} from '@app/drag-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
 import {
+  FlowContent,
   isBlockquote,
   isCode,
+  isFlowContent,
   isParagraph,
   isPhrasingContent,
   Paragraph as ParagraphType,
 } from '@mintter/shared'
 import {useEffect, useMemo, useRef} from 'react'
-import {Node, Path, Transforms} from 'slate'
+import {Editor, Node, Path, Transforms} from 'slate'
 import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
@@ -68,13 +70,14 @@ function Paragraph({
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
   let editor = useSlate()
   let {elementProps, parentNode, parentPath} = usePhrasingProps(editor, element)
-
+// dragProps
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
     ref: mergeRefs([attributes.ref, pRef]),
   }
   useBlockObserve(mode, pRef)
   let mouseService = useMouse();
+  let dragService = useDrag();
 
   let mouseProps =
     mode != EditorMode.Discussion
@@ -90,6 +93,30 @@ function Paragraph({
           },
         }
       : {}
+
+    const onDragOver = (e: React.DragEvent) => {
+      e.preventDefault()
+      // const domNode = ReactEditor.toDOMNode(editor, element)
+      const path = ReactEditor.findPath(editor, element)
+
+      const parentBlock = Editor.above<FlowContent>(editor, {
+        match: isFlowContent,
+        mode: 'lowest',
+        at: path,
+      })
+
+      if (parentBlock) {
+        const [node, ancestorPath] = parentBlock;
+
+        const domNode = ReactEditor.toDOMNode(editor, node)
+
+        dragService?.send({
+          type: 'DRAG.OVER',
+          toPath: ancestorPath,
+          element: domNode as HTMLLIElement,
+        })
+      }
+    }
 
   if (mode == EditorMode.Embed) {
     return (
@@ -133,6 +160,8 @@ function Paragraph({
       {...elementProps}
       {...mouseProps}
       {...otherProps}
+      // {...dragProps}
+      onDragOver={onDragOver}
     >
       {children}
     </p>

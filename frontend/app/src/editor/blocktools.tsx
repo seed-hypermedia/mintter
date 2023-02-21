@@ -35,7 +35,6 @@ import {
   Fragment,
   MouseEvent,
   ReactNode,
-  useEffect,
   useMemo,
   useState,
 } from 'react'
@@ -63,11 +62,11 @@ function DraftBlocktools(props: BlockData) {
     const [node, fromPath] = element as NodeEntry<FlowContent>
     const domNode = ReactEditor.toDOMNode(editor, node)
 
-    if (fromPath && dragService && target) {
+    if (fromPath && dragService && domNode) {
       mouseService.send('DISABLE.DRAG.START')
       dragService.send({
         type: 'DRAG.START',
-        fromPath: fromPath,
+        fromPath,
         element: domNode as HTMLLIElement,
       })
     }

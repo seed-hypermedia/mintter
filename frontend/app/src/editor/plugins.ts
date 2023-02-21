@@ -75,6 +75,7 @@ export const plugins: EditorPlugin[] = [
   {
     name: 'log',
     configureEditor: (editor) => {
+      // console.log(editor.children)
       const {apply} = editor
       editor.apply = (operation) => {
         console.log(operation)

@@ -237,8 +237,6 @@ function Statement({
 }: RenderElementProps & {mode: EditorMode}) {
   let {blockProps} = useBlockProps(element)
 
-  let inRoute = useBlockFlash(attributes.ref, element.id)
-
   if (mode == EditorMode.Embed) {
     return (
       <span {...attributes} {...blockProps}>
@@ -251,7 +249,6 @@ function Statement({
     <ElementDrag
       element={element}
       attributes={attributes}
-      mode={mode}
     >
       {children}
       <span contentEditable={false}>

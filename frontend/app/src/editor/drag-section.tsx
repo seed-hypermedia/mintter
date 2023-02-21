@@ -1,8 +1,10 @@
 import { useDrag } from '@app/drag-context';
 import { dragMachine } from '@app/drag-machine';
-import { useState } from 'react';
-import { Editor, Transforms, Element as SlateElement } from 'slate';
-import { ReactEditor, useSlate } from 'slate-react';
+import { useMouse } from '@app/mouse-context';
+import { FlowContent } from '@mintter/shared';
+import React from 'react';
+import { Editor, Transforms, Element as SlateElement, Node } from 'slate';
+import { ReactEditor, RenderElementProps, useSlate } from 'slate-react';
 import { BlockTools } from './blocktools';
 import { useBlockProps } from './editor-node-props';
 import { useBlockFlash } from './utils';
@@ -13,13 +15,14 @@ const ElementDrag = ({
     children,
     element,
     attributes,
-    mode,
-}) => {
+}: RenderElementProps) => {
     const editor = useSlate();
     let dragService = useDrag();
+    let mouseService = useMouse();
   
-    const onDrop = (e: DragEvent) => {
+    const onDrop = (e: React.DragEvent<HTMLLIElement>) => {
       e.preventDefault();
+      mouseService.send('DISABLE.DRAG.END')
       dragService?.send({
         type: 'DROPPED',
         editor: editor,
@@ -28,16 +31,27 @@ const ElementDrag = ({
       e.dataTransfer?.clearData();
     };
 
-    const onDragOver = (e) => {
-      e.preventDefault()
-      // const childPath = ReactEditor.findPath(editor, element)
-      // const toPath = Path.parent(childPath)
-      dragService?.send({
-        type: 'DRAG.OVER',
-        toPath: ReactEditor.findPath(editor, element),
-        element: e.target as HTMLLIElement,
-      })
-    }
+    // const onDragOver = (e: React.DragEvent<HTMLLIElement>) => {
+    //   // e.preventDefault()
+    //   const domNode = ReactEditor.toDOMNode(editor, element)
+    //   // console.log(domNode);
+    //   // const target = ReactEditor.toSlateNode(editor, e.target);
+    //   // let targetPath = ReactEditor.findPath(editor, target);
+    //   // console.log(Node.parent(target, targetPath))
+    //   // if (targetPath.length > 2) {
+    //   //   console.log(targetPath);
+    //   //   targetPath = targetPath.slice(0, 2);
+    //   //   console.log(targetPath);
+    //   // }
+    //   // console.log(ReactEditor.findPath(editor, target));
+    //   dragService?.send({
+    //     type: 'DRAG.OVER',
+    //     toPath: ReactEditor.findPath(editor, element),
+    //     // toPath: ReactEditor.findPath(editor, target),
+    //     element: domNode as HTMLLIElement,
+    //     // element: e.target as HTMLLIElement,
+    //   })
+    // }
 
     let {blockProps} = useBlockProps(element)
 
@@ -49,12 +63,10 @@ const ElementDrag = ({
           {...blockProps}
           className={inRoute ? 'flash' : undefined}
           onDrop={onDrop}
-          onDragOver={onDragOver}
+          // onDragEnter={onDragOver}
         >
-          <BlockTools block={element} />
-          <div>
-            {children}
-          </div>
+          <BlockTools block={element as FlowContent} />
+          {children}
         </li>
     )
 }

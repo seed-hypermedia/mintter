@@ -2,9 +2,8 @@
 import {ScrollArea} from '@app/components/scroll-area'
 import {DraftActor} from '@app/draft-machine'
 import {DragProvider} from '@app/drag-context'
-import {dragMachine} from '@app/drag-machine'
+import {createDragMachine} from '@app/drag-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
 import {MouseProvider} from '@app/mouse-context'
@@ -17,14 +16,7 @@ import {ChildrenOf, Document} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {
-  Editor as SlateEditor,
-  Path,
-  Transforms,
-  Node,
-  NodeEntry,
-  Descendant,
-} from 'slate'
+import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 
 type DraftPageProps = {
@@ -35,7 +27,7 @@ type DraftPageProps = {
 export default function DraftPage({draftActor, editor}: DraftPageProps) {
   const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
-  let dragService = useInterpret(() => dragMachine)
+  let dragService = useInterpret(() => createDragMachine(editor))
   // @ts-ignore
   window.mouseService = mouseService
 

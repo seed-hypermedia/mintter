@@ -72,8 +72,22 @@ export function usePhrasingProps(
         : undefined,
     }
 
+    // let dragProps = {
+    //   onDragOver: (e: React.DragEvent) => {
+    //     e.preventDefault()
+    //     const domNode = ReactEditor.toDOMNode(editor, element)
+    //     console.log(parentBlock?.[1])
+    //     dragService?.send({
+    //       type: 'DRAG.OVER',
+    //       toPath: parentBlock?.[1],
+    //       element: domNode as HTMLLIElement,
+    //     })
+    //   },
+    // }
+
     return {
       elementProps,
+      // dragProps,
       parentNode: parentBlock?.[0],
       parentPath: parentBlock?.[1],
     }

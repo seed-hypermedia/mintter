@@ -32,7 +32,7 @@ li::marker {
   }
 }
 
-[data-action='dragged'] {
+[data-action='dragged-over'] {
   &::after {
     content: "";
     position: absolute;
