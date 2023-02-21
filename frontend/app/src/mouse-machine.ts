@@ -81,6 +81,7 @@ export var mouseMachine =
               },
             },
             ready: {
+              entry: (C, E) => console.log('IM IN THE READY STATE', C, E),
               on: {
                 'MOUSE.MOVE': [
                   {
@@ -198,7 +199,9 @@ export var mouseMachine =
           },
         }),
         assignObserver: assign({
-          observer: (_, event) => event.observer,
+          observer: (_, event) => {
+            return event.observer
+          },
         }),
         assignCurrentBound: assign((context, event) => {
           let currentBound = context.visibleBounds.find(([, rect]) =>

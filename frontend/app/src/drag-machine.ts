@@ -1,9 +1,12 @@
+import {Empty} from '@bufbuild/protobuf'
+import {FlowContent} from './../../shared/src/mttast/types'
 import {isFlowContent} from '@mintter/shared'
 import React from 'react'
 import {Editor, Path, Transforms, Element as SlateElement, Node} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {assign, createMachine, send} from 'xstate'
+import {assign, createMachine, actions} from 'xstate'
 
+let {send} = actions
 type DragContext = {
   editor: Editor
   dragOverRef: HTMLLIElement | null
@@ -16,6 +19,7 @@ type DragEvent =
   | {type: 'DRAG.START'; fromPath: Path; element: HTMLLIElement}
   | {type: 'DROPPED'; editor: Editor}
   | {type: 'DRAG.OVER'; toPath: Path; element: HTMLLIElement}
+  | {type: 'DRAGGING.OFF'}
 
 export const createDragMachine = (editor: Editor) => {
   return createMachine(
@@ -33,11 +37,21 @@ export const createDragMachine = (editor: Editor) => {
       id: 'drag-machine',
       description: 'empty',
       initial: 'inactive',
+      on: {
+        'DRAGGING.OFF': {
+          actions: ['setDraggingOff'],
+        },
+      },
       states: {
         inactive: {
           on: {
             'DRAG.START': {
-              actions: ['deselectEditor', 'setFromPath', 'setDragRef'],
+              actions: [
+                'deselectEditor',
+                'startDrag',
+                'setFromPath',
+                'setDragRef',
+              ],
               target: 'active',
             },
           },
@@ -46,7 +60,7 @@ export const createDragMachine = (editor: Editor) => {
         active: {
           on: {
             DROPPED: {
-              actions: ['performMove'],
+              actions: ['performMove', 'stopDrag'],
               target: 'inactive',
             },
             'DRAG.OVER': {
@@ -65,6 +79,14 @@ export const createDragMachine = (editor: Editor) => {
         // }),
         deselectEditor: (context) => {
           ReactEditor.deselect(context.editor)
+        },
+        startDrag: (context) => {
+          context.editor.dragging = true
+        },
+        stopDrag: send({type: 'DRAGGING.OFF'}, {delay: 1000}),
+        setDraggingOff: (context) => {
+          console.log('dragging off')
+          context.editor.dragging = false
         },
         setDragOverRef: assign({
           dragOverRef: (context, event) => {
@@ -117,7 +139,9 @@ export const createDragMachine = (editor: Editor) => {
           fromPath: null,
           toPath: null,
         }),
-        performMove: (context, event) => {
+        performMove: (props) => {
+          const {context, event} = props
+          console.log('DRAGGING PERFORM', props)
           const {fromPath, toPath, dragOverRef, editor} = context
           // console.log(dragOverRef)
           dragOverRef?.removeAttribute('data-action')
@@ -125,23 +149,28 @@ export const createDragMachine = (editor: Editor) => {
             if (fromPath === toPath || fromPath === null || toPath === null)
               return
             if (Path.isAncestor(fromPath, toPath)) return
-            if (fromPath) {
-              Editor.withoutNormalizing(editor, () => {
-                Transforms.deselect(editor)
-                Transforms.select(editor, fromPath)
-              })
-            } else {
-              ReactEditor.focus(editor)
-            }
+            // if (fromPath) {
+            //   Editor.withoutNormalizing(editor, () => {
+            //     Transforms.deselect(editor)
+            //     Transforms.select(editor, Editor.end(editor, toPath))
+            //   })
+            // } else {
+            //   ReactEditor.focus(editor)
+            // }
             // ReactEditor.focus(editor as any)
+            Transforms.deselect(editor)
+            ReactEditor.deselect(editor)
+            ReactEditor.blur(editor)
             Editor.withoutNormalizing(editor, () => {
-              console.log(fromPath, toPath)
-              // Transforms.deselect(editor)
               Transforms.moveNodes(editor, {
                 at: fromPath,
                 to: toPath,
                 mode: 'lowest',
               })
+              Transforms.deselect(editor)
+              ReactEditor.deselect(editor)
+              ReactEditor.blur(editor)
+
               // if (fromPath.length === toPath.length) {
               //   Transforms.select(editor, {
               //     anchor: {path: toPath, offset: 0},
@@ -161,6 +190,11 @@ export const createDragMachine = (editor: Editor) => {
               //   ReactEditor.toDOMNode(editor, Node.get(editor, toPath)),
               // )
             })
+
+            // TODO: remove the parent group for the `fromPath`:
+            // - if its Empty
+            // - if the block has siblings
+            // - if it the only child
           }
         },
       },

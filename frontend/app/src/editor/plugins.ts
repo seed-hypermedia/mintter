@@ -78,8 +78,16 @@ export const plugins: EditorPlugin[] = [
       // console.log(editor.children)
       const {apply} = editor
       editor.apply = (operation) => {
-        console.log(operation)
-        apply(operation)
+        
+        if (operation.type == 'set_selection') {
+          if (!operation.newProperties || !editor.dragging) {
+            apply(operation)
+            console.log('IS DRAGGING!')
+          }
+        } else {
+          apply(operation)
+        }
+        
       }
       return editor
     },
