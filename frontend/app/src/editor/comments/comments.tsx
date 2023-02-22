@@ -1,7 +1,7 @@
 import {EditorMode} from '@app/editor/plugin-utils'
 import {EditorPlugin} from '@app/editor/types'
 import {isParagraph} from '@mintter/shared'
-import {Range} from 'slate'
+import {Node, Range, SetNodeOperation} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {appWindow} from '@tauri-apps/api/window'
 import {MouseEventHandler} from 'react'
@@ -52,6 +52,7 @@ export function createCommentsPlugin(): EditorPlugin {
       const {apply} = editor
 
       editor.apply = (op) => {
+        console.log('=== OP', op)
         /**
          * In order to receive just one particular type of event in the editor (set_selection), we need to override the `apply` hook in the editor
          */
@@ -75,7 +76,49 @@ export function createCommentsPlugin(): EditorPlugin {
             'conversations' in op.newProperties ||
             'conversations' in op.properties
           ) {
-            apply(op)
+            if (
+              (op.newProperties?.conversations as Array<string>)?.includes(
+                'current',
+              )
+            ) {
+              // need to add the current conversation
+              if ((op.properties?.conversations as Array<string>)?.length) {
+                // check if current properties have conversations in it
+                apply({
+                  ...op,
+                  newProperties: {
+                    conversations: op.properties.conversations.concat(
+                      op.newProperties.conversations,
+                    ),
+                  },
+                } as SetNodeOperation)
+                return
+              } else {
+                console.log('=== OP: add current conversation mark')
+
+                apply(op)
+              }
+            }
+
+            // if newProperties is empty AND current properties have the current conversation, just remove the current from the text
+            else if (
+              isObjectEmpty(op.newProperties) &&
+              (op.properties?.conversations as Array<string>)?.includes(
+                'current',
+              )
+            ) {
+              // remove current conversation from text
+              let convs = op.properties?.conversations as Array<string>
+              apply({
+                ...op,
+                newProperties:
+                  convs?.length == 1
+                    ? {}
+                    : {
+                        conversations: convs.filter((c) => c != 'current'),
+                      },
+              })
+            }
           }
         } else if (op.type == 'split_node') {
           apply(op)
@@ -89,4 +132,12 @@ export function createCommentsPlugin(): EditorPlugin {
       }
     },
   }
+}
+
+function isObjectEmpty(obj: unknown) {
+  return (
+    obj &&
+    Object.keys(obj).length === 0 &&
+    Object.getPrototypeOf(obj) === Object.prototype
+  )
 }
