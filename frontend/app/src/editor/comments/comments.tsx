@@ -4,7 +4,8 @@ import {isParagraph} from '@mintter/shared'
 import {Node, Range, SetNodeOperation} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {appWindow} from '@tauri-apps/api/window'
-import {MouseEventHandler} from 'react'
+import {MouseEventHandler, useMemo} from 'react'
+import {useConversations} from '@app/editor/comments/conversations-context'
 
 const MARK_CONVERSATIONS = 'conversations'
 
@@ -16,17 +17,26 @@ export function createCommentsPlugin(): EditorPlugin {
       () =>
       ({attributes, children, leaf}) => {
         if (typeof leaf.conversations !== 'undefined' && leaf.text) {
+          let {highlights} = useConversations()
           function emitSelectorClick(e) {
             e.preventDefault()
             appWindow.emit('selector_click', {
               conversations: leaf.conversations,
             })
           }
+          let highlight = useMemo(() => {
+            return highlights.some((c) => leaf.conversations?.includes(c))
+          }, [highlights])
           return (
             <span
               onClick={emitSelectorClick}
               style={
-                leaf.conversations.length >= 3
+                highlight
+                  ? {
+                      backgroundColor: 'var(--highlight-surface4)',
+                      borderBottom: '2px solid var(--highlight-surface4)',
+                    }
+                  : leaf.conversations.length >= 3
                   ? {
                       backgroundColor: 'var(--highlight-surface4)',
                       borderBottom: '2px solid var(--highlight-surface4)',
