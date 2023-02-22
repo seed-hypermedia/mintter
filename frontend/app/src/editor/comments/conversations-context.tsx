@@ -132,6 +132,7 @@ export function ConversationsProvider({
     let unlisten: () => void | undefined
 
     listen<{conversations: Array<string>}>('selector_click', (event) => {
+      console.log('CLICK ON SELECTOR!', event)
       setHighlights(event.payload.conversations)
     }).then((f) => (unlisten = f))
 

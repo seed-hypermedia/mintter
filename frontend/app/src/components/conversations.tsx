@@ -122,6 +122,7 @@ function ConversationItem({
 
   useEffect(() => {
     if (!elRef.current) return
+
     elRef.current.scrollIntoView({behavior: 'smooth'})
   }, [isHighlighted])
 

@@ -70,7 +70,6 @@ export default function PublicationPage({
 
     listen<{conversations: Array<string>}>('selector_click', (event) => {
       panelSend('CONVERSATIONS.OPEN')
-      setConversationHighlights(event.payload.conversations)
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
