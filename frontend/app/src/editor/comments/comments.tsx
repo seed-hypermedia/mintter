@@ -4,7 +4,7 @@ import {isParagraph} from '@mintter/shared'
 import {Node, Range, SetNodeOperation} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {appWindow} from '@tauri-apps/api/window'
-import {MouseEventHandler, useMemo} from 'react'
+import {MouseEventHandler, useEffect, useMemo, useRef} from 'react'
 import {useConversations} from '@app/editor/comments/conversations-context'
 
 const MARK_CONVERSATIONS = 'conversations'
@@ -16,19 +16,29 @@ export function createCommentsPlugin(): EditorPlugin {
     renderLeaf:
       () =>
       ({attributes, children, leaf}) => {
-        if (typeof leaf.conversations !== 'undefined' && leaf.text) {
-          let {highlights} = useConversations()
-          function emitSelectorClick(e) {
-            e.preventDefault()
-            appWindow.emit('selector_click', {
-              conversations: leaf.conversations,
-            })
+        let {highlights} = useConversations()
+        let ref = useRef<HTMLSpanElement>(null)
+        function emitSelectorClick(e) {
+          e.preventDefault()
+          appWindow.emit('selector_click', {
+            conversations: leaf.conversations,
+          })
+        }
+        let highlight = useMemo(
+          () => highlights.some((c) => leaf.conversations?.includes(c)),
+          [highlights],
+        )
+
+        useEffect(() => {
+          if (highlight && ref.current) {
+            ref.current.scrollIntoView({behavior: 'smooth'})
           }
-          let highlight = useMemo(() => {
-            return highlights.some((c) => leaf.conversations?.includes(c))
-          }, [highlights])
+        }, [highlights])
+
+        if (typeof leaf.conversations !== 'undefined' && leaf.text) {
           return (
             <span
+              ref={ref}
               onClick={emitSelectorClick}
               style={
                 highlight
