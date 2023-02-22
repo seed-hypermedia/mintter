@@ -35,7 +35,6 @@ export default function PublicationPage({
   publicationActor: PublicationActor
 }) {
   let [, params] = useRoute('/p/:id/:version/:block?')
-  const [highlights, setHighlights] = useState<Array<string>>([])
 
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
@@ -70,15 +69,8 @@ export default function PublicationPage({
     let unlisten: () => void | undefined
 
     listen<{conversations: Array<string>}>('selector_click', (event) => {
-      console.log('🚀 ~ file: publication.tsx:85 ~ useEffect ~ event:', event)
       panelSend('CONVERSATIONS.OPEN')
-      setHighlights(event.payload.conversations)
-      // if (resizablePanelState.context.visible) {
-      //   setHighlights(event.payload.conversations)
-      // } else {
-      //   panelSend('CONVERSATIONS.OPEN')
-      //   setHighlights(event.payload.conversations)
-      // }
+      setConversationHighlights(event.payload.conversations)
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
@@ -125,8 +117,7 @@ export default function PublicationPage({
         documentId={params?.id}
         onConversationsOpen={(conversations: string[]) => {
           panelSend({
-            type: 'CONVERSATIONS.HIGHLIGHT.CONVERSATIONS',
-            conversations,
+            type: 'CONVERSATIONS.OPEN',
           })
         }}
         publication={state.context.publication}
@@ -217,7 +208,7 @@ export default function PublicationPage({
                       <ScrollArea
                         onScroll={() => mouseService.send('DISABLE.SCROLL')}
                       >
-                        <Conversations highlights={highlights} />
+                        <Conversations />
                       </ScrollArea>
                       {/* </section> */}
                     </Allotment.Pane>
@@ -289,16 +280,11 @@ function BlockPlaceholder() {
 type ResizablePanelMachineContext = {
   visible: boolean
   left: number
-  highlightConversations: Array<string>
 }
 
 type ResizablePanelMachineEvent =
   | {type: 'CONVERSATIONS.TOGGLE'}
   | {type: 'CONVERSATIONS.OPEN'}
-  | {
-      type: 'CONVERSATIONS.HIGHLIGHT.CONVERSATIONS'
-      conversations: Array<string>
-    }
   | {type: 'RESIZE'; values: Array<number>}
 
 type ResizablePanelMachineServices = {
@@ -322,9 +308,6 @@ let resizablePanelMachine =
         'CONVERSATIONS.TOGGLE': {
           actions: 'toggleVisibility',
         },
-        'CONVERSATIONS.HIGHLIGHT.CONVERSATIONS': {
-          actions: 'setHighlightConversations',
-        },
         RESIZE: {
           actions: 'updateHandlePosition',
         },
@@ -345,10 +328,6 @@ let resizablePanelMachine =
         toggleVisibility: assign({
           visible: (context) => !context.visible,
         }),
-        setHighlightConversations: (context, event) => {
-          context.highlightConversations = event.conversations
-          context.visible = true
-        },
         openPanel: assign({
           visible: (c) => (!c.visible ? true : c.visible),
         }),

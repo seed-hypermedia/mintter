@@ -4,8 +4,8 @@ import {EXPERIMENTS} from '@app/utils/experimental'
 import {
   useNostr,
   useNostrPostsOnDoc,
-  useNostrReplies,
   useNostrProfile,
+  useNostrReplies,
 } from '@app/utils/nostr'
 import {createPromiseClient} from '@bufbuild/connect-web'
 import {Timestamp} from '@bufbuild/protobuf'
@@ -19,23 +19,20 @@ import {
   blockToApi,
   Comments,
   Conversation,
-  ListConversationsResponse,
+  formattedDate,
   paragraph,
   PhrasingContent,
   Selector,
   statement,
   text,
   transport,
-  formattedDate,
 } from '@mintter/shared'
-import {UseQueryResult} from '@tanstack/react-query'
-import {listen} from '@tauri-apps/api/event'
 import {appWindow} from '@tauri-apps/api/window'
 import {Event} from 'nostr-relaypool/event'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 
-export function Conversations({highlights = []}: {highlights: Array<string>}) {
+export function Conversations() {
   const context = useConversations()
 
   useEffect(() => {
@@ -44,7 +41,7 @@ export function Conversations({highlights = []}: {highlights: Array<string>}) {
     return () => unlisten?.()
   }, [])
 
-  const {documentId, conversations} = context
+  const {documentId, conversations, highlights} = context
   const nostrPosts = useNostrPostsOnDoc(documentId)
   const {data} = conversations || {}
 
@@ -124,16 +121,16 @@ function ConversationItem({
   let [firstComment, ...comments] = conversation.comments
 
   useEffect(() => {
-    // setTimeout(() => {
     if (!elRef.current) return
-
     elRef.current.scrollIntoView({behavior: 'smooth'})
-    // }, 500)
   }, [isHighlighted])
 
   return (
     <Box
       ref={elRef}
+      onClick={() => {
+        context.onHighlightConversations([conversation.id])
+      }}
       css={{
         borderBottom: '1px solid rgba(0,0,0,0.1)',
         transition: 'all 150ms ease',
@@ -141,7 +138,9 @@ function ConversationItem({
         paddingLeft: 60,
         backgroundColor: isHighlighted ? '$highlight-surface1' : 'transparent',
         '&:hover': {
-          backgroundColor: '$base-background-subtle',
+          backgroundColor: isHighlighted
+            ? '$highlight-surface1'
+            : '$base-background-subtle',
         },
       }}
     >

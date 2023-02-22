@@ -12,7 +12,15 @@ import {
 } from '@mintter/shared'
 import {ListConversationsResponse} from '@mintter/shared/client/.generated/documents/v1alpha/comments_pb'
 import {useQuery, UseQueryResult} from '@tanstack/react-query'
-import {createContext, PropsWithChildren, useContext, useMemo} from 'react'
+import {listen} from '@tauri-apps/api/event'
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 type BlocksDictionary = Record<string, Block>
 type SelectorDictionary = Record<string, FlowContent>
@@ -25,6 +33,8 @@ export type ConversationsContext = {
   onConversationsOpen: (conversationIds: string[]) => void
   blocks: BlocksDictionary
   clientSelectors: SelectorDictionary
+  highlights: Array<string>
+  onHighlightConversations: (value: Array<string>) => void
 }
 
 let conversationsContext = createContext<ConversationsContext>({
@@ -35,6 +45,10 @@ let conversationsContext = createContext<ConversationsContext>({
   documentId: undefined,
   blocks: {},
   clientSelectors: {},
+  highlights: [],
+  onHighlightConversations: () => {
+    //noop
+  },
 })
 
 export function ConversationsProvider({
@@ -61,6 +75,12 @@ export function ConversationsProvider({
     queryKey: [queryKeys.GET_PUBLICATION_CONVERSATIONS, documentId],
     enabled: !!documentId,
   })
+
+  let [highlights, setHighlights] = useState<Array<string>>([])
+
+  function onHighlightConversations(value: Array<string>) {
+    setHighlights(value)
+  }
 
   let blocksD = useMemo<Record<string, Block>>(() => {
     let res: Record<string, Block> = {}
@@ -108,14 +128,29 @@ export function ConversationsProvider({
     return res
   }, [queryResult.data, blocksD])
 
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    listen<{conversations: Array<string>}>('selector_click', (event) => {
+      setHighlights(event.payload.conversations)
+    }).then((f) => (unlisten = f))
+
+    return () => unlisten?.()
+  }, [])
+
   return (
     <conversationsContext.Provider
       value={{
         documentId,
-        onConversationsOpen,
+        onConversationsOpen: (conversations: Array<string>) => {
+          setHighlights(conversations)
+          onConversationsOpen(conversations)
+        },
         conversations: queryResult,
         blocks: blocksD,
         clientSelectors,
+        highlights,
+        onHighlightConversations,
       }}
     >
       {children}
