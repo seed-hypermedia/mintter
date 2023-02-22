@@ -224,15 +224,13 @@ func getSiteDescription(conn *sqlite.Conn) (getSiteDescriptionResult, error) {
 	return out, err
 }
 
-func addToken(conn *sqlite.Conn, sitesAccountID int64, sitesAddresses string, sitesHostname string, sitesRole int64) error {
-	const query = `INSERT INTO sites (account_id, addresses, hostname, role)
-VALUES (:sitesAccountID, :sitesAddresses, :sitesHostname, :sitesRole)`
+func addToken(conn *sqlite.Conn, inviteTokensToken string, inviteTokensExpirationTime int64) error {
+	const query = `INSERT INTO invite_tokens (token, expiration_time)
+VALUES (:inviteTokensToken, :inviteTokensExpirationTime)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":sitesAccountID", sitesAccountID)
-		stmt.SetText(":sitesAddresses", sitesAddresses)
-		stmt.SetText(":sitesHostname", sitesHostname)
-		stmt.SetInt64(":sitesRole", sitesRole)
+		stmt.SetText(":inviteTokensToken", inviteTokensToken)
+		stmt.SetInt64(":inviteTokensExpirationTime", inviteTokensExpirationTime)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {

@@ -91,8 +91,7 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "addToken", sqlitegen.QueryKindExec,
-			qb.Insert(sqliteschema.SitesAccountID, sqliteschema.SitesAddresses, sqliteschema.SitesHostname,
-				sqliteschema.SitesRole),
+			qb.Insert(sqliteschema.InviteTokensToken, sqliteschema.InviteTokensExpirationTime),
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "removeToken", sqlitegen.QueryKindExec,
