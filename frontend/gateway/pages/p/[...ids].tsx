@@ -20,13 +20,13 @@ export const getServerSideProps = async ({
   params,
   res,
 }: GetServerSidePropsContext) => {
-  if (process.env.VERCEL) {
-    return {
-      props: {
-        publication: null,
-      },
-    }
-  }
+  // if (process.env.VERCEL) {
+  //   return {
+  //     props: {
+  //       publication: null,
+  //     },
+  //   }
+  // }
   const [documentId, version] = params?.ids || []
   // res.setHeader(
   //   'Cache-Control',
