@@ -49,6 +49,7 @@ export function ConversationBlockBubble({block}: {block: FlowContent}) {
         size="0"
         contentEditable={false}
         css={{
+          userSelect: 'none',
           position: 'absolute',
           top: 0,
           right: -40,
