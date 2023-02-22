@@ -224,13 +224,14 @@ func getSiteDescription(conn *sqlite.Conn) (getSiteDescriptionResult, error) {
 	return out, err
 }
 
-func addToken(conn *sqlite.Conn, inviteTokensToken string, inviteTokensExpirationTime int64) error {
-	const query = `INSERT INTO invite_tokens (token, expiration_time)
-VALUES (:inviteTokensToken, :inviteTokensExpirationTime)`
+func addToken(conn *sqlite.Conn, inviteTokensToken string, inviteTokensExpirationTime int64, inviteTokensRole int64) error {
+	const query = `INSERT INTO invite_tokens (token, expiration_time, role)
+VALUES (:inviteTokensToken, :inviteTokensExpirationTime, :inviteTokensRole)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":inviteTokensToken", inviteTokensToken)
 		stmt.SetInt64(":inviteTokensExpirationTime", inviteTokensExpirationTime)
+		stmt.SetInt64(":inviteTokensRole", inviteTokensRole)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -243,6 +244,72 @@ VALUES (:inviteTokensToken, :inviteTokensExpirationTime)`
 	}
 
 	return err
+}
+
+type getTokenResult struct {
+	InviteTokensRole           int64
+	InviteTokensExpirationTime int64
+}
+
+func getToken(conn *sqlite.Conn, inviteTokensToken string) (getTokenResult, error) {
+	const query = `SELECT invite_tokens.role, invite_tokens.expiration_time
+FROM invite_tokens WHERE invite_tokens.token = :inviteTokensToken`
+
+	var out getTokenResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":inviteTokensToken", inviteTokensToken)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("getToken: more than one result return for a single-kind query")
+		}
+
+		out.InviteTokensRole = stmt.ColumnInt64(0)
+		out.InviteTokensExpirationTime = stmt.ColumnInt64(1)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getToken: %w", err)
+	}
+
+	return out, err
+}
+
+type listTokensResult struct {
+	InviteTokensRole           int64
+	InviteTokensExpirationTime int64
+	InviteTokensToken          string
+}
+
+func listTokens(conn *sqlite.Conn) ([]listTokensResult, error) {
+	const query = `SELECT invite_tokens.role, invite_tokens.expiration_time, invite_tokens.token
+FROM invite_tokens`
+
+	var out []listTokensResult
+
+	before := func(stmt *sqlite.Stmt) {
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, listTokensResult{
+			InviteTokensRole:           stmt.ColumnInt64(0),
+			InviteTokensExpirationTime: stmt.ColumnInt64(1),
+			InviteTokensToken:          stmt.ColumnText(2),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: listTokens: %w", err)
+	}
+
+	return out, err
 }
 
 func removeToken(conn *sqlite.Conn, inviteTokensToken string) error {
@@ -265,7 +332,7 @@ func removeToken(conn *sqlite.Conn, inviteTokensToken string) error {
 }
 
 func removeExpiredTokens(conn *sqlite.Conn) error {
-	const query = `DELETE FROM invite_tokens WHERE invite_tokens.expiration_time < strftime(%s, now)`
+	const query = `DELETE FROM invite_tokens WHERE invite_tokens.expiration_time < strftime('%s', 'now')`
 
 	before := func(stmt *sqlite.Stmt) {
 	}
