@@ -78,7 +78,8 @@ export const plugins: EditorPlugin[] = [
       // console.log(editor.children)
       const {apply} = editor
       editor.apply = (operation) => {
-        
+        console.log(operation)
+
         if (operation.type == 'set_selection') {
           if (!operation.newProperties || !editor.dragging) {
             apply(operation)
@@ -87,7 +88,6 @@ export const plugins: EditorPlugin[] = [
         } else {
           apply(operation)
         }
-        
       }
       return editor
     },

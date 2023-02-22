@@ -81,7 +81,7 @@ export var mouseMachine =
               },
             },
             ready: {
-              entry: (C, E) => console.log('IM IN THE READY STATE', C, E),
+              // entry: (C, E) => console.log('IM IN THE READY STATE', C, E),
               on: {
                 'MOUSE.MOVE': [
                   {

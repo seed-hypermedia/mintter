@@ -58,7 +58,6 @@ const ElementDrag = ({children, element, attributes}: RenderElementProps) => {
       {...blockProps}
       className={inRoute ? 'flash' : undefined}
       onDrop={onDrop}
-      onDropCapture={onDrop}
       // onDragEnter={onDragOver}
     >
       <BlockTools block={element as FlowContent} />

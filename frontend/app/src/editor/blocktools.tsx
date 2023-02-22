@@ -39,7 +39,7 @@ import {
   useState,
 } from 'react'
 import toast from 'react-hot-toast'
-import {Editor, Node, NodeEntry} from 'slate'
+import {Editor, Node, NodeEntry, Transforms} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
 import './styles/blocktools.scss'
 
@@ -57,10 +57,10 @@ function DraftBlocktools(props: BlockData) {
   let target = useCurrentTarget()
 
   let topOffset = useTopOffset(props.element)
-  console.log(
-    'MOUSE MACHINE STATE IN BLOCKTOOLS',
-    mouseService.getSnapshot().value,
-  )
+  // console.log(
+  //   'MOUSE MACHINE STATE IN BLOCKTOOLS',
+  //   mouseService.getSnapshot().value,
+  // )
 
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     const [node, fromPath] = element as NodeEntry<FlowContent>
@@ -75,6 +75,10 @@ function DraftBlocktools(props: BlockData) {
     }
   }
 
+  const onMouseUp = (e: MouseEvent<HTMLDivElement>) => {
+    mouseService.send('DISABLE.DRAG.END')
+    Transforms.deselect(editor);
+  }
   // TODO: ADD A MOUSEUP EVENT TO ENABLE THE BLOCKTOOLS MACHINE
 
   return (
@@ -94,6 +98,7 @@ function DraftBlocktools(props: BlockData) {
         gap: '$3',
       }}
       onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
     >
       <ElementDropdown data-testid="blocktools-trigger">
         <Icon name="Grid4" color="muted" />
