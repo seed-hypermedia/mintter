@@ -8,6 +8,7 @@ import {
   PublicationMachineContext,
 } from '@app/publication-machine'
 import {useNavigation} from '@app/utils/navigation'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {tauriEncodeParam} from '@app/utils/tauri-param-hackaround'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
@@ -120,7 +121,7 @@ export function SitesNavDropdownItems() {
           }
         >
           <Icon name="Globe" />
-          <span>{site.hostname}</span>
+          <span>{hostnameStripProtocol(site.hostname)}</span>
         </Dropdown.Item>
       ))}
     </>

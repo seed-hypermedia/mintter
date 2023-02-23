@@ -60,7 +60,7 @@ function PublishDialogForm({
         }}
       />
       <URLPreview>
-        https://{siteId}/
+        {siteId}/
         {path === '/'
           ? ''
           : path === ''
