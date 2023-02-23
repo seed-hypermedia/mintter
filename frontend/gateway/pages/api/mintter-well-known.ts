@@ -1,19 +1,19 @@
-import {getPeerInfo, listAccounts} from '@mintter/shared'
-import {NextRequest, NextResponse} from 'next/server'
-import {transport} from '../../client'
+import { getPeerInfo, listAccounts } from "@mintter/shared"
+import { NextRequest, NextResponse } from "next/server"
+import { transport } from "../../client"
 
-export default async function handler(req: NextRequest, res: NextResponse) {
-  console.log('Attempting to handle well known request')
-  const accts = await listAccounts(undefined, undefined, transport)
+export default async function handler(req: NextRequest, res:NextResponse) {
+console.log('Attempting to handle well known request')
+  const accts = await listAccounts(undefined, undefined, transport) 
   const firstAcct = accts.accounts[0]
   if (!firstAcct) throw new Error('Nope')
   const acctId = firstAcct.id
-  const device = firstAcct.devices[0]
+  const device = firstAcct.devices[0 ]
   if (!device) throw new Error('Nope')
   const peerInfo = await getPeerInfo(device, transport)
   const wellKnown = {
     account_id: acctId,
-    addresses: peerInfo.addrs,
+    addresses: peerInfo.addrs
   }
 
   // const test = {

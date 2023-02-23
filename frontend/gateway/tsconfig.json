@@ -15,10 +15,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
-    "paths": {
-      "@mintter/shared/*": ["../shared/src/*"]
-    }
+    "incremental": true
   },
   "include": [
     "next-env.d.ts",

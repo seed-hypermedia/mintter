@@ -17,8 +17,7 @@
     "isolatedModules": true,
     "paths": {
       "@components/*": ["./src/components/*"],
-      "@app/*": ["./src/*"],
-      "@mintter/shared/*": ["../shared/src/*"]
+      "@app/*": ["./src/*"]
     }
   },
   "typedocOptions": {
