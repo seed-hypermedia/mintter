@@ -51,14 +51,20 @@ export default function HomePage({
   return <PublicationPage publication={publication} metadata={false} />
 }
 
+let pubId =
+  process.env.MINTTER_HOME_PUBID ||
+  'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
+let version =
+  process.env.MINTTER_HOME_VERSION ||
+  'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
+
 async function getHomePublication(): Promise<Publication | null> {
   if (!process.env.GW_NEXT_HOST) {
     // Temp Mintter home screen document:
-    return await getPublication(
-      'bafy2bzacedq36zy5yrhutg5pocnpv2lzxr6xwfs6eeng7saoe7syxkeiq3zsm',
-      'baeaxdiheaiqjrcwamuudzuc7vmzfnebn6xs45fcbgorb4vfkc44aehc3eevt25q',
-      transport,
-    )
+
+    // https://www.mintter.com/p/bafy2bzacebeq7l4bp4fzmox47fj62bfpuzi6lizx5j3fj7jyws7fztnizu7ts/baeaxdiheaiqpjri6ulmrcvehzszraaallp2xpfb5zoxe7j7tulwph46wewle5gi
+
+    return await getPublication(pubId, version, transport)
   }
   const site = getLocalWebSiteClient(transport)
   try {
