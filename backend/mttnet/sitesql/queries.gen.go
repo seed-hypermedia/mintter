@@ -353,15 +353,15 @@ type addMemberResult struct {
 	SiteMembersRole int64
 }
 
-func addMember(conn *sqlite.Conn, siteMembersAccountID int64, siteMembersRole int64) (addMemberResult, error) {
+func addMember(conn *sqlite.Conn, accID string, siteMembersRole int64) (addMemberResult, error) {
 	const query = `INSERT OR REPLACE INTO site_members (account_id, role)
-VALUES (:siteMembersAccountID, :siteMembersRole)
+VALUES ((SELECT id FROM accounts WHERE multihash = x' :accID ')), :siteMembersRole)
 RETURNING site_members.role`
 
 	var out addMemberResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":siteMembersAccountID", siteMembersAccountID)
+		stmt.SetText(":accID", accID)
 		stmt.SetInt64(":siteMembersRole", siteMembersRole)
 	}
 
