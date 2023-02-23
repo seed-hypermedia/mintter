@@ -12,6 +12,14 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
+const prodInter: Interceptor = (next) => async (req) => {
+  console.log('prodInter:', req)
+
+  const result = await next({...req, init: {redirect: 'follow'}})
+  console.log('result of grpc:', req, result)
+  return result
+}
+
 // @ts-ignore
 console.log(import.meta.env?.DEV ? '🦾 Development mode' : '🚀 Production mode')
 
@@ -19,5 +27,5 @@ export const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:55001',
   // baseUrl: 'https://gateway.mintter.com',
   // @ts-ignore
-  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
+  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [prodInter],
 })
