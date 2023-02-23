@@ -14,7 +14,7 @@
   },
   "scripts": {
     "dev": "tsc -w",
-    "build": "exit 0;",
+    "build": "tsc ",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "lint": "pnpm lint:prettier && pnpm lint:eslint",
