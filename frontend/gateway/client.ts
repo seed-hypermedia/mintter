@@ -14,7 +14,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 
 let host =
   process.env.GW_GRPC_ENDPOINT || process.env.VERCEL_ENV == 'development'
-    ? 'http://localhost:56001'
+    ? 'http://127.0.0.1:56001'
     : 'https://gateway.mintter.com'
 
 function getHost() {
@@ -36,8 +36,7 @@ const IS_CLIENT = !!global.window
 const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
 
 export const transport = createGrpcWebTransport({
-  // baseUrl: host,
-  baseUrl: 'https://gateway.mintter.com',
+  baseUrl: host,
   // @ts-ignore
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
