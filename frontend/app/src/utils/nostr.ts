@@ -132,14 +132,14 @@ export function useNostrReplies(postId: string) {
           },
         ],
         nostr.relays,
-        ;(event, isAfterEose, relayURL) => {
+        (event, isAfterEose, relayURL) => {
           ackEvent(event)
           console.log('Reply Evt', {postId, event, isAfterEose, relayURL})
         },
-          undefined,
-          (events, relayURL) => {
-            console.log('Reply relay events', events, relayURL)
-          },
+        undefined,
+        (events, relayURL) => {
+          console.log('Reply relay events', events, relayURL)
+        },
       ),
     [postId, nostr],
   )
@@ -213,7 +213,7 @@ export function useNostrProfile(pubkey?: string | null) {
         },
       ],
       nostr.relays,
-      ;(event, isAfterEose, relayURL) => {
+      (event, isAfterEose, relayURL) => {
         console.log(
           '🚀 ~ file: nostr.ts:217 ~ useEffect ~ isAfterEose, relayURL:',
           isAfterEose,
@@ -225,10 +225,10 @@ export function useNostrProfile(pubkey?: string | null) {
         })
         appQueryClient.setQueryData(['nostr', 'userProfile', pubkey], profile)
       },
-        undefined,
-        (events, relayURL) => {
-          console.log('Reply relay events', events, relayURL)
-        },
+      undefined,
+      (events, relayURL) => {
+        console.log('Reply relay events', events, relayURL)
+      },
     )
   }, [pubkey, nostr])
 
