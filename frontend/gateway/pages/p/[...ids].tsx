@@ -34,17 +34,24 @@ export const getServerSideProps = async ({
   //     version ? '2592000, stale-while-revalidate=3599' : '86400'
   //   }`,
   // )
-  const publication = await getPublication(documentId, version, transport)
-  if (!publication) {
+  try {
+    const publication = await getPublication(documentId, version, transport)
+    if (!publication) {
+      return {
+        notFound: true,
+      }
+    }
+    return {
+      props: {
+        publication: publication.toJson(),
+      },
+    }
+  } catch (e) {
     return {
       notFound: true,
     }
   }
-  return {
-    props: {
-      publication: publication.toJson(),
-    },
-  }
+  
 }
 
 function ClientCIDPage() {
