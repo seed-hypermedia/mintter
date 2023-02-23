@@ -1,5 +1,4 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {Blocktools} from '@app/editor/blocktools'
 import {queryKeys} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
@@ -215,9 +214,7 @@ export function TestPublicationProvider({children}) {
   return (
     <div>
       <MouseProvider value={mouseService}>
-        <BlockHighLighter>
-          <Blocktools>{children}</Blocktools>
-        </BlockHighLighter>
+        <BlockHighLighter>{children}</BlockHighLighter>
       </MouseProvider>
     </div>
   )

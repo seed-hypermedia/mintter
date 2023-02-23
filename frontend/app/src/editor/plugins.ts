@@ -72,4 +72,24 @@ export const plugins: EditorPlugin[] = [
     },
   },
   createCommentsPlugin(),
+  {
+    name: 'log',
+    configureEditor: (editor) => {
+      // console.log(editor.children)
+      const {apply} = editor
+      editor.apply = (operation) => {
+        console.log(operation)
+
+        if (operation.type == 'set_selection') {
+          if (!operation.newProperties || !editor.dragging) {
+            apply(operation)
+            console.log('IS DRAGGING!')
+          }
+        } else {
+          apply(operation)
+        }
+      }
+      return editor
+    },
+  },
 ]

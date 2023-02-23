@@ -1,3 +1,4 @@
+import {BlockTools} from '@app/editor/blocktools'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -12,6 +13,7 @@ import {
 } from '@mintter/shared'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import {ElementDrag} from '../drag-section'
 import type {EditorPlugin} from '../types'
 import {resetFlowContent, useBlockFlash} from '../utils'
 
@@ -86,15 +88,12 @@ function BlockQuote({
   }
 
   return (
-    <li
-      {...attributes}
-      {...blockProps}
-      className={inRoute ? 'flash' : undefined}
-    >
+    <ElementDrag element={element} attributes={attributes} mode={mode}>
       {children}
+      {/* <BlockTools block={element as BlockquoteType} /> */}
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as BlockquoteType} />
       </span>
-    </li>
+    </ElementDrag>
   )
 }

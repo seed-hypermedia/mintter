@@ -20,6 +20,8 @@ type MouseEvent =
   | {type: 'HIGHLIGHT.ENTER'; ref: string}
   | {type: 'HIGHLIGHT.LEAVE'}
   | {type: 'HIGHLIGHT.FROM.WINDOWS'; ref: string}
+  | {type: 'DISABLE.DRAG.START'}
+  | {type: 'DISABLE.DRAG.END'}
 
 type MouseContext = {
   visibleBounds: Array<Bound>
@@ -30,7 +32,7 @@ type MouseContext = {
 }
 
 export var mouseMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QFsD2BXWYC0yCGAxgBYCWAdmAMQCSActQCoB0A8gEIDKAogEoBqvANoAGALqJQAB1SwSAFxKoyEkAA9EAdgBsADiYBmLUYCcAFh1bhu41oA0IAJ6IAjACYAvu-tpMOfMXIqNgAZFgBhAGkmAEEAEViRcSQQaVkFJRV1BG1jJh19AFYCjWMNZy0NfWcNeycEZ2FcnWdjV1djYXLhNtd9T28MLFxCUgpKEPConi4AWRYBRJVU+UVlZKyNAtyC027hDXzq3TtHRH19VyYtVx1Tc+cC4X0dAqN+kB8h-1Gg0MjWTi8BZiJYyFYZdaaa5MYRbZwWMyuUzOfSmWouZq5FFaLbdDRPVqmd6fPwjQKUWLUDjREJcJgAdTosRY9KYIQAqjxFslluk1qAsjoaqdssYsdcdMZivCbPtiYNSQExpTqbSGUyWUxphxqAAtLjcqRgvmZRBC9EIDqXUwaVz7R6dYq2+W+YZKqgACWoAHEPcEfR7mFxaAwhCCecbVqbsq8rqZes5djorA99Ba7Rors9TI84c58zcXV8yWMvb7-b7mMEuNFgUkjWko5CY5nXlp4U9TKYtMY3BaWuUmFLil2hfidK4CkXFT9KGW-QHmAAxHgsGbq2jM+kcQ0pSMQgWIIz6JgFZ6vbo2AoNNEiu3Ioc55oVVybIoeLwfBVun5MQgKAA3MAmFgORUEkSRIApKkaWrNk-giBgWBYYIOCYMJQm4XdeSbQ8EDPAomF2XoDhue8u37ApkzyEpugsZ5jmcacf0CP8CEA4CACcwDwCAHEoOZ2W4Jg5jrUFGwPNQXGvK4UTKMwSnhHF+y0fRM30YRhC7KV4xxKjmO+Vj-xIICmG43j+ME4TRINZx6z3CT+Sk+oLn7cxMzuYwNN2bQDgsAyS2A4zTPMviBJYIS6RswRXHsnDJKyeETxRNwpS03RCmFOpE0MJhqhaIoKguF4p0-EkWIoNiOLMniwpVWC6TCD1olob0DXDBtwScrJSkzCwGl6TTbjcE5soKVwtBhc52wnEoxRtAL3SqkyuNq-j6rVDgwlXYJgmw-dusQXq8nbboNOEYaJrctomFtLtnjFSoDkW39gtWizoNVOCJkiJCULQlgAAVg32xzowIoiztIictIokVqlhE7e008xeyojQXtY8g3vCyKRPmdq4oO6NSn7e0420V5CjtfY+neMhUAgOAVHKwyKHErro0MC1zEm9oNNtcbHjFN4yu-NmgvYlaOZNZtbn7apMwOFFr06VTJ0xyq3pAsCIMgGXcOcidJpeLzeqlHT+3xYQ406Sddl7KodE1yXqtCupOtlvDX0IqpleMIVWi0O403hnsT1eDQNHjFFe0sJixddCWmGxqWgINhKXDUvnVN2VKtOKUPsqePRJXjCbX3yEpPE8IA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QFsD2BXWYC0yCGAxgBYCWAdmAMQCSActQCoB0A8gEIDKAogEoBqvANoAGALqJQAB1SwSAFxKoyEkAA9EAdgBsAViYAWAJwAmABxaTZ0xoDMhgDQgAnogCMxgL4fHaTDnzE5FRsADIsAMIA0kwAggAicSLiSCDSsgpKKuoI2noaOjZmhcLC+uZaji4IrsKmTMbGOsb6Zoam+sI6rlpePhhYuISkFJShEdE8XACyLAJJKmnyisop2fl6WkaurhoajWXGlYiFGgauHcauNja7BcIavSC+AwHDwWFRrJy8c2ILMktMqtNDpDExXIYOvp3I0GkdqpC6hDhJs9ucdF0dI9nv4hkFKHFqBwYqEuEwAOp0OIsclMUIAVR48xSiwyK1A2Ws8I0hhsTBsOlqdlMKMMWlM2P6uMCI0JxNJFKpNKYkw41AAWlxmVIAWysoguc4DZCmKYbLpaoYxZcNPpJX5BjKqAAJagAcWdIXdzuYXFoDCEfxZuuW+pyBSYOgswhspjMWiuwkORoQxlKBkFZR0PPFNRs9peeJGro9Xo9zBCXBiv2SOvSoeB4f0TAsBX0WnNtuMDhTaf0zehOlMhmE227UYe3ieUsdb0oJc93uYADEeCwporaNTyRxtakQ0COYgtAmmFatBpTFcas0NPDLhf+TyWlGCsPDFipzjZ0EmIQFAAbmATCwHIqCSJIkAEkSJKVnSHyRAwLAsCEHBMOEYTcHurINkeCBNKcbQfiO3RWjy8I7B29TGBo2zdLYWi1BKX4zq8v7-iQQEgWBEFQXKsFknEPAxG6TB+okQZ1oC7JqMe6YFI0oJJhiXQ2BRBRgmY-axiK1j6HsBbSm8f4EIBwEAE5gHgEBOJQMz0twTAzDW-z1oesnVIU6m1AYhjdDoRi2HGmyGT+FAmWZTCWdZtn2Y5zlaq4tb7m5MnZK4V6RhlDSmKYTTdvoakpuidQlGm5g2Ns5iTn0DpseFHFcdFNnQfKcHhM6MS0G6WqSSl0lhm0wiRgmzTNO4+U9lU5xmpGNE0TYHTXAZLF1UWwGNRZVktfxCocOEa4hCE2EHmliBDSN7gtNCsLdhRsbGEwpTdKUlw3cY+arYWToRZxW0xa1AnweMSEoWhLAAAp+idqVhgRZ7DkppGGORxUno9t4o4VRgWKF9UbaZf1Rdttm7XBQkiUwHAMDEPAMDDA2NvDRFIxYKNTW4tGPbY+SFaO3RGHaX1Gb+5CbXZLAOWSCUM3qjYoxRKJaJGux2LGAVlLRXhTmQqAQHAKjfvjrmM3h5rwmUw12Jsr21GzePrb9QEm3LeHtBREJghpeVDjYQptA7P2bdx4GQRALu4R5ZqPe21jaLa0JdhRl7K4nfaJi0tiB8ZwfNVUUmux580ttmAWMQU5qBRRJ7DVzVr6aCgodtnotkJtEfuelNyuJGgrR0OjRJorfuRtH1tiijzFeEAA */
   createMachine(
     {
       predictableActionArguments: true,
@@ -58,7 +60,7 @@ export var mouseMachine =
       id: 'mouse-machine',
       description:
         '## services\n- **boundsListener**: this will create the intersection observer to get all the bounds from the visible blocks',
-      initial: 'inactive',
+      initial: 'active',
       states: {
         active: {
           entry: ['getBlockBounds', 'assignCurrentBound'],
@@ -72,9 +74,14 @@ export var mouseMachine =
                   actions: ['getBlockBounds', 'assignCurrentBound'],
                   target: 'ready',
                 },
+                'DISABLE.DRAG.END': {
+                  actions: ['getBlockBounds', 'assignCurrentBound'],
+                  target: 'ready',
+                },
               },
             },
             ready: {
+              // entry: (C, E) => console.log('IM IN THE READY STATE', C, E),
               on: {
                 'MOUSE.MOVE': [
                   {
@@ -96,6 +103,9 @@ export var mouseMachine =
                   target: '#mouse-machine.inactive',
                 },
                 'DISABLE.BLOCKTOOLS.OPEN': {
+                  target: 'stopped',
+                },
+                'DISABLE.DRAG.START': {
                   target: 'stopped',
                 },
               },
@@ -189,7 +199,9 @@ export var mouseMachine =
           },
         }),
         assignObserver: assign({
-          observer: (_, event) => event.observer,
+          observer: (_, event) => {
+            return event.observer
+          },
         }),
         assignCurrentBound: assign((context, event) => {
           let currentBound = context.visibleBounds.find(([, rect]) =>

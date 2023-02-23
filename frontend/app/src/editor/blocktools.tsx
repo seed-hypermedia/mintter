@@ -1,3 +1,4 @@
+import {useDrag} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
@@ -11,6 +12,12 @@ import {
   useCurrentTarget,
   useMouse,
 } from '@app/mouse-context'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {error} from '@app/utils/logger'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon, icons} from '@components/icon'
+import {Text} from '@components/text'
 import {
   blockquote,
   code,
@@ -23,18 +30,12 @@ import {
   ul,
   video,
 } from '@mintter/shared'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {error} from '@app/utils/logger'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon, icons} from '@components/icon'
-import {Text} from '@components/text'
 import {useSelector} from '@xstate/react'
-import {Fragment, ReactNode, useEffect, useMemo, useState} from 'react'
+import {Fragment, MouseEvent, ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {Editor, NodeEntry} from 'slate'
+import {Editor, Node, NodeEntry, Transforms} from 'slate'
+import {ReactEditor, useSlate} from 'slate-react'
 import './styles/blocktools.scss'
-import {ReactEditor} from 'slate-react'
 
 let toolsByMode = {
   [EditorMode.Draft]: DraftBlocktools,
@@ -44,63 +45,59 @@ let toolsByMode = {
   [EditorMode.Mention]: () => null,
 }
 
-export function Blocktools({
-  children,
-  editor,
-}: {
-  children: ReactNode
-  editor: Editor
-}) {
-  let blocktoolsOptions = useBlocktoolsData(editor)
-  let Component = toolsByMode[blocktoolsOptions.mode] || null
-  return (
-    <>
-      {blocktoolsOptions.show ? (
-        <div
-          className="blocktools-wrapper"
-          style={{
-            '--top': blocktoolsOptions.top,
-            '--height': blocktoolsOptions.height,
-          }}
-        />
-      ) : null}
-      {children}
-      {blocktoolsOptions.show && blocktoolsOptions.element ? (
-        <Component {...blocktoolsOptions} />
-      ) : null}
-    </>
-  )
-}
-
 function DraftBlocktools(props: BlockData) {
-  let {mouseService, element} = props
+  let {mouseService, element, editor} = props
+  let dragService = useDrag()
   let target = useCurrentTarget()
-  let leftOffset = useMemo(() => {
-    if (!target) return '-2rem'
 
-    let values = {
-      group: '-1.5rem',
-      unorderedList: '-2.7rem',
-      orderedList: '-3rem',
+  let topOffset = useTopOffset(props.element)
+  // console.log(
+  //   'MOUSE MACHINE STATE IN BLOCKTOOLS',
+  //   mouseService.getSnapshot().value,
+  // )
+
+  const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+    const [node, fromPath] = element as NodeEntry<FlowContent>
+    const domNode = ReactEditor.toDOMNode(editor, node)
+    if (fromPath && dragService && domNode) {
+      mouseService.send('DISABLE.DRAG.START')
+      dragService.send({
+        type: 'DRAG.START',
+        fromPath,
+        element: domNode as HTMLLIElement,
+      })
     }
+  }
 
-    let {dataset} = target
-
-    return values[dataset.parentGroup]
-  }, [target])
-
-  let topOffset = useTopOffset(element)
+  const onMouseUp = (e: MouseEvent<HTMLDivElement>) => {
+    mouseService.send('DISABLE.DRAG.END')
+    Transforms.deselect(editor)
+  }
+  // TODO: ADD A MOUSEUP EVENT TO ENABLE THE BLOCKTOOLS MACHINE
 
   return (
     <Box
-      className="blocktools"
+      contentEditable={false}
       css={{
-        top: `calc(${props.top} - 40px)`,
-        left: `calc(${props.left} + ${leftOffset})`,
-        transform: `translateY(${topOffset})`,
+        width: 30,
+        height: 24,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        zIndex: '$4',
+        transform: `translate(-34px, ${topOffset})`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '$3',
       }}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
     >
-      <Dropdown.Root
+      <ElementDropdown data-testid="blocktools-trigger">
+        <Icon name="Grid4" color="muted" />
+      </ElementDropdown>
+      {/* <Dropdown.Root
         onOpenChange={(isOpen) => {
           mouseService.send(
             isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
@@ -108,10 +105,7 @@ function DraftBlocktools(props: BlockData) {
         }}
       >
         <Dropdown.Trigger asChild>
-          <ElementDropdown
-            data-testid="blocktools-trigger"
-            contentEditable={false}
-          >
+          <ElementDropdown data-testid="blocktools-trigger">
             <Icon name="Grid4" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
@@ -130,11 +124,11 @@ function DraftBlocktools(props: BlockData) {
                       data-testid={`item-${item.label}`}
                       key={item.label}
                       onSelect={() => {
-                        if (props.element) {
-                          props.mouseService.send('DISABLE.CHANGE')
-                          item.onSelect(props.editor, {
-                            element: props.element[0],
-                            at: props.element[1],
+                        if (element) {
+                          mouseService.send('DISABLE.CHANGE')
+                          item.onSelect(editor, {
+                            element: element[0],
+                            at: element[1],
                           })
                         }
                       }}
@@ -149,7 +143,7 @@ function DraftBlocktools(props: BlockData) {
             })}
           </Dropdown.Content>
         </Dropdown.Portal>
-      </Dropdown.Root>
+      </Dropdown.Root> */}
     </Box>
   )
 }
@@ -173,30 +167,40 @@ function PublicationBlocktools(
     }
   }
 
-  let [match, setMatch] = useState(false)
+  // let [match, setMatch] = useState(false)
 
-  useEffect(() => {
-    let responsiveMedia = window.matchMedia('(max-width: 768px)')
-    if (typeof responsiveMedia.addEventListener == 'function') {
-      responsiveMedia.addEventListener('change', handler)
-    } else if (typeof responsiveMedia.addListener == 'function') {
-      responsiveMedia.addListener(handler)
-    } else {
-      error('matchMedia support error', responsiveMedia)
-    }
+  // useEffect(() => {
+  //   let responsiveMedia = window.matchMedia('(max-width: 768px)')
+  //   if (typeof responsiveMedia.addEventListener == 'function') {
+  //     responsiveMedia.addEventListener('change', handler)
+  //   } else if (typeof responsiveMedia.addListener == 'function') {
+  //     responsiveMedia.addListener(handler)
+  //   } else {
+  //     error('matchMedia support error', responsiveMedia)
+  //   }
 
-    setMatch(responsiveMedia.matches)
-    function handler(event: MediaQueryListEvent) {
-      setMatch(event.matches)
-    }
-  }, [])
+  //   setMatch(responsiveMedia.matches)
+  //   function handler(event: MediaQueryListEvent) {
+  //     setMatch(event.matches)
+  //   }
+  // }, [])
 
-  let blockStyle = match
-    ? {top: `calc(${props.top} - 40px)`, right: '0.5rem'}
-    : {top: `calc(${props.top} - 40px)`, left: `calc(${props.right} + 16px)`}
+  let topOffset = useTopOffset(props.element)
 
   return (
-    <Box className="blocktools" css={blockStyle}>
+    <Box
+      contentEditable={false}
+      css={{
+        background: 'red',
+        // width: 30,
+        height: 24,
+        position: 'absolute',
+        top: 0,
+        right: -60,
+        zIndex: '$4',
+        transform: `translate(105%, ${topOffset})`,
+      }}
+    >
       <Button
         variant="ghost"
         color="primary"
@@ -207,8 +211,6 @@ function PublicationBlocktools(
           display: 'flex',
           alignItems: 'center',
           gap: '$2',
-          // this is needed to not render on top of the comments number.
-          transform: 'translateX(30px)',
           '&:hover': {
             background: '$base-background-normal',
           },
@@ -226,40 +228,24 @@ type BlockData = {
   show: boolean
   mode: EditorMode
   element?: NodeEntry<FlowContent>
-  top: string
-  height: string
-  left: string
-  right: string
 }
 
 function useBlocktoolsData(editor: Editor): BlockData {
   let mouseService = useMouse()
   let [id, rect] = useCurrentBound() || []
 
-  let element = useMemo(
-    () =>
-      getEditorBlock(editor, {
-        id,
-      }),
-    [id, editor],
-  )
+  let element = getEditorBlock(editor, {
+    id,
+  })
 
   let show = useSelector(mouseService, (state) => state.matches('active'))
-
-  let topPlatform = import.meta.env.TAURI_PLATFORM == 'windows' ? 40 : 0
 
   return {
     mouseService,
     editor,
-    show,
+    show: show && !!rect,
     mode: editor.mode,
     element,
-    top: rect ? `calc(${rect.top - topPlatform} * 1px)` : '-999px',
-    height: rect
-      ? `calc(calc(${rect.bottom - rect.top} * 1px) + 1rem)`
-      : '-999px',
-    left: rect ? `calc(${rect.left} * 1px)` : '0',
-    right: rect ? `calc(${rect.right} * 1px)` : '0',
   }
 }
 
@@ -268,11 +254,10 @@ function useTopOffset(element: BlockData['element']) {
     if (!element) return '0'
 
     let values = {
-      [ELEMENT_STATEMENT]: '0.1rem',
+      [ELEMENT_STATEMENT]: '0.5rem',
       [ELEMENT_HEADING]: element[1].length == 2 ? '0.6rem' : '0.4rem',
-      [ELEMENT_BLOCKQUOTE]: '0.5rem',
+      [ELEMENT_BLOCKQUOTE]: '1.5rem',
       [ELEMENT_CODE]: '1.3rem',
-      callout: '0',
     }
     let type = element[0].type
 
@@ -338,4 +323,19 @@ var items: {
       onSelect: setList(group),
     },
   ],
+}
+
+export function BlockTools({block}: {block: FlowContent}) {
+  const editor = useSlate()
+  const blocktoolsProps = useBlocktoolsData(editor)
+
+  let {show, element, mode} = blocktoolsProps
+
+  let Component = toolsByMode[mode] || null
+
+  if (show && element && element[0].id == block.id) {
+    return <Component {...blocktoolsProps} />
+  } else {
+    return null
+  }
 }
