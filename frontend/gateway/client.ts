@@ -30,7 +30,9 @@ const IS_CLIENT = !!global.window
 const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
 
 let baseUrl = getHost()
+
 console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', {
+  baseUrl,
   GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
   VERCEL_ENV: process.env.VERCEL_ENV,
   NODE_ENV: process.env.NODE_ENV,
