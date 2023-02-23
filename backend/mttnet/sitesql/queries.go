@@ -129,7 +129,9 @@ func generateQueries() error {
 				sqliteschema.SiteMembersRole,
 			), qb.Line,
 			"VALUES", qb.List(
-				qb.VarCol(sqliteschema.SiteMembersAccountID),
+				qb.SubQuery(
+					"SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" = x'", qb.Var("accID", sqlitegen.TypeText), "')",
+				),
 				qb.VarCol(sqliteschema.SiteMembersRole),
 			), qb.Line,
 			"RETURNING", qb.Results(sqliteschema.SiteMembersRole),
