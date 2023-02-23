@@ -35,9 +35,14 @@ const prodInter: Interceptor = (next) => async (req) => {
   return result
 }
 
+const IS_DEV = !!import.meta.env?.DEV
+
+console.log('IS_DEV: ', IS_DEV ? 'true' : 'false')
+
 export const transport = createGrpcWebTransport({
   // baseUrl: host,
   baseUrl: 'https://gateway.mintter.com',
   // @ts-ignore
-  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [prodInter],
+  // interceptors: IS_DEV ? [loggingInterceptor] : [prodInter],
+  interceptors: [prodInter],
 })
