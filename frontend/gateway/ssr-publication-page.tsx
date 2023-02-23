@@ -25,7 +25,7 @@ export default function PublicationPage({
 
   return (
     <>
-      <SiteHead />
+      <SiteHead title={publication?.document?.title} />
       <main
         id="main-content"
         tabIndex={-1}
