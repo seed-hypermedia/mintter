@@ -180,7 +180,9 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 		}
 		srv.accountsDB[srv.ownerID] = site.Member_OWNER
 		// Indicate we can now serve the already registered endpoints.
-		close(n.registered)
+		if n != nil {
+			close(n.registered)
+		}
 	}()
 	return srv
 }
@@ -324,8 +326,12 @@ func (n *Node) Start(ctx context.Context) (err error) {
 	// Start Mintter protocol listener over libp2p.
 	{
 		g.Go(func() error {
-			<-n.registered
-			return n.grpc.Serve(lis)
+			select {
+			case <-n.registered:
+				return n.grpc.Serve(lis)
+			case <-ctx.Done():
+				return nil
+			}
 		})
 
 		g.Go(func() error {
