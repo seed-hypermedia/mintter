@@ -12,7 +12,6 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
-
 function getHost() {
   if (process.env.GW_GRPC_ENDPOINT) {
     return process.env.GW_GRPC_ENDPOINT

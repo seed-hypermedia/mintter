@@ -93,7 +93,6 @@ fn main() {
         .setup(move |app| {
           app.manage(sentry_options);
 
-          // Start the daemon!
           daemon::start_daemon(
             app.handle(),
             app.state::<daemon::Connection>(),

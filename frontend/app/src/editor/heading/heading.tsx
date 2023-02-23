@@ -1,3 +1,4 @@
+import {BlockTools} from '@app/editor/blocktools'
 import {useBlockConversations} from '@app/editor/comments/conversations-context'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -12,6 +13,7 @@ import {
 } from '@mintter/shared'
 import {Editor, NodeEntry, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import {ElementDrag} from '../drag-section'
 import {MintterEditor} from '../mintter-changes/plugin'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, resetFlowContent, useBlockFlash} from '../utils'
@@ -121,16 +123,13 @@ function Heading({
   }
 
   return (
-    <li
-      {...attributes}
-      {...blockProps}
-      className={inRoute ? 'flash' : undefined}
-    >
+    <ElementDrag element={element} attributes={attributes} mode={mode}>
       {children}
+      {/* <BlockTools block={element as HeadingType} /> */}
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as HeadingType} />
       </span>
-    </li>
+    </ElementDrag>
   )
 }
 

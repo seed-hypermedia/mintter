@@ -24,7 +24,7 @@ import {useRoute} from '@components/router'
 import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
-import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
+import {Editor, Node, Path, Range, Text, Transforms, Element} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
@@ -253,6 +253,51 @@ export function findPath(node: Node): Path {
   // `ReactEditor.findPath` does not use the editor param for anything. it's there because of API consistency reasons I guess? 🤷🏼‍♂️
   // @ts-ignore
   return ReactEditor.findPath(null, node)
+}
+
+export const getNodePath = (editor: Editor, node: any) => {
+  // [TODO] - some when lost focus bug
+  const path = ReactEditor.findPath(editor, node)
+  const isListItem = ['list-item'].includes(node.type)
+
+  let nodePath = path.length === 1 ? [path[0], 0] : path
+  if (isListItem) nodePath = [...nodePath, 0]
+
+  return nodePath
+}
+
+export const getNodeByPath = (
+  editor: Editor,
+  path?: Path,
+  mode: 'all' | 'highest' | 'lowest' = 'lowest',
+) => {
+  const nodeEntry = Array.from(
+    Editor.nodes(editor, {
+      match: (node) => Editor.isEditor(editor) && Element.isElement(node),
+      at: path || editor.selection?.anchor.path,
+      mode,
+    }),
+  )[0]
+
+  if (nodeEntry) return nodeEntry[0]
+
+  return editor.children[0]
+}
+
+// Make recursive for deep nested items
+export const getNodeByCurrentPath = (editor: Editor) => {
+  const {path} = editor.selection!.anchor
+  const level = path.length
+
+  const isNestedLevel = level > 2
+  const isRootLevel = !isNestedLevel
+  const rootNode: any = editor.children[path[0] || 0]
+
+  if (isRootLevel) {
+    return rootNode
+  }
+
+  return rootNode.children[path[1]]
 }
 
 type GetBlockOptions = Omit<

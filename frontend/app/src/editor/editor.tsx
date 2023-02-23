@@ -36,7 +36,7 @@ import {
 import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
 import type {EditorPlugin} from './types'
-import {setList, setType, toggleFormat} from './utils'
+import {findPath, setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
   mode?: EditorMode
@@ -234,6 +234,7 @@ export function Editor({
         >
           <EditorHoveringToolbar />
           <Editable
+            id="editor"
             data-testid="editor"
             renderElement={renderElement}
             renderLeaf={renderLeaf}
@@ -265,6 +266,7 @@ export function Editor({
           </>
         ) : null}
         <Editable
+          id="editor"
           as={as}
           autoCorrect="false"
           autoCapitalize="false"
