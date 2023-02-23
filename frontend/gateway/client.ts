@@ -30,14 +30,14 @@ const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
 
 let baseUrl = getHost()
 
-console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', {
-  baseUrl,
-  GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
-  VERCEL_ENV: process.env.VERCEL_ENV,
-  NODE_ENV: process.env.NODE_ENV,
-  IS_DEV,
-  IS_CLIENT,
-})
+// console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', {
+//   baseUrl,
+//   GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
+//   VERCEL_ENV: process.env.VERCEL_ENV,
+//   NODE_ENV: process.env.NODE_ENV,
+//   IS_DEV,
+//   IS_CLIENT,
+// })
 
 const prodInter: Interceptor = (next) => async (req) => {
   const result = await next({...req, init: {...req.init, redirect: 'follow'}})
@@ -47,5 +47,7 @@ const prodInter: Interceptor = (next) => async (req) => {
 export const transport = createGrpcWebTransport({
   baseUrl,
   // @ts-ignore
-  interceptors: IS_DEV ? DEV_INTERCEPTORS : [loggingInterceptor, prodInter],
+  interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
+
+// mintter://bafy2bzacec5d52g6zl75pgjcjhpfqdtedtprclrdu5akgfufsxm4oqx2lh3l2/baeaxdiheaiqny3b25y7s22segelbw52rqlessi7rx2a275dlq4zojpctags6u2q
