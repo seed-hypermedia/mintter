@@ -4,7 +4,7 @@ import {SiteHead} from '../site-head'
 export default function DownloadPage({manifest = null}) {
   return (
     <>
-      <SiteHead />
+      <SiteHead title="Download" />
       <main
         id="main-content"
         tabIndex={-1}

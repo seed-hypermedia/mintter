@@ -1,10 +1,16 @@
+import Head from 'next/head'
 import Image from 'next/image'
 import Link from 'next/link'
 import {BurgerMenu} from './burger-menu'
 
-export function SiteHead() {
+const SITE_NAME = process.env.GW_SITE_NAME || 'Mintter'
+
+export function SiteHead({title}: {title?: string}) {
   return (
     <header className="site-head" role="banner">
+      <Head>
+        <title>{title ? `${title} | ${SITE_NAME}` : SITE_NAME}</title>
+      </Head>
       <div className="wrapper">
         <a href="#main-content" className="skip-link">
           Skip to content
