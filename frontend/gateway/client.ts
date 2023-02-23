@@ -26,9 +26,16 @@ function getHost() {
   return 'https://gateway.mintter.com'
 }
 
+const prodInter: Interceptor = (next) => async (req) => {
+  // @ts-ignore
+  const result = await next({...req, redirect: 'manual'})
+  console.log('result of grpc:', req, result)
+  return result
+}
+
 export const transport = createGrpcWebTransport({
   // baseUrl: host,
   baseUrl: 'https://gateway.mintter.com',
   // @ts-ignore
-  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [],
+  interceptors: import.meta.env?.DEV ? [loggingInterceptor] : [prodInter],
 })
