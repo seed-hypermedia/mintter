@@ -3,6 +3,7 @@ import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
+import {useAuthor} from '@app/hooks'
 import {
   useAddSite,
   useInviteMember,
@@ -361,30 +362,35 @@ function getNameOfRole(role: Member_Role): string {
   if (role === Member_Role.EDITOR) return 'Editor'
   return 'Unauthorized'
 }
+function SiteMemberRow({member}: {member: localApi.Member}) {
+  const {data: account} = useAuthor(member.accountId)
 
+  return (
+    <pre>
+      {account?.profile?.alias || member.accountId} -{' '}
+      {getNameOfRole(member.role)}
+    </pre>
+  )
+}
 function SiteMembers({hostname}: {hostname: string}) {
   const {content, open} = useInviteDialog(hostname)
   const {data: members} = useSiteMembers(hostname)
   return (
-    <>
+    <SettingsSection title="Members">
       {members?.map((member) => (
-        <div key={member.accountId}>
-          {member.accountId} - {getNameOfRole(member.role)}
-        </div>
+        <SiteMemberRow key={member.accountId} member={member} />
       ))}
       {content}
-      <SettingsSection title="Members">
-        <Button
-          type="button"
-          size="2"
-          data-testid="submit"
-          onClick={open}
-          css={{alignSelf: 'flex-start'}}
-        >
-          Invite Editor
-        </Button>
-      </SettingsSection>
-    </>
+      <Button
+        type="button"
+        size="2"
+        data-testid="submit"
+        onClick={open}
+        css={{alignSelf: 'flex-start'}}
+      >
+        Invite Editor
+      </Button>
+    </SettingsSection>
   )
 }
 
