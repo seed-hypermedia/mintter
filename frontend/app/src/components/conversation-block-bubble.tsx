@@ -51,8 +51,8 @@ export function ConversationBlockBubble({block}: {block: FlowContent}) {
         css={{
           userSelect: 'none',
           position: 'absolute',
-          top: 0,
-          right: -40,
+          top: 10,
+          right: -54,
           display: 'flex',
           alignItems: 'center',
           gap: '$2',

@@ -1,3 +1,4 @@
+import {Blocktools, BlockTools} from '@app/editor/blocktools'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
@@ -18,6 +19,7 @@ import {
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import {ElementDrag} from '../drag-section'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, useBlockFlash} from '../utils'
@@ -235,8 +237,6 @@ function Statement({
 }: RenderElementProps & {mode: EditorMode}) {
   let {blockProps} = useBlockProps(element)
 
-  let inRoute = useBlockFlash(attributes.ref, element.id)
-
   if (mode == EditorMode.Embed) {
     return (
       <span {...attributes} {...blockProps}>
@@ -246,17 +246,12 @@ function Statement({
   }
 
   return (
-    <li
-      {...attributes}
-      {...blockProps}
-      className={inRoute ? 'flash' : undefined}
-      style={{position: 'relative'}}
-    >
+    <ElementDrag element={element} attributes={attributes}>
       {children}
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as StatementType} />
       </span>
-    </li>
+    </ElementDrag>
   )
 }
 

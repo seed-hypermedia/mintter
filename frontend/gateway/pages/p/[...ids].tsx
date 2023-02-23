@@ -51,7 +51,6 @@ export const getServerSideProps = async ({
       notFound: true,
     }
   }
-  
 }
 
 function ClientCIDPage() {

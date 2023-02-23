@@ -32,6 +32,19 @@ li::marker {
   }
 }
 
+[data-action='dragged-over'] {
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    height: 3px;
+    width: 100%;
+    background-color: #007aff;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 .code-selector-wrapper {
   position: absolute;
   top: 0;
@@ -71,6 +84,8 @@ li::marker {
   blockquote {
     max-width: var(--editor-width, 59ch);
     width: 100%;
+    margin: 0;
+    padding-block: 0.5em;
   }
 
   h1 {

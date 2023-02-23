@@ -1,22 +1,23 @@
 // import 'show-keys'
+import {ScrollArea} from '@app/components/scroll-area'
 import {DraftActor} from '@app/draft-machine'
+import {DragProvider} from '@app/drag-context'
+import {createDragMachine} from '@app/drag-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {Blocktools} from '@app/editor/blocktools'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {ChildrenOf, Document} from '@mintter/shared'
 import {AppError} from '@app/root'
+import {Box} from '@components/box'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
+import {ChildrenOf, Document} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {ScrollArea} from '@app/components/scroll-area'
-import {Box} from '@components/box'
 
 type DraftPageProps = {
   draftActor: DraftActor
@@ -24,15 +25,15 @@ type DraftPageProps = {
 }
 
 export default function DraftPage({draftActor, editor}: DraftPageProps) {
+  const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
-
+  let dragService = useInterpret(() => createDragMachine(editor))
   // @ts-ignore
   window.mouseService = mouseService
 
   useInitialFocus(editor)
 
-  const [state, send] = useActor(draftActor)
-  console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
+  // console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
 
   if (state.matches('errored')) {
     return <Text>ERROR: {state.context.errorMessage}</Text>
@@ -45,11 +46,15 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         className="page-wrapper"
         onMouseMove={(event) => {
           mouseService.send({type: 'MOUSE.MOVE', position: event.clientY})
-
+          // console.log('mouse moving')
           draftActor.send('EDITING.STOP')
         }}
         onMouseLeave={() => {
           mouseService.send('DISABLE.CHANGE')
+        }}
+        onMouseUp={() => {
+          dragService.send('DROPPED')
+          mouseService.send('DISABLE.DRAG.END')
         }}
       >
         <ErrorBoundary
@@ -66,9 +71,9 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
             }}
           >
             <MouseProvider value={mouseService}>
-              <BlockHighLighter>
-                <FileProvider value={state.context.draft}>
-                  <Blocktools editor={editor}>
+              <DragProvider value={dragService}>
+                <BlockHighLighter>
+                  <FileProvider value={state.context.draft}>
                     {state.context.localDraft?.content ? (
                       <Editor
                         editor={editor}
@@ -82,9 +87,9 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
                         }}
                       />
                     ) : null}
-                  </Blocktools>
-                </FileProvider>
-              </BlockHighLighter>
+                  </FileProvider>
+                </BlockHighLighter>
+              </DragProvider>
             </MouseProvider>
           </ScrollArea>
         </ErrorBoundary>

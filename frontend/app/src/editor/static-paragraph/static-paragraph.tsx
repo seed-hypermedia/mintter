@@ -1,15 +1,16 @@
+import {useDrag} from '@app/drag-context'
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
+import {css} from '@app/stitches.config'
+import {mergeRefs} from '@app/utils/mege-refs'
+import {Box} from '@components/box'
 import {
   isStaticParagraph,
   StaticParagraph as StaticParagraphType,
 } from '@mintter/shared'
-import {css} from '@app/stitches.config'
-import {mergeRefs} from '@app/utils/mege-refs'
-import {Box} from '@components/box'
 import {useMemo, useRef} from 'react'
-import {RenderElementProps, useSlateStatic} from 'slate-react'
+import {RenderElementProps, useSlate} from 'slate-react'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
@@ -44,7 +45,8 @@ function StaticParagraph({
   attributes,
   mode,
 }: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
-  let editor = useSlateStatic()
+  let editor = useSlate()
+  let dragService = useDrag()
   let {elementProps, parentPath} = usePhrasingProps(editor, element)
 
   let pRef = useRef<HTMLElement | undefined>()
@@ -54,6 +56,12 @@ function StaticParagraph({
   useBlockObserve(mode, pRef)
 
   let mouseService = useMouse()
+
+  let dragProps = {
+    onMouseOver: () => {
+      dragService?.send({type: 'DRAG.OVER', toPath: parentPath})
+    },
+  }
 
   let mouseProps =
     mode != EditorMode.Discussion
@@ -100,6 +108,7 @@ function StaticParagraph({
       {...elementProps}
       {...mouseProps}
       {...otherProps}
+      {...dragProps}
     >
       {children}
     </Box>

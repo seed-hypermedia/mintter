@@ -1,19 +1,18 @@
-import {queryKeys} from '@app/hooks'
+import {appInvalidateQueries, appQueryClient} from '@app/query-client'
+import * as secp256k1 from '@noble/secp256k1'
 import {
   useMutation,
   UseMutationOptions,
   useQuery,
   UseQueryResult,
 } from '@tanstack/react-query'
-import {Store} from 'tauri-plugin-store-api'
+import {decode as bech32decode, encode as bech32encode} from 'bech32-buffer'
 import {RelayPool} from 'nostr-relaypool'
 import {Event, NostrToolsEvent} from 'nostr-relaypool/event'
 import {getPublicKey, Kind} from 'nostr-tools'
-import * as secp256k1 from '@noble/secp256k1'
-import {decode as bech32decode, encode as bech32encode} from 'bech32-buffer'
-import {appInvalidateQueries, appQueryClient} from '@app/query-client'
-import {EXPERIMENTS} from './experimental'
 import {useEffect, useState} from 'react'
+import {Store} from 'tauri-plugin-store-api'
+import {EXPERIMENTS} from './experimental'
 
 const nostrStore = new Store('.nostr.dat')
 
@@ -135,11 +134,11 @@ export function useNostrReplies(postId: string) {
         nostr.relays,
         (event, isAfterEose, relayURL) => {
           ackEvent(event)
-          // console.log('Reply Evt', {postId, event, isAfterEose, relayURL})
+          console.log('Reply Evt', {postId, event, isAfterEose, relayURL})
         },
         undefined,
         (events, relayURL) => {
-          // console.log('Reply relay events', events, relayURL)
+          console.log('Reply relay events', events, relayURL)
         },
       ),
     [postId, nostr],
@@ -215,6 +214,11 @@ export function useNostrProfile(pubkey?: string | null) {
       ],
       nostr.relays,
       (event, isAfterEose, relayURL) => {
+        console.log(
+          '🚀 ~ file: nostr.ts:217 ~ useEffect ~ isAfterEose, relayURL:',
+          isAfterEose,
+          relayURL,
+        )
         const profile = JSON.parse(event.content)
         nostrStore.set(`UserProfile:${pubkey}`, profile).catch((e) => {
           console.error('Error saving user metadata', e)
@@ -223,7 +227,7 @@ export function useNostrProfile(pubkey?: string | null) {
       },
       undefined,
       (events, relayURL) => {
-        // console.log('Reply relay events', events, relayURL)
+        console.log('Reply relay events', events, relayURL)
       },
     )
   }, [pubkey, nostr])
@@ -398,7 +402,7 @@ async function startNostr() {
     )
     const createdAtTime = Math.floor(Date.now() / 1000)
     // create the id per the spec
-    const pubkeyLol = Buffer.from(nostrPubKeyDecoded.data).toString('hex')
+    // const pubkeyLol = Buffer.from(nostrPubKeyDecoded.data).toString('hex')
     // not sure what format we should store the keys in, this is kind of a mess..
     const digestableEvtData = JSON.stringify([
       0,
@@ -445,7 +449,7 @@ async function startNostr() {
     relays,
     (event, isAfterEose, relayURL) => {
       ackEvent(event)
-      // console.log('Evt', event, isAfterEose, relayURL)
+      console.log('Evt', event, isAfterEose, relayURL)
     },
     undefined,
     (events, relayURL) => {
@@ -458,7 +462,7 @@ async function startNostr() {
   return {close, relays, relayPool, publish, getPublicKey}
 }
 type Nostr = Awaited<ReturnType<typeof startNostr>>
-let nostr: Nostr | undefined = undefined
+// let nostr: Nostr | undefined = undefined
 
 let startingNostr: undefined | Promise<Nostr> = undefined
 async function getNostr(): Promise<Nostr> {
