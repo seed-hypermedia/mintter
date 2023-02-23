@@ -72,24 +72,10 @@ export default function Settings({
           </TabsPrimitive.Trigger>
           <TabsPrimitive.Trigger
             className="tab-trigger"
-            value="wallets"
-            data-testid="tab-wallets"
-          >
-            Wallets
-          </TabsPrimitive.Trigger>
-          <TabsPrimitive.Trigger
-            className="tab-trigger"
             value="settings"
             data-testid="tab-settings"
           >
             Settings
-          </TabsPrimitive.Trigger>
-          <TabsPrimitive.Trigger
-            className="tab-trigger"
-            value="verified-accounts"
-            data-testid="tab-verified-accounts"
-          >
-            Verified Accounts
           </TabsPrimitive.Trigger>
           <TabsPrimitive.Trigger
             className="tab-trigger"
@@ -119,16 +105,7 @@ export default function Settings({
           value="account"
           data-tauri-drag-region
         >
-          {/* <ScrollArea> */}
           <AccountInfo service={auth} />
-          {/* </ScrollArea> */}
-        </TabsPrimitive.Content>
-        <TabsPrimitive.Content
-          className="settings-tab-content tab-content"
-          value="wallets"
-          data-tauri-drag-region
-        >
-          <ComingSoon />
         </TabsPrimitive.Content>
         <TabsPrimitive.Content
           className="settings-tab-content tab-content"
@@ -136,13 +113,6 @@ export default function Settings({
           data-tauri-drag-region
         >
           <AppSettings />
-        </TabsPrimitive.Content>
-        <TabsPrimitive.Content
-          className="settings-tab-content tab-content"
-          value="verified-accounts"
-          data-tauri-drag-region
-        >
-          <ComingSoon />
         </TabsPrimitive.Content>
         <TabsPrimitive.Content
           className="settings-tab-content tab-content"
@@ -336,14 +306,6 @@ function AppSettings() {
       <Button size="1" variant="outlined" onClick={onReloadSync}>
         Reload Database localApi.updateProfile
       </Button>
-    </div>
-  )
-}
-
-function ComingSoon() {
-  return (
-    <div className="settings-tab-content">
-      <code>coming soon!</code>
     </div>
   )
 }
