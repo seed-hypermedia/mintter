@@ -17,8 +17,8 @@ import {Editor, Node, Path, Transforms} from 'slate'
 import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
-import { red } from '@radix-ui/colors'
-import { useActor, useSelector } from '@xstate/react'
+import {red} from '@radix-ui/colors'
+import {useActor, useSelector} from '@xstate/react'
 
 export const ELEMENT_PARAGRAPH = 'paragraph'
 
@@ -70,14 +70,14 @@ function Paragraph({
 }: RenderElementProps & {mode: EditorMode; element: ParagraphType}) {
   let editor = useSlate()
   let {elementProps, parentNode, parentPath} = usePhrasingProps(editor, element)
-// dragProps
+  // dragProps
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
     ref: mergeRefs([attributes.ref, pRef]),
   }
   useBlockObserve(mode, pRef)
-  let mouseService = useMouse();
-  let dragService = useDrag();
+  let mouseService = useMouse()
+  let dragService = useDrag()
 
   let mouseProps =
     mode != EditorMode.Discussion
@@ -94,29 +94,29 @@ function Paragraph({
         }
       : {}
 
-    const onDragOver = (e: React.DragEvent) => {
-      e.preventDefault()
-      // const domNode = ReactEditor.toDOMNode(editor, element)
-      const path = ReactEditor.findPath(editor, element)
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    // const domNode = ReactEditor.toDOMNode(editor, element)
+    const path = ReactEditor.findPath(editor, element)
 
-      const parentBlock = Editor.above<FlowContent>(editor, {
-        match: isFlowContent,
-        mode: 'lowest',
-        at: path,
+    const parentBlock = Editor.above<FlowContent>(editor, {
+      match: isFlowContent,
+      mode: 'lowest',
+      at: path,
+    })
+
+    if (parentBlock) {
+      const [node, ancestorPath] = parentBlock
+
+      const domNode = ReactEditor.toDOMNode(editor, node)
+
+      dragService?.send({
+        type: 'DRAG.OVER',
+        toPath: ancestorPath,
+        element: domNode as HTMLLIElement,
       })
-
-      if (parentBlock) {
-        const [node, ancestorPath] = parentBlock;
-
-        const domNode = ReactEditor.toDOMNode(editor, node)
-
-        dragService?.send({
-          type: 'DRAG.OVER',
-          toPath: ancestorPath,
-          element: domNode as HTMLLIElement,
-        })
-      }
     }
+  }
 
   if (mode == EditorMode.Embed) {
     return (

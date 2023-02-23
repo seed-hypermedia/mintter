@@ -31,13 +31,7 @@ import {
   video,
 } from '@mintter/shared'
 import {useSelector} from '@xstate/react'
-import {
-  Fragment,
-  MouseEvent,
-  ReactNode,
-  useMemo,
-  useState,
-} from 'react'
+import {Fragment, MouseEvent, ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, Node, NodeEntry, Transforms} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
@@ -77,7 +71,7 @@ function DraftBlocktools(props: BlockData) {
 
   const onMouseUp = (e: MouseEvent<HTMLDivElement>) => {
     mouseService.send('DISABLE.DRAG.END')
-    Transforms.deselect(editor);
+    Transforms.deselect(editor)
   }
   // TODO: ADD A MOUSEUP EVENT TO ENABLE THE BLOCKTOOLS MACHINE
 

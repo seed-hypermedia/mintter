@@ -19,7 +19,7 @@ import {
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
-import { ElementDrag } from '../drag-section'
+import {ElementDrag} from '../drag-section'
 import {EditorMode} from '../plugin-utils'
 import type {EditorPlugin} from '../types'
 import {isFirstChild, useBlockFlash} from '../utils'
@@ -246,10 +246,7 @@ function Statement({
   }
 
   return (
-    <ElementDrag
-      element={element}
-      attributes={attributes}
-    >
+    <ElementDrag element={element} attributes={attributes}>
       {children}
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as StatementType} />

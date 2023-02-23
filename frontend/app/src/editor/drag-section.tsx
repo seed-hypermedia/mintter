@@ -1,15 +1,15 @@
-import { useDrag } from '@app/drag-context';
-import { dragMachine } from '@app/drag-machine';
-import { useMouse } from '@app/mouse-context';
-import { FlowContent } from '@mintter/shared';
-import React from 'react';
-import { Editor, Transforms, Element as SlateElement, Node } from 'slate';
-import { ReactEditor, RenderElementProps, useSlate } from 'slate-react';
-import { BlockTools } from './blocktools';
-import { useBlockProps } from './editor-node-props';
-import { useBlockFlash } from './utils';
+import {useDrag} from '@app/drag-context'
+import {dragMachine} from '@app/drag-machine'
+import {useMouse} from '@app/mouse-context'
+import {FlowContent} from '@mintter/shared'
+import React from 'react'
+import {Editor, Transforms, Element as SlateElement, Node} from 'slate'
+import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
+import {BlockTools} from './blocktools'
+import {useBlockProps} from './editor-node-props'
+import {useBlockFlash} from './utils'
 
-export type DndState = { fromPath: number[] | null; toPath: number[] | null };
+export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
 const ElementDrag = ({children, element, attributes}: RenderElementProps) => {
   let dragService = useDrag()

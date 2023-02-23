@@ -28,7 +28,7 @@ import {findPath, lowerPoint, resetFlowContent, useBlockFlash} from '../utils'
 import {useBlockConversations} from '@app/editor/comments/conversations-context'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {BlockTools} from '@app/editor/blocktools'
-import { ElementDrag } from '../drag-section'
+import {ElementDrag} from '../drag-section'
 
 export const ELEMENT_CODE = 'code'
 const LEAF_TOKEN = 'codeToken'
@@ -240,11 +240,7 @@ function Code({
   }
 
   return (
-    <ElementDrag
-      element={element}
-      attributes={attributes}
-      mode={mode}
-    >
+    <ElementDrag element={element} attributes={attributes} mode={mode}>
       {children}
       {/* <BlockTools block={element as CodeType} /> */}
       {mode == EditorMode.Draft ? (

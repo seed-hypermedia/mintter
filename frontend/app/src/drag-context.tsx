@@ -1,8 +1,8 @@
 import {dragMachine} from '@app/drag-machine'
-import { useSelector } from '@xstate/react'
+import {useSelector} from '@xstate/react'
 import {useContext, createContext, PropsWithChildren} from 'react'
 import {InterpreterFrom} from 'xstate'
-import { createInterpreterContext } from './utils/machine-utils'
+import {createInterpreterContext} from './utils/machine-utils'
 
 /**
  * we are not using the machine-utils here because we want the `useDrag` hook to be able to return undefined. this is because we should not be able to drag any block inside a publication, and we are calling this hook on each paragraph
