@@ -262,12 +262,17 @@ message PublishDocumentResponse {}
 
 // Request to unpublish a document from a site.
 message UnpublishDocumentRequest {
-  // Required. Document ID to unpublish from the web site.
+  // Optional. Document ID to unpublish from the web site.
+  // If empty then path must be provided.
   string document_id = 1;
 
   // Optional. Specific version to unpublish from the web site.
-  // If empty, all versions should be unpublished.
+  // If empty, document ID or path must be provided.
   string version = 2;
+
+  // Optional. Path to unpublish from the web site.
+  // If empty, document_id must be provided.
+  string path = 3;
 }
 
 // Response after unpublishing a web publication.
