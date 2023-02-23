@@ -17,16 +17,11 @@ let host =
     ? 'http://127.0.0.1:56001'
     : 'https://gateway.mintter.com'
 
-    console.log('🚀 ~ file: client.ts:16 ~ host:', host)
-
-function getHost() {
-  if (process.env.GW_GRPC_ENDPOINT) {
-    return process.env.GW_GRPC_ENDPOINT
-  } else if (process.env.VERCEL_ENV == 'development') {
-    return 'http://localhost:56001'
-  }
-  return 'https://gateway.mintter.com'
-}
+    console.log(
+      '🚀 ~ file: client.ts:16 ~ host:',
+      process.env.GW_GRPC_ENDPOINT,
+      host,
+    )
 
 const prodInter: Interceptor = (next) => async (req) => {
   const result = await next({...req, init: {...req.init, redirect: 'follow'}})
@@ -41,7 +36,7 @@ let baseUrl = process.env.VERCEL ? 'https://gateway.mintter.com' : host
 console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', baseUrl)
 
 export const transport = createGrpcWebTransport({
-  baseUrl,
+  baseUrl: 'https://gateway.mintter.com',
   // @ts-ignore
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
