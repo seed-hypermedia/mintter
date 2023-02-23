@@ -15,7 +15,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 const prodInter: Interceptor = (next) => async (req) => {
   console.log('prodInter:', req)
 
-  const result = await next({...req, init: {redirect: 'follow'}})
+  const result = await next({...req, init: {...req.init, redirect: 'follow'}})
   console.log('result of grpc:', req, result)
   return result
 }
