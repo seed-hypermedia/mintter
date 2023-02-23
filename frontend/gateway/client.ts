@@ -13,10 +13,10 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
 }
 
 let host =
-  process.env.GW_GRPC_ENDPOINT || process.env.VERCEL_ENV == 'development'
-    ? 'http://127.0.0.1:56001'
-    : 'https://gateway.mintter.com'
-
+  process.env.GW_GRPC_ENDPOINT || process.env.VERCEL
+    ? 'https://gateway.mintter.com'
+    : 'http://127.0.0.1:56001'
+    
     console.log(
       '🚀 ~ file: client.ts:16 ~ host:',
       process.env.GW_GRPC_ENDPOINT,
