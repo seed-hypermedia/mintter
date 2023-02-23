@@ -19,6 +19,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {toast} from 'react-hot-toast'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {TextField} from '@components/text-field'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
@@ -143,9 +144,10 @@ function PublishedURLs({
   return (
     <>
       {publications?.map((pub) => {
+        const shortHost = hostnameStripProtocol(pub.hostname)
         const shortURL = pub.path
-          ? `${pub.hostname}/${pub.path}`
-          : `${pub.hostname}/p/${pub.documentId}/${pub.version}`
+          ? `${shortHost}/${pub.path}`
+          : `${shortHost}/p/${pub.documentId}/${pub.version}`
         return (
           <AccessURLRow
             key={`${pub.documentId}/${pub.version}`}

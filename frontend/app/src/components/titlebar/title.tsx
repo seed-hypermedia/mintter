@@ -1,4 +1,5 @@
 import {queryKeys, useAuthor} from '@app/hooks'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
 import {getDraft, getPublication} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
@@ -27,7 +28,9 @@ export function Title() {
         </Route>
         <Route path="/sites/:hostname">
           <span data-tauri-drag-region>
-            {tauriDecodeParam(siteHomeParams?.hostname)}
+            {hostnameStripProtocol(
+              tauriDecodeParam(siteHomeParams?.hostname) || '',
+            )}
           </span>
         </Route>
 
