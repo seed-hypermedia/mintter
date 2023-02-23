@@ -24,7 +24,7 @@ var (
 	pastTime   = time.Now().Add(-time.Minute)
 )
 
-func TestQueries(t *testing.T) {
+func TestTokens(t *testing.T) {
 	conn, closer, err := makeConn()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, closer()) }()
@@ -93,7 +93,19 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 		value TEXT
 	) WITHOUT ROWID;
 
-`)
+	CREATE TABLE accounts (
+		-- Short numerical ID to be used internally.
+		id INTEGER PRIMARY KEY,
+		-- Multihash part of the Account ID.
+		multihash BLOB UNIQUE NOT NULL,
+		-- Bytes of the public key.
+		-- Mostly NULL because Ed25519 keys can be extracted from the CID.
+		public_key BLOB DEFAULT NULL,
+		-- Subjective (locally perceived) time when the item was created.
+		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
+	);
+	`)
+
 	if err != nil {
 		return nil, nil, err
 	}
