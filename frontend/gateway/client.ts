@@ -37,8 +37,11 @@ const IS_DEV = !!import.meta.env?.DEV
 const IS_CLIENT = !!global.window
 const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
 
+let baseUrl = process.env.VERCEL ? 'https://gateway.mintter.com' : host
+console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', baseUrl)
+
 export const transport = createGrpcWebTransport({
-  baseUrl: process.env.VERCEL ? 'https://gateway.mintter.com' : host,
+  baseUrl,
   // @ts-ignore
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
