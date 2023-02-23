@@ -28,7 +28,6 @@ function getHost() {
 
 const prodInter: Interceptor = (next) => async (req) => {
   console.log('prodInter:', req)
-  throw new Error('Intercepted, lol!')
   // @ts-ignore
   const result = await next({...req, redirect: 'follow'})
   console.log('result of grpc:', req, result)
