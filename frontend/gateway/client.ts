@@ -28,8 +28,7 @@ function getHost() {
 
 const prodInter: Interceptor = (next) => async (req) => {
   console.log('prodInter:', req)
-  // @ts-ignore
-  const result = await next({...req, redirect: 'follow'})
+  const result = await next({...req, init: {redirect: 'follow'}})
   console.log('result of grpc:', req, result)
   return result
 }
