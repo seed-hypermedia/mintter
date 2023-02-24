@@ -985,8 +985,7 @@ export class PublishDocumentResponse extends Message<PublishDocumentResponse> {
  */
 export class UnpublishDocumentRequest extends Message<UnpublishDocumentRequest> {
   /**
-   * Optional. Document ID to unpublish from the web site.
-   * If empty then path must be provided.
+   * Required. Document ID to unpublish from the web site.
    *
    * @generated from field: string document_id = 1;
    */
@@ -994,19 +993,11 @@ export class UnpublishDocumentRequest extends Message<UnpublishDocumentRequest> 
 
   /**
    * Optional. Specific version to unpublish from the web site.
-   * If empty, document ID or path must be provided.
+   * If empty, all versions matching document_id will be unpublished
    *
    * @generated from field: string version = 2;
    */
   version = "";
-
-  /**
-   * Optional. Path to unpublish from the web site.
-   * If empty, document_id must be provided.
-   *
-   * @generated from field: string path = 3;
-   */
-  path = "";
 
   constructor(data?: PartialMessage<UnpublishDocumentRequest>) {
     super();
@@ -1018,7 +1009,6 @@ export class UnpublishDocumentRequest extends Message<UnpublishDocumentRequest> 
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UnpublishDocumentRequest {
