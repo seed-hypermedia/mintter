@@ -27,14 +27,18 @@ export const getServerSideProps = async ({
       },
     }
   }
-  const [documentId, version] = params?.ids || []
+  let [documentId, version] = params?.ids || []
   // res.setHeader(
   //   'Cache-Control',
   //   `public, s-maxage=${
   //     version ? '2592000, stale-while-revalidate=3599' : '86400'
   //   }`,
   // )
-  console.log('ids params: ', documentId, version)
+  let checkIds = documentId.split('/')
+  if (checkIds.length > 1) {
+    documentId = checkIds[0]
+    version = checkIds[1]
+  }
   try {
     const publication = await getPublication(documentId, version, transport)
     if (!publication) {
@@ -60,6 +64,11 @@ export const getServerSideProps = async ({
 function ClientCIDPage() {
   const router = useRouter()
   let [docId, version = ''] = router.query.ids || []
+  console.log(
+    '🚀 ~ file: [...ids].tsx:68 ~ ClientCIDPage ~ docId, version:',
+    docId,
+    version,
+  )
   let {data} = useQuery({
     queryKey: ['pub', docId, version],
     enabled: !!docId,
