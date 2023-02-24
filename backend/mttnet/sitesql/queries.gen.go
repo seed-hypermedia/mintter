@@ -353,15 +353,15 @@ type addMemberResult struct {
 	SiteMembersRole int64
 }
 
-func addMember(conn *sqlite.Conn, accID string, siteMembersRole int64) (addMemberResult, error) {
+func addMember(conn *sqlite.Conn, accID []byte, siteMembersRole int64) (addMemberResult, error) {
 	const query = `INSERT OR REPLACE INTO site_members (account_id, role)
-VALUES ((SELECT id FROM accounts WHERE multihash = x' :accID ')), :siteMembersRole)
+VALUES ((SELECT id FROM accounts WHERE multihash = :accID), :siteMembersRole)
 RETURNING site_members.role`
 
 	var out addMemberResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetText(":accID", accID)
+		stmt.SetBytes(":accID", accID)
 		stmt.SetInt64(":siteMembersRole", siteMembersRole)
 	}
 
@@ -382,11 +382,11 @@ RETURNING site_members.role`
 	return out, err
 }
 
-func removeMember(conn *sqlite.Conn, siteMembersAccountID int64) error {
-	const query = `DELETE FROM site_members WHERE site_members.account_id = :siteMembersAccountID`
+func removeMember(conn *sqlite.Conn, accID []byte) error {
+	const query = `DELETE FROM site_members WHERE site_members.account_id =(SELECT id FROM accounts WHERE multihash = :accID )`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":siteMembersAccountID", siteMembersAccountID)
+		stmt.SetBytes(":accID", accID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -402,18 +402,17 @@ func removeMember(conn *sqlite.Conn, siteMembersAccountID int64) error {
 }
 
 type getMemberResult struct {
-	SiteMembersAccountID int64
-	SiteMembersRole      int64
+	SiteMembersRole int64
 }
 
-func getMember(conn *sqlite.Conn, siteMembersAccountID int64) (getMemberResult, error) {
-	const query = `SELECT site_members.account_id, site_members.role
-FROM site_members WHERE site_members.account_id = :siteMembersAccountID`
+func getMember(conn *sqlite.Conn, accID []byte) (getMemberResult, error) {
+	const query = `SELECT site_members.role
+FROM site_members WHERE site_members.account_id =(SELECT id FROM accounts WHERE multihash = :accID )`
 
 	var out getMemberResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":siteMembersAccountID", siteMembersAccountID)
+		stmt.SetBytes(":accID", accID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -421,8 +420,7 @@ FROM site_members WHERE site_members.account_id = :siteMembersAccountID`
 			return errors.New("getMember: more than one result return for a single-kind query")
 		}
 
-		out.SiteMembersAccountID = stmt.ColumnInt64(0)
-		out.SiteMembersRole = stmt.ColumnInt64(1)
+		out.SiteMembersRole = stmt.ColumnInt64(0)
 		return nil
 	}
 
@@ -435,13 +433,14 @@ FROM site_members WHERE site_members.account_id = :siteMembersAccountID`
 }
 
 type listMembersResult struct {
-	SiteMembersAccountID int64
-	SiteMembersRole      int64
+	SiteMembersRole   int64
+	AccountsMultihash []byte
 }
 
 func listMembers(conn *sqlite.Conn) ([]listMembersResult, error) {
-	const query = `SELECT site_members.account_id, site_members.role
-FROM site_members`
+	const query = `SELECT site_members.role, accounts.multihash
+FROM site_members
+JOIN accounts ON accounts.id = site_members.account_id`
 
 	var out []listMembersResult
 
@@ -450,8 +449,8 @@ FROM site_members`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, listMembersResult{
-			SiteMembersAccountID: stmt.ColumnInt64(0),
-			SiteMembersRole:      stmt.ColumnInt64(1),
+			SiteMembersRole:   stmt.ColumnInt64(0),
+			AccountsMultihash: stmt.ColumnBytes(1),
 		})
 
 		return nil

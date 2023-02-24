@@ -4,10 +4,12 @@ package sitesql
 import (
 	"encoding/hex"
 	"fmt"
+	"mintter/backend/core"
 	site "mintter/backend/genproto/documents/v1alpha"
 	"time"
 
 	"crawshaw.io/sqlite"
+	"github.com/ipfs/go-cid"
 )
 
 // TokenInfo holds information about the token.
@@ -72,43 +74,57 @@ func CleanExpiredTokens(conn *sqlite.Conn) error {
 }
 
 // AddMember inserts a new member in the site with provided role.
-func AddMember(conn *sqlite.Conn, accountID string, role int64) error {
-	accountIDHex := hex.EncodeToString([]byte(accountID))
-	if _, err := addMember(conn, accountIDHex, int64(role)); err != nil {
-		return fmt.Errorf("Could not insert token in the db : %w", err)
+func AddMember(conn *sqlite.Conn, accountCID cid.Cid, role int64) error {
+	accIDHexStr := accountCID.Hash().HexString()
+	accIDBytes, err := hex.DecodeString(accIDHexStr)
+	if err != nil {
+		return fmt.Errorf("Add member could not decode provided accountID: %w", err)
+	}
+	//accountIDHex := hex.EncodeToString([]byte(accountID))
+	if _, err := addMember(conn, accIDBytes, int64(role)); err != nil {
+		return fmt.Errorf("Could not add member in the db : %w", err)
 	}
 	return nil
 }
 
-/*
-// AddMember inserts a new member in the site with provided role.
-func AddMember(conn *sqlite.Conn, db *sqlitevcs.DB, accountID string, role int64) error {
-	vcsConn, release, err := db.Conn(context.Background())
+// RemoveMember deletes a given member from the site in the site with provided role.
+func RemoveMember(conn *sqlite.Conn, accountCID cid.Cid) error {
+	accIDHexStr := accountCID.Hash().HexString()
+	accIDBytes, err := hex.DecodeString(accIDHexStr)
 	if err != nil {
-		return fmt.Errorf("Could not add member since vcs database argument is not valid: %w", err)
+		return fmt.Errorf("Remove member could not decode provided accountID: %w", err)
 	}
-	defer release()
-	accCID, err := cid.Decode(accountID)
-	if err != nil {
-		return fmt.Errorf("Could not add member since could not decode site account ID: %w", err)
-	}
-	accID := vcsConn.LookupAccount(accCID)
 
-	if _, err = addMember(conn, int64(accID), int64(role)); err != nil {
-		return fmt.Errorf("Could not insert token in the db : %w", err)
+	if err := removeMember(conn, accIDBytes); err != nil {
+		return fmt.Errorf("Could not remove member in the db : %w", err)
 	}
 	return nil
 }
 
-// GetMember gets a site member.
-func GetMember(conn *sqlite.Conn, token string) (TokenInfo, error) {
-	tokenInfo, err := getMember(conn, token)
+// GetMemberRole gets a member role. Error if it does not exist.
+func GetMemberRole(conn *sqlite.Conn, accountCID cid.Cid) (site.Member_Role, error) {
+	accIDHexStr := accountCID.Hash().HexString()
+	accIDBytes, err := hex.DecodeString(accIDHexStr)
 	if err != nil {
-		return TokenInfo{}, fmt.Errorf("Could not get token: %w", err)
+		return site.Member_ROLE_UNSPECIFIED, fmt.Errorf("Get member could not decode provided accountID: %w", err)
 	}
-	return TokenInfo{
-		Role:           site.Member_Role(tokenInfo.InviteTokensRole),
-		ExpirationTime: time.Unix(tokenInfo.InviteTokensExpirationTime, 0),
-	}, nil
+	member, err := getMember(conn, accIDBytes)
+	if err != nil || member.SiteMembersRole == int64(site.Member_ROLE_UNSPECIFIED) {
+		return site.Member_ROLE_UNSPECIFIED, fmt.Errorf("Could not get member: %w", err)
+	}
+	return site.Member_Role(member.SiteMembersRole), nil
 }
-*/
+
+// ListMembers lists all the members on a site.
+func ListMembers(conn *sqlite.Conn) (map[cid.Cid]site.Member_Role, error) {
+	members, err := listMembers(conn)
+	ret := map[cid.Cid]site.Member_Role{}
+	if err != nil {
+		return ret, fmt.Errorf("Could not list members: %w", err)
+	}
+	for _, member := range members {
+		accountCID := cid.NewCidV1(core.CodecAccountKey, member.AccountsMultihash)
+		ret[accountCID] = site.Member_Role(member.SiteMembersRole)
+	}
+	return ret, nil
+}

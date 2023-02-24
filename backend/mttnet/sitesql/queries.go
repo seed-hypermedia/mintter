@@ -130,7 +130,7 @@ func generateQueries() error {
 			), qb.Line,
 			"VALUES", qb.List(
 				qb.SubQuery(
-					"SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" = x'", qb.Var("accID", sqlitegen.TypeText), "')",
+					"SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes),
 				),
 				qb.VarCol(sqliteschema.SiteMembersRole),
 			), qb.Line,
@@ -139,24 +139,28 @@ func generateQueries() error {
 
 		qb.MakeQuery(sqliteschema.Schema, "removeMember", sqlitegen.QueryKindExec,
 			"DELETE FROM", sqliteschema.SiteMembers,
-			"WHERE", sqliteschema.SiteMembersAccountID, "=", qb.VarCol(sqliteschema.SiteMembersAccountID),
+			"WHERE", sqliteschema.SiteMembersAccountID, "="+
+				"(SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes), ")",
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "getMember", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.SiteMembersAccountID),
+			"SELECT",
+			qb.Results(
 				qb.ResultCol(sqliteschema.SiteMembersRole),
 			), qb.Line,
 			"FROM", sqliteschema.SiteMembers,
-			"WHERE", sqliteschema.SiteMembersAccountID, "=", qb.VarCol(sqliteschema.SiteMembersAccountID),
+			"WHERE", sqliteschema.SiteMembersAccountID, "="+
+				"(SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes), ")",
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "listMembers", sqlitegen.QueryKindMany,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.SiteMembersAccountID),
+			"SELECT",
+			qb.Results(
 				qb.ResultCol(sqliteschema.SiteMembersRole),
+				qb.ResultCol(sqliteschema.AccountsMultihash),
 			), qb.Line,
-			"FROM", sqliteschema.SiteMembers,
+			"FROM", sqliteschema.SiteMembers, qb.Line,
+			"JOIN", sqliteschema.Accounts, "ON", sqliteschema.AccountsID, "=", sqliteschema.SiteMembersAccountID,
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "addWebPublicationRecord", sqlitegen.QueryKindExec,
