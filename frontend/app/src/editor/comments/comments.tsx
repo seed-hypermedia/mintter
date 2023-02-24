@@ -18,7 +18,7 @@ export function createCommentsPlugin(): EditorPlugin {
       ({attributes, children, leaf}) => {
         let {highlights} = useConversations()
         let ref = useRef<HTMLSpanElement>(null)
-        function emitSelectorClick(e) {
+        const emitSelectorClick = (e) => {
           e.preventDefault()
           appWindow.emit('selector_click', {
             conversations: leaf.conversations,
