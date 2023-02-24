@@ -309,8 +309,7 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 	}
 	var toDelete []string
 	for key, record := range srv.WebPublicationRecordDB {
-		if (in.Path == "" && record.Document.ID == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version)) ||
-			(in.Path != "" && in.Path == record.Path) {
+		if record.Document.ID == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version) {
 			doc, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
 				DocumentId: record.Document.ID,
 				Version:    record.Document.Version,
