@@ -51,12 +51,9 @@ function DraftBlocktools(props: BlockData) {
   let target = useCurrentTarget()
 
   let topOffset = useTopOffset(props.element)
-  // console.log(
-  //   'MOUSE MACHINE STATE IN BLOCKTOOLS',
-  //   mouseService.getSnapshot().value,
-  // )
 
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+    if (editor.dragging) return
     const [node, fromPath] = element as NodeEntry<FlowContent>
     const domNode = ReactEditor.toDOMNode(editor, node)
     if (fromPath && dragService && domNode) {
@@ -68,12 +65,6 @@ function DraftBlocktools(props: BlockData) {
       })
     }
   }
-
-  const onMouseUp = (e: MouseEvent<HTMLDivElement>) => {
-    mouseService.send('DISABLE.DRAG.END')
-    Transforms.deselect(editor)
-  }
-  // TODO: ADD A MOUSEUP EVENT TO ENABLE THE BLOCKTOOLS MACHINE
 
   return (
     <Box
@@ -92,7 +83,7 @@ function DraftBlocktools(props: BlockData) {
         gap: '$3',
       }}
       onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
+      onMouseUp={() => mouseService.send('DISABLE.DRAG.END')}
     >
       <ElementDropdown data-testid="blocktools-trigger">
         <Icon name="Grid4" color="muted" />

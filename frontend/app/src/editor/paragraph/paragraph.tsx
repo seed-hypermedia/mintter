@@ -1,6 +1,6 @@
 import {usePhrasingProps} from '@app/editor/editor-node-props'
 import {useBlockObserve, useMouse} from '@app/mouse-context'
-import {useDrag, useDragToPath} from '@app/drag-context'
+import {useDrag} from '@app/drag-context'
 import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
 import {
@@ -160,7 +160,6 @@ function Paragraph({
       {...elementProps}
       {...mouseProps}
       {...otherProps}
-      // {...dragProps}
       onDragOver={onDragOver}
     >
       {children}

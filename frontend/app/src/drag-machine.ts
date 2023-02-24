@@ -1,14 +1,18 @@
-import {Empty} from '@bufbuild/protobuf'
-import {FlowContent} from './../../shared/src/mttast/types'
-import {Group, isFlowContent, isGroupContent} from '@mintter/shared'
+import {
+  FlowContent,
+  Group,
+  isFlowContent,
+  isGroupContent,
+  text,
+} from '@mintter/shared'
 import React from 'react'
 import {
   Editor,
   Path,
   Transforms,
   Element as SlateElement,
-  Node,
   NodeEntry,
+  Node,
 } from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine, actions} from 'xstate'
@@ -16,7 +20,7 @@ import {assign, createMachine, actions} from 'xstate'
 let {send} = actions
 type DragContext = {
   editor: Editor
-  dragOverRef: HTMLLIElement | null
+  dragOverRef: Element | null
   dragRef: HTMLLIElement | null
   fromPath: Path | null
   toPath: Path | null
@@ -85,15 +89,19 @@ export const createDragMachine = (editor: Editor) => {
         startDrag: (context) => {
           context.editor.dragging = true
         },
-        stopDrag: send({type: 'DRAGGING.OFF'}, {delay: 1000}),
+        stopDrag: send({type: 'DRAGGING.OFF'}, {delay: 500}),
         setDraggingOff: (context) => {
-          console.log('dragging off')
           context.editor.dragging = false
         },
         setDragOverRef: assign({
           dragOverRef: (context, event) => {
             context.dragOverRef?.removeAttribute('data-action')
-            const element = event.element
+            const element: HTMLLIElement = event.element
+            const paragraph = element.firstElementChild
+            if (paragraph && paragraph.nodeName === 'P') {
+              paragraph.setAttribute('data-action', 'dragged-over')
+              return paragraph
+            }
             element.setAttribute('data-action', 'dragged-over')
             return element
           },
@@ -142,24 +150,13 @@ export const createDragMachine = (editor: Editor) => {
           toPath: null,
         }),
         performMove: (context, event) => {
-          console.log('DRAGGING PERFORM', context, event)
           const {fromPath, toPath, dragOverRef, editor} = context
-          // console.log(dragOverRef)
           dragOverRef?.removeAttribute('data-action')
           if (fromPath && toPath && editor) {
             if (fromPath === toPath || fromPath === null || toPath === null)
               return
             if (Path.isAncestor(fromPath, toPath)) return
-            // if (fromPath) {
-            //   Editor.withoutNormalizing(editor, () => {
-            //     Transforms.deselect(editor)
-            //     Transforms.select(editor, Editor.end(editor, toPath))
-            //   })
-            // } else {
-            //   ReactEditor.focus(editor)
-            // }
-            // ReactEditor.focus(editor as any)
-            const parentBlock = Editor.above<Group>(editor, {
+            const parentBlock = Editor.above<FlowContent>(editor, {
               match: isFlowContent,
               mode: 'lowest',
               at: fromPath,
@@ -172,55 +169,30 @@ export const createDragMachine = (editor: Editor) => {
                 at: fromPath,
               })
             }
-
-            // const children = Node.elements(parentBlock[0])
-            // for (const child of children) {
-            //   console.log(child)
-            // }
-            // console.log(Path.hasPrevious(fromPath))
-            // console.log(Path.next(fromPath))
             Transforms.deselect(editor)
             ReactEditor.deselect(editor)
             ReactEditor.blur(editor)
             Editor.withoutNormalizing(editor, () => {
+              // if (parentGroup && parentGroup?.[0].children.length <= 1) {
+              //   Transforms.moveNodes(editor, {
+              //     at: fromPath,
+              //     to: toPath,
+              //     mode: 'highest',
+              //   })
+              //   // Transforms.removeNodes(editor, {
+              //   //   at: parentGroup[1],
+              //   // })
+              // } else {
               Transforms.moveNodes(editor, {
                 at: fromPath,
                 to: toPath,
-                mode: 'lowest',
+                mode: 'highest',
               })
-              if (parentGroup && parentGroup?.[0].children.length === 1) {
-                console.log('here', parentGroup?.[0].children.length)
-                Transforms.removeNodes(editor, {
-                  at: parentGroup[1],
-                })
-              }
+              // }
               Transforms.deselect(editor)
               ReactEditor.deselect(editor)
               ReactEditor.blur(editor)
-
-              // if (fromPath.length === toPath.length) {
-              //   Transforms.select(editor, {
-              //     anchor: {path: toPath, offset: 0},
-              //     focus: {path: toPath, offset: 0},
-              //     // anchor: {path: [], offset: 0},
-              //     // focus: {path: [], offset: 0},
-              //   })
-              // } else {
-              // Transforms.select(editor, {
-              //   anchor: {path: [], offset: 0},
-              //   focus: {path: [], offset: 0},
-              // })
-              // }
-              // console.log(editor.children)
-              // console.log(
-              //   ReactEditor.toDOMNode(editor, Node.get(editor, fromPath)),
-              //   ReactEditor.toDOMNode(editor, Node.get(editor, toPath)),
-              // )
             })
-            // TODO: remove the parent group for the `fromPath`:
-            // - if its Empty
-            // - if the block has siblings
-            // - if it the only child
           }
         },
       },
