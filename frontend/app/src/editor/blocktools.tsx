@@ -191,7 +191,6 @@ function PublicationBlocktools(
     <Box
       contentEditable={false}
       css={{
-        background: 'red',
         // width: 30,
         height: 24,
         position: 'absolute',
