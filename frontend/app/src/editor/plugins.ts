@@ -1,5 +1,6 @@
 import {createCommentsPlugin} from '@app/editor/comments/comments'
 import {Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
 import {createBlockquotePlugin} from './blockquote'
 import {createCodePlugin} from './code'
 import {createColorPlugin} from './color'
@@ -73,17 +74,15 @@ export const plugins: EditorPlugin[] = [
   },
   createCommentsPlugin(),
   {
-    name: 'log',
+    name: 'prevent selection after drag and drop',
     configureEditor: (editor) => {
-      // console.log(editor.children)
       const {apply} = editor
       editor.apply = (operation) => {
-        console.log(operation)
-
         if (operation.type == 'set_selection') {
-          if (!operation.newProperties || !editor.dragging) {
+          if (editor.dragging) {
+            ReactEditor.deselect(editor)
+          } else {
             apply(operation)
-            console.log('IS DRAGGING!')
           }
         } else {
           apply(operation)

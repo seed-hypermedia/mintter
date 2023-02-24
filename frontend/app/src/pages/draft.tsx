@@ -16,7 +16,14 @@ import {ChildrenOf, Document} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor, Transforms} from 'slate'
+import {
+  Editor as SlateEditor,
+  Path,
+  Transforms,
+  Node,
+  NodeEntry,
+  Descendant,
+} from 'slate'
 import {ReactEditor} from 'slate-react'
 
 type DraftPageProps = {
