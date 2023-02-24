@@ -178,10 +178,10 @@ function WriteActions({
 }: {
   publicationActor: PublicationActor
 }) {
-  let canUpdate = useSelector(
-    publicationActor,
-    (state) => state.context.canUpdate,
-  )
+  // let canUpdate = useSelector(
+  //   publicationActor,
+  //   (state) => state.context.canUpdate,
+  // )
 
   let errorMessage = useSelector(
     publicationActor,
@@ -189,7 +189,7 @@ function WriteActions({
   )
   return (
     <>
-      {canUpdate && publicationActor && (
+      {publicationActor && (
         <div className="button-group">
           <button
             className="titlebar-button"
