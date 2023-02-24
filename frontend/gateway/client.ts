@@ -30,17 +30,22 @@ const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
 
 let baseUrl = getHost()
 
- console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', {
-   baseUrl,
-   GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
-   VERCEL_ENV: process.env.VERCEL_ENV,
-   NODE_ENV: process.env.NODE_ENV,
-   IS_DEV,
-   IS_CLIENT,
- })
+console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', {
+  baseUrl,
+  GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
+  VERCEL_ENV: process.env.VERCEL_ENV,
+  NODE_ENV: process.env.NODE_ENV,
+  IS_DEV,
+  IS_CLIENT,
+})
 
 const prodInter: Interceptor = (next) => async (req) => {
+  console.log('prodInterceptor request: ', JSON.stringify(req))
   const result = await next({...req, init: {...req.init, redirect: 'follow'}})
+  console.log(
+    'prodInterceptor result: ',
+    JSON.stringify(result).substring(0, 200),
+  )
   return result
 }
 

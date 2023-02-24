@@ -10,19 +10,17 @@ import {PublicationPlaceholder} from '../publication-placeholder'
 import {SiteHead} from '../site-head'
 import PublicationPage from '../ssr-publication-page'
 
+let pubId =
+  process.env.MINTTER_HOME_PUBID ||
+  'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
+let version =
+  process.env.MINTTER_HOME_VERSION ||
+  'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
+
 function DefaultHomePage() {
   let {data} = useQuery({
-    queryKey: [
-      'pub',
-      'bafy2bzacedq36zy5yrhutg5pocnpv2lzxr6xwfs6eeng7saoe7syxkeiq3zsm',
-      'baeaxdiheaiqnlfxtkzqobiqcsrwh6kncz2qeowqmwnjjbokmczxuxyimg6r7dta',
-    ],
-    queryFn: () =>
-      getPublication(
-        'bafy2bzacedq36zy5yrhutg5pocnpv2lzxr6xwfs6eeng7saoe7syxkeiq3zsm',
-        'baeaxdiheaiqnlfxtkzqobiqcsrwh6kncz2qeowqmwnjjbokmczxuxyimg6r7dta',
-        transport,
-      ),
+    queryKey: ['home publication', pubId, version],
+    queryFn: () => getPublication(pubId, version, transport),
   })
   if (data) {
     return <PublicationPage publication={data} metadata={false} />
@@ -50,13 +48,6 @@ export default function HomePage({
   if (!publication) return <DefaultHomePage />
   return <PublicationPage publication={publication} metadata={false} />
 }
-
-let pubId =
-  process.env.MINTTER_HOME_PUBID ||
-  'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
-let version =
-  process.env.MINTTER_HOME_VERSION ||
-  'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
 
 async function getHomePublication(): Promise<Publication | null> {
   if (!process.env.GW_NEXT_HOST) {
@@ -87,7 +78,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const publication = await getHomePublication()
   if (!publication) {
     return {
-      notFound: true,
+      props: {publication: null},
     }
   }
   return {
