@@ -12,12 +12,12 @@ import (
 
 var _ = errors.New
 
-func addSite(conn *sqlite.Conn, sitesAccountID int64, sitesAddresses string, sitesHostname string, sitesRole int64) error {
-	const query = `INSERT INTO sites (account_id, addresses, hostname, role)
-VALUES (:sitesAccountID, :sitesAddresses, :sitesHostname, :sitesRole)`
+func addSite(conn *sqlite.Conn, accID []byte, sitesAddresses string, sitesHostname string, sitesRole int64) error {
+	const query = `INSERT OR REPLACE INTO sites (account_id, addresses, hostname, role)
+VALUES ((SELECT id FROM accounts WHERE multihash = :accID), :sitesAddresses, :sitesHostname, :sitesRole)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":sitesAccountID", sitesAccountID)
+		stmt.SetBytes(":accID", accID)
 		stmt.SetText(":sitesAddresses", sitesAddresses)
 		stmt.SetText(":sitesHostname", sitesHostname)
 		stmt.SetInt64(":sitesRole", sitesRole)
@@ -55,15 +55,17 @@ func removeSite(conn *sqlite.Conn, sitesHostname string) error {
 }
 
 type getSiteResult struct {
-	SitesAccountID int64
-	SitesAddresses string
-	SitesHostname  string
-	SitesRole      int64
+	SitesAddresses    string
+	SitesHostname     string
+	SitesRole         int64
+	AccountsMultihash []byte
 }
 
 func getSite(conn *sqlite.Conn, sitesHostname string) (getSiteResult, error) {
-	const query = `SELECT sites.account_id, sites.addresses, sites.hostname, sites.role
-FROM sites WHERE sites.hostname = :sitesHostname`
+	const query = `SELECT sites.addresses, sites.hostname, sites.role, accounts.multihash
+FROM sites
+JOIN accounts ON accounts.id = sites.account_id
+WHERE sites.hostname = :sitesHostname`
 
 	var out getSiteResult
 
@@ -76,10 +78,10 @@ FROM sites WHERE sites.hostname = :sitesHostname`
 			return errors.New("getSite: more than one result return for a single-kind query")
 		}
 
-		out.SitesAccountID = stmt.ColumnInt64(0)
-		out.SitesAddresses = stmt.ColumnText(1)
-		out.SitesHostname = stmt.ColumnText(2)
-		out.SitesRole = stmt.ColumnInt64(3)
+		out.SitesAddresses = stmt.ColumnText(0)
+		out.SitesHostname = stmt.ColumnText(1)
+		out.SitesRole = stmt.ColumnInt64(2)
+		out.AccountsMultihash = stmt.ColumnBytes(3)
 		return nil
 	}
 
@@ -92,15 +94,16 @@ FROM sites WHERE sites.hostname = :sitesHostname`
 }
 
 type listSitesResult struct {
-	SitesAccountID int64
-	SitesAddresses string
-	SitesHostname  string
-	SitesRole      int64
+	SitesAddresses    string
+	SitesHostname     string
+	SitesRole         int64
+	AccountsMultihash []byte
 }
 
 func listSites(conn *sqlite.Conn) ([]listSitesResult, error) {
-	const query = `SELECT sites.account_id, sites.addresses, sites.hostname, sites.role
-FROM sites`
+	const query = `SELECT sites.addresses, sites.hostname, sites.role, accounts.multihash
+FROM sites
+JOIN accounts ON accounts.id = sites.account_id`
 
 	var out []listSitesResult
 
@@ -109,10 +112,10 @@ FROM sites`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, listSitesResult{
-			SitesAccountID: stmt.ColumnInt64(0),
-			SitesAddresses: stmt.ColumnText(1),
-			SitesHostname:  stmt.ColumnText(2),
-			SitesRole:      stmt.ColumnInt64(3),
+			SitesAddresses:    stmt.ColumnText(0),
+			SitesHostname:     stmt.ColumnText(1),
+			SitesRole:         stmt.ColumnInt64(2),
+			AccountsMultihash: stmt.ColumnBytes(3),
 		})
 
 		return nil

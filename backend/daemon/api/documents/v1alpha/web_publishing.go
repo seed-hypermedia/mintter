@@ -15,10 +15,9 @@ import (
 )
 
 type siteInfo struct {
-	role       int
-	inviteLink string
-	addresses  []string
-	accID      string
+	role      int
+	addresses []string
+	accID     string
 }
 
 // AddSite checks if the provided site hostname is a valid Mintter site and if so, add it to the database.
@@ -122,7 +121,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		role = res.Role
 	}
 
-	api.sitesDB[in.Hostname] = siteInfo{addresses: addresses, inviteLink: in.InviteToken, role: int(role), accID: accountID}
+	api.sitesDB[in.Hostname] = siteInfo{addresses: addresses, role: int(role), accID: accountID}
 	ret.Hostname = in.Hostname
 	ret.Role = documents.Member_Role(api.sitesDB[in.Hostname].role)
 	return &ret, nil
