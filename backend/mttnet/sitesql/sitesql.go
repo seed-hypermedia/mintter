@@ -26,6 +26,19 @@ type SiteInfo struct {
 	accID     cid.Cid
 }
 
+// DocInfo holds information about a document.
+type DocInfo struct {
+	ID      cid.Cid
+	Version string
+}
+
+// PublicationRecord holds the information of a published document (record) on a site.
+type PublicationRecord struct {
+	Document   DocInfo
+	Path       string
+	References []DocInfo
+}
+
 // AddToken inserts a token in the database to be redeemed.
 func AddToken(conn *sqlite.Conn, token string, expirationTime time.Time, role site.Member_Role) error {
 	err := addToken(conn, token, expirationTime.Unix(), int64(role))
@@ -217,4 +230,74 @@ func GetSiteDescription(conn *sqlite.Conn) (string, error) {
 		return "", fmt.Errorf("Could not get site Description: %w", err)
 	}
 	return description.GlobalMetaValue, nil
+}
+
+// AddWebPublicationRecord inserts a new published record in the db.
+func AddWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid, version string, path string) error {
+	docIDHexStr := docID.Hash().HexString()
+	docIDBytes, err := hex.DecodeString(docIDHexStr)
+	if err != nil {
+		return fmt.Errorf("Add member could not decode provided accountID: %w", err)
+	}
+
+	if err := addWebPublicationRecord(conn, docIDBytes, version, path); err != nil {
+		return fmt.Errorf("Could not add record in the db : %w", err)
+	}
+	return nil
+}
+
+// RemoveWebPublicationRecord deletes a given web publication from the site. Does not remove the actual document just the publication record.
+func RemoveWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) error {
+	docIDHexStr := docID.Hash().HexString()
+	docIDBytes, err := hex.DecodeString(docIDHexStr)
+	if err != nil {
+		return fmt.Errorf("Remove member could not decode provided accountID: %w", err)
+	}
+
+	if err := removeWebPublicationRecord(conn, docIDBytes); err != nil {
+		return fmt.Errorf("Could not remove web record from the db : %w", err)
+	}
+	return nil
+}
+
+// GetWebPublicationRecord gets a specific publication record. Error if it does not exist.
+func GetWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) (PublicationRecord, error) {
+	docIDHexStr := docID.Hash().HexString()
+	docIDBytes, err := hex.DecodeString(docIDHexStr)
+	if err != nil {
+		return PublicationRecord{}, fmt.Errorf("Get web Record could not decode provided docID: %w", err)
+	}
+	record, err := getWebPublicationRecord(conn, docIDBytes)
+	if err != nil || record.WebPublicationRecordsDocumentVersion == "" {
+		return PublicationRecord{}, fmt.Errorf("Could not get member: %w", err)
+	}
+
+	documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
+
+	return PublicationRecord{
+		Document: DocInfo{
+			ID:      documentCID,
+			Version: record.WebPublicationRecordsDocumentVersion,
+		},
+		Path:       record.WebPublicationRecordsPath,
+		References: []DocInfo{}, //TODO(juligasa): get the references from getWebPublicationReferences
+	}, nil
+}
+
+// ListWebPublicationRecords lists all the published records on a site.
+func ListWebPublicationRecords(conn *sqlite.Conn) (map[DocInfo]string, error) {
+	records, err := listWebPublicationRecords(conn)
+	ret := map[DocInfo]string{}
+	if err != nil {
+		return ret, fmt.Errorf("Could not list records: %w", err)
+	}
+	for _, record := range records {
+		docID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
+		docInfo := DocInfo{
+			ID:      docID,
+			Version: record.WebPublicationRecordsDocumentVersion,
+		}
+		ret[docInfo] = record.WebPublicationRecordsPath
+	}
+	return ret, nil
 }
