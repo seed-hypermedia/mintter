@@ -34,6 +34,7 @@ export const getServerSideProps = async ({
   //     version ? '2592000, stale-while-revalidate=3599' : '86400'
   //   }`,
   // )
+  console.log('ids params: ', documentId, version)
   try {
     const publication = await getPublication(documentId, version, transport)
     if (!publication) {
