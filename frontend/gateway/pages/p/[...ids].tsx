@@ -38,7 +38,7 @@ export const getServerSideProps = async ({
     const publication = await getPublication(documentId, version, transport)
     if (!publication) {
       return {
-        notFound: true,
+        props: {publication: null},
       }
     }
     return {
@@ -48,7 +48,10 @@ export const getServerSideProps = async ({
     }
   } catch (e) {
     return {
-      notFound: true,
+      // notFound: true,
+      props: {
+        publication: null,
+      },
     }
   }
 }
