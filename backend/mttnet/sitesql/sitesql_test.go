@@ -25,6 +25,13 @@ const (
 	token1 = "ASDFG123"
 	token2 = "QWERT987"
 
+	doc1     = "bafy2bzacedgns6q7bthk63wwqp6gcgldebcl76mvycx5jpjxrghmffhaqwb5k" //leads to A0E40220ADC7505E9901B8EDA87828FC7E50F86F79D604FFA5C0D9F94C2A2518C30D8282 or A0E40220CCD97A1F0CCEAF6ED683FC6119632044BFF995C0AFD4BD37898EC294E08583D5 codec 113
+	version1 = "baeaxdiheaiqk3r2ql2mqdohnvb4cr7d6kd4g66owat72lqgz7fgcujiyymgyfaq"
+	version2 = "QWERT987"
+
+	path1 = "/"
+	path2 = ""
+
 	hostname1 = "https://example.com"
 	hostname2 = "http://127.0.0.1:56001"
 
@@ -101,6 +108,43 @@ func TestSites(t *testing.T) {
 	}
 }
 
+/*
+	func TestRecords(t *testing.T) {
+		conn, closer, err := makeConn()
+		require.NoError(t, err)
+		defer func() { require.NoError(t, closer()) }()
+		{
+			docCID, err := cid.Decode(validDocument)
+			require.NoError(t, err)
+			require.NoError(t, AddWebPublicationRecord(conn, docCID, version1, path1))
+			record, err := GetWebPublicationRecord(conn, docCID)
+			require.NoError(t, err)
+			require.Equal(t, docCID, record.Document.ID)
+			require.Equal(t, version1, record.Document.Version)
+			require.Equal(t, path1, record.Path)
+			//require.Equal(t, path1, record.References) //TODO: Check references
+
+			accountCIDFake, err := cid.Decode(fakeAccount)
+			require.NoError(t, err)
+			_, err = GetMemberRole(conn, accountCIDFake)
+			require.Error(t, err)
+			members, err := ListMembers(conn)
+			require.NoError(t, err)
+			require.Len(t, members, 1)
+			account, ok := members[accountCID]
+			require.True(t, ok)
+			require.Equal(t, site.Member_EDITOR, account)
+			require.NoError(t, RemoveMember(conn, accountCIDFake))
+			members, err = ListMembers(conn)
+			require.NoError(t, err)
+			require.Len(t, members, 1)
+			require.NoError(t, RemoveMember(conn, accountCID))
+			members, err = ListMembers(conn)
+			require.NoError(t, err)
+			require.Len(t, members, 0)
+		}
+	}
+*/
 func TestMembers(t *testing.T) {
 	conn, closer, err := makeConn()
 	require.NoError(t, err)
