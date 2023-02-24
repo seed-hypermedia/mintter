@@ -5,6 +5,7 @@ import (
 	site "mintter/backend/genproto/documents/v1alpha"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -16,8 +17,22 @@ import (
 )
 
 const (
+	siteTitle           = " My Site"
+	modifiedTitle       = "@nother title"
+	siteDescription     = " This is a nice description of the site"
+	modifiedDescription = "Short description"
+
 	token1 = "ASDFG123"
 	token2 = "QWERT987"
+
+	hostname1 = "https://example.com"
+	hostname2 = "http://127.0.0.1:56001"
+
+	addrs1 = "/ip4/172.20.0.2/tcp/56000/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv,/ip4/127.0.0.1/tcp/56000/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv"
+	addrs2 = "/ip4/52.22.139.174/tcp/4002/p2p/12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ/p2p-circuit/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv,/ip4/23.20.24.146/tcp/4002/p2p/12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq/p2p-circuit/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv"
+
+	validAccount = "bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea" // leads to thos multihash in binary x'00240801122056C5D5E350E613C295B9B8EB9C8B900DF61E2A00AFF42C03D5ACA6834EE85290
+	fakeAccount  = "bahezrj4iaqacicabciqhpkuxan2hm6vfh6rek3mvvs54wj5utodglwdrcatmif7jpmllyui"
 )
 
 var (
@@ -31,8 +46,6 @@ func TestSiteOptions(t *testing.T) {
 	defer func() { require.NoError(t, closer()) }()
 
 	{
-		const siteTitle = " My Site"
-		const modifiedTitle = "@nother title"
 		require.NoError(t, SetSiteTitle(conn, siteTitle))
 		title, err := GetSiteTitle(conn)
 		require.NoError(t, err)
@@ -42,8 +55,6 @@ func TestSiteOptions(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, modifiedTitle, title)
 
-		const siteDescription = " This is a nice description of the site"
-		const modifiedDescription = "Short description"
 		require.NoError(t, SetSiteDescription(conn, siteDescription))
 		description, err := GetSiteDescription(conn)
 		require.NoError(t, err)
@@ -55,14 +66,46 @@ func TestSiteOptions(t *testing.T) {
 	}
 }
 
+func TestSites(t *testing.T) {
+	conn, closer, err := makeConn()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, closer()) }()
+	{
+		accountCID, err := cid.Decode(validAccount)
+		require.NoError(t, err)
+		require.NoError(t, AddSite(conn, accountCID, strings.Split(addrs1, ","), hostname1, int64(site.Member_EDITOR)))
+		localSite, err := GetSite(conn, hostname1)
+		require.NoError(t, err)
+		require.Equal(t, int(site.Member_EDITOR), localSite.role)
+		require.Equal(t, accountCID, localSite.accID)
+		require.Equal(t, strings.Split(addrs1, ","), localSite.addresses)
+
+		accountCIDFake, err := cid.Decode(fakeAccount)
+		require.NoError(t, err)
+		require.Error(t, AddSite(conn, accountCIDFake, strings.Split(addrs1, ","), hostname1, int64(site.Member_EDITOR)))
+
+		sites, err := ListSites(conn)
+		require.NoError(t, err)
+		require.Len(t, sites, 1)
+		localSite, ok := sites[hostname1]
+		require.True(t, ok)
+		require.Equal(t, int(site.Member_EDITOR), localSite.role)
+		require.Equal(t, accountCID, localSite.accID)
+		require.Equal(t, strings.Split(addrs1, ","), localSite.addresses)
+
+		require.NoError(t, RemoveSite(conn, hostname2))
+		require.NoError(t, RemoveSite(conn, hostname1))
+		sites, err = ListSites(conn)
+		require.NoError(t, err)
+		require.Len(t, sites, 0)
+	}
+}
+
 func TestMembers(t *testing.T) {
 	conn, closer, err := makeConn()
 	require.NoError(t, err)
 	defer func() { require.NoError(t, closer()) }()
-
 	{
-		const validAccount = "bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea" // leads to thos multihash in binary x'00240801122056C5D5E350E613C295B9B8EB9C8B900DF61E2A00AFF42C03D5ACA6834EE85290
-		const fakeAccount = "bahezrj4iaqacicabciqhpkuxan2hm6vfh6rek3mvvs54wj5utodglwdrcatmif7jpmllyui"
 		accountCID, err := cid.Decode(validAccount)
 		require.NoError(t, err)
 		require.NoError(t, AddMember(conn, accountCID, int64(site.Member_EDITOR)))
@@ -175,6 +218,17 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL PRIMARY KEY,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL
+	) WITHOUT ROWID;
+	CREATE TABLE sites (
+		-- Site unique identification. The hostname of the site with protocol https://example.com
+		hostname TEXT PRIMARY KEY,
+		-- The role we play in the site ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
+		role INTEGER NOT NULL DEFAULT 0,
+		-- P2P addresses to connect to that site in the format of multiaddresses. Space separated.
+		addresses TEXT NOT NULL,
+		-- The account ID of the site. We need a previous connection to the site so the 
+		-- actual account is inserted in the accounts table when handshake.
+		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL
 	) WITHOUT ROWID;
 	`)
 	err = sqlitex.ExecScript(conn, `
