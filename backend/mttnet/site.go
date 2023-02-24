@@ -97,8 +97,8 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	}
 
 	// check if that account was already redeemed in the past
-	if _, ok := srv.accountsDB[acc.String()]; ok {
-		return &site.RedeemInviteTokenResponse{}, nil
+	if role, ok := srv.accountsDB[acc.String()]; ok {
+		return &site.RedeemInviteTokenResponse{Role: role}, nil
 	}
 
 	if in.Token == "" { // TODO(juligasa): substitute with proper regexp match
