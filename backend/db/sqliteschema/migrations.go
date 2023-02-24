@@ -256,10 +256,8 @@ var migrations = []string{
 	// Stores all the records published on this site. Although this table is relevant only
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE web_publication_records (
-		-- Record identifier
-		id INTEGER PRIMARY KEY,
-		-- doc id of the base document published. Not its references.
-		document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		-- Ipfs block where the base document is stored.
+		block_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL PRIMARY KEY,
 		-- doc version of the base document published. Not its references.
 		document_version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL then its not pinned. If / is root document.

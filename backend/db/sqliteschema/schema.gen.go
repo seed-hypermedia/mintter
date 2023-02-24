@@ -183,9 +183,8 @@ const (
 // Table web_publication_records.
 const (
 	WebPublicationRecords                sqlitegen.Table  = "web_publication_records"
-	WebPublicationRecordsDocumentID      sqlitegen.Column = "web_publication_records.document_id"
+	WebPublicationRecordsBlockID         sqlitegen.Column = "web_publication_records.block_id"
 	WebPublicationRecordsDocumentVersion sqlitegen.Column = "web_publication_records.document_version"
-	WebPublicationRecordsID              sqlitegen.Column = "web_publication_records.id"
 	WebPublicationRecordsPath            sqlitegen.Column = "web_publication_records.path"
 )
 
@@ -271,9 +270,8 @@ var Schema = sqlitegen.Schema{
 		WalletsPassword:                      {Table: Wallets, SQLType: "BLOB"},
 		WalletsToken:                         {Table: Wallets, SQLType: "BLOB"},
 		WalletsType:                          {Table: Wallets, SQLType: "TEXT"},
-		WebPublicationRecordsDocumentID:      {Table: WebPublicationRecords, SQLType: "INTEGER"},
+		WebPublicationRecordsBlockID:         {Table: WebPublicationRecords, SQLType: "INTEGER"},
 		WebPublicationRecordsDocumentVersion: {Table: WebPublicationRecords, SQLType: "TEXT"},
-		WebPublicationRecordsID:              {Table: WebPublicationRecords, SQLType: "INTEGER"},
 		WebPublicationRecordsPath:            {Table: WebPublicationRecords, SQLType: "TEXT"},
 	},
 }

@@ -467,12 +467,12 @@ JOIN accounts ON accounts.id = site_members.account_id`
 	return out, err
 }
 
-func addWebPublicationRecord(conn *sqlite.Conn, webPublicationRecordsDocumentID int64, webPublicationRecordsDocumentVersion string, webPublicationRecordsPath string) error {
-	const query = `INSERT INTO web_publication_records (document_id, document_version, path)
-VALUES (:webPublicationRecordsDocumentID, :webPublicationRecordsDocumentVersion, :webPublicationRecordsPath)`
+func addWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte, webPublicationRecordsDocumentVersion string, webPublicationRecordsPath string) error {
+	const query = `INSERT OR REPLACE INTO web_publication_records (block_id, document_version, path)
+VALUES ((SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash), :webPublicationRecordsDocumentVersion, :webPublicationRecordsPath)`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsDocumentID", webPublicationRecordsDocumentID)
+		stmt.SetBytes(":doc_multihash", doc_multihash)
 		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
 		stmt.SetText(":webPublicationRecordsPath", webPublicationRecordsPath)
 	}
@@ -489,11 +489,11 @@ VALUES (:webPublicationRecordsDocumentID, :webPublicationRecordsDocumentVersion,
 	return err
 }
 
-func removeWebPublicationRecord(conn *sqlite.Conn, webPublicationRecordsID int64) error {
-	const query = `DELETE FROM web_publication_records WHERE web_publication_records.id = :webPublicationRecordsID`
+func removeWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte) error {
+	const query = `DELETE FROM web_publication_records WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsID", webPublicationRecordsID)
+		stmt.SetBytes(":doc_multihash", doc_multihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -509,15 +509,16 @@ func removeWebPublicationRecord(conn *sqlite.Conn, webPublicationRecordsID int64
 }
 
 type listWebPublicationRecordsResult struct {
-	WebPublicationRecordsID              int64
-	WebPublicationRecordsDocumentID      int64
+	IPFSBlocksCodec                      int64
+	IPFSBlocksMultihash                  []byte
 	WebPublicationRecordsDocumentVersion string
 	WebPublicationRecordsPath            string
 }
 
 func listWebPublicationRecords(conn *sqlite.Conn) ([]listWebPublicationRecordsResult, error) {
-	const query = `SELECT web_publication_records.id, web_publication_records.document_id, web_publication_records.document_version, web_publication_records.path
-FROM web_publication_records`
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
+FROM site_members
+JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id`
 
 	var out []listWebPublicationRecordsResult
 
@@ -526,8 +527,8 @@ FROM web_publication_records`
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, listWebPublicationRecordsResult{
-			WebPublicationRecordsID:              stmt.ColumnInt64(0),
-			WebPublicationRecordsDocumentID:      stmt.ColumnInt64(1),
+			IPFSBlocksCodec:                      stmt.ColumnInt64(0),
+			IPFSBlocksMultihash:                  stmt.ColumnBytes(1),
 			WebPublicationRecordsDocumentVersion: stmt.ColumnText(2),
 			WebPublicationRecordsPath:            stmt.ColumnText(3),
 		})
@@ -544,19 +545,21 @@ FROM web_publication_records`
 }
 
 type getWebPublicationRecordResult struct {
-	WebPublicationRecordsDocumentID      int64
+	IPFSBlocksCodec                      int64
+	IPFSBlocksMultihash                  []byte
 	WebPublicationRecordsDocumentVersion string
 	WebPublicationRecordsPath            string
 }
 
-func getWebPublicationRecord(conn *sqlite.Conn, webPublicationRecordsID int64) (getWebPublicationRecordResult, error) {
-	const query = `SELECT web_publication_records.document_id, web_publication_records.document_version, web_publication_records.path
-FROM web_publication_records WHERE web_publication_records.id = :webPublicationRecordsID`
+func getWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte) (getWebPublicationRecordResult, error) {
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
+FROM site_members
+JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
 
 	var out getWebPublicationRecordResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsID", webPublicationRecordsID)
+		stmt.SetBytes(":doc_multihash", doc_multihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -564,9 +567,10 @@ FROM web_publication_records WHERE web_publication_records.id = :webPublicationR
 			return errors.New("getWebPublicationRecord: more than one result return for a single-kind query")
 		}
 
-		out.WebPublicationRecordsDocumentID = stmt.ColumnInt64(0)
-		out.WebPublicationRecordsDocumentVersion = stmt.ColumnText(1)
-		out.WebPublicationRecordsPath = stmt.ColumnText(2)
+		out.IPFSBlocksCodec = stmt.ColumnInt64(0)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(1)
+		out.WebPublicationRecordsDocumentVersion = stmt.ColumnText(2)
+		out.WebPublicationRecordsPath = stmt.ColumnText(3)
 		return nil
 	}
 
@@ -579,24 +583,28 @@ FROM web_publication_records WHERE web_publication_records.id = :webPublicationR
 }
 
 type getWebPublicationReferencesResult struct {
-	ContentLinksTargetDocumentID int64
-	ContentLinksTargetVersion    string
+	IPFSBlocksCodec           int64
+	IPFSBlocksMultihash       []byte
+	ContentLinksSourceVersion string
+	ContentLinksTargetVersion string
 }
 
-func getWebPublicationReferences(conn *sqlite.Conn, webPublicationRecordsDocumentID int64) ([]getWebPublicationReferencesResult, error) {
-	const query = `SELECT content_links.target_document_id, content_links.target_version
-FROM web_publication_records WHERE content_links.source_document_id = :webPublicationRecordsDocumentID`
+func getWebPublicationReferences(conn *sqlite.Conn, webPublicationRecordsBlockID int64) ([]getWebPublicationReferencesResult, error) {
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, content_links.source_version, content_links.target_version
+FROM web_publication_records WHERE content_links.source_document_id = :webPublicationRecordsBlockID`
 
 	var out []getWebPublicationReferencesResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsDocumentID", webPublicationRecordsDocumentID)
+		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
 		out = append(out, getWebPublicationReferencesResult{
-			ContentLinksTargetDocumentID: stmt.ColumnInt64(0),
-			ContentLinksTargetVersion:    stmt.ColumnText(1),
+			IPFSBlocksCodec:           stmt.ColumnInt64(0),
+			IPFSBlocksMultihash:       stmt.ColumnBytes(1),
+			ContentLinksSourceVersion: stmt.ColumnText(2),
+			ContentLinksTargetVersion: stmt.ColumnText(3),
 		})
 
 		return nil
@@ -615,14 +623,14 @@ type getWebPublicationReferencesWithVersionResult struct {
 	ContentLinksTargetVersion    string
 }
 
-func getWebPublicationReferencesWithVersion(conn *sqlite.Conn, webPublicationRecordsDocumentID int64, webPublicationRecordsDocumentVersion string) ([]getWebPublicationReferencesWithVersionResult, error) {
+func getWebPublicationReferencesWithVersion(conn *sqlite.Conn, webPublicationRecordsBlockID int64, webPublicationRecordsDocumentVersion string) ([]getWebPublicationReferencesWithVersionResult, error) {
 	const query = `SELECT content_links.target_document_id, content_links.target_version
-FROM web_publication_records WHERE content_links.source_document_id = :webPublicationRecordsDocumentID AND content_links.source_version = :webPublicationRecordsDocumentVersion`
+FROM web_publication_records WHERE content_links.source_document_id = :webPublicationRecordsBlockID AND content_links.source_version = :webPublicationRecordsDocumentVersion`
 
 	var out []getWebPublicationReferencesWithVersionResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsDocumentID", webPublicationRecordsDocumentID)
+		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
 		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
 	}
 
@@ -648,14 +656,14 @@ type countWebPublicationExistingReferencesResult struct {
 	ContentLinksSourceDocumentID int64
 }
 
-func countWebPublicationExistingReferences(conn *sqlite.Conn, webPublicationRecordsDocumentID int64) (countWebPublicationExistingReferencesResult, error) {
+func countWebPublicationExistingReferences(conn *sqlite.Conn, webPublicationRecordsBlockID int64) (countWebPublicationExistingReferencesResult, error) {
 	const query = `SELECT COUNT(DISTINCT target_version) AS count, content_links.source_document_id
-FROM content_links WHERE content_links.source_document_id = :webPublicationRecordsDocumentID`
+FROM content_links WHERE content_links.source_document_id = :webPublicationRecordsBlockID`
 
 	var out countWebPublicationExistingReferencesResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsDocumentID", webPublicationRecordsDocumentID)
+		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -681,14 +689,14 @@ type countWebPublicationExistingReferencesWithVersionResult struct {
 	ContentLinksSourceDocumentID int64
 }
 
-func countWebPublicationExistingReferencesWithVersion(conn *sqlite.Conn, webPublicationRecordsDocumentID int64, webPublicationRecordsDocumentVersion string) (countWebPublicationExistingReferencesWithVersionResult, error) {
+func countWebPublicationExistingReferencesWithVersion(conn *sqlite.Conn, webPublicationRecordsBlockID int64, webPublicationRecordsDocumentVersion string) (countWebPublicationExistingReferencesWithVersionResult, error) {
 	const query = `SELECT COUNT(DISTINCT target_version) AS count, content_links.source_document_id
-FROM content_links WHERE content_links.source_document_id = :webPublicationRecordsDocumentID AND content_links.source_version = :webPublicationRecordsDocumentVersion`
+FROM content_links WHERE content_links.source_document_id = :webPublicationRecordsBlockID AND content_links.source_version = :webPublicationRecordsDocumentVersion`
 
 	var out countWebPublicationExistingReferencesWithVersionResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsDocumentID", webPublicationRecordsDocumentID)
+		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
 		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
 	}
 
