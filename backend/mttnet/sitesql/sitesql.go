@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mintter/backend/core"
 	site "mintter/backend/genproto/documents/v1alpha"
+	"strings"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -16,6 +17,13 @@ import (
 type TokenInfo struct {
 	Role           site.Member_Role
 	ExpirationTime time.Time
+}
+
+// SiteInfo holds information about a site.
+type SiteInfo struct {
+	role      int
+	addresses []string
+	accID     cid.Cid
 }
 
 // AddToken inserts a token in the database to be redeemed.
@@ -73,6 +81,60 @@ func CleanExpiredTokens(conn *sqlite.Conn) error {
 	return nil
 }
 
+// AddSite inserts a new site in the database.
+func AddSite(conn *sqlite.Conn, accountCID cid.Cid, addresses []string, hostname string, role int64) error {
+	accIDHexStr := accountCID.Hash().HexString()
+	accIDBytes, err := hex.DecodeString(accIDHexStr)
+	if err != nil {
+		return fmt.Errorf("Add member could not decode provided accountID: %w", err)
+	}
+
+	if err := addSite(conn, accIDBytes, strings.Join(addresses, " "), hostname, int64(role)); err != nil {
+		return fmt.Errorf("Could not add site in the db : %w", err)
+	}
+	return nil
+}
+
+// RemoveSite deletes a given site from the db.
+func RemoveSite(conn *sqlite.Conn, hostname string) error {
+	if err := removeSite(conn, hostname); err != nil {
+		return fmt.Errorf("Could not remove site from the db : %w", err)
+	}
+	return nil
+}
+
+// GetSite gets a specific site in the db.
+func GetSite(conn *sqlite.Conn, hostname string) (SiteInfo, error) {
+	site, err := getSite(conn, hostname)
+	if err != nil || site.SitesHostname == "" {
+		return SiteInfo{}, fmt.Errorf("Could not get site: %w", err)
+	}
+	accountCID := cid.NewCidV1(core.CodecAccountKey, site.AccountsMultihash)
+	return SiteInfo{
+		role:      int(site.SitesRole),
+		addresses: strings.Split(site.SitesAddresses, " "),
+		accID:     accountCID,
+	}, nil
+}
+
+// ListSites lists all the sites we have.
+func ListSites(conn *sqlite.Conn) (map[string]SiteInfo, error) {
+	sites, err := listSites(conn)
+	ret := map[string]SiteInfo{}
+	if err != nil {
+		return ret, fmt.Errorf("Could not list sites: %w", err)
+	}
+	for _, site := range sites {
+		accountCID := cid.NewCidV1(core.CodecAccountKey, site.AccountsMultihash)
+		ret[site.SitesHostname] = SiteInfo{
+			role:      int(site.SitesRole),
+			addresses: strings.Split(site.SitesAddresses, " "),
+			accID:     accountCID,
+		}
+	}
+	return ret, nil
+}
+
 // AddMember inserts a new member in the site with provided role.
 func AddMember(conn *sqlite.Conn, accountCID cid.Cid, role int64) error {
 	accIDHexStr := accountCID.Hash().HexString()
@@ -96,7 +158,7 @@ func RemoveMember(conn *sqlite.Conn, accountCID cid.Cid) error {
 	}
 
 	if err := removeMember(conn, accIDBytes); err != nil {
-		return fmt.Errorf("Could not remove member in the db : %w", err)
+		return fmt.Errorf("Could not remove member from the db : %w", err)
 	}
 	return nil
 }

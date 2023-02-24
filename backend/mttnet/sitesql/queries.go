@@ -22,34 +22,49 @@ func generateQueries() error {
 	code, err := sqlitegen.CodegenQueries("sitesql",
 
 		qb.MakeQuery(sqliteschema.Schema, "addSite", sqlitegen.QueryKindExec,
-			qb.Insert(sqliteschema.SitesAccountID, sqliteschema.SitesAddresses, sqliteschema.SitesHostname,
-				sqliteschema.SitesRole),
+			"INSERT OR REPLACE INTO", sqliteschema.Sites, qb.ListColShort(
+				sqliteschema.SitesAccountID,
+				sqliteschema.SitesAddresses,
+				sqliteschema.SitesHostname,
+				sqliteschema.SitesRole,
+			), qb.Line,
+			"VALUES", qb.List(
+				qb.SubQuery(
+					"SELECT "+sqliteschema.AccountsID.ShortName()+" FROM "+string(sqliteschema.Accounts)+" WHERE "+sqliteschema.AccountsMultihash.ShortName()+" =", qb.Var("accID", sqlitegen.TypeBytes),
+				),
+				qb.VarCol(sqliteschema.SitesAddresses),
+				qb.VarCol(sqliteschema.SitesHostname),
+				qb.VarCol(sqliteschema.SitesRole),
+			),
 		),
-
 		qb.MakeQuery(sqliteschema.Schema, "removeSite", sqlitegen.QueryKindExec,
 			"DELETE FROM", sqliteschema.Sites,
 			"WHERE", sqliteschema.SitesHostname, "=", qb.VarCol(sqliteschema.SitesHostname),
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "getSite", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.SitesAccountID),
+			"SELECT",
+			qb.Results(
 				qb.ResultCol(sqliteschema.SitesAddresses),
 				qb.ResultCol(sqliteschema.SitesHostname),
 				qb.ResultCol(sqliteschema.SitesRole),
+				qb.ResultCol(sqliteschema.AccountsMultihash),
 			), qb.Line,
-			"FROM", sqliteschema.Sites,
+			"FROM", sqliteschema.Sites, qb.Line,
+			"JOIN", sqliteschema.Accounts, "ON", sqliteschema.AccountsID, "=", sqliteschema.SitesAccountID, qb.Line,
 			"WHERE", sqliteschema.SitesHostname, "=", qb.VarCol(sqliteschema.SitesHostname),
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "listSites", sqlitegen.QueryKindMany,
-			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.SitesAccountID),
+			"SELECT",
+			qb.Results(
 				qb.ResultCol(sqliteschema.SitesAddresses),
 				qb.ResultCol(sqliteschema.SitesHostname),
 				qb.ResultCol(sqliteschema.SitesRole),
+				qb.ResultCol(sqliteschema.AccountsMultihash),
 			), qb.Line,
-			"FROM", sqliteschema.Sites,
+			"FROM", sqliteschema.Sites, qb.Line,
+			"JOIN", sqliteschema.Accounts, "ON", sqliteschema.AccountsID, "=", sqliteschema.SitesAccountID,
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "setSiteTitle", sqlitegen.QueryKindExec,
