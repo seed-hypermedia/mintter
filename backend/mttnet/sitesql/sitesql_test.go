@@ -25,6 +25,36 @@ var (
 	pastTime   = time.Now().Add(-time.Minute)
 )
 
+func TestSiteOptions(t *testing.T) {
+	conn, closer, err := makeConn()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, closer()) }()
+
+	{
+		const siteTitle = " My Site"
+		const modifiedTitle = "@nother title"
+		require.NoError(t, SetSiteTitle(conn, siteTitle))
+		title, err := GetSiteTitle(conn)
+		require.NoError(t, err)
+		require.Equal(t, siteTitle, title)
+		require.NoError(t, SetSiteTitle(conn, modifiedTitle))
+		title, err = GetSiteTitle(conn)
+		require.NoError(t, err)
+		require.Equal(t, modifiedTitle, title)
+
+		const siteDescription = " This is a nice description of the site"
+		const modifiedDescription = "Short description"
+		require.NoError(t, SetSiteDescription(conn, siteDescription))
+		description, err := GetSiteDescription(conn)
+		require.NoError(t, err)
+		require.Equal(t, siteDescription, description)
+		require.NoError(t, SetSiteDescription(conn, modifiedDescription))
+		description, err = GetSiteDescription(conn)
+		require.NoError(t, err)
+		require.Equal(t, modifiedDescription, description)
+	}
+}
+
 func TestMembers(t *testing.T) {
 	conn, closer, err := makeConn()
 	require.NoError(t, err)

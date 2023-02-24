@@ -128,3 +128,31 @@ func ListMembers(conn *sqlite.Conn) (map[cid.Cid]site.Member_Role, error) {
 	}
 	return ret, nil
 }
+
+// SetSiteTitle updates the site title.
+func SetSiteTitle(conn *sqlite.Conn, newTitle string) error {
+	return setSiteTitle(conn, newTitle)
+}
+
+// GetSiteTitle gets the site title.
+func GetSiteTitle(conn *sqlite.Conn) (string, error) {
+	title, err := getSiteTitle(conn)
+	if err != nil {
+		return "", fmt.Errorf("Could not get site Title: %w", err)
+	}
+	return title.GlobalMetaValue, nil
+}
+
+// SetSiteDescription updates the site description.
+func SetSiteDescription(conn *sqlite.Conn, newDescription string) error {
+	return setSiteDescription(conn, newDescription)
+}
+
+// GetSiteDescription gets the site title.
+func GetSiteDescription(conn *sqlite.Conn) (string, error) {
+	description, err := getSiteDescription(conn)
+	if err != nil {
+		return "", fmt.Errorf("Could not get site Description: %w", err)
+	}
+	return description.GlobalMetaValue, nil
+}

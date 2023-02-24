@@ -128,7 +128,7 @@ FROM sites`
 
 func setSiteTitle(conn *sqlite.Conn, title string) error {
 	const query = `INSERT OR REPLACE INTO global_meta (key, value)
-VALUES (site_title, :title)`
+VALUES ('site_title', :title)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":title", title)
@@ -151,7 +151,7 @@ type getSiteTitleResult struct {
 }
 
 func getSiteTitle(conn *sqlite.Conn) (getSiteTitleResult, error) {
-	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key = site_title`
+	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key ='site_title'`
 
 	var out getSiteTitleResult
 
@@ -177,7 +177,7 @@ func getSiteTitle(conn *sqlite.Conn) (getSiteTitleResult, error) {
 
 func setSiteDescription(conn *sqlite.Conn, description string) error {
 	const query = `INSERT OR REPLACE INTO global_meta (key, value)
-VALUES (site_description, :description)`
+VALUES ('site_description', :description)`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetText(":description", description)
@@ -200,7 +200,7 @@ type getSiteDescriptionResult struct {
 }
 
 func getSiteDescription(conn *sqlite.Conn) (getSiteDescriptionResult, error) {
-	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key = site_description`
+	const query = `SELECT global_meta.value FROM global_meta WHERE global_meta.key ='site_description'`
 
 	var out getSiteDescriptionResult
 

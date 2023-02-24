@@ -58,7 +58,7 @@ func generateQueries() error {
 				sqliteschema.GlobalMetaValue,
 			), qb.Line,
 			"VALUES", qb.List(
-				SiteTitleKey,
+				"'"+SiteTitleKey+"'",
 				qb.Var("title", sqlitegen.TypeText),
 			),
 		),
@@ -68,7 +68,7 @@ func generateQueries() error {
 				qb.ResultCol(sqliteschema.GlobalMetaValue),
 			),
 			"FROM", sqliteschema.GlobalMeta,
-			"WHERE", sqliteschema.GlobalMetaKey, "=", SiteTitleKey,
+			"WHERE", sqliteschema.GlobalMetaKey, "='"+SiteTitleKey+"'",
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "setSiteDescription", sqlitegen.QueryKindExec,
@@ -77,7 +77,7 @@ func generateQueries() error {
 				sqliteschema.GlobalMetaValue,
 			), qb.Line,
 			"VALUES", qb.List(
-				SiteDescriptionKey,
+				"'"+SiteDescriptionKey+"'",
 				qb.Var("description", sqlitegen.TypeText),
 			),
 		),
@@ -87,7 +87,7 @@ func generateQueries() error {
 				qb.ResultCol(sqliteschema.GlobalMetaValue),
 			),
 			"FROM", sqliteschema.GlobalMeta,
-			"WHERE", sqliteschema.GlobalMetaKey, "=", SiteDescriptionKey,
+			"WHERE", sqliteschema.GlobalMetaKey, "='"+SiteDescriptionKey+"'",
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "addToken", sqlitegen.QueryKindExec,
