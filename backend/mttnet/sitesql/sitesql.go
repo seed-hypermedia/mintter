@@ -273,14 +273,17 @@ func GetWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) (PublicationRecor
 	}
 
 	documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
-
+	references, err := ListWebPublicationReferencesWithVersion(conn, documentCID, record.WebPublicationRecordsDocumentVersion)
+	if err != nil {
+		return PublicationRecord{}, fmt.Errorf("Could not get web publication references: %w", err)
+	}
 	return PublicationRecord{
 		Document: DocInfo{
 			ID:      documentCID,
 			Version: record.WebPublicationRecordsDocumentVersion,
 		},
 		Path:       record.WebPublicationRecordsPath,
-		References: []DocInfo{}, //TODO(juligasa): get the references from getWebPublicationReferences
+		References: references,
 	}, nil
 }
 
@@ -298,6 +301,52 @@ func ListWebPublicationRecords(conn *sqlite.Conn) (map[DocInfo]string, error) {
 			Version: record.WebPublicationRecordsDocumentVersion,
 		}
 		ret[docInfo] = record.WebPublicationRecordsPath
+	}
+	return ret, nil
+}
+
+// ListWebPublicationReferencesByIDOnly lists all the references of any given document.
+func ListWebPublicationReferencesByIDOnly(conn *sqlite.Conn, docID cid.Cid) ([]DocInfo, error) {
+	docIDHexStr := docID.Hash().HexString()
+	docIDBytes, err := hex.DecodeString(docIDHexStr)
+	if err != nil {
+		return nil, fmt.Errorf("List references could not decode provided docID: %w", err)
+	}
+	references, err := listWebPublicationReferencesByIDOnly(conn, docIDBytes)
+	ret := []DocInfo{}
+	if err != nil {
+		return ret, fmt.Errorf("Could not list references: %w", err)
+	}
+	for _, reference := range references {
+		docID := cid.NewCidV1(uint64(reference.IPFSBlocksCodec), reference.IPFSBlocksMultihash)
+		docInfo := DocInfo{
+			ID:      docID,
+			Version: reference.ContentLinksTargetVersion,
+		}
+		ret = append(ret, docInfo)
+	}
+	return ret, nil
+}
+
+// ListWebPublicationReferencesWithVersion lists all the references of any given document + version.
+func ListWebPublicationReferencesWithVersion(conn *sqlite.Conn, docID cid.Cid, version string) ([]DocInfo, error) {
+	docIDHexStr := docID.Hash().HexString()
+	docIDBytes, err := hex.DecodeString(docIDHexStr)
+	if err != nil {
+		return nil, fmt.Errorf("List references could not decode provided docID: %w", err)
+	}
+	references, err := listWebPublicationReferencesWithVersion(conn, docIDBytes, version)
+	ret := []DocInfo{}
+	if err != nil {
+		return ret, fmt.Errorf("Could not list references: %w", err)
+	}
+	for _, reference := range references {
+		docID := cid.NewCidV1(uint64(reference.IPFSBlocksCodec), reference.IPFSBlocksMultihash)
+		docInfo := DocInfo{
+			ID:      docID,
+			Version: reference.ContentLinksTargetVersion,
+		}
+		ret = append(ret, docInfo)
 	}
 	return ret, nil
 }

@@ -582,29 +582,28 @@ JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_
 	return out, err
 }
 
-type getWebPublicationReferencesResult struct {
+type listWebPublicationReferencesByIDOnlyResult struct {
 	IPFSBlocksCodec           int64
 	IPFSBlocksMultihash       []byte
-	ContentLinksSourceVersion string
 	ContentLinksTargetVersion string
 }
 
-func getWebPublicationReferences(conn *sqlite.Conn, webPublicationRecordsBlockID int64) ([]getWebPublicationReferencesResult, error) {
-	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, content_links.source_version, content_links.target_version
-FROM web_publication_records WHERE content_links.source_document_id = :webPublicationRecordsBlockID`
+func listWebPublicationReferencesByIDOnly(conn *sqlite.Conn, doc_multihash []byte) ([]listWebPublicationReferencesByIDOnlyResult, error) {
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, content_links.target_version
+FROM content_links
+JOIN ipfs_blocks ON content_links.target_document_id = ipfs_blocks.id WHERE content_links.source_document_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
 
-	var out []getWebPublicationReferencesResult
+	var out []listWebPublicationReferencesByIDOnlyResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
+		stmt.SetBytes(":doc_multihash", doc_multihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, getWebPublicationReferencesResult{
+		out = append(out, listWebPublicationReferencesByIDOnlyResult{
 			IPFSBlocksCodec:           stmt.ColumnInt64(0),
 			IPFSBlocksMultihash:       stmt.ColumnBytes(1),
-			ContentLinksSourceVersion: stmt.ColumnText(2),
-			ContentLinksTargetVersion: stmt.ColumnText(3),
+			ContentLinksTargetVersion: stmt.ColumnText(2),
 		})
 
 		return nil
@@ -612,32 +611,35 @@ FROM web_publication_records WHERE content_links.source_document_id = :webPublic
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getWebPublicationReferences: %w", err)
+		err = fmt.Errorf("failed query: listWebPublicationReferencesByIDOnly: %w", err)
 	}
 
 	return out, err
 }
 
-type getWebPublicationReferencesWithVersionResult struct {
-	ContentLinksTargetDocumentID int64
-	ContentLinksTargetVersion    string
+type listWebPublicationReferencesWithVersionResult struct {
+	IPFSBlocksCodec           int64
+	IPFSBlocksMultihash       []byte
+	ContentLinksTargetVersion string
 }
 
-func getWebPublicationReferencesWithVersion(conn *sqlite.Conn, webPublicationRecordsBlockID int64, webPublicationRecordsDocumentVersion string) ([]getWebPublicationReferencesWithVersionResult, error) {
-	const query = `SELECT content_links.target_document_id, content_links.target_version
-FROM web_publication_records WHERE content_links.source_document_id = :webPublicationRecordsBlockID AND content_links.source_version = :webPublicationRecordsDocumentVersion`
+func listWebPublicationReferencesWithVersion(conn *sqlite.Conn, doc_multihash []byte, doc_version string) ([]listWebPublicationReferencesWithVersionResult, error) {
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, content_links.target_version
+FROM content_links
+JOIN ipfs_blocks ON content_links.target_document_id = ipfs_blocks.id WHERE content_links.source_document_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash ) AND content_links.source_version = :doc_version`
 
-	var out []getWebPublicationReferencesWithVersionResult
+	var out []listWebPublicationReferencesWithVersionResult
 
 	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
-		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
+		stmt.SetBytes(":doc_multihash", doc_multihash)
+		stmt.SetText(":doc_version", doc_version)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
-		out = append(out, getWebPublicationReferencesWithVersionResult{
-			ContentLinksTargetDocumentID: stmt.ColumnInt64(0),
-			ContentLinksTargetVersion:    stmt.ColumnText(1),
+		out = append(out, listWebPublicationReferencesWithVersionResult{
+			IPFSBlocksCodec:           stmt.ColumnInt64(0),
+			IPFSBlocksMultihash:       stmt.ColumnBytes(1),
+			ContentLinksTargetVersion: stmt.ColumnText(2),
 		})
 
 		return nil
@@ -645,74 +647,7 @@ FROM web_publication_records WHERE content_links.source_document_id = :webPublic
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getWebPublicationReferencesWithVersion: %w", err)
-	}
-
-	return out, err
-}
-
-type countWebPublicationExistingReferencesResult struct {
-	Count                        int64
-	ContentLinksSourceDocumentID int64
-}
-
-func countWebPublicationExistingReferences(conn *sqlite.Conn, webPublicationRecordsBlockID int64) (countWebPublicationExistingReferencesResult, error) {
-	const query = `SELECT COUNT(DISTINCT target_version) AS count, content_links.source_document_id
-FROM content_links WHERE content_links.source_document_id = :webPublicationRecordsBlockID`
-
-	var out countWebPublicationExistingReferencesResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("countWebPublicationExistingReferences: more than one result return for a single-kind query")
-		}
-
-		out.Count = stmt.ColumnInt64(0)
-		out.ContentLinksSourceDocumentID = stmt.ColumnInt64(1)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: countWebPublicationExistingReferences: %w", err)
-	}
-
-	return out, err
-}
-
-type countWebPublicationExistingReferencesWithVersionResult struct {
-	Count                        int64
-	ContentLinksSourceDocumentID int64
-}
-
-func countWebPublicationExistingReferencesWithVersion(conn *sqlite.Conn, webPublicationRecordsBlockID int64, webPublicationRecordsDocumentVersion string) (countWebPublicationExistingReferencesWithVersionResult, error) {
-	const query = `SELECT COUNT(DISTINCT target_version) AS count, content_links.source_document_id
-FROM content_links WHERE content_links.source_document_id = :webPublicationRecordsBlockID AND content_links.source_version = :webPublicationRecordsDocumentVersion`
-
-	var out countWebPublicationExistingReferencesWithVersionResult
-
-	before := func(stmt *sqlite.Stmt) {
-		stmt.SetInt64(":webPublicationRecordsBlockID", webPublicationRecordsBlockID)
-		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
-	}
-
-	onStep := func(i int, stmt *sqlite.Stmt) error {
-		if i > 1 {
-			return errors.New("countWebPublicationExistingReferencesWithVersion: more than one result return for a single-kind query")
-		}
-
-		out.Count = stmt.ColumnInt64(0)
-		out.ContentLinksSourceDocumentID = stmt.ColumnInt64(1)
-		return nil
-	}
-
-	err := sqlitegen.ExecStmt(conn, query, before, onStep)
-	if err != nil {
-		err = fmt.Errorf("failed query: countWebPublicationExistingReferencesWithVersion: %w", err)
+		err = fmt.Errorf("failed query: listWebPublicationReferencesWithVersion: %w", err)
 	}
 
 	return out, err
