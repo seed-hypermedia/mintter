@@ -160,10 +160,29 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest)
 		}
 		return retValue, nil
 	}
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.SiteInfo{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	//make GetSiteTitle that returns "" when does not find the title tag
+	title, err := sitesql.GetSiteTitle(conn)
+	if err != nil {
+		return &site.SiteInfo{}, fmt.Errorf("Could not get title")
+	}
+	//make GetSiteDescription that returns "" when does not find the description tag
+	description, err := sitesql.GetSiteDescription(conn)
+	if err != nil {
+		return &site.SiteInfo{}, fmt.Errorf("Could not get title")
+	}
 	return &site.SiteInfo{
 		Hostname:    srv.hostname,
-		Title:       srv.title,
-		Description: srv.description,
+		Title:       title,
+		Description: description,
 		Owner:       srv.ownerID,
 	}, nil
 }
@@ -181,19 +200,32 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 		}
 		return retValue, nil
 	}
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.SiteInfo{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+
+	ret := site.SiteInfo{Hostname: srv.hostname,
+		Owner: srv.ownerID}
 	if in.Title != "" {
-		srv.title = in.Title
+		if err = sitesql.SetSiteTitle(conn, in.Title); err != nil {
+			return &site.SiteInfo{}, fmt.Errorf("Could not set new title: %w", err)
+		}
+		ret.Title = in.Title
 	}
 	if in.Description != "" {
-		srv.description = in.Description
+		if err = sitesql.SetSiteDescription(conn, in.Description); err != nil {
+			return &site.SiteInfo{}, fmt.Errorf("Could not set new description: %w", err)
+		}
+		ret.Description = in.Description
 	}
 
-	return &site.SiteInfo{
-		Hostname:    srv.hostname,
-		Title:       srv.title,
-		Description: srv.description,
-		Owner:       srv.ownerID,
-	}, nil
+	return &ret, nil
 }
 
 // ListMembers lists registered members on the site.

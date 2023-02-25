@@ -56,8 +56,15 @@ func TestSiteOptions(t *testing.T) {
 	defer func() { require.NoError(t, closer()) }()
 
 	{
-		require.NoError(t, SetSiteTitle(conn, siteTitle))
 		title, err := GetSiteTitle(conn)
+		require.NoError(t, err)
+		require.Equal(t, "", title)
+		description, err := GetSiteDescription(conn)
+		require.NoError(t, err)
+		require.Equal(t, "", description)
+
+		require.NoError(t, SetSiteTitle(conn, siteTitle))
+		title, err = GetSiteTitle(conn)
 		require.NoError(t, err)
 		require.Equal(t, siteTitle, title)
 		require.NoError(t, SetSiteTitle(conn, modifiedTitle))
@@ -66,7 +73,7 @@ func TestSiteOptions(t *testing.T) {
 		require.Equal(t, modifiedTitle, title)
 
 		require.NoError(t, SetSiteDescription(conn, siteDescription))
-		description, err := GetSiteDescription(conn)
+		description, err = GetSiteDescription(conn)
 		require.NoError(t, err)
 		require.Equal(t, siteDescription, description)
 		require.NoError(t, SetSiteDescription(conn, modifiedDescription))

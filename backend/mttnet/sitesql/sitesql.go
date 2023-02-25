@@ -213,7 +213,7 @@ func SetSiteTitle(conn *sqlite.Conn, newTitle string) error {
 func GetSiteTitle(conn *sqlite.Conn) (string, error) {
 	title, err := getSiteTitle(conn)
 	if err != nil {
-		return "", fmt.Errorf("Could not get site Title: %w", err)
+		return "", nil
 	}
 	return title.GlobalMetaValue, nil
 }
@@ -227,7 +227,7 @@ func SetSiteDescription(conn *sqlite.Conn, newDescription string) error {
 func GetSiteDescription(conn *sqlite.Conn) (string, error) {
 	description, err := getSiteDescription(conn)
 	if err != nil {
-		return "", fmt.Errorf("Could not get site Description: %w", err)
+		return "", nil
 	}
 	return description.GlobalMetaValue, nil
 }

@@ -102,8 +102,6 @@ type Site struct {
 	InviteTokenExpirationDelay time.Duration
 	ownerID                    string
 	// Mockup DBs remove when finished with the mockup
-	title                  string
-	description            string
 	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
@@ -149,12 +147,12 @@ type LocalFunctions interface {
 // NewServer returns a new mttnet API server.
 func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions) *Server {
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
+
 	srv := &Server{Site: &Site{
 		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
 		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
-		title:                      siteCfg.Title,
 	}, Node: node, localFunctions: localFunctions}
 
 	cleaningTokensTicker := time.NewTicker(5 * time.Minute)
@@ -188,6 +186,16 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			site.RegisterWebSiteServer(n.grpc, srv)
 			if srv.ownerID == "" {
 				srv.ownerID = n.me.AccountID().String()
+			}
+			if siteCfg.Title != "" {
+				conn, cancel, err := n.vcs.DB().Conn(ctx)
+				if err == nil {
+					defer cancel()
+					title, err := sitesql.GetSiteTitle(conn)
+					if err == nil && title == "" {
+						_ = sitesql.SetSiteTitle(conn, siteCfg.Title)
+					}
+				}
 			}
 		}
 		defer func() {
