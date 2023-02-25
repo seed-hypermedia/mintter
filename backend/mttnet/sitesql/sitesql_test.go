@@ -25,10 +25,11 @@ const (
 	token1 = "ASDFG123"
 	token2 = "QWERT987"
 
-	doc1     = "bafy2bzacedgns6q7bthk63wwqp6gcgldebcl76mvycx5jpjxrghmffhaqwb5k" //leads to A0E40220CCD97A1F0CCEAF6ED683FC6119632044BFF995C0AFD4BD37898EC294E08583D5 codec 113
-	doc2     = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
-	version1 = "baeaxdiheaiqk3r2ql2mqdohnvb4cr7d6kd4g66owat72lqgz7fgcujiyymgyfaq"
-	version2 = "baeaxdiheaiqadftruxxjks4644snvnhztkwbjvwyaiuycrjeyeu47hrhyr7i7yq"
+	fakeDoc       = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
+	sourceDoc     = "bafy2bzacedidscwwfyegr43j5667hxgstnafpbq7skifl5xovzta5sow5dkyq"
+	sourceVersion = "baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a"
+	targetDoc     = "bafy2bzacebexnm36k6w2jxfikngjnejlqihdcwh5rnaowpwzzefoakdg36vea"
+	targetVersion = "baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my"
 
 	path1 = "/"
 	path2 = "other-path"
@@ -115,19 +116,47 @@ func TestRecords(t *testing.T) {
 	require.NoError(t, err)
 	defer func() { require.NoError(t, closer()) }()
 	{
-		docCID, err := cid.Decode(doc1)
+		docCID, err := cid.Decode(targetDoc)
 		require.NoError(t, err)
-		require.NoError(t, AddWebPublicationRecord(conn, docCID, version1, path1))
+		require.NoError(t, AddWebPublicationRecord(conn, docCID, targetVersion, path1))
 		record, err := GetWebPublicationRecord(conn, docCID)
 		require.NoError(t, err)
 		require.Equal(t, docCID, record.Document.ID)
-		require.Equal(t, version1, record.Document.Version)
+		require.Equal(t, targetVersion, record.Document.Version)
 		require.Equal(t, path1, record.Path)
-		//require.Equal(t, path1, record.References) //TODO: Check references
-
-		docCID2, err := cid.Decode(doc2)
+		require.Len(t, record.References, 0)
+		docCIDFake, err := cid.Decode(fakeDoc)
 		require.NoError(t, err)
-		require.Error(t, AddWebPublicationRecord(conn, docCID2, version2, path2))
+		require.Error(t, AddWebPublicationRecord(conn, docCIDFake, targetVersion, path2))
+		records, err := ListWebPublicationRecords(conn)
+		require.NoError(t, err)
+		require.Len(t, records, 1)
+		listedPath, ok := records[DocInfo{ID: docCID, Version: targetVersion}]
+		require.True(t, ok)
+		require.Equal(t, path1, listedPath)
+
+		docCID, err = cid.Decode(sourceDoc)
+		require.NoError(t, err)
+		require.NoError(t, AddWebPublicationRecord(conn, docCID, sourceVersion, path2))
+		record, err = GetWebPublicationRecord(conn, docCID)
+		require.NoError(t, err)
+		require.Equal(t, docCID, record.Document.ID)
+		require.Equal(t, sourceVersion, record.Document.Version)
+		require.Equal(t, path2, record.Path)
+		require.Len(t, record.References, 1)
+		require.Equal(t, targetVersion, record.References[0].Version)
+		require.Equal(t, targetDoc, record.References[0].ID.String())
+		require.NoError(t, RemoveWebPublicationRecord(conn, docCIDFake))
+		records, err = ListWebPublicationRecords(conn)
+		require.NoError(t, err)
+		require.Len(t, records, 2)
+
+		require.NoError(t, RemoveWebPublicationRecord(conn, docCID))
+		records, err = ListWebPublicationRecords(conn)
+		require.NoError(t, err)
+		require.Len(t, records, 1)
+		require.Equal(t, targetVersion, record.References[0].Version)
+		require.Equal(t, targetDoc, record.References[0].ID.String())
 	}
 }
 
@@ -245,11 +274,11 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	);
 	CREATE TABLE site_members (
 		-- The account id that has been linked to a role on this site
-		account_id INTEGER PRIMARY KEY,
+		account_id INTEGER NOT NULL,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL,
 		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
-	) WITHOUT ROWID;
+	);
 	CREATE TABLE sites (
 		-- Site unique identification. The hostname of the site with protocol https://example.com
 		hostname TEXT PRIMARY KEY,
@@ -278,13 +307,28 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	);
 	CREATE TABLE web_publication_records (
 		-- Ipfs block where the base document is stored.
-		block_id INTEGER PRIMARY KEY CHECK (block_id != 0),
+		block_id INTEGER NOT NULL CHECK (block_id != 0),
 		-- doc version of the base document published. Not its references.
 		document_version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL then its not pinned. If / is root document.
 		path TEXT UNIQUE,
+		UNIQUE(block_id, document_version),
 		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
 	);
+	CREATE TABLE content_links (
+		source_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		source_block_id TEXT NOT NULL,
+		-- In theory this is not needed, because source_change_id will always be the correct version.
+		-- but to simplify the queries we store it here too.
+		source_version TEXT NOT NULL,
+		source_change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		target_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		target_block_id TEXT NOT NULL,
+		target_version TEXT NOT NULL,
+		PRIMARY KEY (target_document_id, target_block_id, target_version, source_document_id, source_block_id, source_change_id)
+	) WITHOUT ROWID;
+	
+	CREATE INDEX content_links_by_source ON content_links (source_document_id, source_block_id);
 	`)
 
 	if err != nil {
@@ -300,13 +344,27 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
 	err = sqlitex.ExecScript(conn, `
-	INSERT INTO ipfs_blocks (multihash, codec) VALUES(x'A0E40220CCD97A1F0CCEAF6ED683FC6119632044BFF995C0AFD4BD37898EC294E08583D5',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(1, x'A0E40220F617530F62384041929B28B3AD7F846A325CBFFFA7FADC849CB4D1623C7F7AE1',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(2, x'A0E4022034FABA61D8624368B4E75587C8A08E933F411696E035F745A3CF7633F5414C2D',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(3, x'A0E40220E76B56D2D3C8019B93658FB826227344F97B56A9445B02FD73956DF6108E6147',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(4, x'A0E402204976B37E57ADA4DCA8534C96912B820E3158FD8B40EB3ED9C90AE02866DFAA40',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(5, x'A0E402207C810919AF074781D59DE0AF2D3EE25B52763F406E20B8BD3C2BF575F2A99EB3',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(6, x'A0E402202287033E2CA0F1FEB6F855E1B92C50B1970C5E8E18972B10A9456CA91E42A0FF',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(8, x'A0E40220D0390AD62E0868F369EFBDF3DCD29B4057861F929055F6EEAE660EC9D6E8D588',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(9, x'A0E40220A8C908D27B3E3E5907C876883B93E358AE7880E551DF9E4F48F3F47DE0388CF0',113);
 	`)
 	if err != nil {
 		return nil, nil, err
 	}
-
+	err = sqlitex.ExecScript(conn, `
+	INSERT INTO content_links (source_document_id, source_block_id, source_version, source_change_id, target_document_id, target_block_id, target_version) 
+	VALUES(8, 'aLI-Z5af', 'baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a', 9, 4, 'BwEEZaUa', 'baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my');
+	`)
+	if err != nil {
+		return nil, nil, err
+	}
 	return conn, func() error {
 		return multierr.Combine(
 			os.RemoveAll(dir),

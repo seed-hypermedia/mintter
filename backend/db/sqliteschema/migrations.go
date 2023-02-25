@@ -249,21 +249,22 @@ var migrations = []string{
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE site_members (
 		-- The account id that has been linked to a role on this site
-		account_id INTEGER PRIMARY KEY,
+		account_id INTEGER NOT NULL,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL,
 		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
-	) WITHOUT ROWID;`,
+	);`,
 
 	// Stores all the records published on this site. Although this table is relevant only
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE web_publication_records (
 		-- Ipfs block where the base document is stored.
-		block_id INTEGER PRIMARY KEY CHECK (block_id != 0),
+		block_id INTEGER NOT NULL CHECK (block_id != 0),
 		-- doc version of the base document published. Not its references.
 		document_version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL then its not pinned. If / is root document.
 		path TEXT UNIQUE,
+		UNIQUE(block_id, document_version),
 		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
 	);`,
 }
