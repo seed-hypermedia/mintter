@@ -89,6 +89,7 @@ func TestSites(t *testing.T) {
 		require.Equal(t, int(site.Member_EDITOR), localSite.role)
 		require.Equal(t, accountCID, localSite.accID)
 		require.Equal(t, strings.Split(addrs1, ","), localSite.addresses)
+		require.NoError(t, AddSite(conn, accountCID, strings.Split(addrs1, ","), hostname1, int64(site.Member_EDITOR)))
 
 		accountCIDFake, err := cid.Decode(fakeAccount)
 		require.NoError(t, err)

@@ -94,7 +94,7 @@ func CleanExpiredTokens(conn *sqlite.Conn) error {
 	return nil
 }
 
-// AddSite inserts a new site in the database.
+// AddSite inserts a new site in the database. Replaces existing on conflict.
 func AddSite(conn *sqlite.Conn, accountCID cid.Cid, addresses []string, hostname string, role int64) error {
 	accIDHexStr := accountCID.Hash().HexString()
 	accIDBytes, err := hex.DecodeString(accIDHexStr)
