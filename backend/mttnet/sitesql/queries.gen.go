@@ -517,7 +517,7 @@ type listWebPublicationRecordsResult struct {
 
 func listWebPublicationRecords(conn *sqlite.Conn) ([]listWebPublicationRecordsResult, error) {
 	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
-FROM site_members
+FROM web_publication_records
 JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id`
 
 	var out []listWebPublicationRecordsResult
@@ -553,7 +553,7 @@ type getWebPublicationRecordResult struct {
 
 func getWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte) (getWebPublicationRecordResult, error) {
 	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
-FROM site_members
+FROM web_publication_records
 JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
 
 	var out getWebPublicationRecordResult
