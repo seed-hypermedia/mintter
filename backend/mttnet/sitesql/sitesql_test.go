@@ -86,9 +86,9 @@ func TestSites(t *testing.T) {
 		require.NoError(t, AddSite(conn, accountCID, strings.Split(addrs1, ","), hostname1, int64(site.Member_EDITOR)))
 		localSite, err := GetSite(conn, hostname1)
 		require.NoError(t, err)
-		require.Equal(t, int(site.Member_EDITOR), localSite.role)
-		require.Equal(t, accountCID, localSite.accID)
-		require.Equal(t, strings.Split(addrs1, ","), localSite.addresses)
+		require.Equal(t, int(site.Member_EDITOR), localSite.Role)
+		require.Equal(t, accountCID, localSite.AccID)
+		require.Equal(t, strings.Split(addrs1, ","), localSite.Addresses)
 		require.NoError(t, AddSite(conn, accountCID, strings.Split(addrs1, ","), hostname1, int64(site.Member_EDITOR)))
 
 		accountCIDFake, err := cid.Decode(fakeAccount)
@@ -100,9 +100,9 @@ func TestSites(t *testing.T) {
 		require.Len(t, sites, 1)
 		localSite, ok := sites[hostname1]
 		require.True(t, ok)
-		require.Equal(t, int(site.Member_EDITOR), localSite.role)
-		require.Equal(t, accountCID, localSite.accID)
-		require.Equal(t, strings.Split(addrs1, ","), localSite.addresses)
+		require.Equal(t, int(site.Member_EDITOR), localSite.Role)
+		require.Equal(t, accountCID, localSite.AccID)
+		require.Equal(t, strings.Split(addrs1, ","), localSite.Addresses)
 
 		require.NoError(t, RemoveSite(conn, hostname2))
 		require.NoError(t, RemoveSite(conn, hostname1))

@@ -7,9 +7,11 @@ import (
 	"fmt"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/mttnet"
+	"mintter/backend/mttnet/sitesql"
 	"net/http"
 	"strings"
 
+	"github.com/ipfs/go-cid"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -86,7 +88,10 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	if !ok {
 		return &ret, fmt.Errorf("Error getting account_id from site, wrong format: account id must me a string")
 	}
-
+	accountCID, err := cid.Decode(accountID)
+	if err != nil {
+		return &ret, fmt.Errorf("Got an invalid accountID [%s]: %w", accountID, err)
+	}
 	info, err := mttnet.AddrInfoFromStrings(addresses...)
 	if err != nil {
 		return &ret, fmt.Errorf("Couldn't parse multiaddress: %w", err)
@@ -96,10 +101,15 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		return &ret, fmt.Errorf("Couldn't connect to the remote site via p2p: %w", err)
 	}
 
-	_, added := api.sitesDB[in.Hostname]
-	if added {
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return &ret, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	if _, err = sitesql.GetSite(conn, in.Hostname); err == nil {
 		return &ret, fmt.Errorf("site " + in.Hostname + " already added")
 	}
+
 	var role documents.Member_Role
 	// make it a proxy call since we want to talk with the site by attaching headers
 	header := metadata.New(map[string]string{mttnet.MttHeader: in.Hostname})
@@ -121,9 +131,11 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		role = res.Role
 	}
 
-	api.sitesDB[in.Hostname] = siteInfo{addresses: addresses, role: int(role), accID: accountID}
+	if err = sitesql.AddSite(conn, accountCID, addresses, in.Hostname, int64(role)); err != nil {
+		return &ret, fmt.Errorf("Could not insert site in the database: %w", err)
+	}
 	ret.Hostname = in.Hostname
-	ret.Role = documents.Member_Role(api.sitesDB[in.Hostname].role)
+	ret.Role = documents.Member_Role(role)
 	return &ret, nil
 }
 
@@ -134,21 +146,30 @@ func (api *Server) RemoveSite(ctx context.Context, req *documents.RemoveSiteRequ
 		return empty, fmt.Errorf("empty hostname")
 	}
 
-	_, included := api.sitesDB[req.Hostname]
-	if !included {
-		return empty, fmt.Errorf("site " + req.Hostname + " does not exist")
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return empty, fmt.Errorf("Cannot connect to internal db")
 	}
-	delete(api.sitesDB, req.Hostname)
-	return empty, nil
+	defer cancel()
+	return empty, sitesql.RemoveSite(conn, req.Hostname)
 }
 
 // ListSites lists all the added sites.
 func (api *Server) ListSites(ctx context.Context, req *documents.ListSitesRequest) (*documents.ListSitesResponse, error) {
 	var s []*documents.SiteConfig
-	for hostname, info := range api.sitesDB {
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return &documents.ListSitesResponse{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	sites, err := sitesql.ListSites(conn)
+	if err != nil {
+		return &documents.ListSitesResponse{}, fmt.Errorf("Could not list sites: %w", err)
+	}
+	for hostname, info := range sites {
 		s = append(s, &documents.SiteConfig{
 			Hostname: hostname,
-			Role:     documents.Member_Role(info.role),
+			Role:     documents.Member_Role(info.Role),
 		})
 	}
 	return &documents.ListSitesResponse{
@@ -159,10 +180,19 @@ func (api *Server) ListSites(ctx context.Context, req *documents.ListSitesReques
 // ListWebPublicationRecords returns all the sites where a given document has been published to.
 func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents.ListWebPublicationRecordsRequest) (*documents.ListWebPublicationRecordsResponse, error) {
 	var ret []*documents.WebPublicationRecord
-	for hostname, siteInfo := range api.sitesDB {
+	conn, cancel, err := api.db.Conn(ctx)
+	if err != nil {
+		return &documents.ListWebPublicationRecordsResponse{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	sites, err := sitesql.ListSites(conn)
+	if err != nil {
+		return &documents.ListWebPublicationRecordsResponse{}, fmt.Errorf("Could not list sites: %w", err)
+	}
+	for hostname, siteInfo := range sites {
 		header := metadata.New(map[string]string{mttnet.MttHeader: hostname})
 		ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
-		ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, siteInfo.accID)
+		ctx = context.WithValue(ctx, mttnet.SiteAccountIDCtxKey, siteInfo.AccID.String())
 		docs, err := api.RemoteCaller.ListWebPublications(ctx, &documents.ListWebPublicationsRequest{})
 		if err != nil {
 			continue
@@ -184,15 +214,4 @@ func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents
 	return &documents.ListWebPublicationRecordsResponse{
 		Publications: ret,
 	}, nil
-}
-
-// GetSiteAccount returns a site's accountID so other gRPC can use it.
-// TODO(juligasa): remove when database schema is ready since SiteInfo will be available there.
-func (api *Server) GetSiteAccount(hostname string) (string, error) {
-	siteInfo, ok := api.sitesDB[hostname]
-
-	if !ok {
-		return "", fmt.Errorf("site %s not found. Please add it first", hostname)
-	}
-	return siteInfo.accID, nil
 }

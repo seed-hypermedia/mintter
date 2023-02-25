@@ -21,9 +21,9 @@ type TokenInfo struct {
 
 // SiteInfo holds information about a site.
 type SiteInfo struct {
-	role      int
-	addresses []string
-	accID     cid.Cid
+	Role      int
+	Addresses []string
+	AccID     cid.Cid
 }
 
 // DocInfo holds information about a document.
@@ -124,9 +124,9 @@ func GetSite(conn *sqlite.Conn, hostname string) (SiteInfo, error) {
 	}
 	accountCID := cid.NewCidV1(core.CodecAccountKey, site.AccountsMultihash)
 	return SiteInfo{
-		role:      int(site.SitesRole),
-		addresses: strings.Split(site.SitesAddresses, " "),
-		accID:     accountCID,
+		Role:      int(site.SitesRole),
+		Addresses: strings.Split(site.SitesAddresses, " "),
+		AccID:     accountCID,
 	}, nil
 }
 
@@ -140,9 +140,9 @@ func ListSites(conn *sqlite.Conn) (map[string]SiteInfo, error) {
 	for _, site := range sites {
 		accountCID := cid.NewCidV1(core.CodecAccountKey, site.AccountsMultihash)
 		ret[site.SitesHostname] = SiteInfo{
-			role:      int(site.SitesRole),
-			addresses: strings.Split(site.SitesAddresses, " "),
-			accID:     accountCID,
+			Role:      int(site.SitesRole),
+			Addresses: strings.Split(site.SitesAddresses, " "),
+			AccID:     accountCID,
 		}
 	}
 	return ret, nil

@@ -617,9 +617,18 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	if !ok {
 		return nil, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
 	}
-
-	siteAccount, err := srv.localFunctions.GetSiteAccount(hostname)
+	var siteAccount string
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
+		return nil, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	site, err := sitesql.GetSite(conn, hostname)
+	if err == nil {
+		siteAccount = site.AccID.String()
+	}
+
+	if err != nil { // Could be an add site call to proxy in which case the site does not exists yet
 		siteAccountCtx := ctx.Value(SiteAccountIDCtxKey)
 		if siteAccountCtx == nil {
 			return nil, fmt.Errorf("Cannot get site accountID: %w", err)
@@ -632,7 +641,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 
 	conn, release, err := n.VCS().DB().Conn(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Cannot connect to internal db")
 	}
 	defer release()
 

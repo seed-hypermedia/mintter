@@ -101,9 +101,9 @@ type Site struct {
 	hostname                   string
 	InviteTokenExpirationDelay time.Duration
 	ownerID                    string
-	title                      string
-	description                string
 	// Mockup DBs remove when finished with the mockup
+	title                  string
+	description            string
 	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
@@ -140,13 +140,10 @@ type Node struct {
 }
 
 // LocalFunctions is an interface for not having to pass a full-fledged documents service,
-// just the getPublication that is what we need to call in getPath, and a way to query the
-// sites database.
+// just the getPublication that is what we need to call in getPath.
 type LocalFunctions interface {
 	// GetPublication gets a local publication.
 	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
-	// GetSiteAccount gets a site's accountID.
-	GetSiteAccount(hostname string) (string, error)
 }
 
 // NewServer returns a new mttnet API server.
