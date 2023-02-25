@@ -104,7 +104,6 @@ type Site struct {
 	title                      string
 	description                string
 	// Mockup DBs remove when finished with the mockup
-	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
 	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
@@ -156,7 +155,6 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 	srv := &Server{Site: &Site{
 		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
-		accountsDB:                 map[string]site.Member_Role{},
 		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
 		title:                      siteCfg.Title,
@@ -195,11 +193,23 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				srv.ownerID = n.me.AccountID().String()
 			}
 		}
-		srv.accountsDB[srv.ownerID] = site.Member_OWNER
-		// Indicate we can now serve the already registered endpoints.
-		if n != nil {
-			close(n.registered)
+		defer func() {
+			// Indicate we can now serve the already registered endpoints.
+			if n != nil {
+				close(n.registered)
+			}
+		}()
+
+		conn, cancel, err := n.vcs.DB().Conn(ctx)
+		if err != nil {
+			return
 		}
+		defer cancel()
+		ownerCID, err := cid.Decode(srv.ownerID)
+		if err != nil {
+			return
+		}
+		_ = sitesql.AddMember(conn, ownerCID, int64(site.Member_OWNER))
 	}()
 	return srv
 }

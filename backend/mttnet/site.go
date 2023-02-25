@@ -100,26 +100,28 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	if !ok {
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Node not ready yet")
 	}
-	if acc.String() == srv.ownerID {
-		n.log.Debug("TOKEN REDEEMED", zap.String("Site Owner", srv.ownerID), zap.String("Role", "OWNER"))
-		srv.accountsDB[acc.String()] = site.Member_OWNER
-		return &site.RedeemInviteTokenResponse{Role: site.Member_OWNER}, nil
-	}
-
-	// check if that account was already redeemed in the past
-	if role, ok := srv.accountsDB[acc.String()]; ok {
-		return &site.RedeemInviteTokenResponse{Role: role}, nil
-	}
-
-	if in.Token == "" { // TODO(juligasa): substitute with proper regexp match
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
-	}
-
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot connect to internal db")
 	}
 	defer cancel()
+	if acc.String() == srv.ownerID {
+		n.log.Debug("TOKEN REDEEMED", zap.String("Site Owner", srv.ownerID), zap.String("Role", "OWNER"))
+		if err = sitesql.AddMember(conn, acc, int64(site.Member_OWNER)); err != nil {
+			return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot add owner member to the db %w", err)
+		}
+		return &site.RedeemInviteTokenResponse{Role: site.Member_OWNER}, nil
+	}
+
+	// check if that account already a member
+	if in.Token == "" {
+		role, err := sitesql.GetMemberRole(conn, acc)
+		if err == nil {
+			return &site.RedeemInviteTokenResponse{Role: role}, nil
+		}
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
+	}
+
 	tokenInfo, err := sitesql.GetToken(conn, in.Token)
 	if err != nil {
 		n.log.Debug("TOKEN NOT VALID", zap.String("Provided token", in.Token), zap.Error(err))
@@ -137,7 +139,9 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	}
 
 	// We upsert the new role
-	srv.accountsDB[acc.String()] = tokenInfo.Role
+	if err = sitesql.AddMember(conn, acc, int64(tokenInfo.Role)); err != nil {
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot add owner member to the db %w", err)
+	}
 
 	n.log.Debug("TOKEN REDEEMED", zap.String("Caller account", acc.String()), zap.String("Site Owner", srv.ownerID), zap.String("Role", "EDITOR"))
 	return &site.RedeemInviteTokenResponse{Role: tokenInfo.Role}, nil
@@ -206,9 +210,22 @@ func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest)
 		return retValue, nil
 	}
 	var members []*site.Member
-	for accID, role := range srv.accountsDB {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.ListMembersResponse{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.ListMembersResponse{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	memberList, err := sitesql.ListMembers(conn)
+	if err != nil {
+		return &site.ListMembersResponse{}, fmt.Errorf("Cannot get site members: %w", err)
+	}
+	for accID, role := range memberList {
 		members = append(members, &site.Member{
-			AccountId: accID,
+			AccountId: accID.String(),
 			Role:      role,
 		})
 	}
@@ -228,8 +245,21 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 		}
 		return retValue, nil
 	}
-	role, ok := srv.accountsDB[in.AccountId]
+	n, ok := srv.Node.Get()
 	if !ok {
+		return &site.Member{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.Member{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	accCID, err := cid.Decode(in.AccountId)
+	if err != nil {
+		return &site.Member{}, fmt.Errorf("Provided account id [%s] not a valid cid: %w", in.AccountId, err)
+	}
+	role, err := sitesql.GetMemberRole(conn, accCID)
+	if err != nil {
 		return &site.Member{}, fmt.Errorf("Member not found")
 	}
 	return &site.Member{AccountId: in.AccountId, Role: role}, nil
@@ -248,14 +278,32 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 		}
 		return retValue, nil
 	}
-	roleToDelete, ok := srv.accountsDB[in.AccountId]
+
+	n, ok := srv.Node.Get()
 	if !ok {
+		return &emptypb.Empty{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &emptypb.Empty{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	accCID, err := cid.Decode(in.AccountId)
+	if err != nil {
+		return &emptypb.Empty{}, fmt.Errorf("Provided account id [%s] not a valid cid: %w", in.AccountId, err)
+	}
+	roleToDelete, err := sitesql.GetMemberRole(conn, accCID)
+	if err != nil {
 		return &emptypb.Empty{}, fmt.Errorf("Member not found")
 	}
+
 	if roleToDelete == site.Member_OWNER {
 		return &emptypb.Empty{}, fmt.Errorf("Site owner cannot be deleted, please, change it manually in site config")
 	}
-	delete(srv.accountsDB, in.AccountId)
+	if err = sitesql.RemoveMember(conn, accCID); err != nil {
+		return &emptypb.Empty{}, fmt.Errorf("Could not remove provided member [%s]: %w", in.AccountId, err)
+	}
+
 	return &emptypb.Empty{}, nil
 }
 
@@ -519,8 +567,14 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	if requiredRole == site.Member_OWNER && acc.String() != srv.ownerID {
 		return cid.Cid{}, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.ownerID {
-		role, ok := srv.Site.accountsDB[acc.String()]
-		if !ok || (ok && role != requiredRole) {
+		conn, cancel, err := n.vcs.DB().Conn(ctx)
+		if err != nil {
+			return cid.Cid{}, false, nil, fmt.Errorf("Cannot connect to internal db")
+		}
+		defer cancel()
+
+		role, err := sitesql.GetMemberRole(conn, acc)
+		if err != nil || role != requiredRole {
 			return cid.Cid{}, false, nil, fmt.Errorf("Unauthorized. Required role: %d", requiredRole)
 		}
 	}
