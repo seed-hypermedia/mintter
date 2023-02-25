@@ -225,47 +225,29 @@ func generateQueries() error {
 				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationReferences", sqlitegen.QueryKindMany,
+		qb.MakeQuery(sqliteschema.Schema, "listWebPublicationReferencesByIDOnly", sqlitegen.QueryKindMany,
 			"SELECT", qb.Results(
 				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
 				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
-				qb.ResultCol(sqliteschema.ContentLinksSourceVersion),
-				//qb.ResultCol(sqliteschema.ContentLinksTargetDocumentID),
 				qb.ResultCol(sqliteschema.ContentLinksTargetVersion),
 			), qb.Line,
-			"FROM", sqliteschema.WebPublicationRecords,
-			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "=", qb.VarCol(sqliteschema.WebPublicationRecordsBlockID),
+			"FROM", sqliteschema.ContentLinks, qb.Line,
+			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.ContentLinksTargetDocumentID, "=", sqliteschema.IPFSBlocksID,
+			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "="+
+				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationReferencesWithVersion", sqlitegen.QueryKindMany,
+		qb.MakeQuery(sqliteschema.Schema, "listWebPublicationReferencesWithVersion", sqlitegen.QueryKindMany,
 			"SELECT", qb.Results(
-				qb.ResultCol(sqliteschema.ContentLinksTargetDocumentID),
+				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
+				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
 				qb.ResultCol(sqliteschema.ContentLinksTargetVersion),
 			), qb.Line,
-			"FROM", sqliteschema.WebPublicationRecords,
-			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "=", qb.VarCol(sqliteschema.WebPublicationRecordsBlockID),
-			"AND", sqliteschema.ContentLinksSourceVersion, "=", qb.VarCol(sqliteschema.WebPublicationRecordsDocumentVersion),
-		),
-
-		// count how many references we actually have on any given published doc id.
-		qb.MakeQuery(sqliteschema.Schema, "countWebPublicationExistingReferences", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultExpr(qb.SQLFunc("COUNT", "DISTINCT "+sqliteschema.ContentLinksTargetVersion.ShortName()), "count", sqlitegen.TypeInt),
-				qb.ResultCol(sqliteschema.ContentLinksSourceDocumentID),
-			), qb.Line,
-			"FROM", sqliteschema.ContentLinks,
-			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "=", qb.VarCol(sqliteschema.WebPublicationRecordsBlockID),
-		),
-
-		// count how many references we actually have on any given published doc id and version.
-		qb.MakeQuery(sqliteschema.Schema, "countWebPublicationExistingReferencesWithVersion", sqlitegen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultExpr(qb.SQLFunc("COUNT", "DISTINCT "+sqliteschema.ContentLinksTargetVersion.ShortName()), "count", sqlitegen.TypeInt),
-				qb.ResultCol(sqliteschema.ContentLinksSourceDocumentID),
-			), qb.Line,
-			"FROM", sqliteschema.ContentLinks,
-			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "=", qb.VarCol(sqliteschema.WebPublicationRecordsBlockID),
-			"AND", sqliteschema.ContentLinksSourceVersion, "=", qb.VarCol(sqliteschema.WebPublicationRecordsDocumentVersion),
+			"FROM", sqliteschema.ContentLinks, qb.Line,
+			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.ContentLinksTargetDocumentID, "=", sqliteschema.IPFSBlocksID,
+			"WHERE", sqliteschema.ContentLinksSourceDocumentID, "="+
+				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
+			"AND", sqliteschema.ContentLinksSourceVersion, "=", qb.Var("doc_version", sqlitegen.TypeText),
 		),
 	)
 	if err != nil {
