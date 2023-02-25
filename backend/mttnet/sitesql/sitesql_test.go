@@ -25,12 +25,14 @@ const (
 	token1 = "ASDFG123"
 	token2 = "QWERT987"
 
-	doc1     = "bafy2bzacedgns6q7bthk63wwqp6gcgldebcl76mvycx5jpjxrghmffhaqwb5k" //leads to A0E40220ADC7505E9901B8EDA87828FC7E50F86F79D604FFA5C0D9F94C2A2518C30D8282 or A0E40220CCD97A1F0CCEAF6ED683FC6119632044BFF995C0AFD4BD37898EC294E08583D5 codec 113
+	doc1     = "bafy2bzacedgns6q7bthk63wwqp6gcgldebcl76mvycx5jpjxrghmffhaqwb5k" //leads to A0E40220CCD97A1F0CCEAF6ED683FC6119632044BFF995C0AFD4BD37898EC294E08583D5 codec 113
+	doc2     = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
 	version1 = "baeaxdiheaiqk3r2ql2mqdohnvb4cr7d6kd4g66owat72lqgz7fgcujiyymgyfaq"
-	version2 = "QWERT987"
+	version2 = "baeaxdiheaiqadftruxxjks4644snvnhztkwbjvwyaiuycrjeyeu47hrhyr7i7yq"
 
 	path1 = "/"
-	path2 = ""
+	path2 = "other-path"
+	path3 = ""
 
 	hostname1 = "https://example.com"
 	hostname2 = "http://127.0.0.1:56001"
@@ -108,43 +110,27 @@ func TestSites(t *testing.T) {
 	}
 }
 
-/*
-	func TestRecords(t *testing.T) {
-		conn, closer, err := makeConn()
+func TestRecords(t *testing.T) {
+	conn, closer, err := makeConn()
+	require.NoError(t, err)
+	defer func() { require.NoError(t, closer()) }()
+	{
+		docCID, err := cid.Decode(doc1)
 		require.NoError(t, err)
-		defer func() { require.NoError(t, closer()) }()
-		{
-			docCID, err := cid.Decode(validDocument)
-			require.NoError(t, err)
-			require.NoError(t, AddWebPublicationRecord(conn, docCID, version1, path1))
-			record, err := GetWebPublicationRecord(conn, docCID)
-			require.NoError(t, err)
-			require.Equal(t, docCID, record.Document.ID)
-			require.Equal(t, version1, record.Document.Version)
-			require.Equal(t, path1, record.Path)
-			//require.Equal(t, path1, record.References) //TODO: Check references
+		require.NoError(t, AddWebPublicationRecord(conn, docCID, version1, path1))
+		record, err := GetWebPublicationRecord(conn, docCID)
+		require.NoError(t, err)
+		require.Equal(t, docCID, record.Document.ID)
+		require.Equal(t, version1, record.Document.Version)
+		require.Equal(t, path1, record.Path)
+		//require.Equal(t, path1, record.References) //TODO: Check references
 
-			accountCIDFake, err := cid.Decode(fakeAccount)
-			require.NoError(t, err)
-			_, err = GetMemberRole(conn, accountCIDFake)
-			require.Error(t, err)
-			members, err := ListMembers(conn)
-			require.NoError(t, err)
-			require.Len(t, members, 1)
-			account, ok := members[accountCID]
-			require.True(t, ok)
-			require.Equal(t, site.Member_EDITOR, account)
-			require.NoError(t, RemoveMember(conn, accountCIDFake))
-			members, err = ListMembers(conn)
-			require.NoError(t, err)
-			require.Len(t, members, 1)
-			require.NoError(t, RemoveMember(conn, accountCID))
-			members, err = ListMembers(conn)
-			require.NoError(t, err)
-			require.Len(t, members, 0)
-		}
+		docCID2, err := cid.Decode(doc2)
+		require.NoError(t, err)
+		require.Error(t, AddWebPublicationRecord(conn, docCID2, version2, path2))
 	}
-*/
+}
+
 func TestMembers(t *testing.T) {
 	conn, closer, err := makeConn()
 	require.NoError(t, err)
@@ -259,9 +245,10 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	);
 	CREATE TABLE site_members (
 		-- The account id that has been linked to a role on this site
-		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL PRIMARY KEY,
+		account_id INTEGER PRIMARY KEY,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
-		role INTEGER NOT NULL
+		role INTEGER NOT NULL,
+		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
 	) WITHOUT ROWID;
 	CREATE TABLE sites (
 		-- Site unique identification. The hostname of the site with protocol https://example.com
@@ -272,11 +259,49 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 		addresses TEXT NOT NULL,
 		-- The account ID of the site. We need a previous connection to the site so the 
 		-- actual account is inserted in the accounts table when handshake.
-		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL
+		account_id INTEGER NOT NULL,
+		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
 	) WITHOUT ROWID;
+	CREATE TABLE ipfs_blocks (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		multihash BLOB UNIQUE NOT NULL,
+		-- Multicodec describing the data stored in the block.
+		codec INTEGER NOT NULL,
+		-- Actual content of the block. Compressed with zstd.
+		data BLOB,
+		-- Byte size of the original uncompressed data.
+		-- Size 0 indicates that data is stored inline in the CID.
+		-- Size -1 indicates that we somehow know about this hash, but don't have the data yet.
+		size INTEGER DEFAULT (-1) NOT NULL,
+		-- Subjective (locally perceived) time when this block was inserted into the table for the first time.
+		insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
+	);
+	CREATE TABLE web_publication_records (
+		-- Ipfs block where the base document is stored.
+		block_id INTEGER PRIMARY KEY CHECK (block_id != 0),
+		-- doc version of the base document published. Not its references.
+		document_version TEXT NOT NULL,
+		-- Path this publication is published to. If NULL then its not pinned. If / is root document.
+		path TEXT UNIQUE,
+		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
+	);
 	`)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	err = sqlitex.ExecTransient(conn, `PRAGMA foreign_keys = ON;`, nil)
+	if err != nil {
+		return nil, nil, err
+	}
 	err = sqlitex.ExecScript(conn, `
 	INSERT INTO accounts (multihash) VALUES(x'00240801122056C5D5E350E613C295B9B8EB9C8B900DF61E2A00AFF42C03D5ACA6834EE85290');
+	`)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = sqlitex.ExecScript(conn, `
+	INSERT INTO ipfs_blocks (multihash, codec) VALUES(x'A0E40220CCD97A1F0CCEAF6ED683FC6119632044BFF995C0AFD4BD37898EC294E08583D5',113);
 	`)
 	if err != nil {
 		return nil, nil, err
