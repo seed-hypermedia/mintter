@@ -10,6 +10,7 @@ import (
 	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
@@ -103,7 +104,6 @@ type Site struct {
 	title                      string
 	description                string
 	// Mockup DBs remove when finished with the mockup
-	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration type
 	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
 	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
@@ -140,11 +140,6 @@ type Node struct {
 	ctx        context.Context // will be set after calling Start()
 }
 
-type tokenInfo struct {
-	role           site.Member_Role
-	expirationTime time.Time
-}
-
 // LocalFunctions is an interface for not having to pass a full-fledged documents service,
 // just the getPublication that is what we need to call in getPath, and a way to query the
 // sites database.
@@ -161,13 +156,35 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 	srv := &Server{Site: &Site{
 		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
-		tokensDB:                   map[string]tokenInfo{},
 		accountsDB:                 map[string]site.Member_Role{},
 		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
 		title:                      siteCfg.Title,
 	}, Node: node, localFunctions: localFunctions}
 
+	cleaningTokensTicker := time.NewTicker(5 * time.Minute)
+	go func() {
+		n, err := node.Await(ctx)
+		if err != nil {
+			return
+		}
+		conn, cancel, err := n.vcs.DB().Conn(ctx)
+		if err != nil {
+			return
+		}
+		defer cancel()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-cleaningTokensTicker.C:
+				if err := sitesql.CleanExpiredTokens(conn); err != nil {
+					return
+				}
+			}
+		}
+	}()
 	go func() {
 		n, err := node.Await(ctx)
 		if err == nil {

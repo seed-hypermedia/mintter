@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	site "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/vcs/vcssql"
 	"net/http"
 	"net/url"
@@ -63,13 +64,22 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 		expirationTime = in.ExpireTime.AsTime()
 	}
 
-	srv.tokensDB[newToken] = tokenInfo{
-		role:           in.Role,
-		expirationTime: expirationTime,
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.InviteToken{}, fmt.Errorf("Node not ready yet")
 	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.InviteToken{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	if err = sitesql.AddToken(conn, newToken, expirationTime, in.Role); err != nil {
+		return &site.InviteToken{}, fmt.Errorf("Cannot add token to db: %w", err)
+	}
+
 	return &site.InviteToken{
 		Token:      newToken,
-		ExpireTime: &timestamppb.Timestamp{Seconds: expirationTime.UnixNano(), Nanos: int32(expirationTime.Unix())},
+		ExpireTime: &timestamppb.Timestamp{Seconds: expirationTime.Unix(), Nanos: int32(expirationTime.Nanosecond())},
 	}, nil
 }
 
@@ -105,25 +115,32 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
 	}
 
-	tokenInfo, valid := srv.tokensDB[in.Token]
-	if !valid {
-		n.log.Debug("TOKEN NOT VALID", zap.String("Provided token", in.Token))
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot connect to internal db")
+	}
+	defer cancel()
+	tokenInfo, err := sitesql.GetToken(conn, in.Token)
+	if err != nil {
+		n.log.Debug("TOKEN NOT VALID", zap.String("Provided token", in.Token), zap.Error(err))
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("token not valid (nonexisting, already redeemed or expired)")
 	}
 
-	if tokenInfo.expirationTime.Before(time.Now()) {
-		delete(srv.tokensDB, in.Token)
+	if tokenInfo.ExpirationTime.Before(time.Now()) {
+		_ = sitesql.RemoveToken(conn, in.Token)
 		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("expired token")
 	}
 
 	// redeem the token
-	delete(srv.tokensDB, in.Token)
+	if err = sitesql.RemoveToken(conn, in.Token); err != nil {
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Could not redeem the token %w", err)
+	}
 
 	// We upsert the new role
-	srv.accountsDB[acc.String()] = tokenInfo.role
+	srv.accountsDB[acc.String()] = tokenInfo.Role
 
 	n.log.Debug("TOKEN REDEEMED", zap.String("Caller account", acc.String()), zap.String("Site Owner", srv.ownerID), zap.String("Role", "EDITOR"))
-	return &site.RedeemInviteTokenResponse{Role: tokenInfo.role}, nil
+	return &site.RedeemInviteTokenResponse{Role: tokenInfo.Role}, nil
 }
 
 // GetSiteInfo Gets public-facing site information.
