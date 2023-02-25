@@ -373,7 +373,6 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 		return retValue, nil
 	}
 	ret := &site.Publication{}
-	// TODO(juligasa): replace with a proper remote call to all known sites in the api.sitesDB
 	err = fmt.Errorf("No publication was found in provided path")
 	for _, v := range srv.WebPublicationRecordDB { // we first look in the db because we may have the document but was unpublished (removed from the database but not from the storage)
 		if in.Path == v.Path {

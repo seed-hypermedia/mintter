@@ -156,7 +156,7 @@ func (api *Server) ListSites(ctx context.Context, req *documents.ListSitesReques
 	}, nil
 }
 
-// ListWebPublicationRecords returns all the sites a given a document has been published to.
+// ListWebPublicationRecords returns all the sites where a given document has been published to.
 func (api *Server) ListWebPublicationRecords(ctx context.Context, req *documents.ListWebPublicationRecordsRequest) (*documents.ListWebPublicationRecordsResponse, error) {
 	var ret []*documents.WebPublicationRecord
 	for hostname, siteInfo := range api.sitesDB {
