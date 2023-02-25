@@ -255,7 +255,7 @@ func RemoveWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) error {
 	}
 
 	if err := removeWebPublicationRecord(conn, docIDBytes); err != nil {
-		return fmt.Errorf("Could not remove web record from the db : %w", err)
+		return fmt.Errorf("Could not remove web publication record from the db : %w", err)
 	}
 	return nil
 }
@@ -269,7 +269,7 @@ func GetWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) (PublicationRecor
 	}
 	record, err := getWebPublicationRecord(conn, docIDBytes)
 	if err != nil || record.WebPublicationRecordsDocumentVersion == "" {
-		return PublicationRecord{}, fmt.Errorf("Could not get member: %w", err)
+		return PublicationRecord{}, fmt.Errorf("Could not get web publication record: %w", err)
 	}
 
 	documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)

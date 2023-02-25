@@ -207,7 +207,7 @@ func generateQueries() error {
 				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
 				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
 			), qb.Line,
-			"FROM", sqliteschema.SiteMembers, qb.Line,
+			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
 			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
 		),
 
@@ -219,7 +219,7 @@ func generateQueries() error {
 				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
 				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
 			), qb.Line,
-			"FROM", sqliteschema.SiteMembers, qb.Line,
+			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
 			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
 			"WHERE", sqliteschema.WebPublicationRecordsBlockID, "="+
 				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
