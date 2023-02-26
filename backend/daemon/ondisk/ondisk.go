@@ -1,3 +1,4 @@
+// Package ondisk manages database.
 package ondisk
 
 import (
@@ -5,7 +6,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"mintter/backend/core"
 	"os"
 	"path/filepath"
@@ -29,7 +29,7 @@ Repo layout v1 file tree:
 const (
 	// This is changed when breaking changes are made. Eventually we'd want
 	// to support some migration mechanisms to help with backward-compatibility.
-	compatibilityVersion = "2023-02-23.01"
+	compatibilityVersion = "2023-02-26.01"
 
 	keysDir = "keys"
 	dbDir   = "db"
@@ -40,6 +40,7 @@ const (
 	versionFilename = "VERSION"
 )
 
+// ErrRepoMigrate is a custom error type.
 var ErrRepoMigrate = errors.New("repo migration failed")
 
 // OnDisk is a configuration directory stored on disk.
@@ -48,7 +49,6 @@ type OnDisk struct {
 	device core.KeyPair
 
 	mu    sync.Mutex
-	id    core.Identity
 	acc   core.PublicKey
 	ready chan struct{}
 	log   *zap.Logger
@@ -124,10 +124,12 @@ func prepareRepo(path string, log *zap.Logger) (r *OnDisk, err error) {
 	return r, nil
 }
 
+// Device gets device.
 func (r *OnDisk) Device() core.KeyPair {
 	return r.device
 }
 
+// Account gets account.
 func (r *OnDisk) Account() (core.PublicKey, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -139,6 +141,7 @@ func (r *OnDisk) Account() (core.PublicKey, error) {
 	return r.acc, nil
 }
 
+// MustAccount gets account immediately or panic.
 func (r *OnDisk) MustAccount() core.PublicKey {
 	acc, err := r.Account()
 	if err != nil {
@@ -147,10 +150,12 @@ func (r *OnDisk) MustAccount() core.PublicKey {
 	return acc
 }
 
+// Ready gets ready.
 func (r *OnDisk) Ready() <-chan struct{} {
 	return r.ready
 }
 
+// CommitAccount commits an account.
 func (r *OnDisk) CommitAccount(acc core.PublicKey) error {
 	if _, err := r.readAccountFile(); err == nil {
 		return fmt.Errorf("account is already committed")
@@ -188,7 +193,7 @@ func (r *OnDisk) SQLitePath() string {
 func (r *OnDisk) deviceKeyFromFile() (crypto.PrivKey, error) {
 	privFile := filepath.Join(r.path, privKeyFilePath)
 
-	privBytes, err := ioutil.ReadFile(privFile)
+	privBytes, err := os.ReadFile(privFile)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, fmt.Errorf("failed reading private key file: %w", err)
 	}
@@ -218,7 +223,7 @@ func (r *OnDisk) setupKeys(pk crypto.PrivKey) error {
 	}
 
 	// TODO: clean this up, coz we may end up writing the same file twice here between multiple runs.
-	if err := ioutil.WriteFile(filepath.Join(r.path, privKeyFilePath), pkBytes, 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(r.path, privKeyFilePath), pkBytes, 0600); err != nil {
 		return err
 	}
 
@@ -244,7 +249,7 @@ func (r *OnDisk) writeAccountFile(k core.PublicKey) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(r.path, accountKeyFilePath), data, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(r.path, accountKeyFilePath), data, 0600); err != nil {
 		return err
 	}
 
@@ -252,7 +257,7 @@ func (r *OnDisk) writeAccountFile(k core.PublicKey) error {
 }
 
 func (r *OnDisk) readAccountFile() (core.PublicKey, error) {
-	data, err := ioutil.ReadFile(filepath.Join(r.path, accountKeyFilePath))
+	data, err := os.ReadFile(filepath.Join(r.path, accountKeyFilePath))
 	if err != nil {
 		return core.PublicKey{}, err
 	}
@@ -267,16 +272,16 @@ func (r *OnDisk) readAccountFile() (core.PublicKey, error) {
 
 func migrateRepo(path string) error {
 	// File profile.json can only be there if it's previously existing directory from the pre-whitepaper architecture.
-	if _, err := ioutil.ReadFile(filepath.Join(path, "profile.json")); err == nil {
+	if _, err := os.ReadFile(filepath.Join(path, "profile.json")); err == nil {
 		return fmt.Errorf("incompatible repo layout in %s: remove this directory or use a different one", path)
 	}
 
 	versionFile := filepath.Join(path, versionFilename)
 
-	ver, err := ioutil.ReadFile(versionFile)
+	ver, err := os.ReadFile(versionFile)
 	if err != nil {
 		v := []byte(compatibilityVersion)
-		if err := ioutil.WriteFile(versionFile, v, 0644); err != nil {
+		if err := os.WriteFile(versionFile, v, 0600); err != nil {
 			return fmt.Errorf("failed to create repo version file: %w", err)
 		}
 
