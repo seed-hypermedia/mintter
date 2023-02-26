@@ -232,7 +232,7 @@ func GetSiteDescription(conn *sqlite.Conn) (string, error) {
 	return description.GlobalMetaValue, nil
 }
 
-// AddWebPublicationRecord inserts a new published record in the db.
+// AddWebPublicationRecord inserts a new published record in the db. Does not check if the version exists.
 func AddWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid, version string, path string) error {
 	docIDHexStr := docID.Hash().HexString()
 	docIDBytes, err := hex.DecodeString(docIDHexStr)
@@ -247,27 +247,27 @@ func AddWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid, version string, p
 }
 
 // RemoveWebPublicationRecord deletes a given web publication from the site. Does not remove the actual document just the publication record.
-func RemoveWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) error {
+func RemoveWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid, version string) error {
 	docIDHexStr := docID.Hash().HexString()
 	docIDBytes, err := hex.DecodeString(docIDHexStr)
 	if err != nil {
 		return fmt.Errorf("Remove member could not decode provided accountID: %w", err)
 	}
 
-	if err := removeWebPublicationRecord(conn, docIDBytes); err != nil {
+	if err := removeWebPublicationRecord(conn, docIDBytes, version); err != nil {
 		return fmt.Errorf("Could not remove web publication record from the db : %w", err)
 	}
 	return nil
 }
 
-// GetWebPublicationRecord gets a specific publication record. Error if it does not exist.
-func GetWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) (PublicationRecord, error) {
+// GetWebPublicationRecordByVersion gets a specific publication record by document ID + version. Error if it does not exist.
+func GetWebPublicationRecordByVersion(conn *sqlite.Conn, docID cid.Cid, version string) (PublicationRecord, error) {
 	docIDHexStr := docID.Hash().HexString()
 	docIDBytes, err := hex.DecodeString(docIDHexStr)
 	if err != nil {
 		return PublicationRecord{}, fmt.Errorf("Get web Record could not decode provided docID: %w", err)
 	}
-	record, err := getWebPublicationRecord(conn, docIDBytes)
+	record, err := getWebPublicationRecordWithVersion(conn, docIDBytes, version)
 	if err != nil || record.WebPublicationRecordsDocumentVersion == "" {
 		return PublicationRecord{}, fmt.Errorf("Could not get web publication record: %w", err)
 	}
@@ -287,7 +287,59 @@ func GetWebPublicationRecord(conn *sqlite.Conn, docID cid.Cid) (PublicationRecor
 	}, nil
 }
 
-// ListWebPublicationRecords lists all the published records on a site.
+// GetWebPublicationRecordsByID gets a publication records by document ID. Error if it does not exist.
+func GetWebPublicationRecordsByID(conn *sqlite.Conn, docID cid.Cid) ([]PublicationRecord, error) {
+	docIDHexStr := docID.Hash().HexString()
+	docIDBytes, err := hex.DecodeString(docIDHexStr)
+	ret := []PublicationRecord{}
+	if err != nil {
+		return ret, fmt.Errorf("Get web Record could not decode provided docID: %w", err)
+	}
+	records, err := getWebPublicationRecordByIDOnly(conn, docIDBytes)
+	if err != nil || len(records) == 0 {
+		return ret, fmt.Errorf("Could not get web publication record: %w", err)
+	}
+	for _, record := range records {
+		documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
+		references, err := ListWebPublicationReferencesWithVersion(conn, documentCID, record.WebPublicationRecordsDocumentVersion)
+		if err != nil {
+			return ret, fmt.Errorf("Could not get web publication references: %w", err)
+		}
+		ret = append(ret, PublicationRecord{
+			Document: DocInfo{
+				ID:      documentCID,
+				Version: record.WebPublicationRecordsDocumentVersion,
+			},
+			Path:       record.WebPublicationRecordsPath,
+			References: references,
+		})
+	}
+	return ret, nil
+}
+
+// GetWebPublicationRecordByPath gets a specific publication record by path. Error if it does not exist.
+func GetWebPublicationRecordByPath(conn *sqlite.Conn, path string) (PublicationRecord, error) {
+	record, err := getWebPublicationRecordByPath(conn, path)
+	if err != nil || record.WebPublicationRecordsDocumentVersion == "" {
+		return PublicationRecord{}, fmt.Errorf("Could not get web publication record: %w", err)
+	}
+
+	documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
+	references, err := ListWebPublicationReferencesWithVersion(conn, documentCID, record.WebPublicationRecordsDocumentVersion)
+	if err != nil {
+		return PublicationRecord{}, fmt.Errorf("Could not get web publication references: %w", err)
+	}
+	return PublicationRecord{
+		Document: DocInfo{
+			ID:      documentCID,
+			Version: record.WebPublicationRecordsDocumentVersion,
+		},
+		Path:       record.WebPublicationRecordsPath,
+		References: references,
+	}, nil
+}
+
+// ListWebPublicationRecords lists all the published records on a site.map[info]path.
 func ListWebPublicationRecords(conn *sqlite.Conn) (map[DocInfo]string, error) {
 	records, err := listWebPublicationRecords(conn)
 	ret := map[DocInfo]string{}

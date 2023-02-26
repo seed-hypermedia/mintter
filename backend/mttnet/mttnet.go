@@ -101,8 +101,6 @@ type Site struct {
 	hostname                   string
 	InviteTokenExpirationDelay time.Duration
 	ownerID                    string
-	// Mockup DBs remove when finished with the mockup
-	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
 // Server holds the p2p functionality to be accessed via gRPC.
@@ -151,7 +149,6 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 	srv := &Server{Site: &Site{
 		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
-		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
 	}, Node: node, localFunctions: localFunctions}
 
@@ -204,17 +201,19 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				close(n.registered)
 			}
 		}()
+		if n != nil {
+			conn, cancel, err := n.vcs.DB().Conn(ctx)
+			if err != nil {
+				return
+			}
+			defer cancel()
+			ownerCID, err := cid.Decode(srv.ownerID)
+			if err != nil {
+				return
+			}
+			_ = sitesql.AddMember(conn, ownerCID, int64(site.Member_OWNER))
+		}
 
-		conn, cancel, err := n.vcs.DB().Conn(ctx)
-		if err != nil {
-			return
-		}
-		defer cancel()
-		ownerCID, err := cid.Decode(srv.ownerID)
-		if err != nil {
-			return
-		}
-		_ = sitesql.AddMember(conn, ownerCID, int64(site.Member_OWNER))
 	}()
 	return srv
 }

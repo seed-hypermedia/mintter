@@ -25,15 +25,17 @@ const (
 	token1 = "ASDFG123"
 	token2 = "QWERT987"
 
-	fakeDoc       = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
-	sourceDoc     = "bafy2bzacedidscwwfyegr43j5667hxgstnafpbq7skifl5xovzta5sow5dkyq"
-	sourceVersion = "baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a"
-	targetDoc     = "bafy2bzacebexnm36k6w2jxfikngjnejlqihdcwh5rnaowpwzzefoakdg36vea"
-	targetVersion = "baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my"
+	fakeDoc        = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
+	invalidVersion = "this is an invalid version"
+	sourceDoc      = "bafy2bzacedidscwwfyegr43j5667hxgstnafpbq7skifl5xovzta5sow5dkyq"
+	sourceVersion  = "baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a"
+	targetDoc      = "bafy2bzacebexnm36k6w2jxfikngjnejlqihdcwh5rnaowpwzzefoakdg36vea"
+	targetVersion  = "baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my"
 
-	path1 = "/"
-	path2 = "other-path"
-	path3 = ""
+	path1     = "/"
+	path2     = "other-path"
+	path3     = "another-path"
+	blankPath = ""
 
 	hostname1 = "https://example.com"
 	hostname2 = "http://127.0.0.1:56001"
@@ -127,7 +129,7 @@ func TestRecords(t *testing.T) {
 		docCID, err := cid.Decode(targetDoc)
 		require.NoError(t, err)
 		require.NoError(t, AddWebPublicationRecord(conn, docCID, targetVersion, path1))
-		record, err := GetWebPublicationRecord(conn, docCID)
+		record, err := GetWebPublicationRecordByVersion(conn, docCID, targetVersion)
 		require.NoError(t, err)
 		require.Equal(t, docCID, record.Document.ID)
 		require.Equal(t, targetVersion, record.Document.Version)
@@ -145,8 +147,11 @@ func TestRecords(t *testing.T) {
 
 		docCID, err = cid.Decode(sourceDoc)
 		require.NoError(t, err)
+		//require.Error(t, AddWebPublicationRecord(conn, docCID, sourceVersion, blankPath))
 		require.NoError(t, AddWebPublicationRecord(conn, docCID, sourceVersion, path2))
-		record, err = GetWebPublicationRecord(conn, docCID)
+		require.Error(t, AddWebPublicationRecord(conn, docCID, sourceVersion, path3))
+
+		record, err = GetWebPublicationRecordByVersion(conn, docCID, sourceVersion)
 		require.NoError(t, err)
 		require.Equal(t, docCID, record.Document.ID)
 		require.Equal(t, sourceVersion, record.Document.Version)
@@ -154,12 +159,17 @@ func TestRecords(t *testing.T) {
 		require.Len(t, record.References, 1)
 		require.Equal(t, targetVersion, record.References[0].Version)
 		require.Equal(t, targetDoc, record.References[0].ID.String())
-		require.NoError(t, RemoveWebPublicationRecord(conn, docCIDFake))
+		require.NoError(t, RemoveWebPublicationRecord(conn, docCIDFake, targetVersion))
 		records, err = ListWebPublicationRecords(conn)
 		require.NoError(t, err)
 		require.Len(t, records, 2)
 
-		require.NoError(t, RemoveWebPublicationRecord(conn, docCID))
+		docByPath, err := GetWebPublicationRecordByPath(conn, path2)
+		require.NoError(t, err)
+		require.Equal(t, docCID, docByPath.Document.ID)
+		require.Equal(t, sourceVersion, docByPath.Document.Version)
+
+		require.NoError(t, RemoveWebPublicationRecord(conn, docCID, sourceVersion))
 		records, err = ListWebPublicationRecords(conn)
 		require.NoError(t, err)
 		require.Len(t, records, 1)

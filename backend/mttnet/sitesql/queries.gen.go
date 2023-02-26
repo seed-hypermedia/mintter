@@ -468,7 +468,7 @@ JOIN accounts ON accounts.id = site_members.account_id`
 }
 
 func addWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte, webPublicationRecordsDocumentVersion string, webPublicationRecordsPath string) error {
-	const query = `INSERT OR REPLACE INTO web_publication_records (block_id, document_version, path)
+	const query = `INSERT INTO web_publication_records (block_id, document_version, path)
 VALUES ((SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash), :webPublicationRecordsDocumentVersion, :webPublicationRecordsPath)`
 
 	before := func(stmt *sqlite.Stmt) {
@@ -489,11 +489,12 @@ VALUES ((SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash), :webPubli
 	return err
 }
 
-func removeWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte) error {
-	const query = `DELETE FROM web_publication_records WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
+func removeWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte, webPublicationRecordsDocumentVersion string) error {
+	const query = `DELETE FROM web_publication_records WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash ) AND web_publication_records.document_version = :webPublicationRecordsDocumentVersion`
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":doc_multihash", doc_multihash)
+		stmt.SetText(":webPublicationRecordsDocumentVersion", webPublicationRecordsDocumentVersion)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
@@ -544,27 +545,65 @@ JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id`
 	return out, err
 }
 
-type getWebPublicationRecordResult struct {
+type getWebPublicationRecordByIDOnlyResult struct {
 	IPFSBlocksCodec                      int64
 	IPFSBlocksMultihash                  []byte
 	WebPublicationRecordsDocumentVersion string
 	WebPublicationRecordsPath            string
 }
 
-func getWebPublicationRecord(conn *sqlite.Conn, doc_multihash []byte) (getWebPublicationRecordResult, error) {
+func getWebPublicationRecordByIDOnly(conn *sqlite.Conn, doc_multihash []byte) ([]getWebPublicationRecordByIDOnlyResult, error) {
 	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
 FROM web_publication_records
 JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash )`
 
-	var out getWebPublicationRecordResult
+	var out []getWebPublicationRecordByIDOnlyResult
 
 	before := func(stmt *sqlite.Stmt) {
 		stmt.SetBytes(":doc_multihash", doc_multihash)
 	}
 
 	onStep := func(i int, stmt *sqlite.Stmt) error {
+		out = append(out, getWebPublicationRecordByIDOnlyResult{
+			IPFSBlocksCodec:                      stmt.ColumnInt64(0),
+			IPFSBlocksMultihash:                  stmt.ColumnBytes(1),
+			WebPublicationRecordsDocumentVersion: stmt.ColumnText(2),
+			WebPublicationRecordsPath:            stmt.ColumnText(3),
+		})
+
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWebPublicationRecordByIDOnly: %w", err)
+	}
+
+	return out, err
+}
+
+type getWebPublicationRecordWithVersionResult struct {
+	IPFSBlocksCodec                      int64
+	IPFSBlocksMultihash                  []byte
+	WebPublicationRecordsDocumentVersion string
+	WebPublicationRecordsPath            string
+}
+
+func getWebPublicationRecordWithVersion(conn *sqlite.Conn, doc_multihash []byte, doc_version string) (getWebPublicationRecordWithVersionResult, error) {
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
+FROM web_publication_records
+JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.block_id =(SELECT id FROM ipfs_blocks WHERE multihash = :doc_multihash ) AND web_publication_records.document_version = :doc_version`
+
+	var out getWebPublicationRecordWithVersionResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetBytes(":doc_multihash", doc_multihash)
+		stmt.SetText(":doc_version", doc_version)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
 		if i > 1 {
-			return errors.New("getWebPublicationRecord: more than one result return for a single-kind query")
+			return errors.New("getWebPublicationRecordWithVersion: more than one result return for a single-kind query")
 		}
 
 		out.IPFSBlocksCodec = stmt.ColumnInt64(0)
@@ -576,7 +615,45 @@ JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_
 
 	err := sqlitegen.ExecStmt(conn, query, before, onStep)
 	if err != nil {
-		err = fmt.Errorf("failed query: getWebPublicationRecord: %w", err)
+		err = fmt.Errorf("failed query: getWebPublicationRecordWithVersion: %w", err)
+	}
+
+	return out, err
+}
+
+type getWebPublicationRecordByPathResult struct {
+	IPFSBlocksCodec                      int64
+	IPFSBlocksMultihash                  []byte
+	WebPublicationRecordsDocumentVersion string
+	WebPublicationRecordsPath            string
+}
+
+func getWebPublicationRecordByPath(conn *sqlite.Conn, webPublicationRecordsPath string) (getWebPublicationRecordByPathResult, error) {
+	const query = `SELECT ipfs_blocks.codec, ipfs_blocks.multihash, web_publication_records.document_version, web_publication_records.path
+FROM web_publication_records
+JOIN ipfs_blocks ON web_publication_records.block_id = ipfs_blocks.id WHERE web_publication_records.path = :webPublicationRecordsPath`
+
+	var out getWebPublicationRecordByPathResult
+
+	before := func(stmt *sqlite.Stmt) {
+		stmt.SetText(":webPublicationRecordsPath", webPublicationRecordsPath)
+	}
+
+	onStep := func(i int, stmt *sqlite.Stmt) error {
+		if i > 1 {
+			return errors.New("getWebPublicationRecordByPath: more than one result return for a single-kind query")
+		}
+
+		out.IPFSBlocksCodec = stmt.ColumnInt64(0)
+		out.IPFSBlocksMultihash = stmt.ColumnBytes(1)
+		out.WebPublicationRecordsDocumentVersion = stmt.ColumnText(2)
+		out.WebPublicationRecordsPath = stmt.ColumnText(3)
+		return nil
+	}
+
+	err := sqlitegen.ExecStmt(conn, query, before, onStep)
+	if err != nil {
+		err = fmt.Errorf("failed query: getWebPublicationRecordByPath: %w", err)
 	}
 
 	return out, err

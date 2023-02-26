@@ -179,7 +179,7 @@ func generateQueries() error {
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "addWebPublicationRecord", sqlitegen.QueryKindExec,
-			"INSERT OR REPLACE INTO", sqliteschema.WebPublicationRecords, qb.ListColShort(
+			"INSERT INTO", sqliteschema.WebPublicationRecords, qb.ListColShort(
 				sqliteschema.WebPublicationRecordsBlockID,
 				sqliteschema.WebPublicationRecordsDocumentVersion,
 				sqliteschema.WebPublicationRecordsPath,
@@ -197,6 +197,7 @@ func generateQueries() error {
 			"DELETE FROM", sqliteschema.WebPublicationRecords,
 			"WHERE", sqliteschema.WebPublicationRecordsBlockID, "="+
 				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
+			"AND", sqliteschema.WebPublicationRecordsDocumentVersion, "=", qb.VarCol(sqliteschema.WebPublicationRecordsDocumentVersion),
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "listWebPublicationRecords", sqlitegen.QueryKindMany,
@@ -211,7 +212,7 @@ func generateQueries() error {
 			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
 		),
 
-		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationRecord", sqlitegen.QueryKindSingle,
+		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationRecordByIDOnly", sqlitegen.QueryKindMany,
 			"SELECT",
 			qb.Results(
 				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
@@ -223,6 +224,34 @@ func generateQueries() error {
 			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
 			"WHERE", sqliteschema.WebPublicationRecordsBlockID, "="+
 				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
+		),
+
+		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationRecordWithVersion", sqlitegen.QueryKindSingle,
+			"SELECT",
+			qb.Results(
+				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
+				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
+				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
+				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
+			), qb.Line,
+			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
+			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
+			"WHERE", sqliteschema.WebPublicationRecordsBlockID, "="+
+				"(SELECT "+sqliteschema.IPFSBlocksID.ShortName()+" FROM "+string(sqliteschema.IPFSBlocks)+" WHERE "+sqliteschema.IPFSBlocksMultihash.ShortName()+" =", qb.Var("doc_multihash", sqlitegen.TypeBytes), ")",
+			"AND", sqliteschema.WebPublicationRecordsDocumentVersion, "=", qb.Var("doc_version", sqlitegen.TypeText),
+		),
+
+		qb.MakeQuery(sqliteschema.Schema, "getWebPublicationRecordByPath", sqlitegen.QueryKindSingle,
+			"SELECT",
+			qb.Results(
+				qb.ResultCol(sqliteschema.IPFSBlocksCodec),
+				qb.ResultCol(sqliteschema.IPFSBlocksMultihash),
+				qb.ResultCol(sqliteschema.WebPublicationRecordsDocumentVersion),
+				qb.ResultCol(sqliteschema.WebPublicationRecordsPath),
+			), qb.Line,
+			"FROM", sqliteschema.WebPublicationRecords, qb.Line,
+			"JOIN", sqliteschema.IPFSBlocks, "ON", sqliteschema.WebPublicationRecordsBlockID, "=", sqliteschema.IPFSBlocksID,
+			"WHERE", sqliteschema.WebPublicationRecordsPath, "=", qb.VarCol(sqliteschema.WebPublicationRecordsPath),
 		),
 
 		qb.MakeQuery(sqliteschema.Schema, "listWebPublicationReferencesByIDOnly", sqlitegen.QueryKindMany,

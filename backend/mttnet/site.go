@@ -70,7 +70,7 @@ func (srv *Server) CreateInviteToken(ctx context.Context, in *site.CreateInviteT
 	}
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return &site.InviteToken{}, fmt.Errorf("Cannot connect to internal db")
+		return &site.InviteToken{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	if err = sitesql.AddToken(conn, newToken, expirationTime, in.Role); err != nil {
@@ -102,7 +102,7 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 	}
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot connect to internal db")
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	if acc.String() == srv.ownerID {
@@ -166,7 +166,7 @@ func (srv *Server) GetSiteInfo(ctx context.Context, in *site.GetSiteInfoRequest)
 	}
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db")
+		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	//make GetSiteTitle that returns "" when does not find the title tag
@@ -206,7 +206,7 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 	}
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db")
+		return &site.SiteInfo{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 
@@ -248,7 +248,7 @@ func (srv *Server) ListMembers(ctx context.Context, in *site.ListMembersRequest)
 	}
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return &site.ListMembersResponse{}, fmt.Errorf("Cannot connect to internal db")
+		return &site.ListMembersResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	memberList, err := sitesql.ListMembers(conn)
@@ -283,7 +283,7 @@ func (srv *Server) GetMember(ctx context.Context, in *site.GetMemberRequest) (*s
 	}
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return &site.Member{}, fmt.Errorf("Cannot connect to internal db")
+		return &site.Member{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	accCID, err := cid.Decode(in.AccountId)
@@ -317,7 +317,7 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 	}
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return &emptypb.Empty{}, fmt.Errorf("Cannot connect to internal db")
+		return &emptypb.Empty{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	accCID, err := cid.Decode(in.AccountId)
@@ -365,28 +365,47 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	}
 	*/
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
-	for key, record := range srv.WebPublicationRecordDB {
-		if record.Document.ID == in.DocumentId && record.Document.Version == in.Version {
+
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+	}
+	defer cancel()
+
+	docID, err := cid.Decode(in.DocumentId)
+	if err != nil {
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Provided Document id [%s] is not valid: %w", in.DocumentId, err)
+	}
+
+	_, err = srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
+		DocumentId: in.DocumentId,
+		Version:    in.Version,
+		LocalOnly:  true,
+	})
+
+	if err != nil {
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Couldn't find the actual document + version to publish in the database: %w", err)
+	}
+
+	record, err := sitesql.GetWebPublicationRecordByPath(conn, in.Path)
+	if err == nil {
+		if record.Document.ID.String() == in.DocumentId && record.Document.Version == in.Version {
 			return &site.PublishDocumentResponse{}, fmt.Errorf("Provided document+version already exists in path [%s]", in.Path)
 		}
-		if record.Path == in.Path {
-			if record.Document.ID != in.DocumentId {
-				return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] already taken by a different Document ID", in.Path)
-			}
-			delete(srv.WebPublicationRecordDB, key)
+		if record.Document.ID.String() != in.DocumentId {
+			return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] already taken by a different Document ID", in.Path)
+		}
+		if err = sitesql.RemoveWebPublicationRecord(conn, record.Document.ID, record.Document.Version); err != nil {
+			return &site.PublishDocumentResponse{}, fmt.Errorf("Could not remove previous version [%s] in the same path: %w", record.Document.Version, err)
 		}
 	}
 
-	var refs []docInfo
-	for _, ref := range in.ReferencedDocuments {
-		refs = append(refs, docInfo{ID: ref.DocumentId, Version: ref.Version})
-	}
-
-	srv.WebPublicationRecordDB[randStr(8)] = PublicationRecord{
-		Document:   docInfo{ID: in.DocumentId, Version: in.Version},
-		Path:       in.Path,
-		Hostname:   srv.hostname,
-		References: refs,
+	if err = sitesql.AddWebPublicationRecord(conn, docID, in.Version, in.Path); err != nil {
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Could not insert document in path [%s]: %w", in.Path, err)
 	}
 	return &site.PublishDocumentResponse{}, nil
 }
@@ -404,11 +423,27 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 		}
 		return retValue, nil
 	}
-	var toDelete []string
-	for key, record := range srv.WebPublicationRecordDB {
-		if record.Document.ID == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version) {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+	}
+	defer cancel()
+	docID, err := cid.Decode(in.DocumentId)
+	if err != nil {
+		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Provided document ID [%s] is in valid: %w", in.DocumentId, err)
+	}
+	records, err := sitesql.GetWebPublicationRecordsByID(conn, docID)
+	if err != nil {
+		return &site.UnpublishDocumentResponse{}, fmt.Errorf("Cannot unpublish: %w", err)
+	}
+	for _, record := range records {
+		if record.Document.ID.String() == in.DocumentId && (in.Version == "" || in.Version == record.Document.Version) {
 			doc, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-				DocumentId: record.Document.ID,
+				DocumentId: record.Document.ID.String(),
 				Version:    record.Document.Version,
 				LocalOnly:  true,
 			})
@@ -422,11 +457,10 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 			if acc.String() != docAcc.String() && srv.ownerID != acc.String() {
 				return &site.UnpublishDocumentResponse{}, fmt.Errorf("You are not the author of the document, nor site owner")
 			}
-			toDelete = append(toDelete, key)
+			if err = sitesql.RemoveWebPublicationRecord(conn, record.Document.ID, record.Document.Version); err != nil {
+				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't remove document [%s]: %w", record.Document.ID.String(), err)
+			}
 		}
-	}
-	for _, record := range toDelete {
-		delete(srv.WebPublicationRecordDB, record)
 	}
 	return &site.UnpublishDocumentResponse{}, nil
 }
@@ -445,12 +479,25 @@ func (srv *Server) ListWebPublications(ctx context.Context, in *site.ListWebPubl
 		return retValue, nil
 	}
 	var publications []*site.WebPublicationRecord
-	for _, record := range srv.WebPublicationRecordDB {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.ListWebPublicationsResponse{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.ListWebPublicationsResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+	}
+	defer cancel()
+	records, err := sitesql.ListWebPublicationRecords(conn)
+	if err != nil {
+		return &site.ListWebPublicationsResponse{}, fmt.Errorf("Cannot List publications: %w", err)
+	}
+	for document, path := range records {
 		publications = append(publications, &site.WebPublicationRecord{
-			DocumentId: record.Document.ID,
-			Version:    record.Document.Version,
+			DocumentId: document.ID.String(),
+			Version:    document.Version,
 			Hostname:   srv.hostname,
-			Path:       record.Path,
+			Path:       path,
 		})
 	}
 	return &site.ListWebPublicationsResponse{Publications: publications}, nil
@@ -469,19 +516,26 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 		}
 		return retValue, nil
 	}
-	ret := &site.Publication{}
-	err = fmt.Errorf("No publication was found in provided path")
-	for _, v := range srv.WebPublicationRecordDB { // we first look in the db because we may have the document but was unpublished (removed from the database but not from the storage)
-		if in.Path == v.Path {
-			ret, err = srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
-				DocumentId: v.Document.ID,
-				LocalOnly:  true,
-			})
-			if err != nil {
-				return &site.GetPathResponse{}, fmt.Errorf("Could not get local document although was found in the list of published documents: %w", err)
-			}
-			break
-		}
+
+	n, ok := srv.Node.Get()
+	if !ok {
+		return &site.GetPathResponse{}, fmt.Errorf("Node not ready yet")
+	}
+	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	if err != nil {
+		return &site.GetPathResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+	}
+	defer cancel()
+	record, err := sitesql.GetWebPublicationRecordByPath(conn, in.Path)
+	if err != nil {
+		return &site.GetPathResponse{}, fmt.Errorf("Could not get record for path [%s]: %w", in.Path, err)
+	}
+	ret, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
+		DocumentId: record.Document.ID.String(),
+		LocalOnly:  true,
+	})
+	if err != nil {
+		return &site.GetPathResponse{}, fmt.Errorf("Could not get local document although was found in the list of published documents: %w", err)
 	}
 	return &site.GetPathResponse{Publication: ret}, err
 }
@@ -601,7 +655,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	} else if requiredRole == site.Member_EDITOR && acc.String() != srv.ownerID {
 		conn, cancel, err := n.vcs.DB().Conn(ctx)
 		if err != nil {
-			return cid.Cid{}, false, nil, fmt.Errorf("Cannot connect to internal db")
+			return cid.Cid{}, false, nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 		}
 		defer cancel()
 
@@ -652,7 +706,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	var siteAccount string
 	conn, cancel, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to internal db")
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer cancel()
 	site, err := sitesql.GetSite(conn, hostname)
@@ -673,7 +727,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 
 	conn, release, err := n.VCS().DB().Conn(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to internal db")
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer release()
 
