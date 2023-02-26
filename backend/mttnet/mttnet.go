@@ -10,6 +10,7 @@ import (
 	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
@@ -100,12 +101,6 @@ type Site struct {
 	hostname                   string
 	InviteTokenExpirationDelay time.Duration
 	ownerID                    string
-	title                      string
-	description                string
-	// Mockup DBs remove when finished with the mockup
-	tokensDB               map[string]tokenInfo         // tokens -> Role mapping and expiration type
-	accountsDB             map[string]site.Member_Role  // accountIDs -> Role mapping
-	WebPublicationRecordDB map[string]PublicationRecord // pubIDs(no docID) -> Publication info
 }
 
 // Server holds the p2p functionality to be accessed via gRPC.
@@ -140,34 +135,46 @@ type Node struct {
 	ctx        context.Context // will be set after calling Start()
 }
 
-type tokenInfo struct {
-	role           site.Member_Role
-	expirationTime time.Time
-}
-
 // LocalFunctions is an interface for not having to pass a full-fledged documents service,
-// just the getPublication that is what we need to call in getPath, and a way to query the
-// sites database.
+// just the getPublication that is what we need to call in getPath.
 type LocalFunctions interface {
 	// GetPublication gets a local publication.
 	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
-	// GetSiteAccount gets a site's accountID.
-	GetSiteAccount(hostname string) (string, error)
 }
 
 // NewServer returns a new mttnet API server.
 func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions) *Server {
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
+
 	srv := &Server{Site: &Site{
 		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
-		tokensDB:                   map[string]tokenInfo{},
-		accountsDB:                 map[string]site.Member_Role{},
-		WebPublicationRecordDB:     map[string]PublicationRecord{},
 		ownerID:                    siteCfg.OwnerID,
-		title:                      siteCfg.Title,
 	}, Node: node, localFunctions: localFunctions}
 
+	cleaningTokensTicker := time.NewTicker(5 * time.Minute)
+	go func() {
+		n, err := node.Await(ctx)
+		if err != nil {
+			return
+		}
+		conn, cancel, err := n.vcs.DB().Conn(ctx)
+		if err != nil {
+			return
+		}
+		defer cancel()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-cleaningTokensTicker.C:
+				if err := sitesql.CleanExpiredTokens(conn); err != nil {
+					return
+				}
+			}
+		}
+	}()
 	go func() {
 		n, err := node.Await(ctx)
 		if err == nil {
@@ -177,11 +184,34 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			if srv.ownerID == "" {
 				srv.ownerID = n.me.AccountID().String()
 			}
+			if siteCfg.Title != "" && n.vcs.DB() != nil {
+				conn, cancel, err := n.vcs.DB().Conn(ctx)
+				if err == nil {
+					defer cancel()
+					title, err := sitesql.GetSiteTitle(conn)
+					if err == nil && title == "" {
+						_ = sitesql.SetSiteTitle(conn, siteCfg.Title)
+					}
+				}
+			}
 		}
-		srv.accountsDB[srv.ownerID] = site.Member_OWNER
-		// Indicate we can now serve the already registered endpoints.
-		if n != nil {
-			close(n.registered)
+		defer func() {
+			// Indicate we can now serve the already registered endpoints.
+			if n != nil {
+				close(n.registered)
+			}
+		}()
+		if n != nil && n.vcs.DB() != nil {
+			conn, cancel, err := n.vcs.DB().Conn(ctx)
+			if err != nil {
+				return
+			}
+			defer cancel()
+			ownerCID, err := cid.Decode(srv.ownerID)
+			if err != nil {
+				return
+			}
+			_ = sitesql.AddMember(conn, ownerCID, int64(site.Member_OWNER))
 		}
 	}()
 	return srv

@@ -25,15 +25,17 @@ const (
 	token1 = "ASDFG123"
 	token2 = "QWERT987"
 
-	fakeDoc       = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
-	sourceDoc     = "bafy2bzacedidscwwfyegr43j5667hxgstnafpbq7skifl5xovzta5sow5dkyq"
-	sourceVersion = "baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a"
-	targetDoc     = "bafy2bzacebexnm36k6w2jxfikngjnejlqihdcwh5rnaowpwzzefoakdg36vea"
-	targetVersion = "baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my"
+	fakeDoc        = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
+	invalidVersion = "this is an invalid version"
+	sourceDoc      = "bafy2bzacedidscwwfyegr43j5667hxgstnafpbq7skifl5xovzta5sow5dkyq"
+	sourceVersion  = "baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a"
+	targetDoc      = "bafy2bzacebexnm36k6w2jxfikngjnejlqihdcwh5rnaowpwzzefoakdg36vea"
+	targetVersion  = "baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my"
 
-	path1 = "/"
-	path2 = "other-path"
-	path3 = ""
+	path1     = "/"
+	path2     = "other-path"
+	path3     = "another-path"
+	blankPath = ""
 
 	hostname1 = "https://example.com"
 	hostname2 = "http://127.0.0.1:56001"
@@ -56,8 +58,15 @@ func TestSiteOptions(t *testing.T) {
 	defer func() { require.NoError(t, closer()) }()
 
 	{
-		require.NoError(t, SetSiteTitle(conn, siteTitle))
 		title, err := GetSiteTitle(conn)
+		require.NoError(t, err)
+		require.Equal(t, "", title)
+		description, err := GetSiteDescription(conn)
+		require.NoError(t, err)
+		require.Equal(t, "", description)
+
+		require.NoError(t, SetSiteTitle(conn, siteTitle))
+		title, err = GetSiteTitle(conn)
 		require.NoError(t, err)
 		require.Equal(t, siteTitle, title)
 		require.NoError(t, SetSiteTitle(conn, modifiedTitle))
@@ -66,7 +75,7 @@ func TestSiteOptions(t *testing.T) {
 		require.Equal(t, modifiedTitle, title)
 
 		require.NoError(t, SetSiteDescription(conn, siteDescription))
-		description, err := GetSiteDescription(conn)
+		description, err = GetSiteDescription(conn)
 		require.NoError(t, err)
 		require.Equal(t, siteDescription, description)
 		require.NoError(t, SetSiteDescription(conn, modifiedDescription))
@@ -86,9 +95,10 @@ func TestSites(t *testing.T) {
 		require.NoError(t, AddSite(conn, accountCID, strings.Split(addrs1, ","), hostname1, int64(site.Member_EDITOR)))
 		localSite, err := GetSite(conn, hostname1)
 		require.NoError(t, err)
-		require.Equal(t, int(site.Member_EDITOR), localSite.role)
-		require.Equal(t, accountCID, localSite.accID)
-		require.Equal(t, strings.Split(addrs1, ","), localSite.addresses)
+		require.Equal(t, int(site.Member_EDITOR), localSite.Role)
+		require.Equal(t, accountCID, localSite.AccID)
+		require.Equal(t, strings.Split(addrs1, ","), localSite.Addresses)
+		require.NoError(t, AddSite(conn, accountCID, strings.Split(addrs1, ","), hostname1, int64(site.Member_EDITOR)))
 
 		accountCIDFake, err := cid.Decode(fakeAccount)
 		require.NoError(t, err)
@@ -99,9 +109,9 @@ func TestSites(t *testing.T) {
 		require.Len(t, sites, 1)
 		localSite, ok := sites[hostname1]
 		require.True(t, ok)
-		require.Equal(t, int(site.Member_EDITOR), localSite.role)
-		require.Equal(t, accountCID, localSite.accID)
-		require.Equal(t, strings.Split(addrs1, ","), localSite.addresses)
+		require.Equal(t, int(site.Member_EDITOR), localSite.Role)
+		require.Equal(t, accountCID, localSite.AccID)
+		require.Equal(t, strings.Split(addrs1, ","), localSite.Addresses)
 
 		require.NoError(t, RemoveSite(conn, hostname2))
 		require.NoError(t, RemoveSite(conn, hostname1))
@@ -119,7 +129,7 @@ func TestRecords(t *testing.T) {
 		docCID, err := cid.Decode(targetDoc)
 		require.NoError(t, err)
 		require.NoError(t, AddWebPublicationRecord(conn, docCID, targetVersion, path1))
-		record, err := GetWebPublicationRecord(conn, docCID)
+		record, err := GetWebPublicationRecordByVersion(conn, docCID, targetVersion)
 		require.NoError(t, err)
 		require.Equal(t, docCID, record.Document.ID)
 		require.Equal(t, targetVersion, record.Document.Version)
@@ -137,8 +147,11 @@ func TestRecords(t *testing.T) {
 
 		docCID, err = cid.Decode(sourceDoc)
 		require.NoError(t, err)
+		//require.Error(t, AddWebPublicationRecord(conn, docCID, sourceVersion, blankPath))
 		require.NoError(t, AddWebPublicationRecord(conn, docCID, sourceVersion, path2))
-		record, err = GetWebPublicationRecord(conn, docCID)
+		require.Error(t, AddWebPublicationRecord(conn, docCID, sourceVersion, path3))
+
+		record, err = GetWebPublicationRecordByVersion(conn, docCID, sourceVersion)
 		require.NoError(t, err)
 		require.Equal(t, docCID, record.Document.ID)
 		require.Equal(t, sourceVersion, record.Document.Version)
@@ -146,12 +159,17 @@ func TestRecords(t *testing.T) {
 		require.Len(t, record.References, 1)
 		require.Equal(t, targetVersion, record.References[0].Version)
 		require.Equal(t, targetDoc, record.References[0].ID.String())
-		require.NoError(t, RemoveWebPublicationRecord(conn, docCIDFake))
+		require.NoError(t, RemoveWebPublicationRecord(conn, docCIDFake, targetVersion))
 		records, err = ListWebPublicationRecords(conn)
 		require.NoError(t, err)
 		require.Len(t, records, 2)
 
-		require.NoError(t, RemoveWebPublicationRecord(conn, docCID))
+		docByPath, err := GetWebPublicationRecordByPath(conn, path2)
+		require.NoError(t, err)
+		require.Equal(t, docCID, docByPath.Document.ID)
+		require.Equal(t, sourceVersion, docByPath.Document.Version)
+
+		require.NoError(t, RemoveWebPublicationRecord(conn, docCID, sourceVersion))
 		records, err = ListWebPublicationRecords(conn)
 		require.NoError(t, err)
 		require.Len(t, records, 1)

@@ -10,6 +10,7 @@ go_binary(
     ) + [
         "//backend/lndhub/lndhubsql:go_library",
         "//backend/wallet/walletsql:go_library",
+        "//backend/mttnet/sitesql:go_library",
         "//backend/vcs/vcssql:go_library",
         "//backend/db/sqliteschema:go_library",
     ],

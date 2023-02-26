@@ -48,7 +48,6 @@ type Server struct {
 	db           *sqlitex.Pool
 	vcsdb        *sqlitevcs.DB
 	me           *future.ReadOnly[core.Identity]
-	sitesDB      map[string]siteInfo // hostname -> Site info (addresses, AccID, ...) TODO: remove when finished with the mockup
 	disc         Discoverer
 	RemoteCaller RemoteCaller
 }
@@ -59,7 +58,6 @@ func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discov
 		db:           db,
 		vcsdb:        sqlitevcs.New(db),
 		me:           me,
-		sitesDB:      map[string]siteInfo{},
 		disc:         disc,
 		RemoteCaller: remoteCaller,
 	}
