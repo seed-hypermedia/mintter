@@ -184,7 +184,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			if srv.ownerID == "" {
 				srv.ownerID = n.me.AccountID().String()
 			}
-			if siteCfg.Title != "" {
+			if siteCfg.Title != "" && n.vcs.DB() != nil {
 				conn, cancel, err := n.vcs.DB().Conn(ctx)
 				if err == nil {
 					defer cancel()
@@ -201,7 +201,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 				close(n.registered)
 			}
 		}()
-		if n != nil {
+		if n != nil && n.vcs.DB() != nil {
 			conn, cancel, err := n.vcs.DB().Conn(ctx)
 			if err != nil {
 				return
@@ -213,7 +213,6 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 			}
 			_ = sitesql.AddMember(conn, ownerCID, int64(site.Member_OWNER))
 		}
-
 	}()
 	return srv
 }

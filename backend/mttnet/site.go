@@ -27,12 +27,14 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+type headerKey string
+
 const (
 	// MttHeader is the headers bearing the remote site hostname to proxy calls to.
-	MttHeader = "x-mintter-site-hostname"
+	MttHeader headerKey = "x-mintter-site-hostname"
 	// SiteAccountIDCtxKey is the key to pass the account id via context down to a proxied call
 	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
-	SiteAccountIDCtxKey = "x-mintter-site-account-id"
+	SiteAccountIDCtxKey headerKey = "x-mintter-site-account-id"
 	// WellKnownPath is the path (to be completed with http(s)+domain) to call to get data from site.
 	WellKnownPath = ".well-known"
 )
@@ -545,7 +547,7 @@ func getRemoteSiteFromHeader(ctx context.Context) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("There is no metadata provided in context")
 	}
-	token := md.Get(MttHeader)
+	token := md.Get(string(MttHeader))
 	if len(token) != 1 {
 		return "", fmt.Errorf("Header [%s] not found in metadata", MttHeader)
 	}
@@ -616,7 +618,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 			n.log.Error("Headers found, meaning this call should be proxied, but remote function params not provided")
 			return acc, false, nil, fmt.Errorf("In order to proxy a call (headers found) you need to provide a valid proxy func and a params")
 		}
-		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the remote site", zap.String(MttHeader, remoteHostname))
+		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the remote site", zap.String(string(MttHeader), remoteHostname))
 
 		pc, _, _, _ := runtime.Caller(1)
 		proxyFcnList := strings.Split(runtime.FuncForPC(pc).Name(), ".")
@@ -746,7 +748,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		return nil, fmt.Errorf("couldn't find devices information of the account %s. Please connect to the remote peer first ", siteAccount)
 	}
 	remoteHostname, _ := getRemoteSiteFromHeader(ctx)
-	ctx = metadata.AppendToOutgoingContext(ctx, MttHeader, remoteHostname)
+	ctx = metadata.AppendToOutgoingContext(ctx, string(MttHeader), remoteHostname)
 	for _, deviceID := range devices {
 		sitec, err := srv.Client(ctx, deviceID)
 		if err != nil {

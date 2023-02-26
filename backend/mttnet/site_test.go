@@ -64,7 +64,7 @@ func TestProxying(t *testing.T) {
 
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
 	time.Sleep(5 * time.Second)
-	header := metadata.New(map[string]string{MttHeader: cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
@@ -93,6 +93,7 @@ func TestGetSiteInfo(t *testing.T) {
 	docSrv.SetSiteAccount(site.accountObjectID.String())
 
 	ctx := context.Background()
+	time.Sleep(100 * time.Millisecond)
 	siteInfo, err := siteSrv.GetSiteInfo(ctx, &documents.GetSiteInfoRequest{})
 	require.NoError(t, err)
 	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)
@@ -131,7 +132,7 @@ func TestE2e(t *testing.T) {
 	tsFuture := time.Now().Add(48 * time.Hour).Unix()
 
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
-	header := metadata.New(map[string]string{MttHeader: cfg.Site.Hostname})
+	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
 	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
