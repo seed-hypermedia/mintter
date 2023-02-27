@@ -66,7 +66,12 @@ export async function getDraft(
   documentId: string,
   rpc: Transport = transport,
 ): Promise<Document> {
-  return await createPromiseClient(Drafts, rpc).getDraft({documentId})
+  try {
+    let draft = await createPromiseClient(Drafts, rpc).getDraft({documentId})
+    return draft
+  } catch (error) {
+    throw new Error(`DetDraft ERROR: ${JSON.stringify(error)}`)
+  }
 }
 
 export type DocumentChanges = {
@@ -78,5 +83,12 @@ export async function updateDraftV2(
   documentChanges: DocumentChanges,
   rpc: Transport = transport,
 ) {
-  return await createPromiseClient(Drafts, rpc).updateDraftV2(documentChanges)
+  try {
+    let result = await createPromiseClient(Drafts, rpc).updateDraftV2(
+      documentChanges,
+    )
+    return result
+  } catch (error) {
+    throw new Error(`UPDATE DRAFT ERROR: ${JSON.stringify(error)}`)
+  }
 }

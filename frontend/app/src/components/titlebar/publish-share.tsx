@@ -1,25 +1,25 @@
-import {useState} from 'react'
-import {useRoute} from 'wouter'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {Box} from '@components/box'
-import {useSelector} from '@xstate/react'
-import {Icon} from '@components/icon'
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
-import {PublicationActor} from '@app/publication-machine'
-import {useDocPublications, useSiteList} from '@app/hooks/sites'
-import {Button} from '@components/button'
-import {styled} from '@app/stitches.config'
-import {AccessURLRow} from '@components/url'
-import {usePublicationDialog} from './publication-dialog'
 import {MainActor} from '@app/hooks/main-actor'
-import {WebPublicationRecord} from '@mintter/shared'
+import {useDocPublications, useSiteList} from '@app/hooks/sites'
+import {PublicationActor} from '@app/publication-machine'
+import {styled} from '@app/stitches.config'
 import {EXPERIMENTS} from '@app/utils/experimental'
 import {useNostr} from '@app/utils/nostr'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-import {toast} from 'react-hot-toast'
-import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
-import {TextField} from '@components/text-field'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
+import {Icon} from '@components/icon'
+import {TextField} from '@components/text-field'
+import {AccessURLRow} from '@components/url'
+import {WebPublicationRecord} from '@mintter/shared'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {useSelector} from '@xstate/react'
+import {useEffect, useRef, useState} from 'react'
+import {toast} from 'react-hot-toast'
+import {useRoute} from 'wouter'
+import {usePublicationDialog} from './publication-dialog'
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
@@ -208,6 +208,27 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const publicationDialog = usePublicationDialog(mainActor)
   const nostrPostDialog = useNostrPostDialog()
   const publications = useDocPublications(docId)
+  let isSaving = useRef(false)
+  useEffect(() => {
+    if (mainActor.type == 'publication') {
+      isSaving.current = false
+    } else {
+      mainActor.actor.subscribe((state) => {
+        if (state.matches('editing.saving')) {
+          console.log('subscribe change TRUE!', state.value)
+          isSaving.current = true
+        } else {
+          console.log('subscribe change FALSE!', state.value)
+          isSaving.current = false
+        }
+      })
+      mainActor.actor.onTransition((state) => {
+        if (state.changed && state.matches('editing.saving')) {
+        } else {
+        }
+      })
+    }
+  }, [mainActor])
 
   if (!isDraft && !isPublic && !isPublicB) return null
   return (
@@ -224,6 +245,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
       >
         <PopoverPrimitive.Trigger asChild>
           <button
+            disabled={isSaving.current}
             onClick={(e) => {
               e.preventDefault()
               if (isOpen) {
@@ -238,7 +260,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
             }}
             className={`titlebar-button success outlined ${
               isOpen ? 'active' : ''
-            }`}
+            } ${isSaving.current ? 'disabled' : ''}`}
             data-testid="button-publish"
           >
             {mainActor.actor?.id === 'editor' ? (
@@ -254,7 +276,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
             )}
           </button>
         </PopoverPrimitive.Trigger>
-        <PopoverPrimitive.Portal style={{}}>
+        <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content
             style={{
               zIndex: 200000,

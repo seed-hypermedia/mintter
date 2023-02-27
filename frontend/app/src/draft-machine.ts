@@ -338,13 +338,17 @@ export function createDraftMachine({
                 ]
               : contentChanges
 
-            await updateDraft({
-              documentId: context.documentId,
-              changes,
-            })
-            // TODO: update document
-            client.removeQueries([queryKeys.GET_DRAFT, context.documentId])
-            client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
+            if (changes.length != 0) {
+              await updateDraft({
+                documentId: context.documentId,
+                changes,
+              })
+              // TODO: update document
+              client.removeQueries([queryKeys.GET_DRAFT, context.documentId])
+              client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
+            } else {
+              console.log('NO CHANGES TO SEND')
+            }
           }
 
           return getDraftQuery(client, context.documentId)

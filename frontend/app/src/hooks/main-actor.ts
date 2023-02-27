@@ -7,7 +7,7 @@ import {
   PublicationActor,
 } from '@app/publication-machine'
 import {appQueryClient} from '@app/query-client'
-import {publishDraft} from '@mintter/shared'
+import {Publication, publishDraft} from '@mintter/shared'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {Editor} from 'slate'
@@ -24,7 +24,7 @@ export type MainActorOptions = Partial<{
   editor: Editor
   client: QueryClient
   //TODO: add proper type
-  publishDraft: any
+  publishDraft?: ReturnType<typeof publishDraft>
 }>
 
 export function useMainActor(props: MainActorOptions = {}) {
@@ -57,8 +57,8 @@ export function useMainActor(props: MainActorOptions = {}) {
         editor,
       }).withConfig({
         actions: {
-          afterPublish: (_, event) => {
-            console.log('draftMachine afterPublish')
+          afterPublish: (c, event) => {
+            console.log('===== PUBLISHING: AFTER PUBLISH ===', c, event)
 
             // invoke('emit_all', {
             //   event: 'document_published',
@@ -66,6 +66,8 @@ export function useMainActor(props: MainActorOptions = {}) {
             setLocation(`/p/${event.data.document?.id}/${event.data.version}`, {
               replace: true,
             })
+
+            republishDoc.mutateAsync(event.data)
             toast.success('Draft published Successfully!')
           },
         },
@@ -73,12 +75,10 @@ export function useMainActor(props: MainActorOptions = {}) {
           // @ts-ignore
           publishDraft: props.publishDraft
             ? props.publishDraft
-            : async (context) => {
-                console.log('draftMachine publishDraft', context)
+            : (context) => {
+                console.log('===== PUBLISHING: PUBLISH SERVICE === ', context)
 
-                const pub = await publishDraft(context.documentId)
-                await republishDoc.mutateAsync(pub)
-                return pub
+                return publishDraft(context.documentId)
               },
         },
       })
