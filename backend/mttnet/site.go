@@ -121,7 +121,10 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 		if err == nil {
 			return &site.RedeemInviteTokenResponse{Role: role}, nil
 		}
-		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
+		if err = sitesql.AddMember(conn, acc, int64(site.Member_ROLE_UNSPECIFIED)); err != nil {
+			return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot add Member_ROLE_UNSPECIFIED member to the db %w", err)
+		}
+		return &site.RedeemInviteTokenResponse{Role: site.Member_ROLE_UNSPECIFIED}, nil
 	}
 
 	tokenInfo, err := sitesql.GetToken(conn, in.Token)
