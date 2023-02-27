@@ -240,10 +240,19 @@ export function useDocRepublish() {
 
 export function useSiteUnpublish() {
   return useMutation(
-    async ({hostname, documentId}: {hostname: string; documentId: string}) => {
+    async ({
+      hostname,
+      documentId,
+      version,
+    }: {
+      hostname: string
+      documentId: string
+      version: string
+    }) => {
       const site = getWebSiteClient(hostname)
       site.unpublishDocument({
         documentId,
+        version,
       })
     },
     {
