@@ -176,7 +176,7 @@ func TestCreateTokens(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestGetSiteInfo(t *testing.T) {
+func TestSiteInfo(t *testing.T) {
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -195,12 +195,38 @@ func TestGetSiteInfo(t *testing.T) {
 	docSrv.SetSiteAccount(site.me.AccountID().String())
 
 	ctx := context.Background()
-	time.Sleep(100 * time.Millisecond)
-	siteInfo, err := siteSrv.GetSiteInfo(ctx, &documents.GetSiteInfoRequest{})
+	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
+	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
+	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
+	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.AccountID().String())
+	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
+	require.NoError(t, err)
+	require.Equal(t, documents.Member_OWNER, res.Role)
+
+	//time.Sleep(100 * time.Millisecond)
+	siteInfo, err := ownerSrv.GetSiteInfo(ctx, &documents.GetSiteInfoRequest{})
 	require.NoError(t, err)
 	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)
 	require.Equal(t, cfg.Site.OwnerID, siteInfo.Owner)
 	require.Equal(t, cfg.Site.Title, siteInfo.Title)
+
+	const newTitle = " new title"
+	const newDescription = "new description"
+	siteInfo, err = ownerSrv.UpdateSiteInfo(ctx, &siteproto.UpdateSiteInfoRequest{
+		Title:       newTitle,
+		Description: newDescription,
+	})
+	require.NoError(t, err)
+	require.Equal(t, newDescription, siteInfo.Description)
+	require.Equal(t, newTitle, siteInfo.Title)
+	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)
+	require.Equal(t, owner.me.AccountID().String(), siteInfo.Owner)
+	siteInfo, err = ownerSrv.GetSiteInfo(ctx, &documents.GetSiteInfoRequest{})
+	require.NoError(t, err)
+	require.Equal(t, newDescription, siteInfo.Description)
+	require.Equal(t, newTitle, siteInfo.Title)
+	require.Equal(t, cfg.Site.Hostname, siteInfo.Hostname)
+	require.Equal(t, owner.me.AccountID().String(), siteInfo.Owner)
 }
 
 func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *simulatedDocs, context.CancelFunc) {
