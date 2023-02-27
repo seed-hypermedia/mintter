@@ -41,6 +41,11 @@ func TestMembers(t *testing.T) {
 	require.True(t, ok)
 	defer stopeditor()
 
+	readerSrv, _, stopreader := makeTestSrv(t, "derek")
+	reader, ok := readerSrv.Node.Get()
+	require.True(t, ok)
+	defer stopreader()
+
 	cfg := config.Default()
 	cfg.Site.Hostname = "127.0.0.1:55001"
 
@@ -65,6 +70,11 @@ func TestMembers(t *testing.T) {
 		ExpireTime: &timestamppb.Timestamp{Seconds: time.Now().Add(10 * time.Minute).Unix()},
 	})
 	require.NoError(t, err)
+
+	require.NoError(t, reader.Connect(ctx, site.AddrInfo()))
+	_, err = readerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
+	require.Error(t, err)
+
 	require.NoError(t, editor.Connect(ctx, site.AddrInfo()))
 	res, err = editorSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{Token: token.Token})
 	require.NoError(t, err)

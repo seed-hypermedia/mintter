@@ -1,4 +1,4 @@
-# Build from the root with `docker build . -f ./backend/cmd/mintterd/Dockerfile`.
+# Build from the root with `docker build -t mintterd . -f ./backend/cmd/mintterd/Dockerfile`.
 FROM golang:1.19-alpine AS builder
 WORKDIR /code
 COPY go.mod go.sum ./
