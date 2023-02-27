@@ -121,10 +121,11 @@ func (srv *Server) RedeemInviteToken(ctx context.Context, in *site.RedeemInviteT
 		if err == nil {
 			return &site.RedeemInviteTokenResponse{Role: role}, nil
 		}
-		if err = sitesql.AddMember(conn, acc, int64(site.Member_ROLE_UNSPECIFIED)); err != nil {
-			return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot add Member_ROLE_UNSPECIFIED member to the db %w", err)
-		}
-		return &site.RedeemInviteTokenResponse{Role: site.Member_ROLE_UNSPECIFIED}, nil
+		return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Invalid token format. Only site owner can add a site without a token")
+		//if err = sitesql.AddMember(conn, acc, int64(site.Member_ROLE_UNSPECIFIED)); err != nil {
+		//	return &site.RedeemInviteTokenResponse{}, fmt.Errorf("Cannot add Member_ROLE_UNSPECIFIED member to the db %w", err)
+		//}
+		//return &site.RedeemInviteTokenResponse{Role: site.Member_ROLE_UNSPECIFIED}, nil
 	}
 
 	tokenInfo, err := sitesql.GetToken(conn, in.Token)
@@ -370,16 +371,59 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	}
 	*/
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
-
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Node not ready yet")
+		return &site.PublishDocumentResponse{}, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
 	}
-	conn, cancel, err := n.vcs.DB().Conn(ctx)
+	conn, release, err := n.VCS().DB().Conn(ctx)
 	if err != nil {
 		return &site.PublishDocumentResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
-	defer cancel()
+	defer release()
+	/*{
+
+		all, err := vcssql.ListAccountDevices(conn)
+		if err != nil {
+			n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
+			return &site.PublishDocumentResponse{}, fmt.Errorf("couldn't list devices")
+		}
+
+		devices, found := all[acc]
+		if !found {
+			return nil, fmt.Errorf("couldn't find devices information of the account %s.", acc.String())
+		}
+		for _, deviceID := range devices {
+			c, err := srv.Client(ctx, deviceID)
+			if err != nil {
+				continue
+			}
+
+			remoteObjs, err := c.ListObjects(ctx, &p2p.ListObjectsRequest{})
+			if err != nil {
+				return err
+			}
+
+			sess := s.bitswap.NewSession(ctx)
+			for _, obj := range remoteObjs.Objects {
+				oid, err := cid.Decode(obj.Id)
+				if err != nil {
+					return err
+				}
+
+				for _, ver := range obj.VersionSet {
+					vv, err := vcs.ParseVersion(ver.Version)
+					if err != nil {
+						return err
+					}
+					// TODO: pass in identity information of the remote version, not our own.
+					if err := s.syncFromVersion(ctx, s.me.AccountID(), s.me.DeviceKey().CID(), oid, sess, vv); err != nil {
+						return err
+					}
+				}
+			}
+			return nil
+		}
+	}*/
 
 	docID, err := cid.Decode(in.DocumentId)
 	if err != nil {
@@ -415,7 +459,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	return &site.PublishDocumentResponse{}, nil
 }
 
-// UnpublishDocument un-publishes (un-lists) a given document. Only the author of that document or the owner can unpublish.
+// UnpublishDocument un-publishes a given document. Only the author of that document or the owner can unpublish.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
 	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
