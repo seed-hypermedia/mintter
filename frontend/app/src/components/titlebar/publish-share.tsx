@@ -146,7 +146,9 @@ function PublishedURLs({
       {publications?.map((pub) => {
         const shortHost = hostnameStripProtocol(pub.hostname)
         const shortURL = pub.path
-          ? `${shortHost}/${pub.path}`
+          ? pub.path === '/'
+            ? shortHost
+            : `${shortHost}/${pub.path}`
           : `${shortHost}/p/${pub.documentId}/${pub.version}`
         return (
           <AccessURLRow
