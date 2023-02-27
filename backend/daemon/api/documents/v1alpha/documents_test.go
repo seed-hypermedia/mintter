@@ -21,6 +21,50 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func TestBug_BlockRevisionMustUpdate(t *testing.T) {
+	t.Parallel()
+
+	// See: https://github.com/mintterteam/mintter/issues/1301.
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	doc, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	doc = updateDraft(ctx, t, api, doc.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+
+	pub1, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	blk := pub1.Document.Children[0]
+	require.NotEqual(t, "", blk.Block.Revision)
+
+	// Update draft.
+	doc, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub1.Document.Id})
+	require.NoError(t, err)
+	doc = updateDraft(ctx, t, api, doc.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Updated!",
+		}}},
+	})
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: doc.Id})
+	require.NoError(t, err)
+
+	blkNew := pub2.Document.Children[0]
+	require.NotEqual(t, "", blkNew.Block.Revision)
+	require.NotEqual(t, blk.Block.Revision, blkNew.Block.Revision, "block revision must update")
+}
+
 func TestCreateDraftFromPublication(t *testing.T) {
 	t.Parallel()
 
