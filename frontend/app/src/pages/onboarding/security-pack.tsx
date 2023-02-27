@@ -64,7 +64,13 @@ export function SecurityPack({
   })
 
   const handleSubmit = useCallback(async () => {
-    const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data
+    const words =
+      useOwnSeed && ownSeed
+        ? ownSeed
+            .split(' ')
+            .map((s) => s.split(','))
+            .flat(1)
+        : mnemonics.data
     if (words) {
       try {
         // words are here.
@@ -97,8 +103,8 @@ export function SecurityPack({
           name="ownSeed"
           label="Your bip39 mnemonic words"
           rows={5}
-          placeholder="foo bar baz ..."
-          hint="all words separated by ONE SPACE"
+          placeholder="food barrrel buzz ..."
+          hint="words separated by spaces or commas"
           data-testid="textarea-own-seed"
           value={ownSeed}
           onChange={(e) => setOwnSeed(e.target.value)}
