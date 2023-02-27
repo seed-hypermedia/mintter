@@ -36,7 +36,11 @@ export function useUnpublishDialog(
                 e.stopPropagation()
                 e.preventDefault()
                 unpublish
-                  .mutateAsync({hostname, documentId: pub.documentId})
+                  .mutateAsync({
+                    hostname,
+                    documentId: pub.documentId,
+                    version: pub.version,
+                  })
                   .then(() => {
                     setIsOpen(false)
                   })
