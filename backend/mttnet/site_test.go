@@ -29,7 +29,69 @@ func TestLocalPublish(t *testing.T) {
 	defer stopSite()
 }
 
-func TestCreateAndRedeemTokens(t *testing.T) {
+func TestMembers(t *testing.T) {
+	t.Parallel()
+	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
+	owner, ok := ownerSrv.Node.Get()
+	require.True(t, ok)
+	defer stopowner()
+
+	editorSrv, _, stopeditor := makeTestSrv(t, "bob")
+	editor, ok := editorSrv.Node.Get()
+	require.True(t, ok)
+	defer stopeditor()
+
+	cfg := config.Default()
+	cfg.Site.Hostname = "127.0.0.1:55001"
+
+	cfg.Site.OwnerID = owner.me.AccountID().String()
+	siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
+	site, ok := siteSrv.Node.Get()
+	require.True(t, ok)
+	defer stopSite()
+
+	docSrv.SetSiteAccount(site.me.AccountID().String())
+
+	ctx := context.Background()
+	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
+	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
+	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
+	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.AccountID().String())
+	res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
+	require.NoError(t, err)
+	require.Equal(t, documents.Member_OWNER, res.Role)
+	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+		Role:       documents.Member_EDITOR,
+		ExpireTime: &timestamppb.Timestamp{Seconds: time.Now().Add(10 * time.Minute).Unix()},
+	})
+	require.NoError(t, err)
+	require.NoError(t, editor.Connect(ctx, site.AddrInfo()))
+	res, err = editorSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{Token: token.Token})
+	require.NoError(t, err)
+	require.Equal(t, documents.Member_EDITOR, res.Role)
+	_, err = editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: site.me.AccountID().String()})
+	require.Error(t, err)
+	member, err := editorSrv.GetMember(ctx, &siteproto.GetMemberRequest{AccountId: editor.me.AccountID().String()})
+	require.NoError(t, err)
+	require.Equal(t, editor.me.AccountID().String(), member.AccountId)
+	require.Equal(t, documents.Member_EDITOR, member.Role)
+	memberList, err := editorSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
+	require.NoError(t, err)
+	require.Len(t, memberList.Members, 2)
+	_, err = editorSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.AccountID().String()})
+	require.Error(t, err)
+	_, err = ownerSrv.DeleteMember(ctx, &siteproto.DeleteMemberRequest{AccountId: editor.me.AccountID().String()})
+	require.NoError(t, err)
+	_, err = editorSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
+	require.Error(t, err)
+	memberList, err = ownerSrv.ListMembers(ctx, &siteproto.ListMembersRequest{})
+	require.NoError(t, err)
+	require.Len(t, memberList.Members, 1)
+	require.Equal(t, documents.Member_OWNER, memberList.Members[0].Role)
+	require.Equal(t, owner.me.AccountID().String(), memberList.Members[0].AccountId)
+}
+
+func TestCreateTokens(t *testing.T) {
 	t.Parallel()
 	ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
 	owner, ok := ownerSrv.Node.Get()
@@ -71,7 +133,7 @@ func TestCreateAndRedeemTokens(t *testing.T) {
 	require.Error(t, err)
 	require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
 	header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
-	ctx = metadata.NewIncomingContext(ctx, header) // Usually, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
+	ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
 	ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.AccountID().String())
 	token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
 		Role:       documents.Member_EDITOR,
