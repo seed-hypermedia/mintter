@@ -64,7 +64,7 @@ h3 + * {
 
 /* So text scale renders nicely */
 div[class*='text-'] {
-  --flow-space: 1rem;
+  --flow-space: 1em;
   line-height: 1;
   font-weight: 700;
 }

@@ -222,11 +222,6 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
           isSaving.current = false
         }
       })
-      mainActor.actor.onTransition((state) => {
-        if (state.changed && state.matches('editing.saving')) {
-        } else {
-        }
-      })
     }
   }, [mainActor])
 

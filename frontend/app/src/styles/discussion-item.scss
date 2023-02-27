@@ -4,8 +4,8 @@
   display: grid;
   grid-template-columns: auto 1fr;
   grid-template-rows: auto 1fr;
-  gap: 0 1rem;
-  padding: 1rem 2rem 1rem 3rem;
+  gap: 0 1em;
+  padding: 1rem 2rem 1rem 3em;
   border-bottom: 1px solid var(--base-border-subtle);
   grid-template-areas:
     'avatar info'
@@ -75,18 +75,18 @@
 .item-info {
   display: flex;
   align-items: center;
-  min-height: 2rem;
+  min-height: 2em;
 }
 
 .item-info {
-  gap: 0.5rem;
+  gap: 0.5em;
   user-select: none;
   -webkit-user-select: none;
 
   * {
     color: var(--base-text-low);
     font-size: small;
-    margin-inline: 0.25rem;
+    margin-inline: 0.25em;
     font-family: var(--mtt-fonts-base);
     margin: 0;
     padding: 0;

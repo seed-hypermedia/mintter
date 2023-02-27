@@ -155,8 +155,7 @@ export function removeEmptyGroup(
         })
         return true
       }
-    }
-    else if (node.children.length === 0) {
+    } else if (node.children.length === 0) {
       Transforms.removeNodes(editor, {
         at: path,
       })

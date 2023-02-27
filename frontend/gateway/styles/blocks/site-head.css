@@ -1,5 +1,5 @@
 .site-head {
-  padding: 1rem;
+  padding: 1em;
   /* background: var(--color-primary); */
   /* border-top: 5px solid var(--color-primary); */
   /* border-bottom: 5px solid var(--color-primary-shade); */
@@ -16,10 +16,10 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 0 1rem;
+  gap: 0 1em;
 }
 
 .site-head__brand {
   display: block;
-  width: 3rem;
+  width: 3em;
 }

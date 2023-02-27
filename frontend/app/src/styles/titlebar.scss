@@ -24,7 +24,7 @@
     overflow: hidden;
     border-radius: 0.3em;
     gap: 0.2em;
-    font-size: 0.8rem;
+    font-size: 0.8em;
     background-color: var(--surface);
     color: var(--color);
     border: 1px solid transparent;
@@ -94,9 +94,9 @@
     margin: auto;
     display: flex;
     align-items: baseline;
+    font-size: 1em;
 
     span {
-      font-size: 1rem;
       display: inline-block;
       max-width: 40ch;
       white-space: nowrap;
@@ -105,10 +105,10 @@
     }
 
     small {
-      font-size: 0.7rem;
+      font-size: 0.7em;
       color: var(--base-text-low);
       font-size: small;
-      margin-inline: 0.5rem;
+      margin-inline: 0.5em;
     }
 
     &:hover {
