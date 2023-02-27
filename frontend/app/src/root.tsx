@@ -10,7 +10,7 @@ import {
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {useInterpret} from '@xstate/react'
-import {Suspense} from 'react'
+import {Suspense, useEffect, useState} from 'react'
 import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
@@ -18,10 +18,12 @@ import {globalStyles} from './stitches.config'
 import OnboardingPage from '@app/pages/onboarding'
 import AppProvider from '@components/app-provider'
 import Main from '@app/pages/main'
+import {store} from '@app/app-store'
 
 import './styles/root.scss'
 import './styles/toaster.scss'
 import {appQueryClient} from './query-client'
+import {listen} from '@tauri-apps/api/event'
 
 import('./updater')
 
@@ -86,6 +88,8 @@ function App() {
     keepPreviousData: true,
   })
 
+  usePageZoom()
+
   if (data == 'no account') {
     return <OnboardingPage />
   }
@@ -139,4 +143,29 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
       <button onClick={resetErrorBoundary}>Try again</button>
     </div>
   )
+}
+
+function usePageZoom() {
+  useEffect(() => {
+    store.get<number>('zoom').then((value) => {
+      console.log('ZOOM VALUE', value)
+      let val = value ?? 1
+      document.body.style = `zoom: ${val};`
+    })
+  }, [])
+
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    listen('change_zoom', async (event: {payload: 'zoomIn' | 'zoomOut'}) => {
+      let currentZoom = (await store.get<number>('zoom')) || 1
+      let newVal =
+        event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
+
+      document.body.style = `zoom: ${newVal};`
+      store.set('zoom', currentZoom)
+    }).then((f) => (unlisten = f))
+
+    return () => unlisten?.()
+  }, [])
 }

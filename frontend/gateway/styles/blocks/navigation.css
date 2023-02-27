@@ -3,13 +3,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.3rem 0.8rem;
+  gap: 0.3rem 0.8em;
   padding: 0;
   margin: 0;
 }
 
 .navigation li {
-  margin: 0.1rem;
+  margin: 0.1em;
 }
 
 .navigation a {

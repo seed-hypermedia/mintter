@@ -1,14 +1,14 @@
 .skip-link {
   display: inline-block;
-  padding: 0.7rem 1rem 0.5rem 1rem;
+  padding: 0.7rem 1rem 0.5rem 1em;
   background: var(--color-light);
   color: var(--color-primary-shade);
   text-decoration: none;
   font-weight: 700;
   text-transform: uppercase;
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: 1em;
+  left: 1em;
 }
 
 .skip-link:hover {
