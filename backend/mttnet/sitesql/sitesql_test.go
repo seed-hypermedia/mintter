@@ -27,10 +27,21 @@ const (
 
 	fakeDoc        = "bafy2bzaceb35vgp7p7hxltutkkk5d5b6cw3z6pjllok57guq2hhvoku44omri"
 	invalidVersion = "this is an invalid version"
-	sourceDoc      = "bafy2bzacedidscwwfyegr43j5667hxgstnafpbq7skifl5xovzta5sow5dkyq"
-	sourceVersion  = "baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a"
-	targetDoc      = "bafy2bzacebexnm36k6w2jxfikngjnejlqihdcwh5rnaowpwzzefoakdg36vea"
-	targetVersion  = "baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my"
+
+	//S1_V1->T1_V1.
+	sourceDoc1ID = "bafy2bzacedgsqq7lw6jmbsixcjhg5wjv42mbjotmarttyqlburrpsyspskayi"
+	sourceDoc1V1 = "baeaxdiheaiqo3pqxy3lvkdrntpnaogz4da73ws22yxp2alabviu3xm5s3tjde3y"
+
+	//S1_V2->(T1_V1,T1_V2).
+	sourceDoc1V2 = "baeaxdiheaiqjzvdicuiypxelczqdh353o63rg7dptvhki6umtbu254hkqaiqojq"
+
+	//S2_V1->(T1_V1,T1_V2).
+	sourceDoc2ID = "bafy2bzaceartk32v37q5nmq6gjgbfsoruwykgv6vwndkavtpab5lioi7mewge"
+	sourceDoc2V1 = "baeaxdiheaiqacjh7uzuktklks4eipimgxxlvzkk2ubdc3fjyzu3xtxoyb67k4uq"
+
+	targetDoc1ID = "bafy2bzaceadbhipjlori7wbwzqx6wec4lfxqhbo75be63flm5bwppnjjm6rv4"
+	targetDoc1V1 = "baeaxdiheaiqgskjzhzft4i4v26vmiptjngnyo7nkhzzmgktgb655jlkpllqrdli"
+	targetDoc1V2 = "baeaxdiheaiqaijuq5faa46npfcv3isrhakmbtsnmxv42dgv5hcxswsxismbmisi"
 
 	path1     = "/"
 	path2     = "other-path"
@@ -43,7 +54,7 @@ const (
 	addrs1 = "/ip4/172.20.0.2/tcp/56000/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv,/ip4/127.0.0.1/tcp/56000/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv"
 	addrs2 = "/ip4/52.22.139.174/tcp/4002/p2p/12D3KooWGvsbBfcbnkecNoRBM7eUTiuriDqUyzu87pobZXSdUUsJ/p2p-circuit/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv,/ip4/23.20.24.146/tcp/4002/p2p/12D3KooWNmjM4sMbSkDEA6ShvjTgkrJHjMya46fhZ9PjKZ4KVZYq/p2p-circuit/p2p/12D3KooWS9vJ7sfXZ4JXKwKhaa2t9igpsuxtVwJ85ZC4rUZ6iukv"
 
-	validAccount = "bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea" // leads to thos multihash in binary x'00240801122056C5D5E350E613C295B9B8EB9C8B900DF61E2A00AFF42C03D5ACA6834EE85290
+	validAccount = "bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea" // leads to this multihash in binary x'00240801122056C5D5E350E613C295B9B8EB9C8B900DF61E2A00AFF42C03D5ACA6834EE85290
 	fakeAccount  = "bahezrj4iaqacicabciqhpkuxan2hm6vfh6rek3mvvs54wj5utodglwdrcatmif7jpmllyui"
 )
 
@@ -126,55 +137,81 @@ func TestRecords(t *testing.T) {
 	require.NoError(t, err)
 	defer func() { require.NoError(t, closer()) }()
 	{
-		docCID, err := cid.Decode(targetDoc)
+		targetCID, err := cid.Decode(targetDoc1ID)
 		require.NoError(t, err)
-		require.NoError(t, AddWebPublicationRecord(conn, docCID, targetVersion, path1))
-		record, err := GetWebPublicationRecordByVersion(conn, docCID, targetVersion)
+		source1CID, err := cid.Decode(sourceDoc1ID)
 		require.NoError(t, err)
-		require.Equal(t, docCID, record.Document.ID)
-		require.Equal(t, targetVersion, record.Document.Version)
+		source2CID, err := cid.Decode(sourceDoc2ID)
+		require.NoError(t, err)
+
+		require.NoError(t, AddWebPublicationRecord(conn, targetCID, targetDoc1V1, path1))
+		record, err := GetWebPublicationRecordByVersion(conn, targetCID, targetDoc1V1)
+		require.NoError(t, err)
+		require.Equal(t, targetCID, record.Document.ID)
+		require.Equal(t, targetDoc1V1, record.Document.Version)
 		require.Equal(t, path1, record.Path)
 		require.Len(t, record.References, 0)
 		docCIDFake, err := cid.Decode(fakeDoc)
 		require.NoError(t, err)
-		require.Error(t, AddWebPublicationRecord(conn, docCIDFake, targetVersion, path2))
+		require.Error(t, AddWebPublicationRecord(conn, docCIDFake, targetDoc1V1, path2))
+		//Same document different version in other path
+		require.Error(t, AddWebPublicationRecord(conn, targetCID, targetDoc1V2, path2))
+		//Same document different version in same path
+		require.Error(t, AddWebPublicationRecord(conn, targetCID, targetDoc1V2, path1))
+		require.Error(t, AddWebPublicationRecord(conn, source1CID, sourceDoc1V1, path1))
+		require.NoError(t, RemoveWebPublicationRecord(conn, targetCID, targetDoc1V1))
+		require.NoError(t, AddWebPublicationRecord(conn, targetCID, targetDoc1V2, path1))
+		record, err = GetWebPublicationRecordByVersion(conn, targetCID, targetDoc1V2)
+		require.NoError(t, err)
+		require.Equal(t, targetCID, record.Document.ID)
+		require.Equal(t, targetDoc1V2, record.Document.Version)
+		require.Equal(t, path1, record.Path)
+		require.Len(t, record.References, 0)
+
 		records, err := ListWebPublicationRecords(conn)
 		require.NoError(t, err)
 		require.Len(t, records, 1)
-		listedPath, ok := records[DocInfo{ID: docCID, Version: targetVersion}]
+		listedPath, ok := records[DocInfo{ID: targetCID, Version: targetDoc1V2}]
 		require.True(t, ok)
 		require.Equal(t, path1, listedPath)
 
-		docCID, err = cid.Decode(sourceDoc)
-		require.NoError(t, err)
 		//require.Error(t, AddWebPublicationRecord(conn, docCID, sourceVersion, blankPath))
-		require.NoError(t, AddWebPublicationRecord(conn, docCID, sourceVersion, path2))
-		require.Error(t, AddWebPublicationRecord(conn, docCID, sourceVersion, path3))
+		require.NoError(t, AddWebPublicationRecord(conn, source1CID, sourceDoc1V1, path2))
+		require.Error(t, AddWebPublicationRecord(conn, source1CID, sourceDoc1V2, path3))
 
-		record, err = GetWebPublicationRecordByVersion(conn, docCID, sourceVersion)
+		record, err = GetWebPublicationRecordByVersion(conn, source1CID, sourceDoc1V1)
 		require.NoError(t, err)
-		require.Equal(t, docCID, record.Document.ID)
-		require.Equal(t, sourceVersion, record.Document.Version)
+		require.Equal(t, source1CID, record.Document.ID)
+		require.Equal(t, sourceDoc1V1, record.Document.Version)
 		require.Equal(t, path2, record.Path)
 		require.Len(t, record.References, 1)
-		require.Equal(t, targetVersion, record.References[0].Version)
-		require.Equal(t, targetDoc, record.References[0].ID.String())
-		require.NoError(t, RemoveWebPublicationRecord(conn, docCIDFake, targetVersion))
+		require.Equal(t, targetDoc1V1, record.References[0].Version)
+		require.Equal(t, targetCID, record.References[0].ID)
+		require.NoError(t, RemoveWebPublicationRecord(conn, docCIDFake, sourceDoc1V1))
 		records, err = ListWebPublicationRecords(conn)
 		require.NoError(t, err)
 		require.Len(t, records, 2)
 
 		docByPath, err := GetWebPublicationRecordByPath(conn, path2)
 		require.NoError(t, err)
-		require.Equal(t, docCID, docByPath.Document.ID)
-		require.Equal(t, sourceVersion, docByPath.Document.Version)
+		require.Equal(t, source1CID, docByPath.Document.ID)
+		require.Equal(t, sourceDoc1V1, docByPath.Document.Version)
 
-		require.NoError(t, RemoveWebPublicationRecord(conn, docCID, sourceVersion))
+		require.NoError(t, AddWebPublicationRecord(conn, source2CID, sourceDoc2V1, path3))
 		records, err = ListWebPublicationRecords(conn)
 		require.NoError(t, err)
-		require.Len(t, records, 1)
-		require.Equal(t, targetVersion, record.References[0].Version)
-		require.Equal(t, targetDoc, record.References[0].ID.String())
+		require.Len(t, records, 3)
+		record, err = GetWebPublicationRecordByVersion(conn, source2CID, sourceDoc2V1)
+		require.NoError(t, err)
+
+		require.Equal(t, source2CID, record.Document.ID)
+		require.Equal(t, sourceDoc2V1, record.Document.Version)
+		require.Equal(t, path3, record.Path)
+		require.Len(t, record.References, 2)
+		require.Equal(t, targetDoc1V1, record.References[0].Version)
+		require.Equal(t, targetCID, record.References[0].ID)
+		require.Equal(t, targetDoc1V2, record.References[1].Version)
+		require.Equal(t, targetCID, record.References[1].ID)
 	}
 }
 
@@ -330,7 +367,7 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 		document_version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL then its not pinned. If / is root document.
 		path TEXT UNIQUE,
-		UNIQUE(block_id, document_version),
+		UNIQUE(block_id),
 		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
 	);
 	CREATE TABLE content_links (
@@ -364,21 +401,30 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	}
 
 	err = sqlitex.ExecScript(conn, `
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(1, x'A0E40220F617530F62384041929B28B3AD7F846A325CBFFFA7FADC849CB4D1623C7F7AE1',113);
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(2, x'A0E4022034FABA61D8624368B4E75587C8A08E933F411696E035F745A3CF7633F5414C2D',113);
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(3, x'A0E40220E76B56D2D3C8019B93658FB826227344F97B56A9445B02FD73956DF6108E6147',113);
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(4, x'A0E402204976B37E57ADA4DCA8534C96912B820E3158FD8B40EB3ED9C90AE02866DFAA40',113);
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(5, x'A0E402207C810919AF074781D59DE0AF2D3EE25B52763F406E20B8BD3C2BF575F2A99EB3',113);
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(6, x'A0E402202287033E2CA0F1FEB6F855E1B92C50B1970C5E8E18972B10A9456CA91E42A0FF',113);
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(8, x'A0E40220D0390AD62E0868F369EFBDF3DCD29B4057861F929055F6EEAE660EC9D6E8D588',113);
-	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(9, x'A0E40220A8C908D27B3E3E5907C876883B93E358AE7880E551DF9E4F48F3F47DE0388CF0',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(1, x'A0E4022064AA6DD32CD0114F0F1E4E59A917F6D8EF914D554CE9B104FEF886D513DFE229',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(2, x'A0E40220EC738CACAD9C5A7186B422F0F54947AC5C022047249F5F58ADB3865C5A4E3839',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(3, x'A0E40220079C3AFCE82118B273BD4E3FFEF58EC76DFF81201F3E430DAD58425CC7710E40',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(4, x'A0E4022008B69E42C52332E2A7B673FAA3EF65E0DBD410DE7E8812DF47F8C3D81C89E6ED',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(5, x'A0E402200613A1E95BA28FD836CC2FEB105C596F0385DFE849ED956CE86CF7B52967A35E',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(6, x'A0E402206929393E4B3E2395D7AAC43E69699B877DAA3E72C32A660FBBD4AD4F5AE111AD',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(7, x'A0E40220042690E9400E79AF28ABB44A27029819C9ACBD79A19ABD38AF2B4AE89302C449',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(8, x'A0E40220CD2843EBB792C0C917124E6ED935E69814BA6C04673C4161A462F9624F928184',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(9, x'A0E40220EDBE17C6D7550E2D9BDA071B3C183FBB4B5AC5DFA02C01AA29BBB3B2DCD2326F',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(10, x'A0E402209CD468151187DC8B166033EFBB77B7137C6F9D4EA47A8C9869AEF0EA80110726',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(11, x'A0E40220669A3532F2B5A971CCADA609153559C6C3FDA4DB17CC11B6FDD6556D6ABF25BB',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(13, x'A0E4022023356F55DFE1D6B21E324C12C9D1A5B0A357D5B346A0566F007AB4391F612C62',113);
+	INSERT INTO ipfs_blocks (id, multihash, codec) VALUES(14, x'A0E402200124FFA668A9A96A970887A186BDD75CA95AA0462D9538CD3779DDD80FBEAE52',113);
 	`)
 	if err != nil {
 		return nil, nil, err
 	}
 	err = sqlitex.ExecScript(conn, `
 	INSERT INTO content_links (source_document_id, source_block_id, source_version, source_change_id, target_document_id, target_block_id, target_version) 
-	VALUES(8, 'aLI-Z5af', 'baeaxdiheaiqkrsii2j5t4psza7ehncb3sprvrltyqdsvdx46j5eph5d54a4iz4a', 9, 4, 'BwEEZaUa', 'baeaxdiheaiqhzaijdgxqor4b2wo6blznh3rfwutwh5ag4ifyxu6cx5lv6kuz5my');
+	VALUES(8, '_on31lSO', 'baeaxdiheaiqjzvdicuiypxelczqdh353o63rg7dptvhki6umtbu254hkqaiqojq', 10, 5, 'QA6qsKk9', 'baeaxdiheaiqaijuq5faa46npfcv3isrhakmbtsnmxv42dgv5hcxswsxismbmisi'),
+	(8, 'oywt1KOF', 'baeaxdiheaiqo3pqxy3lvkdrntpnaogz4da73ws22yxp2alabviu3xm5s3tjde3y', 9, 5, 'QA6qsKk9', 'baeaxdiheaiqgskjzhzft4i4v26vmiptjngnyo7nkhzzmgktgb655jlkpllqrdli'),
+	(8, 'oywt1KOF', 'baeaxdiheaiqjzvdicuiypxelczqdh353o63rg7dptvhki6umtbu254hkqaiqojq', 10, 5, 'QA6qsKk9', 'baeaxdiheaiqgskjzhzft4i4v26vmiptjngnyo7nkhzzmgktgb655jlkpllqrdli'),
+	(13, 'jy_8nMRi', 'baeaxdiheaiqacjh7uzuktklks4eipimgxxlvzkk2ubdc3fjyzu3xtxoyb67k4uq', 14, 5, 'QA6qsKk9', 'baeaxdiheaiqaijuq5faa46npfcv3isrhakmbtsnmxv42dgv5hcxswsxismbmisi'),
+	(13, 'Qcvl0rgE', 'baeaxdiheaiqacjh7uzuktklks4eipimgxxlvzkk2ubdc3fjyzu3xtxoyb67k4uq', 14, 5, 'QA6qsKk9', 'baeaxdiheaiqgskjzhzft4i4v26vmiptjngnyo7nkhzzmgktgb655jlkpllqrdli');
 	`)
 	if err != nil {
 		return nil, nil, err
