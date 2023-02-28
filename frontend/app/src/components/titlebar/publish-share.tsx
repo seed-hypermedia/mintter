@@ -217,10 +217,10 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
     } else {
       mainActor.actor.subscribe((state) => {
         if (state.matches('editing.saving')) {
-          console.log('subscribe change TRUE!', state.value)
+          // console.log('subscribe change TRUE!', state.value)
           isSaving.current = true
         } else {
-          console.log('subscribe change FALSE!', state.value)
+          // console.log('subscribe change FALSE!', state.value)
           isSaving.current = false
         }
       })

@@ -1,3 +1,4 @@
+import {GetChangeInfoRequest} from './.generated/documents/v1alpha/changes_pb'
 import {PartialMessage} from '@bufbuild/protobuf'
 export type {
   Account,
@@ -80,6 +81,11 @@ export {
   Conversation,
 } from './.generated/documents/v1alpha/comments_pb'
 export {Comments} from './.generated/documents/v1alpha/comments_connectweb'
+export {Changes} from './.generated/documents/v1alpha/changes_connectweb'
+export {
+  ChangeInfo,
+  GetChangeInfoRequest,
+} from './.generated/documents/v1alpha/changes_pb'
 
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>

@@ -1,4 +1,6 @@
+import {useAccount} from '@app/auth-context'
 import {useConversations} from '@app/editor/comments/conversations-context'
+import {useAuthor} from '@app/hooks'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {EXPERIMENTS} from '@app/utils/experimental'
 import {
@@ -17,6 +19,7 @@ import {TextField} from '@components/text-field'
 import {
   Block,
   blockToApi,
+  Changes,
   Comments,
   Conversation,
   formattedDate,
@@ -27,6 +30,7 @@ import {
   text,
   transport,
 } from '@mintter/shared'
+import {useQuery} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 import {Event} from 'nostr-relaypool/event'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
@@ -293,6 +297,15 @@ function CommentItem({
   comment: Block
   selectors?: Array<Selector>
 }) {
+  let changeData = useQuery({
+    queryFn: () =>
+      createPromiseClient(Changes, transport).getChangeInfo({
+        id: comment.revision,
+      }),
+  })
+
+  let author = useAuthor(changeData.data?.author)
+
   function deleteComment() {
     createPromiseClient(Comments, transport)
       .deleteComment({
@@ -303,6 +316,7 @@ function CommentItem({
         console.log('Comment deleted!', res)
       })
   }
+
   return (
     <Box
       as="li"
@@ -328,7 +342,11 @@ function CommentItem({
           paddingLeft: '$5',
         }}
       >
-        <Avatar accountId="" size={2} alias="demo alias" />
+        <Avatar
+          accountId={changeData.data?.author}
+          size={2}
+          alias={author?.data?.profile?.alias || 'A'}
+        />
       </Box>
       <Box
         css={{
@@ -338,10 +356,12 @@ function CommentItem({
         }}
       >
         <Text size="2" fontWeight="bold">
-          Demo alias
+          {author?.data?.profile?.alias}
         </Text>
         <Text size="2" color="muted">
-          time here
+          {changeData.data?.createTime
+            ? formattedDate(changeData.data?.createTime)
+            : null}
         </Text>
       </Box>
 
