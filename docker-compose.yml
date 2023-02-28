@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  proxy:
+    container_name: proxy
+    image: caddy:latest
+    depends_on:
+      - minttersite
+    network_mode: "host"
+    profiles:
+      - ssl
+    volumes:
+      - $PWD/Caddyfile:/etc/caddy/Caddyfile
+      - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/data:/data
+      - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/config:/config
+    command: caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://127.0.0.1:56001} --to :${MTT_SITE_LOCAL_PORT:-3000}
+
+  nextjs:
+    container_name: nextjs
+    image: mintter/sitegw:latest
+    depends_on:
+      - minttersite
+    profiles:
+      - base
+      - ssl
+    network_mode: "host"
+    restart: unless-stopped
+    volumes:
+      - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/nextjs:/data:rw
+
+    environment:
+      - "GW_NEXT_HOST=${MTT_SITE_HOSTNAME:-http://127.0.0.1:56001}"
+      - "GW_GRPC_ENDPOINT=http://127.0.0.1:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+
+  minttersite:
+    image: mintter/mintterd:latest
+    restart: unless-stopped
+    container_name: minttersite
+    profiles:
+      - base
+      - ssl
+    network_mode: "host"
+    volumes:
+      - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mttsite:rw
+    command:
+      - "mintterd"
+      - "-repo-path=/.mttsite"
+      - "-p2p.port=56000"
+      - "--http-port=56001"
+      - "-grpc-port=56002"
+      - "-site.hostname=${MTT_SITE_HOSTNAME:-http://127.0.0.1:56001}"
+      - "-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID:-bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea}"
+      - "-site.title=${MTT_SITE_TITLE:-NewSite}"
+      - "-identity.no-account-wait"

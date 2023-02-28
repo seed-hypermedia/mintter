@@ -29,85 +29,82 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 		Role:     documents.Member_ROLE_UNSPECIFIED,
 	}
 	if in.Hostname == "" {
-		return &ret, fmt.Errorf("empty hostname")
+		return &ret, fmt.Errorf("Add site: Empty hostname provided")
 	}
 	if strings.Contains(strings.ToLower(in.Hostname), "notallow") {
-		return &ret, fmt.Errorf("site " + in.Hostname + " is not a valid site")
+		return &ret, fmt.Errorf("Add site: Site " + in.Hostname + " is not a valid site")
 	}
 	if strings.Contains(strings.ToLower(in.Hostname), "taken") {
-		return &ret, fmt.Errorf("site " + in.Hostname + " already taken")
+		return &ret, fmt.Errorf("Add site: Site " + in.Hostname + " already taken")
 	}
-
-	//addresses := []string{"/ip4/23.20.24.146/tcp/55001/p2p/12D3KooWAAmbS5QL7vcf9A9r5A4Q3qhs8ZH8gPwXQixrS8FWD28w"}
-	//accountID := "bahezrj4iaqacicabciqeoo2zi3sktlvzwxiqwilwfpm2hucu2ihsa7zzqtrkmbeoef6lagy"
 
 	requestURL := fmt.Sprintf("%s/%s", in.Hostname, mttnet.WellKnownPath)
 
 	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
 	if err != nil {
-		return &ret, fmt.Errorf("could not create request to well-known site: %w ", err)
+		return &ret, fmt.Errorf("Add site: Could not create request to well-known site: %w ", err)
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return &ret, fmt.Errorf("could not contact to provided site: %w ", err)
+		return &ret, fmt.Errorf("Add site: Could not contact to provided site [%s]: %w ", requestURL, err)
 	}
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return &ret, fmt.Errorf("Site [%s] not reachable. Status code: %d", in.Hostname, res.StatusCode)
+		return &ret, fmt.Errorf("Add site: Site [%s] not reachable. Status code: %d", in.Hostname, res.StatusCode)
 	}
 	var response map[string]interface{}
 	err = json.NewDecoder(res.Body).Decode(&response)
 	if err != nil {
-		return &ret, fmt.Errorf("Unrecognized response format %w", err)
+		return &ret, fmt.Errorf("Add site: Unrecognized response format %w", err)
 	}
 	addressesRes, ok := response["addresses"]
 	if !ok {
-		return &ret, fmt.Errorf("address not found in payload")
+		return &ret, fmt.Errorf("Add site: Address not found in payload")
 	}
 
 	var addresses []string
 	addressesList, ok := addressesRes.([]interface{})
 	if !ok {
-		return &ret, fmt.Errorf("Error getting p2p addresses from site, wrong format: addresses must be a list of multiaddresses even if only one provided")
+		return &ret, fmt.Errorf("Add site: Error getting p2p addresses from site, wrong format: addresses must be a list of multiaddresses even if only one provided")
 	}
 	for _, addrs := range addressesList {
 		addr, ok := addrs.(string)
 		if !ok {
-			return &ret, fmt.Errorf("Error getting p2p addresses from site, wrong format: individual multiaddresses must be a string")
+			return &ret, fmt.Errorf("Add site: Error getting p2p addresses from site, wrong format: individual multiaddresses must be a string")
 		}
 		addresses = append(addresses, addr)
 	}
 
 	accountRes, ok := response["account_id"]
 	if !ok {
-		return &ret, fmt.Errorf("account_id not found in payload")
+		return &ret, fmt.Errorf("Add site: account_id not found in payload")
 	}
 
 	accountID, ok := accountRes.(string)
 	if !ok {
-		return &ret, fmt.Errorf("Error getting account_id from site, wrong format: account id must me a string")
+		return &ret, fmt.Errorf("Add site: Error getting account_id from remote site, wrong format: account id must me a string")
 	}
 	accountCID, err := cid.Decode(accountID)
 	if err != nil {
-		return &ret, fmt.Errorf("Got an invalid accountID [%s]: %w", accountID, err)
+		return &ret, fmt.Errorf("Add site: Got an invalid accountID [%s]: %w", accountID, err)
 	}
 	info, err := mttnet.AddrInfoFromStrings(addresses...)
 	if err != nil {
-		return &ret, fmt.Errorf("Couldn't parse multiaddress: %w", err)
+		return &ret, fmt.Errorf("Add site: Couldn't parse multiaddress: %w", err)
 	}
 
 	if err = api.disc.Connect(ctx, info); err != nil {
-		return &ret, fmt.Errorf("Couldn't connect to the remote site via p2p: %w", err)
+		return &ret, fmt.Errorf("Add site: Couldn't connect to the remote site via p2p: %w", err)
 	}
 
 	conn, cancel, err := api.db.Conn(ctx)
 	if err != nil {
-		return &ret, fmt.Errorf("Cannot connect to internal db")
+		return &ret, fmt.Errorf("Add site: Cannot connect to internal db")
 	}
 	defer cancel()
 	if _, err = sitesql.GetSite(conn, in.Hostname); err == nil {
-		return &ret, fmt.Errorf("site " + in.Hostname + " already added")
+		return &ret, fmt.Errorf("Add site: Site " + in.Hostname + " already added")
 	}
 
 	var role documents.Member_Role
@@ -120,19 +117,19 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 			Token: in.InviteToken,
 		})
 		if err != nil {
-			return &ret, fmt.Errorf("Couldn't redeem the attached token: %w", err)
+			return &ret, fmt.Errorf("Add site: Couldn't redeem the attached token: %w", err)
 		}
 		role = res.Role
 	} else {
 		res, err := api.RemoteCaller.RedeemInviteToken(ctx, &documents.RedeemInviteTokenRequest{})
 		if err != nil {
-			return &ret, fmt.Errorf("Please, contact to the site owner to get an invite token: %w", err)
+			return &ret, fmt.Errorf("Add site: Please, contact to the site owner to get an invite token: %w", err)
 		}
 		role = res.Role
 	}
 
 	if err = sitesql.AddSite(conn, accountCID, addresses, in.Hostname, int64(role)); err != nil {
-		return &ret, fmt.Errorf("Could not insert site in the database: %w", err)
+		return &ret, fmt.Errorf("Add site: Could not insert site in the database: %w", err)
 	}
 	ret.Hostname = in.Hostname
 	ret.Role = documents.Member_Role(role)
