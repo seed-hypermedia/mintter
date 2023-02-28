@@ -17,8 +17,8 @@ function getHost() {
     return process.env.GW_GRPC_ENDPOINT
   }
 
-  if (process.env.VERCEL_ENV == 'development') {
-    return 'http://127.0.0.1:56001'
+  if (process.env.NODE_ENV == 'development') {
+    return 'http://127.0.0.1:55001'
   }
 
   return 'https://gateway.mintter.com'
