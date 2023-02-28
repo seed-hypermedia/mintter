@@ -264,7 +264,7 @@ var migrations = []string{
 		document_version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL then its not pinned. If / is root document.
 		path TEXT UNIQUE,
-		UNIQUE(block_id, document_version),
+		UNIQUE(block_id),
 		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
 	);`,
 }
