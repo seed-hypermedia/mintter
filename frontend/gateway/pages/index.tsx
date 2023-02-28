@@ -1,4 +1,6 @@
 import {
+  Account,
+  getAccount,
   getLocalWebSiteClient,
   getPublication,
   Publication,
@@ -42,11 +44,19 @@ function DefaultHomePage() {
 
 export default function HomePage({
   publication,
+  author,
 }: {
   publication?: Publication | null
+  author: Account | null
 }) {
   if (!publication) return <DefaultHomePage />
-  return <PublicationPage publication={publication} metadata={false} />
+  return (
+    <PublicationPage
+      publication={publication}
+      metadata={false}
+      author={author}
+    />
+  )
 }
 
 async function getHomePublication(): Promise<Publication | null> {
@@ -54,7 +64,6 @@ async function getHomePublication(): Promise<Publication | null> {
     // Temp Mintter home screen document:
 
     // https://www.mintter.com/p/bafy2bzacebeq7l4bp4fzmox47fj62bfpuzi6lizx5j3fj7jyws7fztnizu7ts/baeaxdiheaiqpjri6ulmrcvehzszraaallp2xpfb5zoxe7j7tulwph46wewle5gi
-
     return await getPublication(pubId, version, transport)
   }
   const site = getLocalWebSiteClient(transport)
@@ -78,12 +87,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const publication = await getHomePublication()
   if (!publication) {
     return {
-      props: {publication: null},
+      props: {publication: null, author: null},
     }
   }
+  const author = publication.document?.author
+    ? await getAccount(publication.document?.author, transport)
+    : null
   return {
     props: {
       publication: publication?.toJson(),
+      author: author ? author.toJson() : null,
     },
   }
 }

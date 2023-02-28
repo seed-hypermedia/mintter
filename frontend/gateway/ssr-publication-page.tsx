@@ -1,4 +1,4 @@
-import {blockNodeToSlate, Publication} from '@mintter/shared'
+import {Account, blockNodeToSlate, Publication} from '@mintter/shared'
 import {useRouter} from 'next/router'
 import {PublicationMetadata} from './author'
 import Footer from './footer'
@@ -10,8 +10,10 @@ import {useRenderLeaf} from './slate-react-presentation/render-leaf'
 export default function PublicationPage({
   publication,
   metadata = true,
+  author,
 }: {
   publication?: Publication
+  author?: Account | null
   metadata?: boolean
 }) {
   const router = useRouter()
@@ -34,7 +36,7 @@ export default function PublicationPage({
         <article className="sidebar">
           <div>
             {metadata ? (
-              <PublicationMetadata publication={publication} />
+              <PublicationMetadata publication={publication} author={author} />
             ) : null}
           </div>
           <div>

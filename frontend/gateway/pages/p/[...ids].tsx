@@ -1,4 +1,4 @@
-import {getPublication, Publication} from '@mintter/shared'
+import {Account, getAccount, getPublication, Publication} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {GetServerSidePropsContext} from 'next'
 import {useRouter} from 'next/router'
@@ -9,11 +9,13 @@ import PublicationPage from '../../ssr-publication-page'
 
 export default function CIDPublicationPage({
   publication,
+  author,
 }: {
   publication?: Publication | null
+  author?: Account | null
 }) {
   if (publication === null) return <ClientCIDPage />
-  return <PublicationPage publication={publication} />
+  return <PublicationPage publication={publication} author={author} />
 }
 
 export const getServerSideProps = async ({
@@ -39,25 +41,20 @@ export const getServerSideProps = async ({
     documentId = checkIds[0]
     version = checkIds[1]
   }
-  try {
-    const publication = await getPublication(documentId, version, transport)
-    if (!publication) {
-      return {
-        props: {publication: null},
-      }
-    }
+  const publication = await getPublication(documentId, version, transport)
+  if (!publication) {
     return {
-      props: {
-        publication: publication.toJson(),
-      },
+      notFound: true,
     }
-  } catch (e) {
-    return {
-      // notFound: true,
-      props: {
-        publication: null,
-      },
-    }
+  }
+  const author = publication.document?.author
+    ? await getAccount(publication.document?.author, transport)
+    : null
+  return {
+    props: {
+      publication: publication.toJson(),
+      author: author ? author.toJson() : null,
+    },
   }
 }
 

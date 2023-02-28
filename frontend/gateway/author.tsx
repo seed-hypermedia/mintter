@@ -1,19 +1,17 @@
-import {useQuery} from '@tanstack/react-query'
-import {Publication, getAccount, formattedDate} from '@mintter/shared'
-import {transport} from './client'
+import {Publication, formattedDate, Account} from '@mintter/shared'
 
 export function PublicationMetadata({
   publication,
+  author,
 }: {
   publication?: Publication
+  author?: Account | null
 }) {
   return publication ? (
-    <aside className="aside-content text-base document-metadata">
+    <aside className="text-base aside-content document-metadata">
       <p>
         <span>author:&nbsp;</span>
-        {publication?.document?.author ? (
-          <Author id={publication.document.author} />
-        ) : null}
+        {author?.profile?.alias}
       </p>
       <p>
         Published at:{' '}
@@ -29,26 +27,4 @@ export function PublicationMetadata({
       </p>
     </aside>
   ) : null
-}
-
-function Author({id}: {id: string}) {
-  let {data, status} = useQuery({
-    queryKey: ['AUTHOR', id],
-    queryFn: ({queryKey}) => getAccount(queryKey[1], transport),
-    retry: false,
-  })
-  if (status == 'loading') {
-    return <AuthorPlaceholder />
-  }
-
-  if (status == 'error') {
-    console.error(data)
-    return <span>author request error: {id}</span>
-  }
-
-  return <span>{data?.profile?.alias}</span>
-}
-
-function AuthorPlaceholder() {
-  return <span>...</span>
 }
