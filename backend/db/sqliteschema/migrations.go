@@ -252,6 +252,7 @@ var migrations = []string{
 		account_id INTEGER NOT NULL,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL,
+		UNIQUE(account_id),
 		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
 	);`,
 
