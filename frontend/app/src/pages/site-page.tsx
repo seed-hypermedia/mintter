@@ -37,30 +37,33 @@ export default function SitePage() {
   if (!host) throw new Error('Hostname not found for SitePage')
 
   return (
-    <div className="page-wrapper">
-      <ScrollArea>
-        {isInitialLoading ? (
-          <p>loading...</p>
-        ) : sortedPubs?.length ? (
-          <ul className="file-list" data-testid="files-list">
-            {sortedPubs.map((publication) => (
-              <WebPublicationListItem
-                key={publication.documentId}
-                webPub={publication}
-                hostname={host}
-              />
-            ))}
-          </ul>
-        ) : (
-          <EmptyList
-            description={`Nothing published on ${host} yet.`}
-            action={() => {
-              nav.openNewDraft(false)
-            }}
-          />
-        )}
-      </ScrollArea>
-    </div>
+    <>
+      <div className="page-wrapper">
+        <ScrollArea>
+          {isInitialLoading ? (
+            <p>loading...</p>
+          ) : sortedPubs?.length ? (
+            <ul className="file-list" data-testid="files-list">
+              {sortedPubs.map((publication) => (
+                <WebPublicationListItem
+                  key={publication.documentId}
+                  webPub={publication}
+                  hostname={host}
+                />
+              ))}
+            </ul>
+          ) : (
+            <EmptyList
+              description={`Nothing published on ${host} yet.`}
+              action={() => {
+                nav.openNewDraft(false)
+              }}
+            />
+          )}
+        </ScrollArea>
+      </div>
+      <Footer />
+    </>
   )
 }
 

@@ -6,18 +6,23 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
+import {queryKeys} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {PublicationActor} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
+import {createPromiseClient} from '@bufbuild/connect-web'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Conversations} from '@components/conversations'
+import Footer from '@components/footer'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Tooltip} from '@components/tooltip'
+import {Changes, ContentGraph, listCitations, transport} from '@mintter/shared'
+import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
@@ -28,6 +33,9 @@ import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
+
+const citationsClient = createPromiseClient(ContentGraph, transport)
+const changesClient = createPromiseClient(Changes, transport)
 
 export default function PublicationPage({
   publicationActor,
@@ -47,6 +55,21 @@ export default function PublicationPage({
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
   let [focusBlock, setFocusBlock] = useState(() => params?.block)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
+
+  const {data: changes} = useQuery({
+    queryFn: () =>
+      createPromiseClient(Changes, transport).listChanges({
+        objectId: params?.id,
+      }),
+    queryKey: ['PUBLICATION_CHANGES', params?.id],
+    enabled: !!params?.id,
+  })
+
+  const {data: citations} = useQuery({
+    queryFn: () => citationsClient.listCitations({documentId: params?.id}),
+    queryKey: ['PUBLICATION_CITATIONS', params?.id],
+    enabled: !!params?.id,
+  })
 
   useEffect(() => {
     let isSubscribed = true
@@ -211,6 +234,10 @@ export default function PublicationPage({
                     </Allotment.Pane>
                   )}
               </Allotment>
+              <Footer>
+                <span>versions: {changes?.changes?.length}</span>
+                <span>citations: {citations?.links?.length}</span>
+              </Footer>
             </div>
           </BlockHighLighter>
         </MouseProvider>
@@ -276,6 +303,7 @@ function BlockPlaceholder() {
 
 type ResizablePanelMachineContext = {
   visible: boolean
+
   left: number
 }
 
@@ -290,7 +318,7 @@ type ResizablePanelMachineServices = {
   }
 }
 let resizablePanelMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAlAUQGUBJALToG0AGAXUVGID2sNABc0AsnxAAPRADZOAOgAsARgAcAZk3KAnAt2aA7AFYANCACeiQhrmLOGncqOH1qgEyGAvt4uphbHwiUgpqAFkAQQAVAGEACXC6ABEmSMUouPiuXiQQQWExCSlZBE97Tj0PdRN1OrkjDXULazKTZUUFdU5HI051XXVlTXVfPxAyAQg4KQDMXAISckopAtFxSTzSwmUlRzkTVR7OXSMDuQ9zKxs1B2U1WsMTdrl1UzHvIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIBhAeQDkA1AUQCUBlAQQBUBJRhwB0POgHExAGRYBtAAwBdRKGIB7WGgAuaVWWUgAHogBMANgCsQgJwBGACx2A7I7sAOOXNNe7AGhABPREIbOSshB1s5G1MrNwBmOWNXAF9kv1QNbHwiUgpqNhYOPgAtWUV9NQ1tXX0jBFM5cJtXOLi7KwarOMdzP0CEYNdTISiWh0cu1xtjLtT09CyCEnJKWkZWTl4BBmE6AAUWBnklJBBKrR09U7qbRzihHuNHV1dzWKerV2M+xBDHB+M01MrTcgJScxAZFUEDg+gymFwS1ylAq6guNWuQTsjSiFhCHisjgspmMvQCWJsIwcNnMri65nMdlMrh6qVSQA */
   createMachine(
     {
       predictableActionArguments: true,

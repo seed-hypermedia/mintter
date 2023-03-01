@@ -85,7 +85,7 @@ export {
   ChangeInfo,
   GetChangeInfoRequest,
 } from './.generated/documents/v1alpha/changes_pb'
-
+export {ContentGraph} from './.generated/documents/v1alpha/content_graph_connectweb'
 export type Publication = APIPublication & {
   document?: PartialMessage<Document>
 }
