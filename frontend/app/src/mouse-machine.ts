@@ -309,10 +309,10 @@ export var mouseMachine =
           }
         },
         windowResizeService: () => (sendBack) => {
-          window.addEventListener('resize', handler)
+          window.addEventListener('PANEL.RESIZE', handler)
 
           return () => {
-            window.removeEventListener('resize', handler)
+            window.removeEventListener('PANEL.RESIZE', handler)
           }
 
           function handler() {

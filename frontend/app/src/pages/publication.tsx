@@ -14,6 +14,8 @@ import {classnames} from '@app/utils/classnames'
 import {createPromiseClient} from '@bufbuild/connect-web'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
+import {ChangesList} from '@components/changes-list'
+import {Citations} from '@components/citations'
 import {Conversations} from '@components/conversations'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
@@ -92,7 +94,7 @@ export default function PublicationPage({
     let unlisten: () => void | undefined
 
     listen<{conversations: Array<string>}>('selector_click', (event) => {
-      panelSend('CONVERSATIONS.OPEN')
+      panelSend('PANEL.OPEN')
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
@@ -121,6 +123,8 @@ export default function PublicationPage({
   //   },
   // )
 
+  let {activePanel} = resizablePanelState.context
+
   if (state.matches('errored')) {
     return (
       <div data-testid="publication-section" className="page-wrapper">
@@ -139,7 +143,7 @@ export default function PublicationPage({
         documentId={params?.id}
         onConversationsOpen={(conversations: string[]) => {
           panelSend({
-            type: 'CONVERSATIONS.OPEN',
+            type: 'PANEL.OPEN',
           })
         }}
         publication={state.context.publication}
@@ -149,7 +153,7 @@ export default function PublicationPage({
             <div className="page-wrapper publication-wrapper">
               <Allotment
                 defaultSizes={[100]}
-                onChange={(values) => panelSend({type: 'RESIZE', values})}
+                onChange={(values) => panelSend({type: 'PANEL.RESIZE', values})}
               >
                 <Allotment.Pane>
                   <section
@@ -176,12 +180,12 @@ export default function PublicationPage({
                         >
                           <div
                             className={`discussion-toggle ${
-                              resizablePanelState.context.visible
+                              resizablePanelState.context.show
                                 ? 'visible'
                                 : undefined
                             }`}
                             style={
-                              resizablePanelState.context.visible
+                              resizablePanelState.context.show
                                 ? {
                                     top: 100,
                                     left: `${resizablePanelState.context.left}px`,
@@ -195,7 +199,7 @@ export default function PublicationPage({
                               <button
                                 className="discussion-button"
                                 onClick={() => {
-                                  panelSend('CONVERSATIONS.TOGGLE')
+                                  panelSend('PANEL.TOGGLE')
                                   mouseService.send('DISABLE.WINDOW.RESIZE')
                                 }}
                               >
@@ -221,22 +225,50 @@ export default function PublicationPage({
                     </ErrorBoundary>
                   </section>
                 </Allotment.Pane>
-                {resizablePanelState.context.visible &&
+                {resizablePanelState.context.show &&
                   !!state.context.publication && (
                     <Allotment.Pane preferredSize="35%">
                       {/* <section className="discussion-section"> */}
                       <ScrollArea
                         onScroll={() => mouseService.send('DISABLE.SCROLL')}
                       >
-                        <Conversations />
+                        {activePanel == 'conversations' ? (
+                          <Conversations />
+                        ) : activePanel == 'changes' ? (
+                          <ChangesList />
+                        ) : (
+                          <Citations />
+                        )}
                       </ScrollArea>
                       {/* </section> */}
                     </Allotment.Pane>
                   )}
               </Allotment>
               <Footer>
-                <span>versions: {changes?.changes?.length}</span>
-                <span>citations: {citations?.links?.length}</span>
+                <button
+                  onClick={() => {
+                    panelSend({type: 'PANEL.OPEN', activePanel: 'changes'})
+                  }}
+                >
+                  versions: {changes?.changes?.length}
+                </button>
+                <button
+                  onClick={() => {
+                    panelSend({type: 'PANEL.OPEN', activePanel: 'citations'})
+                  }}
+                >
+                  citations: {citations?.links?.length}
+                </button>
+                <button
+                  onClick={() => {
+                    panelSend({
+                      type: 'PANEL.OPEN',
+                      activePanel: 'conversations',
+                    })
+                  }}
+                >
+                  conversations
+                </button>
               </Footer>
             </div>
           </BlockHighLighter>
@@ -301,16 +333,19 @@ function BlockPlaceholder() {
   )
 }
 
-type ResizablePanelMachineContext = {
-  visible: boolean
+type ActivePanel = 'conversations' | 'citations' | 'changes' | undefined
 
+type ResizablePanelMachineContext = {
+  show: boolean
+  activePanel: ActivePanel
   left: number
 }
 
 type ResizablePanelMachineEvent =
-  | {type: 'CONVERSATIONS.TOGGLE'}
-  | {type: 'CONVERSATIONS.OPEN'}
-  | {type: 'RESIZE'; values: Array<number>}
+  | {type: 'PANEL.TOGGLE'; activePanel?: ActivePanel}
+  | {type: 'PANEL.OPEN'; activePanel?: ActivePanel}
+  | {type: 'PANEL.CLOSE'}
+  | {type: 'PANEL.RESIZE'; values: Array<number>}
 
 type ResizablePanelMachineServices = {
   matchMediaService: {
@@ -322,7 +357,11 @@ let resizablePanelMachine =
   createMachine(
     {
       predictableActionArguments: true,
-      context: {visible: false, left: 100, highlightConversations: []},
+      context: {
+        show: false,
+        left: 100,
+        activePanel: 'conversations',
+      },
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
         context: {} as ResizablePanelMachineContext,
@@ -330,14 +369,14 @@ let resizablePanelMachine =
         services: {} as ResizablePanelMachineServices,
       },
       on: {
-        'CONVERSATIONS.TOGGLE': {
-          actions: 'toggleVisibility',
+        'PANEL.TOGGLE': {
+          actions: ['toggleShow'],
         },
-        RESIZE: {
+        'PANEL.RESIZE': {
           actions: 'updateHandlePosition',
         },
-        'CONVERSATIONS.OPEN': {
-          actions: ['openPanel'],
+        'PANEL.OPEN': {
+          actions: ['showPanel', 'assignActivePanel'],
         },
       },
       id: 'resizable-panel',
@@ -350,11 +389,15 @@ let resizablePanelMachine =
 
           return {left: newValue}
         }),
-        toggleVisibility: assign({
-          visible: (context) => !context.visible,
+        toggleShow: assign({
+          show: (context) => !context.show,
         }),
-        openPanel: assign({
-          visible: (c) => (!c.visible ? true : c.visible),
+        showPanel: assign((_, event) => ({
+          show: true,
+          activePanel: event.activePanel,
+        })),
+        assignActivePanel: assign({
+          activePanel: (_, event) => event.activePanel,
         }),
       },
     },
