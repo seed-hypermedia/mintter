@@ -5,6 +5,7 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
@@ -161,13 +162,14 @@ func TestSynWithList(t *testing.T) {
 		return n
 	}
 	alice := newNode("alice", false)
-	bob := newNode("bob", false)
+	bob := newNode("bob", true)
 	ctx := context.Background()
 
 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
 	var alicePerma vcs.EncodedPermanode
 	var wantDatoms []vcsdb.Datom
+	var publicVersion string
 	{
 		conn, release, err := alice.VCS().Conn(ctx)
 		require.NoError(t, err)
@@ -188,14 +190,18 @@ func TestSynWithList(t *testing.T) {
 			conn.AddDatoms(obj, change, wantDatoms...)
 			conn.SaveVersion(obj, "main", idLocal, vcsdb.LocalVersion{change})
 			conn.EncodeChange(change, alice.ID().DeviceKey())
-
+			version := conn.GetVersion(obj, "main", idLocal)
+			publicVersion = conn.LocalVersionToPublic(version).String()
 			return nil
 		})
 		release()
 		require.NoError(t, err)
 	}
-
-	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().CID()))
+	obj := []*p2p.Object{{
+		Id:         alicePerma.ID.String(),
+		VersionSet: []*p2p.Version{{AccountId: alice.ID().AccountID().String(), Version: publicVersion}},
+	}}
+	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().CID(), obj...))
 
 	{
 		conn, release, err := bob.VCS().Conn(ctx)
