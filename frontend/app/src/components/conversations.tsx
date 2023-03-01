@@ -302,6 +302,7 @@ function CommentItem({
       createPromiseClient(Changes, transport).getChangeInfo({
         id: comment.revision,
       }),
+    queryKey: ['ChangeInfo', comment.revision],
   })
 
   let author = useAuthor(changeData.data?.author)

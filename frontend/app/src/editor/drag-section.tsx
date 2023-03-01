@@ -9,7 +9,11 @@ import {useBlockFlash} from './utils'
 
 export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
-const ElementDrag = ({children, element, attributes}: RenderElementProps) => {
+export const ElementDrag = ({
+  children,
+  element,
+  attributes,
+}: RenderElementProps) => {
   let dragService = useDrag()
   let mouseService = useMouse()
 
@@ -40,5 +44,3 @@ const ElementDrag = ({children, element, attributes}: RenderElementProps) => {
     </li>
   )
 }
-
-export {ElementDrag}

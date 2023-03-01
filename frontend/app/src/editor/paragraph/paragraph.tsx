@@ -80,7 +80,7 @@ function Paragraph({
   let dragService = useDrag()
 
   let mouseProps =
-    mode != EditorMode.Discussion
+    mode == EditorMode.Publication
       ? {
           onMouseEnter: () => {
             mouseService.send({
