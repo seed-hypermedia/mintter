@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	site "mintter/backend/genproto/documents/v1alpha"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/vcs/vcssql"
 	"net/http"
@@ -347,7 +348,7 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 
 // PublishDocument publishes and pins the document to the public web site.
 func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
-	_, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
+	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
 		return &site.PublishDocumentResponse{}, err
 	}
@@ -380,8 +381,8 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return &site.PublishDocumentResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer release()
-	/*{
 
+	{
 		all, err := vcssql.ListAccountDevices(conn)
 		if err != nil {
 			n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
@@ -392,38 +393,34 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		if !found {
 			return nil, fmt.Errorf("couldn't find devices information of the account %s.", acc.String())
 		}
+
+		baseVersionSet := []*p2p.Version{{
+			AccountId: acc.String(),
+			Version:   in.Version,
+		}}
+		n.log.Debug("Adding base document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
+		documentsToSync := []*p2p.Object{{Id: in.DocumentId, VersionSet: baseVersionSet}}
+		for _, doc := range in.ReferencedDocuments {
+			//for _, deviceID := range devices {
+			referencesVersionSet := []*p2p.Version{{
+				AccountId: acc.String(),
+				Version:   doc.Version,
+				//DeviceId:  deviceID.String(),
+			}}
+			n.log.Debug("Adding references document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
+			documentsToSync = append(documentsToSync, &p2p.Object{Id: doc.DocumentId, VersionSet: referencesVersionSet})
+			//}
+		}
+
 		for _, deviceID := range devices {
-			c, err := srv.Client(ctx, deviceID)
-			if err != nil {
+			n.log.Debug("Publish Document: Syncyng..", zap.String("DeviceID", deviceID.String()), zap.Int("Documents to sync", len(documentsToSync)))
+			if err = srv.synchronizer.SyncWithPeer(ctx, deviceID, documentsToSync...); err != nil {
+				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", deviceID.String()), zap.Error(err))
 				continue
 			}
-
-			remoteObjs, err := c.ListObjects(ctx, &p2p.ListObjectsRequest{})
-			if err != nil {
-				return err
-			}
-
-			sess := s.bitswap.NewSession(ctx)
-			for _, obj := range remoteObjs.Objects {
-				oid, err := cid.Decode(obj.Id)
-				if err != nil {
-					return err
-				}
-
-				for _, ver := range obj.VersionSet {
-					vv, err := vcs.ParseVersion(ver.Version)
-					if err != nil {
-						return err
-					}
-					// TODO: pass in identity information of the remote version, not our own.
-					if err := s.syncFromVersion(ctx, s.me.AccountID(), s.me.DeviceKey().CID(), oid, sess, vv); err != nil {
-						return err
-					}
-				}
-			}
-			return nil
+			n.log.Debug("Successfully synced", zap.String("Peer", deviceID.String()))
 		}
-	}*/
+	}
 
 	docID, err := cid.Decode(in.DocumentId)
 	if err != nil {

@@ -108,6 +108,7 @@ type Server struct {
 	Node *future.ReadOnly[*Node]
 	*Site
 	localFunctions LocalFunctions
+	synchronizer   Synchronizer
 }
 
 // Node is a Mintter P2P node.
@@ -142,15 +143,21 @@ type LocalFunctions interface {
 	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
 }
 
+// Synchronizer is a subset of the syncing service that
+// is able to sync content with remote peers on demand.
+type Synchronizer interface {
+	SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...*p2p.Object) error
+}
+
 // NewServer returns a new mttnet API server.
-func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions) *Server {
+func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions, sync Synchronizer) *Server {
 	expirationDelay := siteCfg.InviteTokenExpirationDelay
 
 	srv := &Server{Site: &Site{
 		hostname:                   siteCfg.Hostname,
 		InviteTokenExpirationDelay: expirationDelay,
 		ownerID:                    siteCfg.OwnerID,
-	}, Node: node, localFunctions: localFunctions}
+	}, Node: node, localFunctions: localFunctions, synchronizer: sync}
 
 	cleaningTokensTicker := time.NewTicker(5 * time.Minute)
 	go func() {

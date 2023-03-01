@@ -274,7 +274,7 @@ func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *s
 	f := future.New[*Node]()
 	docsSrv := newSimulatedDocs(&siteproto.Publication{}, "")
 
-	srv := NewServer(ctx, cfg.Site, f.ReadOnly, docsSrv)
+	srv := NewServer(ctx, cfg.Site, f.ReadOnly, docsSrv, nil)
 	require.NoError(t, f.Resolve(n))
 
 	go func() {

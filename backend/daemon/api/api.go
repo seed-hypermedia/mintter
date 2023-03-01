@@ -10,6 +10,7 @@ import (
 	documents "mintter/backend/daemon/api/documents/v1alpha"
 	networking "mintter/backend/daemon/api/networking/v1alpha"
 	"mintter/backend/daemon/ondisk"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
@@ -58,7 +59,7 @@ func New(
 	}
 
 	documentsSrv := documents.NewServer(id, db, &lazyDiscoverer{sync: sync, net: node}, nil)
-	siteSrv := mttnet.NewServer(ctx, cfg, node, documentsSrv)
+	siteSrv := mttnet.NewServer(ctx, cfg, node, documentsSrv, &lazyDiscoverer{sync: sync})
 	documentsSrv.RemoteCaller = siteSrv
 	return Server{
 		Accounts:   accounts.NewServer(id, v),
@@ -103,4 +104,15 @@ func (ld *lazyDiscoverer) Connect(ctx context.Context, peerInfo peer.AddrInfo) e
 		return fmt.Errorf("p2p node is not yet initialized")
 	}
 	return node.Connect(ctx, peerInfo)
+}
+
+// Connect connects to a remote peer. Necessary here for the grpc server to add a site
+// that needs to connect to the site under the hood.
+func (ld *lazyDiscoverer) SyncWithPeer(ctx context.Context, deviceID cid.Cid, initialObjects ...*p2p.Object) error {
+	svc, ok := ld.sync.Get()
+	if !ok {
+		return fmt.Errorf("sync not ready yet")
+	}
+
+	return svc.SyncWithPeer(ctx, deviceID, initialObjects...)
 }
