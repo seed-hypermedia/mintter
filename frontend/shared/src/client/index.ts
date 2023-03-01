@@ -1,4 +1,3 @@
-import {GetChangeInfoRequest} from './.generated/documents/v1alpha/changes_pb'
 import {PartialMessage} from '@bufbuild/protobuf'
 export type {
   Account,
