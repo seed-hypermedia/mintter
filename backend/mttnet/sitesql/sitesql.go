@@ -185,7 +185,7 @@ func GetMemberRole(conn *sqlite.Conn, accountCID cid.Cid) (site.Member_Role, err
 	}
 	member, err := getMember(conn, accIDBytes)
 	if err != nil || member.SiteMembersRole == int64(site.Member_ROLE_UNSPECIFIED) {
-		return site.Member_ROLE_UNSPECIFIED, fmt.Errorf("Could not get member: %w", err)
+		return site.Member_ROLE_UNSPECIFIED, fmt.Errorf("Could not get member with account hash [%s]: %w", accIDHexStr, err)
 	}
 	return site.Member_Role(member.SiteMembersRole), nil
 }

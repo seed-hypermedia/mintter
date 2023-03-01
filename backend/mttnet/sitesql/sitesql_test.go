@@ -230,6 +230,7 @@ func TestMembers(t *testing.T) {
 		require.NoError(t, err)
 		_, err = GetMemberRole(conn, accountCIDFake)
 		require.Error(t, err)
+		require.NoError(t, AddMember(conn, accountCID, int64(site.Member_EDITOR)))
 		members, err := ListMembers(conn)
 		require.NoError(t, err)
 		require.Len(t, members, 1)
@@ -332,6 +333,7 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 		account_id INTEGER NOT NULL,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL,
+		UNIQUE(account_id),
 		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
 	);
 	CREATE TABLE sites (
