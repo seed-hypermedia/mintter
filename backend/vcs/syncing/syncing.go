@@ -398,7 +398,10 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjec
 	if err != nil {
 		return err
 	}
-	finalObjs := innerJoin(remoteObjs.Objects, initialObjects)
+	finalObjs := remoteObjs.Objects
+	if len(initialObjects) != 0 {
+		finalObjs = innerJoin(remoteObjs.Objects, initialObjects)
+	}
 	s.log.Debug("Syncing", zap.Int("remoteObjects", len(remoteObjs.Objects)), zap.Int("initialObjects", len(initialObjects)), zap.Int("finalObjects", len(initialObjects)))
 
 	sess := s.bitswap.NewSession(ctx)
@@ -520,19 +523,16 @@ func (source *object) equal(target *p2p.Object) bool {
 	return true
 }
 
+// innerJoin takes the common objects (intersection) between target and source.
 func innerJoin(source []*p2p.Object, target []*p2p.Object) []*p2p.Object {
 	var ret []*p2p.Object
-	if len(target) != 0 {
-		for _, initialObj := range target {
-			for _, remoteObj := range source {
-				myObj := object{initialObj}
-				if myObj.equal(remoteObj) {
-					ret = append(ret, remoteObj)
-				}
+	for _, initialObj := range target {
+		for _, remoteObj := range source {
+			myObj := object{initialObj}
+			if myObj.equal(remoteObj) {
+				ret = append(ret, remoteObj)
 			}
 		}
-	} else {
-		ret = source
 	}
 	return ret
 }
