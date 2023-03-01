@@ -275,6 +275,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content
+            align="end"
             style={{
               zIndex: 200000,
             }}
