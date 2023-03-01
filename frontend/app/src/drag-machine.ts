@@ -99,10 +99,25 @@ export const createDragMachine = (editor: Editor) => {
             const element: HTMLLIElement = event.element
             const paragraph = element.firstElementChild
             if (paragraph && paragraph.nodeName === 'P') {
-              paragraph.setAttribute('data-action', 'dragged-over')
+              const {fromPath, toPath} = context
+              if (fromPath && toPath) {
+                if (
+                  Path.equals(fromPath, toPath) ||
+                  Path.isAncestor(fromPath, toPath)
+                ) {
+                  return paragraph
+                }
+                if (
+                  Path.isAfter(fromPath, toPath) ||
+                  Path.isAncestor(toPath, fromPath)
+                ) {
+                  paragraph.setAttribute('data-action', 'dragged-top')
+                } else {
+                  paragraph.setAttribute('data-action', 'dragged-bottom')
+                }
+              }
               return paragraph
             }
-            element.setAttribute('data-action', 'dragged-over')
             return element
           },
         }),

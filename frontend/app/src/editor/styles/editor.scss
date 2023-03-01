@@ -32,7 +32,7 @@ li::marker {
   }
 }
 
-[data-action='dragged-over'] {
+[data-action='dragged-bottom'] {
   &::after {
     content: '';
     position: absolute;
@@ -40,6 +40,20 @@ li::marker {
     height: 3px;
     width: 100%;
     background-color: #007aff;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  // background-color: var(--primary-component-bg-hover)
+}
+
+[data-action='dragged-top'] {
+  &::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    height: 3px;
+    width: 100%;
+    background-color: #007AFF;
     left: 50%;
     transform: translateX(-50%);
   }
