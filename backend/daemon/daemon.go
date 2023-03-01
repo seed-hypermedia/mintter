@@ -182,7 +182,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 }
 
 func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
-	logging.SetLogLevel("autorelay", "debug")
+	logging.SetLogLevel("autorelay", "info")
 	logging.SetLogLevel("provider.simple", "debug")
 	logging.SetLogLevel("reprovider.simple", "debug")
 	a.g.Go(func() error {
