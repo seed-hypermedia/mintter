@@ -136,7 +136,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
-	fs.BoolVar(&cfg.Syncing.NoInbound, "syncing.disable-inbound", cfg.Syncing.NoInbound, "Not syncing inbound content, only syncs to remote peers")
+	fs.BoolVar(&cfg.Syncing.NoInbound, "syncing.disable-inbound", cfg.Syncing.NoInbound, "Not syncing inbound content via P2P, only syncs to remote peers. IF this is a site, however still admits content when published")
 }
 
 // ExpandRepoPath is used to expand the home directory in the repo path.
