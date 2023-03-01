@@ -685,7 +685,7 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 			// this would mean this is a proxied call so we take the account from the remote caller ID
 			remotAcc, err := n.AccountForDevice(ctx, remoteDeviceID)
 			if err != nil {
-				return cid.Cid{}, false, nil, fmt.Errorf("couldn't get account ID from device ID: %w", err)
+				return cid.Cid{}, false, nil, fmt.Errorf("checkPermissions: couldn't get account ID from device [%s]: %w", remoteDeviceID.String(), err)
 			}
 
 			n.log.Debug("PROXIED CALL", zap.String("Local AccountID", acc.String()), zap.String("Remote AccountID", remotAcc.String()), zap.Error(err))
