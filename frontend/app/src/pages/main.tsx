@@ -62,12 +62,7 @@ export default function Main() {
           <Route>{() => <Redirect to="/inbox" />}</Route>
         </main>
         <TitleBar clean={isSettings} mainActor={mainActor} />
-        {!isSettings ? (
-          <>
-            <QuickSwitcher />
-            <Footer />
-          </>
-        ) : null}
+        {!isSettings ? <QuickSwitcher /> : null}
       </div>
     </ErrorBoundary>
   )

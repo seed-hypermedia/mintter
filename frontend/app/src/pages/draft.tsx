@@ -10,6 +10,7 @@ import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {AppError} from '@app/root'
 import {Box} from '@components/box'
+import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
 import {ChildrenOf, Document} from '@mintter/shared'
@@ -94,6 +95,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
                         }}
                       />
                     ) : null}
+                    <Footer />
                   </FileProvider>
                 </BlockHighLighter>
               </DragProvider>

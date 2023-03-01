@@ -12,6 +12,7 @@ import {openPublication, useNavigation} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
+import Footer from '@components/footer'
 import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
@@ -31,29 +32,32 @@ function PublicationList() {
   let nav = useNavigation()
 
   return (
-    <div className="page-wrapper">
-      <ScrollArea>
-        {isInitialLoading ? (
-          <p>loading...</p>
-        ) : data && data.publications.length ? (
-          <ul className="file-list" data-testid="files-list">
-            {data.publications.map((publication) => (
-              <PublicationListItem
-                key={`${publication.document?.id}/${publication.version}`}
-                publication={publication}
-              />
-            ))}
-          </ul>
-        ) : (
-          <EmptyList
-            description="You have no Publications yet."
-            action={() => {
-              nav.openNewDraft(false)
-            }}
-          />
-        )}
-      </ScrollArea>
-    </div>
+    <>
+      <div className="page-wrapper">
+        <ScrollArea>
+          {isInitialLoading ? (
+            <p>loading...</p>
+          ) : data && data.publications.length ? (
+            <ul className="file-list" data-testid="files-list">
+              {data.publications.map((publication) => (
+                <PublicationListItem
+                  key={`${publication.document?.id}/${publication.version}`}
+                  publication={publication}
+                />
+              ))}
+            </ul>
+          ) : (
+            <EmptyList
+              description="You have no Publications yet."
+              action={() => {
+                nav.openNewDraft(false)
+              }}
+            />
+          )}
+        </ScrollArea>
+      </div>
+      <Footer />
+    </>
   )
 }
 

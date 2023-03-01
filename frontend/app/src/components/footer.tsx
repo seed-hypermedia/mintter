@@ -14,19 +14,20 @@ import {TextField} from '@components/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {useMemo, useState} from 'react'
+import {PropsWithChildren, ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/footer.scss'
 import {Prompt} from './prompt'
 
-export default function Footer() {
+export default function Footer({children}: {children?: ReactNode}) {
   let client = useQueryClient()
   let contactListService = useInterpret(() =>
     createContactListMachine({client}),
   )
   return (
     <div className="main-footer">
+      {children}
       <Contacts service={contactListService} />
       <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
     </div>
