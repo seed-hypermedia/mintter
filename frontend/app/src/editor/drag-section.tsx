@@ -33,6 +33,7 @@ const ElementDrag = ({children, element, attributes}: RenderElementProps) => {
       {...blockProps}
       className={inRoute ? 'flash' : undefined}
       onDrop={onDrop}
+      onDragEnd={onDrop}
     >
       <BlockTools block={element as FlowContent} />
       {children}
