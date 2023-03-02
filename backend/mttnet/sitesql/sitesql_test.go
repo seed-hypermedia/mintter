@@ -129,6 +129,9 @@ func TestSites(t *testing.T) {
 		sites, err = ListSites(conn)
 		require.NoError(t, err)
 		require.Len(t, sites, 0)
+		siteList, err := listSites(conn)
+		require.NoError(t, err)
+		require.Len(t, siteList, 0)
 	}
 }
 
@@ -231,6 +234,9 @@ func TestMembers(t *testing.T) {
 		_, err = GetMemberRole(conn, accountCIDFake)
 		require.Error(t, err)
 		require.NoError(t, AddMember(conn, accountCID, int64(site.Member_EDITOR)))
+		memberList, err := listMembers(conn)
+		require.NoError(t, err)
+		require.Len(t, memberList, 1)
 		members, err := ListMembers(conn)
 		require.NoError(t, err)
 		require.Len(t, members, 1)
@@ -271,6 +277,9 @@ func TestTokens(t *testing.T) {
 		require.Len(t, tokenList, 2)
 
 		require.NoError(t, CleanExpiredTokens(conn))
+		tokenListReal, err := listTokens(conn)
+		require.NoError(t, err)
+		require.Len(t, tokenListReal, 1)
 		tokenList, err = ListTokens(conn)
 		require.NoError(t, err)
 		require.Len(t, tokenList, 1)
