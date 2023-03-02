@@ -5,9 +5,11 @@ import {mergeRefs} from '@app/utils/mege-refs'
 import {Box} from '@components/box'
 import {
   FlowContent,
+  Group,
   isBlockquote,
   isCode,
   isFlowContent,
+  isGroupContent,
   isParagraph,
   isPhrasingContent,
   Paragraph as ParagraphType,
@@ -96,6 +98,7 @@ function Paragraph({
 
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault()
+    // console.log(e.clientX, e.clientY)
     // const domNode = ReactEditor.toDOMNode(editor, element)
     const path = ReactEditor.findPath(editor, element)
 
@@ -108,7 +111,66 @@ function Paragraph({
     if (parentBlock) {
       const [node, ancestorPath] = parentBlock
 
+      let initialPath = ancestorPath;
+
+      while (initialPath.length !== 2) {
+        initialPath = initialPath.slice(0, -2)
+      }
+
+      const childGroup = Editor.after<Group>(editor, path, {
+        match: isGroupContent,
+        mode: 'lowest',
+        at: path,
+      })
+
+      // console.log(childGroup);
+      // console.log(parentBlock);
+      // console.log(e.clientX);
+
+      // if (!childGroup) {
+      //   const firstParent = Editor.node(editor, ancestorPath.slice(0, 2) as Path);
+      //   let groupStatements = [];
+      //   let groupElements = [];
+      //   const descendantsGen = Node.nodes(firstParent[0], {
+      //     to: ancestorPath.slice(2),
+      //     // pass: (entry) => { return entry[0].type === 'statement' },
+      //   });
+      //   for (let des of descendantsGen)
+      //   {
+      //     if (des[0].type === 'statement') {
+      //       des[1] = [...ancestorPath.slice(0, 2), ...des[1]]
+      //       groupStatements.push(des);
+      //     }
+      //   }
+      //   for (const statement of groupStatements) {
+      //     groupElements.push(ReactEditor.toDOMNode(editor, statement[0]))
+      //   }
+      //   // const ancestorsGen = Node.ancestors(node, path);
+      //   // let ancestors = [];
+      //   // for (const anc of ancestorsGen) {
+      //   //   // ancestors.push(anc);
+      //   //   console.log(anc);
+      //   // }
+      //   // console.log(ancestors);
+      //   // // const pathGen = Path.ancestors(path);
+      //   // let paths = []
+      //   // for (const pth of pathGen) {
+      //   //   paths.push(pth);
+      //   // }
+      //   // console.log(paths);
+      //   // console.log(e.clientX);
+      //   dragService?.send({
+      //     type: 'DRAG.OVER.BOTTOM',
+      //     currentX: e.clientX,
+      //     nodes: groupStatements,
+      //     nestedElements: groupElements, 
+      //   })
+      //   return;
+      // }
+      
       const domNode = ReactEditor.toDOMNode(editor, node)
+      
+      // console.log(domNode.offsetLeft, domNode.getBoundingClientRect())
 
       dragService?.send({
         type: 'DRAG.OVER',
