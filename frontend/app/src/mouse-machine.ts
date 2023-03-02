@@ -11,7 +11,7 @@ type MouseEvent =
   | {type: 'BLOCK.OBSERVE'; entry: HTMLElement}
   | {type: 'DISABLE.WINDOW.BLUR'}
   | {type: 'DISABLE.WINDOW.RESIZE'}
-  | {type: 'MOUSE.MOVE'; position: number}
+  | {type: 'MOUSE.MOVE'; position: number; positionX: number}
   | {type: 'DISABLE.CHANGE'}
   | {type: 'DISABLE.BLOCKTOOLS.OPEN'}
   | {type: 'DISABLE.BLOCKTOOLS.CLOSE'}
@@ -85,7 +85,7 @@ export var mouseMachine =
               on: {
                 'MOUSE.MOVE': [
                   {
-                    actions: 'assignCurrentBound',
+                    actions: ['assignCurrentBound', 'getMousePosition'],
                     description:
                       'will capture the mouse movement on the pag emain component and store in in context',
                     cond: 'hoverNewBlockId',
