@@ -371,14 +371,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	if err != nil {
 		return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] is not a valid path", in.Path)
 	}
-	// TODO(juligasa): call getPublication on the site for the document published and all of the referenced documents
-	// GetPublication is going to call discover object that calls sync, and it'll sync everything. Instead, since site and editor already connected, call
-	// a new function to pull the document directly from the editor, without syncyng
-	/*doc, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{DocumentId: in.DocumentId, Version: in.Version, LocalOnly: false})
-	if err != nil {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Cannot pull document [%s] version [%s]", in.DocumentId, in.Version)
-	}
-	*/
+
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
 	n, ok := srv.Node.Get()
 	if !ok {
@@ -399,7 +392,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 
 		devices, found := all[acc]
 		if !found {
-			return nil, fmt.Errorf("couldn't find devices information of the account %s.", acc.String())
+			return nil, fmt.Errorf("couldn't find devices information of the account %s", acc.String())
 		}
 
 		baseVersionSet := []*p2p.Version{{
@@ -421,7 +414,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		}
 
 		for _, deviceID := range devices {
-			n.log.Debug("Publish Document: Syncyng..", zap.String("DeviceID", deviceID.String()), zap.Int("Documents to sync", len(documentsToSync)))
+			n.log.Debug("Publish Document: Syncyng...", zap.String("DeviceID", deviceID.String()), zap.Int("Documents to sync", len(documentsToSync)))
 			if err = srv.synchronizer.SyncWithPeer(ctx, deviceID, documentsToSync...); err != nil {
 				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", deviceID.String()), zap.Error(err))
 				continue
@@ -570,7 +563,9 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 		}
 		return retValue, nil
 	}
-
+	if in.Path == "" {
+		return &site.GetPathResponse{}, fmt.Errorf("Invalid path")
+	}
 	n, ok := srv.Node.Get()
 	if !ok {
 		return &site.GetPathResponse{}, fmt.Errorf("Node not ready yet")
