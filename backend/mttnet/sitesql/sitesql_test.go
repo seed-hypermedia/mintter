@@ -1,7 +1,6 @@
 package sitesql
 
 import (
-	"io/ioutil"
 	site "mintter/backend/genproto/documents/v1alpha"
 	"os"
 	"path/filepath"
@@ -290,7 +289,7 @@ func TestTokens(t *testing.T) {
 }
 
 func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
-	dir, err := ioutil.TempDir("", "sqlitegen-")
+	dir, err := os.MkdirTemp("", "sqlitegen-")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -313,7 +312,7 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	err = sqlitex.ExecScript(conn, `
 	CREATE TABLE invite_tokens (
 		-- Unique token identification. Random 8 char words
-		token TEXT PRIMARY KEY,
+		token TEXT PRIMARY KEY CHECK(token <> ''),
 		-- The role the token will allow ROLE_UNSPECIFIED = 0 OWNER = 1 EDITOR = 2
 		role INTEGER NOT NULL DEFAULT 2,
 		-- Timestamp since the token will no longer be eligible to be redeemed. Seconds since  Jan 1, 1970
@@ -339,19 +338,18 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	);
 	CREATE TABLE site_members (
 		-- The account id that has been linked to a role on this site
-		account_id INTEGER NOT NULL,
+		account_id INTEGER PRIMARY KEY,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL,
-		UNIQUE(account_id),
 		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
-	);
+	) WITHOUT ROWID;
 	CREATE TABLE sites (
 		-- Site unique identification. The hostname of the site with protocol https://example.com
 		hostname TEXT PRIMARY KEY,
 		-- The role we play in the site ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL DEFAULT 0,
 		-- P2P addresses to connect to that site in the format of multiaddresses. Space separated.
-		addresses TEXT NOT NULL,
+		addresses TEXT NOT NULL CHECK(addresses <> ''),
 		-- The account ID of the site. We need a previous connection to the site so the 
 		-- actual account is inserted in the accounts table when handshake.
 		account_id INTEGER NOT NULL,
@@ -373,14 +371,13 @@ func makeConn() (conn *sqlite.Conn, closer func() error, err error) {
 	);
 	CREATE TABLE web_publication_records (
 		-- Ipfs block where the base document is stored.
-		block_id INTEGER NOT NULL CHECK (block_id != 0),
+		block_id INTEGER PRIMARY KEY CHECK (block_id != 0),
 		-- doc version of the base document published. Not its references.
 		document_version TEXT NOT NULL,
-		-- Path this publication is published to. If NULL then its not pinned. If / is root document.
+		-- Path this publication is published to.
 		path TEXT UNIQUE,
-		UNIQUE(block_id),
 		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
-	);
+	) WITHOUT ROWID;
 	CREATE TABLE content_links (
 		source_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
 		source_block_id TEXT NOT NULL,

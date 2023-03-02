@@ -223,11 +223,11 @@ var migrations = []string{
 	// Stores sites that user has manually added
 	`CREATE TABLE sites (
 		-- Site unique identification. The hostname of the site with protocol https://example.com
-		hostname TEXT PRIMARY KEY,
+		hostname TEXT PRIMARY KEY CHECK(hostname <> ''),
 		-- The role we play in the site ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL DEFAULT 0,
 		-- P2P addresses to connect to that site in the format of multiaddresses. Space separated.
-		addresses TEXT NOT NULL,
+		addresses TEXT NOT NULL CHECK(addresses <> ''),
 		-- The account ID of the site. We need a previous connection to the site so the 
 		-- actual account is inserted in the accounts table when handshake.
 		account_id INTEGER NOT NULL,
@@ -238,7 +238,7 @@ var migrations = []string{
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE invite_tokens (
 		-- Unique token identification. Random 8 char words
-		token TEXT PRIMARY KEY,
+		token TEXT PRIMARY KEY CHECK(token <> ''),
 		-- The role the token will allow ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL DEFAULT 2,
 		-- Timestamp since the token will no longer be eligible to be redeemed. Seconds since  Jan 1, 1970
@@ -249,23 +249,21 @@ var migrations = []string{
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE site_members (
 		-- The account id that has been linked to a role on this site
-		account_id INTEGER NOT NULL,
+		account_id INTEGER PRIMARY KEY,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL,
-		UNIQUE(account_id),
 		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
-	);`,
+	) WITHOUT ROWID;`,
 
 	// Stores all the records published on this site. Although this table is relevant only
 	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
 	`CREATE TABLE web_publication_records (
 		-- Ipfs block where the base document is stored.
-		block_id INTEGER NOT NULL CHECK (block_id != 0),
+		block_id INTEGER PRIMARY KEY CHECK (block_id != 0),
 		-- doc version of the base document published. Not its references.
 		document_version TEXT NOT NULL,
-		-- Path this publication is published to. If NULL then its not pinned. If / is root document.
+		-- Path this publication is published to. If NULL is not listed.
 		path TEXT UNIQUE,
-		UNIQUE(block_id),
 		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
-	);`,
+	) WITHOUT ROWID;`,
 }
