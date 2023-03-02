@@ -1,9 +1,9 @@
+// Package testutil defines some useful function for testing only.
 package testutil
 
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"unicode"
@@ -39,7 +39,7 @@ func MakeCIDWithCodec(t *testing.T, codec uint64, data string) cid.Cid {
 func MakeRepoPath(t testing.TB) string {
 	t.Helper()
 
-	dir, err := ioutil.TempDir("", "mintter-repo-*")
+	dir, err := os.MkdirTemp("", "mintter-repo-*")
 	require.NoError(t, err)
 
 	t.Cleanup(func() {

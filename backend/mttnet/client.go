@@ -17,6 +17,7 @@ import (
 	"go.uber.org/multierr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // Client manages libp2p client connection for the Mintter Protocol.
@@ -43,7 +44,7 @@ func NewClient(me core.Identity, h host.Host) *Client {
 
 				return gostream.Dial(ctx, h, id, ProtocolID)
 			}),
-			grpc.WithInsecure(),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock(),
 		},
 		me:   me,
