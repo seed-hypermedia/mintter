@@ -41,7 +41,7 @@ func TestMembers(t *testing.T) {
 	require.True(t, ok)
 	defer stopeditor()
 
-	readerSrv, _, stopreader := makeTestSrv(t, "derek")
+	readerSrv, _, stopreader := makeTestSrv(t, "david")
 	reader, ok := readerSrv.Node.Get()
 	require.True(t, ok)
 	defer stopreader()

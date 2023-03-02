@@ -168,7 +168,6 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		if !ok && stat.Code() != codes.AlreadyExists {
 			return nil, fmt.Errorf("Cannot register automatic account: %w", err)
 		}
-
 	}
 
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site)
