@@ -237,7 +237,7 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 		ret.Description = in.Description
 	}
 	// Now update the profile accordingly
-	if err = srv.UpdateSiteBio(ctx, in.Title, in.Description); err != nil {
+	if err = srv.updateSiteBio(ctx, in.Title, in.Description); err != nil {
 		return &site.SiteInfo{}, fmt.Errorf("Update Site Info: Could not update Site Bio accordingly: %w", err)
 	}
 	return &ret, nil
@@ -721,8 +721,8 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	return acc, false, nil, nil
 }
 
-// UpdateSiteBio updates the site bio according to the site SEO description.
-func (srv *Server) UpdateSiteBio(ctx context.Context, title, description string) error {
+// updateSiteBio updates the site bio according to the site SEO description.
+func (srv *Server) updateSiteBio(ctx context.Context, title, description string) error {
 	n, ok := srv.Node.Get()
 	if !ok {
 		return fmt.Errorf("Node not ready yet")

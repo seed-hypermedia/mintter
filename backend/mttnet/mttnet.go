@@ -201,7 +201,7 @@ func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*
 						if err != nil {
 							n.log.Warn("Could not set initial site title", zap.String("Title", siteCfg.Title), zap.Error(err))
 						}
-						err = srv.UpdateSiteBio(ctx, siteCfg.Title, "")
+						err = srv.updateSiteBio(ctx, siteCfg.Title, "")
 						if err != nil {
 							n.log.Warn("Could not update site Bio according to title", zap.String("Title", siteCfg.Title), zap.Error(err))
 						}
