@@ -41,6 +41,89 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	testutil.ProtoEqual(t, publishedDocument, remotePublication, "remote publication doesn't match")
 }
 
+/*
+	func TestSite(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+
+		siteConf := makeTestConfig(t)
+		siteConf.Syncing.NoInbound = true
+
+		gw, err := Load(ctx, siteConf, nil)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			cancel()
+			require.Equal(t, context.Canceled, gw.Wait())
+		})
+
+		ownerSrv, docSrv, stopowner := makeTestSrv(t, "alice")
+		owner, ok := ownerSrv.Node.Get()
+		require.True(t, ok)
+		defer stopowner()
+
+		editorSrv, _, stopeditor := makeTestSrv(t, "bob")
+		editor, ok := editorSrv.Node.Get()
+		require.True(t, ok)
+		defer stopeditor()
+
+		readerSrv, _, stopreader := makeTestSrv(t, "derek")
+		reader, ok := readerSrv.Node.Get()
+		require.True(t, ok)
+		defer stopreader()
+
+		cfg := config.Default()
+		cfg.Site.Hostname = "127.0.0.1:55001"
+
+		cfg.Site.OwnerID = owner.me.AccountID().String()
+		siteSrv, _, stopSite := makeTestSrv(t, "carol", cfg.Site)
+		site, ok := siteSrv.Node.Get()
+		require.True(t, ok)
+		defer stopSite()
+
+		docSrv.SetSiteAccount(site.me.AccountID().String())
+
+		ctx := context.Background()
+		require.NoError(t, owner.Connect(ctx, site.AddrInfo()))
+		header := metadata.New(map[string]string{string(MttHeader): cfg.Site.Hostname})
+		ctx = metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
+		ctx = context.WithValue(ctx, SiteAccountIDCtxKey, site.me.AccountID().String())
+		res, err := ownerSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{})
+		require.NoError(t, err)
+		require.Equal(t, documents.Member_OWNER, res.Role)
+		token, err := ownerSrv.CreateInviteToken(ctx, &documents.CreateInviteTokenRequest{
+			Role:       documents.Member_EDITOR,
+			ExpireTime: &timestamppb.Timestamp{Seconds: time.Now().Add(10 * time.Minute).Unix()},
+		})
+		require.NoError(t, err)
+
+		//Publish as owner
+
+		//An editor should receive the document just by having a connection with the site
+		require.NoError(t, editor.Connect(ctx, site.AddrInfo()))
+		res, err = editorSrv.RedeemInviteToken(ctx, &siteproto.RedeemInviteTokenRequest{Token: token.Token})
+		require.NoError(t, err)
+
+		require.Equal(t, documents.Member_EDITOR, res.Role)
+		require.NoError(t, editorSrv.synchronizer.SyncWithPeer(ctx, site.me.DeviceKey().CID()))
+		pub, err := editorSrv.localFunctions.GetPublication(ctx, &siteproto.GetPublicationRequest{
+			DocumentId: "",
+			Version:    "",
+			LocalOnly:  true,
+		})
+		require.NoError(t, err)
+
+		// A reader must not receive the document just by having a connection with the site
+		require.NoError(t, reader.Connect(ctx, site.AddrInfo()))
+		require.NoError(t, editorSrv.synchronizer.SyncWithPeer(ctx, site.me.DeviceKey().CID()))
+		pub, err = readerSrv.localFunctions.GetPublication(ctx, &siteproto.GetPublicationRequest{
+			DocumentId: "",
+			Version:    "",
+			LocalOnly:  true,
+		})
+		require.Error(t, err)
+
+		//Unpublish
+	}
+*/
 func TestGateway(t *testing.T) {
 	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
