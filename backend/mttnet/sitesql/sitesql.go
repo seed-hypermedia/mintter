@@ -120,7 +120,10 @@ func RemoveSite(conn *sqlite.Conn, hostname string) error {
 func GetSite(conn *sqlite.Conn, hostname string) (SiteInfo, error) {
 	site, err := getSite(conn, hostname)
 	if err != nil || site.SitesHostname == "" {
-		return SiteInfo{}, fmt.Errorf("Could not get site: %w", err)
+		if err != nil {
+			return SiteInfo{}, fmt.Errorf("Could not get site info from provided hostname [%s]: %w", hostname, err)
+		}
+		return SiteInfo{}, fmt.Errorf("Found a site matching provided hostname [%s], but was empty", hostname)
 	}
 	accountCID := cid.NewCidV1(core.CodecAccountKey, site.AccountsMultihash)
 	return SiteInfo{
