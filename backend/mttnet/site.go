@@ -6,10 +6,15 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"encoding/json"
+	"errors"
 	"fmt"
 	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet/sitesql"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/hlc"
+	"mintter/backend/vcs/mttacc"
+	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"net/http"
 	"net/url"
@@ -231,7 +236,10 @@ func (srv *Server) UpdateSiteInfo(ctx context.Context, in *site.UpdateSiteInfoRe
 		}
 		ret.Description = in.Description
 	}
-
+	// Now update the profile accordingly
+	if err = srv.UpdateSiteBio(ctx, in.Title, in.Description); err != nil {
+		return &site.SiteInfo{}, fmt.Errorf("Update Site Info: Could not update Site Bio accordingly: %w", err)
+	}
 	return &ret, nil
 }
 
@@ -713,6 +721,66 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 	return acc, false, nil, nil
 }
 
+// UpdateSiteBio updates the site bio according to the site SEO description.
+func (srv *Server) UpdateSiteBio(ctx context.Context, title, description string) error {
+	n, ok := srv.Node.Get()
+	if !ok {
+		return fmt.Errorf("Node not ready yet")
+	}
+	aid := n.me.AccountID()
+
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
+	if err != nil {
+		return err
+	}
+	vcsConn, release, err := n.vcs.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	errNoUpdate := errors.New("nothing to update")
+
+	if err := vcsConn.WithTx(true, func() error {
+		obj := vcsConn.LookupPermanode(perma.ID)
+		meLocal := vcsConn.EnsureIdentity(n.me)
+		version := vcsConn.GetVersion(obj, "main", meLocal)
+		clock := hlc.NewClock()
+		for _, v := range version {
+			vt := vcsConn.GetChangeMaxTime(obj, v)
+			clock.Track(hlc.Unpack(vt))
+		}
+		cs := vcsConn.ResolveChangeSet(obj, version)
+		change := vcsConn.NewChange(obj, meLocal, version, clock)
+
+		batch := vcs.NewBatch(clock, n.me.DeviceKey().Abbrev())
+
+		alias := vcsConn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias)
+		bio := vcsConn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio)
+
+		if alias.IsZero() || alias.Value.(string) != title {
+			batch.Add(vcs.RootNode, mttacc.AttrAlias, title)
+		}
+
+		if bio.IsZero() || bio.Value.(string) != description {
+			batch.Add(vcs.RootNode, mttacc.AttrBio, description)
+		}
+
+		dirty := batch.Dirty()
+		if len(dirty) == 0 {
+			return errNoUpdate
+		}
+		vcsConn.AddDatoms(obj, change, dirty...)
+		vcsConn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
+		vcsConn.EncodeChange(change, n.me.DeviceKey())
+
+		return nil
+	}); err != nil && !errors.Is(err, errNoUpdate) {
+		return err
+	}
+	return nil
+}
+
 // ServeHTTP serves the content for the well-known path.
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
@@ -821,5 +889,5 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		n.log.Debug("Remote call finished successfully", zap.String("First param type", res[0].Kind().String()), zap.String("Second param type", res[1].Kind().String()))
 		return res[0].Interface(), res[1].Interface()
 	}
-	return nil, fmt.Errorf("none of the devices associated with the provided account were reachable")
+	return nil, fmt.Errorf("Proxy to site: none of the devices associated with the provided site account [%s] were reachable", siteAccountID.String())
 }
