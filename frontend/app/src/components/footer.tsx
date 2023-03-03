@@ -14,11 +14,42 @@ import {TextField} from '@components/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {PropsWithChildren, ReactNode, useMemo, useState} from 'react'
+import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/footer.scss'
 import {Prompt} from './prompt'
+
+const LabelWrap = styled('div', {
+  marginHorizontal: 6,
+})
+
+export function FooterButton({
+  active,
+  label,
+  icon,
+  onClick,
+}: {
+  active?: boolean
+  label: string
+  icon?: ReactNode
+  onClick: () => void
+}) {
+  return (
+    <Button
+      size="1"
+      variant="ghost"
+      color={active ? 'primary' : 'muted'}
+      onClick={onClick}
+      css={{
+        display: 'flex',
+      }}
+    >
+      {icon}
+      <LabelWrap>{label}</LabelWrap>
+    </Button>
+  )
+}
 
 export default function Footer({children}: {children?: ReactNode}) {
   let client = useQueryClient()
