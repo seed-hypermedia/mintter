@@ -115,7 +115,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
       let mut flags: Vec<String> = std::env::args().skip(1).collect();
 
-      if flags.len() > 0 {
+      if !flags.is_empty() {
         flags = flags[..flags.len() - 1].to_vec();
       }
 
