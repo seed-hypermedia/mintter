@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sort"
 
 	"mintter/backend/core"
@@ -80,7 +81,10 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		version := conn.GetVersion(obj, "main", meLocal)
 		cs := conn.ResolveChangeSet(obj, version)
 
-		acc = srv.getAccount(conn, obj, cs)
+		acc, err = srv.getAccount(conn, obj, cs)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	}); err != nil {
@@ -90,7 +94,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 	return acc, nil
 }
 
-func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.ChangeSet) *accounts.Account {
+func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.ChangeSet) (*accounts.Account, error) {
 	acc := &accounts.Account{
 		Id:      conn.GetObjectOwner(obj).String(),
 		Profile: &accounts.Profile{},
@@ -120,11 +124,12 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.Chan
 			PeerId: did,
 		}
 	}
-	if regs.Err() != nil {
-		panic(regs.Err())
+
+	if err := regs.Err(); err != nil {
+		return nil, fmt.Errorf("failed to find account '%v': %w", obj, err)
 	}
 
-	return acc
+	return acc, nil
 }
 
 // UpdateProfile implements the corresponding gRPC method.
@@ -229,7 +234,12 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 			}
 			v := conn.GetVersion(a, "main", meLocal)
 			cs := conn.ResolveChangeSet(a, v)
-			resp.Accounts = append(resp.Accounts, srv.getAccount(conn, a, cs))
+
+			acc, err := srv.getAccount(conn, a, cs)
+			if err != nil {
+				return err
+			}
+			resp.Accounts = append(resp.Accounts, acc)
 		}
 
 		return nil
