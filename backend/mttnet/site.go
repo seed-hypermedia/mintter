@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ipfs/go-cid"
@@ -383,45 +384,50 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	}
 	defer release()
 
-	{
-		all, err := vcssql.ListAccountDevices(conn)
-		if err != nil {
-			n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
-			return &site.PublishDocumentResponse{}, fmt.Errorf("couldn't list devices")
-		}
-
-		devices, found := all[acc]
-		if !found {
-			return nil, fmt.Errorf("couldn't find devices information of the account %s", acc.String())
-		}
-
-		baseVersionSet := []*p2p.Version{{
-			AccountId: acc.String(),
-			Version:   in.Version,
-		}}
-		n.log.Debug("Adding base document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
-		documentsToSync := []*p2p.Object{{Id: in.DocumentId, VersionSet: baseVersionSet}}
-		for _, doc := range in.ReferencedDocuments {
-			//for _, deviceID := range devices {
-			referencesVersionSet := []*p2p.Version{{
-				AccountId: acc.String(),
-				Version:   doc.Version,
-				//DeviceId:  deviceID.String(),
-			}}
-			n.log.Debug("Adding references document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
-			documentsToSync = append(documentsToSync, &p2p.Object{Id: doc.DocumentId, VersionSet: referencesVersionSet})
-			//}
-		}
-
-		for _, deviceID := range devices {
-			n.log.Debug("Publish Document: Syncyng...", zap.String("DeviceID", deviceID.String()), zap.Int("Documents to sync", len(documentsToSync)))
-			if err = srv.synchronizer.SyncWithPeer(ctx, deviceID, documentsToSync...); err != nil {
-				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", deviceID.String()), zap.Error(err))
-				continue
-			}
-			n.log.Debug("Successfully synced", zap.String("Peer", deviceID.String()))
-		}
+	all, err := vcssql.ListAccountDevices(conn)
+	if err != nil {
+		n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
+		return &site.PublishDocumentResponse{}, fmt.Errorf("couldn't list devices")
 	}
+
+	devices, found := all[acc]
+	if !found {
+		return nil, fmt.Errorf("couldn't find devices information of the account %s", acc.String())
+	}
+
+	baseVersionSet := []*p2p.Version{{
+		AccountId: acc.String(),
+		Version:   in.Version,
+	}}
+	n.log.Debug("Adding base document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
+	documentsToSync := []*p2p.Object{{Id: in.DocumentId, VersionSet: baseVersionSet}}
+	for _, doc := range in.ReferencedDocuments {
+		//for _, deviceID := range devices {
+		referencesVersionSet := []*p2p.Version{{
+			AccountId: acc.String(),
+			Version:   doc.Version,
+			//DeviceId:  deviceID.String(),
+		}}
+		n.log.Debug("Adding references document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
+		documentsToSync = append(documentsToSync, &p2p.Object{Id: doc.DocumentId, VersionSet: referencesVersionSet})
+		//}
+	}
+	var wg sync.WaitGroup
+	for _, deviceID := range devices {
+		wg.Add(1)
+		go func(device cid.Cid) {
+			defer wg.Done()
+			ctx5Secs, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
+			defer cancel()
+			n.log.Debug("Publish Document: Syncyng...", zap.String("DeviceID", device.String()), zap.Int("Documents to sync", len(documentsToSync)))
+			if err = srv.synchronizer.SyncWithPeer(ctx5Secs, device, documentsToSync...); err != nil {
+				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", device.String()), zap.Error(err))
+				return
+			}
+			n.log.Debug("Successfully synced", zap.String("Peer", device.String()))
+		}(deviceID)
+	}
+	wg.Wait()
 
 	docID, err := cid.Decode(in.DocumentId)
 	if err != nil {
