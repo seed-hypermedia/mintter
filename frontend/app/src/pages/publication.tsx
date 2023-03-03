@@ -6,7 +6,7 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
-import {queryKeys} from '@app/hooks'
+import {queryKeys, useDocChanges, useDocCitations} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {PublicationActor} from '@app/publication-machine'
@@ -17,7 +17,7 @@ import {Button} from '@components/button'
 import {ChangesList} from '@components/changes-list'
 import {Citations} from '@components/citations'
 import {Conversations} from '@components/conversations'
-import Footer from '@components/footer'
+import Footer, {FooterButton} from '@components/footer'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {useRoute} from '@components/router'
@@ -35,9 +35,6 @@ import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
-
-const citationsClient = createPromiseClient(ContentGraph, transport)
-const changesClient = createPromiseClient(Changes, transport)
 
 export default function PublicationPage({
   publicationActor,
@@ -58,20 +55,8 @@ export default function PublicationPage({
   let [focusBlock, setFocusBlock] = useState(() => params?.block)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
-  const {data: changes} = useQuery({
-    queryFn: () =>
-      createPromiseClient(Changes, transport).listChanges({
-        objectId: params?.id,
-      }),
-    queryKey: ['PUBLICATION_CHANGES', params?.id],
-    enabled: !!params?.id,
-  })
-
-  const {data: citations} = useQuery({
-    queryFn: () => citationsClient.listCitations({documentId: params?.id}),
-    queryKey: ['PUBLICATION_CITATIONS', params?.id],
-    enabled: !!params?.id,
-  })
+  const {data: changes} = useDocChanges(params?.id)
+  const {data: citations} = useDocCitations(params?.id)
 
   useEffect(() => {
     let isSubscribed = true
@@ -235,9 +220,15 @@ export default function PublicationPage({
                         {activePanel == 'conversations' ? (
                           <Conversations />
                         ) : activePanel == 'changes' ? (
-                          <ChangesList />
+                          <ChangesList
+                            docId={state.context.publication.document.id}
+                            version={state.context.version}
+                          />
                         ) : (
-                          <Citations />
+                          <Citations
+                            docId={state.context.publication.document.id}
+                            version={state.context.version}
+                          />
                         )}
                       </ScrollArea>
                       {/* </section> */}
@@ -245,30 +236,36 @@ export default function PublicationPage({
                   )}
               </Allotment>
               <Footer>
-                <button
+                <FooterButton
+                  active={activePanel == 'changes'}
+                  label={`${changes?.changes?.length} Versions`}
+                  icon={<Icon name="Pencil" />}
                   onClick={() => {
                     panelSend({type: 'PANEL.OPEN', activePanel: 'changes'})
                   }}
-                >
-                  versions: {changes?.changes?.length}
-                </button>
-                <button
+                />
+                <FooterButton
+                  active={activePanel == 'citations'}
+                  label={`${citations?.links?.length} Citations`}
+                  icon={<Icon name="Link" />}
                   onClick={() => {
                     panelSend({type: 'PANEL.OPEN', activePanel: 'citations'})
                   }}
-                >
-                  citations: {citations?.links?.length}
-                </button>
-                <button
+                />
+                <FooterButton
+                  active={
+                    activePanel == 'conversations' &&
+                    resizablePanelState.context.show
+                  }
+                  label={`Conversations`}
+                  icon={<Icon name="MessageBubble" />}
                   onClick={() => {
                     panelSend({
                       type: 'PANEL.OPEN',
                       activePanel: 'conversations',
                     })
                   }}
-                >
-                  conversations
-                </button>
+                />
               </Footer>
             </div>
           </BlockHighLighter>

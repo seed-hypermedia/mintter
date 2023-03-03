@@ -1,6 +1,8 @@
-import {Transport} from '@bufbuild/connect-web'
+import {createPromiseClient, Transport} from '@bufbuild/connect-web'
 import {Timestamp} from '@bufbuild/protobuf'
 import {
+  Changes,
+  ContentGraph,
   Document,
   getAccount,
   getDraft,
@@ -10,6 +12,7 @@ import {
   listPublications,
   MttLink,
   Publication,
+  transport,
 } from '@mintter/shared'
 import {QueryClient, useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
@@ -37,6 +40,8 @@ export const queryKeys = {
   GET_SITES_LIST: 'GET_SITES_LIST',
   GET_PUBLICATION_CONVERSATIONS: 'GET_PUBLICATION_CONVERSATIONS',
   GET_WEB_PUBLICATIONS: 'GET_WEB_PUBLICATIONS',
+  PUBLICATION_CHANGES: 'PUBLICATION_CHANGES',
+  PUBLICATION_CITATIONS: 'PUBLICATION_CITATIONS',
 } as const
 
 type QueryOptions = {
@@ -240,6 +245,31 @@ export function useDiscussion({documentId, visible}: UseDiscussionParams) {
     ...queryResult,
     data,
   }
+}
+
+const changesClient = createPromiseClient(Changes, transport)
+
+export function useDocChanges(docId?: string) {
+  return useQuery({
+    queryFn: () =>
+      changesClient.listChanges({
+        objectId: docId,
+      }),
+    queryKey: [queryKeys.PUBLICATION_CHANGES, docId],
+    enabled: !!docId,
+  })
+}
+
+const citationsClient = createPromiseClient(ContentGraph, transport)
+export type CitationLink = Awaited<
+  ReturnType<typeof citationsClient.listCitations>
+>['links'][number]
+export function useDocCitations(docId?: string) {
+  return useQuery({
+    queryFn: () => citationsClient.listCitations({documentId: docId}),
+    queryKey: [queryKeys.PUBLICATION_CITATIONS, docId],
+    enabled: !!docId,
+  })
 }
 
 function createDedupeLinks(entry: Array<MttLink>): Array<MttLink> {
