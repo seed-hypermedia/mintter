@@ -272,7 +272,10 @@ func GetWebPublicationRecordByVersion(conn *sqlite.Conn, docID cid.Cid, version 
 	}
 	record, err := getWebPublicationRecordWithVersion(conn, docIDBytes, version)
 	if err != nil || record.WebPublicationRecordsDocumentVersion == "" {
-		return PublicationRecord{}, fmt.Errorf("Could not get web publication record: %w", err)
+		if err != nil {
+			return PublicationRecord{}, fmt.Errorf("Could not get web publication record by ID[%s] + Version[%s]: %w", docID.String(), version, err)
+		}
+		return PublicationRecord{}, fmt.Errorf("Not found any record with ID[%s] and Version[%s]", docID.String(), version)
 	}
 
 	documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
@@ -300,7 +303,10 @@ func GetWebPublicationRecordsByID(conn *sqlite.Conn, docID cid.Cid) ([]Publicati
 	}
 	records, err := getWebPublicationRecordByIDOnly(conn, docIDBytes)
 	if err != nil || len(records) == 0 {
-		return ret, fmt.Errorf("Could not get web publication record: %w", err)
+		if err != nil {
+			return ret, fmt.Errorf("Could not get web publication record By ID[%s]: %w", docID.String(), err)
+		}
+		return ret, fmt.Errorf("Could not find publication record By ID[%s]", docID.String())
 	}
 	for _, record := range records {
 		documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
@@ -324,7 +330,10 @@ func GetWebPublicationRecordsByID(conn *sqlite.Conn, docID cid.Cid) ([]Publicati
 func GetWebPublicationRecordByPath(conn *sqlite.Conn, path string) (PublicationRecord, error) {
 	record, err := getWebPublicationRecordByPath(conn, path)
 	if err != nil || record.WebPublicationRecordsDocumentVersion == "" {
-		return PublicationRecord{}, fmt.Errorf("Could not get web publication record: %w", err)
+		if err != nil {
+			return PublicationRecord{}, fmt.Errorf("Could not get web publication record by Path [%s]: %w", path, err)
+		}
+		return PublicationRecord{}, fmt.Errorf("Path [%s] not found", path)
 	}
 
 	documentCID := cid.NewCidV1(uint64(record.IPFSBlocksCodec), record.IPFSBlocksMultihash)
