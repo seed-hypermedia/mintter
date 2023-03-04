@@ -396,21 +396,16 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	}
 
 	baseVersionSet := []*p2p.Version{{
-		AccountId: acc.String(),
-		Version:   in.Version,
+		Version: in.Version,
 	}}
 	n.log.Debug("Adding base document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
 	documentsToSync := []*p2p.Object{{Id: in.DocumentId, VersionSet: baseVersionSet}}
 	for _, doc := range in.ReferencedDocuments {
-		//for _, deviceID := range devices {
 		referencesVersionSet := []*p2p.Version{{
-			AccountId: acc.String(),
-			Version:   doc.Version,
-			//DeviceId:  deviceID.String(),
+			Version: doc.Version,
 		}}
-		n.log.Debug("Adding references document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
+		n.log.Debug("Adding references document to sync", zap.String("AccountId", acc.String()), zap.String("Version", doc.Version))
 		documentsToSync = append(documentsToSync, &p2p.Object{Id: doc.DocumentId, VersionSet: referencesVersionSet})
-		//}
 	}
 	var wg sync.WaitGroup
 	for _, deviceID := range devices {
@@ -419,7 +414,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 			defer wg.Done()
 			ctx5Secs, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
 			defer cancel()
-			n.log.Debug("Publish Document: Syncyng...", zap.String("DeviceID", device.String()), zap.Int("Documents to sync", len(documentsToSync)))
+			n.log.Debug("Publish Document: Syncing...", zap.String("DeviceID", device.String()), zap.Int("Documents to sync", len(documentsToSync)))
 			if err = srv.synchronizer.SyncWithPeer(ctx5Secs, device, documentsToSync...); err != nil {
 				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", device.String()), zap.Error(err))
 				return
