@@ -509,9 +509,7 @@ func (source *object) equal(target *p2p.Object) bool {
 	var equalVersions = 0
 	for i, srcVersionSet := range source.VersionSet {
 		for _, targetVersionSet := range target.VersionSet {
-			if targetVersionSet.AccountId == srcVersionSet.AccountId &&
-				//targetVersionSet.DeviceId == srcVersionSet.DeviceId &&
-				targetVersionSet.Version == srcVersionSet.Version {
+			if targetVersionSet.Version == srcVersionSet.Version {
 				equalVersions++
 				break
 			}
