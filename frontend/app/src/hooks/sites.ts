@@ -12,27 +12,23 @@ import {
   Member,
   Member_Role,
 } from '@mintter/shared'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from './index'
 
 const webPub = getWebPublishingClient()
-
+const mttUrlRegEx="^"+MINTTER_LINK_PREFIX.replace('/', '\/')+"([a-z0-9]+)\/([a-z0-9]+)\/([a-zA-Z0-9]+)$"
 function blockExtractReferencedDocs(
   block: Block,
 ): Partial<ReferencedDocument>[] {
-  const docIds: string[] = []
+  const docIds: {}[] = []
   block.annotations.forEach((annotation) => {
-    if (annotation.type === 'embed') {
-      docIds.push(annotation.attributes.url)
-    }
-    if (annotation.type === 'link') {
-      docIds.push(annotation.attributes.url)
+    if (annotation.type === 'embed' || annotation.type === 'link') {
+      const match = annotation.attributes.url.match(mttUrlRegEx)?? ['','',''];
+      docIds.push({'documentId':match[1],'version':match[2]});
     }
   })
-  return docIds.map((docId) => ({
-    documentId: docId,
-    version: '',
-  }))
+  return docIds
 }
 
 function extractReferencedDocs(doc: Document) {
@@ -196,10 +192,10 @@ export function useSitePublish() {
       const referencedDocs = extractReferencedDocs(document)
       const site = getWebSiteClient(hostname)
       site.publishDocument({
-        documentId,
-        path,
+        documentId: documentId,
+        path: path,
         referencedDocuments: referencedDocs,
-        version,
+        version: version,
       })
     },
     {
