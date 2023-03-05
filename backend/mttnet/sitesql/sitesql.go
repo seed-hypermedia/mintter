@@ -123,7 +123,7 @@ func GetSite(conn *sqlite.Conn, hostname string) (SiteInfo, error) {
 		if err != nil {
 			return SiteInfo{}, fmt.Errorf("Could not get site info from provided hostname [%s]: %w", hostname, err)
 		}
-		return SiteInfo{}, fmt.Errorf("Found a site matching provided hostname [%s], but was empty", hostname)
+		return SiteInfo{}, fmt.Errorf("Site [%s] not found. Please add it first.", hostname)
 	}
 	accountCID := cid.NewCidV1(core.CodecAccountKey, site.AccountsMultihash)
 	return SiteInfo{

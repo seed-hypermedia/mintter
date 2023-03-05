@@ -16,12 +16,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type siteInfo struct {
-	role      int
-	addresses []string
-	accID     string
-}
-
 // AddSite checks if the provided site hostname is a valid Mintter site and if so, add it to the database.
 func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*documents.SiteConfig, error) {
 	ret := documents.SiteConfig{
@@ -51,7 +45,7 @@ func (api *Server) AddSite(ctx context.Context, in *documents.AddSiteRequest) (*
 	}
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return &ret, fmt.Errorf("Add site: Site [%s] not reachable. Status code: %d", in.Hostname, res.StatusCode)
+		return &ret, fmt.Errorf("Add site: Site info url [%s] not working. Status code: %d", requestURL, res.StatusCode)
 	}
 	var response map[string]interface{}
 	err = json.NewDecoder(res.Body).Decode(&response)
