@@ -44,7 +44,7 @@ on a public server (or locally for testing it out).
 For that purpose, there is a simple docker-compose file that should bundle 
 the necessary modules:
 ```bash
-docker compose up -d
+wget https://minttersite.s3.amazonaws.com/docker-compose.yml && docker compose up -d
 ```
 This command will spin up the new site on http://127.0.0.1:3000. If you want 
 to customize the site and deployment, generate a `.env` file and place
@@ -55,6 +55,11 @@ MTT_SITE_OWNER_ACCOUNT_ID=bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak7
 MTT_SITE_WORKSPACE=~/.mtt-site # Directory where all the site data will be stored.
 MTT_SITE_BACKEND_P2P_PORT=56000 # The port where the local backend will talk to the p2p network. (To get the documents)
 MTT_SITE_BACKEND_GRPCWEB_PORT=56001 # The port through which the local backend and the gateway communicate each other.
+```
+However if you want a frictionless configuration you can customize the site easily
+running the following command
+```bash
+bash <(wget -qO- https://minttersite.s3.amazonaws.com/site_deployment_simple.sh)
 ```
 All domains different than `http://127.0.0.1` are ssl terminated, so make sure 
 ports 80 and 443 are accessible from the outside.

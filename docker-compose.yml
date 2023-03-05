@@ -13,7 +13,7 @@ services:
 
   nextjs:
     container_name: nextjs
-    image: nextjs-docker:latest
+    image: mintter/sitegw:latest
     depends_on:
       - minttersite
     network_mode: "host"
@@ -26,7 +26,7 @@ services:
       - "GW_GRPC_ENDPOINT=http://127.0.0.1:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
 
   minttersite:
-    image: mintterd:latest
+    image: mintter/mintterd:latest
     restart: unless-stopped
     container_name: minttersite
     ports:
