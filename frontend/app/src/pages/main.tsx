@@ -15,7 +15,6 @@ var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
-var Footer = lazy(() => import('@components/footer'))
 
 export default function Main() {
   const [isSettings] = useRoute('/settings')

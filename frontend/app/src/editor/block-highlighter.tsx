@@ -24,7 +24,7 @@ export function BlockHighLighter({children}: {children: ReactNode}) {
                 width: '200vw',
                 height: 'calc(100% + 1rem)',
                 transform: 'translateX(-50%)',
-                background: '$primary-component-bg-hover',
+                background: 'var(--highlight-surface1)',
                 // background: 'red',
                 zIndex: -1,
                 pointerEvents: 'none',
@@ -32,9 +32,14 @@ export function BlockHighLighter({children}: {children: ReactNode}) {
               [`& [data-highlight="${id}"]:hover:before`]: {
                 display: 'none',
               },
-              [`& a[data-highlight="${id}"], & q[data-highlight="${id}"]`]: {
+              [`& a[data-highlight="${id}"]`]: {
                 // [`& [data-highlight="${id}"]`]: {
-                background: '$primary-component-bg-hover',
+                background: 'var(--highlight-surface2)',
+              },
+              [`& q[data-highlight="${id}"] > span`]: {
+                // [`& [data-highlight="${id}"]`]: {
+                background: 'var(--highlight-surface3)',
+                borderBottomColor: 'var(--highlight-surface4)',
               },
             }
           : {
