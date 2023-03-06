@@ -111,7 +111,7 @@ function Paragraph({
     if (parentBlock) {
       const [node, ancestorPath] = parentBlock
 
-      let initialPath = ancestorPath;
+      let initialPath = ancestorPath
 
       while (initialPath.length !== 2) {
         initialPath = initialPath.slice(0, -2)
@@ -163,13 +163,13 @@ function Paragraph({
       //     type: 'DRAG.OVER.BOTTOM',
       //     currentX: e.clientX,
       //     nodes: groupStatements,
-      //     nestedElements: groupElements, 
+      //     nestedElements: groupElements,
       //   })
       //   return;
       // }
-      
+
       const domNode = ReactEditor.toDOMNode(editor, node)
-      
+
       // console.log(domNode.offsetLeft, domNode.getBoundingClientRect())
 
       dragService?.send({

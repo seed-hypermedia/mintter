@@ -17,15 +17,18 @@ import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from './index'
 
 const webPub = getWebPublishingClient()
-const mttUrlRegEx="^"+MINTTER_LINK_PREFIX.replace('/', '\/')+"([a-z0-9]+)\/([a-z0-9]+)\/([a-zA-Z0-9]+)$"
+const mttUrlRegEx =
+  '^' +
+  MINTTER_LINK_PREFIX.replace('/', '/') +
+  '([a-z0-9]+)/([a-z0-9]+)/([a-zA-Z0-9]+)$'
 function blockExtractReferencedDocs(
   block: Block,
 ): Partial<ReferencedDocument>[] {
   const docIds: {}[] = []
   block.annotations.forEach((annotation) => {
     if (annotation.type === 'embed' || annotation.type === 'link') {
-      const match = annotation.attributes.url.match(mttUrlRegEx)?? ['','',''];
-      docIds.push({'documentId':match[1],'version':match[2]});
+      const match = annotation.attributes.url.match(mttUrlRegEx) ?? ['', '', '']
+      docIds.push({documentId: match[1], version: match[2]})
     }
   })
   return docIds
