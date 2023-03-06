@@ -1,5 +1,6 @@
 import {useDrag} from '@app/drag-context'
 import {useMouse} from '@app/mouse-context'
+import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {FlowContent} from '@mintter/shared'
 import React from 'react'
 import {RenderElementProps} from 'slate-react'
@@ -41,6 +42,9 @@ export const ElementDrag = ({
     >
       <BlockTools block={element as FlowContent} />
       {children}
+      <span contentEditable={false}>
+        <ConversationBlockBubble block={element as FlowContent} />
+      </span>
     </li>
   )
 }

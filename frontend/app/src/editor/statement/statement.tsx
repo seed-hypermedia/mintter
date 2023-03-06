@@ -1,7 +1,6 @@
-import {Blocktools, BlockTools} from '@app/editor/blocktools'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
-import {ConversationBlockBubble} from '@components/conversation-block-bubble'
+
 import {
   createId,
   FlowContent,
@@ -248,9 +247,6 @@ function Statement({
   return (
     <ElementDrag element={element} attributes={attributes}>
       {children}
-      <span contentEditable={false}>
-        <ConversationBlockBubble block={element as StatementType} />
-      </span>
     </ElementDrag>
   )
 }

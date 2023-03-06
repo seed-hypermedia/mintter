@@ -26,7 +26,7 @@ import type {EditorPlugin} from '../types'
 import {MARK_UNDERLINE} from '../underline'
 import {findPath, lowerPoint, resetFlowContent, useBlockFlash} from '../utils'
 import {useBlockConversations} from '@app/editor/comments/conversations-context'
-import {ConversationBlockBubble} from '@components/conversation-block-bubble'
+
 import {BlockTools} from '@app/editor/blocktools'
 import {ElementDrag} from '../drag-section'
 
@@ -260,9 +260,6 @@ function Code({
           </select>
         </div>
       ) : null}
-      <span contentEditable={false}>
-        <ConversationBlockBubble block={element as CodeType} />
-      </span>
     </ElementDrag>
   )
 }

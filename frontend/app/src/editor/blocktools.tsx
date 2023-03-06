@@ -1,7 +1,7 @@
 import {useDrag} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {ElementDropdown} from '@app/editor/dropdown'
 import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ELEMENT_STATEMENT} from '@app/editor/statement'
@@ -13,11 +13,9 @@ import {
   useMouse,
 } from '@app/mouse-context'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
-import {Text} from '@components/text'
 import {
   blockquote,
   code,
@@ -31,9 +29,9 @@ import {
   video,
 } from '@mintter/shared'
 import {useSelector} from '@xstate/react'
-import {Fragment, MouseEvent, ReactNode, useMemo, useState} from 'react'
+import {MouseEvent, useMemo} from 'react'
 import toast from 'react-hot-toast'
-import {Editor, Node, NodeEntry, Transforms} from 'slate'
+import {Editor, NodeEntry} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
 import './styles/blocktools.scss'
 

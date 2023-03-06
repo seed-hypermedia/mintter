@@ -24,7 +24,7 @@ const mttUrlRegEx =
 function blockExtractReferencedDocs(
   block: Block,
 ): Partial<ReferencedDocument>[] {
-  const docIds: {}[] = []
+  const docIds: Array<any> = []
   block.annotations.forEach((annotation) => {
     if (annotation.type === 'embed' || annotation.type === 'link') {
       const match = annotation.attributes.url.match(mttUrlRegEx) ?? ['', '', '']
