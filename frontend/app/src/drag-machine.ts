@@ -170,7 +170,8 @@ export const createDragMachine = (editor: Editor) => {
 
             const onDragStart = (e: any) => {
               e.dataTransfer?.setData('text', '')
-              e.dataTransfer.effectAllowed = 'move'
+              e.dataTransfer.effectAllowed = 'none'
+              e.dataTransfer.dropEffect = 'none'
             }
 
             const onDragEnd = (e: any) => {
@@ -182,10 +183,8 @@ export const createDragMachine = (editor: Editor) => {
             }
 
             element.setAttribute('draggable', 'true')
-            element.ondragstart = (event) => {
-              onDragStart(event)
-            }
-            element.ondragend = onDragEnd
+            element.addEventListener('dragstart', onDragStart)
+            element.addEventListener('dragend', onDragEnd)
             return element
           },
         }),

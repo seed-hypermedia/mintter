@@ -1,9 +1,8 @@
 import {useDrag} from '@app/drag-context'
 import {useMouse} from '@app/mouse-context'
-import {FlowContent, Group, isFlowContent, isGroupContent} from '@mintter/shared'
+import {FlowContent} from '@mintter/shared'
 import React from 'react'
-import { Editor, Path, Node } from 'slate'
-import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
+import {RenderElementProps} from 'slate-react'
 import {BlockTools} from './blocktools'
 import {useBlockProps} from './editor-node-props'
 import {useBlockFlash} from './utils'
@@ -17,7 +16,6 @@ export const ElementDrag = ({
 }: RenderElementProps) => {
   let dragService = useDrag()
   let mouseService = useMouse()
-  const editor = useSlate();
 
   const onDrop = (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault()

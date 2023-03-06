@@ -98,7 +98,7 @@ function Paragraph({
 
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    // console.log(e.clientX, e.clientY)
+    e.stopPropagation()
     // const domNode = ReactEditor.toDOMNode(editor, element)
     const path = ReactEditor.findPath(editor, element)
 
@@ -178,6 +178,7 @@ function Paragraph({
         element: domNode as HTMLLIElement,
       })
     }
+    return false
   }
 
   if (mode == EditorMode.Embed) {

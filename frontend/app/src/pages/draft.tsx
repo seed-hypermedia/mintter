@@ -35,10 +35,14 @@ type DraftPageProps = {
 export default function DraftPage({draftActor, editor}: DraftPageProps) {
   const [state, send] = useActor(draftActor)
   let dragService = useInterpret(() => createDragMachine(editor))
-  let mouseService = useInterpret(() => mouseMachine, {actions: { getMousePosition: (context, event) => {
-    dragService.send({type: 'MOUSE.MOVE', position: event.positionX});
-  }}})
-  
+  let mouseService = useInterpret(() => mouseMachine, {
+    actions: {
+      getMousePosition: (context, event) => {
+        dragService.send({type: 'MOUSE.MOVE', position: event.positionX})
+      },
+    },
+  })
+
   // @ts-ignore
   window.mouseService = mouseService
 
@@ -56,7 +60,11 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         data-testid="draft-wrapper"
         className="page-wrapper"
         onMouseMove={(event) => {
-          mouseService.send({type: 'MOUSE.MOVE', position: event.clientY, positionX: event.clientX})
+          mouseService.send({
+            type: 'MOUSE.MOVE',
+            position: event.clientY,
+            positionX: event.clientX,
+          })
           // console.log('mouse moving')
           draftActor.send('EDITING.STOP')
         }}
