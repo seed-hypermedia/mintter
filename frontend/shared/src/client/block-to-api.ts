@@ -10,11 +10,12 @@ export function blockToApi(
   childrenType?: string,
   start?: number,
 ): Block {
+  console.log('🚀 ~ file: block-to-api.ts:13 ~ slateBlock:', slateBlock)
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
   let leaves = flattenLeaves(slateBlock.children[0].children)
 
   // eslint-disable-next-line
-  const {type, id, children, ...attributes} = slateBlock
+  const {type, id, children, revision, ...attributes} = slateBlock
 
   // const out = new Block(slateBlock.id, slateBlock.type);
   const out: Block = {
@@ -24,6 +25,15 @@ export function blockToApi(
     // @ts-ignore
     attributes,
     text: '',
+  }
+
+  if (revision) {
+    out.revision = revision
+  } else {
+    console.log(
+      '🚀 ~ file: block-to-api.ts:33 ~ NO REVISION ON SLATE BLOCK',
+      slateBlock,
+    )
   }
 
   if (childrenType) {
