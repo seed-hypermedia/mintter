@@ -23,13 +23,13 @@ function getHost() {
   }
 
   if (process.env.NODE_ENV == 'development') {
-    return 'http://127.0.0.1:55001'
+    return 'http://127.0.0.1:56001'
   }
 
   return 'https://gateway.mintter.com'
 }
 
-const IS_DEV = !!import.meta.env?.DEV
+const IS_DEV = process.env.NODE_ENV == 'development'
 const IS_CLIENT = !!global.window
 const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
 
