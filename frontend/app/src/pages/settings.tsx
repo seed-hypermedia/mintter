@@ -8,6 +8,7 @@ import {useAuthor} from '@app/hooks'
 import {
   useAddSite,
   useInviteMember,
+  useRemoveMember,
   useRemoveSite,
   useSiteInfo,
   useSiteList,
@@ -37,7 +38,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {styled} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {FormEvent, useEffect, useRef, useState} from 'react'
+import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
@@ -121,7 +122,7 @@ export default function Settings({
           value="sites"
           data-tauri-drag-region
         >
-          <SitesSettings />
+          <SitesSettings auth={auth} />
         </TabsPrimitive.Content>
         <TabsPrimitive.Content
           className="settings-tab-content tab-content"
@@ -353,34 +354,77 @@ function getNameOfRole(role: Member_Role): string {
   if (role === Member_Role.EDITOR) return 'Editor'
   return 'Unauthorized'
 }
-function SiteMemberRow({member}: {member: localApi.Member}) {
-  const {data: account} = useAuthor(member.accountId, {})
 
+function SiteMemberRow({
+  member,
+  hostname,
+  isOwner,
+}: {
+  member: localApi.Member
+  hostname: string
+  isOwner: boolean
+}) {
+  const {data: account} = useAuthor(member.accountId)
+  const remove = useRemoveMember(hostname)
   return (
     <pre>
       {account?.profile?.alias || member.accountId} -{' '}
       {getNameOfRole(member.role)}
+      {isOwner ? (
+        <Button
+          variant="outlined"
+          color="danger"
+          size="1"
+          onClick={() => {
+            remove.mutate(member.accountId)
+          }}
+        >
+          Remove
+        </Button>
+      ) : null}
     </pre>
   )
 }
-function SiteMembers({hostname}: {hostname: string}) {
+function SiteMembers({
+  hostname,
+  accountId,
+}: {
+  hostname: string
+  accountId: string
+}) {
   const {content, open} = useInviteDialog(hostname)
+
   const {data: members} = useSiteMembers(hostname)
+  const isOwner = useMemo(
+    () =>
+      !!members?.find(
+        (member) =>
+          member.accountId === accountId && member.role === Member_Role.OWNER,
+      ),
+    [members, accountId],
+  )
   return (
     <SettingsSection title="Members">
       {members?.map((member) => (
-        <SiteMemberRow key={member.accountId} member={member} />
+        <SiteMemberRow
+          key={member.accountId}
+          member={member}
+          isOwner={isOwner}
+          hostname={hostname}
+        />
       ))}
       {content}
-      <Button
-        type="button"
-        size="2"
-        data-testid="submit"
-        onClick={open}
-        css={{alignSelf: 'flex-start'}}
-      >
-        Invite Editor
-      </Button>
+      {isOwner ? (
+        <Button
+          type="button"
+          size="2"
+          data-testid="submit"
+          onClick={open}
+          css={{alignSelf: 'flex-start'}}
+        >
+          Invite Editor
+        </Button>
+      ) : null}
     </SettingsSection>
   )
 }
@@ -458,9 +502,11 @@ function SiteInfoForm({
 function SiteSettings({
   hostname,
   onDone,
+  accountId,
 }: {
   hostname: string
   onDone: () => void
+  accountId: string
 }) {
   return (
     <>
@@ -470,7 +516,7 @@ function SiteSettings({
       </SettingsHeader>
 
       <SiteInfoSection hostname={hostname} />
-      <SiteMembers hostname={hostname} />
+      <SiteMembers hostname={hostname} accountId={accountId} />
       <SiteAdmin hostname={hostname} onDone={onDone} />
     </>
   )
@@ -566,11 +612,18 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
 }
 
 const NewSitePage = Symbol('NewSitePage')
-function SitesSettings() {
+function SitesSettings({
+  auth,
+}: {
+  auth: InterpreterFrom<ReturnType<typeof createAuthService>>
+}) {
+  let account = useSelector(auth, (state) => state.context.account)
+  let [state] = useActor(auth)
+  const accountId = state.matches('loggedIn') ? account?.id : undefined
   const [activeSitePage, setActiveSitePage] = useState<
     string | typeof NewSitePage | null
   >(null)
-
+  if (!accountId) return null
   if (activeSitePage === NewSitePage) {
     return <NewSite onDone={(s: string | null) => setActiveSitePage(s)} />
   }
@@ -578,6 +631,7 @@ function SitesSettings() {
     return (
       <SiteSettings
         hostname={activeSitePage}
+        accountId={accountId}
         onDone={() => setActiveSitePage(null)}
       />
     )
