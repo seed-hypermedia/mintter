@@ -1,4 +1,4 @@
-import {Profile, updateProfile as defaultUpdateProfile} from '@mintter/shared'
+import {Profile} from '@mintter/shared'
 import {TextField} from '@components/text-field'
 import {useMutation} from '@tanstack/react-query'
 import {FormEvent} from 'react'
@@ -13,6 +13,7 @@ import {
   OnboardingStepPropsType,
   OnboardingStepTitle,
 } from './common'
+import {accountsClient} from '@app/api-clients'
 
 type ProfileInformationDataType = {
   alias: string
@@ -21,7 +22,7 @@ type ProfileInformationDataType = {
 
 export function ProfileInformation({
   next,
-  updateProfile = defaultUpdateProfile,
+  updateProfile = accountsClient.updateProfile,
 }: OnboardingStepPropsType) {
   const {mutate} = useMutation({
     mutationFn: updateProfile,

@@ -3,6 +3,7 @@ import {queryKeys} from '@app/hooks'
 import {QueryClient} from '@tanstack/react-query'
 import {ActorRefFrom, assign, createMachine, spawn} from 'xstate'
 import {createContactMachine} from './contact-machine'
+import {accountsClient} from '@app/api-clients'
 
 export type AccountWithRef = Account & {
   ref: ActorRefFrom<ReturnType<typeof createContactMachine>>
@@ -99,7 +100,7 @@ export function createContactListMachine({client}: {client: QueryClient}) {
       services: {
         fetchList: () =>
           client.fetchQuery([queryKeys.GET_CONTACTS_LIST], () =>
-            listAccounts(),
+            accountsClient.listAccounts({}),
           ),
       },
     },

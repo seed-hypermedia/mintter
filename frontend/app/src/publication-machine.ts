@@ -1,3 +1,9 @@
+import {
+  accountsClient,
+  daemonClient,
+  draftsClient,
+  publicationsClient,
+} from '@app/api-clients'
 import {EditorDocument} from '@app/draft-machine'
 import {queryKeys} from '@app/hooks'
 import {
@@ -7,7 +13,6 @@ import {
   Document,
   getAccount,
   getInfo,
-  getPublication,
   group,
   paragraph,
   Publication,
@@ -169,25 +174,33 @@ export function createPublicationMachine({
     },
     {
       services: {
-        createDraft: (context, event) => {
-          return createDraft(context.documentId)
+        createDraft: (context) => {
+          return draftsClient.createDraft({
+            existingDocumentId: context.documentId,
+          })
         },
         fetchAuthor: (context) => {
           let author = context.publication?.document?.author || ''
           return client.fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
-            getAccount(author),
+            accountsClient.getAccount({id: author}),
           )
         },
         fetchPublicationData: (context) => (sendBack) => {
           Promise.all([
             client.fetchQuery(
               [queryKeys.GET_PUBLICATION, context.documentId, context.version],
-              () => getPublication(context.documentId, context.version),
+              () =>
+                publicationsClient.getPublication({
+                  documentId: context.documentId,
+                  version: context.version,
+                }),
               {
                 staleTime: Infinity,
               },
             ),
-            client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => getInfo()),
+            client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () =>
+              daemonClient.getInfo({}),
+            ),
           ])
             .then(([publication, info]) => {
               if (publication.document?.children.length) {

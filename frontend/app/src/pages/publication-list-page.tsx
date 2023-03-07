@@ -1,3 +1,4 @@
+import {publicationsClient} from '@app/api-clients'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
@@ -17,7 +18,7 @@ import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
-import {deletePublication, formattedDate, Publication} from '@mintter/shared'
+import {formattedDate, Publication} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -84,7 +85,9 @@ export function PublicationListItem({
     {
       services: {
         performDelete: (context) => {
-          return deletePublication(context.documentId)
+          return publicationsClient.deletePublication({
+            documentId: context.documentId,
+          })
         },
       },
       actions: {

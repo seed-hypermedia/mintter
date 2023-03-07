@@ -1,7 +1,3 @@
-import {
-  generateMnemonic as defaultGenerateMnemonic,
-  registerAccount,
-} from '@mintter/shared'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
@@ -27,6 +23,7 @@ import {mnemonicToSeed, getDefaultWordlist, wordlists} from 'bip39'
 // You must wrap a tiny-secp256k1 compatible implementation
 // const bip32 = BIP32Factory(ecc)
 import {Buffer} from 'buffer'
+import {daemonClient} from '@app/api-clients'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -43,9 +40,7 @@ export function SecurityPack({
   const mnemonics = useQuery({
     queryKey: ['onboarding', 'mnemonics'],
     queryFn: async () => {
-      console.log('hi')
-      const data = await generateMnemonic()
-      console.log('hah', data?.mnemonic)
+      const data = await daemonClient.genMnemonic({mnemonicsLength: 12})
 
       mnemonicToSeed(data.mnemonic.join(' '))
         .then((seed) => {
@@ -75,7 +70,7 @@ export function SecurityPack({
       try {
         // words are here.
 
-        await registerAccount(words)
+        await daemonClient.register({mnemonic: words})
         next()
       } catch (error) {
         if (error instanceof Error) {

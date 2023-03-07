@@ -1,4 +1,4 @@
-import {getInfo, transport} from '@mintter/shared'
+import {getInfo} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {themeMachine, ThemeProvider} from '@app/theme'
 import {
@@ -24,6 +24,7 @@ import './styles/root.scss'
 import './styles/toaster.scss'
 import {appQueryClient} from './query-client'
 import {listen} from '@tauri-apps/api/event'
+import {daemonClient} from '@app/api-clients'
 
 import('./updater')
 
@@ -69,7 +70,7 @@ function App() {
   let {data, status} = useQuery({
     queryKey: [queryKeys.GET_ACCOUNT_INFO],
     queryFn: () =>
-      getInfo().catch((err) => {
+      daemonClient.getInfo({}).catch((err) => {
         if (
           err.message === '[failed_precondition] account is not initialized'
         ) {

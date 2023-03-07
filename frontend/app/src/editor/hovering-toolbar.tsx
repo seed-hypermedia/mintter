@@ -1,7 +1,7 @@
+import {commentsClient} from '@app/api-clients'
 import {OutsideClick} from '@app/editor/outside-click'
 import {toolbarMachine} from '@app/editor/toolbar-machine'
 import {queryKeys} from '@app/hooks'
-import {createPromiseClient} from '@bufbuild/connect-web'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -10,7 +10,6 @@ import {Tooltip} from '@components/tooltip'
 import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
 import {
   blockToApi,
-  Comments,
   image,
   isCode,
   isFlowContent,
@@ -19,7 +18,6 @@ import {
   Selector,
   statement,
   text,
-  transport,
 } from '@mintter/shared'
 import {css} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
@@ -358,7 +356,7 @@ export function PublicationToolbar() {
       statement([paragraph([text(commentValue)])]),
     )
 
-    createPromiseClient(Comments, transport)
+    commentsClient
       .createConversation({
         documentId: params?.id,
         initialComment,

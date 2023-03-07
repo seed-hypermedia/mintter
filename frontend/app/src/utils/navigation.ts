@@ -1,3 +1,4 @@
+import {draftsClient} from '@app/api-clients'
 import {createDraft} from '@mintter/shared'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import {toast} from 'react-hot-toast'
@@ -7,7 +8,8 @@ import {openWindow} from './open-window'
 export function useNavigation() {
   const [, setLocation] = useLocation()
   function openNewDraft(newWindow = true) {
-    createDraft()
+    draftsClient
+      .createDraft({})
       .then((doc) => {
         let path = `/d/${doc.id}/new`
         tauriInvoke('emit_all', {

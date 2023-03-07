@@ -1,4 +1,4 @@
-import {connect as apiConnect, ConnectionStatus} from '@mintter/shared'
+import {ConnectionStatus} from '@mintter/shared'
 import {
   AccountWithRef,
   createContactListMachine,
@@ -19,6 +19,7 @@ import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/footer.scss'
 import {Prompt} from './prompt'
+import {networkingClient} from '@app/api-clients'
 
 const LabelWrap = styled('div', {
   marginHorizontal: 6,
@@ -103,20 +104,19 @@ function Contacts({
 
 type ContactsPromptProps = {
   refetch: () => void
-  connect?: typeof apiConnect
+  connect?: typeof networkingClient.connect
 }
 
 export function ContactsPrompt({
   refetch,
-  connect = apiConnect,
+  connect = networkingClient.connect,
 }: ContactsPromptProps) {
   const [peer, setPeer] = useState('')
 
   async function handleConnect() {
     if (peer) {
       try {
-        // const connAttempt = await connect(peer.split(','))
-        await toast.promise(connect(peer.trim().split(',')), {
+        await toast.promise(connect({addrs: peer.trim().split(',')}), {
           loading: 'Connecting to peer...',
           success: 'Connection Succeeded!',
           error: 'Connection Error',

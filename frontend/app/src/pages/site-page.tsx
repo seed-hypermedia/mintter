@@ -1,6 +1,7 @@
+import {publicationsClient} from '@app/api-clients'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {usePublication, useAuthor} from '@app/hooks'
+import {usePublication, useAuthor, queryKeys} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
 import {useNavigation} from '@app/utils/navigation'
 import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
@@ -11,6 +12,7 @@ import {Text} from '@components/text'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
 import {WebPublicationRecord, formattedDate} from '@mintter/shared'
 import {ScrollArea} from '@radix-ui/react-scroll-area'
+import {useQuery} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
@@ -83,11 +85,15 @@ function WebPublicationListItem({
     hostname,
     webPub,
   )
-  const {data: publication} = usePublication(
-    webPub.documentId,
-    webPub.version,
-    {},
-  )
+  const {data: publication} = useQuery({
+    queryKey: [queryKeys.GET_PUBLICATION, webPub.documentId, webPub.version],
+    enabled: !!webPub.documentId,
+    queryFn: () =>
+      publicationsClient.getPublication({
+        documentId: webPub.documentId,
+        version: webPub.version,
+      }),
+  })
   const {data: author} = useAuthor(publication?.document?.author)
   return (
     <li className="list-item">

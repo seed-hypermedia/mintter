@@ -1,3 +1,4 @@
+import {publicationsClient} from '@app/api-clients'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
@@ -9,7 +10,6 @@ import {
   blockNodeToSlate,
   Embed as EmbedType,
   FlowContent,
-  getPublication,
   isEmbed,
   Publication,
 } from '@mintter/shared'
@@ -244,7 +244,8 @@ function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
           let [docId, version] = getIdsfromUrl(context.url)
           return client.fetchQuery<Publication>(
             [queryKeys.GET_PUBLICATION, docId, version],
-            () => getPublication(docId, version),
+            () =>
+              publicationsClient.getPublication({documentId: docId, version}),
           )
         },
         getEmbedBlock: (context) => {

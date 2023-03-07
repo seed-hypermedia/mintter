@@ -15,7 +15,7 @@ export function AccessURLRow({
   enableLink?: boolean
 }) {
   const [isClipboardCopied, setIsClipboardCopied] = useState(false)
-
+  console.log('🚀 ~ file: url.tsx:17 ~ url:', url)
   return (
     <URLRow>
       <URLButton

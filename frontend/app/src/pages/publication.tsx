@@ -1,17 +1,16 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {Blocktools} from '@app/editor/blocktools'
+import {CitationsProvider} from '@app/editor/comments/citations-context'
 import {ConversationsProvider} from '@app/editor/comments/conversations-context'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
-import {queryKeys, useDocChanges, useDocCitations} from '@app/hooks'
+import {useDocChanges, useDocCitations} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {PublicationActor} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
-import {createPromiseClient} from '@bufbuild/connect-web'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {ChangesList} from '@components/changes-list'
@@ -23,8 +22,6 @@ import {Placeholder} from '@components/placeholder-box'
 import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Tooltip} from '@components/tooltip'
-import {Changes, ContentGraph, listCitations, transport} from '@mintter/shared'
-import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
@@ -133,54 +130,57 @@ export default function PublicationPage({
         }}
         publication={state.context.publication}
       >
-        <MouseProvider value={mouseService}>
-          <BlockHighLighter>
-            <div className="page-wrapper publication-wrapper">
-              <Allotment
-                defaultSizes={[100]}
-                onChange={(values) => panelSend({type: 'PANEL.RESIZE', values})}
-              >
-                <Allotment.Pane>
-                  <section
-                    className="publication-section"
-                    data-testid="publication-section"
-                    onMouseMove={(event) =>
-                      mouseService.send({
-                        type: 'MOUSE.MOVE',
-                        position: event.clientY,
-                      })
-                    }
-                    onMouseLeave={() => {
-                      mouseService.send('DISABLE.CHANGE')
-                    }}
-                  >
-                    <ErrorBoundary
-                      fallback={<div>error</div>}
-                      onReset={() => window.location.reload()}
+        <CitationsProvider documentId={params.id}>
+          <MouseProvider value={mouseService}>
+            <BlockHighLighter>
+              <div className="page-wrapper publication-wrapper">
+                <Allotment
+                  defaultSizes={[100]}
+                  onChange={(values) =>
+                    panelSend({type: 'PANEL.RESIZE', values})
+                  }
+                >
+                  <Allotment.Pane>
+                    <section
+                      className="publication-section"
+                      data-testid="publication-section"
+                      onMouseMove={(event) =>
+                        mouseService.send({
+                          type: 'MOUSE.MOVE',
+                          positionX: event.clientX,
+                          position: event.clientY,
+                        })
+                      }
+                      onMouseLeave={() => {
+                        mouseService.send('DISABLE.CHANGE')
+                      }}
                     >
-                      <FileProvider value={state.context.publication}>
-                        <ScrollArea
-                          ref={scrollWrapperRef}
-                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                        >
-                          <div
-                            className={`discussion-toggle ${
-                              resizablePanelState.context.show
-                                ? 'visible'
-                                : undefined
-                            }`}
-                            style={
-                              resizablePanelState.context.show
-                                ? {
-                                    top: 100,
-                                    left: `${resizablePanelState.context.left}px`,
-                                    right: 'auto',
-                                    transform: 'translateX(-50%)',
-                                  }
-                                : undefined
-                            }
+                      <ErrorBoundary
+                        fallback={<div>error</div>}
+                        onReset={() => window.location.reload()}
+                      >
+                        <FileProvider value={state.context.publication}>
+                          <ScrollArea
+                            ref={scrollWrapperRef}
+                            onScroll={() => mouseService.send('DISABLE.SCROLL')}
                           >
-                            <Tooltip content="Toggle Activity">
+                            <div
+                              className={`discussion-toggle ${
+                                resizablePanelState.context.show
+                                  ? 'visible'
+                                  : undefined
+                              }`}
+                              style={
+                                resizablePanelState.context.show
+                                  ? {
+                                      top: 100,
+                                      left: `${resizablePanelState.context.left}px`,
+                                      right: 'auto',
+                                      transform: 'translateX(-50%)',
+                                    }
+                                  : undefined
+                              }
+                            >
                               <button
                                 className="discussion-button"
                                 onClick={() => {
@@ -190,86 +190,86 @@ export default function PublicationPage({
                               >
                                 <Icon name="MessageBubble" />
                               </button>
-                            </Tooltip>
-                          </div>
-                          {state.context.publication?.document?.content && (
-                            <Editor
-                              editor={editor}
-                              mode={EditorMode.Publication}
-                              value={
-                                state.context.publication?.document.content
-                              }
-                              onChange={() => {
-                                mouseService.send('DISABLE.CHANGE')
-                                // noop
-                              }}
+                            </div>
+                            {state.context.publication?.document?.content && (
+                              <Editor
+                                editor={editor}
+                                mode={EditorMode.Publication}
+                                value={
+                                  state.context.publication?.document.content
+                                }
+                                onChange={() => {
+                                  mouseService.send('DISABLE.CHANGE')
+                                  // noop
+                                }}
+                              />
+                            )}
+                          </ScrollArea>
+                        </FileProvider>
+                      </ErrorBoundary>
+                    </section>
+                  </Allotment.Pane>
+                  {resizablePanelState.context.show &&
+                    !!state.context.publication && (
+                      <Allotment.Pane preferredSize="35%">
+                        {/* <section className="discussion-section"> */}
+                        <ScrollArea
+                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                        >
+                          {activePanel == 'conversations' ? (
+                            <Conversations />
+                          ) : activePanel == 'changes' ? (
+                            <ChangesList
+                              docId={state.context.publication.document.id}
+                              version={state.context.version}
+                            />
+                          ) : (
+                            <Citations
+                              docId={state.context.publication.document.id}
+                              version={state.context.version}
                             />
                           )}
                         </ScrollArea>
-                      </FileProvider>
-                    </ErrorBoundary>
-                  </section>
-                </Allotment.Pane>
-                {resizablePanelState.context.show &&
-                  !!state.context.publication && (
-                    <Allotment.Pane preferredSize="35%">
-                      {/* <section className="discussion-section"> */}
-                      <ScrollArea
-                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                      >
-                        {activePanel == 'conversations' ? (
-                          <Conversations />
-                        ) : activePanel == 'changes' ? (
-                          <ChangesList
-                            docId={state.context.publication.document.id}
-                            version={state.context.version}
-                          />
-                        ) : (
-                          <Citations
-                            docId={state.context.publication.document.id}
-                            version={state.context.version}
-                          />
-                        )}
-                      </ScrollArea>
-                      {/* </section> */}
-                    </Allotment.Pane>
-                  )}
-              </Allotment>
-              <Footer>
-                <FooterButton
-                  active={activePanel == 'changes'}
-                  label={`${changes?.changes?.length} Versions`}
-                  icon={<Icon name="Pencil" />}
-                  onClick={() => {
-                    panelSend({type: 'PANEL.OPEN', activePanel: 'changes'})
-                  }}
-                />
-                <FooterButton
-                  active={activePanel == 'citations'}
-                  label={`${citations?.links?.length} Citations`}
-                  icon={<Icon name="Link" />}
-                  onClick={() => {
-                    panelSend({type: 'PANEL.OPEN', activePanel: 'citations'})
-                  }}
-                />
-                <FooterButton
-                  active={
-                    activePanel == 'conversations' &&
-                    resizablePanelState.context.show
-                  }
-                  label={`Conversations`}
-                  icon={<Icon name="MessageBubble" />}
-                  onClick={() => {
-                    panelSend({
-                      type: 'PANEL.OPEN',
-                      activePanel: 'conversations',
-                    })
-                  }}
-                />
-              </Footer>
-            </div>
-          </BlockHighLighter>
-        </MouseProvider>
+                        {/* </section> */}
+                      </Allotment.Pane>
+                    )}
+                </Allotment>
+                <Footer>
+                  <FooterButton
+                    active={activePanel == 'changes'}
+                    label={`${changes?.changes?.length} Versions`}
+                    icon={<Icon name="Pencil" />}
+                    onClick={() => {
+                      panelSend({type: 'PANEL.OPEN', activePanel: 'changes'})
+                    }}
+                  />
+                  <FooterButton
+                    active={activePanel == 'citations'}
+                    label={`${citations?.links?.length} Citations`}
+                    icon={<Icon name="Link" />}
+                    onClick={() => {
+                      panelSend({type: 'PANEL.OPEN', activePanel: 'citations'})
+                    }}
+                  />
+                  <FooterButton
+                    active={
+                      activePanel == 'conversations' &&
+                      resizablePanelState.context.show
+                    }
+                    label={`Conversations`}
+                    icon={<Icon name="MessageBubble" />}
+                    onClick={() => {
+                      panelSend({
+                        type: 'PANEL.OPEN',
+                        activePanel: 'conversations',
+                      })
+                    }}
+                  />
+                </Footer>
+              </div>
+            </BlockHighLighter>
+          </MouseProvider>
+        </CitationsProvider>
       </ConversationsProvider>
     )
   }

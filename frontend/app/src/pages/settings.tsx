@@ -1,3 +1,4 @@
+import {accountsClient, daemonClient} from '@app/api-clients'
 import {createAuthService} from '@app/auth-machine'
 import {Box} from '@app/components/box'
 import {Button} from '@app/components/button'
@@ -30,8 +31,7 @@ import {Prompt, StyledOverlay} from '@components/prompt'
 import {Separator} from '@components/separator'
 import {Input} from '@components/text-field'
 import {AccessURLRow} from '@components/url'
-import * as localApi from '@mintter/shared'
-import {Member_Role, SiteConfig, SiteInfo} from '@mintter/shared'
+import {Member_Role, Profile, SiteConfig, SiteInfo} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {styled} from '@stitches/react'
@@ -43,10 +43,11 @@ import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
 
 export default function Settings({
-  updateProfile = localApi.updateProfile,
+  updateProfile = accountsClient.updateProfile,
 }: {
-  updateProfile?: typeof localApi.updateProfile
+  updateProfile?: typeof accountsClient.updateProfile
 }) {
+  console.log('UPDATE PROFILE', updateProfile)
   const client = useQueryClient()
   const auth = useInterpret(() => createAuthService(client, updateProfile))
   return (
@@ -99,7 +100,7 @@ export default function Settings({
           className="settings-tab-content tab-content"
           value="profile"
         >
-          <ProfileForm service={auth} />
+          <ProfileForm service={auth} updateProfile={updateProfile} />
         </TabsPrimitive.Content>
         <TabsPrimitive.Content
           className="settings-tab-content tab-content"
@@ -136,16 +137,18 @@ export default function Settings({
 
 type SettingsTabProps = {
   service: InterpreterFrom<ReturnType<typeof createAuthService>>
+  updateProfile: typeof accountsClient.updateProfile
 }
 
-export function ProfileForm({service}: SettingsTabProps) {
+export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   let [state, send] = useActor(service)
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     let formData = new FormData(e.currentTarget)
     // @ts-ignore
-    let newProfile: localApi.Profile = Object.fromEntries(formData.entries())
+    let newProfile: Profile = Object.fromEntries(formData.entries())
     e.preventDefault()
+    updateProfile?.(newProfile)
     send({type: 'ACCOUNT.UPDATE.PROFILE', profile: newProfile})
   }
 
@@ -285,27 +288,15 @@ export function AccountInfo({service}: SettingsTabProps) {
 }
 
 function AppSettings() {
-  // let activityService = useActivity()
-
   async function onReloadSync() {
+    await daemonClient.forceSync({})
     toast.success('reload sync successful!')
   }
 
   return (
     <div className="settings-tab-content">
-      <Button
-        color="danger"
-        size="1"
-        variant="outlined"
-        onClick={(e) => {
-          e.preventDefault()
-          // activityService?.send('RESET')
-        }}
-      >
-        Reset Activity
-      </Button>
       <Button size="1" variant="outlined" onClick={onReloadSync}>
-        Reload Database localApi.updateProfile
+        Reload Database
       </Button>
     </div>
   )
@@ -363,7 +354,7 @@ function getNameOfRole(role: Member_Role): string {
   return 'Unauthorized'
 }
 function SiteMemberRow({member}: {member: localApi.Member}) {
-  const {data: account} = useAuthor(member.accountId)
+  const {data: account} = useAuthor(member.accountId, {})
 
   return (
     <pre>
@@ -932,31 +923,6 @@ function ChangeProfileButton({profile}: {profile?: NostrUserProfile}) {
     </>
   )
 }
-function NostrProfile() {
-  const profile = useMyNostrProfile()
-  return (
-    <SettingsSection title="Public Profile">
-      <Text css={{fontWeight: 'bold'}}>Display Name</Text>
-      <Text>{profile.data?.display_name}</Text>
-      <Text css={{fontWeight: 'bold'}}>About</Text>
-      <Text>{profile.data?.about}</Text>
-      <ChangeProfileButton profile={profile.data} />
-    </SettingsSection>
-  )
-}
-
-function NostrSettings() {
-  return (
-    <>
-      <SettingsHeader>
-        <h2>Nostr</h2>
-      </SettingsHeader>
-      <NostrProfile />
-      <NostrInfo />
-      <NostrRelays />
-    </>
-  )
-}
 
 function EmptySiteList() {
   return <div>no sites yet</div>
@@ -1003,6 +969,32 @@ function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
           }}
         />
       ))}
+    </>
+  )
+}
+
+function NostrProfile() {
+  const profile = useMyNostrProfile()
+  return (
+    <SettingsSection title="Public Profile">
+      <Text css={{fontWeight: 'bold'}}>Display Name</Text>
+      <Text>{profile.data?.display_name}</Text>
+      <Text css={{fontWeight: 'bold'}}>About</Text>
+      <Text>{profile.data?.about}</Text>
+      <ChangeProfileButton profile={profile.data} />
+    </SettingsSection>
+  )
+}
+
+function NostrSettings() {
+  return (
+    <>
+      <SettingsHeader>
+        <h2>Nostr</h2>
+      </SettingsHeader>
+      <NostrProfile />
+      <NostrInfo />
+      <NostrRelays />
     </>
   )
 }

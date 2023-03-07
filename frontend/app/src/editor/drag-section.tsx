@@ -1,9 +1,12 @@
 import {useDrag} from '@app/drag-context'
+import {useCitationsForBlock} from '@app/editor/comments/citations-context'
+import {useConversations} from '@app/editor/comments/conversations-context'
+import {EditorMode} from '@app/editor/plugin-utils'
 import {useMouse} from '@app/mouse-context'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {FlowContent} from '@mintter/shared'
 import React from 'react'
-import {RenderElementProps} from 'slate-react'
+import {RenderElementProps, useSlate} from 'slate-react'
 import {BlockTools} from './blocktools'
 import {useBlockProps} from './editor-node-props'
 import {useBlockFlash} from './utils'
@@ -17,6 +20,7 @@ export const ElementDrag = ({
 }: RenderElementProps) => {
   let dragService = useDrag()
   let mouseService = useMouse()
+  let editor = useSlate()
 
   const onDrop = (e: React.DragEvent<HTMLLIElement>) => {
     e.preventDefault()
@@ -44,7 +48,17 @@ export const ElementDrag = ({
       {children}
       <span contentEditable={false}>
         <ConversationBlockBubble block={element as FlowContent} />
+        {editor.mode == EditorMode.Publication ? (
+          <CitationNumber block={element as FlowContent} />
+        ) : null}
       </span>
     </li>
   )
+}
+
+function CitationNumber({block}: {block: FlowContent}) {
+  let cites = useCitationsForBlock(block.id)
+  console.log('🚀 ~ file: drag-section.tsx:62 ~ CitationNumber ~ cites:', cites)
+
+  return cites ? <span>{cites.length}</span> : null
 }

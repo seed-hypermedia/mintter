@@ -3,7 +3,7 @@ import {EditorMode} from '@app/editor/plugin-utils'
 import {queryKeys} from '@app/hooks'
 import {useMouse} from '@app/mouse-context'
 import type {Embed, Link as LinkType} from '@mintter/shared'
-import {embed, isLink, link, text, getPublication} from '@mintter/shared'
+import {embed, isLink, link, text} from '@mintter/shared'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {Box} from '@components/box'
@@ -36,6 +36,7 @@ import {
 import type {EditorPlugin} from '../types'
 import {findPath, getEditorBlock, isCollapsed} from '../utils'
 import {openPublication} from '@app/utils/navigation'
+import {publicationsClient} from '@app/api-clients'
 
 export const ELEMENT_LINK = 'link'
 
@@ -238,7 +239,7 @@ function MintterDocumentLink({element, attributes}: LinkProps) {
   let at = findPath(element)
   let [docId, version] = getIdsfromUrl(element.url)
   let {data} = useQuery([queryKeys.GET_PUBLICATION, docId, version], () =>
-    getPublication(docId, version),
+    publicationsClient.getPublication({documentId: docId, version}),
   )
   useEffect(() => {
     if (data) {

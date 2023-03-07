@@ -252,7 +252,7 @@ let defaultAccount = {
 }
 
 export function createAccount(entry: Partial<Account>): Account {
-  return deepmerge(defaultAccount, entry)
+  return new Account(deepmerge(defaultAccount, entry))
 }
 
 ;(function mockTauriIpc() {
