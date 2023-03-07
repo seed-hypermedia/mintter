@@ -156,6 +156,27 @@ export function useInviteMember(
   )
 }
 
+export function useRemoveMember(
+  hostname: string,
+  opts?: UseMutationOptions<void, unknown, string>,
+) {
+  return useMutation(
+    async (accountId: string) => {
+      await getWebSiteClient(hostname).deleteMember({
+        accountId,
+      })
+      return
+    },
+    {
+      ...opts,
+      onSuccess: (response, input, ctx) => {
+        appInvalidateQueries([queryKeys.GET_SITE_MEMBERS, hostname])
+        opts?.onSuccess?.(response, input, ctx)
+      },
+    },
+  )
+}
+
 export function useRemoveSite(hostname: string, opts: UseMutationOptions) {
   return useMutation(
     async () => {
