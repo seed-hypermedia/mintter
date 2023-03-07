@@ -11,16 +11,12 @@ import {PublicationPlaceholder} from '../publication-placeholder'
 import {SiteHead} from '../site-head'
 import PublicationPage from '../ssr-publication-page'
 
-//mintter://bafy2bzacea5q2cz5f6bgs542fcxdqyshchdzlbwfkqbsxuqpryjkknenzjiu6/baeaxdiheaiql33gmuvnlonf7snzq7fkab2kfle2bkavubcvdoisncxlcuivgljq
-let pubId = 'bafy2bzacea5q2cz5f6bgs542fcxdqyshchdzlbwfkqbsxuqpryjkknenzjiu6'
-let version = 'baeaxdiheaiql33gmuvnlonf7snzq7fkab2kfle2bkavubcvdoisncxlcuivgljq'
-
-// let pubId =
-//   process.env.MINTTER_HOME_PUBID ||
-//   'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
-// let version =
-//   process.env.MINTTER_HOME_VERSION ||
-//   'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
+let pubId =
+  process.env.MINTTER_HOME_PUBID ||
+  'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
+let version =
+  process.env.MINTTER_HOME_VERSION ||
+  'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
 
 function DefaultHomePage() {
   let {data} = useQuery({
