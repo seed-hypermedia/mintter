@@ -77,13 +77,6 @@ async function getHomePublication(): Promise<Publication | null> {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  if (process.env.GW_FORCE_CLIENT) {
-    return {
-      props: {
-        publication: null,
-      },
-    }
-  }
   const publication = await getHomePublication()
   if (!publication) {
     return {
