@@ -1,3 +1,4 @@
+import {changesClient, commentsClient} from '@app/api-clients'
 import {useAccount} from '@app/auth-context'
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAuthor} from '@app/hooks'
@@ -9,7 +10,6 @@ import {
   useNostrProfile,
   useNostrReplies,
 } from '@app/utils/nostr'
-import {createPromiseClient} from '@bufbuild/connect-web'
 import {Timestamp} from '@bufbuild/protobuf'
 import {Avatar, getRandomColor} from '@components/avatar'
 import {Box} from '@components/box'
@@ -28,7 +28,6 @@ import {
   Selector,
   statement,
   text,
-  transport,
 } from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
@@ -217,7 +216,7 @@ function MintterReplyForm({
     e.preventDefault()
     let comment = draft.replace(/\s/g, ' ')
 
-    createPromiseClient(Comments, transport)
+    commentsClient
       .addComment({
         conversationId,
         comment: blockToApi(statement([paragraph([text(comment)])])),
@@ -299,7 +298,7 @@ function CommentItem({
 }) {
   let changeData = useQuery({
     queryFn: () =>
-      createPromiseClient(Changes, transport).getChangeInfo({
+      changesClient.getChangeInfo({
         id: comment.revision,
       }),
     queryKey: ['ChangeInfo', comment.revision],
@@ -308,7 +307,7 @@ function CommentItem({
   let author = useAuthor(changeData.data?.author)
 
   function deleteComment() {
-    createPromiseClient(Comments, transport)
+    commentsClient
       .deleteComment({
         conversationId,
         blockId: comment.id,

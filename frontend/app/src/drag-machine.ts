@@ -1,3 +1,4 @@
+import {EditorMode} from '@app/editor/plugin-utils'
 import {
   FlowContent,
   Group,
@@ -182,10 +183,12 @@ export const createDragMachine = (editor: Editor) => {
               e.target.ondragover = null
             }
 
-            element.setAttribute('draggable', 'true')
-            element.addEventListener('dragstart', onDragStart)
-            element.addEventListener('dragend', onDragEnd)
-            return element
+            if (editor.mode == EditorMode.Draft) {
+              element.setAttribute('draggable', 'true')
+              element.addEventListener('dragstart', onDragStart)
+              element.addEventListener('dragend', onDragEnd)
+              return element
+            }
           },
         }),
         setTopPosition: assign({

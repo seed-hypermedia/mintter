@@ -1,4 +1,4 @@
-import {GenMnemonicResponse, updateProfile} from '@mintter/shared'
+import {GenMnemonicResponse} from '@mintter/shared'
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
@@ -9,10 +9,11 @@ import {Text, textStyles} from '@components/text'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
 import {FormEvent, PropsWithChildren} from 'react'
+import {accountsClient} from '@app/api-clients'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void
-  updateProfile?: typeof updateProfile
+  updateProfile?: typeof accountsClient.updateProfile
   generateMnemonic?: () => Promise<GenMnemonicResponse>
 }
 

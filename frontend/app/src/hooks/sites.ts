@@ -1,26 +1,28 @@
-import {appInvalidateQueries, appQueryClient} from '@app/query-client'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {appInvalidateQueries} from '@app/query-client'
 import {
-  getWebPublishingClient,
-  getWebSiteClient,
-  SiteConfig,
-  SiteInfo,
-  Document,
   Block,
-  Publication,
-  getPublication,
-  ReferencedDocument,
+  Document,
   Member,
   Member_Role,
+  Publication,
+  ReferencedDocument,
+  SiteConfig,
+  SiteInfo,
 } from '@mintter/shared'
-import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
+import {
+  getWebSiteClient,
+  publicationsClient,
+  webPublishingClient,
+} from '@app/api-clients'
 import {queryKeys} from './index'
 
-const webPub = getWebPublishingClient()
 const mttUrlRegEx =
   '^' +
   MINTTER_LINK_PREFIX.replace('/', '/') +
   '([a-z0-9]+)/([a-z0-9]+)/([a-zA-Z0-9]+)$'
+
 function blockExtractReferencedDocs(
   block: Block,
 ): Partial<ReferencedDocument>[] {
@@ -43,7 +45,9 @@ function extractReferencedDocs(doc: Document) {
 }
 
 async function getDocWebPublications(documentId: string) {
-  const result = await webPub.listWebPublicationRecords({documentId})
+  const result = await webPublishingClient.listWebPublicationRecords({
+    documentId,
+  })
   return result.publications
 }
 
@@ -61,7 +65,7 @@ export function useSiteList() {
   return useQuery<SiteConfig[]>({
     queryKey: [queryKeys.GET_SITES],
     queryFn: async () => {
-      const result = await webPub.listSites({})
+      const result = await webPublishingClient.listSites({})
       return result.sites
     },
   })
@@ -77,7 +81,7 @@ export function useAddSite(
 ) {
   return useMutation(
     async (input: {hostname: string; inviteToken?: string}) => {
-      await webPub.addSite(input)
+      await webPublishingClient.addSite(input)
       return null
     },
     {
@@ -155,7 +159,7 @@ export function useInviteMember(
 export function useRemoveSite(hostname: string, opts: UseMutationOptions) {
   return useMutation(
     async () => {
-      await webPub.removeSite({hostname})
+      await webPublishingClient.removeSite({hostname})
     },
     {
       ...opts,
@@ -189,7 +193,9 @@ export function useSitePublish() {
       documentId: string
       path: string
     }) => {
-      const {version, document} = await getPublication(documentId)
+      const {version, document} = await publicationsClient.getPublication({
+        documentId,
+      })
       if (!document)
         throw new Error('Cannot publish document that is not available locally')
       const referencedDocs = extractReferencedDocs(document)

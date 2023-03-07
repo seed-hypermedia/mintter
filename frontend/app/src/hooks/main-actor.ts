@@ -14,6 +14,7 @@ import {Editor} from 'slate'
 import {useLocation, useRoute} from 'wouter'
 import {interpret} from 'xstate'
 import {useDocRepublish} from './sites'
+import {draftsClient} from '@app/api-clients'
 
 export type MainActor =
   | {type: 'publication'; actor: PublicationActor}
@@ -78,7 +79,9 @@ export function useMainActor(props: MainActorOptions = {}) {
             : (context) => {
                 console.log('===== PUBLISHING: PUBLISH SERVICE === ', context)
 
-                return publishDraft(context.documentId)
+                return draftsClient.publishDraft({
+                  documentId: context.documentId,
+                })
               },
         },
       })

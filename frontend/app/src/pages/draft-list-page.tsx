@@ -1,3 +1,4 @@
+import {draftsClient} from '@app/api-clients'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
@@ -66,7 +67,7 @@ export function DraftListItem({draft}: {draft: Document}) {
     {
       services: {
         performDelete: (context) => {
-          return deleteDraft(context.documentId)
+          return draftsClient.deleteDraft({documentId: context.documentId})
         },
       },
       actions: {

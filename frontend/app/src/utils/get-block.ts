@@ -1,9 +1,5 @@
-import {
-  getPublication,
-  LinkNode,
-  Publication,
-  blockNodeToSlate,
-} from '@mintter/shared'
+import {publicationsClient} from '@app/api-clients'
+import {LinkNode, Publication, blockNodeToSlate} from '@mintter/shared'
 import {FlowContent} from '@mintter/shared'
 import {visit} from 'unist-util-visit'
 
@@ -16,7 +12,9 @@ export async function getBlock(
   entry?: LinkNode,
 ): Promise<GetBlockResult | undefined> {
   if (!entry) return
-  let publication = await getPublication(entry.documentId)
+  let publication = await publicationsClient.getPublication({
+    documentId: entry.documentId,
+  })
 
   let block: FlowContent
 

@@ -1,28 +1,32 @@
-import {
-  Account,
-  getAccount,
-  getLocalWebSiteClient,
-  getPublication,
-  Publication,
-} from '@mintter/shared'
+import {Account, Publication} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {GetServerSideProps} from 'next'
-import {transport} from '../client'
+import {
+  accountsClient,
+  localWebsiteClient,
+  publicationsClient,
+  transport,
+} from '../client'
 import {PublicationPlaceholder} from '../publication-placeholder'
 import {SiteHead} from '../site-head'
 import PublicationPage from '../ssr-publication-page'
 
-let pubId =
-  process.env.MINTTER_HOME_PUBID ||
-  'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
-let version =
-  process.env.MINTTER_HOME_VERSION ||
-  'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
+//mintter://bafy2bzacea5q2cz5f6bgs542fcxdqyshchdzlbwfkqbsxuqpryjkknenzjiu6/baeaxdiheaiql33gmuvnlonf7snzq7fkab2kfle2bkavubcvdoisncxlcuivgljq
+let pubId = 'bafy2bzacea5q2cz5f6bgs542fcxdqyshchdzlbwfkqbsxuqpryjkknenzjiu6'
+let version = 'baeaxdiheaiql33gmuvnlonf7snzq7fkab2kfle2bkavubcvdoisncxlcuivgljq'
+
+// let pubId =
+//   process.env.MINTTER_HOME_PUBID ||
+//   'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
+// let version =
+//   process.env.MINTTER_HOME_VERSION ||
+//   'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
 
 function DefaultHomePage() {
   let {data} = useQuery({
     queryKey: ['home publication', pubId, version],
-    queryFn: () => getPublication(pubId, version, transport),
+    queryFn: () =>
+      publicationClient.getPublication({documentId: pubId, version}),
   })
   if (data) {
     return <PublicationPage publication={data} metadata={false} />
@@ -64,11 +68,11 @@ async function getHomePublication(): Promise<Publication | null> {
     // Temp Mintter home screen document:
 
     // https://www.mintter.com/p/bafy2bzacebeq7l4bp4fzmox47fj62bfpuzi6lizx5j3fj7jyws7fztnizu7ts/baeaxdiheaiqpjri6ulmrcvehzszraaallp2xpfb5zoxe7j7tulwph46wewle5gi
-    return await getPublication(pubId, version, transport)
+    return await publicationsClient.getPublication({documentId: pubId, version})
   }
-  const site = getLocalWebSiteClient(transport)
+
   try {
-    const pathRecord = await site.getPath({path: '/'})
+    const pathRecord = await localWebsiteClient.getPath({path: '/'})
     const publication = pathRecord?.publication
     return publication || null
   } catch (e) {
@@ -91,7 +95,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
   }
   const author = publication.document?.author
-    ? await getAccount(publication.document?.author, transport)
+    ? await accountsClient.getAccount({id: publication.document?.author})
     : null
   return {
     props: {

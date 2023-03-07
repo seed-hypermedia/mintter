@@ -1,12 +1,26 @@
-import {CitationLink, useDocCitations, usePublication} from '@app/hooks'
+import {publicationsClient} from '@app/api-clients'
+import {CitationLink, queryKeys, useDocCitations} from '@app/hooks'
 import {openPublication} from '@app/utils/navigation'
+import {useQuery} from '@tanstack/react-query'
 import {Button} from './button'
 import {PanelTitle} from './panel'
 import {Text} from './text'
 
 function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   if (!link.source?.documentId) throw 'Invalid citation'
-  const pub = usePublication(link.source?.documentId, link.source?.version, {})
+  const pub = useQuery({
+    queryKey: [
+      queryKeys.GET_PUBLICATION,
+      link.source.documentId,
+      link.source.version,
+    ],
+    enabled: !!link.source?.documentId,
+    queryFn: () =>
+      publicationsClient.getPublication({
+        documentId: link.source?.documentId,
+        version: link.source?.version,
+      }),
+  })
   return (
     <Button
       key={`${link.source?.documentId}${link.source?.version}${link.source?.blockId}`}
@@ -43,7 +57,6 @@ export function Citations({
   version?: string
 }) {
   const {data: citations} = useDocCitations(docId)
-  console.log('===== ', docId, citations)
   if (!docId) return null
   return (
     <>

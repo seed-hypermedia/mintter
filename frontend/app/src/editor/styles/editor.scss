@@ -81,12 +81,13 @@ li::marker {
   z-index: 100;
 }
 
-[data-block-id] {
-  -moz-user-select: none;
-  user-select: none;
-  -khtml-user-drag: element;
-  -webkit-user-drag: element;
-}
+// this CSS enables to drag from every part of the block, but prevents text selection. maybe we need to understand better what's the UX we need.
+// .mode-draft [data-block-id] {
+//   -moz-user-select: none;
+//   user-select: none;
+//   -khtml-user-drag: element;
+//   -webkit-user-drag: element;
+// }
 
 .editor {
   --size-300: 0.75em;

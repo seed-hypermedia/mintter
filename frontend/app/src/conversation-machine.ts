@@ -1,15 +1,9 @@
-import {
-  Account,
-  getAccount,
-  getPublication,
-  Publication,
-  blockNodeToSlate,
-  MttLink,
-} from '@mintter/shared'
+import {Account, Publication, blockNodeToSlate, MttLink} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/publication-machine'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine} from 'xstate'
+import {accountsClient, publicationsClient} from '@app/api-clients'
 
 type CreateConversationMachineProps = {
   client: QueryClient
@@ -96,26 +90,24 @@ export function createDiscussionMachine({
               context.link.source?.version,
             ],
             queryFn: () =>
-              getPublication(
-                // this should not be undefined ever. but not sure how to force this.
-                // @ts-ignore
-                context.link.source?.documentId,
-                context.link.source?.version,
-              ),
+              publicationsClient.getPublication({
+                documentId: context.link.source?.documentId,
+                version: context.link.source?.version,
+              }),
             staleTime: Infinity,
           }),
         fetchAuthor: async (context) => {
           let documentAuthor = context.source?.document.author || ''
           let userAccount = await client.fetchQuery({
             queryKey: [queryKeys.GET_ACCOUNT, ''],
-            queryFn: () => getAccount(''),
+            queryFn: () => accountsClient.getAccount({id: ''}),
           })
           if (documentAuthor == userAccount.id) {
             return userAccount
           } else {
             let authorAccount = await client.fetchQuery({
               queryKey: [queryKeys.GET_ACCOUNT, documentAuthor],
-              queryFn: () => getAccount(documentAuthor),
+              queryFn: () => accountsClient.getAccount({id: documentAuthor}),
             })
             return authorAccount
           }

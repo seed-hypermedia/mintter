@@ -1,7 +1,8 @@
-import {Account, ConnectionStatus, getPeerInfo, PeerInfo} from '@mintter/shared'
+import {Account, ConnectionStatus, PeerInfo} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine, sendParent} from 'xstate'
+import {accountsClient, networkingClient} from '@app/api-clients'
 
 type ContactContext = {
   account: Account
@@ -134,7 +135,7 @@ export function createContactMachine({
           return Promise.all(
             Object.values(context.account.devices).map((device) =>
               client.fetchQuery([queryKeys.GET_PEER_INFO, device.peerId], () =>
-                getPeerInfo(device),
+                networkingClient.getPeerInfo({peerId: device.peerId}),
               ),
             ),
           )

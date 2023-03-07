@@ -1,22 +1,16 @@
-import {createPromiseClient, Transport} from '@bufbuild/connect-web'
-import {Timestamp} from '@bufbuild/protobuf'
 import {
-  Changes,
-  ContentGraph,
-  Document,
-  getAccount,
-  getDraft,
-  getPublication,
-  listCitations,
-  listDrafts,
-  listPublications,
-  MttLink,
-  Publication,
-  transport,
-} from '@mintter/shared'
+  accountsClient,
+  changesClient,
+  draftsClient,
+  publicationsClient,
+} from '@app/api-clients'
+import {Transport} from '@bufbuild/connect-web'
+import {Timestamp} from '@bufbuild/protobuf'
+import {Document, Publication} from '@mintter/shared'
 import {QueryClient, useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect, useMemo} from 'react'
+import {contentGraphClient} from './../api-clients'
 
 export * from './types'
 
@@ -50,7 +44,7 @@ type QueryOptions = {
 export function usePublicationList({rpc}: QueryOptions = {}) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
-    queryFn: () => listPublications(rpc),
+    queryFn: () => publicationsClient.listPublications({}),
     onError: (err) => {
       console.log(`usePublicationList error: ${err}`)
     },
@@ -102,7 +96,7 @@ export function useDraftList({
 }: UseDraftListParams = {}) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
-    queryFn: () => listDrafts(pageSize, pageToken, options?.rpc),
+    queryFn: () => draftsClient.listDrafts({pageSize, pageToken}),
     onError: (err) => {
       console.log(`useDraftList error: ${err}`)
     },
@@ -114,14 +108,6 @@ export function useDraftList({
         sortDocuments(a.updateTime, b.updateTime),
       ) || []
     )
-
-    function sort(a: Document, b: Document) {
-      let dateA = a.updateTime ? a.updateTime.toDate() : 0
-      let dateB = b.updateTime ? b.updateTime.toDate() : 1
-
-      // @ts-ignore
-      return dateB - dateA
-    }
   }, [queryResult.data])
 
   useEffect(() => {
@@ -171,7 +157,7 @@ export function useAuthor(id = '', opts: QueryOptions = {}) {
   return useQuery({
     enabled: !!id,
     queryKey: [queryKeys.GET_ACCOUNT, id],
-    queryFn: () => getAccount(id, opts.rpc),
+    queryFn: () => accountsClient.getAccount({id}),
     onError: (err) => {
       console.log(`useAuthor error: ${err}`)
     },
@@ -179,75 +165,24 @@ export function useAuthor(id = '', opts: QueryOptions = {}) {
 }
 
 export function prefetchPublication(client: QueryClient, pub: Publication) {
-  client.prefetchQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, pub.document?.id, pub.version],
-    queryFn: () => getPublication(pub.document?.id, pub.version),
-  })
+  if (pub.document?.id) {
+    client.prefetchQuery({
+      queryKey: [queryKeys.GET_PUBLICATION, pub.document.id, pub.version],
+      queryFn: () =>
+        publicationsClient.getPublication({
+          documentId: pub.document?.id,
+          version: pub.version,
+        }),
+    })
+  }
 }
 
 export function prefetchDraft(client: QueryClient, draft: Document) {
   client.prefetchQuery({
     queryKey: [queryKeys.GET_DRAFT, draft.id],
-    queryFn: () => getDraft(draft.id),
+    queryFn: () => draftsClient.getDraft({documentId: draft.id}),
   })
 }
-
-type UseCitationsOptions = QueryOptions & {
-  depth?: number
-}
-
-export function useCitations(documentId: string, opts: UseCitationsOptions) {
-  return useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
-    queryFn: () => listCitations(documentId, opts.depth, opts.rpc),
-    onError: (err) => {
-      console.log(`useCitations error: ${err}`)
-    },
-  })
-  return
-}
-
-export function usePublication(
-  documentId: string,
-  version: string,
-  opts: QueryOptions,
-) {
-  return useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, documentId, version],
-    enabled: !!documentId,
-    queryFn: () => getPublication(documentId, version, opts.rpc),
-    onError: (err) => {
-      console.log(`usePublication error: ${err}`)
-    },
-  })
-}
-type UseDiscussionParams = {
-  documentId?: string
-  visible?: boolean
-}
-
-export function useDiscussion({documentId, visible}: UseDiscussionParams) {
-  let queryResult = useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
-    // we are using the `enabled` attr, so `documentId` _should_ set at this point
-    queryFn: () => listCitations(documentId as string),
-    enabled: !!documentId && visible,
-    refetchOnWindowFocus: true,
-  })
-
-  let data = useMemo(() => {
-    if (queryResult.data) {
-      return createDedupeLinks(queryResult.data.links)
-    } else []
-  }, [queryResult.data])
-
-  return {
-    ...queryResult,
-    data,
-  }
-}
-
-const changesClient = createPromiseClient(Changes, transport)
 
 export function useDocChanges(docId?: string) {
   return useQuery({
@@ -260,32 +195,14 @@ export function useDocChanges(docId?: string) {
   })
 }
 
-const citationsClient = createPromiseClient(ContentGraph, transport)
 export type CitationLink = Awaited<
-  ReturnType<typeof citationsClient.listCitations>
+  ReturnType<typeof contentGraphClient.listCitations>
 >['links'][number]
 export function useDocCitations(docId?: string) {
   return useQuery({
-    queryFn: () => citationsClient.listCitations({documentId: docId}),
+    queryFn: () => contentGraphClient.listCitations({documentId: docId}),
     queryKey: [queryKeys.PUBLICATION_CITATIONS, docId],
     enabled: !!docId,
-  })
-}
-
-function createDedupeLinks(entry: Array<MttLink>): Array<MttLink> {
-  let sourceSet = new Set<string>()
-
-  return entry.filter((link) => {
-    // this will remove any link with no source. maybe this is not possible?
-    if (!link.source) return false
-
-    let currentSource = `${link.source.documentId}/${link.source.version}`
-    if (sourceSet.has(currentSource)) {
-      return false
-    } else {
-      sourceSet.add(currentSource)
-      return true
-    }
   })
 }
 

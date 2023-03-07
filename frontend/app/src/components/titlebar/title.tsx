@@ -1,7 +1,8 @@
+import {draftsClient, publicationsClient} from '@app/api-clients'
 import {queryKeys, useAuthor} from '@app/hooks'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
-import {getDraft, getPublication} from '@mintter/shared'
+import {getDraft} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect} from 'react'
@@ -49,7 +50,11 @@ function PublicationTitle({
   let {data: pub} = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION, params.id, params.version],
     enabled: !!params.id,
-    queryFn: () => getPublication(params.id, params.version),
+    queryFn: () =>
+      publicationsClient.getPublication({
+        documentId: params.id,
+        version: params.version,
+      }),
   })
 
   let {data: author} = useAuthor(pub?.document?.author)
@@ -66,7 +71,7 @@ function DraftTitle({params}: {params: ExtractRouteParams<'/d/:id/:tag?'>}) {
   let {data: draft, refetch} = useQuery({
     queryKey: [queryKeys.GET_DRAFT, params.id],
     enabled: !!params.id,
-    queryFn: () => getDraft(params.id),
+    queryFn: () => draftsClient.getDraft({documentId: params.id}),
   })
 
   useEffect(() => {

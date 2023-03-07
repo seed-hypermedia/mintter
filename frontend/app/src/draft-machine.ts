@@ -1,27 +1,25 @@
 import {
   Account,
-  MttDocument,
-  DocumentChange,
-  getDraft,
-  Publication,
-  updateDraftV2 as apiUpdateDraft,
   blockNodeToSlate,
   createId,
+  Document,
+  DocumentChange,
   group,
   GroupingContent,
   paragraph,
+  Publication,
   statement,
   text,
-  Document,
 } from '@mintter/shared'
 
+import {draftsClient} from '@app/api-clients'
 import {queryKeys} from '@app/hooks'
 import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'
 import {invoke} from '@tauri-apps/api'
 import {Editor} from 'slate'
-import {assign, createMachine, InterpreterFrom, actions} from 'xstate'
+import {actions, assign, createMachine, InterpreterFrom} from 'xstate'
 import {MintterEditor} from './editor/mintter-changes/plugin'
 
 let {send, cancel} = actions
@@ -69,7 +67,7 @@ export interface CreateDraftMachineProps {
   documentId: string
   client: QueryClient
   shouldAutosave?: boolean
-  updateDraft?: typeof apiUpdateDraft
+  updateDraft?: typeof draftsClient.updateDraftV2
   editor: Editor
 }
 
@@ -82,7 +80,7 @@ const defaultContent: [GroupingContent] = [
 export function createDraftMachine({
   documentId,
   client,
-  updateDraft = apiUpdateDraft,
+  updateDraft = draftsClient.updateDraftV2,
   shouldAutosave = true,
   editor,
 }: CreateDraftMachineProps) {
@@ -366,7 +364,7 @@ export function createDraftMachine({
 function getDraftQuery(client: QueryClient, docId: string) {
   return client.fetchQuery({
     queryKey: [queryKeys.GET_DRAFT, docId],
-    queryFn: () => getDraft(docId),
+    queryFn: () => draftsClient.getDraft({documentId: docId}),
   })
 }
 

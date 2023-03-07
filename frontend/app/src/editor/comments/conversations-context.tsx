@@ -1,14 +1,12 @@
+import {commentsClient} from '@app/api-clients'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/publication-machine'
-import {createPromiseClient} from '@bufbuild/connect-web'
 import {
   Annotation,
   Block,
   BlockNode,
   blockToSlate,
-  Comments,
   FlowContent,
-  transport,
 } from '@mintter/shared'
 import {ListConversationsResponse} from '@mintter/shared/client/.generated/documents/v1alpha/comments_pb'
 import {useQuery, UseQueryResult} from '@tanstack/react-query'
@@ -63,10 +61,7 @@ export function ConversationsProvider({
 }>) {
   let queryResult = useQuery({
     queryFn: async () => {
-      let res = await createPromiseClient(
-        Comments,
-        transport,
-      ).listConversations({
+      let res = await commentsClient.listConversations({
         documentId,
       })
       return res.conversations
