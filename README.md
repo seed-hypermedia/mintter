@@ -59,7 +59,7 @@ MTT_SITE_BACKEND_GRPCWEB_PORT=56001 # The port through which the local backend a
 However if you want a frictionless configuration you can customize the site easily
 running the following command
 ```bash
-bash <(wget -qO- https://minttersite.s3.amazonaws.com/site_deployment_simple.sh)
+sh <(wget -qO- https://minttersite.s3.amazonaws.com/site_deployment_simple.sh)
 ```
 All domains different than `http://127.0.0.1` are ssl terminated, so make sure 
 ports 80 and 443 are accessible from the outside.
