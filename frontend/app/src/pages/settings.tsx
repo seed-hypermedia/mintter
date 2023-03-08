@@ -49,7 +49,6 @@ export default function Settings({
 }: {
   updateProfile?: typeof accountsClient.updateProfile
 }) {
-  console.log('UPDATE PROFILE', updateProfile)
   const client = useQueryClient()
   const auth = useInterpret(() => createAuthService(client, updateProfile))
   return (

@@ -23,7 +23,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
-function getHost() {
+function getGRPCHost() {
   if (process.env.GW_GRPC_ENDPOINT) {
     return process.env.GW_GRPC_ENDPOINT
   }
@@ -39,29 +39,24 @@ const IS_DEV = process.env.NODE_ENV == 'development'
 const IS_CLIENT = !!global.window
 const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
 
-let baseUrl = getHost()
+let grpcBaseURL = getGRPCHost()
 
-console.log('🚀 ~ file: client.ts:41 ~ baseUrl:', {
-  baseUrl,
-  GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
-  VERCEL_ENV: process.env.VERCEL_ENV,
-  NODE_ENV: process.env.NODE_ENV,
+console.log('🚀 client.ts ', {
+  grpcBaseURL,
+  // GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
+  // VERCEL_ENV: process.env.VERCEL_ENV,
+  // NODE_ENV: process.env.NODE_ENV,
   IS_DEV,
   IS_CLIENT,
 })
 
 const prodInter: Interceptor = (next) => async (req) => {
-  console.log('prodInterceptor request: ', JSON.stringify(req))
   const result = await next({...req, init: {...req.init, redirect: 'follow'}})
-  console.log(
-    'prodInterceptor result: ',
-    JSON.stringify(result).substring(0, 200),
-  )
   return result
 }
 
 export const transport = createGrpcWebTransport({
-  baseUrl,
+  baseUrl: grpcBaseURL,
   // @ts-ignore
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],
 })
