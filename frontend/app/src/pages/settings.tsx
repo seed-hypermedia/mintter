@@ -327,7 +327,7 @@ export function useInviteDialog(hostname: string) {
 
   function open() {
     invite.mutateAsync().then((inviteToken) => {
-      setIsOpen(`https://${hostname}/invite/${inviteToken}`)
+      setIsOpen(`${hostname}/invite/${inviteToken}`)
     })
   }
   return {
