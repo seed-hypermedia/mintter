@@ -3,7 +3,13 @@ import {
   createPromiseClient,
   Interceptor,
 } from '@bufbuild/connect-web'
-import {Accounts, Publications, WebSite} from '@mintter/shared'
+import {
+  Accounts,
+  Publications,
+  WebSite,
+  Daemon,
+  Networking,
+} from '@mintter/shared'
 
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
@@ -63,3 +69,5 @@ export const transport = createGrpcWebTransport({
 export const publicationsClient = createPromiseClient(Publications, transport)
 export const localWebsiteClient = createPromiseClient(WebSite, transport)
 export const accountsClient = createPromiseClient(Accounts, transport)
+export const daemonClient = createPromiseClient(Daemon, transport)
+export const networkingClient = createPromiseClient(Networking, transport)

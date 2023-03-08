@@ -22,7 +22,7 @@ function DefaultHomePage() {
   let {data} = useQuery({
     queryKey: ['home publication', pubId, version],
     queryFn: () =>
-      publicationClient.getPublication({documentId: pubId, version}),
+      publicationsClient.getPublication({documentId: pubId, version}),
   })
   if (data) {
     return <PublicationPage publication={data} metadata={false} />

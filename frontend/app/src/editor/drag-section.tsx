@@ -41,17 +41,19 @@ export const ElementDrag = ({
       {...attributes}
       {...blockProps}
       className={inRoute ? 'flash' : undefined}
-      onDrop={onDrop}
-      onDragEnd={onDrop}
+      onDrop={editor.mode == EditorMode.Draft ? onDrop : undefined}
+      onDragEnd={editor.mode == EditorMode.Draft ? onDrop : undefined}
     >
       <BlockTools block={element as FlowContent} />
       {children}
-      <span contentEditable={false}>
-        <ConversationBlockBubble block={element as FlowContent} />
-        {editor.mode == EditorMode.Publication ? (
-          <CitationNumber block={element as FlowContent} />
-        ) : null}
-      </span>
+      {editor.mode == EditorMode.Publication ? (
+        <span contentEditable={false}>
+          <ConversationBlockBubble block={element as FlowContent} />
+          {editor.mode == EditorMode.Publication ? (
+            <CitationNumber block={element as FlowContent} />
+          ) : null}
+        </span>
+      ) : null}
     </li>
   )
 }
