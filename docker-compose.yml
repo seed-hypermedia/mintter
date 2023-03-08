@@ -5,7 +5,7 @@ networks:
 services:
   proxy:
     container_name: proxy
-    image: caddy:latest
+    image: caddy
     depends_on:
       - minttersite
     network_mode: "host"
@@ -16,7 +16,7 @@ services:
 
   nextjs:
     container_name: nextjs
-    image: mintter/sitegw:latest
+    image: mintter/sitegw
     depends_on:
       - minttersite
     networks:
@@ -32,7 +32,7 @@ services:
       - "GW_GRPC_ENDPOINT=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
 
   minttersite:
-    image: mintter/mintterd:latest
+    image: mintter/mintterd
     restart: unless-stopped
     container_name: minttersite
     ports:
