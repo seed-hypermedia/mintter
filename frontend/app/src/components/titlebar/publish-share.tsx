@@ -186,7 +186,7 @@ function PublishButtons({
               onPublish(site.hostname)
             }}
           >
-            {site.hostname}
+            {hostnameStripProtocol(site.hostname)}
             <ButtonIcon>
               <Icon name="ExternalLink" />
             </ButtonIcon>

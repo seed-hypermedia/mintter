@@ -27,6 +27,7 @@ import {
   useSetKeyPair,
 } from '@app/utils/nostr'
 import {ObjectKeys} from '@app/utils/object-keys'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Icon} from '@components/icon'
 import {Prompt, StyledOverlay} from '@components/prompt'
 import {Separator} from '@components/separator'
@@ -512,7 +513,7 @@ function SiteSettings({
     <>
       <SettingsHeader>
         <SettingsNavBack title="Web Sites" onDone={onDone} />
-        <h2>{hostname}</h2>
+        <h2>{hostnameStripProtocol(hostname)}</h2>
       </SettingsHeader>
 
       <SiteInfoSection hostname={hostname} />
@@ -985,7 +986,7 @@ function EmptySiteList() {
 function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
   return (
     <Button className="settings-list-item" onClick={onSelect}>
-      {site.hostname}
+      {hostnameStripProtocol(site.hostname)}
     </Button>
   )
 }
