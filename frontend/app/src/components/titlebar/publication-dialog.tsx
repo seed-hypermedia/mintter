@@ -46,6 +46,9 @@ function PublishDialogForm({
     return {path, docId: docState.context.documentId}
   }, [])
   const [path, setPath] = useState<string>(init.path)
+  const pubUrl = `${siteId}/${
+    path === '/' ? '' : path === '' ? `p/${init.docId}` : readPathState(path)
+  }`
   return (
     <>
       <Heading>Publish to {siteId}</Heading>
@@ -59,14 +62,7 @@ function PublishDialogForm({
           setPath(writePathState(e.target.value))
         }}
       />
-      <URLPreview>
-        {siteId}/
-        {path === '/'
-          ? ''
-          : path === ''
-          ? `p/${init.docId}`
-          : readPathState(path)}
-      </URLPreview>
+      <URLPreview>{pubUrl}</URLPreview>
       <Button
         disabled={publish.isLoading}
         onClick={() => {
@@ -78,6 +74,7 @@ function PublishDialogForm({
             })
             .then(() => {
               onDone?.()
+              toast.success(`Document published to ${pubUrl}`, {})
             })
             .catch((e) => {
               console.error(e)
