@@ -9,12 +9,12 @@ import {Text, textStyles} from '@components/text'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
 import {FormEvent, PropsWithChildren} from 'react'
-import {accountsClient} from '@app/api-clients'
+import {accountsClient, daemonClient} from '@app/api-clients'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void
   updateProfile?: typeof accountsClient.updateProfile
-  generateMnemonic?: () => Promise<GenMnemonicResponse>
+  generateMnemonic?: typeof daemonClient.genMnemonic
 }
 
 const containerAnimationVariants: Variants = {
