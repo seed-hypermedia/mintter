@@ -7,42 +7,32 @@ import {
   text,
 } from '@mintter/shared'
 import React from 'react'
-import {
-  Editor,
-  Path,
-  Transforms,
-  Element as SlateElement,
-  NodeEntry,
-  Node,
-} from 'slate'
+import {Editor, Path, Transforms, NodeEntry, Node} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine, actions} from 'xstate'
 
 let {send} = actions
 type DragContext = {
-  position: number
   editor: Editor
   dragOverRef: Element | null
   dragRef: HTMLLIElement | null
   fromPath: Path | null
   toPath: Path | null
   isTop: boolean
+  nestedGroup: HTMLElement[] | null
 }
 
 type DragEvent =
   | {type: 'DRAG.START'; fromPath: Path; element: HTMLLIElement}
-  | {type: 'DROPPED'; editor: Editor}
-  | {type: 'DRAG.OVER'; toPath: Path; element: HTMLLIElement}
+  | {type: 'DROPPED'}
   | {
-      type: 'DRAG.OVER.BOTTOM'
-      nodes: NodeEntry[]
-      currentX: number
-      nestedElements: HTMLLIElement[]
+      type: 'DRAG.OVER'
+      toPath: Path | null
+      element: HTMLLIElement | null
+      currentPos: number
     }
-  | {type: 'BOTTOM.TO.PATH'; toPath: Path}
   | {type: 'DRAGGING.OFF'}
-  | {type: 'MOUSE.MOVE'; position: number}
-  | {type: 'SET.DRAGGING.POSITION'; isTop: boolean}
+  | {type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null}
 
 export const createDragMachine = (editor: Editor) => {
   return createMachine(
@@ -50,12 +40,12 @@ export const createDragMachine = (editor: Editor) => {
       predictableActionArguments: true,
       context: {
         editor,
-        position: 0,
         dragOverRef: null,
         dragRef: null,
         fromPath: null,
         toPath: null,
         isTop: false,
+        nestedGroup: null,
       },
       schema: {context: {} as DragContext, events: {} as DragEvent},
       tsTypes: {} as import('./drag-machine.typegen').Typegen0,
@@ -65,15 +55,6 @@ export const createDragMachine = (editor: Editor) => {
       on: {
         'DRAGGING.OFF': {
           actions: ['setDraggingOff'],
-        },
-        'BOTTOM.TO.PATH': {
-          actions: ['setToPath'],
-        },
-        'MOUSE.MOVE': {
-          actions: ['setPosition'],
-        },
-        'SET.DRAGGING.POSITION': {
-          actions: ['setTopPosition'],
         },
       },
       states: {
@@ -100,8 +81,8 @@ export const createDragMachine = (editor: Editor) => {
             'DRAG.OVER': {
               actions: ['setToPath', 'setDragOverRef'],
             },
-            'DRAG.OVER.BOTTOM': {
-              actions: ['setDragBottomRef'],
+            'SET.NESTED.GROUP': {
+              actions: ['setNestedGroup'],
             },
           },
         },
@@ -120,49 +101,112 @@ export const createDragMachine = (editor: Editor) => {
           context.editor.dragging = false
         },
         setDragOverRef: assign((context, event) => {
-          // dragOverRef: (context, event) => {
-          context.dragOverRef?.removeAttribute('data-action')
-          const element: HTMLLIElement = event.element
-          const paragraph = element.firstElementChild
-          let isTop = context.isTop
-          if (paragraph && paragraph.nodeName === 'P') {
-            const {fromPath, toPath} = context
-            if (fromPath && toPath) {
-              if (
-                Path.equals(fromPath, toPath) ||
-                Path.isAncestor(fromPath, toPath)
-              ) {
-                return paragraph
-              }
-              if (
-                Path.isAfter(fromPath, toPath) ||
-                Path.isAncestor(toPath, fromPath)
-              ) {
-                paragraph.setAttribute('data-action', 'dragged-top')
-                isTop = true
-              } else {
-                paragraph.setAttribute('data-action', 'dragged-bottom')
-                isTop = false
-              }
-            }
-            return {dragOverRef: paragraph, isTop}
-          }
-          return {dragOverRef: element, isTop: isTop}
-        }),
-        setDragBottomRef: assign({
-          dragOverRef: (context, event) => {
+          if (event.element) {
             context.dragOverRef?.removeAttribute('data-action')
-            const {nestedElements, currentX, nodes} = event
-            let hoveredElement = nestedElements[0]
-            let index = 0
-            for (let i = 0; i < nestedElements.length; i++) {
-              if (currentX <= nestedElements[i].getBoundingClientRect()['x']) {
-                hoveredElement = nestedElements[i - 1]
+            const element: HTMLLIElement = event.element
+            const paragraph = element.firstElementChild
+            let isTop = context.isTop
+            if (paragraph && paragraph.nodeName === 'P') {
+              const {fromPath, toPath} = context
+              if (fromPath && toPath) {
+                if (
+                  Path.equals(fromPath, toPath) ||
+                  Path.isAncestor(fromPath, toPath)
+                ) {
+                  return paragraph
+                }
+                if (
+                  Path.isAfter(fromPath, toPath) ||
+                  Path.isAncestor(toPath, fromPath)
+                ) {
+                  paragraph.setAttribute('data-action', 'dragged-top')
+                  isTop = true
+                } else {
+                  paragraph.setAttribute('data-action', 'dragged-bottom')
+                  isTop = false
+                }
+              }
+              return {dragOverRef: paragraph, isTop, nestedGroup: null}
+            }
+            return {dragOverRef: element, isTop: isTop, nestedGroup: null}
+          }
+          if (context.nestedGroup) {
+            const {nestedGroup, dragOverRef} = context
+            let hoveredElement
+
+            for (let i = 0; i < nestedGroup.length; i++) {
+              if (
+                event.currentPos <= nestedGroup[i].getBoundingClientRect()['x']
+              ) {
+                hoveredElement = nestedGroup[i - 1]
+                break
               }
             }
-            hoveredElement.setAttribute('data-action', 'dragged-bottom')
-            return hoveredElement
-          },
+            if (hoveredElement) {
+              dragOverRef?.removeAttribute('data-action')
+              hoveredElement?.setAttribute('data-action', 'dragged-nested')
+              const hoveredNode = ReactEditor.toSlateNode(
+                editor,
+                hoveredElement,
+              )
+              const toPath = ReactEditor.findPath(editor, hoveredNode)
+              return {dragOverRef: hoveredElement, isTop: false, toPath}
+            }
+          } else {
+            const {dragOverRef} = context
+            if (dragOverRef !== null) {
+              const element = ReactEditor.toSlateNode(editor, dragOverRef)
+              const path = ReactEditor.findPath(editor, element)
+              const parentBlock = Editor.above<FlowContent>(editor, {
+                match: isFlowContent,
+                mode: 'lowest',
+                at: path,
+              })
+
+              if (parentBlock) {
+                const [node, ancestorPath] = parentBlock
+
+                const children = node.children as Node[]
+
+                const childGroup = children.find(
+                  (child: Node) => child.type === 'group',
+                )
+
+                if (!childGroup) {
+                  const firstParent = Editor.node(
+                    editor,
+                    path.slice(0, 2) as Path,
+                  )
+                  let groupStatements = []
+                  let groupElements: HTMLElement[] = []
+                  const descendantsGen = Node.nodes(firstParent[0], {
+                    to: path.slice(2),
+                  })
+                  for (let des of descendantsGen) {
+                    if (des[0].type === 'statement') {
+                      des[1] = [...path.slice(0, 2), ...des[1]]
+                      groupStatements.push(des)
+                    }
+                  }
+                  for (const statement of groupStatements) {
+                    groupElements.push(
+                      ReactEditor.toDOMNode(editor, statement[0]),
+                    )
+                  }
+
+                  dragOverRef.removeAttribute('data-action')
+                  dragOverRef.setAttribute('data-action', 'dragged-bottom')
+
+                  return {
+                    dragOverRef: context.dragOverRef,
+                    isTop: context.isTop,
+                    nestedGroup: groupElements,
+                  }
+                }
+              }
+            }
+            return {dragOverRef: context.dragOverRef, isTop: context.isTop}
+          }
         }),
         setDragRef: assign({
           dragRef: (context, event) => {
@@ -191,24 +235,20 @@ export const createDragMachine = (editor: Editor) => {
             }
           },
         }),
-        setTopPosition: assign({
-          isTop: (_, event) => {
-            return event.isTop
-          },
-        }),
         setFromPath: assign({
           fromPath: (_, event) => {
             return event.fromPath
           },
         }),
         setToPath: assign({
-          toPath: (_, event) => {
-            return event.toPath
+          toPath: (context, event) => {
+            return event.toPath !== null ? event.toPath : context.toPath
           },
         }),
-        setPosition: assign({
-          position: (_, event) => {
-            return event.position
+        setNestedGroup: assign({
+          nestedGroup: (_, event) => {
+            console.log(event.nestedGroup, 'here')
+            return event.nestedGroup
           },
         }),
         // @ts-ignore
@@ -217,6 +257,7 @@ export const createDragMachine = (editor: Editor) => {
           dragOverRef: null,
           fromPath: null,
           toPath: null,
+          nestedGroup: null,
         }),
         performMove: (context, event) => {
           const {fromPath, toPath, dragOverRef, editor, isTop} = context

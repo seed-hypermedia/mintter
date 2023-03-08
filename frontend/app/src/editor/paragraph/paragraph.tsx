@@ -223,7 +223,7 @@ function Paragraph({
       {...elementProps}
       {...mouseProps}
       {...otherProps}
-      onDragOver={onDragOver}
+      // onDragOver={onDragOver}
     >
       {children}
     </p>

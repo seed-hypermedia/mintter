@@ -13,9 +13,9 @@ import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {Text} from '@components/text'
-import {ChildrenOf, Document} from '@mintter/shared'
+import {ChildrenOf, Document, FlowContent, Group, isFlowContent, isGroupContent} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
-import {useEffect} from 'react'
+import React, {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {
   Editor as SlateEditor,
@@ -34,14 +34,8 @@ type DraftPageProps = {
 
 export default function DraftPage({draftActor, editor}: DraftPageProps) {
   const [state, send] = useActor(draftActor)
+  let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
-  let mouseService = useInterpret(() => mouseMachine, {
-    actions: {
-      getMousePosition: (context, event) => {
-        dragService.send({type: 'MOUSE.MOVE', position: event.positionX})
-      },
-    },
-  })
 
   // @ts-ignore
   window.mouseService = mouseService
@@ -63,7 +57,6 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
           mouseService.send({
             type: 'MOUSE.MOVE',
             position: event.clientY,
-            positionX: event.clientX,
           })
           // console.log('mouse moving')
           draftActor.send('EDITING.STOP')
@@ -74,6 +67,41 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         onMouseUp={() => {
           dragService.send('DROPPED')
           mouseService.send('DISABLE.DRAG.END')
+        }}
+        onDragOver={(e: React.DragEvent) => {
+          e.preventDefault()
+          const initialNode = e.target as Element;
+          if (initialNode && initialNode.nodeName === 'P') {
+            const element = ReactEditor.toSlateNode(editor, initialNode)
+            const path = ReactEditor.findPath(editor, element)
+
+            const parentBlock = SlateEditor.above<FlowContent>(editor, {
+              match: isFlowContent,
+              mode: 'lowest',
+              at: path,
+            })
+
+            if (parentBlock) {
+              const [node, ancestorPath] = parentBlock
+            
+              const domNode = ReactEditor.toDOMNode(editor, node)
+
+              dragService?.send({
+                type: 'DRAG.OVER',
+                toPath: ancestorPath,
+                element: domNode as HTMLLIElement,
+                currentPos: e.clientX,
+              })
+            }
+          }
+          else {
+            dragService?.send({
+              type: 'DRAG.OVER',
+              toPath: null,
+              element: null,
+              currentPos: e.clientX,
+            })
+          }
         }}
       >
         <ErrorBoundary
