@@ -29,7 +29,11 @@ export type MainActorOptions = Partial<{
 }>
 
 export function useMainActor(props: MainActorOptions = {}) {
-  const republishDoc = useDocRepublish()
+  const republishDoc = useDocRepublish({
+    onSuccess: (webPubs) => {
+      toast.success(`Document updated on ${webPubs.join(', ')}`)
+    },
+  })
   const [, setLocation] = useLocation()
   const [isPublication, publicationParams] = useRoute('/p/:id/:version/:block?')
   const [isDraft, draftParams] = useRoute('/d/:id/:tag?')
