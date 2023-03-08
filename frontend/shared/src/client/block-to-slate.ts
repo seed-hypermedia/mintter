@@ -16,7 +16,7 @@ import {
 import {annotationContains} from './classes'
 
 export function blockToSlate(blk: Block): FlowContent {
-  console.log('🚀 ~ file: block-to-slate.ts:19 ~ blockToSlate ~ blk:', blk)
+  // console.log('🚀 ~ file: block-to-slate.ts:19 ~ blockToSlate ~ blk:', blk)
   // we dont need to pass `childrenType to `out`, but we don't need it for anything for now.
   // eslint-disable-next-line
   const {childrenType, ...attributes} = blk.attributes || {}
