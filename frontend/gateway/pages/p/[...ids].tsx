@@ -1,6 +1,6 @@
-import {Account, getAccount, getPublication, Publication} from '@mintter/shared'
+import {Account, Publication} from '@mintter/shared'
 import {GetServerSidePropsContext} from 'next'
-import {transport} from '../../client'
+import {accountsClient, publicationsClient} from '../../client'
 import PublicationPage from '../../ssr-publication-page'
 
 export default function CIDPublicationPage({
@@ -31,14 +31,17 @@ export const getServerSideProps = async ({
     documentId = checkIds[0]
     version = checkIds[1]
   }
-  const publication = await getPublication(documentId, version, transport)
+  const publication = await publicationsClient.getPublication({
+    documentId,
+    version,
+  })
   if (!publication) {
     return {
       notFound: true,
     }
   }
   const author = publication.document?.author
-    ? await getAccount(publication.document?.author, transport)
+    ? await accountsClient.getAccount({id: publication.document?.author})
     : null
   return {
     props: {
