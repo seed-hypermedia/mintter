@@ -9,6 +9,7 @@ import {
   ReferencedDocument,
   SiteConfig,
   SiteInfo,
+  WebPublicationRecord,
 } from '@mintter/shared'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {
@@ -237,7 +238,14 @@ export function useSitePublish() {
   )
 }
 
-export function useDocRepublish() {
+export function useDocRepublish(
+  opts: UseMutationOptions<
+    WebPublicationRecord[],
+    unknown,
+    Publication,
+    unknown
+  >,
+) {
   return useMutation(
     async ({document, version}: Publication) => {
       if (!document)
@@ -255,10 +263,22 @@ export function useDocRepublish() {
           })
         }),
       )
+      return webPubs
     },
     {
-      onSuccess: (a, input) => {
-        appInvalidateQueries([queryKeys.GET_WEB_PUBLICATIONS])
+      ...opts,
+      onSuccess: (webPubs, input, ctx) => {
+        appInvalidateQueries([
+          queryKeys.GET_DOC_PUBLICATIONS,
+          input.document?.id,
+        ])
+        webPubs.forEach((webPub) =>
+          appInvalidateQueries([
+            queryKeys.GET_WEB_PUBLICATIONS,
+            webPub.hostname,
+          ]),
+        )
+        opts.onSuccess?.(webPubs, input, ctx)
       },
     },
   )
