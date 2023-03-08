@@ -664,9 +664,13 @@ func (srv *Server) checkPermissions(ctx context.Context, requiredRole site.Membe
 		}
 		n.log.Debug("Headers found, meaning this call should be proxied and authentication will take place at the remote site", zap.String(string(MttHeader), remoteHostname))
 
+		// We will extract the caller's function name so we know which function to call in the remote site
+		// We opted to to make it generic so the proxying code is in one place only (proxyToSite).
 		pc, _, _, _ := runtime.Caller(1)
 		proxyFcnList := strings.Split(runtime.FuncForPC(pc).Name(), ".")
 		proxyFcn := proxyFcnList[len(proxyFcnList)-1]
+		// Since proxyFcn is taken from the name of the caller (same codebase as the one
+		// in proxyToSite), we don't expect the reflection to panic at runtime.
 		res, errInterface := srv.proxyToSite(ctx, remoteHostname, proxyFcn, params...)
 		if errInterface != nil {
 			err, ok := errInterface.(error)
@@ -803,7 +807,10 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_ = encoder.Encode(siteInfo)
 }
 
-// proxyToSite calls a remote site function over libp2p.
+// proxyToSite calls a remote site function over libp2p. It uses reflections to
+// avoid having the proxying code spread in many function calls. Since the
+// function's name to call is taken from this codebase, there should not be any
+// inconsistency and no panic is expected at runtime (due to unknown function name).
 func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn string, params ...interface{}) (interface{}, interface{}) {
 	n, ok := srv.Node.Get()
 	if !ok {
@@ -830,12 +837,6 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 			return nil, fmt.Errorf("Cannot get site accountID")
 		}
 	}
-
-	conn, release, err := n.VCS().DB().Conn(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
-	}
-	defer release()
 
 	all, err := vcssql.ListAccountDevices(conn)
 	if err != nil {
