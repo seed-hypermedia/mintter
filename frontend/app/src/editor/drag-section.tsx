@@ -49,9 +49,9 @@ export const ElementDrag = ({
       {editor.mode == EditorMode.Publication ? (
         <span contentEditable={false}>
           <ConversationBlockBubble block={element as FlowContent} />
-          {editor.mode == EditorMode.Publication ? (
+          {/* {editor.mode == EditorMode.Publication ? (
             <CitationNumber block={element as FlowContent} />
-          ) : null}
+          ) : null} */}
         </span>
       ) : null}
     </li>
