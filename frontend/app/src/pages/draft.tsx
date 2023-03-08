@@ -50,9 +50,9 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
 
   // console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
 
-  if (state.matches('errored')) {
-    return <Text>ERROR: {state.context.errorMessage}</Text>
-  }
+  // if (state.matches('errored')) {
+  //   return <Text>ERROR: {state.context.errorMessage}</Text>
+  // }
 
   if (state.matches('editing')) {
     return (
