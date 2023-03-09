@@ -779,6 +779,11 @@ func (srv *Server) updateSiteBio(ctx context.Context, title, description string)
 
 // ServeHTTP serves the content for the well-known path.
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if srv.hostname == "" { // if i'm not a site, then don't expose addresses
+		w.WriteHeader(500)
+		return
+	}
+
 	encoder := json.NewEncoder(w)
 	w.Header().Set("Content-Type", "application/json")
 	var siteInfo wellKnownInfo
@@ -827,7 +832,7 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		siteAccount = site.AccID.String()
 	}
 
-	if err != nil { // Could be an add site call to proxy in which case the site does not exists yet
+	if err != nil { // Could be an add site call to proxy in which case the site does not exist yet
 		siteAccountCtx := ctx.Value(SiteAccountIDCtxKey)
 		if siteAccountCtx == nil {
 			return nil, fmt.Errorf("Cannot get site accountID: %w", err)
