@@ -198,6 +198,7 @@ export function useDocChanges(docId?: string) {
 export type CitationLink = Awaited<
   ReturnType<typeof contentGraphClient.listCitations>
 >['links'][number]
+
 export function useDocCitations(docId?: string) {
   return useQuery({
     queryFn: () => contentGraphClient.listCitations({documentId: docId}),
