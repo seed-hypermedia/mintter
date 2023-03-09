@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - 'build13/staging'
-
+      
+jobs:
   generate-docker-images:
     runs-on: ubuntu-latest
     steps:
