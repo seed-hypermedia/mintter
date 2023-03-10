@@ -22,6 +22,7 @@ import {Placeholder} from '@components/placeholder-box'
 import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Tooltip} from '@components/tooltip'
+import {MttLink} from '@mintter/shared'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
@@ -126,11 +127,20 @@ export default function PublicationPage({
         onConversationsOpen={(conversations: string[]) => {
           panelSend({
             type: 'PANEL.OPEN',
+            activePanel: 'conversations',
           })
         }}
         publication={state.context.publication}
       >
-        <CitationsProvider documentId={params.id}>
+        <CitationsProvider
+          documentId={params.id}
+          onCitationsOpen={(citations: Array<MttLink>) => {
+            panelSend({
+              type: 'PANEL.OPEN',
+              activePanel: 'citations',
+            })
+          }}
+        >
           <MouseProvider value={mouseService}>
             <BlockHighLighter>
               <div className="page-wrapper publication-wrapper">

@@ -1,6 +1,5 @@
-import {Account, getAccount, getLocalWebSiteClient} from '@mintter/shared'
-import {transport} from '../client'
-import {Publication} from '@mintter/shared'
+import {accountsClient, localWebsiteClient} from '../client'
+import {Account, Publication} from '@mintter/shared'
 import {GetServerSideProps} from 'next'
 import PublicationPage from '../ssr-publication-page'
 
@@ -16,15 +15,15 @@ export default function PathPublicationPage({
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const path = (context.params?.pageSlug as string) || ''
-  const site = getLocalWebSiteClient(transport)
-  const pathRecord = await site.getPath({path})
+
+  const pathRecord = await localWebsiteClient.getPath({path})
   const publication = pathRecord.publication
   if (!publication)
     return {
       notFound: true,
     }
   const author = publication.document?.author
-    ? await getAccount(publication.document?.author, transport)
+    ? await accountsClient.getAccount({id: publication.document?.author})
     : null
   return {
     props: {

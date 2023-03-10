@@ -33,14 +33,14 @@ console.log({wl})
 export function SecurityPack({
   prev,
   next,
-  generateMnemonic = defaultGenerateMnemonic,
+  generateMnemonic = daemonClient.genMnemonic,
 }: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
   const mnemonics = useQuery({
     queryKey: ['onboarding', 'mnemonics'],
     queryFn: async () => {
-      const data = await daemonClient.genMnemonic({mnemonicsLength: 12})
+      const data = await generateMnemonic({mnemonicsLength: 12})
 
       mnemonicToSeed(data.mnemonic.join(' '))
         .then((seed) => {

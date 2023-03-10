@@ -11,6 +11,7 @@ import {
   Drafts,
   loggingInterceptor,
   Networking,
+  prodInter,
   Publications,
   WebPublishing,
   WebSite,
@@ -18,7 +19,9 @@ import {
 
 export const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:55001',
-  interceptors: import.meta.env.DEV ? [loggingInterceptor] : [],
+  interceptors: import.meta.env.DEV
+    ? [loggingInterceptor]
+    : [loggingInterceptor, prodInter],
 })
 
 export const draftsClient = createPromiseClient(Drafts, transport)

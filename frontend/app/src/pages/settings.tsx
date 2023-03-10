@@ -49,7 +49,6 @@ export default function Settings({
 }: {
   updateProfile?: typeof accountsClient.updateProfile
 }) {
-  console.log('UPDATE PROFILE', updateProfile)
   const client = useQueryClient()
   const auth = useInterpret(() => createAuthService(client, updateProfile))
   return (
@@ -327,7 +326,7 @@ export function useInviteDialog(hostname: string) {
 
   function open() {
     invite.mutateAsync().then((inviteToken) => {
-      setIsOpen(`https://${hostname}/invite/${inviteToken}`)
+      setIsOpen(`${hostname}/invite/${inviteToken}`)
     })
   }
   return {
@@ -367,15 +366,42 @@ function SiteMemberRow({
 }) {
   const {data: account} = useAuthor(member.accountId)
   const remove = useRemoveMember(hostname)
+  const [hovering, setHover] = useState(false)
   return (
-    <pre>
-      {account?.profile?.alias || member.accountId} -{' '}
-      {getNameOfRole(member.role)}
-      {isOwner ? (
+    <Box
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      css={{
+        backgroundColor: '$base-background-normal',
+        borderRadius: '$2',
+        display: 'flex',
+        overflow: 'hidden',
+        position: 'relative',
+      }}
+    >
+      <Text
+        css={{
+          display: 'flex',
+          textOverflow: 'ellipsis',
+          margin: '$3',
+          flex: 1,
+          fontWeight: member.role === Member_Role.OWNER ? 'bold' : 'normal',
+        }}
+      >
+        {account?.profile?.alias || member.accountId}
+        {member.role === Member_Role.OWNER ? '[Owner]' : ''}
+      </Text>
+      {hovering && isOwner && member.accountId !== account?.id ? (
         <Button
           variant="outlined"
           color="danger"
           size="1"
+          css={{
+            position: 'absolute',
+            right: '$2',
+            background: '$base-background-normal',
+            top: '$2',
+          }}
           onClick={() => {
             remove.mutate(member.accountId)
           }}
@@ -383,37 +409,34 @@ function SiteMemberRow({
           Remove
         </Button>
       ) : null}
-    </pre>
+    </Box>
   )
 }
 function SiteMembers({
   hostname,
   accountId,
+  isOwner,
 }: {
   hostname: string
   accountId: string
+  isOwner: boolean
 }) {
   const {content, open} = useInviteDialog(hostname)
 
   const {data: members} = useSiteMembers(hostname)
-  const isOwner = useMemo(
-    () =>
-      !!members?.find(
-        (member) =>
-          member.accountId === accountId && member.role === Member_Role.OWNER,
-      ),
-    [members, accountId],
-  )
+
   return (
     <SettingsSection title="Members">
-      {members?.map((member) => (
-        <SiteMemberRow
-          key={member.accountId}
-          member={member}
-          isOwner={isOwner}
-          hostname={hostname}
-        />
-      ))}
+      <Box css={{display: 'flex', gap: '$3', flexDirection: 'column'}}>
+        {members?.map((member) => (
+          <SiteMemberRow
+            key={member.accountId}
+            member={member}
+            isOwner={isOwner}
+            hostname={hostname}
+          />
+        ))}
+      </Box>
       {content}
       {isOwner ? (
         <Button
@@ -455,9 +478,11 @@ function SettingsSection({
 function SiteInfoForm({
   info,
   onSubmit,
+  isOwner,
 }: {
   info: SiteInfo
   onSubmit: (s: Partial<SiteInfo>) => void
+  isOwner: boolean
 }) {
   const [title, setTitle] = useState(info.title)
   const [description, setDescription] = useState(info.description)
@@ -468,6 +493,7 @@ function SiteInfoForm({
         name="site-title"
         label="Title"
         value={title}
+        disabled={!isOwner}
         onChange={(e) => setTitle(e.target.value)}
       />
       <TextField
@@ -476,17 +502,20 @@ function SiteInfoForm({
         name="site-description"
         label="Description"
         value={description}
+        disabled={!isOwner}
         onChange={(e) => setDescription(e.target.value)}
       />
-      <Button
-        size="2"
-        color="success"
-        onClick={() => {
-          onSubmit({title, description})
-        }}
-      >
-        Save Site Info
-      </Button>
+      {isOwner ? (
+        <Button
+          size="2"
+          color="success"
+          onClick={() => {
+            onSubmit({title, description})
+          }}
+        >
+          Save Site Info
+        </Button>
+      ) : null}
       {/* <Box
         css={{
           display: 'flex',
@@ -509,21 +538,46 @@ function SiteSettings({
   onDone: () => void
   accountId: string
 }) {
+  const {data: members, isLoading} = useSiteMembers(hostname)
+  const isOwner = useMemo(
+    () =>
+      !!members?.find(
+        (member) =>
+          member.accountId === accountId && member.role === Member_Role.OWNER,
+      ),
+    [members, accountId],
+  )
+
   return (
     <>
       <SettingsHeader>
         <SettingsNavBack title="Web Sites" onDone={onDone} />
         <h2>{hostnameStripProtocol(hostname)}</h2>
       </SettingsHeader>
-
-      <SiteInfoSection hostname={hostname} />
-      <SiteMembers hostname={hostname} accountId={accountId} />
-      <SiteAdmin hostname={hostname} onDone={onDone} />
+      {isLoading ? (
+        <span>Loading</span>
+      ) : (
+        <>
+          <SiteInfoSection hostname={hostname} isOwner={isOwner} />
+          <SiteMembers
+            hostname={hostname}
+            accountId={accountId}
+            isOwner={isOwner}
+          />
+          <SiteAdmin hostname={hostname} onDone={onDone} />
+        </>
+      )}
     </>
   )
 }
 
-function SiteInfoSection({hostname}: {hostname: string}) {
+function SiteInfoSection({
+  hostname,
+  isOwner,
+}: {
+  hostname: string
+  isOwner: boolean
+}) {
   const siteInfo = useSiteInfo(hostname)
   const writeSiteInfo = useWriteSiteInfo(hostname)
   return (
@@ -532,6 +586,7 @@ function SiteInfoSection({hostname}: {hostname: string}) {
         <SiteInfoForm
           info={siteInfo.data}
           onSubmit={(info) => writeSiteInfo.mutate(info)}
+          isOwner={isOwner}
         />
       ) : null}
     </SettingsSection>
@@ -578,7 +633,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         onSubmit={(e) => {
           e.preventDefault()
           const matchedHostProtocol = siteUrl?.match(
-            /^(https?:\/\/)?([^/]*)\/?$/,
+            /^(https?:\/\/)?([^/]*)\/?/,
           )
           const matchedInviteURL = siteUrl?.match(
             /^(https?:\/\/)?([^/]*)(\/invite\/(.*))?$/,
@@ -587,7 +642,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
           const hostname = matchedHostProtocol?.[2] || matchedInviteURL?.[2]
           const inviteToken = matchedInviteURL?.[4]
           const fullHostname = protocol + hostname
-          console.log({fullHostname})
+          console.log({fullHostname, matchedHostProtocol, siteUrl, hostname})
           if (hostname) addSite.mutate({hostname: fullHostname, inviteToken})
         }}
         css={{

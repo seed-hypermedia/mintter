@@ -1,13 +1,13 @@
-import {getInfo, listPeerAddrs} from '@mintter/shared'
+import {daemonClient, networkingClient} from '../../client'
 import {NextRequest, NextResponse} from 'next/server'
-import {transport} from '../../client'
 
 export default async function handler(req: NextRequest, res: NextResponse) {
-  const info = await getInfo(transport)
-  const addresses = await listPeerAddrs(info.peerId, transport)
+  const info = await daemonClient.getInfo({})
+  const peerInfo = await networkingClient.getPeerInfo({peerId: info.peerId})
+
   const wellKnown = {
     account_id: info.accountId,
-    addresses,
+    addresses: peerInfo.addrs,
   }
   return new Response(JSON.stringify(wellKnown), {
     headers: {

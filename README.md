@@ -44,7 +44,7 @@ on a public server (or locally for testing it out).
 For that purpose, there is a simple docker-compose file that should bundle 
 the necessary modules:
 ```bash
-wget https://minttersite.s3.amazonaws.com/docker-compose.yml && docker compose up -d
+curl -s -o docker-compose.yml https://minttersite.s3.amazonaws.com/docker-compose.yml && docker compose up -d
 ```
 This command will spin up the new site on http://127.0.0.1:3000. If you want 
 to customize the site and deployment, generate a `.env` file and place
@@ -59,7 +59,7 @@ MTT_SITE_BACKEND_GRPCWEB_PORT=56001 # The port through which the local backend a
 However if you want a frictionless configuration you can customize the site easily
 running the following command
 ```bash
-sh <(wget -qO- https://minttersite.s3.amazonaws.com/site_deployment_simple.sh)
+sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
 ```
 All domains different than `http://127.0.0.1` are ssl terminated, so make sure 
 ports 80 and 443 are accessible from the outside.

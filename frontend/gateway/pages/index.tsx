@@ -1,12 +1,7 @@
 import {Account, Publication} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {GetServerSideProps} from 'next'
-import {
-  accountsClient,
-  localWebsiteClient,
-  publicationsClient,
-  transport,
-} from '../client'
+import {accountsClient, localWebsiteClient, publicationsClient} from '../client'
 import {PublicationPlaceholder} from '../publication-placeholder'
 import {SiteHead} from '../site-head'
 import PublicationPage from '../ssr-publication-page'
@@ -22,7 +17,7 @@ function DefaultHomePage() {
   let {data} = useQuery({
     queryKey: ['home publication', pubId, version],
     queryFn: () =>
-      publicationClient.getPublication({documentId: pubId, version}),
+      publicationsClient.getPublication({documentId: pubId, version}),
   })
   if (data) {
     return <PublicationPage publication={data} metadata={false} />
@@ -62,8 +57,6 @@ export default function HomePage({
 async function getHomePublication(): Promise<Publication | null> {
   if (!process.env.GW_NEXT_HOST) {
     // Temp Mintter home screen document:
-
-    // https://www.mintter.com/p/bafy2bzacebeq7l4bp4fzmox47fj62bfpuzi6lizx5j3fj7jyws7fztnizu7ts/baeaxdiheaiqpjri6ulmrcvehzszraaallp2xpfb5zoxe7j7tulwph46wewle5gi
     return await publicationsClient.getPublication({documentId: pubId, version})
   }
 
