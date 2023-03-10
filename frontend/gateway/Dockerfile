@@ -13,7 +13,7 @@ RUN pnpm gw:build
 
 FROM node:18-alpine AS production
 COPY --from=builder app/frontend/gateway/.next/standalone .
-COPY --from=builder app/frontend/gateway/.next/static ./frontend/gateway.next/
+COPY --from=builder app/frontend/gateway/.next/static ./frontend/gateway/.next/static
 COPY --from=builder app/frontend/gateway/public ./frontend/gateway/public
 
 RUN addgroup --system --gid 1001 nodejs
