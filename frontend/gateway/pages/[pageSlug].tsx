@@ -1,16 +1,25 @@
-import {accountsClient, localWebsiteClient} from '../client'
 import {Account, Publication} from '@mintter/shared'
 import {GetServerSideProps} from 'next'
+import {accountsClient, localWebsiteClient} from '../client'
+import {getSiteTitle} from '../get-site-info'
 import PublicationPage from '../ssr-publication-page'
 
 export default function PathPublicationPage({
   publication,
   author,
+  siteTitle = null,
 }: {
   publication?: Publication
   author?: Account | null
+  siteTitle: string | null
 }) {
-  return <PublicationPage publication={publication} author={author} />
+  return (
+    <PublicationPage
+      publication={publication}
+      author={author}
+      siteTitle={siteTitle}
+    />
+  )
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -29,6 +38,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {
       publication: publication.toJson(),
       author: author ? author.toJson() : null,
+      siteTitle: await getSiteTitle(),
     },
   }
 }

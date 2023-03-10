@@ -2,6 +2,7 @@ import {Account, blockNodeToSlate, Publication} from '@mintter/shared'
 import {useRouter} from 'next/router'
 import {PublicationMetadata} from './author'
 import Footer from './footer'
+import {GatewayHead} from './gateway-head'
 import {SiteHead} from './site-head'
 import {SlateReactPresentation} from './slate-react-presentation'
 import {useRenderElement} from './slate-react-presentation/render-element'
@@ -11,13 +12,13 @@ export default function PublicationPage({
   publication,
   metadata = true,
   author,
+  siteTitle = null,
 }: {
   publication?: Publication
   author?: Account | null
   metadata?: boolean
+  siteTitle: string | null
 }) {
-  const router = useRouter()
-  // const [docId, version] = router.query.ids || []
   const renderElement = useRenderElement()
   const renderLeaf = useRenderLeaf()
   const blockChildren = publication?.document?.children
@@ -27,7 +28,11 @@ export default function PublicationPage({
 
   return (
     <>
-      <SiteHead title={publication?.document?.title} />
+      {siteTitle ? (
+        <SiteHead siteTitle={siteTitle} />
+      ) : (
+        <GatewayHead title={publication?.document?.title} />
+      )}
       <main
         id="main-content"
         tabIndex={-1}
@@ -52,7 +57,7 @@ export default function PublicationPage({
           </div>
         </article>
       </main>
-      <Footer />
+      {siteTitle ? null : <Footer />}
     </>
   )
 }

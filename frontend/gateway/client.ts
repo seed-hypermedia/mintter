@@ -23,6 +23,11 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   }
 }
 
+const prodInter: Interceptor = (next) => async (req) => {
+  const result = await next({...req, init: {...req.init, redirect: 'follow'}})
+  return result
+}
+
 function getGRPCHost() {
   if (process.env.GW_GRPC_ENDPOINT) {
     return process.env.GW_GRPC_ENDPOINT
@@ -37,23 +42,19 @@ function getGRPCHost() {
 
 const IS_DEV = process.env.NODE_ENV == 'development'
 const IS_CLIENT = !!global.window
-const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
+// const DEV_INTERCEPTORS = IS_CLIENT ? [loggingInterceptor] : []
+const DEV_INTERCEPTORS = [loggingInterceptor, prodInter]
 
 let grpcBaseURL = getGRPCHost()
 
 console.log('🚀 client.ts ', {
   grpcBaseURL,
-  // GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
-  // VERCEL_ENV: process.env.VERCEL_ENV,
-  // NODE_ENV: process.env.NODE_ENV,
+  GW_GRPC_ENDPOINT: process.env.GW_GRPC_ENDPOINT,
+  VERCEL_ENV: process.env.VERCEL_ENV,
+  NODE_ENV: process.env.NODE_ENV,
   IS_DEV,
   IS_CLIENT,
 })
-
-const prodInter: Interceptor = (next) => async (req) => {
-  const result = await next({...req, init: {...req.init, redirect: 'follow'}})
-  return result
-}
 
 export const transport = createGrpcWebTransport({
   baseUrl: grpcBaseURL,

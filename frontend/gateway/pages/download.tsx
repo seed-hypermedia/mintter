@@ -1,10 +1,11 @@
 import Footer from '../footer'
+import {GatewayHead} from '../gateway-head'
 import {SiteHead} from '../site-head'
 
 export default function DownloadPage({manifest = null}) {
   return (
     <>
-      <SiteHead title="Download" />
+      <GatewayHead title="Download" />
       <main
         id="main-content"
         tabIndex={-1}
