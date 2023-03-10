@@ -101,8 +101,14 @@ export const createDragMachine = (editor: Editor) => {
           context.editor.dragging = false
         },
         setDragOverRef: assign((context, event) => {
+          const {nestedGroup, dragOverRef} = context
           if (event.element) {
-            context.dragOverRef?.removeAttribute('data-action')
+            if (nestedGroup) {
+              for (let i = 0; i < nestedGroup.length; i++) {
+                nestedGroup[i].removeAttribute('data-action')
+              }
+            }
+            dragOverRef?.removeAttribute('data-action')
             const element: HTMLLIElement = event.element
             const paragraph = element.firstElementChild
             let isTop = context.isTop
@@ -130,30 +136,35 @@ export const createDragMachine = (editor: Editor) => {
             }
             return {dragOverRef: element, isTop: isTop, nestedGroup: null}
           }
-          if (context.nestedGroup) {
-            const {nestedGroup, dragOverRef} = context
-            let hoveredElement
+          if (nestedGroup) {
+            dragOverRef?.removeAttribute('data-action')
+            let hoveredElement = nestedGroup[nestedGroup.length - 1]
 
-            for (let i = 0; i < nestedGroup.length; i++) {
+            for (let i = 1; i < nestedGroup.length; i++) {
+              nestedGroup[i - 1].removeAttribute('data-action')
+              nestedGroup[i - 1].setAttribute('data-action', 'dragged-group')
+              if (nestedGroup[i] === nestedGroup[nestedGroup.length - 1])
+                nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
               if (
                 event.currentPos <= nestedGroup[i].getBoundingClientRect()['x']
               ) {
                 hoveredElement = nestedGroup[i - 1]
+                hoveredElement.setAttribute('data-action', 'dragged-nested')
+                nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
                 break
               }
             }
-            if (hoveredElement) {
-              dragOverRef?.removeAttribute('data-action')
-              hoveredElement?.setAttribute('data-action', 'dragged-nested')
-              const hoveredNode = ReactEditor.toSlateNode(
-                editor,
-                hoveredElement,
-              )
-              const toPath = ReactEditor.findPath(editor, hoveredNode)
+            const hoveredNode = ReactEditor.toSlateNode(editor, hoveredElement)
+            const toPath = ReactEditor.findPath(editor, hoveredNode)
+            if (hoveredElement != nestedGroup[nestedGroup.length - 1]) {
               return {dragOverRef: hoveredElement, isTop: false, toPath}
             }
+            return {
+              dragOverRef: hoveredElement,
+              isTop: context.isTop,
+              toPath,
+            }
           } else {
-            const {dragOverRef} = context
             if (dragOverRef !== null) {
               const element = ReactEditor.toSlateNode(editor, dragOverRef)
               const path = ReactEditor.findPath(editor, element)
@@ -260,8 +271,14 @@ export const createDragMachine = (editor: Editor) => {
           nestedGroup: null,
         }),
         performMove: (context, event) => {
-          const {fromPath, toPath, dragOverRef, editor, isTop} = context
+          const {fromPath, toPath, dragOverRef, editor, isTop, nestedGroup} =
+            context
           dragOverRef?.removeAttribute('data-action')
+          if (nestedGroup) {
+            for (let i = 0; i < nestedGroup.length; i++) {
+              nestedGroup[i].removeAttribute('data-action')
+            }
+          }
           if (fromPath && toPath && editor) {
             if (fromPath === toPath || fromPath === null || toPath === null)
               return

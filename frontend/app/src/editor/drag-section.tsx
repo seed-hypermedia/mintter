@@ -43,6 +43,7 @@ export const ElementDrag = ({
       className={inRoute ? 'flash' : undefined}
       onDrop={onDrop}
       onDragEnd={onDrop}
+      // style={{border: '1px solid red'}}
     >
       <BlockTools block={element as FlowContent} />
       {children}
