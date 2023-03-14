@@ -25,8 +25,17 @@ export default function PathPublicationPage({
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const path = (context.params?.pageSlug as string) || ''
   const siteInfo = await getSiteInfo()
-
-  const pathRecord = await localWebsiteClient.getPath({path})
+  let pathRecord
+  try {
+    pathRecord = await localWebsiteClient.getPath({path})
+  } catch (e) {
+    const isNotFound = !!e.rawMessage.match('Could not get record for path')
+    if (isNotFound)
+      return {
+        notFound: true,
+      }
+    throw e
+  }
   const publication = pathRecord.publication
   if (!publication)
     return {
