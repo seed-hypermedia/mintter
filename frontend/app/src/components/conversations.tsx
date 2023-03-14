@@ -34,6 +34,7 @@ import {appWindow} from '@tauri-apps/api/window'
 import {Event} from 'nostr-relaypool/event'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
+import {PanelTitle} from './panel'
 
 export function Conversations() {
   const context = useConversations()
@@ -98,15 +99,19 @@ export function Conversations() {
         as="ul"
         data-testid="conversations-list"
       >
-        {documentId
-          ? data?.map((conversation) => (
+        {documentId ? (
+          data?.length ? (
+            data?.map((conversation) => (
               <ConversationItem
                 isHighlighted={highlights.includes(conversation.id)}
                 key={conversation.id}
                 conversation={conversation}
               />
             ))
-          : null}
+          ) : (
+            <PanelTitle>No conversations yet</PanelTitle>
+          )
+        ) : null}
       </Box>
     </Box>
   )
