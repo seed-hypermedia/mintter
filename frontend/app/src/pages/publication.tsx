@@ -179,23 +179,6 @@ export default function PublicationPage({
                             ref={scrollWrapperRef}
                             onScroll={() => mouseService.send('DISABLE.SCROLL')}
                           >
-                            <div
-                              className={`discussion-toggle ${
-                                resizablePanelState.context.show
-                                  ? 'visible'
-                                  : undefined
-                              }`}
-                              style={
-                                resizablePanelState.context.show
-                                  ? {
-                                      top: 100,
-                                      left: `${resizablePanelState.context.left}px`,
-                                      right: 'auto',
-                                      transform: 'translateX(-50%)',
-                                    }
-                                  : undefined
-                              }
-                            ></div>
                             {state.context.publication?.document?.content && (
                               <Editor
                                 editor={editor}
