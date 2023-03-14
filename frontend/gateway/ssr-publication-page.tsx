@@ -1,4 +1,4 @@
-import {Account, blockNodeToSlate, Publication} from '@mintter/shared'
+import {Account, blockNodeToSlate, Publication, SiteInfo} from '@mintter/shared'
 import {useRouter} from 'next/router'
 import {PublicationMetadata} from './author'
 import Footer from './footer'
@@ -12,12 +12,12 @@ export default function PublicationPage({
   publication,
   metadata = true,
   author,
-  siteTitle = null,
+  siteInfo = null,
 }: {
   publication?: Publication
   author?: Account | null
   metadata?: boolean
-  siteTitle: string | null
+  siteInfo: SiteInfo | null
 }) {
   const renderElement = useRenderElement()
   const renderLeaf = useRenderLeaf()
@@ -28,8 +28,8 @@ export default function PublicationPage({
 
   return (
     <>
-      {siteTitle ? (
-        <SiteHead siteTitle={siteTitle} />
+      {siteInfo ? (
+        <SiteHead siteInfo={siteInfo} title={publication?.document?.title} />
       ) : (
         <GatewayHead title={publication?.document?.title} />
       )}
@@ -57,7 +57,7 @@ export default function PublicationPage({
           </div>
         </article>
       </main>
-      {siteTitle ? null : <Footer />}
+      {siteInfo ? null : <Footer />}
     </>
   )
 }

@@ -1,9 +1,9 @@
-import {Account, Publication} from '@mintter/shared'
+import {Account, Publication, SiteInfo} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {GetServerSideProps} from 'next'
 import {accountsClient, localWebsiteClient, publicationsClient} from '../client'
 import {GatewayHead} from '../gateway-head'
-import {getSiteTitle} from '../get-site-info'
+import {getSiteInfo} from '../get-site-info'
 import {PublicationPlaceholder} from '../publication-placeholder'
 import {SiteHead} from '../site-head'
 import PublicationPage from '../ssr-publication-page'
@@ -19,7 +19,7 @@ let version =
 // let pubId = "bafy2bzacebrswg7wbkxvhdzwcpfmhdzy2u5qehdy7pwpf7dx75jitx2p5lwtq"
 // let version = "baeaxdiheaiqaq2xozmaoimhcylcenzowojmr6a7g2xpwljnzzs4ekkm6gnftnnq"
 
-function DefaultHomePage({siteTitle}: {siteTitle: string | null}) {
+function DefaultHomePage({siteInfo}: {siteInfo: SiteInfo | null}) {
   let {data} = useQuery({
     queryKey: ['home publication', pubId, version],
     queryFn: () =>
@@ -30,14 +30,14 @@ function DefaultHomePage({siteTitle}: {siteTitle: string | null}) {
       <PublicationPage
         publication={data}
         metadata={false}
-        siteTitle={siteTitle}
+        siteInfo={siteInfo}
       />
     )
   }
 
   return (
     <>
-      {siteTitle ? <SiteHead siteTitle={siteTitle} /> : <GatewayHead />}
+      {siteInfo ? <SiteHead siteInfo={siteInfo} /> : <GatewayHead />}
 
       <main
         id="main-content"
@@ -53,20 +53,20 @@ function DefaultHomePage({siteTitle}: {siteTitle: string | null}) {
 export default function HomePage({
   publication,
   author,
-  siteTitle = null,
+  siteInfo = null,
 }: {
   publication?: Publication | null
   author: Account | null
-  siteTitle: string | null
+  siteInfo: SiteInfo | null
 }) {
-  if (!publication) return <DefaultHomePage siteTitle={siteTitle} />
+  if (!publication) return <DefaultHomePage siteInfo={siteInfo} />
 
   return (
     <PublicationPage
       publication={publication}
       metadata={false}
       author={author}
-      siteTitle={siteTitle}
+      siteInfo={siteInfo}
     />
   )
 }
@@ -87,20 +87,17 @@ async function getHomePublication(): Promise<Publication | null> {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  console.log('getServerSideProps', context)
   const publication = await getHomePublication()
-  const siteTitle = await getSiteTitle()
+  const siteInfo = await getSiteInfo()
   if (!publication) {
     return {
-      props: {publication: null, author: null, siteTitle},
+      props: {
+        publication: null,
+        author: null,
+        siteInfo: siteInfo ? siteInfo.toJson() : null,
+      },
     }
   }
-
-  console.log(
-    '🚀 ~ file: index.tsx:92 ~ constgetServerSideProps:GetServerSideProps= ~ publication:',
-    publication,
-    siteTitle,
-  )
 
   const author = publication.document?.author
     ? await accountsClient.getAccount({id: publication.document?.author})
@@ -109,7 +106,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     props: {
       publication: publication?.toJson(),
       author: author ? author.toJson() : null,
-      siteTitle,
+      siteInfo: siteInfo ? siteInfo.toJson() : null,
     },
   }
 }

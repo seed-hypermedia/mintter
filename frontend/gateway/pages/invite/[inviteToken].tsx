@@ -1,21 +1,26 @@
+import {SiteInfo} from '@mintter/shared'
 import {GetServerSideProps} from 'next'
 import {useRouter} from 'next/router'
 import Footer from '../../footer'
 import {GatewayHead} from '../../gateway-head'
-import {getSiteTitle} from '../../get-site-info'
+import {getSiteInfo} from '../../get-site-info'
 import {SiteHead} from '../../site-head'
 
 export default function InvitePage({
   hostname,
-  siteTitle,
+  siteInfo,
 }: {
   hostname: string
-  siteTitle: string | null
+  siteInfo: SiteInfo | null
 }) {
   const inviteToken = useRouter().query.inviteToken as string
   return (
     <>
-      {siteTitle ? <SiteHead siteTitle={siteTitle} /> : <GatewayHead />}
+      {siteInfo ? (
+        <SiteHead siteInfo={siteInfo} title="Invite" />
+      ) : (
+        <GatewayHead />
+      )}
       <main
         id="main-content"
         tabIndex={-1}
@@ -30,16 +35,17 @@ export default function InvitePage({
           </li>
         </ol>
       </main>
-      {siteTitle ? null : <Footer />}
+      {siteInfo ? null : <Footer />}
     </>
   )
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
+  const siteInfo = await getSiteInfo()
   return {
     props: {
       hostname: process.env.GW_NEXT_HOST,
-      siteTitle: await getSiteTitle(),
+      siteInfo: siteInfo ? siteInfo.toJson() : null,
     },
   }
 }

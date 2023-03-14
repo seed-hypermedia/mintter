@@ -2,14 +2,18 @@ import {SiteInfo} from '@mintter/shared'
 import {localWebsiteClient} from './client'
 
 export async function getSiteTitle() {
+  const info = await getSiteInfo()
+  if (info) {
+    return info.title
+  }
+  return null
+}
+
+export async function getSiteInfo() {
   if (process.env.GW_NEXT_HOST) {
     try {
       let info: SiteInfo = await localWebsiteClient.getSiteInfo({})
-      console.log('🚀 ~ file: get-site-info.ts:7 ~ getSiteTitle ~ info:', info)
-      if (info) {
-        return info.title as string
-      }
-      return null
+      return info
     } catch (error) {
       return null
     }

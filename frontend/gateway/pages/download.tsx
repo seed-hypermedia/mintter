@@ -1,6 +1,5 @@
 import Footer from '../footer'
 import {GatewayHead} from '../gateway-head'
-import {SiteHead} from '../site-head'
 
 export default function DownloadPage({manifest = null}) {
   return (
