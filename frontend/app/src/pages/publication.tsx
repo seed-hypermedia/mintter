@@ -82,7 +82,7 @@ export default function PublicationPage({
     let unlisten: () => void | undefined
 
     listen<{conversations: Array<string>}>('selector_click', (event) => {
-      panelSend('PANEL.OPEN')
+      panelSend({type: 'PANEL.OPEN', activePanel: 'conversations'})
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
@@ -195,17 +195,7 @@ export default function PublicationPage({
                                     }
                                   : undefined
                               }
-                            >
-                              <button
-                                className="discussion-button"
-                                onClick={() => {
-                                  panelSend('PANEL.TOGGLE')
-                                  mouseService.send('DISABLE.WINDOW.RESIZE')
-                                }}
-                              >
-                                <Icon name="MessageBubble" />
-                              </button>
-                            </div>
+                            ></div>
                             {state.context.publication?.document?.content && (
                               <Editor
                                 editor={editor}
@@ -255,7 +245,7 @@ export default function PublicationPage({
                     label={`${changes?.changes?.length} Versions`}
                     icon={<Icon name="Pencil" />}
                     onClick={() => {
-                      panelSend({type: 'PANEL.OPEN', activePanel: 'changes'})
+                      panelSend({type: 'PANEL.TOGGLE', activePanel: 'changes'})
                     }}
                   />
                   <FooterButton
@@ -263,7 +253,10 @@ export default function PublicationPage({
                     label={`${citations?.links?.length} Citations`}
                     icon={<Icon name="Link" />}
                     onClick={() => {
-                      panelSend({type: 'PANEL.OPEN', activePanel: 'citations'})
+                      panelSend({
+                        type: 'PANEL.TOGGLE',
+                        activePanel: 'citations',
+                      })
                     }}
                   />
                   <FooterButton
@@ -275,7 +268,7 @@ export default function PublicationPage({
                     icon={<Icon name="MessageBubble" />}
                     onClick={() => {
                       panelSend({
-                        type: 'PANEL.OPEN',
+                        type: 'PANEL.TOGGLE',
                         activePanel: 'conversations',
                       })
                     }}
@@ -365,7 +358,7 @@ type ResizablePanelMachineServices = {
   }
 }
 let resizablePanelMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIBhAeQDkA1AUQCUBlAQQBUBJRhwB0POgHExAGRYBtAAwBdRKGIB7WGgAuaVWWUgAHogBMANgCsQgJwBGACx2A7I7sAOOXNNe7AGhABPREIbOSshB1s5G1MrNwBmOWNXAF9kv1QNbHwiUgpqNhYOPgAtWUV9NQ1tXX0jBFM5cJtXOLi7KwarOMdzP0CEYNdTISiWh0cu1xtjLtT09CyCEnJKWkZWTl4BBmE6AAUWBnklJBBKrR09U7qbRzihHuNHV1dzWKerV2M+xBDHB+M01MrTcgJScxAZFUEDg+gymFwS1ylAq6guNWuQTsjSiFhCHisjgspmMvQCWJsIwcNnMri65nMdlMrh6qVSQA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAFAQQDkBRAGQDoAVAeQHEeWmAbQAMAXUShiAe1hoALmilkJIAB6IALBoBMbDQHYAjBoCshgGwBmAJwHr2gDQgAnokLbrbABzbhw8-omQZaWGiGWAL4RTqiy2PhEpBTU9MzsAEpMAMoAkgBaQmIq0rIKSirqCMaWbL4m5obGZsJh2hpOrgiEGoa6ll7m1vptXgPmZlEx6PEEJOSUtIysbFw0TAwi4kggJfKKytuVhiYabMJepiahLWEGHYi23uYaXsKWhtYnZvr6UdEgZCkEDgKlimFwsySlGKMj25UObkM-jOJje2m0XlCNn0XhM9y6hks5jYxms5yu42qwz+ESAA */
   createMachine(
     {
       predictableActionArguments: true,
@@ -381,9 +374,27 @@ let resizablePanelMachine =
         services: {} as ResizablePanelMachineServices,
       },
       on: {
-        'PANEL.TOGGLE': {
-          actions: ['toggleShow'],
-        },
+        'PANEL.TOGGLE': [
+          {
+            cond: 'shouldClosePanel',
+            actions: [
+              (context) => {
+                console.log('IS PANEL VISIBLE!!', context)
+              },
+              'hidePanel',
+              'resetActivePanel',
+            ],
+          },
+          {
+            actions: [
+              (context) => {
+                console.log('IS PANEL NOOOOT VISIBLE!!', context)
+              },
+              'showPanel',
+              'assignActivePanel',
+            ],
+          },
+        ],
         'PANEL.RESIZE': {
           actions: 'updateHandlePosition',
         },
@@ -401,8 +412,10 @@ let resizablePanelMachine =
 
           return {left: newValue}
         }),
-        toggleShow: assign({
-          show: (context) => !context.show,
+        // @ts-ignore
+        hidePanel: assign({
+          show: false,
+          activePanel: undefined,
         }),
         showPanel: assign((_, event) => ({
           show: true,
@@ -411,6 +424,14 @@ let resizablePanelMachine =
         assignActivePanel: assign({
           activePanel: (_, event) => event.activePanel,
         }),
+      },
+      guards: {
+        shouldClosePanel: (context, event) => {
+          if (event.activePanel == context.activePanel) {
+            return context.show
+          }
+          return false
+        },
       },
     },
   )

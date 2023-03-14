@@ -62,10 +62,6 @@ export const ElementDrag = ({
 
 function CitationNumber({block}: {block: FlowContent}) {
   let {citations = [], onCitationsOpen} = useCitationsForBlock(block.id)
-  console.log(
-    '🚀 ~ file: drag-section.tsx:65 ~ CitationNumber ~ citations:',
-    citations,
-  )
 
   return citations?.length ? (
     <Button
