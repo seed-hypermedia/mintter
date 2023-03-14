@@ -15,6 +15,7 @@ import {useLocation, useRoute} from 'wouter'
 import {interpret} from 'xstate'
 import {useDocRepublish} from './sites'
 import {draftsClient} from '@app/api-clients'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
 
 export type MainActor =
   | {type: 'publication'; actor: PublicationActor}
@@ -31,7 +32,11 @@ export type MainActorOptions = Partial<{
 export function useMainActor(props: MainActorOptions = {}) {
   const republishDoc = useDocRepublish({
     onSuccess: (webPubs) => {
-      toast.success(`Document updated on ${webPubs.join(', ')}`)
+      toast.success(
+        `Document updated on ${webPubs
+          .map((pub) => hostnameStripProtocol(pub.hostname))
+          .join(', ')}`,
+      )
     },
   })
   const [, setLocation] = useLocation()
