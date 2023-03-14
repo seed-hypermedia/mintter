@@ -225,7 +225,7 @@ export function useSitePublish() {
         throw new Error('Cannot publish document that is not available locally')
       const referencedDocs = extractReferencedDocs(document)
       const site = getWebSiteClient(hostname)
-      site.publishDocument({
+      await site.publishDocument({
         documentId: documentId,
         path: path,
         referencedDocuments: referencedDocs,
