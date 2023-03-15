@@ -5,10 +5,12 @@ import {fileURLToPath} from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+import tamaguiPlugin from '@tamagui/next-plugin'
+let {withTamagui} = tamaguiPlugin
 /**
  * @type {import('next').NextConfig}
  */
-export default {
+let localConfig = {
   // Append the default value with md extensions
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   reactStrictMode: true,
@@ -59,4 +61,21 @@ export default {
     // },
   },
   output: 'standalone',
+}
+
+export default function (name, {defaultConfig}) {
+  let config = {
+    ...defaultConfig,
+    ...localConfig,
+  }
+
+  const tamaguiPlugin = withTamagui({
+    config: './tamagui.config.ts',
+    components: ['tamagui'],
+  })
+
+  return {
+    ...config,
+    ...tamaguiPlugin(config),
+  }
 }

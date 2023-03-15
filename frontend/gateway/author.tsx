@@ -1,3 +1,4 @@
+import {Paragraph, Text, YStack, styled} from 'tamagui'
 import {Publication, formattedDate, Account} from '@mintter/shared'
 
 export function PublicationMetadata({
@@ -8,23 +9,33 @@ export function PublicationMetadata({
   author?: Account | null
 }) {
   return publication ? (
-    <aside className="text-base aside-content document-metadata">
-      <p>
-        <span>author:&nbsp;</span>
+    <Aside>
+      <Paragraph>
+        <Text fontFamily="$body" o={0.5}>
+          author:&nbsp;
+        </Text>
         {author?.profile?.alias}
-      </p>
-      <p>
-        Published at:{' '}
+      </Paragraph>
+      <Paragraph>
+        <Text fontFamily="$body" o={0.5}>
+          Published at:&nbsp;
+        </Text>
         {publication?.document?.publishTime
           ? formattedDate(publication.document.publishTime)
           : null}
-      </p>
-      <p>
-        Last update:{' '}
+      </Paragraph>
+      <Paragraph>
+        <Text fontFamily="$body" o={0.5}>
+          Last update:&nbsp;
+        </Text>
         {publication?.document?.updateTime
           ? formattedDate(publication.document.updateTime)
           : null}
-      </p>
-    </aside>
+      </Paragraph>
+    </Aside>
   ) : null
 }
+
+const Aside = styled(YStack, {
+  padding: '$4',
+})

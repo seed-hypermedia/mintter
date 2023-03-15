@@ -21,7 +21,6 @@ import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
-import {Tooltip} from '@components/tooltip'
 import {MttLink} from '@mintter/shared'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
@@ -46,7 +45,13 @@ export default function PublicationPage({
     [],
   )
 
-  let mouseService = useInterpret(() => mouseMachine)
+  let mouseService = useInterpret(() => mouseMachine, {
+    actions: {
+      getMousePosition: () => {
+        // noop
+      },
+    },
+  })
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
@@ -120,11 +125,11 @@ export default function PublicationPage({
     )
   }
 
-  if (state.matches('ready')) {
+  if (state.matches('ready') && params?.id) {
     return (
       <ConversationsProvider
-        documentId={params?.id}
-        onConversationsOpen={(conversations: string[]) => {
+        documentId={params.id}
+        onConversationsOpen={() => {
           panelSend({
             type: 'PANEL.OPEN',
             activePanel: 'conversations',
@@ -390,7 +395,7 @@ let resizablePanelMachine =
     },
     {
       actions: {
-        updateHandlePosition: assign((context, event) => {
+        updateHandlePosition: assign((_, event) => {
           // hardcoded value to apply to the controls
           let newValue = event.values[0]
 

@@ -1,13 +1,16 @@
 import {SiteInfo} from '@mintter/shared'
 import {GetServerSideProps} from 'next'
 import {useRouter} from 'next/router'
+import {H1, XStack, YStack, Paragraph} from 'tamagui'
+import {Container} from '../../container'
 import Footer from '../../footer'
 import {GatewayHead} from '../../gateway-head'
 import {getSiteInfo} from '../../get-site-info'
+import {MainContainer, SideContainer} from '../../page-components'
 import {SiteHead} from '../../site-head'
 
 export default function InvitePage({
-  hostname,
+  hostname = 'demo.com',
   siteInfo,
 }: {
   hostname: string
@@ -16,25 +19,26 @@ export default function InvitePage({
   const inviteToken = useRouter().query.inviteToken as string
   return (
     <>
-      {siteInfo ? (
-        <SiteHead siteInfo={siteInfo} title="Invite" />
-      ) : (
-        <GatewayHead />
-      )}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="main-content wrapper text-size-100"
-      >
-        <h1>Youre invited to {hostname}</h1>
-        <ol>
-          <li>Download Mintter</li>
-          <li>Add Site</li>
-          <li>
-            Paste this URL: {hostname}/invite/{inviteToken}
-          </li>
-        </ol>
-      </main>
+      {siteInfo ? <SiteHead siteInfo={siteInfo} /> : <GatewayHead />}
+      <Container tag="main" id="main-content" tabIndex={-1}>
+        <MainContainer>
+          <H1>You&apos;re invited to {hostname}</H1>
+          <YStack tag="ol">
+            <XStack tag="li" className="list-item item-decimal">
+              <Paragraph size={'$8'}>Download Mintter</Paragraph>
+            </XStack>
+            <XStack className="list-item item-decimal" tag="li">
+              <Paragraph size={'$8'}>Add Site</Paragraph>
+            </XStack>
+            <XStack className="list-item item-decimal" tag="li">
+              <Paragraph size={'$8'}>
+                Paste this URL: {hostname}/invite/{inviteToken}
+              </Paragraph>
+            </XStack>
+          </YStack>
+        </MainContainer>
+        <SideContainer></SideContainer>
+      </Container>
       {siteInfo ? null : <Footer />}
     </>
   )

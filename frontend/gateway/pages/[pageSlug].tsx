@@ -1,7 +1,7 @@
 import {Account, Publication, SiteInfo} from '@mintter/shared'
 import {GetServerSideProps} from 'next'
 import {accountsClient, localWebsiteClient} from '../client'
-import {getSiteInfo, getSiteTitle} from '../get-site-info'
+import {getSiteInfo} from '../get-site-info'
 import PublicationPage from '../ssr-publication-page'
 
 export default function PathPublicationPage({

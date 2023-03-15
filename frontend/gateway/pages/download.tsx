@@ -1,3 +1,5 @@
+import {Container} from '../container'
+import {XStack, YStack, H1, Button, styled} from 'tamagui'
 import Footer from '../footer'
 import {GatewayHead} from '../gateway-head'
 
@@ -5,31 +7,24 @@ export default function DownloadPage({manifest = null}) {
   return (
     <>
       <GatewayHead title="Download" />
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="main-content wrapper text-size-100"
-      >
-        <section>
-          <h1>Download Mintter</h1>
-          <div className="cluster">
+      <Container>
+        <YStack>
+          <H1>Download Mintter</H1>
+          <XStack space my="$7">
             {manifest?.platforms.map((item) => (
-              <a
-                key={item.url}
-                className="download-item"
-                href={item.url}
-                download
-              >
+              <DownloadItem key={item.url} href={item.url} download size="$6">
                 {item.platform}
-              </a>
+              </DownloadItem>
             ))}
-          </div>
-        </section>
-      </main>
+          </XStack>
+        </YStack>
+      </Container>
       <Footer />
     </>
   )
 }
+
+const DownloadItem = styled(Button, {})
 
 export async function getServerSideProps() {
   let req = await fetch(

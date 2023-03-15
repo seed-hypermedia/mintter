@@ -1,5 +1,5 @@
 import {useSelector} from '@xstate/react'
-import Head from 'next/head'
+import {YStack} from 'tamagui'
 import {InterpreterFrom} from 'xstate'
 import {PublicationMetadata} from './author'
 import {publicationMachine} from './machines/publication-machine'
@@ -25,20 +25,17 @@ export function PublicationContent({
 
   return publication && value ? (
     <>
-      <article className="sidebar">
-        <div>
-          {!onlyContent ? (
-            <PublicationMetadata publication={publication} />
-          ) : null}
-        </div>
-        <div>
-          <SlateReactPresentation
-            value={[value]}
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-          />
-        </div>
-      </article>
+      <YStack tag="article">
+        {!onlyContent ? (
+          <PublicationMetadata publication={publication} />
+        ) : null}
+
+        <SlateReactPresentation
+          value={[value]}
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+        />
+      </YStack>
     </>
   ) : (
     <PublicationPlaceholder />

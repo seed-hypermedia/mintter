@@ -1,8 +1,9 @@
 import {Account, blockNodeToSlate, Publication, SiteInfo} from '@mintter/shared'
-import {useRouter} from 'next/router'
 import {PublicationMetadata} from './author'
+import {Container} from './container'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
+import {ArticleContainer, MainContainer, SideContainer} from './page-components'
 import {SiteHead} from './site-head'
 import {SlateReactPresentation} from './slate-react-presentation'
 import {useRenderElement} from './slate-react-presentation/render-element'
@@ -33,18 +34,10 @@ export default function PublicationPage({
       ) : (
         <GatewayHead title={publication?.document?.title} />
       )}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="main-content wrapper text-size-100"
-      >
-        <article className="sidebar">
-          <div>
-            {metadata ? (
-              <PublicationMetadata publication={publication} author={author} />
-            ) : null}
-          </div>
-          <div>
+
+      <Container tag="main" id="main-content" tabIndex={-1}>
+        <ArticleContainer>
+          <MainContainer>
             {slateChildren ? (
               <SlateReactPresentation
                 value={[slateChildren]}
@@ -54,9 +47,14 @@ export default function PublicationPage({
             ) : (
               <p>Empty document.</p>
             )}
-          </div>
-        </article>
-      </main>
+          </MainContainer>
+          <SideContainer>
+            {metadata ? (
+              <PublicationMetadata publication={publication} author={author} />
+            ) : null}
+          </SideContainer>
+        </ArticleContainer>
+      </Container>
       {siteInfo ? null : <Footer />}
     </>
   )
