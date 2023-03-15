@@ -23,7 +23,7 @@ require (
 	github.com/ipfs/go-ipns v0.3.0
 	github.com/ipfs/go-log/v2 v2.5.1
 	github.com/ipfs/go-merkledag v0.8.1
-	github.com/ipld/go-ipld-prime v0.18.0
+	github.com/ipld/go-ipld-prime v0.19.0
 	github.com/klauspost/compress v1.15.13
 	github.com/leporo/sqlf v1.3.0
 	github.com/libp2p/go-libp2p v0.24.1
