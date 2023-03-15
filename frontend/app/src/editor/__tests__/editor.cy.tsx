@@ -15,6 +15,7 @@ import {
   Publication,
   blockToApi,
   ListCitationsResponse,
+  BlockNode,
 } from '@mintter/shared'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
 import {Route} from '@components/router'
@@ -23,6 +24,8 @@ import {queryKeys} from '@app/hooks'
 import {mouseMachine} from '@app/mouse-machine'
 import DraftPage from '@app/pages/draft'
 import {InterpreterFrom} from 'xstate'
+import {useMainActor} from '@app/hooks/main-actor'
+import {QueryClient} from '@tanstack/react-query'
 
 before(() => {
   window.__TAURI_IPC__ = function () {
@@ -39,7 +42,7 @@ describe('Editor', () => {
 
       let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft?.id}`,
       })
@@ -53,10 +56,10 @@ describe('Editor', () => {
       let block = heading({id: 'b1'}, [staticParagraph([text('Hello World')])])
       let draft = createTestDraft({
         children: [
-          {
+          new BlockNode({
             block: blockToApi(block),
             children: [],
-          },
+          }),
         ],
       })
       let editor = buildEditorHook(plugins, EditorMode.Draft)
@@ -64,7 +67,7 @@ describe('Editor', () => {
       let {client} = createTestQueryClient({
         draft,
       })
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -106,19 +109,19 @@ describe('Editor', () => {
       let {client, draft} = createTestQueryClient({
         draft: createTestDraft({
           children: [
-            {
+            new BlockNode({
               block: blockToApi(block1),
               children: [],
-            },
-            {
+            }),
+            new BlockNode({
               block: blockToApi(block2),
               children: [],
-            },
+            }),
           ],
         }),
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -163,7 +166,7 @@ describe('Editor', () => {
         }),
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft?.id}`,
       })
@@ -229,7 +232,7 @@ describe('Editor', () => {
         }),
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft?.id}`,
       })
@@ -301,7 +304,7 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -341,7 +344,7 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -397,7 +400,7 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -447,7 +450,7 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -509,7 +512,7 @@ describe('Editor', () => {
         }),
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft?.id}`,
       })
@@ -568,7 +571,7 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -623,7 +626,7 @@ describe('Editor', () => {
         draft,
       })
 
-      cy.mount(<TestEditor editor={editor} />, {
+      cy.mount(<TestEditor client={client} editor={editor} />, {
         client,
         path: `/d/${draft.id}`,
       })
@@ -665,10 +668,10 @@ describe('Links', () => {
       title: 'demo',
       subtitle: '',
       children: [
-        {
+        new BlockNode({
           block: blockToApi(block),
           children: [],
-        },
+        }),
       ],
       createTime: new Date(),
       updateTime: new Date(),
@@ -699,7 +702,7 @@ describe('Links', () => {
       authors: [{id: 'demoauthor'}],
     })
 
-    cy.mount(<TestEditor editor={editor} />, {
+    cy.mount(<TestEditor client={client} editor={editor} />, {
       client,
       path: `/d/${draft.id}`,
     })
@@ -766,7 +769,7 @@ describe('Transclusions', () => {
 
     let editor = buildEditorHook(plugins, EditorMode.Draft)
 
-    cy.mount(<TestEditor editor={editor} />, {
+    cy.mount(<TestEditor client={client} editor={editor} />, {
       client,
       path: `/d/${draft.id}`,
     })
@@ -794,12 +797,18 @@ describe('Transclusions', () => {
 
 type TestEditorProps = {
   editor: EditorType
+  client?: QueryClient
 }
 
-function TestEditor({editor}: TestEditorProps) {
+function TestEditor({editor, client}: TestEditorProps) {
+  const mainActor = useMainActor({shouldAutosave: false, editor, client})
   return (
     <Route path="/d/:id/:tag?">
-      {() => <DraftPage shouldAutosave={false} editor={editor} />}
+      {() =>
+        mainActor?.type == 'draft' ? (
+          <DraftPage draftActor={mainActor.actor} editor={editor} />
+        ) : null
+      }
     </Route>
   )
 }

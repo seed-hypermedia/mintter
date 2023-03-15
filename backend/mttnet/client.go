@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mintter/backend/core"
+	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"net"
 	"sync"
@@ -16,6 +17,7 @@ import (
 	"go.uber.org/multierr"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // Client manages libp2p client connection for the Mintter Protocol.
@@ -42,7 +44,7 @@ func NewClient(me core.Identity, h host.Host) *Client {
 
 				return gostream.Dial(ctx, h, id, ProtocolID)
 			}),
-			grpc.WithInsecure(),
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithBlock(),
 		},
 		me:   me,
@@ -68,6 +70,16 @@ func (c *Client) Dial(ctx context.Context, pid peer.ID) (p2p.P2PClient, error) {
 	}
 
 	return p2p.NewP2PClient(conn), nil
+}
+
+// DialSite dials a remote site a remote peer and provide and RPC client instance.
+func (c *Client) DialSite(ctx context.Context, siteDeviceID peer.ID) (site.WebSiteClient, error) {
+	conn, err := c.dialPeer(ctx, siteDeviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return site.NewWebSiteClient(conn), nil
 }
 
 // Close the Client and all the open connections and streams gracefully.

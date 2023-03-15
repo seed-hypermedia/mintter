@@ -1,5 +1,4 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {Blocktools} from '@app/editor/blocktools'
 import {queryKeys} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
@@ -203,17 +202,11 @@ export type CustomMountOptions = {
   path?: string
   setLocation?: () => void
   client?: QueryClient
-  mainMachineOptions?: MachineOptionsFrom<
-    ReturnType<typeof createMainPageService>
-  >
 }
 
 export type TestProviderProps = CustomMountOptions & {
   children: React.ReactNode
   client: QueryClient
-  mainMachineOptions?: MachineOptionsFrom<
-    ReturnType<typeof createMainPageService>
-  >
 }
 
 export function TestPublicationProvider({children}) {
@@ -221,9 +214,7 @@ export function TestPublicationProvider({children}) {
   return (
     <div>
       <MouseProvider value={mouseService}>
-        <BlockHighLighter>
-          <Blocktools>{children}</Blocktools>
-        </BlockHighLighter>
+        <BlockHighLighter>{children}</BlockHighLighter>
       </MouseProvider>
     </div>
   )
@@ -261,7 +252,7 @@ let defaultAccount = {
 }
 
 export function createAccount(entry: Partial<Account>): Account {
-  return deepmerge(defaultAccount, entry)
+  return new Account(deepmerge(defaultAccount, entry))
 }
 
 ;(function mockTauriIpc() {

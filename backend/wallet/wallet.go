@@ -128,7 +128,7 @@ func New(ctx context.Context, log *zap.Logger, db *sqlitex.Pool, net *future.Rea
 		}
 		n, err := net.Await(ctx)
 		if err != nil {
-			panic(err)
+			return
 		}
 		n.SetInvoicer(&srv)
 	}()

@@ -23,6 +23,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -39,6 +41,249 @@ func TestAPIGetRemotePublication(t *testing.T) {
 	remotePublication, err := requester.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: publishedDocument.Document.Id})
 	require.NoError(t, err)
 	testutil.ProtoEqual(t, publishedDocument, remotePublication, "remote publication doesn't match")
+}
+
+func TestSite(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	siteConf := makeTestConfig(t)
+	siteConf.Syncing.NoInbound = true
+
+	gw, err := Load(ctx, siteConf)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		cancel()
+		require.Equal(t, context.Canceled, gw.Wait())
+	})
+
+	owner := makeTestApp(t, "alice", makeTestConfig(t), true)
+	editor := makeTestApp(t, "bob", makeTestConfig(t), true)
+	editorFriend := makeTestApp(t, "alice-2", makeTestConfig(t), true)
+	reader := makeTestApp(t, "david", makeTestConfig(t), true)
+
+	siteCfg := makeTestConfig(t)
+	siteCfg.Site.Hostname = "http://127.0.0.1:59011"
+	siteCfg.HTTPPort = 59011
+	siteCfg.Identity.NoAccountWait = true
+	siteCfg.Site.Title = "initial Site Title"
+	siteCfg.Site.OwnerID = owner.Me.MustGet().AccountID().String()
+
+	site := makeTestApp(t, "carol", siteCfg, false)
+	time.Sleep(500 * time.Millisecond)
+	newSite, err := owner.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
+	require.NoError(t, err)
+	require.Equal(t, siteCfg.Site.Hostname, newSite.Hostname)
+	require.Equal(t, documents.Member_OWNER, newSite.Role)
+	// The reader connects to the site via p2p only
+	_, err = reader.RPC.Networking.Connect(ctx, &networking.ConnectRequest{Addrs: getAddrs(t, site)})
+	require.NoError(t, err)
+	// The editor and his friend connect to each other
+	_, err = editorFriend.RPC.Networking.Connect(ctx, &networking.ConnectRequest{Addrs: getAddrs(t, editor)})
+	require.NoError(t, err)
+	// Adding twice a site must fail.
+	_, err = owner.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
+	require.Error(t, err)
+	// Generate a token for the editor.
+	header := metadata.New(map[string]string{string(mttnet.MttHeader): siteCfg.Site.Hostname})
+	ctxWithHeaders := metadata.NewIncomingContext(ctx, header) // Typically, the headers are written by the client in the outgoing context and server receives them in the incoming. But here we are writing the server directly
+	ctxWithHeaders = context.WithValue(ctxWithHeaders, mttnet.SiteAccountIDCtxKey, site.Me.MustGet().AccountID().String())
+	token, err := owner.RPC.Site.CreateInviteToken(ctxWithHeaders, &documents.CreateInviteTokenRequest{Role: documents.Member_EDITOR})
+	require.NoError(t, err)
+	// Adding a site as an editor without token should fail.
+	_, err = editor.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname})
+	require.Error(t, err)
+	// Adding a site as an editor with the previous token should succeed.
+	editorSite, err := editor.RPC.Documents.AddSite(ctx, &documents.AddSiteRequest{Hostname: siteCfg.Site.Hostname, InviteToken: token.Token})
+	require.NoError(t, err)
+	require.Equal(t, siteCfg.Site.Hostname, editorSite.Hostname)
+	require.Equal(t, documents.Member_EDITOR, editorSite.Role)
+	// Get initial site info.
+	siteInfo, err := owner.RPC.Site.GetSiteInfo(ctxWithHeaders, &documents.GetSiteInfoRequest{})
+	require.NoError(t, err)
+	require.Equal(t, "", siteInfo.Description)
+	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
+	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
+	require.Equal(t, owner.Me.MustGet().AccountID().String(), siteInfo.Owner)
+	require.Equal(t, siteCfg.Site.Title, siteInfo.Title)
+	siteAcc, err := site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.NoError(t, err)
+	require.Equal(t, "", siteAcc.Profile.Bio)
+	require.Equal(t, siteCfg.Site.Title, siteAcc.Profile.Alias)
+	// Change site info by the editor should fail
+	const newTitle = "new title"
+	const newDescription = " new brief description"
+	_, err = editor.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
+	require.Error(t, err)
+	// Change site info by the owner shouldn't fail
+	siteInfo, err = owner.RPC.Site.UpdateSiteInfo(ctxWithHeaders, &documents.UpdateSiteInfoRequest{Title: newTitle, Description: newDescription})
+	require.NoError(t, err)
+	require.Equal(t, newDescription, siteInfo.Description)
+	require.Equal(t, siteCfg.Site.Hostname, siteInfo.Hostname)
+	require.Equal(t, siteCfg.Site.OwnerID, siteInfo.Owner)
+	require.Equal(t, owner.Me.MustGet().AccountID().String(), siteInfo.Owner)
+	require.Equal(t, newTitle, siteInfo.Title)
+	siteAcc, err = site.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.NoError(t, err)
+	require.Equal(t, newDescription, siteAcc.Profile.Bio)
+	require.Equal(t, newTitle, siteAcc.Profile.Alias)
+	// Share a document.
+	sharedDocument := publishDocument(t, ctx, editor)
+	_, err = editor.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	_, err = editorFriend.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(500 * time.Millisecond) // Sleeping just to make sure it has time to propagate
+	publicationList, err := site.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 0) // since site only works with pull request the document should not reach the site until published
+
+	publicationList, err = editorFriend.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1) // since the friend is a peer, it should have received the document
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	require.NoError(t, err)
+	const indexPath = "/"
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: sharedDocument.Document.Id,
+		Version:    sharedDocument.Version,
+		Path:       indexPath,
+	})
+	require.NoError(t, err)
+	// Site should have the document
+	publicationList, err = site.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1)
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+	// And owner should see it as well
+	_, err = site.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	_, err = owner.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(500 * time.Millisecond) // Sleeping just to make sure it has time to propagate
+
+	publicationList, err = owner.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 1)
+	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
+	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
+
+	// But the reader should not have it since its only connected to the site
+	publicationList, err = reader.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 0)
+	// Owner should view it in the site as published
+	sitePublications, err := owner.RPC.Site.ListWebPublications(ctxWithHeaders, &documents.ListWebPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, sitePublications.Publications, 1)
+	require.Equal(t, sharedDocument.Version, sitePublications.Publications[0].Version)
+	require.Equal(t, siteCfg.Site.Hostname, sitePublications.Publications[0].Hostname)
+	require.Equal(t, indexPath, sitePublications.Publications[0].Path)
+	require.Equal(t, sharedDocument.Document.Id, sitePublications.Publications[0].DocumentId)
+	// publish same doc to another path
+	const anotherPath = "another"
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: sharedDocument.Document.Id,
+		Version:    sharedDocument.Version,
+		Path:       anotherPath,
+	})
+	require.Error(t, err)
+	// publish a different version to another path
+	const anotherTitle = "New Document title leading to a new version"
+	newVersion := updateDocumenTitle(t, ctx, owner, sharedDocument.Document.Id, anotherTitle)
+	require.Equal(t, sharedDocument.Document.Id, newVersion.Document.Id)
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: newVersion.Document.Id,
+		Version:    newVersion.Version,
+		Path:       anotherPath,
+	})
+	require.Error(t, err)
+	// publish different version in same path should update the old one
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: newVersion.Document.Id,
+		Version:    newVersion.Version,
+		Path:       indexPath,
+	})
+	require.Error(t, err) // the editor does not have it, the owner does
+	wantedDoc, err := editor.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{
+		DocumentId: newVersion.Document.Id,
+		Version:    newVersion.Version})
+	require.NoError(t, err)
+	require.Equal(t, newVersion.Version, wantedDoc.Version)
+	require.Equal(t, newVersion.Document.Id, wantedDoc.Document.Id)
+	// Now republish
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: newVersion.Document.Id,
+		Version:    newVersion.Version,
+		Path:       indexPath,
+	})
+	require.NoError(t, err)
+	doc, err := owner.RPC.Site.GetPath(ctxWithHeaders, &documents.GetPathRequest{Path: indexPath})
+	require.NoError(t, err)
+	require.Equal(t, newVersion.Version, doc.Publication.Version)
+	require.Equal(t, anotherTitle, doc.Publication.Document.Title)
+	// Different author changes the version and republishes to the same path
+	const anotherAuthorTitle = "Is this a change in authorship? Nope"
+	noNewAuthor := updateDocumenTitle(t, ctx, editor, newVersion.Document.Id, anotherAuthorTitle)
+	require.Equal(t, sharedDocument.Document.Author, noNewAuthor.Document.Author)
+	require.Equal(t, sharedDocument.Document.Id, noNewAuthor.Document.Id)
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: noNewAuthor.Document.Id,
+		Version:    noNewAuthor.Version,
+		Path:       indexPath,
+	})
+	require.NoError(t, err)
+	// Publish another document (owner) and give no time to sync and get it via getpublication in the editor.
+	newDocument := publishDocument(t, ctx, owner)
+	require.NoError(t, err)
+	_, err = owner.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: newDocument.Document.Id,
+		Version:    newDocument.Version,
+		Path:       anotherPath,
+	})
+	require.NoError(t, err)
+	sitePublications, err = editor.RPC.Site.ListWebPublications(ctxWithHeaders, &documents.ListWebPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, sitePublications.Publications, 2)
+
+	// Unpublish a document we haven't written should fail
+	_, err = editor.RPC.Site.UnpublishDocument(ctxWithHeaders, &documents.UnpublishDocumentRequest{
+		DocumentId: newDocument.Document.Id,
+	})
+	require.Error(t, err)
+	// But the owner can unpublish
+	_, err = owner.RPC.Site.UnpublishDocument(ctxWithHeaders, &documents.UnpublishDocumentRequest{
+		DocumentId: newDocument.Document.Id,
+	})
+	require.NoError(t, err)
+	sitePublications, err = editor.RPC.Site.ListWebPublications(ctxWithHeaders, &documents.ListWebPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, sitePublications.Publications, 1)
+	require.Equal(t, noNewAuthor.Version, sitePublications.Publications[0].Version)
+	require.Equal(t, indexPath, sitePublications.Publications[0].Path)
+	require.Equal(t, noNewAuthor.Document.Id, sitePublications.Publications[0].DocumentId)
+
+	// Publish the previous shared document to the site on a blank path becomes unlisted. but same ID fails
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: sharedDocument.Document.Id,
+		Version:    sharedDocument.Version,
+	})
+	require.Error(t, err)
+	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
+		DocumentId: newDocument.Document.Id,
+		Version:    newDocument.Version,
+	})
+	require.NoError(t, err)
+	sitePublications, err = editor.RPC.Site.ListWebPublications(ctxWithHeaders, &documents.ListWebPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, sitePublications.Publications, 2)
+	_, err = editor.RPC.Site.GetPath(ctxWithHeaders, &documents.GetPathRequest{})
+	require.Error(t, err)
 }
 
 func TestGateway(t *testing.T) {
@@ -138,7 +383,6 @@ func TestBug_SyncHangs(t *testing.T) {
 	}())
 
 	require.NoError(t, g.Wait())
-
 }
 
 func TestBug_PublicationsListInconsistent(t *testing.T) {
@@ -217,7 +461,7 @@ func TestDaemonList(t *testing.T) {
 
 	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
 
-	conn, err := grpc.Dial(alice.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithInsecure())
+	conn, err := grpc.Dial(alice.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
 	defer conn.Close()
 
@@ -239,7 +483,7 @@ func TestDaemonSmoke(t *testing.T) {
 	dmn := makeTestApp(t, "alice", makeTestConfig(t), false)
 	ctx := context.Background()
 
-	conn, err := grpc.Dial(dmn.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithInsecure())
+	conn, err := grpc.Dial(dmn.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	require.NoError(t, err)
 	defer conn.Close()
 
@@ -483,6 +727,26 @@ func publishDocument(t *testing.T, ctx context.Context, publisher *App) *documen
 	require.NoError(t, err)
 	return published
 }
+
+func updateDocumenTitle(t *testing.T, ctx context.Context, publisher *App, docID, newTitle string) *documents.Publication {
+	draft, err := publisher.RPC.Documents.CreateDraft(ctx, &documents.CreateDraftRequest{
+		ExistingDocumentId: docID,
+	})
+	require.NoError(t, err)
+
+	updated, err := publisher.RPC.Documents.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		DocumentId: draft.Id,
+		Changes: []*documents.DocumentChange{
+			{Op: &documents.DocumentChange_SetTitle{SetTitle: newTitle}},
+		},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+	published, err := publisher.RPC.Documents.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	return published
+}
+
 func makeTestConfig(t *testing.T) config.Config {
 	cfg := config.Default()
 

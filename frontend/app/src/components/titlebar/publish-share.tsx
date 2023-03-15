@@ -1,56 +1,192 @@
-import {DraftActor} from '@app/draft-machine'
-import {useMain} from '@app/main-context'
-import {useState} from 'react'
-import {useRoute} from 'wouter'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {Box} from '@components/box'
-import {useSelector} from '@xstate/react'
-import {Icon} from '@components/icon'
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
+import {MainActor} from '@app/hooks/main-actor'
+import {useDocPublications, useSiteList} from '@app/hooks/sites'
 import {PublicationActor} from '@app/publication-machine'
-import {useDocPublications, useSiteList} from '@app/hooks'
-import {Button} from '@components/button'
 import {styled} from '@app/stitches.config'
+import {EXPERIMENTS} from '@app/utils/experimental'
+import {useNostr} from '@app/utils/nostr'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
+import {Icon} from '@components/icon'
+import {TextField} from '@components/text-field'
 import {AccessURLRow} from '@components/url'
+import {WebPublicationRecord} from '@mintter/shared'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {useSelector} from '@xstate/react'
+import {useEffect, useRef, useState} from 'react'
+import {toast} from 'react-hot-toast'
+import {useRoute} from 'wouter'
 import {usePublicationDialog} from './publication-dialog'
+
+const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
+const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
+
+function NostrPublishButton({
+  onClick,
+  doc,
+}: {
+  onClick: (url: string) => void
+  doc: PublicationActor
+}) {
+  const url = useSelector(doc, (state) => {
+    const {documentId, version} = state.context
+    return getMintterPublicURL(documentId, version)
+  })
+  return (
+    <Button
+      onClick={() => {
+        onClick(url)
+      }}
+    >
+      Share on Nostr
+    </Button>
+  )
+}
+
+function NostrPostForm({
+  onDone,
+  docMainURL,
+}: {
+  onDone: () => void
+  docMainURL: string
+}) {
+  const nostr = useNostr()
+  const [content, setContent] = useState(`${docMainURL} on Mintter`)
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        nostr?.publish(content).then(() => {
+          toast.success('Shared on Nostr.')
+        })
+        onDone()
+      }}
+    >
+      <TextField
+        name="content"
+        textarea
+        value={content}
+        onChange={(e) => {
+          setContent(e.target.value)
+        }}
+      />
+      <Button type="submit">Post</Button>
+    </form>
+  )
+}
+
+const Heading = styled('h2', {
+  margin: 0,
+  fontSize: '$4',
+})
+
+function useNostrPostDialog() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [mainUrl, setMainUrl] = useState('')
+  function open(url: string) {
+    setMainUrl(url)
+    setIsOpen(true)
+  }
+  return {
+    open,
+    content: (
+      <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+        <DialogPrimitive.Portal>
+          <StyledOverlay />
+          <StyledContent>
+            <Heading>Post to Nostr</Heading>
+            <NostrPostForm
+              docMainURL={mainUrl}
+              onDone={() => {
+                setIsOpen(false)
+              }}
+            />
+          </StyledContent>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+    ),
+  }
+}
+
+const forceProductionURL = true
+
+function getMintterPublicURL(docId: string, version: string) {
+  return `${
+    isProduction || forceProductionURL
+      ? MINTTER_GATEWAY_URL
+      : 'http://localhost:3000'
+  }/p/${docId}/${version}`
+}
 
 function MintterURLRow({doc}: {doc: PublicationActor}) {
   const {title, url} = useSelector(doc, (state) => {
     const {documentId, version} = state.context
     return {
       title: `mintter.com/p/${documentId}/${version}`,
-      url: `${
-        isProduction ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
-      }/p/${documentId}/${version}`,
+      url: getMintterPublicURL(documentId, version),
     }
   })
   return <AccessURLRow url={url} title={title} />
 }
 
-function PublishedURLs({docId}: {docId: string}) {
-  const publications = useDocPublications(docId)
+function PublishedURLs({
+  publications,
+  doc,
+}: {
+  publications?: WebPublicationRecord[]
+  doc: MainActor['actor']
+}) {
+  if (publications && publications.length === 0)
+    return <MintterURLRow doc={doc} />
   return (
     <>
-      {publications.data?.map((pub) => {
-        return <AccessURLRow key={pub.id} url={'title'} title="pub url" />
+      {publications?.map((pub) => {
+        const shortHost = hostnameStripProtocol(pub.hostname)
+        const shortURL = pub.path
+          ? pub.path === '/'
+            ? shortHost
+            : `${shortHost}/${pub.path}`
+          : `${shortHost}/p/${pub.documentId}/${pub.version}`
+        return (
+          <AccessURLRow
+            key={`${pub.documentId}/${pub.version}`}
+            url={`https://${shortURL}`}
+            title={shortURL}
+          />
+        )
       })}
     </>
   )
 }
 
-function PublishButtons({onPublish}: {onPublish: (siteId: string) => void}) {
+function PublishButtons({
+  onPublish,
+  publications,
+}: {
+  onPublish: (hostname: string) => void
+  publications?: WebPublicationRecord[]
+}) {
   const sites = useSiteList()
+  const sitesList = sites.data?.filter(({hostname}) => {
+    if (publications?.find((pub) => pub.hostname === hostname)) return false
+    return true
+  })
+  if (sitesList?.length === 0) return null
   return (
     <>
-      {sites.data?.map((site) => {
+      <Subheading>Publish to:</Subheading>
+      {sitesList?.map((site) => {
         return (
           <Button
-            key={site.id}
+            key={site.hostname}
             onClick={() => {
-              onPublish(site.id)
+              onPublish(site.hostname)
             }}
           >
-            {site.id}
+            {hostnameStripProtocol(site.hostname)}
             <ButtonIcon>
               <Icon name="ExternalLink" />
             </ButtonIcon>
@@ -64,20 +200,34 @@ const ButtonIcon = styled('span', {
   marginHorizontal: 12,
 })
 
-export function PublishShareButton() {
+export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const [isPublic, pubParams] = useRoute('/p/:id/:version')
-  const [isPublicB, pubParamsB] = useRoute('/p/:id/:version/:block')
-  const [draft, draftParams] = useRoute('/d/:id/:tag?')
-  const [isOpen, setIsOpen] = useState(false)
-  const mainService = useMain()
-  const docActor = useSelector(mainService, (state) => state.context.current)
-  const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
-  const publicationDialog = usePublicationDialog(docId)
+  const [isPublicB, pubParamsB] = useRoute('/p/:id/:version/:block?')
+  const [isDraft, draftParams] = useRoute('/d/:id/:tag?')
 
-  // const isSaving = useSelector(docActor, (state) =>
-  //   state.matches('DRAFT.PUBLISH')
-  // )
-  if (!draft && !isPublic && !isPublicB) return null
+  const [isOpen, setIsOpen] = useState(false)
+  const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
+  const publicationDialog = usePublicationDialog(mainActor)
+  const nostrPostDialog = useNostrPostDialog()
+  const publications = useDocPublications(docId)
+  let isSaving = useRef(false)
+  useEffect(() => {
+    if (mainActor.type == 'publication') {
+      isSaving.current = false
+    } else {
+      mainActor.actor.subscribe((state) => {
+        if (state.matches('editing.saving')) {
+          // console.log('subscribe change TRUE!', state.value)
+          isSaving.current = true
+        } else {
+          // console.log('subscribe change FALSE!', state.value)
+          isSaving.current = false
+        }
+      })
+    }
+  }, [mainActor])
+
+  if (!isDraft && !isPublic && !isPublicB) return null
   return (
     <>
       <PopoverPrimitive.Root
@@ -92,29 +242,25 @@ export function PublishShareButton() {
       >
         <PopoverPrimitive.Trigger asChild>
           <button
+            disabled={isSaving.current}
             onClick={(e) => {
               e.preventDefault()
               if (isOpen) {
                 setIsOpen(false)
                 return
               }
-              const docActor = mainService.getSnapshot().context.current as
-                | DraftActor
-                | PublicationActor
-              if (docActor.id === 'publishDraft' || docActor.id === 'editor') {
-                ;(docActor as DraftActor).send('DRAFT.PUBLISH')
-                setIsOpen(true)
-              } else if (docActor.id === 'publication-machine') {
-                setIsOpen(true)
+
+              if (mainActor.type == 'draft') {
+                mainActor.actor.send('DRAFT.PUBLISH')
               }
+              setIsOpen(true)
             }}
             className={`titlebar-button success outlined ${
               isOpen ? 'active' : ''
-            }`}
+            } ${isSaving.current ? 'disabled' : ''}`}
             data-testid="button-publish"
-            // disabled={isSaving}
           >
-            {docActor?.id === 'editor' ? (
+            {mainActor.actor?.id === 'editor' ? (
               draftParams?.tag === 'new' ? (
                 'Share'
               ) : (
@@ -127,8 +273,9 @@ export function PublishShareButton() {
             )}
           </button>
         </PopoverPrimitive.Trigger>
-        <PopoverPrimitive.Portal style={{}}>
+        <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content
+            align="end"
             style={{
               zIndex: 200000,
             }}
@@ -149,24 +296,34 @@ export function PublishShareButton() {
               }}
             >
               <Subheading>Public on the Web:</Subheading>
-              <MintterURLRow doc={docActor} />
-              <AccessURLRow // getridofme after you fix PublishedURLs
-                title="opinion.ethosfera.org/p/comingsoon"
-                url="https://opinion.ethosfera.org/p/comingsoon"
-              />
-              {docId && <PublishedURLs docId={docId} />}
-              <Subheading>Publish to:</Subheading>
+              {docId && (
+                <PublishedURLs
+                  publications={publications.data}
+                  doc={mainActor.actor}
+                />
+              )}
               <PublishButtons
-                onPublish={(siteId) => {
+                publications={publications.data}
+                onPublish={(hostname) => {
                   setIsOpen(false)
-                  publicationDialog.open(siteId)
+                  publicationDialog.open(hostname)
                 }}
               />
+              {EXPERIMENTS.nostr && (
+                <>
+                  <Subheading>Nostr Network</Subheading>
+                  <NostrPublishButton
+                    doc={mainActor.actor as PublicationActor}
+                    onClick={nostrPostDialog.open}
+                  />
+                </>
+              )}
             </Box>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
       {publicationDialog.content}
+      {nostrPostDialog.content}
     </>
   )
 }

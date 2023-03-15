@@ -1,5 +1,6 @@
 import React from 'react'
 import {isParent, MttastContent} from '@mintter/shared'
+import {Article, Paragraph} from 'tamagui'
 import {
   RenderElementProps as SlateRenderElementProps,
   RenderLeafProps as SlateRenderLeafProps,
@@ -22,6 +23,14 @@ export function SlateReactPresentation({
   leafWrapper = 'span',
   type = 'publication' as EditorType,
 }: SlateReactPresentationProps) {
+  const [showChild, setShowChild] = React.useState(false)
+
+  React.useEffect(() => {
+    setShowChild(true)
+  }, [])
+
+  if (!showChild) return null
+
   let editor = (
     <SlatePresentationContext.Provider
       value={{renderElement, renderLeaf, leafWrapper, type}}
@@ -34,7 +43,7 @@ export function SlateReactPresentation({
     return <>{editor}</>
   }
 
-  return <article className="editor">{editor}</article>
+  return <Article className="editor">{editor}</Article>
 }
 
 export type EditorType = 'publication' | 'transclusion'
@@ -98,7 +107,7 @@ export function Leaf({leaf = {text: ''}}) {
 }
 
 function DefaultElement({children, element}: RenderElementProps) {
-  return <p>{children}</p>
+  return <Paragraph>{children}</Paragraph>
 }
 function DefaultLeaf({children, leaf}) {
   return <span>{children}</span>

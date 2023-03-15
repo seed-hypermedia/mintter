@@ -1,27 +1,29 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {Blocktools} from '@app/editor/blocktools'
+import {CitationsProvider} from '@app/editor/comments/citations-context'
+import {ConversationsProvider} from '@app/editor/comments/conversations-context'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
-import {useMain} from '@app/main-context'
+import {useDocChanges, useDocCitations} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {createPublicationMachine} from '@app/publication-machine'
+import {PublicationActor} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
-import {error} from '@app/utils/logger'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {Discussion} from '@components/discussion'
+import {ChangesList} from '@components/changes-list'
+import {Citations} from '@components/citations'
+import {Conversations} from '@components/conversations'
+import Footer, {FooterButton} from '@components/footer'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
-import {useLocation, useRoute} from '@components/router'
+import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
-import {Tooltip} from '@components/tooltip'
-import {useQueryClient} from '@tanstack/react-query'
+import {MttLink} from '@mintter/shared'
 import {listen} from '@tauri-apps/api/event'
-import {useInterpret, useMachine} from '@xstate/react'
+import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useEffect, useMemo, useRef, useState} from 'react'
@@ -31,20 +33,33 @@ import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
 
-export default function PublicationWrapper() {
-  let client = useQueryClient()
-  let mainService = useMain()
+export default function PublicationPage({
+  publicationActor,
+}: {
+  publicationActor: PublicationActor
+}) {
   let [, params] = useRoute('/p/:id/:version/:block?')
-  let [, setLocation] = useLocation()
-  let [focusBlock, setFocusBlock] = useState(() => params?.block)
-  let mouseService = useInterpret(() => mouseMachine)
+
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
     [],
   )
+
+  let mouseService = useInterpret(() => mouseMachine, {
+    actions: {
+      getMousePosition: () => {
+        // noop
+      },
+    },
+  })
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
+  // this checks if there's a block in the url, so we can highlight and scroll into the selected block
+  let [focusBlock, setFocusBlock] = useState(() => params?.block)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
+
+  const {data: changes} = useDocChanges(params?.id)
+  const {data: citations} = useDocCitations(params?.id)
 
   useEffect(() => {
     let isSubscribed = true
@@ -63,29 +78,42 @@ export default function PublicationWrapper() {
     }
   })
 
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    listen<{conversations: Array<string>}>('selector_click', (event) => {
+      panelSend({type: 'PANEL.OPEN', activePanel: 'conversations'})
+    }).then((f) => (unlisten = f))
+
+    return () => unlisten?.()
+  }, [])
+
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
+  let [state, send] = useActor(publicationActor)
 
-  let [state, send, service] = useMachine(
-    () =>
-      createPublicationMachine({
-        client,
-        editor,
-        documentId: params?.id,
-        version: params?.version,
-      }),
-    {
-      actions: {
-        sendActorToParent: () => {
-          mainService.send({type: 'COMMIT.CURRENT.PUBLICATION', service})
-        },
-        onEditSuccess: (_, event) => {
-          setLocation(`/d/${event.data.id}`)
-        },
-      },
-    },
-  )
+  //  useMachine(
+  //   () =>
+  //     createPublicationMachine({
+  //       client,
+  //       editor,
+  //       documentId: params?.id,
+  //       version: params?.version,
+  //     }),
+  //   {
+  //     actions: {
+  //       sendActorToParent: () => {
+  //         mainService.send({type: 'COMMIT.CURRENT.PUBLICATION', service})
+  //       },
+  //       onEditSuccess: (_, event) => {
+  //         setLocation(`/d/${event.data.id}`)
+  //       },
+  //     },
+  //   },
+  // )
 
-  if (state.matches('publication.errored')) {
+  let {activePanel} = resizablePanelState.context
+
+  if (state.matches('errored')) {
     return (
       <div data-testid="publication-section" className="page-wrapper">
         <p>Publication ERROR</p>
@@ -97,114 +125,143 @@ export default function PublicationWrapper() {
     )
   }
 
-  let topOffset = resizablePanelState.context.vertical ? 82 : 0
-  let top = resizablePanelState.context.top - topOffset
-
-  if (state.matches('publication.ready')) {
+  if (state.matches('ready') && params?.id) {
     return (
-      <MouseProvider value={mouseService}>
-        <BlockHighLighter>
-          <div className="page-wrapper publication-wrapper">
-            <Allotment
-              defaultSizes={[100]}
-              vertical={resizablePanelState.context.vertical}
-              key={resizablePanelState.context.vertical}
-              onChange={(values) => panelSend({type: 'RESIZE', values})}
-            >
-              <Allotment.Pane>
-                <section
-                  className="publication-section"
-                  data-testid="publication-section"
-                  onMouseMove={(event) =>
-                    mouseService.send({
-                      type: 'MOUSE.MOVE',
-                      position: event.clientY,
-                    })
+      <ConversationsProvider
+        documentId={params.id}
+        onConversationsOpen={() => {
+          panelSend({
+            type: 'PANEL.OPEN',
+            activePanel: 'conversations',
+          })
+        }}
+        publication={state.context.publication}
+      >
+        <CitationsProvider
+          documentId={params.id}
+          onCitationsOpen={(citations: Array<MttLink>) => {
+            panelSend({
+              type: 'PANEL.OPEN',
+              activePanel: 'citations',
+            })
+          }}
+        >
+          <MouseProvider value={mouseService}>
+            <BlockHighLighter>
+              <div className="page-wrapper publication-wrapper">
+                <Allotment
+                  defaultSizes={[100]}
+                  onChange={(values) =>
+                    panelSend({type: 'PANEL.RESIZE', values})
                   }
-                  onMouseLeave={() => {
-                    mouseService.send('DISABLE.CHANGE')
-                  }}
                 >
-                  <ErrorBoundary
-                    fallback={<div>error</div>}
-                    onReset={() => window.location.reload()}
-                  >
-                    <FileProvider value={state.context.publication}>
-                      <ScrollArea
-                        ref={scrollWrapperRef}
-                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                  <Allotment.Pane>
+                    <section
+                      className="publication-section"
+                      data-testid="publication-section"
+                      onMouseMove={(event) =>
+                        mouseService.send({
+                          type: 'MOUSE.MOVE',
+                          positionX: event.clientX,
+                          position: event.clientY,
+                        })
+                      }
+                      onMouseLeave={() => {
+                        mouseService.send('DISABLE.CHANGE')
+                      }}
+                    >
+                      <ErrorBoundary
+                        fallback={<div>error</div>}
+                        onReset={() => window.location.reload()}
                       >
-                        <div
-                          className={`discussion-toggle ${
-                            resizablePanelState.context.visible
-                              ? 'visible'
-                              : undefined
-                          }`}
-                          style={
-                            resizablePanelState.context.visible
-                              ? {
-                                  top: `${top}px`,
-                                  left: `${resizablePanelState.context.left}px`,
-                                  right: 'auto',
-                                  transform: resizablePanelState.context
-                                    .vertical
-                                    ? 'translateY(50%)'
-                                    : 'translateX(-50%)',
+                        <FileProvider value={state.context.publication}>
+                          <ScrollArea
+                            ref={scrollWrapperRef}
+                            onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                          >
+                            {state.context.publication?.document?.content && (
+                              <Editor
+                                editor={editor}
+                                mode={EditorMode.Publication}
+                                value={
+                                  state.context.publication?.document.content
                                 }
-                              : undefined
-                          }
-                        >
-                          <Tooltip content="Toggle Activity">
-                            <button
-                              className="discussion-button"
-                              onClick={() => {
-                                panelSend('DISCUSSION.TOGGLE')
-                                mouseService.send('DISABLE.WINDOW.RESIZE')
-                              }}
-                            >
-                              <Icon name="MessageBubble" />
-                            </button>
-                          </Tooltip>
-                        </div>
-                        {state.context.publication?.document?.content && (
-                          <Blocktools editor={editor}>
-                            <Editor
-                              editor={editor}
-                              mode={EditorMode.Publication}
-                              value={
-                                state.context.publication?.document.content
-                              }
-                              onChange={() => {
-                                mouseService.send('DISABLE.CHANGE')
-                                // noop
-                              }}
-                            />
-                          </Blocktools>
-                        )}
-                      </ScrollArea>
-                    </FileProvider>
-                  </ErrorBoundary>
-                </section>
-              </Allotment.Pane>
-              {resizablePanelState.context.visible &&
-                !!state.context.publication && (
-                  <Allotment.Pane preferredSize="35%">
-                    <section className="discussion-section">
-                      <ScrollArea
-                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                      >
-                        <Discussion
-                          visible={resizablePanelState.context.visible}
-                          publication={state.context.publication}
-                        />
-                      </ScrollArea>
+                                onChange={() => {
+                                  mouseService.send('DISABLE.CHANGE')
+                                  // noop
+                                }}
+                              />
+                            )}
+                          </ScrollArea>
+                        </FileProvider>
+                      </ErrorBoundary>
                     </section>
                   </Allotment.Pane>
-                )}
-            </Allotment>
-          </div>
-        </BlockHighLighter>
-      </MouseProvider>
+                  {resizablePanelState.context.show &&
+                    !!state.context.publication && (
+                      <Allotment.Pane preferredSize="35%">
+                        {/* <section className="discussion-section"> */}
+                        <ScrollArea
+                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                        >
+                          {activePanel == 'conversations' ? (
+                            <Conversations />
+                          ) : activePanel == 'changes' ? (
+                            <ChangesList
+                              docId={state.context.publication.document.id}
+                              version={state.context.version}
+                            />
+                          ) : (
+                            <Citations
+                              docId={state.context.publication.document.id}
+                              version={state.context.version}
+                            />
+                          )}
+                        </ScrollArea>
+                        {/* </section> */}
+                      </Allotment.Pane>
+                    )}
+                </Allotment>
+                <Footer>
+                  <FooterButton
+                    active={activePanel == 'changes'}
+                    label={`${changes?.changes?.length} Versions`}
+                    icon={<Icon name="Pencil" />}
+                    onClick={() => {
+                      panelSend({type: 'PANEL.TOGGLE', activePanel: 'changes'})
+                    }}
+                  />
+                  <FooterButton
+                    active={activePanel == 'citations'}
+                    label={`${citations?.links?.length} Citations`}
+                    icon={<Icon name="Link" />}
+                    onClick={() => {
+                      panelSend({
+                        type: 'PANEL.TOGGLE',
+                        activePanel: 'citations',
+                      })
+                    }}
+                  />
+                  <FooterButton
+                    active={
+                      activePanel == 'conversations' &&
+                      resizablePanelState.context.show
+                    }
+                    label={`Conversations`}
+                    icon={<Icon name="MessageBubble" />}
+                    onClick={() => {
+                      panelSend({
+                        type: 'PANEL.TOGGLE',
+                        activePanel: 'conversations',
+                      })
+                    }}
+                  />
+                </Footer>
+              </div>
+            </BlockHighLighter>
+          </MouseProvider>
+        </CitationsProvider>
+      </ConversationsProvider>
     )
   }
 
@@ -214,7 +271,7 @@ export default function PublicationWrapper() {
 
       <p
         className={classnames('publication-fetching-message', {
-          visible: state.matches('publication.fetching.extended'),
+          visible: state.matches('fetching.extended'),
         })}
       >
         Searching the network...
@@ -264,17 +321,19 @@ function BlockPlaceholder() {
   )
 }
 
+type ActivePanel = 'conversations' | 'citations' | 'changes' | undefined
+
 type ResizablePanelMachineContext = {
-  top: number
+  show: boolean
+  activePanel: ActivePanel
   left: number
-  vertical: boolean
-  visible: boolean
 }
 
 type ResizablePanelMachineEvent =
-  | {type: 'DISCUSSION.TOGGLE'}
-  | {type: 'RESIZE'; values: Array<number>}
-  | {type: 'MATCHMEDIA.MATCH'; match: boolean}
+  | {type: 'PANEL.TOGGLE'; activePanel?: ActivePanel}
+  | {type: 'PANEL.OPEN'; activePanel?: ActivePanel}
+  | {type: 'PANEL.CLOSE'}
+  | {type: 'PANEL.RESIZE'; values: Array<number>}
 
 type ResizablePanelMachineServices = {
   matchMediaService: {
@@ -282,75 +341,79 @@ type ResizablePanelMachineServices = {
   }
 }
 let resizablePanelMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAlAUQGUBJALToG0AGAXUVGID2sNABc0AsnxAAPRADZOAOgAsARgAcAZk3KAnAt2aA7AFYANCACeiQhrmLOGncqOH1qgEyGAvt4uphbHwiUgpqAFkAQQAVAGEACXC6ABEmSMUouPiuXiQQQWExCSlZBE97Tj0PdRN1OrkjDXULazKTZUUFdU5HI051XXVlTXVfPxAyAQg4KQDMXAISckopAtFxSTzSwmUlRzkTVR7OXSMDuQ9zKxs1B2U1WsMTdrl1UzHvIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAFAQQDkBRAGQDoAVAeQHEeWmAbQAMAXUShiAe1hoALmilkJIAB6IALBoBMbDQHYAjBoCshgGwBmAJwHr2gDQgAnokLbrbABzbhw8-omQZaWGiGWAL4RTqiy2PhEpBTU9MzsAEpMAMoAkgBaQmIq0rIKSirqCMaWbL4m5obGZsJh2hpOrgiEGoa6ll7m1vptXgPmZlEx6PEEJOSUtIysbFw0TAwi4kggJfKKytuVhiYabMJepiahLWEGHYi23uYaXsKWhtYnZvr6UdEgZCkEDgKlimFwsySlGKMj25UObkM-jOJje2m0XlCNn0XhM9y6hks5jYxms5yu42qwz+ESAA */
   createMachine(
     {
       predictableActionArguments: true,
-      context: {top: 100, left: 100, vertical: false, visible: false},
+      context: {
+        show: false,
+        left: 100,
+        activePanel: 'conversations',
+      },
       tsTypes: {} as import('./publication.typegen').Typegen0,
       schema: {
         context: {} as ResizablePanelMachineContext,
         events: {} as ResizablePanelMachineEvent,
         services: {} as ResizablePanelMachineServices,
       },
-      invoke: {
-        src: 'matchMediaService',
-        id: 'matchMediaService',
-      },
       on: {
-        'DISCUSSION.TOGGLE': {
-          actions: 'setDiscussionVisibility',
-        },
-        RESIZE: {
+        'PANEL.TOGGLE': [
+          {
+            cond: 'shouldClosePanel',
+            actions: [
+              (context) => {
+                console.log('IS PANEL VISIBLE!!', context)
+              },
+              'hidePanel',
+              'resetActivePanel',
+            ],
+          },
+          {
+            actions: [
+              (context) => {
+                console.log('IS PANEL NOOOOT VISIBLE!!', context)
+              },
+              'showPanel',
+              'assignActivePanel',
+            ],
+          },
+        ],
+        'PANEL.RESIZE': {
           actions: 'updateHandlePosition',
         },
-        'MATCHMEDIA.MATCH': {
-          actions: ['setOrientation'],
+        'PANEL.OPEN': {
+          actions: ['showPanel', 'assignActivePanel'],
         },
       },
       id: 'resizable-panel',
     },
     {
       actions: {
-        setOrientation: assign({
-          vertical: (_, event) => event.match,
-        }),
-        updateHandlePosition: assign((context, event) => {
+        updateHandlePosition: assign((_, event) => {
           // hardcoded value to apply to the controls
           let newValue = event.values[0]
 
-          if (context.vertical) {
-            return {top: newValue, left: 0}
-          } else {
-            return {left: newValue, top: 100}
-          }
+          return {left: newValue}
         }),
-        setDiscussionVisibility: assign({
-          visible: (context) => !context.visible,
+        // @ts-ignore
+        hidePanel: assign({
+          show: false,
+          activePanel: undefined,
+        }),
+        showPanel: assign((_, event) => ({
+          show: true,
+          activePanel: event.activePanel,
+        })),
+        assignActivePanel: assign({
+          activePanel: (_, event) => event.activePanel,
         }),
       },
-      services: {
-        matchMediaService: () => (sendBack) => {
-          let responsiveMedia = window.matchMedia('(max-width: 768px)')
-
-          if (typeof responsiveMedia.addEventListener == 'function') {
-            responsiveMedia.addEventListener('change', handler)
-          } else if (typeof responsiveMedia.addListener == 'function') {
-            responsiveMedia.addListener(handler)
-          } else {
-            error('matchMedia support error', responsiveMedia)
+      guards: {
+        shouldClosePanel: (context, event) => {
+          if (event.activePanel == context.activePanel) {
+            return context.show
           }
-
-          // initial set
-          sendBack({type: 'MATCHMEDIA.MATCH', match: responsiveMedia.matches})
-
-          return () => {
-            responsiveMedia.removeEventListener('change', handler)
-          }
-
-          function handler(event: MediaQueryListEvent) {
-            sendBack({type: 'MATCHMEDIA.MATCH', match: event.matches})
-          }
+          return false
         },
       },
     },

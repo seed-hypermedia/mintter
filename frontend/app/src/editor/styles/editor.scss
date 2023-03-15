@@ -17,7 +17,7 @@ li::marker {
 
 [data-element-type='code'] {
   position: relative;
-  max-width: var(--editor-width, 64ch);
+  max-width: var(--editor-width, 59ch);
   pre {
     width: 100%;
     overflow: hidden;
@@ -32,6 +32,46 @@ li::marker {
   }
 }
 
+[data-action='dragged-bottom'] {
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    height: 3px;
+    width: 100%;
+    background-color: #007aff;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  // background-color: var(--primary-component-bg-hover)
+}
+
+[data-action='dragged-top'] {
+  &::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    height: 3px;
+    width: 100%;
+    background-color: #007aff;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+[data-action='dragged-nested'] {
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    height: 3px;
+    width: 25px;
+    background-color: #007a42;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 .code-selector-wrapper {
   position: absolute;
   top: 0;
@@ -41,21 +81,29 @@ li::marker {
   z-index: 100;
 }
 
+// this CSS enables to drag from every part of the block, but prevents text selection. maybe we need to understand better what's the UX we need.
+// .mode-draft [data-block-id] {
+//   -moz-user-select: none;
+//   user-select: none;
+//   -khtml-user-drag: element;
+//   -webkit-user-drag: element;
+// }
+
 .editor {
-  --size-300: 0.75rem;
-  --size-400: 1rem;
-  --size-500: 1.33rem;
-  --size-600: 1.77rem;
-  --size-700: 2.36rem;
-  --size-800: 3.15rem;
-  --size-900: 4.2rem;
+  --size-300: 0.75em;
+  --size-400: 1em;
+  --size-500: 1.33em;
+  --size-600: 1.77em;
+  --size-700: 2.36em;
+  --size-800: 3.15em;
+  --size-900: 4.2em;
   // font-size: var(--size-400);
-  --editor-width: 64ch;
+  --editor-width: 59ch;
   --flow-space: var(--size-700);
 
   padding-inline-end: var(--size-400);
   width: 100%;
-  max-width: var(--editor-width, 64ch);
+  max-width: var(--editor-width, 59ch);
   margin-inline: auto;
 
   @media (min-width: 768px) {
@@ -69,13 +117,14 @@ li::marker {
   p,
   q,
   blockquote {
-    max-width: var(--editor-width, 64ch);
+    max-width: var(--editor-width, 59ch);
     width: 100%;
+    margin: 0;
+    padding-block: 0.5em;
   }
 
   h1 {
     // max-width: 15ch;
-
     width: 100%;
   }
 
@@ -176,7 +225,6 @@ q {
     cursor: pointer;
 
     > span {
-      // text-shadow: 0 0 6px var(--primary-component-bg-active);
       background-color: var(--highlight-surface2);
     }
   }

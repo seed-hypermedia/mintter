@@ -15,9 +15,13 @@ func (s Server) Register(srv *grpc.Server) {
 
 	daemon.RegisterDaemonServer(srv, s.Daemon)
 
+	documents.RegisterWebPublishingServer(srv, s.Documents)
 	documents.RegisterContentGraphServer(srv, s.Documents)
 	documents.RegisterDraftsServer(srv, s.Documents)
 	documents.RegisterPublicationsServer(srv, s.Documents)
+	documents.RegisterCommentsServer(srv, s.Documents)
+	documents.RegisterChangesServer(srv, s.Documents)
+	documents.RegisterWebSiteServer(srv, s.Site)
 
 	networking.RegisterNetworkingServer(srv, s.Networking)
 }

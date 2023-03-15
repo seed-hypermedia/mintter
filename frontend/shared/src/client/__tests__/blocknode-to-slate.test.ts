@@ -1,4 +1,4 @@
-import {Block, BlockNode} from '../.generated/documents/v1alpha/documents'
+import {Block, BlockNode} from '../.generated/documents/v1alpha/documents_pb'
 import {blockNodeToSlate} from '../block-to-slate'
 import {group, ol, paragraph, statement, text} from '../../mttast'
 import {describe, expect, test} from 'vitest'
@@ -6,20 +6,21 @@ import {describe, expect, test} from 'vitest'
 describe('blockNodeToSlate', () => {
   test('default group', () => {
     let input: Array<BlockNode> = [
-      {
-        block: Block.fromPartial({
+      new BlockNode({
+        block: new Block({
           id: 'b1',
           type: 'statement',
           text: 'Hello world',
           attributes: {},
           annotations: [],
+          revision: '',
         }),
         children: [],
-      },
+      }),
     ]
 
     let output = group([
-      statement({id: 'b1'}, [paragraph([text('Hello world')])]),
+      statement({id: 'b1', revision: ''}, [paragraph([text('Hello world')])]),
     ])
 
     expect(blockNodeToSlate(input, 'group')).toEqual(output)
@@ -27,8 +28,8 @@ describe('blockNodeToSlate', () => {
 
   test('ordered group', () => {
     let input: Array<BlockNode> = [
-      {
-        block: Block.fromPartial({
+      new BlockNode({
+        block: new Block({
           id: 'b1',
           type: 'statement',
           text: 'Hello world',
@@ -36,10 +37,11 @@ describe('blockNodeToSlate', () => {
             childrenType: 'orderedList',
           },
           annotations: [],
+          revision: '',
         }),
         children: [
-          {
-            block: Block.fromPartial({
+          new BlockNode({
+            block: new Block({
               id: 'b2',
               type: 'statement',
               text: 'Nested item',
@@ -49,15 +51,19 @@ describe('blockNodeToSlate', () => {
               annotations: [],
             }),
             children: [],
-          },
+          }),
         ],
-      },
+      }),
     ]
 
     let output = group([
-      statement({id: 'b1'}, [
+      statement({id: 'b1', revision: ''}, [
         paragraph([text('Hello world')]),
-        ol([statement({id: 'b2'}, [paragraph([text('Nested item')])])]),
+        ol([
+          statement({id: 'b2', revision: ''}, [
+            paragraph([text('Nested item')]),
+          ]),
+        ]),
       ]),
     ])
 

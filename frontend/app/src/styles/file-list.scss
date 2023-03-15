@@ -10,19 +10,19 @@ $bg: transparent;
   margin: 0;
   // padding: 0;
   max-width: 800px;
-  margin-top: 2rem;
+  margin-top: 2em;
   margin-inline: auto;
   box-sizing: border-box;
+  margin-bottom: 100px;
 }
 .list-item {
   position: relative;
   display: grid;
-  background-color: red;
   gap: 0;
   grid-auto-flow: row;
   user-select: none;
   overflow: hidden;
-  border-radius: 0.2rem;
+  border-radius: 0.2em;
   background-color: $bg;
   grid-template-columns: 1fr 1fr auto;
   grid-template-rows: auto auto;
@@ -41,8 +41,8 @@ $bg: transparent;
   }
 
   & > * {
-    padding-inline: 0.5rem;
-    padding-block: 0.25rem;
+    padding-inline: 0.5em;
+    padding-block: 0.25em;
   }
 
   @media (min-width: 768px) {
@@ -55,11 +55,11 @@ $bg: transparent;
     content: '';
     position: absolute;
     top: 50%;
-    left: -1rem;
+    left: -1em;
     transform: translateY(-50%);
     background: $new-color;
-    block-size: 0.4rem;
-    inline-size: 0.4rem;
+    block-size: 0.4em;
+    inline-size: 0.4em;
     border-radius: 100%;
   }
 }
@@ -68,11 +68,19 @@ $bg: transparent;
   font-family: var(--mtt-fonts-base);
   margin: 0;
   grid-area: item-title;
-  letter-spacing: 0.01rem;
+  letter-spacing: 0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
   color: $foreground;
+
+  &.low {
+    color: var(--base-text-low);
+  }
+}
+.item-sub-title {
+  margin: 0 0.5em;
+  color: var(--base-text-low);
 }
 .item-controls {
   opacity: 0;
@@ -90,12 +98,12 @@ $bg: transparent;
   --text-color-dimmed: var(--base-text-low);
   color: var(--text-color-dimmed);
   text-align: start;
-  font-size: 0.8rem;
+  font-size: 0.8em;
   opacity: 0.7;
 
   @media (min-width: 768px) {
     text-align: end;
-    font-size: 1rem;
+    font-size: 1em;
     opacity: 1;
     min-width: 12ch;
   }

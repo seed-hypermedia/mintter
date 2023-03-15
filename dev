@@ -18,13 +18,15 @@ def cmd(cmds: argparse._SubParsersAction, name: str, help: str):
     return wrapper
 
 
-def run(cmd: str, args: list = None, capture_output=False):
+def run(cmd: str, args: list = None, capture_output=False, env: dict = None):
     """Helper to run cmd in a shell."""
     if args:
         if args[0] == "--":
             args = args[1:]
         cmd += " -- " + " ".join(args)
-    return subprocess.run(cmd, check=True, shell=True, capture_output=capture_output)
+    return subprocess.run(
+        cmd, check=True, shell=True, capture_output=capture_output, env=env
+    )
 
 
 def main():
@@ -72,7 +74,7 @@ def main():
 
     @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
     def build_frontend(args):
-        return run("plz build //frontend:app")
+        return run("pnpm build")
 
     @cmd(
         cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
@@ -101,7 +103,11 @@ def main():
     @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
     def run_frontend(args):
         run("plz build //:pnpm")
-        return run("exec pnpm gw:dev", args=args)
+        return run(
+            "exec pnpm gw:dev",
+            args=args,
+            env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
+        )
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):

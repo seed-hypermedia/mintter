@@ -53,12 +53,12 @@ export default function TitleBarWindows(props: TitleBarProps) {
       >
         <div className="titlebar-section">
           <NavigationButtons />
-          <NavMenu />
+          <NavMenu mainActor={props.mainActor} />
         </div>
 
         <div data-tauri-drag-region style={{flexGrow: 1}}></div>
 
-        <ActionButtons />
+        <ActionButtons {...props} />
       </div>
     </header>
   )

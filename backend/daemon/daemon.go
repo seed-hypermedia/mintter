@@ -20,6 +20,7 @@ import (
 	"mintter/backend/daemon/api"
 	"mintter/backend/daemon/ondisk"
 	"mintter/backend/db/sqliteschema"
+	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/graphql"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
@@ -41,7 +42,9 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 // App is the main Mintter Daemon application, holding all of its dependencies
@@ -149,12 +152,25 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 
 	a.Wallet = wallet.New(ctx, logging.New("mintter/wallet", "debug"), a.DB, a.Net, a.Me, cfg.Lndhub.Mainnet)
 
-	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, grpcOpt...)
+	a.GRPCServer, a.GRPCListener, a.RPC, err = initGRPC(ctx, cfg.GRPCPort, &a.clean, a.g, a.Me, a.Repo, a.DB, a.VCSDB, a.Net, a.Syncing, a.Wallet, cfg.Site, grpcOpt...)
 	if err != nil {
 		return nil, err
 	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet)
+	if cfg.Identity.NoAccountWait {
+		res, err := a.RPC.Daemon.GenMnemonic(ctx, &daemon.GenMnemonicRequest{MnemonicsLength: 12})
+		if err != nil {
+			return nil, fmt.Errorf("Cannot create automatic mnemonics: %w", err)
+		}
+		_, err = a.RPC.Daemon.Register(ctx, &daemon.RegisterRequest{Mnemonic: res.Mnemonic, Passphrase: ""})
+		stat, ok := status.FromError(err)
+
+		if !ok && stat.Code() != codes.AlreadyExists {
+			return nil, fmt.Errorf("Cannot register automatic account: %w", err)
+		}
+	}
+
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +181,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 }
 
 func (a *App) setupLogging(ctx context.Context, cfg config.Config) {
-	logging.SetLogLevel("autorelay", "debug")
+	logging.SetLogLevel("autorelay", "info")
 	logging.SetLogLevel("provider.simple", "debug")
 	logging.SetLogLevel("reprovider.simple", "debug")
 	a.g.Go(func() error {
@@ -385,6 +401,7 @@ func initSyncing(
 }
 
 func initGRPC(
+	ctx context.Context,
 	port int,
 	clean *cleanup.Stack,
 	g *errgroup.Group,
@@ -395,6 +412,7 @@ func initGRPC(
 	node *future.ReadOnly[*mttnet.Node],
 	sync *future.ReadOnly[*syncing.Service],
 	wallet *wallet.Service,
+	cfg config.Site,
 	opt ...grpc.ServerOption,
 ) (srv *grpc.Server, lis net.Listener, rpc api.Server, err error) {
 	lis, err = net.Listen("tcp", ":"+strconv.Itoa(port))
@@ -404,7 +422,7 @@ func initGRPC(
 
 	srv = grpc.NewServer(opt...)
 
-	rpc = api.New(id, repo, pool, v, node, sync, wallet)
+	rpc = api.New(ctx, id, repo, pool, v, node, sync, wallet, cfg)
 	rpc.Register(srv)
 	reflection.Register(srv)
 
@@ -429,6 +447,7 @@ func initHTTP(
 	node *future.ReadOnly[*mttnet.Node],
 	me *future.ReadOnly[core.Identity],
 	wallet *wallet.Service,
+	wellKnownHandler http.Handler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
 	{
@@ -442,7 +461,7 @@ func initHTTP(
 		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
-
+		router.PathPrefix("/" + mttnet.WellKnownPath).Handler(wellKnownHandler)
 		nav := newNavigationHandler(router)
 
 		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {

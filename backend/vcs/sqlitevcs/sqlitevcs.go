@@ -27,6 +27,7 @@ import (
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/leporo/sqlf"
+	"github.com/multiformats/go-multihash"
 	"go.uber.org/multierr"
 )
 
@@ -267,29 +268,13 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, clock
 		return 0
 	}
 
-	if base != nil {
-		data, err := json.Marshal(base)
-		if err != nil {
-			conn.err = err
-			return 0
-		}
-
-		baseRes, err := vcssql.ChangesGetBase(conn.conn, int64(obj), string(data))
-		if err != nil {
-			conn.err = err
-			return 0
-		}
-		if int(baseRes.Count) != len(base) {
-			conn.err = fmt.Errorf("invalid base length")
-			return 0
-		}
-
-		clock.Track(hlc.Unpack(int64(baseRes.MaxClock)))
+	for _, v := range base {
+		clock.Track(hlc.Unpack(conn.GetChangeMaxTime(obj, v)))
 	}
 
 	hlcTime := clock.Now().Pack()
 
-	res, err := vcssql.ChangesAllocateID(conn.conn)
+	res, err := vcssql.IPFSBlocksNewID(conn.conn)
 	if err != nil {
 		conn.err = err
 		return 0
@@ -309,6 +294,93 @@ func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, clock
 	}
 
 	return LocalID(changeID)
+}
+
+// PublicChangeInfo is the public information about a Change.
+type PublicChangeInfo struct {
+	ID         cid.Cid
+	Author     cid.Cid
+	CreateTime time.Time
+}
+
+// GetPublicChangeInfo returns the public information about a Change.
+func (conn *Conn) GetPublicChangeInfo(c cid.Cid) (info PublicChangeInfo, err error) {
+	pk, err := vcssql.IPFSBlocksLookupPK(conn.conn, c.Hash())
+	if err != nil {
+		return info, err
+	}
+
+	q := sqlf.From(string(sqliteschema.Changes)).
+		Select(sqliteschema.AccountsMultihash.String()).
+		Select(sqliteschema.ChangesStartTime.String()).
+		Join(string(sqliteschema.Accounts), sqliteschema.AccountsID.String()+" = "+sqliteschema.ChangesAccountID.String()).
+		Where(sqliteschema.ChangesID.String()+" = ?", pk.IPFSBlocksID).
+		Limit(1)
+	defer q.Close()
+
+	if err := sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
+		acchash, err := multihash.Cast(stmt.ColumnBytes(0))
+		if err != nil {
+			return err
+		}
+
+		info.ID = c
+		info.Author = cid.NewCidV1(core.CodecAccountKey, acchash)
+		info.CreateTime = hlc.Unpack(stmt.ColumnInt64(1)).Time()
+
+		return nil
+	}, q.Args()...); err != nil {
+		return info, err
+	}
+
+	return info, nil
+}
+
+// ListChanges for a given object.
+func (conn *Conn) ListChanges(obj cid.Cid) ([]PublicChangeInfo, error) {
+	o := conn.LookupPermanode(obj)
+	if o == 0 {
+		return nil, fmt.Errorf("can't list changes: object %s not found", obj)
+	}
+
+	q := sqlf.From(string(sqliteschema.IPFSBlocks)).
+		Select(sqliteschema.IPFSBlocksMultihash.String()).
+		Select(sqliteschema.IPFSBlocksCodec.String()).
+		Select(sqliteschema.AccountsMultihash.String()).
+		Select(sqliteschema.ChangesStartTime.String()).
+		LeftJoin(string(sqliteschema.Changes), sqliteschema.ChangesID.String()+" = "+sqliteschema.IPFSBlocksID.String()).
+		Join(string(sqliteschema.Accounts), sqliteschema.AccountsID.String()+" = "+sqliteschema.ChangesAccountID.String()).
+		Where(sqliteschema.ChangesPermanodeID.String()+" = ?", o)
+	defer q.Close()
+
+	var out []PublicChangeInfo
+
+	if err := sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
+		changeHash, err := multihash.Cast(stmt.ColumnBytes(0))
+		if err != nil {
+			return err
+		}
+
+		changeCodec := stmt.ColumnInt(1)
+
+		acchash, err := multihash.Cast(stmt.ColumnBytes(2))
+		if err != nil {
+			return err
+		}
+
+		info := PublicChangeInfo{
+			ID:         cid.NewCidV1(uint64(changeCodec), changeHash),
+			Author:     cid.NewCidV1(core.CodecAccountKey, acchash),
+			CreateTime: hlc.Unpack(stmt.ColumnInt64(3)).Time(),
+		}
+		out = append(out, info)
+
+		return nil
+	}, q.Args()...); err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 // GetChangeClock returns the clock instance with maximum timestamp for a given change.
@@ -503,6 +575,11 @@ func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
 	body.Strings = stringLookup.cache
 	body.Bytes = bytesLookup.cache
 	body.CIDs = cidsLookup.cache
+
+	if len(body.Datoms) == 0 {
+		conn.err = fmt.Errorf("encode change: no datoms to write for change %d", change)
+		return nil
+	}
 
 	data, err := cbornode.DumpObject(body)
 	if err != nil {

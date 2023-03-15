@@ -1,22 +1,22 @@
-import {getPublication, Publication, blockNodeToSlate} from '@mintter/shared'
+import {publicationsClient} from '@app/api-clients'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
-import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
+import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
+import {openPublication} from '@app/utils/navigation'
 import {
+  blockNodeToSlate,
   Embed as EmbedType,
   FlowContent,
   isEmbed,
-  isFlowContent,
+  Publication,
 } from '@mintter/shared'
-import {getBlock} from '@app/utils/get-block'
-import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {QueryClient, useQueryClient} from '@tanstack/react-query'
 import {useMachine} from '@xstate/react'
 import {MouseEvent, useMemo} from 'react'
-import {Editor as SlateEditor, Node, Transforms} from 'slate'
+import {Editor as SlateEditor, Transforms} from 'slate'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
 import {useLocation, useRoute} from 'wouter'
@@ -78,7 +78,6 @@ function Embed({
 }: RenderElementProps & {
   mode: EditorMode
 }) {
-  const mainService = useMain()
   const mouseService = useMouse()
   const [, setLocation] = useLocation()
   let [match, params] = useRoute('/p/:id/:version/:block')
@@ -100,10 +99,7 @@ function Embed({
       if (match && params?.id == docId && params?.version == version) {
         setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
       } else {
-        mainService.send({
-          type: 'COMMIT.OPEN.WINDOW',
-          path: `/p/${docId}/${version}/${blockId}`,
-        })
+        openPublication(docId, version, blockId)
       }
     }
   }
@@ -153,6 +149,7 @@ function Embed({
         onChange={() => {
           // noop
         }}
+        readOnly
       />
       {children}
     </q>
@@ -247,7 +244,8 @@ function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
           let [docId, version] = getIdsfromUrl(context.url)
           return client.fetchQuery<Publication>(
             [queryKeys.GET_PUBLICATION, docId, version],
-            () => getPublication(docId, version),
+            () =>
+              publicationsClient.getPublication({documentId: docId, version}),
           )
         },
         getEmbedBlock: (context) => {

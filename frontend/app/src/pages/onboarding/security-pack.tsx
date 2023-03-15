@@ -1,7 +1,3 @@
-import {
-  generateMnemonic as defaultGenerateMnemonic,
-  registerAccount,
-} from '@mintter/shared'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
@@ -20,31 +16,61 @@ import {
   OnboardingStepPropsType,
   OnboardingStepTitle,
 } from './common'
+// import {bech32m, bech32} from 'bech32'
+// import BIP32Factory from 'bip32'
+import {mnemonicToSeed, getDefaultWordlist, wordlists} from 'bip39'
+// import * as ecc from 'tiny-secp256k1'
+// You must wrap a tiny-secp256k1 compatible implementation
+// const bip32 = BIP32Factory(ecc)
+import {Buffer} from 'buffer'
+import {daemonClient} from '@app/api-clients'
+
+global.Buffer = global.Buffer || Buffer
+
+const wl = (global.wl = wordlists['english'])
+console.log({wl})
 
 export function SecurityPack({
   prev,
   next,
-  generateMnemonic = defaultGenerateMnemonic,
+  generateMnemonic = daemonClient.genMnemonic,
 }: OnboardingStepPropsType) {
   const [ownSeed, setOwnSeed] = useState<string>('')
   const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
-  const mnemonics = useQuery<string[], Error>(
-    ['onboarding', 'mnemonics'],
-    async () => {
-      const resp = await generateMnemonic()
-      return resp.mnemonic
+  const mnemonics = useQuery({
+    queryKey: ['onboarding', 'mnemonics'],
+    queryFn: async () => {
+      const data = await generateMnemonic({mnemonicsLength: 12})
+
+      mnemonicToSeed(data.mnemonic.join(' '))
+        .then((seed) => {
+          // console.log({seed, len: seed.length})
+          // const outKey = bech32.encode('nsec', seed)
+          console.log({seed})
+        })
+        .catch((e) => {
+          console.error('yep: ', e)
+        })
+      // console.log({seed})
+      return data.mnemonic
     },
-    {
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    },
-  )
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  })
 
   const handleSubmit = useCallback(async () => {
-    const words = useOwnSeed && ownSeed ? ownSeed.split(' ') : mnemonics.data
+    const words =
+      useOwnSeed && ownSeed
+        ? ownSeed
+            .split(' ')
+            .map((s) => s.split(','))
+            .flat(1)
+        : mnemonics.data
     if (words) {
       try {
-        await registerAccount(words)
+        // words are here.
+
+        await daemonClient.register({mnemonic: words})
         next()
       } catch (error) {
         if (error instanceof Error) {
@@ -72,8 +98,8 @@ export function SecurityPack({
           name="ownSeed"
           label="Your bip39 mnemonic words"
           rows={5}
-          placeholder="foo bar baz ..."
-          hint="all words separated by ONE SPACE"
+          placeholder="food barrrel buzz ..."
+          hint="words separated by spaces or commas"
           data-testid="textarea-own-seed"
           value={ownSeed}
           onChange={(e) => setOwnSeed(e.target.value)}

@@ -1,10 +1,9 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {queryKeys} from '@app/hooks'
-import {useMain} from '@app/main-context'
 import {useMouse} from '@app/mouse-context'
 import type {Embed, Link as LinkType} from '@mintter/shared'
-import {embed, isLink, link, text, getPublication} from '@mintter/shared'
+import {embed, isLink, link, text} from '@mintter/shared'
 import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {Box} from '@components/box'
@@ -32,9 +31,12 @@ import {
   RenderElementProps,
   useSlate,
   useSlateStatic,
+  useSlateWithV,
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
 import {findPath, getEditorBlock, isCollapsed} from '../utils'
+import {openPublication} from '@app/utils/navigation'
+import {publicationsClient} from '@app/api-clients'
 
 export const ELEMENT_LINK = 'link'
 
@@ -164,7 +166,6 @@ function RenderMintterLink(
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
   const [, setLocation] = useLocation()
-  const mainService = useMain()
   let mouseService = useMouse()
   let [match, params] = useRoute('/p/:id/:version/:block')
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
@@ -178,10 +179,7 @@ function RenderMintterLink(
       if (match && params?.id == docId && params?.version == version) {
         setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
       } else {
-        mainService.send({
-          type: 'COMMIT.OPEN.WINDOW',
-          path: `/p/${docId}/${version}/${blockId}`,
-        })
+        openPublication(docId, version, blockId)
       }
     }
   }
@@ -241,7 +239,7 @@ function MintterDocumentLink({element, attributes}: LinkProps) {
   let at = findPath(element)
   let [docId, version] = getIdsfromUrl(element.url)
   let {data} = useQuery([queryKeys.GET_PUBLICATION, docId, version], () =>
-    getPublication(docId, version),
+    publicationsClient.getPublication({documentId: docId, version}),
   )
   useEffect(() => {
     if (data) {
@@ -404,7 +402,7 @@ function isUrl(value: string): boolean {
 
 export function InsertLinkButton() {
   const [link, setLink] = useState('')
-  const editor = useSlate()
+  const {editor} = useSlateWithV()
   const isLink = isLinkActive(editor)
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

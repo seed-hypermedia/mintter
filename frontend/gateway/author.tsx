@@ -1,55 +1,41 @@
-import {useQuery} from '@tanstack/react-query'
-import {Publication, getAccount} from '@mintter/shared'
-import {formattedDate} from './utils/get-format-date'
-import {client} from './client'
+import {Paragraph, Text, YStack, styled} from 'tamagui'
+import {Publication, formattedDate, Account} from '@mintter/shared'
 
 export function PublicationMetadata({
   publication,
+  author,
 }: {
   publication?: Publication
+  author?: Account | null
 }) {
   return publication ? (
-    <aside className="aside-content text-base document-metadata">
-      <p>
-        <span>author:&nbsp;</span>
-        {publication?.document?.author ? (
-          <Author id={publication.document.author} />
-        ) : null}
-      </p>
-      <p>
-        Published at:{' '}
+    <Aside>
+      <Paragraph>
+        <Text fontFamily="$body" o={0.5}>
+          author:&nbsp;
+        </Text>
+        {author?.profile?.alias}
+      </Paragraph>
+      <Paragraph>
+        <Text fontFamily="$body" o={0.5}>
+          Published at:&nbsp;
+        </Text>
         {publication?.document?.publishTime
-          ? formattedDate(publication.document.publishTime as Date)
+          ? formattedDate(publication.document.publishTime)
           : null}
-      </p>
-      <p>
-        Last update:{' '}
+      </Paragraph>
+      <Paragraph>
+        <Text fontFamily="$body" o={0.5}>
+          Last update:&nbsp;
+        </Text>
         {publication?.document?.updateTime
-          ? formattedDate(publication.document.updateTime as Date)
+          ? formattedDate(publication.document.updateTime)
           : null}
-      </p>
-    </aside>
+      </Paragraph>
+    </Aside>
   ) : null
 }
 
-function Author({id}: {id: string}) {
-  let {data, status} = useQuery({
-    queryKey: ['AUTHOR', id],
-    queryFn: ({queryKey}) => getAccount(queryKey[1], client),
-    retry: false,
-  })
-  if (status == 'loading') {
-    return <AuthorPlaceholder />
-  }
-
-  if (status == 'error') {
-    console.error(data)
-    return <span>author request error: {id}</span>
-  }
-
-  return <span>{data?.profile?.alias}</span>
-}
-
-function AuthorPlaceholder() {
-  return <span>...</span>
-}
+const Aside = styled(YStack, {
+  padding: '$4',
+})

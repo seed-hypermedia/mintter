@@ -1,4 +1,6 @@
+import {createCommentsPlugin} from '@app/editor/comments/comments'
 import {Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
 import {createBlockquotePlugin} from './blockquote'
 import {createCodePlugin} from './code'
 import {createColorPlugin} from './color'
@@ -68,6 +70,25 @@ export const plugins: EditorPlugin[] = [
       // when we add accents we are composing
       e.preventDefault()
       e.stopPropagation()
+    },
+  },
+  createCommentsPlugin(),
+  {
+    name: 'prevent selection after drag and drop',
+    configureEditor: (editor) => {
+      const {apply} = editor
+      editor.apply = (operation) => {
+        if (operation.type == 'set_selection') {
+          if (editor.dragging) {
+            ReactEditor.deselect(editor)
+          } else {
+            apply(operation)
+          }
+        } else {
+          apply(operation)
+        }
+      }
+      return editor
     },
   },
 ]

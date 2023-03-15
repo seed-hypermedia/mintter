@@ -24,6 +24,7 @@ type Config struct {
 	Identity Identity
 	Lndhub   Lndhub
 	P2P      P2P
+	Site     Site
 	Syncing  Syncing
 }
 
@@ -40,6 +41,7 @@ func Default() Config {
 
 		Identity: Identity{
 			DeviceKeyPath: "",
+			NoAccountWait: false,
 		},
 
 		P2P: P2P{
@@ -47,7 +49,9 @@ func Default() Config {
 			Port:           55000,
 			RelayBackoff:   time.Minute * 3,
 		},
-
+		Site: Site{
+			InviteTokenExpirationDelay: time.Hour * 24 * 7,
+		},
 		Syncing: Syncing{
 			WarmupDuration: time.Minute,
 			Interval:       time.Minute,
@@ -112,6 +116,7 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.StringVar(&cfg.RepoPath, "repo-path", cfg.RepoPath, "Path to where to store node data")
 
 	fs.StringVar(&cfg.Identity.DeviceKeyPath, "identity.devicekey-path", cfg.Identity.DeviceKeyPath, "Path to to read fixed device private key from")
+	fs.BoolVar(&cfg.Identity.NoAccountWait, "identity.no-account-wait", cfg.Identity.NoAccountWait, "If set, the daemon auto generates a random Account ID (if not found any in the database) and starts right away")
 
 	fs.BoolVar(&cfg.Lndhub.Mainnet, "lndhub.mainnet", cfg.Lndhub.Mainnet, "Connect to the mainnet lndhub.go server")
 
@@ -120,13 +125,18 @@ func SetupFlags(fs *flag.FlagSet, cfg *Config) {
 	fs.Var(newAddrsFlag(cfg.P2P.BootstrapPeers, &cfg.P2P.BootstrapPeers), "p2p.bootstrap-peers", "Addresses for bootstrap nodes (comma separated)")
 	fs.Var(newAddrsFlag(cfg.P2P.ExtraAddrs, &cfg.P2P.ExtraAddrs), "p2p.extra-addrs", "Add extra addresses to listen on (comma separated)")
 
+	fs.StringVar(&cfg.Site.Hostname, "site.hostname", cfg.Site.Hostname, "Hostname of the site. If not provided then the daemon does not work as a site")
+	fs.StringVar(&cfg.Site.Title, "site.title", cfg.Site.Title, "Title of the site. Something brief and human readable to help understand the site")
+	fs.StringVar(&cfg.Site.OwnerID, "site.owner-id", cfg.Site.OwnerID, "Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID")
+	fs.DurationVar(&cfg.Site.InviteTokenExpirationDelay, "site.token-expiration-delay", cfg.Site.InviteTokenExpirationDelay, "The expiration time delay when creating a new invite token")
+
 	fs.BoolVar(&cfg.P2P.NoListing, "p2p.disable-listing", cfg.P2P.NoListing, "Disable listing documents when requested (stealth mode)")
 	fs.BoolVar(&cfg.P2P.NoMetrics, "p2p.no-metrics", cfg.P2P.NoMetrics, "Disable Prometheus metrics collection")
 	fs.DurationVar(&cfg.P2P.RelayBackoff, "p2p.relay-backoff", cfg.P2P.RelayBackoff, "The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate")
 	fs.DurationVar(&cfg.Syncing.WarmupDuration, "syncing.warmup-duration", cfg.Syncing.WarmupDuration, "Time to wait before the first sync loop iteration")
 	fs.DurationVar(&cfg.Syncing.Interval, "syncing.interval", cfg.Syncing.Interval, "Periodic interval at which sync loop is triggered")
 	fs.DurationVar(&cfg.Syncing.TimeoutPerPeer, "syncing.timeout-per-peer", cfg.Syncing.TimeoutPerPeer, "Maximum duration for syncing with a single peer")
-	fs.BoolVar(&cfg.Syncing.NoInbound, "syncing.disable-inbound", cfg.Syncing.NoInbound, "Not syncing inbound content, only syncs to remote peers")
+	fs.BoolVar(&cfg.Syncing.NoInbound, "syncing.disable-inbound", cfg.Syncing.NoInbound, "Not syncing inbound content via P2P, only syncs to remote peers. IF this is a site, however still admits content when published")
 }
 
 // ExpandRepoPath is used to expand the home directory in the repo path.
@@ -145,6 +155,7 @@ func (c *Config) ExpandRepoPath() error {
 // Identity related config. For field descriptions see SetupFlags().
 type Identity struct {
 	DeviceKeyPath string
+	NoAccountWait bool
 }
 
 // Lndhub related config. For field descriptions see SetupFlags().
@@ -160,6 +171,15 @@ type Syncing struct {
 	// NoInbound disables syncing content to the remote peer from our peer.
 	// If false, then documents get synced in both directions.
 	NoInbound bool
+}
+
+// Site configuration. In case the daemon is deployed in a site.
+// For field descriptions see SetupFlags().
+type Site struct {
+	Hostname                   string
+	InviteTokenExpirationDelay time.Duration
+	OwnerID                    string
+	Title                      string
 }
 
 // P2P configuration. For field descriptions see SetupFlags().

@@ -43,14 +43,15 @@ func (bt *blockTree) MoveBlock(block, parent, left vcs.NodeID) (moved bool, err 
 	}
 
 	posNode := vcs.NewNodeIDv1(time.Now())
-	ab := bt.dw.New(posNode, AttrPosBlock, block)
-	ap := bt.dw.New(posNode, AttrPosParent, parent)
-	aref := bt.dw.New(posNode, AttrPosLeft, leftPosNode)
-	move := bt.dw.New(vcs.RootNode, AttrMove, posNode)
 
-	moved, err = bt.integrateMove(aref.OpID(), block, parent, posNode, refID)
+	// ORDER MATTERS. It's easier to assume this order when we hydrating the document back.
+	apos := bt.dw.New(parent, AttrTreePos, posNode)
+	amove := bt.dw.New(posNode, AttrTreeRef, leftPosNode)
+	ab := bt.dw.New(posNode, AttrTreeBlock, block)
+
+	moved, err = bt.integrateMove(amove.OpID(), block, parent, posNode, refID)
 	if moved && err == nil {
-		bt.dw.AddDatom(ab, ap, aref, move)
+		bt.dw.AddDatom(apos, amove, ab)
 	}
 
 	return moved, err

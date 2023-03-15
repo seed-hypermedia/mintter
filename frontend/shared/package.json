@@ -1,30 +1,15 @@
 {
   "name": "@mintter/shared",
-  "version": "0.1.0",
   "description": "",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./client": {
-      "import": "./dist/client/index.js",
-      "types": "./dist/client/index.d.ts"
-    },
-    "./hast-mtt": {
-      "import": "./dist/hast-mtt/index.js",
-      "types": "./dist/hast-mtt/index.d.ts"
-    },
-    "./mttast": {
-      "import": "./dist/mttast/index.js",
-      "types": "./dist/mttast/index.d.ts"
+    ".": "./dist",
+    "./*": "./dist/*"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
     }
   },
   "scripts": {
@@ -42,6 +27,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/extend": "^3.0.1",
     "@types/hast": "2.3.4",
     "@types/unist": "2.0.6",
     "concurrently": "7.6.0",
@@ -49,9 +35,11 @@
     "vitest": "0.25.5"
   },
   "dependencies": {
-    "@improbable-eng/grpc-web": "0.15.0",
+    "@bufbuild/connect-web": "0.7.0",
+    "@bufbuild/protobuf": "^1.0.0",
     "browser-headers": "0.4.1",
     "deepmerge": "4.2.2",
+    "extend": "^3.0.2",
     "google-protobuf": "3.21.2",
     "hast": "1.0.0",
     "hast-util-has-property": "2.0.0",
@@ -62,16 +50,14 @@
     "is-plain-object": "5.0.0",
     "long": "5.2.1",
     "nanoid": "4.0.0",
-    "protobufjs": "7.1.2",
     "rehype": "12.0.1",
     "rehype-minify-whitespace": "5.0.1",
     "rehype-parse": "8.0.4",
     "rehype-sanitize": "5.0.1",
     "shiki": "0.10.1",
-    "slate": "^0.87.0",
+    "slate": "0.90.0",
     "trim-trailing-lines": "2.1.0",
     "unified": "10.1.2",
-    "unist": "^8.0.11",
     "unist-builder": "3.0.0",
     "unist-util-remove-position": "4.0.1",
     "unist-util-visit": "4.1.1"

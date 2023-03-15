@@ -1,44 +1,38 @@
-import Link from 'next/link'
+import {Footer as TFooter, XStack, Button} from 'tamagui'
+
+import {Container} from './container'
+import {MenuItem} from './menu-item'
 
 export default function Footer() {
   return (
-    <footer className="footer text-base">
-      <div className="wrapper">
-        <nav className="navigation" aria-label="social">
-          <ul role="list">
-            <li>
-              <a
-                href="https://github.com/mintterteam/mintter"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Github
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://discord.gg/mcUnKENdKX"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Discord
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://twitter.com/mintterteam"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Twitter
-              </a>
-            </li>
-            <li>
-              <Link href="/download">Download Mintter</Link>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </footer>
+    <TFooter my="$8">
+      <Container
+        tag="nav"
+        accessibilityRole="navigation"
+        aria-label="social"
+        my="$7"
+      >
+        <XStack space="$3" ai="center">
+          <MenuItem
+            href="https://github.com/mintterteam/mintter"
+            target="_blank"
+          >
+            Github
+          </MenuItem>
+
+          <MenuItem href="https://discord.gg/mcUnKENdKX" target="_blank">
+            Discord
+          </MenuItem>
+
+          <MenuItem href="https://twitter.com/mintterteam" target="_blank">
+            Twitter
+          </MenuItem>
+
+          <Button onPress={() => router.push('/download')} theme="Button">
+            Download
+          </Button>
+        </XStack>
+      </Container>
+    </TFooter>
   )
 }

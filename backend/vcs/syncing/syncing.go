@@ -374,15 +374,18 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 	return nil
 }
 
-// SyncWithPeer syncs all documents from a given peer.
-func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
+// SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
+// if a list a list of initialObjects is provided, then only syncs objects from that list.
+func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...*p2p.Object) error {
 	// Can't sync with self.
 	if s.me.DeviceKey().CID().Equals(device) {
 		return nil
 	}
 
 	// If we don't want to sync incoming documents.
-	if s.NoInbound {
+	// If initialObjects are provided we override this because the client has a general policy
+	// of not syncing inbound unless explicitly saying otherwise.
+	if s.NoInbound && len(initialObjects) == 0 {
 		return nil
 	}
 
@@ -395,9 +398,14 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid) error {
 	if err != nil {
 		return err
 	}
+	finalObjs := remoteObjs.Objects
+	if len(initialObjects) != 0 {
+		finalObjs = innerJoin(remoteObjs.Objects, initialObjects)
+	}
+	s.log.Debug("Syncing", zap.Int("remoteObjects", len(remoteObjs.Objects)), zap.Int("initialObjects", len(initialObjects)), zap.Int("finalObjects", len(initialObjects)))
 
 	sess := s.bitswap.NewSession(ctx)
-	for _, obj := range remoteObjs.Objects {
+	for _, obj := range finalObjs {
 		oid, err := cid.Decode(obj.Id)
 		if err != nil {
 			return err
@@ -488,4 +496,41 @@ func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.
 	})
 
 	return fetched, nil
+}
+
+type object struct {
+	*p2p.Object
+}
+
+func (source *object) equal(target *p2p.Object) bool {
+	if source.Id != target.Id {
+		return false
+	}
+	var equalVersions = 0
+	for i, srcVersionSet := range source.VersionSet {
+		for _, targetVersionSet := range target.VersionSet {
+			if targetVersionSet.Version == srcVersionSet.Version {
+				equalVersions++
+				break
+			}
+		}
+		if equalVersions <= i {
+			return false
+		}
+	}
+	return true
+}
+
+// innerJoin takes the common objects (intersection) between target and source.
+func innerJoin(source []*p2p.Object, target []*p2p.Object) []*p2p.Object {
+	var ret []*p2p.Object
+	for _, initialObj := range target {
+		for _, remoteObj := range source {
+			myObj := object{initialObj}
+			if myObj.equal(remoteObj) {
+				ret = append(ret, remoteObj)
+			}
+		}
+	}
+	return ret
 }

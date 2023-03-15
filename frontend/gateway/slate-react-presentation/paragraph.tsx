@@ -1,6 +1,7 @@
+import {Text, styled, Paragraph as TParagraph} from 'tamagui'
 import {clsx} from 'clsx'
 import {getHighlighter} from 'shiki-es'
-import {PropsWithChildren, useRef, useEffect, useState} from 'react'
+import {ReactNode, useRef, useEffect, useState} from 'react'
 import {assign, createMachine} from 'xstate'
 import {useMachine, useSelector} from '@xstate/react'
 import {useSlatePresentation} from '.'
@@ -27,8 +28,10 @@ export function Paragraph({element, ...props}: ParagraphProps) {
   }
 
   if (state.matches('ready')) {
+    console.log('READY', props)
     if (parentType == 'blockquote') {
-      return <blockquote {...props} />
+      console.log('BLOCKQUOTE!', props)
+      return <TParagraph bg="red" tag="blockquote" {...props} />
     }
 
     if (parentType == 'code') {
@@ -41,13 +44,19 @@ export function Paragraph({element, ...props}: ParagraphProps) {
       )
     }
 
-    return <p className={clsx({inline: type == 'transclusion'})} {...props} />
+    return (
+      <StyledP
+        tag="p"
+        className={clsx({inline: type == 'transclusion'})}
+        {...props}
+      />
+    )
   }
 
-  return <span ref={ref}></span>
+  return <StyledP tag="span" ref={ref} {...props} />
 }
 
-type ParagraphProps = PropsWithChildren<{element: ParagraphType}>
+type ParagraphProps = {element: ParagraphType; children: ReactNode}
 
 let paragraphMachine =
   /** @xstate-layout N4IgpgJg5mDOIC5SwC4EMUEsDGAFNATmlEQA4AWAtALZrbmYB2YAdPWNgNZNQAEphMIxQBiAQSEoA2gAYAuolCkA9rExZljRSAAeiSgEYArEZYAOAGwAmGQbNH7NozLMAaEAE9ED80YsAWfyMAZgMrIwBfCPdUDBx8IhI0Cho6BmY2cg5uRj4AGzAANzA8kQLivNkFJBAVNQ0tGr0EAwtgln8Adk7g8P9ggE4g0Kt3LwRg9v8Aq2sHYwsTAajokEZlCDhtWKw8QmIyKlp6JjBtOvVMTW1myht2yxs7ByMnFzH9AxcWGU6LMyswRk-is-VeViiMXQuwSB2SRzSp0y2R4-EEwnOqku1yanwMAw6-jMwOCAN6IPxHwQdxkLCMAwMBi6gJkFgsf0CkJAO3i+ySKWO6VYEjQEHGSixDRuiE6Zjps06MisZmJ9gGpKpNLpDKZnRZbI5-i5PL2iUOqROGXYXFR5RKmPqV0aoFugJY7JVbVeIQGrPCVMsLAGlkZQVsAxCYRWESAA */
@@ -166,7 +175,12 @@ function Codeblock(props: any) {
 
   return (
     <pre className="shiki">
-      <code>...</code>
+      <StyledP tag="code">...</StyledP>
     </pre>
   )
 }
+
+var StyledP = styled(TParagraph, {
+  fontFamily: '$body',
+  size: '$6',
+})

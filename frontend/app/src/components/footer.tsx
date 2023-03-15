@@ -1,4 +1,4 @@
-import {connect as apiConnect, ConnectionStatus} from '@mintter/shared'
+import {ConnectionStatus} from '@mintter/shared'
 import {
   AccountWithRef,
   createContactListMachine,
@@ -14,19 +14,52 @@ import {TextField} from '@components/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {useMemo, useState} from 'react'
+import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 import '../styles/footer.scss'
 import {Prompt} from './prompt'
+import {networkingClient} from '@app/api-clients'
 
-export default function Footer() {
+const LabelWrap = styled('div', {
+  marginHorizontal: 6,
+})
+
+export function FooterButton({
+  active,
+  label,
+  icon,
+  onClick,
+}: {
+  active?: boolean
+  label: string
+  icon?: ReactNode
+  onClick: () => void
+}) {
+  return (
+    <Button
+      size="1"
+      variant="ghost"
+      color={active ? 'primary' : 'muted'}
+      onClick={onClick}
+      css={{
+        display: 'flex',
+      }}
+    >
+      {icon}
+      <LabelWrap>{label}</LabelWrap>
+    </Button>
+  )
+}
+
+export default function Footer({children}: {children?: ReactNode}) {
   let client = useQueryClient()
   let contactListService = useInterpret(() =>
     createContactListMachine({client}),
   )
   return (
     <div className="main-footer">
+      {children}
       <Contacts service={contactListService} />
       <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
     </div>
@@ -71,20 +104,19 @@ function Contacts({
 
 type ContactsPromptProps = {
   refetch: () => void
-  connect?: typeof apiConnect
+  connect?: typeof networkingClient.connect
 }
 
 export function ContactsPrompt({
   refetch,
-  connect = apiConnect,
+  connect = networkingClient.connect,
 }: ContactsPromptProps) {
   const [peer, setPeer] = useState('')
 
   async function handleConnect() {
     if (peer) {
       try {
-        // const connAttempt = await connect(peer.split(','))
-        await toast.promise(connect(peer.trim().split(',')), {
+        await toast.promise(connect({addrs: peer.trim().split(',')}), {
           loading: 'Connecting to peer...',
           success: 'Connection Succeeded!',
           error: 'Connection Error',

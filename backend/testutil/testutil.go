@@ -1,12 +1,15 @@
+// Package testutil defines some useful function for testing only.
 package testutil
 
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
+	"unicode"
+	"unicode/utf8"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
@@ -36,7 +39,7 @@ func MakeCIDWithCodec(t *testing.T, codec uint64, data string) cid.Cid {
 func MakeRepoPath(t testing.TB) string {
 	t.Helper()
 
-	dir, err := ioutil.TempDir("", "mintter-repo-*")
+	dir, err := os.MkdirTemp("", "mintter-repo-*")
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
@@ -94,4 +97,16 @@ func ProtoEqual(t *testing.T, want, got proto.Message, msg string, format ...int
 			t.Fatal(msg)
 		}
 	}
+}
+
+// ExportedFieldsFilter is a go-cmp Option which ignores recursively unexported fields.
+func ExportedFieldsFilter() cmp.Option {
+	return cmp.FilterPath(func(p cmp.Path) bool {
+		sf, ok := p.Index(-1).(cmp.StructField)
+		if !ok {
+			return false
+		}
+		r, _ := utf8.DecodeRuneInString(sf.Name())
+		return !unicode.IsUpper(r)
+	}, cmp.Ignore())
 }

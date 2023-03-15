@@ -24,7 +24,7 @@ import {useRoute} from '@components/router'
 import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
-import {Editor, Node, Path, Range, Text, Transforms} from 'slate'
+import {Editor, Node, Path, Range, Text, Transforms, Element} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
@@ -147,22 +147,31 @@ export function toggleFormat(
   data: unknown = true,
 ) {
   if (editor.readOnly) return
-  const isActive = isFormatActive(editor, format)
+  const isActive = isMarkActive(editor, format)
 
-  Transforms.setNodes(
-    editor,
-    {[format]: isActive ? null : data},
-    {match: Text.isText, split: true, mode: 'highest'},
-  )
+  if (isActive) {
+    Editor.removeMark(editor, format)
+  } else {
+    Editor.addMark(editor, format, true)
+  }
 }
 
-export function isFormatActive(editor: Editor, format: Mark) {
+export function isMarkActive(editor: Editor, format: Mark) {
   const [match] = Editor.nodes(editor, {
     match: (n) => isText(n) && !!n[format],
     mode: 'all',
   })
 
   return !!match
+}
+
+export function getCurrentConversations(editor: Editor) {
+  const [match] = Editor.nodes(editor, {
+    match: (n) => isText(n) && !!n['conversations'],
+    mode: 'all',
+  })
+
+  return match
 }
 
 export function resetFlowContent(editor: Editor): boolean | undefined {
@@ -244,6 +253,51 @@ export function findPath(node: Node): Path {
   // `ReactEditor.findPath` does not use the editor param for anything. it's there because of API consistency reasons I guess? 🤷🏼‍♂️
   // @ts-ignore
   return ReactEditor.findPath(null, node)
+}
+
+export const getNodePath = (editor: Editor, node: any) => {
+  // [TODO] - some when lost focus bug
+  const path = ReactEditor.findPath(editor, node)
+  const isListItem = ['list-item'].includes(node.type)
+
+  let nodePath = path.length === 1 ? [path[0], 0] : path
+  if (isListItem) nodePath = [...nodePath, 0]
+
+  return nodePath
+}
+
+export const getNodeByPath = (
+  editor: Editor,
+  path?: Path,
+  mode: 'all' | 'highest' | 'lowest' = 'lowest',
+) => {
+  const nodeEntry = Array.from(
+    Editor.nodes(editor, {
+      match: (node) => Editor.isEditor(editor) && Element.isElement(node),
+      at: path || editor.selection?.anchor.path,
+      mode,
+    }),
+  )[0]
+
+  if (nodeEntry) return nodeEntry[0]
+
+  return editor.children[0]
+}
+
+// Make recursive for deep nested items
+export const getNodeByCurrentPath = (editor: Editor) => {
+  const {path} = editor.selection!.anchor
+  const level = path.length
+
+  const isNestedLevel = level > 2
+  const isRootLevel = !isNestedLevel
+  const rootNode: any = editor.children[path[0] || 0]
+
+  if (isRootLevel) {
+    return rootNode
+  }
+
+  return rootNode.children[path[1]]
 }
 
 type GetBlockOptions = Omit<
@@ -487,7 +541,6 @@ export function useBlockFlash(ref: any, id: string) {
     setTimeout(() => {
       if (ref.current) {
         if (match && params?.block == id) {
-          console.log('done')
           setActive(true)
         }
       }

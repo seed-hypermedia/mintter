@@ -1,3 +1,4 @@
+// Package documents provides the implementation of the Documents gRPC API.
 package documents
 
 import (
@@ -8,14 +9,16 @@ import (
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
+	"mintter/backend/vcs/crdt"
 	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/mttdoc"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
+	"mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -30,23 +33,33 @@ type Discoverer interface {
 	// TODO: this is here temporarily. Eventually we need to provide from the vcs
 	// so every time we save a main version, we need to provide the leaf changes.
 	ProvideCID(cid.Cid) error
+	Connect(context.Context, peer.AddrInfo) error
+}
+
+// RemoteCaller is an interface for not having to pass a full-fledged sites service,
+// just the remote functions that need to be called from the local server.
+type RemoteCaller interface {
+	RedeemInviteToken(context.Context, *documents.RedeemInviteTokenRequest) (*documents.RedeemInviteTokenResponse, error)
+	ListWebPublications(ctx context.Context, in *documents.ListWebPublicationsRequest) (*documents.ListWebPublicationsResponse, error)
 }
 
 // Server implements DocumentsServer gRPC API.
 type Server struct {
-	db    *sqlitex.Pool
-	vcsdb *vcsdb.DB
-	me    *future.ReadOnly[core.Identity]
-	disc  Discoverer
+	db           *sqlitex.Pool
+	vcsdb        *sqlitevcs.DB
+	me           *future.ReadOnly[core.Identity]
+	disc         Discoverer
+	RemoteCaller RemoteCaller
 }
 
 // NewServer creates a new RPC handler.
-func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer) *Server {
+func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discoverer, remoteCaller RemoteCaller) *Server {
 	srv := &Server{
-		db:    db,
-		vcsdb: vcsdb.New(db),
-		me:    me,
-		disc:  disc,
+		db:           db,
+		vcsdb:        sqlitevcs.New(db),
+		me:           me,
+		disc:         disc,
+		RemoteCaller: remoteCaller,
 	}
 
 	return srv
@@ -94,7 +107,7 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 		}
 
 		conn.AddDatoms(obj, change, batch.Dirty()...)
-		conn.SaveVersion(obj, "draft", meLocal, vcsdb.LocalVersion{change})
+		conn.SaveVersion(obj, "draft", meLocal, sqlitevcs.LocalVersion{change})
 
 		return nil
 	}); err != nil {
@@ -137,7 +150,7 @@ func (api *Server) createDraftWithBase(ctx context.Context, in *documents.Create
 		}
 
 		change := conn.NewChange(obj, meLocal, main, clock)
-		conn.SaveVersion(obj, "draft", meLocal, vcsdb.LocalVersion{change})
+		conn.SaveVersion(obj, "draft", meLocal, sqlitevcs.LocalVersion{change})
 
 		return nil
 	}); err != nil {
@@ -207,12 +220,7 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 			case *documents.DocumentChange_MoveBlock_:
 				doc.MoveBlock(op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling)
 			case *documents.DocumentChange_ReplaceBlock:
-				blk := op.ReplaceBlock
-				data, err := proto.Marshal(blk)
-				if err != nil {
-					return fmt.Errorf("failed to marshal block %s: %w", blk.Id, err)
-				}
-				doc.EnsureBlockState(blk.Id, data)
+				doc.EnsureBlockState(op.ReplaceBlock.Id, encodeBlock(op.ReplaceBlock))
 			case *documents.DocumentChange_DeleteBlock:
 				doc.DeleteBlock(op.DeleteBlock)
 			default:
@@ -268,30 +276,13 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 
 		cs := conn.ResolveChangeSet(obj, version)
 
-		docpb, err = api.getDocument(conn, obj, cs)
+		docpb, err = loadProtoDocument(conn, obj, cs)
 		return err
 	}); err != nil {
 		return nil, err
 	}
 
 	return docpb, nil
-}
-
-func (api *Server) getDocument(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.ChangeSet) (*documents.Document, error) {
-	doc := mttdoc.New(nil)
-	it := conn.QueryObjectDatoms(obj, cs)
-	datoms := it.Slice()
-	if it.Err() != nil {
-		return nil, it.Err()
-	}
-	objctime := conn.GetPermanodeCreateTime(obj)
-	did := conn.GetObjectCID(obj)
-	author := conn.GetObjectOwner(obj)
-	if err := doc.Replay(datoms); err != nil {
-		return nil, err
-	}
-
-	return mttdocToProto(did.String(), author.String(), objctime, doc)
 }
 
 // ListDrafts implements the corresponding gRPC method.
@@ -492,7 +483,7 @@ func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Versi
 		obj := conn.LookupPermanode(oid)
 		meLocal := conn.LookupIdentity(me)
 
-		var version vcsdb.LocalVersion
+		var version sqlitevcs.LocalVersion
 		if v.IsZero() {
 			version = conn.GetVersion(obj, "main", meLocal)
 		} else {
@@ -508,7 +499,7 @@ func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Versi
 		}
 		cs := conn.ResolveChangeSet(obj, version)
 
-		out.Document, err = api.getDocument(conn, obj, cs)
+		out.Document, err = loadProtoDocument(conn, obj, cs)
 		if err != nil {
 			return err
 		}
@@ -586,7 +577,24 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	return out, nil
 }
 
-func mttdocToProto(id, author string, createTime time.Time, doc *mttdoc.Document) (*documents.Document, error) {
+func loadProtoDocument(conn *sqlitevcs.Conn, obj sqlitevcs.LocalID, cs sqlitevcs.ChangeSet) (*documents.Document, error) {
+	doc := mttdoc.New(nil)
+	it := conn.QueryObjectDatoms(obj, cs)
+	datoms := it.Slice()
+	if it.Err() != nil {
+		return nil, it.Err()
+	}
+	objctime := conn.GetPermanodeCreateTime(obj)
+	did := conn.GetObjectCID(obj)
+	author := conn.GetObjectOwner(obj)
+	if err := doc.Replay(datoms); err != nil {
+		return nil, err
+	}
+
+	return mttdocToProto(conn, did.String(), author.String(), obj, objctime, doc)
+}
+
+func mttdocToProto(conn *sqlitevcs.Conn, id, author string, obj sqlitevcs.LocalID, createTime time.Time, doc *mttdoc.Document) (*documents.Document, error) {
 	if doc.Err() != nil {
 		return nil, doc.Err()
 	}
@@ -626,14 +634,42 @@ func mttdocToProto(id, author string, createTime time.Time, doc *mttdoc.Document
 			continue
 		}
 
-		blk := &documents.Block{}
-		if err := proto.Unmarshal(data, blk); err != nil {
-			return nil, err
+		opid, ok := doc.BlockDatomID(pos.Block)
+		if !ok {
+			continue
 		}
+
+		blk := decodeBlock(conn, obj, opid, data)
 		child := &documents.BlockNode{Block: blk}
 		appendChild(pos.Parent, child)
 		blockMap[pos.Block] = child
 	}
 
 	return docpb, nil
+}
+
+func decodeBlock(conn *sqlitevcs.Conn, obj sqlitevcs.LocalID, opid crdt.OpID, data []byte) *documents.Block {
+	info := conn.ChangeInfoForOp(obj, opid)
+	if info.IsZero() {
+		panic(fmt.Errorf("decodeBlock: failed to find change info"))
+	}
+
+	blk := &documents.Block{}
+	if err := proto.Unmarshal(data, blk); err != nil {
+		panic(fmt.Errorf("decodeBlock: failed to unmarshal proto: %w", err))
+	}
+	blk.Revision = info.StringID()
+
+	return blk
+}
+
+func encodeBlock(blk *documents.Block) []byte {
+	blk = proto.Clone(blk).(*documents.Block)
+	blk.Revision = ""
+
+	data, err := proto.Marshal(blk)
+	if err != nil {
+		panic(err)
+	}
+	return data
 }

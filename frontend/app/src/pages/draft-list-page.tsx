@@ -1,17 +1,18 @@
+import {draftsClient} from '@app/api-clients'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
 import {prefetchDraft, queryKeys, useDraftList} from '@app/hooks'
-import {useMain} from '@app/main-context'
-import {formattedDate} from '@app/utils/get-format-date'
+import {openDraft, useNavigation} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
+import Footer from '@components/footer'
 import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
-import {deleteDraft, Document} from '@mintter/shared'
+import {deleteDraft, Document, formattedDate} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import Highlighter from 'react-highlight-words'
@@ -20,39 +21,39 @@ import '../styles/file-list.scss'
 export default DraftList
 
 function DraftList() {
-  let mainService = useMain()
   let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
-
+  const nav = useNavigation()
   return (
-    <div className="page-wrapper">
-      <ScrollArea>
-        {isInitialLoading ? (
-          <p>loading...</p>
-        ) : data && data.documents.length ? (
-          <ul className="file-list" data-testid="files-list">
-            {data.documents.map((draft) => (
-              <DraftListItem key={draft.id} draft={draft} />
-            ))}
-          </ul>
-        ) : (
-          <EmptyList
-            description="You have no Drafts yet."
-            action={() => {
-              // TODO: create a new draft
-              mainService.send('COMMIT.NEW.DRAFT')
-            }}
-          />
-        )}
-      </ScrollArea>
-    </div>
+    <>
+      <div className="page-wrapper">
+        <ScrollArea>
+          {isInitialLoading ? (
+            <p>loading...</p>
+          ) : data && data.documents.length ? (
+            <ul className="file-list" data-testid="files-list">
+              {data.documents.map((draft) => (
+                <DraftListItem key={draft.id} draft={draft} />
+              ))}
+            </ul>
+          ) : (
+            <EmptyList
+              description="You have no Drafts yet."
+              action={() => {
+                nav.openNewDraft(false)
+              }}
+            />
+          )}
+        </ScrollArea>
+      </div>
+      <Footer />
+    </>
   )
 }
 
 export function DraftListItem({draft}: {draft: Document}) {
   let {search} = useFind()
   let [, setLocation] = useLocation()
-  let mainService = useMain()
   let client = useQueryClient()
   let title = draft.title || 'Untitled Document'
 
@@ -66,7 +67,7 @@ export function DraftListItem({draft}: {draft: Document}) {
     {
       services: {
         performDelete: (context) => {
-          return deleteDraft(context.documentId)
+          return draftsClient.deleteDraft({documentId: context.documentId})
         },
       },
       actions: {
@@ -137,12 +138,9 @@ export function DraftListItem({draft}: {draft: Document}) {
               </Dropdown.Item>
               <Dropdown.Item
                 data-testid="new-window-item"
-                onSelect={() =>
-                  mainService.send({
-                    type: 'COMMIT.OPEN.WINDOW',
-                    path: `/d/${draft.id}`,
-                  })
-                }
+                onSelect={() => {
+                  openDraft(draft.id)
+                }}
               >
                 <Icon name="OpenInNewWindow" />
                 <Text size="2">Open in new Window</Text>

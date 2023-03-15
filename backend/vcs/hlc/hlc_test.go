@@ -1,7 +1,6 @@
 package hlc
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -41,7 +40,7 @@ func TestCompactTimestamp(t *testing.T) {
 	require.Equal(t, in, out)
 }
 
-func TestClock(t *testing.T) {
+func TestClockCausality(t *testing.T) {
 	now := time.Now()
 
 	in := []time.Time{
@@ -62,13 +61,26 @@ func TestClock(t *testing.T) {
 	}
 }
 
+func TestClockCausality_Continuous(t *testing.T) {
+	clock := NewClock()
+
+	// Number of iterations is arbitrary.
+	var last int64
+	for i := 0; i < 50000; i++ {
+		tt := clock.Now().Pack()
+		if tt <= last {
+			t.Fatalf("incorrect causality: prev=%d, current=%d", last, tt)
+		}
+		last = tt
+	}
+}
+
 func TestWallClockAlwaysRounded(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		tt := NewClock().Now()
 		require.Equal(t, uint16(0), tt.counter, "counter must be 0 at clock start")
 		require.Equal(t, uint16(0), uint16(tt.wall), "wall clock must be rounded to 48 bits, i.e. lower 16 bits are 0")
 		require.Equal(t, tt.wall, tt.Time().UnixMicro(), "unix micro representation doesn't match wall clock part")
-		fmt.Println(tt.wall)
 	}
 }
 

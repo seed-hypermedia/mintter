@@ -108,7 +108,7 @@ message ListDraftsResponse {
   // Content is omitted.
   repeated Document documents = 1;
 
-  // Token for the next page if there're any.
+  // Token for the next page if there's any.
   string next_page_token = 2;
 }
 
@@ -171,30 +171,6 @@ message ListPublicationsResponse {
   string next_page_token = 2;
 }
 
-// === Content Graph Service ===
-
-// Content graph service provides access to citations (backlinks).
-service ContentGraph {
-  rpc ListCitations(ListCitationsRequest) returns (ListCitationsResponse);
-}
-
-message ListCitationsRequest {
-  // Required. Document ID for which citations need to be retrieved.
-  string document_id = 1;
-
-  // Optional. Depth can be used to request transitive closure of citations.
-  // For example depth=1 will return not only citations of the requested document_id
-  // but also citations of those direct citations. The default is depth=0 and will only
-  // return direct citations.
-  int32 depth = 2;
-}
-
-// Response with citations.
-message ListCitationsResponse {
-  // List of links that point to the requested document, recursively, according to the requested depth.
-  repeated Link links = 1;
-}
-
 // === Types ===
 
 // State of the document after publication.
@@ -211,7 +187,7 @@ message Publication {
   // it doesn't really matter if different version strings point to the same document.
   string version = 1;
 
-  // Document metadata.
+  // Published document.
   Document document = 2;
 }
 
@@ -267,6 +243,10 @@ message Block {
 
   // Annotation "layers" of the block.
   repeated Annotation annotations = 5;
+
+  // Output only. Current revision of the block. It's the ID of the last Change that modified this block.
+  // Additional information about the Change can be obtained using the Changes service.
+  string revision = 6;
 }
 
 // Conceptual annotation "layer" that is applied to arbitrary spans of block text.
@@ -291,26 +271,4 @@ message Annotation {
   // End offsets of possibly disjoint spans of text for which this annotation is applied.
   // Must be sorted and have the same number of items as `starts` list.
   repeated int32 ends = 4;
-}
-
-// Description of a link inside a document.
-message Link {
-  // Required. Describes where link originates from.
-  LinkNode source = 1;
-
-  // Required. Describes where link points to.
-  // Here the block_id is optional, because the whole document can be linked.
-  LinkNode target = 2;
-}
-
-// Describes "sides" of a Link.
-message LinkNode {
-  // ID of the document on one side of a Link.
-  string document_id = 1;
-
-  // Version of the document.
-  string version = 2;
-
-  // ID of the block inside the document.
-  string block_id = 3;
 }

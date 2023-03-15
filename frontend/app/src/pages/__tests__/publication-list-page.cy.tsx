@@ -1,7 +1,8 @@
-import {ListCitationsResponse, Publication} from '@mintter/shared'
+import {Document, ListCitationsResponse, Publication} from '@mintter/shared'
 import {queryKeys} from '@app/hooks'
 import {createTestQueryClient} from '@app/test/utils'
 import PublicationList, {PublicationListItem} from '../publication-list-page'
+import {Timestamp} from '@bufbuild/protobuf'
 
 // TODO: FIXME
 describe('Publications List', () => {
@@ -22,9 +23,9 @@ describe('Publications List', () => {
             title: 'document 1',
             subtitle: '',
             author: 'testauthor',
-            createTime: new Date(),
-            updateTime: new Date(),
-            publishTime: new Date(),
+            createTime: new Timestamp(),
+            updateTime: new Timestamp(),
+            publishTime: new Timestamp(),
             children: [],
           },
         },
@@ -35,9 +36,9 @@ describe('Publications List', () => {
             title: 'document 2',
             subtitle: '',
             author: 'testauthor',
-            createTime: new Date(),
-            updateTime: new Date(),
-            publishTime: new Date(),
+            createTime: new Timestamp(),
+            updateTime: new Timestamp(),
+            publishTime: new Timestamp(),
             children: [],
           },
         },
@@ -75,9 +76,9 @@ describe('Publications List', () => {
         title: 'document 1',
         subtitle: '',
         author: 'testauthor',
-        createTime: new Date(),
-        updateTime: new Date(),
-        publishTime: new Date(),
+        createTime: new Timestamp(),
+        updateTime: new Timestamp(),
+        publishTime: new Timestamp(),
         children: [],
       },
     }
@@ -98,7 +99,7 @@ describe('Publications List', () => {
         .get('[data-testid="list-item-author"]')
         .contains(authors[0].profile?.alias)
         .get('[data-testid="list-item-date"]')
-        .contains('just now')
+        .contains('Jan 1, 1970')
     })
 
     it('should navigate to the publication', () => {

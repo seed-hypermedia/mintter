@@ -88,6 +88,14 @@ const (
 	GlobalMetaValue sqlitegen.Column = "global_meta.value"
 )
 
+// Table invite_tokens.
+const (
+	InviteTokens               sqlitegen.Table  = "invite_tokens"
+	InviteTokensExpirationTime sqlitegen.Column = "invite_tokens.expiration_time"
+	InviteTokensRole           sqlitegen.Column = "invite_tokens.role"
+	InviteTokensToken          sqlitegen.Column = "invite_tokens.token"
+)
+
 // Table ipfs_blocks.
 const (
 	IPFSBlocks           sqlitegen.Table  = "ipfs_blocks"
@@ -96,8 +104,15 @@ const (
 	IPFSBlocksID         sqlitegen.Column = "ipfs_blocks.id"
 	IPFSBlocksInsertTime sqlitegen.Column = "ipfs_blocks.insert_time"
 	IPFSBlocksMultihash  sqlitegen.Column = "ipfs_blocks.multihash"
-	IPFSBlocksPending    sqlitegen.Column = "ipfs_blocks.pending"
 	IPFSBlocksSize       sqlitegen.Column = "ipfs_blocks.size"
+)
+
+// Table ipld_links.
+const (
+	IPLDLinks       sqlitegen.Table  = "ipld_links"
+	IPLDLinksChild  sqlitegen.Column = "ipld_links.child"
+	IPLDLinksParent sqlitegen.Column = "ipld_links.parent"
+	IPLDLinksPath   sqlitegen.Column = "ipld_links.path"
 )
 
 // Table named_versions.
@@ -129,6 +144,22 @@ const (
 	ProfilesEmail     sqlitegen.Column = "profiles.email"
 )
 
+// Table site_members.
+const (
+	SiteMembers          sqlitegen.Table  = "site_members"
+	SiteMembersAccountID sqlitegen.Column = "site_members.account_id"
+	SiteMembersRole      sqlitegen.Column = "site_members.role"
+)
+
+// Table sites.
+const (
+	Sites          sqlitegen.Table  = "sites"
+	SitesAccountID sqlitegen.Column = "sites.account_id"
+	SitesAddresses sqlitegen.Column = "sites.addresses"
+	SitesHostname  sqlitegen.Column = "sites.hostname"
+	SitesRole      sqlitegen.Column = "sites.role"
+)
+
 // Table sqlite_sequence.
 const (
 	SQLITESequence     sqlitegen.Table  = "sqlite_sequence"
@@ -149,76 +180,98 @@ const (
 	WalletsType     sqlitegen.Column = "wallets.type"
 )
 
+// Table web_publication_records.
+const (
+	WebPublicationRecords                sqlitegen.Table  = "web_publication_records"
+	WebPublicationRecordsBlockID         sqlitegen.Column = "web_publication_records.block_id"
+	WebPublicationRecordsDocumentVersion sqlitegen.Column = "web_publication_records.document_version"
+	WebPublicationRecordsPath            sqlitegen.Column = "web_publication_records.path"
+)
+
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{
 	Columns: map[sqlitegen.Column]sqlitegen.ColumnInfo{
-		AccountDevicesAccountID:      {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountDevicesDeviceID:       {Table: AccountDevices, SQLType: "INTEGER"},
-		AccountsCreateTime:           {Table: Accounts, SQLType: "INTEGER"},
-		AccountsID:                   {Table: Accounts, SQLType: "INTEGER"},
-		AccountsMultihash:            {Table: Accounts, SQLType: "BLOB"},
-		AccountsPublicKey:            {Table: Accounts, SQLType: "BLOB"},
-		ChangeDepsChild:              {Table: ChangeDeps, SQLType: "INTEGER"},
-		ChangeDepsParent:             {Table: ChangeDeps, SQLType: "INTEGER"},
-		ChangesAccountID:             {Table: Changes, SQLType: "INTEGER"},
-		ChangesDeviceID:              {Table: Changes, SQLType: "INTEGER"},
-		ChangesID:                    {Table: Changes, SQLType: "INTEGER"},
-		ChangesKind:                  {Table: Changes, SQLType: "TEXT"},
-		ChangesPermanodeID:           {Table: Changes, SQLType: "INTEGER"},
-		ChangesStartTime:             {Table: Changes, SQLType: "INTEGER"},
-		ContentLinksSourceBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
-		ContentLinksSourceChangeID:   {Table: ContentLinks, SQLType: "INTEGER"},
-		ContentLinksSourceDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
-		ContentLinksSourceVersion:    {Table: ContentLinks, SQLType: "TEXT"},
-		ContentLinksTargetBlockID:    {Table: ContentLinks, SQLType: "TEXT"},
-		ContentLinksTargetDocumentID: {Table: ContentLinks, SQLType: "INTEGER"},
-		ContentLinksTargetVersion:    {Table: ContentLinks, SQLType: "TEXT"},
-		DatomAttrsAttr:               {Table: DatomAttrs, SQLType: "TEXT"},
-		DatomAttrsID:                 {Table: DatomAttrs, SQLType: "INTEGER"},
-		DatomsAttr:                   {Table: Datoms, SQLType: "INTEGER"},
-		DatomsChange:                 {Table: Datoms, SQLType: "INTEGER"},
-		DatomsEntity:                 {Table: Datoms, SQLType: "INTEGER"},
-		DatomsOrigin:                 {Table: Datoms, SQLType: "INTEGER"},
-		DatomsPermanode:              {Table: Datoms, SQLType: "INTEGER"},
-		DatomsTime:                   {Table: Datoms, SQLType: "INTEGER"},
-		DatomsValue:                  {Table: Datoms, SQLType: "BLOB"},
-		DatomsValueType:              {Table: Datoms, SQLType: "INTEGER"},
-		DevicesCreateTime:            {Table: Devices, SQLType: "INTEGER"},
-		DevicesID:                    {Table: Devices, SQLType: "INTEGER"},
-		DevicesMultihash:             {Table: Devices, SQLType: "BLOB"},
-		DevicesPublicKey:             {Table: Devices, SQLType: "BLOB"},
-		GlobalMetaKey:                {Table: GlobalMeta, SQLType: "TEXT"},
-		GlobalMetaValue:              {Table: GlobalMeta, SQLType: "TEXT"},
-		IPFSBlocksCodec:              {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksData:               {Table: IPFSBlocks, SQLType: "BLOB"},
-		IPFSBlocksID:                 {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksInsertTime:         {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksMultihash:          {Table: IPFSBlocks, SQLType: "BLOB"},
-		IPFSBlocksPending:            {Table: IPFSBlocks, SQLType: "INTEGER"},
-		IPFSBlocksSize:               {Table: IPFSBlocks, SQLType: "INTEGER"},
-		NamedVersionsAccountID:       {Table: NamedVersions, SQLType: "INTEGER"},
-		NamedVersionsDeviceID:        {Table: NamedVersions, SQLType: "INTEGER"},
-		NamedVersionsName:            {Table: NamedVersions, SQLType: "TEXT"},
-		NamedVersionsObjectID:        {Table: NamedVersions, SQLType: "INTEGER"},
-		NamedVersionsVersion:         {Table: NamedVersions, SQLType: "TEXT"},
-		PermanodesAccountID:          {Table: Permanodes, SQLType: "INTEGER"},
-		PermanodesCreateTime:         {Table: Permanodes, SQLType: "INTEGER"},
-		PermanodesID:                 {Table: Permanodes, SQLType: "INTEGER"},
-		PermanodesType:               {Table: Permanodes, SQLType: "TEXT"},
-		ProfilesAccountID:            {Table: Profiles, SQLType: "INTEGER"},
-		ProfilesAlias:                {Table: Profiles, SQLType: "TEXT"},
-		ProfilesBio:                  {Table: Profiles, SQLType: "TEXT"},
-		ProfilesChangeID:             {Table: Profiles, SQLType: "INTEGER"},
-		ProfilesEmail:                {Table: Profiles, SQLType: "TEXT"},
-		SQLITESequenceName:           {Table: SQLITESequence, SQLType: ""},
-		SQLITESequenceSeq:            {Table: SQLITESequence, SQLType: ""},
-		WalletsAddress:               {Table: Wallets, SQLType: "TEXT"},
-		WalletsBalance:               {Table: Wallets, SQLType: "INTEGER"},
-		WalletsID:                    {Table: Wallets, SQLType: "TEXT"},
-		WalletsLogin:                 {Table: Wallets, SQLType: "BLOB"},
-		WalletsName:                  {Table: Wallets, SQLType: "TEXT"},
-		WalletsPassword:              {Table: Wallets, SQLType: "BLOB"},
-		WalletsToken:                 {Table: Wallets, SQLType: "BLOB"},
-		WalletsType:                  {Table: Wallets, SQLType: "TEXT"},
+		AccountDevicesAccountID:              {Table: AccountDevices, SQLType: "INTEGER"},
+		AccountDevicesDeviceID:               {Table: AccountDevices, SQLType: "INTEGER"},
+		AccountsCreateTime:                   {Table: Accounts, SQLType: "INTEGER"},
+		AccountsID:                           {Table: Accounts, SQLType: "INTEGER"},
+		AccountsMultihash:                    {Table: Accounts, SQLType: "BLOB"},
+		AccountsPublicKey:                    {Table: Accounts, SQLType: "BLOB"},
+		ChangeDepsChild:                      {Table: ChangeDeps, SQLType: "INTEGER"},
+		ChangeDepsParent:                     {Table: ChangeDeps, SQLType: "INTEGER"},
+		ChangesAccountID:                     {Table: Changes, SQLType: "INTEGER"},
+		ChangesDeviceID:                      {Table: Changes, SQLType: "INTEGER"},
+		ChangesID:                            {Table: Changes, SQLType: "INTEGER"},
+		ChangesKind:                          {Table: Changes, SQLType: "TEXT"},
+		ChangesPermanodeID:                   {Table: Changes, SQLType: "INTEGER"},
+		ChangesStartTime:                     {Table: Changes, SQLType: "INTEGER"},
+		ContentLinksSourceBlockID:            {Table: ContentLinks, SQLType: "TEXT"},
+		ContentLinksSourceChangeID:           {Table: ContentLinks, SQLType: "INTEGER"},
+		ContentLinksSourceDocumentID:         {Table: ContentLinks, SQLType: "INTEGER"},
+		ContentLinksSourceVersion:            {Table: ContentLinks, SQLType: "TEXT"},
+		ContentLinksTargetBlockID:            {Table: ContentLinks, SQLType: "TEXT"},
+		ContentLinksTargetDocumentID:         {Table: ContentLinks, SQLType: "INTEGER"},
+		ContentLinksTargetVersion:            {Table: ContentLinks, SQLType: "TEXT"},
+		DatomAttrsAttr:                       {Table: DatomAttrs, SQLType: "TEXT"},
+		DatomAttrsID:                         {Table: DatomAttrs, SQLType: "INTEGER"},
+		DatomsAttr:                           {Table: Datoms, SQLType: "INTEGER"},
+		DatomsChange:                         {Table: Datoms, SQLType: "INTEGER"},
+		DatomsEntity:                         {Table: Datoms, SQLType: "INTEGER"},
+		DatomsOrigin:                         {Table: Datoms, SQLType: "INTEGER"},
+		DatomsPermanode:                      {Table: Datoms, SQLType: "INTEGER"},
+		DatomsTime:                           {Table: Datoms, SQLType: "INTEGER"},
+		DatomsValue:                          {Table: Datoms, SQLType: "BLOB"},
+		DatomsValueType:                      {Table: Datoms, SQLType: "INTEGER"},
+		DevicesCreateTime:                    {Table: Devices, SQLType: "INTEGER"},
+		DevicesID:                            {Table: Devices, SQLType: "INTEGER"},
+		DevicesMultihash:                     {Table: Devices, SQLType: "BLOB"},
+		DevicesPublicKey:                     {Table: Devices, SQLType: "BLOB"},
+		GlobalMetaKey:                        {Table: GlobalMeta, SQLType: "TEXT"},
+		GlobalMetaValue:                      {Table: GlobalMeta, SQLType: "TEXT"},
+		InviteTokensExpirationTime:           {Table: InviteTokens, SQLType: "INTEGER"},
+		InviteTokensRole:                     {Table: InviteTokens, SQLType: "INTEGER"},
+		InviteTokensToken:                    {Table: InviteTokens, SQLType: "TEXT"},
+		IPFSBlocksCodec:                      {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPFSBlocksData:                       {Table: IPFSBlocks, SQLType: "BLOB"},
+		IPFSBlocksID:                         {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPFSBlocksInsertTime:                 {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPFSBlocksMultihash:                  {Table: IPFSBlocks, SQLType: "BLOB"},
+		IPFSBlocksSize:                       {Table: IPFSBlocks, SQLType: "INTEGER"},
+		IPLDLinksChild:                       {Table: IPLDLinks, SQLType: "INTEGER"},
+		IPLDLinksParent:                      {Table: IPLDLinks, SQLType: "INTEGER"},
+		IPLDLinksPath:                        {Table: IPLDLinks, SQLType: "TEXT"},
+		NamedVersionsAccountID:               {Table: NamedVersions, SQLType: "INTEGER"},
+		NamedVersionsDeviceID:                {Table: NamedVersions, SQLType: "INTEGER"},
+		NamedVersionsName:                    {Table: NamedVersions, SQLType: "TEXT"},
+		NamedVersionsObjectID:                {Table: NamedVersions, SQLType: "INTEGER"},
+		NamedVersionsVersion:                 {Table: NamedVersions, SQLType: "TEXT"},
+		PermanodesAccountID:                  {Table: Permanodes, SQLType: "INTEGER"},
+		PermanodesCreateTime:                 {Table: Permanodes, SQLType: "INTEGER"},
+		PermanodesID:                         {Table: Permanodes, SQLType: "INTEGER"},
+		PermanodesType:                       {Table: Permanodes, SQLType: "TEXT"},
+		ProfilesAccountID:                    {Table: Profiles, SQLType: "INTEGER"},
+		ProfilesAlias:                        {Table: Profiles, SQLType: "TEXT"},
+		ProfilesBio:                          {Table: Profiles, SQLType: "TEXT"},
+		ProfilesChangeID:                     {Table: Profiles, SQLType: "INTEGER"},
+		ProfilesEmail:                        {Table: Profiles, SQLType: "TEXT"},
+		SiteMembersAccountID:                 {Table: SiteMembers, SQLType: "INTEGER"},
+		SiteMembersRole:                      {Table: SiteMembers, SQLType: "INTEGER"},
+		SitesAccountID:                       {Table: Sites, SQLType: "INTEGER"},
+		SitesAddresses:                       {Table: Sites, SQLType: "TEXT"},
+		SitesHostname:                        {Table: Sites, SQLType: "TEXT"},
+		SitesRole:                            {Table: Sites, SQLType: "INTEGER"},
+		SQLITESequenceName:                   {Table: SQLITESequence, SQLType: ""},
+		SQLITESequenceSeq:                    {Table: SQLITESequence, SQLType: ""},
+		WalletsAddress:                       {Table: Wallets, SQLType: "TEXT"},
+		WalletsBalance:                       {Table: Wallets, SQLType: "INTEGER"},
+		WalletsID:                            {Table: Wallets, SQLType: "TEXT"},
+		WalletsLogin:                         {Table: Wallets, SQLType: "BLOB"},
+		WalletsName:                          {Table: Wallets, SQLType: "TEXT"},
+		WalletsPassword:                      {Table: Wallets, SQLType: "BLOB"},
+		WalletsToken:                         {Table: Wallets, SQLType: "BLOB"},
+		WalletsType:                          {Table: Wallets, SQLType: "TEXT"},
+		WebPublicationRecordsBlockID:         {Table: WebPublicationRecords, SQLType: "INTEGER"},
+		WebPublicationRecordsDocumentVersion: {Table: WebPublicationRecords, SQLType: "TEXT"},
+		WebPublicationRecordsPath:            {Table: WebPublicationRecords, SQLType: "TEXT"},
 	},
 }

@@ -1,3 +1,6 @@
+/// This module defines all the menu items and associated functions that are present in the top level menu.
+///
+/// All event handlers are all also commands, so they can be reused from the frontend when replicating the titlebar and menu using HTML, CSS, and JS.
 use tauri::{
   api::shell::open, window::WindowBuilder, AppHandle, Manager, Runtime, Window, WindowUrl,
 };
@@ -11,6 +14,7 @@ use log::error;
 #[cfg(target_os = "macos")]
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu, WindowMenuEvent};
 
+/// Opens the about prompt that includes helpful information about the App such as the version and commit.
 #[tauri::command(async)]
 pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
   let package_info = app_handle.package_info();
@@ -33,6 +37,7 @@ pub fn open_about<R: Runtime>(app_handle: AppHandle<R>, window: Window<R>) {
   tauri::api::dialog::message(Some(&window), &package_info.name, message);
 }
 
+/// Opens the preferences window or focuses the window if the settings are already opened.
 #[tauri::command(async)]
 pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<()> {
   if let Some(window) = app_handle.get_window("preferences") {
@@ -54,21 +59,39 @@ pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<(
   Ok(())
 }
 
+/// Opens the Mintter documentation.
+///
+/// This current just point to the Website.
 #[tauri::command(async)]
 pub fn open_documentation<R: Runtime>(app_handle: AppHandle<R>) {
-  open(&app_handle.shell_scope(), "https://mintter.com", None).unwrap();
+  open(
+    &app_handle.shell_scope(),
+    "https://github.com/mintterteam/mintter",
+    None,
+  )
+  .unwrap();
 }
 
+/// Opens the Mintter release notes.
+///
+/// Since we don't have a CHANGELOG.md file this just points the Releases section on GitHub.
 #[tauri::command(async)]
 pub fn open_release_notes<R: Runtime>(app_handle: AppHandle<R>) {
-  open(&app_handle.shell_scope(), "https://mintter.com", None).unwrap();
+  open(
+    &app_handle.shell_scope(),
+    "https://github.com/mintterteam/mintter/releases",
+    None,
+  )
+  .unwrap();
 }
 
+/// Opens the acknowledgements. This currently panics since it is not implemented yet.
 #[tauri::command(async)]
 pub fn open_acknowledgements<R: Runtime>(_app_handle: AppHandle<R>) {
   todo!()
 }
 
+// Construct the full menu with all submenus for macOS. This function get's called from `main.rs`.
 #[cfg(target_os = "macos")]
 pub fn get_menu() -> Menu {
   let app_menu = Menu::new()
@@ -126,7 +149,9 @@ pub fn get_menu() -> Menu {
     .add_item(CustomMenuItem::new("reload", "Reload").accelerator("CmdOrControl+R"))
     .add_item(
       CustomMenuItem::new("quick_switcher", "Quick Switcher...").accelerator("CmdOrControl+K"),
-    );
+    )
+    .add_item(CustomMenuItem::new("zoomIn", "Zoom In").accelerator("CmdOrControl+Plus"))
+    .add_item(CustomMenuItem::new("zoomOut", "Zoom Out").accelerator("CmdOrControl+-"));
 
   let help_menu = Menu::new()
     .add_item(CustomMenuItem::new("documentation", "Documentation"))
@@ -149,6 +174,7 @@ pub fn event_handler(event: WindowMenuEvent) {
   }
 }
 
+// This function is used as the menu event listener in `main.rs` and adds the necessary functionality to each menu item.
 #[cfg(target_os = "macos")]
 pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
   match event.menu_item_id() {
@@ -194,6 +220,9 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
     }
     "unordered_list" | "ordered_list" | "group" => {
       event.window().emit("format_list", event.menu_item_id())?;
+    }
+    "zoomIn" | "zoomOut" => {
+      event.window().emit("change_zoom", event.menu_item_id())?;
     }
     id => bail!("Unhandled menu item \"{}\"", id),
   }

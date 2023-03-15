@@ -4,24 +4,27 @@ import {themeMachine, ThemeProvider} from '@app/theme'
 import {
   dehydrate,
   Hydrate,
-  QueryClient,
   QueryClientProvider,
   useQuery,
 } from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
 import {useInterpret} from '@xstate/react'
-import {lazy, Suspense} from 'react'
+import {Suspense, useEffect, useState} from 'react'
 import {FallbackProps} from 'react-error-boundary'
 import {Toaster} from 'react-hot-toast'
 import {attachConsole, debug} from 'tauri-plugin-log-api'
 import {globalStyles} from './stitches.config'
-const OnboardingPage = lazy(() => import('./pages/onboarding'))
-const AppProvider = lazy(() => import('./components/app-provider'))
-const Main = lazy(() => import('./pages/main'))
+import OnboardingPage from '@app/pages/onboarding'
+import AppProvider from '@components/app-provider'
+import Main from '@app/pages/main'
+import {store} from '@app/app-store'
 
 import './styles/root.scss'
 import './styles/toaster.scss'
+import {appQueryClient} from './query-client'
+import {listen} from '@tauri-apps/api/event'
+import {daemonClient} from '@app/api-clients'
 
 import('./updater')
 
@@ -41,11 +44,12 @@ onUpdaterEvent(({error, status}) => {
 })
 
 export function Root() {
-  var themeService = useInterpret(() => themeMachine)
+  const themeService = useInterpret(themeMachine)
+
   globalStyles()
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={appQueryClient}>
       <Suspense>
         <Hydrate state={dehydrateState}>
           <ThemeProvider value={themeService}>
@@ -66,13 +70,12 @@ function App() {
   let {data, status} = useQuery({
     queryKey: [queryKeys.GET_ACCOUNT_INFO],
     queryFn: () =>
-      getInfo().catch((err) => {
-        let message = err.metadata?.headersMap?.['grpc-message']
-        // console.log('message', message)
-        if (message?.[0] == 'account is not initialized') {
+      daemonClient.getInfo({}).catch((err) => {
+        if (
+          err.message === '[failed_precondition] account is not initialized'
+        ) {
           return 'no account'
         }
-
         return new Error(err)
       }),
     refetchOnWindowFocus: false,
@@ -85,6 +88,8 @@ function App() {
       Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
     keepPreviousData: true,
   })
+
+  usePageZoom()
 
   if (data == 'no account') {
     return <OnboardingPage />
@@ -129,28 +134,7 @@ if (window.Cypress) {
   }
 }
 
-var queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      networkMode: 'always',
-      useErrorBoundary: true,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      retryOnMount: false,
-      staleTime: Infinity,
-      refetchOnReconnect: false,
-      onError: (err) => {
-        console.log(`Query error: ${err}`)
-      },
-      retry: 4,
-      retryDelay: (attempt) =>
-        Math.min(attempt > 1 ? 2 ** attempt * 1000 : 1000, 30 * 1000),
-      keepPreviousData: true,
-    },
-  },
-})
-
-var dehydrateState = dehydrate(queryClient)
+var dehydrateState = dehydrate(appQueryClient)
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (
@@ -160,4 +144,29 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
       <button onClick={resetErrorBoundary}>Try again</button>
     </div>
   )
+}
+
+function usePageZoom() {
+  useEffect(() => {
+    store.get<number>('zoom').then((value) => {
+      console.log('ZOOM VALUE', value)
+      let val = value ?? 1
+      document.body.style = `zoom: ${val};`
+    })
+  }, [])
+
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    listen('change_zoom', async (event: {payload: 'zoomIn' | 'zoomOut'}) => {
+      let currentZoom = (await store.get<number>('zoom')) || 1
+      let newVal =
+        event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
+
+      document.body.style = `zoom: ${newVal};`
+      store.set('zoom', currentZoom)
+    }).then((f) => (unlisten = f))
+
+    return () => unlisten?.()
+  }, [])
 }

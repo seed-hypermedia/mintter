@@ -1,4 +1,4 @@
-import {Block} from '../.generated/documents/v1alpha/documents'
+import {Block} from '../.generated/documents/v1alpha/documents_pb'
 import {
   embed,
   heading,
@@ -16,29 +16,33 @@ import {blockToSlate} from '../block-to-slate'
 
 describe('Transform: blockToSlate', () => {
   test('should return an empty annotations list', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'Hello world',
       attributes: {},
       annotations: [],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [paragraph([text('Hello world')])])
+    let output = statement({id: 'blockId', revision: ''}, [
+      paragraph([text('Hello world')]),
+    ])
 
     expect(blockToSlate(input)).toEqual(output)
   })
 
   test('should return a heading block', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'heading',
       text: 'Hello world',
       attributes: {},
       annotations: [],
+      revision: '',
     })
 
-    let output = heading({id: 'blockId'}, [
+    let output = heading({id: 'blockId', revision: ''}, [
       staticParagraph([text('Hello world')]),
     ])
 
@@ -46,21 +50,24 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should return a block with a single letter and no annotations', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'h',
       attributes: {},
       annotations: [],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [paragraph([text('h')])])
+    let output = statement({id: 'blockId', revision: ''}, [
+      paragraph([text('h')]),
+    ])
 
     expect(blockToSlate(input)).toEqual(output)
   })
 
   test('basic marks with no trailing space', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'A',
@@ -69,9 +76,10 @@ describe('Transform: blockToSlate', () => {
         // { type: "emphasis", starts: [1], ends: [2], attributes: {} },
       ],
       attributes: {},
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([text('A', {strong: true})]),
     ])
 
@@ -79,7 +87,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should return all the possible marks', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'A B C D E F',
@@ -92,9 +100,10 @@ describe('Transform: blockToSlate', () => {
         {type: 'subscript', starts: [10], ends: [11], attributes: {}},
       ],
       attributes: {},
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('A ', {subscript: true}),
         text('B ', {emphasis: true}),
@@ -109,7 +118,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should generate overlapping marks', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'Mintter is Awesome',
@@ -118,9 +127,10 @@ describe('Transform: blockToSlate', () => {
         {type: 'emphasis', starts: [8], ends: [18], attributes: {}},
       ],
       attributes: {},
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('Mintter ', {strong: true}),
         text('is', {strong: true, emphasis: true}),
@@ -132,14 +142,15 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('should transform no ASCII characters (emojis)', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'hello from 👨‍👩‍👧‍👦 family',
       annotations: [{type: 'strong', starts: [6], ends: [25], attributes: {}}],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([text('hello '), text('from 👨‍👩‍👧‍👦 family', {strong: true})]),
     ])
 
@@ -148,7 +159,7 @@ describe('Transform: blockToSlate', () => {
 
   describe('Links', () => {
     test('Links: simple', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'hello Mintter',
@@ -160,9 +171,10 @@ describe('Transform: blockToSlate', () => {
             ends: [13],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text('hello '),
           link({url: 'https://mintter.com'}, [text('Mintter')]),
@@ -174,7 +186,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Links: simple 2', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'AB',
@@ -187,9 +199,10 @@ describe('Transform: blockToSlate', () => {
           },
           {type: 'strong', attributes: {}, starts: [0], ends: [1]},
         ],
+        revision: '',
       })
 
-      let output: Statement = statement({id: 'blockId'}, [
+      let output: Statement = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           link({url: 'https://hola.com'}, [text('A', {strong: true})]),
@@ -202,7 +215,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Links: multiple links together', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'Mintterdemo',
@@ -220,9 +233,10 @@ describe('Transform: blockToSlate', () => {
             ends: [11],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           link({url: 'https://mintter.com'}, [text('Mintter')]),
@@ -236,7 +250,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Links: with marks', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'hello Mintter team!',
@@ -249,9 +263,10 @@ describe('Transform: blockToSlate', () => {
           },
           {type: 'strong', starts: [14], ends: [19], attributes: {}},
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text('hello '),
           link({url: 'https://mintter.com'}, [
@@ -267,7 +282,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Images: simple', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -282,9 +297,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+      revision: '',
+    })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
@@ -296,7 +312,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Images: simple + alt', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -311,9 +327,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+      revision: '',
+    })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         image({url: 'https://mintter.com/image', alt: 'hello alt'}, [text('')]),
@@ -325,7 +342,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Images: with more content', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'hello block with \uFFFC this image in between content',
@@ -340,9 +357,10 @@ describe('Transform: blockToSlate', () => {
           ends: [18],
         },
       ],
-    }
+      revision: '',
+    })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('hello block with '),
         image({url: 'https://mintter.com/image', alt: ''}, [text('')]),
@@ -355,7 +373,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Videos: simple', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -370,9 +388,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+      revision: '',
+    })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
@@ -384,7 +403,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Videos: simple + alt', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: '\uFFFC',
@@ -399,9 +418,10 @@ describe('Transform: blockToSlate', () => {
           ends: [1],
         },
       ],
-    }
+      revision: '',
+    })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text(''),
         video({url: 'https://mintter.com/video', alt: 'hello alt'}, [text('')]),
@@ -413,7 +433,7 @@ describe('Transform: blockToSlate', () => {
   })
 
   test('Videos: with more content', () => {
-    let input = {
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'hello block with \uFFFC this video in between content',
@@ -428,9 +448,10 @@ describe('Transform: blockToSlate', () => {
           ends: [18],
         },
       ],
-    }
+      revision: '',
+    })
 
-    let output: Statement = statement({id: 'blockId'}, [
+    let output: Statement = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('hello block with '),
         video({url: 'https://mintter.com/video', alt: ''}, [text('')]),
@@ -444,7 +465,7 @@ describe('Transform: blockToSlate', () => {
 
   describe('Embeds', () => {
     test('Embeds: simple', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '\uFFFC',
@@ -456,9 +477,10 @@ describe('Transform: blockToSlate', () => {
             ends: [1],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           embed({url: 'mintter://doc1/block1'}, [text('')]),
@@ -470,7 +492,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Embeds: multiple embeds together', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '\uFFFC\uFFFC',
@@ -488,9 +510,10 @@ describe('Transform: blockToSlate', () => {
             ends: [2],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text(''),
           embed({url: 'mintter://doc1/block1'}, [text('')]),
@@ -504,7 +527,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Embeds: multiple embeds separated by marks', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'This \uFFFC and also this are very important: \uFFFC',
@@ -523,9 +546,10 @@ describe('Transform: blockToSlate', () => {
             ends: [42],
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([
           text('This '),
           embed({url: 'mintter://doc1/block1'}, [text('')]),
@@ -543,20 +567,23 @@ describe('Transform: blockToSlate', () => {
 
   describe('Emojis', () => {
     test('Single Emoji', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '😅',
         annotations: [],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [paragraph([text('😅')])])
+      let output = statement({id: 'blockId', revision: ''}, [
+        paragraph([text('😅')]),
+      ])
       let result = blockToSlate(input as Block)
       expect(result).toEqual(output)
     })
 
     test('Single Emoji with Mark', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '😅',
@@ -568,9 +595,10 @@ describe('Transform: blockToSlate', () => {
             attributes: {},
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([text('😅', {emphasis: true})]),
       ])
       let result = blockToSlate(input as Block)
@@ -578,7 +606,7 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Multiple emojis', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: '😀 😎 👨‍👩‍👧‍👦',
@@ -590,9 +618,10 @@ describe('Transform: blockToSlate', () => {
             attributes: {},
           },
         ],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [
+      let output = statement({id: 'blockId', revision: ''}, [
         paragraph([text('😀 😎 '), text('👨‍👩‍👧‍👦', {emphasis: true})]),
       ])
 
@@ -600,21 +629,24 @@ describe('Transform: blockToSlate', () => {
     })
 
     test('Text + Emojis', () => {
-      let input = Block.fromPartial({
+      let input = new Block({
         id: 'blockId',
         type: 'statement',
         text: 'hello 😅',
         annotations: [],
+        revision: '',
       })
 
-      let output = statement({id: 'blockId'}, [paragraph([text('hello 😅')])])
+      let output = statement({id: 'blockId', revision: ''}, [
+        paragraph([text('hello 😅')]),
+      ])
       let result = blockToSlate(input as Block)
       expect(result).toEqual(output)
     })
   })
 
   test('combining layers', () => {
-    let input = Block.fromPartial({
+    let input = new Block({
       id: 'blockId',
       type: 'statement',
       text: 'Alice, Bob and Carol',
@@ -626,9 +658,10 @@ describe('Transform: blockToSlate', () => {
           attributes: {},
         },
       ],
+      revision: '',
     })
 
-    let output = statement({id: 'blockId'}, [
+    let output = statement({id: 'blockId', revision: ''}, [
       paragraph([
         text('Alice', {strong: true}),
         text(', Bob and '),

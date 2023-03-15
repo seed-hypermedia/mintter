@@ -5,7 +5,9 @@ import (
 	"mintter/backend/config"
 	"mintter/backend/core/coretest"
 	"mintter/backend/db/sqliteschema"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
@@ -139,6 +141,92 @@ func TestSync(t *testing.T) {
 	}
 }
 
+func TestSynWithList(t *testing.T) {
+	t.Parallel()
+
+	type Node struct {
+		*mttnet.Node
+
+		Syncer *Service
+	}
+
+	newNode := func(name string, inDisable bool) Node {
+		var n Node
+
+		peer, stop := makeTestPeer(t, name)
+		t.Cleanup(stop)
+		n.Node = peer
+
+		n.Syncer = NewService(must.Do2(zap.NewDevelopment()).Named(name), peer.ID(), peer.VCS(), peer.Bitswap(), peer.Client, inDisable)
+
+		return n
+	}
+	alice := newNode("alice", false)
+	bob := newNode("bob", true)
+	ctx := context.Background()
+
+	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
+
+	var alicePerma vcs.EncodedPermanode
+	var wantDatoms []vcsdb.Datom
+	var publicVersion string
+	{
+		conn, release, err := alice.VCS().Conn(ctx)
+		require.NoError(t, err)
+
+		err = conn.WithTx(true, func() error {
+			clock := hlc.NewClock()
+			perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
+			alicePerma = perma
+			require.NoError(t, err)
+			obj := conn.NewObject(perma)
+			idLocal := conn.EnsureIdentity(alice.ID())
+			change := conn.NewChange(obj, idLocal, nil, clock)
+
+			wantDatoms = []vcsdb.Datom{
+				vcs.NewDatom(vcs.RootNode, "title", "This is a title", clock.Now().Pack(), 123),
+			}
+
+			conn.AddDatoms(obj, change, wantDatoms...)
+			conn.SaveVersion(obj, "main", idLocal, vcsdb.LocalVersion{change})
+			conn.EncodeChange(change, alice.ID().DeviceKey())
+			version := conn.GetVersion(obj, "main", idLocal)
+			publicVersion = conn.LocalVersionToPublic(version).String()
+			return nil
+		})
+		release()
+		require.NoError(t, err)
+	}
+	obj := []*p2p.Object{{
+		Id:         alicePerma.ID.String(),
+		VersionSet: []*p2p.Version{{AccountId: alice.ID().AccountID().String(), Version: publicVersion}},
+	}}
+	require.NoError(t, bob.Syncer.SyncWithPeer(ctx, alice.ID().DeviceKey().CID(), obj...))
+
+	{
+		conn, release, err := bob.VCS().Conn(ctx)
+		require.NoError(t, err)
+
+		err = conn.WithTx(false, func() error {
+			obj := conn.LookupPermanode(alicePerma.ID)
+			idLocal := conn.LookupIdentity(bob.ID())
+			version := conn.GetVersion(obj, "main", idLocal)
+			cs := conn.ResolveChangeSet(obj, version)
+
+			var i int
+			it := conn.QueryObjectDatoms(obj, cs)
+			for it.Next() {
+				i++
+			}
+			require.Equal(t, len(wantDatoms), i, "must get the same number of datoms as in the original object")
+
+			return nil
+		})
+		release()
+		require.NoError(t, err)
+	}
+}
+
 func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) {
 	u := coretest.NewTester(name)
 
@@ -157,12 +245,14 @@ func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) 
 	cfg.NoRelay = true
 	cfg.BootstrapPeers = nil
 	cfg.NoMetrics = true
-
 	n, err := mttnet.New(cfg, hvcs, reg, u.Identity, must.Do2(zap.NewDevelopment()).Named(name))
 	require.NoError(t, err)
 
 	errc := make(chan error, 1)
 	ctx, cancel := context.WithCancel(context.Background())
+	f := future.New[*mttnet.Node]()
+	_ = mttnet.NewServer(ctx, config.Default().Site, f.ReadOnly, nil, nil)
+	require.NoError(t, f.Resolve(n))
 	go func() {
 		errc <- n.Start(ctx)
 	}()

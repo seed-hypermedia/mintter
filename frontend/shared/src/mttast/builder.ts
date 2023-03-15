@@ -2,7 +2,6 @@ import {nanoid} from 'nanoid/non-secure'
 import type {Node, Parent} from 'unist'
 import type {
   Blockquote,
-  Callout,
   Code,
   MttDocument,
   Embed,
@@ -75,8 +74,6 @@ export const blockquote = createParent<Blockquote>('blockquote', {
 })
 
 export const code = createParent<Code>('code', {id: createId()})
-
-export const callout = createParent<Callout>('callout', {id: createId()})
 
 export const group = createParent<Group>('group')
 

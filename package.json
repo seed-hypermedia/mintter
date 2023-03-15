@@ -22,16 +22,18 @@
     "app:test": "pnpm --filter='@mintter/app' test",
     "tauri:dev": "cd desktop/app && cargo tauri dev",
     "gw:dev": "pnpm --parallel --filter='@mintter/shared' --filter='@mintter/gateway' dev",
-    "gw:build": "pnpm shared:build && pnpm --filter='@mintter/gateway' build",
-    "gw:test": "pnpm --filter='@mintter/gateway' test"
+    "gw:build": "pnpm --filter='@mintter/gateway' build",
+    "gw:test": "pnpm --filter='@mintter/gateway' test",
+    "gw:start": "pnpm --filter='@mintter/gateway' start"
   },
   "devDependencies": {
+    "@bufbuild/protoc-gen-connect-web": "^0.6.0",
+    "@bufbuild/protoc-gen-es": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "5.45.1",
     "@typescript-eslint/parser": "5.45.1",
     "@typescript-eslint/typescript-estree": "5.45.1",
     "concurrently": "7.6.0",
     "eslint": "8.29.0",
-    "eslint-config-preact": "1.3.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-react": "7.31.11",
@@ -39,7 +41,6 @@
     "graphql-codegen": "0.4.0",
     "prettier": "2.8.1",
     "tiny-glob": "0.2.9",
-    "ts-proto": "1.135.0",
     "typescript": "4.9.4"
   }
 }

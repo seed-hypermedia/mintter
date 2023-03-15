@@ -1,7 +1,9 @@
+import {BlockTools} from '@app/editor/blocktools'
 import {useBlockProps} from '@app/editor/editor-node-props'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {
+  Blockquote as BlockquoteType,
   createId,
   isBlockquote,
   paragraph,
@@ -10,6 +12,7 @@ import {
 } from '@mintter/shared'
 import {Editor, Path, Transforms} from 'slate'
 import {RenderElementProps} from 'slate-react'
+import {ElementDrag} from '../drag-section'
 import type {EditorPlugin} from '../types'
 import {resetFlowContent, useBlockFlash} from '../utils'
 
@@ -71,9 +74,9 @@ function BlockQuote({
   children,
   mode,
 }: RenderElementProps & {mode: EditorMode}) {
-  let {blockProps} = useBlockProps(element)
+  let {blockProps} = useBlockProps(element as BlockquoteType)
 
-  let inRoute = useBlockFlash(attributes.ref, element.id)
+  let inRoute = useBlockFlash(attributes.ref, (element as BlockquoteType).id)
 
   if (mode == EditorMode.Embed) {
     return (
@@ -84,12 +87,8 @@ function BlockQuote({
   }
 
   return (
-    <li
-      {...attributes}
-      {...blockProps}
-      className={inRoute ? 'flash' : undefined}
-    >
+    <ElementDrag element={element} attributes={attributes} mode={mode}>
       {children}
-    </li>
+    </ElementDrag>
   )
 }

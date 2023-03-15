@@ -1,28 +1,25 @@
 import {
-  Document,
-  getAccount,
-  getDraft,
-  getPublication,
-  GrpcClient,
-  MttLink,
-  listCitations,
-  listDrafts,
-  listPublications,
-  Publication,
-} from '@mintter/shared'
-import {
-  QueryClient,
-  useMutation,
-  UseMutationOptions,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+  accountsClient,
+  changesClient,
+  draftsClient,
+  publicationsClient,
+} from '@app/api-clients'
+import {Transport} from '@bufbuild/connect-web'
+import {Timestamp} from '@bufbuild/protobuf'
+import {Document, Publication} from '@mintter/shared'
+import {QueryClient, useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect, useMemo} from 'react'
+import {contentGraphClient} from './../api-clients'
 
 export * from './types'
 
 export const queryKeys = {
+  GET_SITES: 'GET_SITES',
+  SITES_LIST: 'SITES_LIST',
+  GET_SITE_INFO: 'GET_SITE_INFO', // , siteId: string
+  GET_SITE_MEMBERS: 'GET_SITE_MEMBERS', // , siteId: string
+  GET_DOC_PUBLICATIONS: 'GET_DOC_PUBLICATIONS', // , siteId: string
   GET_DRAFT_LIST: 'GET_DRAFT_LIST',
   GET_ACCOUNT: 'GET_ACCOUNT',
   GET_CONTACTS_LIST: 'GET_CONTACTS_LIST',
@@ -31,28 +28,34 @@ export const queryKeys = {
   GET_PEER_ADDRS: 'GET_PEER_ADDRS',
   GET_PUBLICATION: 'GET_PUBLICATION',
   GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST',
-  OTHERS_PUBLICATION_LIST: 'OTHERS_PUBLICATION_LIST',
-  MY_PUBLICATION_LIST: 'MY_PUBLICATION_LIST',
   GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
   GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
   GET_PEER_INFO: 'GET_PEER_INFO',
   GET_SITES_LIST: 'GET_SITES_LIST',
-}
+  GET_PUBLICATION_CONVERSATIONS: 'GET_PUBLICATION_CONVERSATIONS',
+  GET_WEB_PUBLICATIONS: 'GET_WEB_PUBLICATIONS',
+  PUBLICATION_CHANGES: 'PUBLICATION_CHANGES',
+  PUBLICATION_CITATIONS: 'PUBLICATION_CITATIONS',
+} as const
 
 type QueryOptions = {
-  rpc?: GrpcClient
+  rpc?: Transport
 }
 export function usePublicationList({rpc}: QueryOptions = {}) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
-    queryFn: () => listPublications(rpc),
+    queryFn: () => publicationsClient.listPublications({}),
     onError: (err) => {
       console.log(`usePublicationList error: ${err}`)
     },
   })
 
   let publications = useMemo(() => {
-    return queryResult.data?.publications.sort(sortPublications) || []
+    return (
+      queryResult.data?.publications.sort((a, b) =>
+        sortDocuments(a.document?.updateTime, b.document?.updateTime),
+      ) || []
+    )
   }, [queryResult.data])
 
   useEffect(() => {
@@ -80,97 +83,6 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
   }
 }
 
-export type Site = {
-  id: string
-}
-
-export function useDocPublications(docId: string) {
-  return useQuery({
-    queryKey: ['queryKeys.GET_DOC_PUBLICATIONS'],
-    queryFn: async () => {
-      return []
-    },
-  })
-}
-
-export function useSiteList({rpc}: QueryOptions = {}) {
-  return useQuery({
-    queryKey: [queryKeys.GET_SITES_LIST],
-    queryFn: async () => {
-      //listSites(rpc),
-
-      // temp init sites include this:
-      return [{id: 'opinion.ethosfera.org'}] as Site[]
-    },
-  })
-}
-export function useAddSite() {
-  const queryClient = useQueryClient()
-
-  return useMutation(
-    async (hostname: string) => {
-      // call rpc. for now this insta-succeeds
-      return null
-    },
-    {
-      onSuccess: (_result, hostname) => {
-        queryClient.setQueryData(
-          [queryKeys.GET_SITES_LIST],
-          (oldSites: Site[] | undefined) => {
-            const site = {id: hostname}
-            if (oldSites) return [...oldSites, site]
-            return [site]
-          },
-        )
-      },
-    },
-  )
-}
-export function useDeleteSite(siteId: string, opts: UseMutationOptions) {
-  const queryClient = useQueryClient()
-
-  return useMutation(
-    async () => {
-      // call rpc. for now this insta-succeeds
-      return null
-    },
-    {
-      ...opts,
-      onSuccess: (response, input, ctx) => {
-        queryClient.setQueryData(
-          [queryKeys.GET_SITES_LIST],
-          (oldSites: Site[] | undefined) => {
-            if (oldSites) return oldSites.filter((site) => site.id !== siteId)
-            return undefined
-          },
-        )
-        opts?.onSuccess?.(response, input, ctx)
-      },
-    },
-  )
-}
-
-type SiteConfig = {
-  title: string
-  description: string
-  editors: string[]
-}
-export function useWriteSiteConfig(sietId: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation(
-    async (config: SiteConfig) => {
-      // call rpc. for now this insta-succeeds
-      return null
-    },
-    {
-      onSuccess: (_result, config) => {
-        //noop
-      },
-    },
-  )
-}
-
 type UseDraftListParams = {
   pageSize?: number
   pageToken?: string
@@ -184,22 +96,18 @@ export function useDraftList({
 }: UseDraftListParams = {}) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
-    queryFn: () => listDrafts(pageSize, pageToken, options?.rpc),
+    queryFn: () => draftsClient.listDrafts({pageSize, pageToken}),
     onError: (err) => {
       console.log(`useDraftList error: ${err}`)
     },
   })
 
   let documents = useMemo(() => {
-    return queryResult.data?.documents.sort(sort) || []
-
-    function sort(a: Document, b: Document) {
-      let dateA = a.updateTime ? new Date(a.updateTime) : 0
-      let dateB = b.updateTime ? new Date(b.updateTime) : 1
-
-      // @ts-ignore
-      return dateB - dateA
-    }
+    return (
+      queryResult.data?.documents.sort((a, b) =>
+        sortDocuments(a.updateTime, b.updateTime),
+      ) || []
+    )
   }, [queryResult.data])
 
   useEffect(() => {
@@ -247,8 +155,9 @@ export function useDraftList({
 
 export function useAuthor(id = '', opts: QueryOptions = {}) {
   return useQuery({
+    enabled: !!id,
     queryKey: [queryKeys.GET_ACCOUNT, id],
-    queryFn: () => getAccount(id, opts.rpc),
+    queryFn: () => accountsClient.getAccount({id}),
     onError: (err) => {
       console.log(`useAuthor error: ${err}`)
     },
@@ -256,94 +165,51 @@ export function useAuthor(id = '', opts: QueryOptions = {}) {
 }
 
 export function prefetchPublication(client: QueryClient, pub: Publication) {
-  client.prefetchQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, pub.document?.id, pub.version],
-    queryFn: () => getPublication(pub.document?.id, pub.version),
-  })
+  if (pub.document?.id) {
+    client.prefetchQuery({
+      queryKey: [queryKeys.GET_PUBLICATION, pub.document.id, pub.version],
+      queryFn: () =>
+        publicationsClient.getPublication({
+          documentId: pub.document?.id,
+          version: pub.version,
+        }),
+    })
+  }
 }
 
 export function prefetchDraft(client: QueryClient, draft: Document) {
   client.prefetchQuery({
     queryKey: [queryKeys.GET_DRAFT, draft.id],
-    queryFn: () => getDraft(draft.id),
+    queryFn: () => draftsClient.getDraft({documentId: draft.id}),
   })
 }
 
-type UseCitationsOptions = QueryOptions & {
-  depth?: number
-}
-
-export function useCitations(documentId: string, opts: UseCitationsOptions) {
+export function useDocChanges(docId?: string) {
   return useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
-    queryFn: () => listCitations(documentId, opts.depth, opts.rpc),
-    onError: (err) => {
-      console.log(`useCitations error: ${err}`)
-    },
+    queryFn: () =>
+      changesClient.listChanges({
+        objectId: docId,
+      }),
+    queryKey: [queryKeys.PUBLICATION_CHANGES, docId],
+    enabled: !!docId,
   })
-  return
 }
 
-export function usePublication(
-  documentId: string,
-  version: string,
-  opts: QueryOptions,
-) {
+export type CitationLink = Awaited<
+  ReturnType<typeof contentGraphClient.listCitations>
+>['links'][number]
+
+export function useDocCitations(docId?: string) {
   return useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, documentId, version],
-    enabled: !!documentId && !!version,
-    queryFn: () => getPublication(documentId, version, opts.rpc),
-    onError: (err) => {
-      console.log(`usePublication error: ${err}`)
-    },
-  })
-}
-type UseDiscussionParams = {
-  documentId?: string
-  visible?: boolean
-}
-
-export function useDiscussion({documentId, visible}: UseDiscussionParams) {
-  let queryResult = useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION_DISCUSSION, documentId],
-    // we are using the `enabled` attr, so `documentId` _should_ set at this point
-    queryFn: () => listCitations(documentId as string),
-    enabled: !!documentId && visible,
-    refetchOnWindowFocus: true,
-  })
-
-  let data = useMemo(() => {
-    if (queryResult.data) {
-      return createDedupeLinks(queryResult.data.links)
-    } else []
-  }, [queryResult.data])
-
-  return {
-    ...queryResult,
-    data,
-  }
-}
-
-function createDedupeLinks(entry: Array<MttLink>): Array<MttLink> {
-  let sourceSet = new Set<string>()
-
-  return entry.filter((link) => {
-    // this will remove any link with no source. maybe this is not possible?
-    if (!link.source) return false
-
-    let currentSource = `${link.source.documentId}/${link.source.version}`
-    if (sourceSet.has(currentSource)) {
-      return false
-    } else {
-      sourceSet.add(currentSource)
-      return true
-    }
+    queryFn: () => contentGraphClient.listCitations({documentId: docId}),
+    queryKey: [queryKeys.PUBLICATION_CITATIONS, docId],
+    enabled: !!docId,
   })
 }
 
-function sortPublications(a: Publication, b: Publication) {
-  let dateA = a.document?.updateTime ? new Date(a.document?.updateTime) : 0
-  let dateB = b.document?.updateTime ? new Date(b.document?.updateTime) : 1
+function sortDocuments(a?: Timestamp, b?: Timestamp) {
+  let dateA = a ? a.toDate() : 0
+  let dateB = b ? b.toDate() : 1
 
   // @ts-ignore
   return dateB - dateA

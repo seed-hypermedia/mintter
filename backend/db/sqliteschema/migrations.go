@@ -39,12 +39,23 @@ var migrations = []string{
 		-- Actual content of the block. Compressed with zstd.
 		data BLOB,
 		-- Byte size of the original uncompressed data.
-		size INTEGER DEFAULT (0) NOT NULL,
+		-- Size 0 indicates that data is stored inline in the CID.
+		-- Size -1 indicates that we somehow know about this hash, but don't have the data yet.
+		size INTEGER DEFAULT (-1) NOT NULL,
 		-- Subjective (locally perceived) time when this block was inserted into the table for the first time.
-		insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-		-- Pending blocks are those for which we know the hash, but we don't have the content yet.
-		pending INTEGER DEFAULT (0) NOT NULL CHECK (pending IN (0, 1))
+		insert_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 	);`,
+
+	// Stores IPLD links between ipfs_blocks for those nodes which are IPLD.
+	`CREATE TABLE ipld_links (
+		child INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		parent INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		path TEXT NOT NULL,
+		PRIMARY KEY (child, parent)
+	) WITHOUT ROWID;`,
+
+	// Index to query IPLD links from parent to child.
+	`CREATE INDEX idx_ipld_links_reverse ON ipld_links (parent, child);`,
 
 	// Stores data about Mintter Accounts.
 	`CREATE TABLE accounts (
@@ -154,7 +165,7 @@ var migrations = []string{
 		time INTEGER NOT NULL CHECK (time > 0),
 		-- Abbreviated device ID that authored the change.
 		origin INTEGER NOT NULL CHECK (origin != 0),
-		PRIMARY KEY (permanode, change, time)
+		PRIMARY KEY (permanode, time, change, origin)
 	) WITHOUT ROWID;`,
 
 	`CREATE INDEX datoms_eavt ON datoms (permanode, entity, attr);
@@ -186,8 +197,8 @@ var migrations = []string{
 	CREATE INDEX content_links_by_source ON content_links (source_document_id, source_block_id);`,
 
 	// Stores Lightning wallets both externals (imported wallets like bluewallet
-	`-- based on lndhub) and internals (based on the LND embedded node).
-	CREATE TABLE wallets (
+	// based on lndhub) and internals (based on the LND embedded node).
+	`CREATE TABLE wallets (
 		-- Wallet unique ID. Is the connection uri hash.
 		id TEXT PRIMARY KEY,
 		-- The type of the wallet.
@@ -198,7 +209,7 @@ var migrations = []string{
 		-- The login to access the wallet. Login in case lndhub and the macaroon 
 		-- bytes in case lnd.
 		login BLOB NOT NULL,
-		-- The password to access the wallet. Passphrase in case of lndhub and the encrytion 
+		-- The password to access the wallet. Passphrase in case of lndhub and the encryption 
 		-- key to unlock the internal wallet in case of LND.
 		password BLOB NOT NULL,
 		-- The Authentication token of the wallet. api token in case of lndhub
@@ -208,4 +219,51 @@ var migrations = []string{
 		-- The balance in satoshis
 		balance INTEGER DEFAULT 0
 	);`,
+
+	// Stores sites that user has manually added
+	`CREATE TABLE sites (
+		-- Site unique identification. The hostname of the site with protocol https://example.com
+		hostname TEXT PRIMARY KEY CHECK(hostname <> ''),
+		-- The role we play in the site ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
+		role INTEGER NOT NULL DEFAULT 0,
+		-- P2P addresses to connect to that site in the format of multiaddresses. Space separated.
+		addresses TEXT NOT NULL CHECK(addresses <> ''),
+		-- The account ID of the site. We need a previous connection to the site so the 
+		-- actual account is inserted in the accounts table when handshake.
+		account_id INTEGER NOT NULL,
+		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
+	) WITHOUT ROWID;`,
+
+	// Table that stores all the tokens not yet redeemed inside a site. Although this table is relevant only
+	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+	`CREATE TABLE invite_tokens (
+		-- Unique token identification. Random 8 char words
+		token TEXT PRIMARY KEY CHECK(token <> ''),
+		-- The role the token will allow ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
+		role INTEGER NOT NULL DEFAULT 2,
+		-- Timestamp since the token will no longer be eligible to be redeemed. Seconds since  Jan 1, 1970
+		expiration_time INTEGER NOT NULL CHECK (expiration_time > 0)
+	) WITHOUT ROWID;`,
+
+	// Table that stores the role each account has inside a site. Although this table is relevant only
+	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+	`CREATE TABLE site_members (
+		-- The account id that has been linked to a role on this site
+		account_id INTEGER PRIMARY KEY,
+		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
+		role INTEGER NOT NULL,
+		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
+	) WITHOUT ROWID;`,
+
+	// Stores all the records published on this site. Although this table is relevant only
+	// for sites at the beginning, keep in mind that any regular node can be upgraded to a site.
+	`CREATE TABLE web_publication_records (
+		-- Ipfs block where the base document is stored.
+		block_id INTEGER PRIMARY KEY CHECK (block_id != 0),
+		-- doc version of the base document published. Not its references.
+		document_version TEXT NOT NULL,
+		-- Path this publication is published to. If NULL is not listed.
+		path TEXT UNIQUE,
+		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
+	) WITHOUT ROWID;`,
 }

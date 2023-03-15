@@ -1,12 +1,31 @@
-export type {
+import {Accounts} from './.generated/accounts/v1alpha/accounts_connectweb'
+import {Daemon} from './.generated/daemon/v1alpha/daemon_connectweb'
+import {Changes} from './.generated/documents/v1alpha/changes_connectweb'
+import {Comments} from './.generated/documents/v1alpha/comments_connectweb'
+import {ContentGraph} from './.generated/documents/v1alpha/content_graph_connectweb'
+
+import {
+  Drafts,
+  Publications,
+} from './.generated/documents/v1alpha/documents_connectweb'
+import {
+  WebPublishing,
+  WebSite,
+} from './.generated/documents/v1alpha/web_publishing_connectweb'
+import {Networking} from './.generated/networking/v1alpha/networking_connectweb'
+import {PartialMessage} from '@bufbuild/protobuf'
+import {
+  Document,
+  Publication as APIPublication,
+} from './.generated/documents/v1alpha/documents_pb'
+export {
   Account,
-  Account_DevicesEntry,
   Device,
   GetAccountRequest,
   ListAccountsRequest,
   ListAccountsResponse,
   Profile,
-} from './.generated/accounts/v1alpha/accounts'
+} from './.generated/accounts/v1alpha/accounts_pb'
 export type {
   GenMnemonicRequest,
   GenMnemonicResponse,
@@ -14,7 +33,23 @@ export type {
   Info,
   RegisterRequest,
   RegisterResponse,
-} from './.generated/daemon/v1alpha/daemon'
+} from './.generated/daemon/v1alpha/daemon_pb'
+export {
+  ChangeInfo,
+  GetChangeInfoRequest,
+} from './.generated/documents/v1alpha/changes_pb'
+export {
+  Conversation,
+  CreateConversationRequest,
+  ListConversationsRequest,
+  ListConversationsResponse,
+  Selector,
+} from './.generated/documents/v1alpha/comments_pb'
+export {
+  Link as MttLink,
+  LinkNode,
+  ListCitationsResponse,
+} from './.generated/documents/v1alpha/content_graph_pb'
 export {
   Annotation,
   Block,
@@ -25,58 +60,39 @@ export {
   DocumentChange,
   GetDraftRequest,
   GetPublicationRequest,
-  Link as MttLink,
-  LinkNode,
   ListDraftsRequest,
   ListDraftsResponse,
   ListPublicationsRequest,
   ListPublicationsResponse,
   PublishDraftRequest,
-  UpdateDraftRequestV2,
-  ListCitationsResponse,
-} from './.generated/documents/v1alpha/documents'
-export {ConnectionStatus} from './.generated/networking/v1alpha/networking'
+} from './.generated/documents/v1alpha/documents_pb'
+export * from './.generated/documents/v1alpha/web_publishing_pb'
+export {ConnectionStatus} from './.generated/networking/v1alpha/networking_pb'
 export type {
   ConnectRequest,
   ConnectResponse,
   GetPeerInfoRequest,
   PeerInfo,
-} from './.generated/networking/v1alpha/networking'
+} from './.generated/networking/v1alpha/networking_pb'
 export * from './.generated/types'
-export {
-  generateMnemonic,
-  getAccount,
-  listAccounts,
-  registerAccount,
-  updateProfile,
-} from './accounts'
-export {getInfo, forceSync} from './daemon'
-export {
-  createDraft,
-  deleteDraft,
-  getDraft,
-  listDrafts,
-  publishDraft,
-  updateDraftV2,
-} from './drafts'
-export {createGrpcClient, MINTTER_API_URL_DEFAULT} from './grpc-client'
-export type {GrpcClient} from './grpc-client'
-export {connect, getPeerInfo, listPeerAddrs} from './networking'
-export {
-  deletePublication,
-  getPublication,
-  listCitations,
-  listPublications,
-} from './publications'
-import {
-  Document,
-  Publication as APIPublication,
-} from './.generated/documents/v1alpha/documents'
-export type Publication = APIPublication & {
-  document?: Document
-}
-export {Document}
-export * from './block-to-slate'
 export * from './block-to-api'
-export * from './client'
+export * from './block-to-slate'
 export * from './change-creators'
+export * from './client-utils'
+export type {Document}
+export {
+  Accounts,
+  ContentGraph,
+  Comments,
+  Changes,
+  Drafts,
+  Publications,
+  Daemon,
+  Networking,
+  WebPublishing,
+  WebSite,
+}
+
+export type Publication = APIPublication & {
+  document?: PartialMessage<Document>
+}

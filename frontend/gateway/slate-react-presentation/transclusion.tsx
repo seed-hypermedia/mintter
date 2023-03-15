@@ -7,13 +7,13 @@ import {SlateReactPresentation} from '.'
 import {
   Embed,
   FlowContent,
-  getPublication,
   Publication,
   blockNodeToSlate,
 } from '@mintter/shared'
 import {getIdsfromUrl} from '../utils/get-ids-from-url'
 import {useRenderElement} from './render-element'
 import {useRenderLeaf} from './render-leaf'
+import {publicationsClient} from '../client'
 
 export function Transclusion({element}: {element: Embed}) {
   let renderElement = useRenderElement()
@@ -125,7 +125,8 @@ export function createTransclusionMachine({
           let [docId, version] = getIdsfromUrl(context.url)
           return client.fetchQuery<Publication>(
             ['PUBLICATION', docId, version],
-            () => getPublication(docId, version),
+            () =>
+              publicationsClient.getPublication({documentId: docId, version}),
           )
         },
         getBlock: (context) => {

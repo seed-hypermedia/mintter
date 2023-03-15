@@ -7,10 +7,12 @@ import (
 	"io"
 	"mintter/backend/config"
 	"mintter/backend/core"
-	"mintter/backend/db/sqliteds"
+	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/ipfs"
+	"mintter/backend/mttnet/sitesql"
 	"mintter/backend/pkg/cleanup"
+	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
@@ -20,6 +22,8 @@ import (
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-datastore"
+	dssync "github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	provider "github.com/ipfs/go-ipfs-provider"
 	"github.com/ipfs/go-ipfs-provider/simple"
@@ -74,6 +78,39 @@ func DefaultRelays() []peer.AddrInfo {
 	}
 }
 
+type wellKnownInfo struct {
+	Addresses []string `json:"addresses,omitempty"`
+	AccountID string   `json:"account_id,omitempty"`
+}
+
+type docInfo struct {
+	ID      string
+	Version string
+}
+
+// PublicationRecord holds the information of a published document (record) on a site.
+type PublicationRecord struct {
+	Document   docInfo
+	Path       string
+	Hostname   string
+	References []docInfo
+}
+
+// Site is a hosted site.
+type Site struct {
+	hostname                   string
+	InviteTokenExpirationDelay time.Duration
+	ownerID                    string
+}
+
+// Server holds the p2p functionality to be accessed via gRPC.
+type Server struct {
+	Node *future.ReadOnly[*Node]
+	*Site
+	localFunctions LocalFunctions
+	synchronizer   Synchronizer
+}
+
 // Node is a Mintter P2P node.
 type Node struct {
 	log             *zap.Logger
@@ -89,14 +126,109 @@ type Node struct {
 	accountDeviceProof  []byte
 	accountPublicKeyRaw []byte
 
-	p2p       *ipfs.Libp2p
-	bitswap   *ipfs.Bitswap
-	providing provider.System
-	grpc      *grpc.Server
-	quit      io.Closer
-	ready     chan struct{}
+	p2p        *ipfs.Libp2p
+	bitswap    *ipfs.Bitswap
+	providing  provider.System
+	grpc       *grpc.Server
+	quit       io.Closer
+	ready      chan struct{}
+	registered chan struct{}
+	ctx        context.Context // will be set after calling Start()
+}
 
-	ctx context.Context // will be set after calling Start()
+// LocalFunctions is an interface for not having to pass a full-fledged documents service,
+// just the getPublication that is what we need to call in getPath.
+type LocalFunctions interface {
+	// GetPublication gets a local publication.
+	GetPublication(ctx context.Context, in *site.GetPublicationRequest) (*site.Publication, error)
+}
+
+// Synchronizer is a subset of the syncing service that
+// is able to sync content with remote peers on demand.
+type Synchronizer interface {
+	SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...*p2p.Object) error
+}
+
+// NewServer returns a new mttnet API server.
+func NewServer(ctx context.Context, siteCfg config.Site, node *future.ReadOnly[*Node], localFunctions LocalFunctions, sync Synchronizer) *Server {
+	expirationDelay := siteCfg.InviteTokenExpirationDelay
+
+	srv := &Server{Site: &Site{
+		hostname:                   siteCfg.Hostname,
+		InviteTokenExpirationDelay: expirationDelay,
+		ownerID:                    siteCfg.OwnerID,
+	}, Node: node, localFunctions: localFunctions, synchronizer: sync}
+
+	cleaningTokensTicker := time.NewTicker(5 * time.Minute)
+	go func() {
+		n, err := node.Await(ctx)
+		if err != nil {
+			return
+		}
+		conn, cancel, err := n.vcs.DB().Conn(ctx)
+		if err != nil {
+			return
+		}
+		defer cancel()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-cleaningTokensTicker.C:
+				if err := sitesql.CleanExpiredTokens(conn); err != nil {
+					return
+				}
+			}
+		}
+	}()
+	go func() {
+		n, err := node.Await(ctx)
+		if err == nil {
+			// this is how we respond to remote RPCs over libp2p.
+			p2p.RegisterP2PServer(n.grpc, srv)
+			site.RegisterWebSiteServer(n.grpc, srv)
+			if srv.ownerID == "" {
+				srv.ownerID = n.me.AccountID().String()
+			}
+			if siteCfg.Title != "" && n.vcs.DB() != nil {
+				conn, cancel, err := n.vcs.DB().Conn(ctx)
+				if err == nil {
+					defer cancel()
+					title, err := sitesql.GetSiteTitle(conn)
+					if err == nil && title == "" {
+						err = sitesql.SetSiteTitle(conn, siteCfg.Title)
+						if err != nil {
+							n.log.Warn("Could not set initial site title", zap.String("Title", siteCfg.Title), zap.Error(err))
+						}
+						err = srv.updateSiteBio(ctx, siteCfg.Title, "")
+						if err != nil {
+							n.log.Warn("Could not update site Bio according to title", zap.String("Title", siteCfg.Title), zap.Error(err))
+						}
+					}
+				}
+			}
+		}
+		defer func() {
+			// Indicate we can now serve the already registered endpoints.
+			if n != nil {
+				close(n.registered)
+			}
+		}()
+		if n != nil && n.vcs.DB() != nil {
+			conn, cancel, err := n.vcs.DB().Conn(ctx)
+			if err != nil {
+				return
+			}
+			defer cancel()
+			ownerCID, err := cid.Decode(srv.ownerID)
+			if err != nil {
+				return
+			}
+			_ = sitesql.AddMember(conn, ownerCID, int64(site.Member_OWNER))
+		}
+	}()
+	return srv
 }
 
 // New creates a new P2P Node. The users must call Start() before using the node, and can use Ready() to wait
@@ -139,15 +271,7 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, lo
 		grpc:            grpc.NewServer(),
 		quit:            &clean,
 		ready:           make(chan struct{}),
-	}
-
-	// rpc handler is how we respond to remote RPCs over libp2p.
-	{
-		handler := &rpcHandler{
-			Node: n,
-		}
-
-		p2p.RegisterP2PServer(n.grpc, handler)
+		registered:      make(chan struct{}),
 	}
 
 	return n, nil
@@ -246,7 +370,12 @@ func (n *Node) Start(ctx context.Context) (err error) {
 	// Start Mintter protocol listener over libp2p.
 	{
 		g.Go(func() error {
-			return n.grpc.Serve(lis)
+			select {
+			case <-n.registered:
+				return n.grpc.Serve(lis)
+			case <-ctx.Done():
+				return nil
+			}
 		})
 
 		g.Go(func() error {
@@ -324,10 +453,6 @@ func (n *Node) startLibp2p(ctx context.Context) error {
 	return nil
 }
 
-type rpcHandler struct {
-	*Node
-}
-
 // AddrInfoToStrings returns address as string.
 func AddrInfoToStrings(info peer.AddrInfo) []string {
 	var addrs []string
@@ -369,12 +494,9 @@ func AddrInfoFromStrings(addrs ...string) (out peer.AddrInfo, err error) {
 
 func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs.Libp2p, io.Closer, error) {
 	var clean cleanup.Stack
-	ds := sqliteds.New(pool, "datastore")
-	clean.Add(ds)
 
-	if err := ds.InitTable(context.Background()); err != nil {
-		return nil, nil, err
-	}
+	ds := dssync.MutexWrap(datastore.NewMapDatastore())
+	clean.Add(ds)
 
 	ps, err := pstoreds.NewPeerstore(context.Background(), ds, pstoreds.DefaultOpts())
 	if err != nil {
@@ -407,7 +529,7 @@ func newLibp2p(cfg config.P2P, device crypto.PrivKey, pool *sqlitex.Pool) (*ipfs
 			libp2p.EnableHolePunching(),
 			libp2p.EnableAutoRelay(autorelay.WithStaticRelays(DefaultRelays()),
 				autorelay.WithBootDelay(time.Second*10),
-				autorelay.WithNumRelays(2), 
+				autorelay.WithNumRelays(2),
 				autorelay.WithMinCandidates(2),
 				autorelay.WithBackoff(cfg.RelayBackoff)),
 		)

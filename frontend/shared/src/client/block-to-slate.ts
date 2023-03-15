@@ -2,7 +2,7 @@ import {
   Annotation,
   Block,
   BlockNode,
-} from './.generated/documents/v1alpha/documents'
+} from './.generated/documents/v1alpha/documents_pb'
 import {
   GroupingContent,
   Text,
@@ -19,10 +19,11 @@ export function blockToSlate(blk: Block): FlowContent {
   // we dont need to pass `childrenType to `out`, but we don't need it for anything for now.
   // eslint-disable-next-line
   const {childrenType, ...attributes} = blk.attributes || {}
-
+  const blockText = blk.text || ''
   const out = {
     id: blk.id,
     type: blk.type,
+    revision: blk.revision,
     ...attributes,
     // TODO: handle block attributes too. I guess we've lost
     // the "paragraph" type of the content node during the conversion ¯\_(ツ)_/¯.
@@ -61,7 +62,7 @@ export function blockToSlate(blk: Block): FlowContent {
   let i = 0
   // Last UTF-16 offset. Used to finish the last leaf. Otherwise we never get to
   // fill the leaf value.
-  const stopPoint = blk.text.length - 1
+  const stopPoint = blockText.length - 1
   // Code point position we're currently at. We check it across all the
   // block annotations to determine where leafs should start and end.
   let pos = 0
@@ -69,14 +70,14 @@ export function blockToSlate(blk: Block): FlowContent {
   const leafAnnotations = new Set<Annotation>()
 
   // if there's no text in the block, early return it
-  if (blk.text == '') {
-    leaves.push({type: 'text', text: blk.text})
+  if (blockText == '') {
+    leaves.push({type: 'text', text: blockText})
     return out as FlowContent
   }
 
   // Main loop that iterates over the block text string.
   // TODO: need to handle U+FFFC properly, and a lot more other edge cases.
-  while (i < blk.text.length) {
+  while (i < blockText.length) {
     // This tracks how many UTF-16 code units we need to "consume", i.e. advance our position forward.
     // It's mostly 1, but we skip the second half of the surrogate pair when we see the first one.
     let ul = 1
@@ -84,12 +85,12 @@ export function blockToSlate(blk: Block): FlowContent {
     // We have to check each code point position whether it belongs to any of the annotations of the block.
     let annotationsChanged = trackPosAnnotations(pos)
 
-    let surrogate = isSurrogate(blk.text, i)
+    let surrogate = isSurrogate(blockText, i)
     if (surrogate) {
       ul++
 
       let onlyOneSurrogate = pos + ul
-      if (onlyOneSurrogate == blk.text.length) {
+      if (onlyOneSurrogate == blockText.length) {
         // we enter here if the only character in the block is a Surrogate,
         // This means that we need to wrap up the transformation (same as in the end of the while loop)
         if (!leaf) {
@@ -155,7 +156,7 @@ export function blockToSlate(blk: Block): FlowContent {
 
     // we check here if the new value of `i` is the same as the text's block length.
     // This means that th last character is Surrogate, and we just finished the transformation
-    if (i == blk.text.length) {
+    if (i == blockText.length) {
       finishLeaf(textStart, i)
       return out as FlowContent
     }
@@ -211,6 +212,15 @@ export function blockToSlate(blk: Block): FlowContent {
         // @ts-ignore
         leaf['color'] = l.attributes.color
       }
+      if (l.type == 'conversation') {
+        if (leaf && Array.isArray(leaf.conversations)) {
+          if (!leaf.conversations.includes(l.attributes.conversationId)) {
+            leaf!['conversations'].push(l.attributes.conversationId)
+          }
+        } else {
+          leaf!['conversations'] = [l.attributes.conversationId]
+        }
+      }
     })
 
     if (linkAnnotation) {
@@ -253,7 +263,7 @@ export function blockToSlate(blk: Block): FlowContent {
   }
 
   function finishLeaf(low: number, high: number) {
-    let newValue = blk.text.substring(low, high)
+    let newValue = blockText.substring(low, high)
     if (leaf) leaf.text = newValue
 
     textStart = high
@@ -313,15 +323,17 @@ function isSurrogate(s: string, i: number): boolean {
   return res
 }
 
+type childrenType = 'group' | 'unorderedList' | 'orderedList'
+
 export function blockNodeToSlate(
   entry: Array<BlockNode>,
-  childrenType: string,
+  childrenType: childrenType = 'group',
   start?: string,
 ): GroupingContent {
   let fn =
-    childrenType == 'orderedList'
+    childrenType === 'orderedList'
       ? ol
-      : childrenType == 'unorderedList'
+      : childrenType === 'unorderedList'
       ? ul
       : group
   let res = fn(
@@ -329,11 +341,11 @@ export function blockNodeToSlate(
       // TODO(horacio): fix types, block should always be a block, not undefined
       // @ts-ignore
       let slateBlock = blockToSlate(block)
-      if (children.length) {
+      if (children?.length) {
         slateBlock.children[1] = blockNodeToSlate(
           children,
-          block?.attributes.childrenType as string,
-          block?.attributes.start,
+          block?.attributes?.childrenType as childrenType,
+          block?.attributes?.start,
         )
       }
       return slateBlock

@@ -1,4 +1,4 @@
-import {deletePublication, Publication} from '@mintter/shared'
+import {publicationsClient} from '@app/api-clients'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
@@ -9,15 +9,16 @@ import {
   useAuthor,
   usePublicationList,
 } from '@app/hooks'
-import {useMain} from '@app/main-context'
-import {formattedDate} from '@app/utils/get-format-date'
+import {openPublication, useNavigation} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
+import Footer from '@components/footer'
 import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
+import {formattedDate, Publication} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -28,34 +29,36 @@ import '../styles/file-list.scss'
 export default PublicationList
 
 function PublicationList() {
-  let mainService = useMain()
   let {data, isInitialLoading} = usePublicationList()
+  let nav = useNavigation()
 
   return (
-    <div className="page-wrapper">
-      <ScrollArea>
-        {isInitialLoading ? (
-          <p>loading...</p>
-        ) : data && data.publications.length ? (
-          <ul className="file-list" data-testid="files-list">
-            {data.publications.map((publication) => (
-              <PublicationListItem
-                key={`${publication.document?.id}/${publication.version}`}
-                publication={publication}
-              />
-            ))}
-          </ul>
-        ) : (
-          <EmptyList
-            description="You have no Publications yet."
-            action={() => {
-              // TODO: create a new draft
-              mainService.send('COMMIT.NEW.DRAFT')
-            }}
-          />
-        )}
-      </ScrollArea>
-    </div>
+    <>
+      <div className="page-wrapper">
+        <ScrollArea>
+          {isInitialLoading ? (
+            <p>loading...</p>
+          ) : data && data.publications.length ? (
+            <ul className="file-list" data-testid="files-list">
+              {data.publications.map((publication) => (
+                <PublicationListItem
+                  key={`${publication.document?.id}/${publication.version}`}
+                  publication={publication}
+                />
+              ))}
+            </ul>
+          ) : (
+            <EmptyList
+              description="You have no Publications yet."
+              action={() => {
+                nav.openNewDraft(false)
+              }}
+            />
+          )}
+        </ScrollArea>
+      </div>
+      <Footer />
+    </>
   )
 }
 
@@ -71,7 +74,6 @@ export function PublicationListItem({
   const client = useQueryClient()
   const title = publication.document?.title || 'Untitled Document'
   const {data: author} = useAuthor(publication.document?.author)
-  const mainService = useMain()
 
   const deleteService = useInterpret(
     () =>
@@ -83,7 +85,9 @@ export function PublicationListItem({
     {
       services: {
         performDelete: (context) => {
-          return deletePublication(context.documentId)
+          return publicationsClient.deletePublication({
+            documentId: context.documentId,
+          })
         },
       },
       actions: {
@@ -180,10 +184,7 @@ export function PublicationListItem({
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() =>
-                  mainService.send({
-                    type: 'COMMIT.OPEN.WINDOW',
-                    path: `/p/${publication.document.id}/${publication.version}`,
-                  })
+                  openPublication(publication.document.id, publication.version)
                 }
               >
                 <Icon name="OpenInNewWindow" />

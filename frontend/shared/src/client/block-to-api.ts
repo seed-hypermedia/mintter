@@ -1,4 +1,4 @@
-import {Block} from './.generated/documents/v1alpha/documents'
+import {Block} from './.generated/documents/v1alpha/documents_pb'
 import {AnnotationSet} from './classes'
 import {FlowContent} from '../mttast'
 
@@ -10,11 +10,12 @@ export function blockToApi(
   childrenType?: string,
   start?: number,
 ): Block {
+  console.log('🚀 ~ file: block-to-api.ts:13 ~ slateBlock:', slateBlock)
   // this is to flatten the links into its underlying leaves passing all the attributes (the url) to them.
   let leaves = flattenLeaves(slateBlock.children[0].children)
 
   // eslint-disable-next-line
-  const {type, id, children, ...attributes} = slateBlock
+  const {type, id, children, revision, ...attributes} = slateBlock
 
   // const out = new Block(slateBlock.id, slateBlock.type);
   const out: Block = {
@@ -24,6 +25,15 @@ export function blockToApi(
     // @ts-ignore
     attributes,
     text: '',
+  }
+
+  if (revision) {
+    out.revision = revision
+  } else {
+    console.log(
+      '🚀 ~ file: block-to-api.ts:33 ~ NO REVISION ON SLATE BLOCK',
+      slateBlock,
+    )
   }
 
   if (childrenType) {
@@ -79,6 +89,14 @@ export function blockToApi(
 
     if (leaf.color) {
       annotations.addSpan('color', {color: leaf.color}, start, end)
+    }
+
+    if (leaf.conversations) {
+      if (Array.isArray(leaf.conversations)) {
+        leaf.conversations.forEach((conversationId: string) => {
+          annotations.addSpan('conversation', {conversationId}, start, end)
+        })
+      }
     }
 
     // inline block elements check
