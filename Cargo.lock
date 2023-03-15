@@ -2151,7 +2151,6 @@ dependencies = [
  "webkit2gtk",
  "webview2-com",
  "windows 0.39.0",
- "workspace-hack",
 ]
 
 [[package]]
@@ -3855,7 +3854,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-log"
 version = "0.1.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-log?branch=next#44015721cca125f72486ec23a7f40a10f1b35c4c"
+source = "git+https://github.com/tauri-apps/tauri-plugin-log?rev=44015721cca125f72486ec23a7f40a10f1b35c4c#44015721cca125f72486ec23a7f40a10f1b35c4c"
 dependencies = [
  "byte-unit",
  "fern",
@@ -3870,7 +3869,7 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-store"
 version = "0.0.0"
-source = "git+https://github.com/tauri-apps/tauri-plugin-store?branch=next#3022f251530d83c6c07b67519bba63d4f57c8c66"
+source = "git+https://github.com/tauri-apps/tauri-plugin-store?rev=3022f251530d83c6c07b67519bba63d4f57c8c66#3022f251530d83c6c07b67519bba63d4f57c8c66"
 dependencies = [
  "log",
  "serde",
@@ -4406,7 +4405,6 @@ dependencies = [
  "walkdir",
  "wasmtime",
  "wit-bindgen-host-wasmtime-rust",
- "workspace-hack",
 ]
 
 [[package]]
@@ -5241,49 +5239,6 @@ dependencies = [
  "id-arena",
  "pulldown-cmark",
  "unicode-xid",
-]
-
-[[package]]
-name = "workspace-hack"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "cc",
- "futures-core",
- "futures-util",
- "hashbrown",
- "heck 0.4.0",
- "indexmap",
- "libc",
- "log",
- "native-tls",
- "num-integer",
- "num-traits 0.2.15",
- "object",
- "openssl",
- "openssl-sys",
- "rand 0.8.5",
- "reqwest",
- "scopeguard",
- "semver 1.0.14",
- "serde",
- "serde_json",
- "smallvec",
- "syn",
- "tao",
- "tauri-codegen",
- "tauri-runtime",
- "tauri-runtime-wry",
- "tauri-utils",
- "tokio",
- "tracing",
- "tracing-core",
- "uuid 1.2.2",
- "winapi",
- "windows 0.39.0",
- "windows-sys 0.36.1",
- "windows-sys 0.42.0",
- "wry",
 ]
 
 [[package]]
