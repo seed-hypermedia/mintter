@@ -5,7 +5,7 @@ networks:
 services:
   proxy:
     container_name: proxy
-    image: caddy:latest
+    image: caddy:2.6.4
     depends_on:
       - minttersite
     network_mode: "host"
