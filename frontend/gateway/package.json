@@ -56,7 +56,10 @@
     "vitest": "0.25.5",
     "webpack": ">=5.0.0 <6.0.0"
   },
-  "engines": {
-    "node": ">=14"
+  "peerDependencies": {
+    "@babel/core": ">=7.0.0 <8.0.0",
+    "expo-modules-core": "^0.6.3",
+    "expo-screen-orientation": "^4.1.1",
+    "react-native": ">=0.64.0"
   }
 }

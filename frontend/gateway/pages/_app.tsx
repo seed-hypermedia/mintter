@@ -1,6 +1,10 @@
 import 'setimmediate'
-if (!global.setImmediate) {
+
+if (!global.setImmediate || !globalThis['setImmediate']) {
+  //@ts-ignore
   global.setImmediate = setTimeout
+  //@ts-ignore
+  globalThis['setImmediate'] = setTimeout
 }
 
 import '@tamagui/core/reset.css'
