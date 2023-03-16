@@ -400,9 +400,12 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjec
 	}
 	finalObjs := remoteObjs.Objects
 	if len(initialObjects) != 0 {
-		finalObjs = innerJoin(remoteObjs.Objects, initialObjects)
+		// We don't check for version since we want to sync all versions of a given document in case
+		// the publisher wants to publish an old version. Because that old version is not available as an
+		// standalone version, we need to get it as part of the latest version.
+		finalObjs = innerJoin(remoteObjs.Objects, initialObjects, false)
 	}
-	s.log.Debug("Syncing", zap.Int("remoteObjects", len(remoteObjs.Objects)), zap.Int("initialObjects", len(initialObjects)), zap.Int("finalObjects", len(initialObjects)))
+	s.log.Debug("Syncing", zap.Int("remoteObjects", len(remoteObjs.Objects)), zap.Int("initialObjects", len(initialObjects)), zap.Int("finalObjects", len(finalObjs)))
 
 	sess := s.bitswap.NewSession(ctx)
 	for _, obj := range finalObjs {
@@ -502,32 +505,35 @@ type object struct {
 	*p2p.Object
 }
 
-func (source *object) equal(target *p2p.Object) bool {
+func (source *object) equal(target *p2p.Object, checkVersion bool) bool {
 	if source.Id != target.Id {
 		return false
 	}
-	var equalVersions = 0
-	for i, srcVersionSet := range source.VersionSet {
-		for _, targetVersionSet := range target.VersionSet {
-			if targetVersionSet.Version == srcVersionSet.Version {
-				equalVersions++
-				break
+	if checkVersion {
+		var equalVersions = 0
+		for i, srcVersionSet := range source.VersionSet {
+			for _, targetVersionSet := range target.VersionSet {
+				if targetVersionSet.Version == srcVersionSet.Version {
+					equalVersions++
+					break
+				}
 			}
-		}
-		if equalVersions <= i {
-			return false
+			if equalVersions <= i {
+				return false
+			}
 		}
 	}
 	return true
 }
 
-// innerJoin takes the common objects (intersection) between target and source.
-func innerJoin(source []*p2p.Object, target []*p2p.Object) []*p2p.Object {
+// innerJoin takes the common objects (intersection) between target and source. In order to match
+// both source and target must have the same docID and optionally the same version.
+func innerJoin(source []*p2p.Object, target []*p2p.Object, checkVersion bool) []*p2p.Object {
 	var ret []*p2p.Object
 	for _, initialObj := range target {
 		for _, remoteObj := range source {
 			myObj := object{initialObj}
-			if myObj.equal(remoteObj) {
+			if myObj.equal(remoteObj, checkVersion) {
 				ret = append(ret, remoteObj)
 			}
 		}
