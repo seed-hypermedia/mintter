@@ -168,7 +168,7 @@ export function GatewayHead({title}: {title?: string}) {
                       href="https://discord.gg/mcUnKENdKX"
                       target="_blank"
                     >
-                      <HeadAnchor>Dicord</HeadAnchor>
+                      <HeadAnchor>Discord</HeadAnchor>
                     </NextLink>
 
                     <NextLink
