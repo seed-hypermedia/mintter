@@ -1,5 +1,3 @@
-import 'setimmediate'
-
 console.log('🚀 ~ file: _app.tsx:4 ~ global.setImmediate:', global.setImmediate)
 console.log(
   '🚀 ~ file: _app.tsx:4 ~ global.setImmediate:',
