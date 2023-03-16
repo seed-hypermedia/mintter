@@ -1,3 +1,20 @@
+import 'setimmediate'
+
+console.log('🚀 ~ file: _app.tsx:4 ~ global.setImmediate:', global.setImmediate)
+console.log(
+  '🚀 ~ file: _app.tsx:4 ~ global.setImmediate:',
+  globalThis.setImmediate,
+)
+if (typeof globalThis.EdgeRuntime !== 'string') {
+  console.log('I"M IN THE EDGE!', globalThis.setImmediate)
+}
+if (!global.setImmediate || !globalThis['setImmediate']) {
+  //@ts-ignore
+  global.setImmediate = setTimeout
+  //@ts-ignore
+  globalThis['setImmediate'] = setTimeout
+}
+
 import {
   createGrpcWebTransport,
   createPromiseClient,
