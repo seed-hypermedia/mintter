@@ -23,6 +23,6 @@
     "**/*.tsx",
     "**/*.mdx",
     "next.config.mjs"
-, "pages/api/publication/[...id].js"  ],
+  ],
   "exclude": ["node_modules"]
 }
