@@ -1,4 +1,5 @@
 import {Account, blockNodeToSlate, Publication, SiteInfo} from '@mintter/shared'
+import {useMedia} from 'tamagui'
 import {PublicationMetadata} from './author'
 import {Container} from './container'
 import Footer from './footer'
@@ -20,6 +21,7 @@ export default function PublicationPage({
   metadata?: boolean
   siteInfo: SiteInfo | null
 }) {
+  let media = useMedia()
   const renderElement = useRenderElement()
   const renderLeaf = useRenderLeaf()
   const blockChildren = publication?.document?.children
@@ -36,7 +38,7 @@ export default function PublicationPage({
       )}
 
       <Container tag="main" id="main-content" tabIndex={-1}>
-        <ArticleContainer>
+        <ArticleContainer fd={media.gtSm ? 'row' : 'column-reverse'}>
           <MainContainer>
             {slateChildren ? (
               <SlateReactPresentation

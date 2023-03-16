@@ -1,5 +1,13 @@
-import {Paragraph, Text, YStack, styled} from 'tamagui'
+import {
+  Paragraph,
+  Text,
+  YStack,
+  styled,
+  useMedia,
+  FontSizeTokens,
+} from 'tamagui'
 import {Publication, formattedDate, Account} from '@mintter/shared'
+import {useMemo} from 'react'
 
 export function PublicationMetadata({
   publication,
@@ -8,15 +16,17 @@ export function PublicationMetadata({
   publication?: Publication
   author?: Account | null
 }) {
+  let media = useMedia()
+  let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
   return publication ? (
     <Aside>
-      <Paragraph>
+      <Paragraph size={size}>
         <Text fontFamily="$body" o={0.5}>
           author:&nbsp;
         </Text>
         {author?.profile?.alias}
       </Paragraph>
-      <Paragraph>
+      <Paragraph size={size}>
         <Text fontFamily="$body" o={0.5}>
           Published at:&nbsp;
         </Text>
@@ -24,7 +34,7 @@ export function PublicationMetadata({
           ? formattedDate(publication.document.publishTime)
           : null}
       </Paragraph>
-      <Paragraph>
+      <Paragraph size={size}>
         <Text fontFamily="$body" o={0.5}>
           Last update:&nbsp;
         </Text>
@@ -37,5 +47,9 @@ export function PublicationMetadata({
 }
 
 const Aside = styled(YStack, {
-  padding: '$4',
+  px: '$4',
+  py: '$2',
+  $gtSm: {
+    padding: '$4',
+  },
 })
