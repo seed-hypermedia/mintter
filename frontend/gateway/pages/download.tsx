@@ -1,3 +1,18 @@
+console.log('🚀 ~ file: _app.tsx:4 ~ global.setImmediate:', global.setImmediate)
+console.log(
+  '🚀 ~ file: _app.tsx:4 ~ globalThis.setImmediate:',
+  globalThis.setImmediate,
+)
+if (typeof globalThis.EdgeRuntime !== 'string') {
+  console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
+}
+if (!global.setImmediate || !globalThis['setImmediate']) {
+  //@ts-ignore
+  global.setImmediate = setTimeout
+  //@ts-ignore
+  globalThis['setImmediate'] = setTimeout
+}
+
 import {Container} from '../container'
 import {XStack, YStack, H1, Button, styled} from 'tamagui'
 import Footer from '../footer'
