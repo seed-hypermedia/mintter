@@ -1,3 +1,8 @@
+import 'setimmediate'
+if (!global.setImmediate) {
+  global.setImmediate = setTimeout
+}
+
 import '@tamagui/core/reset.css'
 import '../main.css'
 import {Hydrate, QueryClient, QueryClientProvider} from '@tanstack/react-query'
@@ -5,6 +10,10 @@ import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {TamaguiProvider, Theme} from 'tamagui'
 import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
 import config from '../tamagui.config'
+
+// if (!globalThis.setImmediate) {
+//   globalThis['setImmediate'] = setTimeout
+// }
 
 import type {AppProps} from 'next/app'
 import Head from 'next/head'

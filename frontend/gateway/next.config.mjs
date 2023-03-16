@@ -3,7 +3,21 @@ import path from 'path'
 import {dirname} from 'path'
 import {fileURLToPath} from 'url'
 
+Error.stackTraceLimit = Infinity
+
+process.env.IGNORE_TS_CONFIG_PATHS = 'true'
+process.env.TAMAGUI_TARGET = 'web'
+
 const __dirname = dirname(fileURLToPath(import.meta.url))
+
+const boolVals = {
+  true: true,
+  false: false,
+}
+
+const disableExtraction =
+  boolVals[process.env.DISABLE_EXTRACTION] ??
+  process.env.NODE_ENV === 'development'
 
 import tamaguiPlugin from '@tamagui/next-plugin'
 let {withTamagui} = tamaguiPlugin
@@ -60,7 +74,10 @@ let localConfig = {
     // memoryLimit?: number
     // },
   },
-  output: 'standalone',
+}
+
+if (!process.env.MINTTER_IS_GATEWAY) {
+  localConfig.output = 'standalone'
 }
 
 export default function (name, {defaultConfig}) {
@@ -70,8 +87,11 @@ export default function (name, {defaultConfig}) {
   }
 
   const tamaguiPlugin = withTamagui({
+    useReactNativeWebLite: true,
+    logTimings: true,
     config: './tamagui.config.ts',
     components: ['tamagui'],
+    disableExtraction,
   })
 
   return {

@@ -330,6 +330,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0
       react-native-web: ^0.18.12
+      setimmediate: ^1.0.5
       shiki-es: ^0.1.2
       slate: 0.90.0
       slate-react: 0.90.0
@@ -367,6 +368,7 @@ importers:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-native-web: 0.18.12_biqbaboplfbrettd7655fr4n2y
+      setimmediate: 1.0.5
       shiki-es: 0.1.2
       slate: 0.90.0
       slate-react: 0.90.0_vfkxdgngtm5gosdcaawdsu5ur4
