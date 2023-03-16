@@ -3,17 +3,12 @@ name: Build and Push Docker Site
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 7 * * 1-5'
+    - cron: '45 7 * * 1-5'
 
 jobs:
   generate-docker-images:
     runs-on: ubuntu-latest
     steps:
-      - 
-        name: checkout build13 branch
-        uses: actions/checkout@v2
-        with:
-          ref: build13/staging
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
