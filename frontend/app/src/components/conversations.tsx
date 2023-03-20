@@ -1,5 +1,4 @@
 import {changesClient, commentsClient} from '@app/api-clients'
-import {useAccount} from '@app/auth-context'
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAuthor} from '@app/hooks'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -19,8 +18,6 @@ import {TextField} from '@components/text-field'
 import {
   Block,
   blockToApi,
-  Changes,
-  Comments,
   Conversation,
   formattedDate,
   paragraph,
