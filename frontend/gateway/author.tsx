@@ -1,4 +1,13 @@
+import {
+  Paragraph,
+  Text,
+  YStack,
+  styled,
+  useMedia,
+  FontSizeTokens,
+} from 'tamagui'
 import {Publication, formattedDate, Account} from '@mintter/shared'
+import {useMemo} from 'react'
 
 export function PublicationMetadata({
   publication,
@@ -7,24 +16,40 @@ export function PublicationMetadata({
   publication?: Publication
   author?: Account | null
 }) {
+  let media = useMedia()
+  let size: FontSizeTokens = useMemo(() => (media.gtSm ? '$5' : '$7'), [media])
   return publication ? (
-    <aside className="text-base aside-content document-metadata">
-      <p>
-        <span>author:&nbsp;</span>
+    <Aside>
+      <Paragraph size={size}>
+        <Text fontFamily="$body" o={0.5}>
+          author:&nbsp;
+        </Text>
         {author?.profile?.alias}
-      </p>
-      <p>
-        Published at:{' '}
+      </Paragraph>
+      <Paragraph size={size}>
+        <Text fontFamily="$body" o={0.5}>
+          Published at:&nbsp;
+        </Text>
         {publication?.document?.publishTime
           ? formattedDate(publication.document.publishTime)
           : null}
-      </p>
-      <p>
-        Last update:{' '}
+      </Paragraph>
+      <Paragraph size={size}>
+        <Text fontFamily="$body" o={0.5}>
+          Last update:&nbsp;
+        </Text>
         {publication?.document?.updateTime
           ? formattedDate(publication.document.updateTime)
           : null}
-      </p>
-    </aside>
+      </Paragraph>
+    </Aside>
   ) : null
 }
+
+const Aside = styled(YStack, {
+  px: '$4',
+  py: '$2',
+  $gtSm: {
+    padding: '$4',
+  },
+})

@@ -3,11 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --kill-others --kill-others-on-fail -n POSTCSS,NEXT -c bgGreen,bgMagenta 'pnpm dev:styles' 'pnpm dev:front'",
-    "dev:styles": "nodemon css-props-generator.js",
-    "dev:front": "next dev",
-    "build": "cd ../.. && pnpm shared:build && cd frontend/gateway && pnpm build:styles && pnpm build:front",
-    "build:styles": "node css-props-generator.js",
+    "dev": "next dev",
+    "build": "cd ../.. && pnpm shared:build && cd frontend/gateway && pnpm build:front",
     "build:front": "next build",
     "lint": "next lint",
     "format": "prettier --write .",
@@ -18,10 +15,12 @@
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
     "@bufbuild/protobuf": "1.0.0",
-    "@mdx-js/loader": "2.1.5",
-    "@mdx-js/react": "2.1.5",
     "@mintter/shared": "workspace:*",
-    "@next/mdx": "13.0.6",
+    "@tamagui/config": "1.7.7",
+    "@tamagui/core": "1.7.7",
+    "@tamagui/lucide-icons": "^1.7.8",
+    "@tamagui/next-plugin": "1.7.7",
+    "@tamagui/next-theme": "1.7.7",
     "@tanstack/react-query": "4.19.1",
     "@tanstack/react-query-devtools": "4.19.1",
     "@types/node": "18.11.17",
@@ -40,35 +39,27 @@
     "next": "13.0.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "shiki-es": "0.1.2",
+    "react-native-web": "^0.18.12",
+    "shiki-es": "^0.1.2",
     "slate": "0.90.0",
     "slate-react": "0.90.0",
+    "tamagui": "1.7.7",
     "typescript": "4.9.4",
     "unist-util-visit": "4.1.1",
     "xstate": "4.35.1"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "0.5.8",
     "@types/unist": "2.0.6",
-    "autoprefixer": "10.4.13",
-    "concurrently": "7.6.0",
-    "cssnano": "5.1.14",
     "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-storybook": "0.6.8",
-    "eslint-plugin-tailwindcss": "3.7.1",
-    "nodemon": "2.0.20",
-    "postcss": "8.4.20",
-    "postcss-flexbugs-fixes": "5.0.2",
-    "postcss-nesting": "10.2.0",
-    "postcss-partial-import": "4.1.0",
-    "postcss-preset-env": "7.8.3",
     "prettier": "2.8.1",
-    "tailwindcss": "3.2.4",
     "vercel": "28.9.0",
     "vitest": "0.25.5",
     "webpack": ">=5.0.0 <6.0.0"
   },
-  "engines": {
-    "node": ">=14"
+  "peerDependencies": {
+    "@babel/core": ">=7.0.0 <8.0.0",
+    "expo-modules-core": "^0.6.3",
+    "expo-screen-orientation": "^4.1.1",
+    "react-native": ">=0.64.0"
   }
 }

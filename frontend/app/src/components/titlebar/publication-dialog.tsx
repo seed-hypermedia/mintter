@@ -43,7 +43,11 @@ function PublishDialogForm({
     const title = docState.context.title
     const path = title ? writePathState(title) : 'untitled'
 
-    return {path, docId: docState.context.documentId}
+    return {
+      path,
+      docId: docState.context.documentId,
+      version: docState.context.version,
+    }
   }, [])
   const [path, setPath] = useState<string>(init.path)
   const pubUrl = `${siteId}/${
@@ -70,6 +74,7 @@ function PublishDialogForm({
             .mutateAsync({
               hostname: siteId,
               documentId: init.docId,
+              version: init.version,
               path: readPathState(path),
             })
             .then(() => {

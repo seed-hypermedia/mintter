@@ -43,8 +43,8 @@ export const ElementDrag = ({
       {...attributes}
       {...blockProps}
       className={inRoute ? 'flash' : undefined}
-      onDrop={onDrop}
-      onDragEnd={onDrop}
+      onDrop={editor.mode == EditorMode.Draft ? onDrop : undefined}
+      onDragEnd={editor.mode == EditorMode.Draft ? onDrop : undefined}
     >
       <BlockTools block={element as FlowContent} />
       {children}
@@ -62,10 +62,6 @@ export const ElementDrag = ({
 
 function CitationNumber({block}: {block: FlowContent}) {
   let {citations = [], onCitationsOpen} = useCitationsForBlock(block.id)
-  console.log(
-    '🚀 ~ file: drag-section.tsx:65 ~ CitationNumber ~ citations:',
-    citations,
-  )
 
   return citations?.length ? (
     <Button

@@ -378,6 +378,8 @@ export function PublicationToolbar() {
     state.matches('active.commenting'),
   )
 
+  console.log('POSITION', {x, y})
+
   useEffect(() => {
     if (selection) {
       service.send({type: 'TOOLBAR.SELECT', selection})
@@ -398,8 +400,8 @@ export function PublicationToolbar() {
         ref={floating}
         css={{
           position: strategy,
-          top: y ?? -1000,
-          left: x ?? -1000,
+          top: y ? y : -1000,
+          left: x ? x : -1000,
           zIndex: '$max',
         }}
       >

@@ -33,7 +33,13 @@ import {Prompt, StyledOverlay} from '@components/prompt'
 import {Separator} from '@components/separator'
 import {Input} from '@components/text-field'
 import {AccessURLRow} from '@components/url'
-import {Member_Role, Profile, SiteConfig, SiteInfo} from '@mintter/shared'
+import {
+  Member,
+  Member_Role,
+  Profile,
+  SiteConfig,
+  SiteInfo,
+} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {styled} from '@stitches/react'
@@ -360,7 +366,7 @@ function SiteMemberRow({
   hostname,
   isOwner,
 }: {
-  member: localApi.Member
+  member: Member
   hostname: string
   isOwner: boolean
 }) {

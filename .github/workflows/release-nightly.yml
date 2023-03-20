@@ -3,7 +3,11 @@ name: Release Nightly
 on:
   workflow_dispatch:
   schedule:
+<<<<<<< HEAD
     - cron: '0 6 * * 1-5'
+=======
+    - cron: '45 7 * * 1-5'
+>>>>>>> master
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

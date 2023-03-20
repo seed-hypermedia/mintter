@@ -1,5 +1,5 @@
 [workspace]
-members = ["desktop/app", "desktop/wasi-mtt", "desktop/workspace-hack"]
+members = ["desktop/app"]
 
 # default to small, optimized workspace release binaries
 [profile.release]

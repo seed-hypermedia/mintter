@@ -49,6 +49,10 @@ function ChangeItem({change, docId}: {change: ChangeInfo; docId: string}) {
   )
 }
 
+function pluralS(length: number) {
+  return length === 1 ? '' : 's'
+}
+
 export function ChangesList({
   docId,
   version,
@@ -58,9 +62,12 @@ export function ChangesList({
 }) {
   const {data: changes} = useDocChanges(docId)
   if (!docId) return null
+  const count = changes?.changes?.length || 0
   return (
     <>
-      <PanelTitle>Version History</PanelTitle>
+      <PanelTitle>
+        {count} Doc Version{pluralS(count)}
+      </PanelTitle>
       {changes?.changes.map((change) => (
         <ChangeItem docId={docId} key={change.id} change={change} />
       ))}

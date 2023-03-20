@@ -5,49 +5,51 @@ networks:
 services:
   proxy:
     container_name: proxy
-    image: caddy
+    image: caddy:2.6.4
     depends_on:
       - minttersite
-    network_mode: "host"
+    network_mode: 'host'
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/data:/data
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/config:/config
-    command: caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://nextjs} --to :${MTT_SITE_LOCAL_PORT:-3000}
+    command:
+      caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://nextjs} --to
+      :${MTT_SITE_LOCAL_PORT:-3000}
 
   nextjs:
     container_name: nextjs
-    image: mintter/sitegw
+    image: mintter/sitegw:latest
     depends_on:
       - minttersite
     networks:
       - internal_network
     ports:
-      - "${MTT_SITE_LOCAL_PORT:-3000}:${MTT_SITE_LOCAL_PORT:-3000}"
+      - '${MTT_SITE_LOCAL_PORT:-3000}:${MTT_SITE_LOCAL_PORT:-3000}'
     restart: unless-stopped
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/nextjs:/data:rw
 
     environment:
-      - "GW_NEXT_HOST=${MTT_SITE_HOSTNAME:-http://nextjs}"
-      - "GW_GRPC_ENDPOINT=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
+      - 'GW_NEXT_HOST=${MTT_SITE_HOSTNAME:-http://nextjs}'
+      - 'GW_GRPC_ENDPOINT=http://minttersite:${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
 
   minttersite:
-    image: mintter/mintterd
+    image: mintter/mintterd:latest
     restart: unless-stopped
     container_name: minttersite
     ports:
-      - "56000:56000"
+      - '56000:56000'
     networks:
       - internal_network
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/backend:/.mttsite:rw
     command:
-      - "mintterd"
-      - "-repo-path=/.mttsite"
-      - "-p2p.port=56000"
-      - "--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}"
-      - "-grpc-port=56002"
-      - "-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}"
-      - "-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID:-bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea}"
-      - "-site.title=${MTT_SITE_TITLE:-NewSite}"
-      - "-identity.no-account-wait"
+      - 'mintterd'
+      - '-repo-path=/.mttsite'
+      - '-p2p.port=56000'
+      - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
+      - '-grpc-port=56002'
+      - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
+      - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID:-bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea}'
+      - '-site.title=${MTT_SITE_TITLE:-NewSite}'
+      - '-identity.no-account-wait'

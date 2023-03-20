@@ -46,8 +46,6 @@ let toolsByMode = {
 function DraftBlocktools(props: BlockData) {
   let {mouseService, element, editor} = props
   let dragService = useDrag()
-  let target = useCurrentTarget()
-
   let topOffset = useTopOffset(props.element)
 
   const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {

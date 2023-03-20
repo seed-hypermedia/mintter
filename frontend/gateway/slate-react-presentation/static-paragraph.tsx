@@ -1,10 +1,11 @@
-import {useMachine} from '@xstate/react'
-import {useEffect, useRef} from 'react'
+import {styled, Paragraph, SizeTokens} from 'tamagui'
+import {useMachine, useSelector} from '@xstate/react'
+import {useEffect, useRef, useMemo} from 'react'
 import {assign, createMachine} from 'xstate'
 
-export function StaticParagraph(props) {
+export function StaticParagraph({element, ...props}) {
   let ref = useRef<HTMLSpanElement>()
-  let [state, send] = useMachine(() => staticParagraphMachine)
+  let [state, send, service] = useMachine(() => staticParagraphMachine)
 
   useEffect(() => {
     if (ref.current) {
@@ -16,17 +17,25 @@ export function StaticParagraph(props) {
     throw Error(`static paragraph error: ${state.context.errorMessage}`)
   }
 
-  let Elem = headingLevel[state.context.level]
+  let size = useSelector(
+    service,
+    (state) => headingLevel[state.context.level || 2] || '$10',
+  )
 
   return (
-    <span ref={ref}>
-      {state.matches('ready') ? <Elem {...props} /> : '...'}
-    </span>
+    <StyledStaticP
+      size={size as any}
+      ref={ref}
+      display="inline-flex"
+      mb="$4"
+      mt="$5"
+      {...props}
+    />
   )
 }
 
 let staticParagraphMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5SwC4EMUEsDGAFNATmlEQA4AWAtALZrbmYB2YAdPWNgNZNQAEphMIxQBiAQSEoA2gAYAuolCkA9rExZljRSAAeiSgEYArEZYAOAGwAmGQbNH7NozLMAaEAE9ED80YsAWfyMAZgMrIwBfCPdUDBx8IhI0Cho6BmY2cg5uRj4AGzAANzA8kQLivNkFJBAVNQ0tGr0EAwtgln8Adk7g8P9ggE4g0Kt3LwRg9v8Aq2sHYwsTAajokEZlCDhtWKw8QmIyKlp6JjBtOvVMTW1myht2yxs7ByMnFzH9AxcWGU6LMyswRk-is-VeViiMXQuwSB2SRzSp0y2R4-EEwnOqku1yanwMAw6-jMwOCAN6IPxHwQdxkLCMAwMBi6gJkFgsf0CkJAO3i+ySKWO6VYEjQEHGSixDRuiE6Zjps06MisZmJ9gGpKpNLpDKZnRZbI5-i5PL2iUOqROGXYXFR5RKmPqV0aoFugJY7JVbVeIQGrPCVMsLAGlkZQVsAxCYRWESAA */
+  /** @xstate-layout  as {[key: number]: SizeN4IgpgJg5mDOIC5SwC4EMUEsDGAFNATmlEQA4AWAtALZrbmYB2YAdPWNgNZNQAEphMIxQBiAQSEoA2gAYAuolCkA9rExZljRSAAeiSgEYArEZYAOAGwAmGQbNH7NozLMAaEAE9ED80YsAWfyMAZgMrIwBfCPdUDBx8IhI0Cho6BmY2cg5uRj4AGzAANzA8kQLivNkFJBAVNQ0tGr0EAwtgln8Adk7g8P9ggE4g0Kt3LwRg9v8Aq2sHYwsTAajokEZlCDhtWKw8QmIyKlp6JjBtOvVMTW1myht2yxs7ByMnFzH9AxcWGU6LMyswRk-is-VeViiMXQuwSB2SRzSp0y2R4-EEwnOqku1yanwMAw6-jMwOCAN6IPxHwQdxkLCMAwMBi6gJkFgsf0CkJAO3i+ySKWO6VYEjQEHGSixDRuiE6Zjps06MisZmJ9gGpKpNLpDKZnRZbI5-i5PL2iUOqROGXYXFR5RKmPqV0aoFugJY7JVbVeIQGrPCVMsLAGlkZQVsAxCYRWESAA */
   createMachine(
     {
       initial: 'idle',
@@ -124,13 +133,13 @@ let staticParagraphMachine =
   )
 
 var headingLevel = {
-  1: 'h1',
-  2: 'h2',
-  3: 'h3',
-  4: 'h4',
-  5: 'h5',
-  6: 'h6',
-}
+  1: '$11',
+  2: '$10',
+  3: '$9',
+  4: '$8',
+  5: '$7',
+  6: '$6',
+} as {[key: number]: SizeTokens}
 
 type StaticParagraphMachineContext = {
   currentRef?: HTMLElement
@@ -152,3 +161,7 @@ type StaticParagraphMachineServices = {
     data: number
   }
 }
+
+var StyledStaticP = styled(Paragraph, {
+  fontWeight: 'bold',
+})

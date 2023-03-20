@@ -578,6 +578,7 @@ func (srv *Server) GetPath(ctx context.Context, in *site.GetPathRequest) (*site.
 	}
 	ret, err := srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
 		DocumentId: record.Document.ID.String(),
+		Version:    record.Document.Version,
 		LocalOnly:  true,
 	})
 	if err != nil {

@@ -1,15 +1,42 @@
+console.log('🚀 ~ file: _app.tsx:4 ~ global.setImmediate:', global.setImmediate)
+console.log(
+  '🚀 ~ file: _app.tsx:4 ~ globalThis.setImmediate:',
+  globalThis.setImmediate,
+)
+if (typeof globalThis.EdgeRuntime !== 'string') {
+  console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
+}
+if (!global.setImmediate || !globalThis['setImmediate']) {
+  //@ts-ignore
+  global.setImmediate = setTimeout
+  //@ts-ignore
+  globalThis['setImmediate'] = setTimeout
+}
+
+import '@tamagui/core/reset.css'
+import '../main.css'
 import {Hydrate, QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
+import {TamaguiProvider, Theme} from 'tamagui'
+import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
+import config from '../tamagui.config'
 
-import '../styles/global.css'
-import '../styles/cube.css'
+// if (!globalThis.setImmediate) {
+//   globalThis['setImmediate'] = setTimeout
+// }
 
 import type {AppProps} from 'next/app'
 import Head from 'next/head'
-import {useState} from 'react'
+import {useMemo, useState} from 'react'
 
 export default function App({Component, pageProps}: AppProps) {
   let [client] = useState(() => new QueryClient())
+  const [theme, setTheme] = useRootTheme()
+
+  // memo to avoid re-render on dark/light change
+  const contents = useMemo(() => {
+    return <Component {...pageProps} />
+  }, [pageProps])
 
   return (
     <QueryClientProvider client={client}>
@@ -100,9 +127,25 @@ export default function App({Component, pageProps}: AppProps) {
           name="msapplication-square310x310logo"
           content="mstile-310x310.png"
         />
+        <script
+          key="tamagui-animations-mount"
+          dangerouslySetInnerHTML={{
+            // avoid flash of animated things on enter
+            __html: `document.documentElement.classList.add('t_unmounted')`,
+          }}
+        />
       </Head>
       <Hydrate state={pageProps.dehydratedState}>
-        <Component {...pageProps} />
+        <NextThemeProvider onChangeTheme={setTheme}>
+          <TamaguiProvider
+            config={config}
+            // disableInjectCSS
+            disableRootThemeClass
+            defaultTheme={theme}
+          >
+            <Theme name="blue">{contents}</Theme>
+          </TamaguiProvider>
+        </NextThemeProvider>
       </Hydrate>
       <ReactQueryDevtools />
     </QueryClientProvider>

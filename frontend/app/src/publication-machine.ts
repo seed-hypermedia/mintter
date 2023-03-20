@@ -21,6 +21,7 @@ import {
 } from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
+import {appInvalidateQueries} from './query-client'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -112,7 +113,14 @@ export function createPublicationMachine({
           },
           on: {
             'PUBLICATION.REPORT.SUCCESS': {
-              actions: ['assignPublication', 'assignCanUpdate', 'assignTitle'],
+              actions: [
+                'assignPublication',
+                'assignCanUpdate',
+                'assignTitle',
+                () => {
+                  appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+                },
+              ],
               target: 'ready',
             },
             'PUBLICATION.REPORT.ERROR': {

@@ -49,6 +49,10 @@ function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   )
 }
 
+function pluralS(length: number) {
+  return length === 1 ? '' : 's'
+}
+
 export function Citations({
   docId,
   version,
@@ -58,9 +62,12 @@ export function Citations({
 }) {
   const {data: citations} = useDocCitations(docId)
   if (!docId) return null
+  const count = citations?.links?.length || 0
   return (
     <>
-      <PanelTitle>Citations</PanelTitle>
+      <PanelTitle>
+        {count} Citation{pluralS(count)}
+      </PanelTitle>
       {citations?.links.map((link) => (
         <CitationItem
           docId={docId}

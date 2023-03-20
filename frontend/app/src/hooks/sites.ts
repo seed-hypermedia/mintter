@@ -209,24 +209,27 @@ export function useSitePublish() {
     async ({
       hostname,
       documentId,
+      version,
       path,
     }: {
       hostname: string
       documentId: string
+      version: string
       path: string
     }) => {
-      const {version, document} = await publicationsClient.getPublication({
+      const {document} = await publicationsClient.getPublication({
         documentId,
+        version,
       })
       if (!document)
         throw new Error('Cannot publish document that is not available locally')
       const referencedDocs = extractReferencedDocs(document)
       const site = getWebSiteClient(hostname)
-      site.publishDocument({
+      await site.publishDocument({
         documentId: documentId,
         path: path,
         referencedDocuments: referencedDocs,
-        version: version,
+        version,
       })
     },
     {
