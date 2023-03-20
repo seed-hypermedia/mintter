@@ -341,11 +341,7 @@ type ResizablePanelMachineServices = {
   }
 }
 let resizablePanelMachine =
-<<<<<<< HEAD
-  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIBhAeQDkA1AUQCUBlAQQBUBJRhwB0POgHExAGRYBtAAwBdRKGIB7WGgAuaVWWUgAHogBMANgCsQgJwBGACx2A7I7sAOOXNNe7AGhABPREIbOSshB1s5G1MrNwBmOWNXAF9kv1QNbHwiUgpqNhYOPgAtWUV9NQ1tXX0jBFM5cJtXOLi7KwarOMdzP0CEYNdTISiWh0cu1xtjLtT09CyCEnJKWkZWTl4BBmE6AAUWBnklJBBKrR09U7qbRzihHuNHV1dzWKerV2M+xBDHB+M01MrTcgJScxAZFUEDg+gymFwS1ylAq6guNWuQTsjSiFhCHisjgspmMvQCWJsIwcNnMri65nMdlMrh6qVSQA */
-=======
   /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAFAQQDkBRAGQDoAVAeQHEeWmAbQAMAXUShiAe1hoALmilkJIAB6IALBoBMbDQHYAjBoCshgGwBmAJwHr2gDQgAnokLbrbABzbhw8-omQZaWGiGWAL4RTqiy2PhEpBTU9MzsAEpMAMoAkgBaQmIq0rIKSirqCMaWbL4m5obGZsJh2hpOrgiEGoa6ll7m1vptXgPmZlEx6PEEJOSUtIysbFw0TAwi4kggJfKKytuVhiYabMJepiahLWEGHYi23uYaXsKWhtYnZvr6UdEgZCkEDgKlimFwsySlGKMj25UObkM-jOJje2m0XlCNn0XhM9y6hks5jYxms5yu42qwz+ESAA */
->>>>>>> master
   createMachine(
     {
       predictableActionArguments: true,
@@ -361,11 +357,6 @@ let resizablePanelMachine =
         services: {} as ResizablePanelMachineServices,
       },
       on: {
-<<<<<<< HEAD
-        'PANEL.TOGGLE': {
-          actions: ['toggleShow'],
-        },
-=======
         'PANEL.TOGGLE': [
           {
             cond: 'shouldClosePanel',
@@ -387,7 +378,6 @@ let resizablePanelMachine =
             ],
           },
         ],
->>>>>>> master
         'PANEL.RESIZE': {
           actions: 'updateHandlePosition',
         },
@@ -399,25 +389,16 @@ let resizablePanelMachine =
     },
     {
       actions: {
-<<<<<<< HEAD
-        updateHandlePosition: assign((context, event) => {
-=======
         updateHandlePosition: assign((_, event) => {
->>>>>>> master
           // hardcoded value to apply to the controls
           let newValue = event.values[0]
 
           return {left: newValue}
         }),
-<<<<<<< HEAD
-        toggleShow: assign({
-          show: (context) => !context.show,
-=======
         // @ts-ignore
         hidePanel: assign({
           show: false,
           activePanel: undefined,
->>>>>>> master
         }),
         showPanel: assign((_, event) => ({
           show: true,
@@ -426,8 +407,6 @@ let resizablePanelMachine =
         assignActivePanel: assign({
           activePanel: (_, event) => event.activePanel,
         }),
-<<<<<<< HEAD
-=======
       },
       guards: {
         shouldClosePanel: (context, event) => {
@@ -436,7 +415,6 @@ let resizablePanelMachine =
           }
           return false
         },
->>>>>>> master
       },
     },
   )
