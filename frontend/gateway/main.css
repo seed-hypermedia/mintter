@@ -69,13 +69,13 @@ a {
   text-decoration: underline;
   text-underline-offset: 5px;
   text-decoration-thickness: 2px;
-  text-decoration-color: var(--pink6);
+  text-decoration-color: var(--blue6);
 }
 
 .link:hover {
   text-decoration: underline;
   cursor: pointer;
-  text-decoration-color: var(--pink8);
+  text-decoration-color: var(--blue8);
 }
 
 .is_Paragraph:has(> ul) {
@@ -86,15 +86,15 @@ a {
   text-decoration-style: solid;
   text-decoration-thickness: 3px !important;
   text-decoration: underline;
-  color: var(--pink10);
-  text-decoration-color: var(--pink6);
+  color: var(--blue10);
+  text-decoration-color: var(--blue6);
   text-underline-offset: 2px;
 }
 
 :is(article p a):hover {
   text-decoration-style: solid;
   text-decoration-thickness: 5px !important;
-  text-decoration-color: var(--pink12);
+  text-decoration-color: var(--blue12);
 }
 
 p.intro-paragraph.large {
@@ -243,33 +243,10 @@ pre {
   cursor: help;
 }
 
-.rainbow {
-  background-image: -webkit-linear-gradient(
-    0deg,
-    var(--orange10),
-    var(--yellow10),
-    var(--green10) 56%,
-    var(--blue10) 56.1%,
-    var(--pink10),
-    var(--red10)
-  );
-}
-
 /* intro paragraph links */
 ._fow-200 .link span,
 ._fow-200 .link {
   font-weight: inherit !important;
-}
-
-.xmas-season .rainbow {
-  background-image: -webkit-linear-gradient(
-    -220deg,
-    #009135,
-    #009135,
-    #59af2f,
-    #ff0024 60%,
-    #ff0024
-  );
 }
 
 .clip-text {
@@ -360,159 +337,6 @@ iframe {
 
 .mask-gradient-up {
   mask-image: linear-gradient(transparent 20%, rgba(0, 0, 0, 1));
-}
-
-/* code highlighting */
-
-.token.parameter {
-  color: var(--pink10);
-}
-
-.token.class-name {
-  color: var(--green10);
-}
-
-.token.tag,
-.token.selector,
-.token.selector .class,
-.token.function {
-  color: var(--green10);
-}
-
-.highlight-line:hover {
-  background-color: var(--backgroundHover);
-}
-
-.highlight-line {
-  color: var(--colorPress);
-}
-
-.token.attr-value,
-.token.script {
-  color: var(--red10);
-}
-
-.token.class,
-.token.string,
-.token.number,
-.token.unit,
-.token.color {
-  color: var(--purple10);
-}
-
-.token.operator {
-  color: (--color);
-}
-
-.token.attr-name,
-.token.keyword,
-.token.rule,
-.token.pseudo-class,
-.token.important {
-  color: var(--pink10);
-}
-
-.token.punctuation {
-  color: var(--green10);
-}
-
-.token.module,
-.token.property {
-  color: var(--blue10);
-}
-
-.token.comment {
-  color: var(--color);
-  opacity: 0.4;
-}
-
-.token.atapply .token:not(.rule):not(.important) {
-  color: inherit;
-}
-
-.language-shell .token:not(.comment) {
-  color: inherit;
-}
-
-.language-css .token.function {
-  color: inherit;
-}
-
-.token.deleted:not(.prefix),
-.token.inserted:not(.prefix) {
-  display: block;
-  padding-left: 20px;
-  padding-right: 20px;
-  margin-left: -20px;
-  margin-right: -20px;
-}
-
-.token.deleted:not(.prefix) {
-  color: var(--red9);
-}
-
-.token.inserted:not(.prefix) {
-  color: var(--green9);
-}
-
-.token.deleted.prefix,
-.token.inserted.prefix {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.highlight-word {
-  --word-bg: var(--purple9);
-  color: var(--purple9);
-  background-color: var(--purple4);
-  display: inline-block;
-  box-shadow: var(--xOffset) 0 0 0 var(--word-bg), -1px 0 0 0 var(--word-bg);
-}
-
-.highlight-word .token {
-  color: inherit;
-}
-
-.highlight-word.on {
-  --word-bg: var(--purple7);
-  transition: all 100ms ease;
-  cursor: pointer;
-}
-
-.highlight-line {
-  white-space: pre;
-  /* safari fix weird wrapping */
-  word-wrap: initial;
-}
-
-.highlight-line,
-.highlight-line * {
-  transition: color 150ms ease;
-}
-
-.highlight-line[data-highlighted='false'] {
-  color: var(--gray12);
-}
-
-.token.deleted .highlight-word {
-  color: var(--red9);
-}
-
-.token.deleted .highlight-word.on {
-  color: var(--red10);
-}
-
-.token.inserted .highlight-word {
-  color: var(--yellow9);
-}
-
-.token.inserted .highlight-word.on {
-  color: var(--yellow10);
-}
-
-*[data-line-numbers='true'].highlight-line {
-  position: relative;
-  padding-left: var(--space-4);
 }
 
 .typewriter {
