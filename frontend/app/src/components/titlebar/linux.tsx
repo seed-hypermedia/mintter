@@ -5,7 +5,7 @@ import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
 import {useLocation} from 'wouter'
-import {ActionButtons, NavigationButtons} from './common'
+import {ActionButtons, NavigationButtons, SitesNavDropdownItems} from './common'
 import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
 import {
@@ -118,6 +118,8 @@ function Menu() {
             Quick Switcher
             <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
           </Dropdown.Item>
+
+          <SitesNavDropdownItems />
 
           <Dropdown.Separator />
 
