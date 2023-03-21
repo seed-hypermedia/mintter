@@ -129,6 +129,9 @@ export default function PublicationPage({
     return (
       <ConversationsProvider
         documentId={params.id}
+        isOpen={
+          activePanel === 'conversations' && resizablePanelState.context.show
+        }
         onConversationsOpen={() => {
           panelSend({
             type: 'PANEL.OPEN',

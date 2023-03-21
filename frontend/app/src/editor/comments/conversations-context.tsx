@@ -54,10 +54,12 @@ export function ConversationsProvider({
   documentId,
   onConversationsOpen,
   publication,
+  isOpen,
 }: PropsWithChildren<{
   documentId?: string
   onConversationsOpen: (conversationIds: string[]) => void
   publication: ClientPublication | null
+  isOpen: boolean
 }>) {
   let queryResult = useQuery({
     queryFn: async () => {
@@ -151,7 +153,7 @@ export function ConversationsProvider({
         conversations: queryResult,
         blocks: blocksD,
         clientSelectors,
-        highlights,
+        highlights: isOpen ? highlights : [],
         onHighlightConversations,
       }}
     >
