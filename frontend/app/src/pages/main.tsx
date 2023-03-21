@@ -1,5 +1,8 @@
 import {useMainActor} from '@app/hooks/main-actor'
 import {classnames} from '@app/utils/classnames'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Heading} from '@components/heading'
 import {TitleBar} from '@components/titlebar'
 import {lazy} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
@@ -69,10 +72,31 @@ export default function Main() {
 
 function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
   return (
-    <div role="alert" data-layout-section="main">
-      <p>Main Error</p>
-      <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>reload page</button>
-    </div>
+    <Box
+      css={{
+        background: '$base-background-normal',
+        display: 'flex',
+        minHeight: '100vh',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <Box
+        css={{
+          background: '$base-background-subtle',
+          boxShadow: '$menu',
+          padding: '$4',
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: '50vw',
+        }}
+      >
+        <Heading color="danger">App Error!</Heading>
+        <pre>{error.message}</pre>
+        <Button onClick={resetErrorBoundary} css={{alignSelf: 'flex-end'}}>
+          Reload
+        </Button>
+      </Box>
+    </Box>
   )
 }
