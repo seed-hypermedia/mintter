@@ -613,7 +613,7 @@ function ConversationSelectors({
 
     return leafs.map((l) => l.text).join('')
   }, [convContext.clientSelectors, conversationId, selectors])
-
+  if (selectorText === '') return null
   return (
     <Box
       css={{

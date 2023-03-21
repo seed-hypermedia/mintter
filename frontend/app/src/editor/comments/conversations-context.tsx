@@ -105,11 +105,17 @@ export function ConversationsProvider({
     queryResult.data?.forEach((conversation) => {
       let [selector] = conversation.selectors
       let block = blocksD[selector.blockId]
+      let start = selector.start
+      let end = selector.end
+      if (start === 0 && end === 0) {
+        // whole block is selected.
+        end = block.text.length
+      }
       block.annotations.push(
         new Annotation({
           type: 'conversation',
-          starts: [selector.start],
-          ends: [selector.end],
+          starts: [start],
+          ends: [end],
           attributes: {
             conversationId: conversation.id,
           },
