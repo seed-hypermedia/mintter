@@ -33,6 +33,7 @@ import {MouseEvent, useMemo} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
+import {EditorHoveringActions} from './hovering-toolbar'
 import './styles/blocktools.scss'
 
 let toolsByMode = {
@@ -135,24 +136,8 @@ function DraftBlocktools(props: BlockData) {
   )
 }
 
-function PublicationBlocktools(
-  props: BlockData & {copy?: typeof copyTextToClipboard},
-) {
+function PublicationBlocktools(props: BlockData) {
   let target = useCurrentTarget()
-  let blockId = useMemo(() => {
-    if (!props.element) return null
-    return props.element[0].id
-  }, [props.element])
-
-  let localCopy = props.copy ?? copyTextToClipboard
-
-  function handleCopy() {
-    let reference = target?.dataset.reference
-    if (reference) {
-      localCopy(reference)
-      toast.success('copied block!')
-    }
-  }
 
   // let [match, setMatch] = useState(false)
 
@@ -174,37 +159,20 @@ function PublicationBlocktools(
 
   let topOffset = useTopOffset(props.element)
 
+  const copyUrl = target?.dataset.reference
   return (
-    <Box
-      contentEditable={false}
+    <EditorHoveringActions
+      onCopyLink={copyUrl ? () => copyUrl : undefined}
+      // onComment={() => {}} // TODO, block commenting
+      copyLabel="block"
       css={{
-        // width: 30,
-        height: 24,
+        transform: `translate(105%, ${topOffset})`,
         position: 'absolute',
         top: 0,
         right: -60,
         zIndex: '$4',
-        transform: `translate(105%, ${topOffset})`,
       }}
-    >
-      <Button
-        variant="ghost"
-        color="primary"
-        size="1"
-        onClick={handleCopy}
-        css={{
-          background: '$base-background-normal',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '$2',
-          '&:hover': {
-            background: '$base-background-normal',
-          },
-        }}
-      >
-        <Icon name="Copy" /> <span>{blockId}</span>
-      </Button>
-    </Box>
+    />
   )
 }
 

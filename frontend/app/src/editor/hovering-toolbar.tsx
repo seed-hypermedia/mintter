@@ -2,6 +2,7 @@ import {commentsClient} from '@app/api-clients'
 import {OutsideClick} from '@app/editor/outside-click'
 import {toolbarMachine} from '@app/editor/toolbar-machine'
 import {queryKeys} from '@app/hooks'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -22,7 +23,15 @@ import {
 import {css} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useSelector} from '@xstate/react'
-import {FormEvent, PropsWithChildren, useEffect, useMemo, useState} from 'react'
+import {
+  ComponentProps,
+  FormEvent,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import {toast} from 'react-hot-toast'
 import {Editor, Range, Text, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -246,6 +255,83 @@ function HoveringToolbar({children}: PropsWithChildren) {
   )
 }
 
+type BlockCSS = ComponentProps<typeof Box>['css']
+
+export function EditorHoveringActions({
+  onComment,
+  onCopyLink,
+  copyLabel,
+  css,
+}: {
+  onComment?: () => void
+  onCopyLink?: () => string
+  copyLabel?: string
+  css: BlockCSS
+}) {
+  return (
+    <Box
+      contentEditable={false}
+      css={{
+        background: '$base-background-normal',
+        borderRadius: '$2',
+        display: 'flex',
+        boxShadow: '$menu',
+        ...css,
+      }}
+    >
+      {onCopyLink && (
+        <Button
+          variant="ghost"
+          color="primary"
+          size="1"
+          onClick={() => {
+            let link = onCopyLink()
+            if (link) {
+              copyTextToClipboard(link).then(() => {
+                toast.success(
+                  copyLabel
+                    ? `Copied link to ${copyLabel}`
+                    : 'Link copied to clipboard',
+                )
+              })
+            }
+          }}
+          css={{
+            background: '$base-background-normal',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$2',
+            '&:hover': {
+              background: '$base-background-normal',
+            },
+          }}
+        >
+          <Icon name="Copy" />
+        </Button>
+      )}
+      {onComment && (
+        <Button
+          variant="ghost"
+          color="primary"
+          size="1"
+          onClick={onComment}
+          css={{
+            background: '$base-background-normal',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$2',
+            '&:hover': {
+              background: '$base-background-normal',
+            },
+          }}
+        >
+          <Icon name="MessageBubble" />
+        </Button>
+      )}
+    </Box>
+  )
+}
+
 export function PublicationToolbar() {
   let client = useQueryClient()
   let [, params] = useRoute('/p/:id/:version/:block?')
@@ -405,35 +491,6 @@ export function PublicationToolbar() {
           zIndex: '$max',
         }}
       >
-        <Box
-          css={{
-            zIndex: '$max',
-            boxShadow: '$menu',
-            padding: '$2',
-            backgroundColor: '$base-background-normal',
-            borderRadius: '2px',
-            transition: 'opacity 0.5s',
-            display: 'flex',
-            gap: '$2',
-            paddingHorizontal: '$2',
-            '& > *': {
-              display: 'inline-block',
-            },
-            '& > * + *': {
-              marginLeft: 2,
-            },
-          }}
-        >
-          <Button
-            variant="ghost"
-            size="0"
-            color="muted"
-            onClick={() => service.send('START.CONVERSATION')}
-          >
-            <Icon name="MessageBubble" size="2" />
-            <span>Add comment</span>
-          </Button>
-        </Box>
         {isCommentActive ? (
           <Box
             as="form"
@@ -459,7 +516,27 @@ export function PublicationToolbar() {
               submit
             </Button>
           </Box>
-        ) : null}
+        ) : (
+          <EditorHoveringActions
+            onComment={() => service.send('START.CONVERSATION')}
+            onCopyLink={() => {
+              alert('Cannot copy ranges yet.')
+              // how to convert `selection` into a usable range? Also need to get blockId from target?.dataset.reference
+              return '#soon'
+            }}
+            copyLabel="range"
+            css={{
+              zIndex: '$max',
+              boxShadow: '$menu',
+              backgroundColor: '$base-background-normal',
+              borderRadius: '2px',
+              transition: 'opacity 0.5s',
+              display: 'flex',
+              position: 'relative',
+              left: 20,
+            }}
+          />
+        )}
       </Box>
     </OutsideClick>
   )
