@@ -109,9 +109,6 @@ export var mouseMachine =
                   target: 'stopped',
                 },
               },
-              'DISABLE.DRAG.START': {
-                target: 'stopped',
-              },
             },
           },
         },

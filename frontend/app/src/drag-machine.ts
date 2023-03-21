@@ -195,6 +195,7 @@ export const createDragMachine = (editor: Editor) => {
                   })
                   for (let des of descendantsGen) {
                     if (des[0].type === 'statement') {
+                      if (des.)
                       des[1] = [...path.slice(0, 2), ...des[1]]
                       groupStatements.push(des)
                     }
@@ -325,3 +326,8 @@ function isLastBlock(parentGroup: NodeEntry<Group>, path: Path) {
   let [groupNode, groupPath] = parentGroup
   return groupNode.children.length - 1 === path[path.length - 1]
 }
+
+// function isLastSibling(node: NodeEntry, parentEntry: NodeEntry) {
+//   let [parentNode, parentPath] = parentEntry;
+//   return Path.equals(node[1], parentNode)
+// }

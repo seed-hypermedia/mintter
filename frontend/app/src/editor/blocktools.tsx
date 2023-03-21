@@ -31,7 +31,7 @@ import {
 import {useSelector} from '@xstate/react'
 import {MouseEvent, useMemo} from 'react'
 import toast from 'react-hot-toast'
-import {Editor, NodeEntry} from 'slate'
+import {Editor, NodeEntry, Path} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
 import './styles/blocktools.scss'
 
@@ -54,6 +54,8 @@ function DraftBlocktools(props: BlockData) {
     const domNode = ReactEditor.toDOMNode(editor, node)
     if (fromPath && dragService && domNode) {
       mouseService.send('DISABLE.DRAG.START')
+      // // console.log(Editor.node(editor, Path.next(fromPath)))
+      // console.log(Path.hasPrevious(fromPath))
       dragService.send({
         type: 'DRAG.START',
         fromPath,
