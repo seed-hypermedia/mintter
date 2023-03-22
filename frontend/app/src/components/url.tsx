@@ -2,7 +2,6 @@ import {styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {open} from '@tauri-apps/api/shell'
 import {useState} from 'react'
-import {Box} from './box'
 import {Icon} from './icon'
 
 export function AccessURLRow({
@@ -15,7 +14,6 @@ export function AccessURLRow({
   enableLink?: boolean
 }) {
   const [isClipboardCopied, setIsClipboardCopied] = useState(false)
-  console.log('🚀 ~ file: url.tsx:17 ~ url:', url)
   return (
     <URLRow>
       <URLButton

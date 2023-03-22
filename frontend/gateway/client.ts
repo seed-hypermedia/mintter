@@ -1,8 +1,3 @@
-console.log('🚀 ~ file: _app.tsx:4 ~ global.setImmediate:', global.setImmediate)
-console.log(
-  '🚀 ~ file: _app.tsx:4 ~ globalThis.setImmediate:',
-  globalThis.setImmediate,
-)
 if (typeof globalThis.EdgeRuntime !== 'string') {
   console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
 }

@@ -251,10 +251,6 @@ export function createDraftMachine({
           if (event.data.children?.length) {
             // TODO: use the parent list type from the document object instead
             newValue.content = [blockNodeToSlate(event.data.children, 'group')]
-            console.log(
-              '🚀 ~ file: draft-machine.ts:255 ~ assignLocalDraft:assign ~ newValue.content:',
-              newValue.content,
-            )
           } else {
             newValue.content = defaultContent
             let entryNode = defaultContent[0].children[0]
