@@ -15,6 +15,7 @@ import {AccessURLRow} from '@components/url'
 import {WebPublicationRecord} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {UseQueryResult} from '@tanstack/react-query'
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -136,14 +137,19 @@ function PublishedURLs({
   publications,
   doc,
 }: {
-  publications?: WebPublicationRecord[]
+  publications: UseQueryResult<WebPublicationRecord[]>
   doc: MainActor['actor']
 }) {
-  if (publications && publications.length === 0)
+  if (!publications.data) {
+    if (publications.isLoading) return <div>Loading...</div>
+    if (publications.error) return <div>Failed to load.</div>
+  }
+  if (publications.data && publications.data?.length === 0)
     return <MintterURLRow doc={doc} />
   return (
     <>
-      {publications?.map((pub) => {
+      <Subheading>Public on the Web:</Subheading>
+      {publications.data?.map((pub) => {
         const shortHost = hostnameStripProtocol(pub.hostname)
         const shortURL = pub.path
           ? pub.path === '/'
@@ -295,10 +301,9 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
                 gap: '$4',
               }}
             >
-              <Subheading>Public on the Web:</Subheading>
               {docId && (
                 <PublishedURLs
-                  publications={publications.data}
+                  publications={publications}
                   doc={mainActor.actor}
                 />
               )}
