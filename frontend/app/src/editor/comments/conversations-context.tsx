@@ -107,6 +107,7 @@ export function ConversationsProvider({
     queryResult.data?.forEach((conversation) => {
       let [selector] = conversation.selectors
       let block = blocksD[selector.blockId]
+      if (!block) return
       let start = selector.start
       let end = selector.end
       if (start === 0 && end === 0) {
