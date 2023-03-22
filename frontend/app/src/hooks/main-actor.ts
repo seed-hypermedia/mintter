@@ -6,7 +6,7 @@ import {
   createPublicationMachine,
   PublicationActor,
 } from '@app/publication-machine'
-import {appQueryClient} from '@app/query-client'
+import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {Publication, publishDraft} from '@mintter/shared'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
@@ -16,6 +16,7 @@ import {interpret} from 'xstate'
 import {useDocRepublish} from './sites'
 import {draftsClient} from '@app/api-clients'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {queryKeys} from '@app/hooks'
 
 export type MainActor =
   | {type: 'publication'; actor: PublicationActor}
@@ -73,10 +74,12 @@ export function useMainActor(props: MainActorOptions = {}) {
             // invoke('emit_all', {
             //   event: 'document_published',
             // })
-            setLocation(`/p/${event.data.document?.id}/${event.data.version}`, {
+            const docId = event.data.document?.id
+            if (!docId) return
+            appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
+            setLocation(`/p/${docId}/${event.data.version}`, {
               replace: true,
             })
-
             republishDoc.mutateAsync(event.data)
             toast.success('Draft published Successfully!')
           },

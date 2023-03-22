@@ -35,8 +35,9 @@ import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
-  const {data: pub} = usePublication(docId)
+  const {data: pub, isLoading} = usePublication(docId)
   const [l, setLocation] = useLocation()
+  if (isLoading) return null
   if (version === pub?.version) return null
   if (!pub?.version) return null
   return (
