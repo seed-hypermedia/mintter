@@ -74,7 +74,6 @@ export function createCommentsPlugin(): EditorPlugin {
       const {apply} = editor
 
       editor.apply = (op) => {
-        console.log('=== OP', op)
         /**
          * In order to receive just one particular type of event in the editor (set_selection), we need to override the `apply` hook in the editor
          */
@@ -116,8 +115,6 @@ export function createCommentsPlugin(): EditorPlugin {
                 } as SetNodeOperation)
                 return
               } else {
-                console.log('=== OP: add current conversation mark')
-
                 apply(op)
               }
             }
