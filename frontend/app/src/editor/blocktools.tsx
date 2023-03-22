@@ -1,8 +1,9 @@
 import {commentsClient} from '@app/api-clients'
+import {Text} from '@components/text'
 import {useDrag} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
-import {ElementDropdown} from '@app/editor/dropdown'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ELEMENT_STATEMENT} from '@app/editor/statement'
@@ -28,6 +29,8 @@ import {
   group,
   heading,
   image,
+  isGroup,
+  isGroupContent,
   ol,
   paragraph,
   Selector,
@@ -37,9 +40,9 @@ import {
   video,
 } from '@mintter/shared'
 import {useSelector} from '@xstate/react'
-import {MouseEvent, useMemo, useState} from 'react'
+import {Fragment, MouseEvent, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {Editor, NodeEntry} from 'slate'
+import {Editor, Node, NodeEntry, Path} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
 import {useRoute} from 'wouter'
 import {CommentForm, EditorHoveringActions} from './hovering-toolbar'
@@ -57,21 +60,22 @@ let toolsByMode = {
 function DraftBlocktools(props: BlockData) {
   let {mouseService, element, editor} = props
   let dragService = useDrag()
-  let topOffset = useTopOffset(props.element)
+  let topOffset = useTopOffset(element)
+  let [localOpen, setLocalOpen] = useState(false)
+  let [isMouseDown, setMouseDown] = useState(false)
 
-  const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    if (editor.dragging) return
-    const [node, fromPath] = element as NodeEntry<FlowContent>
-    const domNode = ReactEditor.toDOMNode(editor, node)
-    if (fromPath && dragService && domNode) {
-      mouseService.send('DISABLE.DRAG.START')
-      dragService.send({
-        type: 'DRAG.START',
-        fromPath,
-        element: domNode as HTMLLIElement,
-      })
+  let hasMarker = useMemo(() => {
+    if (!element) return false
+    let [, path] = element
+
+    let parentPath = Path.parent(path)
+    let parent = Node.get(editor, parentPath)
+    if (isGroupContent(parent)) {
+      return !isGroup(parent)
+    } else {
+      return false
     }
-  }
+  }, [props.element])
 
   return (
     <Box
@@ -83,27 +87,57 @@ function DraftBlocktools(props: BlockData) {
         top: 0,
         left: 0,
         zIndex: '$4',
-        transform: `translate(-34px, ${topOffset})`,
+        transform: `translate(${hasMarker ? '-40px' : '-24px'}, ${topOffset})`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '$3',
       }}
-      onMouseDown={onMouseDown}
-      onMouseUp={() => mouseService.send('DISABLE.DRAG.END')}
     >
-      <ElementDropdown data-testid="blocktools-trigger">
+      <ElementDropdown
+        data-testid="blocktools-trigger"
+        onMouseDown={() => {
+          setMouseDown(true)
+        }}
+        onMouseMove={() => {
+          if (isMouseDown) {
+            if (editor.dragging) return
+            const [node, fromPath] = element as NodeEntry<FlowContent>
+            const domNode = ReactEditor.toDOMNode(editor, node)
+            if (fromPath && dragService && domNode) {
+              mouseService.send('DISABLE.DRAG.START')
+              dragService.send({
+                type: 'DRAG.START',
+                fromPath,
+                element: domNode as HTMLLIElement,
+              })
+            }
+          }
+        }}
+        onMouseUp={() => {
+          setMouseDown(false)
+          setLocalOpen((p) => !p)
+          mouseService.send(
+            !localOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
+          )
+        }}
+      >
         <Icon name="Grid4" color="muted" />
       </ElementDropdown>
-      {/* <Dropdown.Root
+      <Dropdown.Root
+        open={localOpen}
         onOpenChange={(isOpen) => {
+          setLocalOpen(isOpen)
           mouseService.send(
             isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
           )
         }}
       >
         <Dropdown.Trigger asChild>
-          <ElementDropdown data-testid="blocktools-trigger">
+          <ElementDropdown
+            data-testid="blocktools-trigger"
+            style={{opacity: 0, visibility: 'hidden'}}
+          >
             <Icon name="Grid4" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
@@ -141,7 +175,7 @@ function DraftBlocktools(props: BlockData) {
             })}
           </Dropdown.Content>
         </Dropdown.Portal>
-      </Dropdown.Root> */}
+      </Dropdown.Root>
     </Box>
   )
 }
@@ -358,7 +392,7 @@ export function BlockTools({block}: {block: FlowContent}) {
   let Component = toolsByMode[mode] || null
 
   const docId = params?.id
-  if (!docId) {
+  if (mode == EditorMode.Publication && !docId) {
     return null
   }
   if (isCommenting && block.revision) {

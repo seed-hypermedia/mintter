@@ -73,7 +73,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         }}
         onMouseUp={() => {
           dragService.send('DROPPED')
-          mouseService.send('DISABLE.DRAG.END')
+          // mouseService.send('DISABLE.DRAG.END')
         }}
       >
         <ErrorBoundary

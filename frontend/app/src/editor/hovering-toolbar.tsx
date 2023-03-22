@@ -242,8 +242,8 @@ function HoveringToolbar({children}: PropsWithChildren) {
       ref={floating}
       css={{
         position: strategy,
-        top: y ?? 0,
-        left: x ?? 0,
+        top: y && y > 0 ? y : -999,
+        left: x && x > 0 ? x : -999,
         zIndex: '$max',
       }}
       onMouseDown={(e) => {
