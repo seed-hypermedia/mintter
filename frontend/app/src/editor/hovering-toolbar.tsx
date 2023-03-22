@@ -32,7 +32,7 @@ import {
   useState,
 } from 'react'
 import {toast} from 'react-hot-toast'
-import {Editor, Range, Text, Transforms} from 'slate'
+import {BasePoint, Descendant, Editor, Range, Text, Transforms} from 'slate'
 import {
   ReactEditor,
   useFocused,
@@ -255,6 +255,18 @@ function HoveringToolbar({children}: PropsWithChildren) {
   )
 }
 
+function handledErrors<V>(unsafeHandler: () => V) {
+  return () => {
+    try {
+      return unsafeHandler()
+    } catch (e) {
+      toast.error(e.message)
+      console.error(e)
+      throw new Error(e)
+    }
+  }
+}
+
 type BlockCSS = ComponentProps<typeof Box>['css']
 
 export function EditorHoveringActions({
@@ -464,8 +476,6 @@ export function PublicationToolbar() {
     state.matches('active.commenting'),
   )
 
-  console.log('POSITION', {x, y})
-
   useEffect(() => {
     if (selection) {
       service.send({type: 'TOOLBAR.SELECT', selection})
@@ -479,6 +489,54 @@ export function PublicationToolbar() {
       reference(toolbarSelection)
     }
   }, [isToolbarActive, toolbarSelection])
+
+  function sizeNode(d: Descendant): number {
+    if (!d) return 0
+    const children =
+      d.children?.reduce((acc, child) => acc + sizeNode(child), 0) ?? 0
+    const text = d.text?.length ?? 0
+    return children + text
+  }
+
+  function convertRange(path: number[], children: Descendant[]): number {
+    let i = 0
+    let nodes = children
+    path.forEach((address, addressIndex) => {
+      const child = nodes[address]
+      for (let siblingIndex = 0; siblingIndex < address; siblingIndex++) {
+        const sib = nodes[siblingIndex]
+        i += sizeNode(sib)
+      }
+      nodes = child.children
+    })
+    return i
+  }
+
+  function getCopyLink(): string {
+    if (!selection) throw new Error('No selection')
+    const selectedBlock = selection.anchor.path[1]
+    const block = editor.children[0].children[selectedBlock]
+    const blockChildren = block.children
+    const anchor =
+      convertRange(selection.anchor.path.slice(2), blockChildren) +
+      selection.anchor.offset
+    const focus =
+      convertRange(selection.focus.path.slice(2), blockChildren) +
+      selection.focus.offset
+    const start = Math.min(anchor, focus)
+    const end = Math.max(anchor, focus)
+    const documentId = params?.id
+    const version = params?.version
+    // console.log('... : ', {
+    //   selection,
+    //   c: editor.children,
+    //   start,
+    //   end,
+    //   documentId,
+    //   version,
+    // })
+    return `https://mintter.com/p/${documentId}?v=${version}#${block.id}:${start}:${end}`
+  }
 
   return (
     <OutsideClick onClose={() => service.send('TOOLBAR.DISMISS')}>
@@ -519,11 +577,7 @@ export function PublicationToolbar() {
         ) : (
           <EditorHoveringActions
             onComment={() => service.send('START.CONVERSATION')}
-            onCopyLink={() => {
-              alert('Cannot copy ranges yet.')
-              // how to convert `selection` into a usable range? Also need to get blockId from target?.dataset.reference
-              return '#soon'
-            }}
+            onCopyLink={handledErrors(getCopyLink)}
             copyLabel="range"
             css={{
               zIndex: '$max',
