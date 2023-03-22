@@ -1,3 +1,7 @@
+export const config = {
+  runtime: 'nodejs',
+}
+
 if (typeof globalThis.EdgeRuntime !== 'string') {
   console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
 }
@@ -36,7 +40,8 @@ export default function DownloadPage({manifest = null}) {
 
 const DownloadItem = styled(Button, {})
 
-export async function getStaticProps() {
+export async function getStaticProps(context) {
+  console.log('RUNNING AT BUILD TIME', context)
   let req = await fetch(
     `https://mintternightlies.s3.amazonaws.com/manifest.json`,
   )
