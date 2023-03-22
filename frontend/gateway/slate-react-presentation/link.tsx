@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import {useMemo} from 'react'
 import {Leaf} from '.'
-import {Link as LinkType} from '@mintter/shared'
-import {getIdsfromUrl, MINTTER_LINK_PREFIX} from '../utils/get-ids-from-url'
+import {
+  getIdsfromUrl,
+  Link as LinkType,
+  MINTTER_LINK_PREFIX,
+} from '@mintter/shared'
 
 type ElementLinkProps = {
   'data-type': string

@@ -1,8 +1,8 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
+export const MINTTER_LINK_PREFIX = 'mintter://'
 
 export function getIdsfromUrl(
   entry: string,
-): [docId: string, version: string, blockId: string] {
+): [docId: string, version: string | undefined, blockId: string | undefined] {
   if (!entry.startsWith(MINTTER_LINK_PREFIX) && !entry.startsWith('mtt://')) {
     throw Error(
       `getIdsfromUrl Error: url must start with ${MINTTER_LINK_PREFIX}. (${entry})`,

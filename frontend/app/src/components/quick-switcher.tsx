@@ -1,11 +1,11 @@
 import {useDraftList, usePublicationList} from '@app/hooks'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {useLocation} from '@components/router'
+import {getIdsfromUrl} from '@mintter/shared'
 import {listen} from '@tauri-apps/api/event'
 import {Command} from 'cmdk'
 import {useEffect, useState} from 'react'
 import '../styles/quick-switcher.scss'
-import {getIdsfromUrl} from '../utils/get-ids-from-url'
 
 export default function QuickSwitcher() {
   const {data: drafts} = useDraftList()

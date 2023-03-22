@@ -9,8 +9,8 @@ import {
   FlowContent,
   Publication,
   blockNodeToSlate,
+  getIdsfromUrl,
 } from '@mintter/shared'
-import {getIdsfromUrl} from '../utils/get-ids-from-url'
 import {useRenderElement} from './render-element'
 import {useRenderLeaf} from './render-leaf'
 import {publicationsClient} from '../client'
