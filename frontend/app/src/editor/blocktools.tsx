@@ -1,3 +1,4 @@
+import {commentsClient} from '@app/api-clients'
 import {useDrag} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
@@ -6,34 +7,43 @@ import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ELEMENT_STATEMENT} from '@app/editor/statement'
 import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
+import {queryKeys} from '@app/hooks'
 import {
   MouseInterpret,
   useCurrentBound,
   useCurrentTarget,
   useMouse,
 } from '@app/mouse-context'
+import {appInvalidateQueries} from '@app/query-client'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
+import {inline, offset, shift, flip, useFloating} from '@floating-ui/react-dom'
 import {
   blockquote,
+  blockToApi,
   code,
   FlowContent,
   group,
   heading,
   image,
   ol,
+  paragraph,
+  Selector,
   statement,
+  text,
   ul,
   video,
 } from '@mintter/shared'
 import {useSelector} from '@xstate/react'
-import {MouseEvent, useMemo} from 'react'
+import {MouseEvent, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, NodeEntry} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
-import {EditorHoveringActions} from './hovering-toolbar'
+import {useRoute} from 'wouter'
+import {CommentForm, EditorHoveringActions} from './hovering-toolbar'
+import {OutsideClick} from './outside-click'
 import './styles/blocktools.scss'
 
 let toolsByMode = {
@@ -135,6 +145,62 @@ function DraftBlocktools(props: BlockData) {
     </Box>
   )
 }
+function BlockCommentForm({
+  onBlur,
+  blockId,
+  docId,
+  blockRevision,
+}: {
+  onBlur: () => void
+  blockId: string
+  blockRevision: string
+  docId: string
+}) {
+  const [comment, setComment] = useState('')
+  return (
+    <OutsideClick onClose={onBlur}>
+      <Box
+        css={{
+          position: 'absolute',
+          zIndex: '$max',
+          right: -50,
+        }}
+      >
+        <CommentForm
+          comment={comment}
+          onChange={setComment}
+          onSubmit={(e) => {
+            e.preventDefault()
+            onBlur()
+            let selector = new Selector({
+              blockId,
+              blockRevision,
+              start: 0,
+              end: 0,
+            })
+            let commentValue = comment.replace(/\s/g, ' ')
+            let initialComment = blockToApi(
+              statement([paragraph([text(commentValue)])]),
+            )
+            commentsClient
+              .createConversation({
+                documentId: docId,
+                initialComment,
+                selectors: [selector],
+              })
+              .then((res) => {
+                // service.send('TOOLBAR.DISMISS')
+                // setCurrentComment('')
+                // ReactEditor.blur(editor)
+                appInvalidateQueries([queryKeys.GET_PUBLICATION_CONVERSATIONS])
+                toast.success('Comment added')
+              })
+          }}
+        />
+      </Box>
+    </OutsideClick>
+  )
+}
 
 function PublicationBlocktools(props: BlockData) {
   let target = useCurrentTarget()
@@ -163,7 +229,7 @@ function PublicationBlocktools(props: BlockData) {
   return (
     <EditorHoveringActions
       onCopyLink={copyUrl ? () => copyUrl : undefined}
-      // onComment={() => {}} // TODO, block commenting
+      onComment={props.onComment}
       copyLabel="block"
       css={{
         transform: `translate(105%, ${topOffset})`,
@@ -182,6 +248,7 @@ type BlockData = {
   show: boolean
   mode: EditorMode
   element?: NodeEntry<FlowContent>
+  onComment?: () => void
 }
 
 function useBlocktoolsData(editor: Editor): BlockData {
@@ -281,14 +348,40 @@ var items: {
 
 export function BlockTools({block}: {block: FlowContent}) {
   const editor = useSlate()
+  let [, params] = useRoute('/p/:id/:version/:block?')
+
   const blocktoolsProps = useBlocktoolsData(editor)
+  const [isCommenting, setIsCommenting] = useState(false)
 
   let {show, element, mode} = blocktoolsProps
 
   let Component = toolsByMode[mode] || null
 
+  const docId = params?.id
+  if (!docId) {
+    return null
+  }
+  if (isCommenting && block.revision) {
+    return (
+      <BlockCommentForm
+        blockId={block.id}
+        blockRevision={block.revision}
+        docId={docId}
+        onBlur={() => {
+          setIsCommenting(false)
+        }}
+      />
+    )
+  }
   if (show && element && element[0].id == block.id) {
-    return <Component {...blocktoolsProps} />
+    return (
+      <Component
+        {...blocktoolsProps}
+        onComment={() => {
+          setIsCommenting(true)
+        }}
+      />
+    )
   } else {
     return null
   }

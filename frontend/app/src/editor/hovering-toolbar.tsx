@@ -25,6 +25,7 @@ import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useSelector} from '@xstate/react'
 import {
   ComponentProps,
+  FocusEvent,
   FormEvent,
   PropsWithChildren,
   useEffect,
@@ -255,10 +256,10 @@ function HoveringToolbar({children}: PropsWithChildren) {
   )
 }
 
-function handledErrors<V>(unsafeHandler: () => V) {
-  return () => {
+function handledErrors<A, V>(unsafeHandler: (a: A) => V) {
+  return (a: A) => {
     try {
-      return unsafeHandler()
+      return unsafeHandler(a)
     } catch (e) {
       toast.error(e.message)
       console.error(e)
@@ -276,7 +277,7 @@ export function EditorHoveringActions({
   css,
 }: {
   onComment?: () => void
-  onCopyLink?: () => string
+  onCopyLink?: (v: void) => string
   copyLabel?: string
   css: BlockCSS
 }) {
@@ -454,7 +455,7 @@ export function PublicationToolbar() {
       statement([paragraph([text(commentValue)])]),
     )
 
-    commentsClient
+    await commentsClient
       .createConversation({
         documentId: params?.id,
         initialComment,
@@ -550,30 +551,11 @@ export function PublicationToolbar() {
         }}
       >
         {isCommentActive ? (
-          <Box
-            as="form"
-            onSubmit={createConversation}
-            css={{
-              display: 'flex',
-              gap: '$3',
-              padding: '$3',
-              borderRadius: '$3',
-              background: '$base-background-normal',
-              flexDirection: 'column',
-              boxShadow: '$menu',
-            }}
-          >
-            <TextField
-              name="comment"
-              textarea
-              placeholder="initial comment here"
-              value={currentComment}
-              onChange={(e) => setCurrentComment(e.target.value)}
-            />
-            <Button variant="solid" color="muted" size="2">
-              submit
-            </Button>
-          </Box>
+          <CommentForm
+            onSubmit={handledErrors(createConversation)}
+            comment={currentComment}
+            onChange={setCurrentComment}
+          />
         ) : (
           <EditorHoveringActions
             onComment={() => service.send('START.CONVERSATION')}
@@ -593,6 +575,44 @@ export function PublicationToolbar() {
         )}
       </Box>
     </OutsideClick>
+  )
+}
+
+export function CommentForm({
+  onSubmit,
+  comment,
+  onChange,
+}: {
+  onSubmit: (e: FormEvent) => void
+  comment: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <Box
+      as="form"
+      onSubmit={onSubmit}
+      contentEditable={false}
+      css={{
+        display: 'flex',
+        gap: '$3',
+        padding: '$3',
+        borderRadius: '$3',
+        background: '$base-background-normal',
+        flexDirection: 'column',
+        boxShadow: '$menu',
+      }}
+    >
+      <TextField
+        name="comment"
+        textarea
+        placeholder="initial comment here"
+        value={comment}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <Button variant="solid" color="muted" size="2">
+        submit
+      </Button>
+    </Box>
   )
 }
 
