@@ -65,7 +65,7 @@ export function EditorHoveringToolbar() {
     const maybeColor =
       selectionColors.size === 1 ? [...selectionColors.values()][0] : null
 
-    setSelectionColor(maybeColor || 'invalid color')
+    setSelectionColor(maybeColor || '#000000')
   }, [editor])
 
   const codeInSelection = useMemo(
