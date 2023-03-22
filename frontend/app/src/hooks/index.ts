@@ -41,6 +41,18 @@ export const queryKeys = {
 type QueryOptions = {
   rpc?: Transport
 }
+
+export function usePublication(documentId: string, versionId?: string) {
+  return useQuery({
+    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
+    enabled: !!documentId,
+    queryFn: () =>
+      publicationsClient.getPublication({
+        documentId: documentId,
+        version: versionId,
+      }),
+  })
+}
 export function usePublicationList({rpc}: QueryOptions = {}) {
   let queryResult = useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
