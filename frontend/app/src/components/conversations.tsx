@@ -599,7 +599,8 @@ function ConversationSelectors({
   let selectorText = useMemo(() => {
     let leafs: Array<PhrasingContent> = []
     selectors.forEach((sel) => {
-      let p = convContext.clientSelectors[sel.blockId].children[0]
+      let p = convContext.clientSelectors[sel.blockId]?.children?.[0]
+      if (!p) return
 
       p.children.forEach((leaf) => {
         if (
