@@ -41,8 +41,13 @@ gateway: `docker build -t gateway . -f ./frontend/gateway/Dockerfile`
 ### Deploy a Site
 One can also take advantage of the above modules and deploy a mintter site
 on a public server (or locally for testing it out).
-For that purpose, there is a simple docker-compose file that should bundle 
-the necessary modules:
+You can customize the site easily running the following command
+```bash
+sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
+```
+All domains different than `http://127.0.0.1` are ssl terminated, so make sure 
+ports 80 and 443 are accessible from the outside.
+However if you want full control over the deployment, there is a simple docker-compose file that should bundle the necessary modules:
 ```bash
 curl -s -o docker-compose.yml https://minttersite.s3.amazonaws.com/docker-compose.yml && docker compose up -d
 ```
@@ -56,10 +61,14 @@ MTT_SITE_WORKSPACE=~/.mtt-site # Directory where all the site data will be store
 MTT_SITE_BACKEND_P2P_PORT=56000 # The port where the local backend will talk to the p2p network. (To get the documents)
 MTT_SITE_BACKEND_GRPCWEB_PORT=56001 # The port through which the local backend and the gateway communicate each other.
 ```
-However if you want a frictionless configuration you can customize the site easily
-running the following command
+### Update a site
+If you want to update the site to the latest version, the easiest way is to rerun the
+installation command to start a new site (ON)
 ```bash
 sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
 ```
-All domains different than `http://127.0.0.1` are ssl terminated, so make sure 
-ports 80 and 443 are accessible from the outside.
+Then set the same workspace path as the previous installation. The script
+should recognize the previous installation and ask for overriding. Say yes 
+to overriding as it will pull new images and restart the containers.
+This should have automatically updated to latest version the site without
+any data loss and minimal downtime.
