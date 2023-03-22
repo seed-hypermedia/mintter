@@ -3,16 +3,13 @@ export const MINTTER_LINK_PREFIX = 'mintter://'
 export function getIdsfromUrl(
   entry: string,
 ): [docId: string, version: string | undefined, blockId: string | undefined] {
-  if (!entry.startsWith(MINTTER_LINK_PREFIX) && !entry.startsWith('mtt://')) {
+  if (!entry.startsWith(MINTTER_LINK_PREFIX)) {
     throw Error(
       `getIdsfromUrl Error: url must start with ${MINTTER_LINK_PREFIX}. (${entry})`,
     )
   }
 
-  let prefix = entry.startsWith(MINTTER_LINK_PREFIX)
-    ? MINTTER_LINK_PREFIX
-    : 'mtt://'
-  const [, restUrl] = entry.split(prefix)
+  const [, restUrl] = entry.split(MINTTER_LINK_PREFIX)
 
   if (restUrl.length <= 3) {
     throw Error(
