@@ -156,10 +156,15 @@ function PublishedURLs({
             ? shortHost
             : `${shortHost}/${pub.path}`
           : `${shortHost}/p/${pub.documentId}?v=${pub.version}`
+        const fullURL = pub.path
+          ? pub.path === '/'
+            ? pub.hostname
+            : `${pub.hostname}/${pub.path}`
+          : `${pub.hostname}/p/${pub.documentId}?v=${pub.version}`
         return (
           <AccessURLRow
             key={`${pub.documentId}/${pub.version}`}
-            url={`https://${shortURL}`}
+            url={fullURL}
             title={shortURL}
           />
         )
