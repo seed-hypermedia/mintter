@@ -68,7 +68,9 @@ installation command to start a new site (ON)
 sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
 ```
 Then set the same workspace path as the previous installation. The script
-should recognize the previous installation and ask for overriding. Say yes 
-to overriding as it will pull new images and restart the containers.
-This should have automatically updated to latest version the site without
-any data loss and minimal downtime.
+should recognize the previous installation and ask for overriding or continue. 
+Chances are that you want to keep the previous configuration, so just continue 
+is fine in most cases. If you want to change any param at this point, you can 
+hit override and change them.
+After applying the configuration, the site should have been updated to latest version
+without any data loss and minimal downtime.
