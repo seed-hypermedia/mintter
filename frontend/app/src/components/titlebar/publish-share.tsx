@@ -151,21 +151,21 @@ function PublishedURLs({
       <Subheading>Public on the Web:</Subheading>
       {publications.data?.map((pub) => {
         const shortHost = hostnameStripProtocol(pub.hostname)
-        const shortURL = pub.path
+        const displayURL = pub.path
           ? pub.path === '/'
             ? shortHost
             : `${shortHost}/${pub.path}`
-          : `${shortHost}/p/${pub.documentId}?v=${pub.version}`
+          : `${shortHost}/p/${pub.documentId}`
         const fullURL = pub.path
           ? pub.path === '/'
             ? pub.hostname
-            : `${pub.hostname}/${pub.path}`
+            : `${pub.hostname}/${pub.path}?v=${pub.version}`
           : `${pub.hostname}/p/${pub.documentId}?v=${pub.version}`
         return (
           <AccessURLRow
             key={`${pub.documentId}/${pub.version}`}
             url={fullURL}
-            title={shortURL}
+            title={displayURL}
           />
         )
       })}
