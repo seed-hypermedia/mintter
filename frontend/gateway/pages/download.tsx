@@ -8,10 +8,6 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
-export const config = {
-  runtime: 'nodejs',
-}
-
 import {Container} from '../container'
 import {XStack, YStack, H1, Button, styled} from 'tamagui'
 import Footer from '../footer'
@@ -40,7 +36,7 @@ export default function DownloadPage({manifest = null}) {
 
 const DownloadItem = styled(Button, {})
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   let req = await fetch(
     `https://mintternightlies.s3.amazonaws.com/manifest.json`,
   )
