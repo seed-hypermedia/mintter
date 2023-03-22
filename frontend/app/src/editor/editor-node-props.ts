@@ -68,7 +68,7 @@ export function usePhrasingProps(
       'data-parent-group': parentGroup?.[0].type,
       'data-highlight': `${docId}/${parentBlock?.[0].id}`,
       'data-reference': version
-        ? `${MINTTER_LINK_PREFIX}${docId}/${version}#${parentBlock?.[0].id}`
+        ? `${MINTTER_LINK_PREFIX}${docId}?v=${version}#${parentBlock?.[0].id}`
         : undefined,
     }
 

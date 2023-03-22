@@ -15,6 +15,17 @@ import {useRenderElement} from './render-element'
 import {useRenderLeaf} from './render-leaf'
 import {publicationsClient} from '../client'
 
+function renderStandardUrl(docId: string, version?: string, block?: string) {
+  let url = `/p/${docId}`
+  if (version) {
+    url += `?v=${version}`
+  }
+  if (block) {
+    url += `#${block}`
+  }
+  return url
+}
+
 export function Transclusion({element}: {element: Embed}) {
   let renderElement = useRenderElement()
   let renderLeaf = useRenderLeaf()
@@ -22,11 +33,15 @@ export function Transclusion({element}: {element: Embed}) {
   let [state] = useMachine(() =>
     createTransclusionMachine({url: element.url, client}),
   )
-
-  if (state.matches('idle') && state.context.block) {
+  const docId = state.context.publication?.document?.id
+  if (docId && state.matches('idle') && state.context.block) {
     return (
       <Link
-        href={`/p/${state.context.publication?.document?.id}/${state.context.publication?.version}/${state.context.blockId}`}
+        href={renderStandardUrl(
+          docId,
+          state.context.publication?.version,
+          state.context.blockId,
+        )}
       >
         <q>
           <SlateReactPresentation

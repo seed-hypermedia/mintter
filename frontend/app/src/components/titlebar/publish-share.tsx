@@ -118,14 +118,14 @@ function getMintterPublicURL(docId: string, version: string) {
     isProduction || forceProductionURL
       ? MINTTER_GATEWAY_URL
       : 'http://localhost:3000'
-  }/p/${docId}/${version}`
+  }/p/${docId}?v=${version}`
 }
 
 function MintterURLRow({doc}: {doc: PublicationActor}) {
   const {title, url} = useSelector(doc, (state) => {
     const {documentId, version} = state.context
     return {
-      title: `mintter.com/p/${documentId}/${version}`,
+      title: `mintter.com/p/${documentId}`,
       url: getMintterPublicURL(documentId, version),
     }
   })
@@ -149,7 +149,7 @@ function PublishedURLs({
           ? pub.path === '/'
             ? shortHost
             : `${shortHost}/${pub.path}`
-          : `${shortHost}/p/${pub.documentId}/${pub.version}`
+          : `${shortHost}/p/${pub.documentId}?v=${pub.version}`
         return (
           <AccessURLRow
             key={`${pub.documentId}/${pub.version}`}

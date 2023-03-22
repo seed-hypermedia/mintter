@@ -15,9 +15,9 @@ export function ElementLink({element, ...props}: ElementLinkProps) {
       let [docId, version, block] = getIdsfromUrl(element.url)
       if (version) {
         if (block) {
-          return `/p/${docId}/${version}/${block}`
+          return `/p/${docId}?v=${version}#${block}`
         } else {
-          return `/p/${docId}/${version}`
+          return `/p/${docId}?v=${version}`
         }
       } else {
         return `/p/${docId}`

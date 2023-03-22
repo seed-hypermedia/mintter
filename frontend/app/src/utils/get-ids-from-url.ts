@@ -20,5 +20,11 @@ export function getIdsfromUrl(
     )
   }
   const [docId, version, blockId] = ids.split('/')
-  return [docId, version, blockId]
+  const newVersion = entry.match(/\?v=(.*)#?/)?.[1]
+  const newBlockId = entry.match(/#(.*)$/)?.[1]
+  return [
+    docId,
+    version ?? newVersion, // support old format for a while
+    blockId ?? newBlockId,
+  ]
 }

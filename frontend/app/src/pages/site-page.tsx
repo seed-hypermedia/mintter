@@ -153,7 +153,7 @@ function WebPublicationListItem({
                 data-testid="copy-item"
                 onSelect={() => {
                   copyTextToClipboard(
-                    `${MINTTER_LINK_PREFIX}${webPub.documentId}/${webPub.version}`,
+                    `${MINTTER_LINK_PREFIX}${webPub.documentId}?v=${webPub.version}`,
                   )
                   toast.success('Document ID copied successfully')
                 }}
