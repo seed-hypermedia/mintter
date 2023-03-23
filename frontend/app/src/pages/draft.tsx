@@ -69,7 +69,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
         }}
         onDragOver={(e: React.DragEvent) => {
           e.preventDefault()
-          const initialNode = e.target as Element;
+          const initialNode = e.target as Element
           if (initialNode && initialNode.nodeName === 'P') {
             const element = ReactEditor.toSlateNode(editor, initialNode)
             const path = ReactEditor.findPath(editor, element)
@@ -82,7 +82,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
 
             if (parentBlock) {
               const [node, ancestorPath] = parentBlock
-            
+
               const domNode = ReactEditor.toDOMNode(editor, node)
 
               dragService?.send({
@@ -92,8 +92,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
                 currentPos: e.clientX,
               })
             }
-          }
-          else {
+          } else {
             dragService?.send({
               type: 'DRAG.OVER',
               toPath: null,
