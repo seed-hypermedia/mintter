@@ -184,35 +184,23 @@ export const createDragMachine = (editor: Editor) => {
                 )
 
                 if (!childGroup) {
-                  const firstParent = Editor.node(
-                    editor,
-                    path.slice(0, 2) as Path,
-                  )
-                  let groupStatements = []
-                  let groupElements: HTMLElement[] = []
-                  const descendantsGen = Node.nodes(firstParent[0], {
-                    to: path.slice(2),
-                  })
-                  for (let des of descendantsGen) {
-                    if (des[0].type === 'statement') {
-                      if (des.)
-                      des[1] = [...path.slice(0, 2), ...des[1]]
-                      groupStatements.push(des)
+                  let groupStatements: NodeEntry<FlowContent>[] =
+                    getNestedGroup(parentBlock, editor)
+                  if (groupStatements.length > 0) {
+                    let groupElements: HTMLElement[] = []
+                    for (const statement of groupStatements) {
+                      groupElements.push(
+                        ReactEditor.toDOMNode(editor, statement[0]),
+                      )
                     }
-                  }
-                  for (const statement of groupStatements) {
-                    groupElements.push(
-                      ReactEditor.toDOMNode(editor, statement[0]),
-                    )
-                  }
 
-                  dragOverRef.removeAttribute('data-action')
-                  dragOverRef.setAttribute('data-action', 'dragged-bottom')
+                    dragOverRef.removeAttribute('data-action')
 
-                  return {
-                    dragOverRef: context.dragOverRef,
-                    isTop: context.isTop,
-                    nestedGroup: groupElements,
+                    return {
+                      dragOverRef: context.dragOverRef,
+                      isTop: context.isTop,
+                      nestedGroup: groupElements,
+                    }
                   }
                 }
               }
@@ -259,7 +247,6 @@ export const createDragMachine = (editor: Editor) => {
         }),
         setNestedGroup: assign({
           nestedGroup: (_, event) => {
-            console.log(event.nestedGroup, 'here')
             return event.nestedGroup
           },
         }),
@@ -327,7 +314,45 @@ function isLastBlock(parentGroup: NodeEntry<Group>, path: Path) {
   return groupNode.children.length - 1 === path[path.length - 1]
 }
 
-// function isLastSibling(node: NodeEntry, parentEntry: NodeEntry) {
-//   let [parentNode, parentPath] = parentEntry;
-//   return Path.equals(node[1], parentNode)
-// }
+function getNestedGroup(block: NodeEntry<FlowContent>, editor: Editor) {
+  let [node, path] = block
+  const parentGroup = Editor.above<Group>(editor, {
+    match: isGroupContent,
+    mode: 'lowest',
+    at: path,
+  })
+  if (
+    !Editor.next(editor, {
+      at: path,
+    }) ||
+    (parentGroup && isLastBlock(parentGroup, path))
+  ) {
+    let isSibling = false
+    const groupStatements = [block]
+    let parentPath = path
+    while (!isSibling) {
+      let parent = Editor.above<FlowContent>(editor, {
+        match: isFlowContent,
+        mode: 'lowest',
+        at: parentPath,
+      })
+      parentPath = parentPath.slice(0, -2)
+      if (parent) {
+        const parentSibling = Editor.next(editor, {
+          at: parentPath,
+        })
+        groupStatements.unshift(parent)
+        if (parentSibling) {
+          isSibling = true
+          break
+        }
+      } else {
+        isSibling = true
+        break
+      }
+    }
+    return groupStatements
+  } else {
+    return [] as NodeEntry<FlowContent>[]
+  }
+}

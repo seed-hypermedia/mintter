@@ -45,13 +45,7 @@ export default function PublicationPage({
     [],
   )
 
-  let mouseService = useInterpret(() => mouseMachine, {
-    actions: {
-      getMousePosition: () => {
-        // noop
-      },
-    },
-  })
+  let mouseService = useInterpret(() => mouseMachine)
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
@@ -162,7 +156,6 @@ export default function PublicationPage({
                       onMouseMove={(event) =>
                         mouseService.send({
                           type: 'MOUSE.MOVE',
-                          positionX: event.clientX,
                           position: event.clientY,
                         })
                       }
