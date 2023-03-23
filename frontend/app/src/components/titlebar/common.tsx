@@ -10,13 +10,14 @@ import {
 import {useNavigation} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {tauriEncodeParam} from '@app/utils/tauri-param-hackaround'
+import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
-import {Route, Switch, useLocation} from 'wouter'
+import {Route, Switch, useLocation, NoMatch} from 'wouter'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
 
@@ -62,16 +63,23 @@ export function ActionButtons(props: TitleBarProps) {
       ) : null}
 
       <div className="button-group">
-        <button
-          className="titlebar-button"
-          onClick={(e) => {
-            e.preventDefault()
-            nav.openNewDraft(!e.shiftKey)
-          }}
-        >
-          <Icon name="Add" />
-          <span style={{marginRight: '0.3em'}}>Write</span>
-        </button>
+        <Switch>
+          <Route path="/connections">
+            <ContactsPrompt />
+          </Route>
+          <Route>
+            <button
+              className="titlebar-button"
+              onClick={(e) => {
+                e.preventDefault()
+                nav.openNewDraft(!e.shiftKey)
+              }}
+            >
+              <Icon name="Add" />
+              <span style={{marginRight: '0.3em'}}>Write</span>
+            </button>
+          </Route>
+        </Switch>
       </div>
     </div>
   )
