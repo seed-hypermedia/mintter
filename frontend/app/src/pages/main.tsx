@@ -20,6 +20,7 @@ var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
 import {listen as tauriListen} from '@tauri-apps/api/event'
 import ConnectionsPage from './connections-page'
+import AccountPage from './account-page'
 
 export default function Main() {
   const [, setLocation] = useLocation()
@@ -58,6 +59,9 @@ export default function Main() {
           </Route>
           <Route path="/connections">
             <ConnectionsPage />
+          </Route>
+          <Route path="/account/:id">
+            <AccountPage />
           </Route>
           <Route path="/p/:id/:version/:block?">
             {mainActor?.type === 'publication' ? (
