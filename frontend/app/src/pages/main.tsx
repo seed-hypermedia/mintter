@@ -66,7 +66,7 @@ export default function Main() {
           <Route path="/p/:id/:version/:block?">
             {mainActor?.type === 'publication' ? (
               <Publication
-                key={window.location.href}
+                // key={window.location.href}
                 publicationActor={mainActor.actor}
               />
             ) : null}

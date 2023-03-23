@@ -1,5 +1,4 @@
 import {draftsClient} from '@app/api-clients'
-import {createDraft} from '@mintter/shared'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import {toast} from 'react-hot-toast'
 import {useLocation} from 'wouter'
