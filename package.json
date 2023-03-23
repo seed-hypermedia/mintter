@@ -27,8 +27,8 @@
     "gw:start": "pnpm --filter='@mintter/gateway' start"
   },
   "devDependencies": {
-    "@bufbuild/protoc-gen-connect-web": "^0.6.0",
-    "@bufbuild/protoc-gen-es": "^1.0.0",
+    "@bufbuild/protoc-gen-connect-web": "0.6.0",
+    "@bufbuild/protoc-gen-es": "1.0.0",
     "@typescript-eslint/eslint-plugin": "5.45.1",
     "@typescript-eslint/parser": "5.45.1",
     "@typescript-eslint/typescript-estree": "5.45.1",

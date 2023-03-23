@@ -150,6 +150,7 @@ pub fn get_menu() -> Menu {
     .add_item(
       CustomMenuItem::new("quick_switcher", "Quick Switcher...").accelerator("CmdOrControl+K"),
     )
+    .add_item(CustomMenuItem::new("connections", "Connections").accelerator("CmdOrControl+9"))
     .add_item(CustomMenuItem::new("zoomIn", "Zoom In").accelerator("CmdOrControl+Plus"))
     .add_item(CustomMenuItem::new("zoomOut", "Zoom Out").accelerator("CmdOrControl+-"));
 
@@ -207,6 +208,9 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
     }
     "quick_switcher" => {
       event.window().emit("open_quick_switcher", ())?;
+    }
+    "connections" => {
+      event.window().emit("open_connections", ())?;
     }
     "select_all" => {
       event.window().emit("select_all", ())?;
