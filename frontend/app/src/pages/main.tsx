@@ -4,9 +4,9 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Heading} from '@components/heading'
 import {TitleBar} from '@components/titlebar'
-import {lazy} from 'react'
+import {lazy, useEffect} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {Redirect} from 'wouter'
+import {Redirect, useLocation} from 'wouter'
 import {Route, useRoute} from '../components/router'
 import '../styles/main.scss'
 import './polyfills'
@@ -18,10 +18,25 @@ var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
+import {listen as tauriListen} from '@tauri-apps/api/event'
+import ConnectionsPage from './connections-page'
 
 export default function Main() {
+  const [, setLocation] = useLocation()
   const [isSettings] = useRoute('/settings')
   const mainActor = useMainActor()
+
+  useEffect(() => {
+    let unlisten: () => void
+    tauriListen('open_connections', () => {
+      setLocation('/connections')
+    }).then((a) => {
+      unlisten = a
+    })
+    return () => {
+      unlisten?.()
+    }
+  }, [])
 
   return (
     <ErrorBoundary
@@ -40,6 +55,9 @@ export default function Main() {
           </Route>
           <Route path="/sites/:hostname">
             <Site />
+          </Route>
+          <Route path="/connections">
+            <ConnectionsPage />
           </Route>
           <Route path="/p/:id/:version/:block?">
             {mainActor?.type === 'publication' ? (

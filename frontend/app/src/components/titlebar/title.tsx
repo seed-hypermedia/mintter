@@ -23,6 +23,9 @@ export function Title() {
         <Route path="/inbox">
           <span data-tauri-drag-region>Inbox</span>
         </Route>
+        <Route path="/connections">
+          <span data-tauri-drag-region>Connections</span>
+        </Route>
         <Route path="/drafts">
           <span data-tauri-drag-region>Drafts</span>
         </Route>
