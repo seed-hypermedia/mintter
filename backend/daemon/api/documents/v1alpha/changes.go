@@ -4,6 +4,7 @@ import (
 	"context"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/errutil"
+	"mintter/backend/vcs"
 
 	"github.com/ipfs/go-cid"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -31,6 +32,7 @@ func (api *Server) GetChangeInfo(ctx context.Context, in *documents.GetChangeInf
 		Id:         in.Id,
 		Author:     info.Author.String(),
 		CreateTime: timestamppb.New(info.CreateTime),
+		Version:    vcs.NewVersion(c).String(),
 	}
 
 	return resp, nil
@@ -63,6 +65,7 @@ func (api *Server) ListChanges(ctx context.Context, in *documents.ListChangesReq
 			Id:         info.ID.String(),
 			Author:     info.Author.String(),
 			CreateTime: timestamppb.New(info.CreateTime),
+			Version:    vcs.NewVersion(info.ID).String(),
 		}
 	}
 
