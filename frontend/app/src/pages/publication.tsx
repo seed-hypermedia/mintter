@@ -6,7 +6,12 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
-import {useDocChanges, useDocCitations, usePublication} from '@app/hooks'
+import {
+  queryKeys,
+  useDocChanges,
+  useDocCitations,
+  usePublication,
+} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {PublicationActor} from '@app/publication-machine'
@@ -23,6 +28,8 @@ import {useLocation, useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {MttLink} from '@mintter/shared'
+import {keyframes} from '@stitches/react'
+import {useQueryClient} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
@@ -34,26 +41,51 @@ import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
 
+const slideDown = keyframes({
+  '0%': {transform: 'translateY(-100%)', opacity: 0},
+  '100%': {transform: 'translateY(0)', opacity: 1},
+})
+
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const {data: pub, isLoading} = usePublication(docId)
   const [l, setLocation] = useLocation()
+  const client = useQueryClient()
   if (isLoading) return null
   if (version === pub?.version) return null
   if (!pub?.version) return null
   return (
     <Box
       css={{
-        padding: '$4',
-        background: '$warning-background-normal',
+        opacity: 0,
+        animation: `${slideDown} 200ms`,
+        animationDelay: '300ms',
+        animationFillMode: 'forwards',
+        paddingInline: '$4',
+        paddingBlock: '$2',
+        background: '$warning-background-subtle',
         cursor: 'pointer',
         borderBottom: '1px solid blue',
-        borderColor: '$warning-text-low',
+        borderColor: '$warning-border-normal',
+        transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        '&:hover': {
+          background: '$warning-background-normal',
+        },
+        position: 'absolute',
+        width: '$full',
+        top: 0,
+        left: 0,
+      }}
+      onMouseEnter={() => {
+        client.prefetchQuery({
+          queryKey: [queryKeys.GET_PUBLICATION, docId, pub.version],
+        })
       }}
     >
       <Text
         css={{
           color: '$warning-text-low',
-          textAlign: 'cente',
+          textAlign: 'center',
+          fontSize: '$2',
         }}
       >
         <a
@@ -62,7 +94,8 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
             setLocation(`/p/${docId}/${pub.version}`)
           }}
         >
-          There is a newer version of this doc. Click to go to latest version
+          There is a newer version of this Publication. Click here to go to
+          latest version →
         </a>
       </Text>
     </Box>
