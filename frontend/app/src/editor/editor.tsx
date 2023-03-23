@@ -6,10 +6,6 @@ import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'
 import {
-  EditorHoveringToolbar,
-  PublicationToolbar,
-} from '@app/editor/hovering-toolbar'
-import {
   Block,
   blockquote,
   ChildrenOf,
