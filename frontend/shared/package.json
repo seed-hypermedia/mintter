@@ -27,7 +27,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/extend": "^3.0.1",
+    "@types/extend": "3.0.1",
     "@types/hast": "2.3.4",
     "@types/unist": "2.0.6",
     "concurrently": "7.6.0",
@@ -36,10 +36,10 @@
   },
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
-    "@bufbuild/protobuf": "^1.0.0",
+    "@bufbuild/protobuf": "1.0.0",
     "browser-headers": "0.4.1",
     "deepmerge": "4.2.2",
-    "extend": "^3.0.2",
+    "extend": "3.0.2",
     "google-protobuf": "3.21.2",
     "hast": "1.0.0",
     "hast-util-has-property": "2.0.0",
