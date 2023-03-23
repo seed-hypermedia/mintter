@@ -1,8 +1,6 @@
-import {
-  createGrpcWebTransport,
-  createPromiseClient,
-  Interceptor,
-} from '@bufbuild/connect'
+import {createPromiseClient, Interceptor} from '@bufbuild/connect'
+import {createConnectTransport} from '@bufbuild/connect-node'
+
 import {
   Accounts,
   Publications,
@@ -66,7 +64,8 @@ console.log('🚀 client.ts ', {
   IS_CLIENT,
 })
 
-export const transport = createGrpcWebTransport({
+export const transport = createConnectTransport({
+  httpVersion: '2',
   baseUrl: grpcBaseURL,
   // @ts-ignore
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],

@@ -302,6 +302,7 @@ importers:
   frontend/gateway:
     specifiers:
       '@bufbuild/connect': ^0.8.4
+      '@bufbuild/connect-node': ^0.8.4
       '@bufbuild/connect-web': 0.7.0
       '@bufbuild/protobuf': 1.0.0
       '@mintter/shared': workspace:*
@@ -349,6 +350,7 @@ importers:
       zod: ^3.21.4
     dependencies:
       '@bufbuild/connect': 0.8.4_@bufbuild+protobuf@1.0.0
+      '@bufbuild/connect-node': 0.8.4_@bufbuild+protobuf@1.0.0
       '@bufbuild/connect-web': 0.7.0_@bufbuild+protobuf@1.0.0
       '@bufbuild/protobuf': 1.0.0
       '@mintter/shared': link:../shared
@@ -1223,6 +1225,17 @@ packages:
       '@babel/helper-string-parser': 7.19.4
       '@babel/helper-validator-identifier': 7.19.1
       to-fast-properties: 2.0.0
+
+  /@bufbuild/connect-node/0.8.4_@bufbuild+protobuf@1.0.0:
+    resolution: {integrity: sha512-i2C5Q/BiVA29Uj9msn7hiFvlzPp0jiU+P+MBfZVf3vg2PmklnAoA9UETt3MNjpOHd54fvJkAK964koc7iVyCKA==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@bufbuild/protobuf': ^1.0.0
+    dependencies:
+      '@bufbuild/connect': 0.8.4_@bufbuild+protobuf@1.0.0
+      '@bufbuild/protobuf': 1.0.0
+      headers-polyfill: 3.1.2
+    dev: false
 
   /@bufbuild/connect-web/0.7.0_@bufbuild+protobuf@1.0.0:
     resolution: {integrity: sha512-Un85bR4jOSY76hydaNlRNE8JZdv0cfbDm/VRcUqpsS5FXA7I8L95y4ecqZ6eEDBZ+F4h8hMLZADj3TgkzNkOhg==}
@@ -9404,6 +9417,10 @@ packages:
       capital-case: 1.0.4
       tslib: 2.5.0
     dev: true
+
+  /headers-polyfill/3.1.2:
+    resolution: {integrity: sha512-tWCK4biJ6hcLqTviLXVR9DTRfYGQMXEIUj3gwJ2rZ5wO/at3XtkI4g8mCvFdUF9l1KMBNCfmNAdnahm1cgavQA==}
+    dev: false
 
   /hey-listen/1.0.8:
     resolution: {integrity: sha512-COpmrF2NOg4TBWUJ5UVyaCU2A88wEMkUPK4hNqyCkqHbxT92BbvfjoSozkAIIm6XhicGlJHhFdullInrdhwU8Q==}
