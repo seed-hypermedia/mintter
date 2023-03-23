@@ -149,7 +149,6 @@ export function AppError({error, resetErrorBoundary}: FallbackProps) {
 function usePageZoom() {
   useEffect(() => {
     store.get<number>('zoom').then((value) => {
-      console.log('ZOOM VALUE', value)
       let val = value ?? 1
       document.body.style = `zoom: ${val};`
     })

@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import {useMemo} from 'react'
 import {Leaf} from '.'
-import {Link as LinkType} from '@mintter/shared'
-import {getIdsfromUrl, MINTTER_LINK_PREFIX} from '../utils/get-ids-from-url'
+import {
+  getIdsfromUrl,
+  Link as LinkType,
+  MINTTER_LINK_PREFIX,
+} from '@mintter/shared'
 
 type ElementLinkProps = {
   'data-type': string
@@ -15,9 +18,9 @@ export function ElementLink({element, ...props}: ElementLinkProps) {
       let [docId, version, block] = getIdsfromUrl(element.url)
       if (version) {
         if (block) {
-          return `/p/${docId}/${version}/${block}`
+          return `/p/${docId}?v=${version}#${block}`
         } else {
-          return `/p/${docId}/${version}`
+          return `/p/${docId}?v=${version}`
         }
       } else {
         return `/p/${docId}`

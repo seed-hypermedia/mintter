@@ -14,7 +14,7 @@ const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
 
 function writePathState(s: string) {
   if (s === '/') return '/'
-  const basicPath = s.replace(/[^a-z0-9]/gi, '_')
+  const basicPath = s.replace(/[^a-z0-9-]/gi, '_')
   if (basicPath === 'home') return '/'
   return basicPath
 }

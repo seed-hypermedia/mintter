@@ -2,11 +2,10 @@ import {draftsClient, publicationsClient} from '@app/api-clients'
 import {queryKeys, useAuthor} from '@app/hooks'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
-import {getDraft} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect} from 'react'
-import {Route, ExtractRouteParams, Switch, useRoute} from 'wouter'
+import {ExtractRouteParams, Route, Switch, useRoute} from 'wouter'
 
 export function Title() {
   let [, siteHomeParams] = useRoute('/sites/:hostname')

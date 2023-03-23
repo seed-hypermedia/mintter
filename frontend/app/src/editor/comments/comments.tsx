@@ -36,31 +36,33 @@ export function createCommentsPlugin(): EditorPlugin {
         }, [highlights])
 
         if (typeof leaf.conversations !== 'undefined' && leaf.text) {
+          let spanStyle = null
+          if (highlight) {
+            spanStyle = {
+              backgroundColor: 'var(--highlight-surface3)',
+              borderBottom: '2px solid var(--highlight-surface3)',
+            }
+          } else if (leaf.conversations.length >= 3) {
+            spanStyle = {
+              backgroundColor: 'var(--highlight-surface3)',
+              borderBottom: '2px solid var(--highlight-surface3)',
+            }
+          } else if (leaf.conversations.length >= 2) {
+            spanStyle = {
+              backgroundColor: 'var(--highlight-surface2)',
+              borderBottom: '2px solid var(--highlight-surface3)',
+            }
+          } else {
+            spanStyle = {
+              backgroundColor: 'var(--highlight-surface1)',
+              borderBottom: '2px solid var(--highlight-surface2)',
+            }
+          }
           return (
             <span
               ref={ref}
               onClick={emitSelectorClick}
-              style={
-                highlight
-                  ? {
-                      backgroundColor: 'var(--highlight-surface4)',
-                      borderBottom: '2px solid var(--highlight-surface4)',
-                    }
-                  : leaf.conversations.length >= 3
-                  ? {
-                      backgroundColor: 'var(--highlight-surface4)',
-                      borderBottom: '2px solid var(--highlight-surface4)',
-                    }
-                  : leaf.conversations?.length == 2
-                  ? {
-                      backgroundColor: 'var(--highlight-surface3)',
-                      borderBottom: '2px solid var(--highlight-surface3)',
-                    }
-                  : {
-                      backgroundColor: 'var(--highlight-surface1)',
-                      borderBottom: '2px solid var(--highlight-surface2)',
-                    }
-              }
+              style={spanStyle}
               {...attributes}
             >
               {children}
@@ -72,7 +74,6 @@ export function createCommentsPlugin(): EditorPlugin {
       const {apply} = editor
 
       editor.apply = (op) => {
-        console.log('=== OP', op)
         /**
          * In order to receive just one particular type of event in the editor (set_selection), we need to override the `apply` hook in the editor
          */
@@ -114,8 +115,6 @@ export function createCommentsPlugin(): EditorPlugin {
                 } as SetNodeOperation)
                 return
               } else {
-                console.log('=== OP: add current conversation mark')
-
                 apply(op)
               }
             }

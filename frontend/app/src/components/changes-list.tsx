@@ -7,7 +7,15 @@ import {Button} from './button'
 import {PanelTitle} from './panel'
 import {Text} from './text'
 
-function ChangeItem({change, docId}: {change: ChangeInfo; docId: string}) {
+function ChangeItem({
+  change,
+  docId,
+  activeVersion,
+}: {
+  change: ChangeInfo
+  docId: string
+  activeVersion?: string
+}) {
   const author = useAuthor(change.author)
   return (
     <Button
@@ -20,7 +28,7 @@ function ChangeItem({change, docId}: {change: ChangeInfo; docId: string}) {
       css={{
         listStyle: 'none',
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         gap: '$3',
         alignItems: 'center',
         position: 'relative',
@@ -29,20 +37,36 @@ function ChangeItem({change, docId}: {change: ChangeInfo; docId: string}) {
         },
       }}
     >
-      <Box css={{}}>
+      <Box
+        css={{
+          display: 'flex',
+          alignSelf: 'stretch',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+        }}
+      >
         <Avatar
           accountId={change.author}
           size={2}
           alias={author?.data?.profile?.alias || 'A'}
         />
+
+        <Text size="2" fontWeight="bold" css={{marginHorizontal: '$4'}}>
+          {author?.data?.profile?.alias || change.author}
+        </Text>
+
+        <Text size="2" color="muted">
+          {change.createTime ? formattedDate(change.createTime) : null}
+        </Text>
       </Box>
-      <Text size="2" fontWeight="bold">
-        {author?.data?.profile?.alias || change.author}
-      </Text>
-      <Text size="2" color="muted">
-        {change.createTime ? formattedDate(change.createTime) : null}
-      </Text>
-      <Text size="1" color="muted" css={{overflow: 'hidden'}}>
+      <Text
+        size="1"
+        color={
+          // the intention is to indicate which is the active version, but we are comparing a version id with a change id so this doesn't work YET but supposedly will work after *the breaking change*
+          change.id === activeVersion ? 'primary' : 'muted'
+        }
+        css={{overflow: 'hidden'}}
+      >
         {change.id}
       </Text>
     </Button>
@@ -69,7 +93,12 @@ export function ChangesList({
         {count} Doc Version{pluralS(count)}
       </PanelTitle>
       {changes?.changes.map((change) => (
-        <ChangeItem docId={docId} key={change.id} change={change} />
+        <ChangeItem
+          docId={docId}
+          key={change.id}
+          change={change}
+          activeVersion={version}
+        />
       ))}
     </>
   )

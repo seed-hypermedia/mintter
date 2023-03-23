@@ -85,15 +85,7 @@ function WebPublicationListItem({
     hostname,
     webPub,
   )
-  const {data: publication} = useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, webPub.documentId, webPub.version],
-    enabled: !!webPub.documentId,
-    queryFn: () =>
-      publicationsClient.getPublication({
-        documentId: webPub.documentId,
-        version: webPub.version,
-      }),
-  })
+  const {data: publication} = usePublication(webPub.documentId, webPub.version)
   const {data: author} = useAuthor(publication?.document?.author)
   return (
     <li className="list-item">
@@ -153,7 +145,7 @@ function WebPublicationListItem({
                 data-testid="copy-item"
                 onSelect={() => {
                   copyTextToClipboard(
-                    `${MINTTER_LINK_PREFIX}${webPub.documentId}/${webPub.version}`,
+                    `${MINTTER_LINK_PREFIX}${webPub.documentId}?v=${webPub.version}`,
                   )
                   toast.success('Document ID copied successfully')
                 }}

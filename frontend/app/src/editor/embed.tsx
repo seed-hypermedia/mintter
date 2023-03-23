@@ -4,12 +4,12 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import {useMouse} from '@app/mouse-context'
-import {getIdsfromUrl} from '@app/utils/get-ids-from-url'
 import {openPublication} from '@app/utils/navigation'
 import {
   blockNodeToSlate,
   Embed as EmbedType,
   FlowContent,
+  getIdsfromUrl,
   isEmbed,
   Publication,
 } from '@mintter/shared'

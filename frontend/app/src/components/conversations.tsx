@@ -1,5 +1,4 @@
 import {changesClient, commentsClient} from '@app/api-clients'
-import {useAccount} from '@app/auth-context'
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAuthor} from '@app/hooks'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -19,8 +18,6 @@ import {TextField} from '@components/text-field'
 import {
   Block,
   blockToApi,
-  Changes,
-  Comments,
   Conversation,
   formattedDate,
   paragraph,
@@ -602,7 +599,8 @@ function ConversationSelectors({
   let selectorText = useMemo(() => {
     let leafs: Array<PhrasingContent> = []
     selectors.forEach((sel) => {
-      let p = convContext.clientSelectors[sel.blockId].children[0]
+      let p = convContext.clientSelectors[sel.blockId]?.children?.[0]
+      if (!p) return
 
       p.children.forEach((leaf) => {
         if (
@@ -616,7 +614,7 @@ function ConversationSelectors({
 
     return leafs.map((l) => l.text).join('')
   }, [convContext.clientSelectors, conversationId, selectors])
-
+  if (selectorText === '') return null
   return (
     <Box
       css={{

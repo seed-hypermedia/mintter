@@ -1,38 +1,52 @@
+import {commentsClient} from '@app/api-clients'
+import {Text} from '@components/text'
 import {useDrag} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
-import {ElementDropdown} from '@app/editor/dropdown'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {ELEMENT_HEADING} from '@app/editor/heading'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {ELEMENT_STATEMENT} from '@app/editor/statement'
 import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
+import {queryKeys} from '@app/hooks'
 import {
   MouseInterpret,
   useCurrentBound,
   useCurrentTarget,
   useMouse,
 } from '@app/mouse-context'
+import {appInvalidateQueries} from '@app/query-client'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
+import {inline, offset, shift, flip, useFloating} from '@floating-ui/react-dom'
 import {
   blockquote,
+  blockToApi,
   code,
   FlowContent,
   group,
   heading,
   image,
+  isGroup,
+  isGroupContent,
   ol,
+  paragraph,
+  Selector,
   statement,
+  text,
   ul,
   video,
 } from '@mintter/shared'
 import {useSelector} from '@xstate/react'
-import {MouseEvent, useMemo} from 'react'
+import {Fragment, MouseEvent, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {Editor, NodeEntry, Path} from 'slate'
+import {Editor, Node, NodeEntry, Path} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
+import {useRoute} from 'wouter'
+import {CommentForm, EditorHoveringActions} from './hovering-toolbar'
+import {OutsideClick} from './outside-click'
 import './styles/blocktools.scss'
 
 let toolsByMode = {
@@ -46,23 +60,22 @@ let toolsByMode = {
 function DraftBlocktools(props: BlockData) {
   let {mouseService, element, editor} = props
   let dragService = useDrag()
-  let topOffset = useTopOffset(props.element)
+  let topOffset = useTopOffset(element)
+  let [localOpen, setLocalOpen] = useState(false)
+  let [isMouseDown, setMouseDown] = useState(false)
 
-  const onMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    if (editor.dragging) return
-    const [node, fromPath] = element as NodeEntry<FlowContent>
-    const domNode = ReactEditor.toDOMNode(editor, node)
-    if (fromPath && dragService && domNode) {
-      mouseService.send('DISABLE.DRAG.START')
-      // // console.log(Editor.node(editor, Path.next(fromPath)))
-      // console.log(Path.hasPrevious(fromPath))
-      dragService.send({
-        type: 'DRAG.START',
-        fromPath,
-        element: domNode as HTMLLIElement,
-      })
+  let hasMarker = useMemo(() => {
+    if (!element) return false
+    let [, path] = element
+
+    let parentPath = Path.parent(path)
+    let parent = Node.get(editor, parentPath)
+    if (isGroupContent(parent)) {
+      return !isGroup(parent)
+    } else {
+      return false
     }
-  }
+  }, [props.element])
 
   return (
     <Box
@@ -74,27 +87,57 @@ function DraftBlocktools(props: BlockData) {
         top: 0,
         left: 0,
         zIndex: '$4',
-        transform: `translate(-34px, ${topOffset})`,
+        transform: `translate(${hasMarker ? '-40px' : '-24px'}, ${topOffset})`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '$3',
       }}
-      onMouseDown={onMouseDown}
-      onMouseUp={() => mouseService.send('DISABLE.DRAG.END')}
     >
-      <ElementDropdown data-testid="blocktools-trigger">
+      <ElementDropdown
+        data-testid="blocktools-trigger"
+        onMouseDown={() => {
+          setMouseDown(true)
+        }}
+        onMouseMove={() => {
+          if (isMouseDown) {
+            if (editor.dragging) return
+            const [node, fromPath] = element as NodeEntry<FlowContent>
+            const domNode = ReactEditor.toDOMNode(editor, node)
+            if (fromPath && dragService && domNode) {
+              mouseService.send('DISABLE.DRAG.START')
+              dragService.send({
+                type: 'DRAG.START',
+                fromPath,
+                element: domNode as HTMLLIElement,
+              })
+            }
+          }
+        }}
+        onMouseUp={() => {
+          setMouseDown(false)
+          setLocalOpen((p) => !p)
+          mouseService.send(
+            !localOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
+          )
+        }}
+      >
         <Icon name="Grid4" color="muted" />
       </ElementDropdown>
-      {/* <Dropdown.Root
+      <Dropdown.Root
+        open={localOpen}
         onOpenChange={(isOpen) => {
+          setLocalOpen(isOpen)
           mouseService.send(
             isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
           )
         }}
       >
         <Dropdown.Trigger asChild>
-          <ElementDropdown data-testid="blocktools-trigger">
+          <ElementDropdown
+            data-testid="blocktools-trigger"
+            style={{opacity: 0, visibility: 'hidden'}}
+          >
             <Icon name="Grid4" color="muted" />
           </ElementDropdown>
         </Dropdown.Trigger>
@@ -132,29 +175,69 @@ function DraftBlocktools(props: BlockData) {
             })}
           </Dropdown.Content>
         </Dropdown.Portal>
-      </Dropdown.Root> */}
+      </Dropdown.Root>
     </Box>
   )
 }
+function BlockCommentForm({
+  onBlur,
+  blockId,
+  docId,
+  blockRevision,
+}: {
+  onBlur: () => void
+  blockId: string
+  blockRevision: string
+  docId: string
+}) {
+  const [comment, setComment] = useState('')
+  return (
+    <OutsideClick onClose={onBlur}>
+      <Box
+        css={{
+          position: 'absolute',
+          zIndex: '$max',
+          right: -50,
+        }}
+      >
+        <CommentForm
+          comment={comment}
+          onChange={setComment}
+          onSubmit={(e) => {
+            e.preventDefault()
+            onBlur()
+            let selector = new Selector({
+              blockId,
+              blockRevision,
+              start: 0,
+              end: 0,
+            })
+            let commentValue = comment.replace(/\s/g, ' ')
+            let initialComment = blockToApi(
+              statement([paragraph([text(commentValue)])]),
+            )
+            commentsClient
+              .createConversation({
+                documentId: docId,
+                initialComment,
+                selectors: [selector],
+              })
+              .then((res) => {
+                // service.send('TOOLBAR.DISMISS')
+                // setCurrentComment('')
+                // ReactEditor.blur(editor)
+                appInvalidateQueries([queryKeys.GET_PUBLICATION_CONVERSATIONS])
+                toast.success('Comment added')
+              })
+          }}
+        />
+      </Box>
+    </OutsideClick>
+  )
+}
 
-function PublicationBlocktools(
-  props: BlockData & {copy?: typeof copyTextToClipboard},
-) {
+function PublicationBlocktools(props: BlockData) {
   let target = useCurrentTarget()
-  let blockId = useMemo(() => {
-    if (!props.element) return null
-    return props.element[0].id
-  }, [props.element])
-
-  let localCopy = props.copy ?? copyTextToClipboard
-
-  function handleCopy() {
-    let reference = target?.dataset.reference
-    if (reference) {
-      localCopy(reference)
-      toast.success('copied block!')
-    }
-  }
 
   // let [match, setMatch] = useState(false)
 
@@ -176,37 +259,20 @@ function PublicationBlocktools(
 
   let topOffset = useTopOffset(props.element)
 
+  const copyUrl = target?.dataset.reference
   return (
-    <Box
-      contentEditable={false}
+    <EditorHoveringActions
+      onCopyLink={copyUrl ? () => copyUrl : undefined}
+      onComment={props.onComment}
+      copyLabel="block"
       css={{
-        // width: 30,
-        height: 24,
+        transform: `translate(105%, ${topOffset})`,
         position: 'absolute',
         top: 0,
         right: -60,
         zIndex: '$4',
-        transform: `translate(105%, ${topOffset})`,
       }}
-    >
-      <Button
-        variant="ghost"
-        color="primary"
-        size="1"
-        onClick={handleCopy}
-        css={{
-          background: '$base-background-normal',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '$2',
-          '&:hover': {
-            background: '$base-background-normal',
-          },
-        }}
-      >
-        <Icon name="Copy" /> <span>{blockId}</span>
-      </Button>
-    </Box>
+    />
   )
 }
 
@@ -216,6 +282,7 @@ type BlockData = {
   show: boolean
   mode: EditorMode
   element?: NodeEntry<FlowContent>
+  onComment?: () => void
 }
 
 function useBlocktoolsData(editor: Editor): BlockData {
@@ -315,14 +382,40 @@ var items: {
 
 export function BlockTools({block}: {block: FlowContent}) {
   const editor = useSlate()
+  let [, params] = useRoute('/p/:id/:version/:block?')
+
   const blocktoolsProps = useBlocktoolsData(editor)
+  const [isCommenting, setIsCommenting] = useState(false)
 
   let {show, element, mode} = blocktoolsProps
 
   let Component = toolsByMode[mode] || null
 
+  const docId = params?.id
+  if (mode == EditorMode.Publication && !docId) {
+    return null
+  }
+  if (isCommenting && block.revision) {
+    return (
+      <BlockCommentForm
+        blockId={block.id}
+        blockRevision={block.revision}
+        docId={docId}
+        onBlur={() => {
+          setIsCommenting(false)
+        }}
+      />
+    )
+  }
   if (show && element && element[0].id == block.id) {
-    return <Component {...blocktoolsProps} />
+    return (
+      <Component
+        {...blocktoolsProps}
+        onComment={() => {
+          setIsCommenting(true)
+        }}
+      />
+    )
   } else {
     return null
   }

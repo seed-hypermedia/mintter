@@ -1,3 +1,14 @@
+import {createPromiseClient, Interceptor} from '@bufbuild/connect'
+import {createConnectTransport} from '@bufbuild/connect-node'
+
+import {
+  Accounts,
+  Publications,
+  WebSite,
+  Daemon,
+  Networking,
+} from '@mintter/shared'
+
 if (typeof globalThis.EdgeRuntime !== 'string') {
   console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
 }
@@ -8,19 +19,6 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
-import {
-  createGrpcWebTransport,
-  createPromiseClient,
-  Interceptor,
-} from '@bufbuild/connect-web'
-import {
-  Accounts,
-  Publications,
-  WebSite,
-  Daemon,
-  Networking,
-} from '@mintter/shared'
-
 const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
@@ -28,7 +26,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
     console.log(`🔃 to ${req.method.name} `, req.message, result.message)
     return result
   } catch (e) {
-    console.error(`🚨 to ${req.method.name} `, e)
+    console.error(`🚨 to ${req.method.name} `, e, req.message)
     throw e
   }
 }
@@ -44,7 +42,7 @@ function getGRPCHost() {
   }
 
   if (process.env.NODE_ENV == 'development') {
-    return 'http://127.0.0.1:56001'
+    return 'http://127.0.0.1:55001'
   }
 
   return 'https://gateway.mintter.com'
@@ -66,7 +64,8 @@ console.log('🚀 client.ts ', {
   IS_CLIENT,
 })
 
-export const transport = createGrpcWebTransport({
+export const transport = createConnectTransport({
+  httpVersion: '2',
   baseUrl: grpcBaseURL,
   // @ts-ignore
   interceptors: IS_DEV ? DEV_INTERCEPTORS : [prodInter],

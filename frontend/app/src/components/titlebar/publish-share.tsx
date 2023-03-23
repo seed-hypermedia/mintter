@@ -15,6 +15,7 @@ import {AccessURLRow} from '@components/url'
 import {WebPublicationRecord} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {UseQueryResult} from '@tanstack/react-query'
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -118,14 +119,14 @@ function getMintterPublicURL(docId: string, version: string) {
     isProduction || forceProductionURL
       ? MINTTER_GATEWAY_URL
       : 'http://localhost:3000'
-  }/p/${docId}/${version}`
+  }/p/${docId}?v=${version}`
 }
 
 function MintterURLRow({doc}: {doc: PublicationActor}) {
   const {title, url} = useSelector(doc, (state) => {
     const {documentId, version} = state.context
     return {
-      title: `mintter.com/p/${documentId}/${version}`,
+      title: `mintter.com/p/${documentId}`,
       url: getMintterPublicURL(documentId, version),
     }
   })
@@ -136,25 +137,35 @@ function PublishedURLs({
   publications,
   doc,
 }: {
-  publications?: WebPublicationRecord[]
+  publications: UseQueryResult<WebPublicationRecord[]>
   doc: MainActor['actor']
 }) {
-  if (publications && publications.length === 0)
+  if (!publications.data) {
+    if (publications.isLoading) return <div>Loading...</div>
+    if (publications.error) return <div>Failed to load.</div>
+  }
+  if (publications.data && publications.data?.length === 0)
     return <MintterURLRow doc={doc} />
   return (
     <>
-      {publications?.map((pub) => {
+      <Subheading>Public on the Web:</Subheading>
+      {publications.data?.map((pub) => {
         const shortHost = hostnameStripProtocol(pub.hostname)
-        const shortURL = pub.path
+        const displayURL = pub.path
           ? pub.path === '/'
             ? shortHost
             : `${shortHost}/${pub.path}`
-          : `${shortHost}/p/${pub.documentId}/${pub.version}`
+          : `${shortHost}/p/${pub.documentId}`
+        const fullURL = pub.path
+          ? pub.path === '/'
+            ? pub.hostname
+            : `${pub.hostname}/${pub.path}?v=${pub.version}`
+          : `${pub.hostname}/p/${pub.documentId}?v=${pub.version}`
         return (
           <AccessURLRow
             key={`${pub.documentId}/${pub.version}`}
-            url={`https://${shortURL}`}
-            title={shortURL}
+            url={fullURL}
+            title={displayURL}
           />
         )
       })}
@@ -295,10 +306,9 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
                 gap: '$4',
               }}
             >
-              <Subheading>Public on the Web:</Subheading>
               {docId && (
                 <PublishedURLs
-                  publications={publications.data}
+                  publications={publications}
                   doc={mainActor.actor}
                 />
               )}

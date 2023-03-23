@@ -1,8 +1,7 @@
-console.log('🚀 ~ file: _app.tsx:4 ~ global.setImmediate:', global.setImmediate)
-console.log(
-  '🚀 ~ file: _app.tsx:4 ~ globalThis.setImmediate:',
-  globalThis.setImmediate,
-)
+export const config = {
+  runtime: 'nodejs',
+}
+
 if (typeof globalThis.EdgeRuntime !== 'string') {
   console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
 }
@@ -41,7 +40,8 @@ export default function DownloadPage({manifest = null}) {
 
 const DownloadItem = styled(Button, {})
 
-export async function getServerSideProps() {
+export async function getStaticProps(context) {
+  console.log('RUNNING AT BUILD TIME', context)
   let req = await fetch(
     `https://mintternightlies.s3.amazonaws.com/manifest.json`,
   )

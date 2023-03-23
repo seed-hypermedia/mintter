@@ -2,6 +2,7 @@ import {commentsClient} from '@app/api-clients'
 import {OutsideClick} from '@app/editor/outside-click'
 import {toolbarMachine} from '@app/editor/toolbar-machine'
 import {queryKeys} from '@app/hooks'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -22,8 +23,17 @@ import {
 import {css} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useSelector} from '@xstate/react'
-import {FormEvent, PropsWithChildren, useEffect, useMemo, useState} from 'react'
-import {Editor, Range, Text, Transforms} from 'slate'
+import {
+  ComponentProps,
+  FocusEvent,
+  FormEvent,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import {toast} from 'react-hot-toast'
+import {BasePoint, Descendant, Editor, Range, Text, Transforms} from 'slate'
 import {
   ReactEditor,
   useFocused,
@@ -55,7 +65,7 @@ export function EditorHoveringToolbar() {
     const maybeColor =
       selectionColors.size === 1 ? [...selectionColors.values()][0] : null
 
-    setSelectionColor(maybeColor || 'invalid color')
+    setSelectionColor(maybeColor || '#000000')
   }, [editor])
 
   const codeInSelection = useMemo(
@@ -232,8 +242,8 @@ function HoveringToolbar({children}: PropsWithChildren) {
       ref={floating}
       css={{
         position: strategy,
-        top: y ?? 0,
-        left: x ?? 0,
+        top: y && y > 0 ? y : -999,
+        left: x && x > 0 ? x : -999,
         zIndex: '$max',
       }}
       onMouseDown={(e) => {
@@ -242,6 +252,95 @@ function HoveringToolbar({children}: PropsWithChildren) {
       }}
     >
       {children}
+    </Box>
+  )
+}
+
+function handledErrors<A, V>(unsafeHandler: (a: A) => V) {
+  return (a: A) => {
+    try {
+      return unsafeHandler(a)
+    } catch (e) {
+      toast.error(e.message)
+      console.error(e)
+      throw new Error(e)
+    }
+  }
+}
+
+type BlockCSS = ComponentProps<typeof Box>['css']
+
+export function EditorHoveringActions({
+  onComment,
+  onCopyLink,
+  copyLabel,
+  css,
+}: {
+  onComment?: () => void
+  onCopyLink?: (v: void) => string
+  copyLabel?: string
+  css: BlockCSS
+}) {
+  return (
+    <Box
+      contentEditable={false}
+      css={{
+        background: '$base-background-normal',
+        borderRadius: '$2',
+        display: 'flex',
+        boxShadow: '$menu',
+        ...css,
+      }}
+    >
+      {onCopyLink && (
+        <Button
+          variant="ghost"
+          color="primary"
+          size="1"
+          onClick={() => {
+            let link = onCopyLink()
+            if (link) {
+              copyTextToClipboard(link).then(() => {
+                toast.success(
+                  copyLabel
+                    ? `Copied link to ${copyLabel}`
+                    : 'Link copied to clipboard',
+                )
+              })
+            }
+          }}
+          css={{
+            background: '$base-background-normal',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$2',
+            '&:hover': {
+              background: '$base-background-normal',
+            },
+          }}
+        >
+          <Icon name="Copy" />
+        </Button>
+      )}
+      {onComment && (
+        <Button
+          variant="ghost"
+          color="primary"
+          size="1"
+          onClick={onComment}
+          css={{
+            background: '$base-background-normal',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$2',
+            '&:hover': {
+              background: '$base-background-normal',
+            },
+          }}
+        >
+          <Icon name="MessageBubble" />
+        </Button>
+      )}
     </Box>
   )
 }
@@ -356,7 +455,7 @@ export function PublicationToolbar() {
       statement([paragraph([text(commentValue)])]),
     )
 
-    commentsClient
+    await commentsClient
       .createConversation({
         documentId: params?.id,
         initialComment,
@@ -378,8 +477,6 @@ export function PublicationToolbar() {
     state.matches('active.commenting'),
   )
 
-  console.log('POSITION', {x, y})
-
   useEffect(() => {
     if (selection) {
       service.send({type: 'TOOLBAR.SELECT', selection})
@@ -394,6 +491,54 @@ export function PublicationToolbar() {
     }
   }, [isToolbarActive, toolbarSelection])
 
+  function sizeNode(d: Descendant): number {
+    if (!d) return 0
+    const children =
+      d.children?.reduce((acc, child) => acc + sizeNode(child), 0) ?? 0
+    const text = d.text?.length ?? 0
+    return children + text
+  }
+
+  function convertRange(path: number[], children: Descendant[]): number {
+    let i = 0
+    let nodes = children
+    path.forEach((address, addressIndex) => {
+      const child = nodes[address]
+      for (let siblingIndex = 0; siblingIndex < address; siblingIndex++) {
+        const sib = nodes[siblingIndex]
+        i += sizeNode(sib)
+      }
+      nodes = child.children
+    })
+    return i
+  }
+
+  function getCopyLink(): string {
+    if (!selection) throw new Error('No selection')
+    const selectedBlock = selection.anchor.path[1]
+    const block = editor.children[0].children[selectedBlock]
+    const blockChildren = block.children
+    const anchor =
+      convertRange(selection.anchor.path.slice(2), blockChildren) +
+      selection.anchor.offset
+    const focus =
+      convertRange(selection.focus.path.slice(2), blockChildren) +
+      selection.focus.offset
+    const start = Math.min(anchor, focus)
+    const end = Math.max(anchor, focus)
+    const documentId = params?.id
+    const version = params?.version
+    // console.log('... : ', {
+    //   selection,
+    //   c: editor.children,
+    //   start,
+    //   end,
+    //   documentId,
+    //   version,
+    // })
+    return `https://mintter.com/p/${documentId}?v=${version}#${block.id}:${start}:${end}`
+  }
+
   return (
     <OutsideClick onClose={() => service.send('TOOLBAR.DISMISS')}>
       <Box
@@ -405,63 +550,69 @@ export function PublicationToolbar() {
           zIndex: '$max',
         }}
       >
-        <Box
-          css={{
-            zIndex: '$max',
-            boxShadow: '$menu',
-            padding: '$2',
-            backgroundColor: '$base-background-normal',
-            borderRadius: '2px',
-            transition: 'opacity 0.5s',
-            display: 'flex',
-            gap: '$2',
-            paddingHorizontal: '$2',
-            '& > *': {
-              display: 'inline-block',
-            },
-            '& > * + *': {
-              marginLeft: 2,
-            },
-          }}
-        >
-          <Button
-            variant="ghost"
-            size="0"
-            color="muted"
-            onClick={() => service.send('START.CONVERSATION')}
-          >
-            <Icon name="MessageBubble" size="2" />
-            <span>Add comment</span>
-          </Button>
-        </Box>
         {isCommentActive ? (
-          <Box
-            as="form"
-            onSubmit={createConversation}
+          <CommentForm
+            onSubmit={handledErrors(createConversation)}
+            comment={currentComment}
+            onChange={setCurrentComment}
+          />
+        ) : (
+          <EditorHoveringActions
+            onComment={() => service.send('START.CONVERSATION')}
+            onCopyLink={handledErrors(getCopyLink)}
+            copyLabel="range"
             css={{
-              display: 'flex',
-              gap: '$3',
-              padding: '$3',
-              borderRadius: '$3',
-              background: '$base-background-normal',
-              flexDirection: 'column',
+              zIndex: '$max',
               boxShadow: '$menu',
+              backgroundColor: '$base-background-normal',
+              borderRadius: '2px',
+              transition: 'opacity 0.5s',
+              display: 'flex',
+              position: 'relative',
+              left: 20,
             }}
-          >
-            <TextField
-              name="comment"
-              textarea
-              placeholder="initial comment here"
-              value={currentComment}
-              onChange={(e) => setCurrentComment(e.target.value)}
-            />
-            <Button variant="solid" color="muted" size="2">
-              submit
-            </Button>
-          </Box>
-        ) : null}
+          />
+        )}
       </Box>
     </OutsideClick>
+  )
+}
+
+export function CommentForm({
+  onSubmit,
+  comment,
+  onChange,
+}: {
+  onSubmit: (e: FormEvent) => void
+  comment: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <Box
+      as="form"
+      onSubmit={onSubmit}
+      contentEditable={false}
+      css={{
+        display: 'flex',
+        gap: '$3',
+        padding: '$3',
+        borderRadius: '$3',
+        background: '$base-background-normal',
+        flexDirection: 'column',
+        boxShadow: '$menu',
+      }}
+    >
+      <TextField
+        name="comment"
+        textarea
+        placeholder="initial comment here"
+        value={comment}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <Button variant="solid" color="muted" size="2">
+        submit
+      </Button>
+    </Box>
   )
 }
 

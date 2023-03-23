@@ -214,11 +214,6 @@ export function useNostrProfile(pubkey?: string | null) {
       ],
       nostr.relays,
       (event, isAfterEose, relayURL) => {
-        console.log(
-          '🚀 ~ file: nostr.ts:217 ~ useEffect ~ isAfterEose, relayURL:',
-          isAfterEose,
-          relayURL,
-        )
         const profile = JSON.parse(event.content)
         nostrStore.set(`UserProfile:${pubkey}`, profile).catch((e) => {
           console.error('Error saving user metadata', e)

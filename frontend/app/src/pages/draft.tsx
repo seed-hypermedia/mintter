@@ -58,7 +58,6 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
             type: 'MOUSE.MOVE',
             position: event.clientY,
           })
-          // console.log('mouse moving')
           draftActor.send('EDITING.STOP')
         }}
         onMouseLeave={() => {

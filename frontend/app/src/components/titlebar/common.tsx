@@ -25,7 +25,7 @@ export function ActionButtons(props: TitleBarProps) {
   function onCopy() {
     if (props.mainActor?.actor) {
       let context = props.mainActor.actor.getSnapshot().context
-      let reference = `${MINTTER_LINK_PREFIX}${context.documentId}/${
+      let reference = `${MINTTER_LINK_PREFIX}${context.documentId}?v=${
         (context as PublicationMachineContext).version
       }`
       copyTextToClipboard(reference)

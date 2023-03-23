@@ -2,6 +2,13 @@ import {
   EditorHoveringToolbar,
   PublicationToolbar,
 } from '@app/editor/hovering-toolbar'
+import {flow} from '@app/stitches.config'
+import {classnames} from '@app/utils/classnames'
+import {error} from '@app/utils/logger'
+import {
+  EditorHoveringToolbar,
+  PublicationToolbar,
+} from '@app/editor/hovering-toolbar'
 import {
   Block,
   blockquote,
@@ -19,9 +26,6 @@ import {
   Selector,
   CreateConversationRequest,
 } from '@mintter/shared'
-import {flow} from '@app/stitches.config'
-import {classnames} from '@app/utils/classnames'
-import {error} from '@app/utils/logger'
 import {Event, listen} from '@tauri-apps/api/event'
 import {PropsWithChildren, useEffect, useMemo} from 'react'
 import {Descendant, Editor as EditorType, Transforms} from 'slate'
@@ -36,7 +40,7 @@ import {
 import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
 import type {EditorPlugin} from './types'
-import {findPath, setList, setType, toggleFormat} from './utils'
+import {setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
   mode?: EditorMode

@@ -1,8 +1,3 @@
-console.log('🚀 ~ file: _app.tsx:4 ~ global.setImmediate:', global.setImmediate)
-console.log(
-  '🚀 ~ file: _app.tsx:4 ~ globalThis.setImmediate:',
-  globalThis.setImmediate,
-)
 if (typeof globalThis.EdgeRuntime !== 'string') {
   console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
 }
@@ -28,8 +23,9 @@ import config from '../tamagui.config'
 import type {AppProps} from 'next/app'
 import Head from 'next/head'
 import {useMemo, useState} from 'react'
+import {trpc} from '../trpc'
 
-export default function App({Component, pageProps}: AppProps) {
+function App({Component, pageProps}: AppProps) {
   let [client] = useState(() => new QueryClient())
   const [theme, setTheme] = useRootTheme()
 
@@ -151,3 +147,5 @@ export default function App({Component, pageProps}: AppProps) {
     </QueryClientProvider>
   )
 }
+
+export default trpc.withTRPC(App)

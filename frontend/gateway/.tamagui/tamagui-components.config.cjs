@@ -10901,7 +10901,7 @@ var size = /* @__PURE__ */ __name(function(options) {
   };
 }, "size");
 
-// ../../node_modules/.pnpm/@floating-ui+dom@1.2.4/node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
+// ../../node_modules/.pnpm/@floating-ui+dom@1.2.5/node_modules/@floating-ui/dom/dist/floating-ui.dom.mjs
 function getWindow(node) {
   var _node$ownerDocument;
   return ((_node$ownerDocument = node.ownerDocument) == null ? void 0 : _node$ownerDocument.defaultView) || window;
@@ -11453,12 +11453,8 @@ function autoUpdate(reference, floating, update, options) {
   });
   let observer = null;
   if (elementResize) {
-    let initialUpdate = true;
     observer = new ResizeObserver(() => {
-      if (!initialUpdate) {
-        update();
-      }
-      initialUpdate = false;
+      update();
     });
     isElement(reference) && !animationFrame && observer.observe(reference);
     if (!isElement(reference) && reference.contextElement && !animationFrame) {

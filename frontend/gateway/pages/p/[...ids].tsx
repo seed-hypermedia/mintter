@@ -24,9 +24,11 @@ export default function CIDPublicationPage({
 
 export const getServerSideProps = async ({
   params,
+  query,
   res,
 }: GetServerSidePropsContext) => {
-  let [documentId, version] = params?.ids || []
+  let [documentId, versionFromPath] = params?.ids || []
+  let version = query.v ? String(query.v) : versionFromPath
   let siteInfo = await getSiteInfo()
   let publication: Publication | null = null
   let author: Account | null = null

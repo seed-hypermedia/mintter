@@ -58,19 +58,8 @@ export function useCitations() {
 
 export function useCitationsForBlock(blockId: string) {
   let context = useContext(citationsContext)
-  console.log(
-    '🚀 ~ file: citations-context.tsx:61 ~ useCitationsForBlock ~ context:',
-    context,
-  )
-
   let citations = useMemo(() => {
     if (!context) return []
-
-    console.log(
-      '🚀 ~ file: citations-context.tsx:33 ~ return useMemo ~ context.data?.links:',
-      context.citations.data,
-    )
-
     return context.citations.data?.links.filter((link) => {
       return link.target?.blockId == blockId
     })

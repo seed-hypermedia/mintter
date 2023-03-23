@@ -59,7 +59,7 @@ export function ConversationBlockBubble({block}: {block: FlowContent}) {
           paddingInline: '$3',
           paddingBlock: '$1',
           // borderRadius: '$2',
-          zIndex: '$max',
+          zIndex: 100,
           '&:hover': {
             backgroundColor: '$base-component-bg-hover',
             cursor: 'pointer',
