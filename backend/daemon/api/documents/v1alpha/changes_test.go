@@ -92,3 +92,48 @@ func TestChangeInfoAPI(t *testing.T) {
 		testutil.ProtoEqual(t, want[i], list.Changes[i], "change %d in the list must match", i)
 	}
 }
+
+func TestChangesFields(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
+		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
+			Id:   "b1",
+			Type: "statement",
+			Text: "Hello world!",
+		}}},
+	})
+	pub, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	draft, err = api.CreateDraft(ctx, &documents.CreateDraftRequest{ExistingDocumentId: pub.Document.Id})
+	require.NoError(t, err)
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_SetTitle{SetTitle: "Changed Title"}},
+	})
+	pub, err = api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+
+	changes, err := api.ListChanges(ctx, &documents.ListChangesRequest{ObjectId: pub.Document.Id})
+	require.NoError(t, err)
+
+	require.Len(t, changes.Changes, 2, "list changes must return all changes")
+	for _, c := range changes.Changes {
+		require.NotEqual(t, "", c.Id, "change must have ID")
+		require.NotEqual(t, "", c.Author, "change must have author")
+		require.NotEqual(t, nil, c.CreateTime, "change must have create time")
+		require.NotEqual(t, "", c.Version, "change must have version")
+
+		cc, err := api.GetChangeInfo(ctx, &documents.GetChangeInfoRequest{Id: c.Id})
+		require.NoError(t, err)
+		testutil.ProtoEqual(t, c, cc, "get change must return same data as list changes")
+	}
+}

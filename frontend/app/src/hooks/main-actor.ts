@@ -33,6 +33,7 @@ export type MainActorOptions = Partial<{
 export function useMainActor(props: MainActorOptions = {}) {
   const republishDoc = useDocRepublish({
     onSuccess: (webPubs) => {
+      if (!webPubs.length) return
       toast.success(
         `Document updated on ${webPubs
           .map((pub) => hostnameStripProtocol(pub.hostname))

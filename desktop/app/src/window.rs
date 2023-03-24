@@ -28,9 +28,9 @@ async fn open(window: Window, path: &str) -> Result<()> {
       url
     };
 
-    // only compare the first 2 segments of the URL (wether the window has a draft or publication and the document ID)
-    let left = win_url.path_segments().unwrap().take(2);
-    let right = requested_url.path_segments().unwrap().take(2);
+    // only compare the first 3 segments of the URL (wether the window has a draft or publication and the document ID)
+    let left = win_url.path_segments().unwrap().take(3);
+    let right = requested_url.path_segments().unwrap().take(3);
 
     debug!(
       "comparing win url {:?}  to requested {:?}, equal: {}",

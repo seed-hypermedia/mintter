@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "cd ../.. && pnpm shared:build && cd frontend/gateway && pnpm build:front",
+    "build": "node setup-pages.js && cd ../.. && pnpm shared:build && pnpm rmfiles && cd frontend/gateway && pnpm build:front",
     "build:front": "next build",
     "lint": "next lint",
     "format": "prettier --write .",

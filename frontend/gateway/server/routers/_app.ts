@@ -1,6 +1,10 @@
+import {createPromiseClient} from '@bufbuild/connect'
+import {Publications} from '@mintter/shared'
 import {z} from 'zod'
-import {publicationsClient} from '../../grpc.server'
 import {procedure, router} from '../trpc'
+import {transport} from '../../grpc.server'
+
+const publicationsClient = createPromiseClient(Publications, transport)
 
 const publicationRouter = router({
   get: procedure
@@ -16,7 +20,7 @@ const publicationRouter = router({
         version: input.versionId,
       })
       return {
-        publication: pub.toJSON(),
+        publication: pub.toJson(),
       }
     }),
 })
