@@ -87,7 +87,7 @@ do
     fi
   elif [ "$turn" = "OFF" ]; then
     curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
-    docker compose -f mttsite.yml down
+    MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml down
     rm mttsite.yml
     exit 0
   else
@@ -109,7 +109,7 @@ do
     read -p "Do you want to continue(c) with those params or overide(r) them (c/r)?" response
     if [ "$response" = "c" ]; then
         curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
-        docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+        MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
         rm mttsite.yml
         exit 0
     fi
@@ -133,10 +133,11 @@ do
   
   while true; do
     if [ ! -d "$workspace" ];then
-      echo "4) Site Owner seed. Enter 12 space sepparated BIP-39 mnemonic words"
+      echo "4) Site Owner seed. Enter 12 space separated BIP-39 mnemonic words"
       read -p "" words
-      IFS=' ' read -r -a mnemonic <<< "${words}"
-      numWords=${#mnemonic[@]}
+      IFS=" "
+      set -- $words
+      numWords=$#
       if [ $numWords -ne 12 ] && [ $numWords -ne 15 ] && [ $numWords -ne 18 ] && [ $numWords -ne 21 ] && [ $numWords -ne 24 ]; then
         echo "Please provide a 12|15|18|21|24 BIP-39 compatible workds"
       else
@@ -173,34 +174,37 @@ do
       echo -n "MTT_SITE_OWNER_ACCOUNT_ID=" >> ${workspace}/.env
     fi
     curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
-    docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
-    rm mttsite.yml
     if [ -z "$owner"]; then
+      docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+      rm mttsite.yml
       payload="["
+      index=0
       lastIndex=`expr "$numWords" - 1`
-      for index in "${!mnemonic[@]}"
+      for word in "$@"
       do
-        toInsert="\"${array[index]}\","
+        toInsert="\"${word}\","
         if [ $index -eq $lastIndex ]; then
-          toInsert="\"${array[index]}\"]"
+          toInsert="\"${word}\"]"
         fi
+        index=`expr "$index" + 1`
         payload="${payload}${toInsert}"
       done
-      payload="${payload}\"${element}\","
       echo "Waiting to register new account on the site..."
-      for wait_s in 2 3 4 3 2 1
-      do
-        sleep $wait_s
-        res=$(curl -s -o ${workspace}/.env -w "%{http_code}" -X POST -d '$payload' http://localhost:3000/api/owner-registration)
-        if [ $res -ge 200 ] && [ $res -le 299 ]; then
-          echo "Site registered successfully!"
-          break
-        fi
-        if [ $wait_s -eq 1 ]; then
-          echo "[ERROR]: Couldn't register account, please check site docker logs."
-          exit 1
-        fi
-      done 
+      sleep 3
+      res=$(curl -s -o .output -w %{http_code} -X POST -d ${payload} http://localhost:3000/api/owner-registration)
+      if [ $res -ge 200 ] && [ $res -le 299 ]; then
+        cat .output >> ${workspace}/.env
+        rm .output
+        echo "Site registered successfully!"
+      else
+        echo "[ERROR]: Couldn't register account, please check site docker logs."
+        rm .output
+        rm ${workspace}/.env
+        exit 1
+      fi
+    else
+      MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+      rm mttsite.yml
     fi
     exit 0
   fi

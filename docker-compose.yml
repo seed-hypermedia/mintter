@@ -12,9 +12,7 @@ services:
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/data:/data
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/config:/config
-    command:
-      caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://nextjs} --to
-      :${MTT_SITE_LOCAL_PORT:-3000}
+    command: caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://nextjs} --to :${MTT_SITE_LOCAL_PORT:-3000}
 
   nextjs:
     container_name: nextjs
@@ -50,6 +48,6 @@ services:
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
       - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
-      - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID:-bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea}'
       - '-site.title=${MTT_SITE_TITLE:-NewSite}'
-      - '-identity.no-account-wait'
+      - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}'
+      - '${MTT_SITE_NOWAIT_FLAG}'
