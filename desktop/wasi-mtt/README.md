@@ -1,6 +1,9 @@
 # wasi-mtt
 
-*NOTICE: This was the initial implementation for Mintter Plugins using WASM. A lot of this needs to be updated, because a lot of things in the wasmtime package changed, and a lot of code was broken. As this was never used in practice, this package is removed from the Cargo workspace for now to avoid build issues.
+\*NOTICE: This was the initial implementation for Mintter Plugins using WASM. A
+lot of this needs to be updated, because a lot of things in the wasmtime package
+changed, and a lot of code was broken. As this was never used in practice, this
+package is removed from the Cargo workspace for now to avoid build issues.
 
 This is the set of APIs that are exposed to the WASM module running inside the
 wasmtime plugin runtime.

@@ -6,6 +6,7 @@ import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'
 import {
+  Block,
   blockquote,
   ChildrenOf,
   code,
@@ -18,6 +19,8 @@ import {
   ol,
   statement,
   ul,
+  Selector,
+  CreateConversationRequest,
 } from '@mintter/shared'
 import {Event, listen} from '@tauri-apps/api/event'
 import {PropsWithChildren, useEffect, useMemo} from 'react'

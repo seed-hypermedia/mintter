@@ -24,7 +24,7 @@ import {Conversations} from '@components/conversations'
 import Footer, {FooterButton} from '@components/footer'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
-import {useLocation, useRoute} from '@components/router'
+import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {MttLink} from '@mintter/shared'
@@ -114,13 +114,7 @@ export default function PublicationPage({
     [],
   )
 
-  let mouseService = useInterpret(() => mouseMachine, {
-    actions: {
-      getMousePosition: () => {
-        // noop
-      },
-    },
-  })
+  let mouseService = useInterpret(() => mouseMachine)
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
@@ -234,7 +228,6 @@ export default function PublicationPage({
                       onMouseMove={(event) =>
                         mouseService.send({
                           type: 'MOUSE.MOVE',
-                          positionX: event.clientX,
                           position: event.clientY,
                         })
                       }

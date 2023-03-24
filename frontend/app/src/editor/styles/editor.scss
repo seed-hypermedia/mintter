@@ -65,10 +65,23 @@ li::marker {
     position: absolute;
     bottom: -7px;
     height: 3px;
-    width: 25px;
-    background-color: #007a42;
-    left: 50%;
-    transform: translateX(-50%);
+    width: 20px;
+    background-color: #3eb489;
+    left: 0%;
+    // transform: translateX(-50%);
+  }
+}
+
+[data-action='dragged-group'] {
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    height: 3px;
+    width: 20px;
+    background-color: #007aff;
+    left: 0%;
+    // transform: translateX(-50%);
   }
 }
 
