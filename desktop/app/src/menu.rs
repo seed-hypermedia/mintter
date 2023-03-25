@@ -152,7 +152,8 @@ pub fn get_menu() -> Menu {
     )
     .add_item(CustomMenuItem::new("connections", "Connections").accelerator("CmdOrControl+9"))
     .add_item(CustomMenuItem::new("zoomIn", "Zoom In").accelerator("CmdOrControl+Plus"))
-    .add_item(CustomMenuItem::new("zoomOut", "Zoom Out").accelerator("CmdOrControl+-"));
+    .add_item(CustomMenuItem::new("zoomOut", "Zoom Out").accelerator("CmdOrControl+-"))
+    .add_item(CustomMenuItem::new("zoomReset", "Reset Zoom").accelerator("CmdOrControl+0"));
 
   let help_menu = Menu::new()
     .add_item(CustomMenuItem::new("documentation", "Documentation"))
@@ -227,6 +228,9 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
     }
     "zoomIn" | "zoomOut" => {
       event.window().emit("change_zoom", event.menu_item_id())?;
+    }
+    "zoomReset" => {
+      event.window().emit("reset_zoom", event.menu_item_id())?;
     }
     id => bail!("Unhandled menu item \"{}\"", id),
   }

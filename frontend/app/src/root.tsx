@@ -168,4 +168,16 @@ function usePageZoom() {
 
     return () => unlisten?.()
   }, [])
+
+  useEffect(() => {
+    let unlisten: () => void | undefined
+
+    listen('reset_zoom', async (event: {payload: 'zoomReset'}) => {
+      console.log('RESET ZOOM!', event)
+      document.body.style = `zoom: 1;`
+      store.set('zoom', 1)
+    }).then((f) => (unlisten = f))
+
+    return () => unlisten?.()
+  }, [])
 }
