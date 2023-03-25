@@ -12,97 +12,103 @@ type ContactListContext = {
   all: Array<AccountWithRef>
   online: Array<string>
   offline: Array<string>
+  errorMessage: string
 }
 
 type ContactListEvent =
+  | {type: 'CONTACTS.LIST.SUCCESS'; accounts: Array<Account>}
+  | {type: 'CONTACTS.LIST.ERROR'; errorMessage: string}
   | {type: 'COMMIT.ONLINE'; accountId: string}
   | {type: 'COMMIT.OFFLINE'; accountId: string}
   | {type: 'REFETCH'}
 
-type ContactListServices = {
-  fetchList: {
-    data: ListAccountsResponse
-  }
-}
-
-export function createContactListMachine({client}: {client: QueryClient}) {
-  return createMachine(
-    {
-      id: 'contact-list-machine',
-      predictableActionArguments: true,
-      tsTypes: {} as import('./contact-list-machine.typegen').Typegen0,
-      schema: {
-        context: {} as ContactListContext,
-        events: {} as ContactListEvent,
-        services: {} as ContactListServices,
+export const contactsListMachine = createMachine(
+  {
+    id: 'contact-list-machine',
+    predictableActionArguments: true,
+    tsTypes: {} as import('./contact-list-machine.typegen').Typegen0,
+    schema: {
+      context: {} as ContactListContext,
+      events: {} as ContactListEvent,
+    },
+    context: {
+      all: [],
+      offline: [],
+      online: [],
+      errorMessage: '',
+    },
+    initial: 'fetching',
+    states: {
+      fetching: {
+        on: {
+          'CONTACTS.LIST.SUCCESS': {
+            target: 'idle',
+            actions: ['assignAllList'],
+          },
+          'CONTACTS.LIST.ERROR': {
+            target: 'error',
+            actions: ['assignErrorMessage'],
+          },
+        },
       },
-      context: {
+      idle: {
+        on: {
+          REFETCH: 'fetching',
+          'COMMIT.ONLINE': {
+            actions: ['assignContactOnline'],
+          },
+          'COMMIT.OFFLINE': {
+            actions: ['assignContactOffline'],
+          },
+        },
+      },
+      error: {
+        on: {
+          REFETCH: {
+            target: 'fetching',
+            actions: ['triggerRefetch'],
+          },
+        },
+      },
+    },
+  },
+  {
+    actions: {
+      assignAllList: assign({
+        all: (_, event) =>
+          event.accounts.map((account) => ({
+            ...account,
+            ref: spawn(
+              createContactMachine({account, client}),
+              `account-${account.id}`,
+            ),
+          })),
+      }),
+      assignContactOnline: assign({
+        online: (context, event) => {
+          let id = `account-${event.accountId}`
+          if (!context.online.includes(id)) {
+            return [...context.online, id]
+          }
+          return context.online
+        },
+      }),
+      assignContactOffline: assign({
+        offline: (context, event) => {
+          let id = `account-${event.accountId}`
+          if (!context.offline.includes(id)) {
+            return [...context.offline, id]
+          }
+          return context.offline
+        },
+      }),
+      clearAll: assign({
         all: [],
-        offline: [],
         online: [],
-      },
-      initial: 'fetching',
-      states: {
-        fetching: {
-          invoke: {
-            id: 'fetchList',
-            src: 'fetchList',
-            onDone: {
-              target: 'idle',
-              actions: ['assignAllList'],
-            },
-          },
-        },
-        idle: {
-          on: {
-            REFETCH: 'fetching',
-            'COMMIT.ONLINE': {
-              actions: ['assignContactOnline'],
-            },
-            'COMMIT.OFFLINE': {
-              actions: ['assignContactOffline'],
-            },
-          },
-        },
-      },
+        offline: [],
+        errorMessage: '',
+      }),
     },
-    {
-      actions: {
-        assignAllList: assign({
-          all: (_, event) =>
-            event.data.accounts.map((account) => ({
-              ...account,
-              ref: spawn(
-                createContactMachine({account, client}),
-                `account-${account.id}`,
-              ),
-            })),
-        }),
-        assignContactOnline: assign({
-          online: (context, event) => {
-            let id = `account-${event.accountId}`
-            if (!context.online.includes(id)) {
-              return [...context.online, id]
-            }
-            return context.online
-          },
-        }),
-        assignContactOffline: assign({
-          offline: (context, event) => {
-            let id = `account-${event.accountId}`
-            if (!context.offline.includes(id)) {
-              return [...context.offline, id]
-            }
-            return context.offline
-          },
-        }),
-      },
-      services: {
-        fetchList: () =>
-          client.fetchQuery([queryKeys.GET_CONTACTS_LIST], () =>
-            accountsClient.listAccounts({}),
-          ),
-      },
-    },
-  )
-}
+  },
+)
+

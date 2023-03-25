@@ -3,6 +3,7 @@ import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {MainActor} from '@app/hooks/main-actor'
 import {useSiteList} from '@app/hooks/sites'
+import {useDaemonReady} from '@app/node-status-context'
 import {
   PublicationActor,
   PublicationMachineContext,
@@ -23,6 +24,7 @@ import {PublishShareButton} from './publish-share'
 
 export function ActionButtons(props: TitleBarProps) {
   const nav = useNavigation()
+  const isDaemonReady = useDaemonReady()
   function onCopy() {
     if (props.mainActor?.actor) {
       let context = props.mainActor.actor.getSnapshot().context
@@ -69,6 +71,7 @@ export function ActionButtons(props: TitleBarProps) {
           </Route>
           <Route>
             <button
+              disabled={!isDaemonReady}
               className="titlebar-button"
               onClick={(e) => {
                 e.preventDefault()

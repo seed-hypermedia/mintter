@@ -1,6 +1,7 @@
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
 import {MainActor} from '@app/hooks/main-actor'
 import {useDocPublications, useSiteList} from '@app/hooks/sites'
+import {useDaemonReady} from '@app/node-status-context'
 import {PublicationActor} from '@app/publication-machine'
 import {styled} from '@app/stitches.config'
 // import {EXPERIMENTS} from '@app/utils/experimental'
@@ -220,6 +221,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
   const publicationDialog = usePublicationDialog(mainActor)
   // const nostrPostDialog = useNostrPostDialog()
+  const isDaemonReady = useDaemonReady()
   const publications = useDocPublications(docId)
   let isSaving = useRef(false)
   useEffect(() => {
@@ -251,9 +253,12 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
           }
         }}
       >
-        <PopoverPrimitive.Trigger asChild>
+        <PopoverPrimitive.Trigger
+          asChild
+          disabled={!isDaemonReady || isSaving.current}
+        >
           <button
-            disabled={isSaving.current}
+            disabled={!isDaemonReady || isSaving.current}
             onClick={(e) => {
               e.preventDefault()
               if (isOpen) {
