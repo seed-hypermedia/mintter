@@ -126,11 +126,17 @@ func TestChangesFields(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Len(t, changes.Changes, 2, "list changes must return all changes")
-	for _, c := range changes.Changes {
+	for i, c := range changes.Changes {
 		require.NotEqual(t, "", c.Id, "change must have ID")
 		require.NotEqual(t, "", c.Author, "change must have author")
 		require.NotEqual(t, nil, c.CreateTime, "change must have create time")
 		require.NotEqual(t, "", c.Version, "change must have version")
+
+		if i == 0 {
+			require.Nil(t, c.Deps, "first change must have no deps")
+		} else {
+			require.GreaterOrEqual(t, len(c.Deps), 1, "non-first changes must have at least one dep")
+		}
 
 		cc, err := api.GetChangeInfo(ctx, &documents.GetChangeInfoRequest{Id: c.Id})
 		require.NoError(t, err)

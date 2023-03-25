@@ -189,6 +189,13 @@ export class ChangeInfo extends Message<ChangeInfo> {
    */
   version = "";
 
+  /**
+   * IDs of other Changes that are dependencies of this Change.
+   *
+   * @generated from field: repeated string deps = 5;
+   */
+  deps: string[] = [];
+
   constructor(data?: PartialMessage<ChangeInfo>) {
     super();
     proto3.util.initPartial(data, this);
@@ -201,6 +208,7 @@ export class ChangeInfo extends Message<ChangeInfo> {
     { no: 2, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "create_time", kind: "message", T: Timestamp },
     { no: 4, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "deps", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ChangeInfo {

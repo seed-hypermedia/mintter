@@ -57,4 +57,7 @@ message ChangeInfo {
   //
   // TODO(burdiyan): after the breaking change the change ID can be used directly as version.
   string version = 4;
+
+  // IDs of other Changes that are dependencies of this Change.
+  repeated string deps = 5;
 }
