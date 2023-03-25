@@ -4,7 +4,7 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Heading} from '@components/heading'
 import {TitleBar} from '@components/titlebar'
-import {lazy, useEffect} from 'react'
+import {lazy, useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {Redirect, useLocation} from 'wouter'
 import {Route, useRoute} from '../components/router'
@@ -21,11 +21,14 @@ var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
 import {listen as tauriListen} from '@tauri-apps/api/event'
 import ConnectionsPage from './connections-page'
 import AccountPage from './account-page'
+import {FindContextProvider} from '@app/editor/find'
+import {TooltipProvider} from '@components/tooltip'
 
 export default function Main() {
   const [, setLocation] = useLocation()
   const [isSettings] = useRoute('/settings')
   const mainActor = useMainActor()
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     let unlisten: () => void
@@ -46,48 +49,52 @@ export default function Main() {
         window.location.reload()
       }}
     >
-      <div className={classnames('main-root', {settings: isSettings})}>
-        <main>
-          <Route path="/inbox">
-            <PublicationList />
-          </Route>
-          <Route path="/drafts">
-            <DraftList />
-          </Route>
-          <Route path="/sites/:hostname">
-            <Site />
-          </Route>
-          <Route path="/connections">
-            <ConnectionsPage />
-          </Route>
-          <Route path="/account/:id">
-            <AccountPage />
-          </Route>
-          <Route path="/p/:id/:version/:block?">
-            {mainActor?.type === 'publication' ? (
-              <Publication
-                // key={window.location.href}
-                publicationActor={mainActor.actor}
-              />
-            ) : null}
-          </Route>
-          <Route path="/d/:id/:tag?">
-            {mainActor?.type === 'draft' ? (
-              <Draft
-                key={window.location.href}
-                draftActor={mainActor.actor}
-                editor={mainActor.editor}
-              />
-            ) : null}
-          </Route>
-          <Route path="/settings">
-            <Settings />
-          </Route>
-          <Route>{() => <Redirect to="/inbox" />}</Route>
-        </main>
-        <TitleBar clean={isSettings} mainActor={mainActor} />
-        {!isSettings ? <QuickSwitcher /> : null}
-      </div>
+      <FindContextProvider value={{search, setSearch}}>
+        <TooltipProvider>
+          <div className={classnames('main-root', {settings: isSettings})}>
+            <main>
+              <Route path="/inbox">
+                <PublicationList />
+              </Route>
+              <Route path="/drafts">
+                <DraftList />
+              </Route>
+              <Route path="/sites/:hostname">
+                <Site />
+              </Route>
+              <Route path="/connections">
+                <ConnectionsPage />
+              </Route>
+              <Route path="/account/:id">
+                <AccountPage />
+              </Route>
+              <Route path="/p/:id/:version/:block?">
+                {mainActor?.type === 'publication' ? (
+                  <Publication
+                    // key={window.location.href}
+                    publicationActor={mainActor.actor}
+                  />
+                ) : null}
+              </Route>
+              <Route path="/d/:id/:tag?">
+                {mainActor?.type === 'draft' ? (
+                  <Draft
+                    key={window.location.href}
+                    draftActor={mainActor.actor}
+                    editor={mainActor.editor}
+                  />
+                ) : null}
+              </Route>
+              <Route path="/settings">
+                <Settings />
+              </Route>
+              <Route>{() => <Redirect to="/inbox" />}</Route>
+            </main>
+            <TitleBar clean={isSettings} mainActor={mainActor} />
+            {!isSettings ? <QuickSwitcher /> : null}
+          </div>
+        </TooltipProvider>
+      </FindContextProvider>
     </ErrorBoundary>
   )
 }

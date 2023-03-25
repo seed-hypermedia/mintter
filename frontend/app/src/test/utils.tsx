@@ -1,10 +1,12 @@
 import {BlockHighLighter} from '@app/editor/block-highlighter'
+import {FindContextProvider} from '@app/editor/find'
 import {queryKeys} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {globalStyles} from '@app/stitches.config'
 import {themeMachine, ThemeProvider} from '@app/theme'
 import AppProvider from '@components/app-provider'
+import {TooltipProvider} from '@components/tooltip'
 import {
   Account,
   Document,
@@ -188,7 +190,16 @@ export function TestProvider({client, children}: TestProviderProps) {
           {
             // TODO: @jonas why SearchTermProvider breaks tests?
           }
-          <AppProvider>{children}</AppProvider>
+          <FindContextProvider
+            value={{
+              search: '',
+              setSearch: () => {
+                // noop
+              },
+            }}
+          >
+            <TooltipProvider>{children}</TooltipProvider>
+          </FindContextProvider>
 
           {/* // <Toaster position="bottom-right" /> */}
         </ThemeProvider>
