@@ -17,7 +17,7 @@ import toast from 'react-hot-toast'
 import {assign, InterpreterFrom} from 'xstate'
 import {Prompt} from './prompt'
 import {accountsClient, networkingClient} from '@app/api-clients'
-import {useDaemonReady} from '@app/node-status-context'
+import {useDaemonReady, useOnline} from '@app/node-status-context'
 import {queryKeys} from '@app/hooks'
 
 const LabelWrap = styled('div', {
@@ -53,6 +53,7 @@ export function FooterButton({
 
 export default function Footer({children}: {children?: ReactNode}) {
   let isDaemonReady = useDaemonReady()
+  let isOnline = useOnline()
 
   let contactsListQuery = useQuery({
     enabled: isDaemonReady,
@@ -81,7 +82,7 @@ export default function Footer({children}: {children?: ReactNode}) {
 
   return (
     <FooterStyled platform={import.meta.env.TAURI_PLATFORM}>
-      {isDaemonReady ? (
+      {!isDaemonReady ? (
         <Box
           css={{
             display: 'flex',
@@ -89,11 +90,49 @@ export default function Footer({children}: {children?: ReactNode}) {
             paddingInline: '$4',
             paddingBlock: '$1',
             gap: '$2',
+            userSelect: 'none',
+            marginRight: '$4',
+            '&:hover': {
+              cursor: 'default',
+            },
           }}
         >
           <Icon name="Clock" size="1" color="muted" />
-          <Text color="muted" size="1">
+          <Text
+            color="muted"
+            size="1"
+            css={{
+              userSelect: 'none',
+            }}
+          >
             Initializing node...
+          </Text>
+        </Box>
+      ) : !isOnline ? (
+        <Box
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingInline: '$4',
+            paddingBlock: '$1',
+            gap: '$2',
+            userSelect: 'none',
+            backgroundColor: '$danger-normal',
+            marginRight: '$4',
+            '&:hover': {
+              cursor: 'default',
+            },
+          }}
+        >
+          <Icon name="Close" size="1" color="danger-opposite" />
+          <Text
+            color="danger-opposite"
+            size="1"
+            css={{
+              userSelect: 'none',
+            }}
+          >
+            You're Offline
           </Text>
         </Box>
       ) : null}
@@ -102,7 +141,7 @@ export default function Footer({children}: {children?: ReactNode}) {
           css={{
             display: 'flex',
             alignItems: 'center',
-            gap: '$2',
+            gap: '0',
           }}
         >
           <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
@@ -110,7 +149,14 @@ export default function Footer({children}: {children?: ReactNode}) {
         </Box>
       ) : null}
 
-      <Box css={{flex: 1, alignItems: 'center', justifyContent: 'flex-end'}}>
+      <Box
+        css={{
+          display: 'flex',
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }}
+      >
         {children}
       </Box>
     </FooterStyled>
@@ -200,7 +246,7 @@ export function ContactsPrompt({
   return (
     <Prompt.Root>
       <DialogPrimitive.Trigger asChild>
-        <ButtonStyled data-testid="add-contact-button" css={{}}>
+        <ButtonStyled data-testid="add-contact-button" css={{paddingInline: 0}}>
           <Icon name="Add" color="muted" />
         </ButtonStyled>
       </DialogPrimitive.Trigger>

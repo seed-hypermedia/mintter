@@ -2,6 +2,7 @@ import {useAccountIsConnected, useContactsList} from '@app/hooks/contacts'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
+import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
@@ -41,12 +42,17 @@ export default function ConnectionsPage() {
   const contacts = useContactsList()
   const accounts = contacts.data?.accounts || []
   return (
-    <ScrollArea>
-      <Box>
-        {accounts.map((account) => {
-          return <ContactItem key={account.id} account={account} />
-        })}
-      </Box>
-    </ScrollArea>
+    <>
+      <div className="page-wrapper">
+        <ScrollArea>
+          <Box>
+            {accounts.map((account) => {
+              return <ContactItem key={account.id} account={account} />
+            })}
+          </Box>
+        </ScrollArea>
+      </div>
+      <Footer />
+    </>
   )
 }

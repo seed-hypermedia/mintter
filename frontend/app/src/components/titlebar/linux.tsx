@@ -118,6 +118,10 @@ function Menu() {
             Quick Switcher
             <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
           </Dropdown.Item>
+          <Dropdown.Item onSelect={() => setLocation('/connections')}>
+            Connections
+            <Dropdown.RightSlot>Ctrl+9</Dropdown.RightSlot>
+          </Dropdown.Item>
 
           <SitesNavDropdownItems />
 

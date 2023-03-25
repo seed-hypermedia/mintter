@@ -1,3 +1,4 @@
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {networkingClient} from '@app/api-clients'
 import {CSS} from '@stitches/react'
 import {useState} from 'react'
@@ -36,27 +37,11 @@ export function ContactsPrompt({
 
   return (
     <Prompt.Root>
-      <Prompt.Trigger
-        variant="ghost"
-        color="primary"
-        data-testid="add-contact-button"
-        size="1"
-        css={{
-          all: 'unset',
-          padding: '$1',
-          borderRadius: '$2',
-          backgroundColor: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          '&:hover': {
-            backgroundColor: '$base-component-bg-hover',
-          },
-        }}
-      >
-        <Icon name="Add" color="muted" />
-        <span style={{marginInline: '0.2em'}}>Invite</span>
-      </Prompt.Trigger>
+      <DialogPrimitive.Trigger asChild>
+        <button className="titlebar-button">
+          <span style={{marginInline: '0.2em'}}>Add Connection</span>
+        </button>
+      </DialogPrimitive.Trigger>
       <Prompt.Portal>
         <Prompt.Content>
           <Prompt.Title>Add a Contact</Prompt.Title>
@@ -69,13 +54,6 @@ export function ContactsPrompt({
             textarea
             rows={3}
             data-testid="add-contact-input"
-            containerCss={
-              {
-                minHeight: 150,
-                maxHeight: 150,
-                overflow: 'scroll',
-              } as CSS
-            }
           />
           <Prompt.Actions>
             <Prompt.Close asChild>

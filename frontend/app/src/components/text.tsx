@@ -113,6 +113,9 @@ export const textStyles = css({
       danger: {
         color: '$danger-normal',
       },
+      'danger-opposite': {
+        color: '$danger-text-opposite',
+      },
     },
   },
 

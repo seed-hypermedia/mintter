@@ -65,7 +65,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
 }
 
 function SystemMenu() {
-  const [location] = useLocation()
+  const [location, setLocation] = useLocation()
 
   const editingDisabled = !location.startsWith('/d/')
 
@@ -293,6 +293,11 @@ function SystemMenu() {
                   title="Quick Switcher..."
                   accelerator="Ctrl+K"
                   onSelect={() => tauriEmit('open_quick_switcher')}
+                />
+                <MenuItem
+                  title="Connections"
+                  accelerator="Ctrl+9"
+                  onSelect={() => setLocation('/connections')}
                 />
               </NavigationMenu.List>
             </NavigationMenu.Sub>

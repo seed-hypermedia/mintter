@@ -178,6 +178,10 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
             Quick Switcher
             <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
           </Dropdown.Item>
+          <Dropdown.Item onSelect={() => setLocation('/connections')}>
+            Connections
+            <Dropdown.RightSlot>Ctrl+9</Dropdown.RightSlot>
+          </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Portal>
     </Dropdown.Root>
