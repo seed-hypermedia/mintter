@@ -1,22 +1,23 @@
-import {QueryClient} from '@tanstack/react-query'
+import {useDaemonReady} from '@app/node-status-context'
+import {draftsClient} from '@app/api-clients'
 import {createDraftMachine, DraftActor} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
+import {queryKeys} from '@app/hooks'
 import {
   createPublicationMachine,
   PublicationActor,
 } from '@app/publication-machine'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
-import {Publication, publishDraft} from '@mintter/shared'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {publishDraft} from '@mintter/shared'
+import {QueryClient} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {Editor} from 'slate'
 import {useLocation, useRoute} from 'wouter'
 import {interpret} from 'xstate'
 import {useDocRepublish} from './sites'
-import {draftsClient} from '@app/api-clients'
-import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {queryKeys} from '@app/hooks'
 
 export type MainActor =
   | {type: 'publication'; actor: PublicationActor}
@@ -41,9 +42,11 @@ export function useMainActor(props: MainActorOptions = {}) {
       )
     },
   })
+  const isDaemonReady = useDaemonReady()
   const [, setLocation] = useLocation()
   const [isPublication, publicationParams] = useRoute('/p/:id/:version/:block?')
   const [isDraft, draftParams] = useRoute('/d/:id/:tag?')
+
   return useMemo(() => {
     if (isPublication) {
       const pubMachine = createPublicationMachine({
@@ -96,6 +99,9 @@ export function useMainActor(props: MainActorOptions = {}) {
                   documentId: context.documentId,
                 })
               },
+        },
+        guards: {
+          isDaemonReady: () => isDaemonReady,
         },
       })
 

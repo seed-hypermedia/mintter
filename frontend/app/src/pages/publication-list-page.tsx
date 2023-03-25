@@ -7,6 +7,7 @@ import {
   prefetchPublication,
   queryKeys,
   useAuthor,
+  useDraftList,
   usePublicationList,
 } from '@app/hooks'
 import {openPublication, useNavigation} from '@app/utils/navigation'
@@ -18,7 +19,7 @@ import {Icon} from '@components/icon'
 import {useLocation} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
-import {formattedDate, Publication} from '@mintter/shared'
+import {Document, formattedDate, Publication} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -30,6 +31,7 @@ export default PublicationList
 
 function PublicationList() {
   let {data, isInitialLoading} = usePublicationList()
+  let drafts = useDraftList()
   let nav = useNavigation()
 
   return (
@@ -42,6 +44,9 @@ function PublicationList() {
             <ul className="file-list" data-testid="files-list">
               {data.publications.map((publication) => (
                 <PublicationListItem
+                  hasDraft={drafts.data.documents.find(
+                    (d) => d.id == publication.document?.id,
+                  )}
                   key={`${publication.document?.id}/${publication.version}`}
                   publication={publication}
                 />
@@ -64,10 +69,12 @@ function PublicationList() {
 
 export function PublicationListItem({
   publication,
+  hasDraft,
   copy = copyTextToClipboard,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
+  hasDraft: Document | undefined
 }) {
   const {search} = useFind()
   const [, setLocation] = useLocation()

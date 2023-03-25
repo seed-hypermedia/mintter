@@ -1,3 +1,4 @@
+import {AppBanner, BannerText} from '@app/app-banner'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {CitationsProvider} from '@app/editor/comments/citations-context'
 import {ConversationsProvider} from '@app/editor/comments/conversations-context'
@@ -40,67 +41,6 @@ import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
-
-const slideDown = keyframes({
-  '0%': {transform: 'translateY(-100%)', opacity: 0},
-  '100%': {transform: 'translateY(0)', opacity: 1},
-})
-
-function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
-  const {data: pub, isLoading} = usePublication(docId)
-  const [l, setLocation] = useLocation()
-  const client = useQueryClient()
-  if (isLoading) return null
-  if (version === pub?.version) return null
-  if (!pub?.version) return null
-  return (
-    <Box
-      css={{
-        opacity: 0,
-        animation: `${slideDown} 200ms`,
-        animationDelay: '300ms',
-        animationFillMode: 'forwards',
-        paddingInline: '$4',
-        paddingBlock: '$2',
-        background: '$warning-background-subtle',
-        cursor: 'pointer',
-        borderBottom: '1px solid blue',
-        borderColor: '$warning-border-normal',
-        transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-        '&:hover': {
-          background: '$warning-background-normal',
-        },
-        position: 'absolute',
-        width: '$full',
-        top: 0,
-        left: 0,
-      }}
-      onMouseEnter={() => {
-        client.prefetchQuery({
-          queryKey: [queryKeys.GET_PUBLICATION, docId, pub.version],
-        })
-      }}
-    >
-      <Text
-        css={{
-          color: '$warning-text-low',
-          textAlign: 'center',
-          fontSize: '$2',
-        }}
-      >
-        <a
-          onClick={(e) => {
-            e.preventDefault()
-            setLocation(`/p/${docId}/${pub.version}`)
-          }}
-        >
-          There is a newer version of this Publication. Click here to go to
-          latest version →
-        </a>
-      </Text>
-    </Box>
-  )
-}
 
 export default function PublicationPage({
   publicationActor,
@@ -509,4 +449,34 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
       }
     }, 1000)
   }, [ref, blockId, editor])
+}
+
+function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
+  const {data: pub, isLoading} = usePublication(docId)
+  const [l, setLocation] = useLocation()
+  const client = useQueryClient()
+  if (isLoading) return null
+  if (version === pub?.version) return null
+  if (!pub?.version) return null
+  return (
+    <AppBanner
+      onMouseEnter={() => {
+        client.prefetchQuery({
+          queryKey: [queryKeys.GET_PUBLICATION, docId, pub.version],
+        })
+      }}
+    >
+      <BannerText>
+        <a
+          onClick={(e) => {
+            e.preventDefault()
+            setLocation(`/p/${docId}/${pub.version}`)
+          }}
+        >
+          There is a newer version of this Publication. Click here to go to
+          latest version →
+        </a>
+      </BannerText>
+    </AppBanner>
+  )
 }

@@ -1,4 +1,5 @@
 // import 'show-keys'
+import {AppBanner, BannerText} from '@app/app-banner'
 import {ScrollArea} from '@app/components/scroll-area'
 import {DraftActor} from '@app/draft-machine'
 import {DragProvider} from '@app/drag-context'
@@ -8,23 +9,16 @@ import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
+import {useDaemonReady} from '@app/node-status-context'
 import {AppError} from '@app/root'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
-import {Text} from '@components/text'
 import {ChildrenOf, Document, FlowContent, isFlowContent} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import React, {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
-import {
-  Editor as SlateEditor,
-  Path,
-  Transforms,
-  Node,
-  NodeEntry,
-  Descendant,
-} from 'slate'
+import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 
 type DraftPageProps = {
@@ -36,11 +30,18 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
   const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
+  let isDaemonReady = useDaemonReady()
 
   // @ts-ignore
   window.mouseService = mouseService
 
   useInitialFocus(editor)
+
+  useEffect(() => {
+    if (isDaemonReady) {
+      send('IS_DAEMON_READY')
+    }
+  }, [isDaemonReady])
 
   // console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
 
@@ -106,6 +107,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
           FallbackComponent={AppError}
           onReset={() => window.location.reload()}
         >
+          {isDaemonReady ? <NotSavingBanner /> : null}
           <ScrollArea
             onScroll={() => {
               mouseService.send('DISABLE.SCROLL')
@@ -122,10 +124,15 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
                     {state.context.localDraft?.content ? (
                       <Editor
                         editor={editor}
+                        readOnly={!isDaemonReady}
                         value={state.context.localDraft.content}
                         //@ts-ignore
                         onChange={(content: ChildrenOf<Document>) => {
-                          if (!content && typeof content == 'string') return
+                          if (
+                            (!content && typeof content == 'string') ||
+                            !isDaemonReady
+                          )
+                            return
                           mouseService.send('DISABLE.CHANGE')
                           draftActor.send('EDITING.START')
                           send({type: 'DRAFT.UPDATE', payload: {content}})
@@ -199,5 +206,13 @@ function BlockPlaceholder() {
       <Placeholder css={{height: 16, width: '84%'}} />
       <Placeholder css={{height: 16, width: '90%'}} />
     </Box>
+  )
+}
+
+function NotSavingBanner() {
+  return (
+    <AppBanner>
+      <BannerText>The Draft is not being saved right now.</BannerText>
+    </AppBanner>
   )
 }
