@@ -1,7 +1,7 @@
 import {ConnectionStatus} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {AccountWithRef, contactsListMachine} from '@app/contact-list-machine'
-import {CSS, keyframes, styled} from '@app/stitches.config'
+import {keyframes, styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
@@ -10,19 +10,17 @@ import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import {useQuery, useQueryClient} from '@tanstack/react-query'
-import {useActor, useInterpret, useSelector} from '@xstate/react'
+import {useActor} from '@xstate/react'
 import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {assign, InterpreterFrom} from 'xstate'
+import {InterpreterFrom} from 'xstate'
 import {Prompt} from './prompt'
-import {accountsClient, networkingClient} from '@app/api-clients'
+import {networkingClient} from '@app/api-clients'
 import {useDaemonReady, useOnline} from '@app/node-status-context'
-import {queryKeys} from '@app/hooks'
 import {emit} from '@tauri-apps/api/event'
 import {OnlineIndicator} from './indicator'
-import {useRoute} from 'wouter'
 import {useConnectionSummary} from '@app/hooks/contacts'
+import {useNavRoute} from '@app/utils/navigation'
 
 const LabelWrap = styled('div', {
   marginHorizontal: 6,
@@ -56,13 +54,13 @@ export function FooterButton({
 }
 
 function FooterContactsButton() {
-  const [active] = useRoute('/connections')
+  const route = useNavRoute()
   const summary = useConnectionSummary()
   return (
     <Button
       size="1"
       variant="ghost"
-      color={active ? 'primary' : 'muted'}
+      color={route.key === 'connections' ? 'primary' : 'muted'}
       onClick={() => {
         emit('open_connections')
       }}

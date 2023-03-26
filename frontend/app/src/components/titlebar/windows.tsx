@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {TitleBarProps} from '@components/titlebar'
 import * as NavigationMenu from '@radix-ui/react-navigation-menu'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
-import {useLocation} from 'wouter'
 import '../../styles/dropdown.scss'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import {MintterIcon} from './mintter-icon'
@@ -53,7 +53,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
       >
         <div className="titlebar-section">
           <NavigationButtons />
-          <NavMenu mainActor={props.mainActor} />
+          <NavMenu />
         </div>
 
         <div data-tauri-drag-region style={{flexGrow: 1}}></div>
@@ -65,9 +65,9 @@ export default function TitleBarWindows(props: TitleBarProps) {
 }
 
 function SystemMenu() {
-  const [location, setLocation] = useLocation()
-
-  const editingDisabled = !location.startsWith('/d/')
+  const route = useNavRoute()
+  const navigate = useNavigate()
+  const editingDisabled = route.key !== 'draft'
 
   return (
     <NavigationMenu.Root id="titlebar-system-menu">
@@ -297,7 +297,7 @@ function SystemMenu() {
                 <MenuItem
                   title="Connections"
                   accelerator="Ctrl+9"
-                  onSelect={() => setLocation('/connections')}
+                  onSelect={() => navigate({key: 'connections'})}
                 />
               </NavigationMenu.List>
             </NavigationMenu.Sub>

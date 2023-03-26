@@ -7,6 +7,7 @@ import {createDragMachine} from '@app/drag-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Editor} from '@app/editor/editor'
 import {FileProvider} from '@app/file-provider'
+import {MainActor} from '@app/hooks/main-actor'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {useDaemonReady} from '@app/node-status-context'
@@ -21,12 +22,11 @@ import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 
-type DraftPageProps = {
-  draftActor: DraftActor
-  editor: SlateEditor
-}
-
-export default function DraftPage({draftActor, editor}: DraftPageProps) {
+export default function DraftPage({mainActor}: {mainActor: MainActor}) {
+  if (mainActor.type !== 'draft')
+    throw new Error('Draft actor must be passed to DraftPage')
+  const draftActor = mainActor.actor
+  const editor = mainActor.editor
   const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
@@ -59,7 +59,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
             type: 'MOUSE.MOVE',
             position: event.clientY,
           })
-          draftActor.send('EDITING.STOP')
+          mainActor.send('EDITING.STOP')
         }}
         onMouseLeave={() => {
           mouseService.send('DISABLE.CHANGE')
@@ -134,7 +134,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
                           )
                             return
                           mouseService.send('DISABLE.CHANGE')
-                          draftActor.send('EDITING.START')
+                          mainActor.send('EDITING.START')
                           send({type: 'DRAFT.UPDATE', payload: {content}})
                         }}
                       />

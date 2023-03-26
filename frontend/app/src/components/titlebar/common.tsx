@@ -4,13 +4,14 @@ import {Find} from '@app/editor/find'
 import {MainActor} from '@app/hooks/main-actor'
 import {useSiteList} from '@app/hooks/sites'
 import {useDaemonReady} from '@app/node-status-context'
+import {PublicationActor} from '@app/publication-machine'
 import {
-  PublicationActor,
-  PublicationMachineContext,
-} from '@app/publication-machine'
-import {useNavigation} from '@app/utils/navigation'
+  useNavigate,
+  useNavigationActions,
+  useNavigationDispatch,
+  useNavRoute,
+} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {tauriEncodeParam} from '@app/utils/tauri-param-hackaround'
 import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
@@ -18,23 +19,24 @@ import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
-import {Route, Switch, useLocation, NoMatch} from 'wouter'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
 
 export function ActionButtons(props: TitleBarProps) {
-  const nav = useNavigation()
+  const nav = useNavigationActions()
+  const route = useNavRoute()
   const isDaemonReady = useDaemonReady()
-  function onCopy() {
-    if (props.mainActor?.actor) {
-      let context = props.mainActor.actor.getSnapshot().context
-      let reference = `${MINTTER_LINK_PREFIX}${context.documentId}?v=${
-        (context as PublicationMachineContext).version
-      }`
-      copyTextToClipboard(reference)
-      toast.success('Document reference copied!')
-    }
-  }
+
+  const onCopy =
+    route.key === 'publication'
+      ? () => {
+          let reference = `${MINTTER_LINK_PREFIX}${route.documentId}`
+          if (route.versionId) reference += `?v=${route.versionId}`
+          if (route.blockId) reference += `#${route.blockId}`
+          copyTextToClipboard(reference)
+          toast.success('Document reference copied!')
+        }
+      : undefined
 
   return (
     <div
@@ -44,32 +46,28 @@ export function ActionButtons(props: TitleBarProps) {
     >
       <Find />
 
-      <Switch>
-        <Route path="/p/:id/:version/:block?">
-          <Tooltip content="Copy document reference">
-            <button onClick={onCopy} className="titlebar-button">
-              <Icon name="Copy" />
-            </button>
-          </Tooltip>
-        </Route>
-      </Switch>
+      {onCopy && (
+        <Tooltip content="Copy document reference">
+          <button onClick={onCopy} className="titlebar-button">
+            <Icon name="Copy" />
+          </button>
+        </Tooltip>
+      )}
 
-      <Route path="/p/:id/:version/:block?">
-        {props.mainActor?.type === 'publication' && (
-          <WriteActions publicationActor={props.mainActor.actor} />
-        )}
-      </Route>
+      {route.key === 'publication' &&
+      props.mainActor?.type === 'publication' ? (
+        <WriteActions publicationActor={props.mainActor.actor} />
+      ) : null}
 
       {props.mainActor ? (
         <PublishShareButton mainActor={props.mainActor} />
       ) : null}
 
-      <div className="button-group">
-        <Switch>
-          <Route path="/connections">
+      {route.key === 'draft' ? null : (
+        <div className="button-group">
+          {route.key === 'connections' ? (
             <ContactsPrompt />
-          </Route>
-          <Route>
+          ) : (
             <button
               disabled={!isDaemonReady}
               className="titlebar-button"
@@ -81,31 +79,27 @@ export function ActionButtons(props: TitleBarProps) {
               <Icon name="Add" />
               <span style={{marginRight: '0.3em'}}>Write</span>
             </button>
-          </Route>
-        </Switch>
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-type Push = {
-  back: () => void
-  forward: () => void
-}
-
-export function NavigationButtons({push = history}: {push?: Push}) {
+export function NavigationButtons() {
+  const dispatch = useNavigationDispatch()
   return (
     <div className="button-group">
       <button
         data-testid="history-back"
-        onClick={() => push.back()}
+        onClick={() => dispatch({type: 'pop'})}
         className="titlebar-button"
       >
         <Icon name="ArrowChevronLeft" size="2" color="muted" />
       </button>
       <button
         data-testid="history-forward"
-        onClick={() => push.forward()}
+        onClick={() => dispatch({type: 'forward'})}
         className="titlebar-button"
       >
         <Icon name="ArrowChevronRight" size="2" color="muted" />
@@ -116,8 +110,7 @@ export function NavigationButtons({push = history}: {push?: Push}) {
 
 export function SitesNavDropdownItems() {
   const sites = useSiteList()
-
-  let [, setLocation] = useLocation()
+  const navigate = useNavigate()
 
   if (!sites.data) return null
   if (sites.data.length == 0) return null
@@ -127,9 +120,7 @@ export function SitesNavDropdownItems() {
       {sites.data.map((site) => (
         <Dropdown.Item
           key={site.hostname}
-          onSelect={() =>
-            setLocation(`/sites/${tauriEncodeParam(site.hostname)}`)
-          }
+          onSelect={() => navigate({key: 'site', hostname: site.hostname})}
         >
           <Icon name="Globe" />
           <span>{hostnameStripProtocol(site.hostname)}</span>
@@ -140,8 +131,8 @@ export function SitesNavDropdownItems() {
 }
 
 export function NavMenu({mainActor}: {mainActor?: MainActor}) {
-  let [location, setLocation] = useLocation()
-
+  const route = useNavRoute()
+  const navigate = useNavigate()
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
@@ -156,17 +147,17 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
       <Dropdown.Portal>
         <Dropdown.Content>
           <Dropdown.Item
-            disabled={location == '/inbox'}
+            disabled={route.key === 'home'}
             data-testid="menu-item-inbox"
-            onSelect={() => setLocation('/inbox')}
+            onSelect={() => navigate({key: 'home'})}
           >
             <Icon name="File" />
             <span>Inbox</span>
           </Dropdown.Item>
           <Dropdown.Item
-            disabled={location == '/drafts'}
+            disabled={route.key === 'drafts'}
             data-testid="menu-item-drafts"
-            onSelect={() => setLocation('/drafts')}
+            onSelect={() => navigate({key: 'drafts'})}
           >
             <Icon name="PencilAdd" />
             <span>Drafts</span>
@@ -178,7 +169,10 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
             Quick Switcher
             <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
           </Dropdown.Item>
-          <Dropdown.Item onSelect={() => setLocation('/connections')}>
+          <Dropdown.Item
+            disabled={route.key === 'connections'}
+            onSelect={() => navigate({key: 'connections'})}
+          >
             Connections
             <Dropdown.RightSlot>Ctrl+9</Dropdown.RightSlot>
           </Dropdown.Item>

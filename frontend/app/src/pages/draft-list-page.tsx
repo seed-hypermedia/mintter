@@ -3,27 +3,28 @@ import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
 import {prefetchDraft, queryKeys, useDraftList} from '@app/hooks'
-import {openDraft, useNavigation} from '@app/utils/navigation'
-import {openWindow} from '@app/utils/open-window'
+import {
+  DraftRoute,
+  useNavigate,
+  useNavigationActions,
+} from '@app/utils/navigation'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
 import PageContainer from '@components/page-container'
-import {useLocation} from '@components/router'
 import {Text} from '@components/text'
-import {deleteDraft, Document, formattedDate} from '@mintter/shared'
+import {Document, formattedDate} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import Highlighter from 'react-highlight-words'
 import '../styles/file-list.scss'
+import {PageProps} from './base'
 
-export default DraftList
-
-function DraftList() {
+export default function DraftList(props: PageProps) {
   let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
-  const nav = useNavigation()
+  const nav = useNavigationActions()
   return (
     <>
       <PageContainer>
@@ -49,7 +50,8 @@ function DraftList() {
 
 export function DraftListItem({draft}: {draft: Document}) {
   let {search} = useFind()
-  let [, setLocation] = useLocation()
+  const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
   let client = useQueryClient()
   let title = draft.title || 'Untitled Document'
 
@@ -77,10 +79,11 @@ export function DraftListItem({draft}: {draft: Document}) {
 
   function goToItem(event: MouseEvent) {
     event.preventDefault()
+    const route: DraftRoute = {key: 'draft', documentId: draft.id}
     if (event.metaKey || event.shiftKey) {
-      openWindow(`/d/${draft.id}`)
+      spawn(route)
     } else {
-      setLocation(`/d/${draft.id}`)
+      navigate(route)
     }
   }
 
@@ -135,7 +138,7 @@ export function DraftListItem({draft}: {draft: Document}) {
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() => {
-                  openDraft(draft.id)
+                  spawn({key: 'draft', documentId: draft.id})
                 }}
               >
                 <Icon name="OpenInNewWindow" />
@@ -143,15 +146,15 @@ export function DraftListItem({draft}: {draft: Document}) {
               </Dropdown.Item>
               <DeleteDialog
                 deleteRef={deleteService}
-                title="Delete document"
-                description="Are you sure you want to delete this document? This action is not reversible."
+                title="Delete draft"
+                description="Are you sure you want to delete this draft? This action is not reversible."
               >
                 <Dropdown.Item
                   data-testid="delete-item"
                   onSelect={(e) => e.preventDefault()}
                 >
                   <Icon name="Close" />
-                  <Text size="2">Delete Document</Text>
+                  <Text size="2">Delete Draft</Text>
                 </Dropdown.Item>
               </DeleteDialog>
             </Dropdown.Content>

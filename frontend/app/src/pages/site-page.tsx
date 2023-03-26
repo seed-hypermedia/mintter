@@ -2,8 +2,11 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {usePublication, useAuthor} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
-import {useNavigation} from '@app/utils/navigation'
-import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
+import {
+  useNavigate,
+  useNavigationActions,
+  useNavRoute,
+} from '@app/utils/navigation'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
@@ -14,12 +17,13 @@ import {WebPublicationRecord, formattedDate} from '@mintter/shared'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
-import {useLocation, useRoute} from 'wouter'
 import '../styles/file-list.scss'
+import {PageProps} from './base'
 
-export default function SitePage() {
-  let [, params] = useRoute('/sites/:hostname')
-  const host = tauriDecodeParam(params?.hostname)
+export default function SitePage(props: PageProps) {
+  const route = useNavRoute()
+
+  const host = route.key === 'site' ? route.hostname : undefined
 
   let {data, isInitialLoading} = useSitePublications(host)
 
@@ -34,7 +38,7 @@ export default function SitePage() {
       return 0
     })
   }, [data])
-  const nav = useNavigation()
+  const nav = useNavigationActions()
   if (!host) throw new Error('Hostname not found for SitePage')
 
   return (
@@ -71,9 +75,13 @@ function WebPublicationListItem({
   hostname: string
   webPub: WebPublicationRecord
 }) {
-  const [, setLocation] = useLocation()
+  const navigate = useNavigate()
   function goToItem() {
-    setLocation(`/p/${webPub.documentId}/${webPub.version}`)
+    navigate({
+      key: 'publication',
+      documentId: webPub.documentId,
+      versionId: webPub.version,
+    })
   }
   const [unpublishDialog, onUnpublishClick] = useUnpublishDialog(
     hostname,

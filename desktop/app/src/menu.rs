@@ -46,7 +46,11 @@ pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<(
     let win = WindowBuilder::new(
       &app_handle,
       "preferences",
-      WindowUrl::App("/settings".into()),
+      // the new nav system has messy paths, usually they arenot hardcoded but WOWthey are ugly.
+      // this is the base64 encoded string of the {"key":"settings"} route
+      // if we don't do stuff like this, bad things happen if interesting characters are in the params, like dots
+      // t//Buffer.from(JSON.stringify({key:'settings'})).toString('base64')
+      WindowUrl::App("/eyJrZXkiOiJzZXR0aW5ncyJ9".into()),
     )
     .title("Preferences");
 

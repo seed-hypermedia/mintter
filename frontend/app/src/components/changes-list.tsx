@@ -1,6 +1,6 @@
 import {useAuthor, useDocChanges} from '@app/hooks'
+import {useNavigate} from '@app/utils/navigation'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
-import {useLocation} from 'wouter'
 import {Avatar} from './avatar'
 import {Box} from './box'
 import {Button} from './button'
@@ -17,7 +17,7 @@ function ChangeItem({
   activeVersion?: string
 }) {
   const author = useAuthor(change.author)
-  const [, setLocation] = useLocation()
+  const navigate = useNavigate()
   console.log('VERSION ITEM', change, docId)
   return (
     <Button
@@ -25,7 +25,11 @@ function ChangeItem({
       as="li"
       variant="ghost"
       onClick={() => {
-        setLocation(`/p/${docId}/${change.version}`)
+        navigate({
+          key: 'publication',
+          documentId: docId,
+          versionId: change.version,
+        })
       }}
       css={{
         listStyle: 'none',
