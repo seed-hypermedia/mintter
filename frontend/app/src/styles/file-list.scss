@@ -63,6 +63,8 @@ $bg: transparent;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  display: flex;
+  justify-content: space-between;
   color: $foreground;
 
   &.low {

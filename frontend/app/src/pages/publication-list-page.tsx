@@ -12,6 +12,7 @@ import {
 } from '@app/hooks'
 import {openPublication, useNavigation} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
+import {Button} from '@components/button'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
@@ -134,6 +135,30 @@ export function PublicationListItem({
           autoEscape={true}
           textToHighlight={title}
         />
+        {hasDraft && (
+          <Button
+            variant="ghost"
+            color="warning"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setLocation(`/d/${hasDraft.id}`)
+            }}
+            size="1"
+            css={{
+              border: '1px solid black',
+              borderColor: '$warning-border-hover',
+              color: '$warning-border-hover',
+              paddingHorizontal: '$3',
+              '&:hover': {
+                color: 'white',
+                background: '$warning-border-hover',
+              },
+            }}
+          >
+            DRAFT
+          </Button>
+        )}
       </p>
       <span
         onClick={goToItem}
