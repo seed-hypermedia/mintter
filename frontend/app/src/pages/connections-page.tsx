@@ -4,7 +4,7 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
-import {ScrollArea} from '@components/scroll-area'
+import PageContainer from '@components/page-container'
 import {Text} from '@components/text'
 import {Account} from '@mintter/shared'
 import {useLocation} from 'wouter'
@@ -15,8 +15,13 @@ function ContactItem({account}: {account: Account}) {
   const alias = account.profile?.alias
   return (
     <Button
-      variant="ghost"
-      css={{display: 'flex'}}
+      css={{
+        display: 'flex',
+        flexGrow: 1,
+        background: 'transparent',
+        color: '$base-text-normal',
+        '&:hover': {background: '$base-background-normal'},
+      }}
       onClick={() => {
         setLocation(`/account/${account.id}`)
       }}
@@ -27,9 +32,11 @@ function ContactItem({account}: {account: Account}) {
         alias={account.profile?.alias || ''}
       />
       {alias ? (
-        <Text fontWeight="bold">{alias}</Text>
+        <Text fontWeight="bold" css={{marginInline: '$4'}}>
+          {alias}
+        </Text>
       ) : (
-        <Text fontWeight="bold" color="muted">
+        <Text fontWeight="bold" color="muted" css={{marginInline: '$4'}}>
           {account.id.slice(0, 5)}...{account.id.slice(-5)}
         </Text>
       )}
@@ -43,15 +50,11 @@ export default function ConnectionsPage() {
   const accounts = contacts.data?.accounts || []
   return (
     <>
-      <div className="page-wrapper">
-        <ScrollArea>
-          <Box>
-            {accounts.map((account) => {
-              return <ContactItem key={account.id} account={account} />
-            })}
-          </Box>
-        </ScrollArea>
-      </div>
+      <PageContainer>
+        {accounts.map((account) => {
+          return <ContactItem key={account.id} account={account} />
+        })}
+      </PageContainer>
       <Footer />
     </>
   )

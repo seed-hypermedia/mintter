@@ -29,6 +29,9 @@ export function Title() {
         <Route path="/drafts">
           <span data-tauri-drag-region>Drafts</span>
         </Route>
+        <Route path="/account/:id">
+          <span data-tauri-drag-region>Profile</span>
+        </Route>
         <Route path="/sites/:hostname">
           <span data-tauri-drag-region>
             {hostnameStripProtocol(

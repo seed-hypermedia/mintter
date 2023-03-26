@@ -9,8 +9,8 @@ import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
+import PageContainer from '@components/page-container'
 import {useLocation} from '@components/router'
-import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {deleteDraft, Document, formattedDate} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
@@ -26,26 +26,22 @@ function DraftList() {
   const nav = useNavigation()
   return (
     <>
-      <div className="page-wrapper">
-        <ScrollArea>
-          {isInitialLoading ? (
-            <p>loading...</p>
-          ) : data && data.documents.length ? (
-            <ul className="file-list" data-testid="files-list">
-              {data.documents.map((draft) => (
-                <DraftListItem key={draft.id} draft={draft} />
-              ))}
-            </ul>
-          ) : (
-            <EmptyList
-              description="You have no Drafts yet."
-              action={() => {
-                nav.openNewDraft(false)
-              }}
-            />
-          )}
-        </ScrollArea>
-      </div>
+      <PageContainer>
+        {isInitialLoading ? (
+          <p>loading...</p>
+        ) : data && data.documents.length ? (
+          data.documents.map((draft) => (
+            <DraftListItem key={draft.id} draft={draft} />
+          ))
+        ) : (
+          <EmptyList
+            description="You have no Drafts yet."
+            action={() => {
+              nav.openNewDraft(false)
+            }}
+          />
+        )}
+      </PageContainer>
       <Footer />
     </>
   )
