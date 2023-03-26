@@ -1,5 +1,5 @@
 import {accountsClient, networkingClient} from '@app/api-clients'
-import {Account, ConnectionStatus} from '@mintter/shared'
+import {Account, ConnectionStatus, Device} from '@mintter/shared'
 import {useQueries, useQuery} from '@tanstack/react-query'
 import {queryKeys} from '.'
 
@@ -11,6 +11,22 @@ export function useContactsList() {
     },
   })
   return contacts
+}
+
+export function useConnectionSummary() {
+  const contacts = useContactsList()
+  const allDevices = contacts.data?.accounts
+    .map((account) => Object.values(account.devices))
+    .flat()
+  const peerInfo = usePeerInfo(allDevices)
+  const loadedDevices = peerInfo.map((peer) => peer.data)
+  const connectedDevices = loadedDevices.filter(
+    (device) => device?.connectionStatus === ConnectionStatus.CONNECTED,
+  )
+  return {
+    online: connectedDevices.length > 0,
+    connectedCount: connectedDevices.length,
+  }
 }
 
 export function useAccount(accountId: string) {
@@ -25,7 +41,9 @@ export function useAccount(accountId: string) {
 
 export function useAccountWithDevices(accountId: string) {
   const account = useAccount(accountId)
-  const peerInfo = usePeerInfo(account?.data)
+  const peerInfo = usePeerInfo(
+    account?.data?.devices ? Object.values(account.data.devices) : [],
+  )
   // account.data?.devices[0].peerId
   // peerInfo[0].data?.addrs
   // peerInfo[0].data?.accountId
@@ -36,10 +54,10 @@ export function useAccountWithDevices(accountId: string) {
   }
 }
 
-export function usePeerInfo(account?: Account) {
+export function usePeerInfo(devices?: Device[]) {
   return useQueries({
-    queries: Object.entries(account?.devices || {}).map(([, device]) => ({
-      queryKey: [queryKeys.GET_PEER_INFO, account?.id],
+    queries: Object.entries(devices || {}).map(([, device]) => ({
+      queryKey: [queryKeys.GET_PEER_INFO, device.peerId],
       queryFn: async () => {
         return await networkingClient.getPeerInfo({peerId: device.peerId})
       },
@@ -48,7 +66,7 @@ export function usePeerInfo(account?: Account) {
 }
 
 export function useAccountIsConnected(account: Account) {
-  const peerInfoQueries = usePeerInfo(account)
+  const peerInfoQueries = usePeerInfo(Object.values(account.devices))
   const isConnected = peerInfoQueries.some(
     (peerInfoQuery) =>
       peerInfoQuery.data?.connectionStatus == ConnectionStatus.CONNECTED,

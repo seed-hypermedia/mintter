@@ -19,6 +19,10 @@ import {Prompt} from './prompt'
 import {accountsClient, networkingClient} from '@app/api-clients'
 import {useDaemonReady, useOnline} from '@app/node-status-context'
 import {queryKeys} from '@app/hooks'
+import {emit} from '@tauri-apps/api/event'
+import {OnlineIndicator} from './indicator'
+import {useRoute} from 'wouter'
+import {useConnectionSummary} from '@app/hooks/contacts'
 
 const LabelWrap = styled('div', {
   marginHorizontal: 6,
@@ -51,34 +55,57 @@ export function FooterButton({
   )
 }
 
+function FooterContactsButton() {
+  const [active] = useRoute('/connections')
+  const summary = useConnectionSummary()
+  return (
+    <Button
+      size="1"
+      variant="ghost"
+      color={active ? 'primary' : 'muted'}
+      onClick={() => {
+        emit('open_connections')
+      }}
+      css={{
+        display: 'flex',
+        gap: '$2',
+      }}
+    >
+      <OnlineIndicator online={summary.online} />
+      <Icon name="Person" size="1" />
+      <Text css={{}}>{summary.connectedCount}</Text>
+    </Button>
+  )
+}
+
 export default function Footer({children}: {children?: ReactNode}) {
   let isDaemonReady = useDaemonReady()
   let isOnline = useOnline()
 
-  let contactsListQuery = useQuery({
-    enabled: isDaemonReady,
-    queryKey: [queryKeys.GET_CONTACTS_LIST],
-    queryFn: () => accountsClient.listAccounts({}),
-  })
+  // let contactsListQuery = useQuery({
+  //   enabled: isDaemonReady,
+  //   queryKey: [queryKeys.GET_CONTACTS_LIST],
+  //   queryFn: () => accountsClient.listAccounts({}),
+  // })
 
-  let contactListService = useInterpret(() => contactsListMachine, {
-    actions: {
-      triggerRefetch: () => {
-        contactsListQuery.refetch()
-      },
-      assignErrorMessage: assign({
-        errorMessage: (_, event) => event.errorMessage,
-      }),
-    },
-  })
+  // let contactListService = useInterpret(() => contactsListMachine, {
+  //   actions: {
+  //     triggerRefetch: () => {
+  //       contactsListQuery.refetch()
+  //     },
+  //     assignErrorMessage: assign({
+  //       errorMessage: (_, event) => event.errorMessage,
+  //     }),
+  //   },
+  // })
 
-  if (contactsListQuery.status == 'error') {
-    contactListService.send({
-      type: 'CONTACTS.LIST.ERROR',
-      errorMessage: JSON.stringify(contactsListQuery.error),
-    })
-    return <div className="main-footer">{children}</div>
-  }
+  // if (contactsListQuery.status == 'error') {
+  //   contactListService.send({
+  //     type: 'CONTACTS.LIST.ERROR',
+  //     errorMessage: JSON.stringify(contactsListQuery.error),
+  //   })
+  //   return <div className="main-footer">{children}</div>
+  // }
 
   return (
     <FooterStyled platform={import.meta.env.TAURI_PLATFORM}>
@@ -136,7 +163,7 @@ export default function Footer({children}: {children?: ReactNode}) {
           </Text>
         </Box>
       ) : null}
-      {isDaemonReady ? (
+      {/* {isDaemonReady ? (
         <Box
           css={{
             display: 'flex',
@@ -147,7 +174,8 @@ export default function Footer({children}: {children?: ReactNode}) {
           <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
           <Contacts service={contactListService} />
         </Box>
-      ) : null}
+      ) : null} */}
+      <FooterContactsButton />
 
       <Box
         css={{
