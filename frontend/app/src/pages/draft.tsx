@@ -107,7 +107,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
           FallbackComponent={AppError}
           onReset={() => window.location.reload()}
         >
-          {isDaemonReady ? <NotSavingBanner /> : null}
+          {!isDaemonReady ? <NotSavingBanner /> : null}
           <ScrollArea
             onScroll={() => {
               mouseService.send('DISABLE.SCROLL')
