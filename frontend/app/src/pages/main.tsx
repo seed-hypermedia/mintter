@@ -23,6 +23,7 @@ import ConnectionsPage from './connections-page'
 import AccountPage from './account-page'
 import {FindContextProvider} from '@app/editor/find'
 import {TooltipProvider} from '@components/tooltip'
+import {Text} from '@components/text'
 
 export default function Main() {
   const [, setLocation] = useLocation()
@@ -109,6 +110,7 @@ function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
         justifyContent: 'center',
         alignItems: 'center',
       }}
+      data-tauri-drag-region
     >
       <Box
         css={{
@@ -118,10 +120,20 @@ function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
           display: 'flex',
           flexDirection: 'column',
           minWidth: '50vw',
+          maxWidth: 565,
         }}
       >
         <Heading color="danger">App Error!</Heading>
-        <pre>{error.message}</pre>
+        <Box
+          css={{
+            fontFamily: 'ui-monospace,monospace',
+            padding: '$2',
+            background: '$warning-background-normal',
+            marginVertical: '$6',
+          }}
+        >
+          {error.message}
+        </Box>
         <Button onClick={resetErrorBoundary} css={{alignSelf: 'flex-end'}}>
           Reload
         </Button>
