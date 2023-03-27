@@ -134,8 +134,12 @@ export function createContactMachine({
         fetchListDeviceStatus: (context) => {
           return Promise.all(
             Object.values(context.account.devices).map((device) =>
-              client.fetchQuery([queryKeys.GET_PEER_INFO, device.peerId], () =>
-                networkingClient.getPeerInfo({peerId: device.peerId}),
+              client.fetchQuery(
+                [queryKeys.GET_PEER_INFO, device.peerId],
+                () => networkingClient.getPeerInfo({peerId: device.peerId}),
+                {
+                  retry: false,
+                },
               ),
             ),
           )
