@@ -33,12 +33,7 @@ import {
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
 import {findPath, getEditorBlock, isCollapsed} from '../utils'
-import {
-  openPublication,
-  PublicationRoute,
-  useNavigate,
-  useNavRoute,
-} from '@app/utils/navigation'
+import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {publicationsClient} from '@app/api-clients'
 
 export const ELEMENT_LINK = 'link'

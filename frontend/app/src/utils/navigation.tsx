@@ -1,13 +1,6 @@
 import {draftsClient} from '@app/api-clients'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
-import {parse} from 'path'
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useReducer,
-} from 'react'
+import {createContext, ReactNode, useContext, useReducer} from 'react'
 import {toast} from 'react-hot-toast'
 import {openWindow} from './open-window'
 
@@ -102,9 +95,6 @@ try {
 }
 
 export function NavigationProvider({children}: {children: ReactNode}) {
-  // useEffect(() => {
-  //   alert('window.location: ' + window.location.pathname)
-  // }, [window.location.href])
   const [navState, dispatch] = useReducer(navStateReducer, {
     routes: [initRoute],
     routeIndex: 0,
@@ -184,19 +174,4 @@ export function useNavigationActions() {
   return {
     openNewDraft,
   }
-}
-
-export function openPublication(
-  docId: string,
-  version?: string,
-  blockId?: string,
-) {
-  let path = `/p/${docId}`
-  if (version) {
-    path += `/${version}`
-    if (blockId) {
-      path += `/${blockId}`
-    }
-  }
-  openWindow(path)
 }

@@ -11,7 +11,6 @@ import {
   usePublicationList,
 } from '@app/hooks'
 import {
-  openPublication,
   PublicationRoute,
   useNavigate,
   useNavigationActions,
@@ -81,6 +80,8 @@ export function PublicationListItem({
   const client = useQueryClient()
   const title = publication.document?.title || 'Untitled Document'
   const {data: author} = useAuthor(publication.document?.author)
+  const docId = publication.document?.id
+  if (!docId) throw new Error('PublicationListItem requires id')
 
   const deleteService = useInterpret(
     () =>
@@ -107,8 +108,6 @@ export function PublicationListItem({
   const [deleteState] = useActor(deleteService)
 
   function goToItem(event: MouseEvent) {
-    const docId = publication.document?.id
-    if (!docId) throw new Error('Cannot open document without id')
     event.preventDefault()
     const route: PublicationRoute = {
       key: 'publication',
@@ -222,7 +221,11 @@ export function PublicationListItem({
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() =>
-                  openPublication(publication.document.id, publication.version)
+                  spawn({
+                    key: 'publication',
+                    documentId: docId,
+                    versionId: publication.version,
+                  })
                 }
               >
                 <Icon name="OpenInNewWindow" />
