@@ -96,6 +96,6 @@ function DraftTitle({route}: {route: DraftRoute}) {
       isSubscribed = false
     }
   })
-
-  return <span data-tauri-drag-region>{draft?.title}</span>
+  const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
+  return <span data-tauri-drag-region>{displayTitle}</span>
 }

@@ -6,6 +6,7 @@ import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
 import {ActionButtons, NavigationButtons, SitesNavDropdownItems} from './common'
+import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
 import {
@@ -64,6 +65,7 @@ export default function TitleBarLinux(props: TitleBarProps) {
       </div>
       <div className="titlebar-section" style={{paddingLeft: 0}}>
         <NavigationButtons />
+        <DiscardDraftButton />
       </div>
 
       <Title />

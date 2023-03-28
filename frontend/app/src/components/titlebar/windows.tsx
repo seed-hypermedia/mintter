@@ -8,6 +8,7 @@ import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
 import '../../styles/dropdown.scss'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
+import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
 import {
@@ -54,6 +55,7 @@ export default function TitleBarWindows(props: TitleBarProps) {
         <div className="titlebar-section">
           <NavigationButtons />
           <NavMenu />
+          <DiscardDraftButton />
         </div>
 
         <div data-tauri-drag-region style={{flexGrow: 1}}></div>
