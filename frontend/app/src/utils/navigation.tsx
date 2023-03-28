@@ -1,6 +1,12 @@
 import {draftsClient} from '@app/api-clients'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
-import {createContext, ReactNode, useContext, useReducer} from 'react'
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useReducer,
+} from 'react'
 import {toast} from 'react-hot-toast'
 import {openWindow} from './open-window'
 
@@ -39,6 +45,7 @@ export type NavAction = PushAction | ReplaceAction | PopAction | ForwardAction
 export type NavState = {
   routes: NavRoute[]
   routeIndex: number
+  lastAction: NavAction['type']
 }
 export type NavigationContext = {
   state: NavState
@@ -53,23 +60,27 @@ function navStateReducer(state: NavState, action: NavAction): NavState {
       return {
         routes: [...state.routes.slice(0, state.routeIndex + 1), action.route],
         routeIndex: state.routeIndex + 1,
+        lastAction: action.type,
       }
     case 'replace':
       return {
         routes: [...state.routes.slice(0, state.routeIndex), action.route],
         routeIndex: state.routeIndex,
+        lastAction: action.type,
       }
     case 'pop': {
       if (state.routeIndex === 0) return state
       return {
         ...state,
         routeIndex: state.routeIndex - 1,
+        lastAction: action.type,
       }
     }
     case 'forward':
       return {
         routes: state.routes,
         routeIndex: Math.min(state.routeIndex + 1, state.routes.length - 1),
+        lastAction: action.type,
       }
     default:
       return state
@@ -77,8 +88,22 @@ function navStateReducer(state: NavState, action: NavAction): NavState {
 }
 
 const initRouteEncoded = window.location.pathname.slice(1)
+const homeRoute: HomeRoute = {key: 'home'}
+let initRoute: NavRoute = homeRoute
+try {
+  initRoute = decodeRouteFromPath(initRouteEncoded)
+} catch (e) {
+  console.error('🔥 Error parsing initial route! ', e)
+}
 
-function parseInitRoute(initRoute: string): NavRoute {
+function encodeRouteToPath(route: NavRoute): string {
+  return `/${Buffer.from(JSON.stringify(route))
+    .toString('base64')
+    .replaceAll('=', '-')
+    .replaceAll('+', '_')}`
+}
+
+function decodeRouteFromPath(initRoute: string): NavRoute {
   return JSON.parse(
     Buffer.from(
       initRoute.replaceAll('_', '+').replaceAll('-', '='),
@@ -87,19 +112,18 @@ function parseInitRoute(initRoute: string): NavRoute {
   )
 }
 
-let initRoute: NavRoute = {key: 'home'}
-try {
-  initRoute = parseInitRoute(initRouteEncoded)
-} catch (e) {
-  console.error('🔥 Error parsing initial route! ', e)
-}
-
 export function NavigationProvider({children}: {children: ReactNode}) {
   const [navState, dispatch] = useReducer(navStateReducer, {
     routes: [initRoute],
     routeIndex: 0,
+    lastAction: 'replace',
   })
-  console.log('-- nav state', navState)
+  const {lastAction, routes, routeIndex} = navState
+  const activeRoute = routes[routeIndex]
+  useEffect(() => {
+    const newPath = encodeRouteToPath(activeRoute)
+    window.history.replaceState(null, '', newPath)
+  }, [activeRoute, lastAction])
   return (
     <NavContext.Provider
       value={{
@@ -139,12 +163,7 @@ export function useNavigate(mode: NavMode = 'push') {
   const dispatch = useNavigationDispatch()
   return (route: NavRoute) => {
     if (mode === 'spawn') {
-      openWindow(
-        `/${Buffer.from(JSON.stringify(route))
-          .toString('base64')
-          .replaceAll('=', '-')
-          .replaceAll('+', '_')}`,
-      )
+      openWindow(encodeRouteToPath(route))
     } else {
       dispatch({type: mode === 'replace' ? 'replace' : 'push', route})
     }
