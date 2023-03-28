@@ -130,17 +130,30 @@ do
       echo "Please make sure the hostname includes the protocol http(s)://"
     fi
   done
-  
   while true; do
+    owner=""
     if [ ! -d "$workspace" ];then
-      echo "4) Site Owner seed. Enter 12 space separated BIP-39 mnemonic words"
+      echo "4) Site Owner. If you want to link this site to an existing account then enter"
+      echo "   12 space separated BIP-39 mnemonic words and site owner will be that account."
+      echo "   But if you want independent site AccountID, just enter the owner accountID."
       read -p "" words
+      
       IFS=" "
       set -- $words
       numWords=$#
+      if [ $numWords -eq 1 ]; then
+        owner=$1
+        if [ ${#owner} -ne 72 ]; then
+          echo "Invalid Mintter Account ID"
+          continue
+        else
+          break
+        fi
+      fi
       if [ $numWords -ne 12 ] && [ $numWords -ne 15 ] && [ $numWords -ne 18 ] && [ $numWords -ne 21 ] && [ $numWords -ne 24 ]; then
-        echo "Please provide a 12|15|18|21|24 BIP-39 compatible workds"
+        echo "Only 12|15|18|21|24 mnemonic words allowed"
       else
+        bip39=1
         break
       fi
     else
@@ -159,7 +172,7 @@ do
   if [ ! -z "$owner" ]; then
     echo "  - Owner ID: ${owner}"
   else
-    echo "  - Owner ID: ***"
+    echo "  - Owner ID: [not known yet]"
   fi
 
   echo "  - Workspace: ${workspace}"
