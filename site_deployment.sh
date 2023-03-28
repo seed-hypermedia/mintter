@@ -156,7 +156,7 @@ do
   done
   echo "Nice, we will create a site with the following characteristics:"
   echo "  - Hostname: ${hostname}"
-  if [ ! -z "$owner"]; then
+  if [ ! -z "$owner" ]; then
     echo "  - Owner ID: ${owner}"
   else
     echo "  - Owner ID: ***"
@@ -168,13 +168,13 @@ do
     mkdir -p ${workspace}
     echo "MTT_SITE_HOSTNAME=${hostname}" > ${workspace}/.env
     echo "MTT_SITE_WORKSPACE=${workspace}" >> ${workspace}/.env
-    if [ ! -z "$owner"]; then
+    if [ ! -z "$owner" ]; then
       echo "MTT_SITE_OWNER_ACCOUNT_ID=${owner}" >> ${workspace}/.env
     else
       echo -n "MTT_SITE_OWNER_ACCOUNT_ID=" >> ${workspace}/.env
     fi
     curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
-    if [ -z "$owner"]; then
+    if [ -z "$owner" ]; then
       docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
       rm mttsite.yml
       payload="["
