@@ -2,6 +2,8 @@ import {draftsClient} from '@app/api-clients'
 import {queryKeys, useAuthor, usePublication} from '@app/hooks'
 import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
 import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect} from 'react'
@@ -9,13 +11,28 @@ import {useEffect} from 'react'
 export function TitleContent() {
   const route = useNavRoute()
   if (route.key === 'home') {
-    return <>Inbox</>
+    return (
+      <>
+        <Icon name="File" />
+        <Text css={{marginInline: '$3'}}>All Publications</Text>
+      </>
+    )
   }
   if (route.key === 'connections') {
-    return <>Connections</>
+    return (
+      <>
+        <Icon name="Person" />
+        <Text css={{marginInline: '$3'}}>Connections</Text>
+      </>
+    )
   }
   if (route.key === 'drafts') {
-    return <>Drafts</>
+    return (
+      <>
+        <Icon name="PencilAdd" />
+        <Text css={{marginInline: '$3'}}>Drafts</Text>
+      </>
+    )
   }
   if (route.key === 'account') {
     return <>Account Profile</>
