@@ -23,9 +23,10 @@ import {
   CreateConversationRequest,
 } from '@mintter/shared'
 import {Event, listen} from '@tauri-apps/api/event'
-import {PropsWithChildren, useEffect, useMemo} from 'react'
+import {PropsWithChildren, useEffect, useMemo, useState} from 'react'
 import {Descendant, Editor as EditorType, Transforms} from 'slate'
 import {Editable, ReactEditor, Slate} from 'slate-react'
+import DragContext, { DragContextValues, HoveredNode } from './drag-context'
 import {
   buildDecorateHook,
   buildEventHandlerHooks,
@@ -37,6 +38,7 @@ import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
 import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
+import debounce from 'lodash.debounce'
 
 interface EditorProps {
   mode?: EditorMode
@@ -61,6 +63,17 @@ export function Editor({
 }: PropsWithChildren<EditorProps>) {
   if (!editor) {
     throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
+  }
+
+  const [draggedNode, setDraggedNode] = useState<HoveredNode>(null);
+  let contextValues: DragContextValues = {
+    drag: draggedNode,
+    setDrag: debounce((e: DragEvent, node: FlowContent) => {
+      if (draggedNode) return;
+      // console.log(draggedNode, node);
+      setDraggedNode(node);
+    }, 500),
+    clearDrag: () => {setDraggedNode(null)},
   }
 
   const renderElement = useMemo(
@@ -224,26 +237,33 @@ export function Editor({
     }
   })
 
+  useEffect(() => {
+    contextValues.drag = draggedNode
+    console.log(draggedNode);
+  }, [draggedNode])
+
   if (mode == EditorMode.Draft) {
     return (
       <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
-        <Slate
-          editor={editor}
-          value={value as Array<Descendant>}
-          onChange={onChange}
-        >
-          <EditorHoveringToolbar />
-          <Editable
-            id="editor"
-            data-testid="editor"
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            decorate={decorate}
-            placeholder="Start typing here..."
-            {...eventHandlers}
-          />
-          {children}
-        </Slate>
+        <DragContext.Provider value={contextValues}>
+          <Slate
+            editor={editor}
+            value={value as Array<Descendant>}
+            onChange={onChange}
+          >
+            <EditorHoveringToolbar />
+            <Editable
+              id="editor"
+              data-testid="editor"
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              decorate={decorate}
+              placeholder="Start typing here..."
+              {...eventHandlers}
+            />
+            {children}
+          </Slate>
+        </DragContext.Provider>
         {/* <pre>{JSON.stringify(editor.children, null, 2)}</pre> */}
       </div>
     )

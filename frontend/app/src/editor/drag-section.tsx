@@ -7,9 +7,10 @@ import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {FlowContent} from '@mintter/shared'
-import React from 'react'
-import {RenderElementProps, useSlate} from 'slate-react'
+import React, { useContext, useEffect } from 'react'
+import {ReactEditor, RenderElementProps, useSlate} from 'slate-react'
 import {BlockTools} from './blocktools'
+import DragContext from './drag-context'
 import {useBlockProps} from './editor-node-props'
 import {useBlockFlash} from './utils'
 
@@ -38,6 +39,13 @@ export const ElementDrag = ({
 
   let inRoute = useBlockFlash(attributes.ref, element.id)
 
+  const dragContext = useContext(DragContext);
+  const {drag, setDrag, clearDrag} = dragContext;
+
+  // useEffect(() => {
+  //   drag = dragContext.drag
+  // }, [dragContext])
+
   return (
     <li
       {...attributes}
@@ -45,6 +53,26 @@ export const ElementDrag = ({
       className={inRoute ? 'flash' : undefined}
       onDrop={editor.mode == EditorMode.Draft ? onDrop : undefined}
       onDragEnd={editor.mode == EditorMode.Draft ? onDrop : undefined}
+      onDragEnter={(e: any) => {
+        if (drag) return;
+        setDrag(e, element as FlowContent)
+        // console.log(element);
+        e.preventDefault()
+        const path = ReactEditor.findPath(editor, element)
+
+        const domNode = ReactEditor.toDOMNode(editor, element)
+
+        dragService?.send({
+          type: 'DRAG.OVER',
+          toPath: path,
+          element: domNode as HTMLLIElement,
+          currentPos: e.clientX,
+        })
+      }}
+      onDragLeave={(e: any) => {
+        if (!drag) return;
+        clearDrag();
+      }}
     >
       <BlockTools block={element as FlowContent} />
       {children}

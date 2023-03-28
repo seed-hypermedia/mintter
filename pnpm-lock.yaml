@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@bufbuild/protoc-gen-connect-web': ^0.6.0
-      '@bufbuild/protoc-gen-es': ^1.0.0
+      '@bufbuild/protoc-gen-es': ^1.2.0
       '@typescript-eslint/eslint-plugin': 5.45.1
       '@typescript-eslint/parser': 5.45.1
       '@typescript-eslint/typescript-estree': 5.45.1
@@ -20,8 +20,8 @@ importers:
       tiny-glob: 0.2.9
       typescript: 4.9.4
     devDependencies:
-      '@bufbuild/protoc-gen-connect-web': 0.6.0_gc6flkzwgkoiultk67xcgwp4py
-      '@bufbuild/protoc-gen-es': 1.1.1
+      '@bufbuild/protoc-gen-connect-web': 0.6.0_6jgp3rbr5thx3undeymermbcem
+      '@bufbuild/protoc-gen-es': 1.2.0
       '@typescript-eslint/eslint-plugin': 5.45.1_f3ripjxnrcbcxlztumpiegdjha
       '@typescript-eslint/parser': 5.45.1_ha6vam6werchizxrnqvarmz2zu
       '@typescript-eslint/typescript-estree': 5.45.1_typescript@4.9.4
@@ -122,6 +122,7 @@ importers:
       is-plain-object: 5.0.0
       is-url: 1.2.4
       js-video-url-parser: 0.5.1
+      lodash.debounce: ^4.0.8
       long: 5.2.1
       nanoid: 4.0.0
       navaid: 1.2.0
@@ -223,6 +224,7 @@ importers:
       is-plain-object: 5.0.0
       is-url: 1.2.4
       js-video-url-parser: 0.5.1
+      lodash.debounce: 4.0.8
       long: 5.2.1
       nanoid: 4.0.0
       navaid: 1.2.0
@@ -248,7 +250,7 @@ importers:
       slate-react: 0.90.0_vfkxdgngtm5gosdcaawdsu5ur4
       tauri-plugin-log-api: github.com/tauri-apps/tauri-plugin-log/b58475bbc410fa78eb69276c62d0b64c91c07914
       tauri-plugin-sentry-api: github.com/JonasKruckenberg/sentry-tauri/df123beb03104b6068b3bdd6fc509e3158f7dd30
-      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/971c3d86fb614871c49e27a30124454c66ca3a53
+      tauri-plugin-store-api: github.com/tauri-apps/tauri-plugin-store/d21d55684ad444d8cba322f0013e1b2b7e0630a7
       tiny-secp256k1: 2.2.1
       trim-trailing-lines: 2.1.0
       unified: 10.1.2
@@ -1267,8 +1269,13 @@ packages:
 
   /@bufbuild/protobuf/1.1.1:
     resolution: {integrity: sha512-1dS2m3jabfW2XL2K6//41wZkO4XJOZtpe0bKLuta0BvK5LxNRyUBSSN5835n3bIFiNJKFWhDnzZEMrV7QVGFfQ==}
+    dev: false
 
-  /@bufbuild/protoc-gen-connect-web/0.6.0_gc6flkzwgkoiultk67xcgwp4py:
+  /@bufbuild/protobuf/1.2.0:
+    resolution: {integrity: sha512-MBVuQMOBHxgGnZ9XCUIi8WOy5O/T4ma3TduCRhRvndv3UDbG9cHgd8h6nOYSGyBYPEvXf1z9nTwhp8mVIDbq2g==}
+    dev: true
+
+  /@bufbuild/protoc-gen-connect-web/0.6.0_6jgp3rbr5thx3undeymermbcem:
     resolution: {integrity: sha512-R2iuvUCRTRvBVyvx3U/ph9hjciwizy4EScQvqdASFCC3QimtXBf+pV2QU6KzNzhI9RqlKh18A7Egfw++4B9I7Q==}
     engines: {node: '>=14'}
     hasBin: true
@@ -1281,31 +1288,31 @@ packages:
       '@bufbuild/protoc-gen-es':
         optional: true
     dependencies:
-      '@bufbuild/protoc-gen-es': 1.1.1
-      '@bufbuild/protoplugin': 1.1.1
+      '@bufbuild/protoc-gen-es': 1.2.0
+      '@bufbuild/protoplugin': 1.2.0
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@bufbuild/protoc-gen-es/1.1.1:
-    resolution: {integrity: sha512-TaT3xvUrlikuq7bN63d/FlpbecdnrKgerrUD+ArFGIN5CLIdBU+FMVlup/wvP+iTNxf0k6Qrpg2x7XhyLIHZMg==}
+  /@bufbuild/protoc-gen-es/1.2.0:
+    resolution: {integrity: sha512-rdg2+Co4H+cImZ81EEzHLEi9bmzmMnS/bsf7XLHKtWYskj1PZVIalfquQejcSV6eWbdmVGKa29JwI5zEkSmkCQ==}
     engines: {node: '>=14'}
     hasBin: true
     peerDependencies:
-      '@bufbuild/protobuf': 1.1.1
+      '@bufbuild/protobuf': 1.2.0
     peerDependenciesMeta:
       '@bufbuild/protobuf':
         optional: true
     dependencies:
-      '@bufbuild/protoplugin': 1.1.1
+      '@bufbuild/protoplugin': 1.2.0
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@bufbuild/protoplugin/1.1.1:
-    resolution: {integrity: sha512-WDLgYReAMo1X2QqZrKyaFaZIcO01CHuq1dGRtaB42tyiY1f6Er9de1tvtRxt0MWfx5vPhZmoPCKSrwLZp92UTw==}
+  /@bufbuild/protoplugin/1.2.0:
+    resolution: {integrity: sha512-TX0mEk+LdIbpK2xr5RqeUswR8jGZs6uCX6Cq8azADj8hhiUr7Xty8agEOU/zR+J71D4dV5SnyEPYyw0nGJ6dGQ==}
     dependencies:
-      '@bufbuild/protobuf': 1.1.1
+      '@bufbuild/protobuf': 1.2.0
       '@typescript/vfs': 1.4.0
       typescript: 4.5.2
     transitivePeerDependencies:
@@ -5398,7 +5405,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       '@typescript-eslint/types': 5.45.1
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
     dev: true
 
   /@typescript-eslint/visitor-keys/5.55.0:
@@ -8413,6 +8420,11 @@ packages:
   /eslint-visitor-keys/3.3.0:
     resolution: {integrity: sha512-mQ+suqKJVyeuwGYHAdjMFqjCyfl8+Ldnxuyp3ldiMBFKkvytrXUZWaiPCEav8qDHKty44bD+qV1IP4T+w+xXRA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    dev: false
+
+  /eslint-visitor-keys/3.4.0:
+    resolution: {integrity: sha512-HPpKPUBQcAsZOsHAFwTtIKcYlCje62XB7SEAcxjtmW6TD1WVpkS6i6/hOVtTZIl4zGj/mBqpFVGvaDneik+VoQ==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   /eslint/8.29.0:
     resolution: {integrity: sha512-isQ4EEiyUjZFbEKvEGJKKGBwXtvXX+zJbkVKCgTuB9t/+jUBcy8avhkEwWJecI15BkRkOYmvIM5ynbhRjEkoeg==}
@@ -8431,7 +8443,7 @@ packages:
       escape-string-regexp: 4.0.0
       eslint-scope: 7.1.1
       eslint-utils: 3.0.0_eslint@8.29.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
       espree: 9.5.0
       esquery: 1.5.0
       esutils: 2.0.3
@@ -8446,7 +8458,7 @@ packages:
       imurmurhash: 0.1.4
       is-glob: 4.0.3
       is-path-inside: 3.0.3
-      js-sdsl: 4.3.0
+      js-sdsl: 4.4.0
       js-yaml: 4.1.0
       json-stable-stringify-without-jsonify: 1.0.1
       levn: 0.4.1
@@ -8471,7 +8483,7 @@ packages:
     dependencies:
       acorn: 8.8.2
       acorn-jsx: 5.3.2_acorn@8.8.2
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
 
   /esprima/4.0.1:
     resolution: {integrity: sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==}
@@ -10080,8 +10092,8 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /js-sdsl/4.3.0:
-    resolution: {integrity: sha512-mifzlm2+5nZ+lEcLJMoBK0/IH/bDg8XnJfd/Wq6IP+xoCjLZsTOnV2QpxlVbX9bMnkl5PdEjNtBJ9Cj1NjifhQ==}
+  /js-sdsl/4.4.0:
+    resolution: {integrity: sha512-FfVSdx6pJ41Oa+CF7RDaFmTnCaFhua+SNYQX74riGOpl96x+2jQCqEfQ2bnXu/5DPCqlRuiqyvTJM0Qjz26IVg==}
 
   /js-tokens/4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -14093,8 +14105,8 @@ packages:
       tslib: 2.5.0
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-store/971c3d86fb614871c49e27a30124454c66ca3a53:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/971c3d86fb614871c49e27a30124454c66ca3a53}
+  github.com/tauri-apps/tauri-plugin-store/d21d55684ad444d8cba322f0013e1b2b7e0630a7:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-store/tar.gz/d21d55684ad444d8cba322f0013e1b2b7e0630a7}
     name: tauri-plugin-store-api
     version: 0.0.0
     dependencies:
