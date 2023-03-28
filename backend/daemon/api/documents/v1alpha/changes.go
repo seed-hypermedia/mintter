@@ -4,6 +4,8 @@ import (
 	"context"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/pkg/errutil"
+	"mintter/backend/vcs"
+	"mintter/backend/vcs/sqlitevcs"
 
 	"github.com/ipfs/go-cid"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -27,13 +29,7 @@ func (api *Server) GetChangeInfo(ctx context.Context, in *documents.GetChangeInf
 		return nil, err
 	}
 
-	resp := &documents.ChangeInfo{
-		Id:         in.Id,
-		Author:     info.Author.String(),
-		CreateTime: timestamppb.New(info.CreateTime),
-	}
-
-	return resp, nil
+	return changeToProto(info), nil
 }
 
 // ListChanges implements the Changes server.
@@ -59,12 +55,26 @@ func (api *Server) ListChanges(ctx context.Context, in *documents.ListChangesReq
 	}
 
 	for i, info := range infos {
-		resp.Changes[i] = &documents.ChangeInfo{
-			Id:         info.ID.String(),
-			Author:     info.Author.String(),
-			CreateTime: timestamppb.New(info.CreateTime),
-		}
+		resp.Changes[i] = changeToProto(info)
 	}
 
 	return resp, nil
+}
+
+func changeToProto(info sqlitevcs.PublicChangeInfo) *documents.ChangeInfo {
+	pb := &documents.ChangeInfo{
+		Id:         info.ID.String(),
+		Author:     info.Author.String(),
+		CreateTime: timestamppb.New(info.CreateTime),
+		Version:    vcs.NewVersion(info.ID).String(),
+	}
+
+	if info.Deps != nil {
+		pb.Deps = make([]string, len(info.Deps))
+		for i, d := range info.Deps {
+			pb.Deps[i] = d.String()
+		}
+	}
+
+	return pb
 }

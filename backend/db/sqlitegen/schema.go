@@ -79,6 +79,16 @@ func (c Column) ShortName() string {
 	return string(c[idx+1:])
 }
 
+// Term is a common interface for Table and Column.
+type Term interface {
+	isTerm()
+	String() string
+}
+
+func (t Table) isTerm()        {}
+func (c Column) isTerm()       {}
+func (t Table) String() string { return string(t) }
+
 // Table is a type for a SQL table name.
 type Table string
 

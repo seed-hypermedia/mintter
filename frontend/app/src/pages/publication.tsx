@@ -1,3 +1,4 @@
+import {AppBanner, BannerText} from '@app/app-banner'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {CitationsProvider} from '@app/editor/comments/citations-context'
 import {ConversationsProvider} from '@app/editor/comments/conversations-context'
@@ -6,7 +7,12 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {FileProvider} from '@app/file-provider'
-import {useDocChanges, useDocCitations, usePublication} from '@app/hooks'
+import {
+  queryKeys,
+  useDocChanges,
+  useDocCitations,
+  usePublication,
+} from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {PublicationActor} from '@app/publication-machine'
@@ -23,6 +29,8 @@ import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
 import {MttLink} from '@mintter/shared'
+import {keyframes} from '@stitches/react'
+import {useQueryClient} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
 import {Allotment} from 'allotment'
@@ -33,41 +41,6 @@ import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
-
-function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
-  const {data: pub, isLoading} = usePublication(docId)
-  const [l, setLocation] = useLocation()
-  if (isLoading) return null
-  if (version === pub?.version) return null
-  if (!pub?.version) return null
-  return (
-    <Box
-      css={{
-        padding: '$4',
-        background: '$warning-background-normal',
-        cursor: 'pointer',
-        borderBottom: '1px solid blue',
-        borderColor: '$warning-text-low',
-      }}
-    >
-      <Text
-        css={{
-          color: '$warning-text-low',
-          textAlign: 'cente',
-        }}
-      >
-        <a
-          onClick={(e) => {
-            e.preventDefault()
-            setLocation(`/p/${docId}/${pub.version}`)
-          }}
-        >
-          There is a newer version of this doc. Click to go to latest version
-        </a>
-      </Text>
-    </Box>
-  )
-}
 
 export default function PublicationPage({
   publicationActor,
@@ -476,4 +449,34 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
       }
     }, 1000)
   }, [ref, blockId, editor])
+}
+
+function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
+  const {data: pub, isLoading} = usePublication(docId)
+  const [l, setLocation] = useLocation()
+  const client = useQueryClient()
+  if (isLoading) return null
+  if (version === pub?.version) return null
+  if (!pub?.version) return null
+  return (
+    <AppBanner
+      onMouseEnter={() => {
+        client.prefetchQuery({
+          queryKey: [queryKeys.GET_PUBLICATION, docId, pub.version],
+        })
+      }}
+    >
+      <BannerText>
+        <a
+          onClick={(e) => {
+            e.preventDefault()
+            setLocation(`/p/${docId}/${pub.version}`)
+          }}
+        >
+          There is a newer version of this Publication. Click here to go to
+          latest version →
+        </a>
+      </BannerText>
+    </AppBanner>
+  )
 }

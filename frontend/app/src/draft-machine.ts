@@ -14,7 +14,6 @@ import {
 
 import {draftsClient} from '@app/api-clients'
 import {queryKeys} from '@app/hooks'
-import {createSelectAllActor} from '@app/selectall-machine'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'
 import {invoke} from '@tauri-apps/api'
@@ -38,6 +37,7 @@ export type DraftMachineContext = {
   author: Account | null
   title: string
   editor: Editor
+  canSave: boolean
 }
 
 export type DraftMachineEvent =
@@ -50,6 +50,8 @@ export type DraftMachineEvent =
   | {type: 'RETRY'}
   | {type: 'EDITING.START'}
   | {type: 'EDITING.STOP'}
+  | {type: 'IS_DAEMON_READY'}
+  
 
 type DraftMachineServices = {
   fetchDraft: {
@@ -84,7 +86,7 @@ export function createDraftMachine({
   shouldAutosave = true,
   editor,
 }: CreateDraftMachineProps) {
-  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdAMzDQGMALFAOygGIINywcKA3DAawYOJIBEsBDPGgDaABgC6iUAAcMsdCjqSQAD0QAmACwB2HCI0BWAByG9agGwBGbQGZrAGhABPRIYM591-WY1qR+g2oeAL5BDqiYuJykFNRgWFjYOFIANnxoeNgAtviEpLwCwuJKMnJoCuRKqgi2FjhaIn7aWhYthloOzggaGmY4PvpaGhZa+gCcZqMi1lohYRDoieExVABKAKIAymsAKjgAwgASAIIAcgDim6ISSCAl8oo3Va21aq9mWmq2GiITZh2I+haOGMxjManGGlGhkCGlm4HmERwS0ojAgyTAVG4KyOADFdgBVAAK3CO2zWV2KsnuFUeiChajq4x+LTMIjUbUM-wQhgs+ncIl5Wlso2sItscPCiwRMVR6Mx2LxOEJ+IAQgAZACSGwOFJudzKD1AT2sFkMOFFUOmfl5hjM+i5Fj8DMd7Oh1m69UMEoRUvkKJQaIxWNxuz2AHkALIRjW7DZHABq5KKeqpBppRsQnpwr2+IpEWkM4ztDoFfO62isouhQq9oXhC1wyKgOFgfCYy1o9EY5BY7BbbbA+UEuukqfKlQB3Rwo2aJhMngmAq5PJ0DVeVh5XgGZm9DaR0pRrfblCocQSuBSaQyWGyR8H-GHydHpXHtO5o1GODBZneFk0Jo0aw-icOkRhwP9DHdAxulGLw1F3REm37Y9qGDRUiRJMkR1uMdDRURAfwZEQoRnUV9ECSsuXGMtDHI8xyP0BogIQxIpAAVwAI2SFBYBIGg6AYZg2AYdiuJ4ngH0Ka5n2pCcEEBM1bCMICc2GfMHTGPkRELfNSPBMFrBYi9OO43jT3iVjUnSLIkhM8ShykykXzwqoC0-axNECLQJnBCx3gdLRYN0KFjG6dkPFNIykQsrBIFWHYVgATWw-VXwzBAIPcT5AJnD9QQsB1TU-MweRnXzRmGDyotE0ySGQjsBO7XsGDvByUtw9N8IQMERC-fQvC0At+sLcEHWhPlNAMZS1GGW0dzrSVjLE3j6pPM9LKvGzWsk9rnM6qpbGsbMJi8UYNFcRifjGoCvyAwEjHBM7-BCOtyAwCA4CURanNkt8AFoCpA6ogTOgsf0dIwC08KKojISgfrTOTtBLAU6gFVxRTU6w2iipsEbSrrIV6GdTW0qZToaYDOhK2o2WmGw2g-AZcYPZsA3RfGXMzMDjCmUVAM0Eblx-bNujZV4+YtFm-WbI8Yk5-bucUx6cx8Rn7SBlpeXcZo1EG3kPKg6q7N4hW5JhYE7UdWDeX6PyHQmWpvPZd0-Mgz1cZiyAzbfd53LMbGA-qAYPQdIYzRMQaRgqiwKqmY3lrquX4ZTPa5OsNlLcBYj7rtqnEFNW1dDBAZBp6SEDAT2rbMT+XU9+9Kg+BCxRQac6hT89pNcmWo-L0EZfJGbSXqCIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SQJYBcD2AnAdAMzDQGMALFAOygGIINywcKA3DAawYOJIBEsBDPGgDaABgC6iUAAcMsdCjqSQAD0QAmACwB2HCI0BWAByG9agGwBGbQGZrAGhABPRIYM591-WY1qR+g2oeAL5BDqiYuJykFNRgWFjYOFIANnxoeNgAtviEpLwCwuJKMnJoCuRKqgi2FjhaIn7aWhYthloOzggaGmY4PvpaGhZa+gCcZqMi1lohYRDoieExVABKAKIAymsAKjgAwgASAIIAcgDim6ISSCAl8oo3Va21aq9mWmq2GiITZh2I+haOGMxjManGGlGhkCGlm4HmERwS0ojAgyTAVG4KyOADFdgBVAAK3CO2zWV2KsnuFUeiChajq4x+LTMIjUbUM-wQhgs+ncIl5Wlso2sItscPCiwRMVR6Mx2LxOEJ+IAQgAZACSGwOFJudzKD1AT2sFkMOFFUOmfl5hjM+i5Fj8DMd7Oh1m69UMEoRUvkKJQaIxWNxuz2AHkALIRjW7DZHABq5KKeqpBppRsQnpwr2+IpEWkM4ztDoFfO62isouhQq9oXhC1wyKgOFgfCYy1o9EY5BY7BbbbA+UEuukqfKlQB3Rwo2aJhMngmAq5PJ0DVeVh5XgGZm9DaR0pRrfblCocQSuBSaQyWGyR8H-GHydHpXHtO5o1GODBZneFk0Jo0aw-icOkRhwP9DHdAxulGLw1F3REm37Y9qGDRUiRJMkR1uMdDRUAFrAZERXHBNoLBND9gM6FovHNdkf15UZoI-BDEikABXAAjZIUFgEgaDoBhmDYBgOO43ieAfQprmfakJwQQEzVsIwgJzYZ8wdMY+WIyYtBnQjxk+ViLy4ni+NPeI2NSdIsiSUyJKHaTKRfPCqgLT9CP6LQJnBCx3gdPTtKhYxunZDxTWMuzxL45CO0E7tewYO9HOw-VXwzBAwREL99C8LQC1ywtwQdaE+U0AwVLUYZbR3OtJRM6KSFik8zysq9bOSqTUtw9N8OqWxswmLwmNcfQGioxBTSAr8gMBIxwSY-xItarBIFWHYVgATW6lzeqedl3E+QCZw-UELAdU1PzMHkZ180ZhkIkI63IDAIDgJR6ucuS3wAWnOkDqiMadvkaFoPjGmY6p9SJcjISgvrTeTtBLAU6gFVxRXU6w2mWg8oAR9K+o0VxdBIqFmgo8YuQ+M1S0LICgNO3G-WbAN0QJ1zMynMYBUhbQqtI5dfHA7z9E+AZZqmZmykPNsYg5vbMwLOiPxzHw2lgi7eXcZo1Hy3lCKgyKxLMkgFfkmFgTtR1YN5fo-IdRc6h-QYDb191jfsmKj3llNdvk6w2StwERFt-xAgdgHTVtXQwQGfKej5-RPcaqLTd92TEbfMxpmBcjJj0NoTX8qPJlqPy9BGXyRmIlPTbTiTIHNt9A4ZW0Q7D+2JoQXxoS-HxNG8oUC285bLNWiBm4y94PJz20rQGD0HSGM0THykZ7ose6paeoA */
   return createMachine(
     {
       predictableActionArguments: true,
@@ -96,6 +98,7 @@ export function createDraftMachine({
         author: null,
         title: '',
         editor,
+        canSave: true,
       },
       tsTypes: {} as import('./draft-machine.typegen').Typegen0,
       schema: {
@@ -126,10 +129,6 @@ export function createDraftMachine({
         },
 
         editing: {
-          invoke: {
-            src: createSelectAllActor(editor),
-            id: 'selectAllListener',
-          },
           on: {
             'RESET.CHANGES': {
               actions: ['cancelSave', 'resetChanges'],
@@ -151,7 +150,16 @@ export function createDraftMachine({
                   target: '#editor.publish.saving',
                   actions: ['cancelSave'],
                 },
-                'DRAFT.COMMIT.SAVE': 'saving',
+                'DRAFT.COMMIT.SAVE': [
+                  {
+                    target: 'saving',
+                    cond: 'isDaemonReady',
+                  },
+                  {
+                    target: 'idle',
+                    actions: ['assignCannotSave'],
+                  },
+                ],
               },
             },
             saving: {
@@ -234,6 +242,11 @@ export function createDraftMachine({
           },
         },
       },
+      on: {
+        IS_DAEMON_READY: {
+          actions: ['assignCanSave'],
+        },
+      },
     },
     {
       actions: {
@@ -314,6 +327,12 @@ export function createDraftMachine({
         },
         cancelSave: cancel('save-draft'),
         commitSave: send('DRAFT.COMMIT.SAVE', {id: 'save-draft', delay: 500}),
+        assignCannotSave: assign({
+          canSave: false,
+        }),
+        assignCanSave: assign({
+          canSave: true,
+        }),
       },
       services: {
         fetchDraft: (context) => {

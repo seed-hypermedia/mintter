@@ -24,11 +24,12 @@
     "gw:dev": "pnpm --parallel --filter='@mintter/shared' --filter='@mintter/gateway' dev",
     "gw:build": "pnpm --filter='@mintter/gateway' build",
     "gw:test": "pnpm --filter='@mintter/gateway' test",
-    "gw:start": "pnpm --filter='@mintter/gateway' start"
+    "gw:start": "pnpm --filter='@mintter/gateway' start",
+    "rmfiles": "rm -rf node_modules/.pnpm/esbuild-windows* node_modules/.pnpm/esbuild-freebsd* node_modules/.pnpm/esbuild-openbsd* node_modules/.pnpm/esbuild-sunos* node_modules/.pnpm/esbuild-netbsd* node_modules/.pnpm/esbuild-android* node_modules/.pnpm/@esbuild+linux-loong* node_modules/.pnpm/esbuild-linux-arm* node_modules/.pnpm/esbuild-linux-riscv*"
   },
   "devDependencies": {
-    "@bufbuild/protoc-gen-connect-web": "^0.6.0",
-    "@bufbuild/protoc-gen-es": "^1.2.0",
+    "@bufbuild/protoc-gen-connect-web": "0.6.0",
+    "@bufbuild/protoc-gen-es": "1.0.0",
     "@typescript-eslint/eslint-plugin": "5.45.1",
     "@typescript-eslint/parser": "5.45.1",
     "@typescript-eslint/typescript-estree": "5.45.1",

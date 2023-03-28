@@ -50,6 +50,6 @@ services:
       - '--http-port=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
       - '-grpc-port=56002'
       - '-site.hostname=${MTT_SITE_HOSTNAME:-http://nextjs}'
-      - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID:-bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea}'
       - '-site.title=${MTT_SITE_TITLE:-NewSite}'
-      - '-identity.no-account-wait'
+      - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}'
+      - '${MTT_SITE_NOWAIT_FLAG}'

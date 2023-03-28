@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "cd ../.. && pnpm shared:build && cd frontend/gateway && pnpm build:front",
+    "build": "node setup-pages.js && cd ../.. && pnpm shared:build && pnpm rmfiles && cd frontend/gateway && pnpm build:front",
     "build:front": "next build",
     "lint": "next lint",
     "format": "prettier --write .",
@@ -20,7 +20,7 @@
     "@mintter/shared": "workspace:*",
     "@tamagui/config": "1.7.7",
     "@tamagui/core": "1.7.7",
-    "@tamagui/lucide-icons": "^1.7.8",
+    "@tamagui/lucide-icons": "1.7.8",
     "@tamagui/next-plugin": "1.7.7",
     "@tamagui/next-theme": "1.7.7",
     "@tanstack/react-query": "4.19.1",
@@ -45,8 +45,8 @@
     "next": "13.0.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-native-web": "^0.18.12",
-    "shiki-es": "^0.1.2",
+    "react-native-web": "0.18.12",
+    "shiki-es": "0.1.2",
     "slate": "0.90.0",
     "slate-react": "0.90.0",
     "tamagui": "1.7.7",
@@ -65,8 +65,8 @@
   },
   "peerDependencies": {
     "@babel/core": ">=7.0.0 <8.0.0",
-    "expo-modules-core": "^0.6.3",
-    "expo-screen-orientation": "^4.1.1",
+    "expo-modules-core": "0.6.3",
+    "expo-screen-orientation": "4.1.1",
     "react-native": ">=0.64.0"
   }
 }

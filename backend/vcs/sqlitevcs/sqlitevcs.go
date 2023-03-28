@@ -301,6 +301,7 @@ type PublicChangeInfo struct {
 	ID         cid.Cid
 	Author     cid.Cid
 	CreateTime time.Time
+	Deps       []cid.Cid
 }
 
 // GetPublicChangeInfo returns the public information about a Change.
@@ -310,23 +311,52 @@ func (conn *Conn) GetPublicChangeInfo(c cid.Cid) (info PublicChangeInfo, err err
 		return info, err
 	}
 
-	q := sqlf.From(string(sqliteschema.Changes)).
-		Select(sqliteschema.AccountsMultihash.String()).
-		Select(sqliteschema.ChangesStartTime.String()).
+	// Get dependencies for our change.
+	{
+		var (
+			codec    int64
+			ipfsHash []byte
+		)
+		q := sqlf.From(sqliteschema.ChangeDeps.String()).
+			Select(sqliteschema.IPFSBlocksCodec.String()).To(&codec).
+			Select(sqliteschema.IPFSBlocksMultihash.String()).To(&ipfsHash).
+			Join(sqliteschema.IPFSBlocks.String(), string(sqliteschema.IPFSBlocksID)+" = "+sqliteschema.ChangeDepsParent.String()).
+			Where(sqliteschema.ChangeDepsChild.String()+" = ?", pk.IPFSBlocksID)
+		defer q.Close()
+
+		if err := sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
+			stmt.Scan(q.Dest()...)
+			info.Deps = append(info.Deps, cid.NewCidV1(uint64(codec), ipfsHash))
+			return nil
+		}, q.Args()...); err != nil {
+			return info, err
+		}
+	}
+
+	// Get other metadata about our change.
+	var (
+		accountHash []byte
+		startTime   int64
+	)
+	q := sqlf.From(sqliteschema.Changes.String()).
+		Select(sqliteschema.AccountsMultihash.String()).To(&accountHash).
+		Select(sqliteschema.ChangesStartTime.String()).To(&startTime).
 		Join(string(sqliteschema.Accounts), sqliteschema.AccountsID.String()+" = "+sqliteschema.ChangesAccountID.String()).
 		Where(sqliteschema.ChangesID.String()+" = ?", pk.IPFSBlocksID).
 		Limit(1)
 	defer q.Close()
 
 	if err := sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
-		acchash, err := multihash.Cast(stmt.ColumnBytes(0))
+		stmt.Scan(q.Dest()...)
+
+		acchash, err := multihash.Cast(accountHash)
 		if err != nil {
 			return err
 		}
 
 		info.ID = c
 		info.Author = cid.NewCidV1(core.CodecAccountKey, acchash)
-		info.CreateTime = hlc.Unpack(stmt.ColumnInt64(1)).Time()
+		info.CreateTime = hlc.Unpack(startTime).Time()
 
 		return nil
 	}, q.Args()...); err != nil {
@@ -343,41 +373,65 @@ func (conn *Conn) ListChanges(obj cid.Cid) ([]PublicChangeInfo, error) {
 		return nil, fmt.Errorf("can't list changes: object %s not found", obj)
 	}
 
+	var (
+		changeID    int
+		codec       int
+		changeHash  []byte
+		accountHash []byte
+		startTime   int64
+	)
 	q := sqlf.From(string(sqliteschema.IPFSBlocks)).
-		Select(sqliteschema.IPFSBlocksMultihash.String()).
-		Select(sqliteschema.IPFSBlocksCodec.String()).
-		Select(sqliteschema.AccountsMultihash.String()).
-		Select(sqliteschema.ChangesStartTime.String()).
+		Select(sqliteschema.ChangesID.String()).To(&changeID).
+		Select(sqliteschema.IPFSBlocksMultihash.String()).To(&changeHash).
+		Select(sqliteschema.IPFSBlocksCodec.String()).To(&codec).
+		Select(sqliteschema.AccountsMultihash.String()).To(&accountHash).
+		Select(sqliteschema.ChangesStartTime.String()).To(&startTime).
 		LeftJoin(string(sqliteschema.Changes), sqliteschema.ChangesID.String()+" = "+sqliteschema.IPFSBlocksID.String()).
 		Join(string(sqliteschema.Accounts), sqliteschema.AccountsID.String()+" = "+sqliteschema.ChangesAccountID.String()).
 		Where(sqliteschema.ChangesPermanodeID.String()+" = ?", o)
 	defer q.Close()
 
 	var out []PublicChangeInfo
+	var ids []int
 
 	if err := sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
-		changeHash, err := multihash.Cast(stmt.ColumnBytes(0))
-		if err != nil {
-			return err
-		}
-
-		changeCodec := stmt.ColumnInt(1)
-
-		acchash, err := multihash.Cast(stmt.ColumnBytes(2))
-		if err != nil {
-			return err
-		}
+		stmt.Scan(q.Dest()...)
+		ids = append(ids, changeID)
 
 		info := PublicChangeInfo{
-			ID:         cid.NewCidV1(uint64(changeCodec), changeHash),
-			Author:     cid.NewCidV1(core.CodecAccountKey, acchash),
-			CreateTime: hlc.Unpack(stmt.ColumnInt64(3)).Time(),
+			ID:         cid.NewCidV1(uint64(codec), changeHash),
+			Author:     cid.NewCidV1(core.CodecAccountKey, accountHash),
+			CreateTime: hlc.Unpack(startTime).Time(),
 		}
 		out = append(out, info)
 
 		return nil
 	}, q.Args()...); err != nil {
 		return nil, err
+	}
+
+	for i, id := range ids {
+		// Get dependencies for our change.
+		{
+			var (
+				codec    int64
+				ipfsHash []byte
+			)
+			q := sqlf.From(sqliteschema.ChangeDeps.String()).
+				Select(sqliteschema.IPFSBlocksCodec.String()).To(&codec).
+				Select(sqliteschema.IPFSBlocksMultihash.String()).To(&ipfsHash).
+				Join(sqliteschema.IPFSBlocks.String(), string(sqliteschema.IPFSBlocksID)+" = "+sqliteschema.ChangeDepsParent.String()).
+				Where(sqliteschema.ChangeDepsChild.String()+" = ?", id)
+			defer q.Close()
+
+			if err := sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
+				stmt.Scan(q.Dest()...)
+				out[i].Deps = append(out[i].Deps, cid.NewCidV1(uint64(codec), ipfsHash))
+				return nil
+			}, q.Args()...); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return out, nil

@@ -1,8 +1,6 @@
 import {ConnectionStatus} from '@mintter/shared'
-import {
-  AccountWithRef,
-  createContactListMachine,
-} from '@app/contact-list-machine'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
+import {AccountWithRef, contactsListMachine} from '@app/contact-list-machine'
 import {CSS, keyframes, styled} from '@app/stitches.config'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Avatar} from '@components/avatar'
@@ -12,14 +10,19 @@ import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import {useQueryClient} from '@tanstack/react-query'
+import {useQuery, useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import {InterpreterFrom} from 'xstate'
-import '../styles/footer.scss'
+import {assign, InterpreterFrom} from 'xstate'
 import {Prompt} from './prompt'
-import {networkingClient} from '@app/api-clients'
+import {accountsClient, networkingClient} from '@app/api-clients'
+import {useDaemonReady, useOnline} from '@app/node-status-context'
+import {queryKeys} from '@app/hooks'
+import {emit} from '@tauri-apps/api/event'
+import {OnlineIndicator} from './indicator'
+import {useRoute} from 'wouter'
+import {useConnectionSummary} from '@app/hooks/contacts'
 
 const LabelWrap = styled('div', {
   marginHorizontal: 6,
@@ -52,24 +55,146 @@ export function FooterButton({
   )
 }
 
-export default function Footer({children}: {children?: ReactNode}) {
-  let client = useQueryClient()
-  let contactListService = useInterpret(() =>
-    createContactListMachine({client}),
-  )
+function FooterContactsButton() {
+  const [active] = useRoute('/connections')
+  const summary = useConnectionSummary()
   return (
-    <div className="main-footer">
-      {children}
-      <Contacts service={contactListService} />
-      <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
-    </div>
+    <Button
+      size="1"
+      variant="ghost"
+      color={active ? 'primary' : 'muted'}
+      onClick={() => {
+        emit('open_connections')
+      }}
+      css={{
+        display: 'flex',
+        gap: '$2',
+      }}
+    >
+      <OnlineIndicator online={summary.online} />
+      <Icon name="Person" size="1" />
+      <Text css={{}}>{summary.connectedCount}</Text>
+    </Button>
+  )
+}
+
+export default function Footer({children}: {children?: ReactNode}) {
+  let isDaemonReady = useDaemonReady()
+  let isOnline = useOnline()
+
+  // let contactsListQuery = useQuery({
+  //   enabled: isDaemonReady,
+  //   queryKey: [queryKeys.GET_CONTACTS_LIST],
+  //   queryFn: () => accountsClient.listAccounts({}),
+  // })
+
+  // let contactListService = useInterpret(() => contactsListMachine, {
+  //   actions: {
+  //     triggerRefetch: () => {
+  //       contactsListQuery.refetch()
+  //     },
+  //     assignErrorMessage: assign({
+  //       errorMessage: (_, event) => event.errorMessage,
+  //     }),
+  //   },
+  // })
+
+  // if (contactsListQuery.status == 'error') {
+  //   contactListService.send({
+  //     type: 'CONTACTS.LIST.ERROR',
+  //     errorMessage: JSON.stringify(contactsListQuery.error),
+  //   })
+  //   return <div className="main-footer">{children}</div>
+  // }
+
+  return (
+    <FooterStyled platform={import.meta.env.TAURI_PLATFORM}>
+      {!isDaemonReady ? (
+        <Box
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingInline: '$4',
+            paddingBlock: '$1',
+            gap: '$2',
+            userSelect: 'none',
+            marginRight: '$4',
+            '&:hover': {
+              cursor: 'default',
+            },
+          }}
+        >
+          <Icon name="Clock" size="1" color="muted" />
+          <Text
+            color="muted"
+            size="1"
+            css={{
+              userSelect: 'none',
+            }}
+          >
+            Initializing node...
+          </Text>
+        </Box>
+      ) : !isOnline ? (
+        <Box
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingInline: '$4',
+            paddingBlock: '$1',
+            gap: '$2',
+            userSelect: 'none',
+            backgroundColor: '$danger-normal',
+            marginRight: '$4',
+            '&:hover': {
+              cursor: 'default',
+            },
+          }}
+        >
+          <Icon name="Close" size="1" color="danger-opposite" />
+          <Text
+            color="danger-opposite"
+            size="1"
+            css={{
+              userSelect: 'none',
+            }}
+          >
+            You're Offline
+          </Text>
+        </Box>
+      ) : null}
+      {/* {isDaemonReady ? (
+        <Box
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0',
+          }}
+        >
+          <ContactsPrompt refetch={() => contactListService.send('REFETCH')} />
+          <Contacts service={contactListService} />
+        </Box>
+      ) : null} */}
+      <FooterContactsButton />
+
+      <Box
+        css={{
+          display: 'flex',
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+        }}
+      >
+        {children}
+      </Box>
+    </FooterStyled>
   )
 }
 
 function Contacts({
   service,
 }: {
-  service: InterpreterFrom<ReturnType<typeof createContactListMachine>>
+  service: InterpreterFrom<typeof contactsListMachine>
 }) {
   const totalCount = useSelector(service, (state) => state.context.all.length)
   const online = useSelector(service, (state) =>
@@ -81,26 +206,43 @@ function Contacts({
   return (
     <HoverCard.Root openDelay={100}>
       <HoverCard.Trigger asChild>
-        <button className="button">
-          {online.length && <span className="status-indicator" />}
+        <ButtonStyled>
+          {online.length ? (
+            <Box
+              css={{
+                width: 7,
+                height: 7,
+                borderRadius: '$round',
+                backgroundColor: '$success-active',
+              }}
+            />
+          ) : null}
           <Icon name="Person" />
           <span>{`(${online.length}/${totalCount || 0})`}</span>
-        </button>
+        </ButtonStyled>
       </HoverCard.Trigger>
       <HoverCard.Portal>
         {online.length && (
           <HoverCard.Content side="top" align="end">
-            <ul className="contacts-content">
+            <ContactsContent>
               {online.map((contact) => (
                 <ContactItem key={contact.id} contact={contact} />
               ))}
-            </ul>
+            </ContactsContent>
           </HoverCard.Content>
         )}
       </HoverCard.Portal>
     </HoverCard.Root>
   )
 }
+
+var ContactsContent = styled('ul', {
+  backgroundColor: '$base-background-normal',
+  padding: '$2',
+  boxShadow: '$menu',
+  margin: 0,
+  listStyle: 'none',
+})
 
 type ContactsPromptProps = {
   refetch: () => void
@@ -131,26 +273,11 @@ export function ContactsPrompt({
 
   return (
     <Prompt.Root>
-      <Prompt.Trigger
-        variant="ghost"
-        color="primary"
-        data-testid="add-contact-button"
-        size="1"
-        css={{
-          all: 'unset',
-          padding: '$1',
-          borderRadius: '$2',
-          backgroundColor: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          '&:hover': {
-            backgroundColor: '$base-component-bg-hover',
-          },
-        }}
-      >
-        <Icon name="Add" color="muted" />
-      </Prompt.Trigger>
+      <DialogPrimitive.Trigger asChild>
+        <ButtonStyled data-testid="add-contact-button" css={{paddingInline: 0}}>
+          <Icon name="Add" color="muted" />
+        </ButtonStyled>
+      </DialogPrimitive.Trigger>
       <Prompt.Portal>
         <Prompt.Content>
           <Prompt.Title>Add a Contact</Prompt.Title>
@@ -163,13 +290,6 @@ export function ContactsPrompt({
             textarea
             rows={3}
             data-testid="add-contact-input"
-            containerCss={
-              {
-                minHeight: 150,
-                maxHeight: 150,
-                overflow: 'scroll',
-              } as CSS
-            }
           />
           <Prompt.Actions>
             <Prompt.Close asChild>
@@ -246,7 +366,24 @@ function ContactItem({contact}: ContactItemProps) {
   return (
     <HoverCard.Root>
       <HoverCard.Trigger asChild>
-        <li className="contact-item" data-testid={`contact-item-${accountId}`}>
+        <Box
+          as="li"
+          data-testid={`contact-item-${accountId}`}
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            minWidth: '20ch',
+            paddingBlock: '$2',
+            paddingInline: '$4',
+            userSelect: 'none',
+            borderRadius: '$2',
+            whiteSpace: 'nowrap',
+            gap: '$2',
+            '&:hover': {
+              backgroundColor: '$base-component-bg-hover',
+            },
+          }}
+        >
           <Avatar
             accountId={state.context.account.id}
             size={1}
@@ -281,7 +418,7 @@ function ContactItem({contact}: ContactItemProps) {
               }}
             />
           ) : null}
-        </li>
+        </Box>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" side="top">
         <Avatar
@@ -337,3 +474,84 @@ function ContactItem({contact}: ContactItemProps) {
     </HoverCard.Root>
   )
 }
+
+var FooterStyled = styled(Box, {
+  position: 'fixed',
+  height: 'var(--footer-h)',
+  borderTop: '1px solid $colors$base-border-subtle',
+  backgroundColor: '$base-background-subtle',
+  display: 'flex',
+  alignItems: 'stretch',
+  paddingInline: '$2',
+  inset: import.meta.env.TAURI_PLATFORM == 'macos' ? 'auto 0 0 0' : 'unset',
+  variants: {
+    platform: {
+      macos: {
+        inset: 'auto 0 0 0',
+      },
+      windows: {
+        bottom: 1,
+        left: 1,
+        right: 1,
+      },
+      linux: {
+        bottom: 1,
+        left: 1,
+        right: 1,
+      },
+    },
+  },
+})
+
+var ButtonStyled = styled('button', {
+  $$color: '$colors$base-text-low',
+  '$$color-hover': '$colors$base-text-low',
+  $$surface: 'transparent',
+  '$$surface-hover': '$base-component-bg-hover',
+  all: 'unset',
+  minInliseSize: '1em',
+  minBlockSize: '1em',
+  paddingBlock: '$1',
+  paddingInline: '$2',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  borderRadius: '$2',
+  gap: '$2',
+  fontSize: '$1',
+  backgroundColor: '$$surface',
+  color: '$$color',
+  border: '1px solid transparent',
+  '&:hover': {
+    backgroundColor: '$base-component-bg-hover',
+    color: '$$color-hover',
+    cursor: 'pointer',
+  },
+  '& > *': {
+    maxHeight: '1em',
+    lineHeight: 1,
+  },
+  variants: {
+    variant: {
+      primary: {
+        $$color: '$colors$primary-active',
+        '$$color-hover': 'white',
+        '$$surface-hover': '$colors$primary-active',
+      },
+      success: {
+        $$color: '$colors$success-active',
+        '$$color-hover': 'white',
+        '$$surface-hover': '$colors$success-active',
+      },
+    },
+    type: {
+      outlined: {
+        borderColor: '$$color',
+      },
+      dropdown: {
+        fontWeight: '$bold',
+      },
+    },
+  },
+})

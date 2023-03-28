@@ -3,6 +3,7 @@ import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {MainActor} from '@app/hooks/main-actor'
 import {useSiteList} from '@app/hooks/sites'
+import {useDaemonReady} from '@app/node-status-context'
 import {
   PublicationActor,
   PublicationMachineContext,
@@ -10,18 +11,20 @@ import {
 import {useNavigation} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {tauriEncodeParam} from '@app/utils/tauri-param-hackaround'
+import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
-import {Route, Switch, useLocation} from 'wouter'
+import {Route, Switch, useLocation, NoMatch} from 'wouter'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
 
 export function ActionButtons(props: TitleBarProps) {
   const nav = useNavigation()
+  const isDaemonReady = useDaemonReady()
   function onCopy() {
     if (props.mainActor?.actor) {
       let context = props.mainActor.actor.getSnapshot().context
@@ -62,16 +65,24 @@ export function ActionButtons(props: TitleBarProps) {
       ) : null}
 
       <div className="button-group">
-        <button
-          className="titlebar-button"
-          onClick={(e) => {
-            e.preventDefault()
-            nav.openNewDraft(!e.shiftKey)
-          }}
-        >
-          <Icon name="Add" />
-          <span style={{marginRight: '0.3em'}}>Write</span>
-        </button>
+        <Switch>
+          <Route path="/connections">
+            <ContactsPrompt />
+          </Route>
+          <Route>
+            <button
+              disabled={!isDaemonReady}
+              className="titlebar-button"
+              onClick={(e) => {
+                e.preventDefault()
+                nav.openNewDraft(!e.shiftKey)
+              }}
+            >
+              <Icon name="Add" />
+              <span style={{marginRight: '0.3em'}}>Write</span>
+            </button>
+          </Route>
+        </Switch>
       </div>
     </div>
   )
@@ -166,6 +177,10 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
           <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
             Quick Switcher
             <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={() => setLocation('/connections')}>
+            Connections
+            <Dropdown.RightSlot>Ctrl+9</Dropdown.RightSlot>
           </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Portal>

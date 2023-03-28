@@ -4,9 +4,9 @@ import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Heading} from '@components/heading'
 import {TitleBar} from '@components/titlebar'
-import {lazy} from 'react'
+import {lazy, useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import {Redirect} from 'wouter'
+import {Redirect, useLocation} from 'wouter'
 import {Route, useRoute} from '../components/router'
 import '../styles/main.scss'
 import './polyfills'
@@ -18,10 +18,30 @@ var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
+import {listen as tauriListen} from '@tauri-apps/api/event'
+import ConnectionsPage from './connections-page'
+import AccountPage from './account-page'
+import {FindContextProvider} from '@app/editor/find'
+import {TooltipProvider} from '@components/tooltip'
+import {Text} from '@components/text'
 
 export default function Main() {
+  const [, setLocation] = useLocation()
   const [isSettings] = useRoute('/settings')
   const mainActor = useMainActor()
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    let unlisten: () => void
+    tauriListen('open_connections', () => {
+      setLocation('/connections')
+    }).then((a) => {
+      unlisten = a
+    })
+    return () => {
+      unlisten?.()
+    }
+  }, [])
 
   return (
     <ErrorBoundary
@@ -30,42 +50,52 @@ export default function Main() {
         window.location.reload()
       }}
     >
-      <div className={classnames('main-root', {settings: isSettings})}>
-        <main>
-          <Route path="/inbox">
-            <PublicationList />
-          </Route>
-          <Route path="/drafts">
-            <DraftList />
-          </Route>
-          <Route path="/sites/:hostname">
-            <Site />
-          </Route>
-          <Route path="/p/:id/:version/:block?">
-            {mainActor?.type === 'publication' ? (
-              <Publication
-                key={window.location.href}
-                publicationActor={mainActor.actor}
-              />
-            ) : null}
-          </Route>
-          <Route path="/d/:id/:tag?">
-            {mainActor?.type === 'draft' ? (
-              <Draft
-                key={window.location.href}
-                draftActor={mainActor.actor}
-                editor={mainActor.editor}
-              />
-            ) : null}
-          </Route>
-          <Route path="/settings">
-            <Settings />
-          </Route>
-          <Route>{() => <Redirect to="/inbox" />}</Route>
-        </main>
-        <TitleBar clean={isSettings} mainActor={mainActor} />
-        {!isSettings ? <QuickSwitcher /> : null}
-      </div>
+      <FindContextProvider value={{search, setSearch}}>
+        <TooltipProvider>
+          <div className={classnames('main-root', {settings: isSettings})}>
+            <main>
+              <Route path="/inbox">
+                <PublicationList />
+              </Route>
+              <Route path="/drafts">
+                <DraftList />
+              </Route>
+              <Route path="/sites/:hostname">
+                <Site />
+              </Route>
+              <Route path="/connections">
+                <ConnectionsPage />
+              </Route>
+              <Route path="/account/:id">
+                <AccountPage />
+              </Route>
+              <Route path="/p/:id/:version/:block?">
+                {mainActor?.type === 'publication' ? (
+                  <Publication
+                    // key={window.location.href}
+                    publicationActor={mainActor.actor}
+                  />
+                ) : null}
+              </Route>
+              <Route path="/d/:id/:tag?">
+                {mainActor?.type === 'draft' ? (
+                  <Draft
+                    key={window.location.href}
+                    draftActor={mainActor.actor}
+                    editor={mainActor.editor}
+                  />
+                ) : null}
+              </Route>
+              <Route path="/settings">
+                <Settings />
+              </Route>
+              <Route>{() => <Redirect to="/inbox" />}</Route>
+            </main>
+            <TitleBar clean={isSettings} mainActor={mainActor} />
+            {!isSettings ? <QuickSwitcher /> : null}
+          </div>
+        </TooltipProvider>
+      </FindContextProvider>
     </ErrorBoundary>
   )
 }
@@ -80,6 +110,7 @@ function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
         justifyContent: 'center',
         alignItems: 'center',
       }}
+      data-tauri-drag-region
     >
       <Box
         css={{
@@ -89,10 +120,20 @@ function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
           display: 'flex',
           flexDirection: 'column',
           minWidth: '50vw',
+          maxWidth: 565,
         }}
       >
         <Heading color="danger">App Error!</Heading>
-        <pre>{error.message}</pre>
+        <Box
+          css={{
+            fontFamily: 'ui-monospace,monospace',
+            padding: '$2',
+            background: '$warning-background-normal',
+            marginVertical: '$6',
+          }}
+        >
+          {error.message}
+        </Box>
         <Button onClick={resetErrorBoundary} css={{alignSelf: 'flex-end'}}>
           Reload
         </Button>

@@ -7,6 +7,7 @@ Error.stackTraceLimit = Infinity
 
 process.env.IGNORE_TS_CONFIG_PATHS = 'true'
 process.env.TAMAGUI_TARGET = 'web'
+let isGateway = process.env.MINTTER_IS_GATEWAY == '1'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -21,11 +22,11 @@ const disableExtraction =
 
 import tamaguiPlugin from '@tamagui/next-plugin'
 let {withTamagui} = tamaguiPlugin
+
 /**
  * @type {import('next').NextConfig}
  */
 let localConfig = {
-  // Append the default value with md extensions
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   reactStrictMode: true,
   typescript: {
@@ -94,8 +95,10 @@ export default function (name, {defaultConfig}) {
     disableExtraction,
   })
 
+  let tamagui = tamaguiPlugin(config)
+
   return {
     ...config,
-    ...tamaguiPlugin(config),
+    ...tamagui,
   }
 }

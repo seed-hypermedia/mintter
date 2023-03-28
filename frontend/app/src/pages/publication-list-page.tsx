@@ -7,18 +7,20 @@ import {
   prefetchPublication,
   queryKeys,
   useAuthor,
+  useDraftList,
   usePublicationList,
 } from '@app/hooks'
 import {openPublication, useNavigation} from '@app/utils/navigation'
 import {openWindow} from '@app/utils/open-window'
+import {Button} from '@components/button'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
+import PageContainer from '@components/page-container'
 import {useLocation} from '@components/router'
-import {ScrollArea} from '@components/scroll-area'
 import {Text} from '@components/text'
-import {formattedDate, Publication} from '@mintter/shared'
+import {Document, formattedDate, Publication} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -30,33 +32,33 @@ export default PublicationList
 
 function PublicationList() {
   let {data, isInitialLoading} = usePublicationList()
+  let drafts = useDraftList()
   let nav = useNavigation()
 
   return (
     <>
-      <div className="page-wrapper">
-        <ScrollArea>
-          {isInitialLoading ? (
-            <p>loading...</p>
-          ) : data && data.publications.length ? (
-            <ul className="file-list" data-testid="files-list">
-              {data.publications.map((publication) => (
-                <PublicationListItem
-                  key={`${publication.document?.id}/${publication.version}`}
-                  publication={publication}
-                />
-              ))}
-            </ul>
-          ) : (
-            <EmptyList
-              description="You have no Publications yet."
-              action={() => {
-                nav.openNewDraft(false)
-              }}
+      <PageContainer>
+        {isInitialLoading ? (
+          <p>loading...</p>
+        ) : data && data.publications.length ? (
+          data.publications.map((publication) => (
+            <PublicationListItem
+              hasDraft={drafts.data.documents.find(
+                (d) => d.id == publication.document?.id,
+              )}
+              key={`${publication.document?.id}/${publication.version}`}
+              publication={publication}
             />
-          )}
-        </ScrollArea>
-      </div>
+          ))
+        ) : (
+          <EmptyList
+            description="You have no Publications yet."
+            action={() => {
+              nav.openNewDraft(false)
+            }}
+          />
+        )}
+      </PageContainer>
       <Footer />
     </>
   )
@@ -64,10 +66,12 @@ function PublicationList() {
 
 export function PublicationListItem({
   publication,
+  hasDraft,
   copy = copyTextToClipboard,
 }: {
   publication: Publication
   copy?: typeof copyTextToClipboard
+  hasDraft: Document | undefined
 }) {
   const {search} = useFind()
   const [, setLocation] = useLocation()
@@ -131,6 +135,30 @@ export function PublicationListItem({
           autoEscape={true}
           textToHighlight={title}
         />
+        {hasDraft && (
+          <Button
+            variant="ghost"
+            color="warning"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setLocation(`/d/${hasDraft.id}`)
+            }}
+            size="1"
+            css={{
+              border: '1px solid black',
+              borderColor: '$warning-border-hover',
+              color: '$warning-border-hover',
+              paddingHorizontal: '$3',
+              '&:hover': {
+                color: 'white',
+                background: '$warning-border-hover',
+              },
+            }}
+          >
+            DRAFT
+          </Button>
+        )}
       </p>
       <span
         onClick={goToItem}

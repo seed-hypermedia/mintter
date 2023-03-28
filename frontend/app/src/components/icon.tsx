@@ -51,6 +51,9 @@ export const Svg = styled('svg', {
       danger: {
         color: '$danger-normal',
       },
+      'danger-opposite': {
+        color: '$danger-text-opposite',
+      },
       inherit: {
         color: 'inherit',
       },

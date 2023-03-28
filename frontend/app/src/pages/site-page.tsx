@@ -1,18 +1,16 @@
-import {publicationsClient} from '@app/api-clients'
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {usePublication, useAuthor, queryKeys} from '@app/hooks'
+import {usePublication, useAuthor} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
 import {useNavigation} from '@app/utils/navigation'
 import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
+import PageContainer from '@components/page-container'
 import {Text} from '@components/text'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
 import {WebPublicationRecord, formattedDate} from '@mintter/shared'
-import {ScrollArea} from '@radix-ui/react-scroll-area'
-import {useQuery} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
@@ -41,30 +39,26 @@ export default function SitePage() {
 
   return (
     <>
-      <div className="page-wrapper">
-        <ScrollArea>
-          {isInitialLoading ? (
-            <p>loading...</p>
-          ) : sortedPubs?.length ? (
-            <ul className="file-list" data-testid="files-list">
-              {sortedPubs.map((publication) => (
-                <WebPublicationListItem
-                  key={publication.documentId}
-                  webPub={publication}
-                  hostname={host}
-                />
-              ))}
-            </ul>
-          ) : (
-            <EmptyList
-              description={`Nothing published on ${host} yet.`}
-              action={() => {
-                nav.openNewDraft(false)
-              }}
+      <PageContainer>
+        {isInitialLoading ? (
+          <p>loading...</p>
+        ) : sortedPubs?.length ? (
+          sortedPubs.map((publication) => (
+            <WebPublicationListItem
+              key={publication.documentId}
+              webPub={publication}
+              hostname={host}
             />
-          )}
-        </ScrollArea>
-      </div>
+          ))
+        ) : (
+          <EmptyList
+            description={`Nothing published on ${host} yet.`}
+            action={() => {
+              nav.openNewDraft(false)
+            }}
+          />
+        )}
+      </PageContainer>
       <Footer />
     </>
   )
