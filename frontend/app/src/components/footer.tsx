@@ -20,7 +20,7 @@ import {useDaemonReady, useOnline} from '@app/node-status-context'
 import {emit} from '@tauri-apps/api/event'
 import {OnlineIndicator} from './indicator'
 import {useConnectionSummary} from '@app/hooks/contacts'
-import {useNavRoute} from '@app/utils/navigation'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 
 const LabelWrap = styled('div', {
   marginHorizontal: 6,
@@ -55,6 +55,7 @@ export function FooterButton({
 
 function FooterContactsButton() {
   const route = useNavRoute()
+  const navigate = useNavigate()
   const summary = useConnectionSummary()
   return (
     <Button
@@ -62,7 +63,7 @@ function FooterContactsButton() {
       variant="ghost"
       color={route.key === 'connections' ? 'primary' : 'muted'}
       onClick={() => {
-        emit('open_connections')
+        navigate({key: 'connections'})
       }}
       css={{
         display: 'flex',
