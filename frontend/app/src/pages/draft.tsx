@@ -1,7 +1,6 @@
 // import 'show-keys'
 import {AppBanner, BannerText} from '@app/app-banner'
 import {ScrollArea} from '@app/components/scroll-area'
-import {DraftActor} from '@app/draft-machine'
 import {DragProvider} from '@app/drag-context'
 import {createDragMachine} from '@app/drag-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
@@ -59,7 +58,7 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
             type: 'MOUSE.MOVE',
             position: event.clientY,
           })
-          mainActor.send('EDITING.STOP')
+          mainActor.actor.send('EDITING.STOP')
         }}
         onMouseLeave={() => {
           mouseService.send('DISABLE.CHANGE')
@@ -134,7 +133,7 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
                           )
                             return
                           mouseService.send('DISABLE.CHANGE')
-                          mainActor.send('EDITING.START')
+                          mainActor.actor.send('EDITING.START')
                           send({type: 'DRAFT.UPDATE', payload: {content}})
                         }}
                       />
