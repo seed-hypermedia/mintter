@@ -18,7 +18,6 @@ import {
 } from './common'
 // import {bech32m, bech32} from 'bech32'
 // import BIP32Factory from 'bip32'
-import {mnemonicToSeed, getDefaultWordlist, wordlists} from 'bip39'
 // import * as ecc from 'tiny-secp256k1'
 // You must wrap a tiny-secp256k1 compatible implementation
 // const bip32 = BIP32Factory(ecc)
@@ -41,17 +40,6 @@ export function SecurityPack({
     queryKey: ['onboarding', 'mnemonics'],
     queryFn: async () => {
       const data = await generateMnemonic({mnemonicsLength: 12})
-
-      mnemonicToSeed(data.mnemonic.join(' '))
-        .then((seed) => {
-          // console.log({seed, len: seed.length})
-          // const outKey = bech32.encode('nsec', seed)
-          console.log({seed})
-        })
-        .catch((e) => {
-          console.error('yep: ', e)
-        })
-      // console.log({seed})
       return data.mnemonic
     },
     refetchOnReconnect: false,
