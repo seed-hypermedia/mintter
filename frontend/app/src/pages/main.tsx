@@ -56,8 +56,10 @@ export default function Main() {
   const PageComponent = getPageComponent(navR)
   useEffect(() => {
     let unlisten: () => void
-    tauriListen('open_connections', () => {
-      navigate({key: 'connections'})
+    tauriListen('open_route', (event) => {
+      // we might fix this by using zod for routes and validating them
+      const route: NavRoute = event.payload
+      navigate(route)
     }).then((a) => {
       unlisten = a
     })

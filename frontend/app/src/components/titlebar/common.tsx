@@ -152,7 +152,8 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
             onSelect={() => navigate({key: 'home'})}
           >
             <Icon name="File" />
-            <span>Inbox</span>
+            <span>All Publications</span>
+            <Dropdown.RightSlot>&#8984; 1</Dropdown.RightSlot>
           </Dropdown.Item>
           <Dropdown.Item
             disabled={route.key === 'drafts'}
@@ -161,20 +162,22 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
           >
             <Icon name="PencilAdd" />
             <span>Drafts</span>
+            <Dropdown.RightSlot>&#8984; 8</Dropdown.RightSlot>
+          </Dropdown.Item>
+          <Dropdown.Item
+            disabled={route.key === 'connections'}
+            onSelect={() => navigate({key: 'connections'})}
+          >
+            <Icon name="Person" />
+            Connections
+            <Dropdown.RightSlot>&#8984; 9</Dropdown.RightSlot>
           </Dropdown.Item>
           <SitesNavDropdownItems />
           <Dropdown.Separator />
 
           <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
             Quick Switcher
-            <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
-          </Dropdown.Item>
-          <Dropdown.Item
-            disabled={route.key === 'connections'}
-            onSelect={() => navigate({key: 'connections'})}
-          >
-            Connections
-            <Dropdown.RightSlot>Ctrl+9</Dropdown.RightSlot>
+            <Dropdown.RightSlot>&#8984; K</Dropdown.RightSlot>
           </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Portal>

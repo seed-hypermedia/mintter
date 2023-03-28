@@ -1,3 +1,4 @@
+use serde_json::json;
 /// This module defines all the menu items and associated functions that are present in the top level menu.
 ///
 /// All event handlers are all also commands, so they can be reused from the frontend when replicating the titlebar and menu using HTML, CSS, and JS.
@@ -151,10 +152,16 @@ pub fn get_menu() -> Menu {
 
   let view_menu = Menu::new()
     .add_item(CustomMenuItem::new("reload", "Reload").accelerator("CmdOrControl+R"))
+    .add_native_item(MenuItem::Separator)
+    .add_item(
+      CustomMenuItem::new("viewAllPublications", "All Publications").accelerator("CmdOrControl+1"),
+    )
+    .add_item(CustomMenuItem::new("viewDrafts", "Drafts").accelerator("CmdOrControl+8"))
+    .add_item(CustomMenuItem::new("viewConnections", "Connections").accelerator("CmdOrControl+9"))
     .add_item(
       CustomMenuItem::new("quick_switcher", "Quick Switcher...").accelerator("CmdOrControl+K"),
     )
-    .add_item(CustomMenuItem::new("connections", "Connections").accelerator("CmdOrControl+9"))
+    .add_native_item(MenuItem::Separator)
     .add_item(CustomMenuItem::new("zoomIn", "Zoom In").accelerator("CmdOrControl+Plus"))
     .add_item(CustomMenuItem::new("zoomOut", "Zoom Out").accelerator("CmdOrControl+-"))
     .add_item(CustomMenuItem::new("zoomReset", "Reset Zoom").accelerator("CmdOrControl+0"));
@@ -214,8 +221,20 @@ pub fn event_handler_inner(event: WindowMenuEvent) -> anyhow::Result<()> {
     "quick_switcher" => {
       event.window().emit("open_quick_switcher", ())?;
     }
-    "connections" => {
-      event.window().emit("open_connections", ())?;
+    "viewAllPublications" => {
+      event
+        .window()
+        .emit("open_route", json!({ "key": "home" }))?;
+    }
+    "viewDrafts" => {
+      event
+        .window()
+        .emit("open_route", json!({ "key": "drafts" }))?;
+    }
+    "viewConnections" => {
+      event
+        .window()
+        .emit("open_route", json!({ "key": "connections" }))?;
     }
     "select_all" => {
       event.window().emit("select_all", ())?;
