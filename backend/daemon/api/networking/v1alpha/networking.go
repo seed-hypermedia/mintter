@@ -3,10 +3,12 @@ package networking
 import (
 	"context"
 	"fmt"
+	"mintter/backend/core"
 	networking "mintter/backend/genproto/networking/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/future"
+	"mintter/backend/vcs/vcssql"
 
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -45,6 +47,52 @@ func (srv *Server) Connect(ctx context.Context, in *networking.ConnectRequest) (
 	return &networking.ConnectResponse{}, nil
 }
 
+// ListPeers filters peers by status. If no status provided, it lists all peers.
+func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersRequest) (*networking.ListPeersResponse, error) {
+	net, err := srv.getNet()
+	if err != nil {
+		return nil, err
+	}
+	//allPeers := net.Libp2p().Peerstore().Peers()
+
+	conn, release, err := net.VCS().DB().Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	devices, err := vcssql.DevicesList(conn)
+	release()
+	if err != nil {
+		return nil, err
+	}
+	ret := networking.ListPeersResponse{
+		PeerList: []*networking.PeerIDs{},
+	}
+	for _, device := range devices {
+		did := cid.NewCidV1(core.CodecDeviceKey, device.DevicesMultihash)
+		pid, err := peer.FromCid(did)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse device ID[%s] as PID: %w", did.String(), err)
+		}
+		connectedness := net.Libp2p().Network().Connectedness(pid)
+		if in.Status >= 0 && in.Status != networking.ConnectionStatus(connectedness) {
+			continue
+		}
+		aid, err := net.AccountForDevice(ctx, did)
+		if err != nil {
+			return nil, err
+		}
+
+		ret.PeerList = append(ret.PeerList, &networking.PeerIDs{
+			DeviceId:  did.String(),
+			PeerId:    pid.String(),
+			AccountId: aid.String(),
+		})
+	}
+
+	return &ret, nil
+}
+
+// GetPeerInfo gets info about
 func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRequest) (*networking.PeerInfo, error) {
 	if in.PeerId == "" {
 		return nil, status.Error(codes.InvalidArgument, "must specify peer id")

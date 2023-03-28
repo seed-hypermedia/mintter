@@ -9,6 +9,9 @@ service Networking {
   // Lookup details about a known peer.
   rpc GetPeerInfo(GetPeerInfoRequest) returns (PeerInfo);
 
+  // List peers by status.
+  rpc ListPeers(ListPeersRequest) returns (ListPeersResponse);
+
   // Establishes a direct connection with a given peer explicitly.
   rpc Connect(ConnectRequest) returns (ConnectResponse);
 }
@@ -17,6 +20,12 @@ service Networking {
 message GetPeerInfoRequest {
   // Required. CID-encoded Peer ID.
   string peer_id = 1;
+}
+
+// Request to get peer's addresses.
+message ListPeersRequest {
+  // Required. Status of the peers to list. If negative, all peers are returned, regardless of their status.
+  ConnectionStatus status = 1;
 }
 
 // Request for connecting to a peer explicitly.
@@ -28,6 +37,25 @@ message ConnectRequest {
 
 // Response for conneting to a peer.
 message ConnectResponse {}
+
+
+// Various details about a list of peers.
+message ListPeersResponse {
+  // List of knwown peers matching status in the request.
+  repeated PeerIDs peerList = 1;
+}
+
+// All the IDs associated with a peer.
+message PeerIDs {
+  // Device cid to this peer.
+  string device_id = 1;
+
+  // Peer ID as shown in p2p addresses.
+  string peer_id = 2;
+
+  // Account ID that this peer is bound to.
+  string account_id = 3;
+}
 
 // Various details about a known peer.
 message PeerInfo {

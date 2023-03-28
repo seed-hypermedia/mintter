@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type NetworkingClient interface {
 	// Lookup details about a known peer.
 	GetPeerInfo(ctx context.Context, in *GetPeerInfoRequest, opts ...grpc.CallOption) (*PeerInfo, error)
+	// List peers by status.
+	ListPeers(ctx context.Context, in *ListPeersRequest, opts ...grpc.CallOption) (*ListPeersResponse, error)
 	// Establishes a direct connection with a given peer explicitly.
 	Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ConnectResponse, error)
 }
@@ -45,6 +47,15 @@ func (c *networkingClient) GetPeerInfo(ctx context.Context, in *GetPeerInfoReque
 	return out, nil
 }
 
+func (c *networkingClient) ListPeers(ctx context.Context, in *ListPeersRequest, opts ...grpc.CallOption) (*ListPeersResponse, error) {
+	out := new(ListPeersResponse)
+	err := c.cc.Invoke(ctx, "/com.mintter.networking.v1alpha.Networking/ListPeers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *networkingClient) Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ConnectResponse, error) {
 	out := new(ConnectResponse)
 	err := c.cc.Invoke(ctx, "/com.mintter.networking.v1alpha.Networking/Connect", in, out, opts...)
@@ -60,6 +71,8 @@ func (c *networkingClient) Connect(ctx context.Context, in *ConnectRequest, opts
 type NetworkingServer interface {
 	// Lookup details about a known peer.
 	GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error)
+	// List peers by status.
+	ListPeers(context.Context, *ListPeersRequest) (*ListPeersResponse, error)
 	// Establishes a direct connection with a given peer explicitly.
 	Connect(context.Context, *ConnectRequest) (*ConnectResponse, error)
 }
@@ -70,6 +83,9 @@ type UnimplementedNetworkingServer struct {
 
 func (UnimplementedNetworkingServer) GetPeerInfo(context.Context, *GetPeerInfoRequest) (*PeerInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPeerInfo not implemented")
+}
+func (UnimplementedNetworkingServer) ListPeers(context.Context, *ListPeersRequest) (*ListPeersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListPeers not implemented")
 }
 func (UnimplementedNetworkingServer) Connect(context.Context, *ConnectRequest) (*ConnectResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
@@ -104,6 +120,24 @@ func _Networking_GetPeerInfo_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Networking_ListPeers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPeersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkingServer).ListPeers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.mintter.networking.v1alpha.Networking/ListPeers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkingServer).ListPeers(ctx, req.(*ListPeersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Networking_Connect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ConnectRequest)
 	if err := dec(in); err != nil {
@@ -132,6 +166,10 @@ var Networking_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPeerInfo",
 			Handler:    _Networking_GetPeerInfo_Handler,
+		},
+		{
+			MethodName: "ListPeers",
+			Handler:    _Networking_ListPeers_Handler,
 		},
 		{
 			MethodName: "Connect",

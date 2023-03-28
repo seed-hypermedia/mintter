@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { ConnectRequest, ConnectResponse, GetPeerInfoRequest, PeerInfo } from "./networking_pb";
+import { ConnectRequest, ConnectResponse, GetPeerInfoRequest, ListPeersRequest, ListPeersResponse, PeerInfo } from "./networking_pb";
 import { MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -23,6 +23,17 @@ export const Networking = {
       name: "GetPeerInfo",
       I: GetPeerInfoRequest,
       O: PeerInfo,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * List peers by status.
+     *
+     * @generated from rpc com.mintter.networking.v1alpha.Networking.ListPeers
+     */
+    listPeers: {
+      name: "ListPeers",
+      I: ListPeersRequest,
+      O: ListPeersResponse,
       kind: MethodKind.Unary,
     },
     /**
