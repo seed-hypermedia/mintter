@@ -26,9 +26,6 @@ import {daemonClient} from '@app/api-clients'
 
 global.Buffer = global.Buffer || Buffer
 
-const wl = (global.wl = wordlists['english'])
-console.log({wl})
-
 export function SecurityPack({
   prev,
   next,
