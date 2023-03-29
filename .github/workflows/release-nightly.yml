@@ -46,11 +46,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload site creation 
+      - name: Checkout code
         uses: actions/checkout@v3
+      - name: Upload scripts
         run: aws s3 sync ./*.sh s3://minttersite/ --delete
       - name: Upload docker compose
-        uses: actions/checkout@v3
         run: aws s3 sync ./docker-compose.yml s3://minttersite/ --delete
 
   get-version:
