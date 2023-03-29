@@ -49,9 +49,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Upload scripts
-        run: aws s3 sync ./*.sh s3://minttersite/ --delete
+        run: aws s3 cp ./*.sh s3://minttersite/
       - name: Upload docker compose
-        run: aws s3 sync ./docker-compose.yml s3://minttersite/ --delete
+        run: aws s3 cp ./docker-compose.yml s3://minttersite/
 
   get-version:
     runs-on: ubuntu-latest
