@@ -44,6 +44,7 @@
     "@stitches/react": "1.2.8",
     "@tanstack/react-query": "4.19.1",
     "@tauri-apps/api": "1.2.0",
+    "@types/lodash.debounce": "^4.0.7",
     "@xstate/react": "3.1.1",
     "allotment": "1.17.1",
     "autosize": "5.0.2",

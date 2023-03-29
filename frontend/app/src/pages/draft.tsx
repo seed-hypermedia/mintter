@@ -14,16 +14,9 @@ import {AppError} from '@app/root'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
-<<<<<<< HEAD
-import {Text} from '@components/text'
-import {ChildrenOf, Document, FlowContent, isFlowContent} from '@mintter/shared'
-import {useActor, useInterpret} from '@xstate/react'
-import React, {useEffect, useState} from 'react'
-=======
 import {ChildrenOf, Document, FlowContent, isFlowContent} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
 import React, {useEffect} from 'react'
->>>>>>> master
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -37,10 +30,7 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
   const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
-<<<<<<< HEAD
-=======
   let isDaemonReady = useDaemonReady()
->>>>>>> master
 
   // @ts-ignore
   window.mouseService = mouseService

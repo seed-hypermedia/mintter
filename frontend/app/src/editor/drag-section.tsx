@@ -48,26 +48,26 @@ export const ElementDrag = ({
 
   return (
     <li
+      // style={{border: '1px solid red'}}
       {...attributes}
       {...blockProps}
       className={inRoute ? 'flash' : undefined}
       onDrop={editor.mode == EditorMode.Draft ? onDrop : undefined}
       onDragEnd={editor.mode == EditorMode.Draft ? onDrop : undefined}
-      onDragEnter={(e: any) => {
+      onDragOver={(e: any) => {
         if (drag) return;
         setDrag(e, element as FlowContent)
-        // console.log(element);
-        e.preventDefault()
-        const path = ReactEditor.findPath(editor, element)
+        // e.preventDefault()
+        // const path = ReactEditor.findPath(editor, element)
 
-        const domNode = ReactEditor.toDOMNode(editor, element)
+        // const domNode = ReactEditor.toDOMNode(editor, element)
 
-        dragService?.send({
-          type: 'DRAG.OVER',
-          toPath: path,
-          element: domNode as HTMLLIElement,
-          currentPos: e.clientX,
-        })
+        // dragService?.send({
+        //   type: 'DRAG.OVER',
+        //   toPath: path,
+        //   element: domNode as HTMLLIElement,
+        //   currentPos: e.clientX,
+        // })
       }}
       onDragLeave={(e: any) => {
         if (!drag) return;

@@ -21,10 +21,12 @@ import {
   ul,
   Selector,
   CreateConversationRequest,
+  isGroupContent,
+  Group,
 } from '@mintter/shared'
 import {Event, listen} from '@tauri-apps/api/event'
 import {PropsWithChildren, useEffect, useMemo, useState} from 'react'
-import {Descendant, Editor as EditorType, Transforms} from 'slate'
+import {Descendant, Editor as EditorType, Transforms, Node, NodeEntry, Path} from 'slate'
 import {Editable, ReactEditor, Slate} from 'slate-react'
 import DragContext, { DragContextValues, HoveredNode } from './drag-context'
 import {
@@ -39,6 +41,7 @@ import './styles/editor.scss'
 import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
 import debounce from 'lodash.debounce'
+import { useDrag } from '@app/drag-context'
 
 interface EditorProps {
   mode?: EditorMode
@@ -49,6 +52,53 @@ interface EditorProps {
   as?: unknown
   className?: string
   readOnly?: boolean
+}
+
+function isLastBlock(parentGroup: NodeEntry<Group>, path: Path) {
+  let [groupNode, groupPath] = parentGroup
+  return groupNode.children.length - 1 === path[path.length - 1]
+}
+
+function getNestedGroup(node: FlowContent, path: Path, editor: EditorType) {
+  const parentGroup = EditorType.above<Group>(editor, {
+    match: isGroupContent,
+    mode: 'lowest',
+    at: path,
+  })
+  if (
+    !EditorType.next(editor, {
+      at: path,
+    }) ||
+    (parentGroup && isLastBlock(parentGroup, path))
+  ) {
+    let isSibling = false
+    const groupStatements = [[node, path] as NodeEntry<FlowContent>]
+    let parentPath = path
+    while (!isSibling) {
+      let parent = EditorType.above<FlowContent>(editor, {
+        match: isFlowContent,
+        mode: 'lowest',
+        at: parentPath,
+      })
+      parentPath = parentPath.slice(0, -2)
+      if (parent) {
+        const parentSibling = EditorType.next(editor, {
+          at: parentPath,
+        })
+        groupStatements.unshift(parent)
+        if (parentSibling) {
+          isSibling = true
+          break
+        }
+      } else {
+        isSibling = true
+        break
+      }
+    }
+    return groupStatements
+  } else {
+    return [] as NodeEntry<FlowContent>[]
+  }
 }
 
 export function Editor({
@@ -65,14 +115,77 @@ export function Editor({
     throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
   }
 
+  const dragService = useDrag();
   const [draggedNode, setDraggedNode] = useState<HoveredNode>(null);
   let contextValues: DragContextValues = {
     drag: draggedNode,
     setDrag: debounce((e: DragEvent, node: FlowContent) => {
       if (draggedNode) return;
-      // console.log(draggedNode, node);
       setDraggedNode(node);
-    }, 500),
+      e.preventDefault()
+      const path = ReactEditor.findPath(editor, node)
+
+      const domNode = ReactEditor.toDOMNode(editor, node)
+      
+      // const children = node.children as Node[]
+
+      // const childGroup = children.find(
+      //   (child: Node) => child.type === 'group',
+      // )
+
+      // if (!childGroup) {
+      //   let groupStatements: NodeEntry<FlowContent>[] =
+      //     getNestedGroup(node, path, editor)
+      //   if (groupStatements.length > 0) {
+      //     let groupElements: HTMLElement[] = []
+      //     for (const statement of groupStatements) {
+      //       groupElements.push(
+      //         ReactEditor.toDOMNode(editor, statement[0]),
+      //       )
+      //     }
+
+      //     // console.log(groupStatements, groupElements)
+      //     dragService?.send({
+      //       type: 'SET.NESTED.GROUP',
+      //       nestedGroup: groupElements,
+      //     })
+
+      //     dragService?.send({
+      //       type: 'DRAG.OVER',
+      //       toPath: path,
+      //       element: null,
+      //       currentPos: e.clientX,
+      //     })
+
+      //     // return;
+      //   }
+      // }
+
+      // dragService?.send({
+      //   type: 'SET.NESTED.GROUP',
+      //   nestedGroup: null,
+      // })
+
+      const serviceContext = dragService?.getSnapshot().context;
+
+      // if (serviceContext.nestedGroup && serviceContext.dragOverRef === domNode) {
+      //   console.log
+      //   dragService?.send({
+      //     type: 'DRAG.OVER',
+      //     toPath: null,
+      //     element: null,
+      //     currentPos: e.clientX,
+      //   })
+      //   return;
+      // }
+
+      dragService?.send({
+        type: 'DRAG.OVER',
+        toPath: path,
+        element: domNode as HTMLLIElement,
+        currentPos: e.clientX,
+      })
+    }, 500, {leading: true, trailing: false}),
     clearDrag: () => {setDraggedNode(null)},
   }
 
@@ -239,7 +352,6 @@ export function Editor({
 
   useEffect(() => {
     contextValues.drag = draggedNode
-    console.log(draggedNode);
   }, [draggedNode])
 
   if (mode == EditorMode.Draft) {
