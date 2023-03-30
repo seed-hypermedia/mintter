@@ -126,58 +126,6 @@ export function Editor({
       const path = ReactEditor.findPath(editor, node)
 
       const domNode = ReactEditor.toDOMNode(editor, node)
-      
-      // const children = node.children as Node[]
-
-      // const childGroup = children.find(
-      //   (child: Node) => child.type === 'group',
-      // )
-
-      // if (!childGroup) {
-      //   let groupStatements: NodeEntry<FlowContent>[] =
-      //     getNestedGroup(node, path, editor)
-      //   if (groupStatements.length > 0) {
-      //     let groupElements: HTMLElement[] = []
-      //     for (const statement of groupStatements) {
-      //       groupElements.push(
-      //         ReactEditor.toDOMNode(editor, statement[0]),
-      //       )
-      //     }
-
-      //     // console.log(groupStatements, groupElements)
-      //     dragService?.send({
-      //       type: 'SET.NESTED.GROUP',
-      //       nestedGroup: groupElements,
-      //     })
-
-      //     dragService?.send({
-      //       type: 'DRAG.OVER',
-      //       toPath: path,
-      //       element: null,
-      //       currentPos: e.clientX,
-      //     })
-
-      //     // return;
-      //   }
-      // }
-
-      // dragService?.send({
-      //   type: 'SET.NESTED.GROUP',
-      //   nestedGroup: null,
-      // })
-
-      const serviceContext = dragService?.getSnapshot().context;
-
-      // if (serviceContext.nestedGroup && serviceContext.dragOverRef === domNode) {
-      //   console.log
-      //   dragService?.send({
-      //     type: 'DRAG.OVER',
-      //     toPath: null,
-      //     element: null,
-      //     currentPos: e.clientX,
-      //   })
-      //   return;
-      // }
 
       dragService?.send({
         type: 'DRAG.OVER',

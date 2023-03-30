@@ -12,19 +12,5 @@ export type DragContextValues = {
   clearDrag: () => void,
 }
 
-// const CreateDragContext = () => {
-//   const [draggedNode, setDraggedNode] = useState(null as HoveredNode);
-
-//   const values = {
-//     drag: draggedNode,
-//     setDrag: (e: DragEvent, node: FlowContent) => {
-//       if (draggedNode && node.id === draggedNode.id) return;
-//       setDraggedNode(node);
-//     }
-//   }
-
-//   const contextValue = createContext<DragContextValues>(values);
-// }
-
 const DragContext = createContext<DragContextValues>({drag: null, setDrag: () => {return null}, clearDrag: () => {return null}});
 export default DragContext;

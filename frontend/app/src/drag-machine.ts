@@ -144,7 +144,7 @@ export const createDragMachine = (editor: Editor) => {
             let hoveredElement = nestedGroup[nestedGroup.length - 1]
 
             if (nestedGroup.length === 1) {
-              hoveredElement.setAttribute('data-action', 'dragged-bottom')
+              hoveredElement.setAttribute('data-action', 'dragged-bottom-group')
               return {
                 dragOverRef: element,
                 isTop: context.isTop,
@@ -156,11 +156,17 @@ export const createDragMachine = (editor: Editor) => {
               nestedGroup[i - 1].removeAttribute('data-action')
               nestedGroup[i - 1].setAttribute('data-action', 'dragged-group')
               if (nestedGroup[i] === nestedGroup[nestedGroup.length - 1])
-                nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
+                nestedGroup[i].setAttribute(
+                  'data-action',
+                  'dragged-bottom-group',
+                )
               if (currentPosX <= nestedGroup[i].getBoundingClientRect()['x']) {
                 hoveredElement = nestedGroup[i - 1]
                 hoveredElement.setAttribute('data-action', 'dragged-nested')
-                nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
+                nestedGroup[i].setAttribute(
+                  'data-action',
+                  'dragged-bottom-group',
+                )
                 break
               }
             }
@@ -181,6 +187,14 @@ export const createDragMachine = (editor: Editor) => {
               nestedGroup,
             }
           } else {
+            if (!Path.equals(context.toPath, context.fromPath)) {
+              result.isTop
+                ? result.dragOverRef?.setAttribute('data-action', 'dragged-top')
+                : result.dragOverRef?.setAttribute(
+                    'data-action',
+                    'dragged-bottom',
+                  )
+            }
             return result
           }
         }),
@@ -265,7 +279,9 @@ export const createDragMachine = (editor: Editor) => {
               if (
                 !isTop &&
                 ((parentToGroup && isLastBlock(parentToGroup, toPath)) ||
-                  (parentFromGroup && isLastBlock(parentFromGroup, fromPath)))
+                  (parentFromGroup && isLastBlock(parentFromGroup, fromPath)) ||
+                  (context.nestedGroup &&
+                    context.nestedGroup[0] === dragOverRef))
               ) {
                 to = Path.next(toPath)
               }
@@ -372,10 +388,8 @@ function filterDragOverRef(
         return {dragOverRef: paragraph, isTop: false, nestedGroup: null}
       }
       if (Path.isAfter(fromPath, toPath) || Path.isAncestor(toPath, fromPath)) {
-        paragraph.setAttribute('data-action', 'dragged-top')
         isTop = true
       } else {
-        paragraph.setAttribute('data-action', 'dragged-bottom')
         isTop = false
       }
     }

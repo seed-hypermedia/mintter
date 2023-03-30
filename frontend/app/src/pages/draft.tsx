@@ -68,40 +68,6 @@ export default function DraftPage({draftActor, editor}: DraftPageProps) {
           dragService.send('DROPPED')
           mouseService.send('DISABLE.DRAG.END')
         }}
-        // onDragOver={(e: React.DragEvent) => {
-        //   e.preventDefault()
-        //   const initialNode = e.target as Element
-        //   if (initialNode && initialNode.nodeName === 'P') {
-        //     const element = ReactEditor.toSlateNode(editor, initialNode)
-        //     const path = ReactEditor.findPath(editor, element)
-
-        //     const parentBlock = SlateEditor.above<FlowContent>(editor, {
-        //       match: isFlowContent,
-        //       mode: 'lowest',
-        //       at: path,
-        //     })
-
-        //     if (parentBlock) {
-        //       const [node, ancestorPath] = parentBlock
-
-        //       const domNode = ReactEditor.toDOMNode(editor, node)
-
-        //       dragService?.send({
-        //         type: 'DRAG.OVER',
-        //         toPath: ancestorPath,
-        //         element: domNode as HTMLLIElement,
-        //         currentPos: e.clientX,
-        //       })
-        //     }
-        //   } else {
-        //     dragService?.send({
-        //       type: 'DRAG.OVER',
-        //       toPath: null,
-        //       element: null,
-        //       currentPos: e.clientX,
-        //     })
-        //   }
-        // }}
       >
         <ErrorBoundary
           FallbackComponent={AppError}
