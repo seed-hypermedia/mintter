@@ -107,8 +107,7 @@ export default function PublicationPage({mainActor}: PageProps) {
       </div>
     )
   }
-
-  if (state.matches('ready') && docId) {
+  if (docId) {
     return (
       <ConversationsProvider
         documentId={docId}
