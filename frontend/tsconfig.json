@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@mintter/ui/*": ["./packages/ui/*"]
+    }
+  },
+  "extends": "./tsconfig.base.json"
+}

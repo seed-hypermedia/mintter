@@ -94,30 +94,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 19
+          cache: "yarn"
 
-      - uses: pnpm/action-setup@v2.2.4
-        name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 7
-          run_install: false
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - uses: pnpm/action-setup@v2.2.4
-        with:
-          run_install: true
+      - name: Install Dependencies
+        run: YARN_CHECKSUM_BEHAVIOR=update yarn
 
       - name: 'Install native packages'
         if: "matrix.config.os == 'ubuntu-latest'"
@@ -303,30 +283,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 19
+          cache: "yarn"
 
-      - uses: pnpm/action-setup@v2.2.4
-        name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 7
-          run_install: false
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "::set-output name=pnpm_cache_dir::$(pnpm store path)"
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - uses: pnpm/action-setup@v2.2.4
-        with:
-          run_install: true
+      - name: Install Dependencies
+        run: YARN_CHECKSUM_BEHAVIOR=update yarn
 
       - name: Generate static updater manifest
         run:

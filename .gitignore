@@ -1,10 +1,6 @@
 /bin
-node_modules
-.netlify
-.now
 *.log
 .DS_Store
-npm-debug.log*
 
 # Local output for hacking.
 tmp
@@ -22,6 +18,10 @@ user.bazelrc
 bazel-*
 .bazel-*
 .bazel
+
+# Frontend
+frontend/apps/desktop/.vite
+frontend-old
 
 # Backend code
 backend/ui/rice-box.go-e 

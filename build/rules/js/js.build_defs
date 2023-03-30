@@ -1,19 +1,18 @@
-def pnpm_install(
+def yarn_install(
         name: str,
         srcs = [
-            "package.json",
-            "pnpm-workspace.yaml",
-            "pnpm-lock.yaml",
+            "frontend/package.json",
+            "frontend/yarn.lock",
         ],
         deps = [],
         labels = [],
         visibility: list = None):
     """
-    Installs pnpm dependencies inside the workspace tree.
+    Installs yarn dependencies inside the workspace tree.
 
     If node_modules are deleted manually, the build system won't be aware of that,
     and builds will start failing in a weird way. The way to solve it is to run this rule with --rebuild flag
-    or install the node_modules manually using pnpm.
+    or install the node_modules back using yarn.
     """
 
     fg = filegroup(
@@ -27,81 +26,69 @@ def pnpm_install(
         srcs = [fg],
         exported_deps = [fg],
         output_is_complete = False,
-        building_description = "Installing pnpm dependencies...",
-        outs = ["pnpm.state"],
+        building_description = "Installing Yarn dependencies...",
+        outs = ["yarn.state"],
         cmd = """
 HOME=$(eval echo ~$(whoami))
 TMPDIR="/tmp"
 cd $WORKSPACE
-$TOOLS_PNPM install
-cp node_modules/.modules.yaml $OUT
+$TOOLS_YARN install
+cp frontend/node_modules/.yarn-state.yml $OUT
 """,
         tools = {
-            "pnpm": [CONFIG.PNPM_TOOL],
+            "yarn": [CONFIG.YARN_TOOL],
         },
         deps = deps,
-        labels = labels + ["pnpm_install"],
+        labels = labels + ["yarn_install"],
         visibility = visibility,
     )
 
-def pnpm_script(
+def yarn_script(
         name: str,
         srcs: list,
         script_name: str,
-        pnpm_deps: str,  # Label to of of the pnpm_install target.
+        yarn_deps: str,  # Label to of of the yarn_install target.
         outs: list,
         workdir = "./",
         deps = [],
         labels = [],
         visibility: list = None):
     """
-    Runs a script defined in package.json.
+    Bundles a ViteJS app.
     """
 
     def pre_build(label):
-        if not has_label(pnpm_deps, "pnpm_install"):
-            log.fatal("Attribute pnpm_deps must point to a pnpm_install rule")
+        if not has_label(yarn_deps, "yarn_install"):
+            log.fatal("Attribute yarn_deps must point to a yarn_install rule")
 
     return build_rule(
         name = name,
         srcs = srcs,
         pre_build = pre_build,
         outs = outs,
-        building_description = "Running pnpm script...",
+        building_description = "Running Yarn script...",
         env = {
             "workdir": workdir,
             "script_name": script_name,
         },
         cmd = """
-set -x
-export HOME=$(eval echo ~$(whoami))
-export PATH="$(pwd)/node_modules/.bin:$PATH"
-
-# This is a bit of a workaround which is needed,
-# because pnpm doesn't have its own binary in path
-# when executing script, unlike yarn.
-mkdir -p bin
-cp $TOOLS_PNPM bin
-export PATH="$(pwd)/bin:$PATH"
-
 EXECROOT="$(pwd)"
 ln -s $WORKSPACE/node_modules node_modules
-ln -s $WORKSPACE/$PKG/$workdir/node_modules $PKG/$workdir/node_modules
 cd $PKG/$workdir
-pnpm run $script_name
+$TOOLS_YARN run $script_name
 mv $OUTS $EXECROOT
 """,
         tools = {
-            "pnpm": [CONFIG.PNPM_TOOL],
+            "yarn": [CONFIG.YARN_TOOL],
         },
-        deps = deps + [pnpm_deps],
+        deps = deps + [yarn_deps],
         labels = labels,
         visibility = visibility,
     )
 
-def pnpm_binary(
+def yarn_binary(
         name: str,
-        pnpm_deps: str,
+        yarn_deps: str,
         command: str = None,
         deps = [],
         visibility = None):
@@ -110,7 +97,7 @@ def pnpm_binary(
         outs = [command or name],
         binary = True,
         cmd = """
-TOOL="${TOOLS_PNPM:${#WORKSPACE}+1}"
+TOOL="${TOOLS_YARN:${#WORKSPACE}+1}"
 cat > $OUT <<EOF
 #!/bin/sh
 exec $(echo '$WORKSPACE')/$TOOL {command} $(echo '$@')
@@ -118,8 +105,8 @@ EOF
 chmod +x $OUT
 """.format(command = command or name),
         tools = {
-            "pnpm": [CONFIG.PNPM_TOOL],
+            "yarn": [CONFIG.YARN_TOOL],
         },
         visibility = visibility,
-        deps = deps + [pnpm_deps],
+        deps = deps + [yarn_deps],
     )

@@ -6,6 +6,6 @@ schema:
   - ./schema.graphql
 
 generates:
-  ../frontend/app/src/client/.generated/types.ts:
+  ../frontend/packages/shared/src/client/.generated/types.ts:
     plugins:
       - typescript

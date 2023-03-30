@@ -29,7 +29,7 @@ pnpm codegen
 ```
 
 The above command generates a `types.d.ts` file in
-`frontend/app/src/client/.generated` (checkout [codegen.yml](../codegen.yml) for
+`frontend/packages/shared/src/client/.generated` (checkout [codegen.yml](../codegen.yml) for
 more info about the config.)
 
 ### Additional Resources

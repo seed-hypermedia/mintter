@@ -74,7 +74,7 @@ def main():
 
     @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
     def build_frontend(args):
-        return run("pnpm build")
+        return run("cd frontend && yarn build")
 
     @cmd(
         cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
@@ -97,22 +97,22 @@ def main():
 
     @cmd(cmds, "run-frontend", "Run frontend web app for development.")
     def run_frontend(args):
-        run("plz build //:pnpm")
-        return run("exec pnpm app:dev", args=args)
+        run("plz build //:yarn")
+        return run("exec cd frontend && yarn app:dev", args=args)
 
     @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
     def run_frontend(args):
-        run("plz build //:pnpm")
+        run("plz build //:yarn")
         return run(
-            "exec pnpm gw:dev",
+            "exec cd frontend && yarn web",
             args=args,
             env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):
-        run("plz build //backend:mintterd //:pnpm")
-        return run("pnpm tauri:dev", args=args)
+        run("plz build //backend:mintterd //:yarn")
+        return run("cd frontend && yarn tauri:dev", args=args)
 
     @cmd(cmds, "release", "Cut a new release.")
     def release(args):
