@@ -4,7 +4,7 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {queryKeys} from '@app/hooks'
 import {useMouse} from '@app/mouse-context'
-import {openPublication} from '@app/utils/navigation'
+import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {
   blockNodeToSlate,
   Embed as EmbedType,
@@ -19,7 +19,6 @@ import {MouseEvent, useMemo} from 'react'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {RenderElementProps, useFocused, useSelected} from 'slate-react'
 import {visit} from 'unist-util-visit'
-import {useLocation, useRoute} from 'wouter'
 import {assign, createMachine} from 'xstate'
 import type {EditorPlugin} from './types'
 
@@ -79,8 +78,11 @@ function Embed({
   mode: EditorMode
 }) {
   const mouseService = useMouse()
-  const [, setLocation] = useLocation()
-  let [match, params] = useRoute('/p/:id/:version/:block')
+  const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
+  const navigateReplace = useNavigate('replace')
+  const route = useNavRoute()
+
   let [docId, version, blockId] = getIdsfromUrl(element.url)
   let client = useQueryClient()
   let [state] = useMachine(() => createEmbedMachine({url: element.url, client}))
@@ -93,13 +95,23 @@ function Embed({
     event.preventDefault()
     // if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
 
+    const destRoute: PublicationRoute = {
+      key: 'publication',
+      documentId: docId,
+      versionId: version,
+      blockId,
+    }
     if (isShiftKey) {
-      setLocation(`/p/${docId}/${version}/${blockId}`)
+      navigate(destRoute)
     } else {
-      if (match && params?.id == docId && params?.version == version) {
-        setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
+      if (
+        route.key === 'publication' &&
+        route.documentId === docId &&
+        route.versionId === version
+      ) {
+        navigateReplace(destRoute)
       } else {
-        openPublication(docId, version, blockId)
+        spawn(destRoute)
       }
     }
   }

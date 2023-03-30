@@ -20,7 +20,6 @@ import {
   Mark,
 } from '@mintter/shared'
 import {ObjectKeys} from '@app/utils/object-keys'
-import {useRoute} from '@components/router'
 import videoParser from 'js-video-url-parser'
 import {useEffect, useMemo, useState} from 'react'
 import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
@@ -28,6 +27,7 @@ import {Editor, Node, Path, Range, Text, Transforms, Element} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {MintterEditor} from './mintter-changes/plugin'
 import {ELEMENT_PARAGRAPH} from './paragraph'
+import {useNavRoute} from '@app/utils/navigation'
 
 export const isCollapsed = (range: Range | null): boolean =>
   !!range && Range.isCollapsed(range)
@@ -535,17 +535,17 @@ export function insertInline(fn: typeof image | typeof video) {
 // eslint-disable-next-line
 export function useBlockFlash(ref: any, id: string) {
   let [active, setActive] = useState(false)
-  let [match, params] = useRoute('/p/:id/:version/:block')
+  const route = useNavRoute()
 
   useEffect(() => {
     setTimeout(() => {
       if (ref.current) {
-        if (match && params?.block == id) {
+        if (route.key === 'publication' && route.blockId === id) {
           setActive(true)
         }
       }
     }, 100)
-  }, [id, match, params, ref])
+  }, [route, id])
 
   return active
 }

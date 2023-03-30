@@ -15,8 +15,8 @@ import {
 } from '@app/hooks'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {PublicationActor} from '@app/publication-machine'
 import {classnames} from '@app/utils/classnames'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {ChangesList} from '@components/changes-list'
@@ -25,11 +25,8 @@ import {Conversations} from '@components/conversations'
 import Footer, {FooterButton} from '@components/footer'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
-import {useRoute} from '@components/router'
 import {ScrollArea} from '@components/scroll-area'
-import {Text} from '@components/text'
 import {MttLink} from '@mintter/shared'
-import {keyframes} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useActor, useInterpret, useMachine} from '@xstate/react'
@@ -41,13 +38,16 @@ import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
+import {PageProps} from './base'
 
-export default function PublicationPage({
-  publicationActor,
-}: {
-  publicationActor: PublicationActor
-}) {
-  let [, params] = useRoute('/p/:id/:version/:block?')
+export default function PublicationPage({mainActor}: PageProps) {
+  if (mainActor.type !== 'publication')
+    throw new Error('Publication page expects publication actor')
+  const publicationActor = mainActor.actor
+  const route = useNavRoute()
+  const docId = route.key === 'publication' ? route.documentId : undefined
+  const blockId = route.key === 'publication' ? route.blockId : undefined
+  const versionId = route.key === 'publication' ? route.versionId : undefined
 
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
@@ -58,11 +58,11 @@ export default function PublicationPage({
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
-  let [focusBlock, setFocusBlock] = useState(() => params?.block)
+  let [focusBlock, setFocusBlock] = useState(() => blockId)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
-  const {data: changes} = useDocChanges(params?.id)
-  const {data: citations} = useDocCitations(params?.id)
+  const {data: changes} = useDocChanges(docId)
+  const {data: citations} = useDocCitations(docId)
 
   useEffect(() => {
     let isSubscribed = true
@@ -94,26 +94,6 @@ export default function PublicationPage({
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
   let [state, send] = useActor(publicationActor)
 
-  //  useMachine(
-  //   () =>
-  //     createPublicationMachine({
-  //       client,
-  //       editor,
-  //       documentId: params?.id,
-  //       version: params?.version,
-  //     }),
-  //   {
-  //     actions: {
-  //       sendActorToParent: () => {
-  //         mainService.send({type: 'COMMIT.CURRENT.PUBLICATION', service})
-  //       },
-  //       onEditSuccess: (_, event) => {
-  //         setLocation(`/d/${event.data.id}`)
-  //       },
-  //     },
-  //   },
-  // )
-
   let {activePanel} = resizablePanelState.context
 
   if (state.matches('errored')) {
@@ -127,11 +107,10 @@ export default function PublicationPage({
       </div>
     )
   }
-
-  if (state.matches('ready') && params?.id) {
+  if (docId) {
     return (
       <ConversationsProvider
-        documentId={params.id}
+        documentId={docId}
         isOpen={
           activePanel === 'conversations' && resizablePanelState.context.show
         }
@@ -144,7 +123,7 @@ export default function PublicationPage({
         publication={state.context.publication}
       >
         <CitationsProvider
-          documentId={params.id}
+          documentId={docId}
           onCitationsOpen={(citations: Array<MttLink>) => {
             panelSend({
               type: 'PANEL.OPEN',
@@ -216,10 +195,7 @@ export default function PublicationPage({
                           {activePanel == 'conversations' ? (
                             <Conversations />
                           ) : activePanel == 'changes' ? (
-                            <ChangesList
-                              docId={state.context.publication.document.id}
-                              version={state.context.version}
-                            />
+                            <ChangesList />
                           ) : (
                             <Citations
                               docId={state.context.publication.document.id}
@@ -453,7 +429,7 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const {data: pub, isLoading} = usePublication(docId)
-  const [l, setLocation] = useLocation()
+  const navigate = useNavigate()
   const client = useQueryClient()
   if (isLoading) return null
   if (version === pub?.version) return null
@@ -470,7 +446,11 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
         <a
           onClick={(e) => {
             e.preventDefault()
-            setLocation(`/p/${docId}/${pub.version}`)
+            navigate({
+              key: 'publication',
+              documentId: docId,
+              versionId: pub.version,
+            })
           }}
         >
           There is a newer version of this Publication. Click here to go to

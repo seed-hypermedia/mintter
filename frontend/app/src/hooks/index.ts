@@ -4,10 +4,16 @@ import {
   draftsClient,
   publicationsClient,
 } from '@app/api-clients'
+import {appInvalidateQueries} from '@app/query-client'
 import {Transport} from '@bufbuild/connect-web'
 import {Timestamp} from '@bufbuild/protobuf'
 import {Document, Publication} from '@mintter/shared'
-import {QueryClient, useQuery} from '@tanstack/react-query'
+import {
+  MutationOptions,
+  QueryClient,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect, useMemo} from 'react'
 import {contentGraphClient} from './../api-clients'
@@ -95,75 +101,48 @@ export function usePublicationList({rpc}: QueryOptions = {}) {
   }
 }
 
-type UseDraftListParams = {
-  pageSize?: number
-  pageToken?: string
-  options?: QueryOptions
-}
-
-export function useDraftList({
-  pageSize,
-  pageToken,
-  options,
-}: UseDraftListParams = {}) {
-  let queryResult = useQuery({
+export function useDraftList() {
+  return useQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
-    queryFn: () => draftsClient.listDrafts({pageSize, pageToken}),
+    queryFn: async () => {
+      const result = await draftsClient.listDrafts({
+        pageSize: undefined,
+        pageToken: undefined,
+      })
+      const documents =
+        result.documents.sort((a, b) =>
+          sortDocuments(a.updateTime, b.updateTime),
+        ) || []
+      return {
+        ...result,
+        documents,
+      }
+    },
     onError: (err) => {
       console.log(`useDraftList error: ${err}`)
     },
   })
-
-  let documents = useMemo(() => {
-    return (
-      queryResult.data?.documents.sort((a, b) =>
-        sortDocuments(a.updateTime, b.updateTime),
-      ) || []
-    )
-  }, [queryResult.data])
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('new_draft', () => {
-      queryResult.refetch()
-
-      if (!isSubscribed) {
-        return unlisten()
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('update_draft', () => {
-      queryResult.refetch()
-
-      if (!isSubscribed) {
-        return unlisten()
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
-
-  return {
-    ...queryResult,
-    data: {
-      ...queryResult.data,
-      documents,
-    },
-  }
 }
+
+export function useDeleteDraft(opts: MutationOptions<void, unknown, string>) {
+  return useMutation({
+    ...opts,
+    mutationFn: async (documentId) => {
+      await draftsClient.deleteDraft({documentId})
+    },
+    onSuccess: (...args) => {
+      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+      opts?.onSuccess?.(...args)
+    },
+  })
+}
+
+listen('update_draft', () => {
+  appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+})
+listen('new_draft', () => {
+  appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+})
 
 export function useAuthor(id = '', opts: QueryOptions = {}) {
   return useQuery({

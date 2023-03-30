@@ -10,14 +10,13 @@ import {
 } from '@app/publication-machine'
 import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {publishDraft} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {Editor} from 'slate'
-import {useLocation, useRoute} from 'wouter'
 import {interpret} from 'xstate'
 import {useDocRepublish} from './sites'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 
 export type MainActor =
   | {type: 'publication'; actor: PublicationActor}
@@ -27,8 +26,6 @@ export type MainActorOptions = Partial<{
   shouldAutosave: boolean
   editor: Editor
   client: QueryClient
-  //TODO: add proper type
-  publishDraft?: ReturnType<typeof publishDraft>
 }>
 
 export function useMainActor(props: MainActorOptions = {}) {
@@ -43,32 +40,36 @@ export function useMainActor(props: MainActorOptions = {}) {
     },
   })
   const isDaemonReady = useDaemonReady()
-  const [, setLocation] = useLocation()
-  const [isPublication, publicationParams] = useRoute('/p/:id/:version/:block?')
-  const [isDraft, draftParams] = useRoute('/d/:id/:tag?')
+
+  const route = useNavRoute()
+  const navReplace = useNavigate('replace')
+  const {editor: inputEditor, shouldAutosave} = props
 
   return useMemo(() => {
-    if (isPublication) {
+    if (route.key === 'publication') {
       const pubMachine = createPublicationMachine({
         client: appQueryClient,
-        documentId: publicationParams.id,
-        version: publicationParams.version,
+        documentId: route.documentId,
+        version: route.versionId,
       }).withConfig({
         actions: {
           onEditSuccess: (_, event) => {
-            setLocation(`/d/${event.data.id}`)
+            navReplace({
+              key: 'draft',
+              documentId: event.data.id,
+            })
           },
         },
       })
       const actor = interpret(pubMachine, {})
       actor.start()
       return {type: 'publication', actor} as const
-    } else if (isDraft) {
-      const editor = props.editor ?? buildEditorHook(plugins, EditorMode.Draft)
+    } else if (route.key === 'draft') {
+      const editor = inputEditor ?? buildEditorHook(plugins, EditorMode.Draft)
       const draftMachine = createDraftMachine({
-        client: props.client ?? appQueryClient,
-        documentId: draftParams.id,
-        shouldAutosave: props.shouldAutosave || true,
+        client: appQueryClient,
+        documentId: route.documentId,
+        shouldAutosave: shouldAutosave || true,
         editor,
       }).withConfig({
         actions: {
@@ -81,24 +82,23 @@ export function useMainActor(props: MainActorOptions = {}) {
             const docId = event.data.document?.id
             if (!docId) return
             appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
-            setLocation(`/p/${docId}/${event.data.version}`, {
-              replace: true,
+            appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, docId])
+            appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
+            navReplace({
+              key: 'publication',
+              documentId: docId,
+              versionId: event.data.version,
             })
             republishDoc.mutateAsync(event.data)
             toast.success('Draft published Successfully!')
           },
         },
         services: {
-          // @ts-ignore
-          publishDraft: props.publishDraft
-            ? props.publishDraft
-            : (context) => {
-                console.log('===== PUBLISHING: PUBLISH SERVICE === ', context)
-
-                return draftsClient.publishDraft({
-                  documentId: context.documentId,
-                })
-              },
+          publishDraft: (context) => {
+            return draftsClient.publishDraft({
+              documentId: context.documentId,
+            })
+          },
         },
         guards: {
           isDaemonReady: () => isDaemonReady,
@@ -111,10 +111,11 @@ export function useMainActor(props: MainActorOptions = {}) {
     }
     return undefined
   }, [
-    isPublication,
-    isDraft,
-    publicationParams?.id,
-    publicationParams?.version,
-    draftParams?.id,
+    route,
+    isDaemonReady,
+    republishDoc,
+    navReplace,
+    inputEditor,
+    shouldAutosave,
   ])
 }

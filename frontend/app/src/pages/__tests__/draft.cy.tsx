@@ -6,9 +6,9 @@ import {
   BlockNode,
 } from '@mintter/shared'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
-import {Route} from 'wouter'
 import DraftPage from '../draft'
 import {useMainActor} from '@app/hooks/main-actor'
+import {useNavRoute} from '@app/utils/navigation'
 describe('Draft Page', () => {
   it('should render the draft', () => {
     let {client, draft} = createTestQueryClient({
@@ -61,14 +61,15 @@ describe('Draft Page', () => {
 
 function TestDraft({publishDraft, client}: any) {
   let mainActor = useMainActor({shouldAutosave: false, client, publishDraft})
-
+  const route = useNavRoute()
+  if (route.key !== 'draft') return null
   return (
-    <Route path="/d/:id/:tag?">
+    <>
       {() =>
         mainActor?.type == 'draft' ? (
           <DraftPage draftActor={mainActor?.actor} editor={mainActor.editor} />
         ) : null
       }
-    </Route>
+    </>
   )
 }

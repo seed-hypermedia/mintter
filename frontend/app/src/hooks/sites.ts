@@ -3,6 +3,7 @@ import {appInvalidateQueries} from '@app/query-client'
 import {
   Block,
   Document,
+  getIdsfromUrl,
   Member,
   Member_Role,
   Publication,
@@ -19,19 +20,16 @@ import {
 } from '@app/api-clients'
 import {queryKeys} from './index'
 
-const mttUrlRegEx =
-  '^' +
-  MINTTER_LINK_PREFIX.replace('/', '/') +
-  '([a-z0-9]+)/([a-z0-9]+)/([a-zA-Z0-9]+)$'
-
 function blockExtractReferencedDocs(
   block: Block,
 ): Partial<ReferencedDocument>[] {
   const docIds: Array<any> = []
   block.annotations.forEach((annotation) => {
     if (annotation.type === 'embed' || annotation.type === 'link') {
-      const match = annotation.attributes.url.match(mttUrlRegEx) ?? ['', '', '']
-      docIds.push({documentId: match[1], version: match[2]})
+      const ids = getIdsfromUrl(annotation.attributes.url)
+      if (ids[0]) {
+        docIds.push({documentId: ids[0], version: ids[1]})
+      }
     }
   })
   return docIds

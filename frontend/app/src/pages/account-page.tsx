@@ -1,4 +1,5 @@
-import {useAccount, useAccountWithDevices} from '@app/hooks/contacts'
+import {useAccountWithDevices} from '@app/hooks/contacts'
+import {useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
@@ -8,7 +9,7 @@ import PageContainer from '@components/page-container'
 import {Text} from '@components/text'
 import {ConnectionStatus, PeerInfo} from '@mintter/shared'
 import {ComponentProps, ReactNode} from 'react'
-import {useRoute} from 'wouter'
+import {PageProps} from './base'
 
 function PeerRow({peer}: {peer: PeerInfo}) {
   return (
@@ -42,9 +43,9 @@ function Section({
     </Box>
   )
 }
-export default function AccountPage() {
-  const [, params] = useRoute('/account/:id')
-  const accountId = params?.id
+export default function AccountPage(props: PageProps) {
+  const route = useNavRoute()
+  const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')
   const account = useAccountWithDevices(accountId)
   return (
