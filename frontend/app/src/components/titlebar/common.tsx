@@ -1,6 +1,7 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
+import {useDraftList} from '@app/hooks'
 import {MainActor} from '@app/hooks/main-actor'
 import {useSiteList} from '@app/hooks/sites'
 import {useDaemonReady} from '@app/node-status-context'
@@ -16,7 +17,7 @@ import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
-import {useSelector} from '@xstate/react'
+import {useActor, useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
@@ -194,7 +195,11 @@ function WriteActions({
   //   publicationActor,
   //   (state) => state.context.canUpdate,
   // )
-
+  const draftList = useDraftList()
+  const [pubState] = useActor(publicationActor)
+  const hasExistingDraft = draftList.data?.documents.some(
+    (draft) => draft.id === pubState.context.documentId,
+  )
   let errorMessage = useSelector(
     publicationActor,
     (state) => state.context.errorMessage,
@@ -204,12 +209,14 @@ function WriteActions({
       {publicationActor && (
         <div className="button-group">
           <button
-            className="titlebar-button"
+            className={`titlebar-button ${hasExistingDraft ? 'warning' : ''}`}
             onClick={() => {
               publicationActor.send({type: 'PUBLICATION.EDIT'})
             }}
           >
-            <span style={{marginInline: '0.3em'}}>Edit</span>
+            <span style={{marginInline: '0.3em'}}>
+              {hasExistingDraft ? 'Resume Editing' : 'Edit'}
+            </span>
             {errorMessage ? ' (failed)' : null}
           </button>
         </div>
