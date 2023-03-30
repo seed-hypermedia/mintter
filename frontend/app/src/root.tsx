@@ -27,6 +27,7 @@ import {accountsClient, daemonClient, networkingClient} from '@app/api-clients'
 import {Account} from '@mintter/shared'
 import {ScrollArea} from '@radix-ui/react-scroll-area'
 import {DaemonStatusProvider} from '@app/node-status-context'
+import {NavigationProvider} from './utils/navigation'
 
 import('./updater')
 
@@ -56,7 +57,9 @@ export function Root() {
         <Hydrate state={dehydrateState}>
           <ErrorBoundary FallbackComponent={AppError}>
             <ThemeProvider value={themeService}>
-              <App />
+              <NavigationProvider>
+                <App />
+              </NavigationProvider>
               <Toaster
                 position="bottom-right"
                 toastOptions={{className: 'toaster'}}

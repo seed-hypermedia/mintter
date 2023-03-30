@@ -18,7 +18,6 @@ import {
   BlockNode,
 } from '@mintter/shared'
 import {createTestDraft, createTestQueryClient} from '@app/test/utils'
-import {Route} from '@components/router'
 import {Editor as EditorType} from 'slate'
 import {queryKeys} from '@app/hooks'
 import {mouseMachine} from '@app/mouse-machine'
@@ -26,6 +25,7 @@ import DraftPage from '@app/pages/draft'
 import {InterpreterFrom} from 'xstate'
 import {useMainActor} from '@app/hooks/main-actor'
 import {QueryClient} from '@tanstack/react-query'
+import {useNavRoute} from '@app/utils/navigation'
 
 before(() => {
   window.__TAURI_IPC__ = function () {
@@ -802,13 +802,15 @@ type TestEditorProps = {
 
 function TestEditor({editor, client}: TestEditorProps) {
   const mainActor = useMainActor({shouldAutosave: false, editor, client})
+  const route = useNavRoute()
+  if (route.key !== 'draft') return null
   return (
-    <Route path="/d/:id/:tag?">
+    <>
       {() =>
         mainActor?.type == 'draft' ? (
           <DraftPage draftActor={mainActor.actor} editor={editor} />
         ) : null
       }
-    </Route>
+    </>
   )
 }

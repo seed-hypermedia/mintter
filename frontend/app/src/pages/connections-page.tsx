@@ -1,16 +1,16 @@
 import {useAccountIsConnected, useContactsList} from '@app/hooks/contacts'
+import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
-import {Box} from '@components/box'
 import {Button} from '@components/button'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
 import PageContainer from '@components/page-container'
 import {Text} from '@components/text'
 import {Account} from '@mintter/shared'
-import {useLocation} from 'wouter'
+import {PageProps} from './base'
 
 function ContactItem({account}: {account: Account}) {
-  const [, setLocation] = useLocation()
+  const navigate = useNavigate()
   const isConnected = useAccountIsConnected(account)
   const alias = account.profile?.alias
   return (
@@ -23,7 +23,7 @@ function ContactItem({account}: {account: Account}) {
         '&:hover': {background: '$base-background-normal'},
       }}
       onClick={() => {
-        setLocation(`/account/${account.id}`)
+        navigate({key: 'account', accountId: account.id})
       }}
     >
       <Avatar
@@ -45,7 +45,7 @@ function ContactItem({account}: {account: Account}) {
   )
 }
 
-export default function ConnectionsPage() {
+export default function ConnectionsPage(props: PageProps) {
   const contacts = useContactsList()
   const accounts = contacts.data?.accounts || []
   return (

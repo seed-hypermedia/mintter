@@ -44,10 +44,10 @@ import {Fragment, MouseEvent, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, Node, NodeEntry, Path} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
-import {useRoute} from 'wouter'
 import {CommentForm, EditorHoveringActions} from './hovering-toolbar'
 import {OutsideClick} from './outside-click'
 import './styles/blocktools.scss'
+import {useNavRoute} from '@app/utils/navigation'
 
 let toolsByMode = {
   [EditorMode.Draft]: DraftBlocktools,
@@ -382,7 +382,7 @@ var items: {
 
 export function BlockTools({block}: {block: FlowContent}) {
   const editor = useSlate()
-  let [, params] = useRoute('/p/:id/:version/:block?')
+  const route = useNavRoute()
 
   const blocktoolsProps = useBlocktoolsData(editor)
   const [isCommenting, setIsCommenting] = useState(false)
@@ -391,11 +391,11 @@ export function BlockTools({block}: {block: FlowContent}) {
 
   let Component = toolsByMode[mode] || null
 
-  const docId = params?.id
+  const docId = route.key === 'publication' ? route.documentId : undefined
   if (mode == EditorMode.Publication && !docId) {
     return null
   }
-  if (isCommenting && block.revision) {
+  if (isCommenting && block.revision && docId) {
     return (
       <BlockCommentForm
         blockId={block.id}

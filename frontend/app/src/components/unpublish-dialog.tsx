@@ -16,22 +16,17 @@ export function useUnpublishDialog(
       <Alert.Portal>
         <Alert.Overlay className={overlayStyles()} />
         <Alert.Content>
-          <Alert.Title color="danger" data-testid="delete-dialog-title">
-            Un-Publish from Site
-          </Alert.Title>
+          <Alert.Title color="danger">Un-Publish from Site</Alert.Title>
           <Alert.Description>
             {pub.path == null
               ? `This document may no longer be visible on this site.`
               : `This document will no longer be visible at /${pub.path}`}
           </Alert.Description>
           <Alert.Actions>
-            <Alert.Cancel data-testid="delete-dialog-cancel">
-              Cancel
-            </Alert.Cancel>
+            <Alert.Cancel>Cancel</Alert.Cancel>
             <Alert.Action
               color="danger"
               disabled={unpublish.isLoading}
-              data-testid="delete-dialog-confirm"
               onClick={(e: MouseEvent<HTMLButtonElement>) => {
                 e.stopPropagation()
                 e.preventDefault()

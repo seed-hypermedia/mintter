@@ -8,7 +8,6 @@ import {isMintterLink} from '@app/utils/is-mintter-link'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {useLocation, useRoute} from '@components/router'
 import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
@@ -34,7 +33,7 @@ import {
 } from 'slate-react'
 import type {EditorPlugin} from '../types'
 import {findPath, getEditorBlock, isCollapsed} from '../utils'
-import {openPublication} from '@app/utils/navigation'
+import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {publicationsClient} from '@app/api-clients'
 
 export const ELEMENT_LINK = 'link'
@@ -164,21 +163,34 @@ function RenderMintterLink(
   props: LinkProps,
   ref: ForwardedRef<HTMLAnchorElement>,
 ) {
-  const [, setLocation] = useLocation()
+  const navigate = useNavigate()
+  const spawn = useNavigate()
+  const navigateReplace = useNavigate('replace')
+
   let mouseService = useMouse()
-  let [match, params] = useRoute('/p/:id/:version/:block')
+  const route = useNavRoute()
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
+    const destRoute: PublicationRoute = {
+      key: 'publication',
+      documentId: docId,
+      versionId: version,
+      blockId: blockId,
+    }
     if (isShiftKey) {
-      setLocation(`/p/${docId}/${version}/${blockId}`)
+      navigate(destRoute)
     } else {
-      if (match && params?.id == docId && params?.version == version) {
-        setLocation(`/p/${docId}/${version}/${blockId}`, {replace: true})
+      if (
+        route.key === 'publication' &&
+        route.documentId === docId &&
+        route?.versionId === version
+      ) {
+        navigateReplace(destRoute)
       } else {
-        openPublication(docId, version, blockId)
+        spawn(destRoute)
       }
     }
   }

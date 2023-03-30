@@ -10,15 +10,17 @@ import {
   useDraftList,
   usePublicationList,
 } from '@app/hooks'
-import {openPublication, useNavigation} from '@app/utils/navigation'
-import {openWindow} from '@app/utils/open-window'
+import {
+  PublicationRoute,
+  useNavigate,
+  useNavigationActions,
+} from '@app/utils/navigation'
 import {Button} from '@components/button'
 import {DeleteDialog} from '@components/delete-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
 import PageContainer from '@components/page-container'
-import {useLocation} from '@components/router'
 import {Text} from '@components/text'
 import {Document, formattedDate, Publication} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
@@ -27,13 +29,12 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import Highlighter from 'react-highlight-words'
 import toast from 'react-hot-toast'
 import '../styles/file-list.scss'
+import {PageProps} from './base'
 
-export default PublicationList
-
-function PublicationList() {
+export default function PublicationList(props: PageProps) {
   let {data, isInitialLoading} = usePublicationList()
   let drafts = useDraftList()
-  let nav = useNavigation()
+  let nav = useNavigationActions()
 
   return (
     <>
@@ -43,7 +44,7 @@ function PublicationList() {
         ) : data && data.publications.length ? (
           data.publications.map((publication) => (
             <PublicationListItem
-              hasDraft={drafts.data.documents.find(
+              hasDraft={drafts.data?.documents.find(
                 (d) => d.id == publication.document?.id,
               )}
               key={`${publication.document?.id}/${publication.version}`}
@@ -74,10 +75,13 @@ export function PublicationListItem({
   hasDraft: Document | undefined
 }) {
   const {search} = useFind()
-  const [, setLocation] = useLocation()
+  const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
   const client = useQueryClient()
   const title = publication.document?.title || 'Untitled Document'
   const {data: author} = useAuthor(publication.document?.author)
+  const docId = publication.document?.id
+  if (!docId) throw new Error('PublicationListItem requires id')
 
   const deleteService = useInterpret(
     () =>
@@ -105,10 +109,15 @@ export function PublicationListItem({
 
   function goToItem(event: MouseEvent) {
     event.preventDefault()
+    const route: PublicationRoute = {
+      key: 'publication',
+      documentId: docId,
+      versionId: publication.version,
+    }
     if (event.metaKey || event.shiftKey) {
-      openWindow(`/p/${publication.document?.id}/${publication.version}`)
+      spawn(route)
     } else {
-      setLocation(`/p/${publication.document?.id}/${publication.version}`)
+      navigate(route)
     }
   }
 
@@ -142,7 +151,7 @@ export function PublicationListItem({
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              setLocation(`/d/${hasDraft.id}`)
+              navigate({key: 'draft', documentId: hasDraft.id})
             }}
             size="1"
             css={{
@@ -156,7 +165,7 @@ export function PublicationListItem({
               },
             }}
           >
-            DRAFT
+            Resume Editing
           </Button>
         )}
       </p>
@@ -212,7 +221,11 @@ export function PublicationListItem({
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() =>
-                  openPublication(publication.document.id, publication.version)
+                  spawn({
+                    key: 'publication',
+                    documentId: docId,
+                    versionId: publication.version,
+                  })
                 }
               >
                 <Icon name="OpenInNewWindow" />

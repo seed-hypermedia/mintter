@@ -1,6 +1,6 @@
 import {publicationsClient} from '@app/api-clients'
 import {CitationLink, queryKeys, useDocCitations} from '@app/hooks'
-import {openPublication} from '@app/utils/navigation'
+import {useNavigate} from '@app/utils/navigation'
 import {useQuery} from '@tanstack/react-query'
 import {Button} from './button'
 import {PanelTitle} from './panel'
@@ -8,6 +8,7 @@ import {Text} from './text'
 
 function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   if (!link.source?.documentId) throw 'Invalid citation'
+  const spawn = useNavigate('spawn')
   const pub = useQuery({
     queryKey: [
       queryKeys.GET_PUBLICATION,
@@ -30,7 +31,12 @@ function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
       onClick={() => {
         const sourceDocId = link.source?.documentId
         if (!sourceDocId) return
-        openPublication(sourceDocId, link.source?.version, link.source?.blockId)
+        spawn({
+          key: 'publication',
+          documentId: sourceDocId,
+          versionId: link.source?.version,
+          blockId: link.source?.blockId,
+        })
       }}
       css={{
         listStyle: 'none',

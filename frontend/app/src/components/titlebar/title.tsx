@@ -1,67 +1,68 @@
-import {draftsClient, publicationsClient} from '@app/api-clients'
-import {queryKeys, useAuthor} from '@app/hooks'
+import {draftsClient} from '@app/api-clients'
+import {queryKeys, useAuthor, usePublication} from '@app/hooks'
+import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {tauriDecodeParam} from '@app/utils/tauri-param-hackaround'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
 import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect} from 'react'
-import {ExtractRouteParams, Route, Switch, useRoute} from 'wouter'
+
+export function TitleContent() {
+  const route = useNavRoute()
+  if (route.key === 'home') {
+    return (
+      <>
+        <Icon name="File" />
+        <Text css={{marginInline: '$3'}}>All Publications</Text>
+      </>
+    )
+  }
+  if (route.key === 'connections') {
+    return (
+      <>
+        <Icon name="Person" />
+        <Text css={{marginInline: '$3'}}>Connections</Text>
+      </>
+    )
+  }
+  if (route.key === 'drafts') {
+    return (
+      <>
+        <Icon name="PencilAdd" />
+        <Text css={{marginInline: '$3'}}>Drafts</Text>
+      </>
+    )
+  }
+  if (route.key === 'account') {
+    return <>Account Profile</>
+  }
+  if (route.key === 'site') {
+    return <>{hostnameStripProtocol(route.hostname)}</>
+  }
+  if (route.key === 'publication') {
+    return <PublicationTitle route={route} />
+  }
+  if (route.key === 'draft') {
+    return <DraftTitle route={route} />
+  }
+  return <>{null}</>
+}
 
 export function Title() {
-  let [, siteHomeParams] = useRoute('/sites/:hostname')
-
   return (
     <h1
       className="titlebar-title"
       data-testid="titlebar-title"
       data-tauri-drag-region
     >
-      <Switch>
-        <Route path="/">
-          <span data-tauri-drag-region>Inbox</span>
-        </Route>
-        <Route path="/inbox">
-          <span data-tauri-drag-region>Inbox</span>
-        </Route>
-        <Route path="/connections">
-          <span data-tauri-drag-region>Connections</span>
-        </Route>
-        <Route path="/drafts">
-          <span data-tauri-drag-region>Drafts</span>
-        </Route>
-        <Route path="/account/:id">
-          <span data-tauri-drag-region>Profile</span>
-        </Route>
-        <Route path="/sites/:hostname">
-          <span data-tauri-drag-region>
-            {hostnameStripProtocol(
-              tauriDecodeParam(siteHomeParams?.hostname) || '',
-            )}
-          </span>
-        </Route>
-
-        <Route path="/p/:id/:version/:block?" component={PublicationTitle} />
-        <Route path="/d/:id/:tag?" component={DraftTitle} />
-      </Switch>
+      <TitleContent />
     </h1>
   )
 }
 
-function PublicationTitle({
-  params,
-}: {
-  params: ExtractRouteParams<'/p/:id/:version/:block?'>
-}) {
-  let {data: pub} = useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, params.id, params.version],
-    enabled: !!params.id,
-    queryFn: () =>
-      publicationsClient.getPublication({
-        documentId: params.id,
-        version: params.version,
-      }),
-  })
-
+function PublicationTitle({route}: {route: PublicationRoute}) {
+  let {data: pub} = usePublication(route.documentId, route.versionId)
   let {data: author} = useAuthor(pub?.document?.author)
 
   return (
@@ -72,11 +73,11 @@ function PublicationTitle({
   )
 }
 
-function DraftTitle({params}: {params: ExtractRouteParams<'/d/:id/:tag?'>}) {
+function DraftTitle({route}: {route: DraftRoute}) {
   let {data: draft, refetch} = useQuery({
-    queryKey: [queryKeys.GET_DRAFT, params.id],
-    enabled: !!params.id,
-    queryFn: () => draftsClient.getDraft({documentId: params.id}),
+    queryKey: [queryKeys.GET_DRAFT, route.documentId],
+    enabled: !!route.documentId,
+    queryFn: () => draftsClient.getDraft({documentId: route.documentId}),
   })
 
   useEffect(() => {
@@ -95,6 +96,6 @@ function DraftTitle({params}: {params: ExtractRouteParams<'/d/:id/:tag?'>}) {
       isSubscribed = false
     }
   })
-
-  return <span data-tauri-drag-region>{draft?.title}</span>
+  const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
+  return <span data-tauri-drag-region>{displayTitle}</span>
 }

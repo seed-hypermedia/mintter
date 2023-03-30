@@ -157,7 +157,6 @@ importers:
       vite-react-jsx: 1.1.2
       vite-tsconfig-paths: 3.6.0
       vitest: 0.25.5
-      wouter: 2.9.0
       ws: 8.11.0
       xstate: 4.35.4
     dependencies:
@@ -242,7 +241,6 @@ importers:
       unist-util-remove-position: 4.0.1
       unist-util-visit: 4.1.1
       unist-util-visit-parents: 5.1.1
-      wouter: 2.9.0_react@18.2.0
       xstate: 4.35.4
     devDependencies:
       '@babel/core': 7.20.7
@@ -13612,14 +13610,6 @@ packages:
   /word-wrap/1.2.3:
     resolution: {integrity: sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==}
     engines: {node: '>=0.10.0'}
-
-  /wouter/2.9.0_react@18.2.0:
-    resolution: {integrity: sha512-cGi9miU5jgwNaybj4sfzY9ZVhU8EwFsncmi2yDvVbS2pL/yz8ZpAMMiELHr4j8w2NLStgI/ltqDluYvBwPhYoQ==}
-    peerDependencies:
-      react: '>=16.8.0'
-    dependencies:
-      react: 18.2.0
-    dev: false
 
   /wrap-ansi/2.1.0:
     resolution: {integrity: sha512-vAaEaDM946gbNpH5pLVNR+vX2ht6n0Bt3GXwVB1AuAqZosOvHNF3P7wDnh8KLkSqgUh0uh77le7Owgoz+Z9XBw==}

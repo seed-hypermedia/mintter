@@ -3,6 +3,7 @@ import {OutsideClick} from '@app/editor/outside-click'
 import {toolbarMachine} from '@app/editor/toolbar-machine'
 import {queryKeys} from '@app/hooks'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
@@ -41,7 +42,6 @@ import {
   useSlateSelection,
   useSlateWithV,
 } from 'slate-react'
-import {useRoute} from 'wouter'
 import {assign} from 'xstate'
 import {MARK_EMPHASIS} from './emphasis'
 import {MARK_CODE} from './inline-code'
@@ -347,7 +347,9 @@ export function EditorHoveringActions({
 
 export function PublicationToolbar() {
   let client = useQueryClient()
-  let [, params] = useRoute('/p/:id/:version/:block?')
+  const route = useNavRoute()
+  const documentId = route.key === 'publication' ? route.documentId : undefined
+  const version = route.key === 'publication' ? route.versionId : undefined
   const editor = useSlate()
   let selection = useSlateSelection()
   const {x, y, reference, floating, strategy} = useFloating({
@@ -457,7 +459,7 @@ export function PublicationToolbar() {
 
     await commentsClient
       .createConversation({
-        documentId: params?.id,
+        documentId,
         initialComment,
         selectors: [selector],
       })
@@ -526,8 +528,6 @@ export function PublicationToolbar() {
       selection.focus.offset
     const start = Math.min(anchor, focus)
     const end = Math.max(anchor, focus)
-    const documentId = params?.id
-    const version = params?.version
     // console.log('... : ', {
     //   selection,
     //   c: editor.children,

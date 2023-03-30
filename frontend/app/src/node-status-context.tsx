@@ -46,8 +46,8 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
     retry: true,
     queryFn: () =>
       networkingClient.getPeerInfo({peerId: infoQuery.data?.peerId}),
-    refetchInterval: 2000,
-    refetchIntervalInBackground: true,
+    // refetchInterval: 2000,
+    // refetchIntervalInBackground: true,
   })
 
   useEffect(() => {
