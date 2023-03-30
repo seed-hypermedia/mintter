@@ -1,4 +1,6 @@
 import {draftsClient} from '@app/api-clients'
+import {queryKeys} from '@app/hooks'
+import {appInvalidateQueries} from '@app/query-client'
 import {invoke as tauriInvoke} from '@tauri-apps/api'
 import {
   createContext,
@@ -177,9 +179,7 @@ export function useNavigationActions() {
     draftsClient
       .createDraft({})
       .then((doc) => {
-        tauriInvoke('emit_all', {
-          event: 'new_draft',
-        })
+        appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
         if (newWindow) {
           spawn({key: 'draft', documentId: doc.id})
         } else {

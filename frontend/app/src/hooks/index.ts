@@ -59,46 +59,21 @@ export function usePublication(documentId: string, versionId?: string) {
       }),
   })
 }
-export function usePublicationList({rpc}: QueryOptions = {}) {
-  let queryResult = useQuery({
+export function usePublicationList() {
+  return useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
-    queryFn: () => publicationsClient.listPublications({}),
-    onError: (err) => {
-      console.log(`usePublicationList error: ${err}`)
-    },
-  })
-
-  let publications = useMemo(() => {
-    return (
-      queryResult.data?.publications.sort((a, b) =>
-        sortDocuments(a.document?.updateTime, b.document?.updateTime),
-      ) || []
-    )
-  }, [queryResult.data])
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('document_published', () => {
-      queryResult.refetch()
-      if (!isSubscribed) {
-        return unlisten()
+    queryFn: async () => {
+      const result = await publicationsClient.listPublications({})
+      const publications =
+        result.publications.sort((a, b) =>
+          sortDocuments(a.document?.updateTime, b.document?.updateTime),
+        ) || []
+      return {
+        ...result,
+        publications,
       }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
-
-  return {
-    ...queryResult,
-    data: {
-      ...queryResult.data,
-      publications,
     },
-  }
+  })
 }
 
 export function useDraftList() {
@@ -137,12 +112,30 @@ export function useDeleteDraft(opts: MutationOptions<void, unknown, string>) {
   })
 }
 
-listen('update_draft', () => {
-  appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-})
-listen('new_draft', () => {
-  appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-})
+export function useDeletePublication(
+  opts: MutationOptions<void, unknown, string>,
+) {
+  return useMutation({
+    ...opts,
+    mutationFn: async (documentId) => {
+      await publicationsClient.deletePublication({documentId})
+    },
+    onSuccess: (...args) => {
+      appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
+      opts?.onSuccess?.(...args)
+    },
+  })
+}
+
+export function useDraft(documentId?: string) {
+  return useQuery({
+    queryKey: [queryKeys.GET_DRAFT, documentId],
+    enabled: !!documentId,
+    queryFn: () => {
+      return draftsClient.getDraft({documentId: documentId})
+    },
+  })
+}
 
 export function useAuthor(id = '', opts: QueryOptions = {}) {
   return useQuery({

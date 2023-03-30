@@ -1,5 +1,5 @@
 import {draftsClient} from '@app/api-clients'
-import {queryKeys, useAuthor, usePublication} from '@app/hooks'
+import {queryKeys, useAuthor, useDraft, usePublication} from '@app/hooks'
 import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Icon} from '@components/icon'
@@ -74,28 +74,7 @@ function PublicationTitle({route}: {route: PublicationRoute}) {
 }
 
 function DraftTitle({route}: {route: DraftRoute}) {
-  let {data: draft, refetch} = useQuery({
-    queryKey: [queryKeys.GET_DRAFT, route.documentId],
-    enabled: !!route.documentId,
-    queryFn: () => draftsClient.getDraft({documentId: route.documentId}),
-  })
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('update_draft', () => {
-      refetch()
-
-      if (!isSubscribed) {
-        return unlisten()
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
+  const {data: draft} = useDraft(route.documentId)
   const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
   return <span data-tauri-drag-region>{displayTitle}</span>
 }
