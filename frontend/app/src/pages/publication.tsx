@@ -195,10 +195,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                           {activePanel == 'conversations' ? (
                             <Conversations />
                           ) : activePanel == 'changes' ? (
-                            <ChangesList
-                              docId={state.context.publication.document.id}
-                              version={state.context.version}
-                            />
+                            <ChangesList />
                           ) : (
                             <Citations
                               docId={state.context.publication.document.id}

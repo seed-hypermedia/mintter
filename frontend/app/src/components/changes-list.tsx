@@ -1,5 +1,5 @@
 import {useAuthor, useDocChanges} from '@app/hooks'
-import {useNavigate} from '@app/utils/navigation'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
 import {Avatar} from './avatar'
 import {Box} from './box'
@@ -11,14 +11,15 @@ function ChangeItem({
   change,
   docId,
   activeVersion,
+  active,
 }: {
   change: ChangeInfo
   docId: string
   activeVersion?: string
+  active?: boolean
 }) {
   const author = useAuthor(change.author)
   const navigate = useNavigate()
-  console.log('VERSION ITEM', change, docId)
   return (
     <Button
       key={change.id}
@@ -36,10 +37,12 @@ function ChangeItem({
         display: 'flex',
         flexDirection: 'column',
         gap: '$3',
+        background: active ? '$highlight-surface1' : 'transparent',
         alignItems: 'center',
         position: 'relative',
         '&:hover': {
           cursor: 'pointer',
+          background: active ? '$highlight-surface1' : 'transparent',
         },
       }}
     >
@@ -83,13 +86,10 @@ function pluralS(length: number) {
   return length === 1 ? '' : 's'
 }
 
-export function ChangesList({
-  docId,
-  version,
-}: {
-  docId?: string
-  version?: string
-}) {
+export function ChangesList() {
+  const route = useNavRoute()
+  const version = route.key === 'publication' ? route.versionId : undefined
+  const docId = route.key === 'publication' ? route.documentId : undefined
   const {data: changes} = useDocChanges(docId)
   if (!docId) return null
   const count = changes?.changes?.length || 0
@@ -104,6 +104,7 @@ export function ChangesList({
           key={change.id}
           change={change}
           activeVersion={version}
+          active={change.version === version}
         />
       ))}
     </>
