@@ -272,7 +272,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
             data-testid="button-publish"
           >
             {mainActor.type === 'draft' ? (
-              'Share'
+              'Publish'
             ) : (
               <>
                 <Icon name="Globe" />
