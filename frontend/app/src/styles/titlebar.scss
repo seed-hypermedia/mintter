@@ -58,7 +58,6 @@
       --surface-hover: var(--warning-text-low);
     }
 
-
     &.dropdown {
       font-weight: bold;
     }
@@ -72,11 +71,12 @@
       line-height: 1;
     }
 
-    &.disabled, &:disabled {
+    &.disabled,
+    &:disabled {
       opacity: 0.5;
 
       &:hover {
-        cursor:not-allowed;
+        cursor: not-allowed;
       }
     }
   }

@@ -1,16 +1,21 @@
-import { FlowContent } from '@mintter/shared';
-import React, { createContext, useState } from 'react'
-import { Node } from 'slate';
-import { RenderElementProps } from 'slate-react';
-import { ElementDrag } from './drag-section';
+import {FlowContent} from '@mintter/shared'
+import {createContext} from 'react'
 
-export type HoveredNode = FlowContent | null;
+export type HoveredNode = FlowContent | null
 
 export type DragContextValues = {
-  drag: HoveredNode,
-  setDrag: (_e: DragEvent, _node: FlowContent) => void,
-  clearDrag: () => void,
+  drag: HoveredNode
+  setDrag: (_e: DragEvent, _node: FlowContent) => void
+  clearDrag: () => void
 }
 
-const DragContext = createContext<DragContextValues>({drag: null, setDrag: () => {return null}, clearDrag: () => {return null}});
-export default DragContext;
+const DragContext = createContext<DragContextValues>({
+  drag: null,
+  setDrag: () => {
+    return null
+  },
+  clearDrag: () => {
+    return null
+  },
+})
+export default DragContext

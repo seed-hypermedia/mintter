@@ -1,3 +1,4 @@
+import {useDrag} from '@app/drag-context'
 import {
   EditorHoveringToolbar,
   PublicationToolbar,
@@ -6,7 +7,6 @@ import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'
 import {
-  Block,
   blockquote,
   ChildrenOf,
   code,
@@ -19,16 +19,13 @@ import {
   ol,
   statement,
   ul,
-  Selector,
-  CreateConversationRequest,
-  isGroupContent,
-  Group,
 } from '@mintter/shared'
 import {Event, listen} from '@tauri-apps/api/event'
+import debounce from 'lodash.debounce'
 import {PropsWithChildren, useEffect, useMemo, useState} from 'react'
-import {Descendant, Editor as EditorType, Transforms, Node, NodeEntry, Path} from 'slate'
+import {Descendant, Editor as EditorType, Transforms} from 'slate'
 import {Editable, ReactEditor, Slate} from 'slate-react'
-import DragContext, { DragContextValues, HoveredNode } from './drag-context'
+import DragContext, {DragContextValues, HoveredNode} from './drag-context'
 import {
   buildDecorateHook,
   buildEventHandlerHooks,
@@ -40,8 +37,6 @@ import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
 import type {EditorPlugin} from './types'
 import {setList, setType, toggleFormat} from './utils'
-import debounce from 'lodash.debounce'
-import { useDrag } from '@app/drag-context'
 
 interface EditorProps {
   mode?: EditorMode
@@ -52,53 +47,6 @@ interface EditorProps {
   as?: unknown
   className?: string
   readOnly?: boolean
-}
-
-function isLastBlock(parentGroup: NodeEntry<Group>, path: Path) {
-  let [groupNode, groupPath] = parentGroup
-  return groupNode.children.length - 1 === path[path.length - 1]
-}
-
-function getNestedGroup(node: FlowContent, path: Path, editor: EditorType) {
-  const parentGroup = EditorType.above<Group>(editor, {
-    match: isGroupContent,
-    mode: 'lowest',
-    at: path,
-  })
-  if (
-    !EditorType.next(editor, {
-      at: path,
-    }) ||
-    (parentGroup && isLastBlock(parentGroup, path))
-  ) {
-    let isSibling = false
-    const groupStatements = [[node, path] as NodeEntry<FlowContent>]
-    let parentPath = path
-    while (!isSibling) {
-      let parent = EditorType.above<FlowContent>(editor, {
-        match: isFlowContent,
-        mode: 'lowest',
-        at: parentPath,
-      })
-      parentPath = parentPath.slice(0, -2)
-      if (parent) {
-        const parentSibling = EditorType.next(editor, {
-          at: parentPath,
-        })
-        groupStatements.unshift(parent)
-        if (parentSibling) {
-          isSibling = true
-          break
-        }
-      } else {
-        isSibling = true
-        break
-      }
-    }
-    return groupStatements
-  } else {
-    return [] as NodeEntry<FlowContent>[]
-  }
 }
 
 export function Editor({
@@ -115,27 +63,33 @@ export function Editor({
     throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
   }
 
-  const dragService = useDrag();
-  const [draggedNode, setDraggedNode] = useState<HoveredNode>(null);
+  const dragService = useDrag()
+  const [draggedNode, setDraggedNode] = useState<HoveredNode>(null)
   let contextValues: DragContextValues = {
     drag: draggedNode,
-    setDrag: debounce((e: DragEvent, node: FlowContent) => {
-      if (draggedNode) return;
-      setDraggedNode(node);
-      e.preventDefault()
-      const path = ReactEditor.findPath(editor, node)
+    setDrag: debounce(
+      (e: DragEvent, node: FlowContent) => {
+        if (draggedNode) return
+        setDraggedNode(node)
+        e.preventDefault()
+        const path = ReactEditor.findPath(editor, node)
 
-      const domNode = ReactEditor.toDOMNode(editor, node)
+        const domNode = ReactEditor.toDOMNode(editor, node)
 
-      dragService?.send({
-        type: 'DRAG.OVER',
-        toPath: path,
-        element: domNode as HTMLLIElement,
-        currentPosX: e.clientX,
-        currentPosY: e.clientY,
-      })
-    }, 100, {leading: true, trailing: false}),
-    clearDrag: () => {setDraggedNode(null)},
+        dragService?.send({
+          type: 'DRAG.OVER',
+          toPath: path,
+          element: domNode as HTMLLIElement,
+          currentPosX: e.clientX,
+          currentPosY: e.clientY,
+        })
+      },
+      100,
+      {leading: true, trailing: false},
+    ),
+    clearDrag: () => {
+      setDraggedNode(null)
+    },
   }
 
   const renderElement = useMemo(

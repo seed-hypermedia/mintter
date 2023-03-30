@@ -4,12 +4,10 @@ import {
   Group,
   isFlowContent,
   isGroupContent,
-  text,
 } from '@mintter/shared'
-import React from 'react'
-import {Editor, Path, Transforms, NodeEntry, Node} from 'slate'
+import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {assign, createMachine, actions} from 'xstate'
+import {actions, assign, createMachine} from 'xstate'
 
 let {send} = actions
 type DragContext = {
