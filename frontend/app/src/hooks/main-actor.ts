@@ -82,6 +82,7 @@ export function useMainActor(props: MainActorOptions = {}) {
             const docId = event.data.document?.id
             if (!docId) return
             appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
+            appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, docId])
             navReplace({
               key: 'publication',
               documentId: docId,
