@@ -44,7 +44,7 @@ export default function PublicationList(props: PageProps) {
         ) : data && data.publications.length ? (
           data.publications.map((publication) => (
             <PublicationListItem
-              hasDraft={drafts.data.documents.find(
+              hasDraft={drafts.data?.documents.find(
                 (d) => d.id == publication.document?.id,
               )}
               key={`${publication.document?.id}/${publication.version}`}
@@ -165,7 +165,7 @@ export function PublicationListItem({
               },
             }}
           >
-            DRAFT
+            Resume Editing
           </Button>
         )}
       </p>
