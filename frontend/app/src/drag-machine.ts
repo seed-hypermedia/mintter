@@ -29,7 +29,8 @@ type DragEvent =
       type: 'DRAG.OVER'
       toPath: Path
       element: HTMLLIElement
-      currentPos: number
+      currentPosX: number
+      currentPosY: number
     }
   | {type: 'DRAGGING.OFF'}
   | {type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null}
@@ -102,7 +103,7 @@ export const createDragMachine = (editor: Editor) => {
         },
         setDragOverRef: assign((context, event) => {
           const {dragOverRef} = context
-          const {element, toPath, currentPos} = event
+          const {element, toPath, currentPosX, currentPosY} = event
           dragOverRef?.removeAttribute('data-action')
           if (context.nestedGroup) {
             for (const elem of context.nestedGroup) {
@@ -114,23 +115,40 @@ export const createDragMachine = (editor: Editor) => {
             editor,
             toPath,
             context,
-            currentPos,
+            currentPosX,
           )
-          const nestedGroup = context.nestedGroup
-            ? context.nestedGroup
-            : result.nestedGroup
+          let nestedGroup = result.nestedGroup
+          if (context.nestedGroup) {
+            const lastElement =
+              context.nestedGroup[
+                context.nestedGroup.length - 1
+              ].getBoundingClientRect()
+            const boundariesX = [
+              context.nestedGroup[0].getBoundingClientRect().x,
+              lastElement.x + lastElement.width,
+            ]
+            const boundariesY = [
+              lastElement.y,
+              lastElement.y + lastElement.height,
+            ]
+            if (
+              currentPosX > boundariesX[0] &&
+              currentPosX < boundariesX[1] &&
+              currentPosY > boundariesY[0] &&
+              currentPosY < boundariesY[1]
+            ) {
+              nestedGroup = context.nestedGroup
+            }
+          }
           if (nestedGroup && nestedGroup.includes(element)) {
             let hoveredElement = nestedGroup[nestedGroup.length - 1]
 
             if (nestedGroup.length === 1) {
               hoveredElement.setAttribute('data-action', 'dragged-bottom')
               return {
-                dragOverRef: hoveredElement,
+                dragOverRef: element,
                 isTop: context.isTop,
-                toPath: ReactEditor.findPath(
-                  editor,
-                  ReactEditor.toSlateNode(editor, hoveredElement),
-                ),
+                toPath,
               }
             }
 
@@ -139,7 +157,7 @@ export const createDragMachine = (editor: Editor) => {
               nestedGroup[i - 1].setAttribute('data-action', 'dragged-group')
               if (nestedGroup[i] === nestedGroup[nestedGroup.length - 1])
                 nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
-              if (currentPos <= nestedGroup[i].getBoundingClientRect()['x']) {
+              if (currentPosX <= nestedGroup[i].getBoundingClientRect()['x']) {
                 hoveredElement = nestedGroup[i - 1]
                 hoveredElement.setAttribute('data-action', 'dragged-nested')
                 nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
@@ -320,7 +338,7 @@ function filterDragOverRef(
   editor: Editor,
   toPath: Path,
   context: DragContext,
-  currentPos: number,
+  currentPosX: number,
 ) {
   const node = ReactEditor.toSlateNode(editor, element) as FlowContent
   const children = node.children as Node[]
@@ -354,12 +372,10 @@ function filterDragOverRef(
         return {dragOverRef: paragraph, isTop: false, nestedGroup: null}
       }
       if (Path.isAfter(fromPath, toPath) || Path.isAncestor(toPath, fromPath)) {
-        if (!context.nestedGroup)
-          paragraph.setAttribute('data-action', 'dragged-top')
+        paragraph.setAttribute('data-action', 'dragged-top')
         isTop = true
       } else {
-        if (!context.nestedGroup)
-          paragraph.setAttribute('data-action', 'dragged-bottom')
+        paragraph.setAttribute('data-action', 'dragged-bottom')
         isTop = false
       }
     }

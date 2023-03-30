@@ -183,9 +183,10 @@ export function Editor({
         type: 'DRAG.OVER',
         toPath: path,
         element: domNode as HTMLLIElement,
-        currentPos: e.clientX,
+        currentPosX: e.clientX,
+        currentPosY: e.clientY,
       })
-    }, 500, {leading: true, trailing: false}),
+    }, 100, {leading: true, trailing: false}),
     clearDrag: () => {setDraggedNode(null)},
   }
 
