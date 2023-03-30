@@ -8,10 +8,13 @@ export function useDeleteDraftDialog(
   renderTrigger: (props: {onClick: () => void}) => JSX.Element,
   onSuccess?: () => void,
 ): ReactNode {
-  const deleteDraft = useDeleteDraft({
-    onSuccess,
-  })
   const [isOpen, setIsOpen] = useState(false)
+  const deleteDraft = useDeleteDraft({
+    onSuccess: () => {
+      setIsOpen(false)
+      onSuccess?.()
+    },
+  })
   if (!docId) return null
   return (
     <Alert.Root open={isOpen} onOpenChange={setIsOpen}>
