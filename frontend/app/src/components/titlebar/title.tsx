@@ -1,7 +1,13 @@
 import {draftsClient} from '@app/api-clients'
 import {queryKeys, useAuthor, useDraft, usePublication} from '@app/hooks'
-import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
+import {
+  DraftRoute,
+  PublicationRoute,
+  useNavigate,
+  useNavRoute,
+} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {useQuery} from '@tanstack/react-query'
@@ -64,11 +70,31 @@ export function Title() {
 function PublicationTitle({route}: {route: PublicationRoute}) {
   let {data: pub} = usePublication(route.documentId, route.versionId)
   let {data: author} = useAuthor(pub?.document?.author)
+  const navigate = useNavigate()
 
   return (
     <>
       <span data-tauri-drag-region>{pub?.document?.title || '...'}</span>
-      <small data-tauri-drag-region>{author?.profile?.alias || ''}</small>
+      <Button
+        css={{
+          color: '$base-active',
+          fontSize: '$1',
+          '&:hover': {
+            color: '$base-active',
+            textDecoration: 'underline',
+          },
+        }}
+        size="1"
+        variant="ghost"
+        onClick={(e) => {
+          e.preventDefault()
+          const accountId = author?.id
+          if (!accountId) return
+          navigate({key: 'account', accountId})
+        }}
+      >
+        {author?.profile?.alias || ''}
+      </Button>
     </>
   )
 }

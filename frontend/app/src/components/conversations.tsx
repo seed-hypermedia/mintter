@@ -3,6 +3,7 @@ import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAuthor} from '@app/hooks'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {EXPERIMENTS} from '@app/utils/experimental'
+import {useNavigate} from '@app/utils/navigation'
 // import {
 //   useNostr,
 //   useNostrPostsOnDoc,
@@ -318,7 +319,10 @@ function CommentItem({
         console.log('Comment deleted!', res)
       })
   }
-
+  const navigate = useNavigate()
+  const navigateToAuthor = changeData.data?.author
+    ? () => navigate({key: 'account', accountId: changeData.data?.author})
+    : undefined
   return (
     <Box
       as="li"
@@ -341,8 +345,10 @@ function CommentItem({
           left: -12,
           transform: 'translateX(-100%)',
           paddingBottom: 0,
+          cursor: 'pointer',
           paddingLeft: '$5',
         }}
+        onClick={navigateToAuthor}
       >
         <Avatar
           accountId={changeData.data?.author}
@@ -357,9 +363,23 @@ function CommentItem({
           flex: 1,
         }}
       >
-        <Text size="2" fontWeight="bold">
+        <Button
+          css={{
+            padding: 0,
+            color: '$text-active',
+            fontWeight: 'bold',
+            fontSize: '$1',
+            '&:hover': {
+              color: '$text-active',
+              textDecoration: 'underline',
+            },
+          }}
+          variant="ghost"
+          size="2"
+          onClick={navigateToAuthor}
+        >
           {author?.data?.profile?.alias}
-        </Text>
+        </Button>
         <Text size="2" color="muted">
           {changeData.data?.createTime
             ? formattedDate(changeData.data?.createTime)
