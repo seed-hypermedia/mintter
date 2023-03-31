@@ -19,6 +19,7 @@ import {Button} from './button'
 import {DeleteDialog} from './delete-dialog'
 import {Icon} from './icon'
 import {Text} from './text'
+import '../styles/file-list.scss'
 
 export function PublicationListItem({
   publication,

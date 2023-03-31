@@ -1,4 +1,4 @@
-import {usePublicationList} from '@app/hooks'
+import {useAccountPublicationList} from '@app/hooks'
 import {useAccountWithDevices} from '@app/hooks/contacts'
 import {useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
@@ -47,13 +47,13 @@ function Section({
 }
 
 function AccountDocuments({accountId}: {accountId: string}) {
-  const list = usePublicationList()
+  const list = useAccountPublicationList(accountId)
   return (
     <Section>
-      {list.data?.publications?.map((doc) => {
+      {list.data?.map((doc) => {
         return (
           <PublicationListItem
-            key={doc.id}
+            key={doc.document?.id}
             publication={doc}
             hasDraft={undefined}
           />
