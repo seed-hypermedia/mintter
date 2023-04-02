@@ -1,16 +1,16 @@
-import { isParagraph } from '@mintter/shared'
-import { Icon } from '@components/icon'
-import { listen } from '@tauri-apps/api/event'
-import { createContext, useContext, useEffect, useRef } from 'react'
-import { Node, Range } from 'slate'
+import {isParagraph} from '@mintter/shared'
+import {Icon} from '@components/icon'
+import {listen} from '@tauri-apps/api/event'
+import {createContext, useContext, useEffect, useRef} from 'react'
+import {Node, Range} from 'slate'
 import '../styles/find.scss'
-import { EditorPlugin } from './types'
-import { lowerPoint } from './utils'
+import {EditorPlugin} from './types'
+import {lowerPoint} from './utils'
 
 const FIND_HIGHLIGHT = 'find-highlight'
 
 export function Find() {
-  const { search, setSearch } = useContext(findContext)
+  const {search, setSearch} = useContext(findContext)
   const searchInput = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export function createFindPlugin(): EditorPlugin {
     name: 'find',
     renderLeaf:
       () =>
-      ({ attributes, children, leaf }) => {
+      ({attributes, children, leaf}) => {
         if (leaf[FIND_HIGHLIGHT] && leaf.text) {
           return (
             <span className={FIND_HIGHLIGHT} {...attributes}>
@@ -81,9 +81,9 @@ export function createFindPlugin(): EditorPlugin {
       },
     decorate: () => (entry) => {
       const [node, path] = entry
-      let ranges: Array<Range & { [FIND_HIGHLIGHT]: boolean }> = []
+      let ranges: Array<Range & {[FIND_HIGHLIGHT]: boolean}> = []
 
-      const { search } = useContext(findContext)
+      const {search} = useContext(findContext)
       if (!search) return
       const re = new RegExp(search, 'gi')
 
@@ -92,8 +92,8 @@ export function createFindPlugin(): EditorPlugin {
 
         let match
         while ((match = re.exec(str))) {
-          const anchor = lowerPoint(node, { path, offset: match.index })
-          const focus = lowerPoint(node, { path, offset: re.lastIndex })
+          const anchor = lowerPoint(node, {path, offset: match.index})
+          const focus = lowerPoint(node, {path, offset: re.lastIndex})
 
           if (!anchor || !focus) {
             throw new Error('failed to lower point')

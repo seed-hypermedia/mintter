@@ -12,10 +12,10 @@ import {
   isStaticContent,
   isStaticPhrasingContent,
 } from '@mintter/shared'
-import { error } from '@app/utils/logger'
-import { Editor, MoveNodeOperation, Node, Path } from 'slate'
-import { EditorPlugin } from '../types'
-import { getEditorBlock } from '../utils'
+import {error} from '@app/utils/logger'
+import {Editor, MoveNodeOperation, Node, Path} from 'slate'
+import {EditorPlugin} from '../types'
+import {getEditorBlock} from '../utils'
 
 type ChangeType = NonNullable<DocumentChange['op']>['case'] | undefined
 export type ChangeOperation = [ChangeType, string] | ['setRoot', string]
@@ -26,7 +26,7 @@ export function createMintterChangesPlugin(): EditorPlugin {
     configureEditor(editor) {
       editor.__mtt_changes = []
 
-      const { apply } = editor
+      const {apply} = editor
 
       editor.apply = (op) => {
         // console.log('== operation ==')
@@ -148,7 +148,7 @@ export const MintterEditor: MintterEditor = {
               case: 'setTitle',
               value,
             },
-          })
+          }),
         )
       }
 
@@ -159,7 +159,7 @@ export const MintterEditor: MintterEditor = {
               case: 'setSubtitle',
               value,
             },
-          })
+          }),
         )
       }
     })
@@ -170,7 +170,12 @@ export const MintterEditor: MintterEditor = {
     editor.__mtt_changes = []
   },
   addChange: function (editor: Editor, entry: ChangeOperation): void {
-    if (shouldOverride(entry, editor.__mtt_changes[editor.__mtt_changes.length - 1])) {
+    if (
+      shouldOverride(
+        entry,
+        editor.__mtt_changes[editor.__mtt_changes.length - 1],
+      )
+    ) {
       editor.__mtt_changes.pop()
     }
     editor.__mtt_changes.push(entry)
@@ -188,14 +193,23 @@ function replaceText(editor: Editor, path: Path) {
   }
 }
 
-function addOperation(editor: Editor, opType: ChangeType | 'setRoot', node: Node) {
+function addOperation(
+  editor: Editor,
+  opType: ChangeType | 'setRoot',
+  node: Node,
+) {
   if (opType == 'setRoot') {
     //@ts-ignore
     editor.__mtt_changes.push(['setRoot', node.type])
   }
   if (isFlowContent(node)) {
     let newChange: ChangeOperation = [opType, node.id]
-    if (!shouldOverride(newChange, editor.__mtt_changes[editor.__mtt_changes.length - 1])) {
+    if (
+      !shouldOverride(
+        newChange,
+        editor.__mtt_changes[editor.__mtt_changes.length - 1],
+      )
+    ) {
       editor.__mtt_changes.push(newChange)
     }
   }
@@ -203,7 +217,7 @@ function addOperation(editor: Editor, opType: ChangeType | 'setRoot', node: Node
 
 function shouldOverride(
   current: ChangeOperation,
-  lastChange: ChangeOperation | undefined
+  lastChange: ChangeOperation | undefined,
 ): boolean {
   if (lastChange) {
     let [op, blockId] = lastChange
@@ -240,7 +254,11 @@ function moveNode(editor: Editor, operation: MoveNodeOperation) {
       addOperation(editor, 'moveBlock', block)
       addOperation(editor, 'replaceBlock', block)
     } else {
-      error('moveNode: getting the above block should always work', operation, node)
+      error(
+        'moveNode: getting the above block should always work',
+        operation,
+        node,
+      )
     }
   } else if (isFlowContent(node)) {
     addOperation(editor, 'moveBlock', node)

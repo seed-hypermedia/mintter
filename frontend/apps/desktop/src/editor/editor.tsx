@@ -1,8 +1,11 @@
-import { EditorDocument } from '@app/draft-machine'
-import { EditorHoveringToolbar, PublicationToolbar } from '@app/editor/hovering-toolbar'
-import { flow } from '@app/stitches.config'
-import { classnames } from '@app/utils/classnames'
-import { error } from '@app/utils/logger'
+import {EditorDocument} from '@app/draft-machine'
+import {
+  EditorHoveringToolbar,
+  PublicationToolbar,
+} from '@app/editor/hovering-toolbar'
+import {flow} from '@app/stitches.config'
+import {classnames} from '@app/utils/classnames'
+import {error} from '@app/utils/logger'
 import {
   blockquote,
   ChildrenOf,
@@ -17,7 +20,7 @@ import {
   statement,
   ul,
 } from '@mintter/shared'
-import { Event, listen } from '@tauri-apps/api/event'
+import {Event, listen} from '@tauri-apps/api/event'
 import {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -25,8 +28,8 @@ import {
   useEffect,
   useMemo,
 } from 'react'
-import { Descendant, Editor as EditorType, Transforms } from 'slate'
-import { Editable, ReactEditor, Slate } from 'slate-react'
+import {Descendant, Editor as EditorType, Transforms} from 'slate'
+import {Editable, ReactEditor, Slate} from 'slate-react'
 import {
   buildDecorateHook,
   buildEventHandlerHooks,
@@ -34,10 +37,10 @@ import {
   buildRenderLeafHook,
   EditorMode,
 } from './plugin-utils'
-import { plugins as defaultPlugins } from './plugins'
+import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
-import type { EditorPlugin } from './types'
-import { setList, setType, toggleFormat } from './utils'
+import type {EditorPlugin} from './types'
+import {setList, setType, toggleFormat} from './utils'
 
 interface EditorProps {
   mode?: EditorMode
@@ -64,10 +67,22 @@ export function Editor({
     throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
   }
 
-  const renderElement = useMemo(() => buildRenderElementHook(plugins, editor), [plugins, editor])
-  const renderLeaf = useMemo(() => buildRenderLeafHook(plugins, editor), [plugins, editor])
-  const decorate = useMemo(() => buildDecorateHook(plugins, editor), [plugins, editor])
-  const eventHandlers = useMemo(() => buildEventHandlerHooks(plugins, editor), [plugins, editor])
+  const renderElement = useMemo(
+    () => buildRenderElementHook(plugins, editor),
+    [plugins, editor],
+  )
+  const renderLeaf = useMemo(
+    () => buildRenderLeafHook(plugins, editor),
+    [plugins, editor],
+  )
+  const decorate = useMemo(
+    () => buildDecorateHook(plugins, editor),
+    [plugins, editor],
+  )
+  const eventHandlers = useMemo(
+    () => buildEventHandlerHooks(plugins, editor),
+    [plugins, editor],
+  )
 
   // async function createDummyComment(event: any) {
   //   event.preventDefault()
@@ -157,7 +172,7 @@ export function Editor({
           statement,
           blockquote,
           codeblock: code,
-        }[event.payload]
+        }[event.payload],
       )
 
       const [element, path] =
@@ -168,7 +183,7 @@ export function Editor({
 
       if (!element || !path) throw new Error('whut')
 
-      set(editor, { at: path, element })
+      set(editor, {at: path, element})
     }).then((_unlisten) => (unlisten = _unlisten))
 
     return () => {
@@ -185,7 +200,10 @@ export function Editor({
         return unlisten()
       }
 
-      if (!editor.selection || !['ordered_list', 'unordered_list', 'group'].includes(event.payload))
+      if (
+        !editor.selection ||
+        !['ordered_list', 'unordered_list', 'group'].includes(event.payload)
+      )
         return
 
       const set = setList(
@@ -193,7 +211,7 @@ export function Editor({
           ordered_list: ol,
           unordered_list: ul,
           group,
-        }[event.payload]!
+        }[event.payload]!,
       )
 
       const [, path] =
@@ -204,7 +222,7 @@ export function Editor({
 
       if (path) {
         //@ts-ignore
-        set(editor, { at: path })
+        set(editor, {at: path})
       } else {
         error('whut')
       }
@@ -218,7 +236,11 @@ export function Editor({
   if (mode == EditorMode.Draft) {
     return (
       <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
-        <Slate editor={editor} value={value as Array<Descendant>} onChange={onChange}>
+        <Slate
+          editor={editor}
+          value={value as Array<Descendant>}
+          onChange={onChange}
+        >
           <EditorHoveringToolbar />
           <Editable
             id="editor"
@@ -241,7 +263,11 @@ export function Editor({
       className={`${classnames('editor', mode)} ${flow()}`}
       // onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
     >
-      <Slate editor={editor} value={value as Array<Descendant>} onChange={onChange}>
+      <Slate
+        editor={editor}
+        value={value as Array<Descendant>}
+        onChange={onChange}
+      >
         {mode == EditorMode.Publication ? (
           <>
             <PublicationToolbar />

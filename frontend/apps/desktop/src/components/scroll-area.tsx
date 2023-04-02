@@ -1,6 +1,6 @@
-import { styled } from '@app/stitches.config'
+import {styled} from '@app/stitches.config'
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
-import { forwardRef, PropsWithChildren } from 'react'
+import {forwardRef, PropsWithChildren} from 'react'
 
 const SCROLLBAR_SIZE = 6
 
@@ -26,8 +26,8 @@ export const ScrollBar = styled(ScrollAreaPrimitive.Scrollbar, {
   padding: 2,
   background: '$base-component-bg-hover',
   transition: 'background 160ms ease-out',
-  '&:hover': { background: '$base-component-bg-active' },
-  '&[data-orientation="vertical"]': { width: SCROLLBAR_SIZE },
+  '&:hover': {background: '$base-component-bg-active'},
+  '&[data-orientation="vertical"]': {width: SCROLLBAR_SIZE},
 })
 
 export const ScrollBarThumb = styled(ScrollAreaPrimitive.Thumb, {
@@ -59,7 +59,7 @@ export type ScrollAreaProps = PropsWithChildren<
 >
 
 export const ScrollArea = forwardRef<HTMLElement, ScrollAreaProps>(
-  ({ children, orientation = 'vertical', onScroll }, ref) => {
+  ({children, orientation = 'vertical', onScroll}, ref) => {
     return (
       <StyledScrollArea type="hover">
         <ScrollViewport onScroll={onScroll}>{children}</ScrollViewport>
@@ -68,5 +68,5 @@ export const ScrollArea = forwardRef<HTMLElement, ScrollAreaProps>(
         </ScrollBar>
       </StyledScrollArea>
     )
-  }
+  },
 )

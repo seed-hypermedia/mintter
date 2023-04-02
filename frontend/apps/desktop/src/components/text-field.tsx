@@ -1,15 +1,15 @@
-import type { CSS } from '@app/stitches.config'
-import { styled } from '@app/stitches.config'
-import { mergeRefs } from '@app/utils/mege-refs'
+import type {CSS} from '@app/stitches.config'
+import {styled} from '@app/stitches.config'
+import {mergeRefs} from '@app/utils/mege-refs'
 import * as Label from '@radix-ui/react-label'
 import type * as Stitches from '@stitches/react'
-import { css } from '@stitches/react'
+import {css} from '@stitches/react'
 import autosize from 'autosize'
-import { nanoid } from 'nanoid/non-secure'
-import type { InputHTMLAttributes, PropsWithChildren } from 'react'
-import { forwardRef, useLayoutEffect, useRef } from 'react'
-import { Box } from './box'
-import { Text } from './text'
+import {nanoid} from 'nanoid/non-secure'
+import type {InputHTMLAttributes, PropsWithChildren} from 'react'
+import {forwardRef, useLayoutEffect, useRef} from 'react'
+import {Box} from './box'
+import {Text} from './text'
 
 const InputContainer = styled(Box, {
   display: 'flex',
@@ -149,18 +149,20 @@ export type InputVariants = Stitches.VariantProps<typeof inputStyles>
 export type InputProps = InputVariants
 
 // @ts-ignore
-const InputElement = forwardRef<HTMLInputElement, PropsWithChildren<InputProps>>(
-  function InputElement(props, ref) {
-    return <Input ref={ref} {...props} />
-  }
-)
+const InputElement = forwardRef<
+  HTMLInputElement,
+  PropsWithChildren<InputProps>
+>(function InputElement(props, ref) {
+  return <Input ref={ref} {...props} />
+})
 
 // @ts-ignore
-const TextareaElement = forwardRef<HTMLTextAreaElement, PropsWithChildren<InputProps>>(
-  function TextareaElement(props, ref) {
-    return <Textarea ref={ref} {...props} />
-  }
-)
+const TextareaElement = forwardRef<
+  HTMLTextAreaElement,
+  PropsWithChildren<InputProps>
+>(function TextareaElement(props, ref) {
+  return <Textarea ref={ref} {...props} />
+})
 
 const TextFieldHint = styled(Text, {
   variants: {
@@ -209,7 +211,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       textarea = false,
       ...props
     }: TextFieldProps,
-    ref
+    ref,
   ) => {
     const localRef = useRef<HTMLInputElement>(null)
 
@@ -225,13 +227,19 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       <InputContainer size={props.size} css={containerCss}>
         {label ? (
           <Label.Root asChild htmlFor={id}>
-            <Text size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined} color={status}>
+            <Text
+              size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}
+              color={status}
+            >
               {label}
             </Text>
           </Label.Root>
         ) : null}
         <InputComponent
-          ref={mergeRefs<HTMLInputElement | HTMLTextAreaElement>([localRef, ref])}
+          ref={mergeRefs<HTMLInputElement | HTMLTextAreaElement>([
+            localRef,
+            ref,
+          ])}
           status={status}
           {...props}
         />
@@ -246,6 +254,6 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         ) : null}
       </InputContainer>
     )
-  }
+  },
 )
 TextField.displayName = 'TextField'

@@ -1,7 +1,7 @@
-import { QueryClient } from '@tanstack/react-query'
-import { Account } from '@mintter/shared'
-import { ActorRefFrom, assign, createMachine, spawn } from 'xstate'
-import { createContactMachine } from './contact-machine'
+import {QueryClient} from '@tanstack/react-query'
+import {Account} from '@mintter/shared'
+import {ActorRefFrom, assign, createMachine, spawn} from 'xstate'
+import {createContactMachine} from './contact-machine'
 
 export type AccountWithRef = Account & {
   ref: ActorRefFrom<ReturnType<typeof createContactMachine>>
@@ -14,11 +14,11 @@ type ContactListContext = {
 }
 
 type ContactListEvent =
-  | { type: 'CONTACTS.LIST.SUCCESS'; accounts: Array<Account> }
-  | { type: 'CONTACTS.LIST.ERROR'; errorMessage: string }
-  | { type: 'COMMIT.ONLINE'; accountId: string }
-  | { type: 'COMMIT.OFFLINE'; accountId: string }
-  | { type: 'REFETCH' }
+  | {type: 'CONTACTS.LIST.SUCCESS'; accounts: Array<Account>}
+  | {type: 'CONTACTS.LIST.ERROR'; errorMessage: string}
+  | {type: 'COMMIT.ONLINE'; accountId: string}
+  | {type: 'COMMIT.OFFLINE'; accountId: string}
+  | {type: 'REFETCH'}
 
 export const createContactsListMachine = (client: QueryClient) =>
   createMachine(
@@ -78,7 +78,10 @@ export const createContactsListMachine = (client: QueryClient) =>
           all: (_, event) =>
             event.accounts.map((account) => ({
               ...account,
-              ref: spawn(createContactMachine({ account, client }), `account-${account.id}`),
+              ref: spawn(
+                createContactMachine({account, client}),
+                `account-${account.id}`,
+              ),
             })),
         }),
         assignContactOnline: assign({
@@ -100,5 +103,5 @@ export const createContactsListMachine = (client: QueryClient) =>
           },
         }),
       },
-    }
+    },
   )

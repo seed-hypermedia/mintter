@@ -1,32 +1,31 @@
 // import 'show-keys'
-import { AppBanner, BannerText } from '@app/app-banner'
-import { ScrollArea } from '@app/components/scroll-area'
-import { DraftActor } from '@app/draft-machine'
-import { DragProvider } from '@app/drag-context'
-import { createDragMachine } from '@app/drag-machine'
-import { BlockHighLighter } from '@app/editor/block-highlighter'
-import { Editor } from '@app/editor/editor'
-import { FileProvider } from '@app/file-provider'
-import { MouseProvider } from '@app/mouse-context'
-import { mouseMachine } from '@app/mouse-machine'
-import { useDaemonReady } from '@app/node-status-context'
-import { AppError } from '@app/root'
-import { Box } from '@components/box'
+import {AppBanner, BannerText} from '@app/app-banner'
+import {ScrollArea} from '@app/components/scroll-area'
+import {DragProvider} from '@app/drag-context'
+import {createDragMachine} from '@app/drag-machine'
+import {BlockHighLighter} from '@app/editor/block-highlighter'
+import {Editor} from '@app/editor/editor'
+import {FileProvider} from '@app/file-provider'
+import {MainActor} from '@app/hooks/main-actor'
+import {MouseProvider} from '@app/mouse-context'
+import {mouseMachine} from '@app/mouse-machine'
+import {useDaemonReady} from '@app/node-status-context'
+import {AppError} from '@app/root'
+import {Box} from '@components/box'
 import Footer from '@components/footer'
-import { Placeholder } from '@components/placeholder-box'
-import { ChildrenOf, Document, FlowContent, isFlowContent } from '@mintter/shared'
-import { useActor, useInterpret } from '@xstate/react'
-import React, { useEffect } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { Editor as SlateEditor, Transforms } from 'slate'
-import { ReactEditor } from 'slate-react'
+import {Placeholder} from '@components/placeholder-box'
+import {ChildrenOf, Document, FlowContent, isFlowContent} from '@mintter/shared'
+import {useActor, useInterpret} from '@xstate/react'
+import React, {useEffect} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {Editor as SlateEditor, Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
 
-type DraftPageProps = {
-  draftActor: DraftActor
-  editor: SlateEditor
-}
-
-export default function DraftPage({ draftActor, editor }: DraftPageProps) {
+export default function DraftPage({mainActor}: {mainActor: MainActor}) {
+  if (mainActor.type !== 'draft')
+    throw new Error('Draft actor must be passed to DraftPage')
+  const draftActor = mainActor.actor
+  const editor = mainActor.editor
   const [state, send] = useActor(draftActor)
   let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
@@ -59,7 +58,7 @@ export default function DraftPage({ draftActor, editor }: DraftPageProps) {
             type: 'MOUSE.MOVE',
             position: event.clientY,
           })
-          draftActor.send('EDITING.STOP')
+          mainActor.actor.send('EDITING.STOP')
         }}
         onMouseLeave={() => {
           mouseService.send('DISABLE.CHANGE')
@@ -103,7 +102,10 @@ export default function DraftPage({ draftActor, editor }: DraftPageProps) {
           }
         }}
       >
-        <ErrorBoundary FallbackComponent={AppError} onReset={() => window.location.reload()}>
+        <ErrorBoundary
+          FallbackComponent={AppError}
+          onReset={() => window.location.reload()}
+        >
           {!isDaemonReady ? <NotSavingBanner /> : null}
           <ScrollArea
             onScroll={() => {
@@ -125,11 +127,15 @@ export default function DraftPage({ draftActor, editor }: DraftPageProps) {
                         value={state.context.localDraft.content}
                         //@ts-ignore
                         onChange={(content: ChildrenOf<Document>) => {
-                          if ((!content && typeof content == 'string') || !isDaemonReady) return
+                          if (
+                            (!content && typeof content == 'string') ||
+                            !isDaemonReady
+                          )
+                            return
                           mouseService.send('DISABLE.CHANGE')
-                          draftActor.send('EDITING.START')
-                          //@ts-ignore
-                          send({ type: 'DRAFT.UPDATE', payload: { content } })
+                          mainActor.actor.send('EDITING.START')
+                          // @ts-ignore
+                          send({type: 'DRAFT.UPDATE', payload: {content}})
                         }}
                       />
                     ) : null}
@@ -195,10 +201,10 @@ function BlockPlaceholder() {
         gap: '$2',
       }}
     >
-      <Placeholder css={{ height: 16, width: '$full' }} />
-      <Placeholder css={{ height: 16, width: '92%' }} />
-      <Placeholder css={{ height: 16, width: '84%' }} />
-      <Placeholder css={{ height: 16, width: '90%' }} />
+      <Placeholder css={{height: 16, width: '$full'}} />
+      <Placeholder css={{height: 16, width: '92%'}} />
+      <Placeholder css={{height: 16, width: '84%'}} />
+      <Placeholder css={{height: 16, width: '90%'}} />
     </Box>
   )
 }

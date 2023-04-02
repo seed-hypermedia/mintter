@@ -1,10 +1,10 @@
-import { accountsClient, daemonClient } from '@app/api-clients'
-import { queryKeys } from '@app/hooks'
-import { Account, Info, Profile } from '@mintter/shared'
-import { QueryClient } from '@tanstack/react-query'
+import {accountsClient, daemonClient} from '@app/api-clients'
+import {queryKeys} from '@app/hooks'
+import {Account, Info, Profile} from '@mintter/shared'
+import {QueryClient} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import { assign, createMachine, MachineOptions } from 'xstate'
-import { networkingClient } from './api-clients'
+import {assign, createMachine, MachineOptions} from 'xstate'
+import {networkingClient} from './api-clients'
 
 type AuthContext = {
   accountInfo?: Info
@@ -15,9 +15,9 @@ type AuthContext = {
 }
 
 type AuthEvent =
-  | { type: 'ACCOUNT.UPDATE.PROFILE'; profile: Profile }
-  | { type: 'RETRY' }
-  | { type: 'ACCOUNT.COPY.ADDRESS' }
+  | {type: 'ACCOUNT.UPDATE.PROFILE'; profile: Profile}
+  | {type: 'RETRY'}
+  | {type: 'ACCOUNT.COPY.ADDRESS'}
 
 type AuthService = {
   fetchAccount: {
@@ -71,7 +71,11 @@ export function createAuthService(client: QueryClient) {
               },
               {
                 target: 'loggedOut',
-                actions: ['removeAccountInfo', 'clearRetries', 'assignRetryError'],
+                actions: [
+                  'removeAccountInfo',
+                  'clearRetries',
+                  'assignRetryError',
+                ],
               },
             ],
           },
@@ -158,15 +162,15 @@ export function createAuthService(client: QueryClient) {
       services: {
         fetchInfo: function fetchInfoService() {
           return client.fetchQuery<Info>([queryKeys.GET_ACCOUNT_INFO], () =>
-            daemonClient.getInfo({})
+            daemonClient.getInfo({}),
           )
         },
         fetchAccount: function fetchAccountService() {
           return client.fetchQuery(
             [queryKeys.GET_ACCOUNT, ''],
-            function accountQuery({ queryKey }) {
-              return accountsClient.getAccount({ id: queryKey[1] })
-            }
+            function accountQuery({queryKey}) {
+              return accountsClient.getAccount({id: queryKey[1]})
+            },
           )
         },
         updateProfile: function updateProfileService(_, event) {
@@ -209,17 +213,20 @@ export function createAuthService(client: QueryClient) {
           },
         }),
         assignAccountError: assign({
-          errorMessage: (_, event) => `[Auth]: Fetch Account Error: ${event.data}`,
+          errorMessage: (_, event) =>
+            `[Auth]: Fetch Account Error: ${event.data}`,
         }),
         assignErrorFromUpdate: assign({
-          errorMessage: (_, event) => `[Auth]: Update Profile Error: ${event.data}`,
+          errorMessage: (_, event) =>
+            `[Auth]: Update Profile Error: ${event.data}`,
         }),
         assignPeerData: assign({
           peerAddrs: (_, event) => event.data,
         }),
         assignRetryError: assign({
           // eslint-disable-next-line
-          errorMessage: (_) => '[Auth]: Limit retries exceeded. Please check yout account',
+          errorMessage: (_) =>
+            '[Auth]: Limit retries exceeded. Please check yout account',
         }),
         assignPeerDataError: assign({
           // eslint-disable-next-line
@@ -244,6 +251,6 @@ export function createAuthService(client: QueryClient) {
           return exponent * 200
         },
       },
-    }
+    },
   )
 }

@@ -1,4 +1,4 @@
-import { assign, createMachine } from 'xstate'
+import {assign, createMachine} from 'xstate'
 
 type VideoContext = {
   errorMessage: string
@@ -6,12 +6,12 @@ type VideoContext = {
 }
 
 type VideoEvent =
-  | { type: 'VIDEO.REPLACE' }
-  | { type: 'VIDEO.SUBMIT'; value: string }
-  | { type: 'VIDEO.CANCEL' }
-  | { type: 'REPORT.VIDEO.VALID' }
-  | { type: 'REPORT.VIDEO.INVALID' }
-  | { type: 'CAPTION.UPDATE'; value: string }
+  | {type: 'VIDEO.REPLACE'}
+  | {type: 'VIDEO.SUBMIT'; value: string}
+  | {type: 'VIDEO.CANCEL'}
+  | {type: 'REPORT.VIDEO.VALID'}
+  | {type: 'REPORT.VIDEO.INVALID'}
+  | {type: 'CAPTION.UPDATE'; value: string}
 
 type VideoServices = {
   validateUrlService: {
@@ -112,5 +112,5 @@ export const videoMachine =
           errorMessage: (c, e) => `Video Error: ${JSON.stringify(e.data)}`,
         }),
       },
-    }
+    },
   )

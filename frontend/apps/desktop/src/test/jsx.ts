@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { MintterEditor } from '@app/editor/mintter-changes/plugin'
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {
   Blockquote,
   Code,
@@ -31,9 +31,9 @@ import {
   ul,
   video,
 } from '@mintter/shared'
-import { createEditor } from 'slate'
-import { createHyperscript } from 'slate-hyperscript'
-import type { Parent } from 'unist'
+import {createEditor} from 'slate'
+import {createHyperscript} from 'slate-hyperscript'
+import type {Parent} from 'unist'
 
 type JSXCompliant<T extends Parent> = Omit<T, 'type' | 'children'> & {
   children?: T['children']
@@ -64,14 +64,14 @@ declare global {
       mttimage: Omit<Image, 'type'>
       mttembed: JSXCompliant<Embed>
       mttlink: JSXCompliant<Link>
-      mtttext: Omit<Text, 'type' | 'text'> & { children: string }
+      mtttext: Omit<Text, 'type' | 'text'> & {children: string}
     }
   }
 }
 
 export const jsx = createHyperscript({
   elements: {
-    editor: { ...createEditor(), __mtt_changes: [] },
+    editor: {...createEditor(), __mtt_changes: []},
     group: group([]),
     unorderedList: ul([]),
     orderedList: ol([]),
@@ -85,8 +85,8 @@ export const jsx = createHyperscript({
     blockquote: blockquote([]),
     //@ts-ignore
     code: code([]),
-    embed: embed({ url: '' }, []),
-    link: link({ url: '' }, []),
+    embed: embed({url: ''}, []),
+    link: link({url: ''}, []),
   },
   creators: {
     text: (_, a, c) => text(c[0], a),

@@ -1,7 +1,7 @@
-import { tamaguiExtractPlugin, tamaguiPlugin } from '@tamagui/vite-plugin'
+import {tamaguiExtractPlugin, tamaguiPlugin} from '@tamagui/vite-plugin'
 import react from '@vitejs/plugin-react'
-import { defineConfig, searchForWorkspaceRoot } from 'vite'
-import { writeFileSync } from 'fs'
+import {defineConfig, searchForWorkspaceRoot} from 'vite'
+import {writeFileSync} from 'fs'
 import path from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -16,7 +16,7 @@ $TAURI_FAMILY: '${process.env.TAURI_FAMILY}';
 $TAURI_PLATFORM_VERSION: '${process.env.TAURI_PLATFORM_VERSION}';
 $TAURI_PLATFORM_TYPE: '${process.env.TAURI_PLATFORM_TYPE}';
 $TAURI_DEBUG: '${process.env.TAURI_DEBUG}';
-`
+`,
 )
 
 if (shouldExtract) {
@@ -51,7 +51,7 @@ export default defineConfig({
     // tauri supports es2021
     target: ['es2021', 'chrome97', 'safari13'],
     // don't minify for debug builds
-    minify: !process.env.TAURI_DEBUG && 'esbuild',
+    minify: !process.env.TAURI_DEBUG ? 'esbuild' : undefined,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
   },

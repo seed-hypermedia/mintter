@@ -1,6 +1,6 @@
 import {useDraftList, usePublicationList} from '@app/hooks'
 import {isMintterLink} from '@app/utils/is-mintter-link'
-import {useLocation} from '@components/router'
+import {useNavigate} from '@app/utils/navigation'
 import {getIdsfromUrl} from '@mintter/shared'
 import {listen} from '@tauri-apps/api/event'
 import {Command} from 'cmdk'
@@ -13,7 +13,7 @@ export default function QuickSwitcher() {
 
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
-  let [, setLocation] = useLocation()
+  const navigate = useNavigate()
 
   // Toggle the menu when ⌘K is pressed
   useEffect(() => {
@@ -46,7 +46,12 @@ export default function QuickSwitcher() {
             onSelect={() => {
               setOpen(false)
               let [docId, version, block] = getIdsfromUrl(search)
-              setLocation(`/p/${docId}/${version}/${block && `/${block}`}`)
+              navigate({
+                key: 'publication',
+                documentId: docId,
+                versionId: version,
+                blockId: block,
+              })
             }}
           >
             Jump to {search}
@@ -60,8 +65,10 @@ export default function QuickSwitcher() {
               value={(draft.title || 'Untitled Draft') + draft.id}
               onSelect={() => {
                 setOpen(false)
-
-                setLocation(`/d/${draft.id}`)
+                navigate({
+                  key: 'draft',
+                  documentId: draft.id,
+                })
               }}
             >
               <span className="cmdk-mtt-text">
@@ -84,7 +91,11 @@ export default function QuickSwitcher() {
               value={title + docId}
               onSelect={() => {
                 setOpen(false)
-                setLocation(`/p/${docId}/${publication.version}`)
+                navigate({
+                  key: 'publication',
+                  documentId: docId,
+                  versionId: publication.version,
+                })
               }}
             >
               <span className="cmdk-mtt-text">

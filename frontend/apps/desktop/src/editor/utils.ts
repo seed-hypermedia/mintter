@@ -1,3 +1,5 @@
+import {useNavRoute} from '@app/utils/navigation'
+import {ObjectKeys} from '@app/utils/object-keys'
 import {
   createId,
   FlowContent,
@@ -10,6 +12,7 @@ import {
   isHeading,
   isStatement,
   isText,
+  Mark,
   ol,
   paragraph,
   Statement,
@@ -17,19 +20,17 @@ import {
   text,
   ul,
   video,
-  Mark,
 } from '@mintter/shared'
-import { ObjectKeys } from '@app/utils/object-keys'
-import { useRoute } from '@components/router'
 import videoParser from 'js-video-url-parser'
-import { useEffect, useMemo, useState } from 'react'
-import type { Ancestor, Descendant, NodeEntry, Point, Span } from 'slate'
-import { Editor, Node, Path, Range, Text, Transforms, Element } from 'slate'
-import { ReactEditor } from 'slate-react'
-import { MintterEditor } from './mintter-changes/plugin'
-import { ELEMENT_PARAGRAPH } from './paragraph'
+import {useEffect, useMemo, useState} from 'react'
+import type {Ancestor, Descendant, NodeEntry, Point, Span} from 'slate'
+import {Editor, Element, Node, Path, Range, Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
+import {MintterEditor} from './mintter-changes/plugin'
+import {ELEMENT_PARAGRAPH} from './paragraph'
 
-export const isCollapsed = (range: Range | null): boolean => !!range && Range.isCollapsed(range)
+export const isCollapsed = (range: Range | null): boolean =>
+  !!range && Range.isCollapsed(range)
 
 export interface UnhangRangeOptions {
   at?: Range | Path | Point | Span
@@ -79,10 +80,10 @@ export interface UnhangRangeOptions {
  *
  * */
 export function unhangRange(editor: Editor, options: UnhangRangeOptions = {}) {
-  const { at = editor.selection, voids, unhang = true } = options
+  const {at = editor.selection, voids, unhang = true} = options
 
   if (Range.isRange(at) && unhang) {
-    options.at = Editor.unhangRange(editor, at, { voids })
+    options.at = Editor.unhangRange(editor, at, {voids})
   }
 }
 
@@ -107,11 +108,16 @@ export function getLastChildPath(entry: NodeEntry<Ancestor>): Path {
  *
  * we need to check the type of the last child of a statement to know where to move the new statement created.
  */
-export function getLastChild(entry: NodeEntry<Ancestor>): NodeEntry<Descendant> | null {
+export function getLastChild(
+  entry: NodeEntry<Ancestor>,
+): NodeEntry<Descendant> | null {
   const [node, path] = entry
 
   if (!node.children.length) return null
-  return [node.children[node.children.length - 1], path.concat([node.children.length - 1])]
+  return [
+    node.children[node.children.length - 1],
+    path.concat([node.children.length - 1]),
+  ]
 }
 
 /**
@@ -122,7 +128,10 @@ export function getLastChild(entry: NodeEntry<Ancestor>): NodeEntry<Descendant> 
  *
  * before we check the last child type, we need to make sure the current statement path is not the last child. that way we are certain that the last child should be a group.
  */
-export function isLastChild(parentEntry: NodeEntry<Ancestor>, childPath: Path): boolean {
+export function isLastChild(
+  parentEntry: NodeEntry<Ancestor>,
+  childPath: Path,
+): boolean {
   const lastChildPath = getLastChildPath(parentEntry)
 
   return Path.equals(lastChildPath, childPath)
@@ -132,7 +141,11 @@ export function isFirstChild(path: Path): boolean {
   return path[path.length - 1] == 0
 }
 
-export function toggleFormat(editor: Editor, format: Mark, data: unknown = true) {
+export function toggleFormat(
+  editor: Editor,
+  format: Mark,
+  data: unknown = true,
+) {
   if (editor.readOnly) return
   const isActive = isMarkActive(editor, format)
 
@@ -164,7 +177,7 @@ export function getCurrentConversations(editor: Editor) {
 }
 
 export function resetFlowContent(editor: Editor): boolean | undefined {
-  const { selection } = editor
+  const {selection} = editor
   if (selection && isCollapsed(selection)) {
     const block = Editor.above<Statement>(editor, {
       match: (n) => isFlowContent(n) && !isStatement(n),
@@ -175,10 +188,14 @@ export function resetFlowContent(editor: Editor): boolean | undefined {
 
       if (!Node.string(node.children[0])) {
         Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(editor, statement({ id: node.id }, node.children), {
-            at: Path.next(path),
-          })
-          Transforms.removeNodes(editor, { at: path })
+          Transforms.insertNodes(
+            editor,
+            statement({id: node.id}, node.children),
+            {
+              at: Path.next(path),
+            },
+          )
+          Transforms.removeNodes(editor, {at: path})
           Transforms.select(editor, path.concat(0))
         })
         return true
@@ -201,20 +218,28 @@ export function resetGroupingContent(editor: Editor): boolean {
       if (isGroup(listNode)) {
         // remove the list if the type os the default one (group)
         Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(editor, statement({ id: createId() }, [paragraph([text('')])]), {
-            at: listPath,
-          })
-          Transforms.removeNodes(editor, { at: Path.next(listPath) })
+          Transforms.insertNodes(
+            editor,
+            statement({id: createId()}, [paragraph([text('')])]),
+            {
+              at: listPath,
+            },
+          )
+          Transforms.removeNodes(editor, {at: Path.next(listPath)})
 
           Transforms.select(editor, listPath.concat(0))
         })
       } else {
         // reset the group type for the empty list
         Editor.withoutNormalizing(editor, () => {
-          Transforms.insertNodes(editor, group([statement([paragraph([text('')])])]), {
-            at: listPath,
-          })
-          Transforms.removeNodes(editor, { at: Path.next(listPath) })
+          Transforms.insertNodes(
+            editor,
+            group([statement([paragraph([text('')])])]),
+            {
+              at: listPath,
+            },
+          )
+          Transforms.removeNodes(editor, {at: Path.next(listPath)})
           Transforms.select(editor, [...listPath, 0, 0])
         })
       }
@@ -246,14 +271,14 @@ export const getNodePath = (editor: Editor, node: any) => {
 export const getNodeByPath = (
   editor: Editor,
   path?: Path,
-  mode: 'all' | 'highest' | 'lowest' = 'lowest'
+  mode: 'all' | 'highest' | 'lowest' = 'lowest',
 ) => {
   const nodeEntry = Array.from(
     Editor.nodes(editor, {
       match: (node) => Editor.isEditor(editor) && Element.isElement(node),
       at: path || editor.selection?.anchor.path,
       mode,
-    })
+    }),
   )[0]
 
   if (nodeEntry) return nodeEntry[0]
@@ -263,7 +288,7 @@ export const getNodeByPath = (
 
 // Make recursive for deep nested items
 export const getNodeByCurrentPath = (editor: Editor) => {
-  const { path } = editor.selection!.anchor
+  const {path} = editor.selection!.anchor
   const level = path.length
 
   const isNestedLevel = level > 2
@@ -287,7 +312,7 @@ type GetBlockOptions = Omit<
 // TODO: there's a copy of this function inside the client package (frontend/client/src/v2/change-creators.ts)
 export function getEditorBlock(
   editor: Editor,
-  options: GetBlockOptions
+  options: GetBlockOptions,
 ): NodeEntry<FlowContent> | undefined {
   let [match] = Editor.nodes<FlowContent>(editor, {
     ...options,
@@ -344,7 +369,7 @@ const VIMEO_PREFIX = 'https://player.vimeo.com/video/'
 export const parseVideoUrl = (url: string) => {
   const videoData = videoParser.parse(url)
   if (videoData?.provider && videoData.id) {
-    const { id, provider } = videoData
+    const {id, provider} = videoData
 
     const providerUrls: Record<string, string> = {
       youtube: `${YOUTUBE_PREFIX}${id}`,
@@ -379,7 +404,7 @@ export function lowerPoint(root: Node, point: Point): Point | null {
   let offset = 0
   for (const [text, path] of Node.texts(root)) {
     if (offset <= point.offset && point.offset <= offset + text.text.length) {
-      return { path: [...point.path, ...path], offset: point.offset - offset }
+      return {path: [...point.path, ...path], offset: point.offset - offset}
     }
 
     offset += text.text.length
@@ -395,41 +420,52 @@ export function setType(fn: any) {
     opts: {
       element: FlowContent
       at: Path
-    }
+    },
   ) {
     if (editor.readOnly) return
     Editor.withoutNormalizing(editor, function () {
       MintterEditor.addChange(editor, ['replaceBlock', opts.element.id])
       const keys = ObjectKeys(opts.element).filter(
-        (key) => !['type', 'id', 'children', 'data'].includes(key as string)
+        (key) => !['type', 'id', 'children', 'data'].includes(key as string),
       )
 
       if (isHeading(opts.element)) {
-        Transforms.setNodes(editor, { type: ELEMENT_PARAGRAPH }, { at: [...opts.at, 0] })
+        Transforms.setNodes(
+          editor,
+          {type: ELEMENT_PARAGRAPH},
+          {at: [...opts.at, 0]},
+        )
       }
 
       if (keys.length) {
-        Transforms.unsetNodes(editor, keys, { at: opts.at })
+        Transforms.unsetNodes(editor, keys, {at: opts.at})
       }
 
       // IDs are meant to be stable, so we shouldn't obverride it
       // eslint-disable-next-line
-      const { id, ...props } = fn()
+      const {id, ...props} = fn()
 
-      Transforms.setNodes(editor, props, { at: opts.at })
+      Transforms.setNodes(editor, props, {at: opts.at})
     })
   }
 }
 
 export function setList(fn: typeof ol | typeof ul | typeof group) {
-  return function wrapWithListType(editor: Editor, opts: { element: FlowContent; at: Path }) {
+  return function wrapWithListType(
+    editor: Editor,
+    opts: {element: FlowContent; at: Path},
+  ) {
     if (editor.readOnly) return
     Editor.withoutNormalizing(editor, () => {
       const list = Node.parent(editor, opts.at)
 
       if (list && isGroupContent(list)) {
         let newList = fn([])
-        Transforms.setNodes(editor, { type: newList.type }, { at: Path.parent(opts.at) })
+        Transforms.setNodes(
+          editor,
+          {type: newList.type},
+          {at: Path.parent(opts.at)},
+        )
 
         if (opts.at.length > 2) {
           let parentBlockEntry = Editor.above(editor, {
@@ -456,10 +492,14 @@ export function toggleList(fn: typeof ol | typeof ul) {
       if (isGroupContent(list)) {
         if (list.type === newList.type) {
           // reset type to group
-          Transforms.setNodes(editor, { type: 'group' }, { at: Path.parent(at) })
+          Transforms.setNodes(editor, {type: 'group'}, {at: Path.parent(at)})
         } else {
           // set type
-          Transforms.setNodes(editor, { type: newList.type }, { at: Path.parent(at) })
+          Transforms.setNodes(
+            editor,
+            {type: newList.type},
+            {at: Path.parent(at)},
+          )
         }
 
         if (at.length > 2) {
@@ -483,11 +523,11 @@ export function insertInline(fn: typeof image | typeof video) {
     opts: {
       element: FlowContent
       at: Path
-    }
+    },
   ) {
-    let { element, at } = opts
+    let {element, at} = opts
     MintterEditor.addChange(editor, ['replaceBlock', element.id])
-    Transforms.insertNodes(editor, fn({ url: '' }, [text('')]), {
+    Transforms.insertNodes(editor, fn({url: ''}, [text('')]), {
       // TODO: maybe this needs to insert at selection position? now I guess is creating a new image on top of the current block
       at,
     })
@@ -497,17 +537,17 @@ export function insertInline(fn: typeof image | typeof video) {
 // eslint-disable-next-line
 export function useBlockFlash(ref: any, id: string) {
   let [active, setActive] = useState(false)
-  let [match, params] = useRoute('/p/:id/:version/:block')
+  const route = useNavRoute()
 
   useEffect(() => {
     setTimeout(() => {
       if (ref.current) {
-        if (match && params?.block == id) {
+        if (route.key === 'publication' && route.blockId === id) {
           setActive(true)
         }
       }
     }, 100)
-  }, [id, match, params, ref])
+  }, [route, id])
 
   return active
 }

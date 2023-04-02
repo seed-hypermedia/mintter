@@ -1,6 +1,6 @@
-import { Document } from '@mintter/shared'
-import { ClientPublication } from '@app/publication-machine'
-import { createContext, useContext, useMemo } from 'react'
+import {Document} from '@mintter/shared'
+import {ClientPublication} from '@app/publication-machine'
+import {createContext, useContext, useMemo} from 'react'
 
 export type FileContext = ClientPublication | Document
 
@@ -12,13 +12,17 @@ export function useFile() {
   let context = useContext(fileContext)
 
   if (!context) {
-    throw new Error(`useFile Error: useFile must be called inside a FilesProvider`)
+    throw new Error(
+      `useFile Error: useFile must be called inside a FilesProvider`,
+    )
   }
 
   return context
 }
 
-export function useFileIds(): [documentId: string, version: string] | [documentId: string] {
+export function useFileIds():
+  | [documentId: string, version: string]
+  | [documentId: string] {
   let context = useFile()
   // @ts-ignore
   return useMemo(() => {

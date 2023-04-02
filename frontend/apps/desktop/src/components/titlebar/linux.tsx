@@ -1,11 +1,12 @@
 import {Dropdown} from '@app/editor/dropdown'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Icon} from '@components/icon'
 import {TitleBarProps} from '@components/titlebar'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
-import {useLocation} from 'wouter'
 import {ActionButtons, NavigationButtons, SitesNavDropdownItems} from './common'
+import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
 import {
@@ -64,6 +65,8 @@ export default function TitleBarLinux(props: TitleBarProps) {
       </div>
       <div className="titlebar-section" style={{paddingLeft: 0}}>
         <NavigationButtons />
+        {/* @ts-ignore */}
+        <DiscardDraftButton />
       </div>
 
       <Title />
@@ -80,9 +83,9 @@ export default function TitleBarLinux(props: TitleBarProps) {
 }
 
 function Menu() {
-  const [location, setLocation] = useLocation()
-
-  const editingEnabled = location.startsWith('/d/')
+  const route = useNavRoute()
+  const navigate = useNavigate()
+  const editingEnabled = route.key === 'draft'
 
   return (
     <Dropdown.Root>
@@ -98,17 +101,17 @@ function Menu() {
       <Dropdown.Portal>
         <Dropdown.Content>
           <Dropdown.Item
-            disabled={location == '/inbox'}
+            disabled={route.key === 'home'}
             data-testid="menu-item-inbox"
-            onSelect={() => setLocation('/inbox')}
+            onSelect={() => navigate({key: 'home'})}
           >
             <Icon name="File" />
             <span>Inbox</span>
           </Dropdown.Item>
           <Dropdown.Item
-            disabled={location == '/drafts'}
+            disabled={route.key === 'drafts'}
             data-testid="menu-item-drafts"
-            onSelect={() => setLocation('/drafts')}
+            onSelect={() => navigate({key: 'drafts'})}
           >
             <Icon name="PencilAdd" />
             <span>Drafts</span>
@@ -118,7 +121,7 @@ function Menu() {
             Quick Switcher
             <Dropdown.RightSlot>Ctrl+K</Dropdown.RightSlot>
           </Dropdown.Item>
-          <Dropdown.Item onSelect={() => setLocation('/connections')}>
+          <Dropdown.Item onSelect={() => navigate({key: 'connections'})}>
             Connections
             <Dropdown.RightSlot>Ctrl+9</Dropdown.RightSlot>
           </Dropdown.Item>

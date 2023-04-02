@@ -1,26 +1,28 @@
-import { networkingClient } from '@app/api-clients'
-import { AccountWithRef, createContactsListMachine } from '@app/contact-list-machine'
-import { useConnectionSummary } from '@app/hooks/contacts'
-import { useDaemonReady, useOnline } from '@app/node-status-context'
-import { keyframes, styled } from '@app/stitches.config'
-import { ObjectKeys } from '@app/utils/object-keys'
-import { Avatar } from '@components/avatar'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Icon } from '@components/icon'
-import { Text } from '@components/text'
-import { TextField } from '@components/text-field'
-import { ConnectionStatus } from '@mintter/shared'
+import {networkingClient} from '@app/api-clients'
+import {
+  AccountWithRef,
+  createContactsListMachine,
+} from '@app/contact-list-machine'
+import {useConnectionSummary} from '@app/hooks/contacts'
+import {useDaemonReady, useOnline} from '@app/node-status-context'
+import {keyframes, styled} from '@app/stitches.config'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
+import {ObjectKeys} from '@app/utils/object-keys'
+import {Avatar} from '@components/avatar'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
+import {ConnectionStatus} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import { emit } from '@tauri-apps/api/event'
-import { useActor, useSelector } from '@xstate/react'
-import { ReactNode, useMemo, useState } from 'react'
+import {useActor, useSelector} from '@xstate/react'
+import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import { useRoute } from 'wouter'
-import { InterpreterFrom } from 'xstate'
-import { OnlineIndicator } from './indicator'
-import { Prompt } from './prompt'
+import {InterpreterFrom} from 'xstate'
+import {OnlineIndicator} from './indicator'
+import {Prompt} from './prompt'
 
 const LabelWrap = styled('div', {
   marginHorizontal: 6,
@@ -54,15 +56,16 @@ export function FooterButton({
 }
 
 function FooterContactsButton() {
-  const [active] = useRoute('/connections')
+  const route = useNavRoute()
+  const navigate = useNavigate()
   const summary = useConnectionSummary()
   return (
     <Button
       size="1"
       variant="ghost"
-      color={active ? 'primary' : 'muted'}
+      color={route.key === 'connections' ? 'primary' : 'muted'}
       onClick={() => {
-        emit('open_connections')
+        navigate({key: 'connections'})
       }}
       css={{
         display: 'flex',
@@ -76,7 +79,7 @@ function FooterContactsButton() {
   )
 }
 
-export default function Footer({ children }: { children?: ReactNode }) {
+export default function Footer({children}: {children?: ReactNode}) {
   let isDaemonReady = useDaemonReady()
   let isOnline = useOnline()
 
@@ -196,7 +199,9 @@ function Contacts({
 }) {
   const totalCount = useSelector(service, (state) => state.context.all.length)
   const online = useSelector(service, (state) =>
-    state.context.all.filter((acc) => state.context.online.includes(acc.ref.id))
+    state.context.all.filter((acc) =>
+      state.context.online.includes(acc.ref.id),
+    ),
   )
 
   return (
@@ -254,7 +259,7 @@ export function ContactsPrompt({
   async function handleConnect() {
     if (peer) {
       try {
-        await toast.promise(connect({ addrs: peer.trim().split(',') }), {
+        await toast.promise(connect({addrs: peer.trim().split(',')}), {
           loading: 'Connecting to peer...',
           success: 'Connection Succeeded!',
           error: 'Connection Error',
@@ -270,14 +275,16 @@ export function ContactsPrompt({
   return (
     <Prompt.Root>
       <DialogPrimitive.Trigger asChild>
-        <ButtonStyled data-testid="add-contact-button" css={{ paddingInline: 0 }}>
+        <ButtonStyled data-testid="add-contact-button" css={{paddingInline: 0}}>
           <Icon name="Add" color="muted" />
         </ButtonStyled>
       </DialogPrimitive.Trigger>
       <Prompt.Portal>
         <Prompt.Content>
           <Prompt.Title>Add a Contact</Prompt.Title>
-          <Prompt.Description>Enter a contact address to connect</Prompt.Description>
+          <Prompt.Description>
+            Enter a contact address to connect
+          </Prompt.Description>
           <TextField
             value={peer}
             onChange={(event) => setPeer(event.currentTarget.value)}
@@ -304,23 +311,23 @@ export function ContactsPrompt({
 }
 
 const slideUpAndFade = keyframes({
-  '0%': { opacity: 0, transform: 'translateY(2px)' },
-  '100%': { opacity: 1, transform: 'translateY(0)' },
+  '0%': {opacity: 0, transform: 'translateY(2px)'},
+  '100%': {opacity: 1, transform: 'translateY(0)'},
 })
 
 const slideRightAndFade = keyframes({
-  '0%': { opacity: 0, transform: 'translateX(-2px)' },
-  '100%': { opacity: 1, transform: 'translateX(0)' },
+  '0%': {opacity: 0, transform: 'translateX(-2px)'},
+  '100%': {opacity: 1, transform: 'translateX(0)'},
 })
 
 const slideDownAndFade = keyframes({
-  '0%': { opacity: 0, transform: 'translateY(-2px)' },
-  '100%': { opacity: 1, transform: 'translateY(0)' },
+  '0%': {opacity: 0, transform: 'translateY(-2px)'},
+  '100%': {opacity: 1, transform: 'translateY(0)'},
 })
 
 const slideLeftAndFade = keyframes({
-  '0%': { opacity: 0, transform: 'translateX(2px)' },
-  '100%': { opacity: 1, transform: 'translateX(0)' },
+  '0%': {opacity: 0, transform: 'translateX(2px)'},
+  '100%': {opacity: 1, transform: 'translateX(0)'},
 })
 
 const HoverCardContentStyled = styled(HoverCard.Content, {
@@ -337,10 +344,10 @@ const HoverCardContentStyled = styled(HoverCard.Content, {
     animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
     willChange: 'transform, opacity',
     '&[data-state="open"]': {
-      '&[data-side="top"]': { animationName: slideDownAndFade },
-      '&[data-side="right"]': { animationName: slideLeftAndFade },
-      '&[data-side="bottom"]': { animationName: slideUpAndFade },
-      '&[data-side="left"]': { animationName: slideRightAndFade },
+      '&[data-side="top"]': {animationName: slideDownAndFade},
+      '&[data-side="right"]': {animationName: slideLeftAndFade},
+      '&[data-side="bottom"]': {animationName: slideUpAndFade},
+      '&[data-side="left"]': {animationName: slideRightAndFade},
     },
   },
 })
@@ -349,10 +356,13 @@ export type ContactItemProps = {
   contact: AccountWithRef
 }
 
-function ContactItem({ contact }: ContactItemProps) {
+function ContactItem({contact}: ContactItemProps) {
   let [state] = useActor(contact.ref)
 
-  let accountId = useMemo(() => contact.id.slice(contact.id.length - 8), [contact.id])
+  let accountId = useMemo(
+    () => contact.id.slice(contact.id.length - 8),
+    [contact.id],
+  )
 
   return (
     <HoverCard.Root>
@@ -417,7 +427,7 @@ function ContactItem({ contact }: ContactItemProps) {
           size={2}
           alias={state.context.account.profile?.alias || ''}
         />
-        <Box css={{ display: 'flex', flexDirection: 'column', gap: '$2' }}>
+        <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
           <Text fontWeight="bold">{state.context.account.profile?.alias}</Text>
           <Text
             color="muted"
@@ -430,7 +440,11 @@ function ContactItem({ contact }: ContactItemProps) {
             {state.context.account.profile?.bio}
           </Text>
           <Text size="1" fontWeight="bold">
-            ({state.context.status == ConnectionStatus.CONNECTED ? 'connected' : 'not_connected'})
+            (
+            {state.context.status == ConnectionStatus.CONNECTED
+              ? 'connected'
+              : 'not_connected'}
+            )
           </Text>
           <Text
             size="1"
@@ -452,7 +466,8 @@ function ContactItem({ contact }: ContactItemProps) {
                 overflow: 'hidden',
               }}
             >
-              <b>device {index + 1} ID:</b> {String(device).slice(String(device).length - 8)}
+              <b>device {index + 1} ID:</b>{' '}
+              {String(device).slice(String(device).length - 8)}
             </Text>
           ))}
         </Box>

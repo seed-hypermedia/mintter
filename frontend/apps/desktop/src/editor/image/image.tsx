@@ -1,6 +1,6 @@
-import { imageMachine } from '@app/editor/image/image-machine'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { findPath, isValidUrl } from '@app/editor/utils'
+import {imageMachine} from '@app/editor/image/image-machine'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {findPath, isValidUrl} from '@app/editor/utils'
 import {
   Image as ImageType,
   isFlowContent,
@@ -9,15 +9,15 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import { styled } from '@app/stitches.config'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Icon } from '@components/icon'
-import { Text } from '@components/text'
-import { TextField } from '@components/text-field'
-import { useActor, useInterpret } from '@xstate/react'
-import { FormEvent, useMemo } from 'react'
-import { Editor, Path, Transforms } from 'slate'
+import {styled} from '@app/stitches.config'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
+import {useActor, useInterpret} from '@xstate/react'
+import {FormEvent, useMemo} from 'react'
+import {Editor, Path, Transforms} from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
@@ -25,8 +25,8 @@ import {
   useSelected,
   useSlateStatic,
 } from 'slate-react'
-import { ActorRefFrom, assign } from 'xstate'
-import type { EditorPlugin } from '../types'
+import {ActorRefFrom, assign} from 'xstate'
+import type {EditorPlugin} from '../types'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -35,7 +35,7 @@ export function createImagePlugin(): EditorPlugin {
     name: ELEMENT_IMAGE,
     renderElement:
       () =>
-      ({ element, children, attributes }) => {
+      ({element, children, attributes}) => {
         if (isImage(element)) {
           return (
             <Image element={element} attributes={attributes}>
@@ -45,7 +45,7 @@ export function createImagePlugin(): EditorPlugin {
         }
       },
     configureEditor(editor) {
-      const { isVoid, isInline } = editor
+      const {isVoid, isInline} = editor
 
       editor.isVoid = function imageVoid(element) {
         return isImage(element) || isVoid(element)
@@ -66,17 +66,17 @@ const Img = styled('img', {
   width: '$full',
 })
 
-function Image({ element, attributes, children }: RenderElementProps) {
+function Image({element, attributes, children}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const imgService = useInterpret(() => imageMachine, {
     //@ts-ignore
     actions: {
       assignValidUrl: (_, event) => {
-        Transforms.setNodes<ImageType>(editor, { url: event.data }, { at: path })
+        Transforms.setNodes<ImageType>(editor, {url: event.data}, {at: path})
       },
       updateCaption: (_, event) => {
-        Transforms.setNodes<ImageType>(editor, { alt: event.value }, { at: path })
+        Transforms.setNodes<ImageType>(editor, {alt: event.value}, {at: path})
       },
     },
     guards: {
@@ -92,7 +92,7 @@ function Image({ element, attributes, children }: RenderElementProps) {
   const [state] = useActor(imgService)
 
   return (
-    <Box css={{ zIndex: '$max' }} {...attributes}>
+    <Box css={{zIndex: '$max'}} {...attributes}>
       {children}
       {state.matches('image') ? (
         <ImageComponent service={imgService} element={element as ImageType} />
@@ -108,7 +108,7 @@ type InnerImageProps = {
   element: ImageType
 }
 
-function ImageComponent({ service, element }: InnerImageProps) {
+function ImageComponent({service, element}: InnerImageProps) {
   let [state, send] = useActor(service)
   const editor = useSlateStatic()
   const selected = useSelected()
@@ -140,7 +140,12 @@ function ImageComponent({ service, element }: InnerImageProps) {
             pointerEvents: 'none',
           }}
         >
-          <Button size="1" color="muted" type="submit" onClick={() => send('IMAGE.REPLACE')}>
+          <Button
+            size="1"
+            color="muted"
+            type="submit"
+            onClick={() => send('IMAGE.REPLACE')}
+          >
             replace
           </Button>
         </Box>
@@ -152,7 +157,7 @@ function ImageComponent({ service, element }: InnerImageProps) {
         src={(element as ImageType).url}
       />
       {state.context.captionVisibility ? (
-        <Box css={{ marginHorizontal: '-$3', marginTop: '$1' }}>
+        <Box css={{marginHorizontal: '-$3', marginTop: '$1'}}>
           <TextField
             textarea
             size={1}
@@ -160,7 +165,9 @@ function ImageComponent({ service, element }: InnerImageProps) {
             status="muted"
             placeholder="Media Caption"
             value={element.alt}
-            onChange={(e) => send({ type: 'CAPTION.UPDATE', value: e.target.value })}
+            onChange={(e) =>
+              send({type: 'CAPTION.UPDATE', value: e.target.value})
+            }
             onKeyDown={(event) => {
               if (event.key == 'Enter') {
                 // This will create a new block below the image and focus on it
@@ -177,7 +184,7 @@ function ImageComponent({ service, element }: InnerImageProps) {
                   let newBlock = statement([paragraph([text('')])])
                   let newPath = Path.next(pPath)
                   Editor.withoutNormalizing(editor, () => {
-                    Transforms.insertNodes(editor, newBlock, { at: newPath })
+                    Transforms.insertNodes(editor, newBlock, {at: newPath})
                     ReactEditor.focus(editor)
                     setTimeout(() => {
                       Transforms.select(editor, newPath)
@@ -193,7 +200,7 @@ function ImageComponent({ service, element }: InnerImageProps) {
   )
 }
 
-function ImageForm({ service }: InnerImageProps) {
+function ImageForm({service}: InnerImageProps) {
   const [state, send] = useActor(service)
   const selected = useSelected()
   const focused = useFocused()
@@ -203,7 +210,7 @@ function ImageForm({ service }: InnerImageProps) {
 
     let formData = new FormData(event.currentTarget)
     let value: string = formData.get('url')?.toString() || ''
-    send({ type: 'IMAGE.SUBMIT', value })
+    send({type: 'IMAGE.SUBMIT', value})
   }
 
   return (
@@ -263,7 +270,7 @@ function ImageForm({ service }: InnerImageProps) {
         </Box>
       </Box>
       {state.context.errorMessage ? (
-        <Text color="danger" size={1} css={{ userSelect: 'none' }}>
+        <Text color="danger" size={1} css={{userSelect: 'none'}}>
           {state.context.errorMessage}
         </Text>
       ) : null}

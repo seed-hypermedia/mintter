@@ -1,8 +1,10 @@
-import { EditorDocument } from '@app/draft-machine'
-import { GroupingContent } from '@mintter/shared'
-import { Node } from 'slate'
+import {EditorDocument} from '@app/draft-machine'
+import {GroupingContent} from '@mintter/shared'
+import {Node} from 'slate'
 
-export function getTitleFromContent(entry: { children: Array<GroupingContent> }): string {
+export function getTitleFromContent(entry: {
+  children: Array<GroupingContent>
+}): string {
   // @ts-ignore
   return Node.string(Node.get(entry, [0, 0, 0])) || ''
 }

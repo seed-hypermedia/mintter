@@ -29,7 +29,7 @@
     "types": ["node"],
     "lib": ["es2021", "dom", "esnext"]
   },
-  "exclude": ["_"],
+  "exclude": ["node_modules", "./**/*.d.ts"],
   "typeAcquisition": {
     "enable": true
   }

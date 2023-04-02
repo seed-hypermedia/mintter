@@ -1,17 +1,22 @@
-import { wrapLink } from '@app/editor/link'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { EmbedUrlData, isCollapsed, isValidUrl, parseVideoUrl } from '@app/editor/utils'
-import { videoMachine } from '@app/editor/video/video-machine'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Icon } from '@components/icon'
-import { Text } from '@components/text'
-import { TextField } from '@components/text-field'
-import { isVideo, text, video, Video as VideoType } from '@mintter/shared'
-import { useActor, useInterpret, useSelector } from '@xstate/react'
+import {wrapLink} from '@app/editor/link'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {
+  EmbedUrlData,
+  isCollapsed,
+  isValidUrl,
+  parseVideoUrl,
+} from '@app/editor/utils'
+import {videoMachine} from '@app/editor/video/video-machine'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
+import {isVideo, text, video, Video as VideoType} from '@mintter/shared'
+import {useActor, useInterpret, useSelector} from '@xstate/react'
 import isUrl from 'is-url'
-import { FormEvent } from 'react'
-import { Editor, Transforms } from 'slate'
+import {FormEvent} from 'react'
+import {Editor, Transforms} from 'slate'
 import {
   ReactEditor,
   RenderElementProps,
@@ -19,8 +24,8 @@ import {
   useSelected,
   useSlateStatic,
 } from 'slate-react'
-import { ActorRefFrom, assign } from 'xstate'
-import type { EditorPlugin } from '../types'
+import {ActorRefFrom, assign} from 'xstate'
+import type {EditorPlugin} from '../types'
 
 export const ELEMENT_VIDEO = 'video'
 
@@ -35,7 +40,7 @@ export function createVideoPlugin(): EditorPlugin {
       }
     },
     configureEditor(editor) {
-      const { insertData, isVoid, isInline } = editor
+      const {insertData, isVoid, isInline} = editor
 
       editor.isVoid = function videoVoid(element) {
         return isVideo(element) || isVoid(element)
@@ -62,27 +67,27 @@ export function createVideoPlugin(): EditorPlugin {
 }
 
 function insertVideo(editor: Editor, url: string) {
-  const { selection } = editor
+  const {selection} = editor
 
   if (isCollapsed(selection)) {
-    const newVideo = video({ url }, [text('')])
+    const newVideo = video({url}, [text('')])
     Transforms.insertNodes(editor, newVideo)
-    Transforms.move(editor, { distance: 1, unit: 'offset' })
+    Transforms.move(editor, {distance: 1, unit: 'offset'})
   } else {
     wrapLink(editor, url)
   }
 }
 
-function Video({ element, attributes, children }: RenderElementProps) {
+function Video({element, attributes, children}: RenderElementProps) {
   const editor = useSlateStatic()
   const path = ReactEditor.findPath(editor, element)
   const videoService = useInterpret(() => videoMachine, {
     actions: {
       assignValidUrl: (_, event) => {
-        Transforms.setNodes<VideoType>(editor, { url: event.data }, { at: path })
+        Transforms.setNodes<VideoType>(editor, {url: event.data}, {at: path})
       },
       updateCaption: (_, event) => {
-        Transforms.setNodes<VideoType>(editor, { alt: event.value }, { at: path })
+        Transforms.setNodes<VideoType>(editor, {alt: event.value}, {at: path})
       },
     },
     guards: {
@@ -101,9 +106,17 @@ function Video({ element, attributes, children }: RenderElementProps) {
     <Box {...attributes}>
       {children}
       {state.matches('video') ? (
-        <VideoComponent mode={editor.mode} service={videoService} element={element as VideoType} />
+        <VideoComponent
+          mode={editor.mode}
+          service={videoService}
+          element={element as VideoType}
+        />
       ) : (
-        <VideoForm mode={editor.mode} service={videoService} element={element as VideoType} />
+        <VideoForm
+          mode={editor.mode}
+          service={videoService}
+          element={element as VideoType}
+        />
       )}
     </Box>
   )
@@ -115,7 +128,7 @@ type InnerVideoProps = {
   mode: EditorMode
 }
 
-function VideoComponent({ service, element, mode }: InnerVideoProps) {
+function VideoComponent({service, element, mode}: InnerVideoProps) {
   let videoData = parseVideoUrl(element.url)
   if (videoData?.provider) {
     return <VideoEmbed mode={mode} service={service} videoData={videoData} />
@@ -136,8 +149,8 @@ type VideoEmbedProps = {
 //   vimeo: '56.2061%',
 // }
 
-function VideoEmbed({ videoData, service, mode }: VideoEmbedProps) {
-  let { url } = videoData
+function VideoEmbed({videoData, service, mode}: VideoEmbedProps) {
+  let {url} = videoData
 
   return (
     <Box
@@ -191,7 +204,7 @@ function VideoEmbed({ videoData, service, mode }: VideoEmbedProps) {
   )
 }
 
-function VideoForm({ service }: InnerVideoProps) {
+function VideoForm({service}: InnerVideoProps) {
   let errorMessage = useSelector(service, (state) => state.context.errorMessage)
   const selected = useSelected()
   const focused = useFocused()
@@ -201,7 +214,7 @@ function VideoForm({ service }: InnerVideoProps) {
 
     let formData = new FormData(event.currentTarget)
     let value: string = formData.get('url')?.toString() || ''
-    service.send({ type: 'VIDEO.SUBMIT', value })
+    service.send({type: 'VIDEO.SUBMIT', value})
   }
 
   return (
@@ -261,7 +274,7 @@ function VideoForm({ service }: InnerVideoProps) {
         </Box>
       </Box>
       {errorMessage ? (
-        <Text color="danger" size={1} css={{ userSelect: 'none' }}>
+        <Text color="danger" size={1} css={{userSelect: 'none'}}>
           {errorMessage}
         </Text>
       ) : null}

@@ -1,4 +1,4 @@
-import { styled, YStack } from 'tamagui'
+import {styled, YStack} from 'tamagui'
 
 export const SiteAside = styled(YStack, {
   px: '$4',

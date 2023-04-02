@@ -1,16 +1,18 @@
-import { error } from '@app/utils/logger'
-import { assign, createMachine, InterpreterFrom } from 'xstate'
-import { darkTheme, lightTheme } from './stitches.config'
-import { createInterpreterContext } from './utils/machine-utils'
+import {error} from '@app/utils/logger'
+import {assign, createMachine, InterpreterFrom} from 'xstate'
+import {darkTheme, lightTheme} from './stitches.config'
+import {createInterpreterContext} from './utils/machine-utils'
 
 const [ThemeProvider, useTheme, createThemeSelector] =
   createInterpreterContext<InterpreterFrom<typeof themeMachine>>('Theme')
 
-export { ThemeProvider, useTheme }
+export {ThemeProvider, useTheme}
 
-export const useCurrentTheme = createThemeSelector((state) => state.context.current)
+export const useCurrentTheme = createThemeSelector(
+  (state) => state.context.current,
+)
 export const useOppositeTheme = createThemeSelector((state) =>
-  state.context.current == 'dark' ? 'light' : 'dark'
+  state.context.current == 'dark' ? 'light' : 'dark',
 )
 
 type keys = 'light' | 'dark'
@@ -25,9 +27,9 @@ type ThemeContextType = {
 }
 
 type ThemeEvent =
-  | { type: 'CHANGE'; theme: keys }
-  | { type: 'TOGGLE' }
-  | { type: 'REPORT.THEME.SUCCESS'; theme: keys }
+  | {type: 'CHANGE'; theme: keys}
+  | {type: 'TOGGLE'}
+  | {type: 'REPORT.THEME.SUCCESS'; theme: keys}
 
 export var themeMachine = createMachine(
   {
@@ -76,7 +78,10 @@ export var themeMachine = createMachine(
       applyToDom: (context) => {
         let opposite: keys = context.current == 'dark' ? 'light' : 'dark'
         if (window) {
-          window.document.body.classList.remove(theme[opposite], theme[context.current])
+          window.document.body.classList.remove(
+            theme[opposite],
+            theme[context.current],
+          )
           window.document.body.classList.add(theme[context.current])
         }
       },
@@ -89,7 +94,9 @@ export var themeMachine = createMachine(
     },
     services: {
       getPersistedTheme: () => (sendBack) => {
-        const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+        const darkModeMediaQuery = window.matchMedia(
+          '(prefers-color-scheme: dark)',
+        )
 
         sendBack({
           type: 'REPORT.THEME.SUCCESS',
@@ -97,5 +104,5 @@ export var themeMachine = createMachine(
         })
       },
     },
-  }
+  },
 )

@@ -19,11 +19,15 @@ import './commands'
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-import { Router } from '@app/components/router'
-import { globalStyles } from '@app/stitches.config'
-import { createTestQueryClient, CustomMountOptions, TestProvider } from '@app/test/utils'
-import { MountOptions, MountReturn } from 'cypress/react'
-import { mount } from 'cypress/react18'
+import {Router} from '@app/components/router'
+import {globalStyles} from '@app/stitches.config'
+import {
+  createTestQueryClient,
+  CustomMountOptions,
+  TestProvider,
+} from '@app/test/utils'
+import {MountOptions, MountReturn} from 'cypress/react'
+import {mount} from 'cypress/react18'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -40,15 +44,21 @@ declare global {
        */
       mount(
         component: React.ReactNode,
-        options?: MountOptions & CustomMountOptions
+        options?: MountOptions & CustomMountOptions,
       ): Cypress.Chainable<MountReturn>
     }
   }
 }
 
 Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
-  let { client: customClient, account, path, setLocation = cy.stub(), ...mountOptions } = options
-  let client = customClient ?? createTestQueryClient({ account }).client
+  let {
+    client: customClient,
+    account,
+    path,
+    setLocation = cy.stub(),
+    ...mountOptions
+  } = options
+  let client = customClient ?? createTestQueryClient({account}).client
 
   globalStyles()
 

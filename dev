@@ -98,13 +98,13 @@ def main():
     @cmd(cmds, "run-frontend", "Run frontend web app for development.")
     def run_frontend(args):
         run("plz build //:yarn")
-        return run("exec cd frontend && yarn app:dev", args=args)
+        return run("cd frontend && yarn desktop", args=args)
 
     @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
     def run_frontend(args):
         run("plz build //:yarn")
         return run(
-            "exec cd frontend && yarn web",
+            "cd frontend && yarn site",
             args=args,
             env={**os.environ, "GW_NEXT_HOST": "http://localhost:3000"},
         )

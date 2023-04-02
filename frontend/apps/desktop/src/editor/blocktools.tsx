@@ -1,21 +1,24 @@
-import { commentsClient } from '@app/api-clients'
-import { Text } from '@components/text'
-import { useDrag } from '@app/drag-context'
-import { ELEMENT_BLOCKQUOTE } from '@app/editor/blockquote'
-import { ELEMENT_CODE } from '@app/editor/code'
-import { Dropdown, ElementDropdown } from '@app/editor/dropdown'
-import { ELEMENT_HEADING } from '@app/editor/heading'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { ELEMENT_STATEMENT } from '@app/editor/statement'
-import { getEditorBlock, insertInline, setList, setType } from '@app/editor/utils'
-import { queryKeys } from '@app/hooks'
-import { MouseInterpret, useCurrentBound, useCurrentTarget, useMouse } from '@app/mouse-context'
-import { appInvalidateQueries } from '@app/query-client'
-import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Icon, icons } from '@components/icon'
-import { inline, offset, shift, flip, useFloating } from '@floating-ui/react-dom'
+import {commentsClient} from '@app/api-clients'
+import {useDrag} from '@app/drag-context'
+import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
+import {ELEMENT_CODE} from '@app/editor/code'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {ELEMENT_HEADING} from '@app/editor/heading'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {ELEMENT_STATEMENT} from '@app/editor/statement'
+import {getEditorBlock, insertInline, setList, setType} from '@app/editor/utils'
+import {queryKeys} from '@app/hooks'
+import {
+  MouseInterpret,
+  useCurrentBound,
+  useCurrentTarget,
+  useMouse,
+} from '@app/mouse-context'
+import {appInvalidateQueries} from '@app/query-client'
+import {useNavRoute} from '@app/utils/navigation'
+import {Box} from '@components/box'
+import {Icon, icons} from '@components/icon'
+import {Text} from '@components/text'
 import {
   blockquote,
   blockToApi,
@@ -34,14 +37,13 @@ import {
   ul,
   video,
 } from '@mintter/shared'
-import { useSelector } from '@xstate/react'
-import { Fragment, MouseEvent, useMemo, useState } from 'react'
+import {useSelector} from '@xstate/react'
+import {Fragment, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
-import { Editor, Node, NodeEntry, Path } from 'slate'
-import { ReactEditor, useSlate } from 'slate-react'
-import { useRoute } from 'wouter'
-import { CommentForm, EditorHoveringActions } from './hovering-toolbar'
-import { OutsideClick } from './outside-click'
+import {Editor, Node, NodeEntry, Path} from 'slate'
+import {ReactEditor, useSlate} from 'slate-react'
+import {CommentForm, EditorHoveringActions} from './hovering-toolbar'
+import {OutsideClick} from './outside-click'
 import './styles/blocktools.scss'
 
 let toolsByMode = {
@@ -53,7 +55,7 @@ let toolsByMode = {
 }
 
 function DraftBlocktools(props: BlockData) {
-  let { mouseService, element, editor } = props
+  let {mouseService, element, editor} = props
   let dragService = useDrag()
   let topOffset = useTopOffset(element)
   let [localOpen, setLocalOpen] = useState(false)
@@ -113,7 +115,9 @@ function DraftBlocktools(props: BlockData) {
         onMouseUp={() => {
           setMouseDown(false)
           setLocalOpen((p) => !p)
-          mouseService.send(!localOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE')
+          mouseService.send(
+            !localOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
+          )
         }}
       >
         <Icon name="Grid4" color="muted" />
@@ -122,13 +126,15 @@ function DraftBlocktools(props: BlockData) {
         open={localOpen}
         onOpenChange={(isOpen) => {
           setLocalOpen(isOpen)
-          mouseService.send(isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE')
+          mouseService.send(
+            isOpen ? 'DISABLE.BLOCKTOOLS.OPEN' : 'DISABLE.BLOCKTOOLS.CLOSE',
+          )
         }}
       >
         <Dropdown.Trigger asChild>
           <ElementDropdown
             data-testid="blocktools-trigger"
-            style={{ opacity: 0, visibility: 'hidden' }}
+            style={{opacity: 0, visibility: 'hidden'}}
           >
             <Icon name="Grid4" color="muted" />
           </ElementDropdown>
@@ -139,7 +145,7 @@ function DraftBlocktools(props: BlockData) {
               return (
                 <Fragment key={key}>
                   <Dropdown.Label>
-                    <Text color="muted" size="2" css={{ padding: '$3' }}>
+                    <Text color="muted" size="2" css={{padding: '$3'}}>
                       {key}
                     </Text>
                   </Dropdown.Label>
@@ -205,7 +211,9 @@ function BlockCommentForm({
               end: 0,
             })
             let commentValue = comment.replace(/\s/g, ' ')
-            let initialComment = blockToApi(statement([paragraph([text(commentValue)])]))
+            let initialComment = blockToApi(
+              statement([paragraph([text(commentValue)])]),
+            )
             commentsClient
               .createConversation({
                 documentId: docId,
@@ -370,18 +378,18 @@ var items: {
   ],
 }
 
-export function BlockTools({ block }: { block: FlowContent }) {
+export function BlockTools({block}: {block: FlowContent}) {
   const editor = useSlate()
-  let [, params] = useRoute('/p/:id/:version/:block?')
+  const route = useNavRoute()
 
   const blocktoolsProps = useBlocktoolsData(editor)
   const [isCommenting, setIsCommenting] = useState(false)
 
-  let { show, element, mode } = blocktoolsProps
+  let {show, element, mode} = blocktoolsProps
 
   let Component = toolsByMode[mode] || null
 
-  const docId = params?.id
+  const docId = route.key === 'publication' ? route.documentId : undefined
   if (mode == EditorMode.Publication && !docId) {
     return null
   }

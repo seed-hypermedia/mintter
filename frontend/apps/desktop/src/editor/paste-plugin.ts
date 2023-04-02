@@ -6,23 +6,26 @@ import {
   sanitizeSchema,
   toMttast,
 } from '@mintter/shared'
-import { isMintterLink } from '@app/utils/is-mintter-link'
-import { error } from '@app/utils/logger'
+import {isMintterLink} from '@app/utils/is-mintter-link'
+import {error} from '@app/utils/logger'
 import rehypeParse from 'rehype-parse'
 import sanitize from 'rehype-sanitize'
-import { Editor, Transforms } from 'slate'
-import { unified } from 'unified'
-import { visit } from 'unist-util-visit'
-import { EditorPlugin } from './types'
+import {Editor, Transforms} from 'slate'
+import {unified} from 'unified'
+import {visit} from 'unist-util-visit'
+import {EditorPlugin} from './types'
 
-const processor = unified().use(rehypeParse).use(sanitize, sanitizeSchema).freeze()
+const processor = unified()
+  .use(rehypeParse)
+  .use(sanitize, sanitizeSchema)
+  .freeze()
 
 export function createPlainTextPastePlugin(): EditorPlugin {
   return {
     name: 'PastePlainTextPlugin',
     configureEditor(editor) {
       if (editor.readOnly) return
-      const { insertData } = editor
+      const {insertData} = editor
 
       editor.insertData = (transfer: DataTransfer) => {
         /**
@@ -44,7 +47,8 @@ export function createPlainTextPastePlugin(): EditorPlugin {
             return Transforms.insertNodes(editor, fragment.children)
           }
 
-          const [parentBlock, parentPath] = Editor.above(editor, { match: isFlowContent }) || []
+          const [parentBlock, parentPath] =
+            Editor.above(editor, {match: isFlowContent}) || []
           if (parentBlock && parentPath) {
             Transforms.insertNodes(editor, fragment.children, {
               at: parentPath,

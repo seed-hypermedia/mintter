@@ -1,27 +1,23 @@
-import { isProduction, MINTTER_GATEWAY_URL } from '@app/constants'
-import { MainActor } from '@app/hooks/main-actor'
-import { useDocPublications, useSiteList } from '@app/hooks/sites'
-import { useDaemonReady } from '@app/node-status-context'
-import { PublicationActor } from '@app/publication-machine'
-import { styled } from '@app/stitches.config'
-// import {EXPERIMENTS} from '@app/utils/experimental'
-// import {useNostr} from '@app/utils/nostr'
-import { hostnameStripProtocol } from '@app/utils/site-hostname'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { dialogContentStyles, overlayStyles } from '@components/dialog-styles'
-import { Icon } from '@components/icon'
-import { TextField } from '@components/text-field'
-import { AccessURLRow } from '@components/url'
-import { WebPublicationRecord } from '@mintter/shared'
+import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
+import {MainActor} from '@app/hooks/main-actor'
+import {useDocPublications, useSiteList} from '@app/hooks/sites'
+import {useDaemonReady} from '@app/node-status-context'
+import {PublicationActor} from '@app/publication-machine'
+import {styled} from '@app/stitches.config'
+import {useNavRoute} from '@app/utils/navigation'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
+import {Icon} from '@components/icon'
+import {AccessURLRow} from '@components/url'
+import {WebPublicationRecord} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { UseQueryResult } from '@tanstack/react-query'
-import { useSelector } from '@xstate/react'
-import { useEffect, useRef, useState } from 'react'
-import { toast } from 'react-hot-toast'
-import { useRoute } from 'wouter'
-import { usePublicationDialog } from './publication-dialog'
+import {UseQueryResult} from '@tanstack/react-query'
+import {useSelector} from '@xstate/react'
+import {useEffect, useRef, useState} from 'react'
+import {usePublicationDialog} from './publication-dialog'
 
 const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
@@ -117,13 +113,15 @@ const forceProductionURL = true
 
 function getMintterPublicURL(docId: string, version: string) {
   return `${
-    isProduction || forceProductionURL ? MINTTER_GATEWAY_URL : 'http://localhost:3000'
+    isProduction || forceProductionURL
+      ? MINTTER_GATEWAY_URL
+      : 'http://localhost:3000'
   }/p/${docId}?v=${version}`
 }
 
-function MintterURLRow({ doc }: { doc: PublicationActor }) {
-  const { title, url } = useSelector(doc, (state) => {
-    const { documentId, version } = state.context
+function MintterURLRow({doc}: {doc: PublicationActor}) {
+  const {title, url} = useSelector(doc, (state) => {
+    const {documentId, version} = state.context
     return {
       title: `mintter.com/p/${documentId}`,
       url: getMintterPublicURL(documentId, version),
@@ -162,7 +160,11 @@ function PublishedURLs({
             : `${pub.hostname}/${pub.path}?v=${pub.version}`
           : `${pub.hostname}/p/${pub.documentId}?v=${pub.version}`
         return (
-          <AccessURLRow key={`${pub.documentId}/${pub.version}`} url={fullURL} title={displayURL} />
+          <AccessURLRow
+            key={`${pub.documentId}/${pub.version}`}
+            url={fullURL}
+            title={displayURL}
+          />
         )
       })}
     </>
@@ -177,7 +179,7 @@ function PublishButtons({
   publications?: WebPublicationRecord[]
 }) {
   const sites = useSiteList()
-  const sitesList = sites.data?.filter(({ hostname }) => {
+  const sitesList = sites.data?.filter(({hostname}) => {
     if (publications?.find((pub) => pub.hostname === hostname)) return false
     return true
   })
@@ -207,13 +209,12 @@ const ButtonIcon = styled('span', {
   marginHorizontal: 12,
 })
 
-export function PublishShareButton({ mainActor }: { mainActor: MainActor }) {
-  const [isPublic, pubParams] = useRoute('/p/:id/:version')
-  const [isPublicB, pubParamsB] = useRoute('/p/:id/:version/:block?')
-  const [isDraft, draftParams] = useRoute('/d/:id/:tag?')
-
+export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
+  const route = useNavRoute()
+  const isDraft = route.key === 'draft'
+  const isPublication = route.key === 'publication'
+  const docId = route.key === 'publication' ? route.documentId : undefined
   const [isOpen, setIsOpen] = useState(false)
-  const docId = pubParams?.id || pubParamsB?.id || draftParams?.id
   const publicationDialog = usePublicationDialog(mainActor)
   // const nostrPostDialog = useNostrPostDialog()
   const isDaemonReady = useDaemonReady()
@@ -235,7 +236,7 @@ export function PublishShareButton({ mainActor }: { mainActor: MainActor }) {
     }
   }, [mainActor])
 
-  if (!isDraft && !isPublic && !isPublicB) return null
+  if (!isDraft && !isPublication) return null
   return (
     <>
       <PopoverPrimitive.Root
@@ -248,7 +249,10 @@ export function PublishShareButton({ mainActor }: { mainActor: MainActor }) {
           }
         }}
       >
-        <PopoverPrimitive.Trigger asChild disabled={!isDaemonReady || isSaving.current}>
+        <PopoverPrimitive.Trigger
+          asChild
+          disabled={!isDaemonReady || isSaving.current}
+        >
           <button
             disabled={!isDaemonReady || isSaving.current}
             onClick={(e) => {
@@ -263,17 +267,13 @@ export function PublishShareButton({ mainActor }: { mainActor: MainActor }) {
               }
               setIsOpen(true)
             }}
-            className={`titlebar-button success outlined ${isOpen ? 'active' : ''} ${
-              isSaving.current ? 'disabled' : ''
-            }`}
+            className={`titlebar-button success outlined ${
+              isOpen ? 'active' : ''
+            } ${isSaving.current ? 'disabled' : ''}`}
             data-testid="button-publish"
           >
-            {mainActor.actor?.id === 'editor' ? (
-              draftParams?.tag === 'new' ? (
-                'Share'
-              ) : (
-                'Save'
-              )
+            {mainActor.type === 'draft' ? (
+              'Publish'
             ) : (
               <>
                 <Icon name="Globe" />
@@ -303,7 +303,12 @@ export function PublishShareButton({ mainActor }: { mainActor: MainActor }) {
                 gap: '$4',
               }}
             >
-              {docId && <PublishedURLs publications={publications} doc={mainActor.actor} />}
+              {docId && (
+                <PublishedURLs
+                  publications={publications}
+                  doc={mainActor.actor}
+                />
+              )}
               <PublishButtons
                 publications={publications.data}
                 onPublish={(hostname) => {

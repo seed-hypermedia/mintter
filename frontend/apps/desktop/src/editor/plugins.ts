@@ -1,31 +1,31 @@
-import { createCommentsPlugin } from '@app/editor/comments/comments'
-import { Transforms } from 'slate'
-import { ReactEditor } from 'slate-react'
-import { createBlockquotePlugin } from './blockquote'
-import { createCodePlugin } from './code'
-import { createColorPlugin } from './color'
-import { createEmbedPlugin } from './embed'
-import { createEmphasisPlugin } from './emphasis'
+import {createCommentsPlugin} from '@app/editor/comments/comments'
+import {Transforms} from 'slate'
+import {ReactEditor} from 'slate-react'
+import {createBlockquotePlugin} from './blockquote'
+import {createCodePlugin} from './code'
+import {createColorPlugin} from './color'
+import {createEmbedPlugin} from './embed'
+import {createEmphasisPlugin} from './emphasis'
 // import {extensionsPlugin} from './extensions-plugin'
-import { createGroupPlugin } from './group'
-import { createHeadingPlugin } from './heading'
-import { createImagePlugin } from './image/image'
-import { createInlineCodePlugin } from './inline-code'
-import { createLinkPlugin } from './link'
-import { createMarkdownShortcutsPlugin } from './markdown-plugin'
-import { createMintterChangesPlugin } from './mintter-changes/plugin'
-import { createParagraphPlugin } from './paragraph'
-import { createPlainTextPastePlugin } from './paste-plugin'
-import { createStatementPlugin } from './statement'
-import { createStaticParagraphPlugin } from './static-paragraph'
-import { createStrikethroughPlugin } from './strikethrough'
-import { createStrongPlugin } from './strong'
-import { createSubscriptPlugin } from './subscript'
-import { createSuperscriptPlugin } from './superscript'
-import { createTabPlugin } from './tab-plugin'
-import type { EditorPlugin } from './types'
-import { createUnderlinePlugin } from './underline'
-import { createVideoPlugin } from './video/video'
+import {createGroupPlugin} from './group'
+import {createHeadingPlugin} from './heading'
+import {createImagePlugin} from './image/image'
+import {createInlineCodePlugin} from './inline-code'
+import {createLinkPlugin} from './link'
+import {createMarkdownShortcutsPlugin} from './markdown-plugin'
+import {createMintterChangesPlugin} from './mintter-changes/plugin'
+import {createParagraphPlugin} from './paragraph'
+import {createPlainTextPastePlugin} from './paste-plugin'
+import {createStatementPlugin} from './statement'
+import {createStaticParagraphPlugin} from './static-paragraph'
+import {createStrikethroughPlugin} from './strikethrough'
+import {createStrongPlugin} from './strong'
+import {createSubscriptPlugin} from './subscript'
+import {createSuperscriptPlugin} from './superscript'
+import {createTabPlugin} from './tab-plugin'
+import type {EditorPlugin} from './types'
+import {createUnderlinePlugin} from './underline'
+import {createVideoPlugin} from './video/video'
 
 export const plugins: EditorPlugin[] = [
   createStrongPlugin(),
@@ -76,7 +76,7 @@ export const plugins: EditorPlugin[] = [
   {
     name: 'prevent selection after drag and drop',
     configureEditor: (editor) => {
-      const { apply } = editor
+      const {apply} = editor
       editor.apply = (operation) => {
         if (operation.type == 'set_selection') {
           //@ts-ignore

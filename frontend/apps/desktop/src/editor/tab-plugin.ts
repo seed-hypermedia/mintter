@@ -1,7 +1,12 @@
-import { MintterEditor } from '@app/editor/mintter-changes/plugin'
-import { isFlowContent, isGroupContent, isParent, GroupingContent } from '@mintter/shared'
-import { Editor, Node, Path, Transforms } from 'slate'
-import type { EditorPlugin } from './types'
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {
+  isFlowContent,
+  isGroupContent,
+  isParent,
+  GroupingContent,
+} from '@mintter/shared'
+import {Editor, Node, Path, Transforms} from 'slate'
+import type {EditorPlugin} from './types'
 
 /**
  * This plugin handles the <Tab> interactions with the editor:
@@ -51,8 +56,8 @@ function moveStatement(editor: Editor, up: boolean) {
           Transforms.wrapNodes(
             editor,
             //@ts-ignore
-            { type: parent.type, children: [] },
-            { at: statementPath }
+            {type: parent.type, children: []},
+            {at: statementPath},
           )
           Transforms.moveNodes(editor, {
             at: statementPath,
@@ -61,7 +66,11 @@ function moveStatement(editor: Editor, up: boolean) {
         } else {
           Transforms.moveNodes(editor, {
             at: statementPath,
-            to: [...prevPath, 1, (prev.children[1] as GroupingContent).children.length],
+            to: [
+              ...prevPath,
+              1,
+              (prev.children[1] as GroupingContent).children.length,
+            ],
           })
         }
       } else {
@@ -87,9 +96,10 @@ function moveStatement(editor: Editor, up: boolean) {
                 children: [],
               },
               {
-                match: (_, path) => siblings.some((s) => Path.equals(s[1], path)),
+                match: (_, path) =>
+                  siblings.some((s) => Path.equals(s[1], path)),
                 at: range,
-              }
+              },
             )
 
             Transforms.moveNodes(editor, {
@@ -132,9 +142,9 @@ function* nextSiblings(editor: Editor, path: Path) {
 function doubleLift(editor: Editor, path: Path) {
   const ref = Editor.pathRef(editor, path)
 
-  Transforms.liftNodes(editor, { at: path })
+  Transforms.liftNodes(editor, {at: path})
   if (!ref.current) throw new Error('couldnt track path')
-  Transforms.liftNodes(editor, { at: ref.current })
+  Transforms.liftNodes(editor, {at: ref.current})
 
   ref.unref()
 }

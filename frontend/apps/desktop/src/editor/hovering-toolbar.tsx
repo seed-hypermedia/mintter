@@ -1,14 +1,15 @@
-import { commentsClient } from '@app/api-clients'
-import { OutsideClick } from '@app/editor/outside-click'
-import { toolbarMachine } from '@app/editor/toolbar-machine'
-import { queryKeys } from '@app/hooks'
-import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Icon, icons } from '@components/icon'
-import { TextField } from '@components/text-field'
-import { Tooltip } from '@components/tooltip'
-import { flip, inline, offset, shift, useFloating } from '@floating-ui/react-dom'
+import {commentsClient} from '@app/api-clients'
+import {OutsideClick} from '@app/editor/outside-click'
+import {toolbarMachine} from '@app/editor/toolbar-machine'
+import {queryKeys} from '@app/hooks'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {useNavRoute} from '@app/utils/navigation'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon, icons} from '@components/icon'
+import {TextField} from '@components/text-field'
+import {Tooltip} from '@components/tooltip'
+import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
 import {
   blockToApi,
   image,
@@ -20,29 +21,27 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import { css } from '@stitches/react'
-import { useQueryClient } from '@tanstack/react-query'
-import { useInterpret, useSelector } from '@xstate/react'
+import {css} from '@stitches/react'
+import {useQueryClient} from '@tanstack/react-query'
+import {useInterpret, useSelector} from '@xstate/react'
 import {
   ComponentProps,
-  FocusEvent,
   FormEvent,
   PropsWithChildren,
   useEffect,
   useMemo,
   useState,
 } from 'react'
-import { toast } from 'react-hot-toast'
-import { BasePoint, Descendant, Editor, Range, Text, Transforms } from 'slate'
-import { ReactEditor, useFocused, useSlate, useSlateSelection, useSlateWithV } from 'slate-react'
-import { useRoute } from 'wouter'
-import { assign } from 'xstate'
-import { MARK_EMPHASIS } from './emphasis'
-import { MARK_CODE } from './inline-code'
-import { InsertLinkButton } from './link'
-import { MARK_STRONG } from './strong'
-import { MARK_UNDERLINE } from './underline'
-import { isMarkActive, toggleFormat } from './utils'
+import {toast} from 'react-hot-toast'
+import {Descendant, Editor, Range, Text, Transforms} from 'slate'
+import {ReactEditor, useFocused, useSlate, useSlateSelection} from 'slate-react'
+import {assign} from 'xstate'
+import {MARK_EMPHASIS} from './emphasis'
+import {MARK_CODE} from './inline-code'
+import {InsertLinkButton} from './link'
+import {MARK_STRONG} from './strong'
+import {MARK_UNDERLINE} from './underline'
+import {isMarkActive, toggleFormat} from './utils'
 
 export function EditorHoveringToolbar() {
   const editor = useSlate()
@@ -56,14 +55,15 @@ export function EditorHoveringToolbar() {
 
     const selectionColors = new Set([...nodes].map(([node]) => node.color))
 
-    const maybeColor = selectionColors.size === 1 ? [...selectionColors.values()][0] : null
+    const maybeColor =
+      selectionColors.size === 1 ? [...selectionColors.values()][0] : null
 
     setSelectionColor(maybeColor || '#000000')
   }, [editor])
 
   const codeInSelection = useMemo(
     () => [...Editor.nodes(editor)].some(([node]) => isCode(node)),
-    [editor]
+    [editor],
   )
 
   return (
@@ -100,8 +100,8 @@ export function EditorHoveringToolbar() {
               onChange={(ev) =>
                 Transforms.setNodes(
                   editor,
-                  { color: ev.target.value },
-                  { match: Text.isText, split: true, mode: 'highest' }
+                  {color: ev.target.value},
+                  {match: Text.isText, split: true, mode: 'highest'},
                 )
               }
             />
@@ -128,7 +128,13 @@ const textSelectorStyles = css({
   },
 })
 
-function FormatButton({ format, icon }: { format: Mark; icon: keyof typeof icons }) {
+function FormatButton({
+  format,
+  icon,
+}: {
+  format: Mark
+  icon: keyof typeof icons
+}) {
   const editor = useSlate()
 
   return (
@@ -160,16 +166,23 @@ function FormatButton({ format, icon }: { format: Mark; icon: keyof typeof icons
 function InsertImageButton() {
   const editor = useSlate()
 
-  function insertImageHandler(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+  function insertImageHandler(
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) {
     event.preventDefault()
 
-    let img = image({ url: '' }, [text('')])
+    let img = image({url: ''}, [text('')])
     Transforms.insertNodes(editor, [text(''), img, text('')])
   }
 
   return (
     <Tooltip content={<span>Insert Image</span>}>
-      <Button onClick={insertImageHandler} variant="ghost" size="0" color="muted">
+      <Button
+        onClick={insertImageHandler}
+        variant="ghost"
+        size="0"
+        color="muted"
+      >
         <Icon name="Image" size="2" />
       </Button>
     </Tooltip>
@@ -194,12 +207,12 @@ const defaultVirtualEl = {
   },
 }
 
-function HoveringToolbar({ children }: PropsWithChildren) {
+function HoveringToolbar({children}: PropsWithChildren) {
   const editor = useSlate()
   const inFocus = useFocused()
   const selection = useSlateSelection()
 
-  const { x, y, reference, floating, strategy } = useFloating({
+  const {x, y, reference, floating, strategy} = useFloating({
     placement: 'top',
     middleware: [inline(), offset(8), shift(), flip()],
   })
@@ -284,7 +297,9 @@ export function EditorHoveringActions({
             if (link) {
               copyTextToClipboard(link).then(() => {
                 toast.success(
-                  copyLabel ? `Copied link to ${copyLabel}` : 'Link copied to clipboard'
+                  copyLabel
+                    ? `Copied link to ${copyLabel}`
+                    : 'Link copied to clipboard',
                 )
               })
             }
@@ -327,10 +342,12 @@ export function EditorHoveringActions({
 
 export function PublicationToolbar() {
   let client = useQueryClient()
-  let [, params] = useRoute('/p/:id/:version/:block?')
+  const route = useNavRoute()
+  const documentId = route.key === 'publication' ? route.documentId : undefined
+  const version = route.key === 'publication' ? route.versionId : undefined
   const editor = useSlate()
   let selection = useSlateSelection()
-  const { x, y, reference, floating, strategy } = useFloating({
+  const {x, y, reference, floating, strategy} = useFloating({
     placement: 'top',
     middleware: [inline(), offset(8), shift(), flip()],
   })
@@ -340,7 +357,9 @@ export function PublicationToolbar() {
   let service = useInterpret(() => toolbarMachine, {
     guards: {
       isNotValid: (_, event) =>
-        !selection || Range.isCollapsed(selection) || Editor.string(editor, selection) === '',
+        !selection ||
+        Range.isCollapsed(selection) ||
+        Editor.string(editor, selection) === '',
     },
     actions: {
       assignDefaultSelection: () => {
@@ -349,7 +368,9 @@ export function PublicationToolbar() {
       assignSelection: assign((_, e) => {
         return {
           selection: e.selection,
-          domRange: e.selection ? ReactEditor.toDOMRange(editor, e.selection) : null,
+          domRange: e.selection
+            ? ReactEditor.toDOMRange(editor, e.selection)
+            : null,
         }
       }),
       setSelectorMark: (context) => {
@@ -398,7 +419,10 @@ export function PublicationToolbar() {
       mode: 'lowest',
     })
 
-    invariant(currentEntry, `"currentEntry" is not available - ${JSON.stringify(currentEntry)}`)
+    invariant(
+      currentEntry,
+      `"currentEntry" is not available - ${JSON.stringify(currentEntry)}`,
+    )
 
     // get block from entry
     // TODO: get all the blocks from selection, now it's capped by just one block.
@@ -411,7 +435,8 @@ export function PublicationToolbar() {
 
     let commentAnnotation = apiBlock.annotations.find(
       (annotation) =>
-        annotation.type == 'conversation' && annotation.attributes.conversationId == 'current'
+        annotation.type == 'conversation' &&
+        annotation.attributes.conversationId == 'current',
     )
 
     // invariant(commentAnnotation, 'No commentAnnotation available')
@@ -425,11 +450,13 @@ export function PublicationToolbar() {
     })
 
     let commentValue = currentComment.replace(/\s/g, ' ')
-    let initialComment = blockToApi(statement([paragraph([text(commentValue)])]))
+    let initialComment = blockToApi(
+      statement([paragraph([text(commentValue)])]),
+    )
 
     await commentsClient
       .createConversation({
-        documentId: params?.id,
+        documentId,
         initialComment,
         selectors: [selector],
       })
@@ -445,11 +472,13 @@ export function PublicationToolbar() {
 
   let isToolbarActive = useSelector(service, (state) => state.matches('active'))
   let toolbarSelection = useSelector(service, (state) => state.context.domRange)
-  let isCommentActive = useSelector(service, (state) => state.matches('active.commenting'))
+  let isCommentActive = useSelector(service, (state) =>
+    state.matches('active.commenting'),
+  )
 
   useEffect(() => {
     if (selection) {
-      service.send({ type: 'TOOLBAR.SELECT', selection })
+      service.send({type: 'TOOLBAR.SELECT', selection})
     } else {
       service.send('TOOLBAR.DISMISS')
     }
@@ -464,7 +493,9 @@ export function PublicationToolbar() {
   function sizeNode(d: Descendant): number {
     if (!d) return 0
     //@ts-ignore
-    const children = d.children?.reduce((acc, child) => acc + sizeNode(child), 0) ?? 0
+    const children =
+      //@ts-ignore
+      d.children?.reduce((acc, child) => acc + sizeNode(child), 0) ?? 0
     //@ts-ignore
     const text = d.text?.length ?? 0
     return children + text
@@ -492,13 +523,13 @@ export function PublicationToolbar() {
     const block = editor.children[0].children[selectedBlock]
     const blockChildren = block.children
     const anchor =
-      convertRange(selection.anchor.path.slice(2), blockChildren) + selection.anchor.offset
+      convertRange(selection.anchor.path.slice(2), blockChildren) +
+      selection.anchor.offset
     const focus =
-      convertRange(selection.focus.path.slice(2), blockChildren) + selection.focus.offset
+      convertRange(selection.focus.path.slice(2), blockChildren) +
+      selection.focus.offset
     const start = Math.min(anchor, focus)
     const end = Math.max(anchor, focus)
-    const documentId = params?.id
-    const version = params?.version
     // console.log('... : ', {
     //   selection,
     //   c: editor.children,

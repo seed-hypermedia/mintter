@@ -1,5 +1,5 @@
 {
-  "name": "desktop-app",
+  "name": "@mintter/desktop",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -8,7 +8,10 @@
     "tsc": "tsc --watch",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "typegen": "xstate typegen \"src/**/*.(ts|tsx)\""
+    "typegen": "xstate typegen \"src/**/*.(ts|tsx)\"",
+    "test:no": "NODE_ENV=test cypress run --component",
+    "test": "echo 'DESKTOP: NO TESTS'",
+    "test:watch": "NODE_ENV=test cypress open --component"
   },
   "dependencies": {
     "@bufbuild/connect-web": "0.7.0",
@@ -37,15 +40,13 @@
     "@sentry/tracing": "7.24.2",
     "@stitches/core": "1.2.8",
     "@stitches/react": "1.2.8",
-    "@tamagui/config": "1.9.10",
-    "@tamagui/web": "1.9.10",
+    "@tamagui/config": "1.9.22",
+    "@tamagui/web": "1.9.22",
     "@tanstack/react-query": "4.19.1",
     "@tauri-apps/api": "1.2.0",
     "@xstate/react": "3.1.1",
     "allotment": "1.17.1",
     "autosize": "5.0.2",
-    "bip32": "3.1.0",
-    "bip39": "3.0.4",
     "browser-headers": "0.4.1",
     "buffer": "6.0.3",
     "cmdk": "0.1.21",
@@ -75,6 +76,7 @@
     "react-error-boundary": "3.1.4",
     "react-highlight-words": "0.18.0",
     "react-hot-toast": "2.4.0",
+    "react-native": "0.0.0",
     "react-qr-code": "2.0.11",
     "rehype": "12.0.1",
     "rehype-minify-whitespace": "5.0.1",
@@ -97,7 +99,6 @@
     "unist-util-remove-position": "4.0.1",
     "unist-util-visit": "4.1.1",
     "unist-util-visit-parents": "5.1.1",
-    "wouter": "2.9.0",
     "xstate": "4.35.4"
   },
   "devDependencies": {
@@ -107,7 +108,7 @@
     "@graphql-codegen/typescript": "2.8.5",
     "@happy-dom/global-registrator": "7.8.1",
     "@radix-ui/react-navigation-menu": "1.1.1",
-    "@tamagui/vite-plugin": "1.9.10",
+    "@tamagui/vite-plugin": "1.9.22",
     "@tanstack/react-query-devtools": "4.19.1",
     "@types/autosize": "4.0.1",
     "@types/hast": "2.3.4",
@@ -119,6 +120,7 @@
     "@types/react-copy-to-clipboard": "5.0.4",
     "@types/react-dom": "18.0.11",
     "@types/react-highlight-words": "0.16.4",
+    "@types/react-native": "0.71.5",
     "@types/unist": "2.0.6",
     "@vitejs/plugin-react": "3.1.0",
     "@xstate/cli": "0.4.1",
@@ -128,7 +130,7 @@
     "concurrently": "7.6.0",
     "copy-text-to-clipboard": "3.0.1",
     "covector": "0.7.3",
-    "cypress": "10.11.0",
+    "cypress": "12.9.0",
     "happy-dom": "7.8.1",
     "is-hidden": "2.0.1",
     "prettier": "2.8.1",

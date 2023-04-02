@@ -1,10 +1,10 @@
-import { accountsClient, daemonClient } from '@app/api-clients'
-import { createAuthService } from '@app/auth-machine'
-import { Box } from '@app/components/box'
-import { Button } from '@app/components/button'
-import { Text } from '@app/components/text'
-import { TextField } from '@app/components/text-field'
-import { useAuthor } from '@app/hooks'
+import {accountsClient, daemonClient} from '@app/api-clients'
+import {createAuthService} from '@app/auth-machine'
+import {Box} from '@app/components/box'
+import {Button} from '@app/components/button'
+import {Text} from '@app/components/text'
+import {TextField} from '@app/components/text-field'
+import {useAuthor} from '@app/hooks'
 import {
   useAddSite,
   useInviteMember,
@@ -25,21 +25,27 @@ import {
 //   useRemoveRelay,
 //   useSetKeyPair,
 // } from '@app/utils/nostr'
-import { ObjectKeys } from '@app/utils/object-keys'
-import { hostnameStripProtocol } from '@app/utils/site-hostname'
-import { Icon } from '@components/icon'
-import { Prompt, StyledOverlay } from '@components/prompt'
-import { Separator } from '@components/separator'
-import { AccessURLRow } from '@components/url'
-import { Member, Member_Role, Profile, SiteConfig, SiteInfo } from '@mintter/shared'
+import {ObjectKeys} from '@app/utils/object-keys'
+import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Icon} from '@components/icon'
+import {Prompt, StyledOverlay} from '@components/prompt'
+import {Separator} from '@components/separator'
+import {AccessURLRow} from '@components/url'
+import {
+  Member,
+  Member_Role,
+  Profile,
+  SiteConfig,
+  SiteInfo,
+} from '@mintter/shared'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
-import { styled } from '@stitches/react'
-import { useQueryClient } from '@tanstack/react-query'
-import { useActor, useInterpret, useSelector } from '@xstate/react'
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import {styled} from '@stitches/react'
+import {useQueryClient} from '@tanstack/react-query'
+import {useActor, useInterpret, useSelector} from '@xstate/react'
+import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
-import { InterpreterFrom } from 'xstate'
+import {InterpreterFrom} from 'xstate'
 import '../styles/settings.scss'
 
 export default function Settings({
@@ -51,12 +57,24 @@ export default function Settings({
   const auth = useInterpret(() => createAuthService(client))
   return (
     <div className="settings-wrapper">
-      <TabsPrimitive.Root className="tabs" defaultValue="profile" orientation="vertical">
+      <TabsPrimitive.Root
+        className="tabs"
+        defaultValue="profile"
+        orientation="vertical"
+      >
         <TabsPrimitive.List className="tabs-list" aria-label="Manage your node">
-          <TabsPrimitive.Trigger className="tab-trigger" value="profile" data-testid="tab-profile">
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="profile"
+            data-testid="tab-profile"
+          >
             Profile
           </TabsPrimitive.Trigger>
-          <TabsPrimitive.Trigger className="tab-trigger" value="account" data-testid="tab-account">
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="account"
+            data-testid="tab-account"
+          >
             Account Info
           </TabsPrimitive.Trigger>
           <TabsPrimitive.Trigger
@@ -66,7 +84,11 @@ export default function Settings({
           >
             Settings
           </TabsPrimitive.Trigger>
-          <TabsPrimitive.Trigger className="tab-trigger" value="sites" data-testid="tab-sites">
+          <TabsPrimitive.Trigger
+            className="tab-trigger"
+            value="sites"
+            data-testid="tab-sites"
+          >
             Web Sites
           </TabsPrimitive.Trigger>
           {/* {EXPERIMENTS.nostr && (
@@ -79,7 +101,10 @@ export default function Settings({
             </TabsPrimitive.Trigger>
           )} */}
         </TabsPrimitive.List>
-        <TabsPrimitive.Content className="settings-tab-content tab-content" value="profile">
+        <TabsPrimitive.Content
+          className="settings-tab-content tab-content"
+          value="profile"
+        >
           <ProfileForm service={auth} updateProfile={updateProfile} />
         </TabsPrimitive.Content>
         <TabsPrimitive.Content
@@ -120,7 +145,7 @@ type SettingsTabProps = {
   updateProfile?: typeof accountsClient.updateProfile
 }
 
-export function ProfileForm({ service, updateProfile }: SettingsTabProps) {
+export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   let [state, send] = useActor(service)
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -129,14 +154,18 @@ export function ProfileForm({ service, updateProfile }: SettingsTabProps) {
     let newProfile: Profile = Object.fromEntries(formData.entries())
     e.preventDefault()
     updateProfile?.(newProfile)
-    send({ type: 'ACCOUNT.UPDATE.PROFILE', profile: newProfile })
+    send({type: 'ACCOUNT.UPDATE.PROFILE', profile: newProfile})
   }
 
-  let isPending = useSelector(service, (state) => state.matches('loggedIn.updating'))
-  let onSuccess = useSelector(service, (state) => state.matches('loggedIn.onSuccess'))
+  let isPending = useSelector(service, (state) =>
+    state.matches('loggedIn.updating'),
+  )
+  let onSuccess = useSelector(service, (state) =>
+    state.matches('loggedIn.onSuccess'),
+  )
 
   if (state.context.account?.profile && state.matches('loggedIn')) {
-    let { alias, bio } = state.context.account.profile
+    let {alias, bio} = state.context.account.profile
 
     return (
       <form onSubmit={onSubmit} className="settings-tab-content">
@@ -174,7 +203,7 @@ export function ProfileForm({ service, updateProfile }: SettingsTabProps) {
             shape="pill"
             color="success"
             data-testid="submit"
-            css={{ alignSelf: 'flex-start' }}
+            css={{alignSelf: 'flex-start'}}
           >
             Save
           </Button>
@@ -191,10 +220,12 @@ export function ProfileForm({ service, updateProfile }: SettingsTabProps) {
   return null
 }
 
-export function AccountInfo({ service }: SettingsTabProps) {
+export function AccountInfo({service}: SettingsTabProps) {
   let [state] = useActor(service)
   let account = useSelector(service, (state) => state.context.account)
-  let onSuccess = useSelector(service, (state) => state.matches('loggedIn.onSuccess'))
+  let onSuccess = useSelector(service, (state) =>
+    state.matches('loggedIn.onSuccess'),
+  )
   const peerAddrs = useSelector(service, (state) => state.context.peerAddrs)
 
   if (account && state.matches('loggedIn')) {
@@ -207,7 +238,7 @@ export function AccountInfo({ service }: SettingsTabProps) {
           name="accountId"
           value={account.id}
           data-testid="account-id"
-          css={{ fontFamily: 'monospace' }}
+          css={{fontFamily: 'monospace'}}
         />
 
         <TextField
@@ -219,7 +250,7 @@ export function AccountInfo({ service }: SettingsTabProps) {
           rows={4}
           value={peerAddrs}
           data-testid="account-addresses"
-          css={{ fontFamily: 'monospace', userSelect: 'none' }}
+          css={{fontFamily: 'monospace', userSelect: 'none'}}
         />
         <Box
           css={{
@@ -276,15 +307,15 @@ function AppSettings() {
   )
 }
 
-function SettingsNavBack({ onDone, title }: { onDone: () => void; title: string }) {
+function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
   return (
     <Button onClick={onDone} className="settings-nav-button">
       <Icon name="ArrowChevronLeft" size="2" color="muted" />
-      <span style={{ marginLeft: '0.3em' }}>{title}</span>
+      <span style={{marginLeft: '0.3em'}}>{title}</span>
     </Button>
   )
 }
-function InviteMemberDialog({ url, onDone }: { url: string; onDone: () => void }) {
+function InviteMemberDialog({url, onDone}: {url: string; onDone: () => void}) {
   return (
     <div>
       <p>Copy and send this secret editor invite URL</p>
@@ -304,11 +335,16 @@ export function useInviteDialog(hostname: string) {
   }
   return {
     content: (
-      <DialogPrimitive.Root open={!!isOpen} onOpenChange={() => setIsOpen(null)}>
+      <DialogPrimitive.Root
+        open={!!isOpen}
+        onOpenChange={() => setIsOpen(null)}
+      >
         <DialogPrimitive.Portal>
           <StyledOverlay />
           <Prompt.Content>
-            {isOpen && <InviteMemberDialog url={isOpen} onDone={() => setIsOpen(null)} />}
+            {isOpen && (
+              <InviteMemberDialog url={isOpen} onDone={() => setIsOpen(null)} />
+            )}
           </Prompt.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
@@ -332,7 +368,7 @@ function SiteMemberRow({
   hostname: string
   isOwner: boolean
 }) {
-  const { data: account } = useAuthor(member.accountId)
+  const {data: account} = useAuthor(member.accountId)
   const remove = useRemoveMember(hostname)
   const [hovering, setHover] = useState(false)
   return (
@@ -389,13 +425,13 @@ function SiteMembers({
   accountId: string
   isOwner: boolean
 }) {
-  const { content, open } = useInviteDialog(hostname)
+  const {content, open} = useInviteDialog(hostname)
 
-  const { data: members } = useSiteMembers(hostname)
+  const {data: members} = useSiteMembers(hostname)
 
   return (
     <SettingsSection title="Members">
-      <Box css={{ display: 'flex', gap: '$3', flexDirection: 'column' }}>
+      <Box css={{display: 'flex', gap: '$3', flexDirection: 'column'}}>
         {members?.map((member) => (
           <SiteMemberRow
             key={member.accountId}
@@ -412,7 +448,7 @@ function SiteMembers({
           size="2"
           data-testid="submit"
           onClick={open}
-          css={{ alignSelf: 'flex-start' }}
+          css={{alignSelf: 'flex-start'}}
         >
           Invite Editor
         </Button>
@@ -421,7 +457,13 @@ function SiteMembers({
   )
 }
 
-function SettingsSection({ title, children }: { title?: string; children: React.ReactNode }) {
+function SettingsSection({
+  title,
+  children,
+}: {
+  title?: string
+  children: React.ReactNode
+}) {
   return (
     <Box
       css={{
@@ -472,7 +514,7 @@ function SiteInfoForm({
           size="2"
           color="success"
           onClick={() => {
-            onSubmit({ title, description })
+            onSubmit({title, description})
           }}
         >
           Save Site Info
@@ -500,13 +542,14 @@ function SiteSettings({
   onDone: () => void
   accountId: string
 }) {
-  const { data: members, isLoading } = useSiteMembers(hostname)
+  const {data: members, isLoading} = useSiteMembers(hostname)
   const isOwner = useMemo(
     () =>
       !!members?.find(
-        (member) => member.accountId === accountId && member.role === Member_Role.OWNER
+        (member) =>
+          member.accountId === accountId && member.role === Member_Role.OWNER,
       ),
-    [members, accountId]
+    [members, accountId],
   )
 
   return (
@@ -520,7 +563,11 @@ function SiteSettings({
       ) : (
         <>
           <SiteInfoSection hostname={hostname} isOwner={isOwner} />
-          <SiteMembers hostname={hostname} accountId={accountId} isOwner={isOwner} />
+          <SiteMembers
+            hostname={hostname}
+            accountId={accountId}
+            isOwner={isOwner}
+          />
           <SiteAdmin hostname={hostname} onDone={onDone} />
         </>
       )}
@@ -528,7 +575,13 @@ function SiteSettings({
   )
 }
 
-function SiteInfoSection({ hostname, isOwner }: { hostname: string; isOwner: boolean }) {
+function SiteInfoSection({
+  hostname,
+  isOwner,
+}: {
+  hostname: string
+  isOwner: boolean
+}) {
   const siteInfo = useSiteInfo(hostname)
   const writeSiteInfo = useWriteSiteInfo(hostname)
   return (
@@ -555,7 +608,7 @@ const SettingsHeader = styled('div', {
   },
 })
 
-function NewSite({ onDone }: { onDone: (activeSite: string | null) => void }) {
+function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
   const addSite = useAddSite({
     onSuccess: (result, input) => onDone(input.hostname),
   })
@@ -575,24 +628,28 @@ function NewSite({ onDone }: { onDone: (activeSite: string | null) => void }) {
         <h2>Add Mintter Web Site</h2>
       </SettingsHeader>
 
-      {
+      {addSite.error ? (
         //@ts-ignore
-        addSite.error ? <Text color={'danger'}>{addSite.error?.message}</Text> : null
-      }
+        <Text color={'danger'}>{addSite.error?.message}</Text>
+      ) : null}
       {addSite.isLoading ? <div>loading...</div> : null}
       <p>Follow the self-hosting guide and copy the invite URL:</p>
       <Box
         as={'form'}
         onSubmit={(e) => {
           e.preventDefault()
-          const matchedHostProtocol = siteUrl?.match(/^(https?:\/\/)?([^/]*)\/?/)
-          const matchedInviteURL = siteUrl?.match(/^(https?:\/\/)?([^/]*)(\/invite\/(.*))?$/)
+          const matchedHostProtocol = siteUrl?.match(
+            /^(https?:\/\/)?([^/]*)\/?/,
+          )
+          const matchedInviteURL = siteUrl?.match(
+            /^(https?:\/\/)?([^/]*)(\/invite\/(.*))?$/,
+          )
           const protocol = matchedHostProtocol?.[1] ?? 'https://'
           const hostname = matchedHostProtocol?.[2] || matchedInviteURL?.[2]
           const inviteToken = matchedInviteURL?.[4]
           const fullHostname = protocol + hostname
-          console.log({ fullHostname, matchedHostProtocol, siteUrl, hostname })
-          if (hostname) addSite.mutate({ hostname: fullHostname, inviteToken })
+          console.log({fullHostname, matchedHostProtocol, siteUrl, hostname})
+          if (hostname) addSite.mutate({hostname: fullHostname, inviteToken})
         }}
         css={{
           display: 'flex',
@@ -617,11 +674,17 @@ function NewSite({ onDone }: { onDone: (activeSite: string | null) => void }) {
 }
 
 const NewSitePage = Symbol('NewSitePage')
-function SitesSettings({ auth }: { auth: InterpreterFrom<ReturnType<typeof createAuthService>> }) {
+function SitesSettings({
+  auth,
+}: {
+  auth: InterpreterFrom<ReturnType<typeof createAuthService>>
+}) {
   let account = useSelector(auth, (state) => state.context.account)
   let [state] = useActor(auth)
   const accountId = state.matches('loggedIn') ? account?.id : undefined
-  const [activeSitePage, setActiveSitePage] = useState<string | typeof NewSitePage | null>(null)
+  const [activeSitePage, setActiveSitePage] = useState<
+    string | typeof NewSitePage | null
+  >(null)
   if (!accountId) return null
   if (activeSitePage === NewSitePage) {
     return <NewSite onDone={(s: string | null) => setActiveSitePage(s)} />
@@ -647,7 +710,7 @@ function SitesSettings({ auth }: { auth: InterpreterFrom<ReturnType<typeof creat
         onClick={() => {
           setActiveSitePage(NewSitePage)
         }}
-        css={{ alignSelf: 'flex-start' }}
+        css={{alignSelf: 'flex-start'}}
       >
         Add Site
       </Button>
@@ -659,7 +722,7 @@ function EmptySiteList() {
   return <div>no sites yet</div>
 }
 
-function SiteItem({ site, onSelect }: { site: SiteConfig; onSelect: () => void }) {
+function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
   return (
     <Button className="settings-list-item" onClick={onSelect}>
       {hostnameStripProtocol(site.hostname)}
@@ -667,21 +730,26 @@ function SiteItem({ site, onSelect }: { site: SiteConfig; onSelect: () => void }
   )
 }
 
-function SiteAdmin({ hostname, onDone }: { hostname: string; onDone: () => void }) {
+function SiteAdmin({hostname, onDone}: {hostname: string; onDone: () => void}) {
   const removeSite = useRemoveSite(hostname, {
     onSuccess: () => onDone(),
   })
   return (
     <SettingsSection>
-      <Button color="danger" size="1" variant="outlined" onClick={() => removeSite.mutate()}>
+      <Button
+        color="danger"
+        size="1"
+        variant="outlined"
+        onClick={() => removeSite.mutate()}
+      >
         Remove Site
       </Button>
     </SettingsSection>
   )
 }
 
-function SitesList({ onSelectSite }: { onSelectSite: (siteId: string) => void }) {
-  const { data: sites, isLoading } = useSiteList()
+function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
+  const {data: sites, isLoading} = useSiteList()
   return (
     <>
       {isLoading && <div>loading...</div>}

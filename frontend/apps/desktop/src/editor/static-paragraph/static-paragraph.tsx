@@ -1,14 +1,17 @@
-import { useDrag } from '@app/drag-context'
-import { usePhrasingProps } from '@app/editor/editor-node-props'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { useBlockObserve, useMouse } from '@app/mouse-context'
-import { css } from '@app/stitches.config'
-import { mergeRefs } from '@app/utils/mege-refs'
-import { Box } from '@components/box'
-import { isStaticParagraph, StaticParagraph as StaticParagraphType } from '@mintter/shared'
-import { useMemo, useRef } from 'react'
-import { RenderElementProps, useSlate } from 'slate-react'
-import type { EditorPlugin } from '../types'
+import {useDrag} from '@app/drag-context'
+import {usePhrasingProps} from '@app/editor/editor-node-props'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {useBlockObserve, useMouse} from '@app/mouse-context'
+import {css} from '@app/stitches.config'
+import {mergeRefs} from '@app/utils/mege-refs'
+import {Box} from '@components/box'
+import {
+  isStaticParagraph,
+  StaticParagraph as StaticParagraphType,
+} from '@mintter/shared'
+import {useMemo, useRef} from 'react'
+import {RenderElementProps, useSlate} from 'slate-react'
+import type {EditorPlugin} from '../types'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
@@ -21,10 +24,14 @@ export const createStaticParagraphPlugin = (): EditorPlugin => ({
   name: ELEMENT_STATIC_PARAGRAPH,
   renderElement:
     (editor) =>
-    ({ element, children, attributes }) => {
+    ({element, children, attributes}) => {
       if (isStaticParagraph(element)) {
         return (
-          <StaticParagraph mode={editor.mode} element={element} attributes={attributes}>
+          <StaticParagraph
+            mode={editor.mode}
+            element={element}
+            attributes={attributes}
+          >
             {children}
           </StaticParagraph>
         )
@@ -37,10 +44,10 @@ function StaticParagraph({
   element,
   attributes,
   mode,
-}: RenderElementProps & { mode: EditorMode; element: StaticParagraphType }) {
+}: RenderElementProps & {mode: EditorMode; element: StaticParagraphType}) {
   let editor = useSlate()
   let dragService = useDrag()
-  let { elementProps, parentPath } = usePhrasingProps(editor, element)
+  let {elementProps, parentPath} = usePhrasingProps(editor, element)
 
   let pRef = useRef<HTMLElement | undefined>()
   let otherProps = {
@@ -52,7 +59,7 @@ function StaticParagraph({
 
   let dragProps = {
     onMouseOver: () => {
-      dragService?.send({ type: 'DRAG.OVER', toPath: parentPath, element: null })
+      dragService?.send({type: 'DRAG.OVER', toPath: parentPath, element: null})
     },
   }
 
@@ -72,7 +79,7 @@ function StaticParagraph({
       : {}
 
   let as = useMemo(() => {
-    const headingMap: { [key: number]: string } = {
+    const headingMap: {[key: number]: string} = {
       2: 'h2',
       4: 'h3',
       6: 'h4',
@@ -95,7 +102,14 @@ function StaticParagraph({
   }
 
   return (
-    <Box as={as} {...attributes} {...elementProps} {...mouseProps} {...otherProps} {...dragProps}>
+    <Box
+      as={as}
+      {...attributes}
+      {...elementProps}
+      {...mouseProps}
+      {...otherProps}
+      {...dragProps}
+    >
       {children}
     </Box>
   )

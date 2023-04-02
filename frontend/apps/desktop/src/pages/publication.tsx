@@ -1,60 +1,68 @@
-import { AppBanner, BannerText } from '@app/app-banner'
-import { BlockHighLighter } from '@app/editor/block-highlighter'
-import { CitationsProvider } from '@app/editor/comments/citations-context'
-import { ConversationsProvider } from '@app/editor/comments/conversations-context'
-import { Editor } from '@app/editor/editor'
-import { buildEditorHook, EditorMode } from '@app/editor/plugin-utils'
-import { plugins } from '@app/editor/plugins'
-import { getEditorBlock } from '@app/editor/utils'
-import { FileProvider } from '@app/file-provider'
-import { queryKeys, useDocChanges, useDocCitations, usePublication } from '@app/hooks'
-import { MouseProvider } from '@app/mouse-context'
-import { mouseMachine } from '@app/mouse-machine'
-import { PublicationActor } from '@app/publication-machine'
-import { classnames } from '@app/utils/classnames'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { ChangesList } from '@components/changes-list'
-import { Citations } from '@components/citations'
-import { Conversations } from '@components/conversations'
-import Footer, { FooterButton } from '@components/footer'
-import { Icon } from '@components/icon'
-import { Placeholder } from '@components/placeholder-box'
-import { useLocation, useRoute } from '@components/router'
-import { ScrollArea } from '@components/scroll-area'
-import { Text } from '@components/text'
-import { MttLink } from '@mintter/shared'
-import { keyframes } from '@stitches/react'
-import { useQueryClient } from '@tanstack/react-query'
-import { listen } from '@tauri-apps/api/event'
-import { useActor, useInterpret, useMachine } from '@xstate/react'
-import { Allotment } from 'allotment'
+import {AppBanner, BannerText} from '@app/app-banner'
+import {BlockHighLighter} from '@app/editor/block-highlighter'
+import {CitationsProvider} from '@app/editor/comments/citations-context'
+import {ConversationsProvider} from '@app/editor/comments/conversations-context'
+import {Editor} from '@app/editor/editor'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
+import {getEditorBlock} from '@app/editor/utils'
+import {FileProvider} from '@app/file-provider'
+import {
+  queryKeys,
+  useDocChanges,
+  useDocCitations,
+  usePublication,
+} from '@app/hooks'
+import {MouseProvider} from '@app/mouse-context'
+import {mouseMachine} from '@app/mouse-machine'
+import {classnames} from '@app/utils/classnames'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {ChangesList} from '@components/changes-list'
+import {Citations} from '@components/citations'
+import {Conversations} from '@components/conversations'
+import Footer, {FooterButton} from '@components/footer'
+import {Icon} from '@components/icon'
+import {Placeholder} from '@components/placeholder-box'
+import {ScrollArea} from '@components/scroll-area'
+import {MttLink} from '@mintter/shared'
+import {useQueryClient} from '@tanstack/react-query'
+import {listen} from '@tauri-apps/api/event'
+import {useActor, useInterpret, useMachine} from '@xstate/react'
+import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { Editor as SlateEditor } from 'slate'
-import { ReactEditor } from 'slate-react'
-import { assign, createMachine } from 'xstate'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {Editor as SlateEditor} from 'slate'
+import {ReactEditor} from 'slate-react'
+import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
+import {PageProps} from './base'
 
-export default function PublicationPage({
-  publicationActor,
-}: {
-  publicationActor: PublicationActor
-}) {
-  let [, params] = useRoute('/p/:id/:version/:block?')
+export default function PublicationPage({mainActor}: PageProps) {
+  if (mainActor.type !== 'publication')
+    throw new Error('Publication page expects publication actor')
+  const publicationActor = mainActor.actor
+  const route = useNavRoute()
+  const docId = route.key === 'publication' ? route.documentId : undefined
+  const blockId = route.key === 'publication' ? route.blockId : undefined
+  const versionId = route.key === 'publication' ? route.versionId : undefined
 
-  let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Publication), [])
+  let editor = useMemo(
+    () => buildEditorHook(plugins, EditorMode.Publication),
+    [],
+  )
 
   let mouseService = useInterpret(() => mouseMachine)
   let scrollWrapperRef = useRef<HTMLDivElement>(null)
 
   // this checks if there's a block in the url, so we can highlight and scroll into the selected block
-  let [focusBlock, setFocusBlock] = useState(() => params?.block)
+  let [focusBlock, setFocusBlock] = useState(() => blockId)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
-  const { data: changes } = useDocChanges(params?.id)
-  const { data: citations } = useDocCitations(params?.id)
+  const {data: changes} = useDocChanges(docId)
+  const {data: citations} = useDocCitations(docId)
 
   useEffect(() => {
     let isSubscribed = true
@@ -76,8 +84,8 @@ export default function PublicationPage({
   useEffect(() => {
     let unlisten: () => void | undefined
 
-    listen<{ conversations: Array<string> }>('selector_click', (event) => {
-      panelSend({ type: 'PANEL.OPEN', activePanel: 'conversations' })
+    listen<{conversations: Array<string>}>('selector_click', (event) => {
+      panelSend({type: 'PANEL.OPEN', activePanel: 'conversations'})
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
@@ -86,27 +94,7 @@ export default function PublicationPage({
   let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
   let [state, send] = useActor(publicationActor)
 
-  //  useMachine(
-  //   () =>
-  //     createPublicationMachine({
-  //       client,
-  //       editor,
-  //       documentId: params?.id,
-  //       version: params?.version,
-  //     }),
-  //   {
-  //     actions: {
-  //       sendActorToParent: () => {
-  //         mainService.send({type: 'COMMIT.CURRENT.PUBLICATION', service})
-  //       },
-  //       onEditSuccess: (_, event) => {
-  //         setLocation(`/d/${event.data.id}`)
-  //       },
-  //     },
-  //   },
-  // )
-
-  let { activePanel } = resizablePanelState.context
+  let {activePanel} = resizablePanelState.context
 
   if (state.matches('errored')) {
     return (
@@ -119,12 +107,13 @@ export default function PublicationPage({
       </div>
     )
   }
-
-  if (state.matches('ready') && params?.id) {
+  if (docId) {
     return (
       <ConversationsProvider
-        documentId={params.id}
-        isOpen={activePanel === 'conversations' && resizablePanelState.context.show}
+        documentId={docId}
+        isOpen={
+          activePanel === 'conversations' && resizablePanelState.context.show
+        }
         onConversationsOpen={() => {
           panelSend({
             type: 'PANEL.OPEN',
@@ -134,7 +123,7 @@ export default function PublicationPage({
         publication={state.context.publication}
       >
         <CitationsProvider
-          documentId={params.id}
+          documentId={docId}
           onCitationsOpen={(citations: Array<MttLink>) => {
             panelSend({
               type: 'PANEL.OPEN',
@@ -147,7 +136,9 @@ export default function PublicationPage({
               <div className="page-wrapper publication-wrapper">
                 <Allotment
                   defaultSizes={[100]}
-                  onChange={(values) => panelSend({ type: 'PANEL.RESIZE', values })}
+                  onChange={(values) =>
+                    panelSend({type: 'PANEL.RESIZE', values})
+                  }
                 >
                   <Allotment.Pane>
                     <section
@@ -180,7 +171,9 @@ export default function PublicationPage({
                               <Editor
                                 editor={editor}
                                 mode={EditorMode.Publication}
-                                value={state.context.publication?.document.content}
+                                value={
+                                  state.context.publication?.document.content
+                                }
                                 onChange={() => {
                                   mouseService.send('DISABLE.CHANGE')
                                   // noop
@@ -192,27 +185,27 @@ export default function PublicationPage({
                       </ErrorBoundary>
                     </section>
                   </Allotment.Pane>
-                  {resizablePanelState.context.show && !!state.context.publication && (
-                    <Allotment.Pane preferredSize="35%">
-                      {/* <section className="discussion-section"> */}
-                      <ScrollArea onScroll={() => mouseService.send('DISABLE.SCROLL')}>
-                        {activePanel == 'conversations' ? (
-                          <Conversations />
-                        ) : activePanel == 'changes' ? (
-                          <ChangesList
-                            docId={state.context.publication.document.id}
-                            version={state.context.version}
-                          />
-                        ) : (
-                          <Citations
-                            docId={state.context.publication.document.id}
-                            version={state.context.version}
-                          />
-                        )}
-                      </ScrollArea>
-                      {/* </section> */}
-                    </Allotment.Pane>
-                  )}
+                  {resizablePanelState.context.show &&
+                    !!state.context.publication && (
+                      <Allotment.Pane preferredSize="35%">
+                        {/* <section className="discussion-section"> */}
+                        <ScrollArea
+                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
+                        >
+                          {activePanel == 'conversations' ? (
+                            <Conversations />
+                          ) : activePanel == 'changes' ? (
+                            <ChangesList />
+                          ) : (
+                            <Citations
+                              docId={state.context.publication.document.id}
+                              version={state.context.version}
+                            />
+                          )}
+                        </ScrollArea>
+                        {/* </section> */}
+                      </Allotment.Pane>
+                    )}
                 </Allotment>
                 <Footer>
                   <FooterButton
@@ -220,7 +213,7 @@ export default function PublicationPage({
                     label={`${changes?.changes?.length} Versions`}
                     icon={<Icon name="Pencil" />}
                     onClick={() => {
-                      panelSend({ type: 'PANEL.TOGGLE', activePanel: 'changes' })
+                      panelSend({type: 'PANEL.TOGGLE', activePanel: 'changes'})
                     }}
                   />
                   <FooterButton
@@ -235,7 +228,10 @@ export default function PublicationPage({
                     }}
                   />
                   <FooterButton
-                    active={activePanel == 'conversations' && resizablePanelState.context.show}
+                    active={
+                      activePanel == 'conversations' &&
+                      resizablePanelState.context.show
+                    }
                     label={`Conversations`}
                     icon={<Icon name="MessageBubble" />}
                     onClick={() => {
@@ -302,10 +298,10 @@ function BlockPlaceholder() {
         gap: '$2',
       }}
     >
-      <Placeholder css={{ height: 16, width: '$full' }} />
-      <Placeholder css={{ height: 16, width: '92%' }} />
-      <Placeholder css={{ height: 16, width: '84%' }} />
-      <Placeholder css={{ height: 16, width: '90%' }} />
+      <Placeholder css={{height: 16, width: '$full'}} />
+      <Placeholder css={{height: 16, width: '92%'}} />
+      <Placeholder css={{height: 16, width: '84%'}} />
+      <Placeholder css={{height: 16, width: '90%'}} />
     </Box>
   )
 }
@@ -319,10 +315,10 @@ type ResizablePanelMachineContext = {
 }
 
 type ResizablePanelMachineEvent =
-  | { type: 'PANEL.TOGGLE'; activePanel?: ActivePanel }
-  | { type: 'PANEL.OPEN'; activePanel?: ActivePanel }
-  | { type: 'PANEL.CLOSE' }
-  | { type: 'PANEL.RESIZE'; values: Array<number> }
+  | {type: 'PANEL.TOGGLE'; activePanel?: ActivePanel}
+  | {type: 'PANEL.OPEN'; activePanel?: ActivePanel}
+  | {type: 'PANEL.CLOSE'}
+  | {type: 'PANEL.RESIZE'; values: Array<number>}
 
 type ResizablePanelMachineServices = {
   matchMediaService: {
@@ -370,7 +366,7 @@ let resizablePanelMachine =
           // hardcoded value to apply to the controls
           let newValue = event.values[0]
 
-          return { left: newValue }
+          return {left: newValue}
         }),
         // @ts-ignore
         hidePanel: assign({
@@ -397,7 +393,7 @@ let resizablePanelMachine =
           return false
         },
       },
-    }
+    },
   )
 
 // eslint-disable-next-line
@@ -407,7 +403,7 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
     setTimeout(() => {
       if (blockId) {
         if (ref?.current) {
-          let entry = getEditorBlock(editor, { id: blockId })
+          let entry = getEditorBlock(editor, {id: blockId})
 
           if (entry) {
             let [block] = entry
@@ -415,7 +411,7 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
 
             let rect = elm.getBoundingClientRect()
             let wrapper = ref.current.getBoundingClientRect()
-            ref.current.scrollTo({ top: rect.top - wrapper.top - 24 })
+            ref.current.scrollTo({top: rect.top - wrapper.top - 24})
           }
         }
       }
@@ -423,9 +419,9 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
   }, [ref, blockId, editor])
 }
 
-function OutOfDateBanner({ docId, version }: { docId: string; version: string }) {
-  const { data: pub, isLoading } = usePublication(docId)
-  const [l, setLocation] = useLocation()
+function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
+  const {data: pub, isLoading} = usePublication(docId)
+  const navigate = useNavigate()
   const client = useQueryClient()
   if (isLoading) return null
   if (version === pub?.version) return null
@@ -442,10 +438,15 @@ function OutOfDateBanner({ docId, version }: { docId: string; version: string })
         <a
           onClick={(e) => {
             e.preventDefault()
-            setLocation(`/p/${docId}/${pub.version}`)
+            navigate({
+              key: 'publication',
+              documentId: docId,
+              versionId: pub.version,
+            })
           }}
         >
-          There is a newer version of this Publication. Click here to go to latest version →
+          There is a newer version of this Publication. Click here to go to
+          latest version →
         </a>
       </BannerText>
     </AppBanner>

@@ -1,21 +1,25 @@
-import { useDrag } from '@app/drag-context'
-import { useCitationsForBlock } from '@app/editor/comments/citations-context'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { useMouse } from '@app/mouse-context'
-import { Button } from '@components/button'
-import { ConversationBlockBubble } from '@components/conversation-block-bubble'
-import { Icon } from '@components/icon'
-import { Text } from '@components/text'
-import { FlowContent } from '@mintter/shared'
+import {useDrag} from '@app/drag-context'
+import {useCitationsForBlock} from '@app/editor/comments/citations-context'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {useMouse} from '@app/mouse-context'
+import {Button} from '@components/button'
+import {ConversationBlockBubble} from '@components/conversation-block-bubble'
+import {Icon} from '@components/icon'
+import {Text} from '@components/text'
+import {FlowContent} from '@mintter/shared'
 import React from 'react'
-import { RenderElementProps, useSlate } from 'slate-react'
-import { BlockTools } from './blocktools'
-import { useBlockProps } from './editor-node-props'
-import { useBlockFlash } from './utils'
+import {RenderElementProps, useSlate} from 'slate-react'
+import {BlockTools} from './blocktools'
+import {useBlockProps} from './editor-node-props'
+import {useBlockFlash} from './utils'
 
-export type DndState = { fromPath: number[] | null; toPath: number[] | null }
+export type DndState = {fromPath: number[] | null; toPath: number[] | null}
 
-export const ElementDrag = ({ children, element, attributes }: RenderElementProps) => {
+export const ElementDrag = ({
+  children,
+  element,
+  attributes,
+}: RenderElementProps) => {
   let dragService = useDrag()
   let mouseService = useMouse()
   let editor = useSlate()
@@ -31,7 +35,7 @@ export const ElementDrag = ({ children, element, attributes }: RenderElementProp
   }
 
   //@ts-ignore
-  let { blockProps } = useBlockProps(element)
+  let {blockProps} = useBlockProps(element)
 
   let inRoute = useBlockFlash(attributes.ref, (element as FlowContent).id)
 
@@ -57,8 +61,8 @@ export const ElementDrag = ({ children, element, attributes }: RenderElementProp
   )
 }
 
-function CitationNumber({ block }: { block: FlowContent }) {
-  let { citations = [], onCitationsOpen } = useCitationsForBlock(block.id)
+function CitationNumber({block}: {block: FlowContent}) {
+  let {citations = [], onCitationsOpen} = useCitationsForBlock(block.id)
 
   return citations?.length ? (
     <Button

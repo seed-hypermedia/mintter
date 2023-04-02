@@ -1,6 +1,11 @@
-import { accountsClient, daemonClient, draftsClient, publicationsClient } from '@app/api-clients'
-import { EditorDocument } from '@app/draft-machine'
-import { queryKeys } from '@app/hooks'
+import {
+  accountsClient,
+  daemonClient,
+  draftsClient,
+  publicationsClient,
+} from '@app/api-clients'
+import {EditorDocument} from '@app/draft-machine'
+import {queryKeys} from '@app/hooks'
 import {
   Account,
   blockNodeToSlate,
@@ -11,9 +16,9 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import { QueryClient } from '@tanstack/react-query'
-import { assign, createMachine, InterpreterFrom } from 'xstate'
-import { appInvalidateQueries } from './query-client'
+import {QueryClient} from '@tanstack/react-query'
+import {assign, createMachine, InterpreterFrom} from 'xstate'
+import {appInvalidateQueries} from './query-client'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
   document: EditorDocument
@@ -30,21 +35,21 @@ export type PublicationMachineContext = {
 }
 
 export type PublicationMachineEvent =
-  | { type: 'PUBLICATION.FETCH.DATA' }
+  | {type: 'PUBLICATION.FETCH.DATA'}
   | {
       type: 'PUBLICATION.REPORT.SUCCESS'
       publication: ClientPublication
       canUpdate?: boolean
     }
-  | { type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string }
-  | { type: 'DISCUSSION.SHOW' }
-  | { type: 'DISCUSSION.HIDE' }
-  | { type: 'PANEL.TOGGLE' }
-  | { type: 'FILE.DELETE.OPEN' }
-  | { type: 'FILE.DELETE.CLOSE' }
-  | { type: 'FILE.DELETE.CANCEL' }
-  | { type: 'FILE.DELETE.CONFIRM' }
-  | { type: 'PUBLICATION.EDIT' }
+  | {type: 'PUBLICATION.REPORT.ERROR'; errorMessage: string}
+  | {type: 'DISCUSSION.SHOW'}
+  | {type: 'DISCUSSION.HIDE'}
+  | {type: 'PANEL.TOGGLE'}
+  | {type: 'FILE.DELETE.OPEN'}
+  | {type: 'FILE.DELETE.CLOSE'}
+  | {type: 'FILE.DELETE.CANCEL'}
+  | {type: 'FILE.DELETE.CONFIRM'}
+  | {type: 'PUBLICATION.EDIT'}
 
 type PublicationMachineServices = {
   createDraft: {
@@ -58,7 +63,9 @@ type CreatePublicationMachineProps = {
   version: string
 }
 
-export type PublicationActor = InterpreterFrom<ReturnType<typeof createPublicationMachine>>
+export type PublicationActor = InterpreterFrom<
+  ReturnType<typeof createPublicationMachine>
+>
 
 export function createPublicationMachine({
   client,
@@ -180,7 +187,7 @@ export function createPublicationMachine({
         fetchAuthor: (context) => {
           let author = context.publication?.document?.author || ''
           return client.fetchQuery([queryKeys.GET_ACCOUNT, author], () =>
-            accountsClient.getAccount({ id: author })
+            accountsClient.getAccount({id: author}),
           )
         },
         fetchPublicationData: (context) => (sendBack) => {
@@ -194,9 +201,11 @@ export function createPublicationMachine({
                 }),
               {
                 staleTime: Infinity,
-              }
+              },
             ),
-            client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () => daemonClient.getInfo({})),
+            client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () =>
+              daemonClient.getInfo({}),
+            ),
           ])
             .then(([publication, info]) => {
               if (publication.document?.children.length) {
@@ -207,7 +216,10 @@ export function createPublicationMachine({
                 //   conversations,
                 // })
 
-                let content = blockNodeToSlate(publication.document.children, 'group')
+                let content = blockNodeToSlate(
+                  publication.document.children,
+                  'group',
+                )
                 sendBack({
                   type: 'PUBLICATION.REPORT.SUCCESS',
                   publication: Object.assign(publication, {
@@ -226,8 +238,8 @@ export function createPublicationMachine({
                       document: {
                         ...publication.document,
                         content: [
-                          group({ data: { parent: '' } }, [
-                            statement({ id: '' }, [paragraph([text('')])]),
+                          group({data: {parent: ''}}, [
+                            statement({id: ''}, [paragraph([text('')])]),
                           ]),
                         ],
                       },
@@ -252,7 +264,8 @@ export function createPublicationMachine({
       },
       actions: {
         assignTitle: assign({
-          title: (_, event) => event.publication.document.title || 'Untitled Document',
+          title: (_, event) =>
+            event.publication.document.title || 'Untitled Document',
         }),
         assignAuthor: assign({
           author: (_, event) => event.data as Account,
@@ -281,6 +294,6 @@ export function createPublicationMachine({
           errorMessage: () => '',
         }),
       },
-    }
+    },
   )
 }

@@ -1,11 +1,11 @@
-import { useConversations } from '@app/editor/comments/conversations-context'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { EditorPlugin } from '@app/editor/types'
-import { isParagraph } from '@mintter/shared'
-import { appWindow } from '@tauri-apps/api/window'
-import { MouseEventHandler, useEffect, useMemo, useRef } from 'react'
-import { Range, SetNodeOperation } from 'slate'
-import { ReactEditor } from 'slate-react'
+import {useConversations} from '@app/editor/comments/conversations-context'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {EditorPlugin} from '@app/editor/types'
+import {isParagraph} from '@mintter/shared'
+import {appWindow} from '@tauri-apps/api/window'
+import {MouseEventHandler, useEffect, useMemo, useRef} from 'react'
+import {Range, SetNodeOperation} from 'slate'
+import {ReactEditor} from 'slate-react'
 
 const MARK_CONVERSATIONS = 'conversations'
 
@@ -15,8 +15,8 @@ export function createCommentsPlugin(): EditorPlugin {
     apply: EditorMode.Publication,
     renderLeaf:
       () =>
-      ({ attributes, children, leaf }) => {
-        let { highlights } = useConversations()
+      ({attributes, children, leaf}) => {
+        let {highlights} = useConversations()
         let ref = useRef<HTMLSpanElement>(null)
         const emitSelectorClick: MouseEventHandler = (e) => {
           e.preventDefault()
@@ -26,12 +26,12 @@ export function createCommentsPlugin(): EditorPlugin {
         }
         let highlight = useMemo(
           () => highlights.some((c) => leaf.conversations?.includes(c)),
-          [highlights]
+          [highlights],
         )
 
         useEffect(() => {
           if (highlight && ref.current) {
-            ref.current.scrollIntoView({ behavior: 'smooth' })
+            ref.current.scrollIntoView({behavior: 'smooth'})
           }
         }, [highlights])
 
@@ -59,14 +59,19 @@ export function createCommentsPlugin(): EditorPlugin {
             }
           }
           return (
-            <span ref={ref} onClick={emitSelectorClick} style={spanStyle} {...attributes}>
+            <span
+              ref={ref}
+              onClick={emitSelectorClick}
+              style={spanStyle}
+              {...attributes}
+            >
               {children}
             </span>
           )
         }
       },
     configureEditor(editor) {
-      const { apply } = editor
+      const {apply} = editor
 
       editor.apply = (op) => {
         /**
@@ -88,9 +93,16 @@ export function createCommentsPlugin(): EditorPlugin {
             apply(op)
           }
         } else if (op.type == 'set_node') {
-          if ('conversations' in op.newProperties || 'conversations' in op.properties) {
-            //@ts-ignore
-            if ((op.newProperties?.conversations as Array<string>)?.includes('current')) {
+          if (
+            'conversations' in op.newProperties ||
+            'conversations' in op.properties
+          ) {
+            if (
+              //@ts-ignore
+              (op.newProperties?.conversations as Array<string>)?.includes(
+                'current',
+              )
+            ) {
               // need to add the current conversation
               //@ts-ignore
               if ((op.properties?.conversations as Array<string>)?.length) {
@@ -101,7 +113,7 @@ export function createCommentsPlugin(): EditorPlugin {
                     //@ts-ignore
                     conversations: op.properties.conversations.concat(
                       //@ts-ignore
-                      op.newProperties.conversations
+                      op.newProperties.conversations,
                     ),
                   },
                 } as SetNodeOperation)
@@ -115,7 +127,9 @@ export function createCommentsPlugin(): EditorPlugin {
             else if (
               isObjectEmpty(op.newProperties) &&
               //@ts-ignore
-              (op.properties?.conversations as Array<string>)?.includes('current')
+              (op.properties?.conversations as Array<string>)?.includes(
+                'current',
+              )
             ) {
               // remove current conversation from text
               //@ts-ignore
@@ -146,5 +160,9 @@ export function createCommentsPlugin(): EditorPlugin {
 }
 
 function isObjectEmpty(obj: unknown) {
-  return obj && Object.keys(obj).length === 0 && Object.getPrototypeOf(obj) === Object.prototype
+  return (
+    obj &&
+    Object.keys(obj).length === 0 &&
+    Object.getPrototypeOf(obj) === Object.prototype
+  )
 }

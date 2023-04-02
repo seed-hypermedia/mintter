@@ -1,20 +1,20 @@
-import { changesClient, commentsClient } from '@app/api-clients'
-import { useConversations } from '@app/editor/comments/conversations-context'
-import { useAuthor } from '@app/hooks'
-import { copyTextToClipboard } from '@app/utils/copy-to-clipboard'
-import { EXPERIMENTS } from '@app/utils/experimental'
+import {changesClient, commentsClient} from '@app/api-clients'
+import {useConversations} from '@app/editor/comments/conversations-context'
+import {useAuthor} from '@app/hooks'
+import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {EXPERIMENTS} from '@app/utils/experimental'
 // import {
 //   useNostr,
 //   useNostrPostsOnDoc,
 //   useNostrProfile,
 //   useNostrReplies,
 // } from '@app/utils/nostr'
-import { Timestamp } from '@bufbuild/protobuf'
-import { Avatar, getRandomColor } from '@components/avatar'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Text } from '@components/text'
-import { TextField } from '@components/text-field'
+import {Timestamp} from '@bufbuild/protobuf'
+import {Avatar, getRandomColor} from '@components/avatar'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
 import {
   Block,
   blockToApi,
@@ -26,12 +26,12 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import { useQuery } from '@tanstack/react-query'
-import { appWindow } from '@tauri-apps/api/window'
+import {useQuery} from '@tanstack/react-query'
+import {appWindow} from '@tauri-apps/api/window'
 // import {Event} from 'nostr-relaypool/event'
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
-import { PanelTitle } from './panel'
+import {PanelTitle} from './panel'
 
 export function Conversations() {
   const context = useConversations()
@@ -42,16 +42,16 @@ export function Conversations() {
     return () => unlisten?.()
   }, [])
 
-  const { documentId, conversations, highlights } = context
+  const {documentId, conversations, highlights} = context
   // const nostrPosts = useNostrPostsOnDoc(documentId)
-  const { data } = conversations || {}
+  const {data} = conversations || {}
 
   useEffect(() => {
     let isSubscribed = true
     let unlisten: () => void
 
     appWindow
-      .onFocusChanged(({ payload: focused }) => {
+      .onFocusChanged(({payload: focused}) => {
         if (!isSubscribed) {
           return unlisten()
         }
@@ -128,7 +128,7 @@ function ConversationItem({
   useEffect(() => {
     if (!elRef.current) return
 
-    elRef.current.scrollIntoView({ behavior: 'smooth' })
+    elRef.current.scrollIntoView({behavior: 'smooth'})
   }, [isHighlighted])
 
   return (
@@ -144,11 +144,13 @@ function ConversationItem({
         paddingLeft: 60,
         backgroundColor: isHighlighted ? '$highlight-surface1' : 'transparent',
         '&:hover': {
-          backgroundColor: isHighlighted ? '$highlight-surface1' : '$base-background-subtle',
+          backgroundColor: isHighlighted
+            ? '$highlight-surface1'
+            : '$base-background-subtle',
         },
       }}
     >
-      <Box as="ul" css={{ margin: 0, padding: 0 }}>
+      <Box as="ul" css={{margin: 0, padding: 0}}>
         <CommentItem
           conversationId={conversation.id}
           comment={firstComment}
@@ -230,7 +232,7 @@ function MintterReplyForm({
 
   if (isReplying)
     return (
-      <Box css={{ display: 'flex', paddingBlock: '$4', paddingRight: '$4' }}>
+      <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
         <Box
           as="form"
           onSubmit={submitReply}
@@ -272,7 +274,7 @@ function MintterReplyForm({
       </Box>
     )
   return (
-    <Box css={{ display: 'flex', paddingBlock: '$4', paddingRight: '$4' }}>
+    <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
       <Button
         onClick={() => {
           setIsReplying(true)
@@ -359,12 +361,17 @@ function CommentItem({
           {author?.data?.profile?.alias}
         </Text>
         <Text size="2" color="muted">
-          {changeData.data?.createTime ? formattedDate(changeData.data?.createTime) : null}
+          {changeData.data?.createTime
+            ? formattedDate(changeData.data?.createTime)
+            : null}
         </Text>
       </Box>
 
       {selectors ? (
-        <ConversationSelectors conversationId={conversationId} selectors={selectors} />
+        <ConversationSelectors
+          conversationId={conversationId}
+          selectors={selectors}
+        />
       ) : null}
       <CommentBlock comment={comment} />
     </Box>
@@ -639,7 +646,7 @@ function ConversationSelectors({
   )
 }
 
-function CommentBlock({ comment }: { comment: Block }) {
+function CommentBlock({comment}: {comment: Block}) {
   return (
     <Box
       css={{

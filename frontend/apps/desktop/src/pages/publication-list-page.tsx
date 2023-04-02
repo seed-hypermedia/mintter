@@ -1,9 +1,9 @@
-import { MouseEvent, MouseEventHandler } from 'react'
-import { publicationsClient } from '@app/api-clients'
-import { MINTTER_LINK_PREFIX } from '@app/constants'
-import { deleteFileMachine } from '@app/delete-machine'
-import { Dropdown, ElementDropdown } from '@app/editor/dropdown'
-import { useFind } from '@app/editor/find'
+import {MouseEvent, MouseEventHandler} from 'react'
+import {publicationsClient} from '@app/api-clients'
+import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {deleteFileMachine} from '@app/delete-machine'
+import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {useFind} from '@app/editor/find'
 import {
   prefetchPublication,
   queryKeys,
@@ -11,30 +11,31 @@ import {
   useDraftList,
   usePublicationList,
 } from '@app/hooks'
-import { openPublication, useNavigation } from '@app/utils/navigation'
-import { openWindow } from '@app/utils/open-window'
-import { Button } from '@components/button'
-import { DeleteDialog } from '@components/delete-dialog'
-import { EmptyList } from '@components/empty-list'
+import {
+  PublicationRoute,
+  useNavigate,
+  useNavigationActions,
+} from '@app/utils/navigation'
+import {Button} from '@components/button'
+import {DeleteDialog} from '@components/delete-dialog'
+import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
-import { Icon } from '@components/icon'
+import {Icon} from '@components/icon'
 import PageContainer from '@components/page-container'
-import { useLocation } from '@components/router'
-import { Text } from '@components/text'
-import { Document, formattedDate, Publication } from '@mintter/shared'
-import { useQueryClient } from '@tanstack/react-query'
-import { useActor, useInterpret } from '@xstate/react'
+import {Text} from '@components/text'
+import {Document, formattedDate, Publication} from '@mintter/shared'
+import {useQueryClient} from '@tanstack/react-query'
+import {useActor, useInterpret} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import Highlighter from 'react-highlight-words'
 import toast from 'react-hot-toast'
 import '../styles/file-list.scss'
+import {PageProps} from './base'
 
-export default PublicationList
-
-function PublicationList() {
-  let { data, isInitialLoading } = usePublicationList()
+export default function PublicationList() {
+  let {data, isInitialLoading} = usePublicationList()
   let drafts = useDraftList()
-  let nav = useNavigation()
+  let nav = useNavigationActions()
 
   return (
     <>
@@ -44,7 +45,9 @@ function PublicationList() {
         ) : data && data.publications.length ? (
           data.publications.map((publication) => (
             <PublicationListItem
-              hasDraft={drafts.data.documents.find((d) => d.id == publication.document?.id)}
+              hasDraft={drafts.data?.documents.find(
+                (d) => d.id == publication.document?.id,
+              )}
               key={`${publication.document?.id}/${publication.version}`}
               publication={publication}
             />
@@ -72,11 +75,14 @@ export function PublicationListItem({
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
 }) {
-  const { search } = useFind()
-  const [, setLocation] = useLocation()
+  const {search} = useFind()
+  const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
   const client = useQueryClient()
   const title = publication.document?.title || 'Untitled Document'
-  const { data: author } = useAuthor(publication.document?.author)
+  const {data: author} = useAuthor(publication.document?.author)
+  const docId = publication.document?.id
+  if (!docId) throw new Error('PublicationListItem requires id')
 
   const deleteService = useInterpret(
     () =>
@@ -98,27 +104,41 @@ export function PublicationListItem({
           client.invalidateQueries([queryKeys.GET_PUBLICATION_LIST])
         },
       },
-    }
+    },
   )
   const [deleteState] = useActor(deleteService)
 
   const goToItem: MouseEventHandler = (event) => {
     event.preventDefault()
+    const route: PublicationRoute = {
+      key: 'publication',
+      documentId: docId,
+      versionId: publication.version,
+    }
     if (event.metaKey || event.shiftKey) {
-      openWindow(`/p/${publication.document?.id}/${publication.version}`)
+      spawn(route)
     } else {
-      setLocation(`/p/${publication.document?.id}/${publication.version}`)
+      navigate(route)
     }
   }
 
   function onCopy() {
-    copy(`${MINTTER_LINK_PREFIX}${publication.document?.id}/${publication.version}`)
+    copy(
+      `${MINTTER_LINK_PREFIX}${publication.document?.id}/${publication.version}`,
+    )
     toast.success('Document ID copied successfully')
   }
 
   return (
-    <li className="list-item" onMouseEnter={() => prefetchPublication(client, publication)}>
-      <p onClick={goToItem} className="item-title" data-testid="list-item-title">
+    <li
+      className="list-item"
+      onMouseEnter={() => prefetchPublication(client, publication)}
+    >
+      <p
+        onClick={goToItem}
+        className="item-title"
+        data-testid="list-item-title"
+      >
         <Highlighter
           highlightClassName="search-highlight"
           searchWords={[search]}
@@ -132,7 +152,7 @@ export function PublicationListItem({
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              setLocation(`/d/${hasDraft.id}`)
+              navigate({key: 'draft', documentId: hasDraft.id})
             }}
             size="1"
             css={{
@@ -146,7 +166,7 @@ export function PublicationListItem({
               },
             }}
           >
-            DRAFT
+            Resume Editing
           </Button>
         )}
       </p>
@@ -154,12 +174,20 @@ export function PublicationListItem({
       <span
         onClick={goToItem}
         data-testid="list-item-author"
-        className={`item-author ${!author?.profile?.alias ? 'loading' : undefined}`}
+        className={`item-author ${
+          !author?.profile?.alias ? 'loading' : undefined
+        }`}
       >
         {author?.profile?.alias}
       </span>
-      <span onClick={goToItem} className="item-date" data-testid="list-item-date">
-        {publication.document?.updateTime ? formattedDate(publication.document?.updateTime) : '...'}
+      <span
+        onClick={goToItem}
+        className="item-date"
+        data-testid="list-item-date"
+      >
+        {publication.document?.updateTime
+          ? formattedDate(publication.document?.updateTime)
+          : '...'}
       </span>
       <span className="item-controls">
         <Dropdown.Root>
@@ -200,7 +228,13 @@ export function PublicationListItem({
               </Dropdown.Item>
               <Dropdown.Item
                 data-testid="new-window-item"
-                onSelect={() => openPublication(publication.document!.id, publication.version)}
+                onSelect={() =>
+                  spawn({
+                    key: 'publication',
+                    documentId: docId,
+                    versionId: publication.version,
+                  })
+                }
               >
                 <Icon name="OpenInNewWindow" />
                 <Text size="2">Open in new Window</Text>
@@ -210,7 +244,10 @@ export function PublicationListItem({
                 title="Delete document"
                 description="Are you sure you want to delete this document? This action is not reversible."
               >
-                <Dropdown.Item data-testid="delete-item" onSelect={(e) => e.preventDefault()}>
+                <Dropdown.Item
+                  data-testid="delete-item"
+                  onSelect={(e) => e.preventDefault()}
+                >
                   <Icon name="Close" />
                   <Text size="2">Delete Document</Text>
                 </Dropdown.Item>

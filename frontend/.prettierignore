@@ -1,0 +1,35 @@
+.yarn
+node_modules
+
+# build code
+build
+dist
+src-tauri
+public
+out
+plz-out
+types
+
+# Project files
+docs
+infra
+scripts
+tools
+
+# Generated files
+coverage
+.generated
+/target
+exts/wake-asc/mtt_ephemeral_poll.ts
+.vite
+*.typegen.*
+
+# Site
+apps/site/.next
+apps/site/.vercel
+apps/site/.tamagui
+
+# Shared
+packages/shared/src/client/.generated
+
+# Desktop

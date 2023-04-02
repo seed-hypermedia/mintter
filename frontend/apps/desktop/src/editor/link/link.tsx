@@ -1,21 +1,29 @@
-import { MintterEditor } from '@app/editor/mintter-changes/plugin'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { queryKeys } from '@app/hooks'
-import { useMouse } from '@app/mouse-context'
-import { Embed, getIdsfromUrl, Link as LinkType } from '@mintter/shared'
-import { embed, isLink, link, text } from '@mintter/shared'
-import { isMintterLink } from '@app/utils/is-mintter-link'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Icon } from '@components/icon'
-import { useLocation, useRoute } from '@components/router'
-import { TextField } from '@components/text-field'
-import { Tooltip } from '@components/tooltip'
+import {publicationsClient} from '@app/api-clients'
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {queryKeys} from '@app/hooks'
+import {useMouse} from '@app/mouse-context'
+import {isMintterLink} from '@app/utils/is-mintter-link'
+import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {TextField} from '@components/text-field'
+import {Tooltip} from '@components/tooltip'
+import {
+  Embed,
+  embed,
+  getIdsfromUrl,
+  isLink,
+  link,
+  Link as LinkType,
+  text,
+} from '@mintter/shared'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import { useQuery } from '@tanstack/react-query'
-import { open } from '@tauri-apps/api/shell'
-import { isKeyHotkey } from 'is-hotkey'
-import { ForwardedRef, forwardRef, MouseEvent, useEffect, useState } from 'react'
+import {useQuery} from '@tanstack/react-query'
+import {open} from '@tauri-apps/api/shell'
+import {isKeyHotkey} from 'is-hotkey'
+import {ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
 import {
   BaseRange,
   BaseSelection,
@@ -30,24 +38,25 @@ import {
   RenderElementProps,
   useSlate,
   useSlateStatic,
-  useSlateWithV,
 } from 'slate-react'
-import type { EditorPlugin } from '../types'
-import { findPath, getEditorBlock, isCollapsed } from '../utils'
-import { openPublication } from '@app/utils/navigation'
-import { publicationsClient } from '@app/api-clients'
+import type {EditorPlugin} from '../types'
+import {findPath, getEditorBlock, isCollapsed} from '../utils'
 
 export const ELEMENT_LINK = 'link'
 
 export const createLinkPlugin = (): EditorPlugin => ({
   name: ELEMENT_LINK,
   renderElement:
-    ({ mode }) =>
-    ({ children, attributes, element }) => {
+    ({mode}) =>
+    ({children, attributes, element}) => {
       if (isLink(element)) {
         if (element.data?.void) {
           return (
-            <MintterDocumentLink attributes={attributes} element={element} mode={mode}>
+            <MintterDocumentLink
+              attributes={attributes}
+              element={element}
+              mode={mode}
+            >
               {children}
             </MintterDocumentLink>
           )
@@ -62,7 +71,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
     },
   onKeyDown(editor) {
     return (event) => {
-      const { selection } = editor
+      const {selection} = editor
 
       // Default left/right behavior is unit:'character'.
       // This fails to distinguish between two cursor positions, such as
@@ -71,15 +80,15 @@ export const createLinkPlugin = (): EditorPlugin => ({
       // This lets the user step into and out of the inline without stepping over characters.
       // You may wish to customize this further to only use unit:'offset' in specific cases.
       if (selection && Range.isCollapsed(selection)) {
-        const { nativeEvent } = event
+        const {nativeEvent} = event
         if (isKeyHotkey('left', nativeEvent)) {
           event.preventDefault()
-          Transforms.move(editor, { unit: 'offset', reverse: true })
+          Transforms.move(editor, {unit: 'offset', reverse: true})
           return
         }
         if (isKeyHotkey('right', nativeEvent)) {
           event.preventDefault()
-          Transforms.move(editor, { unit: 'offset' })
+          Transforms.move(editor, {unit: 'offset'})
           return
         }
       }
@@ -92,7 +101,7 @@ export const createLinkPlugin = (): EditorPlugin => ({
      *   - write a link text
      *   - by selecting and interacting with the toolbar (not in here)
      */
-    const { isInline, insertText, insertData, isVoid } = editor
+    const {isInline, insertText, insertData, isVoid} = editor
 
     //@ts-ignore
     editor.isVoid = (element) => element.data?.void || isVoid(element)
@@ -128,11 +137,11 @@ export const createLinkPlugin = (): EditorPlugin => ({
 })
 
 function insertDocumentLink(editor: Editor, url: string) {
-  let { selection } = editor
+  let {selection} = editor
   if (isCollapsed(selection)) {
     Transforms.insertNodes(editor, [
       // we are setting the `void` data attribute to true as a temporary value in order to fetch for the document title and convert it to a normal link
-      link({ url, data: { void: true } }, [text('')]),
+      link({url, data: {void: true}}, [text('')]),
       text(''),
     ])
   } else {
@@ -157,22 +166,38 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
 const MintterLink = forwardRef(RenderMintterLink)
 const WebLink = forwardRef(RenderWebLink)
 
-function RenderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
-  const [, setLocation] = useLocation()
+function RenderMintterLink(
+  props: LinkProps,
+  ref: ForwardedRef<HTMLAnchorElement>,
+) {
+  const navigate = useNavigate()
+  const spawn = useNavigate()
+  const navigateReplace = useNavigate('replace')
+
   let mouseService = useMouse()
-  let [match, params] = useRoute('/p/:id/:version/:block')
+  const route = useNavRoute()
   const [docId, version, blockId] = getIdsfromUrl(props.element.url)
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
+    const destRoute: PublicationRoute = {
+      key: 'publication',
+      documentId: docId,
+      versionId: version,
+      blockId: blockId,
+    }
     if (isShiftKey) {
-      setLocation(`/p/${docId}/${version}/${blockId}`)
+      navigate(destRoute)
     } else {
-      if (match && params?.id == docId && params?.version == version) {
-        setLocation(`/p/${docId}/${version}/${blockId}`, { replace: true })
+      if (
+        route.key === 'publication' &&
+        route.documentId === docId &&
+        route?.versionId === version
+      ) {
+        navigateReplace(destRoute)
       } else {
-        openPublication(docId, version, blockId)
+        spawn(destRoute)
       }
     }
   }
@@ -204,7 +229,8 @@ function RenderMintterLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
-    if (props.mode == EditorMode.Embed || props.mode == EditorMode.Discussion) return
+    if (props.mode == EditorMode.Embed || props.mode == EditorMode.Discussion)
+      return
     open(props.element.url)
   }
 
@@ -226,22 +252,24 @@ export const Link = forwardRef(renderLink)
 
 Link.displayName = 'Link'
 
-function MintterDocumentLink({ element, attributes }: LinkProps) {
+function MintterDocumentLink({element, attributes}: LinkProps) {
   let editor = useSlateStatic()
   let at = findPath(element)
   let [docId, version] = getIdsfromUrl(element.url)
-  let { data } = useQuery([queryKeys.GET_PUBLICATION, docId, version], () =>
-    publicationsClient.getPublication({ documentId: docId, version })
+  let {data} = useQuery([queryKeys.GET_PUBLICATION, docId, version], () =>
+    publicationsClient.getPublication({documentId: docId, version}),
   )
   useEffect(() => {
     if (data) {
       Editor.withoutNormalizing(editor, () => {
         Transforms.insertNodes(
           editor,
-          link({ url: element.url }, [text(data?.document?.title || element.url)]),
-          { at }
+          link({url: element.url}, [
+            text(data?.document?.title || element.url),
+          ]),
+          {at},
         )
-        Transforms.removeNodes(editor, { at: Path.next(at) })
+        Transforms.removeNodes(editor, {at: Path.next(at)})
       })
     }
   }, [data, element, at, editor])
@@ -261,7 +289,7 @@ export interface InsertLinkOptions {
 
 export function insertLink(
   editor: Editor,
-  { url, selection = editor.selection }: InsertLinkOptions
+  {url, selection = editor.selection}: InsertLinkOptions,
 ): void {
   if (isLinkActive(editor)) {
     unwrapLink(editor)
@@ -271,13 +299,13 @@ export function insertLink(
     return
   }
 
-  const newLink = link({ url }, isCollapsed(selection) ? [text(url)] : [])
+  const newLink = link({url}, isCollapsed(selection) ? [text(url)] : [])
 
   if (isCollapsed(selection)) {
-    Transforms.insertNodes(editor, newLink, { at: selection })
+    Transforms.insertNodes(editor, newLink, {at: selection})
   } else {
-    Transforms.wrapNodes(editor, newLink, { at: selection, split: true })
-    Transforms.collapse(editor, { edge: 'end' })
+    Transforms.wrapNodes(editor, newLink, {at: selection, split: true})
+    Transforms.collapse(editor, {edge: 'end'})
   }
   let nextPath = Path.next(selection.focus.path)
   Transforms.insertNodes(editor, text(''), {
@@ -287,30 +315,42 @@ export function insertLink(
   addLinkChange(editor, selection)
 }
 
-export function isLinkActive(editor: Editor, selection: BaseSelection = editor.selection): boolean {
+export function isLinkActive(
+  editor: Editor,
+  selection: BaseSelection = editor.selection,
+): boolean {
   if (!selection) return false
 
   const [link] = Editor.nodes(editor, {
-    match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
+    match: (n) =>
+      !Editor.isEditor(n) &&
+      SlateElement.isElement(n) &&
+      n.type == ELEMENT_LINK,
     at: selection,
   })
 
   return !!link
 }
 
-export function unwrapLink(editor: Editor, selection: Range | null = editor.selection): void {
+export function unwrapLink(
+  editor: Editor,
+  selection: Range | null = editor.selection,
+): void {
   addLinkChange(editor, selection)
   Transforms.unwrapNodes(editor, {
-    match: (n) => !Editor.isEditor(n) && SlateElement.isElement(n) && n.type == ELEMENT_LINK,
+    match: (n) =>
+      !Editor.isEditor(n) &&
+      SlateElement.isElement(n) &&
+      n.type == ELEMENT_LINK,
     at: selection ?? undefined,
   })
-  Transforms.collapse(editor, { edge: 'end' })
+  Transforms.collapse(editor, {edge: 'end'})
 }
 
 export function wrapLink(
   editor: Editor,
   url: string,
-  selection: Range | null = editor.selection
+  selection: Range | null = editor.selection,
 ): void {
   if (isLinkActive(editor)) {
     unwrapLink(editor, selection)
@@ -318,7 +358,10 @@ export function wrapLink(
     addLinkChange(editor, selection)
   }
 
-  const newLink: LinkType = link({ url }, isCollapsed(selection) ? [text(url)] : [])
+  const newLink: LinkType = link(
+    {url},
+    isCollapsed(selection) ? [text(url)] : [],
+  )
 
   if (isCollapsed(selection)) {
     // Editor.withoutNormalizing(editor, () => {
@@ -332,8 +375,8 @@ export function wrapLink(
         at: selection ?? undefined,
       })
 
-      Transforms.collapse(editor, { edge: 'end' })
-      Transforms.move(editor, { distance: 1, unit: 'offset' })
+      Transforms.collapse(editor, {edge: 'end'})
+      Transforms.move(editor, {distance: 1, unit: 'offset'})
     })
   }
 }
@@ -345,13 +388,13 @@ function hasBlockId(text: string) {
 }
 
 function wrapMintterLink(editor: Editor, url: string) {
-  const { selection } = editor
+  const {selection} = editor
 
   if (isCollapsed(selection)) {
-    const newEmbed: Embed = embed({ url }, [text('')])
+    const newEmbed: Embed = embed({url}, [text('')])
     Transforms.insertNodes(editor, newEmbed)
     addLinkChange(editor, selection)
-    Transforms.move(editor, { distance: 1, unit: 'offset' })
+    Transforms.move(editor, {distance: 1, unit: 'offset'})
   } else {
     wrapLink(editor, url)
   }
@@ -387,7 +430,7 @@ export function InsertLinkButton() {
     if (!editor) return
     if (link && (isUrl(link) || isMintterLink(link))) {
       ReactEditor.focus(editor)
-      insertLink(editor, { url: link, selection: editor.selection, wrap: true })
+      insertLink(editor, {url: link, selection: editor.selection, wrap: true})
       Transforms.move(editor, {
         distance: 1,
         unit: 'offset',
@@ -419,7 +462,12 @@ export function InsertLinkButton() {
     // <Tooltip content={<span>Add Link</span>}>
     <PopoverPrimitive.Root>
       <PopoverPrimitive.Trigger asChild>
-        <Button variant="ghost" size="0" color="muted" data-testid="toolbar-link-button">
+        <Button
+          variant="ghost"
+          size="0"
+          color="muted"
+          data-testid="toolbar-link-button"
+        >
           <Icon name="Link" size="2" />
         </Button>
       </PopoverPrimitive.Trigger>

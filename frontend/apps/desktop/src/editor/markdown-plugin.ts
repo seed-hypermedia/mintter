@@ -8,14 +8,14 @@ import {
   ul,
 } from '@mintter/shared'
 
-import { MintterEditor } from '@app/editor/mintter-changes/plugin'
-import { Ancestor, Editor, Range, Transforms } from 'slate'
-import { ELEMENT_CODE } from './code'
-import { ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST } from './group'
-import { ELEMENT_HEADING } from './heading'
-import { ELEMENT_STATIC_PARAGRAPH } from './static-paragraph'
-import type { EditorPlugin } from './types'
-import { isFirstChild } from './utils'
+import {MintterEditor} from '@app/editor/mintter-changes/plugin'
+import {Ancestor, Editor, Range, Transforms} from 'slate'
+import {ELEMENT_CODE} from './code'
+import {ELEMENT_ORDERED_LIST, ELEMENT_UNORDERED_LIST} from './group'
+import {ELEMENT_HEADING} from './heading'
+import {ELEMENT_STATIC_PARAGRAPH} from './static-paragraph'
+import type {EditorPlugin} from './types'
+import {isFirstChild} from './utils'
 
 const LANGUAGE_SHORTCUTS = {
   js: 'javascript',
@@ -25,13 +25,13 @@ const LANGUAGE_SHORTCUTS = {
 export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
   name: 'markdown shortcuts',
   configureEditor(editor) {
-    const { insertText } = editor
+    const {insertText} = editor
 
     editor.insertText = (text) => {
-      const { selection } = editor
+      const {selection} = editor
 
       if (text == ' ' && selection && Range.isCollapsed(selection)) {
-        const { anchor } = selection
+        const {anchor} = selection
         const block = Editor.above(editor, {
           //@ts-ignore
           match: (n) => Editor.isBlock(editor, n),
@@ -39,7 +39,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
         const path = block ? block[1] : []
         const start = Editor.start(editor, path)
-        const range = { anchor, focus: start }
+        const range = {anchor, focus: start}
         const beforeText = Editor.string(editor, range)
 
         // turn Group into UnorderedList
@@ -57,8 +57,8 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                 Transforms.delete(editor)
                 Transforms.setNodes(
                   editor,
-                  { type: ELEMENT_UNORDERED_LIST },
-                  { match: isGroupContent }
+                  {type: ELEMENT_UNORDERED_LIST},
+                  {match: isGroupContent},
                 )
               })
               let groupParent = Editor.above(editor, {
@@ -81,7 +81,9 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                   }) || []
 
                 if (!prev || !prevPath)
-                  throw new Error('[markdown-plugin]: No prev or prevPath for unordered list')
+                  throw new Error(
+                    '[markdown-plugin]: No prev or prevPath for unordered list',
+                  )
 
                 //@ts-ignore
                 MintterEditor.addChange(editor, ['replaceBlock', prev.id])
@@ -122,8 +124,8 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
                 Transforms.setNodes(
                   editor,
-                  { type: ELEMENT_ORDERED_LIST, start },
-                  { match: isGroupContent }
+                  {type: ELEMENT_ORDERED_LIST, start},
+                  {match: isGroupContent},
                 )
               })
               let groupParent = Editor.above(editor, {
@@ -142,10 +144,13 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
 
                 const start = parseInt(beforeText)
 
-                const [prev, prevPath] = Editor.previous<Ancestor>(editor, { at: abovePath }) || []
+                const [prev, prevPath] =
+                  Editor.previous<Ancestor>(editor, {at: abovePath}) || []
 
                 if (!prev || !prevPath)
-                  throw new Error('[markdown-plugin]: no prev or prevPath for ordered lists')
+                  throw new Error(
+                    '[markdown-plugin]: no prev or prevPath for ordered lists',
+                  )
 
                 //@ts-ignore
                 MintterEditor.addChange(editor, ['replaceBlock', prev.id])
@@ -156,7 +161,7 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
                     to: prevPath.concat(1, prev.children[1].children.length),
                   })
                 } else {
-                  Transforms.wrapNodes(editor, ol({ start }, []), {
+                  Transforms.wrapNodes(editor, ol({start}, []), {
                     at: abovePath,
                   })
                   Transforms.moveNodes(editor, {
@@ -179,21 +184,29 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
             Editor.withoutNormalizing(editor, () => {
               Transforms.select(editor, range)
               Transforms.delete(editor)
-              //@ts-ignore
-              Transforms.setNodes(editor, { type: ELEMENT_HEADING }, { match: isStatement })
+
               Transforms.setNodes(
                 editor,
                 //@ts-ignore
-                { type: ELEMENT_STATIC_PARAGRAPH },
-                { match: isParagraph }
+                {type: ELEMENT_HEADING},
+                {match: isStatement},
+              )
+              Transforms.setNodes(
+                editor,
+                //@ts-ignore
+                {type: ELEMENT_STATIC_PARAGRAPH},
+                {match: isParagraph},
               )
             })
             return
           }
           // turn Statement into Codeblock
         } else if (/```\w*/.test(beforeText)) {
-          //@ts-ignore
-          const lang = LANGUAGE_SHORTCUTS[beforeText.slice(3)] || beforeText.slice(3) || undefined
+          const lang =
+            //@ts-ignore
+            LANGUAGE_SHORTCUTS[beforeText.slice(3)] ||
+            beforeText.slice(3) ||
+            undefined
           const above = Editor.above(editor, {
             match: isStatement,
             mode: 'lowest',
@@ -203,8 +216,12 @@ export const createMarkdownShortcutsPlugin = (): EditorPlugin => ({
             Editor.withoutNormalizing(editor, () => {
               Transforms.select(editor, range)
               Transforms.delete(editor)
-              //@ts-ignore
-              Transforms.setNodes(editor, { type: ELEMENT_CODE, lang }, { match: isStatement })
+              Transforms.setNodes(
+                editor,
+                //@ts-ignore
+                {type: ELEMENT_CODE, lang},
+                {match: isStatement},
+              )
             })
             return
           }

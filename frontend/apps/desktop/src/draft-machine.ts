@@ -13,16 +13,16 @@ import {
   text,
 } from '@mintter/shared'
 
-import { draftsClient } from '@app/api-clients'
-import { queryKeys } from '@app/hooks'
-import { getTitleFromContent } from '@app/utils/get-document-title'
-import { QueryClient } from '@tanstack/react-query'
-import { invoke } from '@tauri-apps/api'
-import { Editor } from 'slate'
-import { actions, assign, createMachine, InterpreterFrom } from 'xstate'
-import { MintterEditor } from './editor/mintter-changes/plugin'
+import {draftsClient} from '@app/api-clients'
+import {queryKeys} from '@app/hooks'
+import {getTitleFromContent} from '@app/utils/get-document-title'
+import {QueryClient} from '@tanstack/react-query'
+import {invoke} from '@tauri-apps/api'
+import {Editor} from 'slate'
+import {actions, assign, createMachine, InterpreterFrom} from 'xstate'
+import {MintterEditor} from './editor/mintter-changes/plugin'
 
-let { send, cancel } = actions
+let {send, cancel} = actions
 export type DraftActor = InterpreterFrom<ReturnType<typeof createDraftMachine>>
 
 export type EditorDocument = Partial<Document> & {
@@ -42,16 +42,16 @@ export type DraftMachineContext = {
 }
 
 export type DraftMachineEvent =
-  | { type: 'DRAFT.UPDATE'; payload: Array<GroupingContent> }
-  | { type: 'RESET.CHANGES' }
-  | { type: 'DRAFT.REPORT.AUTHOR.ERROR'; errorMessage: string }
-  | { type: 'DRAFT.REPORT.AUTHOR.SUCCESS'; author: Account }
-  | { type: 'DRAFT.PUBLISH' }
-  | { type: 'DRAFT.COMMIT.SAVE' }
-  | { type: 'RETRY' }
-  | { type: 'EDITING.START' }
-  | { type: 'EDITING.STOP' }
-  | { type: 'IS_DAEMON_READY' }
+  | {type: 'DRAFT.UPDATE'; payload: Array<GroupingContent>}
+  | {type: 'RESET.CHANGES'}
+  | {type: 'DRAFT.REPORT.AUTHOR.ERROR'; errorMessage: string}
+  | {type: 'DRAFT.REPORT.AUTHOR.SUCCESS'; author: Account}
+  | {type: 'DRAFT.PUBLISH'}
+  | {type: 'DRAFT.COMMIT.SAVE'}
+  | {type: 'RETRY'}
+  | {type: 'EDITING.START'}
+  | {type: 'EDITING.STOP'}
+  | {type: 'IS_DAEMON_READY'}
 
 type DraftMachineServices = {
   fetchDraft: {
@@ -74,7 +74,9 @@ export interface CreateDraftMachineProps {
 }
 
 const defaultContent: [GroupingContent] = [
-  group({ data: { parent: '' } }, [statement({ id: createId() }, [paragraph([text('')])])]),
+  group({data: {parent: ''}}, [
+    statement({id: createId()}, [paragraph([text('')])]),
+  ]),
 ]
 
 export function createDraftMachine({
@@ -137,7 +139,12 @@ export function createDraftMachine({
             idle: {
               on: {
                 'DRAFT.UPDATE': {
-                  actions: ['updateValueToContext', 'updateTitle', 'cancelSave', 'commitSave'],
+                  actions: [
+                    'updateValueToContext',
+                    'updateTitle',
+                    'cancelSave',
+                    'commitSave',
+                  ],
                 },
                 'DRAFT.PUBLISH': {
                   target: '#editor.publish.saving',
@@ -162,7 +169,12 @@ export function createDraftMachine({
                 onDone: [
                   {
                     target: 'idle',
-                    actions: ['resetChanges', 'assignDraft', 'resetQueryData', 'refetchDraftList'],
+                    actions: [
+                      'resetChanges',
+                      'assignDraft',
+                      'resetQueryData',
+                      'refetchDraftList',
+                    ],
                   },
                 ],
                 onError: [
@@ -254,13 +266,16 @@ export function createDraftMachine({
             newValue.content = [blockNodeToSlate(event.data.children, 'group')]
             console.log(
               '🚀 ~ file: draft-machine.ts:255 ~ assignLocalDraft:assign ~ newValue.content:',
-              newValue.content
+              newValue.content,
             )
           } else {
             newValue.content = defaultContent
             let entryNode = defaultContent[0].children[0]
             MintterEditor.addChange(context.editor, ['moveBlock', entryNode.id])
-            MintterEditor.addChange(context.editor, ['replaceBlock', entryNode.id])
+            MintterEditor.addChange(context.editor, [
+              'replaceBlock',
+              entryNode.id,
+            ])
           }
 
           return {
@@ -273,7 +288,7 @@ export function createDraftMachine({
             //@ts-ignore
             if (event.payload.content) {
               //@ts-ignore
-              return getTitleFromContent({ children: event.payload.content })
+              return getTitleFromContent({children: event.payload.content})
             }
             return ''
           },
@@ -286,7 +301,9 @@ export function createDraftMachine({
         // }),
         assignError: assign({
           errorMessage: (_, event) => {
-            return JSON.stringify(`Draft machine error: ${JSON.stringify(event)}`)
+            return JSON.stringify(
+              `Draft machine error: ${JSON.stringify(event)}`,
+            )
           },
         }),
         updateValueToContext: assign({
@@ -294,8 +311,10 @@ export function createDraftMachine({
             return {
               ...context.localDraft,
               ...event.payload,
-              //@ts-ignore
-              content: event.payload.content || context.localDraft?.content || [],
+
+              content:
+                //@ts-ignore
+                event.payload.content || context.localDraft?.content || [],
             }
           },
         }),
@@ -311,7 +330,7 @@ export function createDraftMachine({
           })
         },
         cancelSave: cancel('save-draft'),
-        commitSave: send('DRAFT.COMMIT.SAVE', { id: 'save-draft', delay: 500 }),
+        commitSave: send('DRAFT.COMMIT.SAVE', {id: 'save-draft', delay: 500}),
         //@ts-ignore
         assignCannotSave: assign({
           canSave: false,
@@ -327,10 +346,14 @@ export function createDraftMachine({
         },
         saveDraft: async (context) => {
           if (shouldAutosave) {
-            let contentChanges = MintterEditor.transformChanges(context.editor).filter(Boolean)
+            let contentChanges = MintterEditor.transformChanges(
+              context.editor,
+            ).filter(Boolean)
 
             let newTitle =
-              context.title.length > 50 ? `${context.title.substring(0, 50)}...` : context.title
+              context.title.length > 50
+                ? `${context.title.substring(0, 50)}...`
+                : context.title
             let changes: Array<DocumentChange> = newTitle
               ? [
                   ...contentChanges,
@@ -359,14 +382,14 @@ export function createDraftMachine({
           return getDraftQuery(client, context.documentId)
         },
       },
-    }
+    },
   )
 }
 
 function getDraftQuery(client: QueryClient, docId: string) {
   return client.fetchQuery({
     queryKey: [queryKeys.GET_DRAFT, docId],
-    queryFn: () => draftsClient.getDraft({ documentId: docId }),
+    queryFn: () => draftsClient.getDraft({documentId: docId}),
   })
 }
 

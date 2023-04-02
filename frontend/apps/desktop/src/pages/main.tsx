@@ -1,47 +1,73 @@
-import { useMainActor } from '@app/hooks/main-actor'
-import { classnames } from '@app/utils/classnames'
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Heading } from '@components/heading'
-import { TitleBar } from '@components/titlebar'
-import { lazy, useEffect, useState } from 'react'
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
-import { Redirect, useLocation } from 'wouter'
-import { Route, useRoute } from '../components/router'
-import { Main as TMain } from '@mintter/ui'
+import {FindContextProvider} from '@app/editor/find'
+import {useMainActor} from '@app/hooks/main-actor'
+import {classnames} from '@app/utils/classnames'
+import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Heading} from '@components/heading'
+import {TitleBar} from '@components/titlebar'
+import {TooltipProvider} from '@components/tooltip'
+import {listen as tauriListen} from '@tauri-apps/api/event'
+import {lazy, useEffect, useState} from 'react'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import '../styles/main.scss'
+import {NotFoundPage} from './base'
 import './polyfills'
+import {Main as UIMain} from '@mintter/ui'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
-var Site = lazy(() => import('@app/pages/site-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))
+var Account = lazy(() => import('@app/pages/account-page'))
+var Connections = lazy(() => import('@app/pages/connections-page'))
+var Site = lazy(() => import('@app/pages/site-page'))
 var Publication = lazy(() => import('@app/pages/publication'))
 var Draft = lazy(() => import('@app/pages/draft'))
 var Settings = lazy(() => import('@app/pages/settings'))
 var QuickSwitcher = lazy(() => import('@components/quick-switcher'))
-import { listen as tauriListen } from '@tauri-apps/api/event'
-import ConnectionsPage from './connections-page'
-import AccountPage from './account-page'
-import { FindContextProvider } from '@app/editor/find'
-import { TooltipProvider } from '@components/tooltip'
+
+function getPageComponent(navRoute: NavRoute) {
+  switch (navRoute.key) {
+    case 'home':
+      return PublicationList
+    case 'drafts':
+      return DraftList
+    case 'site':
+      return Site
+    case 'connections':
+      return Connections
+    case 'account':
+      return Account
+    case 'publication':
+      return Publication
+    case 'draft':
+      return Draft
+    case 'settings':
+      return Settings
+    default:
+      return NotFoundPage
+  }
+}
 
 export default function Main() {
-  const [, setLocation] = useLocation()
-  const [isSettings] = useRoute('/settings')
   const mainActor = useMainActor()
   const [search, setSearch] = useState('')
-
+  const navR = useNavRoute()
+  const isSettings = navR.key === 'settings'
+  const navigate = useNavigate()
+  const PageComponent = getPageComponent(navR)
   useEffect(() => {
     let unlisten: () => void
-    tauriListen('open_connections', () => {
-      setLocation('/connections')
+    tauriListen<NavRoute>('open_route', (event) => {
+      // we might fix this by using zod for routes and validating them
+      const route = event.payload
+      navigate(route)
     }).then((a) => {
       unlisten = a
     })
     return () => {
       unlisten?.()
     }
-  }, [])
+  }, [navigate])
 
   return (
     <ErrorBoundary
@@ -50,47 +76,13 @@ export default function Main() {
         window.location.reload()
       }}
     >
-      <FindContextProvider value={{ search, setSearch }}>
+      <FindContextProvider value={{search, setSearch}}>
         <TooltipProvider>
-          <div className={classnames('main-root', { settings: isSettings })}>
-            <TMain>
-              <Route path="/inbox">
-                <PublicationList />
-              </Route>
-              <Route path="/drafts">
-                <DraftList />
-              </Route>
-              <Route path="/sites/:hostname">
-                <Site />
-              </Route>
-              <Route path="/connections">
-                <ConnectionsPage />
-              </Route>
-              <Route path="/account/:id">
-                <AccountPage />
-              </Route>
-              <Route path="/p/:id/:version/:block?">
-                {mainActor?.type === 'publication' ? (
-                  <Publication
-                    // key={window.location.href}
-                    publicationActor={mainActor.actor}
-                  />
-                ) : null}
-              </Route>
-              <Route path="/d/:id/:tag?">
-                {mainActor?.type === 'draft' ? (
-                  <Draft
-                    key={window.location.href}
-                    draftActor={mainActor.actor}
-                    editor={mainActor.editor}
-                  />
-                ) : null}
-              </Route>
-              <Route path="/settings">
-                <Settings />
-              </Route>
-              <Route>{() => <Redirect to="/inbox" />}</Route>
-            </TMain>
+          <div className={classnames('main-root', {settings: isSettings})}>
+            <UIMain>
+              {/* @ts-ignore */}
+              <PageComponent mainActor={mainActor} />
+            </UIMain>
             <TitleBar clean={isSettings} mainActor={mainActor} />
             {!isSettings ? <QuickSwitcher /> : null}
           </div>
@@ -100,7 +92,7 @@ export default function Main() {
   )
 }
 
-function MainBoundary({ error, resetErrorBoundary }: FallbackProps) {
+function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
   return (
     <Box
       css={{
@@ -110,6 +102,7 @@ function MainBoundary({ error, resetErrorBoundary }: FallbackProps) {
         justifyContent: 'center',
         alignItems: 'center',
       }}
+      data-tauri-drag-region
     >
       <Box
         css={{
@@ -119,11 +112,21 @@ function MainBoundary({ error, resetErrorBoundary }: FallbackProps) {
           display: 'flex',
           flexDirection: 'column',
           minWidth: '50vw',
+          maxWidth: 565,
         }}
       >
         <Heading color="danger">App Error!</Heading>
-        <pre>{error.message}</pre>
-        <Button onClick={resetErrorBoundary} css={{ alignSelf: 'flex-end' }}>
+        <Box
+          css={{
+            fontFamily: 'ui-monospace,monospace',
+            padding: '$2',
+            background: '$warning-background-normal',
+            marginVertical: '$6',
+          }}
+        >
+          {error.message}
+        </Box>
+        <Button onClick={resetErrorBoundary} css={{alignSelf: 'flex-end'}}>
           Reload
         </Button>
       </Box>

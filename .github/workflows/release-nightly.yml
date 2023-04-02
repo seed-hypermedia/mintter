@@ -36,6 +36,23 @@ jobs:
           file: frontend/gateway/Dockerfile
           tags: mintter/sitegw:latest
 
+  push-site-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Upload scripts
+        run: aws s3 cp ./*.sh s3://minttersite/
+      - name: Upload docker compose
+        run: aws s3 cp ./docker-compose.yml s3://minttersite/
+
   get-version:
     runs-on: ubuntu-latest
     outputs:

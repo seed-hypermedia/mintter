@@ -1,10 +1,10 @@
-import { Box } from '@components/box'
-import { Button } from '@components/button'
-import { Text } from '@components/text'
-import { TextField } from '@components/text-field'
-import { useQuery } from '@tanstack/react-query'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Text} from '@components/text'
+import {TextField} from '@components/text-field'
+import {useQuery} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import { useCallback, useState } from 'react'
+import {useCallback, useState} from 'react'
 import toast from 'react-hot-toast'
 import {
   IconContainer,
@@ -18,16 +18,13 @@ import {
 } from './common'
 // import {bech32m, bech32} from 'bech32'
 // import BIP32Factory from 'bip32'
-import { mnemonicToSeed, wordlists } from 'bip39'
 // import * as ecc from 'tiny-secp256k1'
 // You must wrap a tiny-secp256k1 compatible implementation
 // const bip32 = BIP32Factory(ecc)
-import { daemonClient } from '@app/api-clients'
-import { Buffer } from 'buffer'
+import {daemonClient} from '@app/api-clients'
+import {Buffer} from 'buffer'
 
-if (window.global) {
-  window.global.Buffer = window.global.Buffer || Buffer
-}
+global.Buffer = global.Buffer || Buffer
 
 export function SecurityPack({
   prev,
@@ -39,18 +36,7 @@ export function SecurityPack({
   const mnemonics = useQuery({
     queryKey: ['onboarding', 'mnemonics'],
     queryFn: async () => {
-      const data = await generateMnemonic({ mnemonicsLength: 12 })
-
-      mnemonicToSeed(data.mnemonic.join(' '))
-        .then((seed) => {
-          // console.log({seed, len: seed.length})
-          // const outKey = bech32.encode('nsec', seed)
-          console.log({ seed })
-        })
-        .catch((e) => {
-          console.error('yep: ', e)
-        })
-      // console.log({seed})
+      const data = await generateMnemonic({mnemonicsLength: 12})
       return data.mnemonic
     },
     refetchOnReconnect: false,
@@ -69,7 +55,7 @@ export function SecurityPack({
       try {
         // words are here.
 
-        await daemonClient.register({ mnemonic: words })
+        await daemonClient.register({mnemonic: words})
         next()
       } catch (error) {
         if (error instanceof Error) {
@@ -83,10 +69,12 @@ export function SecurityPack({
 
   return (
     <OnboardingStep>
-      <OnboardingStepTitle icon={<SecurityPackIcon />}>Security Pack</OnboardingStepTitle>
+      <OnboardingStepTitle icon={<SecurityPackIcon />}>
+        Security Pack
+      </OnboardingStepTitle>
       <OnboardingStepDescription>
-        Please save these words securely! This will allow you to recreate your account and recover
-        associated funds:
+        Please save these words securely! This will allow you to recreate your
+        account and recover associated funds:
       </OnboardingStepDescription>
       {useOwnSeed ? (
         <TextField
@@ -103,7 +91,7 @@ export function SecurityPack({
         />
       ) : mnemonics.isError ? (
         <OnboardingStepBody>
-          <Text color="danger" css={{ textAlign: 'center' }}>
+          <Text color="danger" css={{textAlign: 'center'}}>
             {JSON.stringify(mnemonics.error, null)}
           </Text>
         </OnboardingStepBody>
@@ -118,12 +106,16 @@ export function SecurityPack({
         data-testid="button-toogle-custom-seed"
       >
         Setting up a new device?{' '}
-        <Text css={{ textDecoration: 'underline', display: 'inline-block' }}>
+        <Text css={{textDecoration: 'underline', display: 'inline-block'}}>
           provide your own seed
         </Text>
       </Button>
       <OnboardingStepActions>
-        <OnboardingStepButton variant="outlined" onClick={prev} data-testid="prev-btn">
+        <OnboardingStepButton
+          variant="outlined"
+          onClick={prev}
+          data-testid="prev-btn"
+        >
           Back
         </OnboardingStepButton>
         <OnboardingStepButton
@@ -138,7 +130,7 @@ export function SecurityPack({
   )
 }
 
-function MnemonicList({ words }: { words: string[] }) {
+function MnemonicList({words}: {words: string[]}) {
   function onCopy() {
     copyTextToClipboard(words.join(','))
     toast.success('Words copied to your clipboard!')
@@ -181,7 +173,13 @@ function MnemonicList({ words }: { words: string[] }) {
         ))}
       </Box>
 
-      <Button type="button" size="2" color="success" variant="outlined" onClick={() => onCopy()}>
+      <Button
+        type="button"
+        size="2"
+        color="success"
+        variant="outlined"
+        onClick={() => onCopy()}
+      >
         Copy words to clipboard
       </Button>
     </OnboardingStepBody>

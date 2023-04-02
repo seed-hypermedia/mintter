@@ -1,4 +1,4 @@
-import { assign, createMachine } from 'xstate'
+import {assign, createMachine} from 'xstate'
 
 type ImageContext = {
   errorMessage: string
@@ -6,12 +6,12 @@ type ImageContext = {
 }
 
 type ImageEvent =
-  | { type: 'IMAGE.REPLACE' }
-  | { type: 'IMAGE.SUBMIT'; value: string }
-  | { type: 'IMAGE.CANCEL' }
-  | { type: 'REPORT.IMAGE.VALID' }
-  | { type: 'REPORT.IMAGE.INVALID' }
-  | { type: 'CAPTION.UPDATE'; value: string }
+  | {type: 'IMAGE.REPLACE'}
+  | {type: 'IMAGE.SUBMIT'; value: string}
+  | {type: 'IMAGE.CANCEL'}
+  | {type: 'REPORT.IMAGE.VALID'}
+  | {type: 'REPORT.IMAGE.INVALID'}
+  | {type: 'CAPTION.UPDATE'; value: string}
 
 type ImageServices = {
   validateUrlService: {
@@ -29,7 +29,8 @@ export const imageMachine = createMachine(
       events: {} as ImageEvent,
       services: {} as ImageServices,
     },
-    description: 'Context: caption, imageURL (the image imput should be uncontrolled)',
+    description:
+      'Context: caption, imageURL (the image imput should be uncontrolled)',
     context: {
       errorMessage: '',
       captionVisibility: false,
@@ -104,5 +105,5 @@ export const imageMachine = createMachine(
         captionVisibility: true,
       }),
     },
-  }
+  },
 )

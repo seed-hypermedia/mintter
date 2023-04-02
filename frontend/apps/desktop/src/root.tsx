@@ -1,25 +1,26 @@
 // we can't uncomment this until we remove all the styles from the other systems :(
 // import '@tamagui/web/reset.css'
 // import '@tamagui/polyfill-dev'
-import { store } from '@app/app-store'
+import {store} from '@app/app-store'
 import Main from '@app/pages/main'
-import { themeMachine, ThemeProvider } from '@app/theme'
-import { Provider } from '@mintter/ui'
-import { dehydrate, Hydrate, QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { onUpdaterEvent } from '@tauri-apps/api/updater'
-import { useInterpret } from '@xstate/react'
-import { Suspense, useEffect } from 'react'
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
-import { Toaster } from 'react-hot-toast'
-import { attachConsole, debug } from 'tauri-plugin-log-api'
-import { globalStyles } from './stitches.config'
+import {themeMachine, ThemeProvider} from '@app/theme'
+import {Provider} from '@mintter/ui'
+import {dehydrate, Hydrate, QueryClientProvider} from '@tanstack/react-query'
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
+import {onUpdaterEvent} from '@tauri-apps/api/updater'
+import {useInterpret} from '@xstate/react'
+import {Suspense, useEffect} from 'react'
+import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
+import {Toaster} from 'react-hot-toast'
+import {attachConsole, debug} from 'tauri-plugin-log-api'
+import {globalStyles} from './stitches.config'
 
-import { DaemonStatusProvider } from '@app/node-status-context'
-import { listen } from '@tauri-apps/api/event'
-import { appQueryClient } from './query-client'
+import {DaemonStatusProvider} from '@app/node-status-context'
+import {listen} from '@tauri-apps/api/event'
+import {appQueryClient} from './query-client'
 import './styles/root.scss'
 import './styles/toaster.scss'
+import {NavigationProvider} from './utils/navigation'
 
 import('./updater')
 
@@ -34,7 +35,7 @@ import('./updater')
 
 attachConsole()
 
-onUpdaterEvent(({ error, status }) => {
+onUpdaterEvent(({error, status}) => {
   debug(`Updater event. error: ${error} status: ${status}`)
 })
 
@@ -50,8 +51,13 @@ export function Root() {
           <ErrorBoundary FallbackComponent={AppError}>
             <Provider disableRootThemeClass>
               <ThemeProvider value={themeService}>
-                <App />
-                <Toaster position="bottom-right" toastOptions={{ className: 'toaster' }} />
+                <NavigationProvider>
+                  <App />
+                </NavigationProvider>
+                <Toaster
+                  position="bottom-right"
+                  toastOptions={{className: 'toaster'}}
+                />
               </ThemeProvider>
             </Provider>
           </ErrorBoundary>
@@ -98,7 +104,7 @@ if (window.Cypress) {
 
 var dehydrateState = dehydrate(appQueryClient)
 
-export function AppError({ error, resetErrorBoundary }: FallbackProps) {
+export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (
     <div role="alert">
       <p>Something went wrong loading the App:</p>
@@ -120,9 +126,10 @@ function usePageZoom() {
   useEffect(() => {
     let unlisten: () => void | undefined
 
-    listen('change_zoom', async (event: { payload: 'zoomIn' | 'zoomOut' }) => {
+    listen('change_zoom', async (event: {payload: 'zoomIn' | 'zoomOut'}) => {
       let currentZoom = (await store.get<number>('zoom')) || 1
-      let newVal = event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
+      let newVal =
+        event.payload == 'zoomIn' ? (currentZoom += 0.1) : (currentZoom -= 0.1)
       // @ts-ignore
       document.body.style = `zoom: ${newVal};`
       store.set('zoom', currentZoom)
@@ -134,7 +141,7 @@ function usePageZoom() {
   useEffect(() => {
     let unlisten: () => void | undefined
 
-    listen('reset_zoom', async (event: { payload: 'zoomReset' }) => {
+    listen('reset_zoom', async (event: {payload: 'zoomReset'}) => {
       console.log('RESET ZOOM!', event)
       // @ts-ignore
       document.body.style = `zoom: 1;`

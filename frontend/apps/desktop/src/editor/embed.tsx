@@ -1,10 +1,10 @@
-import { publicationsClient } from '@app/api-clients'
-import { Editor } from '@app/editor/editor'
-import { buildEditorHook, EditorMode } from '@app/editor/plugin-utils'
-import { plugins } from '@app/editor/plugins'
-import { queryKeys } from '@app/hooks'
-import { useMouse } from '@app/mouse-context'
-import { openPublication } from '@app/utils/navigation'
+import {publicationsClient} from '@app/api-clients'
+import {Editor} from '@app/editor/editor'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
+import {queryKeys} from '@app/hooks'
+import {useMouse} from '@app/mouse-context'
+import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {
   blockNodeToSlate,
   Embed as EmbedType,
@@ -13,22 +13,21 @@ import {
   isEmbed,
   Publication,
 } from '@mintter/shared'
-import { QueryClient, useQueryClient } from '@tanstack/react-query'
-import { useMachine } from '@xstate/react'
-import { MouseEvent, useMemo } from 'react'
-import { Editor as SlateEditor, Transforms } from 'slate'
-import { RenderElementProps, useFocused, useSelected } from 'slate-react'
-import { visit } from 'unist-util-visit'
-import { useLocation, useRoute } from 'wouter'
-import { assign, createMachine } from 'xstate'
-import type { EditorPlugin } from './types'
+import {QueryClient, useQueryClient} from '@tanstack/react-query'
+import {useMachine} from '@xstate/react'
+import {MouseEvent, useMemo} from 'react'
+import {Editor as SlateEditor, Transforms} from 'slate'
+import {RenderElementProps, useFocused, useSelected} from 'slate-react'
+import {visit} from 'unist-util-visit'
+import {assign, createMachine} from 'xstate'
+import type {EditorPlugin} from './types'
 
 export const ELEMENT_EMBED = 'embed'
 
 export const createEmbedPlugin = (): EditorPlugin => ({
   name: ELEMENT_EMBED,
   configureEditor(editor) {
-    const { isVoid, isInline } = editor
+    const {isVoid, isInline} = editor
 
     editor.isVoid = (node) => isEmbed(node) || isVoid(node)
     editor.isInline = (node) => isEmbed(node) || isInline(node)
@@ -42,20 +41,28 @@ export const createEmbedPlugin = (): EditorPlugin => ({
         event.preventDefault()
         let [, path] = match
 
-        Transforms.removeNodes(editor, { at: path })
+        Transforms.removeNodes(editor, {at: path})
       }
     }
   },
   renderElement:
     (editor) =>
-    ({ attributes, children, element }) => {
+    ({attributes, children, element}) => {
       if (isEmbed(element)) {
         if (!element.url) {
-          console.error(`Embed: element does not have a url attribute: ${JSON.stringify(element)}`)
+          console.error(
+            `Embed: element does not have a url attribute: ${JSON.stringify(
+              element,
+            )}`,
+          )
           return <span {...attributes}>error on embed{children}</span>
         }
         return (
-          <Embed element={element as EmbedType} attributes={attributes} mode={editor.mode}>
+          <Embed
+            element={element as EmbedType}
+            attributes={attributes}
+            mode={editor.mode}
+          >
             {children}
           </Embed>
         )
@@ -71,11 +78,16 @@ function Embed({
   mode: EditorMode
 }) {
   const mouseService = useMouse()
-  const [, setLocation] = useLocation()
-  let [match, params] = useRoute('/p/:id/:version/:block')
+  const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
+  const navigateReplace = useNavigate('replace')
+  const route = useNavRoute()
+
   let [docId, version, blockId] = getIdsfromUrl((element as EmbedType).url)
   let client = useQueryClient()
-  let [state] = useMachine(() => createEmbedMachine({ url: (element as EmbedType).url, client }))
+  let [state] = useMachine(() =>
+    createEmbedMachine({url: (element as EmbedType).url, client}),
+  )
   let editor = useMemo(() => buildEditorHook(plugins, EditorMode.Embed), [])
   let selected = useSelected()
   let focused = useFocused()
@@ -85,13 +97,23 @@ function Embed({
     event.preventDefault()
     // if (mode == EditorMode.Embed || mode == EditorMode.Discussion) return
 
+    const destRoute: PublicationRoute = {
+      key: 'publication',
+      documentId: docId,
+      versionId: version,
+      blockId,
+    }
     if (isShiftKey) {
-      setLocation(`/p/${docId}/${version}/${blockId}`)
+      navigate(destRoute)
     } else {
-      if (match && params?.id == docId && params?.version == version) {
-        setLocation(`/p/${docId}/${version}/${blockId}`, { replace: true })
+      if (
+        route.key === 'publication' &&
+        route.documentId === docId &&
+        route.versionId === version
+      ) {
+        navigateReplace(destRoute)
       } else {
-        openPublication(docId, version, blockId)
+        spawn(destRoute)
       }
     }
   }
@@ -115,7 +137,7 @@ function Embed({
   }
 
   function mouseEnter() {
-    mouseService.send({ type: 'HIGHLIGHT.ENTER', ref: `${docId}/${blockId}` })
+    mouseService.send({type: 'HIGHLIGHT.ENTER', ref: `${docId}/${blockId}`})
   }
   function mouseLeave() {
     mouseService.send('HIGHLIGHT.LEAVE')
@@ -164,7 +186,7 @@ type EmbedMachineServices = {
   }
 }
 
-function createEmbedMachine({ url, client }: { url: string; client: QueryClient }) {
+function createEmbedMachine({url, client}: {url: string; client: QueryClient}) {
   /** @xstate-layout N4IgpgJg5mDOIC5RgLYCNIFoUEMDGAFgJYB2YAdAGZgAuhpUACgK5oA2ReONRA9iQGII-CqQBuvANYUYNAKLpILdp258SiUAAdesIj36aQAD0SYArAGZyANgCMAFgDsAJgAcATks2fHgAzmADQgAJ5mdnZO5Ob2Ng4eHnaWfn6ebgC+6cGoGBDY+MRkVLT0JEysHFwGgmAATrW8teRabNyUjSjksgq5ypVqhkggOnrVRqYImHZ+duRudi52MX4JDi42lkGhiBGzLs5+my6Wlm4O8y6Z2Yp5uKUUlKQQAEJsvHiSQiLk4lIytD1IK93pIjCN9OpxohLB5zOQHJs3G44pYHGtzPtgmEEFE3N4bE41sknJZCV5zFdwDd8vcqE9gR8BHUGk0Wm0Ol0ATcGaChuCxkMJnZ-OQXDFEjMxYs4ljELj8YTjn4SU5zDNMlkQCReBA4EYclg7oUHiVCuUVFVIXzdBDBqAJpgHFZbI5FWcnPNzG5ZZMFrM-LEnV61R4fE5KQbbgVSA96W8PmCbQL7YgXH4HORCQ44o51u5Fj6pi4PNFA363OY1usI9SjTGfhA2GBE6MrSmEPY-OREmiSZWvG5UoWIjY5jYXE5YV4bMGzjXcjTjeRmY1IC3bRpBamTuQ7BWSe5nASvT6Fhn9k5Dql3DO7AT54bo2R18mTGZnFF7M41u7Pd7tpMUqlneuwrE6CyWBq6RAA */
   return createMachine(
     {
@@ -234,15 +256,20 @@ function createEmbedMachine({ url, client }: { url: string; client: QueryClient 
       services: {
         getEmbedPublication: (context) => {
           let [docId, version] = getIdsfromUrl(context.url)
-          return client.fetchQuery<Publication>([queryKeys.GET_PUBLICATION, docId, version], () =>
-            publicationsClient.getPublication({ documentId: docId, version })
+          return client.fetchQuery<Publication>(
+            [queryKeys.GET_PUBLICATION, docId, version],
+            () =>
+              publicationsClient.getPublication({documentId: docId, version}),
           )
         },
         getEmbedBlock: (context) => {
           return new Promise((resolve, reject) => {
             let [, , blockId] = getIdsfromUrl(context.url)
             if (context.publication?.document?.children) {
-              let pubContent = blockNodeToSlate(context.publication?.document?.children, 'group')
+              let pubContent = blockNodeToSlate(
+                context.publication?.document?.children,
+                'group',
+              )
 
               let temp: FlowContent | undefined
 
@@ -251,10 +278,10 @@ function createEmbedMachine({ url, client }: { url: string; client: QueryClient 
                   type: 'root',
                   children: pubContent.children,
                 },
-                { id: blockId },
+                {id: blockId},
                 (node) => {
                   temp = node
-                }
+                },
               )
 
               if (temp) {
@@ -271,7 +298,8 @@ function createEmbedMachine({ url, client }: { url: string; client: QueryClient 
           block: (c, event) => event.data,
         }),
         assignError: assign({
-          errorMessage: (_, event) => `${event.type} Error: ${JSON.stringify(event.data)}`,
+          errorMessage: (_, event) =>
+            `${event.type} Error: ${JSON.stringify(event.data)}`,
         }),
         assignPublication: assign({
           publication: (_, event) => event.data,
@@ -289,7 +317,7 @@ function createEmbedMachine({ url, client }: { url: string; client: QueryClient 
           publication: undefined,
         }),
       },
-    }
+    },
   )
 }
 

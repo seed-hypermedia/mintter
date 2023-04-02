@@ -1,5 +1,6 @@
 import {TitleBarProps} from '@components/titlebar'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
+import DiscardDraftButton from './discard-draft-button'
 import {Title} from './title'
 
 export default function TitleBarMacos(props: TitleBarProps) {
@@ -24,6 +25,10 @@ export default function TitleBarMacos(props: TitleBarProps) {
       <div className="titlebar-section">
         <NavMenu mainActor={props.mainActor} />
         <NavigationButtons />
+      </div>
+      <div className="titlebar-section">
+        {/* @ts-ignore */}
+        <DiscardDraftButton />
       </div>
 
       <Title />

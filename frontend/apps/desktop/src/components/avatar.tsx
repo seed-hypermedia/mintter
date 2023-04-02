@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import {useQuery} from '@tanstack/react-query'
+import {useMemo} from 'react'
 import '../styles/avatar.scss'
 
 export function Avatar({
@@ -15,7 +15,7 @@ export function Avatar({
   size: 1 | 2 | 3
   color?: string
 }) {
-  let { data: avatarColor } = useQuery({
+  let {data: avatarColor} = useQuery({
     queryKey: ['avatarColor', accountId],
     queryFn: () => getRandomColor(accountId!),
     enabled: !!accountId,
@@ -26,7 +26,7 @@ export function Avatar({
   return (
     <div
       className="avatar-circle"
-      style={{ backgroundColor: color || avatarColor }}
+      style={{backgroundColor: color || avatarColor}}
       data-size={size}
     >
       {url ? <img src={url} /> : <span className="initials">{initials}</span>}

@@ -6,7 +6,7 @@
   "build": {
     "distDir": "../../frontend/apps/desktop/dist",
     "devPath": "http://localhost:5173",
-    "beforeDevCommand": "pwd && cd ../frontend && yarn desktop",
+    "beforeDevCommand": "cd ../frontend && yarn desktop",
     "beforeBuildCommand": "cd ../frontend && yarn desktop:prod",
     "withGlobalTauri": true
   },

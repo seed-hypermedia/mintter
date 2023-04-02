@@ -1,5 +1,5 @@
-import { useBlockProps } from '@app/editor/editor-node-props'
-import { EditorMode } from '@app/editor/plugin-utils'
+import {useBlockProps} from '@app/editor/editor-node-props'
+import {EditorMode} from '@app/editor/plugin-utils'
 
 import {
   createId,
@@ -9,12 +9,12 @@ import {
   isStaticParagraph,
   statement,
 } from '@mintter/shared'
-import { Editor, NodeEntry, Transforms } from 'slate'
-import { RenderElementProps } from 'slate-react'
-import { ElementDrag } from '../drag-section'
-import { MintterEditor } from '../mintter-changes/plugin'
-import type { EditorPlugin } from '../types'
-import { isFirstChild, resetFlowContent, useBlockFlash } from '../utils'
+import {Editor, NodeEntry, Transforms} from 'slate'
+import {RenderElementProps} from 'slate-react'
+import {ElementDrag} from '../drag-section'
+import {MintterEditor} from '../mintter-changes/plugin'
+import type {EditorPlugin} from '../types'
+import {isFirstChild, resetFlowContent, useBlockFlash} from '../utils'
 
 export const ELEMENT_HEADING = 'heading'
 
@@ -22,7 +22,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
   name: ELEMENT_HEADING,
   renderElement:
     (editor) =>
-    ({ attributes, children, element }) => {
+    ({attributes, children, element}) => {
       if (isHeading(element)) {
         return (
           <Heading mode={editor.mode} element={element} attributes={attributes}>
@@ -32,7 +32,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
       }
     },
   configureEditor: (editor) => {
-    const { normalizeNode, deleteBackward } = editor
+    const {normalizeNode, deleteBackward} = editor
 
     editor.deleteBackward = (unit) => {
       if (resetFlowContent(editor)) return
@@ -45,10 +45,17 @@ export const createHeadingPlugin = (): EditorPlugin => ({
       if (isHeading(node)) {
         if (removeEmptyHeading(editor, entry as NodeEntry<HeadingType>)) return
 
-        if (isFirstChild(path.concat(0)) && !isStaticParagraph(node.children[0])) {
+        if (
+          isFirstChild(path.concat(0)) &&
+          !isStaticParagraph(node.children[0])
+        ) {
           // transform to static paragraph if there's only one child and is not static paragraph
           // TODO: This will produce invalid paragraphs
-          Transforms.setNodes(editor, { type: 'staticParagraph' }, { at: path.concat(0) })
+          Transforms.setNodes(
+            editor,
+            {type: 'staticParagraph'},
+            {at: path.concat(0)},
+          )
           return
         } else if (node.children.length == 2) {
           if (!isGroupContent(node.children[1])) {
@@ -60,10 +67,10 @@ export const createHeadingPlugin = (): EditorPlugin => ({
 
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)
-              let newBlock = statement({ id: createId() })
+              let newBlock = statement({id: createId()})
 
-              Transforms.setNodes(editor, { type: 'paragraph' }, { at })
-              Transforms.wrapNodes(editor, newBlock, { at })
+              Transforms.setNodes(editor, {type: 'paragraph'}, {at})
+              Transforms.wrapNodes(editor, newBlock, {at})
               Transforms.wrapNodes(
                 editor,
                 //@ts-ignore
@@ -71,7 +78,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
                   type: pGroupEntry ? pGroupEntry[0].type : 'group',
                   children: [],
                 },
-                { at }
+                {at},
               )
               MintterEditor.addChange(editor, ['replaceBlock', node.id])
               MintterEditor.addChange(editor, ['moveBlock', newBlock.id])
@@ -86,7 +93,7 @@ export const createHeadingPlugin = (): EditorPlugin => ({
           if (isStaticParagraph(secondChild)) {
             Editor.withoutNormalizing(editor, () => {
               let at = path.concat(1)
-              Transforms.moveNodes(editor, { at, to: path.concat(2, 0) })
+              Transforms.moveNodes(editor, {at, to: path.concat(2, 0)})
               return
             })
           }
@@ -104,9 +111,9 @@ function Heading({
   children,
   element,
   mode,
-}: RenderElementProps & { mode: EditorMode }) {
+}: RenderElementProps & {mode: EditorMode}) {
   //@ts-ignore
-  let { blockProps } = useBlockProps(element)
+  let {blockProps} = useBlockProps(element)
   if (mode == EditorMode.Embed) {
     return (
       <span {...attributes} {...blockProps}>
@@ -122,12 +129,15 @@ function Heading({
   )
 }
 
-function removeEmptyHeading(editor: Editor, entry: NodeEntry<HeadingType>): boolean | undefined {
+function removeEmptyHeading(
+  editor: Editor,
+  entry: NodeEntry<HeadingType>,
+): boolean | undefined {
   const [node, path] = entry
   if (node.children.length == 1) {
     let child = Editor.node(editor, path.concat(0))
     if (!('type' in child[0])) {
-      Transforms.removeNodes(editor, { at: path })
+      Transforms.removeNodes(editor, {at: path})
       return true
     }
   }

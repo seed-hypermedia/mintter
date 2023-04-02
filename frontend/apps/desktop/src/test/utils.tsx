@@ -1,11 +1,11 @@
-import { BlockHighLighter } from '@app/editor/block-highlighter'
-import { FindContextProvider } from '@app/editor/find'
-import { queryKeys } from '@app/hooks'
-import { MouseProvider } from '@app/mouse-context'
-import { mouseMachine } from '@app/mouse-machine'
-import { globalStyles } from '@app/stitches.config'
-import { themeMachine, ThemeProvider } from '@app/theme'
-import { TooltipProvider } from '@components/tooltip'
+import {BlockHighLighter} from '@app/editor/block-highlighter'
+import {FindContextProvider} from '@app/editor/find'
+import {queryKeys} from '@app/hooks'
+import {MouseProvider} from '@app/mouse-context'
+import {mouseMachine} from '@app/mouse-machine'
+import {globalStyles} from '@app/stitches.config'
+import {themeMachine, ThemeProvider} from '@app/theme'
+import {TooltipProvider} from '@components/tooltip'
 import {
   Account,
   Document,
@@ -14,12 +14,12 @@ import {
   ListPublicationsResponse,
   Publication,
 } from '@mintter/shared'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { mockIPC, mockWindows } from '@tauri-apps/api/mocks'
-import { useInterpret } from '@xstate/react'
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
+import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
-import { nanoid } from 'nanoid'
-import { ReactNode, Suspense } from 'react'
+import {nanoid} from 'nanoid'
+import {ReactNode, Suspense} from 'react'
 
 type TestMockData = {
   account?: Partial<Account>
@@ -88,11 +88,20 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
   client.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], info)
-  client.setQueryData<Array<string>>([queryKeys.GET_PEER_ADDRS, peerId], ['foo', 'bar'])
+  client.setQueryData<Array<string>>(
+    [queryKeys.GET_PEER_ADDRS, peerId],
+    ['foo', 'bar'],
+  )
   client.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], info)
-  client.setQueryData<Array<string>>([queryKeys.GET_PEER_ADDRS, peerId], ['foo', 'bar'])
+  client.setQueryData<Array<string>>(
+    [queryKeys.GET_PEER_ADDRS, peerId],
+    ['foo', 'bar'],
+  )
 
-  client.setQueryData<Array<string>>([queryKeys.GET_PEER_ADDRS, info.accountId], ['foo', 'bar'])
+  client.setQueryData<Array<string>>(
+    [queryKeys.GET_PEER_ADDRS, info.accountId],
+    ['foo', 'bar'],
+  )
 
   if (mocks.draft) {
     client.setQueryData([queryKeys.GET_DRAFT, mocks.draft.id], mocks.draft)
@@ -101,8 +110,12 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   if (mocks.publication) {
     client.setQueryData(
-      [queryKeys.GET_PUBLICATION, mocks.publication.document?.id, mocks.publication.version],
-      mocks.publication
+      [
+        queryKeys.GET_PUBLICATION,
+        mocks.publication.document?.id,
+        mocks.publication.version,
+      ],
+      mocks.publication,
     )
     values.publication = mocks.publication
   }
@@ -119,10 +132,13 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   mocks.publicationList = mocks.publicationList || []
   //@ts-ignore
-  client.setQueryData<ListPublicationsResponse>([queryKeys.GET_PUBLICATION_LIST], {
-    nextPageToken: '',
-    publications: mocks.publicationList,
-  })
+  client.setQueryData<ListPublicationsResponse>(
+    [queryKeys.GET_PUBLICATION_LIST],
+    new ListPublicationsResponse({
+      nextPageToken: '',
+      publications: mocks.publicationList,
+    }),
+  )
 
   let authors = mocks.authors
     ? mocks.authors.map((a, idx) =>
@@ -140,8 +156,8 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
               },
             },
           },
-          a
-        )
+          a,
+        ),
       )
     : []
 
@@ -161,7 +177,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   return values
 }
 
-export function TestProvider({ client, children }: TestProviderProps) {
+export function TestProvider({client, children}: TestProviderProps) {
   let themeService = useInterpret(() => themeMachine)
 
   // return null
@@ -203,7 +219,7 @@ export type TestProviderProps = CustomMountOptions & {
   client: QueryClient
 }
 
-export function TestPublicationProvider({ children }: { children: ReactNode }) {
+export function TestPublicationProvider({children}: {children: ReactNode}) {
   let mouseService = useInterpret(() => mouseMachine)
   return (
     <div>
@@ -226,7 +242,7 @@ export function createTestDraft(entry: Partial<Document> = {}): Document {
       author: 'testauthor',
       publishTime: undefined,
     },
-    entry
+    entry,
   )
 }
 

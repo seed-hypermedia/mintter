@@ -1,12 +1,18 @@
-import { isGroup } from './../../../packages/shared/src/mttast/assertions'
-import { EditorMode } from '@app/editor/plugin-utils'
-import { FlowContent, Group, isFlowContent, isGroupContent, text } from '@mintter/shared'
+import {isGroup} from './../../../packages/shared/src/mttast/assertions'
+import {EditorMode} from '@app/editor/plugin-utils'
+import {
+  FlowContent,
+  Group,
+  isFlowContent,
+  isGroupContent,
+  text,
+} from '@mintter/shared'
 import React from 'react'
-import { Editor, Path, Transforms, NodeEntry, Node } from 'slate'
-import { ReactEditor } from 'slate-react'
-import { assign, createMachine, actions } from 'xstate'
+import {Editor, Path, Transforms, NodeEntry, Node} from 'slate'
+import {ReactEditor} from 'slate-react'
+import {assign, createMachine, actions} from 'xstate'
 
-let { send } = actions
+let {send} = actions
 type DragContext = {
   editor: Editor
   dragOverRef: Element | null
@@ -18,16 +24,16 @@ type DragContext = {
 }
 
 type DragEvent =
-  | { type: 'DRAG.START'; fromPath: Path; element: HTMLLIElement }
-  | { type: 'DROPPED' }
+  | {type: 'DRAG.START'; fromPath: Path; element: HTMLLIElement}
+  | {type: 'DROPPED'}
   | {
       type: 'DRAG.OVER'
       toPath?: Path | null
       element?: HTMLLIElement | null
       currentPos?: number
     }
-  | { type: 'DRAGGING.OFF' }
-  | { type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null }
+  | {type: 'DRAGGING.OFF'}
+  | {type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null}
 
 export const createDragMachine = (editor: Editor) => {
   return createMachine(
@@ -42,7 +48,7 @@ export const createDragMachine = (editor: Editor) => {
         isTop: false,
         nestedGroup: null,
       },
-      schema: { context: {} as DragContext, events: {} as DragEvent },
+      schema: {context: {} as DragContext, events: {} as DragEvent},
       tsTypes: {} as import('./drag-machine.typegen').Typegen0,
       id: 'drag-machine',
       description: 'empty',
@@ -56,7 +62,12 @@ export const createDragMachine = (editor: Editor) => {
         inactive: {
           on: {
             'DRAG.START': {
-              actions: ['deselectEditor', 'startDrag', 'setFromPath', 'setDragRef'],
+              actions: [
+                'deselectEditor',
+                'startDrag',
+                'setFromPath',
+                'setDragRef',
+              ],
               target: 'active',
             },
           },
@@ -87,14 +98,14 @@ export const createDragMachine = (editor: Editor) => {
           //@ts-ignore
           context.editor.dragging = true
         },
-        stopDrag: send({ type: 'DRAGGING.OFF' }, { delay: 500 }),
+        stopDrag: send({type: 'DRAGGING.OFF'}, {delay: 500}),
         setDraggingOff: (context) => {
           //@ts-ignore
           context.editor.dragging = false
         },
         //@ts-ignore
         setDragOverRef: assign((context, event) => {
-          const { nestedGroup, dragOverRef } = context
+          const {nestedGroup, dragOverRef} = context
           if (event.element) {
             if (nestedGroup) {
               for (let i = 0; i < nestedGroup.length; i++) {
@@ -107,12 +118,18 @@ export const createDragMachine = (editor: Editor) => {
 
             let isTop = context.isTop
             if (paragraph && paragraph.nodeName === 'P') {
-              const { fromPath, toPath } = context
+              const {fromPath, toPath} = context
               if (fromPath && toPath) {
-                if (Path.equals(fromPath, toPath) || Path.isAncestor(fromPath, toPath)) {
+                if (
+                  Path.equals(fromPath, toPath) ||
+                  Path.isAncestor(fromPath, toPath)
+                ) {
                   return paragraph
                 }
-                if (Path.isAfter(fromPath, toPath) || Path.isAncestor(toPath, fromPath)) {
+                if (
+                  Path.isAfter(fromPath, toPath) ||
+                  Path.isAncestor(toPath, fromPath)
+                ) {
                   paragraph.setAttribute('data-action', 'dragged-top')
                   isTop = true
                 } else {
@@ -120,9 +137,9 @@ export const createDragMachine = (editor: Editor) => {
                   isTop = false
                 }
               }
-              return { dragOverRef: paragraph, isTop, nestedGroup: null }
+              return {dragOverRef: paragraph, isTop, nestedGroup: null}
             }
-            return { dragOverRef: element, isTop: isTop, nestedGroup: null }
+            return {dragOverRef: element, isTop: isTop, nestedGroup: null}
           }
           if (nestedGroup) {
             dragOverRef?.removeAttribute('data-action')
@@ -133,8 +150,10 @@ export const createDragMachine = (editor: Editor) => {
               nestedGroup[i - 1].setAttribute('data-action', 'dragged-group')
               if (nestedGroup[i] === nestedGroup[nestedGroup.length - 1])
                 nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
-              //@ts-ignore
-              if (event.currentPos <= nestedGroup[i].getBoundingClientRect()['x']) {
+              if (
+                //@ts-ignore
+                event.currentPos <= nestedGroup[i].getBoundingClientRect()['x']
+              ) {
                 hoveredElement = nestedGroup[i - 1]
                 hoveredElement.setAttribute('data-action', 'dragged-nested')
                 nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
@@ -144,7 +163,7 @@ export const createDragMachine = (editor: Editor) => {
             const hoveredNode = ReactEditor.toSlateNode(editor, hoveredElement)
             const toPath = ReactEditor.findPath(editor, hoveredNode)
             if (hoveredElement != nestedGroup[nestedGroup.length - 1]) {
-              return { dragOverRef: hoveredElement, isTop: false, toPath }
+              return {dragOverRef: hoveredElement, isTop: false, toPath}
             }
             return {
               dragOverRef: hoveredElement,
@@ -169,14 +188,14 @@ export const createDragMachine = (editor: Editor) => {
                 const childGroup = children.find(isGroup)
 
                 if (!childGroup) {
-                  let groupStatements: NodeEntry<FlowContent>[] = getNestedGroup(
-                    parentBlock,
-                    editor
-                  )
+                  let groupStatements: NodeEntry<FlowContent>[] =
+                    getNestedGroup(parentBlock, editor)
                   if (groupStatements.length > 0) {
                     let groupElements: HTMLElement[] = []
                     for (const statement of groupStatements) {
-                      groupElements.push(ReactEditor.toDOMNode(editor, statement[0]))
+                      groupElements.push(
+                        ReactEditor.toDOMNode(editor, statement[0]),
+                      )
                     }
 
                     dragOverRef.removeAttribute('data-action')
@@ -190,7 +209,7 @@ export const createDragMachine = (editor: Editor) => {
                 }
               }
             }
-            return { dragOverRef: context.dragOverRef, isTop: context.isTop }
+            return {dragOverRef: context.dragOverRef, isTop: context.isTop}
           }
         }),
         setDragRef: assign({
@@ -246,7 +265,8 @@ export const createDragMachine = (editor: Editor) => {
           nestedGroup: null,
         }),
         performMove: (context, event) => {
-          const { fromPath, toPath, dragOverRef, editor, isTop, nestedGroup } = context
+          const {fromPath, toPath, dragOverRef, editor, isTop, nestedGroup} =
+            context
           dragOverRef?.removeAttribute('data-action')
           if (nestedGroup) {
             for (let i = 0; i < nestedGroup.length; i++) {
@@ -254,7 +274,8 @@ export const createDragMachine = (editor: Editor) => {
             }
           }
           if (fromPath && toPath && editor) {
-            if (fromPath === toPath || fromPath === null || toPath === null) return
+            if (fromPath === toPath || fromPath === null || toPath === null)
+              return
             if (Path.isAncestor(fromPath, toPath)) return
             const parentToGroup = Editor.above<Group>(editor, {
               match: isGroupContent,
@@ -290,7 +311,7 @@ export const createDragMachine = (editor: Editor) => {
           }
         },
       },
-    }
+    },
   )
 }
 
