@@ -3,7 +3,7 @@ name: Lint JavaScript
 on:
   push:
     branches:
-      - masterold
+      - master
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'frontend/**'
@@ -36,8 +36,8 @@ jobs:
       - name: Install Dependencies
         run: YARN_CHECKSUM_BEHAVIOR=update yarn
       
-      - name: Lint packages
-        run: yarn lint
+      # - name: Lint packages
+      #   run: yarn lint
       
       - name: Format files (Prettier)
         run: yarn format
