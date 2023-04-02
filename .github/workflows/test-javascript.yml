@@ -38,8 +38,8 @@ jobs:
       - name: Install Dependencies
         run: YARN_CHECKSUM_BEHAVIOR=update yarn
 
-      - name: Build Frontend Shared packages
-        run: yarn shared:build
+      # - name: Build Frontend Shared packages
+      #   run: yarn shared:build
 
       - name: Run Frontend packages tests
         run: yarn test

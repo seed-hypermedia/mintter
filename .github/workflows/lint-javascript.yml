@@ -3,7 +3,7 @@ name: Lint JavaScript
 on:
   push:
     branches:
-      - master
+      - masterold
     paths:
       - '.github/workflows/lint-javascript.yml'
       - 'frontend/**'
