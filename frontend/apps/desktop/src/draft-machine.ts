@@ -21,6 +21,7 @@ import {invoke} from '@tauri-apps/api'
 import {Editor} from 'slate'
 import {actions, assign, createMachine, InterpreterFrom} from 'xstate'
 import {MintterEditor} from './editor/mintter-changes/plugin'
+import {appInvalidateQueries} from './query-client'
 
 let {send, cancel} = actions
 export type DraftActor = InterpreterFrom<ReturnType<typeof createDraftMachine>>
@@ -169,12 +170,7 @@ export function createDraftMachine({
                 onDone: [
                   {
                     target: 'idle',
-                    actions: [
-                      'resetChanges',
-                      'assignDraft',
-                      'resetQueryData',
-                      'refetchDraftList',
-                    ],
+                    actions: ['resetChanges', 'assignDraft', 'invalidateDraft'],
                   },
                 ],
                 onError: [
@@ -198,7 +194,7 @@ export function createDraftMachine({
             id: 'publishDraft',
             onDone: [
               {
-                actions: ['resetQueryData', 'afterPublish'],
+                actions: ['invalidateDraft', 'afterPublish'],
               },
             ],
             onError: [
@@ -321,13 +317,9 @@ export function createDraftMachine({
         resetChanges: (context) => {
           MintterEditor.resetChanges(context.editor)
         },
-        resetQueryData: (context) => {
-          resetQueryData(client, context.documentId)
-        },
-        refetchDraftList: (context) => {
-          invoke('emit_all', {
-            event: 'update_draft',
-          })
+        invalidateDraft: (context) => {
+          appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
+          appInvalidateQueries([queryKeys.GET_DRAFT, context.documentId])
         },
         cancelSave: cancel('save-draft'),
         commitSave: send('DRAFT.COMMIT.SAVE', {id: 'save-draft', delay: 500}),
@@ -371,9 +363,6 @@ export function createDraftMachine({
                 documentId: context.documentId,
                 changes,
               })
-              // TODO: update document
-              client.removeQueries([queryKeys.GET_DRAFT, context.documentId])
-              client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
             } else {
               console.log('NO CHANGES TO SEND')
             }
@@ -391,9 +380,4 @@ function getDraftQuery(client: QueryClient, docId: string) {
     queryKey: [queryKeys.GET_DRAFT, docId],
     queryFn: () => draftsClient.getDraft({documentId: docId}),
   })
-}
-
-function resetQueryData(client: QueryClient, docId: string) {
-  client.removeQueries([queryKeys.GET_DRAFT, docId])
-  client.invalidateQueries([queryKeys.GET_DRAFT_LIST])
 }

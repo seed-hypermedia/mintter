@@ -76,11 +76,9 @@ export function useMainActor(props: MainActorOptions = {}) {
           afterPublish: (c, event) => {
             console.log('===== PUBLISHING: AFTER PUBLISH ===', c, event)
 
-            // invoke('emit_all', {
-            //   event: 'document_published',
-            // })
             const docId = event.data.document?.id
             if (!docId) return
+            appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
             appInvalidateQueries([queryKeys.GET_PUBLICATION, docId])
             appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, docId])
             appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])

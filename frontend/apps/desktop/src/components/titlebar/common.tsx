@@ -134,6 +134,7 @@ export function SitesNavDropdownItems() {
 export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   const route = useNavRoute()
   const navigate = useNavigate()
+  const spawn = useNavigate('spawn')
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
@@ -175,10 +176,15 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
           </Dropdown.Item>
           <SitesNavDropdownItems />
           <Dropdown.Separator />
-
           <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
+            <Icon name="QuickSwitcher" />
             Quick Switcher
             <Dropdown.RightSlot>&#8984; K</Dropdown.RightSlot>
+          </Dropdown.Item>
+          <Dropdown.Item onSelect={() => spawn({key: 'settings'})}>
+            <Icon name="GearOutlined" />
+            Settings
+            <Dropdown.RightSlot>&#8984; ,</Dropdown.RightSlot>
           </Dropdown.Item>
         </Dropdown.Content>
       </Dropdown.Portal>

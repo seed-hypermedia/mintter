@@ -1,7 +1,13 @@
 import {draftsClient} from '@app/api-clients'
-import {queryKeys, useAuthor, usePublication} from '@app/hooks'
-import {DraftRoute, PublicationRoute, useNavRoute} from '@app/utils/navigation'
+import {queryKeys, useAuthor, useDraft, usePublication} from '@app/hooks'
+import {
+  DraftRoute,
+  PublicationRoute,
+  useNavigate,
+  useNavRoute,
+} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {useQuery} from '@tanstack/react-query'
@@ -64,38 +70,37 @@ export function Title() {
 function PublicationTitle({route}: {route: PublicationRoute}) {
   let {data: pub} = usePublication(route.documentId, route.versionId)
   let {data: author} = useAuthor(pub?.document?.author)
+  const navigate = useNavigate()
 
   return (
     <>
       <span data-tauri-drag-region>{pub?.document?.title || '...'}</span>
-      <small data-tauri-drag-region>{author?.profile?.alias || ''}</small>
+      <Button
+        css={{
+          color: '$base-active',
+          fontSize: '$1',
+          '&:hover': {
+            color: '$base-active',
+            textDecoration: 'underline',
+          },
+        }}
+        size="1"
+        variant="ghost"
+        onClick={(e) => {
+          e.preventDefault()
+          const accountId = author?.id
+          if (!accountId) return
+          navigate({key: 'account', accountId})
+        }}
+      >
+        {author?.profile?.alias || ''}
+      </Button>
     </>
   )
 }
 
 function DraftTitle({route}: {route: DraftRoute}) {
-  let {data: draft, refetch} = useQuery({
-    queryKey: [queryKeys.GET_DRAFT, route.documentId],
-    enabled: !!route.documentId,
-    queryFn: () => draftsClient.getDraft({documentId: route.documentId}),
-  })
-
-  useEffect(() => {
-    let isSubscribed = true
-    let unlisten: () => void
-
-    listen('update_draft', () => {
-      refetch()
-
-      if (!isSubscribed) {
-        return unlisten()
-      }
-    }).then((_unlisten) => (unlisten = _unlisten))
-
-    return () => {
-      isSubscribed = false
-    }
-  })
+  const {data: draft} = useDraft(route.documentId)
   const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
   return <span data-tauri-drag-region>{displayTitle}</span>
 }

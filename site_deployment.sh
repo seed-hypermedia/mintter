@@ -167,6 +167,7 @@ do
     fi
     
   done
+  read -p "5) Do you want the site to share content with non members? n if not sure (y/n)" listing
   echo "Nice, we will create a site with the following characteristics:"
   echo "  - Hostname: ${hostname}"
   if [ ! -z "$owner" ]; then
@@ -174,7 +175,9 @@ do
   else
     echo "  - Owner ID: [not known yet]"
   fi
-
+  if [ "$listing" != "y" ]; then
+    echo "  - Additional flags: -p2p.disable-listing"
+  fi
   echo "  - Workspace: ${workspace}"
   read -p "Confirm (y/n)?" confirmation
   if [ "$confirmation" = "y" ]; then
@@ -186,9 +189,16 @@ do
     else
       echo -n "MTT_SITE_OWNER_ACCOUNT_ID=" >> ${workspace}/.env
     fi
+    if [ "$listing" != "y" ]; then
+      echo "MTT_SITE_ADDITIONAL_FLAGS=-p2p.disable-listing" >> ${workspace}/.env
+    fi
     curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
     if [ -z "$owner" ]; then
-      docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+      if [ "$listing" != "y" ]; then
+        MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+      else
+        docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+      fi
       rm mttsite.yml
       payload="["
       index=0
@@ -202,8 +212,13 @@ do
         index=`expr "$index" + 1`
         payload="${payload}${toInsert}"
       done
-      echo "Waiting to register new account on the site..."
-      sleep 3
+      echo -n "Waiting to register new account on the site..."
+      sleep 1
+      echo -n "."
+      sleep 2
+      echo -n "."
+      sleep 1
+      echo -n "."
       res=$(curl -s -o .output -w %{http_code} -X POST -d ${payload} http://localhost:3000/api/owner-registration)
       if [ $res -ge 200 ] && [ $res -le 299 ]; then
         cat .output >> ${workspace}/.env

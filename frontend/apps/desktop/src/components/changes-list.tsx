@@ -1,6 +1,8 @@
 import {useAuthor, useDocChanges} from '@app/hooks'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
+import {MouseEvent} from 'react'
+import {toast} from 'react-hot-toast'
 import {Avatar} from './avatar'
 import {Box} from './box'
 import {Button} from './button'
@@ -20,6 +22,11 @@ function ChangeItem({
 }) {
   const author = useAuthor(change.author)
   const navigate = useNavigate()
+  const openAccount = (e: MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigate({key: 'account', accountId: change.author})
+  }
   return (
     <Button
       key={change.id}
@@ -54,15 +61,28 @@ function ChangeItem({
           justifyContent: 'flex-start',
         }}
       >
-        <Avatar
-          accountId={change.author}
-          size={2}
-          alias={author?.data?.profile?.alias || 'A'}
-        />
+        <Box onClick={openAccount}>
+          <Avatar
+            accountId={change.author}
+            size={2}
+            alias={author?.data?.profile?.alias || 'A'}
+          />
+        </Box>
 
-        <Text size="2" fontWeight="bold" css={{marginHorizontal: '$4'}}>
+        <Button
+          css={{
+            color: '$base-text-high',
+            padding: '$3',
+            '&:hover': {
+              textDecoration: 'underline',
+              color: '$base-text-high',
+            },
+          }}
+          variant="ghost"
+          onClick={openAccount}
+        >
           {author?.data?.profile?.alias || change.author}
-        </Text>
+        </Button>
 
         <Text size="2" color="muted">
           {change.createTime ? formattedDate(change.createTime) : null}
