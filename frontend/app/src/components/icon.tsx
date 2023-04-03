@@ -93,6 +93,7 @@ export const icons = {
   Grid4,
   Grid6,
   GearOutlined,
+  QuickSwitcher,
   HamburgerMenu,
   Heading,
   Image,
@@ -457,6 +458,24 @@ function Quote(props: Stitches.VariantProps<typeof Svg>) {
           clipRule="evenodd"
         ></path>
       </svg>
+    </Svg>
+  )
+}
+
+function QuickSwitcher(props: Stitches.VariantProps<typeof Svg>) {
+  return (
+    <Svg width={18} height={15} viewBox="2 0 30 28" {...props}>
+      <path
+        d="M10 5H5C2.79086 5 1 6.79086 1 9V19C1 21.2091 2.79086 23 5 23H10"
+        stroke="currentColor"
+      />
+      <path
+        d="M20 5H25C27.2091 5 29 6.79086 29 9V19C29 21.2091 27.2091 23 25 23H20"
+        stroke="currentColor"
+      />
+      <path d="M14.9305 21.8506L14.9305 6" stroke="currentColor" />
+      <path d="M8 17.888L21.861 9.96265" stroke="currentColor" />
+      <path d="M8 9.96266L21.861 17.888" stroke="currentColor" />
     </Svg>
   )
 }

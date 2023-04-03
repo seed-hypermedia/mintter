@@ -46,14 +46,8 @@ func TestAPIGetRemotePublication(t *testing.T) {
 func TestSite(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	siteConf := makeTestConfig(t)
-	siteConf.Syncing.NoInbound = true
-
-	gw, err := Load(ctx, siteConf)
-	require.NoError(t, err)
 	t.Cleanup(func() {
 		cancel()
-		require.Equal(t, context.Canceled, gw.Wait())
 	})
 
 	owner := makeTestApp(t, "alice", makeTestConfig(t), true)
@@ -67,6 +61,8 @@ func TestSite(t *testing.T) {
 	siteCfg.Identity.NoAccountWait = true
 	siteCfg.Site.Title = "initial Site Title"
 	siteCfg.Site.OwnerID = owner.Me.MustGet().AccountID().String()
+	siteCfg.P2P.NoListing = true
+	siteCfg.Syncing.NoInbound = true
 
 	site := makeTestApp(t, "carol", siteCfg, false)
 	time.Sleep(500 * time.Millisecond)
@@ -174,6 +170,13 @@ func TestSite(t *testing.T) {
 	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
 
 	// But the reader should not have it since its only connected to the site
+	publicationList, err = reader.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, publicationList.Publications, 0)
+	// Even if he syncs, since NoListing = true site wont sync anything with non members
+	_, err = reader.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
+	require.NoError(t, err)
+	time.Sleep(500 * time.Millisecond) // Sleeping just to make sure it has time to propagate
 	publicationList, err = reader.RPC.Documents.ListPublications(ctx, &documents.ListPublicationsRequest{})
 	require.NoError(t, err)
 	require.Len(t, publicationList.Publications, 0)
@@ -757,6 +760,5 @@ func makeTestConfig(t *testing.T) config.Config {
 	cfg.P2P.BootstrapPeers = nil
 	cfg.P2P.NoRelay = true
 	cfg.P2P.NoMetrics = true
-
 	return cfg
 }

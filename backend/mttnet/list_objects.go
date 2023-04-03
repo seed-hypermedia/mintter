@@ -16,11 +16,11 @@ func (srv *Server) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 	if !ok {
 		return nil, fmt.Errorf("Node not ready yet")
 	}
-	if n.cfg.NoListing {
+	if n.cfg.NoListing && srv.Site.hostname == "" {
 		return &p2p.ListObjectsResponse{}, nil
 	}
 
-	if srv.Site.hostname != "" { //means this is a site. Sites don't sync out to every peer. Only peers that are subscribed to that site.
+	if srv.Site.hostname != "" { //means this is a site. Sites don't sync out to every peer. Only peers that are subscribed to that site if NoLIsting is true
 		remoteDeviceID, err := getRemoteID(ctx)
 		if err != nil {
 			n.log.Warn("Couldn't get remote caller in ListObjects.", zap.Error(err))
@@ -37,12 +37,12 @@ func (srv *Server) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 		defer cancel()
 
 		role, err := sitesql.GetMemberRole(conn, remotAcc)
-		if err != nil || role == site.Member_ROLE_UNSPECIFIED {
+		if (err != nil || role == site.Member_ROLE_UNSPECIFIED) && n.cfg.NoListing {
 			n.log.Debug("Not serving content to remote peer since is not a site member", zap.String("remote AccountID", remotAcc.String()),
 				zap.Error(err), zap.Int("Role", int(role)))
 			return &p2p.ListObjectsResponse{}, nil
 		}
-		n.log.Debug("Allowing site content", zap.String("remote AccountID", remotAcc.String()), zap.Int("role", int(role)))
+		n.log.Debug("Allowing site content", zap.String("remote AccountID", remotAcc.String()), zap.Int("role", int(role)), zap.Bool("noListing", n.cfg.NoListing))
 	}
 
 	conn, release, err := n.vcs.Conn(ctx)

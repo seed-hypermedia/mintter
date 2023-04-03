@@ -53,3 +53,4 @@ services:
       - '-site.title=${MTT_SITE_TITLE:-NewSite}'
       - '-site.owner-id=${MTT_SITE_OWNER_ACCOUNT_ID}'
       - '${MTT_SITE_NOWAIT_FLAG}'
+      - '${MTT_SITE_ADDITIONAL_FLAGS}'

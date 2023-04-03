@@ -1,3 +1,4 @@
+import {useAccountPublicationList} from '@app/hooks'
 import {useAccountWithDevices} from '@app/hooks/contacts'
 import {useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
@@ -6,6 +7,7 @@ import Footer from '@components/footer'
 import {Heading} from '@components/heading'
 import {OnlineIndicator} from '@components/indicator'
 import PageContainer from '@components/page-container'
+import {PublicationListItem} from '@components/publication-list-item'
 import {Text} from '@components/text'
 import {ConnectionStatus, PeerInfo} from '@mintter/shared'
 import {ComponentProps, ReactNode} from 'react'
@@ -43,6 +45,24 @@ function Section({
     </Box>
   )
 }
+
+function AccountDocuments({accountId}: {accountId: string}) {
+  const list = useAccountPublicationList(accountId)
+  return (
+    <Section>
+      {list.data?.map((doc) => {
+        return (
+          <PublicationListItem
+            key={doc.document?.id}
+            publication={doc}
+            hasDraft={undefined}
+          />
+        )
+      })}
+    </Section>
+  )
+}
+
 export default function AccountPage(props: PageProps) {
   const route = useNavRoute()
   const accountId = route.key === 'account' && route.accountId
@@ -74,6 +94,7 @@ export default function AccountPage(props: PageProps) {
             return <PeerRow key={peer?.accountId} peer={peer} />
           })}
         </Section>
+        <AccountDocuments accountId={accountId} />
       </PageContainer>
       <Footer />
     </>

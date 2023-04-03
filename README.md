@@ -45,7 +45,7 @@ One can also take advantage of the above modules and deploy a mintter site on a
 public server (or locally for testing it out). You can customize the site easily
 running the following command
 
-```bash
+```shell
 sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
 ```
 
@@ -54,7 +54,7 @@ ports 80 and 443 are accessible from the outside. However if you want full
 control over the deployment, there is a simple docker-compose file that should
 bundle the necessary modules:
 
-```bash
+```shell
 curl -s -o docker-compose.yml https://minttersite.s3.amazonaws.com/docker-compose.yml && docker compose up -d
 ```
 
@@ -66,16 +66,47 @@ same folder as the `docker-compose.yml` file. Example `.env` file:
 MTT_SITE_HOSTNAME=https://example.com # Your domain. Remember to add the protocol [http(s)://] + url [yourdomain.com]
 MTT_SITE_OWNER_ACCOUNT_ID=bahezrj4iaqacicabciqfnrov4niome6csw43r244roia35q6fiak75bmapk2zjudj3uffea # The mintter account ID of the owner of the site
 MTT_SITE_WORKSPACE=~/.mtt-site # Directory where all the site data will be stored.
-MTT_SITE_BACKEND_P2P_PORT=56000 # The port where the local backend will talk to the p2p network. (To get the documents)
-MTT_SITE_BACKEND_GRPCWEB_PORT=56001 # The port through which the local backend and the gateway communicate each other.
+MTT_SITE_ADDITIONAL_FLAGS=-p2p.disable-listing # An optional series of flags to be passed to the site daemon. 
 ```
-
+The list of flags than can be passed to the site daemon is:
+```shell
+-p2p.disable-listing
+    Disable listing documents when requested (stealth mode)
+-p2p.extra-addrs value
+    Add extra addresses to listen on (comma separated)
+-p2p.no-metrics
+    Disable Prometheus metrics collection
+-p2p.no-relay
+    Disable libp2p circuit relay
+-p2p.port int
+    Port to listen for incoming P2P connections (default 55000)
+-p2p.relay-backoff duration
+    The time the autorelay waits to reconnect after failing to obtain a reservation with a candidate (default 3m0s)
+-repo-path string
+    Path to where to store node data (default "~/.mtt")
+-site.hostname string
+    Hostname of the site. If not provided then the daemon does not work as a site
+-site.owner-id string
+    Account ID of the owner of this site. If not provided, the owner ID will be this node's account ID
+-site.title string
+    Title of the site. Something brief and human readable to help understand the site
+-site.token-expiration-delay duration
+    The expiration time delay when creating a new invite token (default 168h0m0s)
+-syncing.disable-inbound
+    Not syncing inbound content via P2P, only syncs to remote peers. IF this is a site, however still admits content when published
+-syncing.interval duration
+    Periodic interval at which sync loop is triggered (default 1m0s)
+-syncing.timeout-per-peer duration
+    Maximum duration for syncing with a single peer (default 2m0s)
+-syncing.warmup-duration duration
+    Time to wait before the first sync loop iteration (default 1m0s)
+```
 ### Update a site
 
 If you want to update the site to the latest version, the easiest way is to
 rerun the installation command to start a new site (ON)
 
-```bash
+```shell
 sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
 ```
 
