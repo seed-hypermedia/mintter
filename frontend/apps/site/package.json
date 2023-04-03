@@ -64,7 +64,6 @@
     "expo-modules-core": "0.6.3",
     "expo-screen-orientation": "4.1.1",
     "prettier": "2.8.1",
-    "vitest": "0.25.5",
     "webpack": ">=5.0.0 <6.0.0"
   },
   "peerDependencies": {

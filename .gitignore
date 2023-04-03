@@ -41,3 +41,5 @@ plz-out
 .plzconfig.local
 ./private_keys
 .vercel
+
+node_modules
