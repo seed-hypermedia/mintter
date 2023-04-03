@@ -23,7 +23,7 @@ import {
   CreateConversationRequest,
 } from '@mintter/shared'
 import {Event, listen} from '@tauri-apps/api/event'
-import {PropsWithChildren, useEffect, useMemo} from 'react'
+import {PropsWithChildren, useEffect, useMemo, useState} from 'react'
 import {Descendant, Editor as EditorType, Transforms} from 'slate'
 import {Editable, ReactEditor, Slate} from 'slate-react'
 import {
@@ -79,6 +79,26 @@ export function Editor({
     () => buildEventHandlerHooks(plugins, editor),
     [plugins, editor],
   )
+
+  const [mouseDown, setMouseDown] = useState(false);
+
+  useEffect(() => {
+    function handleMouseDown() {
+      setMouseDown(true);
+    }
+
+    function handleMouseUp() {
+      setMouseDown(false);
+    }
+
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   // async function createDummyComment(event: any) {
   //   event.preventDefault()
@@ -232,7 +252,7 @@ export function Editor({
           value={value as Array<Descendant>}
           onChange={onChange}
         >
-          <EditorHoveringToolbar />
+          <EditorHoveringToolbar mouseDown={mouseDown} />
           <Editable
             id="editor"
             data-testid="editor"
