@@ -43,7 +43,7 @@ import {MARK_STRONG} from './strong'
 import {MARK_UNDERLINE} from './underline'
 import {isMarkActive, toggleFormat} from './utils'
 
-export function EditorHoveringToolbar() {
+export function EditorHoveringToolbar(mouseDown: boolean) {
   const editor = useSlate()
   const [selectionColor, setSelectionColor] = useState<string>('')
 
@@ -59,6 +59,7 @@ export function EditorHoveringToolbar() {
       selectionColors.size === 1 ? [...selectionColors.values()][0] : null
 
     setSelectionColor(maybeColor || '#000000')
+    // console.log(selectionColor)
   }, [editor])
 
   const codeInSelection = useMemo(
@@ -67,7 +68,7 @@ export function EditorHoveringToolbar() {
   )
 
   return (
-    <HoveringToolbar>
+    <HoveringToolbar mouseDown={mouseDown}>
       <Box
         css={{
           zIndex: '$max',
@@ -207,7 +208,10 @@ const defaultVirtualEl = {
   },
 }
 
-function HoveringToolbar({children}: PropsWithChildren) {
+function HoveringToolbar({
+  children,
+  mouseDown,
+}: PropsWithChildren & {mouseDown: boolean}) {
   const editor = useSlate()
   const inFocus = useFocused()
   const selection = useSlateSelection()
@@ -219,6 +223,7 @@ function HoveringToolbar({children}: PropsWithChildren) {
 
   useEffect(() => {
     if (
+      mouseDown.mouseDown ||
       !selection ||
       !inFocus ||
       Range.isCollapsed(selection) ||
@@ -228,7 +233,7 @@ function HoveringToolbar({children}: PropsWithChildren) {
     }
     const domRange = ReactEditor.toDOMRange(editor, selection)
     reference(domRange)
-  }, [reference, inFocus, selection])
+  }, [reference, inFocus, selection, mouseDown])
 
   return (
     <Box
