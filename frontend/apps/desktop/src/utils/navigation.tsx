@@ -1,7 +1,7 @@
 import {draftsClient} from '@app/api-clients'
 import {queryKeys} from '@app/hooks'
 import {appInvalidateQueries} from '@app/query-client'
-import {invoke as tauriInvoke} from '@tauri-apps/api'
+import {Buffer} from 'buffer'
 import {
   createContext,
   ReactNode,
@@ -11,7 +11,6 @@ import {
 } from 'react'
 import {toast} from 'react-hot-toast'
 import {openWindow} from './open-window'
-import {Buffer} from 'buffer'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -117,12 +116,18 @@ function decodeRouteFromPath(initRoute: string): NavRoute {
   )
 }
 
-export function NavigationProvider({children}: {children: ReactNode}) {
-  const [navState, dispatch] = useReducer(navStateReducer, {
+export function NavigationProvider({
+  children,
+  initialNav = {
     routes: [initRoute],
     routeIndex: 0,
     lastAction: 'replace',
-  })
+  },
+}: {
+  children: ReactNode
+  initialNav?: NavState
+}) {
+  const [navState, dispatch] = useReducer(navStateReducer, initialNav)
   const {lastAction, routes, routeIndex} = navState
   const activeRoute = routes[routeIndex]
   useEffect(() => {

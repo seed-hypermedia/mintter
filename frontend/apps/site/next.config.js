@@ -14,7 +14,7 @@ const boolVals = {
 const plugins = [
   withTamagui({
     config: './tamagui.config.ts',
-    components: ['tamagui', '@mintter/ui'],
+    components: ['@mintter/ui', 'tamagui'],
     importsWhitelist: ['constants.js', 'colors.js'],
     logTimings: true,
     disableExtraction: process.env.NODE_ENV === 'development',

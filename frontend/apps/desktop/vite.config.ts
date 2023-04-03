@@ -24,7 +24,7 @@ if (shouldExtract) {
 }
 
 const tamaguiConfig = {
-  components: ['@tamagui/web'],
+  components: ['@mintter/ui', '@tamagui/web'],
   config: 'tamagui.config.ts',
   useReactNativeWebLite: true,
 }

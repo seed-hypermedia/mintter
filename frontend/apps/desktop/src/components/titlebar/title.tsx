@@ -9,7 +9,7 @@ import {
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {Text} from '@components/text'
+import {TitleText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {useEffect} from 'react'
@@ -20,7 +20,7 @@ export function TitleContent() {
     return (
       <>
         <Icon name="File" />
-        <Text css={{marginInline: '$3'}}>All Publications</Text>
+        <TitleText>All Publications</TitleText>
       </>
     )
   }

@@ -1,10 +1,11 @@
 // we can't uncomment this until we remove all the styles from the other systems :(
 // import '@tamagui/web/reset.css'
-// import '@tamagui/polyfill-dev'
+import '@tamagui/polyfill-dev'
+
 import {store} from '@app/app-store'
 import Main from '@app/pages/main'
 import {themeMachine, ThemeProvider} from '@app/theme'
-import {Provider} from '@mintter/ui'
+import {TamaguiProvider, TamaguiProviderProps, Theme} from '@mintter/ui'
 import {dehydrate, Hydrate, QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
@@ -21,6 +22,7 @@ import {appQueryClient} from './query-client'
 import './styles/root.scss'
 import './styles/toaster.scss'
 import {NavigationProvider} from './utils/navigation'
+import tamaguiConfig from '../tamagui.config'
 
 import('./updater')
 
@@ -49,7 +51,7 @@ export function Root() {
       <Suspense>
         <Hydrate state={dehydrateState}>
           <ErrorBoundary FallbackComponent={AppError}>
-            <Provider disableRootThemeClass>
+            <StyleProvider disableRootThemeClass>
               <ThemeProvider value={themeService}>
                 <NavigationProvider>
                   <App />
@@ -59,7 +61,7 @@ export function Root() {
                   toastOptions={{className: 'toaster'}}
                 />
               </ThemeProvider>
-            </Provider>
+            </StyleProvider>
           </ErrorBoundary>
         </Hydrate>
       </Suspense>
@@ -150,4 +152,20 @@ function usePageZoom() {
 
     return () => unlisten?.()
   }, [])
+}
+
+export function StyleProvider({
+  children,
+  ...rest
+}: Omit<TamaguiProviderProps, 'config'>) {
+  return (
+    <TamaguiProvider
+      config={tamaguiConfig}
+      disableInjectCSS
+      defaultTheme="light"
+      {...rest}
+    >
+      <Theme name="blue">{children}</Theme>
+    </TamaguiProvider>
+  )
 }

@@ -23,14 +23,23 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.boundsListener': { type: 'error.platform.boundsListener'; data: unknown }
-    'error.platform.windowBlurService': { type: 'error.platform.windowBlurService'; data: unknown }
-    'error.platform.windowListener': { type: 'error.platform.windowListener'; data: unknown }
+    'error.platform.boundsListener': {
+      type: 'error.platform.boundsListener'
+      data: unknown
+    }
+    'error.platform.windowBlurService': {
+      type: 'error.platform.windowBlurService'
+      data: unknown
+    }
+    'error.platform.windowListener': {
+      type: 'error.platform.windowListener'
+      data: unknown
+    }
     'error.platform.windowResizeService': {
       type: 'error.platform.windowResizeService'
       data: unknown
     }
-    'xstate.init': { type: 'xstate.init' }
+    'xstate.init': {type: 'xstate.init'}
   }
   invokeSrcNameMap: {
     boundsListener: 'done.invoke.boundsListener'
@@ -66,7 +75,11 @@ export interface Typegen0 {
       | 'DISABLE.WINDOW.RESIZE'
     clearHighlightRef: 'HIGHLIGHT.LEAVE'
     emitAll: 'HIGHLIGHT.ENTER' | 'HIGHLIGHT.LEAVE'
-    getBlockBounds: 'DISABLE.BLOCKTOOLS.CLOSE' | 'DISABLE.DRAG.END' | 'MOUSE.MOVE' | 'xstate.init'
+    getBlockBounds:
+      | 'DISABLE.BLOCKTOOLS.CLOSE'
+      | 'DISABLE.DRAG.END'
+      | 'MOUSE.MOVE'
+      | 'xstate.init'
     removeVisibleBlock: 'BLOCK.REMOVE'
   }
   eventsCausingDelays: {}
@@ -84,6 +97,6 @@ export interface Typegen0 {
     | 'active.ready'
     | 'active.stopped'
     | 'inactive'
-    | { active?: 'ready' | 'stopped' }
+    | {active?: 'ready' | 'stopped'}
   tags: never
 }

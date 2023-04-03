@@ -20,6 +20,7 @@
   "dependencies": {
     "@tamagui/animations-react-native": "^1.9.22",
     "@tamagui/font-inter": "^1.9.22",
+    "@tamagui/lucide-icons": "^1.10.0",
     "@tamagui/react-native-media-driver": "^1.9.22",
     "@tamagui/shorthands": "^1.9.22",
     "@tamagui/themes": "^1.9.22",

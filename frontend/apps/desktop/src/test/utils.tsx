@@ -1,10 +1,11 @@
-import {BlockHighLighter} from '@app/editor/block-highlighter'
-import {FindContextProvider} from '@app/editor/find'
-import {queryKeys} from '@app/hooks'
-import {MouseProvider} from '@app/mouse-context'
-import {mouseMachine} from '@app/mouse-machine'
-import {globalStyles} from '@app/stitches.config'
-import {themeMachine, ThemeProvider} from '@app/theme'
+import {BlockHighLighter} from '../editor/block-highlighter'
+import {FindContextProvider} from '../editor/find'
+import {queryKeys} from '../hooks'
+import {MouseProvider} from '../mouse-context'
+import {mouseMachine} from '../mouse-machine'
+import {globalStyles} from '../stitches.config'
+import {themeMachine, ThemeProvider} from '../theme'
+import {NavState} from '../utils/navigation'
 import {TooltipProvider} from '@components/tooltip'
 import {
   Account,
@@ -209,7 +210,7 @@ export function TestProvider({client, children}: TestProviderProps) {
 
 export type CustomMountOptions = {
   account?: Account
-  path?: string
+  nav?: NavState
   setLocation?: () => void
   client?: QueryClient
 }

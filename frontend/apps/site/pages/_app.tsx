@@ -1,3 +1,7 @@
+// import '@tamagui/core/reset.css'
+// import '@tamagui/font-inter/css/400.css'
+// import '@tamagui/font-inter/css/700.css'
+
 if (typeof globalThis.EdgeRuntime !== 'string') {
   console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
 }

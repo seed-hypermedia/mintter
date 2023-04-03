@@ -1,12 +1,5 @@
 import {config} from '@tamagui/config'
-import {createTamagui} from '@tamagui/web'
+import {config as tamaguiConfig} from '@mintter/ui'
 
-const tamaConf = createTamagui(config)
+export default tamaguiConfig
 
-export type Conf = typeof tamaConf
-
-declare module '@tamagui/web' {
-  interface TamaguiCustomConfig extends Conf {}
-}
-
-export default tamaConf

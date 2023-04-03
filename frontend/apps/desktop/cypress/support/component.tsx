@@ -19,15 +19,16 @@ import './commands'
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-import {Router} from '@app/components/router'
-import {globalStyles} from '@app/stitches.config'
+import {globalStyles} from '../../src/stitches.config'
 import {
   createTestQueryClient,
   CustomMountOptions,
   TestProvider,
-} from '@app/test/utils'
+} from '../../src/test/utils'
 import {MountOptions, MountReturn} from 'cypress/react'
 import {mount} from 'cypress/react18'
+import React from 'react'
+import {NavigationProvider} from '../../src/utils/navigation'
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -54,7 +55,11 @@ Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
   let {
     client: customClient,
     account,
-    path,
+    nav = {
+      routes: [{key: 'home'}],
+      routeIndex: 0,
+      lastAction: 'replace',
+    },
     setLocation = cy.stub(),
     ...mountOptions
   } = options
@@ -63,9 +68,9 @@ Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
   globalStyles()
 
   const wrapped = (
-    <Router hook={() => [path ?? '/', setLocation]}>
+    <NavigationProvider initialNav={nav}>
       <TestProvider client={client}>{component}</TestProvider>
-    </Router>
+    </NavigationProvider>
   )
   // const wrapped = <div>{component}</div>
 
