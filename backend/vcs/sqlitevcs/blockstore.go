@@ -280,11 +280,13 @@ func (b *blockStore) DeleteBlock(ctx context.Context, c cid.Cid) error {
 	}
 	defer release()
 
-	return b.deleteBlock(conn, c)
+	_, err = b.deleteBlock(conn, c)
+	return err
 }
 
-func (b *blockStore) deleteBlock(conn *sqlite.Conn, c cid.Cid) error {
-	return vcssql.IPFSBlocksDelete(conn, c.Hash())
+func (b *blockStore) deleteBlock(conn *sqlite.Conn, c cid.Cid) (oldid int64, err error) {
+	ret, err := vcssql.IPFSBlocksDelete(conn, c.Hash())
+	return ret.IPFSBlocksID, err
 }
 
 // AllKeysChan implements. blockstore.Blockstore interface.

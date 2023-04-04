@@ -1,41 +1,18 @@
-// Package backlinks should not exist. It will be removed in Build 11.
-//
-// TODO(burdiyan): build11: remove this.
-package backlinks
+package documents
 
 import (
 	"fmt"
-	"regexp"
+	"net/url"
 
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/mttdoc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 
 	"crawshaw.io/sqlite"
 	"github.com/ipfs/go-cid"
-	"google.golang.org/protobuf/proto"
 )
-
-// IndexDatom is a callback function for indexing backlinks from datoms.
-// It should not exist, and it's here only for compatibility wth the old code.
-// It will be removed in Build 11 when we implement proper granular block CRDT.
-//
-// TODO(burdiyan): remove this. Search for other places with build11.
-func IndexDatom(conn *vcsdb.Conn, obj, change vcsdb.LocalID, d vcsdb.Datom) error {
-	if d.Attr != mttdoc.AttrBlockSnapshot {
-		return nil
-	}
-
-	blk := &documents.Block{}
-	if err := proto.Unmarshal(d.Value.([]byte), blk); err != nil {
-		return fmt.Errorf("failed to unmarshal content block: %w", err)
-	}
-
-	return indexBacklinks(conn, obj, change, blk)
-}
 
 func indexBacklinks(conn *vcsdb.Conn, obj, change vcsdb.LocalID, blk *documents.Block) error {
 	ver := conn.LocalVersionToPublic(vcsdb.LocalVersion{change})
@@ -93,40 +70,33 @@ type link struct {
 	TargetBlock    string
 }
 
-var linkRegex = regexp.MustCompile(`^(?:mtt|mintter):\/\/([a-z0-9]+)\/([a-z0-9]+)\/?([^\/]+)?$`)
-
-func parseLink(s string) (link, error) {
-	match := linkRegex.FindStringSubmatch(s)
-	if l := len(match); l < 3 || l > 4 {
-		return link{}, fmt.Errorf("malformed mintter link %s", s)
+func parseLink(s string) (l link, err error) {
+	u, err := url.Parse(s)
+	if err != nil {
+		return l, err
 	}
 
-	var out link
-	for i, part := range match {
-		switch i {
-		case 0:
-			// Skip the original full match.
-			continue
-		case 1:
-			docid, err := cid.Decode(part)
-			if err != nil {
-				return link{}, fmt.Errorf("failed to parse document id from link %s", s)
-			}
-			out.TargetDocument = docid
-		case 2:
-			_, err := vcs.ParseVersion(part)
-			if err != nil {
-				return link{}, fmt.Errorf("failed to parse version from link %s", s)
-			}
-			out.TargetVersion = part
-		case 3:
-			out.TargetBlock = part
-		default:
-			return link{}, fmt.Errorf("unexpected link segment in link %s", s)
+	if u.Scheme != "mintter" {
+		return l, fmt.Errorf("not a mintter link")
+	}
+
+	l.TargetDocument, err = cid.Decode(u.Hostname())
+	if err != nil {
+		return l, fmt.Errorf("failed to parse document id from link %s: %w", s, err)
+	}
+
+	if v := u.Query().Get("v"); v != "" {
+		if _, err = vcs.ParseVersion(v); err != nil {
+			return l, fmt.Errorf("failed to parse version from link %s: %w", s, err)
 		}
+		l.TargetVersion = v
 	}
 
-	return out, nil
+	if blk := u.Fragment; blk != "" {
+		l.TargetBlock = blk
+	}
+
+	return l, nil
 }
 
 func ensureIPFSBlock(conn *sqlite.Conn, c cid.Cid) (int64, error) {

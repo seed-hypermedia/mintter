@@ -4,12 +4,11 @@ package documents
 import (
 	"context"
 	"fmt"
-	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	documents "mintter/backend/genproto/documents/v1alpha"
+	"mintter/backend/pkg/errutil"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/crdt"
 	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/sqlitevcs"
@@ -18,12 +17,12 @@ import (
 
 	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
+	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Discoverer is a subset of the syncing service that
@@ -67,99 +66,100 @@ func NewServer(me *future.ReadOnly[core.Identity], db *sqlitex.Pool, disc Discov
 
 // CreateDraft implements the corresponding gRPC method.
 func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftRequest) (out *documents.Document, err error) {
+	me, err := api.me.Await(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, release, err := api.vcsdb.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
+	var (
+		heads       []cid.Cid
+		obj         cid.Cid
+		clock       = hlc.NewClock()
+		perma       vcs.EncodedPermanode
+		newDocument = in.ExistingDocumentId == ""
+	)
 	if in.ExistingDocumentId != "" {
-		return api.createDraftWithBase(ctx, in)
-	}
-
-	me, err := api.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	clock := hlc.NewClock()
-
-	perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(me.AccountID(), clock.Now()))
-	if err != nil {
-		return nil, err
-	}
-
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	if err := conn.WithTx(true, func() error {
-		obj := conn.NewObject(perma)
-		meLocal := conn.EnsureIdentity(me)
-
-		change := conn.NewChange(obj, meLocal, nil, clock)
-
-		batch := vcs.NewBatch(clock, me.DeviceKey().Abbrev())
-
-		doc := mttdoc.New(batch)
-
-		doc.EnsureTitle("")
-		doc.EnsureSubtitle("")
-
-		if doc.Err() != nil {
-			return doc.Err()
+		obj, err = cid.Decode(in.ExistingDocumentId)
+		if err != nil {
+			return nil, errutil.ParseError("existing_document_id", in.ExistingDocumentId, obj, err)
 		}
 
-		conn.AddDatoms(obj, change, batch.Dirty()...)
-		conn.SaveVersion(obj, "draft", meLocal, sqlitevcs.LocalVersion{change})
+		_, err := conn.GetDraftChange(obj)
+		if err == nil {
+			return nil, fmt.Errorf("already have draft for document %s", in.ExistingDocumentId)
+		}
 
+		heads, err = conn.GetHeads(obj, false)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, h := range heads {
+			ts, err := conn.GetChangeTimestamp(h)
+			if err != nil {
+				return nil, err
+			}
+			clock.Track(hlc.Unpack(ts))
+		}
+
+		blk, err := conn.GetBlock(ctx, obj)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get permanode for existing document %s: %w", in.ExistingDocumentId, err)
+		}
+
+		perma.ID = blk.Cid()
+		perma.Data = blk.RawData()
+		var docperma mttdoc.DocumentPermanode
+		if err := cbornode.DecodeInto(perma.Data, &docperma); err != nil {
+			return nil, fmt.Errorf("failed to decode permanode for document %s: %w", obj, err)
+		}
+		perma.Permanode = docperma
+
+	} else {
+		perma, err = vcs.EncodePermanode(mttdoc.NewDocumentPermanode(me.AccountID(), clock.Now()))
+		if err != nil {
+			return nil, err
+		}
+		obj = perma.ID
+	}
+
+	data, err := proto.Marshal(&documents.UpdateDraftRequestV2{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode empty patch: %w", err)
+	}
+
+	ch := vcs.NewChange(me, obj, heads, sqlitevcs.KindDocument, clock.Now(), data)
+	vc, err := ch.Block()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := conn.WithTx(true, func() error {
+		if newDocument {
+			conn.NewObject(perma)
+		}
+		conn.StoreChange(vc)
+		conn.MarkChangeAsDraft(obj, vc.Cid())
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	return &documents.Document{
-		Id:         perma.ID.String(),
-		Author:     me.AccountID().String(),
-		CreateTime: timestamppb.New(perma.PermanodeCreateTime().Time()),
-		UpdateTime: timestamppb.New(clock.Max().Time()),
-	}, nil
-}
-
-func (api *Server) createDraftWithBase(ctx context.Context, in *documents.CreateDraftRequest) (*documents.Document, error) {
-	me, err := api.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	oid, err := cid.Decode(in.ExistingDocumentId)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode document id: %w", err)
-	}
-
-	conn, release, err := api.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	if err := conn.WithTx(true, func() error {
-		obj := conn.LookupPermanode(oid)
-		meLocal := conn.EnsureIdentity(me)
-
-		clock := hlc.NewClock()
-		main := conn.GetVersion(obj, "main", meLocal)
-		for _, v := range main {
-			clock.Track(hlc.Unpack(conn.GetChangeMaxTime(obj, v)))
-		}
-
-		change := conn.NewChange(obj, meLocal, main, clock)
-		conn.SaveVersion(obj, "draft", meLocal, sqlitevcs.LocalVersion{change})
-
-		return nil
+	var doc *docState
+	if err := conn.WithTx(false, func() error {
+		doc, err = api.loadDocument(ctx, conn, true, obj, []cid.Cid{vc.Cid()})
+		return err
 	}); err != nil {
 		return nil, err
 	}
 
-	return api.GetDraft(ctx, &documents.GetDraftRequest{
-		DocumentId: in.ExistingDocumentId,
-	})
+	return doc.hydrate(), nil
 }
 
 // UpdateDraftV2 implements the corresponding gRPC method.
@@ -184,60 +184,51 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 	}
 	defer release()
 
+	chid, err := conn.GetDraftChange(oid)
+	if err != nil {
+		return nil, fmt.Errorf("no draft change for document %s: %w", in.DocumentId, err)
+	}
+
+	var oldChange vcs.Change
+	oldPatch := &documents.UpdateDraftRequestV2{}
+	{
+		blk, err := conn.GetBlock(ctx, chid)
+		if err != nil {
+			return nil, err
+		}
+
+		oldChange, err = vcs.DecodeChange(blk.RawData())
+		if err != nil {
+			return nil, err
+		}
+
+		if err := proto.Unmarshal(oldChange.Body, oldPatch); err != nil {
+			return nil, err
+		}
+	}
+
+	// Combine new patch with the old one and cleanup redundant operations.
+	// This is a bit nasty at the moment. Will need to be improved.
+	// We want to store only latest relevant operation, so we iterate backwards
+	// combining old an new patch.
+	newPatch := &documents.UpdateDraftRequestV2{}
+	if err := cleanupPatch(newPatch, oldPatch, in); err != nil {
+		return nil, fmt.Errorf("failed to cleanup draft patch: %w", err)
+	}
+
+	newBody, err := proto.Marshal(newPatch)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal updated change body: %w", err)
+	}
+
+	newChange, err := vcs.NewChange(me, oid, oldChange.Parents, oldChange.Kind,
+		hlc.NewClockAt(oldChange.Time).Now(), newBody).Block()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create rewritten change: %w", err)
+	}
+
 	if err := conn.WithTx(true, func() error {
-		meLocal := conn.EnsureIdentity(me)
-		obj := conn.LookupPermanode(oid)
-
-		version := conn.GetVersion(obj, "draft", meLocal)
-		if len(version) != 1 {
-			return fmt.Errorf("draft version must have only 1 leaf change, got: %d", len(version))
-		}
-
-		change := version[0]
-
-		clock := conn.GetChangeClock(obj, change)
-		batch := vcs.NewBatch(clock, me.DeviceKey().Abbrev())
-		doc := mttdoc.New(batch)
-		cs := conn.ResolveChangeSet(obj, version)
-		it := conn.QueryObjectDatoms(obj, cs)
-		datoms := it.Slice()
-		if it.Err() != nil {
-			return it.Err()
-		}
-		if err := doc.Replay(datoms); err != nil {
-			return fmt.Errorf("failed to load document before update: %w", err)
-		}
-
-		// TODO: this should not be necessary.
-		clock.Track(hlc.Unpack(datoms[len(datoms)-1].Time))
-
-		for _, c := range in.Changes {
-			switch op := c.Op.(type) {
-			case *documents.DocumentChange_SetTitle:
-				doc.EnsureTitle(op.SetTitle)
-			case *documents.DocumentChange_SetSubtitle:
-				doc.EnsureSubtitle(op.SetSubtitle)
-			case *documents.DocumentChange_MoveBlock_:
-				doc.MoveBlock(op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling)
-			case *documents.DocumentChange_ReplaceBlock:
-				doc.EnsureBlockState(op.ReplaceBlock.Id, encodeBlock(op.ReplaceBlock))
-			case *documents.DocumentChange_DeleteBlock:
-				doc.DeleteBlock(op.DeleteBlock)
-			default:
-				return fmt.Errorf("invalid draft update operation %T: %+v", c, c)
-			}
-
-			if doc.Err() != nil {
-				return fmt.Errorf("failed to apply document update: %w", doc.Err())
-			}
-		}
-
-		conn.AddDatoms(obj, change, batch.Dirty()...)
-
-		for opid := range batch.Deleted() {
-			conn.DeleteDatomByID(obj, change, opid)
-		}
-
+		conn.RewriteChange(chid, newChange)
 		return nil
 	}); err != nil {
 		return nil, err
@@ -246,14 +237,44 @@ func (api *Server) UpdateDraftV2(ctx context.Context, in *documents.UpdateDraftR
 	return &emptypb.Empty{}, nil
 }
 
-// GetDraft implements the corresponding gRPC method.
-func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
-	oid, err := cid.Decode(in.DocumentId)
-	if err != nil {
-		return nil, err
+func cleanupPatch(newPatch, oldPatch, incoming *documents.UpdateDraftRequestV2) error {
+	newPatch.Changes = make([]*documents.DocumentChange, 0, len(oldPatch.Changes)+len(incoming.Changes))
+	for _, c := range oldPatch.Changes {
+		op, ok := c.Op.(*documents.DocumentChange_ReplaceBlock)
+		if ok {
+			op.ReplaceBlock.Revision = ""
+		}
+		newPatch.Changes = append(newPatch.Changes, c)
 	}
 
-	me, err := api.me.Await(ctx)
+	for _, c := range incoming.Changes {
+		op, ok := c.Op.(*documents.DocumentChange_ReplaceBlock)
+		if ok {
+			op.ReplaceBlock.Revision = ""
+		}
+		newPatch.Changes = append(newPatch.Changes, c)
+	}
+
+	return nil
+
+	// TODO(burdiyan): cleanup patch from redundant operations.
+	// newPatch.Changes = make([]*documents.DocumentChange, len(oldPatch.Changes)+len(incoming.Changes))
+
+	// var (
+	// 	changedTitle    bool
+	// 	changedSubtitle bool
+	// )
+
+	// for i := len(incoming.Changes) - 1; i >= 0; i-- {
+	// 	op :=
+	// }
+}
+
+// GetDraft implements the corresponding gRPC method.
+func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) (*documents.Document, error) {
+	// TODO: Check if draft change exists.
+
+	oid, err := cid.Decode(in.DocumentId)
 	if err != nil {
 		return nil, err
 	}
@@ -264,25 +285,24 @@ func (api *Server) GetDraft(ctx context.Context, in *documents.GetDraftRequest) 
 	}
 	defer release()
 
-	var docpb *documents.Document
-
+	var doc *docState
 	if err := conn.WithTx(false, func() error {
-		meLocal := conn.LookupIdentity(me)
-		obj := conn.LookupPermanode(oid)
-		version := conn.GetVersion(obj, "draft", meLocal)
-		if len(version) != 1 {
-			return fmt.Errorf("draft version must have only 1 leaf change, got: %d", len(version))
+		// We don't want to get changes that we might have created concurrently with this draft.
+		draft, err := conn.GetDraftChange(oid)
+		if err != nil {
+			return err
 		}
 
-		cs := conn.ResolveChangeSet(obj, version)
-
-		docpb, err = loadProtoDocument(conn, obj, cs)
-		return err
+		doc, err = api.loadDocument(ctx, conn, true, oid, []cid.Cid{draft})
+		if err != nil {
+			return err
+		}
+		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	return docpb, nil
+	return doc.hydrate(), nil
 }
 
 // ListDrafts implements the corresponding gRPC method.
@@ -323,42 +343,15 @@ func (api *Server) PublishDraft(ctx context.Context, in *documents.PublishDraftR
 		return nil, err
 	}
 
-	me, err := api.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	conn, release, err := api.vcsdb.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer release()
 
-	if err := conn.WithTx(true, func() error {
-		obj := conn.LookupPermanode(oid)
-		meLocal := conn.EnsureIdentity(me)
+	conn.PublishDraft(oid)
 
-		version := conn.GetVersion(obj, "draft", meLocal)
-		if len(version) != 1 {
-			return fmt.Errorf("draft must have only 1 change: can't publish")
-		}
-
-		change := version[0]
-		cs := conn.ResolveChangeSet(obj, version)
-
-		conn.EncodeChange(change, me.DeviceKey())
-		conn.DeleteVersion(obj, "draft", meLocal)
-		conn.SaveVersion(obj, "main", meLocal, version)
-
-		// TODO(burdiyan): at some point we want to add backlinks for drafts too.
-		it := conn.QueryObjectDatoms(obj, cs)
-		for it.Next() {
-			if err := backlinks.IndexDatom(conn, obj, change, it.Item().Datom()); err != nil {
-				return err
-			}
-		}
-		return it.Err()
-	}); err != nil {
+	if err := conn.Err(); err != nil {
 		return nil, err
 	}
 
@@ -386,35 +379,27 @@ func (api *Server) DeleteDraft(ctx context.Context, in *documents.DeleteDraftReq
 	}
 	defer release()
 
-	me, err := api.me.Await(ctx)
+	ch, err := conn.GetDraftChange(oid)
 	if err != nil {
 		return nil, err
 	}
 
 	if err := conn.WithTx(true, func() error {
-		obj := conn.LookupPermanode(oid)
-		localMe := conn.EnsureIdentity(me)
-
-		version := conn.GetVersion(obj, "draft", localMe)
-		if len(version) != 1 {
-			return fmt.Errorf("draft version must only have 1 change")
+		if err := conn.DeleteBlock(ctx, ch); err != nil {
+			return fmt.Errorf("failed to delete draft %s: %w", in.DocumentId, err)
 		}
 
-		change := version[0]
-
-		// If we still have some versions left
-		// we only want to delete the current change.
-		// Otherwise we delete the whole object.
-
-		conn.DeleteVersion(obj, "draft", localMe)
-		c := conn.CountVersions(obj)
-
-		if c > 0 {
-			conn.DeleteChange(change)
-		} else {
-			conn.DeleteObject(obj)
+		// TODO(burdiyan): make this more efficient. Counting is enough, don't need to list.
+		list, err := conn.ListChanges(oid)
+		if err != nil {
+			return err
 		}
 
+		if len(list) == 0 {
+			if err := conn.DeleteBlock(ctx, oid); err != nil {
+				return err
+			}
+		}
 		return nil
 	}); err != nil {
 		return nil, err
@@ -466,47 +451,31 @@ func (api *Server) GetPublication(ctx context.Context, in *documents.GetPublicat
 }
 
 func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Version) (*documents.Publication, error) {
-	me, err := api.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	conn, release, err := api.vcsdb.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer release()
 
-	out := &documents.Publication{}
 	var found bool
+	var doc *docState
 	if err := conn.WithTx(false, func() error {
-		obj := conn.LookupPermanode(oid)
-		meLocal := conn.LookupIdentity(me)
-
-		var version sqlitevcs.LocalVersion
-		if v.IsZero() {
-			version = conn.GetVersion(obj, "main", meLocal)
-		} else {
-			version = conn.PublicVersionToLocal(v)
+		heads := v.CIDs()
+		if heads == nil {
+			heads, err = conn.GetHeads(oid, false)
+			if err != nil {
+				return err
+			}
+		}
+		if heads == nil {
+			return fmt.Errorf("not found any changes for publication %s", oid)
 		}
 
-		if len(version) == 0 {
-			return nil
-		}
-
-		if len(version) > 1 {
-			return fmt.Errorf("TODO(burdiyan): can only get publication with 1 leaf change, got: %d", len(version))
-		}
-		cs := conn.ResolveChangeSet(obj, version)
-
-		out.Document, err = loadProtoDocument(conn, obj, cs)
+		doc, err = api.loadDocument(ctx, conn, false, oid, heads)
 		if err != nil {
 			return err
 		}
 		found = true
-
-		out.Version = conn.LocalVersionToPublic(version).String()
-		out.Document.PublishTime = out.Document.UpdateTime
 		return nil
 	}); err != nil {
 		return nil, status.Errorf(codes.NotFound, "failed to find object %q at version %q: %v", oid.String(), v.String(), err)
@@ -516,7 +485,13 @@ func (api *Server) loadPublication(ctx context.Context, oid cid.Cid, v vcs.Versi
 		return nil, status.Errorf(codes.NotFound, "not found object %q at version %q", oid.String(), v.String())
 	}
 
-	return out, nil
+	docpb := doc.hydrate()
+	docpb.PublishTime = docpb.UpdateTime
+
+	return &documents.Publication{
+		Document: docpb,
+		Version:  doc.version(),
+	}, nil
 }
 
 // DeletePublication implements the corresponding gRPC method.
@@ -577,99 +552,39 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 	return out, nil
 }
 
-func loadProtoDocument(conn *sqlitevcs.Conn, obj sqlitevcs.LocalID, cs sqlitevcs.ChangeSet) (*documents.Document, error) {
-	doc := mttdoc.New(nil)
-	it := conn.QueryObjectDatoms(obj, cs)
-	datoms := it.Slice()
-	if it.Err() != nil {
-		return nil, it.Err()
-	}
-	objctime := conn.GetPermanodeCreateTime(obj)
-	did := conn.GetObjectCID(obj)
-	author := conn.GetObjectOwner(obj)
-	if err := doc.Replay(datoms); err != nil {
+func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, includeDrafts bool, oid cid.Cid, heads []cid.Cid) (*docState, error) {
+	me, err := api.me.Await(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	return mttdocToProto(conn, did.String(), author.String(), obj, objctime, doc)
-}
-
-func mttdocToProto(conn *sqlitevcs.Conn, id, author string, obj sqlitevcs.LocalID, createTime time.Time, doc *mttdoc.Document) (*documents.Document, error) {
-	if doc.Err() != nil {
-		return nil, doc.Err()
+	obj := conn.LookupPermanode(oid)
+	var cs sqlitevcs.ChangeSet
+	v := vcs.NewVersion(heads...)
+	if !v.IsZero() {
+		ver := conn.PublicVersionToLocal(v)
+		cs = conn.ResolveChangeSet(obj, ver)
 	}
 
-	docpb := &documents.Document{
-		Id:         id,
-		Title:      doc.Title(),
-		Subtitle:   doc.Subtitle(),
-		Author:     author,
-		CreateTime: timestamppb.New(createTime),
-		UpdateTime: timestamppb.New(doc.UpdateTime()),
-	}
-
-	blockMap := map[vcs.NodeID]*documents.BlockNode{}
-
-	appendChild := func(parent vcs.NodeID, child *documents.BlockNode) {
-		if parent == vcs.RootNode {
-			docpb.Children = append(docpb.Children, child)
-			return
+	var createTime time.Time
+	{
+		blk, err := conn.GetBlock(ctx, oid)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get permanode for draft %s: %w", oid, err)
 		}
 
-		blk, ok := blockMap[parent]
-		if !ok {
-			panic("BUG: no parent " + parent.String() + " was found yet while iterating")
+		var docpb mttdoc.DocumentPermanode
+		if err := cbornode.DecodeInto(blk.RawData(), &docpb); err != nil {
+			return nil, fmt.Errorf("failed to decode permanode for draft %s: %w", oid, err)
 		}
 
-		blk.Children = append(blk.Children, child)
+		createTime = docpb.CreateTime.Time()
 	}
+	doc := newDocState(oid, me.AccountID(), createTime)
 
-	it := doc.Iterator()
+	conn.IterateChanges(oid, includeDrafts, cs, func(vc vcs.VerifiedChange) error {
+		return doc.applyChange(vc)
+	})
 
-	for el := it.Next(); el != nil; el = it.Next() {
-		pos := el.Value()
-
-		data, ok := doc.BlockState(pos.Block)
-		if !ok {
-			continue
-		}
-
-		opid, ok := doc.BlockDatomID(pos.Block)
-		if !ok {
-			continue
-		}
-
-		blk := decodeBlock(conn, obj, opid, data)
-		child := &documents.BlockNode{Block: blk}
-		appendChild(pos.Parent, child)
-		blockMap[pos.Block] = child
-	}
-
-	return docpb, nil
-}
-
-func decodeBlock(conn *sqlitevcs.Conn, obj sqlitevcs.LocalID, opid crdt.OpID, data []byte) *documents.Block {
-	info := conn.ChangeInfoForOp(obj, opid)
-	if info.IsZero() {
-		panic(fmt.Errorf("decodeBlock: failed to find change info"))
-	}
-
-	blk := &documents.Block{}
-	if err := proto.Unmarshal(data, blk); err != nil {
-		panic(fmt.Errorf("decodeBlock: failed to unmarshal proto: %w", err))
-	}
-	blk.Revision = info.StringID()
-
-	return blk
-}
-
-func encodeBlock(blk *documents.Block) []byte {
-	blk = proto.Clone(blk).(*documents.Block)
-	blk.Revision = ""
-
-	data, err := proto.Marshal(blk)
-	if err != nil {
-		panic(err)
-	}
-	return data
+	return doc, nil
 }

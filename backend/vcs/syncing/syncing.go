@@ -4,20 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mintter/backend/backlinks"
 	"mintter/backend/core"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
-	"sort"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/ipfs/go-cid"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -280,8 +277,16 @@ func (s *Service) Sync(ctx context.Context) (res SyncResult, err error) {
 	return res, nil
 }
 
-func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid, sess exchange.Fetcher, remoteVer vcs.Version) error {
+func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2p.Object) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
+	defer cancel()
+
 	bs := s.vcs.Blockstore()
+
+	oid, err := cid.Decode(obj.Id)
+	if err != nil {
+		return fmt.Errorf("can't sync object: failed to cast CID: %w", err)
+	}
 
 	var permanode vcs.Permanode
 	var shouldStorePermanode bool
@@ -325,13 +330,50 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 		}
 	}
 
-	remoteChanges, err := fetchMissingChanges(ctx, bs, oid, sess, remoteVer)
-	if err != nil {
-		return fmt.Errorf("failed to fetch missing changes: %w", err)
+	// We have to check which of the remote changes we're actually missing to avoid
+	// doing bitswap unnecessarily.
+	var missingSorted []cid.Cid
+	{
+		for _, c := range obj.ChangeIds {
+			cc, err := cid.Decode(c)
+			if err != nil {
+				return fmt.Errorf("failed to cast CID: %w", err)
+			}
+
+			has, err := bs.Has(ctx, cc)
+			if err != nil {
+				return err
+			}
+			if !has {
+				missingSorted = append(missingSorted, cc)
+			}
+		}
 	}
 
-	if remoteChanges == nil {
-		return nil
+	// Fetch missing changes and make sure we have their parents.
+	// We assume causally sorted list, but verifying just in case.
+	fetched := make([]vcs.VerifiedChange, len(missingSorted))
+	{
+		for i, c := range missingSorted {
+			blk, err := sess.GetBlock(ctx, c)
+			if err != nil {
+				return fmt.Errorf("failed to sync blob %s: %w", c, err)
+			}
+			vc, err := vcs.VerifyChangeBlock(blk)
+			if err != nil {
+				return fmt.Errorf("failed to verify change %s: %w", c, err)
+			}
+			for _, dep := range vc.Decoded.Parents {
+				has, err := bs.Has(ctx, dep)
+				if err != nil {
+					return fmt.Errorf("failed to check parent %s of %s: %w", dep, c, err)
+				}
+				if !has {
+					return fmt.Errorf("won't sync object %s: missing parent %s of change %s", obj, dep, c)
+				}
+			}
+			fetched[i] = vc
+		}
 	}
 
 	conn, release, err := s.vcs.Conn(ctx)
@@ -341,30 +383,13 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 	defer release()
 
 	if err := conn.WithTx(true, func() error {
-		var obj vcsdb.LocalID
 		if shouldStorePermanode {
-			obj = conn.NewObject(ep)
-		} else {
-			obj = conn.LookupPermanode(oid)
+			conn.NewObject(ep)
 		}
 
-		idLocal := conn.EnsureAccountDevice(acc, device)
-		newHeads := remoteVer.CIDs()
-		newLocalVersion := make(vcsdb.LocalVersion, len(newHeads))
-		trackHead := func(c cid.Cid, lid vcsdb.LocalID) {
-			for i, h := range newHeads {
-				if h.Equals(c) {
-					newLocalVersion[i] = lid
-				}
-			}
+		for _, vc := range fetched {
+			conn.StoreChange(vc)
 		}
-
-		for _, remote := range remoteChanges {
-			local := conn.StoreRemoteChange(obj, remote, backlinks.IndexDatom)
-			trackHead(remote.Cid(), local)
-		}
-
-		conn.SaveVersion(obj, "main", idLocal, newLocalVersion)
 
 		return nil
 	}); err != nil {
@@ -376,17 +401,24 @@ func (s *Service) syncFromVersion(ctx context.Context, acc, device, oid cid.Cid,
 
 // SyncWithPeer syncs all documents from a given peer. given no initial objectsOptionally.
 // if a list a list of initialObjects is provided, then only syncs objects from that list.
-func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...*p2p.Object) error {
+func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...cid.Cid) error {
 	// Can't sync with self.
 	if s.me.DeviceKey().CID().Equals(device) {
 		return nil
 	}
 
-	// If we don't want to sync incoming documents.
-	// If initialObjects are provided we override this because the client has a general policy
-	// of not syncing inbound unless explicitly saying otherwise.
+	// Nodes such web sites can be configured to avoid automatic syncing with remote peers,
+	// unless explicitly asked to sync some specific object IDs.
 	if s.NoInbound && len(initialObjects) == 0 {
 		return nil
+	}
+
+	var filter map[cid.Cid]struct{}
+	if initialObjects != nil {
+		filter = make(map[cid.Cid]struct{}, len(initialObjects))
+		for _, o := range initialObjects {
+			filter[o] = struct{}{}
+		}
 	}
 
 	c, err := s.client(ctx, device)
@@ -398,31 +430,32 @@ func (s *Service) SyncWithPeer(ctx context.Context, device cid.Cid, initialObjec
 	if err != nil {
 		return err
 	}
-	finalObjs := remoteObjs.Objects
-	if len(initialObjects) != 0 {
-		// We don't check for version since we want to sync all versions of a given document in case
-		// the publisher wants to publish an old version. Because that old version is not available as an
-		// standalone version, we need to get it as part of the latest version.
-		finalObjs = innerJoin(remoteObjs.Objects, initialObjects, false)
+
+	// If only selected objects are requested to sync we filter them out here.
+	var finalObjs []*p2p.Object
+	if filter == nil {
+		finalObjs = remoteObjs.Objects
+	} else {
+		for _, obj := range remoteObjs.Objects {
+			c, err := cid.Decode(obj.Id)
+			if err != nil {
+				s.log.Debug("WillNotSyncInvalidCID", zap.Error(err))
+				continue
+			}
+			_, ok := filter[c]
+			if !ok {
+				continue
+			}
+			finalObjs = append(finalObjs, obj)
+		}
 	}
+
 	s.log.Debug("Syncing", zap.Int("remoteObjects", len(remoteObjs.Objects)), zap.Int("initialObjects", len(initialObjects)), zap.Int("finalObjects", len(finalObjs)))
 
 	sess := s.bitswap.NewSession(ctx)
 	for _, obj := range finalObjs {
-		oid, err := cid.Decode(obj.Id)
-		if err != nil {
+		if err := s.syncObject(ctx, sess, obj); err != nil {
 			return err
-		}
-
-		for _, ver := range obj.VersionSet {
-			vv, err := vcs.ParseVersion(ver.Version)
-			if err != nil {
-				return err
-			}
-			// TODO: pass in identity information of the remote version, not our own.
-			if err := s.syncFromVersion(ctx, s.me.AccountID(), s.me.DeviceKey().CID(), oid, sess, vv); err != nil {
-				return err
-			}
 		}
 	}
 	return nil
@@ -444,99 +477,4 @@ func permanodeFromMap(v interface{}) (p vcs.Permanode, err error) {
 	base.CreateTime = hlc.Unpack(int64(t))
 
 	return base, nil
-}
-
-func fetchMissingChanges(ctx context.Context, bs blockstore.Blockstore, obj cid.Cid, sess exchange.Fetcher, ver vcs.Version) ([]vcs.VerifiedChange, error) {
-	queue := ver.CIDs()
-
-	visited := make(map[cid.Cid]struct{}, ver.Len())
-
-	fetched := make([]vcs.VerifiedChange, 0, 10) // Arbitrary buffer to reduce allocations when buffer grows.
-
-	for len(queue) > 0 {
-		last := len(queue) - 1
-		id := queue[last]
-		queue = queue[:last]
-
-		has, err := bs.Has(ctx, id)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check if change %s is present: %w", id, err)
-		}
-
-		// Stop if we've seen this node already or we have it stored locally.
-		if _, ok := visited[id]; ok || has {
-			continue
-		}
-
-		blk, err := sess.GetBlock(ctx, id)
-		if err != nil {
-			return nil, fmt.Errorf("failed to fetch change %s: %w", id, err)
-		}
-
-		vc, err := vcs.VerifyChangeBlock(blk)
-		if err != nil {
-			return nil, err
-		}
-
-		if !vc.Decoded.Object.Equals(obj) {
-			return nil, fmt.Errorf("change for unrelated object: got = %s, want = %s", vc.Decoded.Object, obj)
-		}
-
-		fetched = append(fetched, vc)
-
-		visited[id] = struct{}{}
-
-		queue = append(queue, vc.Decoded.Parents...)
-	}
-
-	// Avoid returning preallocated slice if we never ended up discovering new blocks to fetch.
-	if len(fetched) == 0 {
-		return nil, nil
-	}
-
-	sort.Slice(fetched, func(i, j int) bool {
-		return fetched[i].Decoded.Less(fetched[j].Decoded)
-	})
-
-	return fetched, nil
-}
-
-type object struct {
-	*p2p.Object
-}
-
-func (source *object) equal(target *p2p.Object, checkVersion bool) bool {
-	if source.Id != target.Id {
-		return false
-	}
-	if checkVersion {
-		var equalVersions = 0
-		for i, srcVersionSet := range source.VersionSet {
-			for _, targetVersionSet := range target.VersionSet {
-				if targetVersionSet.Version == srcVersionSet.Version {
-					equalVersions++
-					break
-				}
-			}
-			if equalVersions <= i {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-// innerJoin takes the common objects (intersection) between target and source. In order to match
-// both source and target must have the same docID and optionally the same version.
-func innerJoin(source []*p2p.Object, target []*p2p.Object, checkVersion bool) []*p2p.Object {
-	var ret []*p2p.Object
-	for _, initialObj := range target {
-		for _, remoteObj := range source {
-			myObj := object{initialObj}
-			if myObj.equal(remoteObj, checkVersion) {
-				ret = append(ret, remoteObj)
-			}
-		}
-	}
-	return ret
 }

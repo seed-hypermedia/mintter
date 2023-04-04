@@ -204,6 +204,14 @@ const (
 	{{- end}}
 )
 
+// Table {{$table}}. Plain strings.
+const (
+	T_{{publicSymbol $table}} = "{{$table}}"
+	{{- range $col, $info := $cols}}
+	C_{{publicSymbol $col}} = "{{$col}}"
+	{{- end}}
+)
+
 {{end -}}
 // Schema describes SQLite columns.
 var Schema = sqlitegen.Schema{

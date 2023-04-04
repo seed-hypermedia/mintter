@@ -5,9 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"mintter/backend/core"
+	"mintter/backend/db/sqliteschema"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
+	"mintter/backend/vcs"
 	"mintter/backend/vcs/mttacc"
 
+	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -158,38 +162,58 @@ func (srv *Server) Handshake(ctx context.Context, in *p2p.HandshakeInfo) (*p2p.H
 }
 
 func (n *Node) handshakeInfo(ctx context.Context) (*p2p.HandshakeInfo, error) {
-	n.once.Do(func() {
-		// TODO(burdiyan): all of this is bad!
-		// Needs a better way to do that.
-		// Search for other places where we have to convert account ID
-		// to account object ID and try to get rid of them.
+	// TODO(burdiyan): this is only needed once. Cache it.
+	// Not doing it because we used to have weird proof not found issues.
 
-		conn, release, err := n.vcs.Conn(ctx)
-		if err != nil && !errors.Is(err, context.Canceled) {
-			panic(err)
-		}
-		defer release()
+	const q = `
+SELECT
+	` + sqliteschema.C_DeviceProofsDelegationCodec + `,
+	` + sqliteschema.C_DeviceProofsDelegationHash + `
+FROM ` + sqliteschema.T_DeviceProofs + `
+WHERE ` + sqliteschema.C_DeviceProofsAccountHash + `= ?
+AND ` + sqliteschema.C_DeviceProofsDeviceHash + ` = ?
+LIMIT 1`
 
-		if err := conn.WithTx(true, func() error {
-			proof, err := mttacc.GetDeviceProof(conn, n.me, n.me.AccountID(), n.me.DeviceKey().CID())
-			if err != nil {
-				return err
-			}
-			n.accountDeviceProof = proof
-			return nil
-		}); err != nil && !errors.Is(err, context.Canceled) {
-			panic(err)
-		}
+	conn, release, err := n.vcs.Conn(ctx)
+	if err != nil && !errors.Is(err, context.Canceled) {
+		panic(err)
+	}
+	defer release()
 
-		n.accountPublicKeyRaw, err = n.me.Account().MarshalBinary()
-		if err != nil {
-			panic(err)
-		}
-	})
+	var (
+		proofCodec int
+		proofHash  []byte
+	)
+	if err := sqlitex.Exec(conn.InternalConn(), q, func(stmt *sqlite.Stmt) error {
+		stmt.Scan(&proofCodec, &proofHash)
+		return nil
+	}, n.me.AccountID().Hash(), n.me.DeviceKey().CID().Hash()); err != nil {
+		return nil, fmt.Errorf("failed to get delegation from database: %w", err)
+	}
+	if proofHash == nil {
+		return nil, fmt.Errorf("BUG: can't find proof for our own device")
+	}
+
+	cc := cid.NewCidV1(uint64(proofCodec), proofHash)
+
+	blk, err := conn.GetBlock(ctx, cc)
+	if err != nil {
+		return nil, fmt.Errorf("BUG: failed to get block %s with our own key delegation: %w", cc, err)
+	}
+
+	ch, err := vcs.DecodeChange(blk.RawData())
+	if err != nil {
+		return nil, fmt.Errorf("BUG: failed to decode our own delegation change %s: %w", cc, err)
+	}
+
+	pubKeyRaw, err := n.me.Account().MarshalBinary()
+	if err != nil {
+		panic(err)
+	}
 
 	hinfo := &p2p.HandshakeInfo{
-		AccountPublicKey:   n.accountPublicKeyRaw,
-		AccountDeviceProof: n.accountDeviceProof,
+		AccountPublicKey:   pubKeyRaw,
+		AccountDeviceProof: ch.Body,
 	}
 
 	return hinfo, nil

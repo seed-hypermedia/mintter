@@ -97,12 +97,29 @@ const (
 	UsersName sqlitegen.Column = "users.name"
 )
 
+// Table users. Plain strings.
+const (
+	T_Users = "users"
+	C_UsersAge = "users.age"
+	C_UsersAvatar = "users.avatar"   
+	C_UsersID = "users.id"
+	C_UsersName = "users.name"
+)
+
 // Table wallets.
 const (
 	Wallets sqlitegen.Table = "wallets"
 	WalletsID sqlitegen.Column = "wallets.id"     
 	WalletsName sqlitegen.Column = "wallets.name"   
 	WalletsUserID sqlitegen.Column = "wallets.user_id"
+)
+
+// Table wallets. Plain strings.
+const (
+	T_Wallets = "wallets"
+	C_WalletsID = "wallets.id"     
+	C_WalletsName = "wallets.name"   
+	C_WalletsUserID = "wallets.user_id"
 )
 
 // Schema describes SQLite columns.

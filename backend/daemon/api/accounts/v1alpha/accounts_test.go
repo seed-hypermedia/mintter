@@ -61,6 +61,8 @@ func TestAPIUpdateProfile(t *testing.T) {
 	testutil.ProtoEqual(t, want, stored, "get account must return updated account")
 }
 
+// TODO: update profile idempotent no change
+
 func newTestServer(t *testing.T, name string) *Server {
 	u := coretest.NewTester(name)
 

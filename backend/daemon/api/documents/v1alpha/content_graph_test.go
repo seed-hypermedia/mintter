@@ -47,7 +47,7 @@ func TestBacklinks(t *testing.T) {
 					Starts: []int32{0},
 					Ends:   []int32{5},
 					Attributes: map[string]string{
-						"url": "mintter://" + pub.Document.Id + "/" + pub.Version + "/b1",
+						"url": "mintter://" + pub.Document.Id + "?v=" + pub.Version + "#b1",
 					},
 				},
 			},
@@ -63,7 +63,7 @@ func TestBacklinks(t *testing.T) {
 					Starts: []int32{0},
 					Ends:   []int32{5},
 					Attributes: map[string]string{
-						"url": "mtt://" + pub.Document.Id + "/" + pub.Version,
+						"url": "mintter://" + pub.Document.Id + "?v=" + pub.Version,
 					},
 				},
 			},

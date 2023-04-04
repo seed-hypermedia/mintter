@@ -7,28 +7,12 @@ import (
 )
 
 func TestLWW(t *testing.T) {
-	tests := []struct {
-		In  []stringValue
-		Out stringValue
-	}{
-		{
-			In: []stringValue{
-				{ID: ID{"a", 1}, Val: "A"},
-				{ID: ID{"a", 2}, Val: "B"},
-				{ID: ID{"a", 3}, Val: "C"},
-				{ID: ID{"b", 1}, Val: "D"},
-			},
-			Out: stringValue{ID: ID{"a", 3}, Val: "C"},
-		},
-	}
+	var lww LWW[string]
+	lww.Set("a", 1, "A")
+	lww.Set("a", 2, "B")
+	lww.Set("a", 3, "C")
+	lww.Set("b", 1, "D")
 
-	for _, tt := range tests {
-		var lww stringLWW
-
-		for _, v := range tt.In {
-			lww.Set(v)
-		}
-
-		require.Equal(t, tt.Out, lww.Get())
-	}
+	want := LWW[string]{ID: ID{"a", 3}, Value: "C"}
+	require.Equal(t, want, lww)
 }

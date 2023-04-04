@@ -5,30 +5,28 @@ package sqlitevcs
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/db/sqliteschema"
+	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/ipfs"
 	"mintter/backend/pkg/must"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/crdt"
 	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/vcssql"
 	"sort"
 	"time"
-	"unsafe"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/leporo/sqlf"
 	"github.com/multiformats/go-multihash"
 	"go.uber.org/multierr"
+	"google.golang.org/protobuf/proto"
 )
 
 const changeKindV1 = vcs.ChangeKindV1
@@ -89,34 +87,6 @@ func (conn *Conn) InternalConn() *sqlite.Conn {
 type Attribute = vcs.Attribute
 
 // Attr ensures an internal ID for an attribute.
-func (conn *Conn) Attr(s Attribute) LocalID {
-	if conn.err != nil {
-		return 0
-	}
-
-	res, err := vcssql.DatomsAttrLookup(conn.conn, string(s))
-	if err != nil {
-		conn.err = err
-		return 0
-	}
-
-	if res.DatomAttrsID > 0 {
-		return LocalID(res.DatomAttrsID)
-	}
-
-	ins, err := vcssql.DatomsAttrInsert(conn.conn, string(s))
-	if err != nil {
-		conn.err = err
-		return 0
-	}
-
-	if ins.DatomAttrsID == 0 {
-		conn.err = fmt.Errorf("failed to insert datom attr %s", s)
-		return 0
-	}
-
-	return LocalID(ins.DatomAttrsID)
-}
 
 // NewObject creates a new object and returns it internal ID.
 func (conn *Conn) NewObject(p vcs.EncodedPermanode) (lid LocalID) {
@@ -145,6 +115,52 @@ func (conn *Conn) NewObject(p vcs.EncodedPermanode) (lid LocalID) {
 		return nil
 	})
 	return lid
+}
+
+// IterateChanges for a given object.
+func (conn *Conn) IterateChanges(obj cid.Cid, includePrivate bool, cs ChangeSet, fn func(vc vcs.VerifiedChange) error) {
+	ohash := obj.Hash()
+
+	must.Maybe(&conn.err, func() error {
+		var (
+			codec int
+			hash  []byte
+		)
+		q := sqlf.
+			Select(sqliteschema.C_ChangesDerefChangeCodec).To(&codec).
+			Select(sqliteschema.C_ChangesDerefChangeHash).To(&hash).
+			From(sqliteschema.T_ChangesDeref).
+			Where(sqliteschema.C_ChangesDerefObjectHash+" = ?", ohash)
+		defer q.Close()
+
+		if !includePrivate {
+			q = q.Where(sqliteschema.C_ChangesDerefIsDraft + ` = 0`)
+		}
+
+		if cs != nil {
+			q = q.Where(sqliteschema.C_ChangesDerefChangeID+` IN (SELECT value FROM json_each(?))`, cs)
+		}
+
+		return sqlitex.Exec(conn.conn, q.String(), func(stmt *sqlite.Stmt) error {
+			stmt.Scan(q.Dest()...)
+			c := cid.NewCidV1(uint64(codec), hash)
+			blk, err := conn.bs.get(conn.conn, c)
+			if err != nil {
+				return fmt.Errorf("failed to iterate change block %s: %w", c, err)
+			}
+			cc, err := vcs.DecodeChange(blk.RawData())
+			if err != nil {
+				return fmt.Errorf("failed to decode change %s: %w", c, err)
+			}
+
+			vc := vcs.VerifiedChange{
+				Block:   blk,
+				Decoded: cc,
+			}
+
+			return fn(vc)
+		}, q.Args()...)
+	})
 }
 
 // LookupPermanode find an internal ID for a given permanode CID.
@@ -260,40 +276,6 @@ func (conn *Conn) EnsureAccountDevice(acc, device cid.Cid) (li LocalIdentity) {
 		return vcssql.AccountDevicesInsertOrIgnore(conn.conn, int64(li.Account), int64(li.Device))
 	})
 	return li
-}
-
-// NewChange creates a new change to modify a given Mintter Object.
-func (conn *Conn) NewChange(obj LocalID, id LocalIdentity, base []LocalID, clock *hlc.Clock) LocalID {
-	if conn.err != nil {
-		return 0
-	}
-
-	for _, v := range base {
-		clock.Track(hlc.Unpack(conn.GetChangeMaxTime(obj, v)))
-	}
-
-	hlcTime := clock.Now().Pack()
-
-	res, err := vcssql.IPFSBlocksNewID(conn.conn)
-	if err != nil {
-		conn.err = err
-		return 0
-	}
-	changeID := res.Seq
-
-	if err := vcssql.ChangesInsertOrIgnore(conn.conn, changeID, int64(obj), int64(id.Account), int64(id.Device), changeKindV1, int64(hlcTime)); err != nil {
-		conn.err = err
-		return 0
-	}
-
-	for _, dep := range base {
-		if err := vcssql.ChangesInsertParent(conn.conn, changeID, int64(dep)); err != nil {
-			conn.err = err
-			return 0
-		}
-	}
-
-	return LocalID(changeID)
 }
 
 // PublicChangeInfo is the public information about a Change.
@@ -437,65 +419,176 @@ func (conn *Conn) ListChanges(obj cid.Cid) ([]PublicChangeInfo, error) {
 	return out, nil
 }
 
-// GetChangeClock returns the clock instance with maximum timestamp for a given change.
-func (conn *Conn) GetChangeClock(object, change LocalID) (c *hlc.Clock) {
+// GetChangeTimestamp returns the timestmap of a given change.
+func (conn *Conn) GetChangeTimestamp(c cid.Cid) (int64, error) {
+	const q = `
+SELECT ` + sqliteschema.C_ChangesStartTime + `
+FROM ` + sqliteschema.T_Changes + `
+WHERE ` + sqliteschema.C_ChangesID + ` = (
+	SELECT ` + sqliteschema.C_IPFSBlocksID + `
+	FROM ` + sqliteschema.T_IPFSBlocks + `
+	WHERE ` + sqliteschema.C_IPFSBlocksMultihash + ` = ?
+	LIMIT 1
+)
+`
+
+	chash := c.Hash()
+
+	var ts int64
+	if err := sqlitex.Exec(conn.conn, q, func(stmt *sqlite.Stmt) error {
+		ts = stmt.ColumnInt64(0)
+		return nil
+	}, chash); err != nil {
+		return 0, err
+	}
+
+	if ts == 0 {
+		return 0, fmt.Errorf("no timestamp for change %s", c)
+	}
+
+	return ts, nil
+}
+
+// Change kinds.
+const (
+	KindRegistration = "mintter:Registration"
+	KindProfile      = "mintter:Profile"
+	KindDocument     = "mintter:Document"
+	KindOpaque       = "mintter:Opaque" // opaque change; mostly used in tests.
+)
+
+// GetDraftChange for a given object.
+func (conn *Conn) GetDraftChange(obj cid.Cid) (c cid.Cid, err error) {
+	var (
+		_ = sqliteschema.T_DraftChanges
+		_ = sqliteschema.C_DraftChangesID
+		_ = sqliteschema.C_DraftChangesPermanodeID
+		_ = sqliteschema.T_IPFSBlocks
+		_ = sqliteschema.C_IPFSBlocksMultihash
+	)
+
+	const q = `
+SELECT
+	codec,
+	multihash
+FROM ipfs_blocks
+WHERE id = (SELECT id FROM draft_changes WHERE permanode_id = (
+	SELECT id FROM ipfs_blocks
+	WHERE codec = ?
+	AND multihash = ?
+	LIMIT 1
+) LIMIT 1)
+`
+
+	ocodec, ohash := ipfs.DecodeCID(obj)
+
+	var (
+		codec int
+		hash  []byte
+	)
+	if err := sqlitex.Exec(conn.conn, q, func(stmt *sqlite.Stmt) error {
+		stmt.Scan(&codec, &hash)
+		c = cid.NewCidV1(uint64(codec), hash)
+		return nil
+	}, ocodec, ohash); err != nil {
+		return c, err
+	}
+
+	if !c.Defined() {
+		return c, fmt.Errorf("no draft for object %s: %w", obj, errNotFound)
+	}
+
+	return c, nil
+}
+
+// MarkChangeAsDraft marks a change to be a draft one.
+func (conn *Conn) MarkChangeAsDraft(obj, change cid.Cid) {
+	// Making a rough query here.
+	// Using the generated columns to detect issues when changing schema.
+	var (
+		_ = sqliteschema.T_DraftChanges
+		_ = sqliteschema.C_DraftChangesID
+		_ = sqliteschema.T_IPFSBlocks
+		_ = sqliteschema.C_IPFSBlocksMultihash
+	)
+
+	const q = `
+INSERT INTO draft_changes (id, permanode_id)
+VALUES (
+	(SELECT id FROM ipfs_blocks WHERE multihash = ? LIMIT 1),
+	(SELECT id FROM ipfs_blocks WHERE multihash = ? LIMIT 1)
+)`
+
 	must.Maybe(&conn.err, func() error {
-		c = hlc.NewClockAt(hlc.Unpack(conn.GetChangeMaxTime(object, change)))
+		return sqlitex.Exec(conn.conn, q, nil, change.Hash(), obj.Hash())
+	})
+}
+
+// PublishDraft makes draft change for a given object public.
+func (conn *Conn) PublishDraft(obj cid.Cid) {
+	// Making a rough query here.
+	// Using the generated columns to detect issues when changing schema.
+	var (
+		_ = sqliteschema.T_DraftChanges
+		_ = sqliteschema.C_DraftChangesID
+		_ = sqliteschema.T_IPFSBlocks
+		_ = sqliteschema.C_IPFSBlocksCodec
+		_ = sqliteschema.C_IPFSBlocksMultihash
+	)
+
+	const q = `
+DELETE FROM draft_changes
+WHERE permanode_id = (
+	SELECT id FROM ipfs_blocks
+	WHERE codec = ?
+	AND multihash = ?
+	LIMIT 1
+)`
+
+	codec, hash := ipfs.DecodeCID(obj)
+
+	must.Maybe(&conn.err, func() error {
+		return sqlitex.Exec(conn.conn, q, nil, codec, hash)
+	})
+}
+
+// RewriteChange in place. Must only be done with draft changes.
+func (conn *Conn) RewriteChange(old cid.Cid, vc vcs.VerifiedChange) {
+	must.Maybe(&conn.err, func() error {
+		oldid, err := conn.bs.deleteBlock(conn.conn, old)
+		if err != nil {
+			return err
+		}
+		conn.storeChangeWithID(vc, oldid)
+		conn.MarkChangeAsDraft(vc.Decoded.Object, vc.Cid())
 		return nil
 	})
-
-	return c
 }
 
-// GetChangeMaxTime returns maximum Hybrid Logical Timestamp for a given change.
-func (conn *Conn) GetChangeMaxTime(object, change LocalID) int64 {
-	if conn.err != nil {
-		return 0
-	}
-
-	var out int64
-
-	onStmt := func(stmt *sqlite.Stmt) error {
-		out = stmt.ColumnInt64(0)
-		return nil
-	}
-
-	q := sqlf.From(string(sqliteschema.Datoms)).
-		Select("MAX("+sqliteschema.DatomsTime.ShortName()+")").
-		Where(sqliteschema.DatomsPermanode.ShortName()+" = ?", object).
-		Where(sqliteschema.DatomsChange.ShortName()+" = ?", change).
-		Limit(1)
-	defer q.Close()
-
-	if err := sqlitex.Exec(conn.conn, q.String(), onStmt, q.Args()...); err != nil {
-		conn.err = err
-		return 0
-	}
-
-	if out == 0 {
-		conn.err = fmt.Errorf("not found lamport time for change %d", change)
-		return 0
-	}
-
-	return out
+// StoreChange in the database. Assumes it's a correct and validated change.
+// The permanode must already exist in the database. Also the parents of change.
+func (conn *Conn) StoreChange(vc vcs.VerifiedChange) {
+	conn.storeChangeWithID(vc, 0)
 }
 
-// StoreRemoteChange stores the changes fetched from the remote peer,
-// and indexes its datoms. It assumes that the change signature was already
-// validated elsewhere. It also assumes that change parents already exist in the database.
-// It also expects that IPFS block of the incoming change is already in the blockstore, placed there
-// by the BitSwap session.
-func (conn *Conn) StoreRemoteChange(obj LocalID, vc vcs.VerifiedChange, onDatom func(conn *Conn, obj, change LocalID, d Datom) error) (change LocalID) {
+func (conn *Conn) storeChangeWithID(vc vcs.VerifiedChange, oldid int64) {
 	must.Maybe(&conn.err, func() error {
-		ch := vc.Decoded
-
-		if ch.Kind != changeKindV1 {
-			panic("BUG: change kind is invalid: " + ch.Kind)
+		obj := conn.lookupObjectID(vc.Decoded.Object)
+		if obj == 0 {
+			return fmt.Errorf("failed to store change %s: missing permanode %s", vc.Cid(), vc.Decoded.Object)
 		}
 
-		// TODO(burdiyan): validate lamport timestamp of the incoming change here, or elsewhere?
+		for _, dep := range vc.Decoded.Parents {
+			ok, err := conn.bs.has(conn.conn, dep)
+			if err != nil {
+				return fmt.Errorf("failed to check change parents in the database: %w", err)
+			}
+			if !ok {
+				return fmt.Errorf("failed to store change %s: missing parent %s", vc.Cid(), dep)
+			}
+		}
 
-		if err := conn.bs.putBlock(conn.conn, vc.Cid(), vc.RawData()); err != nil {
+		if err := conn.bs.putBlockWithID(conn.conn, LocalID(oldid), vc.Cid(), vc.RawData()); err != nil {
 			return err
 		}
 
@@ -503,7 +596,8 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc vcs.VerifiedChange, onDatom 
 		if err != nil || res.IPFSBlocksID == 0 {
 			return fmt.Errorf("ipfs block for the remote change must exist before indexing: %w", err)
 		}
-		change = LocalID(res.IPFSBlocksID)
+		change := LocalID(res.IPFSBlocksID)
+		ch := vc.Decoded
 
 		idLocal := conn.EnsureAccountDevice(ch.Author, ch.Signer)
 
@@ -522,191 +616,104 @@ func (conn *Conn) StoreRemoteChange(obj LocalID, vc vcs.VerifiedChange, onDatom 
 			}
 		}
 
-		datoms, err := ch.Datoms()
-		if err != nil {
-			return err
-		}
+		switch ch.Kind {
+		case KindRegistration:
+			if err := vcssql.AccountDevicesUpdateDelegation(conn.conn, int64(change), int64(idLocal.Account), int64(idLocal.Device)); err != nil {
+				return err
+			}
+		case KindProfile:
+			// TODO(burdiyan): index profiles if needed.
+		case KindDocument:
+			// TODO(burdiyan): avoid having to deserialize again here.
+			patch := &documents.UpdateDraftRequestV2{}
+			if err := proto.Unmarshal(ch.Body, patch); err != nil {
+				return fmt.Errorf("failed to parse body of document change %s: %w", vc.Cid(), err)
+			}
 
-		for _, d := range datoms {
-			conn.AddDatom(obj, change, d)
-			if onDatom != nil {
-				if err := onDatom(conn, obj, change, d); err != nil {
-					return err
+			seen := make(map[string]struct{}, len(patch.Changes))
+
+			// This obviously doesn't need to happen here.
+			// ATM we'll have all the editing history stored in the change, i.e. every block update will be included.
+			// But we only want to index links from the most recent version of a block. So, we iterate backwards here
+			// and remember which blocks we've seen. In reality changes should be cleaned up by the author.
+			for i := len(patch.Changes) - 1; i >= 0; i-- {
+				pc := patch.Changes[i]
+				switch op := pc.Op.(type) {
+				case *documents.DocumentChange_ReplaceBlock:
+					block := op.ReplaceBlock
+					_, ok := seen[block.Id]
+					if ok {
+						continue
+					}
+
+					if err := indexBacklinks(conn, LocalID(obj), change, block); err != nil {
+						return fmt.Errorf("failed to index backlinks: %w", err)
+					}
 				}
 			}
+		case KindOpaque:
+			// No indexing.
+		default:
+			return fmt.Errorf("failed to store change %s: unknown kind %s", vc.Cid(), vc.Decoded.Kind)
 		}
 
 		return nil
 	})
-	return change
 }
 
-// EncodeChange encodes a change into its canonical representation as an IPFS block,
-// and stores it in the internal block store.
-func (conn *Conn) EncodeChange(change LocalID, sig core.KeyPair) blocks.Block {
-	if conn.err != nil {
-		return nil
-	}
+// GetBlock from the block store.
+func (conn *Conn) GetBlock(ctx context.Context, c cid.Cid) (blocks.Block, error) {
+	return conn.bs.get(conn.conn, c)
+}
+
+// DeleteBlock from the block store.
+func (conn *Conn) DeleteBlock(ctx context.Context, c cid.Cid) error {
+	_, err := conn.bs.deleteBlock(conn.conn, c)
+	return err
+}
+
+// GetHeads returns heads for a given object.
+func (conn *Conn) GetHeads(obj cid.Cid, includeDrafts bool) (heads []cid.Cid, err error) {
+	lid := conn.LookupPermanode(obj)
 
 	var (
-		body         vcs.ChangeBody
-		attrLookup   lookup[Attribute, Attribute]
-		stringLookup lookup[string, string]
-		entityLookup lookup[NodeID, NodeID]
-		bytesLookup  lookup[string, []byte]
-		cidsLookup   lookup[cid.Cid, cid.Cid]
+		headCodec int
+		headHash  []byte
 	)
+	qq := sqlf.
+		Select(sqliteschema.C_IPFSBlocksCodec).To(&headCodec).
+		Select(sqliteschema.C_IPFSBlocksMultihash).To(&headHash).
+		From(sqliteschema.T_ChangeHeads).
+		Join(sqliteschema.T_IPFSBlocks, sqliteschema.C_IPFSBlocksID+" = "+sqliteschema.C_ChangeHeadsID).
+		Where(sqliteschema.C_ChangeHeadsPermanodeID+" = ?", lid)
+	defer qq.Close()
 
-	var prevHLC int64
-	onStmt := func(stmt *sqlite.Stmt) error {
-		dr := DatomRow{stmt: stmt}
+	draft, err := conn.GetDraftChange(obj)
+	if err != nil && !errors.Is(err, errNotFound) {
+		return nil, err
+	}
 
-		hlcTime := dr.Time()
-		if hlcTime <= prevHLC {
-			return fmt.Errorf("BUG: unexpected seq order: prev=%d cur=%d", prevHLC, hlcTime)
-		}
-		prevHLC = hlcTime
-
-		entity := dr.Entity()
-		attr := dr.Attr()
-		if attr == "" {
-			return fmt.Errorf("BUG: bad attr")
-		}
-
-		vtype, v := dr.Value()
-
-		var val int
-
-		switch vtype {
-		case vcs.ValueTypeRef:
-			data := v.(NodeID)
-			val = entityLookup.Put(data, data)
-		case vcs.ValueTypeString:
-			data := v.(string)
-			val = stringLookup.Put(data, data)
-		case vcs.ValueTypeInt:
-			val = v.(int)
-		case vcs.ValueTypeBool:
-			vb := v.(bool)
-			if vb {
-				val = 1
-			} else {
-				val = 0
-			}
-		case vcs.ValueTypeBytes:
-			data := v.([]byte)
-			// Can't use []byte as map's key, so doing zero-copy
-			// conversion to string to be used as a map key.
-			val = bytesLookup.Put(*(*string)(unsafe.Pointer(&data)), data)
-		case vcs.ValueTypeCID:
-			val = cidsLookup.Put(v.(cid.Cid), v.(cid.Cid))
-		default:
-			return fmt.Errorf("BUG: invalid value type to encode")
+	if err := sqlitex.Exec(conn.conn, qq.String(), func(stmt *sqlite.Stmt) error {
+		stmt.Scan(qq.Dest()...)
+		c := cid.NewCidV1(uint64(headCodec), headHash)
+		if !includeDrafts && c.Equals(draft) {
+			return nil
 		}
 
-		body.Datoms = append(body.Datoms, [5]int{
-			int(hlcTime),
-			entityLookup.Put(entity, entity),
-			attrLookup.Put(attr, attr),
-			int(vtype),
-			val,
-		})
-
+		heads = append(heads, c)
 		return nil
+	}, qq.Args()...); err != nil {
+		return nil, fmt.Errorf("failed to query change heads: %w", err)
 	}
 
-	q := baseDatomQuery(false)
-	q.Where(sqliteschema.DatomsChange.String()+" = ?", change)
-	defer q.Close()
-
-	if err := sqlitex.Exec(conn.conn, q.String(), onStmt, change); err != nil {
-		conn.err = err
-		return nil
-	}
-
-	body.Attrs = attrLookup.cache
-	body.Entities = entityLookup.cache
-	body.Strings = stringLookup.cache
-	body.Bytes = bytesLookup.cache
-	body.CIDs = cidsLookup.cache
-
-	if len(body.Datoms) == 0 {
-		conn.err = fmt.Errorf("encode change: no datoms to write for change %d", change)
-		return nil
-	}
-
-	data, err := cbornode.DumpObject(body)
-	if err != nil {
-		conn.err = err
-		return nil
-	}
-
-	changeInfo, err := vcssql.ChangesGetOne(conn.conn, int64(change))
-	if err != nil {
-		conn.err = err
-		return nil
-	}
-
-	parents, err := vcssql.ChangesGetParents(conn.conn, int64(change))
-	if err != nil {
-		conn.err = err
-		return nil
-	}
-
-	var deps []cid.Cid
-	if len(parents) > 0 {
-		deps = make([]cid.Cid, len(parents))
-		for i, p := range parents {
-			if p.IPFSBlocksMultihash == nil || len(p.IPFSBlocksMultihash) == 0 {
-				conn.err = fmt.Errorf("change %d depends on unencoded change %d", change, p.ChangeDepsParent)
-				return nil
-			}
-
-			deps[i] = cid.NewCidV1(uint64(p.IPFSBlocksCodec), p.IPFSBlocksMultihash)
-		}
-	}
-
-	obj := cid.NewCidV1(uint64(changeInfo.IPFSBlocksCodec), changeInfo.IPFSBlocksMultihash)
-	author := cid.NewCidV1(core.CodecAccountKey, changeInfo.AccountsMultihash)
-
-	c := vcs.Change{
-		ChangeInfo: vcs.ChangeInfo{
-			Object:  obj,
-			Author:  author,
-			Parents: deps,
-			Kind:    changeInfo.ChangesKind,
-			Message: "",
-			Time:    hlc.Unpack(int64(changeInfo.ChangesStartTime)),
-		},
-		Type: vcs.ChangeType,
-		Body: data,
-	}
-
-	sc := c.Sign(sig)
-
-	signed, err := cbornode.DumpObject(sc)
-	if err != nil {
-		conn.err = err
-		return nil
-	}
-
-	blk := ipfs.NewBlock(cid.DagCBOR, signed)
-
-	if err := conn.bs.putBlockWithID(conn.conn, change, blk.Cid(), blk.RawData()); err != nil {
-		conn.err = err
-		return nil
-	}
-
-	return blk
+	return heads, nil
 }
 
 // PutBlock puts an IPFS block into the database.
 func (conn *Conn) PutBlock(blk blocks.Block) {
-	if conn.err != nil {
-		return
-	}
-
-	conn.err = conn.bs.putBlock(conn.conn, blk.Cid(), blk.RawData())
+	must.Maybe(&conn.err, func() error {
+		return conn.bs.putBlock(conn.conn, blk.Cid(), blk.RawData())
+	})
 }
 
 // NewEntity creates a new NodeID.
@@ -716,77 +723,6 @@ func (conn *Conn) NewEntity() (nid vcs.NodeID) {
 	}
 
 	return vcs.NewNodeIDv1(time.Now())
-}
-
-// AddDatoms is like add datom but allows adding more than one.
-func (conn *Conn) AddDatoms(object, change LocalID, dd ...Datom) {
-	must.Maybe(&conn.err, func() error {
-		for _, d := range dd {
-			conn.AddDatom(object, change, d)
-		}
-		return nil
-	})
-}
-
-// AddDatom adds a triple into the database.
-func (conn *Conn) AddDatom(object, change LocalID, d Datom) {
-	must.Maybe(&conn.err, func() error {
-		value := d.Value
-
-		// sqlitex.Exec doesn't support CIDs bind parameters.
-		if d.ValueType == vcs.ValueTypeCID {
-			value = d.Value.(cid.Cid).Bytes()
-		}
-
-		q := sqlf.InsertInto(string(sqliteschema.Datoms)).
-			Set(sqliteschema.DatomsPermanode.ShortName(), object).
-			Set(sqliteschema.DatomsEntity.ShortName(), d.Entity).
-			Set(sqliteschema.DatomsAttr.ShortName(), conn.Attr(d.Attr)).
-			Set(sqliteschema.DatomsValueType.ShortName(), d.ValueType).
-			Set(sqliteschema.DatomsValue.ShortName(), value).
-			Set(sqliteschema.DatomsChange.ShortName(), change).
-			Set(sqliteschema.DatomsTime.ShortName(), d.Time).
-			Set(sqliteschema.DatomsOrigin.ShortName(), d.Origin)
-		defer q.Close()
-
-		if err := sqlitex.Exec(conn.conn, q.String(), nil, q.Args()...); err != nil {
-			return err
-		}
-
-		return nil
-	})
-}
-
-// DeleteDatoms removes all datoms with a given entity and attribute belonging to the given change.
-// Should only be used for changes that are being prepared and not yet published.
-func (conn *Conn) DeleteDatoms(object, change LocalID, entity NodeID, attribute LocalID) (deleted bool) {
-	if conn.err != nil {
-		return
-	}
-
-	if err := vcssql.DatomsDelete(conn.conn, int64(object), int64(entity), int64(change), int64(attribute)); err != nil {
-		conn.err = err
-		return
-	}
-
-	return conn.conn.Changes() > 0
-}
-
-// DeleteDatomByID deletes one datom given its ID.
-func (conn *Conn) DeleteDatomByID(object, change LocalID, id crdt.OpID) (deleted bool) {
-	q := sqlf.DeleteFrom(string(sqliteschema.Datoms)).
-		Where(sqliteschema.DatomsPermanode.ShortName()+" = ?", object).
-		Where(sqliteschema.DatomsChange.ShortName()+" = ?", change).
-		Where(sqliteschema.DatomsTime.ShortName()+" = ?", id.Time()).
-		Where(sqliteschema.DatomsOrigin.ShortName()+" = ?", id.Origin())
-	defer q.Close()
-
-	if err := sqlitex.Exec(conn.conn, q.String(), nil, q.Args()...); err != nil {
-		conn.err = err
-		return false
-	}
-
-	return conn.conn.Changes() > 0
 }
 
 // OpID is an ID used to perform CRDT-style conflict resolution.
@@ -815,66 +751,6 @@ type Datom = vcs.Datom
 
 // LocalVersion is a set of leaf changes that becomes a version of an Object.
 type LocalVersion []LocalID
-
-// SaveVersion saves a named version for a given peer identity.
-func (conn *Conn) SaveVersion(object LocalID, name string, id LocalIdentity, heads LocalVersion) {
-	must.Maybe(&conn.err, func() error {
-		if len(heads) == 0 {
-			return fmt.Errorf("version to save must have changes")
-		}
-
-		for _, h := range heads {
-			if h == 0 {
-				return fmt.Errorf("version to save must have non-zero changes")
-			}
-		}
-
-		data, err := json.Marshal(heads)
-		if err != nil {
-			return err
-		}
-
-		if err := vcssql.NamedVersionsReplace(conn.conn, int64(object), int64(id.Account), int64(id.Device), name, string(data)); err != nil {
-			return err
-		}
-
-		return nil
-	})
-}
-
-// GetVersion loads a named version.
-func (conn *Conn) GetVersion(object LocalID, name string, id LocalIdentity) (out LocalVersion) {
-	must.Maybe(&conn.err, func() error {
-		res, err := vcssql.NamedVersionsGet(conn.conn, int64(object), int64(id.Account), int64(id.Device), name)
-		if err != nil {
-			return err
-		}
-
-		if res.NamedVersionsVersion == "" {
-			return fmt.Errorf("no version (obj: %d, name: %s, account: %d, device: %d)", object, name, id.Account, id.Device)
-		}
-
-		if err := json.Unmarshal([]byte(res.NamedVersionsVersion), &out); err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return out
-}
-
-// DeleteVersion removes a given named version.
-func (conn *Conn) DeleteVersion(object LocalID, name string, id LocalIdentity) {
-	if conn.err != nil {
-		return
-	}
-
-	if err := vcssql.NamedVersionsDelete(conn.conn, int64(object), int64(id.Account), int64(id.Device), name); err != nil {
-		conn.err = err
-		return
-	}
-}
 
 // LocalVersionToPublic converts a local version into the public one.
 func (conn *Conn) LocalVersionToPublic(v LocalVersion) vcs.Version {
@@ -1154,48 +1030,6 @@ type Ref struct {
 	Account cid.Cid
 	Device  cid.Cid
 	Version vcs.Version
-}
-
-// ListAllVersions collects all the known objects with all their versions,
-// and returns all the public information about them.
-//
-// TODO(burdiyan): this is for compatibility with the old code. It's not a good solution.
-func (conn *Conn) ListAllVersions(nameFilter string) (refs map[cid.Cid][]Ref) {
-	must.Maybe(&conn.err, func() error {
-		versions, err := vcssql.NamedVersionsListAll(conn.conn)
-		if err != nil {
-			return err
-		}
-
-		refs = make(map[cid.Cid][]Ref, len(versions))
-
-		for _, ver := range versions {
-			if nameFilter != "" && nameFilter != ver.NamedVersionsName {
-				continue
-			}
-
-			oid := cid.NewCidV1(uint64(ver.PermanodeCodec), ver.PermanodeMultihash)
-			aid := cid.NewCidV1(core.CodecAccountKey, ver.AccountsMultihash)
-			did := cid.NewCidV1(core.CodecDeviceKey, ver.DevicesMultihash)
-
-			var lv LocalVersion
-			if err := json.Unmarshal([]byte(ver.NamedVersionsVersion), &lv); err != nil {
-				return err
-			}
-
-			v := conn.LocalVersionToPublic(lv)
-
-			refs[oid] = append(refs[oid], Ref{
-				Account: aid,
-				Device:  did,
-				Version: v,
-			})
-		}
-
-		return nil
-	})
-
-	return refs
 }
 
 var errNotFound = errors.New("not found")

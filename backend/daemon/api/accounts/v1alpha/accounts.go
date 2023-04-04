@@ -18,7 +18,11 @@ import (
 	"github.com/ipfs/go-cid"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 )
+
+// Profile is exposed for convenience.
+type Profile = accounts.Profile
 
 // Server implement the accounts gRPC server.
 type Server struct {
@@ -62,11 +66,6 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 
 	oid := perma.ID
 
-	me, err := srv.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	conn, release, err := srv.vcsdb.Conn(ctx)
 	if err != nil {
 		return nil, err
@@ -74,19 +73,13 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 	defer release()
 
 	var acc *accounts.Account
-
 	if err := conn.WithTx(false, func() error {
-		obj := conn.LookupPermanode(oid)
-		meLocal := conn.LookupIdentity(me)
-		version := conn.GetVersion(obj, "main", meLocal)
-		cs := conn.ResolveChangeSet(obj, version)
-
-		acc, err = srv.getAccount(conn, obj, cs)
-		if err != nil {
-			return err
+		lid := conn.LookupPermanode(oid)
+		if lid == 0 {
+			return fmt.Errorf("failed to lookup account permanode for account %s", aid.String())
 		}
-
-		return nil
+		acc, err = srv.getAccount(conn, oid, lid)
+		return err
 	}); err != nil {
 		return nil, err
 	}
@@ -94,40 +87,31 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 	return acc, nil
 }
 
-func (srv *Server) getAccount(conn *vcsdb.Conn, obj vcsdb.LocalID, cs vcsdb.ChangeSet) (*accounts.Account, error) {
+func (srv *Server) getAccount(conn *vcsdb.Conn, obj cid.Cid, oid vcsdb.LocalID) (*accounts.Account, error) {
 	acc := &accounts.Account{
-		Id:      conn.GetObjectOwner(obj).String(),
+		Id:      conn.GetObjectOwner(oid).String(),
 		Profile: &accounts.Profile{},
 		Devices: make(map[string]*accounts.Device),
 	}
 
-	if alias := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias); !alias.IsZero() {
-		acc.Profile.Alias = alias.Value.(string)
-	}
-	if bio := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio); !bio.IsZero() {
-		acc.Profile.Bio = bio.Value.(string)
-	}
-	if email := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrEmail); !email.IsZero() {
-		acc.Profile.Email = email.Value.(string)
-	}
-
-	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, mttacc.AttrRegistration)
-	for regs.Next() {
-		d := conn.QueryLastValue(obj, cs, regs.Item().ValueAny().(vcs.NodeID), mttacc.AttrDevice)
-		if d.IsZero() {
-			panic("BUG: registration without a device")
+	conn.IterateChanges(obj, false, nil, func(vc vcs.VerifiedChange) error {
+		// check if kind profile
+		switch vc.Decoded.Kind {
+		case vcsdb.KindProfile:
+			if err := (proto.UnmarshalOptions{Merge: true}).Unmarshal(vc.Decoded.Body, acc.Profile); err != nil {
+				return fmt.Errorf("failed to unmarshal profile update change: %w", err)
+			}
+		case vcsdb.KindRegistration:
+			_ = mttacc.RegistrationProof(vc.Decoded.Body)
+			// TODO(burdiyan): verify proof.
+			devid := vc.Decoded.Signer.String()
+			acc.Devices[devid] = &accounts.Device{PeerId: devid}
+		default:
+			return fmt.Errorf("unknown change kind for account object: %s", vc.Decoded.Kind)
 		}
 
-		did := d.Value.(cid.Cid).String()
-
-		acc.Devices[did] = &accounts.Device{
-			PeerId: did,
-		}
-	}
-
-	if err := regs.Err(); err != nil {
-		return nil, fmt.Errorf("failed to find account '%v': %w", obj, err)
-	}
+		return nil
+	})
 
 	return acc, nil
 }
@@ -138,61 +122,8 @@ func (srv *Server) UpdateProfile(ctx context.Context, in *accounts.Profile) (*ac
 	if err != nil {
 		return nil, err
 	}
-	aid := me.AccountID()
 
-	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
-	if err != nil {
-		return nil, err
-	}
-
-	conn, release, err := srv.vcsdb.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer release()
-
-	errNoUpdate := errors.New("nothing to update")
-
-	if err := conn.WithTx(true, func() error {
-		obj := conn.LookupPermanode(perma.ID)
-		meLocal := conn.EnsureIdentity(me)
-		version := conn.GetVersion(obj, "main", meLocal)
-		clock := hlc.NewClock()
-		for _, v := range version {
-			vt := conn.GetChangeMaxTime(obj, v)
-			clock.Track(hlc.Unpack(vt))
-		}
-		cs := conn.ResolveChangeSet(obj, version)
-		change := conn.NewChange(obj, meLocal, version, clock)
-
-		batch := vcs.NewBatch(clock, me.DeviceKey().Abbrev())
-
-		email := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrEmail)
-		alias := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias)
-		bio := conn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio)
-
-		if email.IsZero() || email.Value.(string) != in.Email {
-			batch.Add(vcs.RootNode, mttacc.AttrEmail, in.Email)
-		}
-
-		if alias.IsZero() || alias.Value.(string) != in.Alias {
-			batch.Add(vcs.RootNode, mttacc.AttrAlias, in.Alias)
-		}
-
-		if bio.IsZero() || bio.Value.(string) != in.Bio {
-			batch.Add(vcs.RootNode, mttacc.AttrBio, in.Bio)
-		}
-
-		dirty := batch.Dirty()
-		if len(dirty) == 0 {
-			return errNoUpdate
-		}
-		conn.AddDatoms(obj, change, dirty...)
-		conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
-		conn.EncodeChange(change, me.DeviceKey())
-
-		return nil
-	}); err != nil && !errors.Is(err, errNoUpdate) {
+	if err := UpdateProfile(ctx, me, srv.vcsdb, in); err != nil {
 		return nil, err
 	}
 
@@ -222,20 +153,22 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 	}
 
 	if err := conn.WithTx(false, func() error {
-		accs := conn.ListObjectsByType(mttacc.AccountType)
-		meLocal := conn.LookupIdentity(me)
+		accs, err := vcssql.PermanodesListByType(conn.InternalConn(), string(mttacc.AccountType))
+		if err != nil {
+			return err
+		}
 		myAcc := conn.LookupPermanode(perma.ID)
 
 		resp.Accounts = make([]*accounts.Account, 0, len(accs))
 
 		for _, a := range accs {
-			if a == myAcc {
+			if vcsdb.LocalID(a.PermanodesID) == myAcc {
 				continue
 			}
-			v := conn.GetVersion(a, "main", meLocal)
-			cs := conn.ResolveChangeSet(a, v)
 
-			acc, err := srv.getAccount(conn, a, cs)
+			obj := cid.NewCidV1(uint64(a.PermanodeCodec), a.PermanodeMultihash)
+
+			acc, err := srv.getAccount(conn, obj, vcsdb.LocalID(a.PermanodesID))
 			if err != nil {
 				return err
 			}
@@ -310,4 +243,79 @@ func (srv *Server) getMe() (core.Identity, error) {
 		return core.Identity{}, status.Errorf(codes.FailedPrecondition, "account is not initialized yet")
 	}
 	return me, nil
+}
+
+// UpdateProfile is exposed because it's needed to update the site info. This is very bad
+// and should not be this way. TODO(burdiyan): get rid of this!
+func UpdateProfile(ctx context.Context, me core.Identity, db *vcsdb.DB, in *accounts.Profile) error {
+	aid := me.AccountID()
+
+	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
+	if err != nil {
+		return err
+	}
+
+	obj := perma.ID
+
+	conn, release, err := db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	errNoUpdate := errors.New("nothing to update")
+
+	old := &accounts.Profile{}
+
+	clock := hlc.NewClock()
+	var heads []cid.Cid
+	if err := conn.WithTx(false, func() error {
+		heads, err = conn.GetHeads(obj, true)
+		if err != nil {
+			return err
+		}
+
+		for _, h := range heads {
+			ts, err := conn.GetChangeTimestamp(h)
+			if err != nil {
+				return err
+			}
+			clock.Track(hlc.Unpack(ts))
+		}
+
+		conn.IterateChanges(obj, false, nil, func(vc vcs.VerifiedChange) error {
+			if vc.Decoded.Kind != vcsdb.KindProfile {
+				return nil
+			}
+			if err := (proto.UnmarshalOptions{Merge: true}).Unmarshal(vc.Decoded.Body, old); err != nil {
+				return fmt.Errorf("unable to unmarshal profile change %s: %w", vc.Cid(), err)
+			}
+			return nil
+		})
+		return nil
+	}); err != nil && !errors.Is(err, errNoUpdate) {
+		return err
+	}
+
+	// Nothing to update.
+	if proto.Equal(old, in) {
+		return nil
+	}
+
+	data, err := proto.Marshal(in)
+	if err != nil {
+		return fmt.Errorf("failed to marshal profile update: %w", err)
+	}
+
+	ch := vcs.NewChange(me, obj, heads, vcsdb.KindProfile, clock.Now(), data)
+	newvc, err := ch.Block()
+	if err != nil {
+		return err
+	}
+	conn.StoreChange(newvc)
+	if err := conn.Err(); err != nil {
+		return fmt.Errorf("failed to store profile update change: %w", err)
+	}
+
+	return conn.Err()
 }

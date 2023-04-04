@@ -3,7 +3,6 @@ package testutil
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 	"unicode"
@@ -15,7 +14,6 @@ import (
 	"github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/multiformats/go-multihash"
-	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
@@ -84,18 +82,11 @@ func (txn *fakeTxn) Discard(ctx context.Context) {}
 // For some weird reason they made Messages uncomparable using normal mechanisms.
 func ProtoEqual(t *testing.T, want, got proto.Message, msg string, format ...interface{}) {
 	t.Helper()
-	ok := proto.Equal(want, got)
-	if !ok {
-		fmt.Println("Want:")
-		litter.Dump(want)
-		fmt.Println("Got:")
-		litter.Dump(got)
 
-		if format != nil {
-			t.Fatalf(msg, format...)
-		} else {
-			t.Fatal(msg)
-		}
+	diff := cmp.Diff(want, got, ExportedFieldsFilter())
+	if diff != "" {
+		t.Log(diff)
+		t.Fatalf(msg, format...)
 	}
 }
 

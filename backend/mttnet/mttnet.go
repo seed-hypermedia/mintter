@@ -17,7 +17,6 @@ import (
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"strconv"
-	"sync"
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
@@ -26,7 +25,6 @@ import (
 	dssync "github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	provider "github.com/ipfs/go-ipfs-provider"
-	"github.com/ipfs/go-ipfs-provider/simple"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
 
@@ -46,7 +44,7 @@ import (
 
 // Prototcol values.
 const (
-	ProtocolVersion = "0.0.2"
+	ProtocolVersion = "0.0.3"
 	ProtocolName    = "mintter"
 
 	ProtocolID protocol.ID = "/" + ProtocolName + "/" + ProtocolVersion
@@ -121,11 +119,6 @@ type Node struct {
 	invoicer        Invoicer
 	client          *Client
 
-	// Cache for our own account device proof.
-	once                sync.Once
-	accountDeviceProof  []byte
-	accountPublicKeyRaw []byte
-
 	p2p        *ipfs.Libp2p
 	bitswap    *ipfs.Bitswap
 	providing  provider.System
@@ -146,7 +139,7 @@ type LocalFunctions interface {
 // Synchronizer is a subset of the syncing service that
 // is able to sync content with remote peers on demand.
 type Synchronizer interface {
-	SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...*p2p.Object) error
+	SyncWithPeer(ctx context.Context, device cid.Cid, initialObjects ...cid.Cid) error
 }
 
 // NewServer returns a new mttnet API server.
@@ -249,7 +242,7 @@ func New(cfg config.P2P, vcs *vcsdb.DB, accountObj cid.Cid, me core.Identity, lo
 	clean.Add(bitswap)
 
 	// TODO(burdiyan): find a better reproviding strategy than naive provide-everything.
-	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, ipfs.ReprovidingStrategy(simple.NewBlockstoreProvider(vcs.Blockstore())))
+	providing, err := ipfs.NewProviderSystem(host.Datastore(), host.Routing, makeProvidingStrategy(vcs.DB()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize providing: %w", err)
 	}

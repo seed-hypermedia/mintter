@@ -75,6 +75,10 @@ func NewTree(vclock *VectorClock) *Tree {
 // The position of a node is defined by it's parent node ID, and it's left sibling node ID.
 // If the node is already where it should be, no new operations will be produced.
 func (d *Tree) SetNodePosition(site, nodeID, parentID, leftID string) error {
+	if parentID == "" {
+		parentID = RootNodeID
+	}
+
 	var leftPos *position
 	if leftID == "" {
 		l, err := d.findSubtree(parentID)

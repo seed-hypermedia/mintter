@@ -3,13 +3,12 @@ package mttacc
 
 import (
 	"context"
-	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
-	"time"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
 )
 
@@ -32,58 +31,28 @@ func Register(ctx context.Context, acc, device core.KeyPair, conn *vcsdb.Conn) (
 		return c, err
 	}
 
-	obj := conn.NewObject(perma)
-	id := conn.EnsureIdentity(core.NewIdentity(acc.PublicKey, device))
-	clock := hlc.NewClock()
-	change := conn.NewChange(obj, id, nil, clock)
+	oid := perma.ID
 
 	proof, err := NewRegistrationProof(acc, device.CID())
 	if err != nil {
 		return c, err
 	}
 
-	reg := vcs.NewNodeIDv1(time.Now())
+	me := core.NewIdentity(acc.PublicKey, device)
 
-	batch := vcs.NewBatch(clock, device.Abbrev())
-	batch.Add(reg, AttrDevice, device.CID())
-	batch.Add(reg, AttrProof, []byte(proof))
-	batch.Add(vcs.RootNode, AttrRegistration, reg)
+	change := vcs.NewChange(me, oid, nil, vcsdb.KindRegistration, hlc.NewClock().Now(), proof)
 
-	conn.AddDatoms(obj, change, batch.Dirty()...)
-	conn.SaveVersion(obj, "main", id, vcsdb.LocalVersion{change})
-	conn.EncodeChange(change, device)
+	vc, err := change.Block()
+	if err != nil {
+		return c, err
+	}
+
+	defer sqlitex.Save(conn.InternalConn())(&err)
+	conn.NewObject(perma)
+	conn.StoreChange(vc)
+	if err := conn.Err(); err != nil {
+		return c, err
+	}
 
 	return perma.ID, nil
-}
-
-// GetDeviceProof searches for a registration proof of a device under an account.
-func GetDeviceProof(conn *vcsdb.Conn, me core.Identity, account, device cid.Cid) (proof []byte, err error) {
-	perma, err := vcs.EncodePermanode(NewAccountPermanode(account))
-	if err != nil {
-		return nil, err
-	}
-
-	obj := conn.LookupPermanode(perma.ID)
-	localMe := conn.EnsureIdentity(me)
-	ver := conn.GetVersion(obj, "main", localMe)
-	cs := conn.ResolveChangeSet(obj, ver)
-
-	regs := conn.QueryValuesByAttr(obj, cs, vcs.RootNode, AttrRegistration)
-	for regs.Next() {
-		rv := regs.Item().ValueAny().(vcs.NodeID)
-		dd := conn.QueryLastValue(obj, cs, rv, AttrDevice)
-		if !dd.Value.(cid.Cid).Equals(device) {
-			continue
-		}
-		proof := conn.QueryLastValue(obj, cs, rv, AttrProof)
-		if err := regs.Close(); err != nil {
-			return nil, err
-		}
-		return proof.Value.([]byte), nil
-	}
-	if regs.Err() != nil {
-		return nil, regs.Err()
-	}
-
-	return nil, fmt.Errorf("proof not found")
 }
