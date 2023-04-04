@@ -109,25 +109,25 @@ export function Editor({
     [plugins, editor],
   )
 
-  const [mouseDown, setMouseDown] = useState(false);
+  const [mouseDown, setMouseDown] = useState(false)
 
   useEffect(() => {
     function handleMouseDown() {
-      setMouseDown(true);
+      setMouseDown(true)
     }
 
     function handleMouseUp() {
-      setMouseDown(false);
+      setMouseDown(false)
     }
 
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousedown', handleMouseDown)
+    document.addEventListener('mouseup', handleMouseUp)
 
     return () => {
-      document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, []);
+      document.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
 
   // async function createDummyComment(event: any) {
   //   event.preventDefault()
