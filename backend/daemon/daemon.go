@@ -27,7 +27,6 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/syncing"
 	"mintter/backend/wallet"
@@ -314,7 +313,7 @@ func initNetwork(
 		}
 
 		// We assume registration already happened.
-		perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(id.AccountID()))
+		perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(id.AccountID()))
 		if err != nil {
 			return err
 		}

@@ -9,7 +9,6 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 	"time"
@@ -248,7 +247,7 @@ func makeTestSrv(t *testing.T, name string, siteCfg ...config.Site) (*Server, *s
 
 	conn, release, err := hvcs.Conn(context.Background())
 	require.NoError(t, err)
-	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	reg, err := vcsdb.Register(context.Background(), u.Account, u.Device, conn)
 	release()
 	require.NoError(t, err)
 	cfg := config.Default()

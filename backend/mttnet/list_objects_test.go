@@ -5,7 +5,6 @@ import (
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
-	"mintter/backend/vcs/mttdoc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 	"time"
@@ -21,7 +20,7 @@ func TestListObjects(t *testing.T) {
 	ctx := context.Background()
 
 	clock := hlc.NewClockWithWall(func() time.Time { return time.Time{} })
-	perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.me.AccountID(), clock.Now()))
+	perma, err := vcs.EncodePermanode(vcsdb.NewDocumentPermanode(alice.me.AccountID(), clock.Now()))
 	require.NoError(t, err)
 	ch := vcs.NewChange(alice.me, perma.ID, nil, vcsdb.KindOpaque, clock.Now(), []byte("opaque content"))
 	vc, err := ch.Block()

@@ -24,7 +24,6 @@ const ChangeType ObjectType = "https://schema.mintter.org/Change"
 
 func init() {
 	cbornode.RegisterCborType(Change{})
-	cbornode.RegisterCborType(ChangeBody{})
 }
 
 // ChangeInfo is the metadata of the Change.
@@ -90,73 +89,6 @@ func (ch Change) Block() (vc VerifiedChange, err error) {
 	}
 
 	return vc, nil
-}
-
-// Datoms returns the list of Datoms created by this Change.
-func (ch Change) Datoms() ([]Datom, error) {
-	if ch.Kind != ChangeKindV1 {
-		return nil, fmt.Errorf("change kind %q is invalid", ch.Kind)
-	}
-
-	var cb ChangeBody
-	if err := cbornode.DecodeInto(ch.Body, &cb); err != nil {
-		return nil, fmt.Errorf("failed to decode datoms from change body: %w", err)
-	}
-
-	key, err := core.PublicKeyFromCID(ch.Signer)
-	if err != nil {
-		return nil, err
-	}
-
-	origin := key.Abbrev()
-
-	out := make([]Datom, len(cb.Datoms))
-
-	for i, d := range cb.Datoms {
-		out[i] = Datom{
-			Entity:    cb.Entities[d[1]],
-			Attr:      cb.Attrs[d[2]],
-			ValueType: ValueType(d[3]),
-			Time:      int64(d[0]),
-			Origin:    origin,
-		}
-
-		switch out[i].ValueType {
-		case ValueTypeRef:
-			out[i].Value = cb.Entities[d[4]]
-		case ValueTypeString:
-			out[i].Value = cb.Strings[d[4]]
-		case ValueTypeInt:
-			out[i].Value = d[4]
-		case ValueTypeBool:
-			switch d[4] {
-			case 0:
-				out[i].Value = false
-			case 1:
-				out[i].Value = true
-			default:
-				return nil, fmt.Errorf("bad boolean value: %v", d[4])
-			}
-		case ValueTypeBytes:
-			out[i].Value = cb.Bytes[d[4]]
-		case ValueTypeCID:
-			out[i].Value = cb.CIDs[d[4]]
-		default:
-			return nil, fmt.Errorf("unsupported value type: %v", out[i].ValueType)
-		}
-	}
-
-	return out, nil
-}
-
-// ChangeBody is the body of the Change.
-type ChangeBody struct {
-	Entities []NodeID    `refmt:"e,omitempty"`
-	Strings  []string    `refmt:"s,omitempty"`
-	Bytes    [][]byte    `refmt:"b,omitempty"`
-	Attrs    []Attribute `refmt:"a,omitempty"`
-	CIDs     []cid.Cid   `refmt:"c,omitempty"`
-	Datoms   [][5]int    `refmt:"d"` // time, entity, attrIdx, valueType, stringIdx | entityIdx | bool | int
 }
 
 // Less defines total order among changes.

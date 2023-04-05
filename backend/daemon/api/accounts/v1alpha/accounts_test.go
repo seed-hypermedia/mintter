@@ -8,7 +8,6 @@ import (
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	"mintter/backend/pkg/future"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"testing"
 
@@ -75,7 +74,7 @@ func newTestServer(t *testing.T, name string) *Server {
 	defer release()
 
 	err = conn.WithTx(true, func() error {
-		_, err := mttacc.Register(ctx, u.Account, u.Device, conn)
+		_, err := vcsdb.Register(ctx, u.Account, u.Device, conn)
 		return err
 	})
 	require.NoError(t, err)

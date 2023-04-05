@@ -11,7 +11,6 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
-	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 
@@ -59,7 +58,7 @@ func (srv *Server) GetAccount(ctx context.Context, in *accounts.GetAccountReques
 		aid = acc
 	}
 
-	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(aid))
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +101,7 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj cid.Cid, oid vcsdb.LocalID) 
 				return fmt.Errorf("failed to unmarshal profile update change: %w", err)
 			}
 		case vcsdb.KindRegistration:
-			_ = mttacc.RegistrationProof(vc.Decoded.Body)
+			_ = vcsdb.RegistrationProof(vc.Decoded.Body)
 			// TODO(burdiyan): verify proof.
 			devid := vc.Decoded.Signer.String()
 			acc.Devices[devid] = &accounts.Device{PeerId: devid}
@@ -147,13 +146,13 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 
 	resp := &accounts.ListAccountsResponse{}
 
-	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(me.AccountID()))
+	perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(me.AccountID()))
 	if err != nil {
 		return nil, err
 	}
 
 	if err := conn.WithTx(false, func() error {
-		accs, err := vcssql.PermanodesListByType(conn.InternalConn(), string(mttacc.AccountType))
+		accs, err := vcssql.PermanodesListByType(conn.InternalConn(), string(vcsdb.AccountType))
 		if err != nil {
 			return err
 		}
@@ -250,7 +249,7 @@ func (srv *Server) getMe() (core.Identity, error) {
 func UpdateProfile(ctx context.Context, me core.Identity, db *vcsdb.DB, in *accounts.Profile) error {
 	aid := me.AccountID()
 
-	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
+	perma, err := vcs.EncodePermanode(vcsdb.NewAccountPermanode(aid))
 	if err != nil {
 		return err
 	}

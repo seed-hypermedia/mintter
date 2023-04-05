@@ -1,4 +1,4 @@
-package mttacc
+package sqlitevcs
 
 import (
 	"mintter/backend/core/coretest"

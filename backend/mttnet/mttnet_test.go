@@ -9,7 +9,7 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
-	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/sqlitevcs"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
@@ -47,7 +47,7 @@ func makeTestPeer(t *testing.T, name string, siteCfg ...config.Site) (*Node, con
 
 	conn, release, err := hvcs.Conn(context.Background())
 	require.NoError(t, err)
-	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	reg, err := sqlitevcs.Register(context.Background(), u.Account, u.Device, conn)
 	release()
 	require.NoError(t, err)
 

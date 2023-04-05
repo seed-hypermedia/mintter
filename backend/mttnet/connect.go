@@ -8,7 +8,7 @@ import (
 	"mintter/backend/db/sqliteschema"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/vcs"
-	"mintter/backend/vcs/mttacc"
+	"mintter/backend/vcs/sqlitevcs"
 
 	"crawshaw.io/sqlite"
 	"crawshaw.io/sqlite/sqlitex"
@@ -101,7 +101,7 @@ func (n *Node) verifyHandshake(ctx context.Context, device cid.Cid, pb *p2p.Hand
 		return fmt.Errorf("failed to parse remote account public key: %w", err)
 	}
 
-	if err := mttacc.RegistrationProof(pb.AccountDeviceProof).Verify(pubKey, device); err != nil {
+	if err := sqlitevcs.RegistrationProof(pb.AccountDeviceProof).Verify(pubKey, device); err != nil {
 		return fmt.Errorf("failed to verify account device registration proof: %w", err)
 	}
 

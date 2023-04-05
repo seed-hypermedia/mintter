@@ -10,7 +10,6 @@ import (
 	"mintter/backend/pkg/future"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
-	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"time"
@@ -115,14 +114,14 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 
 		perma.ID = blk.Cid()
 		perma.Data = blk.RawData()
-		var docperma mttdoc.DocumentPermanode
+		var docperma sqlitevcs.DocumentPermanode
 		if err := cbornode.DecodeInto(perma.Data, &docperma); err != nil {
 			return nil, fmt.Errorf("failed to decode permanode for document %s: %w", obj, err)
 		}
 		perma.Permanode = docperma
 
 	} else {
-		perma, err = vcs.EncodePermanode(mttdoc.NewDocumentPermanode(me.AccountID(), clock.Now()))
+		perma, err = vcs.EncodePermanode(sqlitevcs.NewDocumentPermanode(me.AccountID(), clock.Now()))
 		if err != nil {
 			return nil, err
 		}
@@ -312,7 +311,7 @@ func (api *Server) ListDrafts(ctx context.Context, in *documents.ListDraftsReque
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(mttdoc.DocumentType))
+	docs, err := vcssql.PermanodesListByType(conn, string(sqlitevcs.DocumentType))
 	release()
 	if err != nil {
 		return nil, err
@@ -527,7 +526,7 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 		return nil, err
 	}
 
-	docs, err := vcssql.PermanodesListByType(conn, string(mttdoc.DocumentType))
+	docs, err := vcssql.PermanodesListByType(conn, string(sqlitevcs.DocumentType))
 	release()
 	if err != nil {
 		return nil, err
@@ -569,7 +568,7 @@ func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, inclu
 			return nil, fmt.Errorf("failed to get permanode for draft %s: %w", oid, err)
 		}
 
-		var docperma mttdoc.DocumentPermanode
+		var docperma sqlitevcs.DocumentPermanode
 		if err := cbornode.DecodeInto(blk.RawData(), &docperma); err != nil {
 			return nil, fmt.Errorf("failed to decode permanode for draft %s: %w", oid, err)
 		}

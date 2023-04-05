@@ -1,43 +1,49 @@
-package mttacc
+package sqlitevcs
 
 import (
+	context "context"
 	"fmt"
 	"mintter/backend/core"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
 
+	"crawshaw.io/sqlite/sqlitex"
 	"github.com/ipfs/go-cid"
-	cbornode "github.com/ipfs/go-ipld-cbor"
 )
 
-// AccountType is a type URL for Account Permanodes.
-const AccountType vcs.ObjectType = "https://schema.mintter.org/Account"
+// Register links device under a given account. Returns the CID of the resulting account object.
+func Register(ctx context.Context, acc, device core.KeyPair, conn *Conn) (c cid.Cid, err error) {
+	aid := acc.CID()
 
-func init() {
-	cbornode.RegisterCborType(AccountPermanode{})
-	cbornode.RegisterCborType(DeviceRegistration{})
-}
-
-// AccountPermanode is an implementation of a Permanode for Account objects.
-type AccountPermanode struct {
-	vcs.BasePermanode
-}
-
-// NewAccountPermanode creates a new permanode for an Account.
-func NewAccountPermanode(owner cid.Cid) AccountPermanode {
-	return AccountPermanode{
-		BasePermanode: vcs.BasePermanode{
-			Type:       AccountType,
-			Owner:      owner,
-			CreateTime: hlc.Time{}, // zero time for deterministic permanode.
-		},
+	perma, err := vcs.EncodePermanode(NewAccountPermanode(aid))
+	if err != nil {
+		return c, err
 	}
-}
 
-// DeviceRegistration delegates capabilities to mutate an Account to a Device.
-type DeviceRegistration struct {
-	Device cid.Cid
-	Proof  RegistrationProof
+	oid := perma.ID
+
+	proof, err := NewRegistrationProof(acc, device.CID())
+	if err != nil {
+		return c, err
+	}
+
+	me := core.NewIdentity(acc.PublicKey, device)
+
+	change := vcs.NewChange(me, oid, nil, KindRegistration, hlc.NewClock().Now(), proof)
+
+	vc, err := change.Block()
+	if err != nil {
+		return c, err
+	}
+
+	defer sqlitex.Save(conn.InternalConn())(&err)
+	conn.NewObject(perma)
+	conn.StoreChange(vc)
+	if err := conn.Err(); err != nil {
+		return c, err
+	}
+
+	return perma.ID, nil
 }
 
 // RegistrationProof is a cryptographic proof certifying that

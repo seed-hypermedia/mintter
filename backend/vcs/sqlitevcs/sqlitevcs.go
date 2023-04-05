@@ -5,9 +5,12 @@ package sqlitevcs
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"mintter/backend/core"
+	"mintter/backend/db/sqlitegen"
+	"mintter/backend/db/sqlitegen/qb"
 	"mintter/backend/db/sqliteschema"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	"mintter/backend/ipfs"
@@ -16,6 +19,7 @@ import (
 	"mintter/backend/vcs/hlc"
 	"mintter/backend/vcs/vcssql"
 	"sort"
+	"strconv"
 	"time"
 
 	"crawshaw.io/sqlite"
@@ -82,9 +86,6 @@ type Conn struct {
 func (conn *Conn) InternalConn() *sqlite.Conn {
 	return conn.conn
 }
-
-// Attribute is here during the refactoring.
-type Attribute = vcs.Attribute
 
 // Attr ensures an internal ID for an attribute.
 
@@ -716,39 +717,6 @@ func (conn *Conn) PutBlock(blk blocks.Block) {
 	})
 }
 
-// NewEntity creates a new NodeID.
-func (conn *Conn) NewEntity() (nid vcs.NodeID) {
-	if conn.err != nil {
-		return
-	}
-
-	return vcs.NewNodeIDv1(time.Now())
-}
-
-// OpID is an ID used to perform CRDT-style conflict resolution.
-// First we compare lamport timestamp, then change, then seq.
-// Notice that LocalID is not enough to compare the changes,
-// because each peer will have different local IDs. This needs to
-// be resolve to the full multihash ID. But this is only necessary
-// in case of concurrency, which is rare, so it's OK to lookup
-// the multihash only when necessary.
-type OpID struct {
-	LamportTime int
-	Change      LocalID
-	Seq         int
-}
-
-// IsZero checks if OpID is a zero value.
-func (o OpID) IsZero() bool {
-	return o.Change == 0
-}
-
-// NodeID is here during the refactoring.
-type NodeID = vcs.NodeID
-
-// Datom is here during the refactoring.
-type Datom = vcs.Datom
-
 // LocalVersion is a set of leaf changes that becomes a version of an Object.
 type LocalVersion []LocalID
 
@@ -1034,32 +1002,64 @@ type Ref struct {
 
 var errNotFound = errors.New("not found")
 
-// OpComparator is a comparison function which compares two, possibly concurrent, operations.
-// It must return -1 if a < b; +1 if a > b; 0 if a == b.
-type OpComparator func(a OpID, b OpID) int
+// ChangeSet is a JSON-encoded array of LocalID,
+// which represents a full list of changes for a given
+// object at a given point in time.
+type ChangeSet []byte
 
-// BasicOpCompare is a comparison function which panics in case of concurrent
-// operations from different changes.
-func BasicOpCompare(a, b OpID) int {
-	if a.LamportTime < b.LamportTime {
-		return -1
+var qLoadChangeSet = qb.MakeQuery(sqliteschema.Schema, "loadChangeSet", sqlitegen.QueryKindMany,
+	"WITH RECURSIVE changeset (change) AS", qb.SubQuery(
+		"SELECT value",
+		"FROM json_each(:heads)",
+		"UNION",
+		"SELECT", qb.Results(
+			sqliteschema.ChangeDepsParent,
+		),
+		"FROM", sqliteschema.ChangeDeps,
+		"JOIN changeset ON changeset.change", "=", sqliteschema.ChangeDepsChild,
+	), '\n',
+	"SELECT json_group_array(change)", '\n',
+	"FROM changeset", '\n',
+	"LIMIT 1",
+)
+
+// ResolveChangeSet recursively walks the DAG of Changes from the given leafs (heads)
+// up to the first change and returns the list of resolved changes as a JSON array.
+func (conn *Conn) ResolveChangeSet(object LocalID, heads LocalVersion) (cs ChangeSet) {
+	must.Maybe(&conn.err, func() error {
+		heads, err := json.Marshal(heads)
+		if err != nil {
+			return nil
+		}
+
+		return sqlitex.Exec(conn.conn, qLoadChangeSet.SQL, func(stmt *sqlite.Stmt) error {
+			cs = stmt.ColumnBytes(0)
+			return nil
+		}, heads)
+	})
+	return cs
+}
+
+// ChangeInfo contains metadata about a given Change.
+type ChangeInfo struct {
+	LocalID LocalID
+	CID     cid.Cid
+}
+
+// IsZero indicates whether it's a zero value.
+func (ci ChangeInfo) IsZero() bool {
+	return ci.LocalID == 0
+}
+
+// StringID returns ChangeID as a string. Including for in-progress changes.
+func (ci ChangeInfo) StringID() string {
+	if ci.IsZero() {
+		return ""
 	}
 
-	if a.LamportTime > b.LamportTime {
-		return +1
+	if ci.CID.Defined() {
+		return ci.CID.String()
 	}
 
-	if a.Change != b.Change {
-		panic("TODO: implement comparison of concurrent ops from different changes")
-	}
-
-	if a.Seq < b.Seq {
-		return -1
-	}
-
-	if a.Seq > b.Seq {
-		return +1
-	}
-
-	panic("BUG: comparing equal operations")
+	return "$LOCAL$:" + strconv.Itoa(int(ci.LocalID))
 }

@@ -11,10 +11,7 @@ import (
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
 	"mintter/backend/vcs/hlc"
-	"mintter/backend/vcs/mttacc"
-	"mintter/backend/vcs/mttdoc"
 	"mintter/backend/vcs/sqlitevcs"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"path/filepath"
 	"testing"
 
@@ -30,8 +27,8 @@ func TestPermanodeFromMap(t *testing.T) {
 	tests := []struct {
 		In vcs.Permanode
 	}{
-		{In: mttdoc.NewDocumentPermanode(alice.AccountID, hlc.NewClock().Now())},
-		{In: mttacc.NewAccountPermanode(alice.AccountID)},
+		{In: sqlitevcs.NewDocumentPermanode(alice.AccountID, hlc.NewClock().Now())},
+		{In: sqlitevcs.NewAccountPermanode(alice.AccountID)},
 	}
 
 	for _, tt := range tests {
@@ -91,7 +88,7 @@ func TestSync(t *testing.T) {
 
 		err = conn.WithTx(true, func() error {
 			clock := hlc.NewClock()
-			perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
+			perma, err := vcs.EncodePermanode(sqlitevcs.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
 			alicePerma = perma
 			require.NoError(t, err)
 
@@ -168,7 +165,7 @@ func TestSync(t *testing.T) {
 // 	require.NoError(t, alice.Connect(ctx, bob.AddrInfo()))
 
 // 	var alicePerma vcs.EncodedPermanode
-// 	var wantDatoms []vcsdb.Datom
+// 	var wantDatoms []sqlitevcs.Datom
 // 	var publicVersion string
 // 	{
 // 		conn, release, err := alice.VCS().Conn(ctx)
@@ -176,19 +173,19 @@ func TestSync(t *testing.T) {
 
 // 		err = conn.WithTx(true, func() error {
 // 			clock := hlc.NewClock()
-// 			perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
+// 			perma, err := vcs.EncodePermanode(sqlitevcs.NewDocumentPermanode(alice.ID().AccountID(), clock.Now()))
 // 			alicePerma = perma
 // 			require.NoError(t, err)
 // 			obj := conn.NewObject(perma)
 // 			idLocal := conn.EnsureIdentity(alice.ID())
 // 			change := conn.NewChange(obj, idLocal, nil, clock)
 
-// 			wantDatoms = []vcsdb.Datom{
+// 			wantDatoms = []sqlitevcs.Datom{
 // 				vcs.NewDatom(vcs.RootNode, "title", "This is a title", clock.Now().Pack(), 123),
 // 			}
 
 // 			conn.AddDatoms(obj, change, wantDatoms...)
-// 			conn.SaveVersion(obj, "main", idLocal, vcsdb.LocalVersion{change})
+// 			conn.SaveVersion(obj, "main", idLocal, sqlitevcs.LocalVersion{change})
 // 			conn.EncodeChange(change, alice.ID().DeviceKey())
 // 			version := conn.GetVersion(obj, "main", idLocal)
 // 			publicVersion = conn.LocalVersionToPublic(version).String()
@@ -229,11 +226,11 @@ func makeTestPeer(t *testing.T, name string) (*mttnet.Node, context.CancelFunc) 
 
 	db := makeTestSQLite(t)
 
-	hvcs := vcsdb.New(db)
+	hvcs := sqlitevcs.New(db)
 
 	conn, release, err := hvcs.Conn(context.Background())
 	require.NoError(t, err)
-	reg, err := mttacc.Register(context.Background(), u.Account, u.Device, conn)
+	reg, err := sqlitevcs.Register(context.Background(), u.Account, u.Device, conn)
 	release()
 	require.NoError(t, err)
 

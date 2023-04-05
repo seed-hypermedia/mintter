@@ -4,7 +4,6 @@ import (
 	context "context"
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
-	"mintter/backend/vcs/mttacc"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
 	sync "sync"
 	"time"
@@ -100,7 +99,7 @@ func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error 
 	defer release()
 
 	if err := conn.WithTx(true, func() error {
-		_, err := mttacc.Register(ctx, acc, srv.repo.Device(), conn)
+		_, err := vcsdb.Register(ctx, acc, srv.repo.Device(), conn)
 		return err
 	}); err != nil {
 		return err
