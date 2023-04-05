@@ -1,47 +1,41 @@
 {
   "name": "mintter",
-  "version": "0.0.1",
-  "description": "Mintter monorepo",
-  "repository": "https://github.com/mintterteam/mintter",
-  "author": "Mintter Team",
   "private": true,
-  "packageManager": "pnpm@7.18.1",
   "scripts": {
-    "dev": "pnpm -r --parallel --if-present dev",
-    "build": "pnpm -r --parallel --if-present build",
-    "lint": "pnpm -r --parallel --if-present lint",
-    "test": "pnpm -r --parallel --if-present test",
-    "format": "pnpm -r --parallel --if-present format",
-    "validate": "pnpm -r --parallel --if-present validate",
-    "codegen": "graphql-codegen",
-    "shared:dev": "pnpm --filter='@mintter/shared' dev",
-    "shared:build": "pnpm --filter='@mintter/shared' build",
-    "shared:test": "pnpm --filter='@mintter/shared' test",
-    "app:dev": "pnpm --parallel --filter='@mintter/shared' --filter='@mintter/app' dev",
-    "app:build": "pnpm shared:build && pnpm --filter='@mintter/app' build",
-    "app:test": "pnpm --filter='@mintter/app' test",
+    "ui:dev": "yarn workspace @mintter/ui dev",
+    "site": "yarn workspaces foreach --exclude @mintter/desktop -pi run dev",
+    "site:extract": "EXTRACT=1 yarn workspace @mintter/site dev",
+    "site:prod": "yarn build && yarn workspace @mintter/site build",
+    "site:prod:serve": "yarn workspace @mintter/site serve",
+    "desktop": "yarn workspaces foreach --exclude @mintter/site -pi run dev",
+    "desktop:extract": "EXTRACT=1 yarn workspace @mintter/desktop dev:extract",
+    "desktop:prod": "yarn workspace @mintter/desktop build",
     "tauri:dev": "cd desktop/app && cargo tauri dev",
-    "gw:dev": "pnpm --parallel --filter='@mintter/shared' --filter='@mintter/gateway' dev",
-    "gw:build": "pnpm --filter='@mintter/gateway' build",
-    "gw:test": "pnpm --filter='@mintter/gateway' test",
-    "gw:start": "pnpm --filter='@mintter/gateway' start",
-    "rmfiles": "rm -rf node_modules/.pnpm/esbuild-windows* node_modules/.pnpm/esbuild-freebsd* node_modules/.pnpm/esbuild-openbsd* node_modules/.pnpm/esbuild-sunos* node_modules/.pnpm/esbuild-netbsd* node_modules/.pnpm/esbuild-android* node_modules/.pnpm/@esbuild+linux-loong* node_modules/.pnpm/esbuild-linux-arm* node_modules/.pnpm/esbuild-linux-riscv*"
+    "fix": "manypkg fix",
+    "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop -pi run build",
+    "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",
+    "format": "prettier --write ./frontend",
+    "test": "yarn workspaces foreach run test"
   },
-  "devDependencies": {
-    "@bufbuild/protoc-gen-connect-web": "0.6.0",
-    "@bufbuild/protoc-gen-es": "1.0.0",
-    "@typescript-eslint/eslint-plugin": "5.45.1",
-    "@typescript-eslint/parser": "5.45.1",
-    "@typescript-eslint/typescript-estree": "5.45.1",
-    "concurrently": "7.6.0",
+  "resolutions": {
+    "@types/react-native": "0.70.8",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-refresh": "^0.14.0",
+    "react-native-svg": "13.4.0",
+    "react-native-web": "0.18.9"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.18.9",
+    "@manypkg/cli": "^0.19.1",
     "eslint": "8.29.0",
-    "eslint-config-prettier": "8.5.0",
-    "eslint-plugin-import": "2.26.0",
-    "eslint-plugin-react": "7.31.11",
-    "eslint-plugin-react-hooks": "4.6.0",
-    "graphql-codegen": "0.4.0",
     "prettier": "2.8.1",
-    "tiny-glob": "0.2.9",
+    "turbo": "^1.8.3",
     "typescript": "4.9.4"
-  }
+  },
+  "packageManager": "yarn@3.5.0",
+  "workspaces": [
+    "frontend/apps/*",
+    "frontend/packages/*"
+  ]
 }

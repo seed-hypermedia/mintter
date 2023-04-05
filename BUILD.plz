@@ -14,12 +14,22 @@ gomod(
 )
 
 # Installs JS dependencies.
-pnpm_install(
-    name = "pnpm",
+yarn_install(
+    name = "yarn",
     visibility = [
         "//build/tools/...",
         "//frontend/...",
     ],
+)
+
+# Exposes tsconfig to the frontend targets.
+filegroup(
+    name = "tsconfig",
+    srcs = [
+        "tsconfig.base.json",
+        "tsconfig.json",
+    ],
+    visibility = ["//frontend/..."],
 )
 
 # Exposes the tools file to the build tools targets.

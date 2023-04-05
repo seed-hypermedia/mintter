@@ -1,0 +1,17 @@
+subinclude("//build/rules/js:defs")
+
+yarn_script(
+    name = "dist",
+    srcs = [
+        "index.html",
+        "package.json",
+        "public",
+        "src",
+        "tsconfig.json",
+        "vite.config.ts",
+        "//frontend/shared",
+    ],
+    outs = ["dist"],
+    yarn_deps = "//:yarn",
+    script_name = "build",
+)

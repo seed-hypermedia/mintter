@@ -4,7 +4,7 @@ In mintter we have currently 3 types of testing:
 
 1. Static type testing with Typescript
 2. Unit testing functions with [vitest](https://vitest.dev/)
-3. UI testing with [Cypress](https://www.cypress.io/)
+3. UI testing with [Cypress](https://www.cypress.io/) (DEPRECATED)
 
 ## Run tests locally
 

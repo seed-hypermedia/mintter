@@ -1,1 +1,0 @@
-# Mintter gateway website

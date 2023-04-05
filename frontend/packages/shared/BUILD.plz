@@ -1,0 +1,23 @@
+subinclude("//build/rules/js:defs")
+
+yarn_script(
+    name = "dist",
+    srcs = [
+        "package.json",
+        "src",
+        "tsconfig.json",
+    ],
+    outs = ["dist"],
+    yarn_deps = "//:yarn",
+    script_name = "build",
+    visibility = ["//frontend/..."],
+)
+
+filegroup(
+    name = "shared",
+    srcs = [
+        "package.json",
+        ":dist",
+    ],
+    visibility = ["//frontend/..."],
+)

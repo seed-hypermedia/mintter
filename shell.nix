@@ -8,7 +8,7 @@ let
       findutils
       go
       nodejs
-      nodePackages.pnpm
+      yarn
       please
       python3
       bazel-buildtools

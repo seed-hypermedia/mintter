@@ -39,11 +39,11 @@ $TOOLS_PROTOC -I proto \
     --plugin=protoc-gen-connect-web=$TOOLS_PROTOC_GEN_CONNECT_WEB \
     --es_opt=target=ts,import_extension=none \
     --connect-web_opt=target=ts,import_extension=none \
-    --es_out=frontend/shared/src/client/.generated/ \
-    --connect-web_out=frontend/shared/src/client/.generated/ \
+    --es_out=frontend/packages/shared/src/client/.generated/ \
+    --connect-web_out=frontend/packages/shared/src/client/.generated/ \
     $SRCS
 """,
-                out_dir = "//" + package_name().replace("proto", "frontend/shared/src/client/.generated"),
+                out_dir = "//" + package_name().replace("proto", "frontend/packages/shared/src/client/.generated"),
                 tools = [
                     "//build/nix:protoc",
                     "//build/tools:protoc-gen-es",

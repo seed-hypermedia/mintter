@@ -1,5 +1,5 @@
-# ignore backend code
-backend
+.yarn
+node_modules
 
 # build code
 build
@@ -8,6 +8,12 @@ src-tauri
 public
 out
 plz-out
+types
+docs
+.yarn/*
+.github/*
+.yarnrc.yml
+.vscode/*
 
 # Project files
 docs
@@ -19,11 +25,17 @@ tools
 coverage
 .generated
 /target
-exts/wake-asc/mtt_ephemeral_poll.ts
-pnpm-lock.yaml
+exts/*
 .vite
-*.typegen.*
+**/*.typegen.*
 
-# Gateway
-frontend/gateway/.next
-frontend/gateway/.vercel
+# Site
+frontend/apps/site/.next
+frontend/apps/site/.vercel
+frontend/apps/site/.tamagui
+
+# Shared
+frontend/packages/shared/src/client/.generated
+
+# Desktop
+desktop/

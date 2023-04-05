@@ -4,10 +4,10 @@
     "productName": "Mintter"
   },
   "build": {
-    "distDir": "../../frontend/app/dist",
+    "distDir": "../../frontend/apps/desktop/dist",
     "devPath": "http://localhost:5173",
-    "beforeDevCommand": "cd ../ && pnpm app:dev",
-    "beforeBuildCommand": "cd ../ && pnpm app:build",
+    "beforeDevCommand": "cd ../ && yarn desktop",
+    "beforeBuildCommand": "cd ../ && yarn desktop:prod",
     "withGlobalTauri": true
   },
   "tauri": {

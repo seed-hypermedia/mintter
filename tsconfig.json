@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "paths": {
+      "@mintter/ui/*": ["./frontend/packages/ui/*"],
+      "@mintter/shared/*": ["./frontend/packages/shared/*"]
+    }
+  },
+  "extends": "./tsconfig.base.json"
+}
