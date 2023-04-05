@@ -1,6 +1,6 @@
 subinclude("//build/rules/js:defs")
 
-pnpm_script(
+yarn_script(
     name = "dist",
     srcs = [
         "index.html",
@@ -12,6 +12,6 @@ pnpm_script(
         "//frontend/shared",
     ],
     outs = ["dist"],
-    pnpm_deps = "//:pnpm",
+    yarn_deps = "//:yarn",
     script_name = "build",
 )

@@ -1,6 +1,6 @@
 subinclude("//build/rules/js:defs")
 
-pnpm_script(
+yarn_script(
     name = "dist",
     srcs = [
         "package.json",
@@ -8,7 +8,7 @@ pnpm_script(
         "tsconfig.json",
     ],
     outs = ["dist"],
-    pnpm_deps = "//:pnpm",
+    yarn_deps = "//:yarn",
     script_name = "build",
     visibility = ["//frontend/..."],
 )
