@@ -1,4 +1,5 @@
 import {AppBanner, BannerText} from '@app/app-banner'
+import {features} from '@app/constants'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {CitationsProvider} from '@app/editor/comments/citations-context'
 import {ConversationsProvider} from '@app/editor/comments/conversations-context'
@@ -227,20 +228,22 @@ export default function PublicationPage({mainActor}: PageProps) {
                       })
                     }}
                   />
-                  <FooterButton
-                    active={
-                      activePanel == 'conversations' &&
-                      resizablePanelState.context.show
-                    }
-                    label={`Conversations`}
-                    icon={<Icon name="MessageBubble" />}
-                    onClick={() => {
-                      panelSend({
-                        type: 'PANEL.TOGGLE',
-                        activePanel: 'conversations',
-                      })
-                    }}
-                  />
+                  {features.comments ? (
+                    <FooterButton
+                      active={
+                        activePanel == 'conversations' &&
+                        resizablePanelState.context.show
+                      }
+                      label={`Conversations`}
+                      icon={<Icon name="MessageBubble" />}
+                      onClick={() => {
+                        panelSend({
+                          type: 'PANEL.TOGGLE',
+                          activePanel: 'conversations',
+                        })
+                      }}
+                    />
+                  ) : null}
                 </Footer>
               </div>
             </BlockHighLighter>

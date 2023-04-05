@@ -1,4 +1,5 @@
 import {commentsClient} from '@app/api-clients'
+import {features} from '@app/constants'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/publication-machine'
 import {
@@ -14,6 +15,7 @@ import {listen} from '@tauri-apps/api/event'
 import {
   createContext,
   PropsWithChildren,
+  ReactNode,
   useContext,
   useEffect,
   useMemo,
@@ -49,7 +51,9 @@ let conversationsContext = createContext<ConversationsContext>({
   },
 })
 
-export function ConversationsProvider({
+export const ConversationsProvider = features.comments ? RealConversationsProvider : DummyProvider
+
+export function RealConversationsProvider({
   children,
   documentId,
   onConversationsOpen,
@@ -61,6 +65,7 @@ export function ConversationsProvider({
   publication: ClientPublication | null
   isOpen: boolean
 }>) {
+
   let queryResult = useQuery({
     queryFn: async () => {
       let res = await commentsClient.listConversations({
@@ -185,4 +190,9 @@ export function useBlockConversations(blockId: string, revision?: string) {
       return filteredSelectors.length
     })
   }, [context])
+}
+
+
+function DummyProvider({children}: {children: ReactNode}) {
+  return <>{children}</>
 }

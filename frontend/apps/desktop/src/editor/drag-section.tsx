@@ -1,3 +1,4 @@
+import {features} from '@app/constants'
 import {useDrag} from '@app/drag-context'
 import {useCitationsForBlock} from '@app/editor/comments/citations-context'
 import {EditorMode} from '@app/editor/plugin-utils'
@@ -63,7 +64,9 @@ export const ElementDrag = ({
       {children}
       {editor.mode == EditorMode.Publication ? (
         <span contentEditable={false}>
-          <ConversationBlockBubble block={element as FlowContent} />
+          {features.comments ? (
+            <ConversationBlockBubble block={element as FlowContent} />
+          ) : null}
           {editor.mode == EditorMode.Publication ? (
             <CitationNumber block={element as FlowContent} />
           ) : null}

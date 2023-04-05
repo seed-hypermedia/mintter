@@ -1,4 +1,5 @@
 import {commentsClient} from '@app/api-clients'
+import {features} from '@app/constants'
 import {OutsideClick} from '@app/editor/outside-click'
 import {toolbarMachine} from '@app/editor/toolbar-machine'
 import {queryKeys} from '@app/hooks'
@@ -326,7 +327,7 @@ export function EditorHoveringActions({
           <Icon name="Copy" />
         </Button>
       )}
-      {onComment && (
+      {onComment && features.comments && (
         <Button
           variant="ghost"
           color="primary"
@@ -569,7 +570,11 @@ export function PublicationToolbar() {
           />
         ) : (
           <EditorHoveringActions
-            onComment={() => service.send('START.CONVERSATION')}
+            onComment={
+              features.comments
+                ? () => service.send('START.CONVERSATION')
+                : undefined
+            }
             onCopyLink={handledErrors(getCopyLink)}
             copyLabel="range"
             css={{

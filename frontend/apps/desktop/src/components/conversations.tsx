@@ -1,4 +1,5 @@
 import {changesClient, commentsClient} from '@app/api-clients'
+import {features} from '@app/constants'
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAuthor} from '@app/hooks'
 import {useNavigate} from '@app/utils/navigation'
@@ -31,7 +32,9 @@ import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {PanelTitle} from './panel'
 
-export function Conversations() {
+export const Conversations = features.comments ? RealConversations : () => null
+
+export function RealConversations() {
   const context = useConversations()
 
   useEffect(() => {
