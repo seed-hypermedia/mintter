@@ -1,5 +1,4 @@
 {
-  "extends": "assemblyscript/std/assembly",
   "compilerOptions": {
     "experimentalDecorators": true
   }

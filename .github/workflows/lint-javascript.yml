@@ -21,9 +21,6 @@ concurrency:
 jobs:
   lint-javascript:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend
     steps:
       - uses: actions/checkout@v3
 
