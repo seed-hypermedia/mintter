@@ -12,9 +12,11 @@ import (
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
 	networking "mintter/backend/genproto/networking/v1alpha"
+	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
+	"mintter/backend/vcs"
 	"os"
 	"testing"
 	"time"
@@ -27,6 +29,98 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 )
+
+func TestDaemonSmoke(t *testing.T) {
+	t.Parallel()
+
+	dmn := makeTestApp(t, "alice", makeTestConfig(t), false)
+	ctx := context.Background()
+
+	conn, err := grpc.Dial(dmn.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	require.NoError(t, err)
+	defer conn.Close()
+
+	ac := accounts.NewAccountsClient(conn)
+	dc := daemon.NewDaemonClient(conn)
+	nc := networking.NewNetworkingClient(conn)
+
+	acc, err := ac.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.Error(t, err)
+	require.Nil(t, acc)
+
+	seed, err := dc.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
+		MnemonicsLength: 12,
+	})
+	require.NoError(t, err)
+
+	reg, err := dc.Register(ctx, &daemon.RegisterRequest{
+		Mnemonic: seed.Mnemonic,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, reg)
+	require.NotEqual(t, "", reg.AccountId, "account ID must be generated after registration")
+
+	_, err = dmn.Me.Await(ctx)
+	require.NoError(t, err)
+
+	_, err = dmn.Net.Await(ctx)
+	require.NoError(t, err)
+
+	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.NoError(t, err)
+	require.Equal(t, reg.AccountId, acc.Id, "must return account after registration")
+	require.Equal(t, 1, len(acc.Devices), "must return our own device after registration")
+
+	profileUpdate := &accounts.Profile{
+		Alias: "fulanito",
+		Bio:   "Mintter Tester",
+		Email: "fulanito@example.com",
+	}
+
+	updatedAcc, err := ac.UpdateProfile(ctx, profileUpdate)
+	require.NoError(t, err)
+	require.Equal(t, acc.Id, updatedAcc.Id)
+	require.Equal(t, acc.Devices, updatedAcc.Devices)
+	testutil.ProtoEqual(t, profileUpdate, updatedAcc.Profile, "profile update must return full profile")
+
+	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
+	require.NoError(t, err)
+	testutil.ProtoEqual(t, updatedAcc, acc, "get account after update must match")
+
+	infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
+	require.NoError(t, err)
+	require.NotNil(t, infoResp)
+	require.NotEqual(t, "", infoResp.AccountId)
+	require.NotEqual(t, "", infoResp.PeerId)
+
+	peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
+		PeerId: infoResp.PeerId,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, peerInfo)
+	require.NotEqual(t, "", peerInfo.AccountId)
+}
+
+func TestDaemonListPublications(t *testing.T) {
+	t.Parallel()
+
+	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
+
+	conn, err := grpc.Dial(alice.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	require.NoError(t, err)
+	defer conn.Close()
+
+	client := documents.NewPublicationsClient(conn)
+
+	list, err := client.ListPublications(context.Background(), &documents.ListPublicationsRequest{})
+	require.NoError(t, err)
+	require.Len(t, list.Publications, 0, "account object must not be listed as publication")
+
+	_, err = client.DeletePublication(context.Background(), &documents.DeletePublicationRequest{
+		DocumentId: alice.Me.MustGet().AccountID().String(),
+	})
+	require.Error(t, err, "we must not be able to delete other objects than publications")
+}
 
 func TestAPIGetRemotePublication(t *testing.T) {
 	t.Parallel()
@@ -356,6 +450,7 @@ func TestGateway(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(pubPublisher.Publications))
 }
+
 func TestBug_SyncHangs(t *testing.T) {
 	// See: https://github.com/mintterteam/mintter/issues/712.
 	t.Parallel()
@@ -459,96 +554,50 @@ func TestBug_PublicationsListInconsistent(t *testing.T) {
 	require.NoError(t, g.Wait())
 }
 
-func TestDaemonList(t *testing.T) {
+func TestBug_ListObjectsMustHaveCausalOrder(t *testing.T) {
 	t.Parallel()
 
 	alice := makeTestApp(t, "alice", makeTestConfig(t), true)
-
-	conn, err := grpc.Dial(alice.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	require.NoError(t, err)
-	defer conn.Close()
-
-	client := documents.NewPublicationsClient(conn)
-
-	list, err := client.ListPublications(context.Background(), &documents.ListPublicationsRequest{})
-	require.NoError(t, err)
-	require.Len(t, list.Publications, 0, "account object must not be listed as publication")
-
-	_, err = client.DeletePublication(context.Background(), &documents.DeletePublicationRequest{
-		DocumentId: alice.Me.MustGet().AccountID().String(),
-	})
-	require.Error(t, err, "we must not be able to delete other objects than publications")
-}
-
-func TestDaemonSmoke(t *testing.T) {
-	t.Parallel()
-
-	dmn := makeTestApp(t, "alice", makeTestConfig(t), false)
+	bob := makeTestApp(t, "bob", makeTestConfig(t), true)
 	ctx := context.Background()
 
-	conn, err := grpc.Dial(dmn.GRPCListener.Addr().String(), grpc.WithBlock(), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	require.NoError(t, err)
-	defer conn.Close()
+	require.NoError(t, bob.Net.MustGet().Connect(ctx, alice.Net.MustGet().AddrInfo()))
 
-	ac := accounts.NewAccountsClient(conn)
-	dc := daemon.NewDaemonClient(conn)
-	nc := networking.NewNetworkingClient(conn)
+	pub := publishDocument(t, ctx, alice)
 
-	acc, err := ac.GetAccount(ctx, &accounts.GetAccountRequest{})
-	require.Error(t, err)
-	require.Nil(t, acc)
-
-	seed, err := dc.GenMnemonic(ctx, &daemon.GenMnemonicRequest{
-		MnemonicsLength: 12,
-	})
+	cc, err := bob.Net.MustGet().Client(ctx, alice.Repo.Device().CID())
 	require.NoError(t, err)
 
-	reg, err := dc.Register(ctx, &daemon.RegisterRequest{
-		Mnemonic: seed.Mnemonic,
-	})
-	require.NoError(t, err)
-	require.NotNil(t, reg)
-	require.NotEqual(t, "", reg.AccountId, "account ID must be generated after registration")
-
-	_, err = dmn.Me.Await(ctx)
+	list, err := cc.ListObjects(ctx, &p2p.ListObjectsRequest{})
 	require.NoError(t, err)
 
-	_, err = dmn.Net.Await(ctx)
-	require.NoError(t, err)
+	require.Len(t, list.Objects, 2, "alice must list her account and the published document")
 
-	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
-	require.NoError(t, err)
-	require.Equal(t, reg.AccountId, acc.Id, "must return account after registration")
-	require.Equal(t, 1, len(acc.Devices), "must return our own device after registration")
+	var found *p2p.Object
+	seen := map[cid.Cid]struct{}{}
+	for _, obj := range list.Objects {
+		if obj.Id == pub.Document.Id {
+			found = obj
+		}
+		for _, ch := range obj.ChangeIds {
+			c := must.Do2(cid.Decode(ch))
 
-	profileUpdate := &accounts.Profile{
-		Alias: "fulanito",
-		Bio:   "Mintter Tester",
-		Email: "fulanito@example.com",
+			blk, err := alice.VCSDB.Blockstore().Get(ctx, c)
+			require.NoError(t, err)
+
+			change, err := vcs.DecodeChange(blk.RawData())
+			require.NoError(t, err)
+
+			seen[blk.Cid()] = struct{}{}
+
+			for _, dep := range change.Parents {
+				_, ok := seen[dep]
+				require.True(t, ok, "non causal order of IPLD links: haven't seen dep %s of %s", dep, blk.Cid())
+			}
+		}
 	}
 
-	updatedAcc, err := ac.UpdateProfile(ctx, profileUpdate)
-	require.NoError(t, err)
-	require.Equal(t, acc.Id, updatedAcc.Id)
-	require.Equal(t, acc.Devices, updatedAcc.Devices)
-	testutil.ProtoEqual(t, profileUpdate, updatedAcc.Profile, "profile update must return full profile")
-
-	acc, err = ac.GetAccount(ctx, &accounts.GetAccountRequest{})
-	require.NoError(t, err)
-	testutil.ProtoEqual(t, updatedAcc, acc, "get account after update must match")
-
-	infoResp, err := dc.GetInfo(ctx, &daemon.GetInfoRequest{})
-	require.NoError(t, err)
-	require.NotNil(t, infoResp)
-	require.NotEqual(t, "", infoResp.AccountId)
-	require.NotEqual(t, "", infoResp.PeerId)
-
-	peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
-		PeerId: infoResp.PeerId,
-	})
-	require.NoError(t, err)
-	require.NotNil(t, peerInfo)
-	require.NotEqual(t, "", peerInfo.AccountId)
+	require.NotNil(t, found, "published document must be in the list objects response")
 }
 
 func TestPeriodicSync(t *testing.T) {
