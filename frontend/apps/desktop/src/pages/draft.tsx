@@ -14,9 +14,9 @@ import {AppError} from '@app/root'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
-import {ChildrenOf, Document, FlowContent, isFlowContent} from '@mintter/shared'
+import {ChildrenOf, Document} from '@mintter/shared'
 import {useActor, useInterpret} from '@xstate/react'
-import React, {useEffect} from 'react'
+import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -66,40 +66,6 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
         onMouseUp={() => {
           dragService.send('DROPPED')
           mouseService.send('DISABLE.DRAG.END')
-        }}
-        onDragOver={(e: React.DragEvent) => {
-          e.preventDefault()
-          const initialNode = e.target as Element
-          if (initialNode && initialNode.nodeName === 'P') {
-            const element = ReactEditor.toSlateNode(editor, initialNode)
-            const path = ReactEditor.findPath(editor, element)
-
-            const parentBlock = SlateEditor.above<FlowContent>(editor, {
-              match: isFlowContent,
-              mode: 'lowest',
-              at: path,
-            })
-
-            if (parentBlock) {
-              const [node, ancestorPath] = parentBlock
-
-              const domNode = ReactEditor.toDOMNode(editor, node)
-
-              dragService?.send({
-                type: 'DRAG.OVER',
-                toPath: ancestorPath,
-                element: domNode as HTMLLIElement,
-                currentPos: e.clientX,
-              })
-            }
-          } else {
-            dragService?.send({
-              type: 'DRAG.OVER',
-              toPath: null,
-              element: null,
-              currentPos: e.clientX,
-            })
-          }
         }}
       >
         <ErrorBoundary

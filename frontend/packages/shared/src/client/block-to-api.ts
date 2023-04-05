@@ -29,10 +29,7 @@ export function blockToApi(
   if (revision) {
     out.revision = revision
   } else {
-    // console.log(
-    //   '🚀 ~ file: block-to-api.ts:33 ~ NO REVISION ON SLATE BLOCK',
-    //   slateBlock,
-    // )
+    // no revision!
   }
 
   if (childrenType) {

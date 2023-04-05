@@ -20,6 +20,9 @@ apps/desktop/.vite
 # production
 /build
 
+# development files
+**/*.typegen.ts
+
 # debug
 npm-debug.log*
 yarn-debug.log*

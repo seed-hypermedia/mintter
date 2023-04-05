@@ -7,9 +7,10 @@ import {ConversationBlockBubble} from '@components/conversation-block-bubble'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {FlowContent} from '@mintter/shared'
-import React from 'react'
+import React, {useContext} from 'react'
 import {RenderElementProps, useSlate} from 'slate-react'
 import {BlockTools} from './blocktools'
+import DragContext from './drag-context'
 import {useBlockProps} from './editor-node-props'
 import {useBlockFlash} from './utils'
 
@@ -39,6 +40,9 @@ export const ElementDrag = ({
 
   let inRoute = useBlockFlash(attributes.ref, (element as FlowContent).id)
 
+  const dragContext = useContext(DragContext)
+  const {drag, setDrag, clearDrag} = dragContext
+
   return (
     <li
       {...attributes}
@@ -46,6 +50,14 @@ export const ElementDrag = ({
       className={inRoute ? 'flash' : undefined}
       onDrop={editor.mode == EditorMode.Draft ? onDrop : undefined}
       onDragEnd={editor.mode == EditorMode.Draft ? onDrop : undefined}
+      onDragOver={(e: any) => {
+        if (drag) return
+        setDrag(e, element as FlowContent)
+      }}
+      onDragLeave={(e: any) => {
+        if (!drag) return
+        clearDrag()
+      }}
     >
       <BlockTools block={element as FlowContent} />
       {children}

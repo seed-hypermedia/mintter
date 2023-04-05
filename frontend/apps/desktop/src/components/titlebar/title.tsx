@@ -1,18 +1,14 @@
-import {draftsClient} from '@app/api-clients'
-import {queryKeys, useAuthor, useDraft, usePublication} from '@app/hooks'
+import {useAuthor, useDraft, usePublication} from '@app/hooks'
 import {
   DraftRoute,
   PublicationRoute,
-  useNavigate,
   useNavRoute,
+  useNavigate,
 } from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {TitleText} from '@mintter/ui'
-import {useQuery} from '@tanstack/react-query'
-import {listen} from '@tauri-apps/api/event'
-import {useEffect} from 'react'
 
 export function TitleContent() {
   const route = useNavRoute()
@@ -28,7 +24,7 @@ export function TitleContent() {
     return (
       <>
         <Icon name="Person" />
-        <Text css={{marginInline: '$3'}}>Connections</Text>
+        <TitleText>Connections</TitleText>
       </>
     )
   }
@@ -36,7 +32,7 @@ export function TitleContent() {
     return (
       <>
         <Icon name="PencilAdd" />
-        <Text css={{marginInline: '$3'}}>Drafts</Text>
+        <TitleText>Drafts</TitleText>
       </>
     )
   }
@@ -52,7 +48,7 @@ export function TitleContent() {
   if (route.key === 'draft') {
     return <DraftTitle route={route} />
   }
-  return <>{null}</>
+  return null
 }
 
 export function Title() {

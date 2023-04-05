@@ -28,6 +28,7 @@ import {
   ComponentProps,
   FormEvent,
   PropsWithChildren,
+  ReactNode,
   useEffect,
   useMemo,
   useState,
@@ -43,7 +44,7 @@ import {MARK_STRONG} from './strong'
 import {MARK_UNDERLINE} from './underline'
 import {isMarkActive, toggleFormat} from './utils'
 
-export function EditorHoveringToolbar(mouseDown: boolean) {
+export function EditorHoveringToolbar({mouseDown}: {mouseDown: boolean}) {
   const editor = useSlate()
   const [selectionColor, setSelectionColor] = useState<string>('')
 
@@ -211,7 +212,10 @@ const defaultVirtualEl = {
 function HoveringToolbar({
   children,
   mouseDown,
-}: PropsWithChildren & {mouseDown: boolean}) {
+}: {
+  children: ReactNode
+  mouseDown: boolean
+}) {
   const editor = useSlate()
   const inFocus = useFocused()
   const selection = useSlateSelection()
@@ -223,7 +227,7 @@ function HoveringToolbar({
 
   useEffect(() => {
     if (
-      mouseDown.mouseDown ||
+      mouseDown ||
       !selection ||
       !inFocus ||
       Range.isCollapsed(selection) ||

@@ -1,7 +1,6 @@
 import {Box} from '@components/box'
-import {Text, TextProps} from '@components/text'
+import {Text} from '@components/text'
 import {keyframes} from '@stitches/react'
-import {CSS, styled} from '@app/stitches.config'
 import {MouseEventHandler, ReactNode} from 'react'
 
 const slideDown = keyframes({

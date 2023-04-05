@@ -1,6 +1,10 @@
 import {publicationsClient} from '@app/api-clients'
-import {LinkNode, Publication, blockNodeToSlate} from '@mintter/shared'
-import {FlowContent} from '@mintter/shared'
+import {
+  blockNodeToSlate,
+  FlowContent,
+  LinkNode,
+  Publication,
+} from '@mintter/shared'
 import {visit} from 'unist-util-visit'
 
 export type GetBlockResult = {

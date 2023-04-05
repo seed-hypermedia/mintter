@@ -1,5 +1,5 @@
-import {Document} from '@mintter/shared'
 import {ClientPublication} from '@app/publication-machine'
+import {Document} from '@mintter/shared'
 import {createContext, useContext, useMemo} from 'react'
 
 export type FileContext = ClientPublication | Document

@@ -13,9 +13,15 @@ export interface Typegen0 {
       data: unknown
       __tip: 'See the XState TS docs to learn how to strongly type this.'
     }
-    'error.platform.fetchAuthor': { type: 'error.platform.fetchAuthor'; data: unknown }
-    'error.platform.fetchSource': { type: 'error.platform.fetchSource'; data: unknown }
-    'xstate.init': { type: 'xstate.init' }
+    'error.platform.fetchAuthor': {
+      type: 'error.platform.fetchAuthor'
+      data: unknown
+    }
+    'error.platform.fetchSource': {
+      type: 'error.platform.fetchSource'
+      data: unknown
+    }
+    'xstate.init': {type: 'xstate.init'}
   }
   invokeSrcNameMap: {
     fetchAuthor: 'done.invoke.fetchAuthor'

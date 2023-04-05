@@ -160,7 +160,7 @@ export default function Footer({children}: {children?: ReactNode}) {
               userSelect: 'none',
             }}
           >
-            You're Offline
+            You are Offline
           </Text>
         </Box>
       ) : null}

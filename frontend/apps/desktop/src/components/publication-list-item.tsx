@@ -6,20 +6,20 @@ import {prefetchPublication, queryKeys, useAuthor} from '@app/hooks'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {PublicationRoute, useNavigate} from '@app/utils/navigation'
 import {
+  Document,
   formattedDate,
   MINTTER_LINK_PREFIX,
   Publication,
-  Document,
 } from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import Highlighter from 'react-highlight-words'
 import {toast} from 'react-hot-toast'
+import '../styles/file-list.scss'
 import {Button} from './button'
 import {DeleteDialog} from './delete-dialog'
 import {Icon} from './icon'
 import {Text} from './text'
-import '../styles/file-list.scss'
 
 export function PublicationListItem({
   publication,
