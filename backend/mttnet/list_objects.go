@@ -3,10 +3,14 @@ package mttnet
 import (
 	"context"
 	"fmt"
+	"mintter/backend/db/sqliteschema"
 	site "mintter/backend/genproto/documents/v1alpha"
 	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet/sitesql"
 
+	"crawshaw.io/sqlite"
+	"crawshaw.io/sqlite/sqlitex"
+	"github.com/ipfs/go-cid"
 	"go.uber.org/zap"
 )
 
@@ -45,40 +49,55 @@ func (srv *Server) ListObjects(ctx context.Context, in *p2p.ListObjectsRequest) 
 		n.log.Debug("Allowing site content", zap.String("remote AccountID", remotAcc.String()), zap.Int("role", int(role)), zap.Bool("noListing", n.cfg.NoListing))
 	}
 
-	conn, release, err := n.vcs.Conn(ctx)
+	conn, release, err := n.vcs.DB().Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer release()
 
-	if err := conn.BeginTx(false); err != nil {
+	const q = `
+SELECT
+	` + sqliteschema.C_ChangesDerefObjectCodec + `,
+	` + sqliteschema.C_ChangesDerefObjectHash + `,
+	` + sqliteschema.C_ChangesDerefChangeCodec + `,
+	` + sqliteschema.C_ChangesDerefChangeHash + `
+FROM ` + sqliteschema.T_ChangesDeref + `
+WHERE ` + sqliteschema.C_ChangesDerefIsDraft + ` = 0;`
+
+	var (
+		objectCodec int
+		objectHash  []byte
+		changeCodec int
+		changeHash  []byte
+	)
+	objMap := make(map[cid.Cid][]cid.Cid)
+
+	if err := sqlitex.Exec(conn, q, func(stmt *sqlite.Stmt) error {
+		stmt.Scan(&objectCodec, &objectHash, &changeCodec, &changeHash)
+
+		oid := cid.NewCidV1(uint64(objectCodec), objectHash)
+		chid := cid.NewCidV1(uint64(changeCodec), changeHash)
+		objMap[oid] = append(objMap[oid], chid)
+		return nil
+	}); err != nil {
 		return nil, err
 	}
-	refs := conn.ListAllVersions("main")
 
 	out := &p2p.ListObjectsResponse{
-		Objects: make([]*p2p.Object, 0, len(refs)),
+		Objects: make([]*p2p.Object, 0, len(objMap)),
 	}
 
-	for obj, vers := range refs {
+	for obj, changes := range objMap {
 		objpb := &p2p.Object{
-			Id:         obj.String(),
-			VersionSet: make([]*p2p.Version, len(vers)),
+			Id:        obj.String(),
+			ChangeIds: make([]string, len(changes)),
 		}
 
-		for i, ver := range vers {
-			objpb.VersionSet[i] = &p2p.Version{
-				AccountId: ver.Account.String(),
-				DeviceId:  ver.Device.String(),
-				Version:   ver.Version.String(),
-			}
+		for i, c := range changes {
+			objpb.ChangeIds[i] = c.String()
 		}
 
 		out.Objects = append(out.Objects, objpb)
-	}
-
-	if err := conn.Commit(); err != nil {
-		return nil, err
 	}
 
 	return out, nil

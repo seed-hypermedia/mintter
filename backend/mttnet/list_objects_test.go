@@ -20,28 +20,20 @@ func TestListObjects(t *testing.T) {
 	defer stopalice()
 	ctx := context.Background()
 
+	clock := hlc.NewClockWithWall(func() time.Time { return time.Time{} })
+	perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.me.AccountID(), clock.Now()))
+	require.NoError(t, err)
+	ch := vcs.NewChange(alice.me, perma.ID, nil, vcsdb.KindOpaque, clock.Now(), []byte("opaque content"))
+	vc, err := ch.Block()
+	require.NoError(t, err)
+
 	{
 		conn, release, err := alice.vcs.Conn(ctx)
 		require.NoError(t, err)
 
 		err = conn.WithTx(true, func() error {
-			clock := hlc.NewClockWithWall(func() time.Time { return time.Time{} })
-			perma, err := vcs.EncodePermanode(mttdoc.NewDocumentPermanode(alice.me.AccountID(), clock.Now()))
-			if err != nil {
-				return err
-			}
-
-			obj := conn.NewObject(perma)
-			meLocal := conn.EnsureIdentity(alice.me)
-			change := conn.NewChange(obj, meLocal, nil, clock)
-
-			conn.AddDatom(obj, change, vcs.NewDatom(vcs.RootNode, "title", "This is a title", clock.Now().Pack(), alice.me.DeviceKey().Abbrev()))
-			conn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
-			conn.EncodeChange(change, alice.me.DeviceKey())
-
-			refs := conn.ListAllVersions("main")
-			require.Len(t, refs, 2)
-
+			conn.NewObject(perma)
+			conn.StoreChange(vc)
 			return nil
 		})
 		release()

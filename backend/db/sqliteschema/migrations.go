@@ -48,8 +48,8 @@ var migrations = []string{
 
 	// Stores IPLD links between ipfs_blocks for those nodes which are IPLD.
 	`CREATE TABLE ipld_links (
-		child INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-		parent INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		child INTEGER REFERENCES ipfs_blocks (id) ON DELETE CASCADE NOT NULL,
+		parent INTEGER REFERENCES ipfs_blocks (id) ON DELETE CASCADE NOT NULL,
 		path TEXT NOT NULL,
 		PRIMARY KEY (child, parent)
 	) WITHOUT ROWID;`,
@@ -70,17 +70,6 @@ var migrations = []string{
 		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL
 	);`,
 
-	// Stores profile information.
-	`CREATE TABLE profiles (
-		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
-		alias TEXT,
-		email TEXT,
-		bio TEXT,
-		change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-		PRIMARY KEY (account_id, change_id),
-		CHECK (account_id != change_id)
-	) WITHOUT ROWID;`,
-
 	// Stores data about Mintter Devices.
 	`CREATE TABLE devices (
 		-- Short numerical ID to be used internally.
@@ -96,8 +85,9 @@ var migrations = []string{
 
 	// Stores relationships between accounts and devices.
 	`CREATE TABLE account_devices (
-		account_id INTEGER REFERENCES accounts NOT NULL,
-		device_id INTEGER REFERENCES devices NOT NULL,
+		account_id INTEGER REFERENCES accounts (id) NOT NULL,
+		device_id INTEGER REFERENCES devices (id) NOT NULL,
+		delegation_id INTEGER REFERENCES ipfs_blocks (id) DEFAULT NULL,
 		PRIMARY KEY (account_id, device_id)
 	) WITHOUT ROWID;`,
 
@@ -108,9 +98,9 @@ var migrations = []string{
 	`CREATE TABLE permanodes (
 		id INTEGER PRIMARY KEY,
 		type TEXT NOT NULL CHECK (type != ''),
-		account_id INTEGER REFERENCES accounts NOT NULL,
+		account_id INTEGER REFERENCES accounts (id) NOT NULL,
 		create_time INTEGER DEFAULT (strftime('%s', 'now')) NOT NULL,
-		FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
+		FOREIGN KEY (id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
 	);`,
 
 	// Index for querying permanodes by type.
@@ -121,9 +111,9 @@ var migrations = []string{
 
 	`CREATE TABLE changes (
 		id INTEGER PRIMARY KEY,
-		permanode_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
-		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
-		device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
+		permanode_id INTEGER REFERENCES permanodes (id) ON DELETE CASCADE NOT NULL,
+		account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE NOT NULL,
+		device_id INTEGER REFERENCES devices (id) ON DELETE CASCADE NOT NULL,
 		kind TEXT,
 		-- Hybrid Logical Timestamp when change was created.
 		start_time INTEGER NOT NULL
@@ -134,61 +124,79 @@ var migrations = []string{
 		-- by manually incrementing the internal sqlite_sequence table where
 		-- the corresponding record for the AUTOINCREMENT ID in ipfs_blocks table
 		-- is created by SQLite automatically.
-		-- FOREIGN KEY (id) REFERENCES ipfs_blocks ON DELETE CASCADE
+		-- FOREIGN KEY (id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
 	);`,
 
+	`CREATE INDEX idx_changes_by_object ON changes (permanode_id);`,
+
+	`CREATE INDEX idx_changes_by_account ON changes (account_id);`,
+
+	`CREATE TABLE draft_changes (
+		id INTEGER PRIMARY KEY,
+		permanode_id INTEGER REFERENCES permanodes (id) ON DELETE CASCADE UNIQUE,
+		FOREIGN KEY (id) REFERENCES changes (id) ON DELETE CASCADE
+	) WITHOUT ROWID;`,
+
+	// View of IPFS blobs which are public and safe to provide.
+	`CREATE VIEW public_blobs AS
+		SELECT codec, multihash
+		FROM ipfs_blocks
+		WHERE size >= 0
+		AND id NOT IN (SELECT id FROM draft_changes)
+	;`,
+
+	// View of changes with dereferenced CIDs.
+	`CREATE VIEW changes_deref AS
+		SELECT
+			changes.id AS change_id,
+			changes.permanode_id AS permanode_id,
+			object_blobs.codec AS object_codec,
+			object_blobs.multihash AS object_hash,
+			change_blobs.codec As change_codec,
+			change_blobs.multihash AS change_hash,
+			CASE WHEN draft_changes.id > 0 THEN 1 ELSE 0 END AS is_draft
+		FROM changes
+		JOIN ipfs_blocks AS change_blobs ON changes.id = change_blobs.id
+		JOIN ipfs_blocks AS object_blobs ON changes.permanode_id = object_blobs.id
+		LEFT OUTER JOIN draft_changes ON draft_changes.id = changes.id
+		ORDER BY changes.permanode_id, changes.start_time, change_blobs.multihash
+	;`,
+
 	`CREATE TABLE change_deps (
-		child INTEGER REFERENCES changes ON DELETE CASCADE NOT NULL,
-		parent INTEGER REFERENCES changes NOT NULL,
+		child INTEGER REFERENCES changes (id) ON DELETE CASCADE NOT NULL,
+		parent INTEGER REFERENCES changes (id) NOT NULL,
 		PRIMARY KEY (child, parent)
 	) WITHOUT ROWID;`,
 
-	`CREATE TABLE datom_attrs (
-		id INTEGER PRIMARY KEY,
-		attr TEXT UNIQUE
-	);`,
+	`CREATE INDEX idx_change_rdeps ON change_deps (parent, child);`,
 
-	`CREATE TABLE datoms (
-		-- Mintter Object that datom is applied to.
-		permanode INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
-		-- Entity within Mintter Object.
-		entity INTEGER NOT NULL,
-		-- Attribute.
-		attr INTEGER REFERENCES datom_attrs NOT NULL,
-		-- Value types. See the code for possible values types.
-		value_type INTEGER NOT NULL,
-		-- Value of the attribute.
-		value BLOB NOT NULL,
-		-- Change that introduced the datom.
-		change INTEGER REFERENCES changes ON DELETE CASCADE NOT NULL,
-		-- Hybrid Logical Timestamp of the datom.
-		time INTEGER NOT NULL CHECK (time > 0),
-		-- Abbreviated device ID that authored the change.
-		origin INTEGER NOT NULL CHECK (origin != 0),
-		PRIMARY KEY (permanode, time, change, origin)
-	) WITHOUT ROWID;`,
+	`CREATE VIEW change_heads AS
+		SELECT changes.*
+		FROM changes
+		WHERE changes.id NOT IN (SELECT parent FROM change_deps)
+	;`,
 
-	`CREATE INDEX datoms_eavt ON datoms (permanode, entity, attr);
-	CREATE INDEX datoms_aevt ON datoms (permanode, attr, entity);
-	CREATE INDEX datoms_vaet ON datoms (permanode, value, attr, entity) WHERE value_type = 0;`, // value type 0 is a ref
-
-	`CREATE TABLE named_versions (
-		object_id INTEGER REFERENCES permanodes ON DELETE CASCADE NOT NULL,
-		account_id INTEGER REFERENCES accounts ON DELETE CASCADE NOT NULL,
-		device_id INTEGER REFERENCES devices ON DELETE CASCADE NOT NULL,
-		name TEXT NOT NULL,
-		version TEXT NOT NULL,
-		PRIMARY KEY (object_id, name, account_id, device_id)
-	) WITHOUT ROWID;`,
+	// View to easily get the block ID of the delegation proof.
+	`CREATE VIEW device_proofs AS
+		SELECT
+			accounts.multihash AS account_hash,
+			devices.multihash AS device_hash,
+			ipfs_blocks.codec AS delegation_codec,
+			ipfs_blocks.multihash AS delegation_hash
+		FROM account_devices
+		JOIN accounts ON accounts.id = account_devices.account_id
+		JOIN devices ON devices.id = account_devices.device_id
+		JOIN ipfs_blocks ON account_devices.delegation_id = ipfs_blocks.id
+	;`,
 
 	`CREATE TABLE content_links (
-		source_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		source_document_id INTEGER REFERENCES ipfs_blocks (id) ON DELETE CASCADE NOT NULL,
 		source_block_id TEXT NOT NULL,
 		-- In theory this is not needed, because source_change_id will always be the correct version.
 		-- but to simplify the queries we store it here too.
 		source_version TEXT NOT NULL,
-		source_change_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
-		target_document_id INTEGER REFERENCES ipfs_blocks ON DELETE CASCADE NOT NULL,
+		source_change_id INTEGER REFERENCES ipfs_blocks (id) ON DELETE CASCADE NOT NULL,
+		target_document_id INTEGER REFERENCES ipfs_blocks (id) ON DELETE CASCADE NOT NULL,
 		target_block_id TEXT NOT NULL,
 		target_version TEXT NOT NULL,
 		PRIMARY KEY (target_document_id, target_block_id, target_version, source_document_id, source_block_id, source_change_id)
@@ -231,7 +239,7 @@ var migrations = []string{
 		-- The account ID of the site. We need a previous connection to the site so the 
 		-- actual account is inserted in the accounts table when handshake.
 		account_id INTEGER NOT NULL,
-		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
+		FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
 	) WITHOUT ROWID;`,
 
 	// Table that stores all the tokens not yet redeemed inside a site. Although this table is relevant only
@@ -252,7 +260,7 @@ var migrations = []string{
 		account_id INTEGER PRIMARY KEY,
 		-- The role the account holds ROLE_UNSPECIFIED = 0 | OWNER = 1 | EDITOR = 2
 		role INTEGER NOT NULL,
-		FOREIGN KEY(account_id) REFERENCES accounts(id) ON DELETE CASCADE
+		FOREIGN KEY (account_id) REFERENCES accounts (id) ON DELETE CASCADE
 	) WITHOUT ROWID;`,
 
 	// Stores all the records published on this site. Although this table is relevant only
@@ -264,6 +272,6 @@ var migrations = []string{
 		document_version TEXT NOT NULL,
 		-- Path this publication is published to. If NULL is not listed.
 		path TEXT UNIQUE,
-		FOREIGN KEY(block_id) REFERENCES ipfs_blocks(id) ON DELETE CASCADE
+		FOREIGN KEY (block_id) REFERENCES ipfs_blocks (id) ON DELETE CASCADE
 	) WITHOUT ROWID;`,
 }

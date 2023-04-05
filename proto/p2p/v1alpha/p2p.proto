@@ -13,6 +13,9 @@ service P2P {
   // Returns list of all the objects authored by the account this peer belongs to.
   // Used for syncing objects between peers. Clients are expected to periodically
   // use this call to pull the latest objects from the remote peer.
+  //
+  // This is a very naive syncing protocol, it returns all the objects and all the changes
+  // every time. Eventually this will be improved and made more efficient.
   rpc ListObjects(ListObjectsRequest) returns (ListObjectsResponse);
 
   // Request a peer to issue a lightning BOLT-11 invoice
@@ -43,17 +46,7 @@ message ListObjectsResponse {
 message Object {
   string id = 1;
 
-  repeated Version version_set = 2;
-}
-
-message Version {
-  string account_id = 1;
-
-  string device_id = 2;
-
-  string version = 3;
-
-  // TODO: implement signed versions to allow clients to distinguish between first-party and third-party state.
+  repeated string change_ids = 2;
 }
 
 // List of wanted and unwanted object IDs. Can be used as a snapshot or deltas.

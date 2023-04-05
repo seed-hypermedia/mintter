@@ -19,7 +19,8 @@ func (s Server) Register(srv *grpc.Server) {
 	documents.RegisterContentGraphServer(srv, s.Documents)
 	documents.RegisterDraftsServer(srv, s.Documents)
 	documents.RegisterPublicationsServer(srv, s.Documents)
-	documents.RegisterCommentsServer(srv, s.Documents)
+	// documents.RegisterCommentsServer(srv, s.Documents)
+	documents.RegisterCommentsServer(srv, documents.UnimplementedCommentsServer{})
 	documents.RegisterChangesServer(srv, s.Documents)
 	documents.RegisterWebSiteServer(srv, s.Site)
 

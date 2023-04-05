@@ -61,32 +61,6 @@ var (
 			"FROM", s.Accounts, '\n',
 			"WHERE", s.AccountsMultihash, "!=", qb.Var("ownAccountMultihash", sgen.TypeBytes),
 		),
-		qb.MakeQuery(s.Schema, "AccountsIndexProfile", sgen.QueryKindExec,
-			"INSERT OR IGNORE INTO", s.Profiles, qb.ListColShort(
-				s.ProfilesAccountID,
-				s.ProfilesAlias,
-				s.ProfilesEmail,
-				s.ProfilesBio,
-				s.ProfilesChangeID,
-			), '\n',
-			"VALUES", qb.List(
-				qb.VarCol(s.ProfilesAccountID),
-				qb.VarCol(s.ProfilesAlias),
-				qb.VarCol(s.ProfilesEmail),
-				qb.VarCol(s.ProfilesBio),
-				qb.VarCol(s.ProfilesChangeID),
-			),
-		),
-		qb.MakeQuery(s.Schema, "AccountsListProfiles", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				s.ProfilesAccountID,
-				s.ProfilesAlias,
-				s.ProfilesEmail,
-				s.ProfilesBio,
-				s.ProfilesChangeID,
-			), '\n',
-			"FROM", s.Profiles, '\n',
-		),
 	)
 	_ = accounts
 
@@ -171,6 +145,12 @@ var (
 				qb.VarCol(s.AccountDevicesDeviceID),
 			),
 		),
+		qb.MakeQuery(s.Schema, "AccountDevicesUpdateDelegation", sgen.QueryKindExec,
+			"UPDATE", s.AccountDevices, '\n',
+			"SET", s.AccountDevicesDelegationID.ShortName(), "=", qb.VarCol(s.AccountDevicesDelegationID), '\n',
+			"WHERE", s.AccountDevicesAccountID.ShortName(), "=", qb.VarCol(s.AccountDevicesAccountID), '\n',
+			"AND", s.AccountDevicesDeviceID.ShortName(), "=", qb.VarCol(s.AccountDevicesDeviceID), '\n',
+		),
 		qb.MakeQuery(s.Schema, "AccountDevicesList", sgen.QueryKindMany,
 			"SELECT", qb.Results(
 				s.DevicesMultihash,
@@ -191,72 +171,6 @@ var (
 		),
 	)
 	_ = devices
-
-	namedVersions = add(
-		qb.MakeQuery(s.Schema, "NamedVersionsDelete", sgen.QueryKindExec,
-			"DELETE FROM", s.NamedVersions, '\n',
-			"WHERE", s.NamedVersionsObjectID, "=", qb.VarCol(s.NamedVersionsObjectID), '\n',
-			"AND", s.NamedVersionsAccountID, "=", qb.VarCol(s.NamedVersionsAccountID), '\n',
-			"AND", s.NamedVersionsDeviceID, "=", qb.VarCol(s.NamedVersionsDeviceID), '\n',
-			"AND", s.NamedVersionsName, "=", qb.VarCol(s.NamedVersionsName),
-		),
-		qb.MakeQuery(s.Schema, "NamedVersionsReplace", sgen.QueryKindExec,
-			"INSERT OR REPLACE INTO", s.NamedVersions, qb.ListColShort(
-				s.NamedVersionsObjectID,
-				s.NamedVersionsAccountID,
-				s.NamedVersionsDeviceID,
-				s.NamedVersionsName,
-				s.NamedVersionsVersion,
-			), '\n',
-			"VALUES", qb.List(
-				qb.VarCol(s.NamedVersionsObjectID),
-				qb.VarCol(s.NamedVersionsAccountID),
-				qb.VarCol(s.NamedVersionsDeviceID),
-				qb.VarCol(s.NamedVersionsName),
-				qb.VarCol(s.NamedVersionsVersion),
-			),
-		),
-		qb.MakeQuery(s.Schema, "NamedVersionsGet", sgen.QueryKindSingle,
-			"SELECT", qb.Results(
-				s.NamedVersionsVersion,
-			), '\n',
-			"FROM", s.NamedVersions, '\n',
-			"WHERE", s.NamedVersionsObjectID, "=", qb.VarCol(s.NamedVersionsObjectID), '\n',
-			"AND", s.NamedVersionsAccountID, "=", qb.VarCol(s.NamedVersionsAccountID), '\n',
-			"AND", s.NamedVersionsDeviceID, "=", qb.VarCol(s.NamedVersionsDeviceID), '\n',
-			"AND", s.NamedVersionsName, "=", qb.VarCol(s.NamedVersionsName), '\n',
-			"LIMIT 1",
-		),
-		qb.MakeQuery(s.Schema, "NamedVersionsListByObjectOwner", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				s.AccountsMultihash,
-				s.DevicesMultihash,
-				s.NamedVersionsVersion,
-				qb.ResultColAlias(s.IPFSBlocksCodec, "permanode_codec"),
-				qb.ResultColAlias(s.IPFSBlocksMultihash, "permanode_multihash"),
-			), '\n',
-			"FROM", s.NamedVersions, '\n',
-			"JOIN", s.Devices, "ON", s.DevicesID, "=", s.NamedVersionsDeviceID, '\n',
-			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.NamedVersionsAccountID, '\n',
-			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.NamedVersionsObjectID, '\n',
-			"WHERE", s.PermanodesAccountID, "=", qb.VarCol(s.PermanodesAccountID), '\n',
-		),
-		qb.MakeQuery(s.Schema, "NamedVersionsListAll", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				s.AccountsMultihash,
-				s.DevicesMultihash,
-				s.NamedVersionsVersion,
-				s.NamedVersionsName,
-				qb.ResultColAlias(s.IPFSBlocksCodec, "permanode_codec"),
-				qb.ResultColAlias(s.IPFSBlocksMultihash, "permanode_multihash"),
-			), '\n',
-			"FROM", s.NamedVersions, '\n',
-			"INNER JOIN", s.Devices, "ON", s.DevicesID, "=", s.NamedVersionsDeviceID, '\n',
-			"INNER JOIN", s.Accounts, "ON", s.AccountsID, "=", s.NamedVersionsAccountID, '\n',
-			"INNER JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.NamedVersionsObjectID, '\n',
-		),
-	)
-	_ = namedVersions
 
 	ipfsBlocks = add(
 		qb.MakeQuery(s.Schema, "IPFSBlocksLookupPK", sgen.QueryKindSingle,
@@ -346,9 +260,10 @@ var (
 			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
 			"AND", s.IPFSBlocksSize, ">=", "0",
 		),
-		qb.MakeQuery(s.Schema, "IPFSBlocksDelete", sgen.QueryKindExec,
+		qb.MakeQuery(s.Schema, "IPFSBlocksDelete", sgen.QueryKindSingle,
 			"DELETE FROM", s.IPFSBlocks, '\n',
-			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash),
+			"WHERE", s.IPFSBlocksMultihash, "=", qb.VarCol(s.IPFSBlocksMultihash), '\n',
+			"RETURNING", qb.Results(s.IPFSBlocksID),
 		),
 		qb.MakeQuery(s.Schema, "IPFSBlocksDeleteByID", sgen.QueryKindExec,
 			"DELETE FROM", s.IPFSBlocks, '\n',
@@ -417,24 +332,6 @@ var (
 			"WHERE", s.PermanodesID, "=", qb.VarCol(s.PermanodesID), '\n',
 			"LIMIT 1",
 		),
-		qb.MakeQuery(s.Schema, "PermanodesListWithVersionsByType", sgen.QueryKindMany,
-			"SELECT", qb.Results(
-				s.PermanodesID,
-				s.PermanodesAccountID,
-				s.AccountsMultihash,
-				qb.ResultColAlias(s.IPFSBlocksCodec, "permanode_codec"),
-				qb.ResultColAlias(s.IPFSBlocksMultihash, "permanode_multihash"),
-				s.PermanodesCreateTime,
-			), '\n',
-			"FROM", s.Permanodes, '\n',
-			"JOIN", s.IPFSBlocks, "ON", s.IPFSBlocksID, "=", s.PermanodesID, '\n',
-			"JOIN", s.Accounts, "ON", s.AccountsID, "=", s.PermanodesAccountID, '\n',
-			"WHERE", s.PermanodesType, "=", qb.VarCol(s.PermanodesType), '\n',
-			"AND", s.PermanodesID, "IN", qb.SubQuery(
-				"SELECT DISTINCT", s.NamedVersionsObjectID,
-				"FROM", s.NamedVersions,
-			),
-		),
 		qb.MakeQuery(s.Schema, "PermanodesListByType", sgen.QueryKindMany,
 			"SELECT", qb.Results(
 				s.PermanodesID,
@@ -469,17 +366,6 @@ var (
 				qb.VarCol(s.ChangesDeviceID),
 				qb.VarCol(s.ChangesKind),
 				qb.VarCol(s.ChangesStartTime),
-			),
-		),
-		qb.MakeQuery(s.Schema, "ChangesGetBase", sgen.QueryKindSingle,
-			"SELECT", qb.Results(
-				qb.ResultExpr(qb.SQLFunc("COUNT", "DISTINCT "+s.DatomsChange.ShortName()), "count", sgen.TypeInt),
-				qb.ResultExpr(qb.SQLFunc("MAX", s.DatomsTime.ShortName()), "max_clock", sgen.TypeInt),
-			), '\n',
-			"FROM", s.Datoms, '\n',
-			"WHERE", s.DatomsPermanode, "=", qb.VarCol(s.DatomsPermanode), '\n',
-			"AND", s.DatomsChange, "IN", qb.SubQuery(
-				"SELECT value FROM json_each(", qb.Var("jsonHeads", sgen.TypeText), ")",
 			),
 		),
 		qb.MakeQuery(s.Schema, "ChangesGetOne", sgen.QueryKindSingle,
@@ -530,46 +416,6 @@ var (
 		),
 	)
 	_ = changes
-
-	datoms = add(
-		qb.MakeQuery(s.Schema, "DatomsAttrInsert", sgen.QueryKindSingle,
-			"INSERT INTO", s.DatomAttrs, qb.ListColShort(
-				s.DatomAttrsAttr,
-			), '\n',
-			"VALUES", qb.List(
-				qb.VarCol(s.DatomAttrsAttr),
-			), '\n',
-			"RETURNING", qb.Results(
-				s.DatomAttrsID,
-			),
-		),
-		qb.MakeQuery(s.Schema, "DatomsAttrLookup", sgen.QueryKindSingle,
-			"SELECT", qb.Results(
-				s.DatomAttrsID,
-			), '\n',
-			"FROM", s.DatomAttrs, '\n',
-			"WHERE", s.DatomAttrsAttr, "=", qb.VarCol(s.DatomAttrsAttr),
-			"LIMIT 1",
-		),
-		// TODO(burdiyan): remove this.
-		// qb.MakeQuery(s.Schema, "DatomsMaxSeq", sgen.QueryKindSingle,
-		// 	"SELECT", qb.Results(
-		// 		qb.ResultExpr(qb.SQLFunc("MAX", s.DatomsSeq.String()), "max", sgen.TypeInt),
-		// 	), '\n',
-		// 	"FROM", s.Datoms, '\n',
-		// 	"WHERE", s.DatomsPermanode, "=", qb.VarCol(s.DatomsPermanode), '\n',
-		// 	"AND", s.DatomsChange, "=", qb.VarCol(s.DatomsChange), '\n',
-		// 	"LIMIT 1",
-		// ),
-		qb.MakeQuery(s.Schema, "DatomsDelete", sgen.QueryKindExec,
-			"DELETE FROM", s.Datoms, '\n',
-			"WHERE", s.DatomsPermanode, "=", qb.VarCol(s.DatomsPermanode), '\n',
-			"AND", s.DatomsEntity, "=", qb.VarCol(s.DatomsEntity), '\n',
-			"AND", s.DatomsChange, "=", qb.VarCol(s.DatomsChange), '\n',
-			"AND", s.DatomsAttr, "=", qb.VarCol(s.DatomsAttr),
-		),
-	)
-	_ = datoms
 )
 
 //go:generate gorun generateQueries
