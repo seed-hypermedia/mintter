@@ -99,7 +99,7 @@ func TestCreateDraftFromPublication(t *testing.T) {
 
 	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
 	require.NoError(t, err)
-	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
 		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
@@ -120,22 +120,23 @@ func TestCreateDraftFromPublication(t *testing.T) {
 		}}},
 	})
 	require.NoError(t, err)
-	require.NotNil(t, updated)
+	require.NotNil(t, draft)
 	published, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
 	require.NotNil(t, published)
-	updated.PublishTime = published.Document.PublishTime // drafts don't have publish time.
+	draft.PublishTime = published.Document.PublishTime // drafts don't have publish time.
 
-	testutil.ProtoEqual(t, updated, published.Document, "published document must match")
+	testutil.ProtoEqual(t, draft, published.Document, "published document must match")
 
 	draft2, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{
 		ExistingDocumentId: published.Document.Id,
 	})
 	require.NoError(t, err)
 	draft2.PublishTime = published.Document.PublishTime
+	published.Document.UpdateTime = draft2.UpdateTime // New draft will have a newer update time.
 
 	testutil.ProtoEqual(t, published.Document, draft2, "draft from publication must be same as published")
-	updated = updateDraft(ctx, t, api, draft2.Id, []*documents.DocumentChange{
+	draft2 = updateDraft(ctx, t, api, draft2.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_DeleteBlock{DeleteBlock: "b1"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b2"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
@@ -145,7 +146,7 @@ func TestCreateDraftFromPublication(t *testing.T) {
 		}}},
 	})
 
-	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: updated.Id})
+	pub2, err := api.PublishDraft(ctx, &documents.PublishDraftRequest{DocumentId: draft2.Id})
 	require.NoError(t, err)
 	require.NotNil(t, pub2)
 

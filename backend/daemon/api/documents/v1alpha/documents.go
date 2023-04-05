@@ -553,11 +553,6 @@ func (api *Server) ListPublications(ctx context.Context, in *documents.ListPubli
 }
 
 func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, includeDrafts bool, oid cid.Cid, heads []cid.Cid) (*docState, error) {
-	me, err := api.me.Await(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	obj := conn.LookupPermanode(oid)
 	var cs sqlitevcs.ChangeSet
 	v := vcs.NewVersion(heads...)
@@ -567,20 +562,22 @@ func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, inclu
 	}
 
 	var createTime time.Time
+	var author cid.Cid
 	{
 		blk, err := conn.GetBlock(ctx, oid)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get permanode for draft %s: %w", oid, err)
 		}
 
-		var docpb mttdoc.DocumentPermanode
-		if err := cbornode.DecodeInto(blk.RawData(), &docpb); err != nil {
+		var docperma mttdoc.DocumentPermanode
+		if err := cbornode.DecodeInto(blk.RawData(), &docperma); err != nil {
 			return nil, fmt.Errorf("failed to decode permanode for draft %s: %w", oid, err)
 		}
 
-		createTime = docpb.CreateTime.Time()
+		createTime = docperma.CreateTime.Time()
+		author = docperma.Owner
 	}
-	doc := newDocState(oid, me.AccountID(), createTime)
+	doc := newDocState(oid, author, createTime)
 
 	conn.IterateChanges(oid, includeDrafts, cs, func(vc vcs.VerifiedChange) error {
 		return doc.applyChange(vc)
