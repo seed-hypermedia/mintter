@@ -1,3 +1,4 @@
+import {useDrag} from '@app/drag-context'
 import {
   EditorHoveringToolbar,
   PublicationToolbar,
@@ -6,7 +7,6 @@ import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'
 import {
-  Block,
   blockquote,
   ChildrenOf,
   code,
@@ -19,13 +19,13 @@ import {
   ol,
   statement,
   ul,
-  Selector,
-  CreateConversationRequest,
 } from '@mintter/shared'
 import {Event, listen} from '@tauri-apps/api/event'
+import debounce from 'lodash.debounce'
 import {PropsWithChildren, useEffect, useMemo, useState} from 'react'
 import {Descendant, Editor as EditorType, Transforms} from 'slate'
 import {Editable, ReactEditor, Slate} from 'slate-react'
+import DragContext, {DragContextValues, HoveredNode} from './drag-context'
 import {
   buildDecorateHook,
   buildEventHandlerHooks,
@@ -63,6 +63,35 @@ export function Editor({
     throw Error(`<Editor /> ERROR: "editor" prop is required. Got ${editor}`)
   }
 
+  const dragService = useDrag()
+  const [draggedNode, setDraggedNode] = useState<HoveredNode>(null)
+  let contextValues: DragContextValues = {
+    drag: draggedNode,
+    setDrag: debounce(
+      (e: DragEvent, node: FlowContent) => {
+        if (draggedNode) return
+        setDraggedNode(node)
+        e.preventDefault()
+        const path = ReactEditor.findPath(editor, node)
+
+        const domNode = ReactEditor.toDOMNode(editor, node)
+
+        dragService?.send({
+          type: 'DRAG.OVER',
+          toPath: path,
+          element: domNode as HTMLLIElement,
+          currentPosX: e.clientX,
+          currentPosY: e.clientY,
+        })
+      },
+      100,
+      {leading: true, trailing: false},
+    ),
+    clearDrag: () => {
+      setDraggedNode(null)
+    },
+  }
+
   const renderElement = useMemo(
     () => buildRenderElementHook(plugins, editor),
     [plugins, editor],
@@ -80,25 +109,25 @@ export function Editor({
     [plugins, editor],
   )
 
-  const [mouseDown, setMouseDown] = useState(false);
+  const [mouseDown, setMouseDown] = useState(false)
 
   useEffect(() => {
     function handleMouseDown() {
-      setMouseDown(true);
+      setMouseDown(true)
     }
 
     function handleMouseUp() {
-      setMouseDown(false);
+      setMouseDown(false)
     }
 
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousedown', handleMouseDown)
+    document.addEventListener('mouseup', handleMouseUp)
 
     return () => {
-      document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, []);
+      document.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
 
   // async function createDummyComment(event: any) {
   //   event.preventDefault()
@@ -244,26 +273,32 @@ export function Editor({
     }
   })
 
+  useEffect(() => {
+    contextValues.drag = draggedNode
+  }, [draggedNode])
+
   if (mode == EditorMode.Draft) {
     return (
       <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
-        <Slate
-          editor={editor}
-          value={value as Array<Descendant>}
-          onChange={onChange}
-        >
-          <EditorHoveringToolbar mouseDown={mouseDown} />
-          <Editable
-            id="editor"
-            data-testid="editor"
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            decorate={decorate}
-            placeholder="Start typing here..."
-            {...eventHandlers}
-          />
-          {children}
-        </Slate>
+        <DragContext.Provider value={contextValues}>
+          <Slate
+            editor={editor}
+            value={value as Array<Descendant>}
+            onChange={onChange}
+          >
+            <EditorHoveringToolbar mouseDown={mouseDown} />
+            <Editable
+              id="editor"
+              data-testid="editor"
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              decorate={decorate}
+              placeholder="Start typing here..."
+              {...eventHandlers}
+            />
+            {children}
+          </Slate>
+        </DragContext.Provider>
         {/* <pre>{JSON.stringify(editor.children, null, 2)}</pre> */}
       </div>
     )

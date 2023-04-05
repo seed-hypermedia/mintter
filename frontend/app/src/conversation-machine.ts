@@ -1,9 +1,9 @@
-import {Account, Publication, blockNodeToSlate, MttLink} from '@mintter/shared'
+import {accountsClient, publicationsClient} from '@app/api-clients'
 import {queryKeys} from '@app/hooks'
 import {ClientPublication} from '@app/publication-machine'
+import {Account, blockNodeToSlate, MttLink, Publication} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine} from 'xstate'
-import {accountsClient, publicationsClient} from '@app/api-clients'
 
 type CreateConversationMachineProps = {
   client: QueryClient

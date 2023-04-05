@@ -215,7 +215,10 @@ const defaultVirtualEl = {
   },
 }
 
-function HoveringToolbar({children, mouseDown}: PropsWithChildren & {mouseDown: boolean}) {
+function HoveringToolbar({
+  children,
+  mouseDown,
+}: PropsWithChildren & {mouseDown: boolean}) {
   const {editor} = useSlateWithV()
   const inFocus = useFocused()
   const selection = useSlateSelection()

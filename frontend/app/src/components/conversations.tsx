@@ -1,8 +1,6 @@
 import {changesClient, commentsClient} from '@app/api-clients'
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAuthor} from '@app/hooks'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {EXPERIMENTS} from '@app/utils/experimental'
 import {useNavigate} from '@app/utils/navigation'
 // import {
 //   useNostr,
@@ -10,8 +8,7 @@ import {useNavigate} from '@app/utils/navigation'
 //   useNostrProfile,
 //   useNostrReplies,
 // } from '@app/utils/nostr'
-import {Timestamp} from '@bufbuild/protobuf'
-import {Avatar, getRandomColor} from '@components/avatar'
+import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
@@ -165,12 +162,10 @@ function ConversationItem({
               display: 'flex',
               flexDirection: 'column',
               gap: '$3',
-              // paddingTop: selectors ? '$5' : '$3',
               width: '$full',
               paddingTop: '$5',
               marginRight: '$4',
               position: 'relative',
-              // paddingLeft: 48,
               '&:hover': {
                 cursor: 'default',
               },

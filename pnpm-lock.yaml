@@ -76,6 +76,7 @@ importers:
       '@types/hast': 2.3.4
       '@types/is-hotkey': 0.1.7
       '@types/is-url': 1.2.30
+      '@types/lodash.debounce': ^4.0.7
       '@types/mdast': 3.0.10
       '@types/node': 18.11.17
       '@types/react': 18.0.26
@@ -117,6 +118,7 @@ importers:
       is-plain-object: 5.0.0
       is-url: 1.2.4
       js-video-url-parser: 0.5.1
+      lodash.debounce: ^4.0.8
       long: 5.2.1
       nanoid: 4.0.0
       navaid: 1.2.0
@@ -187,6 +189,7 @@ importers:
       '@stitches/react': 1.2.8_react@18.2.0
       '@tanstack/react-query': 4.19.1_biqbaboplfbrettd7655fr4n2y
       '@tauri-apps/api': 1.2.0
+      '@types/lodash.debounce': 4.0.7
       '@xstate/react': 3.1.1_ngbao4oab7vdrnbppxkauwwehu
       allotment: 1.17.1_biqbaboplfbrettd7655fr4n2y
       autosize: 5.0.2
@@ -210,6 +213,7 @@ importers:
       is-plain-object: 5.0.0
       is-url: 1.2.4
       js-video-url-parser: 0.5.1
+      lodash.debounce: 4.0.8
       long: 5.2.1
       nanoid: 4.0.0
       navaid: 1.2.0
@@ -1240,8 +1244,8 @@ packages:
   /@bufbuild/protobuf/1.0.0:
     resolution: {integrity: sha512-oH3jHBrZ6to8Qf4zLg7O8KqSY42kQZNBRXJRMp5uSi0mqE4L8NbyMnZHeOsbXmTb0xpptRyH11LfS+KeVhXzAA==}
 
-  /@bufbuild/protobuf/1.1.1:
-    resolution: {integrity: sha512-1dS2m3jabfW2XL2K6//41wZkO4XJOZtpe0bKLuta0BvK5LxNRyUBSSN5835n3bIFiNJKFWhDnzZEMrV7QVGFfQ==}
+  /@bufbuild/protobuf/1.2.0:
+    resolution: {integrity: sha512-MBVuQMOBHxgGnZ9XCUIi8WOy5O/T4ma3TduCRhRvndv3UDbG9cHgd8h6nOYSGyBYPEvXf1z9nTwhp8mVIDbq2g==}
     dev: true
 
   /@bufbuild/protoc-gen-connect-web/0.6.0_qxjgbyg5ehaueid3ccsm3gvobi:
@@ -1258,7 +1262,7 @@ packages:
         optional: true
     dependencies:
       '@bufbuild/protoc-gen-es': 1.0.0
-      '@bufbuild/protoplugin': 1.1.1
+      '@bufbuild/protoplugin': 1.2.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1288,10 +1292,10 @@ packages:
       - supports-color
     dev: true
 
-  /@bufbuild/protoplugin/1.1.1:
-    resolution: {integrity: sha512-WDLgYReAMo1X2QqZrKyaFaZIcO01CHuq1dGRtaB42tyiY1f6Er9de1tvtRxt0MWfx5vPhZmoPCKSrwLZp92UTw==}
+  /@bufbuild/protoplugin/1.2.0:
+    resolution: {integrity: sha512-TX0mEk+LdIbpK2xr5RqeUswR8jGZs6uCX6Cq8azADj8hhiUr7Xty8agEOU/zR+J71D4dV5SnyEPYyw0nGJ6dGQ==}
     dependencies:
-      '@bufbuild/protobuf': 1.1.1
+      '@bufbuild/protobuf': 1.2.0
       '@typescript/vfs': 1.4.0
       typescript: 4.5.2
     transitivePeerDependencies:
@@ -5065,6 +5069,12 @@ packages:
       '@types/node': 18.11.17
     dev: true
 
+  /@types/lodash.debounce/4.0.7:
+    resolution: {integrity: sha512-X1T4wMZ+gT000M2/91SYj0d/7JfeNZ9PeeOldSNoE/lunLeQXKvkmIumI29IaKMotU/ln/McOIvgzZcQ/3TrSA==}
+    dependencies:
+      '@types/lodash': 4.14.191
+    dev: false
+
   /@types/lodash/4.14.191:
     resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
     dev: false
@@ -5343,7 +5353,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       '@typescript-eslint/types': 5.45.1
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
     dev: true
 
   /@typescript-eslint/visitor-keys/5.55.0:
@@ -8283,6 +8293,11 @@ packages:
   /eslint-visitor-keys/3.3.0:
     resolution: {integrity: sha512-mQ+suqKJVyeuwGYHAdjMFqjCyfl8+Ldnxuyp3ldiMBFKkvytrXUZWaiPCEav8qDHKty44bD+qV1IP4T+w+xXRA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    dev: false
+
+  /eslint-visitor-keys/3.4.0:
+    resolution: {integrity: sha512-HPpKPUBQcAsZOsHAFwTtIKcYlCje62XB7SEAcxjtmW6TD1WVpkS6i6/hOVtTZIl4zGj/mBqpFVGvaDneik+VoQ==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   /eslint/8.29.0:
     resolution: {integrity: sha512-isQ4EEiyUjZFbEKvEGJKKGBwXtvXX+zJbkVKCgTuB9t/+jUBcy8avhkEwWJecI15BkRkOYmvIM5ynbhRjEkoeg==}
@@ -8301,7 +8316,7 @@ packages:
       escape-string-regexp: 4.0.0
       eslint-scope: 7.1.1
       eslint-utils: 3.0.0_eslint@8.29.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
       espree: 9.5.0
       esquery: 1.5.0
       esutils: 2.0.3
@@ -8341,7 +8356,7 @@ packages:
     dependencies:
       acorn: 8.8.2
       acorn-jsx: 5.3.2_acorn@8.8.2
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
 
   /esprima/4.0.1:
     resolution: {integrity: sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==}

@@ -1,5 +1,4 @@
 import {commentsClient} from '@app/api-clients'
-import {Text} from '@components/text'
 import {useDrag} from '@app/drag-context'
 import {ELEMENT_BLOCKQUOTE} from '@app/editor/blockquote'
 import {ELEMENT_CODE} from '@app/editor/code'
@@ -16,11 +15,10 @@ import {
   useMouse,
 } from '@app/mouse-context'
 import {appInvalidateQueries} from '@app/query-client'
-import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
-import {inline, offset, shift, flip, useFloating} from '@floating-ui/react-dom'
+import {Text} from '@components/text'
 import {
   blockquote,
   blockToApi,
@@ -40,14 +38,13 @@ import {
   video,
 } from '@mintter/shared'
 import {useSelector} from '@xstate/react'
-import {Fragment, MouseEvent, useMemo, useState} from 'react'
+import {Fragment, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {Editor, Node, NodeEntry, Path} from 'slate'
 import {ReactEditor, useSlate} from 'slate-react'
 import {CommentForm, EditorHoveringActions} from './hovering-toolbar'
 import {OutsideClick} from './outside-click'
 import './styles/blocktools.scss'
-import {useNavRoute} from '@app/utils/navigation'
 
 let toolsByMode = {
   [EditorMode.Draft]: DraftBlocktools,

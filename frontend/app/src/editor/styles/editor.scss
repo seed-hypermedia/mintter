@@ -46,6 +46,20 @@ li::marker {
   // background-color: var(--primary-component-bg-hover)
 }
 
+[data-action='dragged-bottom-group'] {
+  background: var(--primary-component-bg-hover);
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    height: 3px;
+    width: 100%;
+    background-color: #007aff;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 [data-action='dragged-top'] {
   &::before {
     content: '';
@@ -60,6 +74,7 @@ li::marker {
 }
 
 [data-action='dragged-nested'] {
+  background: var(--primary-component-bg-hover);
   &::after {
     content: '';
     position: absolute;

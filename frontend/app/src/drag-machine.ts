@@ -4,12 +4,10 @@ import {
   Group,
   isFlowContent,
   isGroupContent,
-  text,
 } from '@mintter/shared'
-import React from 'react'
-import {Editor, Path, Transforms, NodeEntry, Node} from 'slate'
+import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {assign, createMachine, actions} from 'xstate'
+import {actions, assign, createMachine} from 'xstate'
 
 let {send} = actions
 type DragContext = {
@@ -27,9 +25,10 @@ type DragEvent =
   | {type: 'DROPPED'}
   | {
       type: 'DRAG.OVER'
-      toPath: Path | null
-      element: HTMLLIElement | null
-      currentPos: number
+      toPath: Path
+      element: HTMLLIElement
+      currentPosX: number
+      currentPosY: number
     }
   | {type: 'DRAGGING.OFF'}
   | {type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null}
@@ -101,111 +100,100 @@ export const createDragMachine = (editor: Editor) => {
           context.editor.dragging = false
         },
         setDragOverRef: assign((context, event) => {
-          const {nestedGroup, dragOverRef} = context
-          if (event.element) {
-            if (nestedGroup) {
-              for (let i = 0; i < nestedGroup.length; i++) {
-                nestedGroup[i].removeAttribute('data-action')
-              }
+          const {dragOverRef} = context
+          const {element, toPath, currentPosX, currentPosY} = event
+          dragOverRef?.removeAttribute('data-action')
+          if (context.nestedGroup) {
+            for (const elem of context.nestedGroup) {
+              elem.removeAttribute('data-action')
             }
-            dragOverRef?.removeAttribute('data-action')
-            const element: HTMLLIElement = event.element
-            const paragraph = element.firstElementChild
-            let isTop = context.isTop
-            if (paragraph && paragraph.nodeName === 'P') {
-              const {fromPath, toPath} = context
-              if (fromPath && toPath) {
-                if (
-                  Path.equals(fromPath, toPath) ||
-                  Path.isAncestor(fromPath, toPath)
-                ) {
-                  return paragraph
-                }
-                if (
-                  Path.isAfter(fromPath, toPath) ||
-                  Path.isAncestor(toPath, fromPath)
-                ) {
-                  paragraph.setAttribute('data-action', 'dragged-top')
-                  isTop = true
-                } else {
-                  paragraph.setAttribute('data-action', 'dragged-bottom')
-                  isTop = false
-                }
-              }
-              return {dragOverRef: paragraph, isTop, nestedGroup: null}
-            }
-            return {dragOverRef: element, isTop: isTop, nestedGroup: null}
           }
-          if (nestedGroup) {
-            dragOverRef?.removeAttribute('data-action')
+          const result = filterDragOverRef(
+            element,
+            editor,
+            toPath,
+            context,
+            currentPosX,
+          )
+          let nestedGroup = result.nestedGroup
+          if (context.nestedGroup) {
+            const lastElement =
+              context.nestedGroup[
+                context.nestedGroup.length - 1
+              ].getBoundingClientRect()
+            const boundariesX = [
+              context.nestedGroup[0].getBoundingClientRect().x,
+              lastElement.x + lastElement.width,
+            ]
+            const boundariesY = [
+              lastElement.y,
+              lastElement.y + lastElement.height,
+            ]
+            if (
+              currentPosX > boundariesX[0] &&
+              currentPosX < boundariesX[1] &&
+              currentPosY > boundariesY[0] &&
+              currentPosY < boundariesY[1]
+            ) {
+              nestedGroup = context.nestedGroup
+            }
+          }
+          if (nestedGroup && nestedGroup.includes(element)) {
             let hoveredElement = nestedGroup[nestedGroup.length - 1]
+
+            if (nestedGroup.length === 1) {
+              hoveredElement.setAttribute('data-action', 'dragged-bottom-group')
+              return {
+                dragOverRef: element,
+                isTop: context.isTop,
+                toPath,
+              }
+            }
 
             for (let i = 1; i < nestedGroup.length; i++) {
               nestedGroup[i - 1].removeAttribute('data-action')
               nestedGroup[i - 1].setAttribute('data-action', 'dragged-group')
               if (nestedGroup[i] === nestedGroup[nestedGroup.length - 1])
-                nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
-              if (
-                event.currentPos <= nestedGroup[i].getBoundingClientRect()['x']
-              ) {
+                nestedGroup[i].setAttribute(
+                  'data-action',
+                  'dragged-bottom-group',
+                )
+              if (currentPosX <= nestedGroup[i].getBoundingClientRect()['x']) {
                 hoveredElement = nestedGroup[i - 1]
                 hoveredElement.setAttribute('data-action', 'dragged-nested')
-                nestedGroup[i].setAttribute('data-action', 'dragged-bottom')
+                nestedGroup[i].setAttribute(
+                  'data-action',
+                  'dragged-bottom-group',
+                )
                 break
               }
             }
             const hoveredNode = ReactEditor.toSlateNode(editor, hoveredElement)
-            const toPath = ReactEditor.findPath(editor, hoveredNode)
+            const hoveredPath = ReactEditor.findPath(editor, hoveredNode)
             if (hoveredElement != nestedGroup[nestedGroup.length - 1]) {
-              return {dragOverRef: hoveredElement, isTop: false, toPath}
+              return {
+                dragOverRef: hoveredElement,
+                isTop: false,
+                toPath: hoveredPath,
+                nestedGroup,
+              }
             }
             return {
               dragOverRef: hoveredElement,
               isTop: context.isTop,
-              toPath,
+              toPath: hoveredPath,
+              nestedGroup,
             }
           } else {
-            if (dragOverRef !== null) {
-              const element = ReactEditor.toSlateNode(editor, dragOverRef)
-              const path = ReactEditor.findPath(editor, element)
-              const parentBlock = Editor.above<FlowContent>(editor, {
-                match: isFlowContent,
-                mode: 'lowest',
-                at: path,
-              })
-
-              if (parentBlock) {
-                const [node, ancestorPath] = parentBlock
-
-                const children = node.children as Node[]
-
-                const childGroup = children.find(
-                  (child: Node) => child.type === 'group',
-                )
-
-                if (!childGroup) {
-                  let groupStatements: NodeEntry<FlowContent>[] =
-                    getNestedGroup(parentBlock, editor)
-                  if (groupStatements.length > 0) {
-                    let groupElements: HTMLElement[] = []
-                    for (const statement of groupStatements) {
-                      groupElements.push(
-                        ReactEditor.toDOMNode(editor, statement[0]),
-                      )
-                    }
-
-                    dragOverRef.removeAttribute('data-action')
-
-                    return {
-                      dragOverRef: context.dragOverRef,
-                      isTop: context.isTop,
-                      nestedGroup: groupElements,
-                    }
-                  }
-                }
-              }
+            if (!Path.equals(context.toPath, context.fromPath)) {
+              result.isTop
+                ? result.dragOverRef?.setAttribute('data-action', 'dragged-top')
+                : result.dragOverRef?.setAttribute(
+                    'data-action',
+                    'dragged-bottom',
+                  )
             }
-            return {dragOverRef: context.dragOverRef, isTop: context.isTop}
+            return result
           }
         }),
         setDragRef: assign({
@@ -289,7 +277,9 @@ export const createDragMachine = (editor: Editor) => {
               if (
                 !isTop &&
                 ((parentToGroup && isLastBlock(parentToGroup, toPath)) ||
-                  (parentFromGroup && isLastBlock(parentFromGroup, fromPath)))
+                  (parentFromGroup && isLastBlock(parentFromGroup, fromPath)) ||
+                  (context.nestedGroup &&
+                    context.nestedGroup[0] === dragOverRef))
               ) {
                 to = Path.next(toPath)
               }
@@ -355,4 +345,53 @@ function getNestedGroup(block: NodeEntry<FlowContent>, editor: Editor) {
   } else {
     return [] as NodeEntry<FlowContent>[]
   }
+}
+
+function filterDragOverRef(
+  element: HTMLElement,
+  editor: Editor,
+  toPath: Path,
+  context: DragContext,
+  currentPosX: number,
+) {
+  const node = ReactEditor.toSlateNode(editor, element) as FlowContent
+  const children = node.children as Node[]
+
+  const childGroup = children.find((child: Node) => child.type === 'group')
+
+  if (!childGroup && toPath.length > 2) {
+    let groupStatements: NodeEntry<FlowContent>[] = getNestedGroup(
+      [node, toPath] as NodeEntry<FlowContent>,
+      editor,
+    )
+    if (groupStatements.length > 0) {
+      let groupElements: HTMLElement[] = []
+      for (const statement of groupStatements) {
+        groupElements.push(ReactEditor.toDOMNode(editor, statement[0]))
+      }
+
+      return {
+        dragOverRef: context.dragOverRef,
+        isTop: context.isTop,
+        nestedGroup: groupElements,
+      }
+    }
+  }
+  const paragraph = element.firstElementChild
+  let isTop = context.isTop
+  if (paragraph && paragraph.nodeName === 'P') {
+    const {fromPath, toPath} = context
+    if (fromPath && toPath) {
+      if (Path.equals(fromPath, toPath) || Path.isAncestor(fromPath, toPath)) {
+        return {dragOverRef: paragraph, isTop: false, nestedGroup: null}
+      }
+      if (Path.isAfter(fromPath, toPath) || Path.isAncestor(toPath, fromPath)) {
+        isTop = true
+      } else {
+        isTop = false
+      }
+    }
+    return {dragOverRef: paragraph, isTop, nestedGroup: null}
+  }
+  return {dragOverRef: element, isTop: isTop, nestedGroup: null}
 }
