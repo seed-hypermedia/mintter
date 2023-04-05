@@ -134,6 +134,7 @@ func TestAPIGetRemotePublication(t *testing.T) {
 
 	remotePublication, err := requester.RPC.Documents.GetPublication(ctx, &documents.GetPublicationRequest{DocumentId: publishedDocument.Document.Id})
 	require.NoError(t, err)
+
 	testutil.ProtoEqual(t, publishedDocument, remotePublication, "remote publication doesn't match")
 }
 

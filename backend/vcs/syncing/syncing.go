@@ -353,6 +353,7 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 	// Fetch missing changes and make sure we have their parents.
 	// We assume causally sorted list, but verifying just in case.
 	fetched := make([]vcs.VerifiedChange, len(missingSorted))
+	visited := make(map[cid.Cid]struct{})
 	{
 		for i, c := range missingSorted {
 			blk, err := sess.GetBlock(ctx, c)
@@ -363,12 +364,14 @@ func (s *Service) syncObject(ctx context.Context, sess exchange.Fetcher, obj *p2
 			if err != nil {
 				return fmt.Errorf("failed to verify change %s: %w", c, err)
 			}
+			visited[vc.Cid()] = struct{}{}
 			for _, dep := range vc.Decoded.Parents {
 				has, err := bs.Has(ctx, dep)
 				if err != nil {
 					return fmt.Errorf("failed to check parent %s of %s: %w", dep, c, err)
 				}
-				if !has {
+				_, seen := visited[dep]
+				if !has && !seen {
 					return fmt.Errorf("won't sync object %s: missing parent %s of change %s", obj, dep, c)
 				}
 			}
