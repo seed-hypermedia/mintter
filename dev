@@ -97,12 +97,12 @@ def main():
 
     @cmd(cmds, "run-frontend", "Run frontend web app for development.")
     def run_frontend(args):
-        run("plz build //:yarn")
+        run("plz build")
         return run("yarn desktop", args=args)
 
     @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
     def run_frontend(args):
-        run("plz build //:yarn")
+        run("plz build")
         return run(
             "yarn site",
             args=args,
@@ -111,7 +111,7 @@ def main():
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):
-        run("plz build //backend:mintterd //:yarn")
+        run("plz build //backend:mintterd")
         return run("yarn tauri:dev", args=args)
 
     @cmd(cmds, "release", "Cut a new release.")
