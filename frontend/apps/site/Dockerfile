@@ -6,7 +6,7 @@ RUN apk add git
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
 
-COPY frontend .
+COPY . .
 RUN rm -rf ./apps/desktop
 RUN yarn install 
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -14,9 +14,9 @@ ENV NODE_ENV production
 RUN yarn web:prod
 
 FROM node:18-alpine AS production
-COPY --from=builder /app/apps/site/.next/standalone .
-COPY --from=builder /app/apps/site/.next/static ./apps/site/.next/static
-COPY --from=builder /app/apps/site/public ./apps/site/public
+COPY --from=builder /app/frontend/apps/site/.next/standalone .
+COPY --from=builder /app/frontend/apps/site/.next/static ./apps/site/.next/static
+COPY --from=builder /app/frontend/apps/site/public ./apps/site/public
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -26,4 +26,4 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-CMD ["node", "app/apps/site/server.js"]
+CMD ["node", "app/frontend/apps/site/server.js"]
