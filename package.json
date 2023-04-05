@@ -14,7 +14,7 @@
     "fix": "manypkg fix",
     "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop -pi run build",
     "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",
-    "format": "prettier --write .",
+    "format": "prettier --write ./frontend",
     "test": "yarn workspaces foreach run test"
   },
   "resolutions": {

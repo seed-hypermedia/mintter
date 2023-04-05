@@ -9,6 +9,11 @@ public
 out
 plz-out
 types
+docs
+.yarn/*
+.github/*
+.yarnrc.yml
+.vscode/*
 
 # Project files
 docs
@@ -20,16 +25,17 @@ tools
 coverage
 .generated
 /target
-exts/wake-asc/mtt_ephemeral_poll.ts
+exts/*
 .vite
-*.typegen.*
+**/*.typegen.*
 
 # Site
-apps/site/.next
-apps/site/.vercel
-apps/site/.tamagui
+frontend/apps/site/.next
+frontend/apps/site/.vercel
+frontend/apps/site/.tamagui
 
 # Shared
-packages/shared/src/client/.generated
+frontend/packages/shared/src/client/.generated
 
 # Desktop
+desktop/
