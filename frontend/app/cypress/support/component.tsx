@@ -19,13 +19,12 @@ import './commands'
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-import {Router} from '@app/components/router'
-import {globalStyles} from '@app/stitches.config'
+import {globalStyles} from '../../src/stitches.config'
 import {
   createTestQueryClient,
   CustomMountOptions,
   TestProvider,
-} from '@app/test/utils'
+} from '../../src/test/utils'
 import {MountOptions, MountReturn} from 'cypress/react'
 import {mount} from 'cypress/react18'
 
@@ -62,11 +61,7 @@ Cypress.Commands.add('mount', (component, options: CustomMountOptions = {}) => {
 
   globalStyles()
 
-  const wrapped = (
-    <Router hook={() => [path ?? '/', setLocation]}>
-      <TestProvider client={client}>{component}</TestProvider>
-    </Router>
-  )
+  const wrapped = <TestProvider client={client}>{component}</TestProvider>
   // const wrapped = <div>{component}</div>
 
   return mount(wrapped, mountOptions)

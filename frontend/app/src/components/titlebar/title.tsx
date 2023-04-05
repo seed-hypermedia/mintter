@@ -1,5 +1,4 @@
-import {draftsClient} from '@app/api-clients'
-import {queryKeys, useAuthor, useDraft, usePublication} from '@app/hooks'
+import {useAuthor, useDraft, usePublication} from '@app/hooks'
 import {
   DraftRoute,
   PublicationRoute,
@@ -10,9 +9,6 @@ import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
-import {useQuery} from '@tanstack/react-query'
-import {listen} from '@tauri-apps/api/event'
-import {useEffect} from 'react'
 
 export function TitleContent() {
   const route = useNavRoute()

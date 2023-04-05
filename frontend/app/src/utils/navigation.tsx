@@ -1,7 +1,6 @@
 import {draftsClient} from '@app/api-clients'
 import {queryKeys} from '@app/hooks'
 import {appInvalidateQueries} from '@app/query-client'
-import {invoke as tauriInvoke} from '@tauri-apps/api'
 import {
   createContext,
   ReactNode,

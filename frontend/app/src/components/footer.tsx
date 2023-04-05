@@ -1,7 +1,9 @@
-import {ConnectionStatus} from '@mintter/shared'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
+import {networkingClient} from '@app/api-clients'
 import {AccountWithRef, contactsListMachine} from '@app/contact-list-machine'
+import {useConnectionSummary} from '@app/hooks/contacts'
+import {useDaemonReady, useOnline} from '@app/node-status-context'
 import {keyframes, styled} from '@app/stitches.config'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
@@ -9,18 +11,15 @@ import {Button} from '@components/button'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
+import {ConnectionStatus} from '@mintter/shared'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as HoverCard from '@radix-ui/react-hover-card'
 import {useActor} from '@xstate/react'
 import {ReactNode, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
-import {Prompt} from './prompt'
-import {networkingClient} from '@app/api-clients'
-import {useDaemonReady, useOnline} from '@app/node-status-context'
-import {emit} from '@tauri-apps/api/event'
 import {OnlineIndicator} from './indicator'
-import {useConnectionSummary} from '@app/hooks/contacts'
-import {useNavigate, useNavRoute} from '@app/utils/navigation'
+import {Prompt} from './prompt'
 
 const LabelWrap = styled('div', {
   marginHorizontal: 6,
@@ -158,7 +157,7 @@ export default function Footer({children}: {children?: ReactNode}) {
               userSelect: 'none',
             }}
           >
-            You're Offline
+            You are Offline
           </Text>
         </Box>
       ) : null}
