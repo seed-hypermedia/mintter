@@ -1,35 +1,82 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import {ipcRenderer} from 'electron'
+import {useState, MouseEvent, useEffect} from 'react'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  let [id, setId] = useState('')
+  let [shouldShareCoords, setshouldShareCoords] = useState(false)
+  let [coords, setCoords] = useState({x: 100, y: 100})
+
+  async function getWindowId() {
+    let res = await window.api.getWindowId()
+    setId(res)
+  }
+
+  function handleClick(url: string) {
+    return async function clickEvent() {
+      let res = await window.api.openWindow(url)
+      console.log('RES', res)
+    }
+  }
+
+  function handleMouseCoords(event: MouseEvent<HTMLDivElement>) {
+    window.api.sendCoords({x: event.clientX, y: event.clientY})
+  }
+
+  useEffect(() => {
+    if (shouldShareCoords) {
+      window.api.handleCoords((event, newCoords) => {
+        console.log('HANDLE COORDS', newCoords)
+        setCoords(newCoords)
+      })
+    }
+  }, [coords])
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <div
+      className="App"
+      onMouseMove={shouldShareCoords ? handleMouseCoords : undefined}
+    >
+      <div
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: 10,
+          backgroundColor: 'yellow',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: `translate(${coords.y}px, ${coords.x}px)`,
+        }}
+      />
+      <h1>Electron Mintter demo</h1>
+      <h3>{window.location.href}</h3>
+      <button disabled={isSameURL('/')} onClick={handleClick('/')}>
+        open Home (/)
+      </button>
+      <button disabled={isSameURL('/foo')} onClick={handleClick('/foo')}>
+        open /foo
+      </button>
+      <button disabled={isSameURL('/bar')} onClick={handleClick('/bar')}>
+        open /bar
+      </button>
+      <button onClick={getWindowId}>window ID: {id}</button>
+      <label>
+        <input
+          type="checkbox"
+          checked={shouldShareCoords}
+          onChange={(event) => setshouldShareCoords(event.target.value)}
+        />
+        Share mouse coords
+      </label>
+      <p>Copy this text to see if we can share information between windows</p>
+      <textarea placeholder="paste content here"></textarea>
     </div>
   )
+}
+
+function isSameURL(url: string) {
+  return window.location.href == `http://localhost:5173${url}`
 }
 
 export default App
