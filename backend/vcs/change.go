@@ -3,7 +3,9 @@ package vcs
 import (
 	"fmt"
 	"mintter/backend/core"
+	"mintter/backend/ipfs"
 	"mintter/backend/vcs/hlc"
+	"sort"
 
 	blocks "github.com/ipfs/go-block-format"
 	"github.com/ipfs/go-cid"
@@ -44,6 +46,50 @@ type Change struct {
 	ChangeInfo
 	Type ObjectType `refmt:"@type"`
 	Body []byte     `refmt:"body"`
+}
+
+// NewChange creates a new signed change.
+// This function will sort the deps slice in place.
+func NewChange(me core.Identity, obj cid.Cid, deps []cid.Cid, kind string, ts hlc.Time, body []byte) Change {
+	if deps != nil {
+		sort.Slice(deps, func(i, j int) bool {
+			ii := deps[i].KeyString()
+			jj := deps[j].KeyString()
+			return ii < jj
+		})
+	}
+
+	ch := Change{
+		Type: ChangeType,
+		ChangeInfo: ChangeInfo{
+			Object:  obj,
+			Author:  me.AccountID(),
+			Parents: deps,
+			Kind:    kind,
+			// TODO(burdiyan): message
+			Time:   ts,
+			Signer: me.DeviceKey().PublicKey.CID(),
+		},
+		Body: body,
+	}
+
+	return ch.Sign(me.DeviceKey())
+}
+
+// Block encodes the change into the IPFS block.
+func (ch Change) Block() (vc VerifiedChange, err error) {
+	data, err := cbornode.DumpObject(ch)
+	if err != nil {
+		return vc, fmt.Errorf("failed to encode change block: %w", err)
+	}
+
+	blk := ipfs.NewBlock(cid.DagCBOR, data)
+	vc = VerifiedChange{
+		Block:   blk,
+		Decoded: ch,
+	}
+
+	return vc, nil
 }
 
 // Datoms returns the list of Datoms created by this Change.

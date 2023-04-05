@@ -6,15 +6,10 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"encoding/json"
-	"errors"
 	"fmt"
+	accounts "mintter/backend/daemon/api/accounts/v1alpha"
 	site "mintter/backend/genproto/documents/v1alpha"
-	p2p "mintter/backend/genproto/p2p/v1alpha"
 	"mintter/backend/mttnet/sitesql"
-	"mintter/backend/vcs"
-	"mintter/backend/vcs/hlc"
-	"mintter/backend/vcs/mttacc"
-	vcsdb "mintter/backend/vcs/sqlitevcs"
 	"mintter/backend/vcs/vcssql"
 	"net/http"
 	"net/url"
@@ -355,35 +350,35 @@ func (srv *Server) DeleteMember(ctx context.Context, in *site.DeleteMemberReques
 func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocumentRequest) (*site.PublishDocumentResponse, error) {
 	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
-		return &site.PublishDocumentResponse{}, err
+		return nil, err
 	}
 	if proxied {
 		retValue, ok := res.(*site.PublishDocumentResponse)
 		if !ok {
-			return &site.PublishDocumentResponse{}, fmt.Errorf("Format of proxied return value not recognized")
+			return nil, fmt.Errorf("Format of proxied return value not recognized")
 		}
 		return retValue, nil
 	}
 	_, err = url.Parse(in.Path)
 	if err != nil {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] is not a valid path", in.Path)
+		return nil, fmt.Errorf("Path [%s] is not a valid path", in.Path)
 	}
 
 	// If path already taken, we update in case doc_ids match (just updating the version) error otherwise
 	n, ok := srv.Node.Get()
 	if !ok {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
+		return nil, fmt.Errorf("Can't proxy. Local p2p node not ready yet")
 	}
 	conn, release, err := n.VCS().DB().Conn(ctx)
 	if err != nil {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Cannot connect to internal db: %w", err)
+		return nil, fmt.Errorf("Cannot connect to internal db: %w", err)
 	}
 	defer release()
 
 	all, err := vcssql.ListAccountDevices(conn)
 	if err != nil {
 		n.log.Debug("couldn't list devices", zap.String("msg", err.Error()))
-		return &site.PublishDocumentResponse{}, fmt.Errorf("couldn't list devices")
+		return nil, fmt.Errorf("couldn't list devices")
 	}
 
 	devices, found := all[acc]
@@ -391,18 +386,21 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 		return nil, fmt.Errorf("couldn't find devices information of the account %s", acc.String())
 	}
 
-	baseVersionSet := []*p2p.Version{{
-		Version: in.Version,
-	}}
-	n.log.Debug("Adding base document to sync", zap.String("AccountId", acc.String()), zap.String("Version", in.Version))
-	documentsToSync := []*p2p.Object{{Id: in.DocumentId, VersionSet: baseVersionSet}}
-	for _, doc := range in.ReferencedDocuments {
-		referencesVersionSet := []*p2p.Version{{
-			Version: doc.Version,
-		}}
-		n.log.Debug("Adding references document to sync", zap.String("AccountId", acc.String()), zap.String("Version", doc.Version))
-		documentsToSync = append(documentsToSync, &p2p.Object{Id: doc.DocumentId, VersionSet: referencesVersionSet})
+	var toSync []cid.Cid
+	c, err := cid.Decode(in.DocumentId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse document id %s to publish on the web: %w", in.DocumentId, err)
 	}
+
+	toSync = append(toSync, c)
+	for _, ref := range in.ReferencedDocuments {
+		c, err = cid.Decode(ref.DocumentId)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse referenced document id %s when publishing: %w", ref.DocumentId, err)
+		}
+		toSync = append(toSync, c)
+	}
+
 	var wg sync.WaitGroup
 	for _, deviceID := range devices {
 		wg.Add(1)
@@ -410,8 +408,8 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 			defer wg.Done()
 			ctx5Secs, cancel := context.WithTimeout(ctx, time.Duration(5*time.Second))
 			defer cancel()
-			n.log.Debug("Publish Document: Syncing...", zap.String("DeviceID", device.String()), zap.Int("Documents to sync", len(documentsToSync)))
-			if err = srv.synchronizer.SyncWithPeer(ctx5Secs, device, documentsToSync...); err != nil {
+			n.log.Debug("Publish Document: Syncing...", zap.String("DeviceID", device.String()), zap.Int("Documents to sync", len(toSync)))
+			if err = srv.synchronizer.SyncWithPeer(ctx5Secs, device, toSync...); err != nil {
 				n.log.Debug("Publish Document: couldn't sync content with device", zap.String("device", device.String()), zap.Error(err))
 				return
 			}
@@ -422,7 +420,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 
 	docID, err := cid.Decode(in.DocumentId)
 	if err != nil {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Provided Document id [%s] is not valid: %w", in.DocumentId, err)
+		return nil, fmt.Errorf("Provided Document id [%s] is not valid: %w", in.DocumentId, err)
 	}
 
 	_, err = srv.localFunctions.GetPublication(ctx, &site.GetPublicationRequest{
@@ -432,24 +430,24 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	})
 
 	if err != nil {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Couldn't find the actual document + version to publish in the database: %w", err)
+		return nil, fmt.Errorf("Couldn't find the actual document + version to publish in the database: %w", err)
 	}
 
 	record, err := sitesql.GetWebPublicationRecordByPath(conn, in.Path)
 	if err == nil {
 		if record.Document.ID.String() == in.DocumentId && record.Document.Version == in.Version {
-			return &site.PublishDocumentResponse{}, fmt.Errorf("Provided document+version already exists in path [%s]", in.Path)
+			return nil, fmt.Errorf("Provided document+version already exists in path [%s]", in.Path)
 		}
 		if record.Document.ID.String() != in.DocumentId {
-			return &site.PublishDocumentResponse{}, fmt.Errorf("Path [%s] already taken by a different Document ID", in.Path)
+			return nil, fmt.Errorf("Path [%s] already taken by a different Document ID", in.Path)
 		}
 		if err = sitesql.RemoveWebPublicationRecord(conn, record.Document.ID, record.Document.Version); err != nil {
-			return &site.PublishDocumentResponse{}, fmt.Errorf("Could not remove previous version [%s] in the same path: %w", record.Document.Version, err)
+			return nil, fmt.Errorf("Could not remove previous version [%s] in the same path: %w", record.Document.Version, err)
 		}
 	}
 
 	if err = sitesql.AddWebPublicationRecord(conn, docID, in.Version, in.Path); err != nil {
-		return &site.PublishDocumentResponse{}, fmt.Errorf("Could not insert document in path [%s]: %w", in.Path, err)
+		return nil, fmt.Errorf("Could not insert document in path [%s]: %w", in.Path, err)
 	}
 	return &site.PublishDocumentResponse{}, nil
 }
@@ -724,58 +722,11 @@ func (srv *Server) updateSiteBio(ctx context.Context, title, description string)
 	if !ok {
 		return fmt.Errorf("Node not ready yet")
 	}
-	aid := n.me.AccountID()
 
-	perma, err := vcs.EncodePermanode(mttacc.NewAccountPermanode(aid))
-	if err != nil {
-		return err
-	}
-	vcsConn, release, err := n.vcs.Conn(ctx)
-	if err != nil {
-		return err
-	}
-	defer release()
-
-	errNoUpdate := errors.New("nothing to update")
-
-	if err := vcsConn.WithTx(true, func() error {
-		obj := vcsConn.LookupPermanode(perma.ID)
-		meLocal := vcsConn.EnsureIdentity(n.me)
-		version := vcsConn.GetVersion(obj, "main", meLocal)
-		clock := hlc.NewClock()
-		for _, v := range version {
-			vt := vcsConn.GetChangeMaxTime(obj, v)
-			clock.Track(hlc.Unpack(vt))
-		}
-		cs := vcsConn.ResolveChangeSet(obj, version)
-		change := vcsConn.NewChange(obj, meLocal, version, clock)
-
-		batch := vcs.NewBatch(clock, n.me.DeviceKey().Abbrev())
-
-		alias := vcsConn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrAlias)
-		bio := vcsConn.QueryLastValue(obj, cs, vcs.RootNode, mttacc.AttrBio)
-
-		if alias.IsZero() || alias.Value.(string) != title {
-			batch.Add(vcs.RootNode, mttacc.AttrAlias, title)
-		}
-
-		if bio.IsZero() || bio.Value.(string) != description {
-			batch.Add(vcs.RootNode, mttacc.AttrBio, description)
-		}
-
-		dirty := batch.Dirty()
-		if len(dirty) == 0 {
-			return errNoUpdate
-		}
-		vcsConn.AddDatoms(obj, change, dirty...)
-		vcsConn.SaveVersion(obj, "main", meLocal, vcsdb.LocalVersion{change})
-		vcsConn.EncodeChange(change, n.me.DeviceKey())
-
-		return nil
-	}); err != nil && !errors.Is(err, errNoUpdate) {
-		return err
-	}
-	return nil
+	return accounts.UpdateProfile(ctx, n.me, n.vcs, &accounts.Profile{
+		Alias: title,
+		Bio:   description,
+	})
 }
 
 // ServeHTTP serves the content for the well-known path.
