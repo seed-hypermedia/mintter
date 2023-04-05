@@ -12,7 +12,7 @@ import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import '../styles/main.scss'
 import {NotFoundPage} from './base'
 import './polyfills'
-import {Main as UIMain} from '@mintter/ui'
+import {Heading, Main as UIMain} from '@mintter/ui'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))

@@ -20,6 +20,7 @@ import {Button} from './button'
 import {DeleteDialog} from './delete-dialog'
 import {Icon} from './icon'
 import {Text} from './text'
+import {MouseEvent} from 'react'
 
 export function PublicationListItem({
   publication,
@@ -42,7 +43,7 @@ export function PublicationListItem({
   const deleteService = useInterpret(
     () =>
       deleteFileMachine.withContext({
-        documentId: publication.document?.id,
+        documentId: publication.document!.id,
         version: publication.version,
         errorMessage: '',
       }),
@@ -67,7 +68,7 @@ export function PublicationListItem({
     event.preventDefault()
     const route: PublicationRoute = {
       key: 'publication',
-      documentId: docId,
+      documentId: docId!,
       versionId: publication.version,
     }
     if (event.metaKey || event.shiftKey) {
@@ -90,7 +91,7 @@ export function PublicationListItem({
       onMouseEnter={() => prefetchPublication(client, publication)}
     >
       <p
-        onClick={goToItem}
+        onClick={(e) => goToItem(e as MouseEvent)}
         className="item-title"
         data-testid="list-item-title"
       >
@@ -183,7 +184,10 @@ export function PublicationListItem({
                 <Icon name="Copy" />
                 <Text size="2">Copy Document ID</Text>
               </Dropdown.Item>
-              <Dropdown.Item data-testid="open-item" onSelect={goToItem}>
+              <Dropdown.Item
+                data-testid="open-item"
+                onSelect={(e) => goToItem(e as any)}
+              >
                 <Icon name="ArrowTopRight" />
                 <Text size="2">Open in main panel</Text>
               </Dropdown.Item>

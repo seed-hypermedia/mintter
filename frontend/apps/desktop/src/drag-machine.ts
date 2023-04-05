@@ -3,11 +3,12 @@ import {
   FlowContent,
   Group,
   isFlowContent,
+  isGroup,
   isGroupContent,
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {actions, assign, createMachine} from 'xstate'
+import {ContextFrom, actions, assign, createMachine} from 'xstate'
 
 let {send} = actions
 type DragContext = {
@@ -26,9 +27,9 @@ type DragEvent =
   | {
       type: 'DRAG.OVER'
       toPath: Path
-      element: HTMLLIElement
-      currentPosX: number
-      currentPosY: number
+      element?: HTMLLIElement | null
+      currentPosX?: number
+      currentPosY?: number
     }
   | {type: 'DRAGGING.OFF'}
   | {type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null}
@@ -108,13 +109,7 @@ export const createDragMachine = (editor: Editor) => {
               elem.removeAttribute('data-action')
             }
           }
-          const result = filterDragOverRef(
-            element,
-            editor,
-            toPath,
-            context,
-            currentPosX,
-          )
+          const result = filterDragOverRef({editor, toPath, context, element})
           let nestedGroup = result.nestedGroup
           if (context.nestedGroup) {
             const lastElement =
@@ -130,6 +125,8 @@ export const createDragMachine = (editor: Editor) => {
               lastElement.y + lastElement.height,
             ]
             if (
+              currentPosX &&
+              currentPosY &&
               currentPosX > boundariesX[0] &&
               currentPosX < boundariesX[1] &&
               currentPosY > boundariesY[0] &&
@@ -138,7 +135,7 @@ export const createDragMachine = (editor: Editor) => {
               nestedGroup = context.nestedGroup
             }
           }
-          if (nestedGroup && nestedGroup.includes(element)) {
+          if (nestedGroup && element && nestedGroup.includes(element)) {
             let hoveredElement = nestedGroup[nestedGroup.length - 1]
 
             if (nestedGroup.length === 1) {
@@ -158,7 +155,10 @@ export const createDragMachine = (editor: Editor) => {
                   'data-action',
                   'dragged-bottom-group',
                 )
-              if (currentPosX <= nestedGroup[i].getBoundingClientRect()['x']) {
+              if (
+                currentPosX &&
+                currentPosX <= nestedGroup[i].getBoundingClientRect()['x']
+              ) {
                 hoveredElement = nestedGroup[i - 1]
                 hoveredElement.setAttribute('data-action', 'dragged-nested')
                 nestedGroup[i].setAttribute(
@@ -185,7 +185,11 @@ export const createDragMachine = (editor: Editor) => {
               nestedGroup,
             }
           } else {
-            if (!Path.equals(context.toPath, context.fromPath)) {
+            if (
+              Path.isPath(context.toPath) &&
+              Path.isPath(context.fromPath) &&
+              !Path.equals(context.toPath, context.fromPath)
+            ) {
               result.isTop
                 ? result.dragOverRef?.setAttribute('data-action', 'dragged-top')
                 : result.dragOverRef?.setAttribute(
@@ -219,8 +223,8 @@ export const createDragMachine = (editor: Editor) => {
               element.setAttribute('draggable', 'true')
               element.addEventListener('dragstart', onDragStart)
               element.addEventListener('dragend', onDragEnd)
-              return element
             }
+            return element
           },
         }),
         setFromPath: assign({
@@ -347,17 +351,23 @@ function getNestedGroup(block: NodeEntry<FlowContent>, editor: Editor) {
   }
 }
 
-function filterDragOverRef(
-  element: HTMLElement,
-  editor: Editor,
-  toPath: Path,
-  context: DragContext,
-  currentPosX: number,
-) {
+function filterDragOverRef({
+  editor,
+  element,
+  toPath,
+  context,
+}: {
+  editor: Editor
+  toPath: Path
+  context: DragContext
+  element?: HTMLElement | null
+}) {
+  if (!element) return {}
+
   const node = ReactEditor.toSlateNode(editor, element) as FlowContent
   const children = node.children as Node[]
 
-  const childGroup = children.find((child: Node) => child.type === 'group')
+  const childGroup = children.find(isGroup)
 
   if (!childGroup && toPath.length > 2) {
     let groupStatements: NodeEntry<FlowContent>[] = getNestedGroup(

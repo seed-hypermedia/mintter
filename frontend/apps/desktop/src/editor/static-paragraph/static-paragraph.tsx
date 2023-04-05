@@ -9,9 +9,10 @@ import {
   isStaticParagraph,
   StaticParagraph as StaticParagraphType,
 } from '@mintter/shared'
-import {useMemo, useRef} from 'react'
+import {MouseEvent, useMemo, useRef} from 'react'
 import {RenderElementProps, useSlate} from 'slate-react'
 import type {EditorPlugin} from '../types'
+import {Path} from 'slate'
 
 export const ELEMENT_STATIC_PARAGRAPH = 'staticParagraph'
 
@@ -58,8 +59,16 @@ function StaticParagraph({
   let mouseService = useMouse()
 
   let dragProps = {
-    onMouseOver: () => {
-      dragService?.send({type: 'DRAG.OVER', toPath: parentPath, element: null})
+    onMouseOver: (e: MouseEvent) => {
+      if (Path.isPath(parentPath)) {
+        dragService?.send({
+          type: 'DRAG.OVER',
+          toPath: parentPath,
+          element: null,
+          currentPosX: e.clientX,
+          currentPosY: e.clientY,
+        })
+      }
     },
   }
 

@@ -25,7 +25,7 @@ declare module 'slate' {
     Editor: BaseEditor &
       ReactEditor &
       HistoryEditor &
-      MintterEditor & {mode: EditorMode; readOnly: boolean}
+      MintterEditor & {mode: EditorMode; readOnly: boolean; dragging: boolean}
     Element:
       | FlowContent
       | GroupingContent

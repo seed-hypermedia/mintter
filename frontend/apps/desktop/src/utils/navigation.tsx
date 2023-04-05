@@ -11,6 +11,7 @@ import {
 } from 'react'
 import {toast} from 'react-hot-toast'
 import {openWindow} from './open-window'
+import {Document} from '@mintter/shared'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -19,6 +20,7 @@ export type ConnectionsRoute = {key: 'connections'}
 export type AccountRoute = {key: 'account'; accountId: string}
 export type SitesRoute = {key: 'sites'}
 export type SiteRoute = {key: 'site'; hostname: string}
+
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
@@ -204,7 +206,7 @@ export function useNavigationActions() {
   function openNewDraft(newWindow = true) {
     draftsClient
       .createDraft({})
-      .then((doc) => {
+      .then((doc: Document) => {
         appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
         if (newWindow) {
           spawn({key: 'draft', documentId: doc.id})

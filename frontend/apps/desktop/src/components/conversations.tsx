@@ -316,7 +316,7 @@ function CommentItem({
   }
   const navigate = useNavigate()
   const navigateToAuthor = changeData.data?.author
-    ? () => navigate({key: 'account', accountId: changeData.data?.author})
+    ? () => navigate({key: 'account', accountId: changeData.data!.author})
     : undefined
   return (
     <Box
