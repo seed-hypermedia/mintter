@@ -80,30 +80,6 @@ function App() {
   )
 }
 
-/**
- * we need this to run tests without the `__TAURI_IPC__ not a function` error since we are not running tests inside Tauri (yet)
- */
-//@ts-ignore
-if (window.Cypress) {
-  //@ts-ignore
-  window.TAURI_IPC = function () {
-    // noop
-  }
-  window.__TAURI_IPC__ = function TauriIPCMock() {
-    // noop
-  }
-  window.__TAURI_METADATA__ = {
-    __currentWindow: {
-      label: 'test',
-    },
-    __windows: [
-      {
-        label: 'test',
-      },
-    ],
-  }
-}
-
 var dehydrateState = dehydrate(appQueryClient)
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {

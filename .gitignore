@@ -91,8 +91,3 @@ yarn-error.log*
 .DS_Store
 THUMBS_DB
 thumbs.db
-
-# Cypress
-
-**/cypress/screenshots
-**/cypress/videos
