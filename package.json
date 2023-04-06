@@ -8,7 +8,7 @@
     "site:prod": "yarn build && yarn workspace @mintter/site build",
     "site:vercel": "yarn build && cd frontend/apps/site && yarn build",
     "site:prod:serve": "yarn workspace @mintter/site serve",
-    "desktop": "yarn workspaces foreach --exclude @mintter/site -pi run dev",
+    "desktop": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/electron -pi run dev",
     "desktop:extract": "EXTRACT=1 yarn workspace @mintter/desktop dev:extract",
     "desktop:prod": "yarn workspace @mintter/desktop build",
     "tauri:dev": "cd desktop/app && cargo tauri dev",
