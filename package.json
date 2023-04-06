@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "ui:dev": "yarn workspace @mintter/ui dev",
-    "site": "yarn workspaces foreach --exclude @mintter/desktop -pi run dev",
+    "site": "yarn workspaces foreach --exclude @mintter/desktop --exclude @mintter/electron -pi run dev",
     "site:extract": "EXTRACT=1 yarn workspace @mintter/site dev",
     "site:prod": "yarn build && yarn workspace @mintter/site build",
     "site:vercel": "yarn build && cd frontend/apps/site && yarn build",
@@ -13,7 +13,7 @@
     "desktop:prod": "yarn workspace @mintter/desktop build",
     "tauri:dev": "cd desktop/app && cargo tauri dev",
     "fix": "manypkg fix",
-    "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop -pi run build",
+    "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude @mintter/electron -pi run build",
     "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",
     "format": "prettier --write ./frontend",
     "test": "yarn workspaces foreach run test",
