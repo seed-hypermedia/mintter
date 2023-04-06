@@ -12,7 +12,7 @@ if (!global.setImmediate || !globalThis['setImmediate']) {
   globalThis['setImmediate'] = setTimeout
 }
 
-import {Container, XStack, H1, Button} from '@mintter/ui'
+import {Container, XStack, H1, Button, MainContainer} from '@mintter/ui'
 import Footer from '../footer'
 import {GatewayHead} from '../gateway-head'
 
@@ -22,9 +22,9 @@ export default function DownloadPage({
   manifest: {platforms: Array<{url: string; platform: string}>} | null
 }) {
   return (
-    <>
+    <Container>
       <GatewayHead title="Download" />
-      <Container>
+      <MainContainer>
         <H1>Download Mintter</H1>
         <XStack space my="$7">
           {manifest?.platforms.map((item) => (
@@ -33,9 +33,9 @@ export default function DownloadPage({
             </Button>
           ))}
         </XStack>
-      </Container>
+      </MainContainer>
       <Footer />
-    </>
+    </Container>
   )
 }
 

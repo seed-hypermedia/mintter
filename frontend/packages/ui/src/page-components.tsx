@@ -1,9 +1,9 @@
-import {styled, YStack, Stack} from 'tamagui'
+import {styled, YStack} from 'tamagui'
 
-export const ArticleContainer = styled(Stack, {})
+export const ArticleContainer = styled(YStack, {})
 
 export const MainContainer = styled(YStack, {
-  ml: '-$4',
+  marginLeft: '-$4',
   paddingRight: '$5',
   width: '100%',
   maxWidth: 800,
