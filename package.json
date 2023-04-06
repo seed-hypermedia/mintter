@@ -6,6 +6,7 @@
     "site": "yarn workspaces foreach --exclude @mintter/desktop -pi run dev",
     "site:extract": "EXTRACT=1 yarn workspace @mintter/site dev",
     "site:prod": "yarn build && yarn workspace @mintter/site build",
+    "site:vercel": "yarn build && cd frontend/apps/site && yarn build",
     "site:prod:serve": "yarn workspace @mintter/site serve",
     "desktop": "yarn workspaces foreach --exclude @mintter/site -pi run dev",
     "desktop:extract": "EXTRACT=1 yarn workspace @mintter/desktop dev:extract",
