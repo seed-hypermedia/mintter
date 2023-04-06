@@ -3,7 +3,7 @@ import Image from 'next/image'
 import {Menu} from '@tamagui/lucide-icons'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
-import {useEffect, useState} from 'react'
+import {forwardRef, useEffect, useState} from 'react'
 import {
   Button,
   useMedia,
@@ -36,22 +36,11 @@ export function GatewayHead({title}: {title?: string}) {
     }
   }, [router.events])
   return (
-    <XStack
-    // bbc="$borderColor"
-    // zi={50000}
-    // @ts-ignore
-    // pos="fixed"
-    // top={0}
-    // my={0}
-    // left={0}
-    // right={0}
-    // elevation={'$1'}
-    // py={'$2'}
-    >
+    <XStack>
       <Head>
         <title>{title ? `${title} | ${SITE_NAME}` : SITE_NAME}</title>
       </Head>
-      <Container my="$7">
+      <Container my="$7" mx="$0" px="$4">
         <XStack ai="center" jc="space-between">
           <Link href="/" aria-label="home page">
             <YStack cur="pointer">
@@ -187,7 +176,7 @@ export function GatewayHead({title}: {title?: string}) {
   )
 }
 
-const HeadAnchor = React.forwardRef((props: ParagraphProps, ref) => (
+const HeadAnchor = forwardRef((props: ParagraphProps, ref) => (
   <Paragraph
     ref={ref as any}
     fontFamily="$body"

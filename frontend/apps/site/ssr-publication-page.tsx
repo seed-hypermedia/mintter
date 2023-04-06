@@ -1,12 +1,12 @@
 import {Account, blockNodeToSlate, Publication, SiteInfo} from '@mintter/shared'
-import {PublicationMetadata} from './author'
 import {
-  Container,
-  useMedia,
   ArticleContainer,
+  Container,
   MainContainer,
   SideContainer,
+  useMedia,
 } from '@mintter/ui'
+import {PublicationMetadata} from './author'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
 import {SiteHead} from './site-head'

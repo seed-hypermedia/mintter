@@ -3,7 +3,6 @@ import {styled, YStack} from 'tamagui'
 export const ArticleContainer = styled(YStack, {})
 
 export const MainContainer = styled(YStack, {
-  marginLeft: '-$4',
   paddingRight: '$5',
   width: '100%',
   maxWidth: 800,
