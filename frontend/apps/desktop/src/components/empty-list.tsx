@@ -1,28 +1,16 @@
-import {Button} from '@mintter/ui'
-import '../styles/empty-list.scss'
+import {Button, Text, Stack} from '@mintter/ui'
 
-type EmptyListProps = {
+export function EmptyList({
+  description,
+  action,
+}: {
   description: string
   action: () => void
-}
-
-// TODO: add tests
-export function EmptyList({description, action}: EmptyListProps) {
+}) {
   return (
-    <div className="empty-list">
-      <p
-        className="empty-list-description"
-        data-testid="empty-list-description"
-      >
-        {description}
-      </p>
-      <Button
-        theme="yellow"  
-
-        onPress={() => action()}
-      >
-        Start a new Draft
-      </Button>
-    </div>
+    <Stack>
+      <Text fontSize={'1.5em'}>{description}</Text>
+      <Button onPress={() => action()}>Start a new Draft</Button>
+    </Stack>
   )
 }

@@ -37,5 +37,3 @@ frontend/apps/site/.tamagui
 # Shared
 frontend/packages/shared/src/client/.generated
 
-# Desktop
-desktop/
