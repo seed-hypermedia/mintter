@@ -2,7 +2,7 @@ import {styled} from '@app/stitches.config'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import type {ComponentProps, PropsWithChildren} from 'react'
 import {Box} from './box'
-import {Button} from './button'
+import {Button} from '@mintter/ui'
 import {
   dialogContentStyles,
   dialogFooterStyles,

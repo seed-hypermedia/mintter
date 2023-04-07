@@ -10,7 +10,7 @@ import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
+import {Button} from '@mintter/ui'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
@@ -32,22 +32,19 @@ export function FooterButton({
   active,
   label,
   icon,
-  onClick,
+  onPress,
 }: {
   active?: boolean
   label: string
   icon?: ReactNode
-  onClick: () => void
+  onPress: () => void
 }) {
   return (
     <Button
-      size="1"
-      variant="ghost"
-      color={active ? 'primary' : 'muted'}
-      onClick={onClick}
-      css={{
-        display: 'flex',
-      }}
+      size="$1"
+      chromeless
+      color={active ? 'blue' : undefined}
+      onPress={onPress}
     >
       {icon}
       <LabelWrap>{label}</LabelWrap>
@@ -61,15 +58,11 @@ function FooterContactsButton() {
   const summary = useConnectionSummary()
   return (
     <Button
-      size="1"
-      variant="ghost"
-      color={route.key === 'connections' ? 'primary' : 'muted'}
-      onClick={() => {
+      size="$1"
+      chromeless
+      color={route.key === 'connections' ? 'blue' : undefined}
+      onPress={() => {
         navigate({key: 'connections'})
-      }}
-      css={{
-        display: 'flex',
-        gap: '$2',
       }}
     >
       <OnlineIndicator online={summary.online} />
@@ -297,7 +290,7 @@ export function ContactsPrompt({
               <Button
                 data-testid="add-contact-submit"
                 size="2"
-                onClick={handleConnect}
+                onPress={handleConnect}
                 disabled={!peer}
               >
                 Connect

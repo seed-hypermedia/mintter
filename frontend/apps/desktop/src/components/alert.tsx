@@ -1,10 +1,9 @@
 import {styled} from '@app/stitches.config'
+import {Button} from '@mintter/ui'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
-import type {PropsWithChildren} from 'react'
+import type {ComponentProps, PropsWithChildren} from 'react'
 import React from 'react'
 import {Box} from './box'
-import type {ButtonProps} from './button'
-import {Button} from './button'
 import {dialogContentStyles, dialogFooterStyles} from './dialog-styles'
 import type {TextProps} from './text'
 import {Text} from './text'
@@ -34,22 +33,18 @@ function Description(props: PropsWithChildren<TextProps>) {
 }
 
 const Actions = styled(Box, dialogFooterStyles)
-
+type ButtonProps = ComponentProps<typeof Button>
 function Cancel({
   disabled = false,
   ...props
 }: PropsWithChildren<
-  Omit<ButtonProps, 'variant' | 'color' | 'size'> & {disabled?: boolean}
+  Omit<ButtonProps, 'chromeless' | 'color' | 'size'> & {
+    disabled?: boolean
+  }
 >) {
   return (
     <AlertDialogPrimitive.Cancel asChild>
-      <Button
-        variant="ghost"
-        color="muted"
-        size="1"
-        disabled={disabled}
-        {...props}
-      />
+      <Button chromeless size="$1" disabled={disabled} {...props} />
     </AlertDialogPrimitive.Cancel>
   )
 }
@@ -64,7 +59,7 @@ function Action({
 >) {
   return (
     <AlertDialogPrimitive.Action asChild>
-      <Button size="1" disabled={disabled} {...props} />
+      <Button size="$1" disabled={disabled} {...props} />
     </AlertDialogPrimitive.Action>
   )
 }

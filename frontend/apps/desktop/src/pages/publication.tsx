@@ -213,7 +213,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                     active={activePanel == 'changes'}
                     label={`${changes?.changes?.length} Versions`}
                     icon={<Icon name="Pencil" />}
-                    onClick={() => {
+                    onPress={() => {
                       panelSend({type: 'PANEL.TOGGLE', activePanel: 'changes'})
                     }}
                   />
@@ -221,7 +221,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                     active={activePanel == 'citations'}
                     label={`${citations?.links?.length} Citations`}
                     icon={<Icon name="Link" />}
-                    onClick={() => {
+                    onPress={() => {
                       panelSend({
                         type: 'PANEL.TOGGLE',
                         activePanel: 'citations',
@@ -236,7 +236,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                       }
                       label={`Conversations`}
                       icon={<Icon name="MessageBubble" />}
-                      onClick={() => {
+                      onPress={() => {
                         panelSend({
                           type: 'PANEL.TOGGLE',
                           activePanel: 'conversations',

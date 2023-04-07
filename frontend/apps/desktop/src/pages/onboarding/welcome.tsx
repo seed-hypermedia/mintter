@@ -40,9 +40,7 @@ export function Welcome({next}: OnboardingStepPropsType) {
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton onClick={next} data-testid="next-btn">
-          Start
-        </OnboardingStepButton>
+        <OnboardingStepButton onPress={next}>Start</OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
   )

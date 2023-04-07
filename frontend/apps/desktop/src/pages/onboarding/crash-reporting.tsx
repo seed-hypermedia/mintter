@@ -26,11 +26,7 @@ export function CrashReporting(props: OnboardingStepPropsType) {
         release of Mintter will never send your data to anyone.
       </OnboardingStepDescription>
       <OnboardingStepActions>
-        <OnboardingStepButton
-          color="success"
-          onClick={reloadOnComplete}
-          data-testid="next-btn"
-        >
+        <OnboardingStepButton color="green" onPress={reloadOnComplete}>
           Open Mintter App
         </OnboardingStepButton>
       </OnboardingStepActions>

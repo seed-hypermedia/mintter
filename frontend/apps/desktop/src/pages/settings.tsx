@@ -1,7 +1,6 @@
 import {accountsClient, daemonClient} from '@app/api-clients'
 import {createAuthService} from '@app/auth-machine'
 import {Box} from '@app/components/box'
-import {Button} from '@app/components/button'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
 import {useAuthor} from '@app/hooks'
@@ -38,6 +37,7 @@ import {
   SiteConfig,
   SiteInfo,
 } from '@mintter/shared'
+import {Button, Spinner} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {styled} from '@stitches/react'
@@ -196,15 +196,7 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
             alignItems: 'center',
           }}
         >
-          <Button
-            type="submit"
-            disabled={isPending}
-            size="2"
-            shape="pill"
-            color="success"
-            data-testid="submit"
-            css={{alignSelf: 'flex-start'}}
-          >
+          <Button disabled={isPending} size="$2">
             Save
           </Button>
           {onSuccess && (
@@ -260,11 +252,8 @@ export function AccountInfo({service}: SettingsTabProps) {
           }}
         >
           <Button
-            variant="outlined"
-            color="success"
-            size="1"
-            type="button"
-            onClick={() => service.send('ACCOUNT.COPY.ADDRESS')}
+            size="$1"
+            onPress={() => service.send('ACCOUNT.COPY.ADDRESS')}
           >
             Copy Address
           </Button>
@@ -300,7 +289,7 @@ function AppSettings() {
 
   return (
     <div className="settings-tab-content">
-      <Button size="1" variant="outlined" onClick={onReloadSync}>
+      <Button size="$1" onPress={onReloadSync}>
         Reload Database
       </Button>
     </div>
@@ -309,7 +298,7 @@ function AppSettings() {
 
 function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
   return (
-    <Button onClick={onDone} className="settings-nav-button">
+    <Button onPress={onDone}>
       <Icon name="ArrowChevronLeft" size="2" color="muted" />
       <span style={{marginLeft: '0.3em'}}>{title}</span>
     </Button>
@@ -320,7 +309,7 @@ function InviteMemberDialog({url, onDone}: {url: string; onDone: () => void}) {
     <div>
       <p>Copy and send this secret editor invite URL</p>
       {url && <AccessURLRow url={url} title={url} enableLink={false} />}
-      <Button onClick={onDone}>Done</Button>
+      <Button onPress={onDone}>Done</Button>
     </div>
   )
 }
@@ -397,16 +386,9 @@ function SiteMemberRow({
       </Text>
       {hovering && isOwner && member.accountId !== account?.id ? (
         <Button
-          variant="outlined"
-          color="danger"
-          size="1"
-          css={{
-            position: 'absolute',
-            right: '$2',
-            background: '$base-background-normal',
-            top: '$2',
-          }}
-          onClick={() => {
+          color="red"
+          size="$1"
+          onPress={() => {
             remove.mutate(member.accountId)
           }}
         >
@@ -442,17 +424,7 @@ function SiteMembers({
         ))}
       </Box>
       {content}
-      {isOwner ? (
-        <Button
-          type="button"
-          size="2"
-          data-testid="submit"
-          onClick={open}
-          css={{alignSelf: 'flex-start'}}
-        >
-          Invite Editor
-        </Button>
-      ) : null}
+      {isOwner ? <Button onPress={open}>Invite Editor</Button> : null}
     </SettingsSection>
   )
 }
@@ -511,9 +483,9 @@ function SiteInfoForm({
       />
       {isOwner ? (
         <Button
-          size="2"
+          size="$2"
           color="success"
-          onClick={() => {
+          onPress={() => {
             onSubmit({title, description})
           }}
         >
@@ -632,7 +604,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
         //@ts-ignore
         <Text color={'danger'}>{addSite.error?.message}</Text>
       ) : null}
-      {addSite.isLoading ? <div>loading...</div> : null}
+      {addSite.isLoading ? <Spinner /> : null}
       <p>Follow the self-hosting guide and copy the invite URL:</p>
       <Box
         as={'form'}
@@ -665,7 +637,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
           onChange={(e) => setSiteUrl(e.target.value)}
           value={siteUrl ?? undefined}
         />
-        <Button disabled={!siteUrl} size="2" color="success">
+        <Button disabled={!siteUrl} size="$2" color="green">
           Connect + Add Site
         </Button>
       </Box>
@@ -702,15 +674,10 @@ function SitesSettings({
     <>
       <SitesList onSelectSite={(siteId: string) => setActiveSitePage(siteId)} />
       <Button
-        type="button"
-        size="2"
-        shape="pill"
-        color="success"
-        data-testid="submit"
-        onClick={() => {
+        size="$2"
+        onPress={() => {
           setActiveSitePage(NewSitePage)
         }}
-        css={{alignSelf: 'flex-start'}}
       >
         Add Site
       </Button>
@@ -724,9 +691,7 @@ function EmptySiteList() {
 
 function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
   return (
-    <Button className="settings-list-item" onClick={onSelect}>
-      {hostnameStripProtocol(site.hostname)}
-    </Button>
+    <Button onPress={onSelect}>{hostnameStripProtocol(site.hostname)}</Button>
   )
 }
 
@@ -736,12 +701,7 @@ function SiteAdmin({hostname, onDone}: {hostname: string; onDone: () => void}) {
   })
   return (
     <SettingsSection>
-      <Button
-        color="danger"
-        size="1"
-        variant="outlined"
-        onClick={() => removeSite.mutate()}
-      >
+      <Button color="red" size="$1" onPress={() => removeSite.mutate()}>
         Remove Site
       </Button>
     </SettingsSection>
@@ -752,7 +712,7 @@ function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
   const {data: sites, isLoading} = useSiteList()
   return (
     <>
-      {isLoading && <div>loading...</div>}
+      {isLoading && <Spinner />}
       {sites && sites.length === 0 && <EmptySiteList />}
       {sites?.map((site) => (
         <SiteItem

@@ -1,4 +1,4 @@
-import {Button} from '@components/button'
+import {Button} from '@mintter/ui'
 import {Event, listen} from '@tauri-apps/api/event'
 import {relaunch} from '@tauri-apps/api/process'
 import {
@@ -55,17 +55,13 @@ function UpdateAvailable({version, body}: {version: string; body: string}) {
     <div>
       <div>Mintter version {version} is available!</div>
       <Button
-        variant="ghost"
+        chromeless
         style={{paddingLeft: 0}}
-        onClick={() => installUpdate()}
+        onPress={() => installUpdate()}
       >
         Download
       </Button>
-      <Button
-        variant="ghost"
-        color="muted"
-        onClick={() => toast.dismiss(TOAST_ID)}
-      >
+      <Button chromeless color="muted" onPress={() => toast.dismiss(TOAST_ID)}>
         Remind me later
       </Button>
     </div>
@@ -76,18 +72,10 @@ function UpdateSuccess() {
   return (
     <div>
       <div>Update successful. Restart now?</div>
-      <Button
-        variant="ghost"
-        style={{paddingLeft: 0}}
-        onClick={() => relaunch()}
-      >
+      <Button chromeless onPress={() => relaunch()}>
         Restart
       </Button>
-      <Button
-        variant="ghost"
-        color="muted"
-        onClick={() => toast.dismiss(TOAST_ID)}
-      >
+      <Button chromeless onPress={() => toast.dismiss(TOAST_ID)}>
         no thanks
       </Button>
     </div>

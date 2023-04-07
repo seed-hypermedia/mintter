@@ -1,5 +1,4 @@
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {useQuery} from '@tanstack/react-query'
@@ -23,6 +22,7 @@ import {
 // const bip32 = BIP32Factory(ecc)
 import {daemonClient} from '@app/api-clients'
 import {Buffer} from 'buffer'
+import {Button} from '@mintter/ui'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -98,30 +98,17 @@ export function SecurityPack({
       ) : (
         <MnemonicList words={mnemonics.data ?? []} />
       )}
-      <Button
-        type="button"
-        color="muted"
-        variant="outlined"
-        onClick={() => toggleOwnSeed((v) => !v)}
-        data-testid="button-toogle-custom-seed"
-      >
+      <Button color="muted" onPress={() => toggleOwnSeed((v) => !v)}>
         Setting up a new device?{' '}
         <Text css={{textDecoration: 'underline', display: 'inline-block'}}>
           provide your own seed
         </Text>
       </Button>
       <OnboardingStepActions>
-        <OnboardingStepButton
-          variant="outlined"
-          onClick={prev}
-          data-testid="prev-btn"
-        >
-          Back
-        </OnboardingStepButton>
+        <OnboardingStepButton onPress={prev}>Back</OnboardingStepButton>
         <OnboardingStepButton
           disabled={mnemonics.isLoading || !mnemonics.data?.length}
-          onClick={handleSubmit}
-          data-testid="next-btn"
+          onPress={handleSubmit}
         >
           Next
         </OnboardingStepButton>
@@ -173,13 +160,7 @@ function MnemonicList({words}: {words: string[]}) {
         ))}
       </Box>
 
-      <Button
-        type="button"
-        size="2"
-        color="success"
-        variant="outlined"
-        onClick={() => onCopy()}
-      >
+      <Button size="$2" color="green" onPress={() => onCopy()}>
         Copy words to clipboard
       </Button>
     </OnboardingStepBody>

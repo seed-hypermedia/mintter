@@ -2,13 +2,12 @@ import {GenMnemonicResponse} from '@mintter/shared'
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
-import type {ButtonProps} from '@components/button'
-import {Button} from '@components/button'
+import {Button} from '@mintter/ui'
 import type {TextProps} from '@components/text'
 import {Text, textStyles} from '@components/text'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
-import {FormEvent, PropsWithChildren} from 'react'
+import {ComponentProps, FormEvent, PropsWithChildren} from 'react'
 import {accountsClient, daemonClient} from '@app/api-clients'
 export interface OnboardingStepPropsType {
   prev?: () => void
@@ -174,9 +173,9 @@ export function OnboardingStepActions(props: PropsWithChildren<{css?: CSS}>) {
 }
 
 export function OnboardingStepButton(
-  props: PropsWithChildren<ButtonProps & React.HTMLProps<HTMLButtonElement>>,
+  props: PropsWithChildren<ComponentProps<typeof Button>>,
 ) {
-  return <Button type="button" shape="pill" size="3" {...props} />
+  return <Button size="$3" {...props} />
 }
 
 export function IconContainer({children}: PropsWithChildren<unknown>) {
