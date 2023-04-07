@@ -1,6 +1,6 @@
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
-import '../../styles/titlebar.scss'
+import {Button} from '@mintter/ui'
 
 export default function DiscardDraftButton() {
   const route = useNavRoute()
@@ -9,9 +9,9 @@ export default function DiscardDraftButton() {
   const deleteModal = useDeleteDraftDialog(
     draftId,
     ({onClick}) => (
-      <button className="titlebar-button outlined warning" onClick={onClick}>
-        <span style={{marginInline: '0.2em'}}>Discard Draft</span>
-      </button>
+      <Button theme="yellow" onPress={onClick}>
+        Discard Draft
+      </Button>
     ),
     () => {
       navigate({key: 'drafts'})

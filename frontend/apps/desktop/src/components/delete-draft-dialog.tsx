@@ -1,5 +1,5 @@
 import {useDeleteDraft} from '@app/hooks'
-import {ReactNode, useState} from 'react'
+import {ReactElement, ReactNode, useState} from 'react'
 import {Alert} from './alert'
 import {overlayStyles} from './dialog-styles'
 
@@ -7,7 +7,7 @@ export function useDeleteDraftDialog(
   docId: string | null,
   renderTrigger: (props: {onClick: () => void}) => JSX.Element,
   onSuccess?: () => void,
-): ReactNode {
+): ReactElement {
   const [isOpen, setIsOpen] = useState(false)
   const deleteDraft = useDeleteDraft({
     onSuccess: () => {

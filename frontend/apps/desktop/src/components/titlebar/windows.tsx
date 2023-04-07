@@ -11,6 +11,7 @@ import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
+import {Titlebar, TitlebarRow, TitlebarSection} from './titlebar'
 import {
   CloseButton,
   MaximizeOrRestoreButton,
@@ -21,19 +22,19 @@ export default function TitleBarWindows(props: TitleBarProps) {
   // in the settings window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <header id="titlebar" data-testid="titlebar" data-tauri-drag-region>
-        <div className="titlebar-row" data-tauri-drag-region>
+      <Titlebar>
+        <TitlebarRow>
           <MintterIcon />
 
           <CloseButton />
-        </div>
-      </header>
+        </TitlebarRow>
+      </Titlebar>
     )
   }
 
   return (
-    <header id="titlebar" data-testid="titlebar" data-tauri-drag-region>
-      <div className="titlebar-row" data-tauri-drag-region>
+    <Titlebar>
+      <TitlebarRow>
         <MintterIcon />
 
         <SystemMenu />
@@ -45,25 +46,23 @@ export default function TitleBarWindows(props: TitleBarProps) {
           <MaximizeOrRestoreButton />
           <CloseButton />
         </div>
-      </div>
+      </TitlebarRow>
 
-      <div
-        className="titlebar-row"
-        style={{blockSize: 'var(--topbar-h)'}}
-        data-tauri-drag-region
+      <TitlebarRow
+      // style={{blockSize: 'var(--topbar-h)'}}
       >
-        <div className="titlebar-section">
+        <TitlebarSection>
           <NavigationButtons />
           <NavMenu />
           {/* @ts-ignore */}
           <DiscardDraftButton />
-        </div>
+        </TitlebarSection>
 
         <div data-tauri-drag-region style={{flexGrow: 1}}></div>
 
         <ActionButtons {...props} />
-      </div>
-    </header>
+      </TitlebarRow>
+    </Titlebar>
   )
 }
 

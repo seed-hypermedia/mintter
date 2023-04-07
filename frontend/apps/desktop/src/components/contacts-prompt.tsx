@@ -3,8 +3,7 @@ import {networkingClient} from '@app/api-clients'
 import {CSS} from '@stitches/react'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {Button} from './button'
-import {Icon} from './icon'
+import {Button} from '@mintter/ui'
 import {Prompt} from './prompt'
 import {TextField} from './text-field'
 
@@ -38,9 +37,7 @@ export function ContactsPrompt({
   return (
     <Prompt.Root>
       <DialogPrimitive.Trigger asChild>
-        <button className="titlebar-button">
-          <span style={{marginInline: '0.2em'}}>Add Connection</span>
-        </button>
+        <Button>Add Connection</Button>
       </DialogPrimitive.Trigger>
       <Prompt.Portal>
         <Prompt.Content>
@@ -57,12 +54,7 @@ export function ContactsPrompt({
           />
           <Prompt.Actions>
             <Prompt.Close asChild>
-              <Button
-                data-testid="add-contact-submit"
-                size="2"
-                onClick={handleConnect}
-                disabled={!peer}
-              >
+              <Button onPress={handleConnect} disabled={!peer}>
                 Connect
               </Button>
             </Prompt.Close>

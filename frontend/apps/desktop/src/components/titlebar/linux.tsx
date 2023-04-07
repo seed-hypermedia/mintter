@@ -2,6 +2,7 @@ import {Dropdown} from '@app/editor/dropdown'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Icon} from '@components/icon'
 import {TitleBarProps} from '@components/titlebar'
+import {Button} from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
@@ -9,6 +10,7 @@ import {ActionButtons, NavigationButtons, SitesNavDropdownItems} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
+import {Titlebar, TitlebarRow, TitlebarSection} from './titlebar'
 import {
   CloseButton,
   MaximizeOrRestoreButton,
@@ -34,51 +36,42 @@ export default function TitleBarLinux(props: TitleBarProps) {
   // in the clean window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <header
-        id="titlebar"
-        data-testid="titlebar"
-        className="titlebar-row"
-        data-has-focus={focus}
-        data-tauri-drag-region
-      >
-        <MintterIcon />
-        <span></span>
+      <Titlebar>
+        <TitlebarRow>
+          <MintterIcon />
+          <span></span>
 
-        <div id="titlebar-window-controls">
-          <CloseButton />
-        </div>
-      </header>
+          <div id="titlebar-window-controls">
+            <CloseButton />
+          </div>
+        </TitlebarRow>
+      </Titlebar>
     )
   }
 
   return (
-    <header
-      id="titlebar"
-      data-testid="titlebar"
-      className="titlebar-row"
-      data-has-focus={focus}
-      data-tauri-drag-region
-    >
-      <div className="titlebar-section">
-        <MintterIcon />
-        <Menu />
-      </div>
-      <div className="titlebar-section" style={{paddingLeft: 0}}>
-        <NavigationButtons />
-        {/* @ts-ignore */}
-        <DiscardDraftButton />
-      </div>
+    <Titlebar data-has-focus={focus}>
+      <TitlebarRow>
+        <TitlebarSection>
+          <MintterIcon />
+          <Menu />
+        </TitlebarSection>
+        <TitlebarSection>
+          <NavigationButtons />
+          <DiscardDraftButton />
+        </TitlebarSection>
 
-      <Title />
+        <Title />
 
-      <ActionButtons {...props} />
+        <ActionButtons {...props} />
 
-      <div id="titlebar-window-controls">
-        <MinimizeButton />
-        <MaximizeOrRestoreButton />
-        <CloseButton />
-      </div>
-    </header>
+        <div id="titlebar-window-controls">
+          <MinimizeButton />
+          <MaximizeOrRestoreButton />
+          <CloseButton />
+        </div>
+      </TitlebarRow>
+    </Titlebar>
   )
 }
 
@@ -90,13 +83,9 @@ function Menu() {
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
-        <button
-          data-testid="titlebar-menu"
-          id="titlebar-menu"
-          className="titlebar-button"
-        >
+        <Button>
           <Icon name="HamburgerMenu" size="2" color="muted" />
-        </button>
+        </Button>
       </Dropdown.Trigger>
       <Dropdown.Portal>
         <Dropdown.Content>

@@ -1,7 +1,6 @@
 import {MainActor} from '@app/hooks/main-actor'
 import {warn} from '@app/utils/logger'
 import {lazy} from 'react'
-import '../../styles/titlebar.scss'
 
 var TitleBarMacos = lazy(() => import('./macos'))
 var TitleBarWindows = lazy(() => import('./windows'))

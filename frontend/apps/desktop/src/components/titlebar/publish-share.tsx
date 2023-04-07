@@ -7,7 +7,7 @@ import {styled} from '@app/stitches.config'
 import {useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
+import {Button} from '@mintter/ui'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {Icon} from '@components/icon'
 import {AccessURLRow} from '@components/url'
@@ -191,7 +191,7 @@ function PublishButtons({
         return (
           <Button
             key={site.hostname}
-            onClick={() => {
+            onPress={() => {
               onPublish(site.hostname)
             }}
           >
@@ -253,9 +253,9 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
           asChild
           disabled={!isDaemonReady || isSaving.current}
         >
-          <button
+          <Button
             disabled={!isDaemonReady || isSaving.current}
-            onClick={(e) => {
+            onPress={(e) => {
               e.preventDefault()
               if (isOpen) {
                 setIsOpen(false)
@@ -267,10 +267,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
               }
               setIsOpen(true)
             }}
-            className={`titlebar-button success outlined ${
-              isOpen ? 'active' : ''
-            } ${isSaving.current ? 'disabled' : ''}`}
-            data-testid="button-publish"
+            theme="green"
           >
             {mainActor.type === 'draft' ? (
               'Publish'
@@ -279,7 +276,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
                 <Icon name="Globe" />
               </>
             )}
-          </button>
+          </Button>
         </PopoverPrimitive.Trigger>
         <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content

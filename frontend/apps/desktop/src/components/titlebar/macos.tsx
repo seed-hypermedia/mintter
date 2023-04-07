@@ -2,38 +2,28 @@ import {TitleBarProps} from '@components/titlebar'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {Title} from './title'
+import {Titlebar, TitlebarRow, TitlebarSection} from './titlebar'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return (
-      <header
-        data-testid="titlebar"
-        id="titlebar"
-        className="titlebar-row"
-        data-tauri-drag-region
-      />
-    )
+    return <Titlebar />
   }
 
   return (
-    <header
-      id="titlebar"
-      data-testid="titlebar"
-      className="titlebar-row"
-      data-tauri-drag-region
-    >
-      <div className="titlebar-section">
-        <NavMenu mainActor={props.mainActor} />
-        <NavigationButtons />
-      </div>
-      <div className="titlebar-section">
-        {/* @ts-ignore */}
-        <DiscardDraftButton />
-      </div>
+    <Titlebar>
+      <TitlebarRow>
+        <TitlebarSection>
+          <NavMenu mainActor={props.mainActor} />
+          <NavigationButtons />
+        </TitlebarSection>
+        <TitlebarSection>
+          <DiscardDraftButton />
+        </TitlebarSection>
 
-      <Title />
+        <Title />
 
-      <ActionButtons {...props} />
-    </header>
+        <ActionButtons {...props} />
+      </TitlebarRow>
+    </Titlebar>
   )
 }

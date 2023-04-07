@@ -16,12 +16,14 @@ import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
+import {Button, XGroup} from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useActor, useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
+import {TitlebarSection} from './titlebar'
 
 export function ActionButtons(props: TitleBarProps) {
   const nav = useNavigationActions()
@@ -40,18 +42,14 @@ export function ActionButtons(props: TitleBarProps) {
       : undefined
 
   return (
-    <div
-      id="titlebar-action-buttons"
-      className="titlebar-section"
-      data-tauri-drag-region
-    >
+    <TitlebarSection>
       <Find />
 
       {onCopy && (
         <Tooltip content="Copy document reference">
-          <button onClick={onCopy} className="titlebar-button">
+          <Button onPress={onCopy}>
             <Icon name="Copy" />
-          </button>
+          </Button>
         </Tooltip>
       )}
 
@@ -69,43 +67,38 @@ export function ActionButtons(props: TitleBarProps) {
           {route.key === 'connections' ? (
             <ContactsPrompt />
           ) : (
-            <button
+            <Button
               disabled={!isDaemonReady}
-              className="titlebar-button"
-              onClick={(e) => {
+              onPress={(e) => {
                 e.preventDefault()
                 nav.openNewDraft(!e.shiftKey)
               }}
             >
-              <Icon name="Add" />
               <span style={{marginRight: '0.3em'}}>Write</span>
-            </button>
+              <Icon name="Add" />
+            </Button>
           )}
         </div>
       )}
-    </div>
+    </TitlebarSection>
   )
 }
 
 export function NavigationButtons() {
   const dispatch = useNavigationDispatch()
   return (
-    <div className="button-group">
-      <button
-        data-testid="history-back"
-        onClick={() => dispatch({type: 'pop'})}
-        className="titlebar-button"
-      >
-        <Icon name="ArrowChevronLeft" size="2" color="muted" />
-      </button>
-      <button
-        data-testid="history-forward"
-        onClick={() => dispatch({type: 'forward'})}
-        className="titlebar-button"
-      >
-        <Icon name="ArrowChevronRight" size="2" color="muted" />
-      </button>
-    </div>
+    <XGroup>
+      <XGroup.Item>
+        <Button onPress={() => dispatch({type: 'pop'})}>
+          <Icon name="ArrowChevronLeft" size="2" color="muted" />
+        </Button>
+      </XGroup.Item>
+      <XGroup.Item>
+        <Button onPress={() => dispatch({type: 'forward'})}>
+          <Icon name="ArrowChevronRight" size="2" color="muted" />
+        </Button>
+      </XGroup.Item>
+    </XGroup>
   )
 }
 
@@ -138,13 +131,9 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
-        <button
-          data-testid="titlebar-menu"
-          id="titlebar-menu"
-          className="titlebar-button"
-        >
+        <Button>
           <Icon name="HamburgerMenu" size="2" color="muted" />
-        </button>
+        </Button>
       </Dropdown.Trigger>
       <Dropdown.Portal>
         <Dropdown.Content>
@@ -214,17 +203,15 @@ function WriteActions({
     <>
       {publicationActor && (
         <div className="button-group">
-          <button
-            className={`titlebar-button ${hasExistingDraft ? 'warning' : ''}`}
-            onClick={() => {
+          <Button
+            theme={hasExistingDraft ? 'yellow' : undefined}
+            onPress={() => {
               publicationActor.send({type: 'PUBLICATION.EDIT'})
             }}
           >
-            <span style={{marginInline: '0.3em'}}>
-              {hasExistingDraft ? 'Resume Editing' : 'Edit'}
-            </span>
+            {hasExistingDraft ? 'Resume Editing' : 'Edit'}
             {errorMessage ? ' (failed)' : null}
-          </button>
+          </Button>
         </div>
       )}
     </>
