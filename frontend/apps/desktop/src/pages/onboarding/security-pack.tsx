@@ -98,7 +98,13 @@ export function SecurityPack({
       ) : (
         <MnemonicList words={mnemonics.data ?? []} />
       )}
-      <Button color="muted" onPress={() => toggleOwnSeed((v) => !v)}>
+      <Button
+        color="muted"
+        onPress={(e) => {
+          e.preventDefault()
+          toggleOwnSeed((v) => !v)
+        }}
+      >
         Setting up a new device?{' '}
         <Text css={{textDecoration: 'underline', display: 'inline-block'}}>
           provide your own seed

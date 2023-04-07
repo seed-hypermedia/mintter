@@ -7,7 +7,7 @@ export function useDeleteDraftDialog(
   docId: string | null,
   renderTrigger: (props: {onClick: () => void}) => JSX.Element,
   onSuccess?: () => void,
-): ReactElement {
+): ReactElement | null {
   const [isOpen, setIsOpen] = useState(false)
   const deleteDraft = useDeleteDraft({
     onSuccess: () => {

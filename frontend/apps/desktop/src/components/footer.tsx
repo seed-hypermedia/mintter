@@ -289,7 +289,7 @@ export function ContactsPrompt({
             <Prompt.Close asChild>
               <Button
                 data-testid="add-contact-submit"
-                size="2"
+                size="$2"
                 onPress={handleConnect}
                 disabled={!peer}
               >

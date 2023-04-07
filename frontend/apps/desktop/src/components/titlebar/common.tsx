@@ -71,6 +71,7 @@ export function ActionButtons(props: TitleBarProps) {
               disabled={!isDaemonReady}
               onPress={(e) => {
                 e.preventDefault()
+                // @ts-ignore
                 nav.openNewDraft(!e.shiftKey)
               }}
             >

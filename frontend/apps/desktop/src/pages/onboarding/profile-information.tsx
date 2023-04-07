@@ -76,7 +76,7 @@ export function ProfileInformation({
         />
       </OnboardingStepBody>
       <OnboardingStepActions>
-        <OnboardingStepButton type="submit">Next</OnboardingStepButton>
+        <OnboardingStepButton>Next</OnboardingStepButton>
       </OnboardingStepActions>
     </OnboardingStep>
   )
