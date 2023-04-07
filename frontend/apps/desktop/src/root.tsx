@@ -137,7 +137,7 @@ export function StyleProvider({
   return (
     <TamaguiProvider
       config={tamaguiConfig}
-      disableInjectCSS
+      // disableInjectCSS
       defaultTheme="light"
       {...rest}
     >

@@ -1,4 +1,4 @@
-import {Button} from '@components/button'
+import {Button} from '@mintter/ui'
 import '../styles/empty-list.scss'
 
 type EmptyListProps = {
@@ -17,9 +17,9 @@ export function EmptyList({description, action}: EmptyListProps) {
         {description}
       </p>
       <Button
-        // className="button outlined block"
+        theme="yellow"  
 
-        onClick={() => action()}
+        onPress={() => action()}
       >
         Start a new Draft
       </Button>
