@@ -8,7 +8,7 @@ import {
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {TitleText} from '@mintter/ui'
+import {TitleText, XStack} from '@mintter/ui'
 
 export function TitleContent() {
   const route = useNavRoute()
@@ -31,16 +31,16 @@ export function TitleContent() {
   if (route.key === 'drafts') {
     return (
       <>
-        <Icon name="PencilAdd" />
+        <Icon name="PencilAdd" data-tauri-drag-region />
         <TitleText>Drafts</TitleText>
       </>
     )
   }
   if (route.key === 'account') {
-    return <>Account Profile</>
+    return <TitleText>Account Profile</TitleText>
   }
   if (route.key === 'site') {
-    return <>{hostnameStripProtocol(route.hostname)}</>
+    return <TitleText>{hostnameStripProtocol(route.hostname)}</TitleText>
   }
   if (route.key === 'publication') {
     return <PublicationTitle route={route} />
@@ -53,13 +53,9 @@ export function TitleContent() {
 
 export function Title() {
   return (
-    <h1
-      className="titlebar-title"
-      data-testid="titlebar-title"
-      data-tauri-drag-region
-    >
+    <XStack gap="$2" alignItems="baseline" margin="auto">
       <TitleContent />
-    </h1>
+    </XStack>
   )
 }
 
@@ -70,7 +66,7 @@ function PublicationTitle({route}: {route: PublicationRoute}) {
 
   return (
     <>
-      <span data-tauri-drag-region>{pub?.document?.title || '...'}</span>
+      <TitleText>{pub?.document?.title || '...'}</TitleText>
       <Button
         css={{
           color: '$base-active',
@@ -98,5 +94,5 @@ function PublicationTitle({route}: {route: PublicationRoute}) {
 function DraftTitle({route}: {route: DraftRoute}) {
   const {data: draft} = useDraft(route.documentId)
   const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
-  return <span data-tauri-drag-region>{displayTitle}</span>
+  return <TitleText>{displayTitle}</TitleText>
 }

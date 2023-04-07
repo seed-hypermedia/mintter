@@ -24,10 +24,15 @@ export const TitlebarSection = styled(XStack, {
   backgroundColor: '$red10',
 })
 
-export const TitleText = styled(H1, {
+export const TitleTextH1 = styled(H1, {
   // color: '$gray12',
   size: '$4',
+  userSelect: 'none',
+  cursor: 'default',
 })
+export function TitleText(props) {
+  return <TitleTextH1 {...props} data-tauri-drag-region />
+}
 
 export const TitlebarButton = styled(Button, {
   color: '$gray2Light',
