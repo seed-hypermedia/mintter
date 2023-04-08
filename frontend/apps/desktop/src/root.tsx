@@ -48,11 +48,11 @@ export function Root() {
   globalStyles()
 
   return (
-    <QueryClientProvider client={appQueryClient}>
-      <Suspense>
-        <Hydrate state={dehydrateState}>
-          <ErrorBoundary FallbackComponent={AppError}>
-            <StyleProvider disableRootThemeClass>
+    <StyleProvider disableRootThemeClass>
+      <QueryClientProvider client={appQueryClient}>
+        <Suspense>
+          <Hydrate state={dehydrateState}>
+            <ErrorBoundary FallbackComponent={AppError}>
               <ThemeProvider value={themeService}>
                 <NavigationProvider>
                   <App />
@@ -62,12 +62,12 @@ export function Root() {
                   toastOptions={{className: 'toaster'}}
                 />
               </ThemeProvider>
-            </StyleProvider>
-          </ErrorBoundary>
-        </Hydrate>
-      </Suspense>
-      <ReactQueryDevtools />
-    </QueryClientProvider>
+            </ErrorBoundary>
+          </Hydrate>
+        </Suspense>
+        <ReactQueryDevtools />
+      </QueryClientProvider>
+    </StyleProvider>
   )
 }
 
