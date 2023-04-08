@@ -99,7 +99,7 @@ let initRoute: NavRoute = homeRoute
 try {
   initRoute = decodeRouteFromPath(initRouteEncoded)
 } catch (e) {
-  console.error('🔥 Error parsing initial route! ', e)
+  console.error('Error parsing initial route! ', e)
 }
 
 function encodeRouteToPath(route: NavRoute): string {

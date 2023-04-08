@@ -14,10 +14,8 @@ export interface TitleBarProps {
 export function TitleBar(props: TitleBarProps) {
   if (import.meta.env.TAURI_PLATFORM == 'macos')
     return <TitleBarMacos {...props} />
-
   if (import.meta.env.TAURI_PLATFORM == 'windows')
     return <TitleBarWindows {...props} />
-
   if (import.meta.env.TAURI_PLATFORM == 'linux')
     return <TitleBarLinux {...props} />
   // throw new Error(`Titlebar: unsupported platform: ${import.meta.env.TAURI_PLATFORM}`)

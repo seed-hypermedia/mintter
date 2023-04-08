@@ -47,27 +47,3 @@ export const TitleTextH1 = styled(H1, {
 export function TitleText(props) {
   return <TitleTextH1 {...props} data-tauri-drag-region />
 }
-
-const TitlebarStyledButton = styled(Button, {
-  color: '$gray2Light',
-  size: '$2',
-  borderRadius: '$4',
-  overflow: 'hidden',
-  minHeight: 24,
-  minWidth: 24,
-  variants: {
-    variant: {
-      solid: {},
-      outlined: {
-        borderColor: '$color',
-        borderStyle: 'solid',
-        borderWidth: '$10',
-      },
-      ghost: {},
-    },
-  },
-})
-
-export const TitlebarButton = ({}) => {
-  return <TitlebarStyledButton icon={Menu}></TitlebarStyledButton>
-}

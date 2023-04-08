@@ -77,10 +77,8 @@ export default function Main() {
         <FindContextProvider value={{search, setSearch}}>
           <TooltipProvider>
             <TitleBar clean={isSettings} mainActor={mainActor} />
-
             {/* @ts-ignore */}
             <PageComponent mainActor={mainActor} />
-
             {!isSettings ? <QuickSwitcher /> : null}
           </TooltipProvider>
         </FindContextProvider>
