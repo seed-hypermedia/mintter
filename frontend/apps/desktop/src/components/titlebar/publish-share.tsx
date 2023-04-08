@@ -7,7 +7,7 @@ import {styled} from '@app/stitches.config'
 import {useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
-import {Button} from '@mintter/ui'
+import {Button, Globe} from '@mintter/ui'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {Icon} from '@components/icon'
 import {AccessURLRow} from '@components/url'
@@ -254,6 +254,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
           disabled={!isDaemonReady || isSaving.current}
         >
           <Button
+            size="$2"
             disabled={!isDaemonReady || isSaving.current}
             onPress={(e) => {
               e.preventDefault()
@@ -273,7 +274,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
               'Publish'
             ) : (
               <>
-                <Icon name="Globe" />
+                <Globe size={16} />
               </>
             )}
           </Button>

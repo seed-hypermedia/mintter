@@ -10,7 +10,7 @@ import {
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
-import PageContainer from '@components/page-container'
+import {MainWrapper} from '@mintter/ui'
 import {Text} from '@components/text'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
 import {WebPublicationRecord, formattedDate} from '@mintter/shared'
@@ -43,7 +43,7 @@ export default function SitePage(props: PageProps) {
 
   return (
     <>
-      <PageContainer>
+      <MainWrapper>
         {isInitialLoading ? (
           <p>loading...</p>
         ) : sortedPubs?.length ? (
@@ -62,7 +62,7 @@ export default function SitePage(props: PageProps) {
             }}
           />
         )}
-      </PageContainer>
+      </MainWrapper>
       <Footer />
     </>
   )

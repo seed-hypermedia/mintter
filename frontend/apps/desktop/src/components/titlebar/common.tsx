@@ -16,14 +16,13 @@ import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
-import {Button, XGroup} from '@mintter/ui'
+import {Button, Menu, XGroup, TitlebarSection, Add, Copy} from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useActor, useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
-import {TitlebarSection} from './titlebar'
 
 export function ActionButtons(props: TitleBarProps) {
   const nav = useNavigationActions()
@@ -47,9 +46,9 @@ export function ActionButtons(props: TitleBarProps) {
 
       {onCopy && (
         <Tooltip content="Copy document reference">
-          <Button onPress={onCopy}>
-            <Icon name="Copy" />
-          </Button>
+          <Button size="$2" onPress={onCopy} icon={Copy} />
+
+          {/* </Button> */}
         </Tooltip>
       )}
 
@@ -68,15 +67,16 @@ export function ActionButtons(props: TitleBarProps) {
             <ContactsPrompt />
           ) : (
             <Button
+              size="$2"
               disabled={!isDaemonReady}
+              iconAfter={Add}
               onPress={(e) => {
                 e.preventDefault()
                 // @ts-ignore
                 nav.openNewDraft(!e.shiftKey)
               }}
             >
-              <span style={{marginRight: '0.3em'}}>Write</span>
-              <Icon name="Add" />
+              Write
             </Button>
           )}
         </div>
@@ -90,13 +90,13 @@ export function NavigationButtons() {
   return (
     <XGroup>
       <XGroup.Item>
-        <Button onPress={() => dispatch({type: 'pop'})}>
-          <Icon name="ArrowChevronLeft" size="2" color="muted" />
+        <Button size="$2" onPress={() => dispatch({type: 'pop'})}>
+          <Icon name="ArrowChevronLeft" color="muted" />
         </Button>
       </XGroup.Item>
       <XGroup.Item>
-        <Button onPress={() => dispatch({type: 'forward'})}>
-          <Icon name="ArrowChevronRight" size="2" color="muted" />
+        <Button size="$2" onPress={() => dispatch({type: 'forward'})}>
+          <Icon name="ArrowChevronRight" color="muted" />
         </Button>
       </XGroup.Item>
     </XGroup>
@@ -132,8 +132,8 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
-        <Button>
-          <Icon name="HamburgerMenu" size="2" color="muted" />
+        <Button size="$2">
+          <Menu size={16} />
         </Button>
       </Dropdown.Trigger>
       <Dropdown.Portal>
@@ -203,17 +203,16 @@ function WriteActions({
   return (
     <>
       {publicationActor && (
-        <div className="button-group">
-          <Button
-            theme={hasExistingDraft ? 'yellow' : undefined}
-            onPress={() => {
-              publicationActor.send({type: 'PUBLICATION.EDIT'})
-            }}
-          >
-            {hasExistingDraft ? 'Resume Editing' : 'Edit'}
-            {errorMessage ? ' (failed)' : null}
-          </Button>
-        </div>
+        <Button
+          size="$2"
+          theme={hasExistingDraft ? 'yellow' : undefined}
+          onPress={() => {
+            publicationActor.send({type: 'PUBLICATION.EDIT'})
+          }}
+        >
+          {hasExistingDraft ? 'Resume Editing' : 'Edit'}
+          {errorMessage ? ' (failed)' : null}
+        </Button>
       )}
     </>
   )

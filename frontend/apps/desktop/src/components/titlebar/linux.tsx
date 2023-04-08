@@ -2,7 +2,12 @@ import {Dropdown} from '@app/editor/dropdown'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Icon} from '@components/icon'
 import {TitleBarProps} from '@components/titlebar'
-import {Button} from '@mintter/ui'
+import {
+  Button,
+  TitlebarWrapper,
+  TitlebarRow,
+  TitlebarSection,
+} from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
@@ -10,7 +15,6 @@ import {ActionButtons, NavigationButtons, SitesNavDropdownItems} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {MintterIcon} from './mintter-icon'
 import {Title} from './title'
-import {Titlebar, TitlebarRow, TitlebarSection} from './titlebar'
 import {
   CloseButton,
   MaximizeOrRestoreButton,
@@ -36,42 +40,47 @@ export default function TitleBarLinux(props: TitleBarProps) {
   // in the clean window we render a stripped down version of the titlebar
   if (props.clean) {
     return (
-      <Titlebar>
+      <TitlebarWrapper data-tauri-drag-region>
         <TitlebarRow>
-          <MintterIcon />
-          <span></span>
+          <TitlebarSection>
+            <MintterIcon />
+            <span></span>
 
-          <div id="titlebar-window-controls">
-            <CloseButton />
-          </div>
+            <div id="titlebar-window-controls">
+              <CloseButton />
+            </div>
+          </TitlebarSection>
         </TitlebarRow>
-      </Titlebar>
+      </TitlebarWrapper>
     )
   }
 
   return (
-    <Titlebar data-has-focus={focus}>
+    <TitlebarWrapper
+      platform="linux"
+      data-tauri-drag-region
+      data-has-focus={focus}
+    >
       <TitlebarRow>
         <TitlebarSection>
           <MintterIcon />
           <Menu />
-        </TitlebarSection>
-        <TitlebarSection>
           <NavigationButtons />
           <DiscardDraftButton />
         </TitlebarSection>
-
-        <Title />
-
-        <ActionButtons {...props} />
-
-        <div id="titlebar-window-controls">
-          <MinimizeButton />
-          <MaximizeOrRestoreButton />
-          <CloseButton />
-        </div>
+        <TitlebarSection>
+          <Title />
+        </TitlebarSection>
+        <TitlebarSection>
+          <ActionButtons {...props} />
+          <div id="titlebar-window-controls">
+            <MinimizeButton />
+            <MaximizeOrRestoreButton />
+            <CloseButton />
+          </div>
+        </TitlebarSection>
       </TitlebarRow>
-    </Titlebar>
+    </TitlebarWrapper>
   )
 }
 

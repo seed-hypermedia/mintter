@@ -34,8 +34,9 @@ export function AppBanner({
         },
         position: 'absolute',
         width: '$full',
-        top: 0,
+        top: 40,
         left: 0,
+        zIndex: '$max',
       }}
       {...props}
     >

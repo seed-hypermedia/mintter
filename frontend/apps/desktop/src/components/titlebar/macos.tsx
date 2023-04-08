@@ -2,28 +2,29 @@ import {TitleBarProps} from '@components/titlebar'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {Title} from './title'
-import {Titlebar, TitlebarRow, TitlebarSection} from './titlebar'
+import {TitlebarRow, TitlebarSection, TitlebarWrapper} from '@mintter/ui'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return <Titlebar />
+    return <TitlebarWrapper />
   }
 
   return (
-    <Titlebar>
+    <TitlebarWrapper platform="macos" data-tauri-drag-region>
       <TitlebarRow>
-        <TitlebarSection>
+        <TitlebarSection data-tauri-drag-region>
           <NavMenu mainActor={props.mainActor} />
           <NavigationButtons />
-        </TitlebarSection>
-        <TitlebarSection>
           <DiscardDraftButton />
         </TitlebarSection>
+        <TitlebarSection flex={1} data-tauri-drag-region>
+          <Title />
+        </TitlebarSection>
 
-        <Title />
-
-        <ActionButtons {...props} />
+        <TitlebarSection data-tauri-drag-region>
+          <ActionButtons {...props} />
+        </TitlebarSection>
       </TitlebarRow>
-    </Titlebar>
+    </TitlebarWrapper>
   )
 }

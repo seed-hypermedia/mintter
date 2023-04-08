@@ -1,18 +1,16 @@
 import {FindContextProvider} from '@app/editor/find'
 import {useMainActor} from '@app/hooks/main-actor'
-import {classnames} from '@app/utils/classnames'
 import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {TitleBar} from '@components/titlebar'
 import {TooltipProvider} from '@components/tooltip'
+import {Heading, YStack} from '@mintter/ui'
 import {listen as tauriListen} from '@tauri-apps/api/event'
 import {lazy, useEffect, useState} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
-import '../styles/main.scss'
 import {NotFoundPage} from './base'
 import './polyfills'
-import {Heading, Main as UIMain} from '@mintter/ui'
 
 var PublicationList = lazy(() => import('@app/pages/publication-list-page'))
 var DraftList = lazy(() => import('@app/pages/draft-list-page'))
@@ -69,25 +67,25 @@ export default function Main() {
   }, [navigate])
 
   return (
-    <ErrorBoundary
-      FallbackComponent={MainBoundary}
-      onReset={() => {
-        window.location.reload()
-      }}
-    >
-      <FindContextProvider value={{search, setSearch}}>
-        <TooltipProvider>
-          <div className={classnames('main-root', {settings: isSettings})}>
-            <UIMain>
-              {/* @ts-ignore */}
-              <PageComponent mainActor={mainActor} />
-            </UIMain>
+    <YStack fullscreen>
+      <ErrorBoundary
+        FallbackComponent={MainBoundary}
+        onReset={() => {
+          window.location.reload()
+        }}
+      >
+        <FindContextProvider value={{search, setSearch}}>
+          <TooltipProvider>
             <TitleBar clean={isSettings} mainActor={mainActor} />
+
+            {/* @ts-ignore */}
+            <PageComponent mainActor={mainActor} />
+
             {!isSettings ? <QuickSwitcher /> : null}
-          </div>
-        </TooltipProvider>
-      </FindContextProvider>
-    </ErrorBoundary>
+          </TooltipProvider>
+        </FindContextProvider>
+      </ErrorBoundary>
+    </YStack>
   )
 }
 

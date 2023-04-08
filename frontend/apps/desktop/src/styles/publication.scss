@@ -2,76 +2,12 @@
   width: 100%;
 }
 
-.split-view-view > * {
+
+.split-view-view > span {
+  display: block;
   height: 100%;
   box-sizing: border-box;
-}
-
-.publication-section {
-  height: 100%;
-  width: 100%;
   position: relative;
-  // overflow: hidden;
-
-  [data-radix-scroll-area-viewport] {
-    scroll-behavior: smooth;
-    // padding-inline-end: 6em;
-  }
-}
-
-.discussion-section {
-  // border-right: 1px solid var(--base-border-hover);
-  height: 100%;
-  box-sizing: border-box;
-  background-color: var(--base-background-normal);
-}
-
-.discussion-toggle {
-  position: fixed;
-  inset-inline-end: 0;
-  top: 100px;
-  z-index: 100000;
-  padding: 40px;
-
-  button {
-    transition: opacity 0.25s ease;
-    opacity: 0;
-  }
-
-  &.visible button {
-    opacity: 1;
-  }
-
-  @media (min-width: 768px) {
-    // padding: 0;
-
-    button {
-      opacity: 1;
-    }
-  }
-
-  &:hover {
-    button {
-      opacity: 1;
-      pointer-events: initial !important;
-    }
-  }
-}
-
-.discussion-button {
-  all: unset;
-  display: flex;
-  align-items: center;
-  width: 40px;
-  height: 40px;
-  justify-content: center;
-  background-color: var(--primary-component-bg-hover);
-  border-radius: 50%;
-  box-shadow: 0px 4px 8px var(--base-border-hover);
-
-  &:hover {
-    cursor: pointer;
-  }
 }
 
 .publication-fetching-message {

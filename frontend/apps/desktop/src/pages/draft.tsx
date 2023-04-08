@@ -1,11 +1,9 @@
 // import 'show-keys'
 import {AppBanner, BannerText} from '@app/app-banner'
-import {ScrollArea} from '@app/components/scroll-area'
 import {DragProvider} from '@app/drag-context'
 import {createDragMachine} from '@app/drag-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Editor} from '@app/editor/editor'
-import {FileProvider} from '@app/file-provider'
 import {MainActor} from '@app/hooks/main-actor'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
@@ -15,6 +13,7 @@ import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {ChildrenOf, Document} from '@mintter/shared'
+import {MainWrapper, XStack} from '@mintter/ui'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -50,69 +49,66 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
 
   if (state.matches('editing')) {
     return (
-      <div
-        data-testid="draft-wrapper"
-        className="page-wrapper"
-        onMouseMove={(event) => {
-          mouseService.send({
-            type: 'MOUSE.MOVE',
-            position: event.clientY,
-          })
-          mainActor.actor.send('EDITING.STOP')
-        }}
-        onMouseLeave={() => {
-          mouseService.send('DISABLE.CHANGE')
-        }}
-        onMouseUp={() => {
-          dragService.send('DROPPED')
-          mouseService.send('DISABLE.DRAG.END')
-        }}
+      <ErrorBoundary
+        FallbackComponent={AppError}
+        onReset={() => window.location.reload()}
       >
-        <ErrorBoundary
-          FallbackComponent={AppError}
-          onReset={() => window.location.reload()}
-        >
-          {!isDaemonReady ? <NotSavingBanner /> : null}
-          <ScrollArea
-            onScroll={() => {
-              mouseService.send('DISABLE.SCROLL')
+        {!isDaemonReady ? <NotSavingBanner /> : null}
 
-              // if (!canEdit) {
-              //   mainService.send('NOT.EDITING')
-              // }
-            }}
-          >
-            <MouseProvider value={mouseService}>
-              <DragProvider value={dragService}>
-                <BlockHighLighter>
-                  <FileProvider value={state.context.draft}>
-                    {state.context.localDraft?.content ? (
-                      <Editor
-                        editor={editor}
-                        readOnly={!isDaemonReady}
-                        value={state.context.localDraft.content}
-                        //@ts-ignore
-                        onChange={(content: ChildrenOf<Document>) => {
-                          if (
-                            (!content && typeof content == 'string') ||
-                            !isDaemonReady
-                          )
-                            return
-                          mouseService.send('DISABLE.CHANGE')
-                          mainActor.actor.send('EDITING.START')
-                          // @ts-ignore
-                          send({type: 'DRAFT.UPDATE', payload: {content}})
-                        }}
-                      />
-                    ) : null}
-                    <Footer />
-                  </FileProvider>
-                </BlockHighLighter>
-              </DragProvider>
-            </MouseProvider>
-          </ScrollArea>
-        </ErrorBoundary>
-      </div>
+        <MouseProvider value={mouseService}>
+          <DragProvider value={dragService}>
+            <BlockHighLighter>
+              <MainWrapper
+                onScroll={() => {
+                  mouseService.send('DISABLE.SCROLL')
+
+                  // if (!canEdit) {
+                  //   mainService.send('NOT.EDITING')
+                  // }
+                }}
+                // @ts-ignore
+                onMouseMove={(event) => {
+                  mouseService.send({
+                    type: 'MOUSE.MOVE',
+                    position: event.clientY,
+                  })
+                  mainActor.actor.send('EDITING.STOP')
+                }}
+                onMouseLeave={() => {
+                  mouseService.send('DISABLE.CHANGE')
+                }}
+                onMouseUp={() => {
+                  dragService.send('DROPPED')
+                  mouseService.send('DISABLE.DRAG.END')
+                }}
+              >
+                <>
+                  {state.context.localDraft?.content ? (
+                    <Editor
+                      editor={editor}
+                      readOnly={!isDaemonReady}
+                      value={state.context.localDraft.content}
+                      //@ts-ignore
+                      onChange={(content: ChildrenOf<Document>) => {
+                        if (
+                          (!content && typeof content == 'string') ||
+                          !isDaemonReady
+                        )
+                          return
+                        mouseService.send('DISABLE.CHANGE')
+                        mainActor.actor.send('EDITING.START')
+                        // @ts-ignore
+                        send({type: 'DRAFT.UPDATE', payload: {content}})
+                      }}
+                    />
+                  ) : null}
+                </>
+              </MainWrapper>
+              <Footer />
+            </BlockHighLighter>
+          </DragProvider>
+        </MouseProvider>
+      </ErrorBoundary>
     )
   }
 

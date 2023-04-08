@@ -6,6 +6,7 @@ import {Node, Range} from 'slate'
 import '../styles/find.scss'
 import {EditorPlugin} from './types'
 import {lowerPoint} from './utils'
+import {Search} from '@mintter/ui'
 
 const FIND_HIGHLIGHT = 'find-highlight'
 
@@ -45,7 +46,7 @@ export function Find() {
 
   return (
     <label className="titlebar-search">
-      <Icon name="Search" />
+      <Search size={16} />
       <input
         ref={searchInput}
         type="search"

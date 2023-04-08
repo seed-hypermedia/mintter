@@ -9,7 +9,7 @@ export default function DiscardDraftButton() {
   const deleteModal = useDeleteDraftDialog(
     draftId,
     ({onClick}) => (
-      <Button theme="yellow" onPress={onClick}>
+      <Button size="$2" theme="yellow" onPress={onClick}>
         Discard Draft
       </Button>
     ),

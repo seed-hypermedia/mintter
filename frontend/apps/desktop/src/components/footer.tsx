@@ -10,7 +10,7 @@ import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
-import {Button} from '@mintter/ui'
+import {Button, ButtonProps, FooterWrapper} from '@mintter/ui'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
@@ -36,18 +36,18 @@ export function FooterButton({
 }: {
   active?: boolean
   label: string
-  icon?: ReactNode
+  icon?: ButtonProps['icon']
   onPress: () => void
 }) {
   return (
     <Button
       size="$1"
       chromeless
-      color={active ? 'blue' : undefined}
+      color={active ? '$blue10' : undefined}
       onPress={onPress}
+      icon={icon}
     >
-      {icon}
-      <LabelWrap>{label}</LabelWrap>
+      {label}
     </Button>
   )
 }
@@ -102,7 +102,7 @@ export default function Footer({children}: {children?: ReactNode}) {
   // }
 
   return (
-    <FooterStyled platform={import.meta.env.TAURI_PLATFORM}>
+    <FooterWrapper>
       {!isDaemonReady ? (
         <Box
           css={{
@@ -181,7 +181,7 @@ export default function Footer({children}: {children?: ReactNode}) {
       >
         {children}
       </Box>
-    </FooterStyled>
+    </FooterWrapper>
   )
 }
 

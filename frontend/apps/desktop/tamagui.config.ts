@@ -1,5 +1,3 @@
-import {config} from '@tamagui/config'
-import {config as tamaguiConfig} from '@mintter/ui'
+import { config } from '@mintter/ui'
 
-export default tamaguiConfig
-
+export default config

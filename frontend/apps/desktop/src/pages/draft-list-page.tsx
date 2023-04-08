@@ -10,7 +10,7 @@ import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
-import PageContainer from '@components/page-container'
+import {MainWrapper, ScrollView, YStack} from '@mintter/ui'
 import {Text} from '@components/text'
 import {Document, formattedDate} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
@@ -24,13 +24,15 @@ export default function DraftList(props: PageProps) {
   const nav = useNavigationActions()
   return (
     <>
-      <PageContainer>
+      <MainWrapper>
         {isInitialLoading ? (
           <p>loading...</p>
         ) : data && data.documents.length ? (
-          data.documents.map((draft) => (
-            <DraftListItem key={draft.id} draft={draft} />
-          ))
+          <YStack tag="ul">
+            {data.documents.map((draft) => (
+              <DraftListItem key={draft.id} draft={draft} />
+            ))}
+          </YStack>
         ) : (
           <EmptyList
             description="You have no Drafts yet."
@@ -39,7 +41,7 @@ export default function DraftList(props: PageProps) {
             }}
           />
         )}
-      </PageContainer>
+      </MainWrapper>
       <Footer />
     </>
   )

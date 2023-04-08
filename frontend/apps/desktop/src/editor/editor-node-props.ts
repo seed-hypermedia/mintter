@@ -2,6 +2,7 @@ import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {useDrag} from '@app/drag-context'
 import {findPath} from '@app/editor/utils'
 import {useFileIds} from '@app/file-provider'
+import {useNavRoute} from '@app/utils/navigation'
 import {
   FlowContent,
   GroupingContent,
@@ -43,9 +44,8 @@ export function usePhrasingProps(
   editor: Editor,
   element: Paragraph | StaticParagraphType,
 ) {
-  let [docId, version] = useFileIds()
-  let dragService = useDrag()
-  return useMemo(memoizeProps, [editor, docId, version, element])
+  let route = useNavRoute()
+  return useMemo(memoizeProps, [editor, route, element])
 
   function memoizeProps() {
     let path = ReactEditor.findPath(editor, element)
@@ -61,6 +61,12 @@ export function usePhrasingProps(
       mode: 'lowest',
       at: path,
     })
+
+    const version = route.key == 'publication' ? route.versionId : undefined
+    const docId =
+      route.key == 'draft' || route.key == 'publication'
+        ? route.documentId
+        : undefined
 
     let elementProps = {
       'data-element-type': element.type,

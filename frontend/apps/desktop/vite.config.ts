@@ -8,6 +8,10 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 const shouldExtract = process.env.EXTRACT === '1'
 let isTest = process.env.NODE_ENV == 'test'
 
+if (shouldExtract) {
+  console.log('Tamagui compiler enabled')
+}
+
 writeFileSync(
   path.resolve(__dirname, './src/styles/_env.scss'),
   `$TAURI_PLATFORM: '${process.env.TAURI_PLATFORM}';
@@ -24,8 +28,8 @@ if (shouldExtract) {
 }
 
 const tamaguiConfig = {
-  components: ['@mintter/ui', '@tamagui/web'],
-  config: 'tamagui.config.ts',
+  components: ['@mintter/ui', 'tamagui'],
+  config: './tamagui.config.ts',
   useReactNativeWebLite: true,
 }
 

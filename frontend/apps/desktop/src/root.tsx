@@ -18,11 +18,12 @@ import {globalStyles} from './stitches.config'
 
 import {DaemonStatusProvider} from '@app/node-status-context'
 import {listen} from '@tauri-apps/api/event'
+import tamaguiConfig from '../tamagui.config'
 import {appQueryClient} from './query-client'
+import './styles/root.css'
 import './styles/root.scss'
 import './styles/toaster.scss'
 import {NavigationProvider} from './utils/navigation'
-import tamaguiConfig from '../tamagui.config'
 
 import('./updater')
 
@@ -135,12 +136,7 @@ export function StyleProvider({
   ...rest
 }: Omit<TamaguiProviderProps, 'config'>) {
   return (
-    <TamaguiProvider
-      config={tamaguiConfig}
-      // disableInjectCSS
-      defaultTheme="light"
-      {...rest}
-    >
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="light" {...rest}>
       <Theme name="blue">{children}</Theme>
     </TamaguiProvider>
   )

@@ -78,10 +78,3 @@ export const config = createTamagui({
     pointerCoarse: {pointer: 'coarse'},
   }),
 })
-
-export type AppConfig = typeof config
-declare module '@tamagui/core' {
-  // overrides TamaguiCustomConfig so your custom types
-  // work everywhere you import `tamagui`
-  interface TamaguiCustomConfig extends AppConfig {}
-}

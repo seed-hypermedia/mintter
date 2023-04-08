@@ -7,7 +7,6 @@ import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
-import {FileProvider} from '@app/file-provider'
 import {
   queryKeys,
   useDocChanges,
@@ -19,14 +18,12 @@ import {mouseMachine} from '@app/mouse-machine'
 import {classnames} from '@app/utils/classnames'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {ChangesList} from '@components/changes-list'
 import {Citations} from '@components/citations'
 import {Conversations} from '@components/conversations'
 import Footer, {FooterButton} from '@components/footer'
 import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
-import {ScrollArea} from '@components/scroll-area'
 import {MttLink} from '@mintter/shared'
 import {useQueryClient} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
@@ -37,6 +34,17 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
+import {
+  Button,
+  Comment,
+  Link,
+  MainWrapper,
+  Pencil,
+  ScrollView,
+  Text,
+  YStack,
+} from '@mintter/ui'
+
 import {assign, createMachine} from 'xstate'
 import '../styles/publication.scss'
 import {PageProps} from './base'
@@ -99,120 +107,122 @@ export default function PublicationPage({mainActor}: PageProps) {
 
   if (state.matches('errored')) {
     return (
-      <div data-testid="publication-section" className="page-wrapper">
-        <p>Publication ERROR</p>
-        <p>{state.context.errorMessage}</p>
-        <Button onClick={() => send('PUBLICATION.FETCH.DATA')} color="muted">
-          try again
-        </Button>
-      </div>
+      <YStack>
+        <YStack gap="$3" alignItems="flex-start" maxWidth={500} padding="$8">
+          <Text fontFamily="$body" fontWeight="700" fontSize="$6">
+            Publication ERROR
+          </Text>
+          <Text fontFamily="$body" fontSize="$4">
+            {state.context.errorMessage}
+          </Text>
+          <Button theme="yellow" onPress={() => send('PUBLICATION.FETCH.DATA')}>
+            try again
+          </Button>
+        </YStack>
+      </YStack>
     )
   }
+
   if (docId) {
     return (
-      <ConversationsProvider
-        documentId={docId}
-        isOpen={
-          activePanel === 'conversations' && resizablePanelState.context.show
-        }
-        onConversationsOpen={() => {
-          panelSend({
-            type: 'PANEL.OPEN',
-            activePanel: 'conversations',
-          })
-        }}
-        publication={state.context.publication}
+      <ErrorBoundary
+        fallback={<div>error</div>}
+        onReset={() => window.location.reload()}
       >
-        <CitationsProvider
+        <ConversationsProvider
           documentId={docId}
-          onCitationsOpen={(citations: Array<MttLink>) => {
+          isOpen={
+            activePanel === 'conversations' && resizablePanelState.context.show
+          }
+          onConversationsOpen={() => {
             panelSend({
               type: 'PANEL.OPEN',
-              activePanel: 'citations',
+              activePanel: 'conversations',
             })
           }}
+          publication={state.context.publication}
         >
-          <MouseProvider value={mouseService}>
-            <BlockHighLighter>
-              <div className="page-wrapper publication-wrapper">
-                <Allotment
-                  defaultSizes={[100]}
-                  onChange={(values) =>
-                    panelSend({type: 'PANEL.RESIZE', values})
-                  }
-                >
-                  <Allotment.Pane>
-                    <section
-                      className="publication-section"
-                      data-testid="publication-section"
-                      onMouseMove={(event) =>
-                        mouseService.send({
-                          type: 'MOUSE.MOVE',
-                          position: event.clientY,
-                        })
-                      }
-                      onMouseLeave={() => {
-                        mouseService.send('DISABLE.CHANGE')
-                      }}
-                    >
-                      <ErrorBoundary
-                        fallback={<div>error</div>}
-                        onReset={() => window.location.reload()}
+          <CitationsProvider
+            documentId={docId}
+            onCitationsOpen={(citations: Array<MttLink>) => {
+              panelSend({
+                type: 'PANEL.OPEN',
+                activePanel: 'citations',
+              })
+            }}
+          >
+            <MouseProvider value={mouseService}>
+              <BlockHighLighter>
+                <MainWrapper noScroll>
+                  <Allotment
+                    defaultSizes={[100]}
+                    onChange={(values) =>
+                      panelSend({type: 'PANEL.RESIZE', values})
+                    }
+                  >
+                    <Allotment.Pane>
+                      <YStack
+                        height="100%"
+                        // @ts-ignore
+                        onMouseMove={(event) =>
+                          mouseService.send({
+                            type: 'MOUSE.MOVE',
+                            position: event.clientY,
+                          })
+                        }
+                        onMouseLeave={() => {
+                          mouseService.send('DISABLE.CHANGE')
+                        }}
                       >
-                        <FileProvider value={state.context.publication}>
-                          <ScrollArea
-                            ref={scrollWrapperRef}
-                            onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                          >
-                            <OutOfDateBanner
-                              docId={state.context.documentId}
-                              version={state.context.version}
-                            />
-                            {state.context.publication?.document?.content && (
-                              <Editor
-                                editor={editor}
-                                mode={EditorMode.Publication}
-                                value={
-                                  state.context.publication?.document.content
-                                }
-                                onChange={() => {
-                                  mouseService.send('DISABLE.CHANGE')
-                                  // noop
-                                }}
-                              />
-                            )}
-                          </ScrollArea>
-                        </FileProvider>
-                      </ErrorBoundary>
-                    </section>
-                  </Allotment.Pane>
-                  {resizablePanelState.context.show &&
-                    !!state.context.publication && (
-                      <Allotment.Pane preferredSize="35%">
-                        {/* <section className="discussion-section"> */}
-                        <ScrollArea
+                        <ScrollView
                           onScroll={() => mouseService.send('DISABLE.SCROLL')}
                         >
-                          {activePanel == 'conversations' ? (
-                            <Conversations />
-                          ) : activePanel == 'changes' ? (
-                            <ChangesList />
-                          ) : (
-                            <Citations
-                              docId={state.context.publication.document.id}
-                              version={state.context.version}
+                          <OutOfDateBanner
+                            docId={state.context.documentId}
+                            version={state.context.version}
+                          />
+                          {state.context.publication?.document?.content && (
+                            <Editor
+                              editor={editor}
+                              mode={EditorMode.Publication}
+                              value={
+                                state.context.publication?.document.content
+                              }
+                              onChange={() => {
+                                mouseService.send('DISABLE.CHANGE')
+                                // noop
+                              }}
                             />
                           )}
-                        </ScrollArea>
-                        {/* </section> */}
-                      </Allotment.Pane>
-                    )}
-                </Allotment>
+                        </ScrollView>
+                      </YStack>
+                    </Allotment.Pane>
+                    {resizablePanelState.context.show &&
+                      !!state.context.publication && (
+                        <Allotment.Pane preferredSize="35%">
+                          <YStack height="100%">
+                            <ScrollView>
+                              {activePanel == 'conversations' ? (
+                                <Conversations />
+                              ) : activePanel == 'changes' ? (
+                                <ChangesList />
+                              ) : (
+                                <Citations
+                                  docId={state.context.publication.document.id}
+                                  version={state.context.version}
+                                />
+                              )}
+                            </ScrollView>
+                          </YStack>
+                        </Allotment.Pane>
+                      )}
+                  </Allotment>
+                </MainWrapper>
                 <Footer>
                   <FooterButton
                     active={activePanel == 'changes'}
                     label={`${changes?.changes?.length} Versions`}
-                    icon={<Icon name="Pencil" />}
+                    icon={Pencil}
                     onPress={() => {
                       panelSend({type: 'PANEL.TOGGLE', activePanel: 'changes'})
                     }}
@@ -220,7 +230,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                   <FooterButton
                     active={activePanel == 'citations'}
                     label={`${citations?.links?.length} Citations`}
-                    icon={<Icon name="Link" />}
+                    icon={Link}
                     onPress={() => {
                       panelSend({
                         type: 'PANEL.TOGGLE',
@@ -235,7 +245,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                         resizablePanelState.context.show
                       }
                       label={`Conversations`}
-                      icon={<Icon name="MessageBubble" />}
+                      icon={Comment}
                       onPress={() => {
                         panelSend({
                           type: 'PANEL.TOGGLE',
@@ -245,11 +255,12 @@ export default function PublicationPage({mainActor}: PageProps) {
                     />
                   ) : null}
                 </Footer>
-              </div>
-            </BlockHighLighter>
-          </MouseProvider>
-        </CitationsProvider>
-      </ConversationsProvider>
+                {/* </div> */}
+              </BlockHighLighter>
+            </MouseProvider>
+          </CitationsProvider>
+        </ConversationsProvider>
+      </ErrorBoundary>
     )
   }
 

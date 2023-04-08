@@ -4,10 +4,10 @@ import {Avatar} from '@components/avatar'
 import {Button} from '@components/button'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
-import PageContainer from '@components/page-container'
 import {Text} from '@components/text'
 import {Account} from '@mintter/shared'
 import {PageProps} from './base'
+import {MainWrapper} from '@mintter/ui'
 
 function ContactItem({account}: {account: Account}) {
   const navigate = useNavigate()
@@ -50,11 +50,11 @@ export default function ConnectionsPage(props: PageProps) {
   const accounts = contacts.data?.accounts || []
   return (
     <>
-      <PageContainer>
+      <MainWrapper>
         {accounts.map((account) => {
           return <ContactItem key={account.id} account={account} />
         })}
-      </PageContainer>
+      </MainWrapper>
       <Footer />
     </>
   )
