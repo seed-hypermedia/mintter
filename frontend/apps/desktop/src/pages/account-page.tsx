@@ -1,7 +1,6 @@
 import {useAccountPublicationList} from '@app/hooks'
 import {useAccountWithDevices} from '@app/hooks/contacts'
 import {useNavRoute} from '@app/utils/navigation'
-import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Heading} from '@components/heading'
@@ -10,7 +9,7 @@ import {PublicationListItem} from '@components/publication-list-item'
 import {Text} from '@components/text'
 import {ConnectionStatus, PeerInfo} from '@mintter/shared'
 import {ComponentProps, ReactNode} from 'react'
-import {MainWrapper} from '@mintter/ui'
+import {MainWrapper, UIAvatar} from '@mintter/ui'
 import {PageProps} from './base'
 
 function PeerRow({peer}: {peer: PeerInfo}) {
@@ -72,7 +71,7 @@ export default function AccountPage(props: PageProps) {
     <>
       <MainWrapper>
         <Section css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
-          <Avatar
+          <UIAvatar
             accountId={accountId}
             size={3}
             alias={account.profile?.alias || ''}

@@ -6,7 +6,7 @@ import {TitlebarRow, TitlebarSection, TitlebarWrapper} from '@mintter/ui'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
-    return <TitlebarWrapper />
+    return <TitlebarWrapper platform="macos" data-tauri-drag-region />
   }
 
   return (

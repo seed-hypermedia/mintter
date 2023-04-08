@@ -9,7 +9,6 @@ import {useNavigate} from '@app/utils/navigation'
 //   useNostrProfile,
 //   useNostrReplies,
 // } from '@app/utils/nostr'
-import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
@@ -25,6 +24,7 @@ import {
   statement,
   text,
 } from '@mintter/shared'
+import {UIAvatar} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 // import {Event} from 'nostr-relaypool/event'
@@ -348,9 +348,9 @@ function CommentItem({
         }}
         onClick={navigateToAuthor}
       >
-        <Avatar
+        <UIAvatar
           accountId={changeData.data?.author}
-          size={2}
+          size="$2"
           alias={author?.data?.profile?.alias || 'A'}
         />
       </Box>

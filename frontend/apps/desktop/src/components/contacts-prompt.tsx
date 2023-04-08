@@ -37,7 +37,7 @@ export function ContactsPrompt({
   return (
     <Prompt.Root>
       <DialogPrimitive.Trigger asChild>
-        <Button>Add Connection</Button>
+        <Button size="$2">Add Connection</Button>
       </DialogPrimitive.Trigger>
       <Prompt.Portal>
         <Prompt.Content>

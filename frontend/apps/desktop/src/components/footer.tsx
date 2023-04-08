@@ -8,9 +8,8 @@ import {useDaemonReady, useOnline} from '@app/node-status-context'
 import {keyframes, styled} from '@app/stitches.config'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ObjectKeys} from '@app/utils/object-keys'
-import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
-import {Button, ButtonProps, FooterWrapper} from '@mintter/ui'
+import {Button, ButtonProps, FooterWrapper, UIAvatar} from '@mintter/ui'
 import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
@@ -378,9 +377,9 @@ function ContactItem({contact}: ContactItemProps) {
             },
           }}
         >
-          <Avatar
+          <UIAvatar
             accountId={state.context.account.id}
-            size={1}
+            size="$1"
             alias={state.context.account.profile?.alias || 'C'}
           />
           <Text
@@ -415,9 +414,9 @@ function ContactItem({contact}: ContactItemProps) {
         </Box>
       </HoverCard.Trigger>
       <HoverCardContentStyled align="start" side="top">
-        <Avatar
+        <UIAvatar
           accountId={state.context.account.id}
-          size={2}
+          size="$2"
           alias={state.context.account.profile?.alias || ''}
         />
         <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>

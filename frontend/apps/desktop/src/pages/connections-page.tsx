@@ -1,13 +1,12 @@
 import {useAccountIsConnected, useContactsList} from '@app/hooks/contacts'
 import {useNavigate} from '@app/utils/navigation'
-import {Avatar} from '@components/avatar'
 import {Button} from '@components/button'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
 import {Text} from '@components/text'
 import {Account} from '@mintter/shared'
 import {PageProps} from './base'
-import {MainWrapper} from '@mintter/ui'
+import {MainWrapper, UIAvatar} from '@mintter/ui'
 
 function ContactItem({account}: {account: Account}) {
   const navigate = useNavigate()
@@ -26,7 +25,7 @@ function ContactItem({account}: {account: Account}) {
         navigate({key: 'account', accountId: account.id})
       }}
     >
-      <Avatar
+      <UIAvatar
         accountId={account.id}
         size={2}
         alias={account.profile?.alias || ''}
