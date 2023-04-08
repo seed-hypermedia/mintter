@@ -1,7 +1,7 @@
 import {Profile} from '@mintter/shared'
 import {TextField} from '@components/text-field'
 import {useMutation} from '@tanstack/react-query'
-import {FormEvent} from 'react'
+import {FormEvent, useRef} from 'react'
 import toast from 'react-hot-toast'
 import {
   IconContainer,
@@ -14,11 +14,7 @@ import {
   OnboardingStepTitle,
 } from './common'
 import {accountsClient} from '@app/api-clients'
-
-type ProfileInformationDataType = {
-  alias: string
-  bio: string
-}
+import {Form} from '@mintter/ui'
 
 export function ProfileInformation({
   next,
@@ -34,50 +30,52 @@ export function ProfileInformation({
       toast.error('Error updating profile')
     },
   })
-
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    let formData = new FormData(e.currentTarget)
-    // @ts-ignore
-    let newProfile: ProfileInformationDataType = Object.fromEntries(
-      formData.entries(),
-    )
-    e.preventDefault()
-    mutate(newProfile as Profile)
+  const submitValue = useRef({alias: '', bio: ''} as Profile)
+  function onSubmit() {
+    mutate(submitValue.current)
   }
 
   return (
-    <OnboardingStep onSubmit={onSubmit}>
-      <OnboardingStepTitle icon={<ProfileInformationIcon />}>
-        Profile Information
-      </OnboardingStepTitle>
-      <OnboardingStepDescription>
-        Link your personal data with your new Mintter account. You can fill this
-        information later if you prefer.
-      </OnboardingStepDescription>
-      <OnboardingStepBody
-        css={{display: 'flex', flexDirection: 'column', gap: '$6'}}
-      >
-        <TextField
-          type="text"
-          label="Alias"
-          id="alias"
-          name="alias"
-          data-testid="alias-input"
-          placeholder="Readable alias or username. Doesn't have to be unique."
-        />
-        <TextField
-          textarea
-          id="bio"
-          name="bio"
-          label="Bio"
-          data-testid="bio-input"
-          rows={4}
-          placeholder="A little bit about yourself..."
-        />
-      </OnboardingStepBody>
-      <OnboardingStepActions>
-        <OnboardingStepButton>Next</OnboardingStepButton>
-      </OnboardingStepActions>
+    <OnboardingStep>
+      <Form onSubmit={onSubmit}>
+        <OnboardingStepTitle icon={<ProfileInformationIcon />}>
+          Profile Information
+        </OnboardingStepTitle>
+        <OnboardingStepDescription>
+          Link your personal data with your new Mintter account. You can fill
+          this information later if you prefer.
+        </OnboardingStepDescription>
+        <OnboardingStepBody
+          css={{display: 'flex', flexDirection: 'column', gap: '$6'}}
+        >
+          <TextField
+            type="text"
+            label="Alias"
+            id="alias"
+            name="alias"
+            onChange={(e) => {
+              submitValue.current.alias = e.target.value
+            }}
+            placeholder="Readable alias or username. Doesn't have to be unique."
+          />
+          <TextField
+            textarea
+            id="bio"
+            name="bio"
+            label="Bio"
+            onChange={(e) => {
+              submitValue.current.bio = e.target.value
+            }}
+            rows={4}
+            placeholder="A little bit about yourself..."
+          />
+        </OnboardingStepBody>
+        <OnboardingStepActions>
+          <Form.Trigger asChild>
+            <OnboardingStepButton>Next</OnboardingStepButton>
+          </Form.Trigger>
+        </OnboardingStepActions>
+      </Form>
     </OnboardingStep>
   )
 }

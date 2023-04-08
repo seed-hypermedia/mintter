@@ -32,9 +32,18 @@ let Provider = daemonContext.Provider
 
 export function DaemonStatusProvider({children}: {children: ReactNode}) {
   let [netStatus, setNetStatus] = useState<'online' | 'offline'>('online')
-  let infoQuery = useQuery<Info>({
+  let infoQuery = useQuery<Info | null>({
     queryKey: [queryKeys.GET_ACCOUNT_INFO],
-    queryFn: () => daemonClient.getInfo({}),
+    queryFn: async () => {
+      try {
+        return await daemonClient.getInfo({})
+      } catch (error) {
+        if (error) {
+          console.log('error check make sure not set up condition..', error)
+        }
+      }
+      return null
+    },
     retry: false,
     useErrorBoundary: false,
   })
@@ -67,7 +76,7 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
     }
   }, [])
 
-  if (infoQuery.status == 'error') {
+  if (infoQuery.data === null) {
     return <OnboardingPage />
   }
 

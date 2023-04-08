@@ -14,7 +14,7 @@ export function CrashReporting(props: OnboardingStepPropsType) {
   }
 
   return (
-    <OnboardingStep {...props}>
+    <OnboardingStep>
       <OnboardingStepTitle icon={<CrashReportingIcon />}>
         Crash Reporting
       </OnboardingStepTitle>

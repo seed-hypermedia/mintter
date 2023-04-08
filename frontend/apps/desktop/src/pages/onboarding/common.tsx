@@ -7,7 +7,7 @@ import type {TextProps} from '@components/text'
 import {Text, textStyles} from '@components/text'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
-import {ComponentProps, FormEvent, PropsWithChildren} from 'react'
+import {ComponentProps, FormEvent, PropsWithChildren, ReactNode} from 'react'
 import {accountsClient, daemonClient} from '@app/api-clients'
 export interface OnboardingStepPropsType {
   prev?: () => void
@@ -62,7 +62,7 @@ export const slideUpAnimationVariants: Variants = {
   },
 }
 
-const OnboardingStepStyled = styled(motion.form, {
+const OnboardingStepStyled = styled(motion.div, {
   boxSizing: 'border-box',
   alignItems: 'center',
   display: 'flex',
@@ -72,11 +72,7 @@ const OnboardingStepStyled = styled(motion.form, {
   justifyContent: 'center',
 })
 
-export function OnboardingStep(
-  props: PropsWithChildren<{
-    onSubmit?: (e: FormEvent<HTMLFormElement>) => void
-  }>,
-) {
+export function OnboardingStep({children}: {children: ReactNode}) {
   return (
     <OnboardingStepStyled
       variants={containerAnimationVariants}
@@ -84,8 +80,9 @@ export function OnboardingStep(
       data-testid="onboarding-wrapper"
       animate="visible"
       exit="hidden"
-      {...props}
-    />
+    >
+      {children}
+    </OnboardingStepStyled>
   )
 }
 
@@ -175,7 +172,16 @@ export function OnboardingStepActions(props: PropsWithChildren<{css?: CSS}>) {
 export function OnboardingStepButton(
   props: PropsWithChildren<ComponentProps<typeof Button>>,
 ) {
-  return <Button size="$3" {...props} />
+  return (
+    <Button
+      size="$3"
+      {...props}
+      onPress={(e) => {
+        e.preventDefault()
+        props.onPress?.(e)
+      }}
+    />
+  )
 }
 
 export function IconContainer({children}: PropsWithChildren<unknown>) {
