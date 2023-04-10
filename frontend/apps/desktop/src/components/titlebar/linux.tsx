@@ -7,6 +7,8 @@ import {
   TitlebarWrapper,
   TitlebarRow,
   TitlebarSection,
+  Menu as MenuIcon,
+  XStack,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
@@ -44,8 +46,8 @@ export default function TitleBarLinux(props: TitleBarProps) {
         <TitlebarRow>
           <TitlebarSection>
             <MintterIcon />
-            <span></span>
-
+          </TitlebarSection>
+          <TitlebarSection flex={1} alignItems="flex-end">
             <div id="titlebar-window-controls">
               <CloseButton />
             </div>
@@ -68,16 +70,16 @@ export default function TitleBarLinux(props: TitleBarProps) {
           <NavigationButtons />
           <DiscardDraftButton />
         </TitlebarSection>
-        <TitlebarSection>
+        <TitlebarSection flex={1}>
           <Title />
         </TitlebarSection>
         <TitlebarSection>
           <ActionButtons {...props} />
-          <div id="titlebar-window-controls">
+          <XStack>
             <MinimizeButton />
             <MaximizeOrRestoreButton />
             <CloseButton />
-          </div>
+          </XStack>
         </TitlebarSection>
       </TitlebarRow>
     </TitlebarWrapper>
@@ -92,8 +94,8 @@ function Menu() {
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
-        <Button>
-          <Icon name="HamburgerMenu" size="2" color="muted" />
+        <Button size="$2">
+          <MenuIcon size={16} />
         </Button>
       </Dropdown.Trigger>
       <Dropdown.Portal>

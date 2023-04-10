@@ -1,5 +1,4 @@
 import {isParagraph} from '@mintter/shared'
-import {Icon} from '@components/icon'
 import {listen} from '@tauri-apps/api/event'
 import {createContext, useContext, useEffect, useRef} from 'react'
 import {Node, Range} from 'slate'
@@ -46,7 +45,7 @@ export function Find() {
 
   return (
     <label className="titlebar-search">
-      <Search size={16} />
+      <Search size={14} />
       <input
         ref={searchInput}
         type="search"

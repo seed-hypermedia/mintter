@@ -16,7 +16,17 @@ import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
-import {Button, Menu, XGroup, TitlebarSection, Add, Copy} from '@mintter/ui'
+import {
+  Button,
+  Menu,
+  XGroup,
+  TitlebarSection,
+  Add,
+  Copy,
+  Globe,
+  Back,
+  Forward,
+} from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useActor, useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
@@ -46,7 +56,7 @@ export function ActionButtons(props: TitleBarProps) {
 
       {onCopy && (
         <Tooltip content="Copy document reference">
-          <Button size="$2" onPress={onCopy} icon={Copy} />
+          <Button chromeless size="$2" onPress={onCopy} icon={Copy} />
 
           {/* </Button> */}
         </Tooltip>
@@ -68,6 +78,7 @@ export function ActionButtons(props: TitleBarProps) {
           ) : (
             <Button
               size="$2"
+              chromeless
               disabled={!isDaemonReady}
               iconAfter={Add}
               onPress={(e) => {
@@ -90,13 +101,17 @@ export function NavigationButtons() {
   return (
     <XGroup>
       <XGroup.Item>
-        <Button size="$2" onPress={() => dispatch({type: 'pop'})}>
-          <Icon name="ArrowChevronLeft" color="muted" />
+        <Button size="$2" onPress={() => dispatch({type: 'pop'})} chromeless>
+          <Back size={16} />
         </Button>
       </XGroup.Item>
       <XGroup.Item>
-        <Button size="$2" onPress={() => dispatch({type: 'forward'})}>
-          <Icon name="ArrowChevronRight" color="muted" />
+        <Button
+          size="$2"
+          onPress={() => dispatch({type: 'forward'})}
+          chromeless
+        >
+          <Forward size={16} />
         </Button>
       </XGroup.Item>
     </XGroup>
@@ -116,9 +131,11 @@ export function SitesNavDropdownItems() {
         <Dropdown.Item
           key={site.hostname}
           onSelect={() => navigate({key: 'site', hostname: site.hostname})}
+          asChild
         >
-          <Icon name="Globe" />
-          <span>{hostnameStripProtocol(site.hostname)}</span>
+          <Button chromeless size="$2" icon={Globe}>
+            {hostnameStripProtocol(site.hostname)}
+          </Button>
         </Dropdown.Item>
       ))}
     </>
@@ -132,7 +149,7 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   return (
     <Dropdown.Root>
       <Dropdown.Trigger asChild>
-        <Button size="$2">
+        <Button size="$2" chromeless>
           <Menu size={16} />
         </Button>
       </Dropdown.Trigger>
@@ -204,6 +221,7 @@ function WriteActions({
     <>
       {publicationActor && (
         <Button
+          chromeless
           size="$2"
           theme={hasExistingDraft ? 'yellow' : undefined}
           onPress={() => {

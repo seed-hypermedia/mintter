@@ -61,7 +61,7 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
 
 export function Title({size}: {size?: SizeTokens}) {
   return (
-    <XStack gap="$2" alignItems="baseline" margin="auto">
+    <XStack gap="$2" alignItems="baseline" margin="auto" marginVertical={0}>
       <TitleContent size={size} />
     </XStack>
   )

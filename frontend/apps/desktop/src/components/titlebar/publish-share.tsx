@@ -255,6 +255,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
         >
           <Button
             size="$2"
+            chromeless
             disabled={!isDaemonReady || isSaving.current}
             onPress={(e) => {
               e.preventDefault()
