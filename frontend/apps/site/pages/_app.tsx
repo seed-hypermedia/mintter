@@ -20,12 +20,14 @@ import 'raf/polyfill'
 import {Hydrate, QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {NextThemeProvider, useRootTheme} from '@tamagui/next-theme'
-import {Provider} from '@mintter/ui'
+
 import Head from 'next/head'
 import React, {startTransition} from 'react'
 import type {AppProps} from 'next/app'
 import {useMemo, useState} from 'react'
 import {trpc} from '../trpc'
+import {TamaguiProvider, TamaguiProviderProps, Theme} from '@mintter/ui'
+import tamaguiConfig from 'tamagui.config'
 
 export default trpc.withTRPC(App)
 
@@ -94,9 +96,19 @@ function ThemeProvider({children}: {children: React.ReactNode}) {
         })
       }}
     >
-      <Provider disableRootThemeClass defaultTheme={theme}>
-        {children}
-      </Provider>
+      <StyleProvider defaultTheme={theme}>{children}</StyleProvider>
     </NextThemeProvider>
+  )
+}
+
+function StyleProvider({
+  children,
+  defaultTheme = 'light',
+  ...rest
+}: Omit<TamaguiProviderProps, 'config'>) {
+  return (
+    <TamaguiProvider config={tamaguiConfig} {...rest}>
+      <Theme name="blue">{children}</Theme>
+    </TamaguiProvider>
   )
 }

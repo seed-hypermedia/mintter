@@ -48,7 +48,7 @@ export function Root() {
   globalStyles()
 
   return (
-    <StyleProvider disableRootThemeClass>
+    <StyleProvider>
       <QueryClientProvider client={appQueryClient}>
         <Suspense>
           <Hydrate state={dehydrateState}>
@@ -136,7 +136,12 @@ export function StyleProvider({
   ...rest
 }: Omit<TamaguiProviderProps, 'config'>) {
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme="light" {...rest}>
+    <TamaguiProvider
+      config={tamaguiConfig}
+      defaultTheme="light"
+      disableRootThemeClass
+      {...rest}
+    >
       <Theme name="blue">{children}</Theme>
     </TamaguiProvider>
   )
