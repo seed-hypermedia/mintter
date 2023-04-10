@@ -6,41 +6,49 @@ import {
   useNavigate,
 } from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {TitleText, XStack} from '@mintter/ui'
+import {
+  ButtonText,
+  SizeTokens,
+  TitleText,
+  XStack,
+  File,
+  User,
+  Pencil,
+} from '@mintter/ui'
 
-export function TitleContent() {
+export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
   const route = useNavRoute()
   if (route.key === 'home') {
     return (
       <>
-        <Icon name="File" />
-        <TitleText>All Publications</TitleText>
+        <File size={12} />
+        <TitleText size={size}>All Publications</TitleText>
       </>
     )
   }
   if (route.key === 'connections') {
     return (
       <>
-        <Icon name="Person" />
-        <TitleText>Connections</TitleText>
+        <User size={12} />
+        <TitleText size={size}>Connections</TitleText>
       </>
     )
   }
   if (route.key === 'drafts') {
     return (
       <>
-        <Icon name="PencilAdd" data-tauri-drag-region />
-        <TitleText>Drafts</TitleText>
+        <Pencil size={12} />
+        <TitleText size={size}>Drafts</TitleText>
       </>
     )
   }
   if (route.key === 'account') {
-    return <TitleText>Account Profile</TitleText>
+    return <TitleText size={size}>Account Profile</TitleText>
   }
   if (route.key === 'site') {
-    return <TitleText>{hostnameStripProtocol(route.hostname)}</TitleText>
+    return (
+      <TitleText size={size}>{hostnameStripProtocol(route.hostname)}</TitleText>
+    )
   }
   if (route.key === 'publication') {
     return <PublicationTitle route={route} />
@@ -51,34 +59,31 @@ export function TitleContent() {
   return null
 }
 
-export function Title() {
+export function Title({size}: {size?: SizeTokens}) {
   return (
     <XStack gap="$2" alignItems="baseline" margin="auto">
-      <TitleContent />
+      <TitleContent size={size} />
     </XStack>
   )
 }
 
-function PublicationTitle({route}: {route: PublicationRoute}) {
+function PublicationTitle({
+  route,
+  size = '$4',
+}: {
+  route: PublicationRoute
+  size?: SizeTokens
+}) {
   let {data: pub} = usePublication(route.documentId, route.versionId)
   let {data: author} = useAuthor(pub?.document?.author)
   const navigate = useNavigate()
 
   return (
     <>
-      <TitleText>{pub?.document?.title || '...'}</TitleText>
-      <Button
-        css={{
-          color: '$base-active',
-          fontSize: '$1',
-          '&:hover': {
-            color: '$base-active',
-            textDecoration: 'underline',
-          },
-        }}
-        size="1"
-        variant="ghost"
-        onClick={(e) => {
+      <TitleText size={size}>{pub?.document?.title || '...'}</TitleText>
+      <ButtonText
+        size="$1"
+        onPress={(e) => {
           e.preventDefault()
           const accountId = author?.id
           if (!accountId) return
@@ -86,13 +91,19 @@ function PublicationTitle({route}: {route: PublicationRoute}) {
         }}
       >
         {author?.profile?.alias || ''}
-      </Button>
+      </ButtonText>
     </>
   )
 }
 
-function DraftTitle({route}: {route: DraftRoute}) {
+function DraftTitle({
+  route,
+  size = '$4',
+}: {
+  route: DraftRoute
+  size?: SizeTokens
+}) {
   const {data: draft} = useDraft(route.documentId)
   const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
-  return <TitleText>{displayTitle}</TitleText>
+  return <TitleText size={size}>{displayTitle}</TitleText>
 }

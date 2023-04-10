@@ -9,7 +9,7 @@ export function EmptyList({
   action: () => void
 }) {
   return (
-    <YStack gap="$5" paddingVertical="$12">
+    <YStack gap="$5" paddingVertical="$8">
       <Text fontFamily="$body" fontSize={'1.5em'}>
         {description}
       </Text>

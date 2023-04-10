@@ -15,12 +15,22 @@ import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret} from '@xstate/react'
 import Highlighter from 'react-highlight-words'
 import {toast} from 'react-hot-toast'
-import '../styles/file-list.scss'
-import {Button} from './button'
 import {DeleteDialog} from './delete-dialog'
 import {Icon} from './icon'
-import {Text} from './text'
+
 import {MouseEvent} from 'react'
+import {
+  XStack,
+  Text,
+  Button,
+  ButtonText,
+  MoreHorizontal,
+  ListItem,
+  Copy,
+  ExternalLink,
+  Delete,
+  Separator,
+} from '@mintter/ui'
 
 export function PublicationListItem({
   publication,
@@ -86,55 +96,40 @@ export function PublicationListItem({
   }
 
   return (
-    <li
-      className="list-item"
+    <Button
+      chromeless
+      theme="gray"
+      tag="li"
       onMouseEnter={() => prefetchPublication(client, publication)}
     >
-      <p
-        onClick={(e) => goToItem(e as MouseEvent)}
-        className="item-title"
-        data-testid="list-item-title"
-      >
+      {/* @ts-ignore */}
+      <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
         <Highlighter
           highlightClassName="search-highlight"
           searchWords={[search]}
           autoEscape={true}
           textToHighlight={title}
         />
-        {hasDraft && (
-          <Button
-            variant="ghost"
-            color="warning"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              navigate({key: 'draft', documentId: hasDraft.id})
-            }}
-            size="1"
-            css={{
-              border: '1px solid black',
-              borderColor: '$warning-border-hover',
-              color: '$warning-border-hover',
-              paddingHorizontal: '$3',
-              '&:hover': {
-                color: 'white',
-                background: '$warning-border-hover',
-              },
-            }}
-          >
-            Resume Editing
-          </Button>
-        )}
-      </p>
+      </ButtonText>
+
+      {hasDraft && (
+        <Button
+          theme="yellow"
+          onPress={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            navigate({key: 'draft', documentId: hasDraft.id})
+          }}
+          size="$1"
+        >
+          Resume Editing
+        </Button>
+      )}
+
       <Button
-        variant="ghost"
-        css={{
-          '&:hover': {
-            color: '$base-text-low',
-            textDecoration: 'underline',
-          },
-        }}
-        onClick={(e) => {
+        size="$1"
+        theme="$gray5"
+        onPress={(e) => {
           const accountId = publication.document?.author
           if (!accountId) return
           e.preventDefault()
@@ -142,54 +137,46 @@ export function PublicationListItem({
           navigate({key: 'account', accountId})
         }}
         data-testid="list-item-author"
-        className={`item-author ${
-          !author?.profile?.alias ? 'loading' : undefined
-        }`}
       >
         {author?.profile?.alias}
       </Button>
-      <span
-        onClick={goToItem}
-        className="item-date"
+      <Text
+        fontFamily="$body"
+        fontSize="$2"
         data-testid="list-item-date"
+        minWidth="10ch"
+        textAlign="right"
       >
         {publication.document?.updateTime
           ? formattedDate(publication.document?.updateTime)
           : '...'}
-      </span>
-      <span className="item-controls">
+      </Text>
+      <XStack>
         <Dropdown.Root>
           <Dropdown.Trigger asChild>
-            <ElementDropdown
-              data-trigger
-              className="dropdown"
-              css={{
-                backgroundColor: 'transparent',
-              }}
-            >
-              <Icon
-                name="MoreHorizontal"
-                color="muted"
-                // className={match ? hoverIconStyle() : undefined}
-              />
-            </ElementDropdown>
+            <Button size="$1" circular data-trigger>
+              <MoreHorizontal size={12} />
+            </Button>
           </Dropdown.Trigger>
           <Dropdown.Portal>
             <Dropdown.Content
-              align="start"
+              align="end"
               data-testid="library-item-dropdown-root"
               hidden={deleteState.matches('open')}
             >
-              <Dropdown.Item data-testid="copy-item" onSelect={onCopy}>
-                <Icon name="Copy" />
-                <Text size="2">Copy Document ID</Text>
-              </Dropdown.Item>
-              <Dropdown.Item
-                data-testid="open-item"
-                onSelect={(e) => goToItem(e as any)}
-              >
-                <Icon name="ArrowTopRight" />
-                <Text size="2">Open in main panel</Text>
+              <Dropdown.Item data-testid="copy-item" onSelect={onCopy} asChild>
+                <ListItem
+                  icon={Copy}
+                  size="$2"
+                  hoverTheme
+                  pressTheme
+                  paddingVertical="$2"
+                  paddingHorizontal="$4"
+                  textAlign="left"
+                  space="$0"
+                >
+                  Copy Document ID
+                </ListItem>
               </Dropdown.Item>
               <Dropdown.Item
                 data-testid="new-window-item"
@@ -200,10 +187,22 @@ export function PublicationListItem({
                     versionId: publication.version,
                   })
                 }
+                asChild
               >
-                <Icon name="OpenInNewWindow" />
-                <Text size="2">Open in new Window</Text>
+                <ListItem
+                  icon={ExternalLink}
+                  size="$2"
+                  hoverTheme
+                  pressTheme
+                  paddingVertical="$2"
+                  paddingHorizontal="$4"
+                  textAlign="left"
+                  space="$0"
+                >
+                  Open in new Window
+                </ListItem>
               </Dropdown.Item>
+              <Separator />
               <DeleteDialog
                 deleteRef={deleteService}
                 title="Delete document"
@@ -212,15 +211,26 @@ export function PublicationListItem({
                 <Dropdown.Item
                   data-testid="delete-item"
                   onSelect={(e) => e.preventDefault()}
+                  asChild
                 >
-                  <Icon name="Close" />
-                  <Text size="2">Delete Document</Text>
+                  <ListItem
+                    icon={Delete}
+                    size="$2"
+                    hoverTheme
+                    pressTheme
+                    paddingVertical="$2"
+                    paddingHorizontal="$4"
+                    textAlign="left"
+                    space="$0"
+                  >
+                    Delete Document
+                  </ListItem>
                 </Dropdown.Item>
               </DeleteDialog>
             </Dropdown.Content>
           </Dropdown.Portal>
         </Dropdown.Root>
-      </span>
-    </li>
+      </XStack>
+    </Button>
   )
 }

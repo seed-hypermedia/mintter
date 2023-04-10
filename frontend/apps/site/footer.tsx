@@ -1,16 +1,13 @@
+import {useRouter} from 'next/router'
 import {Container, Footer as TFooter, XStack, Button} from '@mintter/ui'
 import {MenuItem} from './menu-item'
 
 export default function Footer() {
+  let router = useRouter()
   return (
     <TFooter my="$8">
-      <Container
-        tag="nav"
-        accessibilityRole="navigation"
-        aria-label="social"
-        my="$7"
-      >
-        <XStack space="$3" ai="center">
+      <Container tag="nav" aria-label="social" marginVertical="$7">
+        <XStack space="$3" alignItems="center">
           <MenuItem
             href="https://github.com/mintterteam/mintter"
             target="_blank"

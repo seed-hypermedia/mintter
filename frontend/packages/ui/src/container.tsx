@@ -65,3 +65,4 @@ export const ContainerXL = styled(YStack, {
 })
 
 export const Container = ContainerLarge
+export const AppContainer = ContainerLarge

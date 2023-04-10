@@ -28,7 +28,6 @@ import {ObjectKeys} from '@app/utils/object-keys'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Icon} from '@components/icon'
 import {Prompt, StyledOverlay} from '@components/prompt'
-import {Separator} from '@components/separator'
 import {AccessURLRow} from '@components/url'
 import {
   Member,
@@ -37,16 +36,23 @@ import {
   SiteConfig,
   SiteInfo,
 } from '@mintter/shared'
-import {Button, Spinner} from '@mintter/ui'
+import {
+  Button,
+  Separator,
+  SizableText,
+  Spinner,
+  Tabs,
+  TabsContentProps,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {styled} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
-import '../styles/settings.scss'
 
 export default function Settings({
   updateProfile = accountsClient.updateProfile,
@@ -55,88 +61,168 @@ export default function Settings({
 }) {
   const client = useQueryClient()
   const auth = useInterpret(() => createAuthService(client))
+  // return (
+  //   <TabsPrimitive.Root
+  //     className="tabs"
+  //     defaultValue="profile"
+  //     orientation="vertical"
+  //   >
+  //     <XStack>
+  //       <TabsPrimitive.List
+  //         className="tabs-list"
+  //         aria-label="Manage your node"
+  //         asChild
+  //       >
+  //         <YStack>
+  //           <TabsPrimitive.Trigger
+  //             className="tab-trigger"
+  //             value="profile"
+  //             data-testid="tab-profile"
+  //           >
+  //             Profile
+  //           </TabsPrimitive.Trigger>
+  //           <TabsPrimitive.Trigger
+  //             className="tab-trigger"
+  //             value="account"
+  //             data-testid="tab-account"
+  //           >
+  //             Account Info
+  //           </TabsPrimitive.Trigger>
+  //           <TabsPrimitive.Trigger
+  //             className="tab-trigger"
+  //             value="settings"
+  //             data-testid="tab-settings"
+  //           >
+  //             Settings
+  //           </TabsPrimitive.Trigger>
+  //           <TabsPrimitive.Trigger
+  //             className="tab-trigger"
+  //             value="sites"
+  //             data-testid="tab-sites"
+  //           >
+  //             Web Sites
+  //           </TabsPrimitive.Trigger>
+  //           {/* {EXPERIMENTS.nostr && (
+  //           <TabsPrimitive.Trigger
+  //             className="tab-trigger"
+  //             value="nostr"
+  //             data-testid="tab-nostr"
+  //           >
+  //             Nostr
+  //           </TabsPrimitive.Trigger>
+  //         )} */}
+  //         </YStack>
+  //       </TabsPrimitive.List>
+  //       <XStack flex={1} padding="$4">
+  //         <TabsPrimitive.Content
+  //           className="settings-tab-content tab-content"
+  //           value="profile"
+  //         >
+  //           <ProfileForm service={auth} updateProfile={updateProfile} />
+  //         </TabsPrimitive.Content>
+  //         <TabsPrimitive.Content
+  //           className="settings-tab-content tab-content"
+  //           value="account"
+  //           data-tauri-drag-region
+  //         >
+  //           <AccountInfo service={auth} />
+  //         </TabsPrimitive.Content>
+  //         <TabsPrimitive.Content
+  //           className="settings-tab-content tab-content"
+  //           value="settings"
+  //           data-tauri-drag-region
+  //         >
+  //           <AppSettings />
+  //         </TabsPrimitive.Content>
+  //         <TabsPrimitive.Content
+  //           className="settings-tab-content tab-content"
+  //           value="sites"
+  //           data-tauri-drag-region
+  //         >
+  //           <SitesSettings auth={auth} />
+  //         </TabsPrimitive.Content>
+  //         {/* <TabsPrimitive.Content
+  //         className="settings-tab-content tab-content"
+  //         value="nostr"
+  //         data-tauri-drag-region
+  //       >
+  //         <NostrSettings />
+  //       </TabsPrimitive.Content> */}
+  //       </XStack>
+  //     </XStack>
+  //   </TabsPrimitive.Root>
+  // )
   return (
-    <div className="settings-wrapper">
-      <TabsPrimitive.Root
-        className="tabs"
-        defaultValue="profile"
-        orientation="vertical"
+    <Tabs
+      theme="gray"
+      height="100%"
+      defaultValue="profile"
+      flexDirection="row"
+      orientation="vertical"
+      borderWidth="$0.25"
+      overflow="hidden"
+      borderColor="$borderColor"
+    >
+      <Tabs.List
+        disablePassBorderRadius="end"
+        aria-label="Manage your account"
+        separator={<Separator />}
       >
-        <TabsPrimitive.List className="tabs-list" aria-label="Manage your node">
-          <TabsPrimitive.Trigger
-            className="tab-trigger"
-            value="profile"
-            data-testid="tab-profile"
-          >
-            Profile
-          </TabsPrimitive.Trigger>
-          <TabsPrimitive.Trigger
-            className="tab-trigger"
-            value="account"
-            data-testid="tab-account"
-          >
-            Account Info
-          </TabsPrimitive.Trigger>
-          <TabsPrimitive.Trigger
-            className="tab-trigger"
-            value="settings"
-            data-testid="tab-settings"
-          >
-            Settings
-          </TabsPrimitive.Trigger>
-          <TabsPrimitive.Trigger
-            className="tab-trigger"
-            value="sites"
-            data-testid="tab-sites"
-          >
-            Web Sites
-          </TabsPrimitive.Trigger>
-          {/* {EXPERIMENTS.nostr && (
-            <TabsPrimitive.Trigger
-              className="tab-trigger"
+        <Tabs.Tab value="profile" data-testid="tab-profile">
+          <SizableText>Profile</SizableText>
+        </Tabs.Tab>
+        <Tabs.Tab value="account" data-testid="tab-account">
+          <SizableText>Account Info</SizableText>
+        </Tabs.Tab>
+        <Tabs.Tab value="settings" data-testid="tab-settings">
+          <SizableText>Settings</SizableText>
+        </Tabs.Tab>
+        <Tabs.Tab value="sites" data-testid="tab-sites">
+          <SizableText>Web Sites</SizableText>
+        </Tabs.Tab>
+        {/* {EXPERIMENTS.nostr && (
+            <Tabs.Tab
               value="nostr"
               data-testid="tab-nostr"
             >
-              Nostr
-            </TabsPrimitive.Trigger>
+              
+              <SizableText>Nostr</SizableText>
+            </Tabs.Tab>
           )} */}
-        </TabsPrimitive.List>
-        <TabsPrimitive.Content
-          className="settings-tab-content tab-content"
-          value="profile"
-        >
-          <ProfileForm service={auth} updateProfile={updateProfile} />
-        </TabsPrimitive.Content>
-        <TabsPrimitive.Content
-          className="settings-tab-content tab-content"
-          value="account"
-          data-tauri-drag-region
-        >
-          <AccountInfo service={auth} />
-        </TabsPrimitive.Content>
-        <TabsPrimitive.Content
-          className="settings-tab-content tab-content"
-          value="settings"
-          data-tauri-drag-region
-        >
-          <AppSettings />
-        </TabsPrimitive.Content>
-        <TabsPrimitive.Content
-          className="settings-tab-content tab-content"
-          value="sites"
-          data-tauri-drag-region
-        >
-          <SitesSettings auth={auth} />
-        </TabsPrimitive.Content>
-        {/* <TabsPrimitive.Content
+      </Tabs.List>
+      <Separator vertical />
+      <TabsContent className="settings-tab-content tab-content" value="profile">
+        <ProfileForm service={auth} updateProfile={updateProfile} />
+      </TabsContent>
+      <TabsContent
+        className="settings-tab-content tab-content"
+        value="account"
+        data-tauri-drag-region
+      >
+        <AccountInfo service={auth} />
+      </TabsContent>
+      <TabsContent
+        className="settings-tab-content tab-content"
+        value="settings"
+        data-tauri-drag-region
+      >
+        <AppSettings />
+      </TabsContent>
+      <TabsContent
+        className="settings-tab-content tab-content"
+        value="sites"
+        data-tauri-drag-region
+      >
+        <SitesSettings auth={auth} />
+      </TabsContent>
+      {/* <TabsContent
           className="settings-tab-content tab-content"
           value="nostr"
           data-tauri-drag-region
         >
           <NostrSettings />
-        </TabsPrimitive.Content> */}
-      </TabsPrimitive.Root>
-    </div>
+        </TabsContent> */}
+    </Tabs>
   )
 }
 
@@ -222,7 +308,7 @@ export function AccountInfo({service}: SettingsTabProps) {
 
   if (account && state.matches('loggedIn')) {
     return (
-      <div className="settings-tab-content">
+      <>
         <TextField
           readOnly
           type="text"
@@ -244,37 +330,31 @@ export function AccountInfo({service}: SettingsTabProps) {
           data-testid="account-addresses"
           css={{fontFamily: 'monospace', userSelect: 'none'}}
         />
-        <Box
-          css={{
-            display: 'flex',
-            gap: '$5',
-            alignItems: 'center',
-          }}
-        >
+        <XStack>
           <Button
-            size="$1"
+            theme="green"
             onPress={() => service.send('ACCOUNT.COPY.ADDRESS')}
           >
             Copy Address
           </Button>
           {onSuccess && (
-            <Text size="3" color="success">
+            <SizableText size="$2" color="green">
               copied!
-            </Text>
+            </SizableText>
           )}
-        </Box>
-        <Separator data-orientation="horizontal" />
+        </XStack>
+        <Separator />
         <Text size="3">Devices List</Text>
-        <ol data-testid="account-device-list" className="account-device-list">
+        <YStack data-testid="account-device-list">
           {account.devices && ObjectKeys(account.devices).length
             ? Object.keys(account.devices).map((id) => (
-                <li key={id}>
-                  <p>...{id.slice(-40)}</p>
-                </li>
+                <XStack tag="li" key={id}>
+                  <SizableText>...{id.slice(-40)}</SizableText>
+                </XStack>
               ))
             : null}
-        </ol>
-      </div>
+        </YStack>
+      </>
     )
   }
 
@@ -288,11 +368,9 @@ function AppSettings() {
   }
 
   return (
-    <div className="settings-tab-content">
-      <Button size="$1" onPress={onReloadSync}>
-        Reload Database
-      </Button>
-    </div>
+    <>
+      <Button onPress={onReloadSync}>Reload Database</Button>
+    </>
   )
 }
 
@@ -724,6 +802,22 @@ function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
         />
       ))}
     </>
+  )
+}
+
+const TabsContent = (props: TabsContentProps) => {
+  return (
+    <Tabs.Content
+      backgroundColor="$background"
+      key="tab3"
+      gap="$3"
+      flex={1}
+      {...props}
+    >
+      <YStack gap="$3" padding="$4">
+        {props.children}
+      </YStack>
+    </Tabs.Content>
   )
 }
 

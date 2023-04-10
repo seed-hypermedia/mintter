@@ -2,7 +2,7 @@ import {styled, XStack} from 'tamagui'
 
 export const FooterWrapper = styled(XStack, {
   theme: 'gray',
-  paddingHorizontal: '$4',
+  marginHorizontal: -1,
   paddingVertical: 0,
   width: '100%',
   // minHeight: 40,

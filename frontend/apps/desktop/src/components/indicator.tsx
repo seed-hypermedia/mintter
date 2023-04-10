@@ -1,14 +1,9 @@
-import {Box} from './box'
+import {Circle, XStack} from '@mintter/ui'
 
 export function OnlineIndicator({online}: {online: boolean}) {
   return (
-    <Box
-      css={{
-        width: 7,
-        height: 7,
-        borderRadius: '50%',
-        backgroundColor: online ? 'var(--success-active)' : 'transparent',
-      }}
-    />
+    <XStack alignItems="center" gap="$3">
+      <Circle size={8} backgroundColor={online ? '$green10' : '$gray8'} />
+    </XStack>
   )
 }

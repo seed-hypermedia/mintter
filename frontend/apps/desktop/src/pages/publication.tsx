@@ -46,7 +46,6 @@ import {
 } from '@mintter/ui'
 
 import {assign, createMachine} from 'xstate'
-import '../styles/publication.scss'
 import {PageProps} from './base'
 
 export default function PublicationPage({mainActor}: PageProps) {

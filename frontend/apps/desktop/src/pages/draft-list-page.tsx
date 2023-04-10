@@ -1,4 +1,4 @@
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {Dropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
 import {prefetchDraft, useDraftList} from '@app/hooks'
 import {
@@ -9,13 +9,23 @@ import {
 import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
-import {Icon} from '@components/icon'
-import {MainWrapper, ScrollView, YStack} from '@mintter/ui'
-import {Text} from '@components/text'
 import {Document, formattedDate} from '@mintter/shared'
+import {
+  Text,
+  Button,
+  ButtonText,
+  Container,
+  Delete,
+  ExternalLink,
+  ListItem,
+  MainWrapper,
+  MoreHorizontal,
+  Separator,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {useQueryClient} from '@tanstack/react-query'
 import Highlighter from 'react-highlight-words'
-import '../styles/file-list.scss'
 import {PageProps} from './base'
 
 export default function DraftList(props: PageProps) {
@@ -25,22 +35,24 @@ export default function DraftList(props: PageProps) {
   return (
     <>
       <MainWrapper>
-        {isInitialLoading ? (
-          <p>loading...</p>
-        ) : data && data.documents.length ? (
-          <YStack tag="ul">
-            {data.documents.map((draft) => (
-              <DraftListItem key={draft.id} draft={draft} />
-            ))}
-          </YStack>
-        ) : (
-          <EmptyList
-            description="You have no Drafts yet."
-            action={() => {
-              nav.openNewDraft(false)
-            }}
-          />
-        )}
+        <Container>
+          {isInitialLoading ? (
+            <p>loading...</p>
+          ) : data && data.documents.length ? (
+            <YStack tag="ul" padding={0}>
+              {data.documents.map((draft) => (
+                <DraftListItem key={draft.id} draft={draft} />
+              ))}
+            </YStack>
+          ) : (
+            <EmptyList
+              description="You have no Drafts yet."
+              action={() => {
+                nav.openNewDraft(false)
+              }}
+            />
+          )}
+        </Container>
       </MainWrapper>
       <Footer />
     </>
@@ -65,10 +77,17 @@ export function DraftListItem({draft}: {draft: Document}) {
   }
 
   return (
-    <li className="list-item" onMouseEnter={() => prefetchDraft(client, draft)}>
-      <p
-        onClick={goToItem}
-        className="item-title"
+    <Button
+      chromeless
+      theme="gray"
+      tag="li"
+      onMouseEnter={() => prefetchDraft(client, draft)}
+    >
+      <ButtonText
+        fontWeight="700"
+        // @ts-ignore
+        onPress={goToItem}
+        flex={1}
         data-testid="list-item-title"
       >
         <Highlighter
@@ -77,78 +96,80 @@ export function DraftListItem({draft}: {draft: Document}) {
           autoEscape={true}
           textToHighlight={title}
         />
-      </p>
-      <span
-        onClick={goToItem}
-        className="item-date"
+      </ButtonText>
+      <Text
+        fontFamily="$body"
+        fontSize="$2"
         data-testid="list-item-date"
+        minWidth="10ch"
+        textAlign="right"
       >
         {draft.updateTime ? formattedDate(draft.updateTime) : '...'}
-      </span>
-      <span className="item-controls">
+      </Text>
+      <XStack>
         <Dropdown.Root>
           <Dropdown.Trigger asChild>
-            <ElementDropdown
-              data-trigger
-              className="dropdown"
-              css={{
-                backgroundColor: 'transparent',
-              }}
-            >
-              <Icon
-                name="MoreHorizontal"
-                color="muted"
-                // className={match ? hoverIconStyle() : undefined}
-              />
-            </ElementDropdown>
+            <Button size="$1" circular data-trigger>
+              <MoreHorizontal size={12} />
+            </Button>
           </Dropdown.Trigger>
           <Dropdown.Portal>
             <Dropdown.Content
-              align="start"
+              align="end"
               data-testid="library-item-dropdown-root"
             >
-              <Dropdown.Item
-                data-testid="open-item"
-                onSelect={(e) => {
-                  //@ts-ignore
-                  goToItem(e)
-                }}
-              >
-                <Icon name="ArrowTopRight" />
-                <Text size="2">Open</Text>
-              </Dropdown.Item>
               <Dropdown.Item
                 data-testid="new-window-item"
                 onSelect={() => {
                   spawn({key: 'draft', documentId: draft.id})
                 }}
+                asChild
               >
-                <Icon name="OpenInNewWindow" />
-                <Text size="2">Open in new Window</Text>
+                <ListItem
+                  icon={ExternalLink}
+                  size="$2"
+                  hoverTheme
+                  pressTheme
+                  paddingVertical="$2"
+                  paddingHorizontal="$4"
+                  textAlign="left"
+                  space="$0"
+                >
+                  Open in new Window
+                </ListItem>
               </Dropdown.Item>
               {useDeleteDraftDialog(draft.id, ({onClick}) => {
                 return (
-                  <Dropdown.Item
-                    data-testid="delete-item"
-                    onSelect={(e) => {
-                      e.preventDefault()
-                      onClick()
-                    }}
-                  >
-                    <Icon name="Close" />
-                    <Text size="2">Delete Draft</Text>
-                  </Dropdown.Item>
+                  <>
+                    <Separator />
+                    <Dropdown.Item
+                      data-testid="delete-item"
+                      onSelect={(e) => {
+                        e.preventDefault()
+                        onClick()
+                      }}
+                      asChild
+                    >
+                      <ListItem
+                        icon={Delete}
+                        size="$2"
+                        hoverTheme
+                        pressTheme
+                        paddingVertical="$2"
+                        paddingHorizontal="$4"
+                        textAlign="left"
+                        space="$0"
+                      >
+                        Delete Draft
+                      </ListItem>
+                    </Dropdown.Item>
+                  </>
                 )
               })}
-              {/* <DeleteDialog
-                deleteRef={deleteService}
-                title="Delete draft"
-                description="Are you sure you want to delete this draft? This action is not reversible."
-              ></DeleteDialog> */}
             </Dropdown.Content>
           </Dropdown.Portal>
         </Dropdown.Root>
-      </span>
-    </li>
+      </XStack>
+    </Button>
   )
 }

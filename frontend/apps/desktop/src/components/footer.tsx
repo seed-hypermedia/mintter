@@ -1,31 +1,27 @@
 import {networkingClient} from '@app/api-clients'
-import {
-  AccountWithRef,
-  createContactsListMachine,
-} from '@app/contact-list-machine'
+import {AccountWithRef} from '@app/contact-list-machine'
 import {useConnectionSummary} from '@app/hooks/contacts'
 import {useDaemonReady, useOnline} from '@app/node-status-context'
 import {keyframes, styled} from '@app/stitches.config'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {ObjectKeys} from '@app/utils/object-keys'
-import {Box} from '@components/box'
-import {Button, ButtonProps, FooterWrapper, UIAvatar} from '@mintter/ui'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
-import {ConnectionStatus} from '@mintter/shared'
+import {
+  Add,
+  Button,
+  ButtonProps,
+  Clock,
+  Delete,
+  FooterWrapper,
+  SizableText,
+  User,
+  XStack,
+} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import * as HoverCard from '@radix-ui/react-hover-card'
-import {useActor, useSelector} from '@xstate/react'
-import {ReactNode, useMemo, useState} from 'react'
+import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
-import {InterpreterFrom} from 'xstate'
 import {OnlineIndicator} from './indicator'
 import {Prompt} from './prompt'
-
-const LabelWrap = styled('div', {
-  marginHorizontal: 6,
-})
 
 export function FooterButton({
   active,
@@ -41,10 +37,11 @@ export function FooterButton({
   return (
     <Button
       size="$1"
-      chromeless
+      chromeless={!active}
       color={active ? '$blue10' : undefined}
       onPress={onPress}
       icon={icon}
+      paddingHorizontal="$2"
     >
       {label}
     </Button>
@@ -56,18 +53,23 @@ function FooterContactsButton() {
   const navigate = useNavigate()
   const summary = useConnectionSummary()
   return (
-    <Button
-      size="$1"
-      chromeless
-      color={route.key === 'connections' ? 'blue' : undefined}
-      onPress={() => {
-        navigate({key: 'connections'})
-      }}
-    >
-      <OnlineIndicator online={summary.online} />
-      <Icon name="Person" size="1" />
-      <Text css={{}}>{summary.connectedCount}</Text>
-    </Button>
+    <XStack alignItems="center" theme="blue" gap="$2">
+      <Button
+        size="$1"
+        chromeless={route.key != 'connections'}
+        color={route.key == 'connections' ? '$blue10' : undefined}
+        onPress={() => {
+          navigate({key: 'connections'})
+        }}
+        paddingHorizontal="$2"
+      >
+        <OnlineIndicator online={summary.online} />
+        <User size={12} />
+        <SizableText size="$1" color="$color">
+          {summary.connectedCount}
+        </SizableText>
+      </Button>
+    </XStack>
   )
 }
 
@@ -103,58 +105,19 @@ export default function Footer({children}: {children?: ReactNode}) {
   return (
     <FooterWrapper>
       {!isDaemonReady ? (
-        <Box
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            paddingInline: '$4',
-            paddingBlock: '$1',
-            gap: '$2',
-            userSelect: 'none',
-            marginRight: '$4',
-            '&:hover': {
-              cursor: 'default',
-            },
-          }}
-        >
-          <Icon name="Clock" size="1" color="muted" />
-          <Text
-            color="muted"
-            size="1"
-            css={{
-              userSelect: 'none',
-            }}
-          >
+        <XStack alignItems="center">
+          <Clock size={10} />
+          <SizableText size="$1" userSelect="none">
             Initializing node...
-          </Text>
-        </Box>
+          </SizableText>
+        </XStack>
       ) : !isOnline ? (
-        <Box
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            paddingInline: '$4',
-            paddingBlock: '$1',
-            gap: '$2',
-            userSelect: 'none',
-            backgroundColor: '$danger-normal',
-            marginRight: '$4',
-            '&:hover': {
-              cursor: 'default',
-            },
-          }}
-        >
-          <Icon name="Close" size="1" color="danger-opposite" />
-          <Text
-            color="danger-opposite"
-            size="1"
-            css={{
-              userSelect: 'none',
-            }}
-          >
+        <XStack alignItems="center">
+          <Delete size={12} />
+          <SizableText size="$1" userSelect="none">
             You are Offline
-          </Text>
-        </Box>
+          </SizableText>
+        </XStack>
       ) : null}
       {/* {isDaemonReady ? (
         <Box
@@ -170,72 +133,17 @@ export default function Footer({children}: {children?: ReactNode}) {
       ) : null} */}
       <FooterContactsButton />
 
-      <Box
-        css={{
-          display: 'flex',
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-        }}
+      <XStack
+        flex={1}
+        alignItems="center"
+        justifyContent="flex-end"
+        marginRight="$2"
       >
         {children}
-      </Box>
+      </XStack>
     </FooterWrapper>
   )
 }
-
-function Contacts({
-  service,
-}: {
-  service: InterpreterFrom<ReturnType<typeof createContactsListMachine>>
-}) {
-  const totalCount = useSelector(service, (state) => state.context.all.length)
-  const online = useSelector(service, (state) =>
-    state.context.all.filter((acc) =>
-      state.context.online.includes(acc.ref.id),
-    ),
-  )
-
-  return (
-    <HoverCard.Root openDelay={100}>
-      <HoverCard.Trigger asChild>
-        <ButtonStyled>
-          {online.length ? (
-            <Box
-              css={{
-                width: 7,
-                height: 7,
-                borderRadius: '$round',
-                backgroundColor: '$success-active',
-              }}
-            />
-          ) : null}
-          <Icon name="Person" />
-          <span>{`(${online.length}/${totalCount || 0})`}</span>
-        </ButtonStyled>
-      </HoverCard.Trigger>
-      <HoverCard.Portal>
-        {online.length && (
-          <HoverCard.Content side="top" align="end">
-            <ContactsContent>
-              {online.map((contact) => (
-                <ContactItem key={contact.id} contact={contact} />
-              ))}
-            </ContactsContent>
-          </HoverCard.Content>
-        )}
-      </HoverCard.Portal>
-    </HoverCard.Root>
-  )
-}
-
-var ContactsContent = styled('ul', {
-  backgroundColor: '$base-background-normal',
-  padding: '$2',
-  boxShadow: '$menu',
-  margin: 0,
-  listStyle: 'none',
-})
 
 type ContactsPromptProps = {
   refetch: () => void
@@ -267,9 +175,9 @@ export function ContactsPrompt({
   return (
     <Prompt.Root>
       <DialogPrimitive.Trigger asChild>
-        <ButtonStyled data-testid="add-contact-button" css={{paddingInline: 0}}>
-          <Icon name="Add" color="muted" />
-        </ButtonStyled>
+        <Button data-testid="add-contact-button">
+          <Add size={12} />
+        </Button>
       </DialogPrimitive.Trigger>
       <Prompt.Portal>
         <Prompt.Content>
@@ -347,154 +255,6 @@ const HoverCardContentStyled = styled(HoverCard.Content, {
 export type ContactItemProps = {
   contact: AccountWithRef
 }
-
-function ContactItem({contact}: ContactItemProps) {
-  let [state] = useActor(contact.ref)
-
-  let accountId = useMemo(
-    () => contact.id.slice(contact.id.length - 8),
-    [contact.id],
-  )
-
-  return (
-    <HoverCard.Root>
-      <HoverCard.Trigger asChild>
-        <Box
-          as="li"
-          data-testid={`contact-item-${accountId}`}
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            minWidth: '20ch',
-            paddingBlock: '$2',
-            paddingInline: '$4',
-            userSelect: 'none',
-            borderRadius: '$2',
-            whiteSpace: 'nowrap',
-            gap: '$2',
-            '&:hover': {
-              backgroundColor: '$base-component-bg-hover',
-            },
-          }}
-        >
-          <UIAvatar
-            accountId={state.context.account.id}
-            size="$1"
-            alias={state.context.account.profile?.alias || 'C'}
-          />
-          <Text
-            size="2"
-            css={{
-              userSelect: 'none',
-              letterSpacing: '0.01em',
-              lineHeight: '$2',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              color: '$$foreground',
-              flex: 1,
-            }}
-          >{`(${state.context.account.id.slice(-5)}) ${
-            state.context.account.profile?.alias
-          }`}</Text>
-          {typeof state.context.status != 'undefined' ? (
-            <Box
-              css={{
-                width: 7,
-                height: 7,
-                borderRadius: '$round',
-                flex: 'none',
-                backgroundColor:
-                  state.context.status === ConnectionStatus.CONNECTED
-                    ? '$success-normal'
-                    : '$base-component-bg-active',
-              }}
-            />
-          ) : null}
-        </Box>
-      </HoverCard.Trigger>
-      <HoverCardContentStyled align="start" side="top">
-        <UIAvatar
-          accountId={state.context.account.id}
-          size="$2"
-          alias={state.context.account.profile?.alias || ''}
-        />
-        <Box css={{display: 'flex', flexDirection: 'column', gap: '$2'}}>
-          <Text fontWeight="bold">{state.context.account.profile?.alias}</Text>
-          <Text
-            color="muted"
-            css={{
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-            }}
-          >
-            {state.context.account.profile?.bio}
-          </Text>
-          <Text size="1" fontWeight="bold">
-            (
-            {state.context.status == ConnectionStatus.CONNECTED
-              ? 'connected'
-              : 'not_connected'}
-            )
-          </Text>
-          <Text
-            size="1"
-            css={{
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-            }}
-          >
-            <b>Acc. ID:</b> {accountId}
-          </Text>
-          {ObjectKeys(state.context.account.devices).map((device, index) => (
-            <Text
-              size="1"
-              key={index}
-              css={{
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-              }}
-            >
-              <b>device {index + 1} ID:</b>{' '}
-              {String(device).slice(String(device).length - 8)}
-            </Text>
-          ))}
-        </Box>
-      </HoverCardContentStyled>
-    </HoverCard.Root>
-  )
-}
-
-var FooterStyled = styled(Box, {
-  position: 'fixed',
-  height: 'var(--footer-h)',
-  borderTop: '1px solid $colors$base-border-subtle',
-  backgroundColor: '$base-background-subtle',
-  display: 'flex',
-  alignItems: 'stretch',
-  paddingInline: '$2',
-  inset: import.meta.env.TAURI_PLATFORM == 'macos' ? 'auto 0 0 0' : 'unset',
-  variants: {
-    platform: {
-      macos: {
-        inset: 'auto 0 0 0',
-      },
-      windows: {
-        bottom: 1,
-        left: 1,
-        right: 1,
-      },
-      linux: {
-        bottom: 1,
-        left: 1,
-        right: 1,
-      },
-    },
-  },
-})
 
 var ButtonStyled = styled('button', {
   $$color: '$colors$base-text-low',

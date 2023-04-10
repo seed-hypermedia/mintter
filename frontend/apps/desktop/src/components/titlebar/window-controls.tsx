@@ -1,21 +1,15 @@
-import {classnames} from '@app/utils/classnames'
 import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect, useState} from 'react'
+import {Button} from '@mintter/ui'
 
 export function CloseButton() {
   const win = getCurrent()
   return (
-    <button
-      aria-label="close"
-      title="Close"
-      tabIndex={-1}
-      className="window-control close"
-      onClick={() => win.close()}
-    >
+    <ButtonWrapper aria-label="close" tabIndex={-1} onPress={() => win.close()}>
       <svg aria-hidden="true" version="1.1" viewBox="0 0 10 10">
         <path d="M 0,0 0,0.7 4.3,5 0,9.3 0,10 0.7,10 5,5.7 9.3,10 10,10 10,9.3 5.7,5 10,0.7 10,0 9.3,0 5,4.3 0.7,0 Z" />
       </svg>
-    </button>
+    </ButtonWrapper>
   )
 }
 
@@ -53,17 +47,11 @@ export function MaximizeOrRestoreButton() {
   const title = name[0].toUpperCase() + name.substring(1)
 
   return (
-    <button
-      aria-label={name}
-      title={title}
-      tabIndex={-1}
-      className={classnames('window-control', name)}
-      onClick={cb}
-    >
+    <ButtonWrapper aria-label={name} title={title} tabIndex={-1} onPress={cb}>
       <svg aria-hidden="true" version="1.1" viewBox="0 0 10 10">
         <path d={path} />
       </svg>
-    </button>
+    </ButtonWrapper>
   )
 }
 
@@ -71,16 +59,27 @@ export function MinimizeButton() {
   const win = getCurrent()
 
   return (
-    <button
+    <ButtonWrapper
       aria-label="minize"
-      title="Minimize"
       tabIndex={-1}
-      className="window-control minimize"
-      onClick={() => win.minimize()}
+      onPress={() => win.minimize()}
     >
       <svg aria-hidden="true" version="1.1" viewBox="0 0 10 10">
         <path d="M 0,5 10,5 10,6 0,6 Z" />
       </svg>
-    </button>
+    </ButtonWrapper>
+  )
+}
+
+function ButtonWrapper(props: any) {
+  return (
+    <Button
+      size="$1"
+      chromeless
+      color="$color"
+      width={20}
+      height={20}
+      {...props}
+    />
   )
 }

@@ -1,6 +1,6 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {usePublication, useAuthor} from '@app/hooks'
+import {usePublication, useAuthor, prefetchPublication} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
 import {
   useNavigate,
@@ -10,15 +10,27 @@ import {
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Icon} from '@components/icon'
-import {MainWrapper} from '@mintter/ui'
-import {Text} from '@components/text'
+import {
+  Button,
+  ButtonText,
+  Container,
+  Copy,
+  Delete,
+  ListItem,
+  MainWrapper,
+  MoreHorizontal,
+  Separator,
+  Text,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
 import {WebPublicationRecord, formattedDate} from '@mintter/shared'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
-import '../styles/file-list.scss'
 import {PageProps} from './base'
+import {useQueryClient} from '@tanstack/react-query'
 
 export default function SitePage(props: PageProps) {
   const route = useNavRoute()
@@ -44,24 +56,28 @@ export default function SitePage(props: PageProps) {
   return (
     <>
       <MainWrapper>
-        {isInitialLoading ? (
-          <p>loading...</p>
-        ) : sortedPubs?.length ? (
-          sortedPubs.map((publication) => (
-            <WebPublicationListItem
-              key={publication.documentId}
-              webPub={publication}
-              hostname={host}
+        <Container>
+          {isInitialLoading ? (
+            <p>loading...</p>
+          ) : sortedPubs?.length ? (
+            <YStack tag="ul" padding={0}>
+              {sortedPubs.map((publication) => (
+                <WebPublicationListItem
+                  key={publication.documentId}
+                  webPub={publication}
+                  hostname={host}
+                />
+              ))}
+            </YStack>
+          ) : (
+            <EmptyList
+              description={`Nothing published on ${host} yet.`}
+              action={() => {
+                nav.openNewDraft(false)
+              }}
             />
-          ))
-        ) : (
-          <EmptyList
-            description={`Nothing published on ${host} yet.`}
-            action={() => {
-              nav.openNewDraft(false)
-            }}
-          />
-        )}
+          )}
+        </Container>
       </MainWrapper>
       <Footer />
     </>
@@ -76,6 +92,7 @@ function WebPublicationListItem({
   webPub: WebPublicationRecord
 }) {
   const navigate = useNavigate()
+  const client = useQueryClient()
   function goToItem() {
     navigate({
       key: 'publication',
@@ -90,53 +107,61 @@ function WebPublicationListItem({
   const {data: publication} = usePublication(webPub.documentId, webPub.version)
   const {data: author} = useAuthor(publication?.document?.author)
   return (
-    <li className="list-item">
+    <Button
+      chromeless
+      theme="gray"
+      tag="li"
+      onMouseEnter={() =>
+        publication ? prefetchPublication(client, publication) : null
+      }
+    >
       {webPub.path === '' ? (
-        <p onClick={goToItem} className="item-title low">
+        <ButtonText onPress={goToItem} theme="gray" fontWeight="700" flex={1}>
           {publication?.document?.title}
-        </p>
+        </ButtonText>
       ) : webPub.path === '/' ? (
-        <p onClick={goToItem} className="item-title">
+        <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
           {publication?.document?.title}
-        </p>
+        </ButtonText>
       ) : (
-        <p onClick={goToItem} className="item-title">
-          /{webPub.path}
-          <span className="item-sub-title">{publication?.document?.title}</span>
-        </p>
+        <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
+          {publication?.document?.title}
+          <Text
+            fontFamily="$body"
+            fontSize="$1"
+            marginHorizontal="$2"
+            opacity={0.5}
+          >
+            /{webPub.path}
+          </Text>
+        </ButtonText>
       )}
-      <span
-        onClick={goToItem}
+      <Button
+        size="$1"
+        theme="$gray5"
+        onPress={goToItem}
         data-testid="list-item-author"
         className={`item-author`}
       >
         {author?.profile?.alias}
-      </span>
-      <span
-        onClick={goToItem}
-        className="item-date"
+      </Button>
+      <Text
+        fontFamily="$body"
+        fontSize="$2"
         data-testid="list-item-date"
+        minWidth="10ch"
+        textAlign="right"
       >
         {publication?.document?.updateTime
           ? formattedDate(publication?.document?.updateTime)
           : '...'}
-      </span>
-      <span className="item-controls">
+      </Text>
+      <XStack>
         <Dropdown.Root>
           <Dropdown.Trigger asChild>
-            <ElementDropdown
-              data-trigger
-              className="dropdown"
-              css={{
-                backgroundColor: 'transparent',
-              }}
-            >
-              <Icon
-                name="MoreHorizontal"
-                color="muted"
-                // className={match ? hoverIconStyle() : undefined}
-              />
-            </ElementDropdown>
+            <Button size="$1" circular data-trigger>
+              <MoreHorizontal size={12} />
+            </Button>
           </Dropdown.Trigger>
           <Dropdown.Portal>
             <Dropdown.Content
@@ -151,25 +176,48 @@ function WebPublicationListItem({
                   )
                   toast.success('Document ID copied successfully')
                 }}
+                asChild
               >
-                <Icon name="Copy" />
-                <Text size="2">Copy Document ID</Text>
+                <ListItem
+                  icon={Copy}
+                  size="$2"
+                  hoverTheme
+                  pressTheme
+                  paddingVertical="$2"
+                  paddingHorizontal="$4"
+                  textAlign="left"
+                  space="$0"
+                >
+                  Copy Document ID
+                </ListItem>
               </Dropdown.Item>
+              <Separator />
               <Dropdown.Item
                 data-testid="delete-item"
                 onSelect={(e) => {
                   e.preventDefault()
                   onUnpublishClick()
                 }}
+                asChild
               >
-                <Icon name="Close" />
-                <Text size="2">Un-Publish Document</Text>
+                <ListItem
+                  icon={Delete}
+                  size="$2"
+                  hoverTheme
+                  pressTheme
+                  paddingVertical="$2"
+                  paddingHorizontal="$4"
+                  textAlign="left"
+                  space="$0"
+                >
+                  Un-Publish Document
+                </ListItem>
               </Dropdown.Item>
               {unpublishDialog}
             </Dropdown.Content>
           </Dropdown.Portal>
         </Dropdown.Root>
-      </span>
-    </li>
+      </XStack>
+    </Button>
   )
 }
