@@ -2,7 +2,7 @@ import {TitleBarProps} from '@components/titlebar'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import DiscardDraftButton from './discard-draft-button'
 import {Title} from './title'
-import {TitlebarRow, TitlebarSection, TitlebarWrapper} from '@mintter/ui'
+import {Container, TitlebarWrapper, XStack} from '@mintter/ui'
 
 export default function TitleBarMacos(props: TitleBarProps) {
   if (props.clean) {
@@ -11,20 +11,32 @@ export default function TitleBarMacos(props: TitleBarProps) {
 
   return (
     <TitlebarWrapper platform="macos" data-tauri-drag-region>
-      <TitlebarRow>
-        <TitlebarSection data-tauri-drag-region>
-          <NavMenu mainActor={props.mainActor} />
-          <NavigationButtons />
+      <XStack paddingHorizontal="$2" justifyContent="space-between">
+        <XStack
+          flex={1}
+          minWidth={'min-content'}
+          flexBasis={0}
+          alignItems="center"
+        >
+          <Container paddingLeft={72} alignItems="flex-start">
+            <NavMenu mainActor={props.mainActor} />
+          </Container>
           <DiscardDraftButton />
-        </TitlebarSection>
-        <TitlebarSection flex={1} data-tauri-drag-region>
+        </XStack>
+        <XStack flex={1} alignItems="center">
           <Title />
-        </TitlebarSection>
-
-        <TitlebarSection data-tauri-drag-region>
+        </XStack>
+        <XStack
+          flex={1}
+          justifyContent="flex-end"
+          minWidth={'min-content'}
+          flexBasis={0}
+          alignItems="center"
+          backgroundColor={'$gray1'}
+        >
           <ActionButtons {...props} />
-        </TitlebarSection>
-      </TitlebarRow>
+        </XStack>
+      </XStack>
     </TitlebarWrapper>
   )
 }

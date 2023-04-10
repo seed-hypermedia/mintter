@@ -18,9 +18,7 @@ export const TitlebarWrapper = styled(YStack, {
   flexShrink: 0,
   variants: {
     platform: {
-      macos: {
-        paddingLeft: '72px',
-      },
+      macos: {},
       windows: {},
       linux: {},
     },
