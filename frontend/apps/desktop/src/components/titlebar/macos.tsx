@@ -18,8 +18,11 @@ export default function TitleBarMacos(props: TitleBarProps) {
           flexBasis={0}
           alignItems="center"
         >
-          <Container paddingLeft={72} alignItems="flex-start">
-            <NavMenu mainActor={props.mainActor} />
+          <Container paddingLeft={64} alignItems="flex-start">
+            <XStack>
+              <NavMenu mainActor={props.mainActor} />
+              <NavigationButtons />
+            </XStack>
           </Container>
           <DiscardDraftButton />
         </XStack>
