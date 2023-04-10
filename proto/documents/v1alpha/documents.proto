@@ -130,6 +130,9 @@ service Publications {
 
   // Lists stored publications. Only the most recent versions show up.
   rpc ListPublications(ListPublicationsRequest) returns (ListPublicationsResponse);
+
+  // List authors that contributed to a given publication.
+  rpc ListAuthors(ListAuthorsRequest) returns (ListAuthorsResponse);
 }
 
 // Request for getting a single publication.
@@ -171,6 +174,41 @@ message ListPublicationsResponse {
   string next_page_token = 2;
 }
 
+// Request to know how many accounts have authored a document.
+message ListAuthorsRequest {
+  // Required. Document ID.
+  string document_id = 1;
+
+	// Required. The version of the document.
+  string version = 2;
+
+	// Algorithm used to calculate percentages.
+	enum PercentageAlgo {
+    // Equal-weight. each author receives 1/len(authors) of the pie.
+    NAIVE = 0;
+
+    // Since each block has an author in version <version>, percentages
+		// are calculated by dividing the number of blocks authored by 
+		// a given account by the total number of blocks in the document.
+    BLOCKCOUNT = 1;
+
+		// Since we can know how many changes a single block had (up to version
+    // <version>, we can count changes made per author divided by the total
+    // amount of changes in all blocks.
+    BLOCKCHANGES = 2;
+
+    // Count how many words can be attributed to an author divided by the
+		// the total word count of the document.
+    WORDCOUNT = 3;
+  }
+	// Algorithm to use for getting attributions.
+  PercentageAlgo algo = 3;
+}
+
+message ListAuthorsResponse {
+  repeated Slice authors = 1;
+}
+
 // === Types ===
 
 // State of the document after publication.
@@ -202,8 +240,8 @@ message Document {
   // Subtitle of the document.
   string subtitle = 3;
 
-  // Output only. Author of the document.
-  string author = 4;
+  // Output only. DeviceID that created the document.
+  string creator = 4;
 
   // This is WIP feature for block-aware API. It will supersede the `content` field.
   repeated BlockNode children = 9;
@@ -271,4 +309,15 @@ message Annotation {
   // End offsets of possibly disjoint spans of text for which this annotation is applied.
   // Must be sorted and have the same number of items as `starts` list.
   repeated int32 ends = 4;
+}
+
+// Given a publication, each author contributes to that document in 
+// greater or lesser manner quantified by the size of this Slice.
+message Slice {
+	// Account CID 
+  string account_id = 1;
+	
+	// Percentage 0-1 of authorship based on the selected algorithm.
+  float percentage = 2;
+
 }

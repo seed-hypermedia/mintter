@@ -229,7 +229,7 @@ func TestSite(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, publicationList.Publications, 1) // since the friend is a peer, it should have received the document
 	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
-	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Creator, publicationList.Publications[0].Document.Creator)
 	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
 
 	require.NoError(t, err)
@@ -245,7 +245,7 @@ func TestSite(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, publicationList.Publications, 1)
 	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
-	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Creator, publicationList.Publications[0].Document.Creator)
 	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
 	// And owner should see it as well
 	_, err = site.RPC.Daemon.ForceSync(ctx, &daemon.ForceSyncRequest{})
@@ -258,7 +258,7 @@ func TestSite(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, publicationList.Publications, 1)
 	require.Equal(t, sharedDocument.Version, publicationList.Publications[0].Version)
-	require.Equal(t, sharedDocument.Document.Author, publicationList.Publications[0].Document.Author)
+	require.Equal(t, sharedDocument.Document.Creator, publicationList.Publications[0].Document.Creator)
 	require.Equal(t, sharedDocument.Document.Id, publicationList.Publications[0].Document.Id)
 
 	// But the reader should not have it since its only connected to the site
@@ -325,7 +325,7 @@ func TestSite(t *testing.T) {
 	// Different author changes the version and republishes to the same path
 	const anotherAuthorTitle = "Is this a change in authorship? Nope"
 	noNewAuthor := updateDocumenTitle(t, ctx, editor, newVersion.Document.Id, anotherAuthorTitle)
-	require.Equal(t, sharedDocument.Document.Author, noNewAuthor.Document.Author)
+	require.Equal(t, sharedDocument.Document.Creator, noNewAuthor.Document.Creator)
 	require.Equal(t, sharedDocument.Document.Id, noNewAuthor.Document.Id)
 	_, err = editor.RPC.Site.PublishDocument(ctxWithHeaders, &documents.PublishDocumentRequest{
 		DocumentId: noNewAuthor.Document.Id,

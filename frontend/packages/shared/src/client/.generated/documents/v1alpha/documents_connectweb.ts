@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequestV2 } from "./documents_pb";
+import { CreateDraftRequest, DeleteDraftRequest, DeletePublicationRequest, Document, GetDraftRequest, GetPublicationRequest, ListAuthorsRequest, ListAuthorsResponse, ListDraftsRequest, ListDraftsResponse, ListPublicationsRequest, ListPublicationsResponse, Publication, PublishDraftRequest, UpdateDraftRequestV2 } from "./documents_pb";
 import { Empty, MethodKind } from "@bufbuild/protobuf";
 
 /**
@@ -122,6 +122,17 @@ export const Publications = {
       name: "ListPublications",
       I: ListPublicationsRequest,
       O: ListPublicationsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * List authors that contributed to a given publication.
+     *
+     * @generated from rpc com.mintter.documents.v1alpha.Publications.ListAuthors
+     */
+    listAuthors: {
+      name: "ListAuthors",
+      I: ListAuthorsRequest,
+      O: ListAuthorsResponse,
       kind: MethodKind.Unary,
     },
   }

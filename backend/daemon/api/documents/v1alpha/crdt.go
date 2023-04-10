@@ -16,7 +16,7 @@ import (
 
 type docState struct {
 	id         cid.Cid
-	author     cid.Cid
+	creator    cid.Cid
 	createTime time.Time
 	maxClock   hlc.Time
 	tree       *crdt.Tree
@@ -27,10 +27,10 @@ type docState struct {
 	blocks     map[string]map[cid.Cid]*documents.Block
 }
 
-func newDocState(id, author cid.Cid, createTime time.Time) *docState {
+func newDocState(id, creator cid.Cid, createTime time.Time) *docState {
 	return &docState{
 		id:         id,
-		author:     author,
+		creator:    creator,
 		createTime: createTime,
 		tree:       crdt.NewTree(crdt.NewVectorClock()),
 		applied:    make(map[cid.Cid]*docChange),
@@ -117,7 +117,7 @@ func (ds *docState) hydrate() *documents.Document {
 		Id:         ds.id.String(),
 		Title:      ds.getTitle(),
 		Subtitle:   ds.getSubtitle(),
-		Author:     ds.author.String(),
+		Creator:    ds.creator.String(),
 		CreateTime: timestamppb.New(ds.createTime),
 		UpdateTime: timestamppb.New(ds.maxClock.Time()),
 	}

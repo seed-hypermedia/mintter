@@ -662,6 +662,147 @@ export class ListPublicationsResponse extends Message<ListPublicationsResponse> 
 }
 
 /**
+ * Request to know how many accounts have authored a document.
+ *
+ * @generated from message com.mintter.documents.v1alpha.ListAuthorsRequest
+ */
+export class ListAuthorsRequest extends Message<ListAuthorsRequest> {
+  /**
+   * Required. Document ID.
+   *
+   * @generated from field: string document_id = 1;
+   */
+  documentId = "";
+
+  /**
+   * Required. The version of the document.
+   *
+   * @generated from field: string version = 2;
+   */
+  version = "";
+
+  /**
+   * Algorithm to use for getting attributions.
+   *
+   * @generated from field: com.mintter.documents.v1alpha.ListAuthorsRequest.PercentageAlgo algo = 3;
+   */
+  algo = ListAuthorsRequest_PercentageAlgo.NAIVE;
+
+  constructor(data?: PartialMessage<ListAuthorsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListAuthorsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "document_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "algo", kind: "enum", T: proto3.getEnumType(ListAuthorsRequest_PercentageAlgo) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListAuthorsRequest {
+    return new ListAuthorsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListAuthorsRequest {
+    return new ListAuthorsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListAuthorsRequest {
+    return new ListAuthorsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListAuthorsRequest | PlainMessage<ListAuthorsRequest> | undefined, b: ListAuthorsRequest | PlainMessage<ListAuthorsRequest> | undefined): boolean {
+    return proto3.util.equals(ListAuthorsRequest, a, b);
+  }
+}
+
+/**
+ * Algorithm used to calculate percentages.
+ *
+ * @generated from enum com.mintter.documents.v1alpha.ListAuthorsRequest.PercentageAlgo
+ */
+export enum ListAuthorsRequest_PercentageAlgo {
+  /**
+   * Equal-weight. each author receives 1/len(authors) of the pie.
+   *
+   * @generated from enum value: NAIVE = 0;
+   */
+  NAIVE = 0,
+
+  /**
+   * Since each block has an author in version <version>, percentages
+   * are calculated by dividing the number of blocks authored by 
+   * a given account by the total number of blocks in the document.
+   *
+   * @generated from enum value: BLOCKCOUNT = 1;
+   */
+  BLOCKCOUNT = 1,
+
+  /**
+   * Since we can know how many changes a single block had (up to version
+   * <version>, we can count changes made per author divided by the total
+   * amount of changes in all blocks.
+   *
+   * @generated from enum value: BLOCKCHANGES = 2;
+   */
+  BLOCKCHANGES = 2,
+
+  /**
+   * Count how many words can be attributed to an author divided by the
+   * the total word count of the document.
+   *
+   * @generated from enum value: WORDCOUNT = 3;
+   */
+  WORDCOUNT = 3,
+}
+// Retrieve enum metadata with: proto3.getEnumType(ListAuthorsRequest_PercentageAlgo)
+proto3.util.setEnumType(ListAuthorsRequest_PercentageAlgo, "com.mintter.documents.v1alpha.ListAuthorsRequest.PercentageAlgo", [
+  { no: 0, name: "NAIVE" },
+  { no: 1, name: "BLOCKCOUNT" },
+  { no: 2, name: "BLOCKCHANGES" },
+  { no: 3, name: "WORDCOUNT" },
+]);
+
+/**
+ * @generated from message com.mintter.documents.v1alpha.ListAuthorsResponse
+ */
+export class ListAuthorsResponse extends Message<ListAuthorsResponse> {
+  /**
+   * @generated from field: repeated com.mintter.documents.v1alpha.Slice authors = 1;
+   */
+  authors: Slice[] = [];
+
+  constructor(data?: PartialMessage<ListAuthorsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.ListAuthorsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "authors", kind: "message", T: Slice, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ListAuthorsResponse {
+    return new ListAuthorsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ListAuthorsResponse {
+    return new ListAuthorsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ListAuthorsResponse {
+    return new ListAuthorsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ListAuthorsResponse | PlainMessage<ListAuthorsResponse> | undefined, b: ListAuthorsResponse | PlainMessage<ListAuthorsResponse> | undefined): boolean {
+    return proto3.util.equals(ListAuthorsResponse, a, b);
+  }
+}
+
+/**
  * State of the document after publication.
  *
  * @generated from message com.mintter.documents.v1alpha.Publication
@@ -747,11 +888,11 @@ export class Document extends Message<Document> {
   subtitle = "";
 
   /**
-   * Output only. Author of the document.
+   * Output only. DeviceID that created this document.
    *
-   * @generated from field: string author = 4;
+   * @generated from field: string creator = 4;
    */
-  author = "";
+  creator = "";
 
   /**
    * This is WIP feature for block-aware API. It will supersede the `content` field.
@@ -792,7 +933,7 @@ export class Document extends Message<Document> {
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "subtitle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "creator", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 9, name: "children", kind: "message", T: BlockNode, repeated: true },
     { no: 6, name: "create_time", kind: "message", T: Timestamp },
     { no: 7, name: "update_time", kind: "message", T: Timestamp },
@@ -1018,6 +1159,56 @@ export class Annotation extends Message<Annotation> {
 
   static equals(a: Annotation | PlainMessage<Annotation> | undefined, b: Annotation | PlainMessage<Annotation> | undefined): boolean {
     return proto3.util.equals(Annotation, a, b);
+  }
+}
+
+/**
+ * Given a publication, each author contributes to that document in 
+ * greater or lesser manner quantified by the size of this Slice.
+ *
+ * @generated from message com.mintter.documents.v1alpha.Slice
+ */
+export class Slice extends Message<Slice> {
+  /**
+   * Account CID 
+   *
+   * @generated from field: string account_id = 1;
+   */
+  accountId = "";
+
+  /**
+   * Percentage 0-1 of authorship based on the selected algorithm.
+   *
+   * @generated from field: float percentage = 2;
+   */
+  percentage = 0;
+
+  constructor(data?: PartialMessage<Slice>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "com.mintter.documents.v1alpha.Slice";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "percentage", kind: "scalar", T: 2 /* ScalarType.FLOAT */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Slice {
+    return new Slice().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Slice {
+    return new Slice().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Slice {
+    return new Slice().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: Slice | PlainMessage<Slice> | undefined, b: Slice | PlainMessage<Slice> | undefined): boolean {
+    return proto3.util.equals(Slice, a, b);
   }
 }
 

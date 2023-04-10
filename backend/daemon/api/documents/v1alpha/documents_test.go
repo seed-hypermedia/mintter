@@ -213,7 +213,7 @@ func TestAPICreateDraft(t *testing.T) {
 	c, err := cid.Decode(doc.Id)
 	require.Equal(t, int(cid.DagCBOR), int(c.Prefix().Codec))
 	require.NoError(t, err)
-	require.Equal(t, api.me.MustGet().AccountID().String(), doc.Author)
+	require.Equal(t, api.me.MustGet().AccountID().String(), doc.Creator)
 	require.False(t, doc.UpdateTime.AsTime().IsZero())
 	require.False(t, doc.CreateTime.AsTime().IsZero())
 
@@ -380,7 +380,7 @@ func TestAPIUpdateDraft(t *testing.T) {
 		Id:       draft.Id,
 		Title:    "My new document title",
 		Subtitle: "This is my document's abstract",
-		Author:   draft.Author,
+		Creator:  draft.Creator,
 		Children: []*documents.BlockNode{
 			{
 				Block: &documents.Block{
@@ -408,7 +408,7 @@ func TestAPIUpdateDraft(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, list.Documents, 1)
 	require.Equal(t, updated.Id, list.Documents[0].Id)
-	require.Equal(t, updated.Author, list.Documents[0].Author)
+	require.Equal(t, updated.Creator, list.Documents[0].Creator)
 	require.Equal(t, updated.Title, list.Documents[0].Title)
 
 	got, err := api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
@@ -554,7 +554,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 		want := &documents.Document{
 			Id:         draft.Id,
-			Author:     draft.Author,
+			Creator:    draft.Creator,
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
@@ -610,7 +610,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 		want := &documents.Document{
 			Id:         draft.Id,
-			Author:     draft.Author,
+			Creator:    draft.Creator,
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
@@ -660,7 +660,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 
 		want := &documents.Document{
 			Id:         draft.Id,
-			Author:     draft.Author,
+			Creator:    draft.Creator,
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,

@@ -561,7 +561,7 @@ func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, inclu
 	}
 
 	var createTime time.Time
-	var author cid.Cid
+	var creator cid.Cid
 	{
 		blk, err := conn.GetBlock(ctx, oid)
 		if err != nil {
@@ -574,13 +574,18 @@ func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, inclu
 		}
 
 		createTime = docperma.CreateTime.Time()
-		author = docperma.Owner
+		creator = docperma.Owner
 	}
-	doc := newDocState(oid, author, createTime)
+	doc := newDocState(oid, creator, createTime)
 
 	conn.IterateChanges(oid, includeDrafts, cs, func(vc vcs.VerifiedChange) error {
 		return doc.applyChange(vc)
 	})
 
 	return doc, nil
+}
+
+// ListAuthors implements the corresponding gRPC method.
+func (api *Server) ListAuthors(ctx context.Context, in *documents.ListAuthorsRequest) (*documents.ListAuthorsResponse, error) {
+	return &documents.ListAuthorsResponse{}, status.Errorf(codes.Unimplemented, "Method not implemented yet")
 }

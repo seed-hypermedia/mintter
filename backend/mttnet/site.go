@@ -452,7 +452,7 @@ func (srv *Server) PublishDocument(ctx context.Context, in *site.PublishDocument
 	return &site.PublishDocumentResponse{}, nil
 }
 
-// UnpublishDocument un-publishes a given document. Only the author of that document or the owner can unpublish.
+// UnpublishDocument un-publishes a given document. Only the creator of that document or the owner can unpublish.
 func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocumentRequest) (*site.UnpublishDocumentResponse, error) {
 	acc, proxied, res, err := srv.checkPermissions(ctx, site.Member_EDITOR, in)
 	if err != nil {
@@ -492,12 +492,12 @@ func (srv *Server) UnpublishDocument(ctx context.Context, in *site.UnpublishDocu
 			if err != nil {
 				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't find the actual document to unpublish although it was found in the database: %w", err)
 			}
-			docAcc, err := cid.Decode(doc.Document.Author)
+			docAcc, err := cid.Decode(doc.Document.Creator)
 			if err != nil {
 				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't parse doc cid: %w", err)
 			}
 			if acc.String() != docAcc.String() && srv.ownerID != acc.String() {
-				return &site.UnpublishDocumentResponse{}, fmt.Errorf("You are not the author of the document, nor site owner")
+				return &site.UnpublishDocumentResponse{}, fmt.Errorf("You are not the creator of the document, nor site owner")
 			}
 			if err = sitesql.RemoveWebPublicationRecord(conn, record.Document.ID, record.Document.Version); err != nil {
 				return &site.UnpublishDocumentResponse{}, fmt.Errorf("Couldn't remove document [%s]: %w", record.Document.ID.String(), err)
