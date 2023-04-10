@@ -45,7 +45,7 @@ export function GatewayHead({title}: {title?: string}) {
           <Link href="/" aria-label="home page">
             <YStack cur="pointer">
               <Image
-                src="/logo-blue.svg"
+                src="/media/MintterLogoBlue.svg"
                 alt="Mintter logo"
                 width={136}
                 height={48}
