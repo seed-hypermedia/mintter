@@ -22,6 +22,7 @@ import (
 	"mintter/backend/db/sqliteschema"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/graphql"
+	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
@@ -169,7 +170,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		}
 	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site)
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, ipfs.NewManager(logging.New("mintter/ipfs", "debug"), a.VCSDB.Blockstore()))
 	if err != nil {
 		return nil, err
 	}
@@ -447,6 +448,7 @@ func initHTTP(
 	me *future.ReadOnly[core.Identity],
 	wallet *wallet.Service,
 	wellKnownHandler http.Handler,
+	fileUploadHandler http.Handler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
 	{
@@ -461,6 +463,7 @@ func initHTTP(
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 		router.PathPrefix("/" + mttnet.WellKnownPath).Handler(wellKnownHandler)
+		router.PathPrefix(ipfs.UploadRoute).Handler(fileUploadHandler)
 		nav := newNavigationHandler(router)
 
 		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
