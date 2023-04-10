@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          file: frontend/gateway/Dockerfile
+          file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:latest
 
   push-site-scripts:
