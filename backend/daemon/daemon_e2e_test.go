@@ -2,12 +2,10 @@ package daemon
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"mintter/backend/config"
 	"mintter/backend/core"
 	"mintter/backend/core/coretest"
-	"mintter/backend/db/sqlitedbg"
 	accounts "mintter/backend/genproto/accounts/v1alpha"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	documents "mintter/backend/genproto/documents/v1alpha"
@@ -17,7 +15,6 @@ import (
 	"mintter/backend/pkg/must"
 	"mintter/backend/testutil"
 	"mintter/backend/vcs"
-	"os"
 	"testing"
 	"time"
 
@@ -639,8 +636,6 @@ func TestPeriodicSync(t *testing.T) {
 }
 
 func TestMultiDevice(t *testing.T) {
-	t.Skip()
-
 	t.Parallel()
 
 	alice1 := makeTestApp(t, "alice", makeTestConfig(t), true)
@@ -663,24 +658,12 @@ func TestMultiDevice(t *testing.T) {
 		require.Equal(t, []cid.Cid{alice1.Repo.Device().CID(), alice2.Repo.Device().CID()}, sr.Devices)
 	}
 
-	// TODO(burdiyan): build11: here it must handle the concurrency properly. See: https://github.com/mintterteam/mintter/issues/687.
-	sqlitedbg.ExecPool(alice1.DB, os.Stdout, "select * from named_versions")
-	return
 	{
 		sr := must.Do2(alice2.Syncing.MustGet().Sync(ctx))
 		require.Equal(t, int64(1), sr.NumSyncOK)
 		require.Equal(t, int64(0), sr.NumSyncFailed)
 		require.Equal(t, []cid.Cid{alice2.Repo.Device().CID(), alice1.Repo.Device().CID()}, sr.Devices)
 	}
-
-	time.Sleep(2 * time.Second)
-
-	fmt.Println("alice1")
-	sqlitedbg.ExecPool(alice1.DB, os.Stdout, "SELECT multihash, id FROM ipfs_blocks ORDER BY multihash")
-	fmt.Println("alice2")
-	sqlitedbg.ExecPool(alice2.DB, os.Stdout, "SELECT multihash, id FROM ipfs_blocks ORDER BY multihash")
-
-	return
 
 	acc1 = must.Do2(alice1.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
 	acc2 = must.Do2(alice2.RPC.Accounts.GetAccount(ctx, &accounts.GetAccountRequest{}))
