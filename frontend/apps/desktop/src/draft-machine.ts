@@ -188,39 +188,40 @@ export function createDraftMachine({
         },
 
         publish: {
-          invoke: {
-            src: 'publishDraft',
-            id: 'publishDraft',
-            onDone: [
-              {
-                actions: ['invalidateDraft', 'afterPublish'],
-              },
-            ],
-            onError: [
-              {
-                target: 'errored',
-                actions: 'assignError',
-              },
-            ],
-          },
-
           states: {
             saving: {
               invoke: {
                 src: 'saveDraft',
                 id: 'saveDraft',
                 onDone: 'publishing',
-                onError: '#editor.errored',
+                onError: {
+                  target: 'errored',
+                  actions: 'assignError',
+                },
               },
             },
-
             publishing: {
               invoke: {
                 src: 'publishDraft',
                 id: 'publishDraft',
+                onDone: [
+                  {
+                    actions: ['invalidateDraft', 'afterPublish'],
+                  },
+                ],
+                onError: [
+                  {
+                    target: 'errored',
+                    actions: 'assignError',
+                  },
+                ],
               },
             },
-
+            errored: {
+              on: {
+                RETRY: 'saving',
+              },
+            },
             published: {
               type: 'final',
             },
@@ -228,7 +229,6 @@ export function createDraftMachine({
 
           initial: 'saving',
         },
-
         errored: {
           on: {
             RETRY: {
