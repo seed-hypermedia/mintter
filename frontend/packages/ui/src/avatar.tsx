@@ -19,6 +19,8 @@ export function UIAvatar({
     () => (accountId ? getRandomColor(accountId) : '$blue8'),
     [accountId],
   )
+  console.log('demo demo')
+  
   return (
     <StyledAvatar circular size={size}>
       <StyledAvatar.Image src={url} />
