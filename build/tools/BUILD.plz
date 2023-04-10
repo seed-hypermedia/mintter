@@ -29,19 +29,19 @@ go_binary(
     workdir = "../..",
 )
 
-pnpm_binary(
+yarn_binary(
     name = "protoc-gen-es",
-    pnpm_deps = "//:pnpm",
+    yarn_deps = "//:yarn",
 )
 
-pnpm_binary(
+yarn_binary(
     name = "protoc-gen-connect-web",
-    pnpm_deps = "//:pnpm",
+    yarn_deps = "//:yarn",
 )
 
-pnpm_binary(
+yarn_binary(
     name = "graphql-codegen",
-    pnpm_deps = "//:pnpm",
+    yarn_deps = "//:yarn",
 )
 
 gomod(

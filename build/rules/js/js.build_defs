@@ -1,8 +1,8 @@
 def yarn_install(
         name: str,
         srcs = [
-            "frontend/package.json",
-            "frontend/yarn.lock",
+            "package.json",
+            "yarn.lock",
         ],
         deps = [],
         labels = [],
@@ -33,7 +33,7 @@ HOME=$(eval echo ~$(whoami))
 TMPDIR="/tmp"
 cd $WORKSPACE
 $TOOLS_YARN install
-cp frontend/node_modules/.yarn-state.yml $OUT
+cp node_modules/.yarn-state.yml $OUT
 """,
         tools = {
             "yarn": [CONFIG.YARN_TOOL],

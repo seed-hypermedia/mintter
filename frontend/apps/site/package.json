@@ -52,7 +52,6 @@
     "tamagui": "1.12.2",
     "typescript": "4.9.4",
     "unist-util-visit": "4.1.1",
-    "vercel": "latest",
     "xstate": "4.35.4",
     "zod": "3.21.4"
   },

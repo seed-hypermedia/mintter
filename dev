@@ -80,7 +80,7 @@ def main():
         cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
     )
     def build_desktop(args):
-        run("plz build //backend:mintterd")
+        run("plz build //backend:mintterd //:yarn")
         run("cargo tauri build --debug")
 
     @cmd(cmds, "ping-p2p", "Execute ping utility to check visibility.")
@@ -111,7 +111,7 @@ def main():
 
     @cmd(cmds, "run-desktop", "Run Tauri desktop app for development.")
     def run_desktop(args):
-        run("plz build //backend:mintterd")
+        run("plz build //backend:mintterd //:yarn")
         return run("yarn tauri:dev", args=args)
 
     @cmd(cmds, "release", "Cut a new release.")
