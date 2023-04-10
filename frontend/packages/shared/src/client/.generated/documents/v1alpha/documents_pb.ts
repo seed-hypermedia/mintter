@@ -888,7 +888,7 @@ export class Document extends Message<Document> {
   subtitle = "";
 
   /**
-   * Output only. DeviceID that created this document.
+   * Output only. DeviceID that created the document.
    *
    * @generated from field: string creator = 4;
    */

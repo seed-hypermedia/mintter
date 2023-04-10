@@ -586,6 +586,6 @@ func (api *Server) loadDocument(ctx context.Context, conn *sqlitevcs.Conn, inclu
 }
 
 // ListAuthors implements the corresponding gRPC method.
-func (api *Server) ListAuthors(ctx context.Context, in *documents.ListAuthorsRequest) (*documents.ListAuthorsResponse, error) {
+func (api *Server) ListAuthors(_ context.Context, in *documents.ListAuthorsRequest) (*documents.ListAuthorsResponse, error) {
 	return &documents.ListAuthorsResponse{}, status.Errorf(codes.Unimplemented, "Method not implemented yet")
 }

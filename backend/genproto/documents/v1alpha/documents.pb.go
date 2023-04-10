@@ -1014,7 +1014,7 @@ type Document struct {
 	Title string `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	// Subtitle of the document.
 	Subtitle string `protobuf:"bytes,3,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
-	// Output only. DeviceID that created this document.
+	// Output only. DeviceID that created the document.
 	Creator string `protobuf:"bytes,4,opt,name=creator,proto3" json:"creator,omitempty"`
 	// This is WIP feature for block-aware API. It will supersede the `content` field.
 	Children []*BlockNode `protobuf:"bytes,9,rep,name=children,proto3" json:"children,omitempty"`
