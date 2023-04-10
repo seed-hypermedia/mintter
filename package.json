@@ -17,7 +17,6 @@
     "upgrade:tamagui": "manypkg upgrade tamagui && manypkg upgrade @tamagui && manypkg upgrade tamagui-loader && manypkg upgrade react-native-web-lite",
     "format": "prettier --write ./frontend",
     "test": "yarn workspaces foreach run test",
-    "postinstall": "yarn build",
     "d2:dev": "yarn workspace @mintter/electron dev"
   },
   "resolutions": {
