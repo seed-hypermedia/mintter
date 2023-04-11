@@ -170,7 +170,16 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		}
 	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, ipfs.NewManager(logging.New("mintter/ipfs", "debug"), a.VCSDB.Blockstore()))
+	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
+	go func() {
+		n, err := a.Net.Await(ctx)
+		if err != nil {
+			return
+		}
+
+		fileManager.Start(n.VCS().Blockstore(), n.Libp2p().Host, n.Libp2p().Routing, n.Libp2p().Datastore())
+	}()
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, fileManager)
 	if err != nil {
 		return nil, err
 	}
