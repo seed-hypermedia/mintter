@@ -61,6 +61,7 @@ export function usePublication(documentId: string, versionId?: string) {
 export function usePublicationList() {
   return useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
+    refetchOnMount: true,
     queryFn: async () => {
       const result = await publicationsClient.listPublications({})
       const publications =
@@ -113,6 +114,7 @@ export function useAccountPublicationList(accountId: string) {
 export function useDraftList() {
   return useQuery({
     queryKey: [queryKeys.GET_DRAFT_LIST],
+    refetchOnMount: true,
     queryFn: async () => {
       const result = await draftsClient.listDrafts({
         pageSize: undefined,
