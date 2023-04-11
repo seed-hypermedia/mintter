@@ -7,7 +7,7 @@
     "distDir": "../../frontend/apps/desktop/dist",
     "devPath": "http://localhost:5173",
     "beforeDevCommand": "cd ../ && yarn desktop",
-    "beforeBuildCommand": "cd ../ && yarn desktop:prod",
+    "beforeBuildCommand": "cd ../ && yarn build && yarn desktop:prod",
     "withGlobalTauri": true
   },
   "tauri": {
