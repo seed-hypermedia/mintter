@@ -4,6 +4,7 @@ import {Box} from '@app/components/box'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
 import {useAuthor} from '@app/hooks'
+import {features} from '@app/constants'
 import {
   useAddSite,
   useInviteMember,
@@ -61,97 +62,7 @@ export default function Settings({
 }) {
   const client = useQueryClient()
   const auth = useInterpret(() => createAuthService(client))
-  // return (
-  //   <TabsPrimitive.Root
-  //     className="tabs"
-  //     defaultValue="profile"
-  //     orientation="vertical"
-  //   >
-  //     <XStack>
-  //       <TabsPrimitive.List
-  //         className="tabs-list"
-  //         aria-label="Manage your node"
-  //         asChild
-  //       >
-  //         <YStack>
-  //           <TabsPrimitive.Trigger
-  //             className="tab-trigger"
-  //             value="profile"
-  //             data-testid="tab-profile"
-  //           >
-  //             Profile
-  //           </TabsPrimitive.Trigger>
-  //           <TabsPrimitive.Trigger
-  //             className="tab-trigger"
-  //             value="account"
-  //             data-testid="tab-account"
-  //           >
-  //             Account Info
-  //           </TabsPrimitive.Trigger>
-  //           <TabsPrimitive.Trigger
-  //             className="tab-trigger"
-  //             value="settings"
-  //             data-testid="tab-settings"
-  //           >
-  //             Settings
-  //           </TabsPrimitive.Trigger>
-  //           <TabsPrimitive.Trigger
-  //             className="tab-trigger"
-  //             value="sites"
-  //             data-testid="tab-sites"
-  //           >
-  //             Web Sites
-  //           </TabsPrimitive.Trigger>
-  //           {/* {EXPERIMENTS.nostr && (
-  //           <TabsPrimitive.Trigger
-  //             className="tab-trigger"
-  //             value="nostr"
-  //             data-testid="tab-nostr"
-  //           >
-  //             Nostr
-  //           </TabsPrimitive.Trigger>
-  //         )} */}
-  //         </YStack>
-  //       </TabsPrimitive.List>
-  //       <XStack flex={1} padding="$4">
-  //         <TabsPrimitive.Content
-  //           className="settings-tab-content tab-content"
-  //           value="profile"
-  //         >
-  //           <ProfileForm service={auth} updateProfile={updateProfile} />
-  //         </TabsPrimitive.Content>
-  //         <TabsPrimitive.Content
-  //           className="settings-tab-content tab-content"
-  //           value="account"
-  //           data-tauri-drag-region
-  //         >
-  //           <AccountInfo service={auth} />
-  //         </TabsPrimitive.Content>
-  //         <TabsPrimitive.Content
-  //           className="settings-tab-content tab-content"
-  //           value="settings"
-  //           data-tauri-drag-region
-  //         >
-  //           <AppSettings />
-  //         </TabsPrimitive.Content>
-  //         <TabsPrimitive.Content
-  //           className="settings-tab-content tab-content"
-  //           value="sites"
-  //           data-tauri-drag-region
-  //         >
-  //           <SitesSettings auth={auth} />
-  //         </TabsPrimitive.Content>
-  //         {/* <TabsPrimitive.Content
-  //         className="settings-tab-content tab-content"
-  //         value="nostr"
-  //         data-tauri-drag-region
-  //       >
-  //         <NostrSettings />
-  //       </TabsPrimitive.Content> */}
-  //       </XStack>
-  //     </XStack>
-  //   </TabsPrimitive.Root>
-  // )
+
   return (
     <Tabs
       theme="gray"
@@ -180,15 +91,11 @@ export default function Settings({
         <Tabs.Tab value="sites" data-testid="tab-sites">
           <SizableText>Web Sites</SizableText>
         </Tabs.Tab>
-        {/* {EXPERIMENTS.nostr && (
-            <Tabs.Tab
-              value="nostr"
-              data-testid="tab-nostr"
-            >
-              
-              <SizableText>Nostr</SizableText>
-            </Tabs.Tab>
-          )} */}
+        {features.nostr && (
+          <Tabs.Tab value="nostr" data-testid="tab-nostr">
+            <SizableText>Nostr</SizableText>
+          </Tabs.Tab>
+        )}
       </Tabs.List>
       <Separator vertical />
       <TabsContent className="settings-tab-content tab-content" value="profile">
@@ -215,13 +122,15 @@ export default function Settings({
       >
         <SitesSettings auth={auth} />
       </TabsContent>
-      {/* <TabsContent
+      {features.nostr && (
+        <TabsContent
           className="settings-tab-content tab-content"
           value="nostr"
           data-tauri-drag-region
         >
           <NostrSettings />
-        </TabsContent> */}
+        </TabsContent>
+      )}
     </Tabs>
   )
 }
@@ -1156,15 +1065,15 @@ const TabsContent = (props: TabsContentProps) => {
 //   )
 // }
 
-// function NostrSettings() {
-//   return (
-//     <>
-//       <SettingsHeader>
-//         <h2>Nostr</h2>
-//       </SettingsHeader>
-//       <NostrProfile />
-//       <NostrInfo />
-//       <NostrRelays />
-//     </>
-//   )
-// }
+function NostrSettings() {
+  return (
+    <>
+      <SettingsHeader>
+        <h2>Nostr</h2>
+      </SettingsHeader>
+      {/* <NostrProfile />
+      <NostrInfo />
+      <NostrRelays /> */}
+    </>
+  )
+}

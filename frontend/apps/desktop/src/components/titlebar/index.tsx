@@ -12,6 +12,7 @@ export interface TitleBarProps {
 }
 
 export function TitleBar(props: TitleBarProps) {
+  
   if (import.meta.env.TAURI_PLATFORM == 'macos')
     return <TitleBarMacos {...props} />
   if (import.meta.env.TAURI_PLATFORM == 'windows')

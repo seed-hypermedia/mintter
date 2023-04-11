@@ -61,7 +61,13 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
 
 export function Title({size}: {size?: SizeTokens}) {
   return (
-    <XStack gap="$2" alignItems="baseline" margin="auto" marginVertical={0}>
+    <XStack
+      gap="$2"
+      alignItems="baseline"
+      margin="auto"
+      marginVertical={0}
+      data-tauri-drag-region
+    >
       <TitleContent size={size} />
     </XStack>
   )

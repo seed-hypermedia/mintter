@@ -11,25 +11,35 @@ export default function TitleBarMacos(props: TitleBarProps) {
 
   return (
     <TitlebarWrapper platform="macos" data-tauri-drag-region>
-      <XStack paddingHorizontal="$2" justifyContent="space-between">
+      <XStack
+        paddingHorizontal="$2"
+        justifyContent="space-between"
+        data-tauri-drag-region
+      >
         <XStack
           flex={1}
           minWidth={'min-content'}
           flexBasis={0}
           alignItems="center"
+          data-tauri-drag-region
         >
-          <Container paddingLeft={64} alignItems="flex-start">
-            <XStack>
+          <Container
+            paddingLeft={64}
+            alignItems="flex-start"
+            data-tauri-drag-region
+          >
+            <XStack data-tauri-drag-region>
               <NavMenu mainActor={props.mainActor} />
               <NavigationButtons />
             </XStack>
           </Container>
           <DiscardDraftButton />
         </XStack>
-        <XStack flex={1} alignItems="center">
+        <XStack flex={1} alignItems="center" data-tauri-drag-region>
           <Title />
         </XStack>
         <XStack
+          data-tauri-drag-region
           flex={1}
           justifyContent="flex-end"
           minWidth={'min-content'}

@@ -1,5 +1,6 @@
 import {Menu} from './icons'
-import {H1, XStack, styled, Button, YStack} from 'tamagui'
+import {H1, XStack, styled, Button, YStack, GetProps} from 'tamagui'
+import {forwardRef} from 'react'
 
 export const TitlebarWrapper = styled(YStack, {
   theme: 'gray',
@@ -32,6 +33,7 @@ export const TitlebarRow = styled(XStack, {
 export const TitlebarSection = styled(XStack, {
   alignItems: 'center',
   gap: '$2',
+  userSelect: 'none',
 })
 
 export const TitleTextH1 = styled(H1, {
