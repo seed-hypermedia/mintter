@@ -26,6 +26,7 @@ import {
   Globe,
   Back,
   Forward,
+  XStack,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useActor, useSelector} from '@xstate/react'
@@ -147,55 +148,57 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   return (
-    <Dropdown.Root>
-      <Dropdown.Trigger asChild>
-        <Button size="$2" chromeless>
-          <Menu size={16} />
-        </Button>
-      </Dropdown.Trigger>
-      <Dropdown.Portal>
-        <Dropdown.Content>
-          <Dropdown.Item
-            disabled={route.key === 'home'}
-            data-testid="menu-item-inbox"
-            onSelect={() => navigate({key: 'home'})}
-          >
-            <Icon name="File" />
-            <span>All Publications</span>
-            <Dropdown.RightSlot>&#8984; 1</Dropdown.RightSlot>
-          </Dropdown.Item>
-          <Dropdown.Item
-            disabled={route.key === 'drafts'}
-            data-testid="menu-item-drafts"
-            onSelect={() => navigate({key: 'drafts'})}
-          >
-            <Icon name="PencilAdd" />
-            <span>Drafts</span>
-            <Dropdown.RightSlot>&#8984; 8</Dropdown.RightSlot>
-          </Dropdown.Item>
-          <Dropdown.Item
-            disabled={route.key === 'connections'}
-            onSelect={() => navigate({key: 'connections'})}
-          >
-            <Icon name="Person" />
-            Connections
-            <Dropdown.RightSlot>&#8984; 9</Dropdown.RightSlot>
-          </Dropdown.Item>
-          <SitesNavDropdownItems />
-          <Dropdown.Separator />
-          <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
-            <Icon name="QuickSwitcher" />
-            Quick Switcher
-            <Dropdown.RightSlot>&#8984; K</Dropdown.RightSlot>
-          </Dropdown.Item>
-          <Dropdown.Item onSelect={() => spawn({key: 'settings'})}>
-            <Icon name="GearOutlined" />
-            Settings
-            <Dropdown.RightSlot>&#8984; ,</Dropdown.RightSlot>
-          </Dropdown.Item>
-        </Dropdown.Content>
-      </Dropdown.Portal>
-    </Dropdown.Root>
+    <XStack paddingRight="$2">
+      <Dropdown.Root>
+        <Dropdown.Trigger asChild>
+          <Button size="$2" chromeless>
+            <Menu size={16} />
+          </Button>
+        </Dropdown.Trigger>
+        <Dropdown.Portal>
+          <Dropdown.Content>
+            <Dropdown.Item
+              disabled={route.key === 'home'}
+              data-testid="menu-item-inbox"
+              onSelect={() => navigate({key: 'home'})}
+            >
+              <Icon name="File" />
+              <span>All Publications</span>
+              <Dropdown.RightSlot>&#8984; 1</Dropdown.RightSlot>
+            </Dropdown.Item>
+            <Dropdown.Item
+              disabled={route.key === 'drafts'}
+              data-testid="menu-item-drafts"
+              onSelect={() => navigate({key: 'drafts'})}
+            >
+              <Icon name="PencilAdd" />
+              <span>Drafts</span>
+              <Dropdown.RightSlot>&#8984; 8</Dropdown.RightSlot>
+            </Dropdown.Item>
+            <Dropdown.Item
+              disabled={route.key === 'connections'}
+              onSelect={() => navigate({key: 'connections'})}
+            >
+              <Icon name="Person" />
+              Connections
+              <Dropdown.RightSlot>&#8984; 9</Dropdown.RightSlot>
+            </Dropdown.Item>
+            <SitesNavDropdownItems />
+            <Dropdown.Separator />
+            <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
+              <Icon name="QuickSwitcher" />
+              Quick Switcher
+              <Dropdown.RightSlot>&#8984; K</Dropdown.RightSlot>
+            </Dropdown.Item>
+            <Dropdown.Item onSelect={() => spawn({key: 'settings'})}>
+              <Icon name="GearOutlined" />
+              Settings
+              <Dropdown.RightSlot>&#8984; ,</Dropdown.RightSlot>
+            </Dropdown.Item>
+          </Dropdown.Content>
+        </Dropdown.Portal>
+      </Dropdown.Root>
+    </XStack>
   )
 }
 

@@ -24,7 +24,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
           data-tauri-drag-region
         >
           <Container
-            paddingLeft={64}
+            paddingLeft={72}
             alignItems="flex-start"
             data-tauri-drag-region
           >
