@@ -10,8 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ipfs/go-bitswap"
-	"github.com/ipfs/go-bitswap/network"
 	blockservice "github.com/ipfs/go-blockservice"
 	"github.com/ipfs/go-datastore"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
@@ -72,11 +70,13 @@ func NewManager(ctx context.Context, log *zap.Logger) *FileManager {
 }
 
 // Start starts new manager.
-func (fm *FileManager) Start(blockstore blockstore.Blockstore, host host.Host, dht routing.Routing, store datastore.Batching) error {
+func (fm *FileManager) Start(blockstore blockstore.Blockstore, host host.Host, dht routing.Routing, store datastore.Batching, bitswap *Bitswap) error {
 	fm.bstore = blockstore
+
 	fm.host = host
 	fm.dht = dht
 	fm.store = store
+	fm.exch = bitswap
 	if err := fm.setupBlockService(); err != nil {
 		return err
 	}
@@ -104,8 +104,6 @@ func (fm *FileManager) autoclose() {
 }
 
 func (fm *FileManager) setupBlockService() error {
-	bswapnet := network.NewFromIpfsHost(fm.host, fm.dht)
-	fm.exch = bitswap.New(fm.ctx, bswapnet, fm.bstore)
 	fm.bservice = blockservice.New(fm.bstore, fm.exch)
 	return nil
 }
