@@ -66,9 +66,8 @@ const OnboardingStepStyled = styled(motion.div, {
   boxSizing: 'border-box',
   alignItems: 'center',
   display: 'flex',
-  flex: 'auto',
   flexDirection: 'column',
-  gap: '$7',
+  gap: '$8',
   justifyContent: 'center',
 })
 
@@ -174,7 +173,9 @@ export function OnboardingStepButton(
 ) {
   return (
     <Button
-      size="$3"
+      // size="$7"
+      paddingVertical="$3"
+      paddingHorizontal="$8"
       {...props}
       onPress={(e) => {
         e.preventDefault()

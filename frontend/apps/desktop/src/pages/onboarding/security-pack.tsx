@@ -166,7 +166,7 @@ function MnemonicList({words}: {words: string[]}) {
         ))}
       </Box>
 
-      <Button size="$2" color="green" onPress={() => onCopy()}>
+      <Button size="$4" theme="green" onPress={() => onCopy()}>
         Copy words to clipboard
       </Button>
     </OnboardingStepBody>

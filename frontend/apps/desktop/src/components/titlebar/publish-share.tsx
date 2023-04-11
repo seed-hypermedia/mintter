@@ -7,107 +7,14 @@ import {styled} from '@app/stitches.config'
 import {useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
-import {Button, Globe} from '@mintter/ui'
-import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
-import {Icon} from '@components/icon'
 import {AccessURLRow} from '@components/url'
 import {WebPublicationRecord} from '@mintter/shared'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
+import {Button, ButtonText, ExternalLink, Globe, SizableText} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {UseQueryResult} from '@tanstack/react-query'
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
 import {usePublicationDialog} from './publication-dialog'
-
-const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
-const StyledContent = styled(DialogPrimitive.Content, dialogContentStyles)
-
-// function NostrPublishButton({
-//   onClick,
-//   doc,
-// }: {
-//   onClick: (url: string) => void
-//   doc: PublicationActor
-// }) {
-//   const url = useSelector(doc, (state) => {
-//     const {documentId, version} = state.context
-//     return getMintterPublicURL(documentId, version)
-//   })
-//   return (
-//     <Button
-//       onClick={() => {
-//         onClick(url)
-//       }}
-//     >
-//       Share on Nostr
-//     </Button>
-//   )
-// }
-
-// function NostrPostForm({
-//   onDone,
-//   docMainURL,
-// }: {
-//   onDone: () => void
-//   docMainURL: string
-// }) {
-//   const nostr = useNostr()
-//   const [content, setContent] = useState(`${docMainURL} on Mintter`)
-//   return (
-//     <form
-//       onSubmit={(e) => {
-//         e.preventDefault()
-//         nostr?.publish(content).then(() => {
-//           toast.success('Shared on Nostr.')
-//         })
-//         onDone()
-//       }}
-//     >
-//       <TextField
-//         name="content"
-//         textarea
-//         value={content}
-//         onChange={(e) => {
-//           setContent(e.target.value)
-//         }}
-//       />
-//       <Button type="submit">Post</Button>
-//     </form>
-//   )
-// }
-
-// const Heading = styled('h2', {
-//   margin: 0,
-//   fontSize: '$4',
-// })
-
-// function useNostrPostDialog() {
-//   const [isOpen, setIsOpen] = useState(false)
-//   const [mainUrl, setMainUrl] = useState('')
-//   function open(url: string) {
-//     setMainUrl(url)
-//     setIsOpen(true)
-//   }
-//   return {
-//     open,
-//     content: (
-//       <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
-//         <DialogPrimitive.Portal>
-//           <StyledOverlay />
-//           <StyledContent>
-//             <Heading>Post to Nostr</Heading>
-//             <NostrPostForm
-//               docMainURL={mainUrl}
-//               onDone={() => {
-//                 setIsOpen(false)
-//               }}
-//             />
-//           </StyledContent>
-//         </DialogPrimitive.Portal>
-//       </DialogPrimitive.Root>
-//     ),
-//   }
-// }
 
 const forceProductionURL = true
 
@@ -146,7 +53,9 @@ function PublishedURLs({
     return <MintterURLRow doc={doc} />
   return (
     <>
-      <Subheading>Public on the Web:</Subheading>
+      <SizableText size="$3" fontWeight="700" theme="blue">
+        Public on the Web:
+      </SizableText>
       {publications.data?.map((pub) => {
         const shortHost = hostnameStripProtocol(pub.hostname)
         const displayURL = pub.path
@@ -186,19 +95,23 @@ function PublishButtons({
   if (sitesList?.length === 0) return null
   return (
     <>
-      <Subheading>Publish to:</Subheading>
+      <SizableText size="$3" fontWeight="700" theme="blue">
+        Publish to:
+      </SizableText>
       {sitesList?.map((site) => {
         return (
           <Button
+            size="$4"
+            theme="blue"
             key={site.hostname}
             onPress={() => {
               onPublish(site.hostname)
             }}
+            iconAfter={ExternalLink}
           >
-            {hostnameStripProtocol(site.hostname)}
-            <ButtonIcon>
-              <Icon name="ExternalLink" />
-            </ButtonIcon>
+            <ButtonText flex={1}>
+              {hostnameStripProtocol(site.hostname)}
+            </ButtonText>
           </Button>
         )
       })}
@@ -334,9 +247,90 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   )
 }
 
-const Subheading = styled('h3', {
-  color: '$primary-text-low',
-  fontSize: '$3',
-  fontWeight: 300,
-  margin: 0,
-})
+
+// function NostrPublishButton({
+//   onClick,
+//   doc,
+// }: {
+//   onClick: (url: string) => void
+//   doc: PublicationActor
+// }) {
+//   const url = useSelector(doc, (state) => {
+//     const {documentId, version} = state.context
+//     return getMintterPublicURL(documentId, version)
+//   })
+//   return (
+//     <Button
+//       onClick={() => {
+//         onClick(url)
+//       }}
+//     >
+//       Share on Nostr
+//     </Button>
+//   )
+// }
+
+// function NostrPostForm({
+//   onDone,
+//   docMainURL,
+// }: {
+//   onDone: () => void
+//   docMainURL: string
+// }) {
+//   const nostr = useNostr()
+//   const [content, setContent] = useState(`${docMainURL} on Mintter`)
+//   return (
+//     <form
+//       onSubmit={(e) => {
+//         e.preventDefault()
+//         nostr?.publish(content).then(() => {
+//           toast.success('Shared on Nostr.')
+//         })
+//         onDone()
+//       }}
+//     >
+//       <TextField
+//         name="content"
+//         textarea
+//         value={content}
+//         onChange={(e) => {
+//           setContent(e.target.value)
+//         }}
+//       />
+//       <Button type="submit">Post</Button>
+//     </form>
+//   )
+// }
+
+// const Heading = styled('h2', {
+//   margin: 0,
+//   fontSize: '$4',
+// })
+
+// function useNostrPostDialog() {
+//   const [isOpen, setIsOpen] = useState(false)
+//   const [mainUrl, setMainUrl] = useState('')
+//   function open(url: string) {
+//     setMainUrl(url)
+//     setIsOpen(true)
+//   }
+//   return {
+//     open,
+//     content: (
+//       <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+//         <DialogPrimitive.Portal>
+//           <StyledOverlay />
+//           <StyledContent>
+//             <Heading>Post to Nostr</Heading>
+//             <NostrPostForm
+//               docMainURL={mainUrl}
+//               onDone={() => {
+//                 setIsOpen(false)
+//               }}
+//             />
+//           </StyledContent>
+//         </DialogPrimitive.Portal>
+//       </DialogPrimitive.Root>
+//     ),
+//   }
+// }

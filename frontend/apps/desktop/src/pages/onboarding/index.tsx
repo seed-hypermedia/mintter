@@ -1,6 +1,7 @@
 import {store} from '@app/app-store'
 import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
+import {YStack} from '@mintter/ui'
 import {useMachine} from '@xstate/react'
 import {useMemo} from 'react'
 import {createMachine, MachineOptionsFrom} from 'xstate'
@@ -86,33 +87,8 @@ export default function OnboardingPage({
   return (
     <>
       <TitleBar clean />
-      <Box
-        css={{
-          alignItems: 'center',
-          display: 'flex',
-          justifyContent: 'center',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '$full',
-          height: '$full',
-          backgroundColor: '$base-background-normal',
-        }}
-      >
-        <Box
-          css={{
-            backgroundColor: '$base-background-subtle',
-            borderRadius: '24px',
-            boxShadow: '$3',
-            display: 'flex',
-            maxWidth: 800,
-            minHeight: 745,
-            paddingBottom: 56,
-            paddingHorizontal: 80,
-            paddingTop: 112,
-            width: '100%',
-          }}
-        >
+      <YStack fullscreen alignItems="center" justifyContent="center">
+        <YStack>
           {onboardingMachineState.matches('welcome') && (
             <Welcome {...onboardingStepProps} />
           )}
@@ -125,8 +101,8 @@ export default function OnboardingPage({
           {onboardingMachineState.matches('complete') && (
             <CrashReporting {...onboardingStepProps} />
           )}
-        </Box>
-      </Box>
+        </YStack>
+      </YStack>
     </>
   )
 }

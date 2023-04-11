@@ -1,8 +1,17 @@
 import {styled} from '@app/stitches.config'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
+import {
+  Button,
+  Separator,
+  Copy,
+  Globe,
+  XGroup,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {open} from '@tauri-apps/api/shell'
 import {useState} from 'react'
-import {Icon} from './icon'
+import {toast} from 'react-hot-toast'
 
 export function AccessURLRow({
   url,
@@ -15,33 +24,44 @@ export function AccessURLRow({
 }) {
   const [isClipboardCopied, setIsClipboardCopied] = useState(false)
   return (
-    <URLRow>
-      <URLButton
-        disabled={!enableLink}
-        onClick={() => {
-          if (!enableLink) return
-          open(url)
-        }}
-      >
-        <IconSpan>
-          <Icon name="Globe" />
-        </IconSpan>
-
-        {title || url}
-      </URLButton>
-      <ClipboardButton
-        onClick={() => {
-          copyTextToClipboard(url)
-          setIsClipboardCopied(true)
-          setTimeout(() => {
-            setIsClipboardCopied(false)
-          }, 2000)
-        }}
-        active={isClipboardCopied}
-      >
-        <Icon name="Copy" />
-      </ClipboardButton>
-    </URLRow>
+    <XGroup borderColor="$gray7" borderWidth="$0.5" borderRadius="$3">
+      <XGroup.Item>
+        <Button
+          flex={1}
+          flexShrink={1}
+          size="$2"
+          chromeless
+          onPress={() => {
+            if (!enableLink) return
+            open(url)
+          }}
+        >
+          <Globe size={32} />
+          {title || url}
+        </Button>
+      </XGroup.Item>
+      <Separator />
+      <XGroup.Item>
+        <Button
+          flexShrink={0}
+          flex={0}
+          chromeless
+          size="$2"
+          onPress={() => {
+            copyTextToClipboard(url).then(() => {
+              toast.success('Link copied successfully')
+            })
+            setIsClipboardCopied(true)
+            setTimeout(() => {
+              setIsClipboardCopied(false)
+            }, 2000)
+          }}
+          active={isClipboardCopied}
+        >
+          <Copy size={32} />
+        </Button>
+      </XGroup.Item>
+    </XGroup>
   )
 }
 const IconSpan = styled('span', {
