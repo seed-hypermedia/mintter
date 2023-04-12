@@ -173,13 +173,13 @@ export function useDraft(documentId?: string) {
   })
 }
 
-export function useAuthor(id = '', opts: QueryOptions = {}) {
+export function useAccount(id = '', opts: QueryOptions = {}) {
   return useQuery({
     enabled: !!id,
     queryKey: [queryKeys.GET_ACCOUNT, id],
     queryFn: () => accountsClient.getAccount({id}),
     onError: (err) => {
-      console.log(`useAuthor error: ${err}`)
+      console.log(`useAccount error: ${err}`)
     },
   })
 }

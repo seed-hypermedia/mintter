@@ -1,4 +1,4 @@
-import {useAuthor, useDraft, usePublication} from '@app/hooks'
+import {useAccount, useDraft, usePublication} from '@app/hooks'
 import {
   DraftRoute,
   PublicationRoute,
@@ -81,7 +81,7 @@ function PublicationTitle({
   size?: SizeTokens
 }) {
   let {data: pub} = usePublication(route.documentId, route.versionId)
-  let {data: author} = useAuthor(pub?.document?.author)
+  let {data: author} = useAccount(pub?.document?.author)
   const navigate = useNavigate()
 
   return (

@@ -1,6 +1,6 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {usePublication, useAuthor, prefetchPublication} from '@app/hooks'
+import {usePublication, useAccount, prefetchPublication} from '@app/hooks'
 import {useSitePublications} from '@app/hooks/sites'
 import {
   useNavigate,
@@ -105,7 +105,7 @@ function WebPublicationListItem({
     webPub,
   )
   const {data: publication} = usePublication(webPub.documentId, webPub.version)
-  const {data: author} = useAuthor(publication?.document?.author)
+  const {data: author} = useAccount(publication?.document?.author)
   return (
     <Button
       chromeless

@@ -1,7 +1,7 @@
 import {changesClient, commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
 import {useConversations} from '@app/editor/comments/conversations-context'
-import {useAuthor} from '@app/hooks'
+import {useAccount} from '@app/hooks'
 import {useNavigate} from '@app/utils/navigation'
 // import {
 //   useNostr,
@@ -305,7 +305,7 @@ function CommentItem({
     queryKey: ['ChangeInfo', comment.revision],
   })
 
-  let author = useAuthor(changeData.data?.author)
+  let author = useAccount(changeData.data?.author)
 
   function deleteComment() {
     commentsClient

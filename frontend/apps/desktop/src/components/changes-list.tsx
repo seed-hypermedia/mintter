@@ -1,4 +1,4 @@
-import {useAuthor, useDocChanges} from '@app/hooks'
+import {useAccount, useDocChanges} from '@app/hooks'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
 import {MouseEvent} from 'react'
@@ -19,7 +19,7 @@ function ChangeItem({
   activeVersion?: string
   active?: boolean
 }) {
-  const author = useAuthor(change.author)
+  const author = useAccount(change.author)
   const navigate = useNavigate()
   const openAccount = (e: MouseEvent) => {
     e.preventDefault()

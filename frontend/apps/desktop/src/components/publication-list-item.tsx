@@ -2,7 +2,7 @@ import {publicationsClient} from '@app/api-clients'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
-import {prefetchPublication, queryKeys, useAuthor} from '@app/hooks'
+import {prefetchPublication, queryKeys, useAccount} from '@app/hooks'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {PublicationRoute, useNavigate} from '@app/utils/navigation'
 import {
@@ -32,6 +32,25 @@ import {
   Separator,
 } from '@mintter/ui'
 
+function EditorButton({accountId}: {accountId: string}) {
+  const navigate = useNavigate()
+  const editor = useAccount(accountId)
+  return (
+    <Button
+      size="$1"
+      theme="$gray5"
+      onPress={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        navigate({key: 'account', accountId})
+      }}
+      data-testid="list-item-author"
+    >
+      {editor?.data?.profile?.alias}
+    </Button>
+  )
+}
+
 export function PublicationListItem({
   publication,
   hasDraft,
@@ -46,7 +65,6 @@ export function PublicationListItem({
   const spawn = useNavigate('spawn')
   const client = useQueryClient()
   const title = publication.document?.title || 'Untitled Document'
-  const {data: author} = useAuthor(publication.document?.author)
   const docId = publication.document?.id
   if (!docId) throw new Error('PublicationListItem requires id')
 
@@ -94,7 +112,6 @@ export function PublicationListItem({
     )
     toast.success('Document ID copied successfully')
   }
-
   return (
     <Button
       chromeless
@@ -126,20 +143,13 @@ export function PublicationListItem({
         </Button>
       )}
 
-      <Button
-        size="$1"
-        theme="$gray5"
-        onPress={(e) => {
-          const accountId = publication.document?.author
-          if (!accountId) return
-          e.preventDefault()
-          e.stopPropagation()
-          navigate({key: 'account', accountId})
-        }}
-        data-testid="list-item-author"
-      >
-        {author?.profile?.alias}
-      </Button>
+      {publication.document?.editors.length ? (
+        publication.document?.editors.map((editor) => (
+          <EditorButton accountId={editor} key={editor} />
+        ))
+      ) : publication.document?.author ? (
+        <EditorButton accountId={publication.document?.author} />
+      ) : null}
       <Text
         fontFamily="$body"
         fontSize="$2"

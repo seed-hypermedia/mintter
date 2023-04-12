@@ -3,7 +3,7 @@ import {createAuthService} from '@app/auth-machine'
 import {Box} from '@app/components/box'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
-import {useAuthor} from '@app/hooks'
+import {useAccount} from '@app/hooks'
 import {features} from '@app/constants'
 import {
   useAddSite,
@@ -344,7 +344,7 @@ function SiteMemberRow({
   hostname: string
   isOwner: boolean
 }) {
-  const {data: account} = useAuthor(member.accountId)
+  const {data: account} = useAccount(member.accountId)
   const remove = useRemoveMember(hostname)
   const [hovering, setHover] = useState(false)
   return (
