@@ -7,19 +7,22 @@ import {Heading} from '@components/heading'
 import {OnlineIndicator} from '@components/indicator'
 import {PublicationListItem} from '@components/publication-list-item'
 import {Text} from '@components/text'
-import {ConnectionStatus, PeerInfo} from '@mintter/shared'
 import {ComponentProps, ReactNode} from 'react'
 import {Container, MainWrapper, UIAvatar} from '@mintter/ui'
 import {PageProps} from './base'
 
-function PeerRow({peer}: {peer: PeerInfo}) {
+function DeviceRow({
+  isOnline,
+  deviceId,
+}: {
+  isOnline: boolean
+  deviceId: string
+}) {
   return (
     <Box css={{display: 'flex', alignItems: 'center'}}>
-      <OnlineIndicator
-        online={peer.connectionStatus === ConnectionStatus.CONNECTED}
-      />
+      <OnlineIndicator online={isOnline} />
       <Text fontWeight={'bold'} css={{marginInline: '$3'}}>
-        {peer.accountId}
+        {deviceId}
       </Text>
     </Box>
   )
@@ -89,9 +92,15 @@ export default function AccountPage(props: PageProps) {
           ) : null}
           <Section>
             <Text fontWeight={'bold'}>Devices</Text>
-            {account.peers.map((peer) => {
-              if (!peer) return null
-              return <PeerRow key={peer?.accountId} peer={peer} />
+            {account.devices.map((device) => {
+              if (!device) return null
+              return (
+                <DeviceRow
+                  key={device.deviceId}
+                  isOnline={device.isConnected}
+                  deviceId={device.deviceId} // what is difference between peerId and deviceId?
+                />
+              )
             })}
           </Section>
           <AccountDocuments accountId={accountId} />

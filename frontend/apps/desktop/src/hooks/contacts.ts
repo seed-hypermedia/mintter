@@ -1,6 +1,6 @@
 import {accountsClient, networkingClient} from '@app/api-clients'
 import {Account, ConnectionStatus, Device} from '@mintter/shared'
-import {useQueries, useQuery} from '@tanstack/react-query'
+import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from '.'
 
 export function useContactsList() {
@@ -14,18 +14,11 @@ export function useContactsList() {
 }
 
 export function useConnectionSummary() {
-  const contacts = useContactsList()
-  const allDevices = contacts.data?.accounts
-    .map((account) => Object.values(account.devices))
-    .flat()
-  const peerInfo = usePeerInfo(allDevices)
-  const loadedDevices = peerInfo.map((peer) => peer.data)
-  const connectedDevices = loadedDevices.filter(
-    (device) => device?.connectionStatus === ConnectionStatus.CONNECTED,
-  )
+  const peerInfo = usePeerInfo()
+  const connectedPeers = peerInfo.data?.peerList || []
   return {
-    online: connectedDevices.length > 0,
-    connectedCount: connectedDevices.length,
+    online: connectedPeers.length > 0,
+    connectedCount: connectedPeers.length,
   }
 }
 
@@ -39,35 +32,33 @@ export function useAccount(accountId: string) {
 
 export function useAccountWithDevices(accountId: string) {
   const account = useAccount(accountId)
-  const peerInfo = usePeerInfo(
-    account?.data?.devices ? Object.values(account.data.devices) : [],
-  )
-  // account.data?.devices[0].peerId
-  // peerInfo[0].data?.addrs
-  // peerInfo[0].data?.accountId
-  // peerInfo[0].data?.connectionStatus
+  const peers = usePeerInfo()
   return {
     profile: account.data?.profile,
-    peers: peerInfo.map((peer) => peer.data),
+    devices: Object.values(account?.data?.devices || {}).map((device) => {
+      // I think this is the cause of much confusion:
+      const deviceId = device.peerId
+      // see https://github.com/mintterteam/mintter/issues/1368
+      return {
+        deviceId,
+        isConnected: !!peers.data?.peerList.find(
+          (peer) => peer.deviceId === deviceId,
+        ),
+      }
+    }),
   }
 }
 
-export function usePeerInfo(devices?: Device[]) {
-  return useQueries({
-    queries: Object.entries(devices || {}).map(([, device]) => ({
-      queryKey: [queryKeys.GET_PEER_INFO, device.peerId],
-      queryFn: async () => {
-        return await networkingClient.getPeerInfo({peerId: device.peerId})
-      },
-    })),
+export function usePeerInfo() {
+  return useQuery({
+    queryKey: [queryKeys.GET_PEERS],
+    queryFn: async () => {
+      return await networkingClient.listPeers({})
+    },
   })
 }
 
 export function useAccountIsConnected(account: Account) {
-  const peerInfoQueries = usePeerInfo(Object.values(account.devices))
-  const isConnected = peerInfoQueries.some(
-    (peerInfoQuery) =>
-      peerInfoQuery.data?.connectionStatus == ConnectionStatus.CONNECTED,
-  )
-  return isConnected
+  const peers = usePeerInfo()
+  return !!peers.data?.peerList.find((peer) => peer.accountId === account.id)
 }

@@ -21,6 +21,7 @@ import {contentGraphClient} from './../api-clients'
 
 export const queryKeys = {
   GET_SITES: 'GET_SITES',
+  GET_PEERS: 'GET_PEERS',
   SITES_LIST: 'SITES_LIST',
   GET_SITE_INFO: 'GET_SITE_INFO', // , siteId: string
   GET_SITE_MEMBERS: 'GET_SITE_MEMBERS', // , siteId: string
