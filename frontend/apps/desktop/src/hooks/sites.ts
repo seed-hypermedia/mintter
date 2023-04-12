@@ -3,6 +3,7 @@ import {appInvalidateQueries} from '@app/query-client'
 import {
   Block,
   Document,
+  DocumentChange,
   getIdsfromUrl,
   Member,
   Member_Role,
@@ -14,11 +15,13 @@ import {
 } from '@mintter/shared'
 import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {
+  draftsClient,
   getWebSiteClient,
   publicationsClient,
   webPublishingClient,
 } from '@app/api-clients'
 import {queryKeys} from './index'
+import {useNavigate} from '@app/utils/navigation'
 
 function blockExtractReferencedDocs(
   block: Block,
@@ -202,7 +205,27 @@ export function useSitePublications(hostname: string | undefined) {
   })
 }
 
+async function performWebPublish(
+  document: Document,
+  hostname: string,
+  path: string,
+  version: string,
+) {
+  // 3. get referenced dependencies of the document
+  const referencedDocs = extractReferencedDocs(document)
+
+  // 4. publish the document to the site
+  const site = getWebSiteClient(hostname)
+  await site.publishDocument({
+    documentId: document.id,
+    path: path,
+    referencedDocuments: referencedDocs,
+    version,
+  })
+}
+
 export function useSitePublish() {
+  const navigate = useNavigate('replace')
   return useMutation(
     async ({
       hostname,
@@ -215,23 +238,76 @@ export function useSitePublish() {
       version: string
       path: string
     }) => {
-      const {document} = await publicationsClient.getPublication({
+      // welcome to New Publish
+      // right now the doc is currently published to the p2p and we want to put it on a site
+
+      // 1. get the account ID of the publisher
+      // 2. ensure document has correct publisher set
+      //   a. if not, create a draft, set the publisher, save new version
+      // 3. get referenced dependencies of the document
+      // 4. publish the document to the site
+
+      const {document, ...localPub} = await publicationsClient.getPublication({
         documentId,
         version,
       })
       if (!document)
         throw new Error('Cannot publish document that is not available locally')
-      const referencedDocs = extractReferencedDocs(document)
-      const site = getWebSiteClient(hostname)
-      await site.publishDocument({
-        documentId: documentId,
-        path: path,
-        referencedDocuments: referencedDocs,
-        version,
+
+      // 1. get the account ID of the publisher
+      // throw new Error('What is the publisher id?')
+      const publisherId = null
+      // const publisherId =
+      //   'bahezrj4iaqacicabciqhss35efrhjsgcgrobrm6h6uc2bfspkwxgmuh26l24jaoaol77vja'
+      // const allSites = await webPublishingClient.listSites({})
+
+      if (document.publisher === publisherId) {
+        console.log('000 - doc publisher is correct')
+        // continue if the publisher is already correct for this version
+        await performWebPublish(document, hostname, path, version)
+        return {version, fromDocument: document, fromVersion: version}
+      }
+      console.log('000 -1 doc publisher setting to ' + publisherId)
+      // we need to create a new version with the correct publisher id
+      if (version !== localPub.version) {
+        throw new Error(
+          'You can only publish the latest version of a document, because we need to write the publisher field, and drafts cannot be created on old versions yet.',
+        )
+      }
+      console.log('000 -2  creating draft')
+      const draft = await draftsClient.createDraft({
+        existingDocumentId: documentId,
       })
+      console.log('000 -3  updating draft')
+      await draftsClient.updateDraftV2({
+        documentId: draft.id,
+        changes: [
+          new DocumentChange({
+            op: {case: 'setPublisher', value: publisherId},
+          }),
+        ],
+      })
+      console.log('000 -4  publishing draft')
+      const newPub = await draftsClient.publishDraft({
+        documentId: draft.id,
+      })
+      console.log('000 -5  webpub')
+      await performWebPublish(document, hostname, path, newPub.version)
+      return {
+        version: newPub.version,
+        fromDocument: document,
+        fromVersion: version,
+      }
     },
     {
-      onSuccess: (a, input) => {
+      onSuccess: ({version, fromDocument, fromVersion}, input) => {
+        if (version !== fromVersion) {
+          navigate({
+            key: 'publication',
+            documentId: fromDocument.id,
+            versionId: version,
+          })
+        }
         appInvalidateQueries([queryKeys.GET_WEB_PUBLICATIONS, input.hostname])
         appInvalidateQueries([queryKeys.GET_DOC_PUBLICATIONS, input.documentId])
       },

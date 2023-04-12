@@ -1,9 +1,9 @@
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
+import {useAccount} from '@app/hooks'
 import {MainActor} from '@app/hooks/main-actor'
 import {useDocPublications, useSiteList} from '@app/hooks/sites'
 import {useDaemonReady} from '@app/node-status-context'
 import {PublicationActor} from '@app/publication-machine'
-import {styled} from '@app/stitches.config'
 import {useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
@@ -11,6 +11,7 @@ import {AccessURLRow} from '@components/url'
 import {WebPublicationRecord} from '@mintter/shared'
 import {Button, ButtonText, ExternalLink, Globe, SizableText} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {GestureReponderEvent} from '@tamagui/web'
 import {UseQueryResult} from '@tanstack/react-query'
 import {useSelector} from '@xstate/react'
 import {useEffect, useRef, useState} from 'react'
@@ -118,9 +119,48 @@ function PublishButtons({
     </>
   )
 }
-const ButtonIcon = styled('span', {
-  marginHorizontal: 12,
-})
+
+function PublishButton({
+  publisherId,
+  onPress,
+  disabled,
+  isDraft,
+}: {
+  publisherId?: null | string
+  onPress: (e: GestureReponderEvent) => void
+  disabled?: boolean
+  isDraft?: boolean
+}) {
+  // const sites = useSiteList()
+  const publisher = useAccount(publisherId || undefined)
+  // const site = sites.data?.find((site) => site.publisherId === publisherId)
+  const publisherLabel = publisherId
+    ? publisher.data?.profile?.alias || null
+    : null
+  const draftActionLabel = publisherId
+    ? `Publish to ${publisherLabel}`
+    : 'Publish'
+  return (
+    <PopoverPrimitive.Trigger asChild disabled={disabled}>
+      <Button
+        size="$2"
+        chromeless
+        disabled={disabled}
+        onPress={onPress}
+        theme="green"
+      >
+        {isDraft ? (
+          draftActionLabel
+        ) : (
+          <>
+            <Globe size={16} />
+          </>
+        )}
+        {publisherLabel}
+      </Button>
+    </PopoverPrimitive.Trigger>
+  )
+}
 
 export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const route = useNavRoute()
@@ -132,11 +172,26 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const isDaemonReady = useDaemonReady()
   const publications = useDocPublications(docId)
   let isSaving = useRef(false)
+
+  const [publisherId, setPublisherId] = useState<null | string>(null)
   useEffect(() => {
     if (mainActor.type == 'publication') {
       isSaving.current = false
+
+      const state = mainActor.actor.getSnapshot()
+      setPublisherId(state?.context.publication?.document.publisher || null)
+
+      const sub = mainActor.actor.subscribe((state) => {
+        setPublisherId(state?.context.publication?.document.publisher || null)
+      })
+      return sub.unsubscribe
     } else {
-      mainActor.actor.subscribe((state) => {
+      const state = mainActor.actor.getSnapshot()
+      setPublisherId(state?.context.draft?.publisher || null)
+
+      const sub = mainActor.actor.subscribe((state) => {
+        setPublisherId(state?.context.draft?.publisher || null)
+
         if (state.matches('editing.saving')) {
           // console.log('subscribe change TRUE!', state.value)
           isSaving.current = true
@@ -145,6 +200,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
           isSaving.current = false
         }
       })
+      return sub.unsubscribe
     }
   }, [mainActor])
 
@@ -161,37 +217,24 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
           }
         }}
       >
-        <PopoverPrimitive.Trigger
-          asChild
+        <PublishButton
+          publisherId={publisherId}
           disabled={!isDaemonReady || isSaving.current}
-        >
-          <Button
-            size="$2"
-            chromeless
-            disabled={!isDaemonReady || isSaving.current}
-            onPress={(e) => {
-              e.preventDefault()
-              if (isOpen) {
-                setIsOpen(false)
-                return
-              }
+          isDraft={mainActor.type === 'draft'}
+          onPress={(e) => {
+            e.preventDefault()
+            if (isOpen) {
+              setIsOpen(false)
+              return
+            }
 
-              if (mainActor.type == 'draft') {
-                mainActor.actor.send('DRAFT.PUBLISH')
-              }
-              setIsOpen(true)
-            }}
-            theme="green"
-          >
-            {mainActor.type === 'draft' ? (
-              'Publish'
-            ) : (
-              <>
-                <Globe size={16} />
-              </>
-            )}
-          </Button>
-        </PopoverPrimitive.Trigger>
+            if (mainActor.type == 'draft') {
+              mainActor.actor.send('DRAFT.PUBLISH')
+            }
+            setIsOpen(true)
+          }}
+        />
+
         <PopoverPrimitive.Portal>
           <PopoverPrimitive.Content
             align="end"

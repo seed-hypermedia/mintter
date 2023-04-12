@@ -15,8 +15,7 @@ import {
   useQueries,
   useQuery,
 } from '@tanstack/react-query'
-import {listen} from '@tauri-apps/api/event'
-import {useEffect, useMemo} from 'react'
+import {useMemo} from 'react'
 import {contentGraphClient} from './../api-clients'
 
 export const queryKeys = {
