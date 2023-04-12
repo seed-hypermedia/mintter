@@ -309,7 +309,6 @@ export function Editor({
             {children}
           </Slate>
         </DragContext.Provider>
-        {/* <pre>{JSON.stringify(editor.children, null, 2)}</pre> */}
       </div>
     )
   }

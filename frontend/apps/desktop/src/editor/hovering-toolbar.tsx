@@ -70,7 +70,7 @@ export function EditorHoveringToolbar({mouseDown}: {mouseDown: boolean}) {
   )
 
   return (
-    <HoveringToolbar mouseDown={mouseDown}>
+    <HoveringToolbar mouseDown={false}>
       <Box
         css={{
           zIndex: '$max',
