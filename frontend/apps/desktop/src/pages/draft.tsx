@@ -13,9 +13,9 @@ import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {ChildrenOf, Document} from '@mintter/shared'
-import {MainWrapper} from '@mintter/ui'
+import {Button, MainWrapper, SizableText, XStack, YStack} from '@mintter/ui'
 import {useActor, useInterpret} from '@xstate/react'
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
@@ -26,6 +26,7 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
   const draftActor = mainActor.actor
   const editor = mainActor.editor
   const [state, send] = useActor(draftActor)
+  const [debugValue, setDebugValue] = useState(false)
   let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
   let isDaemonReady = useDaemonReady()
@@ -83,23 +84,53 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
                 <>
                   {!isDaemonReady ? <NotSavingBanner /> : null}
                   {state.context.localDraft?.content ? (
-                    <Editor
-                      editor={editor}
-                      readOnly={!isDaemonReady}
-                      value={state.context.localDraft.content}
-                      //@ts-ignore
-                      onChange={(content: ChildrenOf<Document>) => {
-                        if (
-                          (!content && typeof content == 'string') ||
-                          !isDaemonReady
-                        )
-                          return
-                        mouseService.send('DISABLE.CHANGE')
-                        mainActor.actor.send('EDITING.START')
-                        // @ts-ignore
-                        send({type: 'DRAFT.UPDATE', payload: {content}})
-                      }}
-                    />
+                    <>
+                      <Editor
+                        editor={editor}
+                        readOnly={!isDaemonReady}
+                        value={state.context.localDraft.content}
+                        //@ts-ignore
+                        onChange={(content: ChildrenOf<Document>) => {
+                          if (
+                            (!content && typeof content == 'string') ||
+                            !isDaemonReady
+                          )
+                            return
+                          mouseService.send('DISABLE.CHANGE')
+                          mainActor.actor.send('EDITING.START')
+                          // @ts-ignore
+                          send({type: 'DRAFT.UPDATE', payload: {content}})
+                        }}
+                      />
+                      {import.meta.env.DEV && (
+                        <YStack maxWidth="500px" marginHorizontal="auto">
+                          <Button
+                            size="$1"
+                            theme="gray"
+                            width="100%"
+                            onPress={() => setDebugValue((v) => !v)}
+                          >
+                            toggle value
+                          </Button>
+                          {debugValue && (
+                            <XStack
+                              tag="pre"
+                              {...{
+                                whiteSpace: 'wrap',
+                              }}
+                            >
+                              <SizableText tag="code" size="$1">
+                                {JSON.stringify(
+                                  state.context.localDraft?.content,
+                                  null,
+                                  3,
+                                )}
+                              </SizableText>
+                            </XStack>
+                          )}
+                        </YStack>
+                      )}
+                    </>
                   ) : null}
                 </>
               </MainWrapper>

@@ -41,7 +41,9 @@ import {
   MainWrapper,
   Pencil,
   ScrollView,
+  SizableText,
   Text,
+  XStack,
   YStack,
 } from '@mintter/ui'
 
@@ -53,6 +55,7 @@ export default function PublicationPage({mainActor}: PageProps) {
     throw new Error('Publication page expects publication actor')
   const publicationActor = mainActor.actor
   const route = useNavRoute()
+  const [debugValue, setDebugValue] = useState(false)
   const docId = route.key === 'publication' ? route.documentId : undefined
   const blockId = route.key === 'publication' ? route.blockId : undefined
   const versionId = route.key === 'publication' ? route.versionId : undefined
@@ -181,17 +184,51 @@ export default function PublicationPage({mainActor}: PageProps) {
                             version={state.context.version}
                           />
                           {state.context.publication?.document?.content && (
-                            <Editor
-                              editor={editor}
-                              mode={EditorMode.Publication}
-                              value={
-                                state.context.publication?.document.content
-                              }
-                              onChange={() => {
-                                mouseService.send('DISABLE.CHANGE')
-                                // noop
-                              }}
-                            />
+                            <>
+                              <Editor
+                                editor={editor}
+                                mode={EditorMode.Publication}
+                                value={
+                                  state.context.publication?.document.content
+                                }
+                                onChange={() => {
+                                  mouseService.send('DISABLE.CHANGE')
+                                  // noop
+                                }}
+                              />
+                              {import.meta.env.DEV && (
+                                <YStack
+                                  maxWidth="500px"
+                                  marginHorizontal="auto"
+                                >
+                                  <Button
+                                    size="$1"
+                                    theme="gray"
+                                    width="100%"
+                                    onPress={() => setDebugValue((v) => !v)}
+                                  >
+                                    toggle value
+                                  </Button>
+                                  {debugValue && (
+                                    <XStack
+                                      tag="pre"
+                                      {...{
+                                        whiteSpace: 'wrap',
+                                      }}
+                                    >
+                                      <SizableText tag="code" size="$1">
+                                        {JSON.stringify(
+                                          state.context.publication?.document
+                                            .content,
+                                          null,
+                                          3,
+                                        )}
+                                      </SizableText>
+                                    </XStack>
+                                  )}
+                                </YStack>
+                              )}
+                            </>
                           )}
                         </ScrollView>
                       </YStack>
