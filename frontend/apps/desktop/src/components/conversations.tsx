@@ -3,12 +3,6 @@ import {features} from '@app/constants'
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAccount} from '@app/hooks'
 import {useNavigate} from '@app/utils/navigation'
-// import {
-//   useNostr,
-//   useNostrPostsOnDoc,
-//   useNostrProfile,
-//   useNostrReplies,
-// } from '@app/utils/nostr'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
@@ -27,7 +21,6 @@ import {
 import {UIAvatar} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
-// import {Event} from 'nostr-relaypool/event'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {PanelTitle} from './panel'
@@ -44,7 +37,6 @@ export function RealConversations() {
   }, [])
 
   const {documentId, conversations, highlights} = context
-  // const nostrPosts = useNostrPostsOnDoc(documentId)
   const {data} = conversations || {}
 
   useEffect(() => {
@@ -75,20 +67,6 @@ export function RealConversations() {
         paddingTop: '$4',
       }}
     >
-      {/* {EXPERIMENTS.nostr ? (
-        <Box
-          css={{
-            padding: 0,
-            margin: 0,
-          }}
-          as="ul"
-        >
-          {nostrPosts.isLoading ? <Text>Loading...</Text> : null}
-          {nostrPosts.data?.map((post) => {
-            return <NostrPostItem post={post} key={post.id} />
-          })}
-        </Box>
-      ) : null} */}
       <Box
         css={{
           padding: 0,
@@ -395,215 +373,6 @@ function CommentItem({
     </Box>
   )
 }
-
-// function NostrLeafPost({post}: {post: Event}) {
-//   const userInfo = useNostrProfile(post.pubkey)
-//   const displayName = userInfo?.data?.display_name
-//   return (
-//     <Box
-//       as="li"
-//       css={{
-//         listStyle: 'none',
-//         display: 'flex',
-//         flexDirection: 'column',
-//         gap: '$3',
-//         // paddingTop: selectors ? '$5' : '$3',
-//         width: '$full',
-//         paddingTop: '$5',
-//         marginRight: '$4',
-//         position: 'relative',
-//         '&:hover': {
-//           cursor: 'default',
-//         },
-//       }}
-//     >
-//       <Box
-//         css={{
-//           position: 'absolute',
-//           // top: selectors ? 8 : 0,
-//           top: 8,
-//           left: 0,
-//           transform: 'translateX(-100%)',
-//           paddingBottom: 0,
-//           paddingLeft: '$5',
-//         }}
-//       >
-//         <Avatar
-//           url={userInfo?.data?.picture}
-//           accountId=""
-//           size={2}
-//           color={getRandomColor(post.pubkey)}
-//           alias={post.pubkey.substring(0, 6)}
-//         />
-//       </Box>
-//       <Box
-//         css={{
-//           display: 'flex',
-//           gap: '$6',
-//           paddingInline: '$4',
-//           flex: 1,
-//         }}
-//       >
-//         <Text size="2" fontWeight="bold">
-//           {displayName || post.pubkey.substring(0, 6)}
-//         </Text>
-//         <Text
-//           size="2"
-//           color="muted"
-//           as="a"
-//           href={'nostr:${post.id}'}
-//           onClick={(e) => {
-//             e.preventDefault()
-//             copyTextToClipboard(`nostr:${post.id}`)
-//             toast.success('Copied to nostr url to clipboard.')
-//           }}
-//         >
-//           {formattedDate(new Timestamp({seconds: BigInt(post.created_at)}))}
-//         </Text>
-//       </Box>
-
-//       <Box
-//         css={{
-//           // width: '$full',
-//           paddingInline: '$4',
-
-//           boxSizing: 'border-box',
-//         }}
-//       >
-//         <Text css={{display: 'inline-block', wordBreak: 'break-all'}}>
-//           {/* {post.content.substring(0, 5)} */}
-//           {post.content}
-//         </Text>
-//       </Box>
-//     </Box>
-//   )
-// }
-
-// function CommentReplyForm({postId}: {postId: string}) {
-//   const [isReplying, setIsReplying] = useState(false)
-//   const [draft, setDraft] = useState('')
-//   const nostr = useNostr()
-//   if (isReplying)
-//     return (
-//       <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
-//         <Box
-//           as="form"
-//           onSubmit={(e) => {
-//             e.preventDefault()
-//             const tags = [['e', postId]]
-//             console.log('HUH', tags)
-//             nostr?.publish(draft, tags).then(() => {
-//               toast.success('Nostr reply sent')
-//               setDraft('')
-//               setIsReplying(false)
-//             })
-//           }}
-//           css={{
-//             flex: 1,
-//             display: 'flex',
-//             alignItems: 'flex-start',
-//             gap: '$4',
-//             flexDirection: 'column',
-//           }}
-//         >
-//           <TextField
-//             value={draft}
-//             onChange={(e) => setDraft(e.target.value)}
-//             name="replyContent"
-//           />
-//           <Box
-//             css={{
-//               display: 'flex',
-//               alignItems: 'center',
-//             }}
-//           >
-//             <Button
-//               onClick={() => {
-//                 setIsReplying(false)
-//               }}
-//               color="muted"
-//               size="1"
-//               variant="ghost"
-//             >
-//               Cancel
-//             </Button>
-//             <Button size="1" type="submit" variant="outlined">
-//               Send Reply
-//             </Button>
-//           </Box>
-//         </Box>
-//       </Box>
-//     )
-//   return (
-//     <Box css={{display: 'flex', paddingBlock: '$4', paddingRight: '$4'}}>
-//       <Button
-//         onClick={() => {
-//           setIsReplying(true)
-//         }}
-//         color="muted"
-//         size="1"
-//         variant="outlined"
-//       >
-//         Reply
-//       </Button>
-//     </Box>
-//   )
-// }
-
-// function NostrPostItem({post}: {post: Event}) {
-//   const replies = useNostrReplies(post.id)
-
-//   return (
-//     <Box
-//       css={{
-//         borderBottom: '1px solid rgba(0,0,0,0.1)',
-//         transition: 'all 150ms ease',
-//         paddingBlock: '$5',
-//         paddingLeft: 60,
-//         '&:hover': {
-//           backgroundColor: '$base-background-subtle',
-//         },
-//       }}
-//     >
-//       <Box as="ul" css={{margin: 0, padding: 0}}>
-//         <NostrLeafPost post={post} />
-//         {replies?.data && (
-//           <Box
-//             as="li"
-//             css={{
-//               listStyle: 'none',
-//               display: 'flex',
-//               flexDirection: 'column',
-//               gap: '$3',
-//               // paddingTop: selectors ? '$5' : '$3',
-//               width: '$full',
-//               paddingTop: '$5',
-//               marginRight: '$4',
-//               position: 'relative',
-//               paddingLeft: 48,
-//               '&:hover': {
-//                 cursor: 'default',
-//               },
-//             }}
-//           >
-//             <Box
-//               as="ul"
-//               css={{
-//                 margin: 0,
-//                 padding: 0,
-//               }}
-//             >
-//               {replies.data.map((post) => (
-//                 <NostrLeafPost key={post.id} post={post} />
-//               ))}
-//             </Box>
-//           </Box>
-//         )}
-//       </Box>
-//       <CommentReplyForm postId={post.id} />
-//     </Box>
-//   )
-// }
 
 function ConversationSelectors({
   selectors,

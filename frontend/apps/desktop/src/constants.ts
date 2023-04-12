@@ -5,5 +5,4 @@ export const MINTTER_GATEWAY_URL =
 
 export const features = {
   comments: false,
-  nostr: false,
 }

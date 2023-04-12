@@ -129,7 +129,6 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const docId = route.key === 'publication' ? route.documentId : undefined
   const [isOpen, setIsOpen] = useState(false)
   const publicationDialog = usePublicationDialog(mainActor)
-  // const nostrPostDialog = useNostrPostDialog()
   const isDaemonReady = useDaemonReady()
   const publications = useDocPublications(docId)
   let isSaving = useRef(false)
@@ -228,109 +227,11 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
                   publicationDialog.open(hostname)
                 }}
               />
-              {/* {EXPERIMENTS.nostr && (
-                <>
-                  <Subheading>Nostr Network</Subheading>
-                  <NostrPublishButton
-                    doc={mainActor.actor as PublicationActor}
-                    onClick={nostrPostDialog.open}
-                  />
-                </>
-              )} */}
             </Box>
           </PopoverPrimitive.Content>
         </PopoverPrimitive.Portal>
       </PopoverPrimitive.Root>
       {publicationDialog.content}
-      {/* {nostrPostDialog.content} */}
     </>
   )
 }
-
-
-// function NostrPublishButton({
-//   onClick,
-//   doc,
-// }: {
-//   onClick: (url: string) => void
-//   doc: PublicationActor
-// }) {
-//   const url = useSelector(doc, (state) => {
-//     const {documentId, version} = state.context
-//     return getMintterPublicURL(documentId, version)
-//   })
-//   return (
-//     <Button
-//       onClick={() => {
-//         onClick(url)
-//       }}
-//     >
-//       Share on Nostr
-//     </Button>
-//   )
-// }
-
-// function NostrPostForm({
-//   onDone,
-//   docMainURL,
-// }: {
-//   onDone: () => void
-//   docMainURL: string
-// }) {
-//   const nostr = useNostr()
-//   const [content, setContent] = useState(`${docMainURL} on Mintter`)
-//   return (
-//     <form
-//       onSubmit={(e) => {
-//         e.preventDefault()
-//         nostr?.publish(content).then(() => {
-//           toast.success('Shared on Nostr.')
-//         })
-//         onDone()
-//       }}
-//     >
-//       <TextField
-//         name="content"
-//         textarea
-//         value={content}
-//         onChange={(e) => {
-//           setContent(e.target.value)
-//         }}
-//       />
-//       <Button type="submit">Post</Button>
-//     </form>
-//   )
-// }
-
-// const Heading = styled('h2', {
-//   margin: 0,
-//   fontSize: '$4',
-// })
-
-// function useNostrPostDialog() {
-//   const [isOpen, setIsOpen] = useState(false)
-//   const [mainUrl, setMainUrl] = useState('')
-//   function open(url: string) {
-//     setMainUrl(url)
-//     setIsOpen(true)
-//   }
-//   return {
-//     open,
-//     content: (
-//       <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
-//         <DialogPrimitive.Portal>
-//           <StyledOverlay />
-//           <StyledContent>
-//             <Heading>Post to Nostr</Heading>
-//             <NostrPostForm
-//               docMainURL={mainUrl}
-//               onDone={() => {
-//                 setIsOpen(false)
-//               }}
-//             />
-//           </StyledContent>
-//         </DialogPrimitive.Portal>
-//       </DialogPrimitive.Root>
-//     ),
-//   }
-// }
