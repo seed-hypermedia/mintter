@@ -269,7 +269,11 @@ function RenderMintterLink(
 function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault()
-    if (props.mode == EditorMode.Embed || props.mode == EditorMode.Discussion)
+    if (
+      props.mode == EditorMode.Embed ||
+      props.mode == EditorMode.Discussion ||
+      props.mode == EditorMode.Draft
+    )
       return
     open(props.element.url)
   }
