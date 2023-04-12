@@ -18,13 +18,19 @@ type docState struct {
 	id         cid.Cid
 	author     cid.Cid
 	createTime time.Time
+	editors    map[cid.Cid]struct{}
 	maxClock   hlc.Time
 	tree       *crdt.Tree
 	applied    map[cid.Cid]*docChange
-	parents    map[cid.Cid]struct{} // applied-parents=heads
-	title      map[cid.Cid]string
-	subtitle   map[cid.Cid]string
-	blocks     map[string]map[cid.Cid]*documents.Block
+	parents    map[cid.Cid]struct{} // heads = applied - parents
+
+	// changeID => value
+	title     map[cid.Cid]string
+	subtitle  map[cid.Cid]string
+	publisher map[cid.Cid]cid.Cid
+
+	// blockID => changeID => block value
+	blocks map[string]map[cid.Cid]*documents.Block
 }
 
 func newDocState(id, author cid.Cid, createTime time.Time) *docState {
@@ -32,11 +38,13 @@ func newDocState(id, author cid.Cid, createTime time.Time) *docState {
 		id:         id,
 		author:     author,
 		createTime: createTime,
+		editors:    make(map[cid.Cid]struct{}),
 		tree:       crdt.NewTree(crdt.NewVectorClock()),
 		applied:    make(map[cid.Cid]*docChange),
 		parents:    make(map[cid.Cid]struct{}),
 		title:      make(map[cid.Cid]string),
 		subtitle:   make(map[cid.Cid]string),
+		publisher:  make(map[cid.Cid]cid.Cid),
 		blocks:     make(map[string]map[cid.Cid]*documents.Block),
 	}
 }
@@ -52,6 +60,9 @@ func (ds *docState) applyChange(vc vcs.VerifiedChange) error {
 	}
 
 	for _, dep := range vc.Decoded.Parents {
+		if _, ok := ds.applied[dep]; !ok {
+			return fmt.Errorf("invalid change order: missing dependency %s of change %s", dep, vc.Cid())
+		}
 		ds.parents[dep] = struct{}{}
 	}
 
@@ -70,7 +81,6 @@ func (ds *docState) applyChange(vc vcs.VerifiedChange) error {
 		case *documents.DocumentChange_SetSubtitle:
 			ds.subtitle[vc.Cid()] = op.SetSubtitle
 		case *documents.DocumentChange_MoveBlock_:
-
 			if err := ds.tree.SetNodePosition(site, op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
 				return fmt.Errorf("failed to apply move operation: %w", err)
 			}
@@ -84,6 +94,12 @@ func (ds *docState) applyChange(vc vcs.VerifiedChange) error {
 			}
 			op.ReplaceBlock.Revision = vc.Cid().String()
 			ds.blocks[op.ReplaceBlock.Id][vc.Cid()] = op.ReplaceBlock
+		case *documents.DocumentChange_SetPublisher:
+			pubid, err := cid.Decode(op.SetPublisher)
+			if err != nil {
+				return fmt.Errorf("failed to decode publisher id %s: %w", op.SetPublisher, err)
+			}
+			ds.publisher[vc.Cid()] = pubid
 		default:
 			panic("BUG: unhandled document change")
 		}
@@ -91,6 +107,7 @@ func (ds *docState) applyChange(vc vcs.VerifiedChange) error {
 
 	ds.maxClock = vc.Decoded.Time
 	ds.applied[vc.Cid()] = dc
+	ds.editors[vc.Decoded.Author] = struct{}{}
 	return nil
 }
 
@@ -118,8 +135,18 @@ func (ds *docState) hydrate() *documents.Document {
 		Title:      ds.getTitle(),
 		Subtitle:   ds.getSubtitle(),
 		Author:     ds.author.String(),
+		Editors:    make([]string, 0, len(ds.editors)),
 		CreateTime: timestamppb.New(ds.createTime),
 		UpdateTime: timestamppb.New(ds.maxClock.Time()),
+	}
+
+	pub := ds.getPublisher()
+	if pub.Defined() {
+		docpb.Publisher = pub.String()
+	}
+
+	for k := range ds.editors {
+		docpb.Editors = append(docpb.Editors, k.String())
 	}
 
 	blockMap := map[string]*documents.BlockNode{}
@@ -160,6 +187,14 @@ func (ds *docState) getSubtitle() string {
 	var lww crdt.LWW[string]
 	for c, str := range ds.subtitle {
 		lww.Set(c.KeyString(), ds.applied[c].vc.Decoded.Time.Pack(), str)
+	}
+	return lww.Value
+}
+
+func (ds *docState) getPublisher() cid.Cid {
+	var lww crdt.LWW[cid.Cid]
+	for c, pub := range ds.publisher {
+		lww.Set(c.KeyString(), ds.applied[c].vc.Decoded.Time.Pack(), pub)
 	}
 	return lww.Value
 }

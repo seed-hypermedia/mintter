@@ -229,6 +229,14 @@ export class DocumentChange extends Message<DocumentChange> {
      */
     value: string;
     case: "deleteBlock";
+  } | {
+    /**
+     * Set the publisher ID on the document.
+     *
+     * @generated from field: string set_publisher = 6;
+     */
+    value: string;
+    case: "setPublisher";
   } | { case: undefined; value?: undefined } = { case: undefined };
 
   constructor(data?: PartialMessage<DocumentChange>) {
@@ -244,6 +252,7 @@ export class DocumentChange extends Message<DocumentChange> {
     { no: 3, name: "move_block", kind: "message", T: DocumentChange_MoveBlock, oneof: "op" },
     { no: 4, name: "replace_block", kind: "message", T: Block, oneof: "op" },
     { no: 5, name: "delete_block", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
+    { no: 6, name: "set_publisher", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DocumentChange {
@@ -747,11 +756,26 @@ export class Document extends Message<Document> {
   subtitle = "";
 
   /**
-   * Output only. Author of the document.
+   * Output only. Author ID of the document.
    *
    * @generated from field: string author = 4;
    */
   author = "";
+
+  /**
+   * Account ID of a publisher if any.
+   *
+   * @generated from field: string publisher = 10;
+   */
+  publisher = "";
+
+  /**
+   * Output only. Account IDs of all the editors of the document.
+   * Includes the original author as well.
+   *
+   * @generated from field: repeated string editors = 11;
+   */
+  editors: string[] = [];
 
   /**
    * This is WIP feature for block-aware API. It will supersede the `content` field.
@@ -793,6 +817,8 @@ export class Document extends Message<Document> {
     { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "subtitle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "publisher", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "editors", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 9, name: "children", kind: "message", T: BlockNode, repeated: true },
     { no: 6, name: "create_time", kind: "message", T: Timestamp },
     { no: 7, name: "update_time", kind: "message", T: Timestamp },

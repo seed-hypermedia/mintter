@@ -90,6 +90,9 @@ message DocumentChange {
 
     // ID of a block to delete.
     string delete_block = 5;
+
+    // Set the publisher ID on the document.
+    string set_publisher = 6;
   }
 }
 
@@ -202,8 +205,15 @@ message Document {
   // Subtitle of the document.
   string subtitle = 3;
 
-  // Output only. Author of the document.
+  // Output only. Author ID of the document.
   string author = 4;
+
+  // Account ID of a publisher if any.
+  string publisher = 10;
+
+  // Output only. Account IDs of all the editors of the document.
+  // Includes the original author as well.
+  repeated string editors = 11;
 
   // This is WIP feature for block-aware API. It will supersede the `content` field.
   repeated BlockNode children = 9;

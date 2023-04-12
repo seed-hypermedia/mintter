@@ -381,6 +381,7 @@ func TestAPIUpdateDraft(t *testing.T) {
 		Title:    "My new document title",
 		Subtitle: "This is my document's abstract",
 		Author:   draft.Author,
+		Editors:  []string{draft.Author},
 		Children: []*documents.BlockNode{
 			{
 				Block: &documents.Block{
@@ -555,6 +556,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 		want := &documents.Document{
 			Id:         draft.Id,
 			Author:     draft.Author,
+			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
@@ -611,6 +613,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 		want := &documents.Document{
 			Id:         draft.Id,
 			Author:     draft.Author,
+			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
@@ -661,6 +664,7 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 		want := &documents.Document{
 			Id:         draft.Id,
 			Author:     draft.Author,
+			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
 			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
@@ -896,6 +900,32 @@ func TestBug_BlockRevisionMustUpdate(t *testing.T) {
 	blkNew := pub2.Document.Children[0]
 	require.NotEqual(t, "", blkNew.Block.Revision)
 	require.NotEqual(t, blk.Block.Revision, blkNew.Block.Revision, "block revision must update")
+}
+
+func TestPublisherAndEditors(t *testing.T) {
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+
+	_, err = api.UpdateDraftV2(ctx, &documents.UpdateDraftRequestV2{
+		DocumentId: draft.Id,
+		Changes: []*documents.DocumentChange{
+			{Op: &documents.DocumentChange_SetTitle{SetTitle: "Document title"}},
+			{Op: &documents.DocumentChange_SetPublisher{SetPublisher: api.me.MustGet().AccountID().String()}},
+		},
+	})
+	require.NoError(t, err)
+
+	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
+	require.NoError(t, err)
+	require.Equal(t, api.me.MustGet().AccountID().String(), draft.Publisher)
+	require.Equal(t, "Document title", draft.Title)
+	wantEditors := []string{api.me.MustGet().AccountID().String()}
+	require.Equal(t, wantEditors, draft.Editors)
 }
 
 func updateDraft(ctx context.Context, t *testing.T, api *Server, id string, updates []*documents.DocumentChange) *documents.Document {
