@@ -1,8 +1,8 @@
 import {createPromiseClient} from '@bufbuild/connect'
 import {Publications} from '@mintter/shared'
+import {transport} from 'client'
 import {z} from 'zod'
 import {procedure, router} from '../trpc'
-import {transport} from '../../grpc.server'
 
 const publicationsClient = createPromiseClient(Publications, transport)
 

@@ -30,7 +30,7 @@ export function Transclusion({element}: {element: Embed}) {
     () => getIdsfromUrl(element.url),
     [element.url],
   )
-  const doc = trpc.publication.get.useQuery(
+  const publicationQuery = trpc.publication.get.useQuery(
     {
       documentId,
       versionId,
@@ -38,7 +38,8 @@ export function Transclusion({element}: {element: Embed}) {
     {},
   )
   const block = useMemo(() => {
-    const docChildren = doc.data?.children
+    const doc = publicationQuery.data?.publication?.document
+    const docChildren = doc?.children
     if (docChildren) {
       let pubContent = blockNodeToSlate(docChildren, 'group')
       let temp: FlowContent | undefined
@@ -56,7 +57,7 @@ export function Transclusion({element}: {element: Embed}) {
         return temp as FlowContent
       }
     }
-  }, [doc.data, blockId])
+  }, [publicationQuery.data, blockId])
   if (!block) return null
   return (
     <Link href={renderStandardUrl(documentId, versionId, blockId)}>
