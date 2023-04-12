@@ -4,8 +4,9 @@ import {
   isGroupContent,
   isParent,
   GroupingContent,
+  FlowContent,
 } from '@mintter/shared'
-import {Editor, Node, Path, Transforms} from 'slate'
+import {Editor, Node, NodeEntry, Path, PathRef, Transforms} from 'slate'
 import type {EditorPlugin} from './types'
 
 /**
@@ -25,108 +26,132 @@ export const createTabPlugin = (): EditorPlugin => {
   }
 }
 
+type NodeRef = {
+  entry: NodeEntry<FlowContent>
+  pathRef: PathRef | null
+  isChild: boolean
+}
+
 function moveStatement(editor: Editor, up: boolean) {
   if (!editor.selection) return
 
-  const [statement, statementPath] =
-    Editor.above(editor, {
-      at: editor.selection,
-      mode: 'lowest',
-      match: isFlowContent,
-    }) || []
+  const {anchor, focus} = editor.selection
 
-  if (!statement || !statementPath) throw new Error('found no parent statement')
+  let startPath, endPath
 
-  const [parent] = Editor.parent(editor, statementPath)
+  if (Path.isAfter(anchor.path, focus.path)) {
+    startPath = focus.path
+    endPath = anchor.path
+  } else {
+    startPath = anchor.path
+    endPath = focus.path
+  }
 
-  if (isGroupContent(parent)) {
-    // IS GROUP, go ahead
-    Editor.withoutNormalizing(editor, () => {
-      MintterEditor.addChange(editor, ['moveBlock', statement.id])
-      MintterEditor.addChange(editor, ['replaceBlock', statement.id])
-      if (!up) {
-        const [prev, prevPath] =
-          Editor.previous(editor, {
-            at: statementPath,
-          }) || []
+  const nodes = getSelectedNodes(editor, startPath, endPath)
 
-        if (!prev || !prevPath || !isParent(prev)) return
+  if (!nodes) throw new Error('found no parent statement')
 
-        if (prev.children.length == 1) {
-          Transforms.wrapNodes(
-            editor,
-            //@ts-ignore
-            {type: parent.type, children: []},
-            {at: statementPath},
-          )
-          Transforms.moveNodes(editor, {
-            at: statementPath,
-            to: [...prevPath, 1],
-          })
-        } else {
-          Transforms.moveNodes(editor, {
-            at: statementPath,
-            to: [
-              ...prevPath,
-              1,
-              (prev.children[1] as GroupingContent).children.length,
-            ],
-          })
-        }
-      } else {
-        // don't try to lift anything if we're already at the root level (with default group the root is depth 4)
-        if (statementPath.length < 4) return
+  let isFirst = true
+  for (const [index, node] of nodes.entries()) {
+    const block = node.entry[0]
+    const blockPath =
+      node.pathRef && node.pathRef.current
+        ? node.pathRef.current
+        : node.entry[1]
 
-        const siblings = Array.from(nextSiblings(editor, statementPath))
+    const [parentBlock] = Editor.parent(editor, blockPath)
+    if (isGroupContent(parentBlock)) {
+      Editor.withoutNormalizing(editor, () => {
+        MintterEditor.addChange(editor, ['moveBlock', block.id])
+        MintterEditor.addChange(editor, ['replaceBlock', block.id])
+        if (!up) {
+          if (!isFirst && node.isChild) return
+          const [prev, prevPath] =
+            Editor.previous(editor, {
+              at: blockPath,
+            }) || []
+          if (!prev || !prevPath || !isParent(prev)) return
 
-        // don't re-parent anything if there are no siblins
-        if (siblings.length) {
-          const range = {
-            anchor: Editor.start(editor, siblings[0][1]),
-            focus: Editor.end(editor, siblings[siblings.length - 1][1]),
-          }
-
-          // if we don't have a group, wrap siblings and then move
-          if (statement?.children.length == 1) {
+          if (prev.children.length == 1) {
             Transforms.wrapNodes(
               editor,
               //@ts-ignore
-              {
-                type: isGroupContent(parent) ? parent.type : 'group',
-                children: [],
-              },
-              {
-                match: (_, path) =>
-                  siblings.some((s) => Path.equals(s[1], path)),
-                at: range,
-              },
+              {type: parentBlock.type, children: []},
+              {at: blockPath},
             )
-
             Transforms.moveNodes(editor, {
-              at: Path.next(statementPath),
-              to: [...statementPath, 1],
+              at: blockPath,
+              to: [...prevPath, 1],
             })
           } else {
             Transforms.moveNodes(editor, {
-              at: range,
-              // moveNodes is recursive, but we only want to move nodes that are actually inside children, not any childrens children
-              match: (_, path) => siblings.some((s) => Path.equals(s[1], path)),
-              to: [...statementPath, 1, statement?.children[1].children.length],
+              at: blockPath,
+              to: [
+                ...prevPath,
+                1,
+                (prev.children[1] as GroupingContent).children.length,
+              ],
             })
           }
+          isFirst = false
+        } else {
+          // don't try to lift anything if we're already at the root level (with default group the root is depth 4)
+          if (blockPath.length < 4 || (!isFirst && node.isChild)) return
 
-          siblings.forEach((entry) => {
-            let [node] = entry
-            if (isFlowContent(node)) {
-              MintterEditor.addChange(editor, ['moveBlock', node.id])
-              MintterEditor.addChange(editor, ['replaceBlock', node.id])
+          const siblings = Array.from(nextSiblings(editor, blockPath))
+
+          // don't re-parent anything if there are no siblins
+          if (siblings.length) {
+            const range = {
+              anchor: Editor.start(editor, siblings[0][1]),
+              focus: Editor.end(editor, siblings[siblings.length - 1][1]),
             }
-          })
-        }
 
-        doubleLift(editor, statementPath)
-      }
-    })
+            // if we don't have a group, wrap siblings and then move
+            if (block?.children.length == 1) {
+              Transforms.wrapNodes(
+                editor,
+                //@ts-ignore
+                {
+                  type: isGroupContent(parentBlock)
+                    ? parentBlock.type
+                    : 'group',
+                  children: [],
+                },
+                {
+                  match: (_, path) =>
+                    siblings.some((s) => Path.equals(s[1], path)),
+                  at: range,
+                },
+              )
+              Transforms.moveNodes(editor, {
+                at: Path.next(blockPath),
+                to: [...blockPath, 1],
+              })
+            } else {
+              Transforms.moveNodes(editor, {
+                at: range,
+                // moveNodes is recursive, but we only want to move nodes that are actually inside children, not any childrens children
+                match: (_, path) =>
+                  siblings.some((s) => Path.equals(s[1], path)),
+                to: [...blockPath, 1, block?.children[1].children.length],
+              })
+            }
+
+            siblings.forEach((entry) => {
+              let [node] = entry
+              if (isFlowContent(node)) {
+                MintterEditor.addChange(editor, ['moveBlock', node.id])
+                MintterEditor.addChange(editor, ['replaceBlock', node.id])
+              }
+            })
+          }
+          liftNode(editor, node)
+          isFirst = false
+        }
+      })
+    }
+    if (node.pathRef) node.pathRef.unref()
   }
 }
 
@@ -139,12 +164,70 @@ function* nextSiblings(editor: Editor, path: Path) {
   }
 }
 
-function doubleLift(editor: Editor, path: Path) {
-  const ref = Editor.pathRef(editor, path)
+function liftNode(editor: Editor, node: NodeRef) {
+  const ref = node.pathRef
+  if (!ref || node.entry[1] === ref.current) {
+    Transforms.liftNodes(editor, {at: node.entry[1]})
+    return
+  }
 
-  Transforms.liftNodes(editor, {at: path})
-  if (!ref.current) throw new Error('couldnt track path')
+  if (!ref || !ref.current) throw new Error('couldnt track path')
   Transforms.liftNodes(editor, {at: ref.current})
+}
 
-  ref.unref()
+function getSelectedNodes(editor: Editor, startPath: Path, endPath: Path) {
+  const startNode = Editor.above(editor, {
+    at: startPath,
+    mode: 'lowest',
+    match: isFlowContent,
+  })
+  const endNode = Editor.above(editor, {
+    at: endPath,
+    mode: 'lowest',
+    match: isFlowContent,
+  })
+
+  const nodes: NodeRef[] = []
+
+  if (!startNode || !endNode) return nodes
+  if (Path.equals(startPath, endPath))
+    return [{entry: startNode, pathRef: null, isChild: false}]
+
+  let currentNode = startNode
+
+  while (!Path.isAfter(currentNode[1], endNode[1])) {
+    nodes.push({
+      entry: currentNode,
+      pathRef: Editor.pathRef(editor, currentNode[1]),
+      isChild: false,
+    })
+    const descendants = Node.descendants(currentNode[0])
+    for (const des of descendants) {
+      des[1] = [...currentNode[1], ...des[1]]
+      if (des[0].type === 'statement' && !Path.isAfter(des[1], endPath)) {
+        nodes.push({
+          entry: des as NodeEntry<FlowContent>,
+          pathRef: Editor.pathRef(editor, des[1]),
+          isChild: true,
+        })
+      }
+    }
+    let nextNode: NodeEntry<FlowContent> | undefined
+    try {
+      nextNode = Editor.node(
+        editor,
+        Path.next(currentNode[1]),
+      ) as NodeEntry<FlowContent>
+    } catch {
+      nextNode = Editor.next(editor, {
+        at: nodes[nodes.length - 1].entry[1],
+        match: isFlowContent,
+        mode: 'lowest',
+      })
+    }
+    if (!nextNode) break
+    currentNode = nextNode
+  }
+
+  return nodes
 }
