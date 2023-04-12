@@ -256,9 +256,11 @@ function MintterDocumentLink({element, attributes}: LinkProps) {
   let editor = useSlateStatic()
   let at = findPath(element)
   let [docId, version] = getIdsfromUrl(element.url)
-  let {data} = useQuery([queryKeys.GET_PUBLICATION, docId, version], () =>
-    publicationsClient.getPublication({documentId: docId, version}),
-  )
+  let {data} = useQuery({
+    queryKey: [queryKeys.GET_PUBLICATION, docId, version],
+    queryFn: () =>
+      publicationsClient.getPublication({documentId: docId, version}),
+  })
   useEffect(() => {
     if (data) {
       Editor.withoutNormalizing(editor, () => {

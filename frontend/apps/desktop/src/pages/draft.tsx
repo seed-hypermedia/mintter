@@ -13,7 +13,7 @@ import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
 import {ChildrenOf, Document} from '@mintter/shared'
-import {MainWrapper, XStack} from '@mintter/ui'
+import {MainWrapper} from '@mintter/ui'
 import {useActor, useInterpret} from '@xstate/react'
 import {useEffect} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
@@ -53,8 +53,6 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
         FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
-        {!isDaemonReady ? <NotSavingBanner /> : null}
-
         <MouseProvider value={mouseService}>
           <DragProvider value={dragService}>
             <BlockHighLighter>
@@ -83,6 +81,7 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
                 }}
               >
                 <>
+                  {!isDaemonReady ? <NotSavingBanner /> : null}
                   {state.context.localDraft?.content ? (
                     <Editor
                       editor={editor}

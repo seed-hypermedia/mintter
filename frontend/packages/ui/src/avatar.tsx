@@ -30,6 +30,7 @@ export function UIAvatar({
             color="$gray10"
             textTransform="capitalize"
             fontWeight="700"
+            fontSize={size}
           >
             {initials}
           </Text>

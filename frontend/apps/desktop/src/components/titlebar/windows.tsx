@@ -120,9 +120,9 @@ export default function TitleBarWindows(props: TitleBarProps) {
           >
             <XStack data-tauri-drag-region>
               <NavigationButtons />
+              <DiscardDraftButton />
             </XStack>
           </Container>
-          <DiscardDraftButton />
         </XStack>
         <XStack flex={1} alignItems="center" data-tauri-drag-region>
           <Title size="$2" />

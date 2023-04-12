@@ -105,7 +105,7 @@ export default function Footer({children}: {children?: ReactNode}) {
   return (
     <FooterWrapper>
       {!isDaemonReady ? (
-        <XStack alignItems="center">
+        <XStack alignItems="center" gap="$2" paddingHorizontal="$3">
           <Clock size={10} />
           <SizableText size="$1" userSelect="none">
             Initializing node...

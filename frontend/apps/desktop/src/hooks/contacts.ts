@@ -32,9 +32,7 @@ export function useConnectionSummary() {
 export function useAccount(accountId: string) {
   const account = useQuery({
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
-    queryFn: async () => {
-      return await accountsClient.getAccount({id: accountId})
-    },
+    queryFn: () => accountsClient.getAccount({id: accountId}),
   })
   return account
 }

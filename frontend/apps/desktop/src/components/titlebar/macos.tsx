@@ -31,9 +31,9 @@ export default function TitleBarMacos(props: TitleBarProps) {
             <XStack data-tauri-drag-region>
               <NavMenu mainActor={props.mainActor} />
               <NavigationButtons />
+              <DiscardDraftButton />
             </XStack>
           </Container>
-          <DiscardDraftButton />
         </XStack>
         <XStack flex={1} alignItems="center" data-tauri-drag-region>
           <Title />
