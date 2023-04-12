@@ -43,6 +43,9 @@ export const TitleTextH1 = styled(H1, {
   cursor: 'default',
   padding: 0,
   margin: 0,
+  letterSpacing: 'auto',
+  textTransform: 'none',
+  fontWeight: '700',
 })
 export function TitleText(props) {
   return <TitleTextH1 {...props} data-tauri-drag-region />
