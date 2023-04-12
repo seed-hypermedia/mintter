@@ -182,13 +182,14 @@ func (fm *FileManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// return that we have successfully uploaded our file!
 		fm.log.Debug("File successfully uploaded")
 	default:
-		fmt.Fprintf(w, "Only GET and POST methods are supported.")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		_ = encoder.Encode("Only GET and POST methods are supported.")
 	}
 }
 
 // AddFile chunks and adds content to the DAGService from a reader. The content
 // is stored as a UnixFS DAG (default for IPFS). It returns the root ipld.Node.
-func (fm *FileManager) AddFile(ctx context.Context, r io.Reader) (ipld.Node, error) {
+func (fm *FileManager) AddFile(r io.Reader) (ipld.Node, error) {
 	params := &AddParams{}
 
 	prefix, err := merkledag.PrefixForCidVersion(1)
@@ -196,9 +197,9 @@ func (fm *FileManager) AddFile(ctx context.Context, r io.Reader) (ipld.Node, err
 		return nil, fmt.Errorf("bad CID Version: %w", err)
 	}
 
-	hashFunCode, ok := multihash.Names[strings.ToLower(params.HashFun)]
+	hashFunCode, ok := multihash.Names[strings.ToLower("sha2-256")]
 	if !ok {
-		return nil, fmt.Errorf("unrecognized hash function: %s", params.HashFun)
+		return nil, fmt.Errorf("unrecognized hash function: %s", "sha2-256")
 	}
 	prefix.MhType = hashFunCode
 	prefix.MhLength = -1
@@ -206,9 +207,9 @@ func (fm *FileManager) AddFile(ctx context.Context, r io.Reader) (ipld.Node, err
 
 	dbp := helpers.DagBuilderParams{
 		Dagserv:    DAGService,
-		RawLeaves:  params.RawLeaves,
+		RawLeaves:  true, // Leave the actual file bytes untouched instead of wrapping them in a dag-pb protobuf wrapper
 		Maxlinks:   helpers.DefaultLinksPerBlock,
-		NoCopy:     params.NoCopy,
+		NoCopy:     false,
 		CidBuilder: &prefix,
 	}
 
