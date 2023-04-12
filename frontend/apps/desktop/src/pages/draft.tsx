@@ -57,31 +57,31 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
         <MouseProvider value={mouseService}>
           <DragProvider value={dragService}>
             <BlockHighLighter>
-              <MainWrapper
-                onScroll={() => {
-                  mouseService.send('DISABLE.SCROLL')
+              <MainWrapper>
+                <YStack
+                  onScroll={() => {
+                    mouseService.send('DISABLE.SCROLL')
 
-                  // if (!canEdit) {
-                  //   mainService.send('NOT.EDITING')
-                  // }
-                }}
-                // @ts-ignore
-                onMouseMove={(event) => {
-                  mouseService.send({
-                    type: 'MOUSE.MOVE',
-                    position: event.clientY,
-                  })
-                  mainActor.actor.send('EDITING.STOP')
-                }}
-                onMouseLeave={() => {
-                  mouseService.send('DISABLE.CHANGE')
-                }}
-                onMouseUp={() => {
-                  dragService.send('DROPPED')
-                  mouseService.send('DISABLE.DRAG.END')
-                }}
-              >
-                <>
+                    // if (!canEdit) {
+                    //   mainService.send('NOT.EDITING')
+                    // }
+                  }}
+                  // @ts-ignore
+                  onMouseMove={(event) => {
+                    mouseService.send({
+                      type: 'MOUSE.MOVE',
+                      position: event.clientY,
+                    })
+                    mainActor.actor.send('EDITING.STOP')
+                  }}
+                  onMouseLeave={() => {
+                    mouseService.send('DISABLE.CHANGE')
+                  }}
+                  onMouseUp={() => {
+                    dragService.send('DROPPED')
+                    mouseService.send('DISABLE.DRAG.END')
+                  }}
+                >
                   {!isDaemonReady ? <NotSavingBanner /> : null}
                   {state.context.localDraft?.content ? (
                     <>
@@ -132,7 +132,7 @@ export default function DraftPage({mainActor}: {mainActor: MainActor}) {
                       )}
                     </>
                   ) : null}
-                </>
+                </YStack>
               </MainWrapper>
               <Footer />
             </BlockHighLighter>
