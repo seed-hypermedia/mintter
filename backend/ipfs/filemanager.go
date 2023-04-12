@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
-	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,6 +32,8 @@ import (
 const (
 	// UploadRoute is the route to upload a file.
 	UploadRoute = "/ipfs/file-upload"
+	// MaxFileMB is the maximum file size (in MB) to be uploaded.
+	MaxFileMB = 64
 )
 
 // AddParams contains all of the configurable parameters needed to specify the
@@ -147,40 +150,55 @@ func (fm *FileManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		// Parse our multipart form, 10 << 20 specifies a maximum
 		// upload of 10 MB files.
-		if err := r.ParseMultipartForm(10 << 20); err != nil {
+		if err := r.ParseMultipartForm(MaxFileMB << 20); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_ = encoder.Encode("Parse body error: " + err.Error())
 			return
 		}
-		// FormFile returns the first file for the given key `myFile`
-		// it also returns the FileHeader so we can get the Filename,
-		// the Header and the size of the file
-		file, handler, err := r.FormFile("myFile")
+		if len(r.MultipartForm.File) != 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			fm.log.Debug("Only one file supported", zap.Int("Number of files", len(r.MultipartForm.File)))
+			_ = encoder.Encode("Only one file supported, got: " + strconv.FormatInt(int64(len(r.MultipartForm.File)), 10))
+			return
+		}
+		fhs := []*multipart.FileHeader{}
+		for _, v := range r.MultipartForm.File {
+			fhs = v
+		}
+		if len(fhs) != 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			fm.log.Debug("Only one file header file supported", zap.Int("Number of headers", len(fhs)))
+			_ = encoder.Encode("Only one file header file supported, got: " + strconv.FormatInt(int64(len(fhs)), 10))
+			return
+		}
+		file, err := fhs[0].Open()
 		if err != nil {
-			fm.log.Debug("Error Retrieving the File: ", zap.Error(err))
+			w.WriteHeader(http.StatusInternalServerError)
+			fm.log.Warn("Error Retrieving file", zap.Error(err))
+			_ = encoder.Encode("Error Retrieving file" + err.Error())
 			return
 		}
 		defer file.Close()
-
-		fm.log.Debug("Uploading file", zap.String("Name", handler.Filename), zap.Int64("Size", handler.Size))
-		// Create a temporary file within our temp-images directory that follows
-		// a particular naming pattern
-		tempFile, err := os.CreateTemp("temp-images", "upload-*.png")
+		n, err := fm.AddFile(file)
 		if err != nil {
-			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fm.log.Warn("Cannot upload file to ipfs", zap.Error(err))
+			_ = encoder.Encode("Cannot upload file to ipfs: " + err.Error())
+			return
 		}
-		defer tempFile.Close()
-
-		// read all of the contents of our uploaded file into a
-		// byte array
-		fileBytes, err := io.ReadAll(file)
+		size, err := n.Size()
 		if err != nil {
-			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fm.log.Warn("Cannot calculate size of the uploaded file", zap.Error(err))
+			_ = encoder.Encode("Cannot calculate size of the uploaded file: " + err.Error())
+			return
 		}
-		// write this byte array to our temporary file
-		_, _ = tempFile.Write(fileBytes)
-		// return that we have successfully uploaded our file!
-		fm.log.Debug("File successfully uploaded")
+		w.WriteHeader(http.StatusCreated)
+		w.Header().Add("Content-Length", strconv.FormatInt(int64(size), 10))
+		w.Header().Add("Content-Type", "text/plain")
+		cid := n.Cid().String()
+		_, _ = w.Write([]byte(cid))
+		return
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		_ = encoder.Encode("Only GET and POST methods are supported.")

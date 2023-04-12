@@ -3,11 +3,18 @@ package ipfs
 import (
 	"bytes"
 	"context"
+	"io/ioutil"
+	"mime/multipart"
 	"mintter/backend/logging"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
@@ -16,9 +23,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	fileBoundary = 100000
+	fileCID      = "bafybeiecq2irw4fl5vunnxo6cegoutv4de63h7n27tekkjtak3jrvrzzhe"
+)
+
 func TestAddFile(t *testing.T) {
 	server := makeManager(t, akey)
-	fileBytes, err := createFile0to100k()
+	fileBytes, err := createFile0toBound(fileBoundary)
 	require.NoError(t, err)
 	fileReader := bytes.NewReader(fileBytes)
 	node, err := server.AddFile(fileReader)
@@ -27,7 +39,66 @@ func TestAddFile(t *testing.T) {
 	require.NoError(t, err)
 	require.Greater(t, int(size), len(fileBytes))
 	cid := node.Cid().String()
-	require.Equal(t, "bafybeiecq2irw4fl5vunnxo6cegoutv4de63h7n27tekkjtak3jrvrzzhe", cid)
+	require.Equal(t, fileCID, cid)
+}
+func TestPost(t *testing.T) {
+	server := makeManager(t, akey)
+	fileBytes, err := createFile0toBound(fileBoundary)
+	require.NoError(t, err)
+	router := mux.NewRouter()
+	router.PathPrefix(UploadRoute).Handler(server)
+	const port = 8085
+	srv := &http.Server{
+		Addr:         ":" + strconv.Itoa(port),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Handler:      router,
+	}
+
+	lis, err := net.Listen("tcp", srv.Addr)
+	require.NoError(t, err)
+
+	go func() {
+		err := srv.Serve(lis)
+		require.ErrorAs(t, err, http.ErrServerClosed)
+	}()
+
+	res := makeRequest(t, "POST", UploadRoute, fileBytes, router)
+	require.Equal(t, http.StatusCreated, res.Code)
+	responseData, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
+	require.Equal(t, fileCID, string(responseData))
+}
+
+func makeRequest(t *testing.T, method, url string, body []byte, router *mux.Router) *httptest.ResponseRecorder {
+	var request *http.Request
+	var err error
+	if strings.ToUpper(method) == "POST" {
+		var b bytes.Buffer
+		w := multipart.NewWriter(&b)
+		// h := make(textproto.MIMEHeader)
+		// h.Set("Content-Type", "application/octet-stream")
+		// ioWriter, err := w.CreatePart(h)
+		ioWriter, err := w.CreateFormFile("file", "myFile.csv")
+		require.NoError(t, err)
+		size, err := ioWriter.Write(body)
+		require.NoError(t, err)
+		require.Equal(t, len(body), int(size))
+		// Don't forget to close the multipart writer.
+		// If you don't close it, your request will be missing the terminating boundary.
+		w.Close()
+		// Now that you have a form, you can submit it to your handler.
+		request, err = http.NewRequest(method, url, &b)
+		require.NoError(t, err)
+		// Don't forget to set the content type, this will contain the boundary.
+		request.Header.Set("Content-Type", w.FormDataContentType())
+	} else {
+		request, err = http.NewRequest(method, url, bytes.NewBuffer(body))
+		require.NoError(t, err)
+	}
+	writer := httptest.NewRecorder()
+	router.ServeHTTP(writer, request)
+	return writer
 }
 
 func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
@@ -56,11 +127,11 @@ func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
 	return fileManager
 }
 
-// createFile0to100k creates a file with the number 0 to 100k
-func createFile0to100k() ([]byte, error) {
+// createFile0toBound creates a file with the number 0 to bound.
+func createFile0toBound(bound uint) ([]byte, error) {
 	b := strings.Builder{}
-	for i := 0; i <= 100000; i++ {
-		s := strconv.Itoa(i)
+	for i := uint(0); i <= bound; i++ {
+		s := strconv.Itoa(int(i))
 		_, err := b.WriteString(s)
 		if err != nil {
 			return nil, err
