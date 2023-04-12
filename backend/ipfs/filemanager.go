@@ -9,22 +9,16 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	blockservice "github.com/ipfs/go-blockservice"
-	"github.com/ipfs/go-datastore"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	chunker "github.com/ipfs/go-ipfs-chunker"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
 	provider "github.com/ipfs/go-ipfs-provider"
-	"github.com/ipfs/go-ipfs-provider/queue"
-	"github.com/ipfs/go-ipfs-provider/simple"
 	ipld "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
 	"github.com/ipfs/go-unixfs/importer/balanced"
 	"github.com/ipfs/go-unixfs/importer/helpers"
-	host "github.com/libp2p/go-libp2p/core/host"
-	routing "github.com/libp2p/go-libp2p/core/routing"
 	multihash "github.com/multiformats/go-multihash"
 	"go.uber.org/zap"
 )
@@ -53,14 +47,11 @@ type FileManager struct {
 	ctx        context.Context
 	started    bool
 	log        *zap.Logger
-	dht        routing.Routing
-	host       host.Host
 	exch       exchange.Interface
-	store      datastore.Batching
 	bstore     blockstore.Blockstore
 	bservice   blockservice.BlockService
 	DAGService ipld.DAGService // become a DAG service
-	reprovider provider.System
+	provider   provider.System
 }
 
 // NewManager creates a new fileManager instance.
@@ -73,23 +64,15 @@ func NewManager(ctx context.Context, log *zap.Logger) *FileManager {
 }
 
 // Start starts new manager.
-func (fm *FileManager) Start(blockstore blockstore.Blockstore, host host.Host, dht routing.Routing, store datastore.Batching, bitswap *Bitswap) error {
+func (fm *FileManager) Start(blockstore blockstore.Blockstore, bitswap *Bitswap, provider provider.System) error {
 	fm.bstore = blockstore
-
-	fm.host = host
-	fm.dht = dht
-	fm.store = store
 	fm.exch = bitswap
+	fm.provider = provider
 	if err := fm.setupBlockService(); err != nil {
 		return err
 	}
 
 	if err := fm.setupDAGService(); err != nil {
-		fm.bservice.Close()
-		return err
-	}
-
-	if err := fm.setupReprovider(0); err != nil {
 		fm.bservice.Close()
 		return err
 	}
@@ -101,7 +84,6 @@ func (fm *FileManager) Start(blockstore blockstore.Blockstore, host host.Host, d
 
 func (fm *FileManager) autoclose() {
 	<-fm.ctx.Done()
-	fm.reprovider.Close()
 	fm.bservice.Close()
 	fm.started = false
 }
@@ -113,26 +95,6 @@ func (fm *FileManager) setupBlockService() error {
 
 func (fm *FileManager) setupDAGService() error {
 	fm.DAGService = merkledag.NewDAGService(fm.bservice)
-	return nil
-}
-
-func (fm *FileManager) setupReprovider(reprovideInterval time.Duration) error {
-	queue, err := queue.NewQueue(fm.ctx, "repro", fm.store)
-	if err != nil {
-		return err
-	}
-
-	prov := simple.NewProvider(fm.ctx, queue, fm.dht)
-
-	reprov := simple.NewReprovider(
-		fm.ctx,
-		reprovideInterval,
-		fm.dht,
-		simple.NewBlockstoreProvider(fm.bstore),
-	)
-
-	fm.reprovider = provider.NewSystem(prov, reprov)
-	fm.reprovider.Run()
 	return nil
 }
 
@@ -193,11 +155,17 @@ func (fm *FileManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			_ = encoder.Encode("Cannot calculate size of the uploaded file: " + err.Error())
 			return
 		}
+
+		if err = fm.provider.Provide(n.Cid()); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fm.log.Warn("Failed to provide file", zap.Error(err))
+			_ = encoder.Encode("Failed to provide file: " + err.Error())
+			return
+		}
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Add("Content-Length", strconv.FormatInt(int64(size), 10))
 		w.Header().Add("Content-Type", "text/plain")
-		cid := n.Cid().String()
-		_, _ = w.Write([]byte(cid))
+		_, _ = w.Write([]byte(n.Cid().String()))
 		return
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)

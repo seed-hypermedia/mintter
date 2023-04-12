@@ -177,7 +177,7 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 			return
 		}
 
-		fileManager.Start(n.VCS().Blockstore(), n.Libp2p().Host, n.Libp2p().Routing, n.Libp2p().Datastore(), n.Bitswap())
+		fileManager.Start(n.VCS().Blockstore(), n.Bitswap(), n.Provider())
 	}()
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, fileManager)
 	if err != nil {

@@ -18,6 +18,9 @@ import (
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
+	provider "github.com/ipfs/go-ipfs-provider"
+	"github.com/ipfs/go-ipfs-provider/queue"
+	"github.com/ipfs/go-ipfs-provider/simple"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/stretchr/testify/require"
@@ -123,7 +126,22 @@ func makeManager(t *testing.T, k crypto.PrivKey) *FileManager {
 
 	t.Cleanup(func() { require.NoError(t, n.Close()) })
 
-	require.NoError(t, fileManager.Start(bs, n.Host, n.Routing, n.Datastore(), bitswap))
+	queue, err := queue.NewQueue(context.Background(), "repro", n.Datastore())
+	require.NoError(t, err)
+
+	prov := simple.NewProvider(context.Background(), queue, n.Routing)
+
+	reprov := simple.NewReprovider(
+		context.Background(),
+		defaultReprovideInterval,
+		n.Routing,
+		simple.NewBlockstoreProvider(blockstore.NewBlockstore(n.Datastore())),
+	)
+
+	providing := provider.NewSystem(prov, reprov)
+	providing.Run()
+
+	require.NoError(t, fileManager.Start(bs, bitswap, providing))
 	return fileManager
 }
 
