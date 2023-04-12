@@ -28,9 +28,7 @@ export function Paragraph({element, ...props}: ParagraphProps) {
   }
 
   if (state.matches('ready')) {
-    console.log('READY', props)
     if (parentType == 'blockquote') {
-      console.log('BLOCKQUOTE!', props)
       return <TParagraph bg="red" tag="blockquote" {...props} />
     }
 

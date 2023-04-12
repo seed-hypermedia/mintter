@@ -28,7 +28,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
     console.log(`🔃 to ${req.method.name} `, req.message, result.message)
     return result
   } catch (e) {
-    console.error(`🚨 to ${req.method.name} `, e)
+    console.error(`🚨 to ${req.method.name} `, req.message, e)
     throw e
   }
 }
