@@ -1,7 +1,6 @@
 import NextDocument, {Head, Html, Main, NextScript} from 'next/document'
 import {Children} from 'react'
 import {AppRegistry} from 'react-native'
-
 import Tamagui from '../tamagui.config'
 
 export default class Document extends NextDocument {

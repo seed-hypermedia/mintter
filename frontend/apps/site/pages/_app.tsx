@@ -1,10 +1,8 @@
-// import '@tamagui/core/reset.css'
-// import '@tamagui/font-inter/css/400.css'
-// import '@tamagui/font-inter/css/700.css'
+import '@tamagui/core/reset.css'
+import '@tamagui/font-inter/css/400.css'
+import '@tamagui/font-inter/css/700.css'
+import '../styles/styles.css'
 
-if (typeof globalThis.EdgeRuntime !== 'string') {
-  console.log('I"M IN THE EDGE!', globalThis.setImmediate, global.setImmediate)
-}
 if (!global.setImmediate || !globalThis['setImmediate']) {
   //@ts-ignore
   global.setImmediate = setTimeout
@@ -107,7 +105,12 @@ function StyleProvider({
   ...rest
 }: Omit<TamaguiProviderProps, 'config'>) {
   return (
-    <TamaguiProvider config={tamaguiConfig} {...rest}>
+    <TamaguiProvider
+      config={tamaguiConfig}
+      defaultTheme={defaultTheme}
+      disableRootThemeClass
+      {...rest}
+    >
       <Theme name="blue">{children}</Theme>
     </TamaguiProvider>
   )
