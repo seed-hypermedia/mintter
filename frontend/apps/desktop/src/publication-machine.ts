@@ -5,7 +5,7 @@ import {
   publicationsClient,
 } from '@app/api-clients'
 import {EditorDocument} from '@app/draft-machine'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {
   Account,
   blockNodeToSlate,

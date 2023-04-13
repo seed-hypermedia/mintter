@@ -6,7 +6,7 @@ import {
   useQuery,
   UseQueryOptions,
 } from '@tanstack/react-query'
-import {queryKeys} from '.'
+import {queryKeys} from './query-keys'
 
 export function useAllPeers() {
   return useQuery({

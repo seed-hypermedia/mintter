@@ -2,7 +2,7 @@ import {publicationsClient} from '@app/api-clients'
 import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {useMouse} from '@app/mouse-context'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {

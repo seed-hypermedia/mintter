@@ -1,5 +1,5 @@
 import {accountsClient, daemonClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {Account, Info, Profile} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'

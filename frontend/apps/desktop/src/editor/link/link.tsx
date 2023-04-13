@@ -1,7 +1,7 @@
 import {publicationsClient} from '@app/api-clients'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {useMouse} from '@app/mouse-context'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'

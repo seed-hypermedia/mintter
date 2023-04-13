@@ -1,4 +1,3 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {appInvalidateQueries} from '@app/query-client'
 import {
   Block,
@@ -20,7 +19,7 @@ import {
   publicationsClient,
   webPublishingClient,
 } from '@app/api-clients'
-import {queryKeys} from './index'
+import {queryKeys} from './query-keys'
 import {useNavigate} from '@app/utils/navigation'
 
 function blockExtractReferencedDocs(

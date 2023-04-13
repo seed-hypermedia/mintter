@@ -14,7 +14,7 @@ import {
 } from '@mintter/shared'
 
 import {draftsClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {getTitleFromContent} from '@app/utils/get-document-title'
 import {QueryClient} from '@tanstack/react-query'
 import {Editor} from 'slate'

@@ -1,6 +1,6 @@
 import {commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {ClientPublication} from '@app/publication-machine'
 import {
   Annotation,
@@ -51,7 +51,9 @@ let conversationsContext = createContext<ConversationsContext>({
   },
 })
 
-export const ConversationsProvider = features.comments ? RealConversationsProvider : DummyProvider
+export const ConversationsProvider = features.comments
+  ? RealConversationsProvider
+  : DummyProvider
 
 export function RealConversationsProvider({
   children,
@@ -65,7 +67,6 @@ export function RealConversationsProvider({
   publication: ClientPublication | null
   isOpen: boolean
 }>) {
-
   let queryResult = useQuery({
     queryFn: async () => {
       let res = await commentsClient.listConversations({
@@ -191,7 +192,6 @@ export function useBlockConversations(blockId: string, revision?: string) {
     })
   }, [context])
 }
-
 
 function DummyProvider({children}: {children: ReactNode}) {
   return <>{children}</>

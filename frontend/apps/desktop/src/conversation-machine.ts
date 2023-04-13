@@ -1,5 +1,5 @@
 import {accountsClient, publicationsClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {ClientPublication} from '@app/publication-machine'
 import {Account, blockNodeToSlate, MttLink, Publication} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'

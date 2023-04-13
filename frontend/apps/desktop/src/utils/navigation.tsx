@@ -1,5 +1,5 @@
 import {draftsClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {appInvalidateQueries} from '@app/query-client'
 import {Buffer} from 'buffer'
 import {

@@ -2,7 +2,7 @@ import {draftsClient} from '@app/api-clients'
 import {createDraftMachine, DraftActor} from '@app/draft-machine'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
-import {queryKeys} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {useDaemonReady} from '@app/node-status-context'
 import {
   createPublicationMachine,

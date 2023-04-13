@@ -7,12 +7,8 @@ import {Editor} from '@app/editor/editor'
 import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
-import {
-  queryKeys,
-  useDocChanges,
-  useDocCitations,
-  usePublication,
-} from '@app/hooks'
+import {useDocChanges, useDocCitations, usePublication} from '@app/hooks'
+import {queryKeys} from '@app/hooks/query-keys'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {classnames} from '@app/utils/classnames'
