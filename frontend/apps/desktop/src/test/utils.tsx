@@ -88,12 +88,12 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   values.info = info
 
   client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
-  client.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], info)
+  client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
   client.setQueryData<Array<string>>(
     [queryKeys.GET_PEER_ADDRS, peerId],
     ['foo', 'bar'],
   )
-  client.setQueryData<Info>([queryKeys.GET_ACCOUNT_INFO], info)
+  client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
   client.setQueryData<Array<string>>(
     [queryKeys.GET_PEER_ADDRS, peerId],
     ['foo', 'bar'],

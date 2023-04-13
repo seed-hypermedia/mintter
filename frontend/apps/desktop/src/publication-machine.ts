@@ -1,6 +1,5 @@
 import {
   accountsClient,
-  daemonClient,
   draftsClient,
   publicationsClient,
 } from '@app/api-clients'
@@ -18,6 +17,7 @@ import {
 } from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
+import {fetchDaemonInfo} from './hooks/daemon'
 import {appInvalidateQueries} from './query-client'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
@@ -203,9 +203,7 @@ export function createPublicationMachine({
                 staleTime: Infinity,
               },
             ),
-            client.fetchQuery([queryKeys.GET_ACCOUNT_INFO], () =>
-              daemonClient.getInfo({}),
-            ),
+            fetchDaemonInfo,
           ])
             .then(([publication, info]) => {
               if (publication.document?.children.length) {

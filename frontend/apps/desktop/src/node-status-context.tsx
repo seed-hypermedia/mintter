@@ -1,8 +1,5 @@
-import {daemonClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks/query-keys'
 import OnboardingPage from '@app/pages/onboarding'
 import {ConnectionStatus, Info, PeerInfo} from '@mintter/shared'
-import {useQuery} from '@tanstack/react-query'
 import {
   createContext,
   ReactNode,
@@ -11,6 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+import {useDaemonInfo} from './hooks/daemon'
 import {usePeerInfo} from './hooks/networking'
 
 type PeerInfoValue = {
@@ -33,21 +31,7 @@ let Provider = daemonContext.Provider
 
 export function DaemonStatusProvider({children}: {children: ReactNode}) {
   let [netStatus, setNetStatus] = useState<'online' | 'offline'>('online')
-  let infoQuery = useQuery<Info | null>({
-    queryKey: [queryKeys.GET_ACCOUNT_INFO],
-    queryFn: async () => {
-      try {
-        return await daemonClient.getInfo({})
-      } catch (error) {
-        if (error) {
-          console.log('error check make sure not set up condition..', error)
-        }
-      }
-      return null
-    },
-    retry: false,
-    useErrorBoundary: false,
-  })
+  let infoQuery = useDaemonInfo()
 
   let peerInfoQuery = usePeerInfo(infoQuery.data?.peerId)
 

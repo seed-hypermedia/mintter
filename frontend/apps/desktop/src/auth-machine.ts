@@ -1,13 +1,14 @@
-import {accountsClient, daemonClient} from '@app/api-clients'
+import {accountsClient} from '@app/api-clients'
 import {queryKeys} from '@app/hooks/query-keys'
 import {Account, Info, Profile} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {assign, createMachine, MachineOptions} from 'xstate'
 import {networkingClient} from './api-clients'
+import {fetchDaemonInfo} from './hooks/daemon'
 
 type AuthContext = {
-  accountInfo?: Info
+  accountInfo: Info | null
   retries: number
   account?: Account
   errorMessage: string
@@ -27,7 +28,7 @@ type AuthService = {
     data: Account
   }
   fetchInfo: {
-    data: Info
+    data: null | Info
   }
   fetchPeerData: {
     data: Array<string>
@@ -48,7 +49,7 @@ export function createAuthService(client: QueryClient) {
         services: {} as AuthService,
       },
       context: {
-        accountInfo: undefined,
+        accountInfo: null,
         retries: 0,
         account: undefined,
         errorMessage: '',
@@ -160,11 +161,7 @@ export function createAuthService(client: QueryClient) {
     },
     {
       services: {
-        fetchInfo: function fetchInfoService() {
-          return client.fetchQuery<Info>([queryKeys.GET_ACCOUNT_INFO], () =>
-            daemonClient.getInfo({}),
-          )
-        },
+        fetchInfo: fetchDaemonInfo,
         fetchAccount: function fetchAccountService() {
           return client.fetchQuery(
             [queryKeys.GET_ACCOUNT, ''],
