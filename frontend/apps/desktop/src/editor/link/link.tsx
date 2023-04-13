@@ -1,6 +1,7 @@
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {usePublication} from '@app/hooks/documents'
+import {useWebLink} from '@app/hooks/web-links'
 import {useMouse} from '@app/mouse-context'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
@@ -19,6 +20,7 @@ import {
   text,
 } from '@mintter/shared'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
+import {Text} from '@tamagui/web'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
 import {ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
@@ -151,14 +153,49 @@ function insertDocumentLink(editor: Editor, url: string) {
 type LinkProps = Omit<RenderElementProps, 'element'> & {
   element: LinkType
   mode: EditorMode
+  hintPureWebLink?: boolean
+  mintterLink?: {
+    documentId: string
+    version?: string
+    blockRef?: string
+  }
 }
 
 function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
-  return isMintterLink(props.element.url) ? (
-    <MintterLink ref={ref} {...props} />
-  ) : (
-    <WebLink ref={ref} {...props} />
+  const linkQuery = useWebLink(
+    props.element.url,
+    props.mode == EditorMode.Draft,
   )
+  if (linkQuery.isLoading) {
+    return <WebLink ref={ref} {...props} />
+  }
+  if (isMintterLink(props.element.url)) {
+    const [docId, version, blockId] = getIdsfromUrl(props.element.url)
+    return (
+      <MintterLink
+        ref={ref}
+        {...props}
+        mintterLink={{
+          documentId: docId,
+          version,
+          blockRef: blockId,
+        }}
+      />
+    )
+  }
+  if (linkQuery.data?.documentId) {
+    return (
+      <MintterLink
+        ref={ref}
+        {...props}
+        mintterLink={{
+          documentId: linkQuery.data?.documentId,
+          version: linkQuery.data?.documentVersion || undefined,
+        }}
+      />
+    )
+  }
+  return <WebLink ref={ref} hintPureWebLink {...props} />
 }
 
 const MintterLink = forwardRef(RenderMintterLink)
@@ -174,23 +211,26 @@ function RenderMintterLink(
 
   let mouseService = useMouse()
   const route = useNavRoute()
-  const [docId, version, blockId] = getIdsfromUrl(props.element.url)
+
+  if (!props.mintterLink) return null
+
+  const {documentId, version, blockRef} = props.mintterLink
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     let isShiftKey = event.shiftKey || event.metaKey
     event.preventDefault()
     const destRoute: PublicationRoute = {
       key: 'publication',
-      documentId: docId,
+      documentId,
       versionId: version,
-      blockId: blockId,
+      blockId: blockRef,
     }
     if (isShiftKey) {
       navigate(destRoute)
     } else {
       if (
         route.key === 'publication' &&
-        route.documentId === docId &&
+        route.documentId === documentId &&
         route?.versionId === version
       ) {
         navigateReplace(destRoute)
@@ -203,7 +243,7 @@ function RenderMintterLink(
   function mouseEnter() {
     mouseService.send({
       type: 'HIGHLIGHT.ENTER',
-      ref: blockId ? `${docId}/${blockId}` : docId,
+      ref: blockRef ? `${documentId}/${blockRef}` : documentId,
     })
   }
 
@@ -212,13 +252,15 @@ function RenderMintterLink(
   }
 
   return (
-    <a
+    <Text
+      tag="a"
+      color={'#0E868E'}
       ref={ref}
       {...props}
       onClick={onClick}
       onMouseEnter={mouseEnter}
       onMouseLeave={mouseLeave}
-      data-highlight={blockId ? `${docId}/${blockId}` : docId}
+      data-highlight={blockRef ? `${documentId}/${blockRef}` : documentId}
       data-reference={props.element.url}
     />
   )
@@ -241,7 +283,13 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
         </span>
       }
     >
-      <a ref={ref} onClick={onClick} {...props} />
+      <Text
+        tag="a"
+        color={props.hintPureWebLink ? '#0E518E' : '#444444'}
+        ref={ref}
+        onClick={onClick}
+        {...props}
+      />
     </Tooltip>
   )
 }

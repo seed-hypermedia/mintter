@@ -1,6 +1,7 @@
 import {Account, Publication, SiteInfo} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {GetServerSideProps} from 'next'
+import {setAllowAnyHostGetCORS} from 'server/cors'
 import {accountsClient, localWebsiteClient, publicationsClient} from '../client'
 import {GatewayHead} from '../gateway-head'
 import {getSiteInfo} from '../get-site-info'
@@ -99,6 +100,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     }
   }
+
+  setAllowAnyHostGetCORS(res)
 
   res.setHeader('x-mintter-document-id', publication.document.id)
   res.setHeader('x-mintter-version', publication.version)

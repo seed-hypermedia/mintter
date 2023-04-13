@@ -1,5 +1,6 @@
 import {daemonClient, networkingClient} from '../../client'
 import {NextApiRequest, NextApiResponse} from 'next'
+import {setAllowAnyHostGetCORS} from 'server/cors'
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,7 +12,6 @@ export default async function handler(
     account_id: info.accountId,
     addresses: peerInfo.addrs,
   }
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET')
+  setAllowAnyHostGetCORS(res)
   res.status(200).send(wellKnown)
 }

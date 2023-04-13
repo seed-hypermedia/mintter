@@ -1,5 +1,6 @@
 import {Account, Publication, SiteInfo} from '@mintter/shared'
 import {GetServerSidePropsContext} from 'next'
+import {setAllowAnyHostGetCORS} from 'server/cors'
 import {accountsClient, publicationsClient} from '../../client'
 import {getSiteInfo} from '../../get-site-info'
 import PublicationPage from '../../ssr-publication-page'
@@ -53,6 +54,9 @@ export const getServerSideProps = async ({
         notFound: true,
       }
     }
+
+    setAllowAnyHostGetCORS(res)
+
     res.setHeader('x-mintter-document-id', documentId)
     res.setHeader('x-mintter-version', publication.version)
     const definedPublisher = publication.document?.publisher
