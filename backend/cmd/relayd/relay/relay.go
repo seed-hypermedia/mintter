@@ -8,7 +8,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/p2p/net/connmgr"
-	relay_v1 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv1/relay"
 	relay_v2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	ma "github.com/multiformats/go-multiaddr"
 	manet "github.com/multiformats/go-multiaddr/net"
@@ -69,7 +68,6 @@ func (r *Relay) Start() error {
 
 	opts = append(opts,
 		libp2p.UserAgent("MintterRelay/0.1"),
-
 		libp2p.Identity(key),
 		libp2p.DisableRelay(),
 		libp2p.ListenAddrStrings(r.cfg.Network.ListenAddrs...),
@@ -134,24 +132,12 @@ func (r *Relay) Start() error {
 		return err
 	}
 
-	if r.cfg.RelayV1.Enabled {
-		_, err = relay_v1.NewRelay(r.host,
-			relay_v1.WithResources(r.cfg.RelayV1.Resources),
-			relay_v1.WithACL(acl))
-		if err != nil {
-			return err
-		}
-		r.log.Info("RelayV1 is running!")
+	_, err = relay_v2.New(r.host,
+		relay_v2.WithResources(r.cfg.RelayV2.Resources),
+		relay_v2.WithACL(acl))
+	if err != nil {
+		return err
 	}
-
-	if r.cfg.RelayV2.Enabled {
-		_, err = relay_v2.New(r.host,
-			relay_v2.WithResources(r.cfg.RelayV2.Resources),
-			relay_v2.WithACL(acl))
-		if err != nil {
-			return err
-		}
-		r.log.Info("RelayV2 is running!")
-	}
+	r.log.Info("RelayV2 is running!")
 	return nil
 }

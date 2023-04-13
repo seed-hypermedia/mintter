@@ -20,11 +20,11 @@ import (
 	"time"
 
 	"crawshaw.io/sqlite/sqlitex"
+	blockstore "github.com/ipfs/boxo/blockstore"
+	provider "github.com/ipfs/boxo/provider"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	provider "github.com/ipfs/go-ipfs-provider"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
 

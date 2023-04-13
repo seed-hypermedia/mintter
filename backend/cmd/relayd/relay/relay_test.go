@@ -16,14 +16,13 @@ import (
 )
 
 func TestRelay(t *testing.T) {
-	require.NoError(t, initAndTest(2))
-	require.NoError(t, initAndTest(1))
+	require.NoError(t, initAndTest())
 }
 
-// initAndTest initialices two nodes and 1 relay and tests connectivity
+// initAndTest initializes two nodes and 1 relay and tests connectivity
 // between the nodes through the relay. You can select the relay version
 // 1->v1 or 2->v2.
-func initAndTest(relayVersion uint8) error {
+func initAndTest() error {
 	// Create the relay
 	log, _ := zap.NewDevelopment(zap.WithCaller(false))
 
@@ -32,15 +31,7 @@ func initAndTest(relayVersion uint8) error {
 		"/ip4/0.0.0.0/tcp/4001",
 		"/ip4/0.0.0.0/udp/4001/quic",
 	}
-	if relayVersion == 1 {
-		h2.cfg.RelayV1.Enabled = true
-		h2.cfg.RelayV2.Enabled = false
-	} else if relayVersion == 2 {
-		h2.cfg.RelayV1.Enabled = false
-		h2.cfg.RelayV2.Enabled = true
-	} else {
-		return fmt.Errorf("only v1 and v2 relay version supported, requested %d version", relayVersion)
-	}
+
 	if err := h2.Start(); err != nil {
 		return err
 	}

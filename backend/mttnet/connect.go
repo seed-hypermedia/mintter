@@ -15,6 +15,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
+	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/net/swarm"
 	"go.uber.org/zap"
 	rpcpeer "google.golang.org/grpc/peer"
@@ -219,10 +220,10 @@ LIMIT 1`
 	return hinfo, nil
 }
 
-func supportsMintterProtocol(protos []string) bool {
+func supportsMintterProtocol(protos []protocol.ID) bool {
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
 	for _, p := range protos {
-		if p == string(ProtocolID) {
+		if p == ProtocolID {
 			return true
 		}
 	}

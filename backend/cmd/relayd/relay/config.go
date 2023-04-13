@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	relayv1 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv1/relay"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	"go.uber.org/zap"
 )
@@ -18,7 +17,6 @@ type Config struct {
 	PrivKey string
 	Network networkConfig
 	ConnMgr connMgrConfig
-	RelayV1 relayV1Config
 	RelayV2 relayV2Config
 	ACL     aclConfig
 }
@@ -34,13 +32,7 @@ type connMgrConfig struct {
 	ConnMgrGrace time.Duration
 }
 
-type relayV1Config struct {
-	Enabled   bool
-	Resources relayv1.Resources
-}
-
 type relayV2Config struct {
-	Enabled   bool
 	Resources relayv2.Resources
 }
 
@@ -64,12 +56,7 @@ func defaultConfig() Config {
 			ConnMgrHi:    768,
 			ConnMgrGrace: 2 * time.Minute,
 		},
-		RelayV1: relayV1Config{
-			Enabled:   false,
-			Resources: relayv1.DefaultResources(),
-		},
 		RelayV2: relayV2Config{
-			Enabled:   true,
 			Resources: relayv2.DefaultResources(),
 		},
 	}

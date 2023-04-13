@@ -9,10 +9,10 @@ import (
 	"unicode/utf8"
 
 	"github.com/google/go-cmp/cmp"
+	blockstore "github.com/ipfs/boxo/blockstore"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	"github.com/multiformats/go-multihash"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
