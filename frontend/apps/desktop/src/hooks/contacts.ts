@@ -1,7 +1,8 @@
-import {accountsClient, networkingClient} from '@app/api-clients'
-import {Account, ConnectionStatus, Device} from '@mintter/shared'
+import {accountsClient} from '@app/api-clients'
+import {Account} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from '.'
+import {useAllPeers} from './networking'
 
 export function useContactsList() {
   const contacts = useQuery({
@@ -14,7 +15,7 @@ export function useContactsList() {
 }
 
 export function useConnectionSummary() {
-  const peerInfo = usePeerInfo()
+  const peerInfo = useAllPeers()
   const connectedPeers = peerInfo.data?.peerList || []
   return {
     online: connectedPeers.length > 0,
@@ -32,7 +33,7 @@ export function useAccount(accountId: string) {
 
 export function useAccountWithDevices(accountId: string) {
   const account = useAccount(accountId)
-  const peers = usePeerInfo()
+  const peers = useAllPeers()
   return {
     profile: account.data?.profile,
     devices: Object.values(account?.data?.devices || {}).map((device) => {
@@ -49,16 +50,7 @@ export function useAccountWithDevices(accountId: string) {
   }
 }
 
-export function usePeerInfo() {
-  return useQuery({
-    queryKey: [queryKeys.GET_PEERS],
-    queryFn: async () => {
-      return await networkingClient.listPeers({})
-    },
-  })
-}
-
 export function useAccountIsConnected(account: Account) {
-  const peers = usePeerInfo()
+  const peers = useAllPeers()
   return !!peers.data?.peerList.find((peer) => peer.accountId === account.id)
 }
