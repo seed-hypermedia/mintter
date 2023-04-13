@@ -48,6 +48,10 @@ export default function PublicationPage({
         />
         <meta name="mintter-document-id" content={publication?.document?.id} />
         <meta name="mintter-document-version" content={publication?.version} />
+        <meta
+          name="mintter-document-title"
+          content={publication?.document?.title}
+        />
       </Head>
       <ArticleContainer fd={media.gtSm ? 'row' : 'column-reverse'}>
         <MainContainer>

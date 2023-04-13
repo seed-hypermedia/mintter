@@ -38,7 +38,8 @@ export function useWebLink(url: string, enabled: boolean) {
         return {
           documentId: extractMetaTagValue(doc, 'mintter-document-id'),
           documentVersion: extractMetaTagValue(doc, 'mintter-document-version'),
-          publisherId: extractMetaTagValue(doc, 'x-mintter-publisher-id'),
+          documentTitle: extractMetaTagValue(doc, 'mintter-document-title'),
+          publisherId: extractMetaTagValue(doc, 'mintter-publisher-id'),
         }
       } catch (e) {
         return null

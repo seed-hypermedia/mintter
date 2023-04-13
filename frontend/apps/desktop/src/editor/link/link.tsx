@@ -17,6 +17,7 @@ import {
   isLink,
   link,
   Link as LinkType,
+  MINTTER_LINK_PREFIX,
   text,
 } from '@mintter/shared'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
@@ -166,11 +167,31 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     props.element.url,
     props.mode == EditorMode.Draft,
   )
-  if (linkQuery.isLoading) {
-    return <WebLink ref={ref} {...props} />
-  }
-  if (isMintterLink(props.element.url)) {
-    const [docId, version, blockId] = getIdsfromUrl(props.element.url)
+  const {url} = props.element
+  let editor = useSlateStatic()
+
+  useEffect(() => {
+    if (props.mode !== EditorMode.Draft) return
+    if (!linkQuery.data) return
+    if (isMintterLink(url)) return
+    let at = findPath(props.element)
+    const {documentId, documentVersion, documentTitle} = linkQuery.data
+    const title = documentTitle || url
+    let outputMintterUrl = `${MINTTER_LINK_PREFIX}${documentId}`
+    if (documentVersion) {
+      outputMintterUrl += `?v=${documentVersion}`
+    }
+    Editor.withoutNormalizing(editor, () => {
+      Transforms.insertNodes(
+        editor,
+        link({url: outputMintterUrl}, [text(title)]),
+        {at},
+      )
+      Transforms.removeNodes(editor, {at: Path.next(at)})
+    })
+  }, [linkQuery.data, url, props.mode])
+  if (isMintterLink(url)) {
+    const [docId, version, blockId] = getIdsfromUrl(url)
     return (
       <MintterLink
         ref={ref}
@@ -182,6 +203,9 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
         }}
       />
     )
+  }
+  if (linkQuery.isLoading) {
+    return <WebLink ref={ref} {...props} />
   }
   if (linkQuery.data?.documentId) {
     return (
@@ -212,9 +236,11 @@ function RenderMintterLink(
   let mouseService = useMouse()
   const route = useNavRoute()
 
-  if (!props.mintterLink) return null
+  const {mintterLink, ...linkProps} = props
 
-  const {documentId, version, blockRef} = props.mintterLink
+  if (!mintterLink) return null
+
+  const {documentId, version, blockRef} = mintterLink
 
   function onClick(event: MouseEvent<HTMLAnchorElement>) {
     let isShiftKey = event.shiftKey || event.metaKey
@@ -257,7 +283,7 @@ function RenderMintterLink(
       color={'#0E868E'}
       // @ts-ignore
       ref={ref}
-      {...props}
+      {...linkProps}
       onClick={onClick}
       onMouseEnter={mouseEnter}
       onMouseLeave={mouseLeave}
