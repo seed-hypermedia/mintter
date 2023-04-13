@@ -6,6 +6,7 @@ import {
   SideContainer,
   useMedia,
 } from '@mintter/ui'
+import Head from 'next/head'
 import {PublicationMetadata} from './author'
 import Footer from './footer'
 import {GatewayHead} from './gateway-head'
@@ -40,6 +41,14 @@ export default function PublicationPage({
       ) : (
         <GatewayHead title={publication?.document?.title} />
       )}
+      <Head>
+        <meta
+          name="mintter-publisher-id"
+          content={publication?.document?.publisher}
+        />
+        <meta name="mintter-document-id" content={publication?.document?.id} />
+        <meta name="mintter-document-version" content={publication?.version} />
+      </Head>
       <ArticleContainer fd={media.gtSm ? 'row' : 'column-reverse'}>
         <MainContainer>
           {slateChildren ? (

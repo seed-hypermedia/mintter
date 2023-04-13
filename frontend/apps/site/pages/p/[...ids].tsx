@@ -48,11 +48,16 @@ export const getServerSideProps = async ({
       documentId,
       version,
     })
-    if (!publication) {
+    if (!publication || !documentId) {
       return {
         notFound: true,
       }
     }
+    res.setHeader('x-mintter-document-id', documentId)
+    res.setHeader('x-mintter-version', publication.version)
+    const definedPublisher = publication.document?.publisher
+    if (definedPublisher)
+      res.setHeader('x-mintter-publisher-id', definedPublisher)
 
     author = publication.document?.author
       ? await accountsClient.getAccount({id: publication.document?.author})
