@@ -203,7 +203,7 @@ export function createPublicationMachine({
                 staleTime: Infinity,
               },
             ),
-            fetchDaemonInfo,
+            fetchDaemonInfo(),
           ])
             .then(([publication, info]) => {
               if (publication.document?.children.length) {
@@ -226,8 +226,7 @@ export function createPublicationMachine({
                       content: [content],
                     },
                   }),
-                  // @ts-ignore
-                  canUpdate: info.accountId == publication.document.author,
+                  canUpdate: info?.accountId == publication.document.author,
                 })
               } else {
                 if (publication.document?.children.length == 0) {
@@ -243,8 +242,7 @@ export function createPublicationMachine({
                         ],
                       },
                     }),
-                    // @ts-ignore
-                    canUpdate: info.accountId == publication.document.author,
+                    canUpdate: info?.accountId == publication.document.author,
                   })
                 } else {
                   sendBack({

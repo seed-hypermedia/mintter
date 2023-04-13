@@ -1,3 +1,4 @@
+import {appQueryClient} from '@app/query-client'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 
@@ -11,8 +12,8 @@ function extractMetaTagValue(doc: Document, name: string): string | null {
   return metaTag ? metaTag.getAttribute('content') : null
 }
 
-export function useWebLink(url: string, enabled: boolean) {
-  return useQuery({
+function queryWebLink(url: string, enabled: boolean) {
+  return {
     queryKey: [queryKeys.GET_URL, url],
     enabled,
     queryFn: async () => {
@@ -45,5 +46,12 @@ export function useWebLink(url: string, enabled: boolean) {
         return null
       }
     },
-  })
+  }
+}
+
+export function useWebLink(url: string, enabled: boolean) {
+  return useQuery(queryWebLink(url, enabled))
+}
+export function fetchWebLink(url: string) {
+  return appQueryClient.fetchQuery(queryWebLink(url, true))
 }

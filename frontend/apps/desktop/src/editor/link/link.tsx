@@ -281,7 +281,7 @@ function RenderMintterLink(
     <Text
       tag="a"
       color={'#0E868E'}
-      // @ts-ignore
+      // @ts-ignore not sure what the Text ref is..
       ref={ref}
       {...linkProps}
       onClick={onClick}
@@ -317,7 +317,7 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
       <Text
         tag="a"
         color={props.hintPureWebLink ? '#0E518E' : '#444444'}
-        // @ts-ignore
+        // @ts-ignore not sure what the Text ref is..
         ref={ref}
         onClick={onClick}
         {...props}

@@ -1,4 +1,4 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {MINTTER_LINK_PREFIX} from '@mintter/shared'
 import {Dropdown} from '@app/editor/dropdown'
 import {Find} from '@app/editor/find'
 import {useDraftList} from '@app/hooks/documents'

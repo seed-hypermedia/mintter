@@ -1,4 +1,4 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
+import {MINTTER_LINK_PREFIX} from '@mintter/shared'
 import {useDrag} from '@app/drag-context'
 import {findPath} from '@app/editor/utils'
 import {useFileIds} from '@app/file-provider'

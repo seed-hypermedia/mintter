@@ -1,4 +1,3 @@
-import {MINTTER_LINK_PREFIX} from '@app/constants'
 import {Dropdown} from '@app/editor/dropdown'
 import {usePublication, prefetchPublication} from '@app/hooks/documents'
 import {useAccount} from '@app/hooks/accounts'
@@ -25,7 +24,11 @@ import {
   YStack,
 } from '@mintter/ui'
 import {useUnpublishDialog} from '@components/unpublish-dialog'
-import {WebPublicationRecord, formattedDate} from '@mintter/shared'
+import {
+  WebPublicationRecord,
+  formattedDate,
+  MINTTER_LINK_PREFIX,
+} from '@mintter/shared'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'

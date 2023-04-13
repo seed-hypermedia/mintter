@@ -7,9 +7,17 @@ import {PublicationActor} from '@app/publication-machine'
 import {useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
+import {Text} from '@components/text'
 import {AccessURLRow} from '@components/url'
 import {WebPublicationRecord} from '@mintter/shared'
-import {Button, ButtonText, ExternalLink, Globe, SizableText} from '@mintter/ui'
+import {
+  Button,
+  ButtonText,
+  ExternalLink,
+  Globe,
+  SizableText,
+  Spinner,
+} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {GestureReponderEvent} from '@tamagui/web'
 import {UseQueryResult} from '@tanstack/react-query'
@@ -46,8 +54,8 @@ function PublishedURLs({
   doc: MainActor['actor']
 }) {
   if (!publications.data) {
-    if (publications.isLoading) return <div>Loading...</div>
-    if (publications.error) return <div>Failed to load.</div>
+    if (publications.isLoading) return <Spinner />
+    if (publications.error) return <Text color="danger">Failed to load.</Text>
   }
   if (publications.data && publications.data?.length === 0)
     //@ts-ignore
@@ -142,23 +150,50 @@ function PublishButton({
     : 'Publish'
   return (
     <PopoverPrimitive.Trigger asChild disabled={disabled}>
-      <Button
-        size="$2"
-        chromeless
-        disabled={disabled}
-        onPress={onPress}
-        theme="green"
-      >
-        {isDraft ? (
-          draftActionLabel
-        ) : (
-          <>
-            <Globe size={16} />
-            {publisherLabel}
-          </>
-        )}
-      </Button>
+      {isDraft ? (
+        <Button
+          size="$2"
+          chromeless
+          disabled={disabled}
+          onPress={onPress}
+          theme="green"
+        >
+          {draftActionLabel}
+        </Button>
+      ) : (
+        <Button
+          size="$2"
+          chromeless
+          disabled={disabled}
+          onPress={onPress}
+          theme="green"
+        >
+          <Globe size={16} />
+          {publisherLabel}
+        </Button>
+      )}
     </PopoverPrimitive.Trigger>
+  )
+}
+
+function PublishShareContent({
+  docId,
+  publications,
+  mainActor,
+  onPublish,
+}: {
+  docId?: string
+  publications: UseQueryResult<WebPublicationRecord[]>
+  mainActor: MainActor
+  onPublish: (hostname: string) => void
+}) {
+  return (
+    <>
+      {docId && (
+        <PublishedURLs publications={publications} doc={mainActor.actor} />
+      )}
+      <PublishButtons publications={publications.data} onPublish={onPublish} />
+    </>
   )
 }
 
@@ -257,14 +292,10 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
                 gap: '$4',
               }}
             >
-              {docId && (
-                <PublishedURLs
-                  publications={publications}
-                  doc={mainActor.actor}
-                />
-              )}
-              <PublishButtons
-                publications={publications.data}
+              <PublishShareContent
+                mainActor={mainActor}
+                publications={publications}
+                docId={docId}
                 onPublish={(hostname) => {
                   setIsOpen(false)
                   publicationDialog.open(hostname)
