@@ -48,6 +48,10 @@ import {
 import {assign, createMachine} from 'xstate'
 import {PageProps} from './base'
 
+function pluralS(length = 0) {
+  return length === 1 ? '' : 's'
+}
+
 export default function PublicationPage({mainActor}: PageProps) {
   if (mainActor.type !== 'publication')
     throw new Error('Publication page expects publication actor')
@@ -255,7 +259,9 @@ export default function PublicationPage({mainActor}: PageProps) {
                 <Footer>
                   <FooterButton
                     active={activePanel == 'changes'}
-                    label={`${changes?.changes?.length} Versions`}
+                    label={`${changes?.changes?.length} Version${pluralS(
+                      changes?.changes?.length,
+                    )}`}
                     icon={Pencil}
                     onPress={() => {
                       panelSend({type: 'PANEL.TOGGLE', activePanel: 'changes'})
@@ -263,7 +269,9 @@ export default function PublicationPage({mainActor}: PageProps) {
                   />
                   <FooterButton
                     active={activePanel == 'citations'}
-                    label={`${citations?.links?.length} Citations`}
+                    label={`${citations?.links?.length} Citation${pluralS(
+                      citations?.links?.length,
+                    )}`}
                     icon={Link}
                     onPress={() => {
                       panelSend({
@@ -475,13 +483,7 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   if (version === pub?.version) return null
   if (!pub?.version) return null
   return (
-    <AppBanner
-      onMouseEnter={() => {
-        client.prefetchQuery({
-          queryKey: [queryKeys.GET_PUBLICATION, docId, pub.version],
-        })
-      }}
-    >
+    <AppBanner onMouseEnter={() => {}}>
       <BannerText>
         <a
           onClick={(e) => {
