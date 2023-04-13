@@ -1,4 +1,4 @@
-import {useDocChanges} from '@app/hooks/documents'
+import {useDocChanges} from '@app/hooks/changes'
 import {useAccount} from '@app/hooks/accounts'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ChangeInfo, formattedDate} from '@mintter/shared'

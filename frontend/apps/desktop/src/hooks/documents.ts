@@ -1,4 +1,4 @@
-import {changesClient, draftsClient, publicationsClient} from '@app/api-clients'
+import {draftsClient, publicationsClient} from '@app/api-clients'
 import {appInvalidateQueries} from '@app/query-client'
 import {Timestamp} from '@bufbuild/protobuf'
 import {Document, Publication} from '@mintter/shared'
@@ -156,19 +156,6 @@ export function prefetchDraft(client: QueryClient, draft: Document) {
     queryKey: [queryKeys.GET_DRAFT, draft.id],
     queryFn: () => draftsClient.getDraft({documentId: draft.id}),
   })
-}
-function createDocChangesQuery(docId: string | undefined) {
-  return {
-    queryFn: () =>
-      changesClient.listChanges({
-        objectId: docId,
-      }),
-    queryKey: [queryKeys.PUBLICATION_CHANGES, docId],
-    enabled: !!docId,
-  } as const
-}
-export function useDocChanges(docId?: string) {
-  return useQuery(createDocChangesQuery(docId))
 }
 
 function sortDocuments(a?: Timestamp, b?: Timestamp) {
