@@ -226,6 +226,7 @@ export function createPublicationMachine({
                       content: [content],
                     },
                   }),
+                  // @ts-ignore
                   canUpdate: info.accountId == publication.document.author,
                 })
               } else {
@@ -242,6 +243,7 @@ export function createPublicationMachine({
                         ],
                       },
                     }),
+                    // @ts-ignore
                     canUpdate: info.accountId == publication.document.author,
                   })
                 } else {
