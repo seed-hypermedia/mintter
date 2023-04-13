@@ -1,4 +1,4 @@
-import {useAccountPublicationList} from '@app/hooks/documents'
+import {useAccountPublicationList} from '@app/hooks/changes'
 import {useAccountWithDevices} from '@app/hooks/contacts'
 import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
