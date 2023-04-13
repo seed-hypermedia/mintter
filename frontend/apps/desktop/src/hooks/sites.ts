@@ -255,11 +255,23 @@ export function useSitePublish() {
         throw new Error('Cannot publish document that is not available locally')
 
       // 1. get the account ID of the publisher
-      // throw new Error('What is the publisher id?')
-      const publisherId = null
-      // const publisherId =
-      //   'bahezrj4iaqacicabciqhss35efrhjsgcgrobrm6h6uc2bfspkwxgmuh26l24jaoaol77vja'
-      // const allSites = await webPublishingClient.listSites({})
+
+      const wellKnownResponse = await fetch(
+        `${hostname}/api/mintter-well-known`,
+      )
+      if (!wellKnownResponse.ok)
+        throw new Error(
+          `Failed to query well-known of site when determining publisher id. Status: ${wellKnownResponse.status}`,
+        )
+      const siteWellKnown = await wellKnownResponse.json()
+      const publisherId: string | undefined =
+        siteWellKnown?.account_id ?? String(siteWellKnown?.account_id)
+
+      if (!publisherId) {
+        throw new Error(
+          'Publisher id could not be found from site well-known response',
+        )
+      }
 
       if (document.publisher === publisherId) {
         console.log('000 - doc publisher is correct')

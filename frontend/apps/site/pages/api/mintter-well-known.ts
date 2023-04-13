@@ -11,5 +11,7 @@ export default async function handler(
     account_id: info.accountId,
     addresses: peerInfo.addrs,
   }
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET')
   res.status(200).send(wellKnown)
 }
