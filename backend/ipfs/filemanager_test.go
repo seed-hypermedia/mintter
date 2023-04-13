@@ -36,7 +36,7 @@ func TestAddFile(t *testing.T) {
 	fileBytes, err := createFile0toBound(fileBoundary)
 	require.NoError(t, err)
 	fileReader := bytes.NewReader(fileBytes)
-	node, err := server.AddFile(fileReader)
+	node, err := server.addFile(fileReader)
 	require.NoError(t, err)
 	size, err := node.Size()
 	require.NoError(t, err)
@@ -66,7 +66,7 @@ func TestPost(t *testing.T) {
 		require.ErrorAs(t, err, http.ErrServerClosed)
 	}()
 
-	res := makeRequest(t, "POST", UploadRoute, fileBytes, router)
+	res := makeRequest(t, "POST", IPFSRootRoute+UploadRoute, fileBytes, router)
 	require.Equal(t, http.StatusCreated, res.Code)
 	responseData, err := ioutil.ReadAll(res.Body)
 	require.NoError(t, err)

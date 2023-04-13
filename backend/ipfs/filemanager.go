@@ -1,19 +1,27 @@
 package ipfs
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/gorilla/mux"
+	unixfile "github.com/ipfs/boxo/ipld/unixfs/file"
+	ufsio "github.com/ipfs/boxo/ipld/unixfs/io"
 	blockservice "github.com/ipfs/go-blockservice"
+	"github.com/ipfs/go-cid"
 	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	chunker "github.com/ipfs/go-ipfs-chunker"
 	exchange "github.com/ipfs/go-ipfs-exchange-interface"
+	files "github.com/ipfs/go-ipfs-files"
 	provider "github.com/ipfs/go-ipfs-provider"
 	ipld "github.com/ipfs/go-ipld-format"
 	"github.com/ipfs/go-merkledag"
@@ -24,10 +32,16 @@ import (
 )
 
 const (
+	// IPFSRootRoute is the root route of ipfs.
+	IPFSRootRoute = "/ipfs"
 	// UploadRoute is the route to upload a file.
-	UploadRoute = "/ipfs/file-upload"
+	UploadRoute = "/file-upload"
+	// UploadRoute is the route to upload a file.
+	GetRoute = "/{cid}"
 	// MaxFileMB is the maximum file size (in MB) to be uploaded.
 	MaxFileMB = 64
+	// SearchTimeout is the maximum time we are searching for a file
+	SearchTimeout = 2 * time.Minute
 )
 
 // AddParams contains all of the configurable parameters needed to specify the
@@ -98,84 +112,159 @@ func (fm *FileManager) setupDAGService() error {
 	return nil
 }
 
-// ServeHTTP Handles ipfs files.
-func (fm *FileManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// GetFile retrieves a file from ipfs.
+func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 	if !fm.started {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_ = encoder.Encode("IPFS node not started")
 		return
 	}
-	switch r.Method {
-	case "GET":
-		http.ServeFile(w, r, "form.html")
-	case "POST":
-		// Parse our multipart form, 10 << 20 specifies a maximum
-		// upload of 10 MB files.
-		if err := r.ParseMultipartForm(MaxFileMB << 20); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			_ = encoder.Encode("Parse body error: " + err.Error())
-			return
-		}
-		if len(r.MultipartForm.File) != 1 {
-			w.WriteHeader(http.StatusBadRequest)
-			fm.log.Debug("Only one file supported", zap.Int("Number of files", len(r.MultipartForm.File)))
-			_ = encoder.Encode("Only one file supported, got: " + strconv.FormatInt(int64(len(r.MultipartForm.File)), 10))
-			return
-		}
-		fhs := []*multipart.FileHeader{}
-		for _, v := range r.MultipartForm.File {
-			fhs = v
-		}
-		if len(fhs) != 1 {
-			w.WriteHeader(http.StatusBadRequest)
-			fm.log.Debug("Only one file header file supported", zap.Int("Number of headers", len(fhs)))
-			_ = encoder.Encode("Only one file header file supported, got: " + strconv.FormatInt(int64(len(fhs)), 10))
-			return
-		}
-		file, err := fhs[0].Open()
-		if err != nil {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		_ = encoder.Encode("Only GET method is supported.")
+		return
+	}
+	vars := mux.Vars(r)
+	cidStr, ok := vars[strings.Replace(GetRoute, "/", "", 1)]
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = encoder.Encode("Url format not recognized")
+		return
+	}
+	cid, err := cid.Decode(cidStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = encoder.Encode("Wrong provided cid [" + cidStr + "]: " + err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), SearchTimeout)
+	defer cancel()
+	nd, err := fm.getFile(ctx, cid)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			w.WriteHeader(http.StatusRequestTimeout)
+			fm.log.Debug("Timeout. Could not get the file", zap.String("CID", cid.String()), zap.Error(err))
+			_ = encoder.Encode("Timeout. Could not get the file")
+		} else {
 			w.WriteHeader(http.StatusInternalServerError)
-			fm.log.Warn("Error Retrieving file", zap.Error(err))
-			_ = encoder.Encode("Error Retrieving file" + err.Error())
-			return
-		}
-		defer file.Close()
-		n, err := fm.AddFile(file)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fm.log.Warn("Cannot upload file to ipfs", zap.Error(err))
-			_ = encoder.Encode("Cannot upload file to ipfs: " + err.Error())
-			return
-		}
-		size, err := n.Size()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fm.log.Warn("Cannot calculate size of the uploaded file", zap.Error(err))
-			_ = encoder.Encode("Cannot calculate size of the uploaded file: " + err.Error())
-			return
+			fm.log.Debug("Could not get the file", zap.String("CID", cid.String()), zap.Error(err))
+			_ = encoder.Encode("Could not get the file: " + err.Error())
 		}
 
-		if err = fm.provider.Provide(n.Cid()); err != nil {
+		return
+	}
+	unixFSNode, err := unixfile.NewUnixfsFile(ctx, fm.DAGService, nd)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fm.log.Debug("Found the node but could not download it", zap.String("CID", cidStr), zap.Error(err))
+		_ = encoder.Encode("Found the node but could not download it: " + err.Error())
+		return
+	}
+
+	var buf bytes.Buffer
+	if f, ok := unixFSNode.(files.File); ok {
+		if _, err := io.Copy(&buf, f); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fm.log.Warn("Failed to provide file", zap.Error(err))
-			_ = encoder.Encode("Failed to provide file: " + err.Error())
+			fm.log.Debug("Found the node but could not reconstruct the file", zap.String("CID", cidStr), zap.Error(err))
+			_ = encoder.Encode("Found the Node but could not reconstruct the file: " + err.Error())
 			return
 		}
-		w.WriteHeader(http.StatusCreated)
-		w.Header().Add("Content-Length", strconv.FormatInt(int64(size), 10))
-		w.Header().Add("Content-Type", "text/plain")
-		_, _ = w.Write([]byte(n.Cid().String()))
-		return
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		_ = encoder.Encode("Only GET and POST methods are supported.")
 	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", "application/octet-stream")
+	w.Header().Add("ETag", cidStr)
+	w.Header().Add("Cache-Control", "public, max-age=29030400, immutable")
+	w.Write(buf.Bytes())
+	return
 }
 
-// AddFile chunks and adds content to the DAGService from a reader. The content
+// UploadFile uploads a file to ipfs.
+func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
+	encoder := json.NewEncoder(w)
+	if !fm.started {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		_ = encoder.Encode("IPFS node not started")
+		return
+	}
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		_ = encoder.Encode("Only POST method is supported.")
+		return
+	}
+
+	// Parse our multipart form, 10 << 20 specifies a maximum
+	// upload of 10 MB files.
+	if err := r.ParseMultipartForm(MaxFileMB << 20); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = encoder.Encode("Parse body error: " + err.Error())
+		return
+	}
+	if len(r.MultipartForm.File) != 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		fm.log.Debug("Only one file supported", zap.Int("Number of files", len(r.MultipartForm.File)))
+		_ = encoder.Encode("Only one file supported, got: " + strconv.FormatInt(int64(len(r.MultipartForm.File)), 10))
+		return
+	}
+	fhs := []*multipart.FileHeader{}
+	for _, v := range r.MultipartForm.File {
+		fhs = v
+	}
+	if len(fhs) != 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		fm.log.Debug("Only one file header file supported", zap.Int("Number of headers", len(fhs)))
+		_ = encoder.Encode("Only one file header file supported, got: " + strconv.FormatInt(int64(len(fhs)), 10))
+		return
+	}
+	file, err := fhs[0].Open()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fm.log.Warn("Error Retrieving file", zap.Error(err))
+		_ = encoder.Encode("Error Retrieving file" + err.Error())
+		return
+	}
+	defer file.Close()
+	n, err := fm.addFile(file)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fm.log.Warn("Cannot upload file to ipfs", zap.Error(err))
+		_ = encoder.Encode("Cannot upload file to ipfs: " + err.Error())
+		return
+	}
+	size, err := n.Size()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fm.log.Warn("Cannot calculate size of the uploaded file", zap.Error(err))
+		_ = encoder.Encode("Cannot calculate size of the uploaded file: " + err.Error())
+		return
+	}
+
+	if err = fm.provider.Provide(n.Cid()); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fm.log.Warn("Failed to provide file", zap.Error(err))
+		_ = encoder.Encode("Failed to provide file: " + err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Add("Content-Length", strconv.FormatInt(int64(size), 10))
+	w.Header().Add("Content-Type", "text/plain")
+	_, _ = w.Write([]byte(n.Cid().String()))
+	return
+}
+
+// getFile returns a reader to a file as identified by its root CID. The file
+// must have been added as a UnixFS DAG (default for IPFS).
+func (fm *FileManager) getFile(ctx context.Context, c cid.Cid) (ufsio.ReadSeekCloser, error) {
+	n, err := fm.DAGService.Get(ctx, c)
+	if err != nil {
+		return nil, err
+	}
+	return ufsio.NewDagReader(ctx, n, fm)
+}
+
+// addFile chunks and adds content to the DAGService from a reader. The content
 // is stored as a UnixFS DAG (default for IPFS). It returns the root ipld.Node.
-func (fm *FileManager) AddFile(r io.Reader) (ipld.Node, error) {
+func (fm *FileManager) addFile(r io.Reader) (ipld.Node, error) {
 	params := &AddParams{}
 
 	prefix, err := merkledag.PrefixForCidVersion(1)

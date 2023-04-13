@@ -457,7 +457,7 @@ func initHTTP(
 	me *future.ReadOnly[core.Identity],
 	wallet *wallet.Service,
 	wellKnownHandler http.Handler,
-	fileUploadHandler http.Handler,
+	ipfsHandler http.Handler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
 	{
@@ -472,7 +472,8 @@ func initHTTP(
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 		router.PathPrefix("/" + mttnet.WellKnownPath).Handler(wellKnownHandler)
-		router.PathPrefix(ipfs.UploadRoute).Handler(fileUploadHandler)
+		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.UploadRoute, ipfsHandler.UploadFile)
+		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.GetRoute, ipfsHandler.GetFile)
 		nav := newNavigationHandler(router)
 
 		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
