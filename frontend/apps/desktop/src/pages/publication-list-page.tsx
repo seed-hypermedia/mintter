@@ -1,4 +1,4 @@
-import {useDraftList, usePublicationList} from '@app/hooks'
+import {useDraftList, usePublicationList} from '@app/hooks/documents'
 import {useNavigationActions} from '@app/utils/navigation'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'

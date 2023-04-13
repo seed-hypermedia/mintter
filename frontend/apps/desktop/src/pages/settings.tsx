@@ -3,7 +3,7 @@ import {createAuthService} from '@app/auth-machine'
 import {Box} from '@app/components/box'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
-import {useAccount} from '@app/hooks'
+import {useAccount} from '@app/hooks/accounts'
 import {
   useAddSite,
   useInviteMember,

@@ -1,5 +1,5 @@
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
-import {useAccount} from '@app/hooks'
+import {useAccount} from '@app/hooks/accounts'
 import {MainActor} from '@app/hooks/main-actor'
 import {useDocPublications, useSiteList} from '@app/hooks/sites'
 import {useDaemonReady} from '@app/node-status-context'

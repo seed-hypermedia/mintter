@@ -1,4 +1,5 @@
-import {useAccount, useDocChanges} from '@app/hooks'
+import {useDocChanges} from '@app/hooks/documents'
+import {useAccount} from '@app/hooks/accounts'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
 import {MouseEvent} from 'react'

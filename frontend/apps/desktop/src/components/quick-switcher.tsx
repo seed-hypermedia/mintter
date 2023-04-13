@@ -1,4 +1,4 @@
-import {useDraftList, usePublicationList} from '@app/hooks'
+import {useDraftList, usePublicationList} from '@app/hooks/documents'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {useNavigate} from '@app/utils/navigation'
 import {getIdsfromUrl} from '@mintter/shared'

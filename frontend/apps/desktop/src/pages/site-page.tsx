@@ -1,6 +1,7 @@
 import {MINTTER_LINK_PREFIX} from '@app/constants'
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
-import {usePublication, useAccount, prefetchPublication} from '@app/hooks'
+import {Dropdown} from '@app/editor/dropdown'
+import {usePublication, prefetchPublication} from '@app/hooks/documents'
+import {useAccount} from '@app/hooks/accounts'
 import {useSitePublications} from '@app/hooks/sites'
 import {
   useNavigate,
@@ -9,7 +10,6 @@ import {
 } from '@app/utils/navigation'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
-import {Icon} from '@components/icon'
 import {
   Button,
   ButtonText,

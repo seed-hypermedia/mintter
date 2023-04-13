@@ -1,11 +1,5 @@
-import {
-  accountsClient,
-  changesClient,
-  draftsClient,
-  publicationsClient,
-} from '@app/api-clients'
+import {changesClient, draftsClient, publicationsClient} from '@app/api-clients'
 import {appInvalidateQueries} from '@app/query-client'
-import {Transport} from '@bufbuild/connect-web'
 import {Timestamp} from '@bufbuild/protobuf'
 import {Document, Publication} from '@mintter/shared'
 import {
@@ -16,12 +10,7 @@ import {
   useQuery,
 } from '@tanstack/react-query'
 import {useMemo} from 'react'
-import {contentGraphClient} from './../api-clients'
 import {queryKeys} from './query-keys'
-
-type QueryOptions = {
-  rpc?: Transport
-}
 
 export function usePublication(documentId: string, versionId?: string) {
   return useQuery({
@@ -149,17 +138,6 @@ export function useDraft(documentId?: string) {
   })
 }
 
-export function useAccount(id = '', opts: QueryOptions = {}) {
-  return useQuery({
-    enabled: !!id,
-    queryKey: [queryKeys.GET_ACCOUNT, id],
-    queryFn: () => accountsClient.getAccount({id}),
-    onError: (err) => {
-      console.log(`useAccount error: ${err}`)
-    },
-  })
-}
-
 export function prefetchPublication(client: QueryClient, pub: Publication) {
   if (pub.document?.id) {
     client.prefetchQuery({
@@ -191,18 +169,6 @@ function createDocChangesQuery(docId: string | undefined) {
 }
 export function useDocChanges(docId?: string) {
   return useQuery(createDocChangesQuery(docId))
-}
-
-export type CitationLink = Awaited<
-  ReturnType<typeof contentGraphClient.listCitations>
->['links'][number]
-
-export function useDocCitations(docId?: string) {
-  return useQuery({
-    queryFn: () => contentGraphClient.listCitations({documentId: docId}),
-    queryKey: [queryKeys.PUBLICATION_CITATIONS, docId],
-    enabled: !!docId,
-  })
 }
 
 function sortDocuments(a?: Timestamp, b?: Timestamp) {

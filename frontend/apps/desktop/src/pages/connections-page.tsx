@@ -1,4 +1,4 @@
-import {useAccountIsConnected, useContactsList} from '@app/hooks/contacts'
+import {useAccountIsConnected, useAllAccounts} from '@app/hooks/accounts'
 import {useNavigate} from '@app/utils/navigation'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
@@ -10,7 +10,6 @@ import {
   UIAvatar,
   YStack,
   Button,
-  ButtonText,
   Text,
   XStack,
 } from '@mintter/ui'
@@ -51,7 +50,7 @@ function ContactItem({account}: {account: Account}) {
 }
 
 export default function ConnectionsPage(props: PageProps) {
-  const contacts = useContactsList()
+  const contacts = useAllAccounts()
   const accounts = contacts.data?.accounts || []
   return (
     <>

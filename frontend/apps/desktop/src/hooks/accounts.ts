@@ -3,9 +3,19 @@ import {Account} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from '@app/hooks/query-keys'
 import {useAllPeers} from './networking'
-import {useAccount} from './accounts'
 
-export function useContactsList() {
+export function useAccount(accountId?: string) {
+  return useQuery({
+    enabled: !!accountId,
+    queryKey: [queryKeys.GET_ACCOUNT, accountId],
+    queryFn: () => accountsClient.getAccount({id: accountId}),
+    onError: (err) => {
+      console.log(`useAccount error: ${err}`)
+    },
+  })
+}
+
+export function useAllAccounts() {
   const contacts = useQuery({
     queryKey: [queryKeys.GET_ALL_ACCOUNTS],
     queryFn: async () => {
