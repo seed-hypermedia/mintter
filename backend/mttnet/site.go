@@ -811,9 +811,12 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 	}
 	remoteHostname, _ := getRemoteSiteFromHeader(ctx)
 	ctx = metadata.AppendToOutgoingContext(ctx, string(MttHeader), remoteHostname)
+	failedPIDs := []string{}
 	for _, deviceID := range devices {
 		sitec, err := srv.Client(ctx, deviceID)
 		if err != nil {
+			pid, _ := peer.FromCid(deviceID)
+			failedPIDs = append(failedPIDs, pid.String())
 			continue
 		}
 
@@ -839,5 +842,5 @@ func (srv *Server) proxyToSite(ctx context.Context, hostname string, proxyFcn st
 		n.log.Debug("Remote call finished successfully", zap.String("First param type", res[0].Kind().String()), zap.String("Second param type", res[1].Kind().String()))
 		return res[0].Interface(), res[1].Interface()
 	}
-	return nil, fmt.Errorf("Proxy to site: none of the devices associated with the provided site account [%s] were reachable", siteAccountID.String())
+	return nil, fmt.Errorf("Proxy to site: none of the devices [%v] associated with the provided site account [%s] were reachable", failedPIDs, siteAccountID.String())
 }
