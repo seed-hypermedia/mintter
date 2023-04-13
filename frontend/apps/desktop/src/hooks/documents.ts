@@ -1,28 +1,19 @@
 import {draftsClient, publicationsClient} from '@app/api-clients'
-import {appInvalidateQueries} from '@app/query-client'
+import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {Timestamp} from '@bufbuild/protobuf'
 import {Document, Publication} from '@mintter/shared'
 import {
+  FetchQueryOptions,
   MutationOptions,
   QueryClient,
   useMutation,
   useQueries,
   useQuery,
+  UseQueryOptions,
 } from '@tanstack/react-query'
 import {useMemo} from 'react'
 import {queryKeys} from './query-keys'
 
-export function usePublication(documentId: string, versionId?: string) {
-  return useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
-    enabled: !!documentId,
-    queryFn: () =>
-      publicationsClient.getPublication({
-        documentId: documentId,
-        version: versionId,
-      }),
-  })
-}
 export function usePublicationList() {
   return useQuery({
     queryKey: [queryKeys.GET_PUBLICATION_LIST],
@@ -138,17 +129,29 @@ export function useDraft(documentId?: string) {
   })
 }
 
-export function prefetchPublication(client: QueryClient, pub: Publication) {
-  if (pub.document?.id) {
-    client.prefetchQuery({
-      queryKey: [queryKeys.GET_PUBLICATION, pub.document.id, pub.version],
-      queryFn: () =>
-        publicationsClient.getPublication({
-          documentId: pub.document?.id,
-          version: pub.version,
-        }),
-    })
+function queryPublication(
+  documentId: string,
+  versionId?: string,
+): UseQueryOptions<Publication> | FetchQueryOptions<Publication> {
+  return {
+    queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
+    queryFn: () =>
+      publicationsClient.getPublication({
+        documentId,
+        version: versionId,
+      }),
   }
+}
+export function usePublication(documentId: string, versionId?: string) {
+  return useQuery(queryPublication(documentId, versionId))
+}
+
+export function prefetchPublication(documentId: string, versionId?: string) {
+  appQueryClient.prefetchQuery(queryPublication(documentId, versionId))
+}
+
+export function fetchPublication(documentId: string, versionId?: string) {
+  return appQueryClient.fetchQuery(queryPublication(documentId, versionId))
 }
 
 export function prefetchDraft(client: QueryClient, draft: Document) {

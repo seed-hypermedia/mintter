@@ -119,7 +119,10 @@ export function PublicationListItem({
       chromeless
       theme="gray"
       tag="li"
-      onMouseEnter={() => prefetchPublication(client, publication)}
+      onMouseEnter={() => {
+        if (publication.document)
+          prefetchPublication(publication.document.id, publication.version)
+      }}
     >
       {/* @ts-ignore */}
       <ButtonText onPress={goToItem} fontWeight="700" flex={1}>

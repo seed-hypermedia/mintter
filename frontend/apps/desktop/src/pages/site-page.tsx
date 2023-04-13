@@ -92,7 +92,6 @@ function WebPublicationListItem({
   webPub: WebPublicationRecord
 }) {
   const navigate = useNavigate()
-  const client = useQueryClient()
   function goToItem() {
     navigate({
       key: 'publication',
@@ -112,7 +111,9 @@ function WebPublicationListItem({
       theme="gray"
       tag="li"
       onMouseEnter={() =>
-        publication ? prefetchPublication(client, publication) : null
+        publication?.document
+          ? prefetchPublication(publication.document?.id, publication.version)
+          : null
       }
     >
       {webPub.path === '' ? (

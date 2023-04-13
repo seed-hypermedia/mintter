@@ -1,7 +1,6 @@
-import {publicationsClient} from '@app/api-clients'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {queryKeys} from '@app/hooks/query-keys'
+import {usePublication} from '@app/hooks/documents'
 import {useMouse} from '@app/mouse-context'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
@@ -20,7 +19,6 @@ import {
   text,
 } from '@mintter/shared'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
-import {useQuery} from '@tanstack/react-query'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
 import {ForwardedRef, forwardRef, MouseEvent, useEffect, useState} from 'react'
@@ -256,11 +254,7 @@ function MintterDocumentLink({element, attributes}: LinkProps) {
   let editor = useSlateStatic()
   let at = findPath(element)
   let [docId, version] = getIdsfromUrl(element.url)
-  let {data} = useQuery({
-    queryKey: [queryKeys.GET_PUBLICATION, docId, version],
-    queryFn: () =>
-      publicationsClient.getPublication({documentId: docId, version}),
-  })
+  let {data} = usePublication(docId, version)
   useEffect(() => {
     if (data) {
       Editor.withoutNormalizing(editor, () => {

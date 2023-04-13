@@ -4,6 +4,7 @@ import {ClientPublication} from '@app/publication-machine'
 import {Account, blockNodeToSlate, MttLink, Publication} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine} from 'xstate'
+import {fetchPublication} from './hooks/documents'
 
 type CreateConversationMachineProps = {
   client: QueryClient
@@ -82,20 +83,16 @@ export function createDiscussionMachine({
     },
     {
       services: {
-        fetchSource: (context) =>
-          client.fetchQuery({
-            queryKey: [
-              queryKeys.GET_PUBLICATION,
-              context.link.source?.documentId,
-              context.link.source?.version,
-            ],
-            queryFn: () =>
-              publicationsClient.getPublication({
-                documentId: context.link.source?.documentId,
-                version: context.link.source?.version,
-              }),
-            staleTime: Infinity,
-          }),
+        fetchSource: (context) => {
+          if (!context.link.source?.documentId)
+            throw new Error(
+              'documentId mandatory context for conversation machine fetchSource',
+            )
+          return fetchPublication(
+            context.link.source?.documentId,
+            context.link.source?.version,
+          )
+        },
         fetchAuthor: async (context) => {
           let documentAuthor = context.source?.document.author || ''
           let userAccount = await client.fetchQuery({
