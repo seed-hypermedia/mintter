@@ -154,9 +154,9 @@ function PublishButton({
         ) : (
           <>
             <Globe size={16} />
+            {publisherLabel}
           </>
         )}
-        {publisherLabel}
       </Button>
     </PopoverPrimitive.Trigger>
   )
