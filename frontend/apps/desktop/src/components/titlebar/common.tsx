@@ -27,6 +27,8 @@ import {
   Back,
   Forward,
   XStack,
+  SizableText,
+  Separator,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useActor, useSelector} from '@xstate/react'
@@ -127,16 +129,19 @@ export function SitesNavDropdownItems() {
   if (sites.data.length == 0) return null
   return (
     <>
-      <Dropdown.Separator />
+      <Separator />
       {sites.data.map((site) => (
         <Dropdown.Item
           key={site.hostname}
           onSelect={() => navigate({key: 'site', hostname: site.hostname})}
           asChild
         >
-          <Button chromeless size="$2" icon={Globe}>
-            {hostnameStripProtocol(site.hostname)}
-          </Button>
+          <XStack alignItems="center">
+            <Globe size={16} />
+            <SizableText size="$2">
+              {hostnameStripProtocol(site.hostname)}
+            </SizableText>
+          </XStack>
         </Dropdown.Item>
       ))}
     </>
@@ -184,7 +189,7 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
               <Dropdown.RightSlot>&#8984; 9</Dropdown.RightSlot>
             </Dropdown.Item>
             <SitesNavDropdownItems />
-            <Dropdown.Separator />
+            <Separator />
             <Dropdown.Item onSelect={() => tauriEmit('open_quick_switcher')}>
               <Icon name="QuickSwitcher" />
               Quick Switcher
