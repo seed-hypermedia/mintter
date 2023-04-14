@@ -280,6 +280,7 @@ function RenderMintterLink(
   return (
     <Text
       tag="a"
+      href={props.element.url}
       color={'#0E868E'}
       // @ts-ignore not sure what the Text ref is..
       ref={ref}
@@ -316,6 +317,7 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     >
       <Text
         tag="a"
+        href={props.element.url}
         color={props.hintPureWebLink ? '#0E518E' : '#444444'}
         // @ts-ignore not sure what the Text ref is..
         ref={ref}
