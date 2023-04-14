@@ -16,6 +16,7 @@ import {
   useSiteMembers,
   useWriteSiteInfo,
 } from '@app/hooks/sites'
+import {TableList} from '@app/table-list'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Icon} from '@components/icon'
@@ -29,12 +30,16 @@ import {
   SiteInfo,
 } from '@mintter/shared'
 import {
+  Add,
   Back,
   Button,
   ButtonFrame,
   Circle,
+  Close,
   Copy,
+  Dialog,
   Form,
+  Forward,
   H2,
   Heading,
   Input,
@@ -123,6 +128,7 @@ type SettingsTabProps = {
 
 export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   let [state, send] = useActor(service)
+  let [file, setFile] = useState<any>(null)
   let [alias, setAlias] = useState(
     () => state?.context.account?.profile?.alias || '',
   )
@@ -154,11 +160,32 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
     return (
       <>
         <Heading>Profile information</Heading>
-        <Form onSubmit={() => onSubmit()}>
-          <XStack gap="$4">
-            <YStack flex={0} alignItems="center">
-              <AvatarForm />
-            </YStack>
+
+        <XStack gap="$4">
+          <YStack flex={0} alignItems="center">
+            <AvatarForm />
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                fetch('http://localhost:55001/ipfs/file-upload', {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    data: file,
+                  }),
+                })
+                  .then((res) => {
+                    console.log('RES', res)
+                  })
+                  .catch((err) => {
+                    console.error(err)
+                  })
+              }}
+            >
+              <input type="file" onChange={(e) => setFile(e.target.value)} />
+              <button type="submit">upload</button>
+            </form>
+          </YStack>
+          <Form onSubmit={() => onSubmit()}>
             <YStack flex={1}>
               <Label htmlFor="alias">Alias</Label>
               <Input
@@ -186,8 +213,8 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
                 )}
               </XStack>
             </YStack>
-          </XStack>
-        </Form>
+          </Form>
+        </XStack>
       </>
     )
   }
@@ -314,33 +341,8 @@ function DeviceInfo({id}: {id: string}) {
   }, [id, current])
 
   return (
-    <YStack
-      userSelect="none"
-      hoverStyle={{
-        cursor: 'default',
-      }}
-      borderWidth={1}
-      borderColor="$borderColor"
-      f={1}
-      // aria-label={}
-      // aria-labelledby={ariaLabelledBy}
-      br="$4"
-      ov="hidden"
-      mx="$-4"
-      $sm={{
-        // @ts-ignore
-        mx: 0,
-      }}
-    >
-      <XStack
-        alignItems="center"
-        // @ts-ignore
-        py="$2"
-        px="$4"
-        backgroundColor="$borderColor"
-        gap="$3"
-        theme={isCurrent ? 'green' : undefined}
-      >
+    <TableList>
+      <TableList.Header>
         <SizableText fontWeight="700">
           {id.substring(id.length - 10)}
         </SizableText>
@@ -351,71 +353,55 @@ function DeviceInfo({id}: {id: string}) {
             </Button>
           )}
         </XStack>
-      </XStack>
-      <ListItem>
-        <XStack alignItems="center">
-          <SizableText size="$1" flex={0} width={80}>
-            Alias:
-          </SizableText>
-          <SizableText
-            size="$1"
-            flex={1}
-            overflow="hidden"
-            textOverflow="ellipsis"
-          >
-            {status == 'success' ? id.substring(id.length - 10) : '...'}
-          </SizableText>
-        </XStack>
-      </ListItem>
+      </TableList.Header>
+      <TableList.Item>
+        <SizableText size="$1" flex={0} width={80}>
+          Alias:
+        </SizableText>
+        <SizableText
+          size="$1"
+          flex={1}
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {status == 'success' ? id.substring(id.length - 10) : '...'}
+        </SizableText>
+      </TableList.Item>
+
       <Separator />
-      <ListItem>
-        <XStack alignItems="center">
+      <TableList.Item>
+        <SizableText size="$1" flex={0} width={80} flexShrink={0} flexGrow={0}>
+          Id:
+        </SizableText>
+        <SizableText
+          size="$1"
+          flex={1}
+          overflow="hidden"
+          textOverflow="ellipsis"
+          userSelect="text"
+        >
+          {id}
+        </SizableText>
+      </TableList.Item>
+
+      <Separator />
+      <TableList.Item>
+        <SizableText size="$1" flex={0} width={80} flexShrink={0} flexGrow={0}>
+          Addresses:
+        </SizableText>
+        <YStack flex={1} position="relative">
           <SizableText
             size="$1"
-            flex={0}
-            width={80}
-            flexShrink={0}
-            flexGrow={0}
-          >
-            Id:
-          </SizableText>
-          <SizableText
-            size="$1"
-            flex={1}
+            width="100%"
             overflow="hidden"
             textOverflow="ellipsis"
             userSelect="text"
           >
-            {id}
+            {status == 'success' ? data?.addrs.join(',') : '...'}
           </SizableText>
-        </XStack>
-      </ListItem>
-      <Separator />
-      <ListItem>
-        <XStack alignItems="flex-start" width="100%">
-          <SizableText
-            size="$1"
-            flex={0}
-            width={80}
-            flexShrink={0}
-            flexGrow={0}
-          >
-            Addresses:
-          </SizableText>
-          <YStack flex={1} position="relative">
-            <SizableText
-              size="$1"
-              width="100%"
-              overflow="hidden"
-              textOverflow="ellipsis"
-              userSelect="text"
-            >
-              {status == 'success' ? data?.addrs.join(',') : '...'}
-            </SizableText>
-          </YStack>
-        </XStack>
-      </ListItem>
-    </YStack>
+        </YStack>
+      </TableList.Item>
+    </TableList>
   )
 }
 
@@ -426,9 +412,62 @@ function AppSettings() {
   }
 
   return (
-    <>
-      <Button onPress={onReloadSync}>Reload Database</Button>
-    </>
+    <YStack gap="$5">
+      <Heading>Application Settings</Heading>
+      <TableList>
+        <TableList.Header>
+          <SizableText fontWeight="700">Bundle Information</SizableText>
+        </TableList.Header>
+        <TableList.Item>
+          <SizableText
+            size="$1"
+            flex={0}
+            width={80}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            Version:
+          </SizableText>
+          <SizableText
+            size="$1"
+            flex={1}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            userSelect="text"
+          >
+            VERSION_HERE
+          </SizableText>
+        </TableList.Item>
+        <Separator />
+
+        <TableList.Item>
+          <SizableText
+            size="$1"
+            flex={0}
+            width={80}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            other
+          </SizableText>
+          <YStack flex={1} position="relative">
+            <SizableText
+              size="$1"
+              width="100%"
+              overflow="hidden"
+              textOverflow="ellipsis"
+              userSelect="text"
+            >
+              other data
+            </SizableText>
+          </YStack>
+        </TableList.Item>
+      </TableList>
+      <Separator />
+      <YStack>
+        <Button onPress={onReloadSync}>Reload Database</Button>
+      </YStack>
+    </YStack>
   )
 }
 
@@ -441,11 +480,11 @@ function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
 }
 function InviteMemberDialog({url, onDone}: {url: string; onDone: () => void}) {
   return (
-    <div>
+    <YStack gap="$3">
       <SizableText>Copy and send this secret editor invite URL</SizableText>
       {url && <AccessURLRow url={url} title={url} enableLink={false} />}
       <Button onPress={onDone}>Done</Button>
-    </div>
+    </YStack>
   )
 }
 export function useInviteDialog(hostname: string) {
@@ -459,19 +498,17 @@ export function useInviteDialog(hostname: string) {
   }
   return {
     content: (
-      <DialogPrimitive.Root
-        open={!!isOpen}
-        onOpenChange={() => setIsOpen(null)}
-      >
-        <DialogPrimitive.Portal>
-          <StyledOverlay />
-          <Prompt.Content>
+      <Dialog open={!!isOpen} onOpenChange={() => setIsOpen(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content>
+            <Dialog.Title>Invite Code</Dialog.Title>
             {isOpen && (
               <InviteMemberDialog url={isOpen} onDone={() => setIsOpen(null)} />
             )}
-          </Prompt.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
     ),
     open,
   }
@@ -495,33 +532,34 @@ function SiteMemberRow({
   const {data: account} = useAccount(member.accountId)
   const remove = useRemoveMember(hostname)
   const [hovering, setHover] = useState(false)
+
+  let hoverProps = useMemo(() => {
+    if (!isOwner && member.accountId == account?.id) return {}
+
+    return {
+      onMouseEnter: () => setHover(true),
+      onMouseLeave: () => setHover(false),
+    }
+  }, [member.accountId, isOwner, account])
+
   return (
-    <Box
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      css={{
-        backgroundColor: '$base-background-normal',
-        borderRadius: '$2',
-        display: 'flex',
-        overflow: 'hidden',
-        position: 'relative',
-      }}
+    <TableList.Item
+      {...hoverProps}
+      // onPressIn={() => setHover(true)}
+      // onPressOut={() => setHover(false)}
     >
-      <Text
-        css={{
-          display: 'flex',
-          textOverflow: 'ellipsis',
-          margin: '$3',
-          flex: 1,
-          fontWeight: member.role === Member_Role.OWNER ? 'bold' : 'normal',
-        }}
-      >
-        {account?.profile?.alias || member.accountId}
-        {member.role === Member_Role.OWNER ? '[Owner]' : ''}
-      </Text>
+      <SizableText flex={1}>
+        {account?.profile?.alias ||
+          `...${member.accountId.substring(member.accountId.length - 16)}`}
+      </SizableText>
+      {member.role === Member_Role.OWNER && (
+        <Button size="$1" disabled>
+          owner
+        </Button>
+      )}
       {hovering && isOwner && member.accountId !== account?.id ? (
         <Button
-          color="red"
+          theme="red"
           size="$1"
           onPress={() => {
             remove.mutate(member.accountId)
@@ -530,7 +568,7 @@ function SiteMemberRow({
           Remove
         </Button>
       ) : null}
-    </Box>
+    </TableList.Item>
   )
 }
 function SiteMembers({
@@ -547,20 +585,27 @@ function SiteMembers({
   const {data: members} = useSiteMembers(hostname)
 
   return (
-    <SettingsSection title="Members">
-      <Box css={{display: 'flex', gap: '$3', flexDirection: 'column'}}>
-        {members?.map((member) => (
-          <SiteMemberRow
-            key={member.accountId}
-            member={member}
-            isOwner={isOwner}
-            hostname={hostname}
-          />
-        ))}
-      </Box>
-      {content}
-      {isOwner ? <Button onPress={open}>Invite Editor</Button> : null}
-    </SettingsSection>
+    <TableList>
+      <TableList.Header>
+        <SizableText flex={1} fontWeight="700">
+          Members
+        </SizableText>
+        {isOwner ? (
+          <Button size="$2" onPress={open} icon={Add}>
+            Invite Editor
+          </Button>
+        ) : null}
+        {content}
+      </TableList.Header>
+      {members?.map((member) => (
+        <SiteMemberRow
+          key={member.accountId}
+          member={member}
+          isOwner={isOwner}
+          hostname={hostname}
+        />
+      ))}
+    </TableList>
   )
 }
 
@@ -572,17 +617,10 @@ function SettingsSection({
   children: React.ReactNode
 }) {
   return (
-    <Box
-      css={{
-        borderTop: '1px solid blue',
-        borderColor: '$base-border-subtle',
-        paddingTop: '$5',
-        paddingBottom: '$5',
-      }}
-    >
-      <h3>{title}</h3>
+    <YStack gap="$3">
+      <Heading>{title}</Heading>
       {children}
-    </Box>
+    </YStack>
   )
 }
 
@@ -598,45 +636,36 @@ function SiteInfoForm({
   const [title, setTitle] = useState(info.title)
   const [description, setDescription] = useState(info.description)
   return (
-    <>
-      <TextField
-        id="site-title"
-        name="site-title"
-        label="Title"
-        value={title}
-        disabled={!isOwner}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <TextField
-        textarea
-        id="site-description"
-        name="site-description"
-        label="Description"
-        value={description}
-        disabled={!isOwner}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+    <YStack gap="$3">
+      <YStack>
+        <Label htmlFor="site-title">title</Label>
+        <Input
+          id="site-title"
+          value={title}
+          disabled={!isOwner}
+          onChangeText={isOwner ? (val) => setTitle(val) : undefined}
+        />
+      </YStack>
+      <YStack>
+        <Label htmlFor="site-description">Description</Label>
+        <TextArea
+          id="site-title"
+          value={description}
+          disabled={!isOwner}
+          onChangeText={isOwner ? (val) => setDescription(val) : undefined}
+        />
+      </YStack>
       {isOwner ? (
         <Button
           size="$2"
-          color="success"
           onPress={() => {
             onSubmit({title, description})
           }}
         >
-          Save Site Info
+          Save
         </Button>
       ) : null}
-      {/* <Box
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-       
-      </Box> */}
-    </>
+    </YStack>
   )
 }
 
@@ -659,26 +688,37 @@ function SiteSettings({
     [members, accountId],
   )
 
+  const removeSite = useRemoveSite(hostname, {
+    onSuccess: () => onDone(),
+  })
+
   return (
     <>
-      <XStack alignItems="center">
-        <SettingsNavBack title="Web Sites" onDone={onDone} />
-        <XStack flex={1} alignContent="center">
-          <H2>{hostnameStripProtocol(hostname)}</H2>
-        </XStack>
+      <XStack alignItems="center" gap="$4">
+        <SettingsNavBack title="Sites" onDone={onDone} />
+        <Heading flex={1}>{hostnameStripProtocol(hostname)}</Heading>
+        <Button
+          theme="red"
+          size="$2"
+          onPress={() => removeSite.mutate()}
+          icon={Close}
+        >
+          Remove Site
+        </Button>
       </XStack>
+
       {isLoading ? (
-        <span>Loading</span>
+        <Spinner />
       ) : (
-        <>
+        <YStack gap="$5">
           <SiteInfoSection hostname={hostname} isOwner={isOwner} />
+          <Separator />
           <SiteMembers
             hostname={hostname}
             accountId={accountId}
             isOwner={isOwner}
           />
-          <SiteAdmin hostname={hostname} onDone={onDone} />
-        </>
+        </YStack>
       )}
     </>
   )
@@ -809,46 +849,67 @@ function SitesSettings({
   }
   return (
     <>
-      <SitesList onSelectSite={(siteId: string) => setActiveSitePage(siteId)} />
-      <Button
-        size="$2"
-        onPress={() => {
-          setActiveSitePage(NewSitePage)
-        }}
-      >
-        Add Site
-      </Button>
+      <YStack gap="$5">
+        <XStack alignItems="center" gap="$4">
+          <Heading flex={1}>Sites</Heading>
+          <Button
+            size="$2"
+            icon={Add}
+            onPress={() => {
+              setActiveSitePage(NewSitePage)
+            }}
+          >
+            Add Site
+          </Button>
+        </XStack>
+
+        <SitesList
+          onSelectSite={(siteId: string) => setActiveSitePage(siteId)}
+        />
+      </YStack>
     </>
   )
 }
 
 function EmptySiteList() {
-  return <div>no sites yet</div>
+  return (
+    <YStack padding="$4">
+      <SizableText>no sites yet</SizableText>
+    </YStack>
+  )
 }
 
 function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
   return (
-    <Button onPress={onSelect}>{hostnameStripProtocol(site.hostname)}</Button>
-  )
-}
-
-function SiteAdmin({hostname, onDone}: {hostname: string; onDone: () => void}) {
-  const removeSite = useRemoveSite(hostname, {
-    onSuccess: () => onDone(),
-  })
-  return (
-    <SettingsSection>
-      <Button color="red" size="$1" onPress={() => removeSite.mutate()}>
-        Remove Site
-      </Button>
-    </SettingsSection>
+    <ListItem
+      onPress={onSelect}
+      iconAfter={Forward}
+      hoverStyle={{cursor: 'pointer'}}
+    >
+      <SizableText hoverStyle={{cursor: 'pointer'}}>
+        {hostnameStripProtocol(site.hostname)}
+      </SizableText>
+    </ListItem>
   )
 }
 
 function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
   const {data: sites, isLoading} = useSiteList()
   return (
-    <>
+    <YStack
+      borderWidth={1}
+      borderColor="$borderColor"
+      f={1}
+      // aria-label={}
+      // aria-labelledby={ariaLabelledBy}
+      br="$4"
+      ov="hidden"
+      mx="$-4"
+      $sm={{
+        //@ts-ignore
+        mx: 0,
+      }}
+    >
       {isLoading && <Spinner />}
       {sites && sites.length === 0 && <EmptySiteList />}
       {sites?.map((site) => (
@@ -860,7 +921,7 @@ function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
           }}
         />
       ))}
-    </>
+    </YStack>
   )
 }
 
