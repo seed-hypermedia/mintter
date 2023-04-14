@@ -2531,6 +2531,7 @@ __metadata:
     raf: 3.4.1
     react: 18.2.0
     react-dom: 18.2.0
+    react-hot-toast: ^2.4.0
     react-native: 0.0.0
     react-native-web: 0.18.12
     react-native-web-lite: 1.12.2
@@ -14104,7 +14105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-hot-toast@npm:2.4.0":
+"react-hot-toast@npm:2.4.0, react-hot-toast@npm:^2.4.0":
   version: 2.4.0
   resolution: "react-hot-toast@npm:2.4.0"
   dependencies:

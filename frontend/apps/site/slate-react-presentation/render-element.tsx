@@ -7,14 +7,23 @@ import {
   Video as VideoType,
   FlowContent,
 } from '@mintter/shared'
-import {useCallback, useRef, useMemo, ReactNode} from 'react'
+import {useCallback, ReactNode, ComponentProps, useState} from 'react'
 import {RenderElementProps} from 'slate-react'
-import {Image, styled, YStack} from '@mintter/ui'
+import {
+  Button,
+  Copy,
+  Image,
+  Tooltip,
+  YStack,
+  Paragraph as UIParagrah,
+  TooltipGroup,
+} from '@mintter/ui'
 import {ElementLink} from './link'
 import {Paragraph} from './paragraph'
 import {StaticParagraph} from './static-paragraph'
 import {Transclusion} from './transclusion'
 import {Video} from './video'
+import toast from 'react-hot-toast'
 
 export function useRenderElement() {
   return useCallback(({children, element, attributes}: RenderElementProps) => {
@@ -104,10 +113,76 @@ function Group({
   )
 }
 
-function Block({type, children, ...props}: {type: FlowContent['type']}) {
+function CopyBlockLinkButton({id}: {id: string}) {
   return (
-    <YStack marginVertical="$2" tag="li" {...props} className={`list-item`}>
+    <TooltipGroup delay={{open: 3000, close: 100}}>
+      <Tooltip placement="top">
+        <Tooltip.Trigger position="absolute" right={'$1'} top={'$1'}>
+          <Button
+            size="$2"
+            backgroundColor={'$gray1'}
+            onPress={() => {
+              const {pathname, origin, search} = window.location
+              navigator.clipboard.writeText(
+                `${origin}${pathname}${search}#${id}`,
+              )
+              toast.success('Copied link to clipboard')
+            }}
+          >
+            <Copy size="$1" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content
+          enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
+          exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
+          scale={1}
+          x={0}
+          y={0}
+          opacity={1}
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+        >
+          <Tooltip.Arrow />
+          <UIParagrah size="$2" lineHeight="$1">
+            Copy Link to Block
+          </UIParagrah>
+        </Tooltip.Content>
+      </Tooltip>
+    </TooltipGroup>
+  )
+}
+
+function Block({
+  children,
+  id,
+  ...props
+}: {
+  children: ReactNode
+} & ComponentProps<typeof YStack>) {
+  const [isHovering, setIsHovering] = useState(false)
+
+  return (
+    <YStack
+      marginVertical="$2"
+      tag="li"
+      {...props}
+      className={`list-item`}
+      borderRadius={6}
+      id={id}
+      hoverStyle={{
+        backgroundColor: '#DCFFF9',
+      }}
+      onHoverIn={() => setIsHovering(true)}
+      onHoverOut={() => setIsHovering(false)}
+    >
       {children}
+      {isHovering && id ? <CopyBlockLinkButton id={id} /> : null}
     </YStack>
   )
 }

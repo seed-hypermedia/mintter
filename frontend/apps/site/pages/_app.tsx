@@ -26,6 +26,7 @@ import {useMemo, useState} from 'react'
 import {trpc} from '../trpc'
 import {TamaguiProvider, TamaguiProviderProps, Theme} from '@mintter/ui'
 import tamaguiConfig from 'tamagui.config'
+import {Toaster} from 'react-hot-toast'
 
 export default trpc.withTRPC(App)
 
@@ -76,7 +77,10 @@ function App({Component, pageProps}: AppProps) {
         />
       </Head>
       <Hydrate state={pageProps.dehydratedState}>
-        <ThemeProvider>{contents}</ThemeProvider>
+        <ThemeProvider>
+          {contents}
+          <Toaster position="bottom-right" />
+        </ThemeProvider>
       </Hydrate>
       <ReactQueryDevtools />
     </QueryClientProvider>
