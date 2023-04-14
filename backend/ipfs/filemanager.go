@@ -40,7 +40,7 @@ const (
 	GetRoute = "/{" + routeVar + "}"
 	// MaxFileMB is the maximum file size (in MB) to be uploaded.
 	MaxFileMB = 64
-	// SearchTimeout is the maximum time we are searching for a file
+	// SearchTimeout is the maximum time we are searching for a file.
 	SearchTimeout = 2 * time.Minute
 )
 
@@ -185,8 +185,7 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/octet-stream")
 	w.Header().Add("ETag", cidStr)
 	w.Header().Add("Cache-Control", "public, max-age=29030400, immutable")
-	w.Write(buf.Bytes())
-	return
+	_, _ = w.Write(buf.Bytes())
 }
 
 // UploadFile uploads a file to ipfs.
@@ -259,18 +258,6 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Length", strconv.FormatInt(int64(size), 10))
 	w.Header().Add("Content-Type", "text/plain")
 	_, _ = w.Write([]byte(n.Cid().String()))
-	return
-}
-
-// getFile returns a reader to a file as identified by its root CID. The file
-// must have been added as a UnixFS DAG (default for IPFS).
-func (fm *FileManager) getFile(ctx context.Context, c cid.Cid) (files.Node, error) {
-	n, err := fm.DAGService.Get(ctx, c)
-	if err != nil {
-		return nil, err
-	}
-
-	return unixfile.NewUnixfsFile(ctx, fm.DAGService, n)
 }
 
 // addFile chunks and adds content to the DAGService from a reader. The content

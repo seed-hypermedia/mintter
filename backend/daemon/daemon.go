@@ -171,14 +171,14 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	}
 
 	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
-	go func() {
+	a.g.Go(func() error {
 		n, err := a.Net.Await(ctx)
 		if err != nil {
-			return
+			return err
 		}
 
-		fileManager.Start(n.VCS().Blockstore(), n.Bitswap(), n.Provider())
-	}()
+		return fileManager.Start(n.VCS().Blockstore(), n.Bitswap(), n.Provider())
+	})
 	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, fileManager)
 	if err != nil {
 		return nil, err
