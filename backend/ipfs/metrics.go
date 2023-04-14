@@ -162,7 +162,7 @@ func (m *Libp2pMetrics) collectConnectionStats() {
 		}
 
 		for _, p := range protos {
-			m.connectedPeers.WithLabelValues(p).Inc()
+			m.connectedPeers.WithLabelValues(string(p)).Inc()
 		}
 	}
 }

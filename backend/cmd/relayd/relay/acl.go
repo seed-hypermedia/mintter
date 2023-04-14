@@ -9,7 +9,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 
-	relayv1 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv1/relay"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 
 	ma "github.com/multiformats/go-multiaddr"
@@ -27,7 +26,6 @@ type ACLFilter struct {
 	addrs map[peer.ID]map[ma.Multiaddr]struct{}
 }
 
-var _ relayv1.ACLFilter = (*ACLFilter)(nil)
 var _ relayv2.ACLFilter = (*ACLFilter)(nil)
 
 // NewACL implements Allow Control Lists on the host h, based on the configuration in cfg.

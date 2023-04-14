@@ -9,8 +9,8 @@ import (
 	"mintter/backend/pkg/cleanup"
 	"mintter/backend/pkg/must"
 
+	"github.com/ipfs/boxo/ipns"
 	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-ipns"
 	"github.com/libp2p/go-libp2p"
 	record "github.com/libp2p/go-libp2p-record"
 	"github.com/libp2p/go-libp2p/core/crypto"

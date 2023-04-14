@@ -1,8 +1,8 @@
 package ipfs
 
 import (
+	"github.com/ipfs/boxo/ipld/merkledag"
 	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-merkledag"
 
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	format "github.com/ipfs/go-ipld-format"
