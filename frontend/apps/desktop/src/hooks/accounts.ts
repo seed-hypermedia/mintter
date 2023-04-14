@@ -3,6 +3,7 @@ import {Account} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from '@app/hooks/query-keys'
 import {useAllPeers} from './networking'
+import {useDaemonInfo} from './daemon'
 
 export function useAccount(accountId?: string) {
   return useQuery({
@@ -56,4 +57,9 @@ export function useAccountWithDevices(accountId: string) {
 export function useAccountIsConnected(account: Account) {
   const peers = useAllPeers()
   return !!peers.data?.peerList.find((peer) => peer.accountId === account.id)
+}
+
+export function useMyAccount() {
+  const daemonInfo = useDaemonInfo()
+  return useAccount(daemonInfo.data?.accountId)
 }

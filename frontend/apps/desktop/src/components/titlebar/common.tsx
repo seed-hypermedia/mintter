@@ -29,6 +29,7 @@ import {
   XStack,
   SizableText,
   Separator,
+  UIAvatar,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useActor, useSelector} from '@xstate/react'
@@ -36,6 +37,8 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
+import {useAccount, useMyAccount} from '@app/hooks/accounts'
+import appError from '@app/errors'
 
 export function ActionButtons(props: TitleBarProps) {
   const nav = useNavigationActions()
@@ -155,6 +158,28 @@ export function SitesNavDropdownItems() {
   )
 }
 
+function AccountDropdownItem() {
+  const navigate = useNavigate()
+  const route = useNavRoute()
+  const {data: account} = useMyAccount()
+  return (
+    <Dropdown.Item
+      disabled={route.key === 'account' && route.accountId === account?.id}
+      onSelect={() => {
+        if (!account?.id) {
+          appError('Account has not loaded.')
+          return
+        }
+        navigate({key: 'account', accountId: account?.id})
+      }}
+    >
+      <UIAvatar size="$1" alias={account?.profile?.alias || '.'} />
+      <span>{account?.profile?.alias || '<me>'}</span>
+      <Dropdown.RightSlot></Dropdown.RightSlot>
+    </Dropdown.Item>
+  )
+}
+
 export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   const route = useNavRoute()
   const navigate = useNavigate()
@@ -169,6 +194,8 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
         </Dropdown.Trigger>
         <Dropdown.Portal>
           <Dropdown.Content>
+            <AccountDropdownItem />
+            <Separator />
             <Dropdown.Item
               disabled={route.key === 'home'}
               data-testid="menu-item-inbox"
