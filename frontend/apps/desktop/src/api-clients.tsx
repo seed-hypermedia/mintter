@@ -1,6 +1,7 @@
 import {
   createGrpcWebTransport,
   createPromiseClient,
+  Interceptor,
 } from '@bufbuild/connect-web'
 import {
   Accounts,
@@ -16,12 +17,34 @@ import {
   WebPublishing,
   WebSite,
 } from '@mintter/shared'
+import {toast} from 'react-hot-toast'
+
+export const toastInterceptor: Interceptor = (next) => async (req) => {
+  try {
+    const result = await next(req)
+    // @ts-ignore
+    // console.log(`🔃 to ${req.method.name} `, req.message, result.message)
+    return result
+  } catch (e) {
+    // toast.error(e.message)
+    toast.error(
+      <span
+        onClick={() => {
+          // toast.success('Lol')
+        }}
+        style={{cursor: 'pointer'}}
+      >
+        🚨 {req.method.name}: {e.message}
+      </span>,
+    )
+  }
+}
 
 export const transport = createGrpcWebTransport({
   baseUrl: 'http://localhost:55001',
   interceptors: import.meta.env.DEV
-    ? [loggingInterceptor]
-    : [loggingInterceptor, prodInter],
+    ? [loggingInterceptor, toastInterceptor]
+    : [loggingInterceptor, toastInterceptor, prodInter],
 })
 
 export const draftsClient = createPromiseClient(Drafts, transport)
