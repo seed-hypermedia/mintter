@@ -8,6 +8,7 @@ import {
   XGroup,
   XStack,
   YStack,
+  SizableText,
 } from '@mintter/ui'
 import {open} from '@tauri-apps/api/shell'
 import {useState} from 'react'
@@ -30,14 +31,27 @@ export function AccessURLRow({
           flex={1}
           flexShrink={1}
           size="$2"
+          gap={0}
           chromeless
           onPress={() => {
             if (!enableLink) return
             open(url)
           }}
+          width="100%"
+          alignItems="center"
+          justifyContent="flex-start"
         >
-          <Globe size={32} />
-          {title || url}
+          <Globe size={16} />
+          <SizableText
+            size="$2"
+            opacity={0.8}
+            textAlign="left"
+            textOverflow="ellipsis"
+            whiteSpace="nowrap"
+            overflow="hidden"
+          >
+            {title || url}
+          </SizableText>
         </Button>
       </XGroup.Item>
       <Separator />
@@ -58,7 +72,7 @@ export function AccessURLRow({
           }}
           active={isClipboardCopied}
         >
-          <Copy size={32} />
+          <Copy size={16} />
         </Button>
       </XGroup.Item>
     </XGroup>
