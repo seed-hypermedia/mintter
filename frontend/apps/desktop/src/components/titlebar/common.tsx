@@ -1,6 +1,5 @@
 import {MINTTER_LINK_PREFIX} from '@mintter/shared'
 import {Dropdown} from '@app/editor/dropdown'
-import {Find} from '@app/editor/find'
 import {useDraftList} from '@app/hooks/documents'
 import {MainActor} from '@app/hooks/main-actor'
 import {useSiteList} from '@app/hooks/sites'
@@ -56,8 +55,6 @@ export function ActionButtons(props: TitleBarProps) {
 
   return (
     <TitlebarSection>
-      <Find />
-
       {onCopy && (
         <Tooltip content="Copy document reference">
           <Button chromeless size="$2" onPress={onCopy} icon={Copy} />
