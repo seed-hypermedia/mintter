@@ -32,24 +32,60 @@ import {
   ExternalLink,
   Delete,
   Separator,
+  UIAvatar,
+  Tooltip,
+  Theme,
+  SizableText,
 } from '@mintter/ui'
 
 function EditorButton({accountId}: {accountId: string}) {
   const navigate = useNavigate()
   const editor = useAccount(accountId)
   return (
-    <Button
-      size="$1"
-      theme="$gray5"
-      onPress={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        navigate({key: 'account', accountId})
-      }}
-      data-testid="list-item-author"
-    >
-      {editor?.data?.profile?.alias}
-    </Button>
+    <Tooltip>
+      <Tooltip.Trigger>
+        <Button
+          size="$1"
+          backgroundColor="transparent"
+          onPress={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            navigate({key: 'account', accountId})
+          }}
+          data-testid="list-item-author"
+        >
+          {editor?.data?.profile?.alias ? (
+            <UIAvatar size="$1" alias={editor.data.profile.alias} />
+          ) : (
+            editor?.data?.profile?.alias
+          )}
+        </Button>
+      </Tooltip.Trigger>
+
+      <Tooltip.Content
+        enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
+        exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
+        scale={1}
+        x={0}
+        y={0}
+        opacity={1}
+        animation={[
+          'quick',
+          {
+            opacity: {
+              overshootClamping: true,
+            },
+          },
+        ]}
+      >
+        <Tooltip.Arrow />
+        <Theme inverse>
+          <SizableText color="$color" size="$1">
+            {editor?.data?.profile?.alias}
+          </SizableText>
+        </Theme>
+      </Tooltip.Content>
+    </Tooltip>
   )
 }
 
@@ -147,14 +183,15 @@ export function PublicationListItem({
           Resume Editing
         </Button>
       )}
-
-      {publication.document?.editors.length ? (
-        publication.document?.editors.map((editor) => (
-          <EditorButton accountId={editor} key={editor} />
-        ))
-      ) : publication.document?.author ? (
-        <EditorButton accountId={publication.document?.author} />
-      ) : null}
+      <XStack>
+        {publication.document?.editors.length ? (
+          publication.document?.editors.map((editor) => (
+            <EditorButton accountId={editor} key={editor} />
+          ))
+        ) : publication.document?.author ? (
+          <EditorButton accountId={publication.document?.author} />
+        ) : null}
+      </XStack>
       <Text
         fontFamily="$body"
         fontSize="$2"
