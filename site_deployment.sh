@@ -86,7 +86,7 @@ do
       
     fi
   elif [ "$turn" = "OFF" ]; then
-    curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
+    curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
     MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml down
     rm mttsite.yml
     exit 0
@@ -108,7 +108,7 @@ do
     done < "${workspace}/.env"
     read -p "Do you want to continue(c) with those params or overide(r) them (c/r)?" response
     if [ "$response" = "c" ]; then
-        curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
+        curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
         MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
         rm mttsite.yml
         exit 0
@@ -192,7 +192,7 @@ do
     if [ "$listing" != "y" ]; then
       echo "MTT_SITE_ADDITIONAL_FLAGS=-p2p.disable-listing" >> ${workspace}/.env
     fi
-    curl -s -o mttsite.yml https://minttersite.s3.amazonaws.com/docker-compose.yml
+    curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
     if [ -z "$owner" ]; then
       if [ "$listing" != "y" ]; then
         MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull

@@ -46,7 +46,7 @@ public server (or locally for testing it out). You can customize the site easily
 running the following command
 
 ```shell
-sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
+sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/site_deployment.sh)
 ```
 
 All domains different than `http://127.0.0.1` are ssl terminated, so make sure
