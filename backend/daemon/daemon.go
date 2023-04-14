@@ -22,6 +22,7 @@ import (
 	"mintter/backend/db/sqliteschema"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	"mintter/backend/graphql"
+	"mintter/backend/ipfs"
 	"mintter/backend/logging"
 	"mintter/backend/mttnet"
 	"mintter/backend/pkg/cleanup"
@@ -169,7 +170,16 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 		}
 	}
 
-	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site)
+	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
+	a.g.Go(func() error {
+		n, err := a.Net.Await(ctx)
+		if err != nil {
+			return err
+		}
+
+		return fileManager.Start(n.VCS().Blockstore(), n.Bitswap(), n.Provider())
+	})
+	a.HTTPServer, a.HTTPListener, err = initHTTP(cfg.HTTPPort, a.GRPCServer, &a.clean, a.g, a.DB, a.Net, a.Me, a.Wallet, a.RPC.Site, fileManager)
 	if err != nil {
 		return nil, err
 	}
@@ -447,6 +457,7 @@ func initHTTP(
 	me *future.ReadOnly[core.Identity],
 	wallet *wallet.Service,
 	wellKnownHandler http.Handler,
+	ipfsHandler ipfs.HTTPHandler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
 	{
@@ -461,6 +472,8 @@ func initHTTP(
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
 		router.PathPrefix("/" + mttnet.WellKnownPath).Handler(wellKnownHandler)
+		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.UploadRoute, ipfsHandler.UploadFile)
+		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.GetRoute, ipfsHandler.GetFile)
 		nav := newNavigationHandler(router)
 
 		router.MatcherFunc(mux.MatcherFunc(func(r *http.Request, match *mux.RouteMatch) bool {
@@ -513,7 +526,7 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 	var routes []string
 
 	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		u, err := route.URL()
+		u, err := route.URL("cid", "bafkreih7mye6mc5nux7oclgmopmo264plkc3paafivulbeyrzashzc2npy")
 		if err != nil {
 			return err
 		}

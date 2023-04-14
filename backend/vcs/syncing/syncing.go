@@ -14,7 +14,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	exchange "github.com/ipfs/boxo/exchange"
+	"github.com/ipfs/boxo/exchange"
 	"github.com/ipfs/go-cid"
 	cbornode "github.com/ipfs/go-ipld-cbor"
 	"github.com/libp2p/go-libp2p/core/peer"

@@ -292,6 +292,11 @@ func (n *Node) Blockstore() blockstore.Blockstore {
 	return n.vcs.Blockstore()
 }
 
+// Provider returns the underlying providing system for convenience.
+func (n *Node) Provider() provider.System {
+	return n.providing
+}
+
 // ProvideCID notifies the providing system to provide the given CID on the DHT.
 func (n *Node) ProvideCID(c cid.Cid) error {
 	return n.providing.Provide(c)
