@@ -35,8 +35,9 @@ const (
 	IPFSRootRoute = "/ipfs"
 	// UploadRoute is the route to upload a file.
 	UploadRoute = "/file-upload"
-	// UploadRoute is the route to upload a file.
-	GetRoute = "/{cid}"
+	routeVar    = "cid"
+	// GetRoute is the route to get a file.
+	GetRoute = "/{" + routeVar + "}"
 	// MaxFileMB is the maximum file size (in MB) to be uploaded.
 	MaxFileMB = 64
 	// SearchTimeout is the maximum time we are searching for a file
@@ -132,7 +133,7 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vars := mux.Vars(r)
-	cidStr, ok := vars[strings.Replace(GetRoute, "/", "", 1)]
+	cidStr, ok := vars[routeVar]
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = encoder.Encode("Url format not recognized")

@@ -44,12 +44,13 @@ func TestAddFile(t *testing.T) {
 	cid := node.Cid().String()
 	require.Equal(t, fileCID, cid)
 }
-func TestPost(t *testing.T) {
+func TestPostGet(t *testing.T) {
 	server := makeManager(t, akey)
 	fileBytes, err := createFile0toBound(fileBoundary)
 	require.NoError(t, err)
 	router := mux.NewRouter()
 	router.HandleFunc(IPFSRootRoute+UploadRoute, server.UploadFile)
+	router.HandleFunc(IPFSRootRoute+GetRoute, server.GetFile)
 	const port = 8085
 	srv := &http.Server{
 		Addr:         ":" + strconv.Itoa(port),
@@ -71,6 +72,9 @@ func TestPost(t *testing.T) {
 	responseData, err := ioutil.ReadAll(res.Body)
 	require.NoError(t, err)
 	require.Equal(t, fileCID, string(responseData))
+	res = makeRequest(t, "GET", IPFSRootRoute+"/"+string(responseData), nil, router)
+	require.Equal(t, http.StatusOK, res.Code)
+	require.Equal(t, fileBytes, res.Body.Bytes())
 }
 
 func makeRequest(t *testing.T, method, url string, body []byte, router *mux.Router) *httptest.ResponseRecorder {
