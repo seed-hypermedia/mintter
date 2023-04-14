@@ -4,6 +4,8 @@ import {Box} from '@app/components/box'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
 import {useAccount} from '@app/hooks/accounts'
+import {useDaemonInfo} from '@app/hooks/daemon'
+import {usePeerInfo} from '@app/hooks/networking'
 import {
   useAddSite,
   useInviteMember,
@@ -27,13 +29,28 @@ import {
   SiteInfo,
 } from '@mintter/shared'
 import {
+  Back,
   Button,
+  ButtonFrame,
+  Circle,
+  Copy,
+  Form,
+  H2,
+  Heading,
+  Input,
+  Label,
+  ListItem,
+  ScrollView,
   Separator,
   SizableText,
   Spinner,
   Tabs,
   TabsContentProps,
+  TextArea,
+  Tooltip,
+  XGroup,
   XStack,
+  YGroup,
   YStack,
 } from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
@@ -54,9 +71,8 @@ export default function Settings({
 
   return (
     <Tabs
-      theme="gray"
-      height="100%"
-      defaultValue="profile"
+      flex={1}
+      defaultValue="account"
       flexDirection="row"
       orientation="vertical"
       borderWidth="$0.25"
@@ -67,43 +83,33 @@ export default function Settings({
         disablePassBorderRadius="end"
         aria-label="Manage your account"
         separator={<Separator />}
+        minWidth={200}
       >
-        <Tabs.Tab value="profile" data-testid="tab-profile">
-          <SizableText>Profile</SizableText>
-        </Tabs.Tab>
         <Tabs.Tab value="account" data-testid="tab-account">
-          <SizableText>Account Info</SizableText>
+          <SizableText flex={1} textAlign="left">
+            Account
+          </SizableText>
         </Tabs.Tab>
         <Tabs.Tab value="settings" data-testid="tab-settings">
-          <SizableText>Settings</SizableText>
+          <SizableText flex={1} textAlign="left">
+            Settings
+          </SizableText>
         </Tabs.Tab>
         <Tabs.Tab value="sites" data-testid="tab-sites">
-          <SizableText>Web Sites</SizableText>
+          <SizableText flex={1} textAlign="left">
+            Web Sites
+          </SizableText>
         </Tabs.Tab>
       </Tabs.List>
       <Separator vertical />
-      <TabsContent className="settings-tab-content tab-content" value="profile">
+      <TabsContent value="account">
         <ProfileForm service={auth} updateProfile={updateProfile} />
-      </TabsContent>
-      <TabsContent
-        className="settings-tab-content tab-content"
-        value="account"
-        data-tauri-drag-region
-      >
         <AccountInfo service={auth} />
       </TabsContent>
-      <TabsContent
-        className="settings-tab-content tab-content"
-        value="settings"
-        data-tauri-drag-region
-      >
+      <TabsContent value="settings" data-tauri-drag-region>
         <AppSettings />
       </TabsContent>
-      <TabsContent
-        className="settings-tab-content tab-content"
-        value="sites"
-        data-tauri-drag-region
-      >
+      <TabsContent value="sites" data-tauri-drag-region>
         <SitesSettings auth={auth} />
       </TabsContent>
     </Tabs>
@@ -117,14 +123,14 @@ type SettingsTabProps = {
 
 export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   let [state, send] = useActor(service)
+  let [alias, setAlias] = useState(
+    () => state?.context.account?.profile?.alias || '',
+  )
+  let [bio, setBio] = useState(() => state?.context.account?.profile?.bio || '')
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
-    let formData = new FormData(e.currentTarget)
-    // @ts-ignore
-    let newProfile: Profile = Object.fromEntries(formData.entries())
-    e.preventDefault()
-    updateProfile?.(newProfile)
-    send({type: 'ACCOUNT.UPDATE.PROFILE', profile: newProfile})
+  async function onSubmit() {
+    let profile = new Profile({alias, bio})
+    send({type: 'ACCOUNT.UPDATE.PROFILE', profile})
   }
 
   let isPending = useSelector(service, (state) =>
@@ -134,52 +140,64 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
     state.matches('loggedIn.onSuccess'),
   )
 
+  useEffect(() => {
+    if (state.context.account?.profile && state.matches('loggedIn')) {
+      console.log('inside the effect', state.context.account?.profile)
+      setBio(state.context.account?.profile?.bio)
+      setAlias(state.context.account?.profile?.alias)
+    }
+  }, [state.context])
+
   if (state.context.account?.profile && state.matches('loggedIn')) {
     let {alias, bio} = state.context.account.profile
 
     return (
-      <form onSubmit={onSubmit} className="settings-tab-content">
-        <TextField
-          type="text"
-          label="Alias"
-          data-testid="input-alias"
-          id="alias"
-          name="alias"
-          defaultValue={alias}
-          placeholder="Readable alias or username. Doesn't have to be unique."
-        />
+      <>
+        <Heading>Profile information</Heading>
+        <Form onSubmit={() => onSubmit()}>
+          <XStack gap="$4">
+            <YStack flex={0} alignItems="center">
+              <AvatarForm />
+            </YStack>
+            <YStack flex={1}>
+              <Label htmlFor="alias">Alias</Label>
+              <Input
+                id="alias"
+                defaultValue={alias}
+                onChangeText={(val) => setAlias(val)}
+                data-testid="input-alias"
+              />
+              <Label htmlFor="bio">Bio</Label>
+              <TextArea
+                defaultValue={bio}
+                onChangeText={(val) => setBio(val)}
+                id="bio"
+                placeholder="A little bit about yourself..."
+              />
 
-        <TextField
-          textarea
-          id="bio"
-          name="bio"
-          label="Bio"
-          data-testid="input-bio"
-          defaultValue={bio}
-          rows={4}
-          placeholder="A little bit about yourself..."
-        />
-        <Box
-          css={{
-            display: 'flex',
-            gap: '$5',
-            alignItems: 'center',
-          }}
-        >
-          <Button disabled={isPending} size="$2">
-            Save
-          </Button>
-          {onSuccess && (
-            <Text size="3" color="success">
-              update success!
-            </Text>
-          )}
-        </Box>
-      </form>
+              <XStack gap="$4" alignItems="center" paddingTop="$3">
+                <Form.Trigger asChild>
+                  <Button disabled={isPending}>Save</Button>
+                </Form.Trigger>
+                {onSuccess && (
+                  <Text size="3" color="success">
+                    update success!
+                  </Text>
+                )}
+              </XStack>
+            </YStack>
+          </XStack>
+        </Form>
+      </>
     )
   }
 
   return null
+}
+
+function AvatarForm() {
+  // TODO: add profile avatar form
+  return <Circle size="$12" backgroundColor="$gray7" />
 }
 
 export function AccountInfo({service}: SettingsTabProps) {
@@ -193,56 +211,210 @@ export function AccountInfo({service}: SettingsTabProps) {
   if (account && state.matches('loggedIn')) {
     return (
       <>
-        <TextField
-          readOnly
-          type="text"
-          label="Account ID"
-          name="accountId"
-          value={account.id}
-          data-testid="account-id"
-          css={{fontFamily: 'monospace'}}
-        />
-
-        <TextField
-          readOnly
-          textarea
-          id="addresses"
-          name="addresses"
-          label="Your Mintter address"
-          rows={4}
-          value={peerAddrs}
-          data-testid="account-addresses"
-          css={{fontFamily: 'monospace', userSelect: 'none'}}
-        />
-        <XStack>
-          <Button
-            theme="green"
-            onPress={() => service.send('ACCOUNT.COPY.ADDRESS')}
-          >
-            Copy Address
-          </Button>
-          {onSuccess && (
-            <SizableText size="$2" color="green">
-              copied!
-            </SizableText>
-          )}
-        </XStack>
         <Separator />
-        <Text size="3">Devices List</Text>
-        <YStack data-testid="account-device-list">
-          {account.devices && ObjectKeys(account.devices).length
-            ? Object.keys(account.devices).map((id) => (
-                <XStack tag="li" key={id}>
-                  <SizableText>...{id.slice(-40)}</SizableText>
-                </XStack>
-              ))
-            : null}
+        <YStack gap="$5">
+          <Heading>Mintter Account</Heading>
+          <YStack>
+            <Label size="$2">Account Id</Label>
+            <XGroup>
+              <XGroup.Item>
+                <Input
+                  disabled
+                  value={account.id}
+                  data-testid="account-id"
+                  fontFamily="$mono"
+                  flex={1}
+                  size="$2"
+                />
+              </XGroup.Item>
+              <XGroup.Item>
+                <Tooltip placement="top-end">
+                  <Tooltip.Trigger>
+                    <Button size="$2" icon={Copy} />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    margin={0}
+                    padding={0}
+                    paddingHorizontal="$2"
+                    theme="inverse"
+                  >
+                    <Tooltip.Arrow />
+                    <SizableText margin={0} padding={0} size="$1">
+                      Copy your account id
+                    </SizableText>
+                  </Tooltip.Content>
+                </Tooltip>
+              </XGroup.Item>
+            </XGroup>
+          </YStack>
+          <YStack>
+            <Label size="$2">Device addresses</Label>
+            <XGroup>
+              <XGroup.Item>
+                <Input
+                  disabled
+                  value={peerAddrs.join(',')}
+                  id="addresses"
+                  data-testid="account-addresses"
+                  flex={1}
+                  size="$2"
+                />
+              </XGroup.Item>
+              <XGroup.Item>
+                <Tooltip placement="top-end">
+                  <Tooltip.Trigger>
+                    <Button
+                      size="$2"
+                      icon={Copy}
+                      onPress={() => service.send('ACCOUNT.COPY.ADDRESS')}
+                    >
+                      {onSuccess && 'copied!'}
+                    </Button>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content
+                    margin={0}
+                    padding={0}
+                    paddingHorizontal="$2"
+                    theme="inverse"
+                  >
+                    <Tooltip.Arrow />
+                    <SizableText margin={0} padding={0} size="$1">
+                      Copy Addresses
+                    </SizableText>
+                  </Tooltip.Content>
+                </Tooltip>
+              </XGroup.Item>
+            </XGroup>
+          </YStack>
+          <Separator />
+          <YStack data-testid="account-device-list" gap="$3">
+            <Heading>Devices</Heading>
+            {account.devices && ObjectKeys(account.devices).length
+              ? Object.keys(account.devices).map((deviceId) => (
+                  <DeviceInfo key={deviceId} id={deviceId} />
+                ))
+              : null}
+          </YStack>
         </YStack>
       </>
     )
   }
 
   return null
+}
+
+function DeviceInfo({id}: {id: string}) {
+  let {status, data} = usePeerInfo(id)
+  let {data: current} = useDaemonInfo()
+
+  let isCurrent = useMemo(() => {
+    if (!current?.peerId) return false
+
+    return current.peerId == id
+  }, [id, current])
+
+  return (
+    <YStack
+      userSelect="none"
+      hoverStyle={{
+        cursor: 'default',
+      }}
+      borderWidth={1}
+      borderColor="$borderColor"
+      f={1}
+      // aria-label={}
+      // aria-labelledby={ariaLabelledBy}
+      br="$4"
+      ov="hidden"
+      mx="$-4"
+      $sm={{
+        mx: 0,
+      }}
+    >
+      <XStack
+        alignItems="center"
+        py="$2"
+        px="$4"
+        backgroundColor="$borderColor"
+        gap="$3"
+        theme={isCurrent ? 'green' : undefined}
+      >
+        <SizableText fontWeight="700">
+          {id.substring(id.length - 10)}
+        </SizableText>
+        <XStack flex={1} alignItems="center" justifyContent="flex-end">
+          {isCurrent && (
+            <Button size="$1" fontWeight="700" disabled>
+              current device
+            </Button>
+          )}
+        </XStack>
+      </XStack>
+      <ListItem>
+        <XStack alignItems="center">
+          <SizableText size="$1" flex={0} width={80}>
+            Alias:
+          </SizableText>
+          <SizableText
+            size="$1"
+            flex={1}
+            overflow="hidden"
+            textOverflow="ellipsis"
+          >
+            {status == 'success' ? id.substring(id.length - 10) : '...'}
+          </SizableText>
+        </XStack>
+      </ListItem>
+      <Separator />
+      <ListItem>
+        <XStack alignItems="center">
+          <SizableText
+            size="$1"
+            flex={0}
+            width={80}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            Id:
+          </SizableText>
+          <SizableText
+            size="$1"
+            flex={1}
+            overflow="hidden"
+            textOverflow="ellipsis"
+            userSelect="text"
+          >
+            {id}
+          </SizableText>
+        </XStack>
+      </ListItem>
+      <Separator />
+      <ListItem>
+        <XStack alignItems="flex-start" width="100%">
+          <SizableText
+            size="$1"
+            flex={0}
+            width={80}
+            flexShrink={0}
+            flexGrow={0}
+          >
+            Addresses:
+          </SizableText>
+          <YStack flex={1} position="relative">
+            <SizableText
+              size="$1"
+              width="100%"
+              overflow="hidden"
+              textOverflow="ellipsis"
+              userSelect="text"
+            >
+              {status == 'success' ? data?.addrs.join(',') : '...'}
+            </SizableText>
+          </YStack>
+        </XStack>
+      </ListItem>
+    </YStack>
+  )
 }
 
 function AppSettings() {
@@ -260,16 +432,15 @@ function AppSettings() {
 
 function SettingsNavBack({onDone, title}: {onDone: () => void; title: string}) {
   return (
-    <Button onPress={onDone}>
-      <Icon name="ArrowChevronLeft" size="2" color="muted" />
-      <span style={{marginLeft: '0.3em'}}>{title}</span>
+    <Button size="$1" chromeless onPress={onDone} icon={Back}>
+      {title}
     </Button>
   )
 }
 function InviteMemberDialog({url, onDone}: {url: string; onDone: () => void}) {
   return (
     <div>
-      <p>Copy and send this secret editor invite URL</p>
+      <SizableText>Copy and send this secret editor invite URL</SizableText>
       {url && <AccessURLRow url={url} title={url} enableLink={false} />}
       <Button onPress={onDone}>Done</Button>
     </div>
@@ -488,10 +659,12 @@ function SiteSettings({
 
   return (
     <>
-      <SettingsHeader>
+      <XStack alignItems="center">
         <SettingsNavBack title="Web Sites" onDone={onDone} />
-        <h2>{hostnameStripProtocol(hostname)}</h2>
-      </SettingsHeader>
+        <XStack flex={1} alignContent="center">
+          <H2>{hostnameStripProtocol(hostname)}</H2>
+        </XStack>
+      </XStack>
       {isLoading ? (
         <span>Loading</span>
       ) : (
@@ -698,9 +871,11 @@ const TabsContent = (props: TabsContentProps) => {
       flex={1}
       {...props}
     >
-      <YStack gap="$3" padding="$4">
-        {props.children}
-      </YStack>
+      <ScrollView>
+        <YStack gap="$4" padding="$4" paddingBottom="$7">
+          {props.children}
+        </YStack>
+      </ScrollView>
     </Tabs.Content>
   )
 }
