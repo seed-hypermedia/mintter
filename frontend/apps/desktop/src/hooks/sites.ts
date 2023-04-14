@@ -28,8 +28,13 @@ function blockExtractReferencedDocs(
   const docIds: Array<any> = []
   block.annotations.forEach((annotation) => {
     if (annotation.type === 'embed' || annotation.type === 'link') {
-      const ids = getIdsfromUrl(annotation.attributes.url)
-      if (ids[0]) {
+      let ids
+      try {
+        ids = getIdsfromUrl(annotation.attributes.url)
+      } catch (e) {
+        // not the best fix for now, but regular URLS are coming through here and we can just skip over them
+      }
+      if (ids?.[0]) {
         docIds.push({documentId: ids[0], version: ids[1]})
       }
     }

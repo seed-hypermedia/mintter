@@ -39,7 +39,10 @@ function queryWebLink(url: string, enabled: boolean) {
         return {
           documentId: extractMetaTagValue(doc, 'mintter-document-id'),
           documentVersion: extractMetaTagValue(doc, 'mintter-document-version'),
-          documentTitle: extractMetaTagValue(doc, 'mintter-document-title'),
+          documentTitle:
+            extractMetaTagValue(doc, 'mintter-document-title') ||
+            doc.querySelector('title')?.innerText ||
+            url,
           publisherId: extractMetaTagValue(doc, 'mintter-publisher-id'),
         }
       } catch (e) {
