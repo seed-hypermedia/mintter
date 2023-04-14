@@ -292,7 +292,7 @@ func (n *Node) Blockstore() blockstore.Blockstore {
 	return n.vcs.Blockstore()
 }
 
-// Blockstore returns the underlying providing system for convenience.
+// Provider returns the underlying providing system for convenience.
 func (n *Node) Provider() provider.System {
 	return n.providing
 }
