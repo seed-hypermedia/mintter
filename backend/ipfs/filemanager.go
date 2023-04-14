@@ -121,6 +121,8 @@ func (fm *FileManager) setupDAGService() error {
 
 // GetFile retrieves a file from ipfs.
 func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	encoder := json.NewEncoder(w)
 	if !fm.started {
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -191,6 +193,8 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 // UploadFile uploads a file to ipfs.
 func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	if !fm.started {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_ = encoder.Encode("IPFS node not started")
