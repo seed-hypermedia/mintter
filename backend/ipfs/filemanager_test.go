@@ -15,12 +15,12 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ipfs/boxo/blockstore"
+	"github.com/ipfs/boxo/provider"
+	"github.com/ipfs/boxo/provider/queue"
+	"github.com/ipfs/boxo/provider/simple"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/sync"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	provider "github.com/ipfs/go-ipfs-provider"
-	"github.com/ipfs/go-ipfs-provider/queue"
-	"github.com/ipfs/go-ipfs-provider/simple"
 	crypto "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/stretchr/testify/require"
@@ -49,7 +49,7 @@ func TestPost(t *testing.T) {
 	fileBytes, err := createFile0toBound(fileBoundary)
 	require.NoError(t, err)
 	router := mux.NewRouter()
-	router.PathPrefix(UploadRoute).Handler(server)
+	router.HandleFunc(IPFSRootRoute+UploadRoute, server.UploadFile)
 	const port = 8085
 	srv := &http.Server{
 		Addr:         ":" + strconv.Itoa(port),

@@ -457,7 +457,7 @@ func initHTTP(
 	me *future.ReadOnly[core.Identity],
 	wallet *wallet.Service,
 	wellKnownHandler http.Handler,
-	ipfsHandler http.Handler,
+	ipfsHandler ipfs.HTTPHandler,
 ) (srv *http.Server, lis net.Listener, err error) {
 	var h http.Handler
 	{
@@ -526,7 +526,7 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 	var routes []string
 
 	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		u, err := route.URL()
+		u, err := route.URL("cid", "bafkreih7mye6mc5nux7oclgmopmo264plkc3paafivulbeyrzashzc2npy")
 		if err != nil {
 			return err
 		}

@@ -14,19 +14,18 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/ipfs/boxo/blockservice"
+	blockstore "github.com/ipfs/boxo/blockstore"
+	chunker "github.com/ipfs/boxo/chunker"
+	"github.com/ipfs/boxo/exchange"
+	"github.com/ipfs/boxo/files"
+	"github.com/ipfs/boxo/ipld/merkledag"
 	unixfile "github.com/ipfs/boxo/ipld/unixfs/file"
-	ufsio "github.com/ipfs/boxo/ipld/unixfs/io"
-	blockservice "github.com/ipfs/go-blockservice"
+	"github.com/ipfs/boxo/ipld/unixfs/importer/balanced"
+	"github.com/ipfs/boxo/ipld/unixfs/importer/helpers"
+	"github.com/ipfs/boxo/provider"
 	"github.com/ipfs/go-cid"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
-	chunker "github.com/ipfs/go-ipfs-chunker"
-	exchange "github.com/ipfs/go-ipfs-exchange-interface"
-	files "github.com/ipfs/go-ipfs-files"
-	provider "github.com/ipfs/go-ipfs-provider"
 	ipld "github.com/ipfs/go-ipld-format"
-	"github.com/ipfs/go-merkledag"
-	"github.com/ipfs/go-unixfs/importer/balanced"
-	"github.com/ipfs/go-unixfs/importer/helpers"
 	multihash "github.com/multiformats/go-multihash"
 	"go.uber.org/zap"
 )
@@ -54,6 +53,13 @@ type AddParams struct {
 	Shard     bool
 	NoCopy    bool
 	HashFun   string
+}
+
+// HTTPHandler is an interface to pass to the router only the http handlers and
+// not all the FileManager type.
+type HTTPHandler interface {
+	GetFile(http.ResponseWriter, *http.Request)
+	UploadFile(http.ResponseWriter, *http.Request)
 }
 
 // FileManager is the main object to handle ipfs files.
@@ -140,7 +146,8 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), SearchTimeout)
 	defer cancel()
-	nd, err := fm.getFile(ctx, cid)
+
+	n, err := fm.DAGService.Get(ctx, cid)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			w.WriteHeader(http.StatusRequestTimeout)
@@ -154,7 +161,9 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	unixFSNode, err := unixfile.NewUnixfsFile(ctx, fm.DAGService, nd)
+
+	unixFSNode, err := unixfile.NewUnixfsFile(ctx, fm.DAGService, n)
+
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fm.log.Debug("Found the node but could not download it", zap.String("CID", cidStr), zap.Error(err))
@@ -254,12 +263,13 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 
 // getFile returns a reader to a file as identified by its root CID. The file
 // must have been added as a UnixFS DAG (default for IPFS).
-func (fm *FileManager) getFile(ctx context.Context, c cid.Cid) (ufsio.ReadSeekCloser, error) {
+func (fm *FileManager) getFile(ctx context.Context, c cid.Cid) (files.Node, error) {
 	n, err := fm.DAGService.Get(ctx, c)
 	if err != nil {
 		return nil, err
 	}
-	return ufsio.NewDagReader(ctx, n, fm)
+
+	return unixfile.NewUnixfsFile(ctx, fm.DAGService, n)
 }
 
 // addFile chunks and adds content to the DAGService from a reader. The content

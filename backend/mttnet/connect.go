@@ -223,7 +223,7 @@ LIMIT 1`
 func supportsMintterProtocol(protos []protocol.ID) bool {
 	// Eventually we'd need to implement some compatibility checks between different protocol versions.
 	for _, p := range protos {
-		if p == ProtocolID {
+		if string(p) == string(ProtocolID) {
 			return true
 		}
 	}
