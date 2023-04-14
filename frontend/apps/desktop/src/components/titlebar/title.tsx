@@ -16,6 +16,7 @@ import {
   User,
   Pencil,
 } from '@mintter/ui'
+import {AccountLinkAvatar} from '@components/account-link-avatar'
 
 export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
   const route = useNavRoute()
@@ -64,7 +65,7 @@ export function Title({size}: {size?: SizeTokens}) {
   return (
     <XStack
       gap="$2"
-      alignItems="baseline"
+      alignItems="center"
       margin="auto"
       marginVertical={0}
       data-tauri-drag-region
@@ -88,7 +89,16 @@ function PublicationTitle({
   return (
     <>
       <TitleText size={size}>{pub?.document?.title || '...'}</TitleText>
-      <ButtonText
+      <XStack gap={0}>
+        {pub?.document?.editors.length === 0 ? (
+          <AccountLinkAvatar accountId={author?.id} />
+        ) : (
+          pub?.document?.editors.map((editor) => (
+            <AccountLinkAvatar accountId={editor} key={editor} />
+          ))
+        )}
+      </XStack>
+      {/* <ButtonText
         size="$1"
         onPress={(e) => {
           e.preventDefault()
@@ -98,7 +108,7 @@ function PublicationTitle({
         }}
       >
         {author?.profile?.alias || ''}
-      </ButtonText>
+      </ButtonText> */}
     </>
   )
 }
@@ -112,5 +122,10 @@ function DraftTitle({
 }) {
   const {data: draft} = useDraft(route.documentId)
   const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
-  return <TitleText size={size}>{displayTitle}</TitleText>
+  return (
+    <>
+      <Pencil size={12} />
+      <TitleText size={size}>{displayTitle}</TitleText>
+    </>
+  )
 }

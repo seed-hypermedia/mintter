@@ -1,9 +1,8 @@
 import {publicationsClient} from '@app/api-clients'
 import {deleteFileMachine} from '@app/delete-machine'
-import {Dropdown, ElementDropdown} from '@app/editor/dropdown'
+import {Dropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
 import {prefetchPublication} from '@app/hooks/documents'
-import {useAccount} from '@app/hooks/accounts'
 import {queryKeys} from '@app/hooks/query-keys'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {PublicationRoute, useNavigate} from '@app/utils/navigation'
@@ -18,8 +17,6 @@ import {useActor, useInterpret} from '@xstate/react'
 import Highlighter from 'react-highlight-words'
 import {toast} from 'react-hot-toast'
 import {DeleteDialog} from './delete-dialog'
-import {Icon} from './icon'
-
 import {MouseEvent} from 'react'
 import {
   XStack,
@@ -32,62 +29,8 @@ import {
   ExternalLink,
   Delete,
   Separator,
-  UIAvatar,
-  Tooltip,
-  Theme,
-  SizableText,
 } from '@mintter/ui'
-
-function EditorButton({accountId}: {accountId: string}) {
-  const navigate = useNavigate()
-  const editor = useAccount(accountId)
-  return (
-    <Tooltip>
-      <Tooltip.Trigger>
-        <Button
-          size="$1"
-          backgroundColor="transparent"
-          onPress={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            navigate({key: 'account', accountId})
-          }}
-          data-testid="list-item-author"
-        >
-          {editor?.data?.profile?.alias ? (
-            <UIAvatar size="$1" alias={editor.data.profile.alias} />
-          ) : (
-            editor?.data?.profile?.alias
-          )}
-        </Button>
-      </Tooltip.Trigger>
-
-      <Tooltip.Content
-        enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
-        exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
-        scale={1}
-        x={0}
-        y={0}
-        opacity={1}
-        animation={[
-          'quick',
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
-      >
-        <Tooltip.Arrow />
-        <Theme inverse>
-          <SizableText color="$color" size="$1">
-            {editor?.data?.profile?.alias}
-          </SizableText>
-        </Theme>
-      </Tooltip.Content>
-    </Tooltip>
-  )
-}
+import {AccountLinkAvatar} from './account-link-avatar'
 
 export function PublicationListItem({
   publication,
@@ -186,10 +129,10 @@ export function PublicationListItem({
       <XStack>
         {publication.document?.editors.length ? (
           publication.document?.editors.map((editor) => (
-            <EditorButton accountId={editor} key={editor} />
+            <AccountLinkAvatar accountId={editor} key={editor} />
           ))
         ) : publication.document?.author ? (
-          <EditorButton accountId={publication.document?.author} />
+          <AccountLinkAvatar accountId={publication.document?.author} />
         ) : null}
       </XStack>
       <Text
