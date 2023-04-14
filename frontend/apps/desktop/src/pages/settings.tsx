@@ -881,7 +881,7 @@ function EmptySiteList() {
 
 function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
   return (
-    <ListItem
+    <TableList.Item
       onPress={onSelect}
       iconAfter={Forward}
       hoverStyle={{cursor: 'pointer'}}
@@ -889,27 +889,14 @@ function SiteItem({site, onSelect}: {site: SiteConfig; onSelect: () => void}) {
       <SizableText hoverStyle={{cursor: 'pointer'}}>
         {hostnameStripProtocol(site.hostname)}
       </SizableText>
-    </ListItem>
+    </TableList.Item>
   )
 }
 
 function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
   const {data: sites, isLoading} = useSiteList()
   return (
-    <YStack
-      borderWidth={1}
-      borderColor="$borderColor"
-      f={1}
-      // aria-label={}
-      // aria-labelledby={ariaLabelledBy}
-      br="$4"
-      ov="hidden"
-      mx="$-4"
-      $sm={{
-        //@ts-ignore
-        mx: 0,
-      }}
-    >
+    <TableList>
       {isLoading && <Spinner />}
       {sites && sites.length === 0 && <EmptySiteList />}
       {sites?.map((site) => (
@@ -921,7 +908,7 @@ function SitesList({onSelectSite}: {onSelectSite: (siteId: string) => void}) {
           }}
         />
       ))}
-    </YStack>
+    </TableList>
   )
 }
 

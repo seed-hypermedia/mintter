@@ -27,6 +27,7 @@ export function TableList({children}: {children: ReactNode}) {
       ov="hidden"
       mx="$-4"
       $sm={{
+        //@ts-ignore
         mx: 0,
       }}
     >
@@ -39,6 +40,7 @@ function TableHeader({children, ...props}: PropsWithChildren<XStackProps>) {
   return (
     <XStack
       alignItems="center"
+      //@ts-ignore
       py="$2"
       px="$4"
       backgroundColor="$borderColor"
