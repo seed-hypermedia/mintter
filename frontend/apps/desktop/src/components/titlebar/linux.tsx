@@ -9,6 +9,7 @@ import {
   TitlebarSection,
   Menu as MenuIcon,
   XStack,
+  Separator,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {invoke} from '@tauri-apps/api/tauri'
@@ -130,7 +131,7 @@ function Menu() {
 
           <SitesNavDropdownItems />
 
-          <Dropdown.Separator />
+          <Separator />
 
           <MenuItem
             title="New Window"
@@ -138,7 +139,7 @@ function Menu() {
             onSelect={() => invoke('new_invoke')}
           />
 
-          <Dropdown.Separator />
+          <Separator />
 
           <MenuItem
             title="Find..."
@@ -189,7 +190,7 @@ function Menu() {
                 disabled={!editingEnabled}
               />
 
-              <Dropdown.Separator />
+              <Separator />
 
               <MenuItem
                 title="Heading"
@@ -216,7 +217,7 @@ function Menu() {
                 disabled={!editingEnabled}
               />
 
-              <Dropdown.Separator />
+              <Separator />
 
               <MenuItem
                 title="Bullet List"
@@ -250,7 +251,7 @@ function Menu() {
             </Dropdown.SubContent>
           </Dropdown.Sub>
 
-          <Dropdown.Separator />
+          <Separator />
 
           <MenuItem
             title="Preferences"
@@ -258,7 +259,7 @@ function Menu() {
             onSelect={() => invoke('open_preferences')}
           />
 
-          <Dropdown.Separator />
+          <Separator />
 
           <MenuItem
             title="Documentation"
