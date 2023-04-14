@@ -10,6 +10,7 @@ import {
   useNavigate,
   useNavigationActions,
   useNavigationDispatch,
+  useNavigationState,
   useNavRoute,
 } from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
@@ -100,11 +101,18 @@ export function ActionButtons(props: TitleBarProps) {
 }
 
 export function NavigationButtons() {
+  const state = useNavigationState()
   const dispatch = useNavigationDispatch()
   return (
     <XGroup>
       <XGroup.Item>
-        <Button size="$2" onPress={() => dispatch({type: 'pop'})} chromeless>
+        <Button
+          size="$2"
+          onPress={() => dispatch({type: 'pop'})}
+          chromeless
+          disabled={state.routeIndex <= 0}
+          opacity={state.routeIndex <= 0 ? 0.5 : 1}
+        >
           <Back size={16} />
         </Button>
       </XGroup.Item>
@@ -113,6 +121,8 @@ export function NavigationButtons() {
           size="$2"
           onPress={() => dispatch({type: 'forward'})}
           chromeless
+          disabled={state.routeIndex >= state.routes.length - 1}
+          opacity={state.routeIndex >= state.routes.length - 1 ? 0.5 : 1}
         >
           <Forward size={16} />
         </Button>
