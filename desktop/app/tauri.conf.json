@@ -90,10 +90,10 @@
         "script-src": "'unsafe-eval'",
         "style-src": "'self' 'unsafe-inline'",
         "connect-src": "'self' http://localhost:55001 wss://*",
-        "img-src": "https:",
-        "media-src": "https:",
-        "frame-src": "https:",
-        "object-src": "'none'"
+        "img-src": "https: http://localhost:55001",
+        "media-src": "https: http://localhost:55001",
+        "frame-src": "https: http://localhost:55001",
+        "object-src": "'none' http://localhost:55001"
       }
     },
     "systemTray": {

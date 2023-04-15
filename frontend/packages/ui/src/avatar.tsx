@@ -19,7 +19,7 @@ export function UIAvatar({
     () => (accountId ? getRandomColor(accountId) : '$blue8'),
     [accountId],
   )
-  
+
   return (
     <StyledAvatar circular size={size}>
       <StyledAvatar.Image src={url} />
@@ -27,10 +27,10 @@ export function UIAvatar({
         {initials ? (
           <Text
             fontFamily="$body"
-            color="$gray10"
             textTransform="capitalize"
             fontWeight="700"
             fontSize={size}
+            color="black"
           >
             {initials}
           </Text>
@@ -53,4 +53,7 @@ export function getRandomColor(id: string) {
 const AvatarFallback = styled(StyledAvatar.Fallback, {
   alignItems: 'center',
   justifyContent: 'center',
+  enterStyle: {
+    opacity: 0,
+  },
 })

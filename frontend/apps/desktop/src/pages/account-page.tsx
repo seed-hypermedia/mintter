@@ -10,6 +10,7 @@ import {Text} from '@components/text'
 import {ComponentProps, ReactNode} from 'react'
 import {Container, MainWrapper, UIAvatar} from '@mintter/ui'
 import {PageProps} from './base'
+import {Avatar} from '@components/avatar'
 
 function DeviceRow({
   isOnline,
@@ -75,9 +76,9 @@ export default function AccountPage(props: PageProps) {
       <MainWrapper>
         <Container>
           <Section css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
-            <UIAvatar
+            <Avatar
               accountId={accountId}
-              size={3}
+              size="$6"
               alias={account.profile?.alias || ''}
             />
             <Heading>{account.profile?.alias || accountId}</Heading>

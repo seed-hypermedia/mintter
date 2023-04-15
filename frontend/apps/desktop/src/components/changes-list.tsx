@@ -1,9 +1,9 @@
-import {useDocChanges} from '@app/hooks/changes'
 import {useAccount} from '@app/hooks/accounts'
+import {useDocChanges} from '@app/hooks/changes'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
+import {Avatar} from '@components/avatar'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
 import {MouseEvent} from 'react'
-import {UIAvatar} from '@mintter/ui'
 import {Box} from './box'
 import {Button} from './button'
 import {PanelTitle} from './panel'
@@ -62,7 +62,7 @@ function ChangeItem({
         }}
       >
         <Box onClick={openAccount}>
-          <UIAvatar
+          <Avatar
             accountId={change.author}
             alias={author?.data?.profile?.alias || 'A'}
           />

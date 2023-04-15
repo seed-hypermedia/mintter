@@ -12,6 +12,7 @@ export {
   PlusSquare as AddSquare,
   Link,
   MessageCircle as Comment,
+  Camera,
   MoreHorizontal,
   ExternalLink,
   Delete,

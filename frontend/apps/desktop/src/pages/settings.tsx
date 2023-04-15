@@ -19,8 +19,7 @@ import {
 import {TableList} from '@app/table-list'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {Icon} from '@components/icon'
-import {Prompt, StyledOverlay} from '@components/prompt'
+import {Avatar} from '@components/avatar'
 import {AccessURLRow} from '@components/url'
 import {
   Member,
@@ -33,18 +32,16 @@ import {
   Add,
   Back,
   Button,
-  ButtonFrame,
+  Camera,
   Circle,
   Close,
   Copy,
   Dialog,
   Form,
   Forward,
-  H2,
   Heading,
   Input,
   Label,
-  ListItem,
   ScrollView,
   Separator,
   SizableText,
@@ -53,16 +50,16 @@ import {
   TabsContentProps,
   TextArea,
   Tooltip,
+  UIAvatar,
   XGroup,
   XStack,
-  YGroup,
   YStack,
 } from '@mintter/ui'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {styled} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
-import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
+import copyTextToClipboard from 'copy-text-to-clipboard'
+import {useEffect, useMemo, useRef, useState, ChangeEvent} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 
@@ -109,7 +106,7 @@ export default function Settings({
       <Separator vertical />
       <TabsContent value="account">
         <ProfileForm service={auth} updateProfile={updateProfile} />
-        <AccountInfo service={auth} />
+        <DevicesInfo service={auth} />
       </TabsContent>
       <TabsContent value="settings" data-tauri-drag-region>
         <AppSettings />
@@ -126,16 +123,18 @@ type SettingsTabProps = {
   updateProfile?: typeof accountsClient.updateProfile
 }
 
+const __AVATAR__ = '__AVATAR__'
+
 export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   let [state, send] = useActor(service)
-  let [file, setFile] = useState<any>(null)
-  let [alias, setAlias] = useState(
-    () => state?.context.account?.profile?.alias || '',
-  )
-  let [bio, setBio] = useState(() => state?.context.account?.profile?.bio || '')
+  let [alias, setAlias] = useState('')
+  let [realBio, setRealBio] = useState('')
+  let [visibleBio, setVisibleBio] = useState('')
+  let [avatar, setAvatar] = useState('')
 
   async function onSubmit() {
-    let profile = new Profile({alias, bio})
+    let newBio = avatar ? `${visibleBio}${__AVATAR__}${avatar}` : visibleBio
+    let profile = new Profile({alias, bio: newBio})
     send({type: 'ACCOUNT.UPDATE.PROFILE', profile})
   }
 
@@ -146,47 +145,89 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
     state.matches('loggedIn.onSuccess'),
   )
 
+  function onCopy() {
+    if (state.context?.account?.id) {
+      copyTextToClipboard(state.context.account.id)
+      toast.success('Account ID copied!')
+    }
+  }
+
+  function handleAvatarPersist(cid: string) {
+    let newBio = (visibleBio += `${__AVATAR__}${cid}`)
+    let profile = new Profile({alias, bio: newBio})
+    setAvatar(cid)
+    send({type: 'ACCOUNT.UPDATE.PROFILE', profile})
+  }
+
   useEffect(() => {
     if (state.context.account?.profile && state.matches('loggedIn')) {
-      console.log('inside the effect', state.context.account?.profile)
-      setBio(state.context.account?.profile?.bio)
+      setRealBio(state.context.account?.profile?.bio)
       setAlias(state.context.account?.profile?.alias)
     }
   }, [state.context])
 
-  if (state.context.account?.profile && state.matches('loggedIn')) {
-    let {alias, bio} = state.context.account.profile
+  useEffect(() => {
+    if (!realBio) return
+    let [bio, avatar] = realBio.split(__AVATAR__)
 
+    setAvatar(avatar)
+    setVisibleBio(bio)
+  }, [realBio])
+
+  if (state.context.account?.profile && state.matches('loggedIn')) {
     return (
       <>
         <Heading>Profile information</Heading>
 
         <XStack gap="$4">
-          <YStack flex={0} alignItems="center">
-            <AvatarForm />
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                fetch('http://localhost:55001/ipfs/file-upload', {
-                  method: 'POST',
-                  body: JSON.stringify({
-                    data: file,
-                  }),
-                })
-                  .then((res) => {
-                    console.log('RES', res)
-                  })
-                  .catch((err) => {
-                    console.error(err)
-                  })
-              }}
-            >
-              <input type="file" onChange={(e) => setFile(e.target.value)} />
-              <button type="submit">upload</button>
-            </form>
+          <YStack flex={0} alignItems="center" flexGrow={0}>
+            <AvatarForm
+              service={service}
+              onUploadSuccess={handleAvatarPersist}
+              url={avatar ? `http://localhost:55001/ipfs/${avatar}` : undefined}
+            />
           </YStack>
-          <Form onSubmit={() => onSubmit()}>
-            <YStack flex={1}>
+          <YStack flex={1}>
+            <YStack>
+              <Label size="$3" htmlFor="accountid">
+                Account Id
+              </Label>
+              <XGroup>
+                <XGroup.Item>
+                  <Input
+                    size="$3"
+                    id="accountid"
+                    userSelect="none"
+                    disabled
+                    value={state.context.account.id}
+                    data-testid="account-id"
+                    flex={1}
+                    hoverStyle={{
+                      cursor: 'default',
+                    }}
+                  />
+                </XGroup.Item>
+                <XGroup.Item>
+                  <Tooltip placement="top-end">
+                    <Tooltip.Trigger>
+                      <Button size="$3" icon={Copy} onPress={onCopy} />
+                    </Tooltip.Trigger>
+                    <Tooltip.Content
+                      margin={0}
+                      padding={0}
+                      paddingHorizontal="$2"
+                      theme="inverse"
+                    >
+                      <Tooltip.Arrow />
+                      <SizableText margin={0} padding={0} size="$1">
+                        Copy your account id
+                      </SizableText>
+                    </Tooltip.Content>
+                  </Tooltip>
+                </XGroup.Item>
+              </XGroup>
+            </YStack>
+            <Form onSubmit={() => onSubmit()}>
               <Label htmlFor="alias">Alias</Label>
               <Input
                 id="alias"
@@ -196,8 +237,8 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
               />
               <Label htmlFor="bio">Bio</Label>
               <TextArea
-                defaultValue={bio}
-                onChangeText={(val) => setBio(val)}
+                defaultValue={visibleBio}
+                onChangeText={(val) => setVisibleBio(val)}
                 id="bio"
                 placeholder="A little bit about yourself..."
               />
@@ -212,8 +253,8 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
                   </Text>
                 )}
               </XStack>
-            </YStack>
-          </Form>
+            </Form>
+          </YStack>
         </XStack>
       </>
     )
@@ -222,115 +263,139 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   return null
 }
 
-function AvatarForm() {
-  // TODO: add profile avatar form
-  return <Circle size="$12" backgroundColor="$gray7" />
-}
-
-export function AccountInfo({service}: SettingsTabProps) {
-  let [state] = useActor(service)
-  let account = useSelector(service, (state) => state.context.account)
-  let onSuccess = useSelector(service, (state) =>
-    state.matches('loggedIn.onSuccess'),
+function AvatarForm({
+  service,
+  onUploadSuccess,
+  url,
+}: {
+  service: InterpreterFrom<ReturnType<typeof createAuthService>>
+  onUploadSuccess?: (cid: string) => void
+  url?: string
+}) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const alias = useSelector(
+    service,
+    (state) => state.context.account?.profile?.alias || '',
   )
-  const peerAddrs = useSelector(service, (state) => state.context.peerAddrs)
-
-  if (account && state.matches('loggedIn')) {
-    return (
-      <>
-        <Separator />
-        <YStack gap="$5">
-          <Heading>Mintter Account</Heading>
-          <YStack>
-            <Label size="$2">Account Id</Label>
-            <XGroup>
-              <XGroup.Item>
-                <Input
-                  disabled
-                  value={account.id}
-                  data-testid="account-id"
-                  fontFamily="$mono"
-                  flex={1}
-                  size="$2"
-                />
-              </XGroup.Item>
-              <XGroup.Item>
-                <Tooltip placement="top-end">
-                  <Tooltip.Trigger>
-                    <Button size="$2" icon={Copy} />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content
-                    margin={0}
-                    padding={0}
-                    paddingHorizontal="$2"
-                    theme="inverse"
-                  >
-                    <Tooltip.Arrow />
-                    <SizableText margin={0} padding={0} size="$1">
-                      Copy your account id
-                    </SizableText>
-                  </Tooltip.Content>
-                </Tooltip>
-              </XGroup.Item>
-            </XGroup>
-          </YStack>
-          <YStack>
-            <Label size="$2">Device addresses</Label>
-            <XGroup>
-              <XGroup.Item>
-                <Input
-                  disabled
-                  value={peerAddrs.join(',')}
-                  id="addresses"
-                  data-testid="account-addresses"
-                  flex={1}
-                  size="$2"
-                />
-              </XGroup.Item>
-              <XGroup.Item>
-                <Tooltip placement="top-end">
-                  <Tooltip.Trigger>
-                    <Button
-                      size="$2"
-                      icon={Copy}
-                      onPress={() => service.send('ACCOUNT.COPY.ADDRESS')}
-                    >
-                      {onSuccess && 'copied!'}
-                    </Button>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content
-                    margin={0}
-                    padding={0}
-                    paddingHorizontal="$2"
-                    theme="inverse"
-                  >
-                    <Tooltip.Arrow />
-                    <SizableText margin={0} padding={0} size="$1">
-                      Copy Addresses
-                    </SizableText>
-                  </Tooltip.Content>
-                </Tooltip>
-              </XGroup.Item>
-            </XGroup>
-          </YStack>
-          <Separator />
-          <YStack data-testid="account-device-list" gap="$3">
-            <Heading>Devices</Heading>
-            {account.devices && ObjectKeys(account.devices).length
-              ? Object.keys(account.devices).map((deviceId) => (
-                  <DeviceInfo key={deviceId} id={deviceId} />
-                ))
-              : null}
-          </YStack>
-        </YStack>
-      </>
-    )
+  const accountId = useSelector(
+    service,
+    (state) => state.context.account?.id || '',
+  )
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const fileList = event.target.files
+    if (fileList) {
+      setSelectedFile(fileList[0])
+    }
   }
 
-  return null
+  const handleUpload = async () => {
+    if (selectedFile) {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      try {
+        const response = await fetch(
+          'http://localhost:55001/ipfs/file-upload',
+          {
+            method: 'POST',
+            body: formData,
+          },
+        )
+        const data = await response.text()
+        onUploadSuccess?.(data)
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  }
+
+  return (
+    <Dialog modal>
+      <Avatar
+        alias={alias}
+        accountId={accountId}
+        size="$12"
+        url={url}
+        color="$blue12"
+      />
+      <Dialog.Trigger asChild>
+        <Button
+          size="$12"
+          userSelect="auto"
+          backgrounded
+          circular
+          icon={Camera}
+          {...{
+            opacity: 0,
+            position: 'absolute',
+            zIndex: 100,
+            alignSelf: 'center',
+            justifyContent: 'center',
+          }}
+          hoverTheme
+          hoverStyle={{
+            opacity: 0.6,
+          }}
+        />
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          backgroundColor="$background"
+          animation="quick"
+          opacity={0.5}
+          enterStyle={{opacity: 0}}
+          exitStyle={{opacity: 0}}
+        />
+        <Dialog.Content
+          backgroundColor="$blue12"
+          theme="blue"
+          bordered
+          key="content"
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+          enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+          exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+          space
+        >
+          <Dialog.Title>Upload Avatar</Dialog.Title>
+          <input type="file" onChange={handleFileChange} />
+          <Dialog.Close asChild>
+            <Button onPress={handleUpload}>Send</Button>
+          </Dialog.Close>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
+  )
 }
 
-function DeviceInfo({id}: {id: string}) {
+function DevicesInfo({
+  service,
+}: {
+  service: InterpreterFrom<ReturnType<typeof createAuthService>>
+}) {
+  const devices = useSelector(
+    service,
+    (state) => state.context.account?.devices || {},
+  )
+
+  return (
+    <YStack data-testid="account-device-list" gap="$3">
+      <Heading>Devices</Heading>
+      {devices && ObjectKeys(devices).length
+        ? Object.keys(devices).map((deviceId) => (
+            <DeviceItem key={deviceId} id={deviceId} />
+          ))
+        : null}
+    </YStack>
+  )
+}
+
+function DeviceItem({id}: {id: string}) {
   let {status, data} = usePeerInfo(id)
   let {data: current} = useDaemonInfo()
 
@@ -500,8 +565,28 @@ export function useInviteDialog(hostname: string) {
     content: (
       <Dialog open={!!isOpen} onOpenChange={() => setIsOpen(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content>
+          <Dialog.Overlay
+            animation="quick"
+            opacity={0.5}
+            enterStyle={{opacity: 0}}
+            exitStyle={{opacity: 0}}
+          />
+          <Dialog.Content
+            bordered
+            elevate
+            key="content"
+            animation={[
+              'quick',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+            enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+            exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+            space
+          >
             <Dialog.Title>Invite Code</Dialog.Title>
             {isOpen && (
               <InviteMemberDialog url={isOpen} onDone={() => setIsOpen(null)} />

@@ -3,6 +3,7 @@ import {features} from '@app/constants'
 import {useConversations} from '@app/editor/comments/conversations-context'
 import {useAccount} from '@app/hooks/accounts'
 import {useNavigate} from '@app/utils/navigation'
+import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Text} from '@components/text'
@@ -18,7 +19,6 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {UIAvatar} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
@@ -326,7 +326,7 @@ function CommentItem({
         }}
         onClick={navigateToAuthor}
       >
-        <UIAvatar
+        <Avatar
           accountId={changeData.data?.author}
           size="$2"
           alias={author?.data?.profile?.alias || 'A'}

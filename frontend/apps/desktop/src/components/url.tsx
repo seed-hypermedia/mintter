@@ -41,7 +41,7 @@ export function AccessURLRow({
           alignItems="center"
           justifyContent="flex-start"
         >
-          <Globe size={16} />
+          <Globe size={16} flexShrink={0} flex={0} flexGrow={0} />
           <SizableText
             size="$2"
             opacity={0.8}
@@ -49,6 +49,7 @@ export function AccessURLRow({
             textOverflow="ellipsis"
             whiteSpace="nowrap"
             overflow="hidden"
+            color="$color"
           >
             {title || url}
           </SizableText>

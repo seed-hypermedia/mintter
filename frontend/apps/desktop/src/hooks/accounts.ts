@@ -3,11 +3,12 @@ import {Account} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from '@app/hooks/query-keys'
 import {useAllPeers} from './networking'
-import {useDaemonInfo} from './daemon'
+import {useDaemonReady} from '@app/node-status-context'
 
 export function useAccount(accountId?: string) {
+  let isDaemonReady = useDaemonReady()
   return useQuery({
-    enabled: !!accountId,
+    enabled: !!isDaemonReady && !!accountId,
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
     queryFn: () => accountsClient.getAccount({id: accountId}),
     onError: (err) => {
@@ -17,7 +18,9 @@ export function useAccount(accountId?: string) {
 }
 
 export function useAllAccounts() {
+  let isDaemonReady = useDaemonReady()
   const contacts = useQuery({
+    enabled: !!isDaemonReady,
     queryKey: [queryKeys.GET_ALL_ACCOUNTS],
     queryFn: async () => {
       return await accountsClient.listAccounts({})

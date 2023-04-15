@@ -117,10 +117,9 @@ function PublishButtons({
               onPublish(site.hostname)
             }}
             iconAfter={ExternalLink}
+            textProps={{flex: 1}}
           >
-            <ButtonText flex={1}>
-              {hostnameStripProtocol(site.hostname)}
-            </ButtonText>
+            {hostnameStripProtocol(site.hostname)}
           </Button>
         )
       })}

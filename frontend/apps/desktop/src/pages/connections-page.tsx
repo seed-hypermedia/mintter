@@ -13,6 +13,7 @@ import {
   Text,
   XStack,
 } from '@mintter/ui'
+import {Avatar} from '@components/avatar'
 
 function ContactItem({account}: {account: Account}) {
   const navigate = useNavigate()
@@ -29,7 +30,7 @@ function ContactItem({account}: {account: Account}) {
       }}
     >
       <XStack alignItems="center" gap="$4" flex={1}>
-        <UIAvatar
+        <Avatar
           size="$2"
           accountId={account.id}
           alias={account.profile?.alias || ''}
