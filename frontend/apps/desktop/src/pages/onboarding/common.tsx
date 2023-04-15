@@ -1,14 +1,13 @@
-import {GenMnemonicResponse} from '@mintter/shared'
+import {accountsClient, daemonClient} from '@app/api-clients'
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
 import {Box} from '@components/box'
-import {Button} from '@mintter/ui'
 import type {TextProps} from '@components/text'
 import {Text, textStyles} from '@components/text'
+import {Button} from '@mintter/ui'
 import type {Variants} from 'framer-motion'
 import {motion} from 'framer-motion'
-import {ComponentProps, FormEvent, PropsWithChildren, ReactNode} from 'react'
-import {accountsClient, daemonClient} from '@app/api-clients'
+import {ComponentProps, PropsWithChildren, ReactNode} from 'react'
 export interface OnboardingStepPropsType {
   prev?: () => void
   next: () => void

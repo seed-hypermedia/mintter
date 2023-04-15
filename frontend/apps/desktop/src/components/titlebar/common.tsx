@@ -39,6 +39,7 @@ import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
 import {useAccount, useMyAccount} from '@app/hooks/accounts'
 import appError from '@app/errors'
+import {Avatar} from '@components/avatar'
 
 export function ActionButtons(props: TitleBarProps) {
   const nav = useNavigationActions()
@@ -173,7 +174,11 @@ function AccountDropdownItem() {
         navigate({key: 'account', accountId: account?.id})
       }}
     >
-      <UIAvatar size="$1" alias={account?.profile?.alias || '.'} />
+      <Avatar
+        size="$1"
+        alias={account?.profile?.alias || '.'}
+        accountId={account?.id}
+      />
       <span>{account?.profile?.alias || '<me>'}</span>
       <Dropdown.RightSlot></Dropdown.RightSlot>
     </Dropdown.Item>
