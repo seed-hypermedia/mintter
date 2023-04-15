@@ -29,66 +29,8 @@ import {
   ExternalLink,
   Delete,
   Separator,
-  Tooltip,
-  Theme,
-  SizableText,
 } from '@mintter/ui'
-import {Avatar} from '@components/avatar'
-
-function EditorButton({accountId}: {accountId: string}) {
-  const navigate = useNavigate()
-  const editor = useAccount(accountId)
-  return (
-    <Tooltip>
-      <Tooltip.Trigger>
-        <Button
-          size="$1"
-          backgroundColor="transparent"
-          onPress={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            navigate({key: 'account', accountId})
-          }}
-          data-testid="list-item-author"
-        >
-          {editor?.data?.profile?.alias ? (
-            <Avatar
-              size="$2"
-              alias={editor.data.profile.alias}
-              accountId={editor.data.id}
-            />
-          ) : (
-            editor?.data?.profile?.alias
-          )}
-        </Button>
-      </Tooltip.Trigger>
-
-      <Tooltip.Content
-        enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
-        exitStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
-        scale={1}
-        x={0}
-        y={0}
-        opacity={1}
-        animation={[
-          'quick',
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
-      >
-        <Tooltip.Arrow />
-        <Theme inverse>
-          <SizableText color="$color" size="$1">
-            {editor?.data?.profile?.alias}
-          </SizableText>
-        </Theme>
-      </Tooltip.Content>
-    </Tooltip>
-  )
-}
+import {AccountLinkAvatar} from './account-link-avatar'
 
 export function PublicationListItem({
   publication,

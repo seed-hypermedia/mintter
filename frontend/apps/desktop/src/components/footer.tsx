@@ -1,7 +1,7 @@
 import {networkingClient} from '@app/api-clients'
 import {AccountWithRef} from '@app/contact-list-machine'
 import {useConnectionSummary} from '@app/hooks/contacts'
-import {useDaemonReady, useOnline} from '@app/node-status-context'
+import {useDaemonReady, useDaemonOnline} from '@app/node-status-context'
 import {keyframes, styled} from '@app/stitches.config'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {TextField} from '@components/text-field'
@@ -75,7 +75,7 @@ function FooterContactsButton() {
 
 export default function Footer({children}: {children?: ReactNode}) {
   let isDaemonReady = useDaemonReady()
-  let isOnline = useOnline()
+  let isOnline = useDaemonOnline()
 
   // let contactsListQuery = useQuery({
   //   enabled: isDaemonReady,

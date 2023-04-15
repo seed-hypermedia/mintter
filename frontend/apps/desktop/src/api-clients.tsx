@@ -18,7 +18,7 @@ import {
   WebSite,
 } from '@mintter/shared'
 import {toast} from 'react-hot-toast'
-
+// @ts-ignore
 export const toastInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
@@ -34,6 +34,7 @@ export const toastInterceptor: Interceptor = (next) => async (req) => {
         }}
         style={{cursor: 'pointer'}}
       >
+        {/** @ts-ignore */}
         🚨 {req.method.name}: {e.message}
       </span>,
     )

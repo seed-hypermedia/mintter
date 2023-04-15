@@ -4,6 +4,7 @@ import {useQuery} from '@tanstack/react-query'
 import {queryKeys} from '@app/hooks/query-keys'
 import {useAllPeers} from './networking'
 import {useDaemonReady} from '@app/node-status-context'
+import {useDaemonInfo} from '@app/hooks/daemon'
 
 export function useAccount(accountId?: string) {
   let isDaemonReady = useDaemonReady()

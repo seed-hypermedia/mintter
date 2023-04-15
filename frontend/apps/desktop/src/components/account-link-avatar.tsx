@@ -1,7 +1,8 @@
 import appError from '@app/errors'
 import {useAccount} from '@app/hooks/accounts'
 import {useNavigate} from '@app/utils/navigation'
-import {Button, UIAvatar, Tooltip, Theme, SizableText} from '@mintter/ui'
+import {Avatar} from '@components/avatar'
+import {Button, Tooltip, Theme, SizableText} from '@mintter/ui'
 
 export function AccountLinkAvatar({accountId}: {accountId?: string}) {
   const navigate = useNavigate()
@@ -22,7 +23,11 @@ export function AccountLinkAvatar({accountId}: {accountId?: string}) {
           data-testid="list-item-author"
         >
           {account?.data?.profile?.alias ? (
-            <UIAvatar size="$1" alias={account.data.profile.alias} />
+            <Avatar
+              size="$1"
+              alias={account.data.profile.alias}
+              accountId={account.data.id}
+            />
           ) : (
             account?.data?.profile?.alias
           )}

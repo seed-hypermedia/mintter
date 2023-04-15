@@ -79,7 +79,7 @@ export function useDaemonReady() {
   return useMemo(() => (context ? context.isReady : false), [context])
 }
 
-export function useOnline() {
+export function useDaemonOnline() {
   let context = useContext(daemonContext)
   return useMemo(() => context?.netStatus == 'online', [context])
 }
