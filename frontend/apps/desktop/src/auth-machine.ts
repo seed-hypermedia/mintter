@@ -175,11 +175,11 @@ export function createAuthService(client: QueryClient) {
         },
         fetchPeerData: function fetchPeerDataService(context: AuthContext) {
           return client.fetchQuery<Array<string>>({
-            queryKey: [queryKeys.GET_PEER_ADDRS, context.accountInfo?.peerId],
+            queryKey: [queryKeys.GET_PEER_ADDRS, context.accountInfo?.deviceId],
             queryFn: async () => {
               if (context.accountInfo) {
                 let peerInfo = await networkingClient.getPeerInfo({
-                  peerId: context.accountInfo.peerId,
+                  deviceId: context.accountInfo.deviceId,
                 })
 
                 return peerInfo.addrs

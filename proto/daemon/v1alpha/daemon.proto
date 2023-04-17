@@ -56,8 +56,8 @@ message Info {
   // Account ID this node belongs to.
   string account_id = 1;
 
-  // Peer ID assigned to this node.
-  string peer_id = 2;
+  // Libp2p Peer ID in CID form (a.k.a. Device ID) assigned to this node.
+  string device_id = 2;
 
   // Start time of the node.
   google.protobuf.Timestamp start_time = 3;

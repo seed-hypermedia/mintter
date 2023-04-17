@@ -18,23 +18,23 @@ export function useAllPeers() {
 }
 
 function queryPeerInfo(
-  peerId?: string,
+  deviceId?: string,
 ): UseQueryOptions<PeerInfo> | FetchQueryOptions<PeerInfo> {
   return {
-    queryKey: [queryKeys.GET_PEER_INFO, peerId],
-    enabled: !!peerId,
+    queryKey: [queryKeys.GET_PEER_INFO, deviceId],
+    enabled: !!deviceId,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     retry: true,
-    queryFn: () => networkingClient.getPeerInfo({peerId: peerId}),
+    queryFn: () => networkingClient.getPeerInfo({deviceId: deviceId}),
     // refetchInterval: 2000,
     // refetchIntervalInBackground: true,
   }
 }
 
-export async function fetchPeerInfo(peerId: string) {
-  return await appQueryClient.fetchQuery(queryPeerInfo(peerId))
+export async function fetchPeerInfo(deviceId: string) {
+  return await appQueryClient.fetchQuery(queryPeerInfo(deviceId))
 }
 
-export function usePeerInfo(peerId?: string) {
-  return useQuery<PeerInfo>(queryPeerInfo(peerId))
+export function usePeerInfo(deviceId?: string) {
+  return useQuery<PeerInfo>(queryPeerInfo(deviceId))
 }

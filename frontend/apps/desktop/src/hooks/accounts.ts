@@ -45,9 +45,7 @@ export function useAccountWithDevices(accountId: string) {
   return {
     profile: account.data?.profile,
     devices: Object.values(account?.data?.devices || {}).map((device) => {
-      // I think this is the cause of much confusion:
-      const deviceId = device.peerId
-      // see https://github.com/mintterteam/mintter/issues/1368
+      const deviceId = device.deviceId
       return {
         deviceId,
         isConnected: !!peers.data?.peerList.find(

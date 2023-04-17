@@ -2,6 +2,7 @@ package daemon
 
 import (
 	context "context"
+	"fmt"
 	"mintter/backend/core"
 	daemon "mintter/backend/genproto/daemon/v1alpha"
 	vcsdb "mintter/backend/vcs/sqlitevcs"
@@ -50,7 +51,7 @@ func NewServer(r Repo, vcs *vcsdb.DB, w Wallet, syncFunc func() error) *Server {
 }
 
 // GenMnemonic returns a set of mnemonic words based on bip39 schema. Word count should be 12 or 15 or 18 or 21 or 24.
-func (srv *Server) GenMnemonic(ctx context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
+func (srv *Server) GenMnemonic(_ context.Context, req *daemon.GenMnemonicRequest) (*daemon.GenMnemonicResponse, error) {
 	words, err := core.NewMnemonic(req.MnemonicsLength)
 	if err != nil {
 		return nil, err
@@ -106,14 +107,14 @@ func (srv *Server) RegisterAccount(ctx context.Context, acc core.KeyPair) error 
 	}
 
 	if err := srv.wallet.ConfigureMintterLNDHub(ctx, acc); err != nil {
-		return err
+		return fmt.Errorf("failed to configure wallet when registering: %w", err)
 	}
 
 	return nil
 }
 
 // GetInfo implements the corresponding gRPC method.
-func (srv *Server) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*daemon.Info, error) {
+func (srv *Server) GetInfo(context.Context, *daemon.GetInfoRequest) (*daemon.Info, error) {
 	pk, err := srv.repo.Account()
 	if err != nil {
 		return nil, status.Error(codes.FailedPrecondition, err.Error())
@@ -121,7 +122,7 @@ func (srv *Server) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*dae
 
 	resp := &daemon.Info{
 		AccountId: pk.CID().String(),
-		PeerId:    srv.repo.Device().CID().String(),
+		DeviceId:  srv.repo.Device().CID().String(),
 		StartTime: timestamppb.New(srv.startTime),
 	}
 
@@ -129,7 +130,7 @@ func (srv *Server) GetInfo(ctx context.Context, in *daemon.GetInfoRequest) (*dae
 }
 
 // ForceSync implements the corresponding gRPC method.
-func (srv *Server) ForceSync(ctx context.Context, in *daemon.ForceSyncRequest) (*emptypb.Empty, error) {
+func (srv *Server) ForceSync(context.Context, *daemon.ForceSyncRequest) (*emptypb.Empty, error) {
 	if srv.forceSyncFunc == nil {
 		return &emptypb.Empty{}, status.Error(codes.FailedPrecondition, "force sync function is not set")
 	}

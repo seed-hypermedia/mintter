@@ -241,11 +241,11 @@ export class Info extends Message<Info> {
   accountId = "";
 
   /**
-   * Peer ID assigned to this node.
+   * Libp2p Peer ID in CID form (a.k.a. Device ID) assigned to this node.
    *
-   * @generated from field: string peer_id = 2;
+   * @generated from field: string device_id = 2;
    */
-  peerId = "";
+  deviceId = "";
 
   /**
    * Start time of the node.
@@ -263,7 +263,7 @@ export class Info extends Message<Info> {
   static readonly typeName = "com.mintter.daemon.v1alpha.Info";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "account_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "peer_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "device_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "start_time", kind: "message", T: Timestamp },
   ]);
 

@@ -33,7 +33,7 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
   let [netStatus, setNetStatus] = useState<'online' | 'offline'>('online')
   let infoQuery = useDaemonInfo()
 
-  let peerInfoQuery = usePeerInfo(infoQuery.data?.peerId)
+  let peerInfoQuery = usePeerInfo(infoQuery.data?.deviceId)
 
   useEffect(() => {
     function handleOnline() {

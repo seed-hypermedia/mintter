@@ -133,7 +133,7 @@ export function createContactMachine({
         fetchListDeviceStatus: (context) => {
           return Promise.all(
             Object.values(context.account.devices).map((device) =>
-              fetchPeerInfo(device.peerId),
+              fetchPeerInfo(device.deviceId),
             ),
           )
         },

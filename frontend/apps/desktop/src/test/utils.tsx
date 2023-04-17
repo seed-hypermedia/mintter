@@ -1,12 +1,12 @@
-import { BlockHighLighter } from '../editor/block-highlighter'
-import { FindContextProvider } from '../editor/find'
-import { queryKeys } from '@app/hooks/query-keys'
-import { MouseProvider } from '../mouse-context'
-import { mouseMachine } from '../mouse-machine'
-import { globalStyles } from '../stitches.config'
-import { themeMachine, ThemeProvider } from '../theme'
-import { NavState } from '../utils/navigation'
-import { TooltipProvider } from '@components/tooltip'
+import {BlockHighLighter} from '../editor/block-highlighter'
+import {FindContextProvider} from '../editor/find'
+import {queryKeys} from '@app/hooks/query-keys'
+import {MouseProvider} from '../mouse-context'
+import {mouseMachine} from '../mouse-machine'
+import {globalStyles} from '../stitches.config'
+import {themeMachine, ThemeProvider} from '../theme'
+import {NavState} from '../utils/navigation'
+import {TooltipProvider} from '@components/tooltip'
 import {
   Account,
   Document,
@@ -15,12 +15,12 @@ import {
   ListPublicationsResponse,
   Publication,
 } from '@mintter/shared'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { mockIPC, mockWindows } from '@tauri-apps/api/mocks'
-import { useInterpret } from '@xstate/react'
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import {mockIPC, mockWindows} from '@tauri-apps/api/mocks'
+import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
-import { nanoid } from 'nanoid'
-import { ReactNode, Suspense } from 'react'
+import {nanoid} from 'nanoid'
+import {ReactNode, Suspense} from 'react'
 
 type TestMockData = {
   account?: Partial<Account>
@@ -55,7 +55,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     client,
   }
 
-  let peerId = 'testPeerID'
+  let deviceId = 'testDeviceId'
   let defaultAccount = new Account({
     id: 'testAccountId',
     profile: {
@@ -64,14 +64,14 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
       bio: 'demo bio',
     },
     devices: {
-      [peerId]: {
-        peerId,
+      [deviceId]: {
+        deviceId: deviceId,
       },
     },
   })
 
   let defaultInfo: Partial<Info> = {
-    peerId,
+    deviceId: deviceId,
     startTime: undefined,
   }
 
@@ -79,9 +79,9 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   let info = mocks.info
     ? (deepmerge(defaultInfo, {
-      ...mocks.info,
-      accountId: account.id,
-    }) as Info)
+        ...mocks.info,
+        accountId: account.id,
+      }) as Info)
     : (defaultInfo as Info)
 
   values.account = account
@@ -90,12 +90,12 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
   client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
   client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, peerId],
+    [queryKeys.GET_PEER_ADDRS, deviceId],
     ['foo', 'bar'],
   )
   client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
   client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, peerId],
+    [queryKeys.GET_PEER_ADDRS, deviceId],
     ['foo', 'bar'],
   )
 
@@ -143,23 +143,23 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   let authors = mocks.authors
     ? mocks.authors.map((a, idx) =>
-      deepmerge(
-        {
-          id: `authorId-${idx + 1}`,
-          profile: {
-            alias: `alias-${idx + 1}`,
-            avatar: `bafkreibaejvf3wyblh3s4yhbrwtxto7wpcac7zkkx36cswjzjez2cbmzvu`,
-            bio: `bio for user ${idx + 1}`,
-          },
-          devices: {
-            d1: {
-              peerId: 'd1',
+        deepmerge(
+          {
+            id: `authorId-${idx + 1}`,
+            profile: {
+              alias: `alias-${idx + 1}`,
+              avatar: `bafkreibaejvf3wyblh3s4yhbrwtxto7wpcac7zkkx36cswjzjez2cbmzvu`,
+              bio: `bio for user ${idx + 1}`,
+            },
+            devices: {
+              d1: {
+                deviceId: 'd1',
+              },
             },
           },
-        },
-        a,
-      ),
-    )
+          a,
+        ),
+      )
     : []
 
   authors.forEach((a) => {
@@ -178,7 +178,7 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
   return values
 }
 
-export function TestProvider({ client, children }: TestProviderProps) {
+export function TestProvider({client, children}: TestProviderProps) {
   let themeService = useInterpret(() => themeMachine)
 
   // return null
@@ -220,7 +220,7 @@ export type TestProviderProps = CustomMountOptions & {
   client: QueryClient
 }
 
-export function TestPublicationProvider({ children }: { children: ReactNode }) {
+export function TestPublicationProvider({children}: {children: ReactNode}) {
   let mouseService = useInterpret(() => mouseMachine)
   return (
     <div>
@@ -247,7 +247,7 @@ export function createTestDraft(entry: Partial<Document> = {}): Document {
   )
 }
 
-let peerId = 'testPeerID'
+let deviceId = 'testDeviceId'
 let defaultAccount = {
   id: 'testAccountId',
   profile: {
@@ -256,8 +256,8 @@ let defaultAccount = {
     bio: 'demo bio',
   },
   devices: {
-    [peerId]: {
-      peerId,
+    [deviceId]: {
+      deviceId: deviceId,
     },
   },
 }
@@ -266,10 +266,10 @@ export function createAccount(entry: Partial<Account>): Account {
   return new Account(deepmerge(defaultAccount, entry))
 }
 
-; (function mockTauriIpc() {
+;(function mockTauriIpc() {
   if (window) {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    mockIPC(() => { })
+    mockIPC(() => {})
     mockWindows('test')
   }
 })()

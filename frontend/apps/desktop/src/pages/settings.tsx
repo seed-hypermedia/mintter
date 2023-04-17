@@ -400,9 +400,9 @@ function DeviceItem({id}: {id: string}) {
   let {data: current} = useDaemonInfo()
 
   let isCurrent = useMemo(() => {
-    if (!current?.peerId) return false
+    if (!current?.deviceId) return false
 
-    return current.peerId == id
+    return current.deviceId == id
   }, [id, current])
 
   return (

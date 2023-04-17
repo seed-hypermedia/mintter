@@ -88,10 +88,10 @@ func TestDaemonSmoke(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, infoResp)
 	require.NotEqual(t, "", infoResp.AccountId)
-	require.NotEqual(t, "", infoResp.PeerId)
+	require.NotEqual(t, "", infoResp.DeviceId)
 
 	peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
-		PeerId: infoResp.PeerId,
+		DeviceId: infoResp.DeviceId,
 	})
 	require.NoError(t, err)
 	require.NotNil(t, peerInfo)

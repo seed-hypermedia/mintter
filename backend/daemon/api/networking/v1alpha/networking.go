@@ -94,8 +94,8 @@ func (srv *Server) ListPeers(ctx context.Context, in *networking.ListPeersReques
 
 // GetPeerInfo gets info about
 func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRequest) (*networking.PeerInfo, error) {
-	if in.PeerId == "" {
-		return nil, status.Error(codes.InvalidArgument, "must specify peer id")
+	if in.DeviceId == "" {
+		return nil, status.Error(codes.InvalidArgument, "must specify device id")
 	}
 
 	net, err := srv.getNet()
@@ -103,9 +103,9 @@ func (srv *Server) GetPeerInfo(ctx context.Context, in *networking.GetPeerInfoRe
 		return nil, err
 	}
 
-	device, err := cid.Decode(in.PeerId)
+	device, err := cid.Decode(in.DeviceId)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "failed to parse peer ID as CID: %v", err)
+		return nil, status.Errorf(codes.InvalidArgument, "failed to parse device ID as CID: %v", err)
 	}
 
 	pid, err := peer.FromCid(device)
