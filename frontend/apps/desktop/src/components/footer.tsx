@@ -1,6 +1,6 @@
 import {networkingClient} from '@app/api-clients'
 import {AccountWithRef} from '@app/contact-list-machine'
-import {useConnectionSummary} from '@app/hooks/contacts'
+import {useConnectionSummary} from '@app/models/contacts'
 import {useDaemonReady, useDaemonOnline} from '@app/node-status-context'
 import {keyframes, styled} from '@app/stitches.config'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'

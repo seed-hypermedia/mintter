@@ -1,4 +1,4 @@
-import {useDeleteDraft} from '@app/hooks/documents'
+import {useDeleteDraft} from '@app/models/documents'
 import {ReactElement, ReactNode, useState} from 'react'
 import {Alert} from './alert'
 import {overlayStyles} from './dialog-styles'

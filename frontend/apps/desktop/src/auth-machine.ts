@@ -1,12 +1,12 @@
 import {accountsClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {Account, Info, Profile} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {assign, createMachine, MachineOptions} from 'xstate'
 import {networkingClient} from './api-clients'
-import {fetchDaemonInfo} from './hooks/daemon'
-import {fetchPeerInfo} from './hooks/networking'
+import {fetchDaemonInfo} from './models/daemon'
+import {fetchPeerInfo} from './models/networking'
 
 type AuthContext = {
   accountInfo: Info | null

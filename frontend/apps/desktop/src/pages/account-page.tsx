@@ -1,5 +1,5 @@
-import {useAccountPublicationList} from '@app/hooks/changes'
-import {useAccountWithDevices} from '@app/hooks/contacts'
+import {useAccountPublicationList} from '@app/models/changes'
+import {useAccountWithDevices} from '@app/models/contacts'
 import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import Footer from '@components/footer'

@@ -1,5 +1,5 @@
-import {useAccount} from '@app/hooks/accounts'
-import {useDocChanges} from '@app/hooks/changes'
+import {useAccount} from '@app/models/accounts'
+import {useDocChanges} from '@app/models/changes'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {ChangeInfo, formattedDate} from '@mintter/shared'

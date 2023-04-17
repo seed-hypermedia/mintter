@@ -1,7 +1,7 @@
 import {Dropdown} from '@app/editor/dropdown'
-import {usePublication, prefetchPublication} from '@app/hooks/documents'
-import {useAccount} from '@app/hooks/accounts'
-import {useSitePublications} from '@app/hooks/sites'
+import {usePublication, prefetchPublication} from '@app/models/documents'
+import {useAccount} from '@app/models/accounts'
+import {useSitePublications} from '@app/models/sites'
 import {
   useNavigate,
   useNavigationActions,

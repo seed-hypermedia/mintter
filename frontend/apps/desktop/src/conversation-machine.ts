@@ -1,10 +1,10 @@
 import {accountsClient, publicationsClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {ClientPublication} from '@app/publication-machine'
 import {Account, blockNodeToSlate, MttLink, Publication} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine} from 'xstate'
-import {fetchPublication} from './hooks/documents'
+import {fetchPublication} from './models/documents'
 
 type CreateConversationMachineProps = {
   client: QueryClient

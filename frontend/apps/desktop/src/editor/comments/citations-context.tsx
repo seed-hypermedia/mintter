@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {useDocCitations} from '@app/hooks/content-graph'
+import {useDocCitations} from '@app/models/content-graph'
 import {MttLink as Link} from '@mintter/shared'
 import {createContext, ReactNode, useContext, useMemo} from 'react'
 

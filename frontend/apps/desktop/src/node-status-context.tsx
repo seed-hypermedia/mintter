@@ -8,8 +8,8 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {useDaemonInfo} from './hooks/daemon'
-import {usePeerInfo} from './hooks/networking'
+import {useDaemonInfo} from './models/daemon'
+import {usePeerInfo} from './models/networking'
 
 type PeerInfoValue = {
   addrs: Array<string>

@@ -1,4 +1,4 @@
-import {MainActor} from '@app/hooks/main-actor'
+import {MainActor} from '@app/models/main-actor'
 import {warn} from '@app/utils/logger'
 import {lazy} from 'react'
 

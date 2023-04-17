@@ -1,7 +1,7 @@
 import {commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
-import {useDocConversations} from '@app/hooks/comments'
-import {queryKeys} from '@app/hooks/query-keys'
+import {useDocConversations} from '@app/models/comments'
+import {queryKeys} from '@app/models/query-keys'
 import {ClientPublication} from '@app/publication-machine'
 import {
   Annotation,

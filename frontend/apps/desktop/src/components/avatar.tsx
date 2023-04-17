@@ -1,4 +1,4 @@
-import {useAccount} from '@app/hooks/accounts'
+import {useAccount} from '@app/models/accounts'
 import {useDaemonReady} from '@app/node-status-context'
 import {GetProps, UIAvatar} from '@mintter/ui'
 import {useMemo} from 'react'

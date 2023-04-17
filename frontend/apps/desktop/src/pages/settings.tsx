@@ -3,9 +3,9 @@ import {createAuthService} from '@app/auth-machine'
 import {Box} from '@app/components/box'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
-import {useAccount, useMyAccount, useSetProfile} from '@app/hooks/accounts'
-import {useDaemonInfo} from '@app/hooks/daemon'
-import {usePeerInfo} from '@app/hooks/networking'
+import {useAccount, useMyAccount, useSetProfile} from '@app/models/accounts'
+import {useDaemonInfo} from '@app/models/daemon'
+import {usePeerInfo} from '@app/models/networking'
 import {
   useAddSite,
   useInviteMember,
@@ -15,7 +15,7 @@ import {
   useSiteList,
   useSiteMembers,
   useWriteSiteInfo,
-} from '@app/hooks/sites'
+} from '@app/models/sites'
 import {TableList} from '@app/table-list'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'

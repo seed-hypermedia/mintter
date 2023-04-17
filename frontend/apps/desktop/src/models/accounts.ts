@@ -1,10 +1,10 @@
 import {accountsClient} from '@app/api-clients'
 import {Account, Profile} from '@mintter/shared'
 import {useMutation, useQuery} from '@tanstack/react-query'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {useAllPeers} from './networking'
 import {useDaemonReady} from '@app/node-status-context'
-import {fetchDaemonInfo, useDaemonInfo} from '@app/hooks/daemon'
+import {fetchDaemonInfo, useDaemonInfo} from '@app/models/daemon'
 import {appInvalidateQueries} from '@app/query-client'
 
 export function useAccount(accountId?: string) {

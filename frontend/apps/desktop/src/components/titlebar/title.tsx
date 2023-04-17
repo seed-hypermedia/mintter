@@ -1,5 +1,5 @@
-import {useDraft, usePublication} from '@app/hooks/documents'
-import {useAccount} from '@app/hooks/accounts'
+import {useDraft, usePublication} from '@app/models/documents'
+import {useAccount} from '@app/models/accounts'
 import {
   DraftRoute,
   PublicationRoute,

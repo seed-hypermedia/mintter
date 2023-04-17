@@ -1,7 +1,7 @@
 import {accountsClient} from '@app/api-clients'
 import {Account, Device} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {useAllPeers} from './networking'
 import {useAccount} from './accounts'
 

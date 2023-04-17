@@ -1,5 +1,5 @@
-import {useDraftList, usePublicationList} from '@app/hooks/documents'
-import {fetchWebLink} from '@app/hooks/web-links'
+import {useDraftList, usePublicationList} from '@app/models/documents'
+import {fetchWebLink} from '@app/models/web-links'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {useNavigate} from '@app/utils/navigation'
 import {getIdsfromUrl} from '@mintter/shared'

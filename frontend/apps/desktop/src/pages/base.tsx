@@ -1,4 +1,4 @@
-import {MainActor} from '@app/hooks/main-actor'
+import {MainActor} from '@app/models/main-actor'
 import {Box} from '@components/box'
 import {Heading} from '@components/heading'
 import {Text} from '@components/text'

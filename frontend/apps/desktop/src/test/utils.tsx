@@ -1,6 +1,6 @@
 import {BlockHighLighter} from '../editor/block-highlighter'
 import {FindContextProvider} from '../editor/find'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {MouseProvider} from '../mouse-context'
 import {mouseMachine} from '../mouse-machine'
 import {globalStyles} from '../stitches.config'

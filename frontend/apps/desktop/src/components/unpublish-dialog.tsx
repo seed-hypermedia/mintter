@@ -1,4 +1,4 @@
-import {useSiteUnpublish} from '@app/hooks/sites'
+import {useSiteUnpublish} from '@app/models/sites'
 import {Alert} from '@components/alert'
 import {overlayStyles} from '@components/dialog-styles'
 import {WebPublicationRecord} from '@mintter/shared'

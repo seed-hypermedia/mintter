@@ -1,4 +1,4 @@
-import {useAccountIsConnected, useAllAccounts} from '@app/hooks/accounts'
+import {useAccountIsConnected, useAllAccounts} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
