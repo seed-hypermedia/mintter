@@ -33,7 +33,6 @@ import {
   Back,
   Button,
   Camera,
-  Circle,
   Close,
   Copy,
   Dialog,
@@ -50,7 +49,6 @@ import {
   TabsContentProps,
   TextArea,
   Tooltip,
-  UIAvatar,
   XGroup,
   XStack,
   YStack,
@@ -59,7 +57,7 @@ import {styled} from '@stitches/react'
 import {useQueryClient} from '@tanstack/react-query'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {useEffect, useMemo, useRef, useState, ChangeEvent} from 'react'
+import {ChangeEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {InterpreterFrom} from 'xstate'
 
@@ -123,18 +121,14 @@ type SettingsTabProps = {
   updateProfile?: typeof accountsClient.updateProfile
 }
 
-const __AVATAR__ = '__AVATAR__'
-
 export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   let [state, send] = useActor(service)
   let [alias, setAlias] = useState('')
-  let [realBio, setRealBio] = useState('')
-  let [visibleBio, setVisibleBio] = useState('')
+  let [bio, setBio] = useState('')
   let [avatar, setAvatar] = useState('')
 
   async function onSubmit() {
-    let newBio = avatar ? `${visibleBio}${__AVATAR__}${avatar}` : visibleBio
-    let profile = new Profile({alias, bio: newBio})
+    let profile = new Profile({alias, bio, avatar})
     send({type: 'ACCOUNT.UPDATE.PROFILE', profile})
   }
 
@@ -152,38 +146,29 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
     }
   }
 
-  function handleAvatarPersist(cid: string) {
-    let newBio = (visibleBio += `${__AVATAR__}${cid}`)
-    let profile = new Profile({alias, bio: newBio})
+  function handleUpdateAvatar(cid: string) {
+    let profile = new Profile({alias, bio, avatar: cid})
     setAvatar(cid)
     send({type: 'ACCOUNT.UPDATE.PROFILE', profile})
   }
 
   useEffect(() => {
     if (state.context.account?.profile && state.matches('loggedIn')) {
-      setRealBio(state.context.account?.profile?.bio)
+      setBio(state.context.account?.profile?.bio)
       setAlias(state.context.account?.profile?.alias)
+      setAvatar(state.context.account.profile.avatar)
     }
   }, [state.context])
-
-  useEffect(() => {
-    if (!realBio) return
-    let [bio, avatar] = realBio.split(__AVATAR__)
-
-    setAvatar(avatar)
-    setVisibleBio(bio)
-  }, [realBio])
 
   if (state.context.account?.profile && state.matches('loggedIn')) {
     return (
       <>
         <Heading>Profile information</Heading>
-
         <XStack gap="$4">
           <YStack flex={0} alignItems="center" flexGrow={0}>
             <AvatarForm
               service={service}
-              onUploadSuccess={handleAvatarPersist}
+              onUploadSuccess={handleUpdateAvatar}
               url={avatar ? `http://localhost:55001/ipfs/${avatar}` : undefined}
             />
           </YStack>
@@ -237,8 +222,8 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
               />
               <Label htmlFor="bio">Bio</Label>
               <TextArea
-                defaultValue={visibleBio}
-                onChangeText={(val) => setVisibleBio(val)}
+                defaultValue={bio}
+                onChangeText={(val) => setBio(val)}
                 id="bio"
                 placeholder="A little bit about yourself..."
               />
