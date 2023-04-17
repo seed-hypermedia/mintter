@@ -46,7 +46,7 @@ jobs:
         with:
           push: true
           file: backend/cmd/relayd/Dockerfile
-          tags: mintter/minttergw:latest
+          tags: mintter/relayd:latest
   push-site-scripts:
     runs-on: ubuntu-latest
     steps:
