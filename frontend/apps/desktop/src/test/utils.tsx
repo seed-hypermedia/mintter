@@ -89,20 +89,8 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
   client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
-  client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, deviceId],
-    ['foo', 'bar'],
-  )
-  client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
-  client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, deviceId],
-    ['foo', 'bar'],
-  )
 
-  client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, info.accountId],
-    ['foo', 'bar'],
-  )
+  client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
 
   if (mocks.draft) {
     client.setQueryData([queryKeys.GET_DRAFT, mocks.draft.id], mocks.draft)

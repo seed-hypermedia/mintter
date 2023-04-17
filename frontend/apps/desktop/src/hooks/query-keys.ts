@@ -1,25 +1,43 @@
+// this file exists so you know what may need to be invalidated from the cache when you make changes.
+
+// organized by the model file that is responsible for querying + mutating the keys
+
+// note the arguments to query keys that are mentioned in comments
+
 export const queryKeys = {
-  GET_SITES: 'GET_SITES',
-  GET_PEERS: 'GET_PEERS',
-  SITES_LIST: 'SITES_LIST',
-  GET_SITE_INFO: 'GET_SITE_INFO', // , siteId: string
-  GET_SITE_MEMBERS: 'GET_SITE_MEMBERS', // , siteId: string
-  GET_DOC_PUBLICATIONS: 'GET_DOC_PUBLICATIONS', // , siteId: string
-  GET_DRAFT_LIST: 'GET_DRAFT_LIST',
-  GET_ACCOUNT: 'GET_ACCOUNT',
-  GET_ALL_ACCOUNTS: 'GET_ALL_ACCOUNTS',
+  // daemon
   GET_DAEMON_INFO: 'GET_DAEMON_INFO',
-  GET_DRAFT: 'GET_DRAFT',
-  GET_PEER_ADDRS: 'GET_PEER_ADDRS',
-  GET_PUBLICATION: 'GET_PUBLICATION',
-  GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST',
-  GET_PUBLICATION_ANNOTATIONS: 'GET_PUBLICATION_ANNOTATIONS',
-  GET_PUBLICATION_DISCUSSION: 'GET_PUBLICATION_DISCUSSION',
-  GET_PEER_INFO: 'GET_PEER_INFO',
-  GET_SITES_LIST: 'GET_SITES_LIST',
-  GET_PUBLICATION_CONVERSATIONS: 'GET_PUBLICATION_CONVERSATIONS',
-  GET_WEB_PUBLICATIONS: 'GET_WEB_PUBLICATIONS',
-  PUBLICATION_CHANGES: 'PUBLICATION_CHANGES',
-  PUBLICATION_CITATIONS: 'PUBLICATION_CITATIONS',
+
+  // networking
+  GET_PEERS: 'GET_PEERS',
+  GET_PEER_INFO: 'GET_PEER_INFO', // , deviceId: string
+
+  // accounts
+  GET_ALL_ACCOUNTS: 'GET_ALL_ACCOUNTS',
+  GET_ACCOUNT: 'GET_ACCOUNT', // , accountId: string
+
+  // sites
+  GET_SITES: 'GET_SITES',
+  GET_SITE_INFO: 'GET_SITE_INFO', // , hostname: string
+  GET_SITE_MEMBERS: 'GET_SITE_MEMBERS', // , hostname: string
+  GET_SITE_PUBLICATIONS: 'GET_SITE_PUBLICATIONS', //, hostname: string
+  GET_DOC_SITE_PUBLICATIONS: 'GET_DOC_SITE_PUBLICATIONS', // , docId: string
+
+  // documents
+  GET_DRAFT_LIST: 'GET_DRAFT_LIST', //
+  GET_PUBLICATION_LIST: 'GET_PUBLICATION_LIST', //
+  GET_DRAFT: 'GET_DRAFT', // , docId: string
+  GET_PUBLICATION: 'GET_PUBLICATION', //, docId: string, versionId?: string
+
+  // comments
+  GET_PUBLICATION_CONVERSATIONS: 'GET_PUBLICATION_CONVERSATIONS', //, docId: string
+
+  // changes
+  PUBLICATION_CHANGES: 'PUBLICATION_CHANGES', //, docId: string
+
+  // content-graph
+  PUBLICATION_CITATIONS: 'PUBLICATION_CITATIONS', //, docId: string
+
+  // web-links
   GET_URL: 'GET_URL',
 } as const

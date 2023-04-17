@@ -59,7 +59,7 @@ async function getDocWebPublications(documentId: string) {
 
 export function useDocPublications(docId?: string) {
   return useQuery({
-    queryKey: [queryKeys.GET_DOC_PUBLICATIONS, docId],
+    queryKey: [queryKeys.GET_DOC_SITE_PUBLICATIONS, docId],
     queryFn: async () => {
       if (!docId) return []
       return await getDocWebPublications(docId)
@@ -200,7 +200,7 @@ export function useRemoveSite(hostname: string, opts: UseMutationOptions) {
 
 export function useSitePublications(hostname: string | undefined) {
   return useQuery({
-    queryKey: [queryKeys.GET_WEB_PUBLICATIONS, hostname],
+    queryKey: [queryKeys.GET_SITE_PUBLICATIONS, hostname],
     queryFn: async () => {
       if (!hostname) return {publications: []}
       const site = getWebSiteClient(hostname)
@@ -317,14 +317,18 @@ export function useSitePublish() {
             input.documentId,
           ])
           appInvalidateQueries([queryKeys.GET_PUBLICATION, input.documentId])
+          appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
           navigate({
             key: 'publication',
             documentId: fromDocument.id,
             versionId: version,
           })
         }
-        appInvalidateQueries([queryKeys.GET_WEB_PUBLICATIONS, input.hostname])
-        appInvalidateQueries([queryKeys.GET_DOC_PUBLICATIONS, input.documentId])
+        appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, input.hostname])
+        appInvalidateQueries([
+          queryKeys.GET_DOC_SITE_PUBLICATIONS,
+          input.documentId,
+        ])
       },
     },
   )
@@ -361,12 +365,12 @@ export function useDocRepublish(
       ...opts,
       onSuccess: (webPubs, input, ctx) => {
         appInvalidateQueries([
-          queryKeys.GET_DOC_PUBLICATIONS,
+          queryKeys.GET_DOC_SITE_PUBLICATIONS,
           input.document?.id,
         ])
         webPubs.forEach((webPub) =>
           appInvalidateQueries([
-            queryKeys.GET_WEB_PUBLICATIONS,
+            queryKeys.GET_SITE_PUBLICATIONS,
             webPub.hostname,
           ]),
         )
@@ -395,7 +399,7 @@ export function useSiteUnpublish() {
     },
     {
       onSuccess: (a, input) => {
-        appInvalidateQueries([queryKeys.GET_WEB_PUBLICATIONS, input.hostname])
+        appInvalidateQueries([queryKeys.GET_SITE_PUBLICATIONS, input.hostname])
       },
     },
   )

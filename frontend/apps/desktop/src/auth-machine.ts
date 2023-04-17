@@ -6,6 +6,7 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import {assign, createMachine, MachineOptions} from 'xstate'
 import {networkingClient} from './api-clients'
 import {fetchDaemonInfo} from './hooks/daemon'
+import {fetchPeerInfo} from './hooks/networking'
 
 type AuthContext = {
   accountInfo: Info | null
@@ -173,21 +174,13 @@ export function createAuthService(client: QueryClient) {
         updateProfile: function updateProfileService(_, event) {
           return accountsClient.updateProfile(event.profile)
         },
-        fetchPeerData: function fetchPeerDataService(context: AuthContext) {
-          return client.fetchQuery<Array<string>>({
-            queryKey: [queryKeys.GET_PEER_ADDRS, context.accountInfo?.deviceId],
-            queryFn: async () => {
-              if (context.accountInfo) {
-                let peerInfo = await networkingClient.getPeerInfo({
-                  deviceId: context.accountInfo.deviceId,
-                })
-
-                return peerInfo.addrs
-              }
-
-              return []
-            },
-          })
+        fetchPeerData: async function fetchPeerDataService(
+          context: AuthContext,
+        ) {
+          const deviceId = context.accountInfo?.deviceId
+          if (!deviceId) return []
+          const info = await fetchPeerInfo(deviceId)
+          return info.addrs
         },
       },
       guards: {
