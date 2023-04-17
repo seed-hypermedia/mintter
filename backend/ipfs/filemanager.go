@@ -3,7 +3,6 @@ package ipfs
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -124,28 +123,27 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
-	encoder := json.NewEncoder(w)
 	if !fm.started {
 		w.WriteHeader(http.StatusServiceUnavailable)
-		_ = encoder.Encode("IPFS node not started")
+		fmt.Fprintf(w, "IPFS node not started")
 		return
 	}
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		_ = encoder.Encode("Only GET method is supported.")
+		fmt.Fprintf(w, "Only GET method is supported.")
 		return
 	}
 	vars := mux.Vars(r)
 	cidStr, ok := vars[routeVar]
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = encoder.Encode("Url format not recognized")
+		fmt.Fprintf(w, "Url format not recognized")
 		return
 	}
 	cid, err := cid.Decode(cidStr)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = encoder.Encode("Wrong provided cid [" + cidStr + "]: " + err.Error())
+		fmt.Fprintf(w, "Wrong provided cid[%s]: %s", cidStr, err.Error())
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), SearchTimeout)
@@ -156,11 +154,11 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, context.DeadlineExceeded) {
 			w.WriteHeader(http.StatusRequestTimeout)
 			fm.log.Debug("Timeout. Could not get the file", zap.String("CID", cid.String()), zap.Error(err))
-			_ = encoder.Encode("Timeout. Could not get the file")
+			fmt.Fprintf(w, "Timeout. Could not get file with provided CID[%s].", cid.String())
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
-			fm.log.Debug("Could not get the file", zap.String("CID", cid.String()), zap.Error(err))
-			_ = encoder.Encode("Could not get the file: " + err.Error())
+			fm.log.Debug("Could not get file", zap.String("CID", cid.String()), zap.Error(err))
+			fmt.Fprintf(w, "Could not get file with provided CID[%s]: %s", cid.String(), err.Error())
 		}
 
 		return
@@ -171,7 +169,7 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fm.log.Debug("Found the node but could not download it", zap.String("CID", cidStr), zap.Error(err))
-		_ = encoder.Encode("Found the node but could not download it: " + err.Error())
+		fmt.Fprintf(w, "Found the node but could not download it: %s", err.Error())
 		return
 	}
 
@@ -180,7 +178,7 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 		if _, err := io.Copy(&buf, f); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fm.log.Debug("Found the node but could not reconstruct the file", zap.String("CID", cidStr), zap.Error(err))
-			_ = encoder.Encode("Found the Node but could not reconstruct the file: " + err.Error())
+			fmt.Fprintf(w, "Found the Node but could not reconstruct the file: %s", err.Error())
 			return
 		}
 	}
@@ -193,18 +191,17 @@ func (fm *FileManager) GetFile(w http.ResponseWriter, r *http.Request) {
 
 // UploadFile uploads a file to ipfs.
 func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
-	encoder := json.NewEncoder(w)
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	w.Header().Set("Access-Control-Allow-Methods", "PUT, POST, OPTIONS")
 	if !fm.started {
 		w.WriteHeader(http.StatusServiceUnavailable)
-		_ = encoder.Encode("IPFS node not started")
+		fmt.Fprintf(w, "IPFS node not started")
 		return
 	}
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		_ = encoder.Encode("Only POST method is supported.")
+		fmt.Fprintf(w, "Only POST method is supported.")
 		return
 	}
 
@@ -212,13 +209,13 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 	// upload of 10 MB files.
 	if err := r.ParseMultipartForm(MaxFileMB << 20); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = encoder.Encode("Parse body error: " + err.Error())
+		fmt.Fprintf(w, "Parse body error: %s", err.Error())
 		return
 	}
 	if len(r.MultipartForm.File) != 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		fm.log.Debug("Only one file supported", zap.Int("Number of files", len(r.MultipartForm.File)))
-		_ = encoder.Encode("Only one file supported, got: " + strconv.FormatInt(int64(len(r.MultipartForm.File)), 10))
+		fmt.Fprintf(w, "Only one file supported, got: %d", len(r.MultipartForm.File))
 		return
 	}
 	fhs := []*multipart.FileHeader{}
@@ -228,14 +225,14 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 	if len(fhs) != 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		fm.log.Debug("Only one file header file supported", zap.Int("Number of headers", len(fhs)))
-		_ = encoder.Encode("Only one file header file supported, got: " + strconv.FormatInt(int64(len(fhs)), 10))
+		fmt.Fprintf(w, "Only one file header file supported, got: %d", len(fhs))
 		return
 	}
 	file, err := fhs[0].Open()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fm.log.Warn("Error Retrieving file", zap.Error(err))
-		_ = encoder.Encode("Error Retrieving file" + err.Error())
+		fm.log.Warn("Error Retrieving file to upload", zap.Error(err))
+		fmt.Fprintf(w, "Error Retrieving file to upload %s", err.Error())
 		return
 	}
 	defer file.Close()
@@ -243,21 +240,21 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fm.log.Warn("Cannot upload file to ipfs", zap.Error(err))
-		_ = encoder.Encode("Cannot upload file to ipfs: " + err.Error())
+		fmt.Fprintf(w, "Cannot upload file to ipfs: %s", err.Error())
 		return
 	}
 	size, err := n.Size()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fm.log.Warn("Cannot calculate size of the uploaded file", zap.Error(err))
-		_ = encoder.Encode("Cannot calculate size of the uploaded file: " + err.Error())
+		fmt.Fprintf(w, "Cannot calculate size of the uploaded file: %s", err.Error())
 		return
 	}
 
 	if err = fm.provider.Provide(n.Cid()); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fm.log.Warn("Failed to provide file", zap.Error(err))
-		_ = encoder.Encode("Failed to provide file: " + err.Error())
+		fmt.Fprintf(w, "Failed to provide file: %s", err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

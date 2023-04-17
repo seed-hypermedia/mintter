@@ -171,6 +171,11 @@ func loadApp(ctx context.Context, cfg config.Config, r *ondisk.OnDisk, grpcOpt .
 	}
 
 	fileManager := ipfs.NewManager(ctx, logging.New("mintter/ipfs", "debug"))
+
+	// We can't use futures in ipfs.NewManager since we will incur in a
+	// cyclic dependency loop between ifps and mttnet packages. This is why
+	// we need a separate Start function to be called when the necessary
+	// resources (bitswap, blockstore, porvider, etc, ...) are available.
 	a.g.Go(func() error {
 		n, err := a.Net.Await(ctx)
 		if err != nil {
@@ -526,6 +531,9 @@ func newNavigationHandler(router *mux.Router) http.Handler {
 	var routes []string
 
 	err := router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		// ipfs get handler takes a param variable (/ipfs/{cid}) This is why
+		// the navbar needs some actual cid to resolve it. Panics otherwise.
+		// only affects to the ipfs GET route
 		u, err := route.URL("cid", "bafkreih7mye6mc5nux7oclgmopmo264plkc3paafivulbeyrzashzc2npy")
 		if err != nil {
 			return err
