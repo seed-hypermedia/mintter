@@ -16,7 +16,7 @@ import {Icon} from '@components/icon'
 import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {useActor, useInterpret} from '@xstate/react'
-import {FormEvent, useMemo} from 'react'
+import {ChangeEvent, FormEvent, useMemo, useState} from 'react'
 import {Editor, Path, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -27,6 +27,7 @@ import {
 } from 'slate-react'
 import {ActorRefFrom, assign} from 'xstate'
 import type {EditorPlugin} from '../types'
+import { Tabs, SizableText, Button as TamaguiButton } from '@mintter/ui'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -199,9 +200,11 @@ function ImageComponent({service, element}: InnerImageProps) {
     </Box>
   )
 }
-
+// {service, onUploadSuccess}: {service: InnerImageProps["service"], onUploadSuccess?: (cid: string) => void}
 function ImageForm({service}: InnerImageProps) {
   const [state, send] = useActor(service)
+  const [tabState, setTabState] = useState("upload")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const selected = useSelected()
   const focused = useFocused()
 
@@ -212,6 +215,128 @@ function ImageForm({service}: InnerImageProps) {
     let value: string = formData.get('url')?.toString() || ''
     send({type: 'IMAGE.SUBMIT', value})
   }
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const fileList = event.target.files
+    if (fileList) {
+      setSelectedFile(fileList[0])
+    }
+    console.log(fileList)
+  }
+
+  const handleUpload = async () => {
+    if (selectedFile) {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      console.log(formData, selectedFile)
+      try {
+        const response = await fetch(
+          'http://localhost:55001/ipfs/file-upload',
+          {
+            method: 'POST',
+            body: formData,
+          },
+        )
+        const data = await response.text()
+        console.log(response, data)
+        // onUploadSuccess?.(data)
+      } catch (error) {
+        console.log('here')
+        console.error(error)
+      }
+    }
+  }
+
+  const ImageDropdown = () => (
+    <Tabs
+      value={tabState}
+      onValueChange={setTabState}
+      orientation="horizontal"
+      flexDirection="column"
+      backgroundColor="white"
+      borderRadius="$0"
+      borderWidth="$0.25"
+      borderColor="black"
+    >
+      <Tabs.List
+        paddingBottom="$1.5"
+        backgroundColor="white"
+      >
+        <Tabs.Tab
+          unstyled
+          value="upload"
+          padding="$5"
+          borderBottomLeftRadius={0}
+          borderBottomRightRadius={0}
+          borderRadius={0}
+          borderBottomColor={tabState == "upload" ? "black" : ""}
+          borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
+        >
+          <SizableText>Upload Image</SizableText>
+        </Tabs.Tab>
+        <Tabs.Tab
+          unstyled
+          value="embed"
+          padding="$5"
+          borderBottomLeftRadius={0}
+          borderBottomRightRadius={0}
+          borderRadius={0}
+          borderBottomColor={tabState == "embed" ? "black" : ""}
+          borderBottomWidth={tabState == "embed" ? "$1" : "$0"}
+        >
+          <SizableText>Embed Link</SizableText>
+        </Tabs.Tab>
+      </Tabs.List>
+
+      <Tabs.Content value="upload">
+        <Box
+          // as="form"
+          css={{
+            width: '$full',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '$4',
+            whiteSpace: 'nowrap',
+          }}
+          // onSubmit={handleUpload}
+        >
+          {/* <Button> */}
+            <input 
+              type="file"
+              onChange={handleFileChange}
+            />
+          {/* </Button> */}
+          {/* <TextField type="file" name="url" placeholder="Upload an image" disabled/> */}
+          <TamaguiButton onPress={handleUpload}>Save</TamaguiButton>
+        </Box>
+      </Tabs.Content>
+      <Tabs.Content value="embed">
+          <Box
+            as="form"
+            css={{
+              width: '$full',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '$4',
+              whiteSpace: 'nowrap',
+            }}
+            onSubmit={submitImage}
+          >
+            <TextField type="url" placeholder="Add an Image URL" name="url" />
+            <Button type="submit">Save</Button>
+            <Button
+              type="button"
+              size="0"
+              variant="ghost"
+              color="muted"
+              onClick={() => send('IMAGE.CANCEL')}
+            >
+              Cancel
+            </Button>
+          </Box>
+      </Tabs.Content>
+    </Tabs>
+  );
 
   return (
     <Box
@@ -243,30 +368,16 @@ function ImageForm({service}: InnerImageProps) {
             justifyContent: 'center',
           }}
         >
-          <Icon name="Image" size="2" />
-        </Box>
-        <Box
-          as="form"
-          css={{
-            width: '$full',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$4',
-            whiteSpace: 'nowrap',
-          }}
-          onSubmit={submitImage}
-        >
-          <TextField type="url" placeholder="Add an Image URL" name="url" />
-          <Button type="submit">Save</Button>
-          <Button
-            type="button"
-            size="0"
-            variant="ghost"
-            color="muted"
-            onClick={() => send('IMAGE.CANCEL')}
-          >
-            Cancel
-          </Button>
+          <Icon name="Image" size="3" />
+          <Box
+            css={{
+              flex: 'none',
+              marginLeft: '$5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >Add an image</Box>
         </Box>
       </Box>
       {state.context.errorMessage ? (
@@ -274,6 +385,7 @@ function ImageForm({service}: InnerImageProps) {
           {state.context.errorMessage}
         </Text>
       ) : null}
+      <ImageDropdown/>
     </Box>
   )
 }
