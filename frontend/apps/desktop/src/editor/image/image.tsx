@@ -10,11 +10,6 @@ import {
   text,
 } from '@mintter/shared'
 import {styled} from '@app/stitches.config'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
-import {TextField} from '@components/text-field'
 import {useActor, useInterpret} from '@xstate/react'
 import {ChangeEvent, FormEvent, useMemo, useState} from 'react'
 import {Editor, Path, Transforms} from 'slate'
@@ -27,7 +22,18 @@ import {
 } from 'slate-react'
 import {ActorRefFrom, assign} from 'xstate'
 import type {EditorPlugin} from '../types'
-import { Tabs, SizableText, Button as TamaguiButton } from '@mintter/ui'
+import {
+  Tabs,
+  SizableText,
+  Button,
+  YStack,
+  Popover,
+  Text,
+  XStack,
+  Input,
+  Form,
+  ImageIcon,
+} from '@mintter/ui'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -74,7 +80,7 @@ function Image({element, attributes, children}: RenderElementProps) {
     //@ts-ignore
     actions: {
       assignValidUrl: (_, event) => {
-        Transforms.setNodes<ImageType>(editor, {url: event.data}, {at: path})
+        Transforms.setNodes<ImageType>(editor, {url: event.value}, {at: path})
       },
       updateCaption: (_, event) => {
         Transforms.setNodes<ImageType>(editor, {alt: event.value}, {at: path})
@@ -85,7 +91,9 @@ function Image({element, attributes, children}: RenderElementProps) {
     },
     services: {
       validateUrlService: (_, event) => {
-        return isValidUrl(event.value)
+        // return isValidUrl(event.value)
+        // TODO: fix this so CIDs can be sotred in the image
+        return 
       },
     },
   })
@@ -93,14 +101,14 @@ function Image({element, attributes, children}: RenderElementProps) {
   const [state] = useActor(imgService)
 
   return (
-    <Box css={{zIndex: '$max'}} {...attributes}>
+    <YStack {...attributes}>
       {children}
       {state.matches('image') ? (
         <ImageComponent service={imgService} element={element as ImageType} />
       ) : (
         <ImageForm service={imgService} element={element as ImageType} />
       )}
-    </Box>
+    </YStack>
   )
 }
 
@@ -117,60 +125,26 @@ function ImageComponent({service, element}: InnerImageProps) {
   const path = useMemo(() => findPath(element), [element])
 
   return (
-    <Box
-      css={{
-        position: 'relative',
-        '&:hover .hover-tools': {
-          opacity: 1,
-          visibility: 'visible',
-          pointerEvents: 'inherit',
-        },
-      }}
-    >
+    <YStack>
       {editor.mode == EditorMode.Draft ? (
-        <Box
-          className="hover-tools"
-          css={{
-            position: 'absolute',
-            top: 0,
-            right: '$3',
-            transition: 'opacity 0.25s ease',
-            zIndex: '$4',
-            opacity: 0,
-            visibility: 'hidden',
-            pointerEvents: 'none',
-          }}
-        >
-          <Button
-            size="1"
-            color="muted"
-            type="submit"
-            onClick={() => send('IMAGE.REPLACE')}
-          >
-            replace
-          </Button>
-        </Box>
+        <Button size="$1" color="muted" onPress={() => send('IMAGE.REPLACE')}>
+          replace
+        </Button>
       ) : null}
       <Img
         css={{
           boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
         }}
-        src={(element as ImageType).url}
+        src={`http://localhost:55001/ipfs/${(element as ImageType).url}`}
       />
       {state.context.captionVisibility ? (
-        <Box css={{marginHorizontal: '-$3', marginTop: '$1'}}>
-          <TextField
-            textarea
-            size={1}
-            rows={1}
-            status="muted"
+        <XStack>
+          <Input
             placeholder="Media Caption"
             value={element.alt}
-            onChange={(e) =>
-              send({type: 'CAPTION.UPDATE', value: e.target.value})
-            }
-            onKeyDown={(event) => {
-              if (event.key == 'Enter') {
+            onChangeText={(val) => send({type: 'CAPTION.UPDATE', value: val})}
+            onKeyPress={(event) => {
+              if (event.nativeEvent.key == 'Enter') {
                 // This will create a new block below the image and focus on it
 
                 event.preventDefault()
@@ -195,15 +169,15 @@ function ImageComponent({service, element}: InnerImageProps) {
               }
             }}
           />
-        </Box>
+        </XStack>
       ) : null}
-    </Box>
+    </YStack>
   )
 }
 // {service, onUploadSuccess}: {service: InnerImageProps["service"], onUploadSuccess?: (cid: string) => void}
 function ImageForm({service}: InnerImageProps) {
   const [state, send] = useActor(service)
-  const [tabState, setTabState] = useState("upload")
+  const [tabState, setTabState] = useState('upload')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const selected = useSelected()
   const focused = useFocused()
@@ -228,7 +202,7 @@ function ImageForm({service}: InnerImageProps) {
     if (selectedFile) {
       const formData = new FormData()
       formData.append('file', selectedFile)
-      console.log(formData, selectedFile)
+
       try {
         const response = await fetch(
           'http://localhost:55001/ipfs/file-upload',
@@ -238,8 +212,7 @@ function ImageForm({service}: InnerImageProps) {
           },
         )
         const data = await response.text()
-        console.log(response, data)
-        // onUploadSuccess?.(data)
+        send({type: 'IMAGE.SUBMIT', value: data})
       } catch (error) {
         console.log('here')
         console.error(error)
@@ -247,70 +220,77 @@ function ImageForm({service}: InnerImageProps) {
     }
   }
 
-  const ImageDropdown = () => (
-    <Tabs
-      value={tabState}
-      onValueChange={setTabState}
-      orientation="horizontal"
-      flexDirection="column"
-      backgroundColor="white"
-      borderRadius="$0"
-      borderWidth="$0.25"
-      borderColor="black"
-    >
-      <Tabs.List
-        paddingBottom="$1.5"
-        backgroundColor="white"
-      >
-        <Tabs.Tab
-          unstyled
-          value="upload"
-          padding="$5"
-          borderBottomLeftRadius={0}
-          borderBottomRightRadius={0}
-          borderRadius={0}
-          borderBottomColor={tabState == "upload" ? "black" : ""}
-          borderBottomWidth={tabState == "upload" ? "$1" : "$0"}
-        >
-          <SizableText>Upload Image</SizableText>
-        </Tabs.Tab>
-        <Tabs.Tab
-          unstyled
-          value="embed"
-          padding="$5"
-          borderBottomLeftRadius={0}
-          borderBottomRightRadius={0}
-          borderRadius={0}
-          borderBottomColor={tabState == "embed" ? "black" : ""}
-          borderBottomWidth={tabState == "embed" ? "$1" : "$0"}
-        >
-          <SizableText>Embed Link</SizableText>
-        </Tabs.Tab>
-      </Tabs.List>
+  return (
+    <YStack contentEditable={false}>
+      <Popover>
+        <Popover.Trigger asChild>
+          <Button
+            icon={ImageIcon}
+            theme="gray"
+            borderRadius={0}
+            size="$5"
+            justifyContent="flex-start"
+          >
+            Add an image
+          </Button>
+        </Popover.Trigger>
+        <Popover.Content top="-30px" padding={0} elevation="$4">
+          <Tabs
+            value={tabState}
+            onValueChange={setTabState}
+            orientation="horizontal"
+            flexDirection="column"
+          >
+            <Tabs.List paddingBottom="$1.5" backgroundColor="white">
+              <Tabs.Tab
+                unstyled
+                value="upload"
+                paddingHorizontal="$4"
+                paddingVertical="$2"
+                borderBottomLeftRadius={0}
+                borderBottomRightRadius={0}
+                borderRadius={0}
+                borderBottomColor={tabState == 'upload' ? 'black' : ''}
+                borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+              >
+                <SizableText size="$2">Upload Image</SizableText>
+              </Tabs.Tab>
+              {/* <Tabs.Tab
+            unstyled
+            value="embed"
+            padding="$5"
+            borderBottomLeftRadius={0}
+            borderBottomRightRadius={0}
+            borderRadius={0}
+            borderBottomColor={tabState == 'embed' ? 'black' : ''}
+            borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
+          >
+            <SizableText>Embed Link</SizableText>
+          </Tabs.Tab> */}
+            </Tabs.List>
 
-      <Tabs.Content value="upload">
-        <Box
-          // as="form"
-          css={{
-            width: '$full',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$4',
-            whiteSpace: 'nowrap',
-          }}
-          // onSubmit={handleUpload}
-        >
-          {/* <Button> */}
-            <input 
-              type="file"
-              onChange={handleFileChange}
-            />
-          {/* </Button> */}
-          {/* <TextField type="file" name="url" placeholder="Upload an image" disabled/> */}
-          <TamaguiButton onPress={handleUpload}>Save</TamaguiButton>
-        </Box>
-      </Tabs.Content>
-      <Tabs.Content value="embed">
+            <Tabs.Content value="upload">
+              <XStack padding="$4" alignItems="center">
+                <XStack
+                  tag="input"
+                  type="file"
+                  flex={1}
+                  onChange={handleFileChange}
+                />
+                <Popover.Close asChild>
+                  <Button
+                    size="$2"
+                    flex={0}
+                    flexShrink={0}
+                    theme="green"
+                    onPress={handleUpload}
+                  >
+                    Save
+                  </Button>
+                </Popover.Close>
+              </XStack>
+            </Tabs.Content>
+            {/* <Tabs.Content value="embed">
           <Box
             as="form"
             css={{
@@ -318,7 +298,6 @@ function ImageForm({service}: InnerImageProps) {
               display: 'flex',
               alignItems: 'center',
               gap: '$4',
-              whiteSpace: 'nowrap',
             }}
             onSubmit={submitImage}
           >
@@ -334,58 +313,140 @@ function ImageForm({service}: InnerImageProps) {
               Cancel
             </Button>
           </Box>
-      </Tabs.Content>
-    </Tabs>
-  );
+        </Tabs.Content> */}
+          </Tabs>
+        </Popover.Content>
+      </Popover>
+    </YStack>
+    // <Box
+    //   css={{
+    //     display: 'flex',
+    //     flexDirection: 'column',
+    //     gap: '$3',
+    //   }}
+    // >
+    //   <Box
+    //     contentEditable={false}
+    //     css={{
+    //       backgroundColor: '$base-component-bg-normal',
+    //       boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
+    //       padding: '$5',
+    //       display: 'flex',
+    //       alignItems: 'center',
+    //       '&:hover': {
+    //         backgroundColor: '$base-component-bg-hover',
+    //       },
+    //     }}
+    //   >
+    //     <Box
+    //       css={{
+    //         flex: 'none',
+    //         marginRight: '$5',
+    //         display: 'flex',
+    //         alignItems: 'center',
+    //         justifyContent: 'center',
+    //       }}
+    //     >
+    //       <Icon name="Image" size="3" />
+    //       <Box
+    //         css={{
+    //           flex: 'none',
+    //           marginLeft: '$5',
+    //           display: 'flex',
+    //           alignItems: 'center',
+    //           justifyContent: 'center',
+    //         }}
+    //       >
+    //         Add an image
+    //       </Box>
+    //     </Box>
+    //   </Box>
+    //   {state.context.errorMessage ? (
+    //     <Text color="danger" size={1} css={{userSelect: 'none'}}>
+    //       {state.context.errorMessage}
+    //     </Text>
+    //   ) : null}
+    //   <Tabs
+    //     value={tabState}
+    //     onValueChange={setTabState}
+    //     orientation="horizontal"
+    //     flexDirection="column"
+    //     backgroundColor="white"
+    //     borderRadius="$0"
+    //     borderWidth="$0.25"
+    //     borderColor="black"
+    //   >
+    //     <Tabs.List paddingBottom="$1.5" backgroundColor="white">
+    //       <Tabs.Tab
+    //         unstyled
+    //         value="upload"
+    //         padding="$5"
+    //         borderBottomLeftRadius={0}
+    //         borderBottomRightRadius={0}
+    //         borderRadius={0}
+    //         borderBottomColor={tabState == 'upload' ? 'black' : ''}
+    //         borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+    //       >
+    //         <SizableText>Upload Image</SizableText>
+    //       </Tabs.Tab>
+    //       {/* <Tabs.Tab
+    //         unstyled
+    //         value="embed"
+    //         padding="$5"
+    //         borderBottomLeftRadius={0}
+    //         borderBottomRightRadius={0}
+    //         borderRadius={0}
+    //         borderBottomColor={tabState == 'embed' ? 'black' : ''}
+    //         borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
+    //       >
+    //         <SizableText>Embed Link</SizableText>
+    //       </Tabs.Tab> */}
+    //     </Tabs.List>
 
-  return (
-    <Box
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$3',
-      }}
-    >
-      <Box
-        contentEditable={false}
-        css={{
-          backgroundColor: '$base-component-bg-normal',
-          boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
-          padding: '$5',
-          display: 'flex',
-          alignItems: 'center',
-          '&:hover': {
-            backgroundColor: '$base-component-bg-hover',
-          },
-        }}
-      >
-        <Box
-          css={{
-            flex: 'none',
-            marginRight: '$5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Icon name="Image" size="3" />
-          <Box
-            css={{
-              flex: 'none',
-              marginLeft: '$5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >Add an image</Box>
-        </Box>
-      </Box>
-      {state.context.errorMessage ? (
-        <Text color="danger" size={1} css={{userSelect: 'none'}}>
-          {state.context.errorMessage}
-        </Text>
-      ) : null}
-      <ImageDropdown/>
-    </Box>
+    //     <Tabs.Content value="upload">
+    //       <Box
+    //         // as="form"
+    //         css={{
+    //           width: '$full',
+    //           display: 'flex',
+    //           alignItems: 'center',
+    //           gap: '$4',
+    //           whiteSpace: 'nowrap',
+    //         }}
+    //         // onSubmit={handleUpload}
+    //       >
+    //         {/* <Button> */}
+    //         <input type="file" onChange={handleFileChange} />
+    //         {/* </Button> */}
+    //         {/* <TextField type="file" name="url" placeholder="Upload an image" disabled/> */}
+    //         <TamaguiButton onPress={handleUpload}>Save</TamaguiButton>
+    //       </Box>
+    //     </Tabs.Content>
+    //     {/* <Tabs.Content value="embed">
+    //       <Box
+    //         as="form"
+    //         css={{
+    //           width: '$full',
+    //           display: 'flex',
+    //           alignItems: 'center',
+    //           gap: '$4',
+    //         }}
+    //         onSubmit={submitImage}
+    //       >
+    //         <TextField type="url" placeholder="Add an Image URL" name="url" />
+    //         <Button type="submit">Save</Button>
+    //         <Button
+    //           type="button"
+    //           size="0"
+    //           variant="ghost"
+    //           color="muted"
+    //           onClick={() => send('IMAGE.CANCEL')}
+    //         >
+    //           Cancel
+    //         </Button>
+    //       </Box>
+    //     </Tabs.Content> */}
+    //   </Tabs>
+    // </Box>
   )
 }

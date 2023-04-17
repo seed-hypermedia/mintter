@@ -47,4 +47,5 @@ export {
   BookOpen as Documentation,
   CheckCircle2 as ReleaseNotes,
   Medal as Acknowledgements,
+  ImagePlus as ImageIcon,
 } from '@tamagui/lucide-icons'

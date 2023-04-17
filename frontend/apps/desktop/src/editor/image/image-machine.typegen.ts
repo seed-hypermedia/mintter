@@ -19,11 +19,10 @@
           services: "validateUrlService";
         };
         eventsCausingActions: {
-          "assignCaptionVisibility": "" | "IMAGE.CANCEL" | "done.invoke.validateUrlService";
+          "assignCaptionVisibility": "" | "IMAGE.CANCEL" | "IMAGE.SUBMIT" | "done.invoke.validateUrlService";
 "assignError": "error.platform.validateUrlService";
-"assignValidUrl": "done.invoke.validateUrlService";
-"clearError": "IMAGE.SUBMIT";
-"enableCaption": "done.invoke.validateUrlService";
+"assignValidUrl": "IMAGE.SUBMIT" | "done.invoke.validateUrlService";
+"enableCaption": "IMAGE.SUBMIT" | "done.invoke.validateUrlService";
 "updateCaption": "CAPTION.UPDATE";
         };
         eventsCausingDelays: {
@@ -33,7 +32,7 @@
           "hasImageUrl": "";
         };
         eventsCausingServices: {
-          "validateUrlService": "IMAGE.SUBMIT";
+          "validateUrlService": never;
         };
         matchesStates: "checking" | "edit" | "edit.new" | "edit.update" | "image" | "submitting" | { "edit"?: "new" | "update"; };
         tags: never;
