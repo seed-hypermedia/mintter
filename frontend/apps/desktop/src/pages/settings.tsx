@@ -3,7 +3,7 @@ import {createAuthService} from '@app/auth-machine'
 import {Box} from '@app/components/box'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
-import {useAccount} from '@app/hooks/accounts'
+import {useAccount, useMyAccount, useSetProfile} from '@app/hooks/accounts'
 import {useDaemonInfo} from '@app/hooks/daemon'
 import {usePeerInfo} from '@app/hooks/networking'
 import {
@@ -54,21 +54,11 @@ import {
   YStack,
 } from '@mintter/ui'
 import {styled} from '@stitches/react'
-import {useQueryClient} from '@tanstack/react-query'
-import {useActor, useInterpret, useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ChangeEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
-import {InterpreterFrom} from 'xstate'
 
-export default function Settings({
-  updateProfile = accountsClient.updateProfile,
-}: {
-  updateProfile?: typeof accountsClient.updateProfile
-}) {
-  const client = useQueryClient()
-  const auth = useInterpret(() => createAuthService(client))
-
+export default function Settings({}: {}) {
   return (
     <Tabs
       flex={1}
@@ -103,144 +93,126 @@ export default function Settings({
       </Tabs.List>
       <Separator vertical />
       <TabsContent value="account">
-        <ProfileForm service={auth} updateProfile={updateProfile} />
-        <DevicesInfo service={auth} />
+        <ProfileInfo />
+        <DevicesInfo />
       </TabsContent>
       <TabsContent value="settings" data-tauri-drag-region>
         <AppSettings />
       </TabsContent>
       <TabsContent value="sites" data-tauri-drag-region>
-        <SitesSettings auth={auth} />
+        <SitesSettings />
       </TabsContent>
     </Tabs>
   )
 }
 
-type SettingsTabProps = {
-  service: InterpreterFrom<ReturnType<typeof createAuthService>>
-  updateProfile?: typeof accountsClient.updateProfile
+function ProfileForm({
+  profile,
+  accountId,
+}: {
+  profile: Profile
+  accountId: string
+}) {
+  const setProfile = useSetProfile()
+  const [alias, setAlias] = useState(profile.alias)
+  const [bio, setBio] = useState(profile.bio)
+  function onCopy() {
+    copyTextToClipboard(accountId)
+    toast.success('Account ID copied!')
+  }
+
+  return (
+    <XStack gap="$4">
+      <YStack flex={0} alignItems="center" flexGrow={0}>
+        <AvatarForm
+          url={
+            profile?.avatar
+              ? `http://localhost:55001/ipfs/${profile.avatar}`
+              : undefined
+          }
+        />
+      </YStack>
+      <YStack flex={1}>
+        <YStack>
+          <Label size="$3" htmlFor="accountid">
+            Account Id
+          </Label>
+          <XGroup>
+            <XGroup.Item>
+              <Input
+                size="$3"
+                id="accountid"
+                userSelect="none"
+                disabled
+                value={accountId}
+                data-testid="account-id"
+                flex={1}
+                hoverStyle={{
+                  cursor: 'default',
+                }}
+              />
+            </XGroup.Item>
+            <XGroup.Item>
+              <Tooltip placement="top-end">
+                <Tooltip.Trigger>
+                  <Button size="$3" icon={Copy} onPress={onCopy} />
+                </Tooltip.Trigger>
+                <Tooltip.Content
+                  margin={0}
+                  padding={0}
+                  paddingHorizontal="$2"
+                  theme="inverse"
+                >
+                  <Tooltip.Arrow />
+                  <SizableText margin={0} padding={0} size="$1">
+                    Copy your account id
+                  </SizableText>
+                </Tooltip.Content>
+              </Tooltip>
+            </XGroup.Item>
+          </XGroup>
+        </YStack>
+        <Form
+          onSubmit={() => {
+            setProfile.mutate(new Profile({...profile, alias, bio}))
+          }}
+        >
+          <Label htmlFor="alias">Alias</Label>
+          <Input id="alias" value={alias} onChangeText={setAlias} />
+          <Label htmlFor="bio">Bio</Label>
+          <TextArea
+            id="bio"
+            value={bio}
+            onChangeText={setBio}
+            placeholder="A little bit about yourself..."
+          />
+
+          <XStack gap="$4" alignItems="center" paddingTop="$3">
+            <Form.Trigger asChild>
+              <Button disabled={setProfile.isLoading}>Save</Button>
+            </Form.Trigger>
+            {setProfile.data && (
+              <Text size="3" color="success">
+                update success!
+              </Text>
+            )}
+          </XStack>
+        </Form>
+      </YStack>
+    </XStack>
+  )
 }
 
-export function ProfileForm({service, updateProfile}: SettingsTabProps) {
-  let [state, send] = useActor(service)
-  let [alias, setAlias] = useState('')
-  let [bio, setBio] = useState('')
-  let [avatar, setAvatar] = useState('')
+export function ProfileInfo() {
+  const account = useMyAccount()
+  const profile = account.data?.profile
+  const accountId = account.data?.id
 
-  async function onSubmit() {
-    let profile = new Profile({alias, bio, avatar})
-    send({type: 'ACCOUNT.UPDATE.PROFILE', profile})
-  }
-
-  let isPending = useSelector(service, (state) =>
-    state.matches('loggedIn.updating'),
-  )
-  let onSuccess = useSelector(service, (state) =>
-    state.matches('loggedIn.onSuccess'),
-  )
-
-  function onCopy() {
-    if (state.context?.account?.id) {
-      copyTextToClipboard(state.context.account.id)
-      toast.success('Account ID copied!')
-    }
-  }
-
-  function handleUpdateAvatar(cid: string) {
-    let profile = new Profile({alias, bio, avatar: cid})
-    setAvatar(cid)
-    send({type: 'ACCOUNT.UPDATE.PROFILE', profile})
-  }
-
-  useEffect(() => {
-    if (state.context.account?.profile && state.matches('loggedIn')) {
-      setBio(state.context.account?.profile?.bio)
-      setAlias(state.context.account?.profile?.alias)
-      setAvatar(state.context.account.profile.avatar)
-    }
-  }, [state.context])
-
-  if (state.context.account?.profile && state.matches('loggedIn')) {
+  if (profile && accountId) {
     return (
       <>
         <Heading>Profile information</Heading>
-        <XStack gap="$4">
-          <YStack flex={0} alignItems="center" flexGrow={0}>
-            <AvatarForm
-              service={service}
-              onUploadSuccess={handleUpdateAvatar}
-              url={avatar ? `http://localhost:55001/ipfs/${avatar}` : undefined}
-            />
-          </YStack>
-          <YStack flex={1}>
-            <YStack>
-              <Label size="$3" htmlFor="accountid">
-                Account Id
-              </Label>
-              <XGroup>
-                <XGroup.Item>
-                  <Input
-                    size="$3"
-                    id="accountid"
-                    userSelect="none"
-                    disabled
-                    value={state.context.account.id}
-                    data-testid="account-id"
-                    flex={1}
-                    hoverStyle={{
-                      cursor: 'default',
-                    }}
-                  />
-                </XGroup.Item>
-                <XGroup.Item>
-                  <Tooltip placement="top-end">
-                    <Tooltip.Trigger>
-                      <Button size="$3" icon={Copy} onPress={onCopy} />
-                    </Tooltip.Trigger>
-                    <Tooltip.Content
-                      margin={0}
-                      padding={0}
-                      paddingHorizontal="$2"
-                      theme="inverse"
-                    >
-                      <Tooltip.Arrow />
-                      <SizableText margin={0} padding={0} size="$1">
-                        Copy your account id
-                      </SizableText>
-                    </Tooltip.Content>
-                  </Tooltip>
-                </XGroup.Item>
-              </XGroup>
-            </YStack>
-            <Form onSubmit={() => onSubmit()}>
-              <Label htmlFor="alias">Alias</Label>
-              <Input
-                id="alias"
-                defaultValue={alias}
-                onChangeText={(val) => setAlias(val)}
-                data-testid="input-alias"
-              />
-              <Label htmlFor="bio">Bio</Label>
-              <TextArea
-                defaultValue={bio}
-                onChangeText={(val) => setBio(val)}
-                id="bio"
-                placeholder="A little bit about yourself..."
-              />
-
-              <XStack gap="$4" alignItems="center" paddingTop="$3">
-                <Form.Trigger asChild>
-                  <Button disabled={isPending}>Save</Button>
-                </Form.Trigger>
-                {onSuccess && (
-                  <Text size="3" color="success">
-                    update success!
-                  </Text>
-                )}
-              </XStack>
-            </Form>
-          </YStack>
-        </XStack>
+        <ProfileForm profile={profile} accountId={accountId} />
       </>
     )
   }
@@ -248,24 +220,10 @@ export function ProfileForm({service, updateProfile}: SettingsTabProps) {
   return null
 }
 
-function AvatarForm({
-  service,
-  onUploadSuccess,
-  url,
-}: {
-  service: InterpreterFrom<ReturnType<typeof createAuthService>>
-  onUploadSuccess?: (cid: string) => void
-  url?: string
-}) {
+function AvatarForm({url}: {url?: string}) {
+  const setProfile = useSetProfile()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const alias = useSelector(
-    service,
-    (state) => state.context.account?.profile?.alias || '',
-  )
-  const accountId = useSelector(
-    service,
-    (state) => state.context.account?.id || '',
-  )
+  const account = useMyAccount()
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files
     if (fileList) {
@@ -286,7 +244,9 @@ function AvatarForm({
           },
         )
         const data = await response.text()
-        onUploadSuccess?.(data)
+        setProfile.mutate({
+          avatar: data,
+        })
       } catch (error) {
         console.error(error)
       }
@@ -296,8 +256,8 @@ function AvatarForm({
   return (
     <Dialog modal>
       <Avatar
-        alias={alias}
-        accountId={accountId}
+        alias={account.data?.profile?.alias || ''}
+        accountId={account.data?.id}
         size="$12"
         url={url}
         color="$blue12"
@@ -358,16 +318,9 @@ function AvatarForm({
   )
 }
 
-function DevicesInfo({
-  service,
-}: {
-  service: InterpreterFrom<ReturnType<typeof createAuthService>>
-}) {
-  const devices = useSelector(
-    service,
-    (state) => state.context.account?.devices || {},
-  )
-
+function DevicesInfo({}: {}) {
+  const account = useMyAccount()
+  const devices = account.data?.devices
   return (
     <YStack data-testid="account-device-list" gap="$3">
       <Heading>Devices</Heading>
@@ -893,14 +846,9 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
 }
 
 const NewSitePage = Symbol('NewSitePage')
-function SitesSettings({
-  auth,
-}: {
-  auth: InterpreterFrom<ReturnType<typeof createAuthService>>
-}) {
-  let account = useSelector(auth, (state) => state.context.account)
-  let [state] = useActor(auth)
-  const accountId = state.matches('loggedIn') ? account?.id : undefined
+function SitesSettings({}: {}) {
+  const daemonInfo = useDaemonInfo()
+  const accountId = daemonInfo.data?.accountId
   const [activeSitePage, setActiveSitePage] = useState<
     string | typeof NewSitePage | null
   >(null)
