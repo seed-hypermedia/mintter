@@ -25,7 +25,7 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
-    console.log(`🔃 to ${req.method.name} `, req.message, result.message)
+    console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
   } catch (e) {
     console.error(`🚨 to ${req.method.name} `, req.message, e)
