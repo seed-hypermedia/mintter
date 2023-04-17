@@ -1,16 +1,16 @@
-import {useAccountPublicationList} from '@app/hooks/changes'
-import {useAccountWithDevices} from '@app/hooks/contacts'
-import {useNavRoute} from '@app/utils/navigation'
-import {Box} from '@components/box'
+import { useAccountPublicationList } from '@app/hooks/changes'
+import { useAccountWithDevices } from '@app/hooks/contacts'
+import { useNavRoute } from '@app/utils/navigation'
+import { Box } from '@components/box'
 import Footer from '@components/footer'
-import {Heading} from '@components/heading'
-import {OnlineIndicator} from '@components/indicator'
-import {PublicationListItem} from '@components/publication-list-item'
-import {Text} from '@components/text'
-import {ComponentProps, ReactNode} from 'react'
-import {Container, MainWrapper, UIAvatar} from '@mintter/ui'
-import {PageProps} from './base'
-import {Avatar} from '@components/avatar'
+import { Heading } from '@components/heading'
+import { OnlineIndicator } from '@components/indicator'
+import { PublicationListItem } from '@components/publication-list-item'
+import { Text } from '@components/text'
+import { ComponentProps, ReactNode } from 'react'
+import { Container, MainWrapper, UIAvatar } from '@mintter/ui'
+import { PageProps } from './base'
+import { Avatar } from '@components/avatar'
 
 function DeviceRow({
   isOnline,
@@ -20,9 +20,9 @@ function DeviceRow({
   deviceId: string
 }) {
   return (
-    <Box css={{display: 'flex', alignItems: 'center'}}>
+    <Box css={{ display: 'flex', alignItems: 'center' }}>
       <OnlineIndicator online={isOnline} />
-      <Text fontWeight={'bold'} css={{marginInline: '$3'}}>
+      <Text fontWeight={'bold'} css={{ marginInline: '$3' }}>
         {deviceId}
       </Text>
     </Box>
@@ -49,7 +49,7 @@ function Section({
   )
 }
 
-function AccountDocuments({accountId}: {accountId: string}) {
+function AccountDocuments({ accountId }: { accountId: string }) {
   const list = useAccountPublicationList(accountId)
   return (
     <Section>
@@ -75,7 +75,7 @@ export default function AccountPage(props: PageProps) {
     <>
       <MainWrapper>
         <Container>
-          <Section css={{display: 'flex', gap: '$4', alignItems: 'center'}}>
+          <Section css={{ display: 'flex', gap: '$4', alignItems: 'center' }}>
             <Avatar
               accountId={accountId}
               size="$6"
@@ -88,9 +88,6 @@ export default function AccountPage(props: PageProps) {
               <span>{account.profile?.bio}</span>
             </Section>
           )}
-          {account.profile?.email ? (
-            <span>Email: {account.profile?.email}</span>
-          ) : null}
           <Section>
             <Text fontWeight={'bold'}>Devices</Text>
             {account.devices.map((device) => {
