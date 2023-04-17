@@ -278,23 +278,19 @@ export function useSitePublish() {
       }
 
       if (document.publisher === publisherId) {
-        console.log('000 - doc publisher is correct')
         // continue if the publisher is already correct for this version
         await performWebPublish(document, hostname, path, version)
         return {version, fromDocument: document, fromVersion: version}
       }
-      console.log('000 -1 doc publisher setting to ' + publisherId)
       // we need to create a new version with the correct publisher id
       if (version !== localPub.version) {
         throw new Error(
           'You can only publish the latest version of a document, because we need to write the publisher field, and drafts cannot be created on old versions yet.',
         )
       }
-      console.log('000 -2  creating draft')
       const draft = await draftsClient.createDraft({
         existingDocumentId: documentId,
       })
-      console.log('000 -3  updating draft')
       await draftsClient.updateDraftV2({
         documentId: draft.id,
         changes: [
@@ -303,11 +299,9 @@ export function useSitePublish() {
           }),
         ],
       })
-      console.log('000 -4  publishing draft')
       const newPub = await draftsClient.publishDraft({
         documentId: draft.id,
       })
-      console.log('000 -5  webpub')
       await performWebPublish(document, hostname, path, newPub.version)
       return {
         version: newPub.version,
@@ -318,6 +312,11 @@ export function useSitePublish() {
     {
       onSuccess: ({version, fromDocument, fromVersion}, input) => {
         if (version !== fromVersion) {
+          appInvalidateQueries([
+            queryKeys.PUBLICATION_CHANGES,
+            input.documentId,
+          ])
+          appInvalidateQueries([queryKeys.GET_PUBLICATION, input.documentId])
           navigate({
             key: 'publication',
             documentId: fromDocument.id,
