@@ -45,6 +45,7 @@ import {
   Separator,
   SizableText,
   Spinner,
+  Stack,
   Tabs,
   TabsContentProps,
   TextArea,
@@ -54,9 +55,35 @@ import {
   YStack,
 } from '@mintter/ui'
 import {styled} from '@stitches/react'
+import {listen} from '@tauri-apps/api/event'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {ChangeEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
+
+function SimpleTooltip({
+  children,
+  content,
+}: {
+  children: React.ReactNode
+  content: React.ReactNode | string
+}) {
+  return (
+    <Tooltip placement="top-end">
+      <Tooltip.Trigger>{children}</Tooltip.Trigger>
+      <Tooltip.Content
+        margin={0}
+        padding={0}
+        paddingHorizontal="$2"
+        theme="inverse"
+      >
+        <Tooltip.Arrow />
+        <SizableText margin={0} padding={0} size="$1">
+          {content}
+        </SizableText>
+      </Tooltip.Content>
+    </Tooltip>
+  )
+}
 
 export default function Settings({}: {}) {
   return (
@@ -222,99 +249,64 @@ export function ProfileInfo() {
 
 function AvatarForm({url}: {url?: string}) {
   const setProfile = useSetProfile()
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const account = useMyAccount()
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files
-    if (fileList) {
-      setSelectedFile(fileList[0])
-    }
+    const file = fileList?.[0]
+    if (!file) return
+    handleUpload(file)
+      .then(() => {
+        toast.success('Avatar changed')
+      })
+      .catch((e) => {
+        console.error(e)
+        toast.error('Failed to upload avatar')
+      })
+      .finally(() => {
+        event.target.value = ''
+      })
   }
 
-  const handleUpload = async () => {
-    if (selectedFile) {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      try {
-        const response = await fetch(
-          'http://localhost:55001/ipfs/file-upload',
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
-        const data = await response.text()
-        setProfile.mutate({
-          avatar: data,
-        })
-      } catch (error) {
-        console.error(error)
-      }
-    }
+  const handleUpload = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await fetch('http://localhost:55001/ipfs/file-upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const data = await response.text()
+    await setProfile.mutateAsync({
+      avatar: data,
+    })
   }
 
   return (
-    <Dialog modal>
-      <Avatar
-        alias={account.data?.profile?.alias || ''}
-        accountId={account.data?.id}
-        size="$12"
-        url={url}
-        color="$blue12"
-      />
-      <Dialog.Trigger asChild>
-        <Button
-          size="$12"
-          userSelect="auto"
-          backgrounded
-          circular
-          icon={Camera}
-          {...{
+    <SimpleTooltip content="Click or Drag to Set Avatar Image">
+      <Stack hoverStyle={{opacity: 0.7}}>
+        <input
+          type="file"
+          onChange={handleFileChange}
+          style={{
             opacity: 0,
+            display: 'flex',
             position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
             zIndex: 100,
-            alignSelf: 'center',
-            justifyContent: 'center',
-          }}
-          hoverTheme
-          hoverStyle={{
-            opacity: 0.6,
+            cursor: 'pointer',
           }}
         />
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          backgroundColor="$background"
-          animation="quick"
-          opacity={0.5}
-          enterStyle={{opacity: 0}}
-          exitStyle={{opacity: 0}}
+        <Avatar
+          alias={account.data?.profile?.alias || ''}
+          accountId={account.data?.id}
+          size="$12"
+          url={url}
+          color="$blue12"
         />
-        <Dialog.Content
-          backgroundColor="$blue12"
-          theme="blue"
-          bordered
-          key="content"
-          animation={[
-            'quick',
-            {
-              opacity: {
-                overshootClamping: true,
-              },
-            },
-          ]}
-          enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
-          exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
-          space
-        >
-          <Dialog.Title>Upload Avatar</Dialog.Title>
-          <input type="file" onChange={handleFileChange} />
-          <Dialog.Close asChild>
-            <Button onPress={handleUpload}>Send</Button>
-          </Dialog.Close>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+      </Stack>
+    </SimpleTooltip>
   )
 }
 

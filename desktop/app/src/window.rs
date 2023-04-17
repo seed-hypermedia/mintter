@@ -50,6 +50,7 @@ async fn open(window: Window, path: &str) -> Result<()> {
 
   let win = WindowBuilder::new(&window, label, WindowUrl::App(path.into()))
     .title("Mintter")
+    .disable_file_drop_handler()
     .inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
     .min_inner_size(DEFAULT_MIN_WINDOW_WIDTH, DEFAULT_MIN_WINDOW_HEIGHT);
 
@@ -76,6 +77,7 @@ pub fn new_window<R: Runtime>(window: Window<R>) -> Result<()> {
 
   let win = WindowBuilder::new(&window, label, WindowUrl::App("index.html".into()))
     .title("Mintter")
+    .disable_file_drop_handler()
     .inner_size(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
     .min_inner_size(DEFAULT_MIN_WINDOW_WIDTH, DEFAULT_MIN_WINDOW_HEIGHT);
 
