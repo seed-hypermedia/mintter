@@ -23,7 +23,7 @@ func TestGetAccount_Own(t *testing.T) {
 		Profile: &accounts.Profile{},
 		Devices: map[string]*accounts.Device{
 			"bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh": {
-				PeerId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",
+				DeviceId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",
 			},
 		},
 	}
@@ -46,7 +46,7 @@ func TestAPIUpdateProfile(t *testing.T) {
 		},
 		Devices: map[string]*accounts.Device{
 			"bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh": {
-				PeerId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",
+				DeviceId: "bafzaajaiaejcausbh36twxwxyoqefku3m44kt5zgsdk6huhrng5izfjl3kiukmuh",
 			},
 		},
 	}
