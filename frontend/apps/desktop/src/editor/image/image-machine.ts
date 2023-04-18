@@ -74,13 +74,7 @@ export const imageMachine = createMachine(
         on: {
           'IMAGE.SUBMIT': {
             target: 'image',
-            actions: [
-              (c, e) => {
-                console.log('IMAGE SUCESS!!!', c, e)
-              },
-              'assignValidUrl',
-              'enableCaption',
-            ],
+            actions: ['assignValidUrl', 'enableCaption'],
           },
         },
       },
@@ -91,22 +85,11 @@ export const imageMachine = createMachine(
           id: 'validateUrlService',
           onDone: {
             target: 'image',
-            actions: [
-              (c, e) => {
-                console.log('IMAGE SUCESS!!!', c, e)
-              },
-              'assignValidUrl',
-              'enableCaption',
-            ],
+            actions: ['assignValidUrl', 'enableCaption'],
           },
           onError: {
             target: 'edit.update',
-            actions: [
-              (c, e) => {
-                console.log('IMAGE ERROR!!!', c, e)
-              },
-              'assignError',
-            ],
+            actions: ['assignError'],
           },
         },
       },

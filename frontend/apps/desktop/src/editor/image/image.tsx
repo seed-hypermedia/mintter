@@ -34,6 +34,7 @@ import {
   Form,
   ImageIcon,
   Label,
+  TextArea,
 } from '@mintter/ui'
 
 export const ELEMENT_IMAGE = 'image'
@@ -139,10 +140,11 @@ function ImageComponent({service, element}: InnerImageProps) {
         <Button
           theme='gray'
           position='absolute'
-          top='$0.5'
+          top='$1.5'
           right='$1.5'
           zIndex='$4'
           size="$1"
+          width={60}
           color="muted"
           onPress={() => send('IMAGE.REPLACE')}
         >
@@ -157,13 +159,18 @@ function ImageComponent({service, element}: InnerImageProps) {
       />
       {state.context.captionVisibility ? (
         <XStack>
-          <Input
-            unstyled
-            size='$2'
-            multiline={false}
-            // backgroundColor='white'
-            // borderColor={'white'}
+          <TextArea
+            size='$3'
+            multiline={true}
+            width='100%'
             placeholder="Media Caption"
+            wordWrap='break-word'
+            placeholderTextColor='grey'
+            borderWidth="$0"
+            focusStyle={{
+              outlineWidth:"$0",
+            }}
+            backgroundColor="var(--base-background-normal)"
             value={element.alt}
             onChangeText={(val) => send({type: 'CAPTION.UPDATE', value: val})}
             onKeyPress={(event) => {
@@ -218,7 +225,6 @@ function ImageForm({service}: InnerImageProps) {
     if (fileList) {
       setSelectedFile(fileList[0])
     }
-    console.log(fileList)
   }
 
   const handleUpload = async () => {
