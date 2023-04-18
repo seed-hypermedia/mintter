@@ -1,5 +1,9 @@
 import {useAccount} from '@app/models/accounts'
-import {useDocChanges} from '@app/models/changes'
+import {
+  SmartChangeInfo,
+  useDocChanges,
+  useSmartChanges,
+} from '@app/models/changes'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
@@ -15,7 +19,7 @@ function ChangeItem({
   activeVersion,
   active,
 }: {
-  change: ChangeInfo
+  change: SmartChangeInfo
   docId: string
   activeVersion?: string
   active?: boolean
@@ -87,6 +91,17 @@ function ChangeItem({
           {change.createTime ? formattedDate(change.createTime) : null}
         </Text>
       </Box>
+
+      {/* {change.webPubs.map((pub) => (
+        <Text size="2" color="muted" key={pub.hostname}>
+          PUBLISHED on {pub.hostname}
+        </Text>
+      ))}
+      {change.summary.map((summaryText) => (
+        <Text size="2" color="muted" key={summaryText}>
+          {summaryText}
+        </Text>
+      ))} */}
       <Text
         size="1"
         color={
@@ -109,15 +124,15 @@ export function ChangesList() {
   const route = useNavRoute()
   const version = route.key === 'publication' ? route.versionId : undefined
   const docId = route.key === 'publication' ? route.documentId : undefined
-  const {data: changes} = useDocChanges(docId)
+  const {data} = useSmartChanges(docId)
   if (!docId) return null
-  const count = changes?.changes?.length || 0
+  const count = data?.changes?.length || 0
   return (
     <>
       <PanelTitle>
         {count} Doc Version{pluralS(count)}
       </PanelTitle>
-      {changes?.changes.map((change) => (
+      {data?.changes?.map((change) => (
         <ChangeItem
           docId={docId}
           key={change.id}
