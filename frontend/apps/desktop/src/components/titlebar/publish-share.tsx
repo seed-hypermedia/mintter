@@ -213,18 +213,18 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
       isSaving.current = false
 
       const state = mainActor.actor.getSnapshot()
-      setPublisherId(state?.context.publication?.document.publisher || null)
+      setPublisherId(state?.context.publication?.document.webUrl || null)
 
       const sub = mainActor.actor.subscribe((state) => {
-        setPublisherId(state?.context.publication?.document.publisher || null)
+        setPublisherId(state?.context.publication?.document.webUrl || null)
       })
       return sub.unsubscribe
     } else {
       const state = mainActor.actor.getSnapshot()
-      setPublisherId(state?.context.draft?.publisher || null)
+      setPublisherId(state?.context.draft?.webUrl || null)
 
       const sub = mainActor.actor.subscribe((state) => {
-        setPublisherId(state?.context.draft?.publisher || null)
+        setPublisherId(state?.context.draft?.webUrl || null)
 
         if (state.matches('editing.saving')) {
           // console.log('subscribe change TRUE!', state.value)
