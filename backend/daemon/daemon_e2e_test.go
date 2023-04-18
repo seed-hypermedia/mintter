@@ -69,9 +69,9 @@ func TestDaemonSmoke(t *testing.T) {
 	require.Equal(t, 1, len(acc.Devices), "must return our own device after registration")
 
 	profileUpdate := &accounts.Profile{
-		Alias: "fulanito",
-		Bio:   "Mintter Tester",
-		Email: "fulanito@example.com",
+		Alias:  "fulanito",
+		Bio:    "Mintter Tester",
+		Avatar: "bafkreibaejvf3wyblh3s4yhbrwtxto7wpcac7zkkx36cswjzjez2cbmzvu",
 	}
 
 	updatedAcc, err := ac.UpdateProfile(ctx, profileUpdate)
@@ -88,10 +88,10 @@ func TestDaemonSmoke(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, infoResp)
 	require.NotEqual(t, "", infoResp.AccountId)
-	require.NotEqual(t, "", infoResp.PeerId)
+	require.NotEqual(t, "", infoResp.DeviceId)
 
 	peerInfo, err := nc.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
-		PeerId: infoResp.PeerId,
+		DeviceId: infoResp.DeviceId,
 	})
 	require.NoError(t, err)
 	require.NotNil(t, peerInfo)
@@ -702,9 +702,9 @@ func makeTestApp(t *testing.T, name string, cfg config.Config, register bool) *A
 		require.NoError(t, err)
 
 		prof := &accounts.Profile{
-			Alias: name,
-			Bio:   name + " bio",
-			Email: name + "@example.com",
+			Alias:  name,
+			Bio:    name + " bio",
+			Avatar: name + "@example.com",
 		}
 		acc, err := app.RPC.Accounts.UpdateProfile(ctx, prof)
 		require.NoError(t, err)

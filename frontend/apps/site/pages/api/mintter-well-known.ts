@@ -7,7 +7,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const info = await daemonClient.getInfo({})
-  const peerInfo = await networkingClient.getPeerInfo({peerId: info.peerId})
+  const peerInfo = await networkingClient.getPeerInfo({deviceId: info.deviceId})
   const wellKnown = {
     account_id: info.accountId,
     addresses: peerInfo.addrs,

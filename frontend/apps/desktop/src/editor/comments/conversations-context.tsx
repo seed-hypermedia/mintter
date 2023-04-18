@@ -1,6 +1,7 @@
 import {commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
-import {queryKeys} from '@app/hooks/query-keys'
+import {useDocConversations} from '@app/models/comments'
+import {queryKeys} from '@app/models/query-keys'
 import {ClientPublication} from '@app/publication-machine'
 import {
   Annotation,
@@ -67,17 +68,7 @@ export function RealConversationsProvider({
   publication: ClientPublication | null
   isOpen: boolean
 }>) {
-  let queryResult = useQuery({
-    queryFn: async () => {
-      let res = await commentsClient.listConversations({
-        documentId,
-      })
-      return res.conversations
-    },
-
-    queryKey: [queryKeys.GET_PUBLICATION_CONVERSATIONS, documentId],
-    enabled: !!documentId,
-  })
+  let queryResult = useDocConversations(documentId)
 
   let [highlights, setHighlights] = useState<Array<string>>([])
 

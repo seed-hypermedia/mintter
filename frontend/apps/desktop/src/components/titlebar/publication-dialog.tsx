@@ -1,5 +1,5 @@
-import {MainActor} from '@app/hooks/main-actor'
-import {useSitePublish} from '@app/hooks/sites'
+import {MainActor} from '@app/models/main-actor'
+import {useSitePublish} from '@app/models/sites'
 import {PublicationActor} from '@app/publication-machine'
 import {styled} from '@app/stitches.config'
 import {Button} from '@components/button'

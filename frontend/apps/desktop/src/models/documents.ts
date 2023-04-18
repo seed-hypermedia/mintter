@@ -7,6 +7,7 @@ import {
   MutationOptions,
   QueryClient,
   useMutation,
+  useQueries,
   useQuery,
   UseQueryOptions,
 } from '@tanstack/react-query'
@@ -93,11 +94,12 @@ export function useDraft(documentId?: string) {
 }
 
 function queryPublication(
-  documentId: string,
+  documentId?: string,
   versionId?: string,
 ): UseQueryOptions<Publication> | FetchQueryOptions<Publication> {
   return {
     queryKey: [queryKeys.GET_PUBLICATION, documentId, versionId],
+    enabled: !!documentId,
     queryFn: () =>
       publicationsClient.getPublication({
         documentId,
@@ -115,6 +117,15 @@ export function prefetchPublication(documentId: string, versionId?: string) {
 
 export function fetchPublication(documentId: string, versionId?: string) {
   return appQueryClient.fetchQuery(queryPublication(documentId, versionId))
+}
+
+export function useDocumentVersions(
+  documentId: string | undefined,
+  versions: string[],
+) {
+  return useQueries({
+    queries: versions.map((version) => queryPublication(documentId, version)),
+  })
 }
 
 export function prefetchDraft(client: QueryClient, draft: Document) {

@@ -1,4 +1,4 @@
-import OnboardingPage from '@app/pages/onboarding'
+import OnboardingPage from '@app/pages/onboarding/index'
 import {ConnectionStatus, Info, PeerInfo} from '@mintter/shared'
 import {
   createContext,
@@ -8,8 +8,8 @@ import {
   useMemo,
   useState,
 } from 'react'
-import {useDaemonInfo} from './hooks/daemon'
-import {usePeerInfo} from './hooks/networking'
+import {useDaemonInfo} from './models/daemon'
+import {usePeerInfo} from './models/networking'
 
 type PeerInfoValue = {
   addrs: Array<string>
@@ -33,7 +33,7 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
   let [netStatus, setNetStatus] = useState<'online' | 'offline'>('online')
   let infoQuery = useDaemonInfo()
 
-  let peerInfoQuery = usePeerInfo(infoQuery.data?.peerId)
+  let peerInfoQuery = usePeerInfo(infoQuery.data?.deviceId)
 
   useEffect(() => {
     function handleOnline() {

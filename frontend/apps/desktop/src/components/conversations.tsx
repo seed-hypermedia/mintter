@@ -1,7 +1,7 @@
 import {changesClient, commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
 import {useConversations} from '@app/editor/comments/conversations-context'
-import {useAccount} from '@app/hooks/accounts'
+import {useAccount} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'

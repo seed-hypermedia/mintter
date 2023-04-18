@@ -1,5 +1,5 @@
 import {draftsClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {appInvalidateQueries} from '@app/query-client'
 import {Buffer} from 'buffer'
 import {
@@ -21,11 +21,20 @@ export type AccountRoute = {key: 'account'; accountId: string}
 export type SitesRoute = {key: 'sites'}
 export type SiteRoute = {key: 'site'; hostname: string}
 
+type PublicationVersionsAccessory = {key: 'versions'}
+type PublicationCitationsAccessory = {key: 'citations'}
+type PublicationCommentsAccessory = {key: 'comments'}
+
 export type PublicationRoute = {
   key: 'publication'
   documentId: string
   versionId?: string
   blockId?: string
+  accessory?:
+    | null
+    | PublicationVersionsAccessory
+    | PublicationCitationsAccessory
+    | PublicationCommentsAccessory
 }
 export type DraftsRoute = {key: 'drafts'}
 export type DraftRoute = {key: 'draft'; documentId: string}

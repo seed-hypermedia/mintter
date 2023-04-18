@@ -35,7 +35,18 @@ jobs:
           push: true
           file: frontend/apps/site/Dockerfile
           tags: mintter/sitegw:latest
-
+      - name: Build and push gateway
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          file: backend/cmd/minttergw/Dockerfile
+          tags: mintter/minttergw:latest
+      - name: Build and push relay
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          file: backend/cmd/relayd/Dockerfile
+          tags: mintter/relayd:latest
   push-site-scripts:
     runs-on: ubuntu-latest
     steps:

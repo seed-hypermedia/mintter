@@ -1,6 +1,6 @@
 import {BlockHighLighter} from '../editor/block-highlighter'
 import {FindContextProvider} from '../editor/find'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {MouseProvider} from '../mouse-context'
 import {mouseMachine} from '../mouse-machine'
 import {globalStyles} from '../stitches.config'
@@ -55,23 +55,23 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
     client,
   }
 
-  let peerId = 'testPeerID'
+  let deviceId = 'testDeviceId'
   let defaultAccount = new Account({
     id: 'testAccountId',
     profile: {
       alias: 'demo',
-      email: 'test@demo.com',
+      avatar: 'bafkreibaejvf3wyblh3s4yhbrwtxto7wpcac7zkkx36cswjzjez2cbmzvu',
       bio: 'demo bio',
     },
     devices: {
-      [peerId]: {
-        peerId,
+      [deviceId]: {
+        deviceId: deviceId,
       },
     },
   })
 
   let defaultInfo: Partial<Info> = {
-    peerId,
+    deviceId: deviceId,
     startTime: undefined,
   }
 
@@ -89,20 +89,8 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
 
   client.setQueryData<Account>([queryKeys.GET_ACCOUNT, ''], account)
   client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
-  client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, peerId],
-    ['foo', 'bar'],
-  )
-  client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
-  client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, peerId],
-    ['foo', 'bar'],
-  )
 
-  client.setQueryData<Array<string>>(
-    [queryKeys.GET_PEER_ADDRS, info.accountId],
-    ['foo', 'bar'],
-  )
+  client.setQueryData<Info>([queryKeys.GET_DAEMON_INFO], info)
 
   if (mocks.draft) {
     client.setQueryData([queryKeys.GET_DRAFT, mocks.draft.id], mocks.draft)
@@ -148,12 +136,12 @@ export function createTestQueryClient(mocks: TestMockData = {}) {
             id: `authorId-${idx + 1}`,
             profile: {
               alias: `alias-${idx + 1}`,
-              email: `user-${idx + 1}@user.com`,
+              avatar: `bafkreibaejvf3wyblh3s4yhbrwtxto7wpcac7zkkx36cswjzjez2cbmzvu`,
               bio: `bio for user ${idx + 1}`,
             },
             devices: {
               d1: {
-                peerId: 'd1',
+                deviceId: 'd1',
               },
             },
           },
@@ -247,17 +235,17 @@ export function createTestDraft(entry: Partial<Document> = {}): Document {
   )
 }
 
-let peerId = 'testPeerID'
+let deviceId = 'testDeviceId'
 let defaultAccount = {
   id: 'testAccountId',
   profile: {
     alias: 'demo',
-    email: 'test@demo.com',
+    avatar: 'bafkreibaejvf3wyblh3s4yhbrwtxto7wpcac7zkkx36cswjzjez2cbmzvu',
     bio: 'demo bio',
   },
   devices: {
-    [peerId]: {
-      peerId,
+    [deviceId]: {
+      deviceId: deviceId,
     },
   },
 }

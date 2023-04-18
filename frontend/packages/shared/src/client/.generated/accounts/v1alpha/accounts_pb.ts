@@ -201,9 +201,9 @@ export class Profile extends Message<Profile> {
   bio = "";
 
   /**
-   * @generated from field: string email = 3;
+   * @generated from field: string avatar = 3;
    */
-  email = "";
+  avatar = "";
 
   constructor(data?: PartialMessage<Profile>) {
     super();
@@ -215,7 +215,7 @@ export class Profile extends Message<Profile> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "alias", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "bio", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "email", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "avatar", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Profile {
@@ -242,9 +242,9 @@ export class Device extends Message<Device> {
   /**
    * CID-encoded Peer ID of this device.
    *
-   * @generated from field: string peer_id = 1;
+   * @generated from field: string device_id = 1;
    */
-  peerId = "";
+  deviceId = "";
 
   constructor(data?: PartialMessage<Device>) {
     super();
@@ -254,7 +254,7 @@ export class Device extends Message<Device> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "com.mintter.accounts.v1alpha.Device";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "peer_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "device_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Device {

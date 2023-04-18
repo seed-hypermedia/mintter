@@ -2,7 +2,8 @@ import {commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
 import {OutsideClick} from '@app/editor/outside-click'
 import {toolbarMachine} from '@app/editor/toolbar-machine'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
+import {appInvalidateQueries} from '@app/query-client'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
 import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
@@ -23,7 +24,6 @@ import {
   text,
 } from '@mintter/shared'
 import {css} from '@stitches/react'
-import {useQueryClient} from '@tanstack/react-query'
 import {useInterpret, useSelector} from '@xstate/react'
 import {
   ComponentProps,
@@ -351,7 +351,6 @@ export function EditorHoveringActions({
 }
 
 export function PublicationToolbar() {
-  let client = useQueryClient()
   const route = useNavRoute()
   const documentId = route.key === 'publication' ? route.documentId : undefined
   const version = route.key === 'publication' ? route.versionId : undefined
@@ -474,9 +473,7 @@ export function PublicationToolbar() {
         service.send('TOOLBAR.DISMISS')
         setCurrentComment('')
         ReactEditor.blur(editor)
-        client.invalidateQueries({
-          queryKey: [queryKeys.GET_PUBLICATION_CONVERSATIONS],
-        })
+        appInvalidateQueries([queryKeys.GET_PUBLICATION_CONVERSATIONS])
       })
   }
 

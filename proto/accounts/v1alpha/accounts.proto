@@ -52,10 +52,10 @@ message Profile {
 
   string bio = 2;
 
-  string email = 3;
+  string avatar = 3;
 }
 
 message Device {
   // CID-encoded Peer ID of this device.
-  string peer_id = 1;
+  string device_id = 1;
 }

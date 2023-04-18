@@ -53,6 +53,7 @@ pub fn open_preferences<R: Runtime>(app_handle: AppHandle<R>) -> tauri::Result<(
       // t//Buffer.from(JSON.stringify({key:'settings'})).toString('base64')
       WindowUrl::App("/eyJrZXkiOiJzZXR0aW5ncyJ9".into()),
     )
+    .disable_file_drop_handler()
     .title("Preferences");
 
     #[cfg(not(target_os = "macos"))]

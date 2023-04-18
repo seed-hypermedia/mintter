@@ -27,7 +27,7 @@ func TestNetworkingGetPeerInfo(t *testing.T) {
 	acc := alice.AccountID
 
 	pinfo, err := api.GetPeerInfo(ctx, &networking.GetPeerInfoRequest{
-		PeerId: did.String(),
+		DeviceId: did.String(),
 	})
 	require.NoError(t, err)
 	require.NotNil(t, pinfo)

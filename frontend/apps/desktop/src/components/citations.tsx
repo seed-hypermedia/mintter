@@ -1,6 +1,6 @@
 import {publicationsClient} from '@app/api-clients'
-import {CitationLink, useDocCitations} from '@app/hooks/content-graph'
-import {queryKeys} from '@app/hooks/query-keys'
+import {CitationLink, useDocCitations} from '@app/models/content-graph'
+import {queryKeys} from '@app/models/query-keys'
 import {useNavigate} from '@app/utils/navigation'
 import {useQuery} from '@tanstack/react-query'
 import {Button} from './button'

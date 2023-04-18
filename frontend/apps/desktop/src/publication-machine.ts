@@ -4,7 +4,7 @@ import {
   publicationsClient,
 } from '@app/api-clients'
 import {EditorDocument} from '@app/draft-machine'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {
   Account,
   blockNodeToSlate,
@@ -17,7 +17,7 @@ import {
 } from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine, InterpreterFrom} from 'xstate'
-import {fetchDaemonInfo} from './hooks/daemon'
+import {fetchDaemonInfo} from './models/daemon'
 import {appInvalidateQueries} from './query-client'
 
 export type ClientPublication = Omit<Publication, 'document'> & {
@@ -84,7 +84,7 @@ export function createPublicationMachine({
         errorMessage: '',
         canUpdate: false,
       },
-      tsTypes: {} as import('./publication-machine.typegen').Typegen0,
+      tsTypes: {} as import("./publication-machine.typegen").Typegen0,
       schema: {
         context: {} as PublicationMachineContext,
         events: {} as PublicationMachineEvent,

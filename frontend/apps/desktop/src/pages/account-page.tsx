@@ -1,5 +1,5 @@
-import {useAccountPublicationList} from '@app/hooks/changes'
-import {useAccountWithDevices} from '@app/hooks/contacts'
+import {useAccountPublicationList} from '@app/models/changes'
+import {useAccountWithDevices} from '@app/models/contacts'
 import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
@@ -88,9 +88,6 @@ export default function AccountPage(props: PageProps) {
               <span>{account.profile?.bio}</span>
             </Section>
           )}
-          {account.profile?.email ? (
-            <span>Email: {account.profile?.email}</span>
-          ) : null}
           <Section>
             <Text fontWeight={'bold'}>Devices</Text>
             {account.devices.map((device) => {
@@ -99,7 +96,7 @@ export default function AccountPage(props: PageProps) {
                 <DeviceRow
                   key={device.deviceId}
                   isOnline={device.isConnected}
-                  deviceId={device.deviceId} // what is difference between peerId and deviceId?
+                  deviceId={device.deviceId}
                 />
               )
             })}

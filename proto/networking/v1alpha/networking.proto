@@ -18,8 +18,8 @@ service Networking {
 
 // Request to get peer's addresses.
 message GetPeerInfoRequest {
-  // Required. CID-encoded Peer ID.
-  string peer_id = 1;
+  // Required. CID-encoded Peer ID (a.k.a. Device ID).
+  string device_id = 1;
 }
 
 // Request to get peer's addresses.
@@ -37,7 +37,6 @@ message ConnectRequest {
 
 // Response for conneting to a peer.
 message ConnectResponse {}
-
 
 // Various details about a list of peers.
 message ListPeersResponse {

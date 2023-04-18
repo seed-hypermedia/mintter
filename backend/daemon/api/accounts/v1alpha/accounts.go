@@ -104,7 +104,7 @@ func (srv *Server) getAccount(conn *vcsdb.Conn, obj cid.Cid, oid vcsdb.LocalID) 
 			_ = vcsdb.RegistrationProof(vc.Decoded.Body)
 			// TODO(burdiyan): verify proof.
 			devid := vc.Decoded.Signer.String()
-			acc.Devices[devid] = &accounts.Device{PeerId: devid}
+			acc.Devices[devid] = &accounts.Device{DeviceId: devid}
 		default:
 			return fmt.Errorf("unknown change kind for account object: %s", vc.Decoded.Kind)
 		}
@@ -214,7 +214,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 				Profile: &accounts.Profile{},
 				Devices: map[string]*accounts.Device{
 					did: {
-						PeerId: did,
+						DeviceId: did,
 					},
 				},
 			})
@@ -224,7 +224,7 @@ func (srv *Server) ListAccounts(ctx context.Context, in *accounts.ListAccountsRe
 				continue
 			}
 			ra.Devices[did] = &accounts.Device{
-				PeerId: did,
+				DeviceId: did,
 			}
 		}
 	}

@@ -81,7 +81,7 @@ func TestGetInfo_Ready(t *testing.T) {
 
 	info, err := srv.GetInfo(ctx, &daemon.GetInfoRequest{})
 	require.NoError(t, err)
-	require.Equal(t, srv.repo.Device().CID().String(), info.PeerId)
+	require.Equal(t, srv.repo.Device().CID().String(), info.DeviceId)
 
 	acc, err := srv.repo.Account()
 	require.NoError(t, err)
@@ -116,6 +116,6 @@ func newTestSQLite(t *testing.T, r *ondisk.OnDisk) *sqlitex.Pool {
 type mockedWallet struct {
 }
 
-func (w *mockedWallet) ConfigureMintterLNDHub(ctx context.Context, acc core.KeyPair) error {
+func (w *mockedWallet) ConfigureMintterLNDHub(context.Context, core.KeyPair) error {
 	return nil
 }

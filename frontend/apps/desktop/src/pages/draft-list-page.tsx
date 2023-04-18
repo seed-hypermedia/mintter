@@ -1,6 +1,6 @@
 import {Dropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
-import {prefetchDraft, useDraftList} from '@app/hooks/documents'
+import {prefetchDraft, useDraftList} from '@app/models/documents'
 import {
   DraftRoute,
   useNavigate,

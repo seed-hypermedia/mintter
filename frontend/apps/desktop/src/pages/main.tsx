@@ -1,5 +1,5 @@
 import {FindContextProvider} from '@app/editor/find'
-import {useMainActor} from '@app/hooks/main-actor'
+import {useMainActor} from '@app/models/main-actor'
 import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Button} from '@components/button'

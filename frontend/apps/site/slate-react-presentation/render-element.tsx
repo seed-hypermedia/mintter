@@ -24,6 +24,7 @@ import {StaticParagraph} from './static-paragraph'
 import {Transclusion} from './transclusion'
 import {Video} from './video'
 import toast from 'react-hot-toast'
+import {useHighlightContext} from './highlight'
 
 export function useRenderElement() {
   return useCallback(({children, element, attributes}: RenderElementProps) => {
@@ -166,7 +167,8 @@ function Block({
   children: ReactNode
 } & ComponentProps<typeof YStack>) {
   const [isHovering, setIsHovering] = useState(false)
-
+  const {highlightedId} = useHighlightContext()
+  const isHighlighted = id === highlightedId
   return (
     <YStack
       marginVertical="$2"
@@ -174,10 +176,17 @@ function Block({
       {...props}
       className={`list-item`}
       borderRadius={6}
+      key={id}
       id={id}
+      // // animations not working for some reason..
+      // enterStyle={isHighlighted ? {backgroundColor: '#0000FF'} : undefined}
+      // animation={{
+      //   backgroundColor: 'lazy',
+      // }}
       hoverStyle={{
-        backgroundColor: '#DCFFF9',
+        backgroundColor: '#DCFFF9', // needs fix: broken in dark mode
       }}
+      backgroundColor={isHighlighted ? 'yellow' : 'transparent'}
       onHoverIn={() => setIsHovering(true)}
       onHoverOut={() => setIsHovering(false)}
     >

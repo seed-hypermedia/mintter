@@ -1,10 +1,11 @@
 import {accountsClient} from '@app/api-clients'
-import {Account} from '@mintter/shared'
-import {useQuery} from '@tanstack/react-query'
-import {queryKeys} from '@app/hooks/query-keys'
+import {Account, Profile} from '@mintter/shared'
+import {useMutation, useQuery} from '@tanstack/react-query'
+import {queryKeys} from '@app/models/query-keys'
 import {useAllPeers} from './networking'
 import {useDaemonReady} from '@app/node-status-context'
-import {useDaemonInfo} from '@app/hooks/daemon'
+import {fetchDaemonInfo, useDaemonInfo} from '@app/models/daemon'
+import {appInvalidateQueries} from '@app/query-client'
 
 export function useAccount(accountId?: string) {
   let isDaemonReady = useDaemonReady()
@@ -45,9 +46,7 @@ export function useAccountWithDevices(accountId: string) {
   return {
     profile: account.data?.profile,
     devices: Object.values(account?.data?.devices || {}).map((device) => {
-      // I think this is the cause of much confusion:
-      const deviceId = device.peerId
-      // see https://github.com/mintterteam/mintter/issues/1368
+      const deviceId = device.deviceId
       return {
         deviceId,
         isConnected: !!peers.data?.peerList.find(
@@ -66,4 +65,21 @@ export function useAccountIsConnected(account: Account) {
 export function useMyAccount() {
   const daemonInfo = useDaemonInfo()
   return useAccount(daemonInfo.data?.accountId)
+}
+
+export function useSetProfile() {
+  return useMutation({
+    mutationFn: async (profile: Partial<Profile>) => {
+      const daemonInfo = await fetchDaemonInfo()
+      const accountId = daemonInfo?.accountId
+      if (!accountId) {
+        throw new Error('Account Id required to write profile')
+      }
+      await accountsClient.updateProfile(profile)
+      return accountId
+    },
+    onSuccess: (accountId, b) => {
+      appInvalidateQueries([queryKeys.GET_ACCOUNT, accountId])
+    },
+  })
 }

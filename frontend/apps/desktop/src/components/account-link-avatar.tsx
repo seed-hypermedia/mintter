@@ -1,5 +1,5 @@
 import appError from '@app/errors'
-import {useAccount} from '@app/hooks/accounts'
+import {useAccount} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {Button, Tooltip, Theme, SizableText} from '@mintter/ui'

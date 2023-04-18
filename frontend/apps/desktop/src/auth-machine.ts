@@ -1,11 +1,12 @@
 import {accountsClient} from '@app/api-clients'
-import {queryKeys} from '@app/hooks/query-keys'
+import {queryKeys} from '@app/models/query-keys'
 import {Account, Info, Profile} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {assign, createMachine, MachineOptions} from 'xstate'
 import {networkingClient} from './api-clients'
-import {fetchDaemonInfo} from './hooks/daemon'
+import {fetchDaemonInfo} from './models/daemon'
+import {fetchPeerInfo} from './models/networking'
 
 type AuthContext = {
   accountInfo: Info | null
@@ -173,21 +174,13 @@ export function createAuthService(client: QueryClient) {
         updateProfile: function updateProfileService(_, event) {
           return accountsClient.updateProfile(event.profile)
         },
-        fetchPeerData: function fetchPeerDataService(context: AuthContext) {
-          return client.fetchQuery<Array<string>>({
-            queryKey: [queryKeys.GET_PEER_ADDRS, context.accountInfo?.peerId],
-            queryFn: async () => {
-              if (context.accountInfo) {
-                let peerInfo = await networkingClient.getPeerInfo({
-                  peerId: context.accountInfo.peerId,
-                })
-
-                return peerInfo.addrs
-              }
-
-              return []
-            },
-          })
+        fetchPeerData: async function fetchPeerDataService(
+          context: AuthContext,
+        ) {
+          const deviceId = context.accountInfo?.deviceId
+          if (!deviceId) return []
+          const info = await fetchPeerInfo(deviceId)
+          return info.addrs
         },
       },
       guards: {

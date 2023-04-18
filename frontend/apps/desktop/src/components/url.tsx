@@ -29,7 +29,6 @@ export function AccessURLRow({
       <XGroup.Item>
         <Button
           flex={1}
-          flexShrink={1}
           size="$2"
           gap={0}
           chromeless
@@ -41,7 +40,7 @@ export function AccessURLRow({
           alignItems="center"
           justifyContent="flex-start"
         >
-          <Globe size={16} flexShrink={0} flex={0} flexGrow={0} />
+          <Globe size={16} flex={0} />
           <SizableText
             size="$2"
             opacity={0.8}
@@ -58,7 +57,6 @@ export function AccessURLRow({
       <Separator />
       <XGroup.Item>
         <Button
-          flexShrink={0}
           flex={0}
           chromeless
           size="$2"
