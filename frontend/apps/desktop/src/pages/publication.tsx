@@ -45,7 +45,6 @@ import {
   YStack,
 } from '@mintter/ui'
 
-import {assign, createMachine} from 'xstate'
 import {PageProps} from './base'
 
 function pluralS(length = 0) {
@@ -58,9 +57,12 @@ export default function PublicationPage({mainActor}: PageProps) {
   const publicationActor = mainActor.actor
   const route = useNavRoute()
   const [debugValue, setDebugValue] = useState(false)
-  const docId = route.key === 'publication' ? route.documentId : undefined
-  const blockId = route.key === 'publication' ? route.blockId : undefined
-  const versionId = route.key === 'publication' ? route.versionId : undefined
+  const pubRoute = route.key === 'publication' ? route : undefined
+  const docId = pubRoute?.documentId
+  const blockId = pubRoute?.blockId
+  const accessory = pubRoute?.accessory
+  const accessoryKey = accessory?.key
+  const replace = useNavigate('replace')
 
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
@@ -98,16 +100,13 @@ export default function PublicationPage({mainActor}: PageProps) {
     let unlisten: () => void | undefined
 
     listen<{conversations: Array<string>}>('selector_click', (event) => {
-      panelSend({type: 'PANEL.OPEN', activePanel: 'conversations'})
+      pubRoute && replace({...pubRoute, accessory: {key: 'comments'}})
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
   }, [])
 
-  let [resizablePanelState, panelSend] = useMachine(() => resizablePanelMachine)
   let [state, send] = useActor(publicationActor)
-
-  let {activePanel} = resizablePanelState.context
 
   if (state.matches('errored')) {
     return (
@@ -135,35 +134,24 @@ export default function PublicationPage({mainActor}: PageProps) {
       >
         <ConversationsProvider
           documentId={docId}
-          isOpen={
-            activePanel === 'conversations' && resizablePanelState.context.show
-          }
+          isOpen={accessoryKey === 'comments'}
           onConversationsOpen={() => {
-            panelSend({
-              type: 'PANEL.OPEN',
-              activePanel: 'conversations',
-            })
+            // todo, pass clicked on conversation into route
+            replace({...pubRoute, accessory: {key: 'comments'}})
           }}
           publication={state.context.publication}
         >
           <CitationsProvider
             documentId={docId}
             onCitationsOpen={(citations: Array<MttLink>) => {
-              panelSend({
-                type: 'PANEL.OPEN',
-                activePanel: 'citations',
-              })
+              // todo, pass active citations into route
+              replace({...pubRoute, accessory: {key: 'citations'}})
             }}
           >
             <MouseProvider value={mouseService}>
               <BlockHighLighter>
                 <MainWrapper noScroll>
-                  <Allotment
-                    defaultSizes={[100]}
-                    onChange={(values) =>
-                      panelSend({type: 'PANEL.RESIZE', values})
-                    }
-                  >
+                  <Allotment defaultSizes={[100]} onChange={(values) => {}}>
                     <Allotment.Pane>
                       <YStack
                         height="100%"
@@ -235,64 +223,60 @@ export default function PublicationPage({mainActor}: PageProps) {
                         </ScrollView>
                       </YStack>
                     </Allotment.Pane>
-                    {resizablePanelState.context.show &&
-                      !!state.context.publication && (
-                        <Allotment.Pane preferredSize="35%">
-                          <YStack height="100%">
-                            <ScrollView>
-                              {activePanel == 'conversations' ? (
-                                <Conversations />
-                              ) : activePanel == 'changes' ? (
-                                <ChangesList />
-                              ) : (
-                                <Citations
-                                  docId={state.context.publication.document.id}
-                                  version={state.context.version}
-                                />
-                              )}
-                            </ScrollView>
-                          </YStack>
-                        </Allotment.Pane>
-                      )}
+                    {accessoryKey && (
+                      <Allotment.Pane preferredSize="35%">
+                        <YStack height="100%">
+                          <ScrollView>
+                            {accessoryKey == 'comments' ? (
+                              <Conversations />
+                            ) : accessoryKey == 'versions' ? (
+                              <ChangesList />
+                            ) : (
+                              <Citations
+                                docId={docId}
+                                version={state.context.version}
+                              />
+                            )}
+                          </ScrollView>
+                        </YStack>
+                      </Allotment.Pane>
+                    )}
                   </Allotment>
                 </MainWrapper>
                 <Footer>
                   <FooterButton
-                    active={activePanel == 'changes'}
+                    active={accessoryKey === 'versions'}
                     label={`${changes?.changes?.length} Version${pluralS(
                       changes?.changes?.length,
                     )}`}
                     icon={Pencil}
                     onPress={() => {
-                      panelSend({type: 'PANEL.TOGGLE', activePanel: 'changes'})
+                      if (pubRoute.accessory)
+                        return replace({...pubRoute, accessory: null})
+                      replace({...pubRoute, accessory: {key: 'versions'}})
                     }}
                   />
                   <FooterButton
-                    active={activePanel == 'citations'}
+                    active={accessoryKey === 'citations'}
                     label={`${citations?.links?.length} Citation${pluralS(
                       citations?.links?.length,
                     )}`}
                     icon={Link}
                     onPress={() => {
-                      panelSend({
-                        type: 'PANEL.TOGGLE',
-                        activePanel: 'citations',
-                      })
+                      if (pubRoute.accessory)
+                        return replace({...pubRoute, accessory: null})
+                      replace({...pubRoute, accessory: {key: 'citations'}})
                     }}
                   />
                   {features.comments ? (
                     <FooterButton
-                      active={
-                        activePanel == 'conversations' &&
-                        resizablePanelState.context.show
-                      }
+                      active={accessoryKey === 'comments'}
                       label={`Conversations`}
                       icon={Comment}
                       onPress={() => {
-                        panelSend({
-                          type: 'PANEL.TOGGLE',
-                          activePanel: 'conversations',
-                        })
+                        if (pubRoute.accessory)
+                          return replace({...pubRoute, accessory: null})
+                        replace({...pubRoute, accessory: {key: 'comments'}})
                       }}
                     />
                   ) : null}
@@ -381,76 +365,6 @@ type ResizablePanelMachineServices = {
     data: void
   }
 }
-let resizablePanelMachine =
-  /** @xstate-layout N4IgpgJg5mDOIC5QCc4EsBeBDARgGzAFoAHLAOzDwGIAFAQQDkBRAGQDoAVAeQHEeWmAbQAMAXUShiAe1hoALmilkJIAB6IALBoBMbDQHYAjBoCshgGwBmAJwHr2gDQgAnokLbrbABzbhw8-omQZaWGiGWAL4RTqiy2PhEpBTU9MzsAEpMAMoAkgBaQmIq0rIKSirqCMaWbL4m5obGZsJh2hpOrgiEGoa6ll7m1vptXgPmZlEx6PEEJOSUtIysbFw0TAwi4kggJfKKytuVhiYabMJepiahLWEGHYi23uYaXsKWhtYnZvr6UdEgZCkEDgKlimFwsySlGKMj25UObkM-jOJje2m0XlCNn0XhM9y6hks5jYxms5yu42qwz+ESAA */
-  createMachine(
-    {
-      predictableActionArguments: true,
-      context: {
-        show: false,
-        left: 100,
-        activePanel: 'conversations',
-      },
-      tsTypes: {} as import('./publication.typegen').Typegen0,
-      schema: {
-        context: {} as ResizablePanelMachineContext,
-        events: {} as ResizablePanelMachineEvent,
-        services: {} as ResizablePanelMachineServices,
-      },
-      on: {
-        'PANEL.TOGGLE': [
-          {
-            cond: 'shouldClosePanel',
-            actions: ['hidePanel', 'resetActivePanel'],
-          },
-          {
-            actions: ['showPanel', 'assignActivePanel'],
-          },
-        ],
-        'PANEL.RESIZE': {
-          actions: 'updateHandlePosition',
-        },
-        'PANEL.OPEN': {
-          actions: ['showPanel', 'assignActivePanel'],
-        },
-      },
-      id: 'resizable-panel',
-    },
-    {
-      actions: {
-        updateHandlePosition: assign((_, event) => {
-          // hardcoded value to apply to the controls
-          let newValue = event.values[0]
-
-          return {left: newValue}
-        }),
-        // @ts-ignore
-        hidePanel: assign({
-          show: false,
-          activePanel: undefined,
-        }),
-        showPanel: assign((_, event) => ({
-          show: true,
-          activePanel: event.activePanel,
-        })),
-        assignActivePanel: assign({
-          activePanel: (_, event) => event.activePanel,
-        }),
-        // @ts-ignore
-        resetActivePanel: assign({
-          activePanel: undefined,
-        }),
-      },
-      guards: {
-        shouldClosePanel: (context, event) => {
-          if (event.activePanel == context.activePanel) {
-            return context.show
-          }
-          return false
-        },
-      },
-    },
-  )
 
 // eslint-disable-next-line
 function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
@@ -478,6 +392,8 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
   const {data: pub, isLoading} = usePublication(docId)
   const navigate = useNavigate()
+  const route = useNavRoute()
+  const pubAccessory = route.key === 'publication' ? route.accessory : undefined
   const client = useQueryClient()
   if (isLoading) return null
   if (version === pub?.version) return null
@@ -492,6 +408,7 @@ function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
               key: 'publication',
               documentId: docId,
               versionId: pub.version,
+              accessory: pubAccessory,
             })
           }}
         >

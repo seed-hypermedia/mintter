@@ -41,6 +41,9 @@ function ChangeItem({
           key: 'publication',
           documentId: docId,
           versionId: change.version,
+          accessory: {
+            key: 'versions',
+          },
         })
       }}
       css={{
