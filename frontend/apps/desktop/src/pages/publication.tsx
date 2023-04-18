@@ -46,6 +46,7 @@ import {
 } from '@mintter/ui'
 
 import {PageProps} from './base'
+import {AppError} from '@app/root'
 
 function pluralS(length = 0) {
   return length === 1 ? '' : 's'
@@ -129,7 +130,7 @@ export default function PublicationPage({mainActor}: PageProps) {
   if (docId) {
     return (
       <ErrorBoundary
-        fallback={<div>error</div>}
+        FallbackComponent={AppError}
         onReset={() => window.location.reload()}
       >
         <ConversationsProvider

@@ -5,7 +5,14 @@ import '@tamagui/polyfill-dev'
 import {store} from '@app/app-store'
 import Main from '@app/pages/main'
 import {themeMachine, ThemeProvider} from '@app/theme'
-import {TamaguiProvider, TamaguiProviderProps, Theme} from '@mintter/ui'
+import {
+  Button,
+  TamaguiProvider,
+  TamaguiProviderProps,
+  Text,
+  Theme,
+  YStack,
+} from '@mintter/ui'
 import {dehydrate, Hydrate, QueryClientProvider} from '@tanstack/react-query'
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools'
 import {onUpdaterEvent} from '@tauri-apps/api/updater'
@@ -85,11 +92,11 @@ var dehydrateState = dehydrate(appQueryClient)
 
 export function AppError({error, resetErrorBoundary}: FallbackProps) {
   return (
-    <div role="alert">
-      <p>Something went wrong loading the App:</p>
-      <pre>{error.message}</pre>
-      <button onClick={resetErrorBoundary}>Try again</button>
-    </div>
+    <YStack role="alert" space>
+      <Text>Something went wrong loading the App:</Text>
+      <Text tag="pre">{error.message}</Text>
+      <Button onPress={resetErrorBoundary}>Try again</Button>
+    </YStack>
   )
 }
 
