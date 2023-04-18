@@ -277,7 +277,7 @@ export function useSitePublish() {
         )
       }
 
-      if (document.publisher === publisherId) {
+      if (document.webUrl === hostname) {
         // continue if the publisher is already correct for this version
         await performWebPublish(document, hostname, path, version)
         return {version, fromDocument: document, fromVersion: version}
@@ -295,7 +295,7 @@ export function useSitePublish() {
         documentId: draft.id,
         changes: [
           new DocumentChange({
-            op: {case: 'setPublisher', value: publisherId},
+            op: {case: 'setWebUrl', value: hostname},
           }),
         ],
       })
