@@ -84,7 +84,7 @@ export function createPublicationMachine({
         errorMessage: '',
         canUpdate: false,
       },
-      tsTypes: {} as import('./publication-machine.typegen').Typegen0,
+      tsTypes: {} as import("./publication-machine.typegen").Typegen0,
       schema: {
         context: {} as PublicationMachineContext,
         events: {} as PublicationMachineEvent,

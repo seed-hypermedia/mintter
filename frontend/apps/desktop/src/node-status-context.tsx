@@ -1,4 +1,4 @@
-import OnboardingPage from '@app/pages/onboarding'
+import OnboardingPage from '@app/pages/onboarding/index'
 import {ConnectionStatus, Info, PeerInfo} from '@mintter/shared'
 import {
   createContext,

@@ -135,7 +135,7 @@ export function useSmartChanges(docId?: string, version?: string) {
                 ) {
                   summary.push(
                     `Edited Block ${blockId} ${
-                      getTextOfBlock(block) || block.id
+                      getTextOfBlock(block) || block.block?.id
                     }`,
                   )
                   summarizedBlockIds[blockId] = true
@@ -150,7 +150,9 @@ export function useSmartChanges(docId?: string, version?: string) {
             ([blockId, {revision, block}]) => {
               if (!summarizedBlockIds[blockId]) {
                 summary.push(
-                  `Added Block ${blockId} ${getTextOfBlock(block) || block.id}`,
+                  `Added Block ${blockId} ${
+                    getTextOfBlock(block) || block.block?.id
+                  }`,
                 )
                 summarizedBlockIds[blockId] = true
               }
