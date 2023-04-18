@@ -119,7 +119,6 @@ func (api *Server) CreateDraft(ctx context.Context, in *documents.CreateDraftReq
 			return nil, fmt.Errorf("failed to decode permanode for document %s: %w", obj, err)
 		}
 		perma.Permanode = docperma
-
 	} else {
 		perma, err = vcs.EncodePermanode(sqlitevcs.NewDocumentPermanode(me.AccountID(), clock.Now()))
 		if err != nil {
