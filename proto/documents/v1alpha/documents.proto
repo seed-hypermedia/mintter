@@ -79,9 +79,6 @@ message DocumentChange {
     // New title to set on the document.
     string set_title = 1;
 
-    // New subtitle to set on the document.
-    string set_subtitle = 2;
-
     // Move operation that creates/moves a block within the document hierarchy.
     MoveBlock move_block = 3;
 
@@ -91,8 +88,8 @@ message DocumentChange {
     // ID of a block to delete.
     string delete_block = 5;
 
-    // Set the publisher ID on the document.
-    string set_publisher = 6;
+    // Sets Web URL where site is published.
+    string set_web_url = 6;
   }
 }
 
@@ -202,14 +199,11 @@ message Document {
   // Title of the document.
   string title = 2;
 
-  // Subtitle of the document.
-  string subtitle = 3;
-
   // Output only. Author ID of the document.
   string author = 4;
 
-  // Account ID of a publisher if any.
-  string publisher = 10;
+  // Web URL where this document is claimed to be published at.
+  string web_url = 10;
 
   // Output only. Account IDs of all the editors of the document.
   // Includes the original author as well.
