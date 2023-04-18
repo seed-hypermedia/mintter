@@ -251,7 +251,6 @@ export const createDragMachine = (editor: Editor) => {
           nestedGroup: null,
         }),
         performMove: (context, event) => {
-          console.log(context)
           const {fromPath, toPath, dragOverRef, editor, isTop, nestedGroup} =
             context
           dragOverRef?.removeAttribute('data-action')
