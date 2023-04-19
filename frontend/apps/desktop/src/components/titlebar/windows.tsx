@@ -53,7 +53,7 @@ import {getCurrent} from '@tauri-apps/api/window'
 import {useEffect} from 'react'
 import {ActionButtons, NavigationButtons, NavMenu} from './common'
 import DiscardDraftButton from './discard-draft-button'
-import {MintterIcon} from './mintter-icon'
+import {MintterIcon} from '../mintter-icon'
 import {Title} from './title'
 import {
   CloseButton,

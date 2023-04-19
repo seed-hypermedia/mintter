@@ -1,17 +1,15 @@
 import {MainActor} from '@app/models/main-actor'
-import {Box} from '@components/box'
-import {Heading} from '@components/heading'
-import {Text} from '@components/text'
+import {Heading, YStack, Text} from '@mintter/ui'
 
 export type PageProps = {
-  mainActor: MainActor
+  mainActor?: MainActor
 }
 
 export function NotFoundPage(props: PageProps) {
   return (
-    <Box>
+    <YStack flex={1} alignItems="center" justifyContent="center">
       <Heading>404</Heading>
       <Text>Page not found</Text>
-    </Box>
+    </YStack>
   )
 }

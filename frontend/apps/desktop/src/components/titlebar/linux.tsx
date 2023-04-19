@@ -16,7 +16,7 @@ import {invoke} from '@tauri-apps/api/tauri'
 import {useEffect, useState} from 'react'
 import {ActionButtons, NavigationButtons, SitesNavDropdownItems} from './common'
 import DiscardDraftButton from './discard-draft-button'
-import {MintterIcon} from './mintter-icon'
+import {MintterIcon} from '../mintter-icon'
 import {Title} from './title'
 import {
   CloseButton,
