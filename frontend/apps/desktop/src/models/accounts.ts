@@ -1,6 +1,6 @@
 import {accountsClient} from '@app/api-clients'
 import {Account, Profile} from '@mintter/shared'
-import {useMutation, useQuery} from '@tanstack/react-query'
+import {useMutation, UseMutationOptions, useQuery} from '@tanstack/react-query'
 import {queryKeys} from '@app/models/query-keys'
 import {useAllPeers} from './networking'
 import {useDaemonReady} from '@app/node-status-context'
@@ -67,7 +67,9 @@ export function useMyAccount() {
   return useAccount(daemonInfo.data?.accountId)
 }
 
-export function useSetProfile() {
+export function useSetProfile(
+  opts?: UseMutationOptions<string, unknown, Partial<Profile>>,
+) {
   return useMutation({
     mutationFn: async (profile: Partial<Profile>) => {
       const daemonInfo = await fetchDaemonInfo()
@@ -78,8 +80,10 @@ export function useSetProfile() {
       await accountsClient.updateProfile(profile)
       return accountId
     },
-    onSuccess: (accountId, b) => {
+    onSuccess: (accountId, ...rest) => {
       appInvalidateQueries([queryKeys.GET_ACCOUNT, accountId])
+      opts?.onSuccess?.(accountId, ...rest)
     },
+    ...opts,
   })
 }

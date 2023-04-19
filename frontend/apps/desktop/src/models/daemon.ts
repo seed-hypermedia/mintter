@@ -3,6 +3,8 @@ import {appQueryClient} from '@app/query-client'
 import {Info} from '@mintter/shared'
 import {
   FetchQueryOptions,
+  useMutation,
+  UseMutationOptions,
   useQuery,
   UseQueryOptions,
 } from '@tanstack/react-query'
@@ -33,4 +35,27 @@ export function useDaemonInfo() {
 
 export function fetchDaemonInfo() {
   return appQueryClient.fetchQuery(queryDaemonInfo())
+}
+
+export function useMnemonics() {
+  return useQuery({
+    queryKey: ['onboarding', 'mnemonics'],
+    queryFn: async () => {
+      const data = await daemonClient.genMnemonic({mnemonicsLength: 12})
+      return data.mnemonic
+    },
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+  })
+}
+
+export function useAccountRegistration(
+  opts?: UseMutationOptions<void, unknown, string[]>,
+) {
+  return useMutation({
+    mutationFn: async (words: string[]) => {
+      await daemonClient.register({mnemonic: words})
+    },
+    ...opts,
+  })
 }

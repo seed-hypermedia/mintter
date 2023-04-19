@@ -1,4 +1,6 @@
-import {accountsClient, daemonClient} from '@app/api-clients'
+import appError from '@app/errors'
+import {useSetProfile} from '@app/models/accounts'
+import {useAccountRegistration, useMnemonics} from '@app/models/daemon'
 import {NotFoundPage} from '@app/pages/base'
 import {MintterIcon} from '@components/mintter-icon'
 import {Tooltip} from '@components/tooltip'
@@ -112,18 +114,15 @@ function Welcome(props: OnboardingStepProps) {
 
 function Mnemonics(props: OnboardingStepProps) {
   const [ownSeed, setOwnSeed] = useState<string>('')
-  const [useOwnSeed, toggleOwnSeed] = useState<boolean>(false)
-  const mnemonics = useQuery({
-    queryKey: ['onboarding', 'mnemonics'],
-    queryFn: async () => {
-      const data = await daemonClient.genMnemonic({mnemonicsLength: 12})
-      return data.mnemonic
-    },
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
+  const [useOwnSeed, setUseOwnSeed] = useState<boolean>(false)
+  const mnemonics = useMnemonics()
+
+  const register = useAccountRegistration({
+    onError: () => appError('Failed to register your words.'),
+    onSuccess: () => props.dispatch({type: 'next'}),
   })
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(() => {
     const words =
       useOwnSeed && ownSeed
         ? ownSeed
@@ -131,21 +130,9 @@ function Mnemonics(props: OnboardingStepProps) {
             .map((s) => s.split(','))
             .flat(1)
         : mnemonics.data
-    if (words) {
-      try {
-        // words are here.
-
-        await daemonClient.register({mnemonic: words})
-        props.dispatch({type: 'next'})
-      } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message)
-        }
-      }
-    } else {
-      toast.error('no words have being received?')
-    }
-  }, [useOwnSeed, ownSeed, mnemonics])
+    if (!words) throw new Error('No words to submit')
+    register.mutate(words)
+  }, [mnemonics.data, ownSeed, useOwnSeed])
 
   function onCopy() {
     if (mnemonics.data) {
@@ -245,9 +232,18 @@ function Mnemonics(props: OnboardingStepProps) {
               <Button
                 size="$2"
                 chromeless={!useOwnSeed}
-                onPress={() => toggleOwnSeed((v) => !v)}
+                onPress={() => {
+                  if (useOwnSeed) {
+                    // refetch here is so that user always sees new words when they click "generate a new seed"
+                    // so they feel like they're getting a secure fresh seed
+                    mnemonics.refetch()
+                    setUseOwnSeed(false)
+                  } else {
+                    setUseOwnSeed(true)
+                  }
+                }}
               >
-                Provide your own seed
+                {useOwnSeed ? 'Generate a new seed' : 'Provide your own seed'}
               </Button>
             </XStack>
           </YStack>
@@ -263,7 +259,12 @@ function Mnemonics(props: OnboardingStepProps) {
         >
           PREV
         </Button>
-        <Button iconAfter={Next} size="$4" onPress={handleSubmit}>
+        <Button
+          iconAfter={Next}
+          size="$4"
+          onPress={handleSubmit}
+          disabled={register.isLoading}
+        >
           NEXT
         </Button>
       </XStack>
@@ -272,19 +273,12 @@ function Mnemonics(props: OnboardingStepProps) {
 }
 
 function Profile(props: OnboardingStepProps) {
-  const {mutate} = useMutation({
-    mutationFn: accountsClient.updateProfile,
-    onSuccess: () => {
-      toast.success('Profile Updated')
-      props.dispatch({type: 'next'})
-    },
-    onError: () => {
-      toast.error('Error updating profile')
-    },
+  const setProfile = useSetProfile({
+    onError: (e) => appError('Failed to set your profile', e),
   })
   const submitValue = useRef({alias: '', bio: ''} as ProfileType)
   function onSubmit() {
-    mutate(submitValue.current)
+    setProfile.mutate(submitValue.current)
   }
   return (
     <StepWrapper>
@@ -344,7 +338,12 @@ function Profile(props: OnboardingStepProps) {
         >
           PREV
         </Button>
-        <Button iconAfter={Next} size="$4" onPress={onSubmit}>
+        <Button
+          iconAfter={Next}
+          size="$4"
+          onPress={onSubmit}
+          disabled={setProfile.isLoading}
+        >
           NEXT
         </Button>
       </XStack>
