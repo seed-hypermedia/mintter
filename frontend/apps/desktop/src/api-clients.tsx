@@ -18,7 +18,7 @@ import {
   WebSite,
 } from '@mintter/shared'
 import {toast} from 'react-hot-toast'
-// @ts-ignore
+
 export const toastInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
@@ -38,6 +38,7 @@ export const toastInterceptor: Interceptor = (next) => async (req) => {
         🚨 {req.method.name}: {JSON.stringify(e)}
       </span>,
     )
+    throw e
   }
 }
 
