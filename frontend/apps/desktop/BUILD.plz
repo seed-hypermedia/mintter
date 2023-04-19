@@ -9,9 +9,8 @@ yarn_script(
         "src",
         "tsconfig.json",
         "vite.config.ts",
-        "//frontend/shared",
     ],
     outs = ["dist"],
-    yarn_deps = "//:yarn",
     script_name = "build",
+    yarn_deps = "//:yarn",
 )

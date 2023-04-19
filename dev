@@ -74,6 +74,7 @@ def main():
 
     @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
     def build_frontend(args):
+        run("plz build //:yarn")
         return run("yarn build")
 
     @cmd(
@@ -97,12 +98,12 @@ def main():
 
     @cmd(cmds, "run-frontend", "Run frontend web app for development.")
     def run_frontend(args):
-        run("plz build")
+        run("plz build //:yarn")
         return run("yarn desktop", args=args)
 
     @cmd(cmds, "run-gw-frontend", "Run frontend web app for development.")
     def run_frontend(args):
-        run("plz build")
+        run("plz build //:yarn")
         return run(
             "yarn site",
             args=args,
