@@ -28,8 +28,6 @@ import {listen} from '@tauri-apps/api/event'
 import tamaguiConfig from '../tamagui.config'
 import {appQueryClient} from './query-client'
 import './styles/root.css'
-import './styles/root.scss'
-import './styles/toaster.scss'
 import {NavigationProvider} from './utils/navigation'
 
 import('./updater')

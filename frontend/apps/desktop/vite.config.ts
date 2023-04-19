@@ -1,8 +1,6 @@
 import {tamaguiExtractPlugin, tamaguiPlugin} from '@tamagui/vite-plugin'
 import react from '@vitejs/plugin-react'
 import {defineConfig, searchForWorkspaceRoot} from 'vite'
-import {writeFileSync} from 'fs'
-import path from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 const shouldExtract = process.env.EXTRACT === '1'
@@ -11,17 +9,6 @@ let isTest = process.env.NODE_ENV == 'test'
 if (shouldExtract) {
   console.log('Tamagui compiler enabled')
 }
-
-writeFileSync(
-  path.resolve(__dirname, './src/styles/_env.scss'),
-  `$TAURI_PLATFORM: '${process.env.TAURI_PLATFORM}';
-$TAURI_ARCH: '${process.env.TAURI_ARCH}';
-$TAURI_FAMILY: '${process.env.TAURI_FAMILY}';
-$TAURI_PLATFORM_VERSION: '${process.env.TAURI_PLATFORM_VERSION}';
-$TAURI_PLATFORM_TYPE: '${process.env.TAURI_PLATFORM_TYPE}';
-$TAURI_DEBUG: '${process.env.TAURI_DEBUG}';
-`,
-)
 
 if (shouldExtract) {
   console.log(`Compiler enabled`)
