@@ -1,7 +1,6 @@
 import {publicationsClient} from '@app/api-clients'
 import {deleteFileMachine} from '@app/delete-machine'
 import {Dropdown} from '@app/editor/dropdown'
-import {useFind} from '@app/editor/find'
 import {prefetchPublication} from '@app/models/documents'
 import {queryKeys} from '@app/models/query-keys'
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
@@ -41,7 +40,6 @@ export function PublicationListItem({
   copy?: typeof copyTextToClipboard
   hasDraft: Document | undefined
 }) {
-  const {search} = useFind()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   const client = useQueryClient()
@@ -105,12 +103,7 @@ export function PublicationListItem({
     >
       {/* @ts-ignore */}
       <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
-        <Highlighter
-          highlightClassName="search-highlight"
-          searchWords={[search]}
-          autoEscape={true}
-          textToHighlight={title}
-        />
+        {title}
       </ButtonText>
 
       {hasDraft && (

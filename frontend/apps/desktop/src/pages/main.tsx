@@ -1,4 +1,3 @@
-import {FindContextProvider} from '@app/editor/find'
 import {useMainActor} from '@app/models/main-actor'
 import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
@@ -6,7 +5,7 @@ import {Button} from '@components/button'
 import {TitleBar} from '@components/titlebar'
 import {Heading, YStack} from '@mintter/ui'
 import {listen as tauriListen} from '@tauri-apps/api/event'
-import {lazy, useEffect, useState} from 'react'
+import {lazy, useEffect} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
 import {NotFoundPage} from './base'
 import './polyfills'
@@ -46,7 +45,6 @@ function getPageComponent(navRoute: NavRoute) {
 
 export default function Main() {
   const mainActor = useMainActor()
-  const [search, setSearch] = useState('')
   const navR = useNavRoute()
   const isSettings = navR.key === 'settings'
   const navigate = useNavigate()
@@ -73,12 +71,10 @@ export default function Main() {
           window.location.reload()
         }}
       >
-        <FindContextProvider value={{search, setSearch}}>
-          <TitleBar clean={isSettings} mainActor={mainActor} />
-          {/* @ts-ignore */}
-          <PageComponent mainActor={mainActor} />
-          {!isSettings ? <QuickSwitcher /> : null}
-        </FindContextProvider>
+        <TitleBar clean={isSettings} mainActor={mainActor} />
+        {/* @ts-ignore */}
+        <PageComponent mainActor={mainActor} />
+        {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>
     </YStack>
   )

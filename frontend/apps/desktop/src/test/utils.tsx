@@ -1,11 +1,4 @@
-import {BlockHighLighter} from '../editor/block-highlighter'
-import {FindContextProvider} from '../editor/find'
 import {queryKeys} from '@app/models/query-keys'
-import {MouseProvider} from '../mouse-context'
-import {mouseMachine} from '../mouse-machine'
-import {globalStyles} from '../stitches.config'
-import {themeMachine, ThemeProvider} from '../theme'
-import {NavState} from '../utils/navigation'
 import {
   Account,
   Document,
@@ -20,6 +13,12 @@ import {useInterpret} from '@xstate/react'
 import deepmerge from 'deepmerge'
 import {nanoid} from 'nanoid'
 import {ReactNode, Suspense} from 'react'
+import {BlockHighLighter} from '../editor/block-highlighter'
+import {MouseProvider} from '../mouse-context'
+import {mouseMachine} from '../mouse-machine'
+import {globalStyles} from '../stitches.config'
+import {themeMachine, ThemeProvider} from '../theme'
+import {NavState} from '../utils/navigation'
 
 type TestMockData = {
   account?: Partial<Account>
@@ -173,23 +172,7 @@ export function TestProvider({client, children}: TestProviderProps) {
   return (
     <QueryClientProvider client={client}>
       <Suspense fallback={<p>Loading...</p>}>
-        <ThemeProvider value={themeService}>
-          {
-            // TODO: @jonas why SearchTermProvider breaks tests?
-          }
-          <FindContextProvider
-            value={{
-              search: '',
-              setSearch: () => {
-                // noop
-              },
-            }}
-          >
-            {children}
-          </FindContextProvider>
-
-          {/* // <Toaster position="bottom-right" /> */}
-        </ThemeProvider>
+        <ThemeProvider value={themeService}>{children}</ThemeProvider>
       </Suspense>
     </QueryClientProvider>
   )
