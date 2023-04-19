@@ -160,7 +160,7 @@ function PublishButton({
           theme="green"
         >
           <Globe size={16} />
-          {webUrl}
+          {hostnameStripProtocol(webUrl)}
         </Button>
       )}
     </PopoverPrimitive.Trigger>
