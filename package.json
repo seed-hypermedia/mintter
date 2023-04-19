@@ -32,6 +32,7 @@
     "@bufbuild/protoc-gen-connect-web": "0.8.5",
     "@bufbuild/protoc-gen-es": "1.2.0",
     "@manypkg/cli": "0.19.1",
+    "@playwright/test": "^1.32.3",
     "cross-env": "7.0.3",
     "eslint": "8.29.0",
     "graphql-codegen": "0.4.0",

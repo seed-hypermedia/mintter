@@ -93,3 +93,6 @@ THUMBS_DB
 thumbs.db
 
 frontend/apps/forge/*
+/test-results/
+/playwright-report/
+/playwright/.cache/
