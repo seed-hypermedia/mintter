@@ -1,5 +1,6 @@
-import {MINTTER_LINK_PREFIX} from '@mintter/shared'
 import {Dropdown} from '@app/editor/dropdown'
+import appError from '@app/errors'
+import {useMyAccount} from '@app/models/accounts'
 import {useDraftList} from '@app/models/documents'
 import {MainActor} from '@app/models/main-actor'
 import {useSiteList} from '@app/models/sites'
@@ -11,24 +12,26 @@ import {
   useNavigationState,
   useNavRoute,
 } from '@app/utils/navigation'
+import {useOpenDraft} from '@app/utils/open-draft'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
+import {Avatar} from '@components/avatar'
 import {ContactsPrompt} from '@components/contacts-prompt'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
+import {MINTTER_LINK_PREFIX} from '@mintter/shared'
 import {
-  Button,
-  Menu,
-  XGroup,
-  TitlebarSection,
   Add,
-  Copy,
-  Globe,
   Back,
+  Button,
+  Copy,
   Forward,
-  XStack,
-  SizableText,
+  Globe,
+  Menu,
   Separator,
-  UIAvatar,
+  SizableText,
+  TitlebarSection,
+  XGroup,
+  XStack,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
 import {useActor, useSelector} from '@xstate/react'
@@ -36,10 +39,6 @@ import copyTextToClipboard from 'copy-text-to-clipboard'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
-import {useAccount, useMyAccount} from '@app/models/accounts'
-import appError from '@app/errors'
-import {Avatar} from '@components/avatar'
-import {useOpenDraft} from '@app/utils/open-draft'
 
 export function ActionButtons(props: TitleBarProps) {
   const openDraft = useOpenDraft()
