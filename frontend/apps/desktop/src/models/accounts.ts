@@ -74,11 +74,9 @@ export function useSetProfile(
     mutationFn: async (profile: Partial<Profile>) => {
       const daemonInfo = await fetchDaemonInfo()
       const accountId = daemonInfo?.accountId
-      if (!accountId) {
-        throw new Error('Account Id required to write profile')
-      }
       await accountsClient.updateProfile(profile)
-      return accountId
+      return accountId || '' // empty string here is nonsense but we need to pass the account id to the invalidation fn if we have it
+      // but accountId is empty during onboarding, so the invalidate will be nonsense but who cares
     },
     onSuccess: (accountId, ...rest) => {
       appInvalidateQueries([queryKeys.GET_ACCOUNT, accountId])

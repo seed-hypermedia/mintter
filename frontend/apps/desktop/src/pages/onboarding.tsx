@@ -1,7 +1,8 @@
 import appError from '@app/errors'
-import {useSetProfile} from '@app/models/accounts'
+import {useMyAccount, useSetProfile} from '@app/models/accounts'
 import {useAccountRegistration, useMnemonics} from '@app/models/daemon'
 import {NotFoundPage} from '@app/pages/base'
+import {AvatarForm} from '@components/avatar-form'
 import {MintterIcon} from '@components/mintter-icon'
 import {Tooltip} from '@components/tooltip'
 import {Profile as ProfileType} from '@mintter/shared'
@@ -17,6 +18,7 @@ import {
   Paragraph,
   Prev,
   SizableText,
+  Text,
   TextArea,
   XStack,
   YStack,
@@ -275,11 +277,17 @@ function Mnemonics(props: OnboardingStepProps) {
 function Profile(props: OnboardingStepProps) {
   const setProfile = useSetProfile({
     onError: (e) => appError('Failed to set your profile', e),
+    onSuccess: () => props.dispatch({type: 'next'}),
   })
-  const submitValue = useRef({alias: '', bio: ''} as ProfileType)
+  const [displayAvatar, setDisplayAvatar] = useState<string | null>(null)
+  const submitValue = useRef({alias: '', bio: '', avatar: ''} as ProfileType)
   function onSubmit() {
     setProfile.mutate(submitValue.current)
   }
+  const avatarUrl = displayAvatar
+    ? `http://localhost:55001/ipfs/${displayAvatar}`
+    : undefined
+  console.log({avatarUrl})
   return (
     <StepWrapper>
       <XStack flex={1} gap="$10">
@@ -287,6 +295,17 @@ function Profile(props: OnboardingStepProps) {
           <CurrentStep />
           <H1>Profile</H1>
           <H1>Information</H1>
+          <AvatarForm
+            onAvatarUpload={async (avatar) => {
+              console.log('has new avatar', avatar)
+              submitValue.current.avatar = avatar
+              setDisplayAvatar(avatar)
+            }}
+            url={avatarUrl}
+          />
+          {displayAvatar === null ? (
+            <Text>Drag or click to select a profile photo</Text>
+          ) : null}
         </YStack>
 
         <YStack flex={2}>

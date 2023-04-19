@@ -8,23 +8,22 @@ import toast from 'react-hot-toast'
 export function AvatarForm({
   size = '$12',
   url,
+  onAvatarUpload,
 }: {
   size?: SizeTokens
   url?: string
+  onAvatarUpload: (avatar: string) => Promise<void>
 }) {
-  const setProfile = useSetProfile()
   const account = useMyAccount()
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files
     const file = fileList?.[0]
     if (!file) return
     handleUpload(file)
-      .then(() => {
-        toast.success('Avatar changed')
-      })
+      .then(() => {})
       .catch((e) => {
         console.error(e)
-        toast.error('Failed to upload avatar')
+        toast.error('Failed to upload avatar. ' + e.message)
       })
       .finally(() => {
         event.target.value = ''
@@ -39,11 +38,11 @@ export function AvatarForm({
       body: formData,
     })
     const data = await response.text()
-    await setProfile.mutateAsync({
-      avatar: data,
-    })
+    if (response.status !== 201) {
+      throw new Error(data)
+    }
+    await onAvatarUpload(data)
   }
-
   return (
     <Tooltip content="Click or Drag to Set Avatar Image">
       <Stack hoverStyle={{opacity: 0.7}}>

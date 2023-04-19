@@ -123,6 +123,10 @@ export function ProfileForm({
     <XStack gap="$4">
       <YStack flex={0} alignItems="center" flexGrow={0}>
         <AvatarForm
+          onAvatarUpload={async (avatar) => {
+            await setProfile.mutateAsync(new Profile({avatar}))
+            toast.success('Avatar changed')
+          }}
           url={
             profile?.avatar
               ? `http://localhost:55001/ipfs/${profile.avatar}`
