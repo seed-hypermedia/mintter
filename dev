@@ -74,8 +74,8 @@ def main():
 
     @cmd(cmds, "build-frontend", "Build production bundle of the frontend web app.")
     def build_frontend(args):
-        run("plz build //:yarn")
-        return run("yarn build")
+        run("plz build //:yarn") 
+        return run("yarn desktop:prod")
 
     @cmd(
         cmds, "build-desktop", "Builds the Tauri desktop app for the current platform."
