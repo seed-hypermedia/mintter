@@ -1,6 +1,3 @@
-import {draftsClient} from '@app/api-clients'
-import {queryKeys} from '@app/models/query-keys'
-import {appInvalidateQueries} from '@app/query-client'
 import {Buffer} from 'buffer'
 import {
   createContext,
@@ -9,9 +6,8 @@ import {
   useEffect,
   useReducer,
 } from 'react'
-import {toast} from 'react-hot-toast'
 import {openWindow} from './open-window'
-import {Document} from '@mintter/shared'
+import {decodeRouteFromPath, encodeRouteToPath} from './route-encoding'
 
 global.Buffer = global.Buffer || Buffer
 
@@ -111,22 +107,6 @@ try {
   console.error('Error parsing initial route! ', e)
 }
 
-function encodeRouteToPath(route: NavRoute): string {
-  return `/${Buffer.from(JSON.stringify(route))
-    .toString('base64')
-    .replaceAll('=', '-')
-    .replaceAll('+', '_')}`
-}
-
-function decodeRouteFromPath(initRoute: string): NavRoute {
-  return JSON.parse(
-    Buffer.from(
-      initRoute.replaceAll('_', '+').replaceAll('-', '='),
-      'base64',
-    ).toString('utf8'),
-  )
-}
-
 export function NavigationProvider({
   children,
   initialNav = {
@@ -206,28 +186,5 @@ export function useNavigate(mode: NavMode = 'push') {
     } else {
       dispatch({type: mode === 'replace' ? 'replace' : 'push', route})
     }
-  }
-}
-
-export function useNavigationActions() {
-  const navigate = useNavigate()
-  const spawn = useNavigate('spawn')
-  function openNewDraft(newWindow = true) {
-    draftsClient
-      .createDraft({})
-      .then((doc: Document) => {
-        appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
-        if (newWindow) {
-          spawn({key: 'draft', documentId: doc.id})
-        } else {
-          navigate({key: 'draft', documentId: doc.id})
-        }
-      })
-      .catch(() => {
-        toast.error('Failed to create new draft')
-      })
-  }
-  return {
-    openNewDraft,
   }
 }

@@ -7,7 +7,6 @@ import {useDaemonReady} from '@app/node-status-context'
 import {PublicationActor} from '@app/publication-machine'
 import {
   useNavigate,
-  useNavigationActions,
   useNavigationDispatch,
   useNavigationState,
   useNavRoute,
@@ -40,9 +39,10 @@ import {PublishShareButton} from './publish-share'
 import {useAccount, useMyAccount} from '@app/models/accounts'
 import appError from '@app/errors'
 import {Avatar} from '@components/avatar'
+import {useOpenDraft} from '@app/utils/open-draft'
 
 export function ActionButtons(props: TitleBarProps) {
-  const nav = useNavigationActions()
+  const openDraft = useOpenDraft()
   const route = useNavRoute()
   const isDaemonReady = useDaemonReady()
 
@@ -89,7 +89,7 @@ export function ActionButtons(props: TitleBarProps) {
               onPress={(e) => {
                 e.preventDefault()
                 // @ts-ignore
-                nav.openNewDraft(!e.shiftKey)
+                openDraft(!e.shiftKey)
               }}
             >
               Write

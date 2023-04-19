@@ -1,11 +1,8 @@
 import {Dropdown} from '@app/editor/dropdown'
 import {useFind} from '@app/editor/find'
 import {prefetchDraft, useDraftList} from '@app/models/documents'
-import {
-  DraftRoute,
-  useNavigate,
-  useNavigationActions,
-} from '@app/utils/navigation'
+import {DraftRoute, useNavigate} from '@app/utils/navigation'
+import {useOpenDraft} from '@app/utils/open-draft'
 import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
@@ -31,7 +28,7 @@ import {PageProps} from './base'
 export default function DraftList(props: PageProps) {
   let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
-  const nav = useNavigationActions()
+  const openDraft = useOpenDraft()
   return (
     <>
       <MainWrapper>
@@ -48,7 +45,7 @@ export default function DraftList(props: PageProps) {
             <EmptyList
               description="You have no Drafts yet."
               action={() => {
-                nav.openNewDraft(false)
+                openDraft(false)
               }}
             />
           )}

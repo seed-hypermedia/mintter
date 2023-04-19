@@ -2451,7 +2451,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mintter/desktop@workspace:frontend/apps/desktop":
+"@mintter/desktop@workspace:*, @mintter/desktop@workspace:frontend/apps/desktop":
   version: 0.0.0-use.local
   resolution: "@mintter/desktop@workspace:frontend/apps/desktop"
   dependencies:
@@ -2590,6 +2590,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mintter/e2e-dev-server@workspace:frontend/e2e"
   dependencies:
+    "@mintter/desktop": "workspace:*"
     esbuild: ^0.17.17
     esbuild-runner: ^2.2.2
     fs-extra: ^11.1.1
