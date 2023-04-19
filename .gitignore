@@ -96,4 +96,4 @@ frontend/apps/forge/*
 /test-results/
 /playwright-report/
 /playwright/.cache/
-test-mtt-data
+.mtt-test
