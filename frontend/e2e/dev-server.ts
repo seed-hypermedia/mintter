@@ -39,7 +39,7 @@ function startup() {
     runDaemon('Daemon', './dev', [
       'run-backend',
       '-repo-path',
-      '/Users/ericvicenti/Code/mintter/test-mtt-data',
+      join(mttRootDir, '.mtt-test'),
     ]),
     runDaemon('Vite', 'yarn', ['desktop']),
   ]
@@ -57,9 +57,9 @@ function startup() {
 }
 
 async function prepare() {
-  const testDataDir = join(mttRootDir, 'test-mtt-data')
-  console.log('removing test data dir: ' + testDataDir)
-  await remove(testDataDir)
+  let daemonLocation = join(mttRootDir, '.mtt-test')
+  console.log('removing test data dir: ' + daemonLocation)
+  await remove(daemonLocation)
 }
 
 prepare().then(() => startup())

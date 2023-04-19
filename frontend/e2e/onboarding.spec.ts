@@ -39,8 +39,10 @@ test('welcome steps', async ({page}) => {
   ).toBeVisible()
   await page.getByText('Open Mintter App').click()
   await expect(page.getByText('You have no Publications yet.')).toBeVisible()
-  // await goToRoute(page, {key: 'settings'})
-  // await expect(page.getByText('Profile information')).toBeVisible()
-  // await expect(page.getByLabel('Alias').inputValue()).toEqual('Monkey')
-  // await expect(page.getByLabel('Bio').inputValue()).toEqual(`I'm a flying monkey`)
+  await goToRoute(page, {key: 'settings'})
+  await expect(page.getByText('Profile information')).toBeVisible()
+  await expect(page.getByLabel('Alias').inputValue()).toEqual('Monkey')
+  await expect(page.getByLabel('Bio').inputValue()).toEqual(
+    `I'm a flying monkey`,
+  )
 })
