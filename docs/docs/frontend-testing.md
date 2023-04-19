@@ -44,7 +44,7 @@ describe('awesome test', () => {
 
 `createTestQueryClient` can accept a certain number of parameters to mock and it will return them alongside with the `client`, so you can assert tests with them.
 
-checkout the [`test/utils`](../frontend/app/src/test/utils.tsx) file and see how internally works.
+checkout the `test/utils` (frontend/app/src/test/utils.tsx) file and see how internally works.
 
 We are using [react-query's `QueryClient`](https://tanstack.com/query/v4/docs/reference/QueryClient) to mock the backend. this way we can test the app almost as if it was running alongisde with the backend and with minimal change from how our users will interact with it. We also use [Cypress component testing](https://docs.cypress.io/guides/component-testing) for the same reason, because our app is running on the native webview, rendering to an actual webview makes more sense in terms of reliability. It's not perfect, but god enough.
 
