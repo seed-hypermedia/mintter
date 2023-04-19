@@ -151,17 +151,6 @@ export const MintterEditor: MintterEditor = {
           }),
         )
       }
-
-      if (type == 'setSubtitle') {
-        result.push(
-          new DocumentChange({
-            op: {
-              case: 'setSubtitle',
-              value,
-            },
-          }),
-        )
-      }
     })
 
     return result
@@ -222,7 +211,7 @@ function shouldOverride(
   if (lastChange) {
     let [op, blockId] = lastChange
     if (current[0] == op) {
-      if (op == 'setTitle' || op == 'setSubtitle' || current[1] == blockId) {
+      if (op == 'setTitle' || current[1] == blockId) {
         return true
       }
     }

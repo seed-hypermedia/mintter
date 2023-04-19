@@ -25,9 +25,8 @@ type docState struct {
 	parents    map[cid.Cid]struct{} // heads = applied - parents
 
 	// changeID => value
-	title     map[cid.Cid]string
-	subtitle  map[cid.Cid]string
-	publisher map[cid.Cid]cid.Cid
+	title  map[cid.Cid]string
+	webURL map[cid.Cid]string
 
 	// blockID => changeID => block value
 	blocks map[string]map[cid.Cid]*documents.Block
@@ -43,8 +42,7 @@ func newDocState(id, author cid.Cid, createTime time.Time) *docState {
 		applied:    make(map[cid.Cid]*docChange),
 		parents:    make(map[cid.Cid]struct{}),
 		title:      make(map[cid.Cid]string),
-		subtitle:   make(map[cid.Cid]string),
-		publisher:  make(map[cid.Cid]cid.Cid),
+		webURL:     make(map[cid.Cid]string),
 		blocks:     make(map[string]map[cid.Cid]*documents.Block),
 	}
 }
@@ -78,8 +76,6 @@ func (ds *docState) applyChange(vc vcs.VerifiedChange) error {
 		switch op := cc.Op.(type) {
 		case *documents.DocumentChange_SetTitle:
 			ds.title[vc.Cid()] = op.SetTitle
-		case *documents.DocumentChange_SetSubtitle:
-			ds.subtitle[vc.Cid()] = op.SetSubtitle
 		case *documents.DocumentChange_MoveBlock_:
 			if err := ds.tree.SetNodePosition(site, op.MoveBlock.BlockId, op.MoveBlock.Parent, op.MoveBlock.LeftSibling); err != nil {
 				return fmt.Errorf("failed to apply move operation: %w", err)
@@ -94,12 +90,8 @@ func (ds *docState) applyChange(vc vcs.VerifiedChange) error {
 			}
 			op.ReplaceBlock.Revision = vc.Cid().String()
 			ds.blocks[op.ReplaceBlock.Id][vc.Cid()] = op.ReplaceBlock
-		case *documents.DocumentChange_SetPublisher:
-			pubid, err := cid.Decode(op.SetPublisher)
-			if err != nil {
-				return fmt.Errorf("failed to decode publisher id %s: %w", op.SetPublisher, err)
-			}
-			ds.publisher[vc.Cid()] = pubid
+		case *documents.DocumentChange_SetWebUrl:
+			ds.webURL[vc.Cid()] = op.SetWebUrl
 		default:
 			panic("BUG: unhandled document change")
 		}
@@ -133,16 +125,11 @@ func (ds *docState) hydrate() *documents.Document {
 	docpb := &documents.Document{
 		Id:         ds.id.String(),
 		Title:      ds.getTitle(),
-		Subtitle:   ds.getSubtitle(),
 		Author:     ds.author.String(),
+		WebUrl:     ds.getWebURL(),
 		Editors:    make([]string, 0, len(ds.editors)),
 		CreateTime: timestamppb.New(ds.createTime),
 		UpdateTime: timestamppb.New(ds.maxClock.Time()),
-	}
-
-	pub := ds.getPublisher()
-	if pub.Defined() {
-		docpb.Publisher = pub.String()
 	}
 
 	for k := range ds.editors {
@@ -183,17 +170,9 @@ func (ds *docState) getTitle() string {
 	return lww.Value
 }
 
-func (ds *docState) getSubtitle() string {
+func (ds *docState) getWebURL() string {
 	var lww crdt.LWW[string]
-	for c, str := range ds.subtitle {
-		lww.Set(c.KeyString(), ds.applied[c].vc.Decoded.Time.Pack(), str)
-	}
-	return lww.Value
-}
-
-func (ds *docState) getPublisher() cid.Cid {
-	var lww crdt.LWW[cid.Cid]
-	for c, pub := range ds.publisher {
+	for c, pub := range ds.webURL {
 		lww.Set(c.KeyString(), ds.applied[c].vc.Decoded.Time.Pack(), pub)
 	}
 	return lww.Value

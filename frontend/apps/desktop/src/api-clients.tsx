@@ -26,7 +26,6 @@ export const toastInterceptor: Interceptor = (next) => async (req) => {
     // console.log(`🔃 to ${req.method.name} `, req.message, result.?message)
     return result
   } catch (e) {
-    // toast.error(e.message)
     toast.error(
       <span
         onClick={() => {
@@ -35,7 +34,7 @@ export const toastInterceptor: Interceptor = (next) => async (req) => {
         style={{cursor: 'pointer'}}
       >
         {/** @ts-ignore */}
-        🚨 {req.method.name}: {e.message}
+        🚨 {req.method.name}: {JSON.stringify(e)}
       </span>,
     )
   }

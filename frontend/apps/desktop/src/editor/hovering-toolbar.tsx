@@ -265,7 +265,7 @@ function handledErrors<A, V>(unsafeHandler: (a: A) => V) {
       return unsafeHandler(a)
     } catch (e: unknown) {
       //@ts-ignore
-      toast.error(e.message)
+      toast.error(JSON.stringify(e))
       console.error(e)
       //@ts-ignore
       throw new Error(e)

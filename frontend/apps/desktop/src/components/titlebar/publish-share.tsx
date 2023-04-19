@@ -128,25 +128,17 @@ function PublishButtons({
 }
 
 function PublishButton({
-  publisherId,
+  webUrl,
   onPress,
   disabled,
   isDraft,
 }: {
-  publisherId?: null | string
+  webUrl?: null | string
   onPress: (e: GestureReponderEvent) => void
   disabled?: boolean
   isDraft?: boolean
 }) {
-  // const sites = useSiteList()
-  const publisher = useAccount(publisherId || undefined)
-  // const site = sites.data?.find((site) => site.publisherId === publisherId)
-  const publisherLabel = publisherId
-    ? publisher.data?.profile?.alias || null
-    : null
-  const draftActionLabel = publisherId
-    ? `Publish to ${publisherLabel}`
-    : 'Publish'
+  const draftActionLabel = webUrl ? `Publish to ${webUrl}` : 'Publish'
   return (
     <PopoverPrimitive.Trigger asChild disabled={disabled}>
       {isDraft ? (
@@ -168,7 +160,7 @@ function PublishButton({
           theme="green"
         >
           <Globe size={16} />
-          {publisherLabel}
+          {webUrl}
         </Button>
       )}
     </PopoverPrimitive.Trigger>
@@ -207,24 +199,25 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
   const publications = useDocPublications(docId)
   let isSaving = useRef(false)
 
-  const [publisherId, setPublisherId] = useState<null | string>(null)
+  const [webUrl, setWebUrl] = useState<null | string>(null)
   useEffect(() => {
     if (mainActor.type == 'publication') {
       isSaving.current = false
 
       const state = mainActor.actor.getSnapshot()
-      setPublisherId(state?.context.publication?.document.publisher || null)
+
+      setWebUrl(state?.context.publication?.document.webUrl || null)
 
       const sub = mainActor.actor.subscribe((state) => {
-        setPublisherId(state?.context.publication?.document.publisher || null)
+        setWebUrl(state?.context.publication?.document.webUrl || null)
       })
       return sub.unsubscribe
     } else {
       const state = mainActor.actor.getSnapshot()
-      setPublisherId(state?.context.draft?.publisher || null)
+      setWebUrl(state?.context.draft?.webUrl || null)
 
       const sub = mainActor.actor.subscribe((state) => {
-        setPublisherId(state?.context.draft?.publisher || null)
+        setWebUrl(state?.context.draft?.webUrl || null)
 
         if (state.matches('editing.saving')) {
           // console.log('subscribe change TRUE!', state.value)
@@ -252,7 +245,7 @@ export function PublishShareButton({mainActor}: {mainActor: MainActor}) {
         }}
       >
         <PublishButton
-          publisherId={publisherId}
+          webUrl={webUrl}
           disabled={!isDaemonReady || isSaving.current}
           isDraft={mainActor.type === 'draft'}
           onPress={(e) => {

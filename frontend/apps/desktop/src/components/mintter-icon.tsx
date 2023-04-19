@@ -1,9 +1,28 @@
 import {XStack} from '@mintter/ui'
 
-export function MintterIcon() {
+type IconSize = '$1' | '$2' | '$3'
+
+let sizes = {
+  $1: 20,
+  $2: 40,
+  $3: 60,
+} as const
+
+export function MintterIcon({
+  size: propSize = '$1',
+  color,
+}: {
+  size?: IconSize
+  color?: string
+}) {
+  let size = sizes[propSize]
   return (
-    <XStack width={20} height={20} data-tauri-drag-region>
-      <svg viewBox="0 0 832 960" xmlns="http://www.w3.org/2000/svg">
+    <XStack width={size} height={size}>
+      <svg
+        viewBox="0 0 832 960"
+        xmlns="http://www.w3.org/2000/svg"
+        fill={color}
+      >
         <path
           fillRule="evenodd"
           clipRule="evenodd"

@@ -8,9 +8,8 @@ import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
 import {plugins} from '@app/editor/plugins'
 import {getEditorBlock} from '@app/editor/utils'
 import {useDocChanges} from '@app/models/changes'
-import {usePublication} from '@app/models/documents'
 import {useDocCitations} from '@app/models/content-graph'
-import {queryKeys} from '@app/models/query-keys'
+import {usePublication} from '@app/models/documents'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {classnames} from '@app/utils/classnames'
@@ -20,18 +19,8 @@ import {ChangesList} from '@components/changes-list'
 import {Citations} from '@components/citations'
 import {Conversations} from '@components/conversations'
 import Footer, {FooterButton} from '@components/footer'
-import {Icon} from '@components/icon'
 import {Placeholder} from '@components/placeholder-box'
 import {MttLink} from '@mintter/shared'
-import {useQueryClient} from '@tanstack/react-query'
-import {listen} from '@tauri-apps/api/event'
-import {useActor, useInterpret, useMachine} from '@xstate/react'
-import {Allotment} from 'allotment'
-import 'allotment/dist/style.css'
-import {useEffect, useMemo, useRef, useState} from 'react'
-import {ErrorBoundary} from 'react-error-boundary'
-import {Editor as SlateEditor} from 'slate'
-import {ReactEditor} from 'slate-react'
 import {
   Button,
   Comment,
@@ -44,16 +33,25 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
+import {useQueryClient} from '@tanstack/react-query'
+import {listen} from '@tauri-apps/api/event'
+import {useActor, useInterpret} from '@xstate/react'
+import {Allotment} from 'allotment'
+import 'allotment/dist/style.css'
+import {useEffect, useMemo, useRef, useState} from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
+import {Editor as SlateEditor} from 'slate'
+import {ReactEditor} from 'slate-react'
 
-import {PageProps} from './base'
 import {AppError} from '@app/root'
+import {PageProps} from './base'
 
 function pluralS(length = 0) {
   return length === 1 ? '' : 's'
 }
 
 export default function PublicationPage({mainActor}: PageProps) {
-  if (mainActor.type !== 'publication')
+  if (mainActor?.type !== 'publication')
     throw new Error('Publication page expects publication actor')
   const publicationActor = mainActor.actor
   const route = useNavRoute()

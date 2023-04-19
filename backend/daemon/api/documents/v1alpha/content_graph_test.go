@@ -20,7 +20,6 @@ func TestBacklinks(t *testing.T) {
 	require.NotNil(t, draft)
 	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",

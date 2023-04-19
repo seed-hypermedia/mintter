@@ -1,4 +1,4 @@
-import OnboardingPage from '@app/pages/onboarding/index'
+import {Onboarding} from '@app/pages/onboarding'
 import {ConnectionStatus, Info, PeerInfo} from '@mintter/shared'
 import {
   createContext,
@@ -52,8 +52,10 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
     }
   }, [])
 
+  // return <Onboarding />
+
   if (infoQuery.data === null) {
-    return <OnboardingPage />
+    return <Onboarding />
   }
 
   if (infoQuery.status == 'success') {

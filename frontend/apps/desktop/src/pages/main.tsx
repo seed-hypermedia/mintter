@@ -4,7 +4,6 @@ import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {TitleBar} from '@components/titlebar'
-import {TooltipProvider} from '@components/tooltip'
 import {Heading, YStack} from '@mintter/ui'
 import {listen as tauriListen} from '@tauri-apps/api/event'
 import {lazy, useEffect, useState} from 'react'
@@ -75,12 +74,10 @@ export default function Main() {
         }}
       >
         <FindContextProvider value={{search, setSearch}}>
-          <TooltipProvider>
-            <TitleBar clean={isSettings} mainActor={mainActor} />
-            {/* @ts-ignore */}
-            <PageComponent mainActor={mainActor} />
-            {!isSettings ? <QuickSwitcher /> : null}
-          </TooltipProvider>
+          <TitleBar clean={isSettings} mainActor={mainActor} />
+          {/* @ts-ignore */}
+          <PageComponent mainActor={mainActor} />
+          {!isSettings ? <QuickSwitcher /> : null}
         </FindContextProvider>
       </ErrorBoundary>
     </YStack>

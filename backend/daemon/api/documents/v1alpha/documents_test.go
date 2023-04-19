@@ -36,7 +36,6 @@ func TestBug_BrokenPublicationList(t *testing.T) {
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -75,7 +74,6 @@ func TestGetPublicationWithDraftID(t *testing.T) {
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -101,7 +99,6 @@ func TestCreateDraftFromPublication(t *testing.T) {
 	require.NoError(t, err)
 	draft = updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -170,7 +167,6 @@ func TestBug_MissingLinkTarget(t *testing.T) {
 	require.NoError(t, err)
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -267,7 +263,6 @@ func TestAPIGetDraft_WithUpdate(t *testing.T) {
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -312,7 +307,6 @@ func TestListDrafts(t *testing.T) {
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -339,7 +333,6 @@ func TestUpdateDraftSmoke(t *testing.T) {
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-			{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 			{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 			{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 				Id:   "b1",
@@ -367,7 +360,6 @@ func TestAPIUpdateDraft(t *testing.T) {
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -377,11 +369,10 @@ func TestAPIUpdateDraft(t *testing.T) {
 	})
 
 	want := &documents.Document{
-		Id:       draft.Id,
-		Title:    "My new document title",
-		Subtitle: "This is my document's abstract",
-		Author:   draft.Author,
-		Editors:  []string{draft.Author},
+		Id:      draft.Id,
+		Title:   "My new document title",
+		Author:  draft.Author,
+		Editors: []string{draft.Author},
 		Children: []*documents.BlockNode{
 			{
 				Block: &documents.Block{
@@ -430,9 +421,6 @@ func TestUpdateDraft_Annotations(t *testing.T) {
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{
 			SetTitle: "Hello Drafts V2",
-		}},
-		{Op: &documents.DocumentChange_SetSubtitle{
-			SetSubtitle: "This is a more granular drafts API",
 		}},
 		{Op: &documents.DocumentChange_MoveBlock_{
 			MoveBlock: &documents.DocumentChange_MoveBlock{
@@ -503,9 +491,6 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 				{Op: &documents.DocumentChange_SetTitle{
 					SetTitle: "Hello Drafts V2",
 				}},
-				{Op: &documents.DocumentChange_SetSubtitle{
-					SetSubtitle: "This is a more granular drafts API",
-				}},
 				{Op: &documents.DocumentChange_MoveBlock_{
 					MoveBlock: &documents.DocumentChange_MoveBlock{
 						BlockId:     "b1",
@@ -558,7 +543,6 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 			Author:     draft.Author,
 			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
-			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
 			UpdateTime: doc.UpdateTime,
 			Children: []*documents.BlockNode{
@@ -615,7 +599,6 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 			Author:     draft.Author,
 			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
-			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
 			UpdateTime: doc.UpdateTime,
 			Children: []*documents.BlockNode{
@@ -666,7 +649,6 @@ func TestAPIUpdateDraft_Complex(t *testing.T) {
 			Author:     draft.Author,
 			Editors:    []string{draft.Author},
 			Title:      "Hello Drafts V2",
-			Subtitle:   "This is a more granular drafts API",
 			CreateTime: draft.CreateTime,
 			UpdateTime: doc.UpdateTime,
 			Children: []*documents.BlockNode{
@@ -729,7 +711,6 @@ func TestAPIPublishDraft(t *testing.T) {
 
 	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
 		{Op: &documents.DocumentChange_SetTitle{SetTitle: "My new document title"}},
-		{Op: &documents.DocumentChange_SetSubtitle{SetSubtitle: "This is my document's abstract"}},
 		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
 		{Op: &documents.DocumentChange_ReplaceBlock{ReplaceBlock: &documents.Block{
 			Id:   "b1",
@@ -915,14 +896,14 @@ func TestPublisherAndEditors(t *testing.T) {
 		DocumentId: draft.Id,
 		Changes: []*documents.DocumentChange{
 			{Op: &documents.DocumentChange_SetTitle{SetTitle: "Document title"}},
-			{Op: &documents.DocumentChange_SetPublisher{SetPublisher: api.me.MustGet().AccountID().String()}},
+			{Op: &documents.DocumentChange_SetWebUrl{SetWebUrl: "http://example.com"}},
 		},
 	})
 	require.NoError(t, err)
 
 	draft, err = api.GetDraft(ctx, &documents.GetDraftRequest{DocumentId: draft.Id})
 	require.NoError(t, err)
-	require.Equal(t, api.me.MustGet().AccountID().String(), draft.Publisher)
+	require.Equal(t, "http://example.com", draft.WebUrl)
 	require.Equal(t, "Document title", draft.Title)
 	wantEditors := []string{api.me.MustGet().AccountID().String()}
 	require.Equal(t, wantEditors, draft.Editors)

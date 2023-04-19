@@ -199,14 +199,6 @@ export class DocumentChange extends Message<DocumentChange> {
     case: "setTitle";
   } | {
     /**
-     * New subtitle to set on the document.
-     *
-     * @generated from field: string set_subtitle = 2;
-     */
-    value: string;
-    case: "setSubtitle";
-  } | {
-    /**
      * Move operation that creates/moves a block within the document hierarchy.
      *
      * @generated from field: com.mintter.documents.v1alpha.DocumentChange.MoveBlock move_block = 3;
@@ -231,12 +223,12 @@ export class DocumentChange extends Message<DocumentChange> {
     case: "deleteBlock";
   } | {
     /**
-     * Set the publisher ID on the document.
+     * Sets Web URL where site is published.
      *
-     * @generated from field: string set_publisher = 6;
+     * @generated from field: string set_web_url = 6;
      */
     value: string;
-    case: "setPublisher";
+    case: "setWebUrl";
   } | { case: undefined; value?: undefined } = { case: undefined };
 
   constructor(data?: PartialMessage<DocumentChange>) {
@@ -248,11 +240,10 @@ export class DocumentChange extends Message<DocumentChange> {
   static readonly typeName = "com.mintter.documents.v1alpha.DocumentChange";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "set_title", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
-    { no: 2, name: "set_subtitle", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
     { no: 3, name: "move_block", kind: "message", T: DocumentChange_MoveBlock, oneof: "op" },
     { no: 4, name: "replace_block", kind: "message", T: Block, oneof: "op" },
     { no: 5, name: "delete_block", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
-    { no: 6, name: "set_publisher", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
+    { no: 6, name: "set_web_url", kind: "scalar", T: 9 /* ScalarType.STRING */, oneof: "op" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DocumentChange {
@@ -749,13 +740,6 @@ export class Document extends Message<Document> {
   title = "";
 
   /**
-   * Subtitle of the document.
-   *
-   * @generated from field: string subtitle = 3;
-   */
-  subtitle = "";
-
-  /**
    * Output only. Author ID of the document.
    *
    * @generated from field: string author = 4;
@@ -763,11 +747,11 @@ export class Document extends Message<Document> {
   author = "";
 
   /**
-   * Account ID of a publisher if any.
+   * Web URL where this document is claimed to be published at.
    *
-   * @generated from field: string publisher = 10;
+   * @generated from field: string web_url = 10;
    */
-  publisher = "";
+  webUrl = "";
 
   /**
    * Output only. Account IDs of all the editors of the document.
@@ -815,9 +799,8 @@ export class Document extends Message<Document> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "title", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "subtitle", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "author", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 10, name: "publisher", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "web_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 11, name: "editors", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 9, name: "children", kind: "message", T: BlockNode, repeated: true },
     { no: 6, name: "create_time", kind: "message", T: Timestamp },

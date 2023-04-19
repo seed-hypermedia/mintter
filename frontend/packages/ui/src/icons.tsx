@@ -48,4 +48,6 @@ export {
   CheckCircle2 as ReleaseNotes,
   Medal as Acknowledgements,
   ImagePlus as ImageIcon,
+  ArrowRight as Next,
+  ArrowLeft as Prev,
 } from '@tamagui/lucide-icons'

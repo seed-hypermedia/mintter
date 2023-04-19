@@ -1,5 +1,4 @@
-import {accountsClient, daemonClient} from '@app/api-clients'
-import {createAuthService} from '@app/auth-machine'
+import {daemonClient} from '@app/api-clients'
 import {Box} from '@app/components/box'
 import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
@@ -19,7 +18,8 @@ import {
 import {TableList} from '@app/table-list'
 import {ObjectKeys} from '@app/utils/object-keys'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
-import {Avatar} from '@components/avatar'
+import {AvatarForm} from '@components/avatar-form'
+import {Tooltip} from '@components/tooltip'
 import {AccessURLRow} from '@components/url'
 import {
   Member,
@@ -32,7 +32,6 @@ import {
   Add,
   Back,
   Button,
-  Camera,
   Close,
   Copy,
   Dialog,
@@ -45,45 +44,17 @@ import {
   Separator,
   SizableText,
   Spinner,
-  Stack,
   Tabs,
   TabsContentProps,
   TextArea,
-  Tooltip,
   XGroup,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {styled} from '@stitches/react'
-import {listen} from '@tauri-apps/api/event'
 import copyTextToClipboard from 'copy-text-to-clipboard'
-import {ChangeEvent, useEffect, useMemo, useRef, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
-
-function SimpleTooltip({
-  children,
-  content,
-}: {
-  children: React.ReactNode
-  content: React.ReactNode | string
-}) {
-  return (
-    <Tooltip placement="top-end">
-      <Tooltip.Trigger>{children}</Tooltip.Trigger>
-      <Tooltip.Content
-        margin={0}
-        padding={0}
-        paddingHorizontal="$2"
-        theme="inverse"
-      >
-        <Tooltip.Arrow />
-        <SizableText margin={0} padding={0} size="$1">
-          {content}
-        </SizableText>
-      </Tooltip.Content>
-    </Tooltip>
-  )
-}
 
 export default function Settings({}: {}) {
   return (
@@ -133,7 +104,7 @@ export default function Settings({}: {}) {
   )
 }
 
-function ProfileForm({
+export function ProfileForm({
   profile,
   accountId,
 }: {
@@ -152,6 +123,10 @@ function ProfileForm({
     <XStack gap="$4">
       <YStack flex={0} alignItems="center" flexGrow={0}>
         <AvatarForm
+          onAvatarUpload={async (avatar) => {
+            await setProfile.mutateAsync(new Profile({avatar}))
+            toast.success('Avatar changed')
+          }}
           url={
             profile?.avatar
               ? `http://localhost:55001/ipfs/${profile.avatar}`
@@ -180,21 +155,8 @@ function ProfileForm({
               />
             </XGroup.Item>
             <XGroup.Item>
-              <Tooltip placement="top-end">
-                <Tooltip.Trigger>
-                  <Button size="$3" icon={Copy} onPress={onCopy} />
-                </Tooltip.Trigger>
-                <Tooltip.Content
-                  margin={0}
-                  padding={0}
-                  paddingHorizontal="$2"
-                  theme="inverse"
-                >
-                  <Tooltip.Arrow />
-                  <SizableText margin={0} padding={0} size="$1">
-                    Copy your account id
-                  </SizableText>
-                </Tooltip.Content>
+              <Tooltip content="Copy your account id">
+                <Button size="$3" icon={Copy} onPress={onCopy} />
               </Tooltip>
             </XGroup.Item>
           </XGroup>
@@ -245,69 +207,6 @@ export function ProfileInfo() {
   }
 
   return null
-}
-
-function AvatarForm({url}: {url?: string}) {
-  const setProfile = useSetProfile()
-  const account = useMyAccount()
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const fileList = event.target.files
-    const file = fileList?.[0]
-    if (!file) return
-    handleUpload(file)
-      .then(() => {
-        toast.success('Avatar changed')
-      })
-      .catch((e) => {
-        console.error(e)
-        toast.error('Failed to upload avatar')
-      })
-      .finally(() => {
-        event.target.value = ''
-      })
-  }
-
-  const handleUpload = async (file: File) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    const response = await fetch('http://localhost:55001/ipfs/file-upload', {
-      method: 'POST',
-      body: formData,
-    })
-    const data = await response.text()
-    await setProfile.mutateAsync({
-      avatar: data,
-    })
-  }
-
-  return (
-    <SimpleTooltip content="Click or Drag to Set Avatar Image">
-      <Stack hoverStyle={{opacity: 0.7}}>
-        <input
-          type="file"
-          onChange={handleFileChange}
-          style={{
-            opacity: 0,
-            display: 'flex',
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            zIndex: 100,
-            cursor: 'pointer',
-          }}
-        />
-        <Avatar
-          alias={account.data?.profile?.alias || ''}
-          accountId={account.data?.id}
-          size="$12"
-          url={url}
-          color="$blue12"
-        />
-      </Stack>
-    </SimpleTooltip>
-  )
 }
 
 function DevicesInfo({}: {}) {

@@ -6,7 +6,6 @@ import {mouseMachine} from '../mouse-machine'
 import {globalStyles} from '../stitches.config'
 import {themeMachine, ThemeProvider} from '../theme'
 import {NavState} from '../utils/navigation'
-import {TooltipProvider} from '@components/tooltip'
 import {
   Account,
   Document,
@@ -186,7 +185,7 @@ export function TestProvider({client, children}: TestProviderProps) {
               },
             }}
           >
-            <TooltipProvider>{children}</TooltipProvider>
+            {children}
           </FindContextProvider>
 
           {/* // <Toaster position="bottom-right" /> */}
