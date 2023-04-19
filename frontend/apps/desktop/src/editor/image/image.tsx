@@ -209,6 +209,7 @@ function ImageForm({service}: InnerImageProps) {
   const [state, send] = useActor(service)
   const [tabState, setTabState] = useState('upload')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [fileName, setFileName] = useState<{name: string, color: string}>({name: 'Upload File', color: 'black'})
   const selected = useSelected()
   const focused = useFocused()
 
@@ -223,7 +224,11 @@ function ImageForm({service}: InnerImageProps) {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files
     if (fileList) {
-      setSelectedFile(fileList[0])
+      if (fileList[0].size <= 62914560) {
+        setSelectedFile(fileList[0])
+        setFileName({name: fileList[0].name, color: 'black'})
+      } else 
+        setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
 
@@ -355,7 +360,10 @@ function ImageForm({service}: InnerImageProps) {
                         overflow='hidden'
                         whiteSpace='nowrap'
                         textOverflow='ellipsis'
-                      >{selectedFile && selectedFile.name ? (selectedFile.name) : 'Upload File'}</SizableText>
+                        color={fileName.color}
+                      >
+                        {fileName.name}
+                      </SizableText>
                     </Label>
                     <input
                       id="file-upload"
@@ -374,7 +382,8 @@ function ImageForm({service}: InnerImageProps) {
                     size="$2"
                     flex={0}
                     flexShrink={0}
-                    theme="green"
+                    theme={fileName.color === 'red' ? 'gray' : "green"}
+                    disabled={fileName.color === 'red' ? true : false}
                     onPress={handleUpload}
                   >
                     Save
