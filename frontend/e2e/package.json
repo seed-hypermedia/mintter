@@ -1,0 +1,11 @@
+{
+  "name": "@mintter/e2e-dev-server",
+  "scripts": {
+    "start": "esr dev-server.ts"
+  },
+  "dependencies": {
+    "esbuild": "^0.17.17",
+    "esbuild-runner": "^2.2.2",
+    "fs-extra": "^11.1.1"
+  }
+}

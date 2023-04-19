@@ -11,6 +11,7 @@
     "desktop": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/electron -pi run dev",
     "desktop:extract": "EXTRACT=1 yarn workspace @mintter/desktop dev:extract",
     "desktop:prod": "yarn workspace @mintter/desktop build",
+    "e2e": "playwright test",
     "tauri:dev": "cd desktop/app && cargo tauri dev",
     "fix": "manypkg fix",
     "build": "yarn workspaces foreach --exclude @mintter/site --exclude @mintter/desktop --exclude @mintter/electron -pi run build",
@@ -43,6 +44,7 @@
   "packageManager": "yarn@3.5.0",
   "workspaces": [
     "frontend/apps/*",
-    "frontend/packages/*"
+    "frontend/packages/*",
+    "frontend/e2e"
   ]
 }
