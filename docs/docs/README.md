@@ -6,6 +6,14 @@ Because the Mintter Data structure is not production-ready yet, we are creating 
 - [Technical Guide](./technical-guide.md)
 - [Developer Project Setup](./dev-setup.md)
 
+
+## [MintterNet Documentation](/docs/mintternet)
+
+### [Terra](/docs/mintternet-terra)
+### [Agua](/docs/mintternet-agua)
+### [Aire](/docs/mintternet-aire)
+
+
 ## Frontend Technical Documentation
 
 - [Frontend Development Setup](./frontend-dev-setup.md)
