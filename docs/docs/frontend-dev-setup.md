@@ -7,7 +7,7 @@ The Mintter Frontend architecture is based on a [pnpm](https://pnpm.io) workspac
 3. Shared: for the shared API-related code
 4. UI (soon): for all the design system/common UI building blocks for all the Mintter applications
 
-After you [setup the project](./dev-setup.md) on your local machine, you should have `pnpm` available, so no need to install it globally.
+After you [setup the project](./dev-setup) on your local machine, you should have `pnpm` available, so no need to install it globally.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ After this is correct, you should run `pnpm install` (or `pnpm i`) to install al
 
 ## Run the Desktop app locally
 
-because we are using [Nix](./nix.md), we are able to create custom orchestrated commands in order to setup everything properly for any situation. To run the desktop app locally, you just need to run:
+because we are using [Nix](./nix), we are able to create custom orchestrated commands in order to setup everything properly for any situation. To run the desktop app locally, you just need to run:
 
 ```bash
 ./dev run-desktop
@@ -29,7 +29,7 @@ This command should trigger a set of processes that eventually should launch the
 
 ![Locally running the Desktop app](./assets/dev-setup-local-run.png)
 
-> you can also run `./dev` to print the stript's readme and see all the possible commands/options. You can checkout all the commands [here](../dev)
+> you can also run `./dev` to print the stript's readme and see all the possible commands/options. You can checkout all the commands [here](https://github.com/mintterteam/mintter/blob/master/dev)
 
 Keep in mind that `./dev run-desktop` runs both the desktop app **and the go backend**. This is setup this way for convenience and ease of use. You are able to run _just_ the desktop frontend code by running:
 

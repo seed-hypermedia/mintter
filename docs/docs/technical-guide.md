@@ -4,6 +4,30 @@
 
 Mintter is a decentralized knowledge collaboration application. It’s built on [IPFS](https://ipfs.tech), it’s peer-to-peer (P2P), and strives to be [local-first](https://www.inkandswitch.com/local-first/). This document assumes that readers are at least somewhat familiar with the mentioned concepts, and with what Mintter is about.
 
+
+## [MintterNet](./mintternet)
+
+An open protocol for collaboration and sharing permanent knowlege
+
+- [Terra](./mintternet-terra) - IPFS network + semantic content types for documents and discussion
+- [Agua](./mintternet-agua) - gRPC over p2p protocol for sharing links to Terra content
+- [Aire](./mintternet-aire) - Web protocol for introducing users into MintterNet
+
+The MintterNet protocol is initially designed by the Mintter team but is ultimately defined by community consensus.
+
+## Mintter.App
+
+The desktop app that the Mintter team develops. Provides the following features
+
+- Cross Platform - Runs on Windows, macOS, Linux
+- Peer-to-Peer - Does not rely on any centralized servers
+- Offline First - Works great even if your computer is frequently offline
+
+## Mintter.Web
+
+The web gateway that the Mintter team develops
+
+
 ## Mintter Documents
 
 Mintter Documents are containers of content blocks, arranged in hierarchical tree structures.

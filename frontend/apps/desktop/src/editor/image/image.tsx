@@ -9,7 +9,6 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {styled} from '@app/stitches.config'
 import {useActor, useInterpret} from '@xstate/react'
 import {ChangeEvent, FormEvent, useMemo, useState} from 'react'
 import {Editor, Path, Transforms} from 'slate'
@@ -20,7 +19,7 @@ import {
   useSelected,
   useSlateStatic,
 } from 'slate-react'
-import {ActorRefFrom, assign} from 'xstate'
+import {ActorRefFrom} from 'xstate'
 import type {EditorPlugin} from '../types'
 import {
   Tabs,
@@ -35,6 +34,7 @@ import {
   ImageIcon,
   Label,
   TextArea,
+  Image as UImage,
 } from '@mintter/ui'
 
 export const ELEMENT_IMAGE = 'image'
@@ -68,12 +68,6 @@ export function createImagePlugin(): EditorPlugin {
     },
   }
 }
-
-const Img = styled('img', {
-  display: 'block',
-  maxWidth: '$full',
-  width: '$full',
-})
 
 function Image({element, attributes, children}: RenderElementProps) {
   const editor = useSlateStatic()
@@ -151,12 +145,13 @@ function ImageComponent({service, element}: InnerImageProps) {
           replace
         </Button>
       ) : null}
-      <Img
+      {/* <Img
         css={{
           boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
         }}
         src={`http://localhost:55001/ipfs/${(element as ImageType).url}`}
-      />
+      /> */}
+      <UImage width="$100" height="$100" src={`http://localhost:55001/ipfs/${(element as ImageType).url}`} />
       {state.context.captionVisibility ? (
         <XStack>
           <TextArea

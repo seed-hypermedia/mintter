@@ -8,14 +8,13 @@ import {
 } from '@app/editor/utils'
 import {videoMachine} from '@app/editor/video/video-machine'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {isVideo, text, video, Video as VideoType} from '@mintter/shared'
+import {SizableText, Button, Input} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import isUrl from 'is-url'
-import {FormEvent} from 'react'
+import {FormEvent, useState} from 'react'
 import {Editor, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -186,10 +185,9 @@ function VideoEmbed({videoData, service, mode}: VideoEmbedProps) {
           }}
         >
           <Button
-            size="1"
-            color="muted"
-            type="submit"
-            onClick={() => service.send('VIDEO.REPLACE')}
+            size="$1"
+            theme="gray"
+            onPress={() => service.send('VIDEO.REPLACE')}
           >
             replace
           </Button>
@@ -208,14 +206,7 @@ function VideoForm({service}: InnerVideoProps) {
   let errorMessage = useSelector(service, (state) => state.context.errorMessage)
   const selected = useSelected()
   const focused = useFocused()
-
-  function submitImage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    let formData = new FormData(event.currentTarget)
-    let value: string = formData.get('url')?.toString() || ''
-    service.send({type: 'VIDEO.SUBMIT', value})
-  }
+  const [url, setUrl] = useState('')
 
   return (
     <Box
@@ -250,7 +241,6 @@ function VideoForm({service}: InnerVideoProps) {
           <Icon name="Video" size="2" />
         </Box>
         <Box
-          as="form"
           css={{
             width: '$full',
             display: 'flex',
@@ -258,25 +248,32 @@ function VideoForm({service}: InnerVideoProps) {
             gap: '$4',
             whiteSpace: 'nowrap',
           }}
-          onSubmit={submitImage}
         >
-          <TextField type="url" placeholder="Add an Video URL" name="url" />
-          <Button type="submit">Save</Button>
+          <Input
+            onChangeText={(val) => setUrl(val)}
+            value={url}
+            placeholder="Add an Video URL"
+            id="url"
+          />
           <Button
-            type="button"
-            size="0"
-            variant="ghost"
-            color="muted"
-            onClick={() => service.send('VIDEO.CANCEL')}
+            onPress={() => service.send({type: 'VIDEO.SUBMIT', value: url})}
+          >
+            Save
+          </Button>
+          <Button
+            size="$1"
+            chromeless
+            opacity={0.5}
+            onPress={() => service.send('VIDEO.CANCEL')}
           >
             Cancel
           </Button>
         </Box>
       </Box>
       {errorMessage ? (
-        <Text color="danger" size={1} css={{userSelect: 'none'}}>
+        <SizableText size="$1" theme="red">
           {errorMessage}
-        </Text>
+        </SizableText>
       ) : null}
     </Box>
   )

@@ -1,5 +1,4 @@
 import {isProduction, MINTTER_GATEWAY_URL} from '@app/constants'
-import {useAccount} from '@app/models/accounts'
 import {MainActor} from '@app/models/main-actor'
 import {useDocPublications, useSiteList} from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
@@ -7,17 +6,9 @@ import {PublicationActor} from '@app/publication-machine'
 import {useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
-import {Text} from '@components/text'
 import {AccessURLRow} from '@components/url'
 import {WebPublicationRecord} from '@mintter/shared'
-import {
-  Button,
-  ButtonText,
-  ExternalLink,
-  Globe,
-  SizableText,
-  Spinner,
-} from '@mintter/ui'
+import {Button, ExternalLink, Globe, SizableText, Spinner} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {GestureReponderEvent} from '@tamagui/web'
 import {UseQueryResult} from '@tanstack/react-query'
@@ -55,7 +46,8 @@ function PublishedURLs({
 }) {
   if (!publications.data) {
     if (publications.isLoading) return <Spinner />
-    if (publications.error) return <Text color="danger">Failed to load.</Text>
+    if (publications.error)
+      return <SizableText theme="red">Failed to load.</SizableText>
   }
   if (publications.data && publications.data?.length === 0)
     //@ts-ignore
@@ -160,7 +152,7 @@ function PublishButton({
           theme="green"
         >
           <Globe size={16} />
-          {webUrl}
+          {hostnameStripProtocol(webUrl)}
         </Button>
       )}
     </PopoverPrimitive.Trigger>

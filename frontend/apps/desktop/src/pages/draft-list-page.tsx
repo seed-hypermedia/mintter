@@ -1,11 +1,7 @@
 import {Dropdown} from '@app/editor/dropdown'
-import {useFind} from '@app/editor/find'
 import {prefetchDraft, useDraftList} from '@app/models/documents'
-import {
-  DraftRoute,
-  useNavigate,
-  useNavigationActions,
-} from '@app/utils/navigation'
+import {DraftRoute, useNavigate} from '@app/utils/navigation'
+import {useOpenDraft} from '@app/utils/open-draft'
 import {useDeleteDraftDialog} from '@components/delete-draft-dialog'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
@@ -31,7 +27,7 @@ import {PageProps} from './base'
 export default function DraftList(props: PageProps) {
   let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
-  const nav = useNavigationActions()
+  const openDraft = useOpenDraft()
   return (
     <>
       <MainWrapper>
@@ -48,7 +44,7 @@ export default function DraftList(props: PageProps) {
             <EmptyList
               description="You have no Drafts yet."
               action={() => {
-                nav.openNewDraft(false)
+                openDraft(false)
               }}
             />
           )}
@@ -60,7 +56,6 @@ export default function DraftList(props: PageProps) {
 }
 
 export function DraftListItem({draft}: {draft: Document}) {
-  let {search} = useFind()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
   let client = useQueryClient()
@@ -90,12 +85,7 @@ export function DraftListItem({draft}: {draft: Document}) {
         flex={1}
         data-testid="list-item-title"
       >
-        <Highlighter
-          highlightClassName="search-highlight"
-          searchWords={[search]}
-          autoEscape={true}
-          textToHighlight={title}
-        />
+        {title}
       </ButtonText>
       <Text
         fontFamily="$body"

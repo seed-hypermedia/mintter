@@ -2,10 +2,9 @@ import {publicationsClient} from '@app/api-clients'
 import {CitationLink, useDocCitations} from '@app/models/content-graph'
 import {queryKeys} from '@app/models/query-keys'
 import {useNavigate} from '@app/utils/navigation'
+import {SizableText} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {Button} from './button'
-import {PanelTitle} from './panel'
-import {Text} from './text'
 
 function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
   if (!link.source?.documentId) throw 'Invalid citation'
@@ -51,7 +50,7 @@ function CitationItem({link, docId}: {link: CitationLink; docId: string}) {
         },
       }}
     >
-      <Text size="2">{pub.data?.document?.title}</Text>
+      <SizableText size="$2">{pub.data?.document?.title}</SizableText>
     </Button>
   )
 }
@@ -72,9 +71,9 @@ export function Citations({
   const count = citations?.links?.length || 0
   return (
     <>
-      <PanelTitle>
+      <SizableText size="$5" fontWeight="700">
         {count} Citation{pluralS(count)}
-      </PanelTitle>
+      </SizableText>
       {citations?.links.map((link) => (
         <CitationItem
           docId={docId}

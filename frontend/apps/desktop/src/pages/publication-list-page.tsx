@@ -1,5 +1,5 @@
 import {useDraftList, usePublicationList} from '@app/models/documents'
-import {useNavigationActions} from '@app/utils/navigation'
+import {useOpenDraft} from '@app/utils/open-draft'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {PublicationListItem} from '@components/publication-list-item'
@@ -8,7 +8,7 @@ import {YStack, MainWrapper, Container} from '@mintter/ui'
 export default function PublicationList() {
   let {data, isInitialLoading} = usePublicationList()
   let drafts = useDraftList()
-  let nav = useNavigationActions()
+  let openDraft = useOpenDraft()
 
   return (
     <>
@@ -31,7 +31,7 @@ export default function PublicationList() {
               <EmptyList
                 description="You have no Publications yet."
                 action={() => {
-                  nav.openNewDraft(false)
+                  openDraft(false)
                 }}
               />
             )}

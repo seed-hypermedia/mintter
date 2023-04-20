@@ -1,5 +1,5 @@
 import {Box} from '@components/box'
-import {Text} from '@components/text'
+import {SizableText} from '@mintter/ui'
 import {keyframes} from '@stitches/react'
 import {MouseEventHandler, ReactNode} from 'react'
 
@@ -46,17 +46,6 @@ export function AppBanner({
 }
 
 // export function BannerText({css, ...props}: TextProps & {css?: CSS}) {
-export function BannerText({css, ...props}: any) {
-  return (
-    <Text
-      {...props}
-      css={{
-        color: '$warning-text-low',
-        textAlign: 'center',
-        fontSize: '$1',
-        ...css,
-      }}
-      size="1"
-    />
-  )
+export function BannerText(props: any) {
+  return <SizableText {...props} size="$1" textAlign="center" theme="yellow" />
 }

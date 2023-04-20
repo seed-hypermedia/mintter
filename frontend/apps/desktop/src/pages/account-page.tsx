@@ -1,16 +1,14 @@
 import {useAccountPublicationList} from '@app/models/changes'
 import {useAccountWithDevices} from '@app/models/contacts'
 import {useNavRoute} from '@app/utils/navigation'
+import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
-import {Heading} from '@components/heading'
 import {OnlineIndicator} from '@components/indicator'
 import {PublicationListItem} from '@components/publication-list-item'
-import {Text} from '@components/text'
+import {Container, Heading, MainWrapper, SizableText, XStack} from '@mintter/ui'
 import {ComponentProps, ReactNode} from 'react'
-import {Container, MainWrapper, UIAvatar} from '@mintter/ui'
 import {PageProps} from './base'
-import {Avatar} from '@components/avatar'
 
 function DeviceRow({
   isOnline,
@@ -20,12 +18,12 @@ function DeviceRow({
   deviceId: string
 }) {
   return (
-    <Box css={{display: 'flex', alignItems: 'center'}}>
+    <XStack alignItems="center">
       <OnlineIndicator online={isOnline} />
-      <Text fontWeight={'bold'} css={{marginInline: '$3'}}>
+      <SizableText fontWeight="700" marginHorizontal="$3">
         {deviceId}
-      </Text>
-    </Box>
+      </SizableText>
+    </XStack>
   )
 }
 function Section({
@@ -89,7 +87,7 @@ export default function AccountPage(props: PageProps) {
             </Section>
           )}
           <Section>
-            <Text fontWeight={'bold'}>Devices</Text>
+            <SizableText fontWeight="700">Devices</SizableText>
             {account.devices.map((device) => {
               if (!device) return null
               return (

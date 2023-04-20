@@ -2,11 +2,7 @@ import {Dropdown} from '@app/editor/dropdown'
 import {usePublication, prefetchPublication} from '@app/models/documents'
 import {useAccount} from '@app/models/accounts'
 import {useSitePublications} from '@app/models/sites'
-import {
-  useNavigate,
-  useNavigationActions,
-  useNavRoute,
-} from '@app/utils/navigation'
+import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {
@@ -34,6 +30,7 @@ import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
 import {PageProps} from './base'
 import {useQueryClient} from '@tanstack/react-query'
+import {useOpenDraft} from '@app/utils/open-draft'
 
 export default function SitePage(props: PageProps) {
   const route = useNavRoute()
@@ -53,7 +50,7 @@ export default function SitePage(props: PageProps) {
       return 0
     })
   }, [data])
-  const nav = useNavigationActions()
+  const openDraft = useOpenDraft()
   if (!host) throw new Error('Hostname not found for SitePage')
 
   return (
@@ -76,7 +73,7 @@ export default function SitePage(props: PageProps) {
             <EmptyList
               description={`Nothing published on ${host} yet.`}
               action={() => {
-                nav.openNewDraft(false)
+                openDraft(false)
               }}
             />
           )}

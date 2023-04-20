@@ -1,6 +1,7 @@
 import type {CSS} from '@app/stitches.config'
 import {styled} from '@app/stitches.config'
 import {mergeRefs} from '@app/utils/mege-refs'
+import {SizableText} from '@mintter/ui'
 import * as Label from '@radix-ui/react-label'
 import type * as Stitches from '@stitches/react'
 import {css} from '@stitches/react'
@@ -9,7 +10,6 @@ import {nanoid} from 'nanoid/non-secure'
 import type {InputHTMLAttributes, PropsWithChildren} from 'react'
 import {forwardRef, useLayoutEffect, useRef} from 'react'
 import {Box} from './box'
-import {Text} from './text'
 
 const InputContainer = styled(Box, {
   display: 'flex',
@@ -164,29 +164,6 @@ const TextareaElement = forwardRef<
   return <Textarea ref={ref} {...props} />
 })
 
-const TextFieldHint = styled(Text, {
-  variants: {
-    status: {
-      neutral: {
-        color: '$base-text-low',
-      },
-      success: {
-        color: '$success-text-low',
-      },
-      warning: {
-        color: '$warning-text-low',
-      },
-      danger: {
-        color: '$danger-text-low',
-      },
-    },
-  },
-
-  defaultVariants: {
-    status: 'neutral',
-  },
-})
-
 type TextFieldProps = PropsWithChildren<
   InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> &
     InputProps & {
@@ -227,12 +204,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       <InputContainer size={props.size} css={containerCss}>
         {label ? (
           <Label.Root asChild htmlFor={id}>
-            <Text
-              size={props.size == 1 ? '2' : props.size == 2 ? '3' : undefined}
-              color={status}
+            <SizableText
+              size={props.size == 1 ? '$2' : props.size == 2 ? '$3' : undefined}
             >
               {label}
-            </Text>
+            </SizableText>
           </Label.Root>
         ) : null}
         <InputComponent
@@ -243,15 +219,6 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
           status={status}
           {...props}
         />
-        {hint ? (
-          <TextFieldHint
-            //@ts-ignore
-            status={status}
-            size={props.size == 1 || props.size == 2 ? props.size : undefined}
-          >
-            {hint}
-          </TextFieldHint>
-        ) : null}
       </InputContainer>
     )
   },

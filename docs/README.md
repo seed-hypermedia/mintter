@@ -1,19 +1,41 @@
-# Mintter Documentation
+# Website
 
-Because the Mintter Data structure is not production-ready yet, we are creating some public documentation about the Product and the company here on this repo. Please feel free to ask any questions and give some feedback to [us](team@mintter.com). In the future, all the Mintter documentation wil be available via Mintter or the Mintter community server
+This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
 
-- [What is Mintter?](./what-is-mintter.md)
-- [Technical Guide](./technical-guide.md)
-- [Developer Project Setup](./dev-setup.md)
+### Installation
 
-## Frontend Technical Documentation
+```
+$ yarn
+```
 
-- [Frontend Development Setup](./frontend-dev-setup.md)
-- [Frontend App Architecture](./frontend-app.md)
-- [Frontend Gateway Architecture](./frontend-gateway.md)
-- [Frontend Shared Packages Architecture](./frontend-shared-packages.md)
-- [Frontend Testing](./frontend-testing.md)
+### Local Development
 
-## Backend Technical Documentation
+```
+$ yarn start
+```
 
-- [DID and UCAN](./did-and-ucan.md)
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+
+### Build
+
+```
+$ yarn build
+```
+
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
+
+### Deployment
+
+Using SSH:
+
+```
+$ USE_SSH=true yarn deploy
+```
+
+Not using SSH:
+
+```
+$ GIT_USER=<Your GitHub username> yarn deploy
+```
+
+If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.

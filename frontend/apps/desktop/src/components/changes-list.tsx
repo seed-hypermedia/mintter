@@ -7,11 +7,10 @@ import {
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {ChangeInfo, formattedDate} from '@mintter/shared'
+import {SizableText} from '@mintter/ui'
 import {MouseEvent} from 'react'
 import {Box} from './box'
 import {Button} from './button'
-import {PanelTitle} from './panel'
-import {Text} from './text'
 
 function ChangeItem({
   change,
@@ -90,9 +89,9 @@ function ChangeItem({
           {author?.data?.profile?.alias || change.author}
         </Button>
 
-        <Text size="2" color="muted">
+        <SizableText size="$2">
           {change.createTime ? formattedDate(change.createTime) : null}
-        </Text>
+        </SizableText>
       </Box>
 
       {/* {change.webPubs.map((pub) => (
@@ -105,16 +104,15 @@ function ChangeItem({
           {summaryText}
         </Text>
       ))} */}
-      <Text
-        size="1"
-        color={
-          // the intention is to indicate which is the active version, but we are comparing a version id with a change id so this doesn't work YET but supposedly will work after *the breaking change*
-          change.id === activeVersion ? 'primary' : 'muted'
-        }
-        css={{overflow: 'hidden'}}
+
+      <SizableText
+        // the intention is to indicate which is the active version, but we are comparing a version id with a change id so this doesn't work YET but supposedly will work after *the breaking change*
+        size="$1"
+        theme={change.id === activeVersion ? 'blue' : 'gray'}
+        overflow="hidden"
       >
         {change.id}
-      </Text>
+      </SizableText>
     </Button>
   )
 }
@@ -132,9 +130,9 @@ export function ChangesList() {
   const count = data?.changes?.length || 0
   return (
     <>
-      <PanelTitle>
+      <SizableText size="$5" fontWeight="700">
         {count} Doc Version{pluralS(count)}
-      </PanelTitle>
+      </SizableText>
       {data?.changes?.map((change) => (
         <ChangeItem
           docId={docId}

@@ -60,7 +60,13 @@ export const config = createTamagui({
     body: bodyFont,
   },
   themes,
-  tokens,
+  tokens: {
+    ...tokens,
+    size: {
+      ...tokens.size,
+      100: '100%',
+    },
+  },
   media: createMedia({
     xs: {maxWidth: 660},
     sm: {maxWidth: 800},
