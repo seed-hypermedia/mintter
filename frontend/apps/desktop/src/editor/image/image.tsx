@@ -85,13 +85,6 @@ function Image({element, attributes, children}: RenderElementProps) {
     guards: {
       hasImageUrl: () => !!(element as ImageType).url,
     },
-    services: {
-      validateUrlService: (_, event) => {
-        // return isValidUrl(event.value)
-        // TODO: fix this so CIDs can be sotred in the image
-        return 
-      },
-    },
   })
 
   const [state] = useActor(imgService)
@@ -145,13 +138,12 @@ function ImageComponent({service, element}: InnerImageProps) {
           replace
         </Button>
       ) : null}
-      {/* <Img
-        css={{
+      <img
+        style={{
           boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
         }}
         src={`http://localhost:55001/ipfs/${(element as ImageType).url}`}
-      /> */}
-      <UImage width="$100" height="$100" src={`http://localhost:55001/ipfs/${(element as ImageType).url}`} />
+      />
       {state.context.captionVisibility ? (
         <XStack>
           <TextArea
@@ -249,6 +241,7 @@ function ImageForm({service}: InnerImageProps) {
   }
 
   return (
+    //@ts-ignore
     <YStack contentEditable={false}>
       <Popover size='$5'>
         <Popover.Trigger asChild>

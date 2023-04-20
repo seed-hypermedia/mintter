@@ -78,21 +78,21 @@ export const imageMachine = createMachine(
           },
         },
       },
-      submitting: {
-        entry: ['clearError'],
-        invoke: {
-          src: 'validateUrlService',
-          id: 'validateUrlService',
-          onDone: {
-            target: 'image',
-            actions: ['assignValidUrl', 'enableCaption'],
-          },
-          onError: {
-            target: 'edit.update',
-            actions: ['assignError'],
-          },
-        },
-      },
+      // submitting: {
+      //   entry: ['clearError'],
+      //   invoke: {
+      //     src: 'validateUrlService',
+      //     id: 'validateUrlService',
+      //     onDone: {
+      //       target: 'image',
+      //       actions: ['assignValidUrl', 'enableCaption'],
+      //     },
+      //     onError: {
+      //       target: 'edit.update',
+      //       actions: ['assignError'],
+      //     },
+      //   },
+      // },
     },
   },
   {
