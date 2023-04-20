@@ -36,3 +36,18 @@ export function getIdsfromUrl(
   const blockId = oldBlockId ?? newBlockId
   return [docId, version, blockId]
 }
+
+export function getIdsfromUrlMaybe(
+  entry: string,
+): [
+  docId: string | undefined,
+  version: string | undefined,
+  blockId: string | undefined,
+] {
+  try {
+    return getIdsfromUrl(entry)
+  } catch (e) {
+    // nnot thhe best way to handle this
+  }
+  return [undefined, undefined, undefined]
+}

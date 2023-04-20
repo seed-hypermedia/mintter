@@ -2,7 +2,7 @@ import {useDraftList, usePublicationList} from '@app/models/documents'
 import {fetchWebLink} from '@app/models/web-links'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {useNavigate} from '@app/utils/navigation'
-import {getIdsfromUrl} from '@mintter/shared'
+import {getIdsfromUrl, getIdsfromUrlMaybe} from '@mintter/shared'
 import {Spinner} from '@mintter/ui'
 import {listen} from '@tauri-apps/api/event'
 import {Command} from 'cmdk'
@@ -71,7 +71,7 @@ export default function QuickSwitcher() {
                     blockId: block,
                   })
                 } else {
-                  let [docId, version, block] = getIdsfromUrl(search)
+                  let [docId, version, block] = getIdsfromUrlMaybe(search)
                   if (docId) {
                     navigate({
                       key: 'publication',
