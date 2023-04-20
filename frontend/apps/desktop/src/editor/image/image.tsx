@@ -1,10 +1,6 @@
 import {imageMachine} from '@app/editor/image/image-machine'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {findPath, isValidUrl} from '@app/editor/utils'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {TextField} from '@components/text-field'
 import {
   Image as ImageType,
   isFlowContent,
@@ -13,9 +9,8 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {Image as UImage, SizableText} from '@mintter/ui'
 import {useActor, useInterpret} from '@xstate/react'
-import {FormEvent, useMemo} from 'react'
+import {ChangeEvent, FormEvent, useMemo, useState} from 'react'
 import {Editor, Path, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -26,6 +21,21 @@ import {
 } from 'slate-react'
 import {ActorRefFrom} from 'xstate'
 import type {EditorPlugin} from '../types'
+import {
+  Tabs,
+  SizableText,
+  Button,
+  YStack,
+  Popover,
+  Text,
+  XStack,
+  Input,
+  Form,
+  ImageIcon,
+  Label,
+  TextArea,
+  Image as UImage,
+} from '@mintter/ui'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -66,7 +76,7 @@ function Image({element, attributes, children}: RenderElementProps) {
     //@ts-ignore
     actions: {
       assignValidUrl: (_, event) => {
-        Transforms.setNodes<ImageType>(editor, {url: event.data}, {at: path})
+        Transforms.setNodes<ImageType>(editor, {url: event.value}, {at: path})
       },
       updateCaption: (_, event) => {
         Transforms.setNodes<ImageType>(editor, {alt: event.value}, {at: path})
@@ -75,24 +85,19 @@ function Image({element, attributes, children}: RenderElementProps) {
     guards: {
       hasImageUrl: () => !!(element as ImageType).url,
     },
-    services: {
-      validateUrlService: (_, event) => {
-        return isValidUrl(event.value)
-      },
-    },
   })
 
   const [state] = useActor(imgService)
 
   return (
-    <Box css={{zIndex: '$max'}} {...attributes}>
+    <YStack {...attributes}>
       {children}
       {state.matches('image') ? (
         <ImageComponent service={imgService} element={element as ImageType} />
       ) : (
         <ImageForm service={imgService} element={element as ImageType} />
       )}
-    </Box>
+    </YStack>
   )
 }
 
@@ -103,61 +108,60 @@ type InnerImageProps = {
 
 function ImageComponent({service, element}: InnerImageProps) {
   let [state, send] = useActor(service)
+  const [replace, setReplace] = useState(false);
   const editor = useSlateStatic()
   const selected = useSelected()
   const focused = useFocused()
   const path = useMemo(() => findPath(element), [element])
 
   return (
-    <Box
-      css={{
-        position: 'relative',
-        '&:hover .hover-tools': {
-          opacity: 1,
-          visibility: 'visible',
-          pointerEvents: 'inherit',
-        },
+    <YStack
+      onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(true);
+      }}
+      onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        setReplace(false);
       }}
     >
-      {editor.mode == EditorMode.Draft ? (
-        <Box
-          className="hover-tools"
-          css={{
-            position: 'absolute',
-            top: 0,
-            right: '$3',
-            transition: 'opacity 0.25s ease',
-            zIndex: '$4',
-            opacity: 0,
-            visibility: 'hidden',
-            pointerEvents: 'none',
-          }}
+      {editor.mode == EditorMode.Draft && replace ? (
+        <Button
+          theme='gray'
+          position='absolute'
+          top='$1.5'
+          right='$1.5'
+          zIndex='$4'
+          size="$1"
+          width={60}
+          color="muted"
+          onPress={() => send('IMAGE.REPLACE')}
         >
-          <Button
-            size="1"
-            color="muted"
-            type="submit"
-            onClick={() => send('IMAGE.REPLACE')}
-          >
-            replace
-          </Button>
-        </Box>
+          replace
+        </Button>
       ) : null}
-      <UImage width="$100" height="$100" src={(element as ImageType).url} />
+      <img
+        style={{
+          boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
+        }}
+        src={`http://localhost:55001/ipfs/${(element as ImageType).url}`}
+      />
       {state.context.captionVisibility ? (
-        <Box css={{marginHorizontal: '-$3', marginTop: '$1'}}>
-          <TextField
-            textarea
-            size={1}
-            rows={1}
-            status="muted"
+        <XStack>
+          <TextArea
+            size='$3'
+            multiline={true}
+            width='100%'
             placeholder="Media Caption"
+            wordWrap='break-word'
+            placeholderTextColor='grey'
+            borderWidth="$0"
+            focusStyle={{
+              outlineWidth:"$0",
+            }}
+            backgroundColor="var(--base-background-normal)"
             value={element.alt}
-            onChange={(e) =>
-              send({type: 'CAPTION.UPDATE', value: e.target.value})
-            }
-            onKeyDown={(event) => {
-              if (event.key == 'Enter') {
+            onChangeText={(val) => send({type: 'CAPTION.UPDATE', value: val})}
+            onKeyPress={(event) => {
+              if (event.nativeEvent.key == 'Enter') {
                 // This will create a new block below the image and focus on it
 
                 event.preventDefault()
@@ -182,14 +186,17 @@ function ImageComponent({service, element}: InnerImageProps) {
               }
             }}
           />
-        </Box>
+        </XStack>
       ) : null}
-    </Box>
+    </YStack>
   )
 }
 
 function ImageForm({service}: InnerImageProps) {
   const [state, send] = useActor(service)
+  const [tabState, setTabState] = useState('upload')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [fileName, setFileName] = useState<{name: string, color: string}>({name: 'Upload File', color: 'black'})
   const selected = useSelected()
   const focused = useFocused()
 
@@ -201,67 +208,207 @@ function ImageForm({service}: InnerImageProps) {
     send({type: 'IMAGE.SUBMIT', value})
   }
 
-  return (
-    <Box
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '$3',
-      }}
-    >
-      <Box
-        contentEditable={false}
-        css={{
-          backgroundColor: '$base-component-bg-normal',
-          boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
-          padding: '$5',
-          display: 'flex',
-          alignItems: 'center',
-          '&:hover': {
-            backgroundColor: '$base-component-bg-hover',
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const fileList = event.target.files
+    if (fileList) {
+      if (fileList[0].size <= 62914560) {
+        setSelectedFile(fileList[0])
+        setFileName({name: fileList[0].name, color: 'black'})
+      } else 
+        setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+    }
+  }
+
+  const handleUpload = async () => {
+    if (selectedFile) {
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+
+      try {
+        const response = await fetch(
+          'http://localhost:55001/ipfs/file-upload',
+          {
+            method: 'POST',
+            body: formData,
           },
-        }}
-      >
-        <Box
-          css={{
-            flex: 'none',
-            marginRight: '$5',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Icon name="Image" size="2" />
-        </Box>
-        <Box
-          as="form"
-          css={{
-            width: '$full',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '$4',
-            whiteSpace: 'nowrap',
-          }}
-          onSubmit={submitImage}
-        >
-          <TextField type="url" placeholder="Add an Image URL" name="url" />
-          <Button type="submit">Save</Button>
+        )
+        const data = await response.text()
+        send({type: 'IMAGE.SUBMIT', value: data})
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  }
+
+  return (
+    //@ts-ignore
+    <YStack contentEditable={false}>
+      <Popover size='$5'>
+        <Popover.Trigger asChild>
           <Button
-            type="button"
-            size="0"
-            variant="ghost"
-            color="muted"
-            onClick={() => send('IMAGE.CANCEL')}
+            icon={ImageIcon}
+            theme="gray"
+            borderRadius={0}
+            size="$5"
+            justifyContent="flex-start"
           >
-            Cancel
+            Add an image
           </Button>
-        </Box>
-      </Box>
-      {state.context.errorMessage ? (
-        <SizableText size="$1" theme="red">
-          {state.context.errorMessage}
-        </SizableText>
-      ) : null}
-    </Box>
+        </Popover.Trigger>
+        <Popover.Content
+          padding={0}
+          elevation="$4"
+          size='$5'
+          enterStyle={{ x: 0, y: -1, opacity: 0 }}
+          exitStyle={{ x: 0, y: -1, opacity: 0 }}
+          animation={[
+            'quick',
+            {
+              opacity: {
+                overshootClamping: true,
+              },
+            },
+          ]}
+          >
+          <Tabs
+            value={tabState}
+            onValueChange={setTabState}
+            orientation="horizontal"
+            flexDirection="column"
+            borderWidth='$1'
+            borderColor="white"
+            borderRadius="$5"
+            width={500}
+          >
+            <Tabs.List
+              marginBottom="$-0.5"
+              backgroundColor="white"
+              borderBottomColor='lightgrey'
+              borderBottomWidth='$1'
+              borderBottomLeftRadius={0}
+              borderBottomRightRadius={0}
+              borderRadius={0}
+            >
+              <Tabs.Tab
+                unstyled
+                value="upload"
+                paddingHorizontal="$4"
+                paddingVertical="$2"
+                borderBottomLeftRadius={0}
+                borderBottomRightRadius={0}
+                borderRadius={0}
+                borderBottomColor={tabState == 'upload' ? 'black' : ''}
+                borderBottomWidth={tabState == 'upload' ? '$1' : '$0'}
+                hoverStyle={{
+                  backgroundColor: 'lightgrey',
+                  cursor: 'pointer',
+                }}
+              >
+                <SizableText size="$2" color='black'>Upload</SizableText>
+              </Tabs.Tab>
+              {/* <Tabs.Tab
+                unstyled
+                value="embed"
+                paddingHorizontal="$4"
+                paddingVertical="$2"
+                borderBottomLeftRadius={0}
+                borderBottomRightRadius={0}
+                borderRadius={0}
+                borderBottomColor={tabState == 'embed' ? 'black' : ''}
+                borderBottomWidth={tabState == 'embed' ? '$1' : '$0'}
+                hoverStyle={{
+                  backgroundColor: 'lightgrey',
+                  cursor: 'pointer',
+                }}
+              >
+                <SizableText size="$2" color='black'>Embed Link</SizableText>
+              </Tabs.Tab> */}
+            </Tabs.List>
+
+            <Tabs.Content value="upload">
+              <XStack padding="$4" alignItems="center" backgroundColor='white'>
+                <XStack
+                  flex={1}
+                  backgroundColor='white'
+                >
+                    <Label
+                      htmlFor="file-upload"
+                      borderColor='lightgrey'
+                      borderWidth='$0.5'
+                      size='$3'
+                      width={400}
+                      justifyContent='center'
+                      hoverStyle={{
+                        backgroundColor: 'lightgrey',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <SizableText
+                        padding='$2'
+                        overflow='hidden'
+                        whiteSpace='nowrap'
+                        textOverflow='ellipsis'
+                        color={fileName.color}
+                      >
+                        {fileName.name}
+                      </SizableText>
+                    </Label>
+                    <input
+                      id="file-upload"
+                      type="file"
+                      style={{
+                        background: 'white',
+                        padding: '0 2px',
+                        display: 'none',
+                      }}
+                      onChange={handleFileChange}
+                      accept="image/png, image/jpg, image/gif, image/jpeg"
+                    />
+                </XStack>
+                <Popover.Close asChild>
+                  <Button
+                    size="$2"
+                    flex={0}
+                    flexShrink={0}
+                    theme={fileName.color === 'red' ? 'gray' : "green"}
+                    disabled={fileName.color === 'red' ? true : false}
+                    onPress={handleUpload}
+                  >
+                    Save
+                  </Button>
+                </Popover.Close>
+              </XStack>
+            </Tabs.Content>
+            {/* <Tabs.Content value="embed">
+              <SizableText padding="$4" alignItems="center" backgroundColor='white'>Just test</SizableText>
+            </Tabs.Content> */}
+            {/* <Tabs.Content value="embed">
+              <Box
+                as="form"
+                css={{
+                  width: '$full',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '$4',
+                }}
+                onSubmit={submitImage}
+              >
+                <TextField type="url" placeholder="Add an Image URL" name="url" />
+                <Button type="submit">Save</Button>
+                <Button
+                  type="button"
+                  size="0"
+                  variant="ghost"
+                  color="muted"
+                  onClick={() => send('IMAGE.CANCEL')}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Tabs.Content> */}
+          </Tabs>
+        </Popover.Content>
+      </Popover>
+    </YStack>
   )
 }
