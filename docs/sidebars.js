@@ -89,11 +89,11 @@ const sidebars = {
     },
     {
       type: 'doc',
-      id: 'mintternet-agua',
+      id: 'mintternet-aqua',
     },
     {
       type: 'doc',
-      id: 'mintternet-aire',
+      id: 'mintternet-aer',
     },
   ]
 };

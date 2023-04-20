@@ -10,8 +10,8 @@ Because the Mintter Data structure is not production-ready yet, we are creating 
 ## [MintterNet Documentation](/docs/mintternet)
 
 ### [Terra](/docs/mintternet-terra)
-### [Agua](/docs/mintternet-agua)
-### [Aire](/docs/mintternet-aire)
+### [Aqua](/docs/mintternet-aqua)
+### [Aer](/docs/mintternet-aer)
 
 
 ## Frontend Technical Documentation

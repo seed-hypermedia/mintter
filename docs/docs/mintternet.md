@@ -24,11 +24,11 @@ HyperMedia Blob Reference:
 - BlockNode
 - Conversation and ConversationComment
 
-## [Agua](./mintternet-agua) - Search and Link Sharing
+## [Aqua](./mintternet-aqua) - Search and Link Sharing
 
-Agua is the GRPC over p2p protocol between peers in the Mintter network
+Aqua is the GRPC over p2p protocol between peers in the Mintter network
 
 
-## [Aire](./mintternet-aire) - Web Bridging Customs
+## [Aer](./mintternet-aer) - Web Bridging Customs
 
-Aire allows web sites to join the MintterNet, exposing Mintter links and/or IPFS references over HTTPS+HTML
+Aer allows web sites to join the MintterNet, exposing Mintter links and/or IPFS references over HTTPS+HTML

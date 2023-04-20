@@ -26,9 +26,6 @@ frontend-old
 # Backend code
 backend/ui/rice-box.go-e 
 
-# Terraform
-.terraform
-
 # Cargo
 target
 

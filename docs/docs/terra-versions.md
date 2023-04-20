@@ -17,4 +17,4 @@ You can learn [the stucture of a Document](./terra-documents) once it has been a
 
 A version is created by producing a DocumentChange blob and storing it in IPFS.
 
-The CID of the DocumentChange is the Version ID, and it can now be distributed through IPFS. You may use Agua or Aire to tell your peers about the new change.
+The CID of the DocumentChange is the Version ID, and it can now be distributed through IPFS. You may use Aqua or Aer to tell your peers about the new change.

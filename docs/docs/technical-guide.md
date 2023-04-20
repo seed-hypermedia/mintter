@@ -10,8 +10,8 @@ Mintter is a decentralized knowledge collaboration application. It’s built on 
 An open protocol for collaboration and sharing permanent knowlege
 
 - [Terra](./mintternet-terra) - IPFS network + semantic content types for documents and discussion
-- [Agua](./mintternet-agua) - gRPC over p2p protocol for sharing links to Terra content
-- [Aire](./mintternet-aire) - Web protocol for introducing users into MintterNet
+- [Aqua](./mintternet-aqua) - gRPC over p2p protocol for sharing links to Terra content
+- [Aer](./mintternet-aer) - Web protocol for introducing users into MintterNet
 
 The MintterNet protocol is initially designed by the Mintter team but is ultimately defined by community consensus.
 
