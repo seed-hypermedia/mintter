@@ -3,11 +3,10 @@ import {useDrag} from '@app/drag-context'
 import {useCitationsForBlock} from '@app/editor/comments/citations-context'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {useMouse} from '@app/mouse-context'
-import {Button} from '@components/button'
 import {ConversationBlockBubble} from '@components/conversation-block-bubble'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
 import {FlowContent} from '@mintter/shared'
+import {Button} from '@mintter/ui'
+import {ArrowUpRight} from '@tamagui/lucide-icons'
 import React, {useContext} from 'react'
 import {RenderElementProps, useSlate} from 'slate-react'
 import {BlockTools} from './blocktools'
@@ -81,44 +80,28 @@ function CitationNumber({block}: {block: FlowContent}) {
 
   return citations?.length ? (
     <Button
-      onClick={(e) => {
-        e.preventDefault()
+      onPress={() => {
         onCitationsOpen(citations)
       }}
-      color="muted"
-      variant="ghost"
-      size="0"
-      contentEditable={false}
-      css={{
-        userSelect: 'none',
-        position: 'absolute',
-        top: 32,
-        right: -54,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '$2',
-        paddingInline: '$3',
-        paddingBlock: '$1',
-        // borderRadius: '$2',
-        zIndex: '$max',
-        '&:hover': {
-          backgroundColor: '$base-component-bg-hover',
-          cursor: 'pointer',
-        },
+      chromeless
+      size="$1"
+      userSelect="none"
+      position="absolute"
+      top={32}
+      right={-54}
+      paddingHorizontal="$2"
+      paddingVertical="$1"
+      zIndex="$10"
+      hoverTheme
+      hoverStyle={{
+        backgroundColor: '$background',
+        cursor: 'pointer',
       }}
+      icon={ArrowUpRight}
+      //@ts-ignore
+      contentEditable={false}
     >
-      <Icon name="ArrowTopRight" size="2" color="muted" />
-      <Text
-        size="2"
-        color="muted"
-        css={{
-          '&:hover': {
-            color: '$base-text-low',
-          },
-        }}
-      >
-        {citations.length}
-      </Text>
+      {citations.length}
     </Button>
   ) : null
 }

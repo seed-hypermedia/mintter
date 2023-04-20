@@ -1,9 +1,7 @@
-import {styled} from '@app/stitches.config'
+import {SizableText} from '@mintter/ui'
 import type {EditorPlugin} from '../types'
 
 export const MARK_SUBSCRIPT = 'subscript'
-
-export const Subscript = styled('sub', {})
 
 export function createSubscriptPlugin(): EditorPlugin {
   return {
@@ -12,7 +10,11 @@ export function createSubscriptPlugin(): EditorPlugin {
       () =>
       ({attributes, children, leaf}) => {
         if (leaf[MARK_SUBSCRIPT] && leaf.text) {
-          return <Subscript {...attributes}>{children}</Subscript>
+          return (
+            <SizableText tag="sub" {...attributes}>
+              {children}
+            </SizableText>
+          )
         }
       },
   }

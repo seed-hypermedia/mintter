@@ -1,6 +1,10 @@
 import {imageMachine} from '@app/editor/image/image-machine'
 import {EditorMode} from '@app/editor/plugin-utils'
 import {findPath, isValidUrl} from '@app/editor/utils'
+import {Box} from '@components/box'
+import {Button} from '@components/button'
+import {Icon} from '@components/icon'
+import {TextField} from '@components/text-field'
 import {
   Image as ImageType,
   isFlowContent,
@@ -9,12 +13,7 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {styled} from '@app/stitches.config'
-import {Box} from '@components/box'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
-import {TextField} from '@components/text-field'
+import {Image as UImage, SizableText} from '@mintter/ui'
 import {useActor, useInterpret} from '@xstate/react'
 import {FormEvent, useMemo} from 'react'
 import {Editor, Path, Transforms} from 'slate'
@@ -25,7 +24,7 @@ import {
   useSelected,
   useSlateStatic,
 } from 'slate-react'
-import {ActorRefFrom, assign} from 'xstate'
+import {ActorRefFrom} from 'xstate'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_IMAGE = 'image'
@@ -59,12 +58,6 @@ export function createImagePlugin(): EditorPlugin {
     },
   }
 }
-
-const Img = styled('img', {
-  display: 'block',
-  maxWidth: '$full',
-  width: '$full',
-})
 
 function Image({element, attributes, children}: RenderElementProps) {
   const editor = useSlateStatic()
@@ -150,12 +143,7 @@ function ImageComponent({service, element}: InnerImageProps) {
           </Button>
         </Box>
       ) : null}
-      <Img
-        css={{
-          boxShadow: selected && focused ? '0 0 0 3px #B4D5FF' : 'none',
-        }}
-        src={(element as ImageType).url}
-      />
+      <UImage width="$100" height="$100" src={(element as ImageType).url} />
       {state.context.captionVisibility ? (
         <Box css={{marginHorizontal: '-$3', marginTop: '$1'}}>
           <TextField
@@ -270,9 +258,9 @@ function ImageForm({service}: InnerImageProps) {
         </Box>
       </Box>
       {state.context.errorMessage ? (
-        <Text color="danger" size={1} css={{userSelect: 'none'}}>
+        <SizableText size="$1" theme="red">
           {state.context.errorMessage}
-        </Text>
+        </SizableText>
       ) : null}
     </Box>
   )

@@ -1,9 +1,8 @@
 import {useMainActor} from '@app/models/main-actor'
 import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
-import {Button} from '@components/button'
 import {TitleBar} from '@components/titlebar'
-import {Heading, YStack} from '@mintter/ui'
+import {Heading, YStack, Button} from '@mintter/ui'
 import {listen as tauriListen} from '@tauri-apps/api/event'
 import {lazy, useEffect} from 'react'
 import {ErrorBoundary, FallbackProps} from 'react-error-boundary'
@@ -103,7 +102,7 @@ function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
           maxWidth: 565,
         }}
       >
-        <Heading color="danger">App Error!</Heading>
+        <Heading theme="red">App Error!</Heading>
         <Box
           css={{
             fontFamily: 'ui-monospace,monospace',
@@ -114,7 +113,7 @@ function MainBoundary({error, resetErrorBoundary}: FallbackProps) {
         >
           {error.message}
         </Box>
-        <Button onClick={resetErrorBoundary} css={{alignSelf: 'flex-end'}}>
+        <Button onPress={resetErrorBoundary} alignSelf="flex-end">
           Reload
         </Button>
       </Box>

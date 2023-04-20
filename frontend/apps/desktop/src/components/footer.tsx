@@ -1,8 +1,7 @@
 import {networkingClient} from '@app/api-clients'
 import {AccountWithRef} from '@app/contact-list-machine'
 import {useConnectionSummary} from '@app/models/contacts'
-import {useDaemonReady, useDaemonOnline} from '@app/node-status-context'
-import {keyframes, styled} from '@app/stitches.config'
+import {useDaemonOnline, useDaemonReady} from '@app/node-status-context'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {TextField} from '@components/text-field'
 import {
@@ -17,7 +16,6 @@ import {
   XStack,
 } from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import * as HoverCard from '@radix-ui/react-hover-card'
 import {ReactNode, useState} from 'react'
 import toast from 'react-hot-toast'
 import {OnlineIndicator} from './indicator'
@@ -210,101 +208,6 @@ export function ContactsPrompt({
   )
 }
 
-const slideUpAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateY(2px)'},
-  '100%': {opacity: 1, transform: 'translateY(0)'},
-})
-
-const slideRightAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateX(-2px)'},
-  '100%': {opacity: 1, transform: 'translateX(0)'},
-})
-
-const slideDownAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateY(-2px)'},
-  '100%': {opacity: 1, transform: 'translateY(0)'},
-})
-
-const slideLeftAndFade = keyframes({
-  '0%': {opacity: 0, transform: 'translateX(2px)'},
-  '100%': {opacity: 1, transform: 'translateX(0)'},
-})
-
-const HoverCardContentStyled = styled(HoverCard.Content, {
-  minWidth: 130,
-  maxWidth: 520,
-  zIndex: '$max',
-  border: '1px solid $colors$base-border-normal',
-  backgroundColor: '$base-background-normal',
-  borderRadius: 6,
-  padding: '$4',
-  boxShadow: '$menu',
-  '@media (prefers-reduced-motion: no-preference)': {
-    animationDuration: '400ms',
-    animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-    willChange: 'transform, opacity',
-    '&[data-state="open"]': {
-      '&[data-side="top"]': {animationName: slideDownAndFade},
-      '&[data-side="right"]': {animationName: slideLeftAndFade},
-      '&[data-side="bottom"]': {animationName: slideUpAndFade},
-      '&[data-side="left"]': {animationName: slideRightAndFade},
-    },
-  },
-})
-
 export type ContactItemProps = {
   contact: AccountWithRef
 }
-
-var ButtonStyled = styled('button', {
-  $$color: '$colors$base-text-low',
-  '$$color-hover': '$colors$base-text-low',
-  $$surface: 'transparent',
-  '$$surface-hover': '$base-component-bg-hover',
-  all: 'unset',
-  minInliseSize: '1em',
-  minBlockSize: '1em',
-  paddingBlock: '$1',
-  paddingInline: '$2',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  overflow: 'hidden',
-  borderRadius: '$2',
-  gap: '$2',
-  fontSize: '$1',
-  backgroundColor: '$$surface',
-  color: '$$color',
-  border: '1px solid transparent',
-  '&:hover': {
-    backgroundColor: '$base-component-bg-hover',
-    color: '$$color-hover',
-    cursor: 'pointer',
-  },
-  '& > *': {
-    maxHeight: '1em',
-    lineHeight: 1,
-  },
-  variants: {
-    variant: {
-      primary: {
-        $$color: '$colors$primary-active',
-        '$$color-hover': 'white',
-        '$$surface-hover': '$colors$primary-active',
-      },
-      success: {
-        $$color: '$colors$success-active',
-        '$$color-hover': 'white',
-        '$$surface-hover': '$colors$success-active',
-      },
-    },
-    type: {
-      outlined: {
-        borderColor: '$$color',
-      },
-      dropdown: {
-        fontWeight: '$bold',
-      },
-    },
-  },
-})

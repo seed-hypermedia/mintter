@@ -6,7 +6,6 @@ import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {Text} from '@components/text'
 import {TextField} from '@components/text-field'
 import {
   Block,
@@ -19,11 +18,11 @@ import {
   statement,
   text,
 } from '@mintter/shared'
+import {SizableText, Text} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
-import {PanelTitle} from './panel'
 
 export const Conversations = features.comments ? RealConversations : () => null
 
@@ -85,7 +84,9 @@ export function RealConversations() {
               />
             ))
           ) : (
-            <PanelTitle>No conversations yet</PanelTitle>
+            <SizableText size="$5" fontWeight="700">
+              No conversations yet
+            </SizableText>
           )
         ) : null}
       </Box>
@@ -356,11 +357,11 @@ function CommentItem({
         >
           {author?.data?.profile?.alias}
         </Button>
-        <Text size="2" color="muted">
+        <SizableText size="$2" theme="gray">
           {changeData.data?.createTime
             ? formattedDate(changeData.data?.createTime)
             : null}
-        </Text>
+        </SizableText>
       </Box>
 
       {selectors ? (
@@ -426,9 +427,9 @@ function ConversationSelectors({
           left: 0,
         }}
       />
-      <Text size="2" color="muted">
+      <SizableText size="$2" theme="gray">
         {selectorText}
-      </Text>
+      </SizableText>
     </Box>
   )
 }
@@ -440,7 +441,7 @@ function CommentBlock({comment}: {comment: Block}) {
         marginBottom: '$3',
       }}
     >
-      <Text alt>{comment.text}</Text>
+      <Text>{comment.text}</Text>
     </Box>
   )
 }

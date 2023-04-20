@@ -1,15 +1,13 @@
 import {styled} from '@app/stitches.config'
+import {Button, H3, SizableText} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import type {ComponentProps, PropsWithChildren} from 'react'
+import type {ComponentProps} from 'react'
 import {Box} from './box'
-import {Button} from '@mintter/ui'
 import {
   dialogContentStyles,
   dialogFooterStyles,
   overlayStyles,
 } from './dialog-styles'
-import type {TextProps} from './text'
-import {Text} from './text'
 
 export const StyledOverlay = styled(DialogPrimitive.Overlay, overlayStyles)
 
@@ -35,18 +33,18 @@ function Trigger(
 
 const Content = styled(DialogPrimitive.Content, dialogContentStyles)
 
-function Title(props: PropsWithChildren<TextProps>) {
+function Title(props: any) {
   return (
     <DialogPrimitive.Title asChild>
-      <Text size="7" {...props} />
+      <H3 {...props} />
     </DialogPrimitive.Title>
   )
 }
 
-function Description(props: PropsWithChildren<TextProps>) {
+function Description(props: any) {
   return (
     <DialogPrimitive.Description asChild>
-      <Text size="3" color="muted" {...props} />
+      <SizableText {...props} />
     </DialogPrimitive.Description>
   )
 }

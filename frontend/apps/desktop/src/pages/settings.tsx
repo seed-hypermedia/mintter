@@ -1,6 +1,5 @@
 import {daemonClient} from '@app/api-clients'
 import {Box} from '@app/components/box'
-import {Text} from '@app/components/text'
 import {TextField} from '@app/components/text-field'
 import {useAccount, useMyAccount, useSetProfile} from '@app/models/accounts'
 import {useDaemonInfo} from '@app/models/daemon'
@@ -181,9 +180,7 @@ export function ProfileForm({
               <Button disabled={setProfile.isLoading}>Save</Button>
             </Form.Trigger>
             {setProfile.data && (
-              <Text size="3" color="success">
-                update success!
-              </Text>
+              <SizableText theme="green">update success!</SizableText>
             )}
           </XStack>
         </Form>
@@ -693,7 +690,7 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
 
       {addSite.error ? (
         //@ts-ignore
-        <Text color={'danger'}>{addSite.error?.message}</Text>
+        <SizableText theme="red">{addSite.error?.message}</SizableText>
       ) : null}
       {addSite.isLoading ? <Spinner /> : null}
       <p>Follow the self-hosting guide and copy the invite URL:</p>

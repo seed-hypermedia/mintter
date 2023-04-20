@@ -1,15 +1,7 @@
-import {css} from '@app/stitches.config'
+import {SizableText} from '@mintter/ui'
 import type {EditorPlugin} from '../types'
 
 export const MARK_CODE = 'code'
-
-const codeStyles = css({
-  padding: '3px 5px',
-  borderRadius: '$2',
-  backgroundColor: '$base-component-bg-normal',
-  color: '$base-text-hight',
-  fontSize: '0.9em',
-})
 
 export const createInlineCodePlugin = (): EditorPlugin => ({
   name: MARK_CODE,
@@ -18,9 +10,17 @@ export const createInlineCodePlugin = (): EditorPlugin => ({
     ({attributes, children, leaf}) => {
       if (leaf[MARK_CODE] && leaf.text) {
         return (
-          <code className={codeStyles()} {...attributes}>
+          <SizableText
+            tag="code"
+            {...attributes}
+            paddingHorizontal="$2"
+            paddingVertical="$1"
+            backgroundColor="$backgroundHover"
+            color="$color"
+            fontSize="0.9em"
+          >
             {children}
-          </code>
+          </SizableText>
         )
       }
     },

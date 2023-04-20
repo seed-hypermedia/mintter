@@ -3,10 +3,9 @@ import {
   useConversations,
 } from '@app/editor/comments/conversations-context'
 import {findPath} from '@app/editor/utils'
-import {Button} from '@components/button'
-import {Icon} from '@components/icon'
-import {Text} from '@components/text'
 import {FlowContent} from '@mintter/shared'
+import {Button, Comment} from '@mintter/ui'
+import {MessageSquare} from '@tamagui/lucide-icons'
 import {useEffect, useMemo} from 'react'
 import {Editor, Transforms} from 'slate'
 import {useSlate} from 'slate-react'
@@ -40,44 +39,28 @@ export function ConversationBlockBubble({block}: {block: FlowContent}) {
   if (conversations.length) {
     return (
       <Button
-        onClick={(e) => {
-          e.preventDefault()
+        onPress={() => {
           onConversationsOpen(conversations.map((c) => c.id))
         }}
-        color="muted"
-        variant="ghost"
-        size="0"
-        contentEditable={false}
-        css={{
-          userSelect: 'none',
-          position: 'absolute',
-          top: 10,
-          right: -54,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '$2',
-          paddingInline: '$3',
-          paddingBlock: '$1',
-          // borderRadius: '$2',
-          zIndex: 100,
-          '&:hover': {
-            backgroundColor: '$base-component-bg-hover',
-            cursor: 'pointer',
-          },
+        chromeless
+        size="$1"
+        userSelect="none"
+        position="absolute"
+        top={10}
+        right={-54}
+        paddingHorizontal="$2"
+        paddingVertical="$1"
+        zIndex="$10"
+        hoverTheme
+        hoverStyle={{
+          backgroundColor: '$background',
+          cursor: 'pointer',
         }}
+        icon={Comment}
+        //@ts-ignore
+        contentEditable={false}
       >
-        <Icon name="MessageBubble" size="2" color="muted" />
-        <Text
-          size="2"
-          color="muted"
-          css={{
-            '&:hover': {
-              color: '$base-text-low',
-            },
-          }}
-        >
-          {commentsCount}
-        </Text>
+        {commentsCount}
       </Button>
     )
   }

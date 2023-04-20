@@ -18,7 +18,6 @@ import {appInvalidateQueries} from '@app/query-client'
 import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Icon, icons} from '@components/icon'
-import {Text} from '@components/text'
 import {
   blockquote,
   blockToApi,
@@ -37,6 +36,7 @@ import {
   ul,
   video,
 } from '@mintter/shared'
+import {SizableText} from '@mintter/ui'
 import {useSelector} from '@xstate/react'
 import {Fragment, useMemo, useState} from 'react'
 import toast from 'react-hot-toast'
@@ -145,9 +145,9 @@ function DraftBlocktools(props: BlockData) {
               return (
                 <Fragment key={key}>
                   <Dropdown.Label>
-                    <Text color="muted" size="2" css={{padding: '$3'}}>
+                    <SizableText theme="gray" size="$2">
                       {key}
-                    </Text>
+                    </SizableText>
                   </Dropdown.Label>
                   {value.map((item) => (
                     <Dropdown.Item

@@ -1,9 +1,7 @@
-import {styled} from '@app/stitches.config'
+import {SizableText} from '@mintter/ui'
 import type {EditorPlugin} from '../types'
 
 export const MARK_STRIKETHROUGH = 'strikethrough'
-
-export const Strikethrough = styled('s', {})
 
 export const createStrikethroughPlugin = (): EditorPlugin => ({
   name: MARK_STRIKETHROUGH,
@@ -11,7 +9,11 @@ export const createStrikethroughPlugin = (): EditorPlugin => ({
     () =>
     ({attributes, children, leaf}) => {
       if (leaf[MARK_STRIKETHROUGH] && leaf.text) {
-        return <Strikethrough {...attributes}>{children}</Strikethrough>
+        return (
+          <SizableText tag="s" {...attributes}>
+            {children}
+          </SizableText>
+        )
       }
     },
 })
