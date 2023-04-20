@@ -18,12 +18,74 @@ const sidebars = {
 
   mintterNet: [
     {
-      type: 'doc',
-      id: 'mintternet',
+      type: 'category',
+      label: 'Intro',
+      items: [
+
+        {
+          type: 'doc',
+          id: 'mintternet',
+        }  
+      ]
     },
     {
-      type: 'doc',
-      id: 'mintternet-terra',
+      type: 'category',
+      label: 'Terra Concepts',
+      items: [
+
+        {
+          type: 'doc',
+          id: 'mintternet-terra',
+        },
+        {
+          type: 'doc',
+          id: 'terra-data',
+        },
+        {
+          type: 'doc',
+          id: 'terra-signing',
+        },
+        {
+          type: 'doc',
+          id: 'terra-documents',
+        },
+        {
+          type: 'doc',
+          id: 'terra-versions',
+        },
+        {
+          type: 'doc',
+          id: 'terra-blocks',
+        },
+        
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Terra Reference',
+      items: [
+        {
+          type: 'doc',
+          id: 'terra-ref-devices',
+        },
+        {
+          type: 'doc',
+          id: 'terra-ref-account',
+        },
+        {
+          type: 'doc',
+          id: 'terra-ref-documentchange',
+        },
+        {
+          type: 'doc',
+          id: 'terra-ref-blocks',
+        },
+        {
+          type: 'doc',
+          id: 'terra-ref-conversations',
+        },
+        
+      ]
     },
     {
       type: 'doc',
