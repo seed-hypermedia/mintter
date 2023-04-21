@@ -8,7 +8,6 @@ import {OnlineIndicator} from '@components/indicator'
 import {PublicationListItem} from '@components/publication-list-item'
 import {Container, Heading, MainWrapper, SizableText, XStack} from '@mintter/ui'
 import {ComponentProps, ReactNode} from 'react'
-import {PageProps} from './base'
 
 function DeviceRow({
   isOnline,
@@ -64,7 +63,7 @@ function AccountDocuments({accountId}: {accountId: string}) {
   )
 }
 
-export default function AccountPage(props: PageProps) {
+export default function AccountPage() {
   const route = useNavRoute()
   const accountId = route.key === 'account' && route.accountId
   if (!accountId) throw new Error('Invalid route, no account id')

@@ -1,4 +1,3 @@
-import {useMainActor} from '@app/models/main-actor'
 import {NavRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {TitleBar} from '@components/titlebar'
@@ -43,7 +42,6 @@ function getPageComponent(navRoute: NavRoute) {
 }
 
 export default function Main() {
-  const mainActor = useMainActor()
   const navR = useNavRoute()
   const isSettings = navR.key === 'settings'
   const navigate = useNavigate()
@@ -70,9 +68,9 @@ export default function Main() {
           window.location.reload()
         }}
       >
-        <TitleBar clean={isSettings} mainActor={mainActor} />
+        <TitleBar clean={isSettings} />
         {/* @ts-ignore */}
-        <PageComponent mainActor={mainActor} />
+        <PageComponent />
         {!isSettings ? <QuickSwitcher /> : null}
       </ErrorBoundary>
     </YStack>

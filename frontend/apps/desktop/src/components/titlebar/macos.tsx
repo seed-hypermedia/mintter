@@ -29,7 +29,7 @@ export default function TitleBarMacos(props: TitleBarProps) {
             data-tauri-drag-region
           >
             <XStack data-tauri-drag-region>
-              <NavMenu mainActor={props.mainActor} />
+              <NavMenu />
               <NavigationButtons />
               <DiscardDraftButton />
             </XStack>

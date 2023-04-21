@@ -1,7 +1,5 @@
 import {MINTTER_LINK_PREFIX} from '@mintter/shared'
-import {useDrag} from '@app/drag-context'
 import {findPath} from '@app/editor/utils'
-import {useFileIds} from '@app/file-provider'
 import {useNavRoute} from '@app/utils/navigation'
 import {
   FlowContent,

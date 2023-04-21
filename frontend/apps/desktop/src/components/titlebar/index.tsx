@@ -1,4 +1,3 @@
-import {MainActor} from '@app/models/main-actor'
 import {warn} from '@app/utils/logger'
 import {lazy} from 'react'
 
@@ -8,7 +7,6 @@ var TitleBarLinux = lazy(() => import('./linux'))
 
 export interface TitleBarProps {
   clean?: boolean
-  mainActor?: MainActor
 }
 
 export function TitleBar(props: TitleBarProps) {

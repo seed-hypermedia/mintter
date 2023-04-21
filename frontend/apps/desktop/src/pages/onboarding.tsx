@@ -338,7 +338,9 @@ function Profile(props: OnboardingStepProps) {
                   <Label htmlFor="bio">Bio</Label>
                   <TextArea
                     id="bio"
-                    onChangeText={(val) => (submitValue.current.bio = val)}
+                    onChangeText={(val: string) =>
+                      (submitValue.current.bio = val)
+                    }
                     placeholder="A little bit about yourself..."
                   />
                 </Fieldset>

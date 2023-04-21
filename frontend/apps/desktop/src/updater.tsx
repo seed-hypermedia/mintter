@@ -54,11 +54,7 @@ function UpdateAvailable({version, body}: {version: string; body: string}) {
   return (
     <div>
       <div>Mintter version {version} is available!</div>
-      <Button
-        chromeless
-        style={{paddingLeft: 0}}
-        onPress={() => installUpdate()}
-      >
+      <Button chromeless paddingLeft={0} onPress={() => installUpdate()}>
         Download
       </Button>
       <Button chromeless color="muted" onPress={() => toast.dismiss(TOAST_ID)}>

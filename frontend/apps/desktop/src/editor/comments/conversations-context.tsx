@@ -1,8 +1,5 @@
-import {commentsClient} from '@app/api-clients'
 import {features} from '@app/constants'
 import {useDocConversations} from '@app/models/comments'
-import {queryKeys} from '@app/models/query-keys'
-import {ClientPublication} from '@app/publication-machine'
 import {
   Annotation,
   Block,
@@ -12,7 +9,7 @@ import {
   Publication,
 } from '@mintter/shared'
 import {ListConversationsResponse} from '@mintter/shared/client/.generated/documents/v1alpha/comments_pb'
-import {useQuery, UseQueryResult} from '@tanstack/react-query'
+import {UseQueryResult} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
 import {
   createContext,

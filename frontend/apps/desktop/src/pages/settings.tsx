@@ -563,7 +563,9 @@ function SiteInfoForm({
           id="site-title"
           value={description}
           disabled={!isOwner}
-          onChangeText={isOwner ? (val) => setDescription(val) : undefined}
+          onChangeText={
+            isOwner ? (val: string) => setDescription(val) : undefined
+          }
         />
       </YStack>
       {isOwner ? (

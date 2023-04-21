@@ -1,19 +1,10 @@
 import {useAccountIsConnected, useAllAccounts} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
+import {Avatar} from '@components/avatar'
 import Footer from '@components/footer'
 import {OnlineIndicator} from '@components/indicator'
 import {Account} from '@mintter/shared'
-import {PageProps} from './base'
-import {
-  Container,
-  MainWrapper,
-  UIAvatar,
-  YStack,
-  Button,
-  Text,
-  XStack,
-} from '@mintter/ui'
-import {Avatar} from '@components/avatar'
+import {Button, Container, MainWrapper, Text, XStack, YStack} from '@mintter/ui'
 
 function ContactItem({account}: {account: Account}) {
   const navigate = useNavigate()
@@ -50,7 +41,7 @@ function ContactItem({account}: {account: Account}) {
   )
 }
 
-export default function ConnectionsPage(props: PageProps) {
+export default function ConnectionsPage() {
   const contacts = useAllAccounts()
   const accounts = contacts.data?.accounts || []
   return (

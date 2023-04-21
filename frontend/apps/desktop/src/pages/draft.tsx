@@ -4,145 +4,157 @@ import {DragProvider} from '@app/drag-context'
 import {createDragMachine} from '@app/drag-machine'
 import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {Editor} from '@app/editor/editor'
-import {MainActor} from '@app/models/main-actor'
+import {buildEditorHook, EditorMode} from '@app/editor/plugin-utils'
+import {plugins} from '@app/editor/plugins'
+import {useEditorDraft, useSaveDraft} from '@app/models/documents'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
 import {useDaemonReady} from '@app/node-status-context'
 import {AppError} from '@app/root'
+import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import Footer from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
-import {ChildrenOf, Document} from '@mintter/shared'
+import {
+  group,
+  GroupingContent,
+  paragraph,
+  statement,
+  text,
+} from '@mintter/shared'
 import {Button, MainWrapper, SizableText, XStack, YStack} from '@mintter/ui'
-import {useActor, useInterpret} from '@xstate/react'
-import {useEffect, useState} from 'react'
+import {useInterpret} from '@xstate/react'
+import {useEffect, useMemo, useState} from 'react'
 import {ErrorBoundary} from 'react-error-boundary'
 import {Editor as SlateEditor, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
 
-export default function DraftPage({mainActor}: {mainActor: MainActor}) {
-  if (mainActor.type !== 'draft')
+let emptyEditorValue = group({data: {parent: ''}}, [
+  statement([paragraph([text('')])]),
+])
+
+export default function DraftPage() {
+  let route = useNavRoute()
+  if (route.key != 'draft')
     throw new Error('Draft actor must be passed to DraftPage')
-  const draftActor = mainActor.actor
-  const editor = mainActor.editor
-  const [state, send] = useActor(draftActor)
+
   const [debugValue, setDebugValue] = useState(false)
+  const docId = route.documentId
+  const editor = useMemo(() => buildEditorHook(plugins, EditorMode.Draft), [])
+
+  const {
+    data: draftState,
+    status,
+    error,
+    refetch,
+  } = useEditorDraft({
+    documentId: docId,
+  })
+  console.log('🚀 ~ file: draft.tsx:53 ~ DraftPage ~ draftState:', draftState)
+
   let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
   let isDaemonReady = useDaemonReady()
 
-  // @ts-ignore
-  window.mouseService = mouseService
+  /**
+   * autosave
+   * - when the user stops typing (after 500ms)
+   * - transform all the changes from editor.__mtt-changes to DocumentChanges
+   * -
+   */
 
   useInitialFocus(editor)
 
-  useEffect(() => {
-    if (isDaemonReady) {
-      send('IS_DAEMON_READY')
-    }
-  }, [isDaemonReady])
+  // TODO: safe when loading the first time a new draft: this is to load the epty block generated when start inside the `editorValue` useMemo
+  const saveDraft = useSaveDraft(docId)
 
-  // console.log('🚀 ~ file: draft.tsx:36 ~ DraftPage ~ state', state)
+  return status == 'success' ? (
+    <ErrorBoundary
+      FallbackComponent={AppError}
+      onReset={() => window.location.reload()}
+    >
+      <MouseProvider value={mouseService}>
+        <DragProvider value={dragService}>
+          <BlockHighLighter>
+            <MainWrapper>
+              <YStack
+                onScroll={() => {
+                  mouseService.send('DISABLE.SCROLL')
 
-  // if (state.matches('errored')) {
-  //   return <Text>ERROR: {state.context.errorMessage}</Text>
-  // }
+                  // if (!canEdit) {
+                  //   mainService.send('NOT.EDITING')
+                  // }
+                }}
+                // @ts-ignore
+                onMouseMove={(event) => {
+                  mouseService.send({
+                    type: 'MOUSE.MOVE',
+                    position: event.clientY,
+                  })
+                }}
+                onMouseLeave={() => {
+                  mouseService.send('DISABLE.CHANGE')
+                }}
+                onMouseUp={() => {
+                  dragService.send('DROPPED')
+                  mouseService.send('DISABLE.DRAG.END')
+                }}
+              >
+                {!isDaemonReady ? <NotSavingBanner /> : null}
+                {draftState.children.length ? (
+                  <>
+                    <Editor
+                      editor={editor}
+                      value={draftState.children}
+                      //@ts-ignore
+                      onChange={(content: GroupingContent[]) => {
+                        // TODO: need to check when content can be a string
+                        if (
+                          (!content && typeof content == 'string') ||
+                          !isDaemonReady
+                        )
+                          return
 
-  if (state.matches('editing')) {
-    return (
-      <ErrorBoundary
-        FallbackComponent={AppError}
-        onReset={() => window.location.reload()}
-      >
-        <MouseProvider value={mouseService}>
-          <DragProvider value={dragService}>
-            <BlockHighLighter>
-              <MainWrapper>
-                <YStack
-                  onScroll={() => {
-                    mouseService.send('DISABLE.SCROLL')
-
-                    // if (!canEdit) {
-                    //   mainService.send('NOT.EDITING')
-                    // }
-                  }}
-                  // @ts-ignore
-                  onMouseMove={(event) => {
-                    mouseService.send({
-                      type: 'MOUSE.MOVE',
-                      position: event.clientY,
-                    })
-                    mainActor.actor.send('EDITING.STOP')
-                  }}
-                  onMouseLeave={() => {
-                    mouseService.send('DISABLE.CHANGE')
-                  }}
-                  onMouseUp={() => {
-                    dragService.send('DROPPED')
-                    mouseService.send('DISABLE.DRAG.END')
-                  }}
-                >
-                  {!isDaemonReady ? <NotSavingBanner /> : null}
-                  {state.context.localDraft?.content ? (
-                    <>
-                      <Editor
-                        editor={editor}
-                        readOnly={!isDaemonReady}
-                        value={state.context.localDraft.content}
-                        //@ts-ignore
-                        onChange={(content: ChildrenOf<Document>) => {
-                          if (
-                            (!content && typeof content == 'string') ||
-                            !isDaemonReady
-                          )
-                            return
-                          mouseService.send('DISABLE.CHANGE')
-                          mainActor.actor.send('EDITING.START')
-                          // @ts-ignore
-                          send({type: 'DRAFT.UPDATE', payload: {content}})
-                        }}
-                      />
-                      {import.meta.env.DEV && (
-                        <YStack maxWidth="500px" marginHorizontal="auto">
-                          <Button
-                            size="$1"
-                            theme="gray"
-                            width="100%"
-                            onPress={() => setDebugValue((v) => !v)}
+                        saveDraft.mutate({editor, content})
+                        mouseService.send('DISABLE.CHANGE')
+                      }}
+                    />
+                    {import.meta.env.DEV && (
+                      <YStack maxWidth="500px" marginHorizontal="auto">
+                        <Button
+                          size="$1"
+                          theme="gray"
+                          width="100%"
+                          onPress={() => setDebugValue((v) => !v)}
+                        >
+                          toggle value
+                        </Button>
+                        {debugValue && (
+                          <XStack
+                            tag="pre"
+                            {...{
+                              whiteSpace: 'wrap',
+                            }}
                           >
-                            toggle value
-                          </Button>
-                          {debugValue && (
-                            <XStack
-                              tag="pre"
-                              {...{
-                                whiteSpace: 'wrap',
-                              }}
-                            >
-                              <SizableText tag="code" size="$1">
-                                {JSON.stringify(
-                                  state.context.localDraft?.content,
-                                  null,
-                                  3,
-                                )}
-                              </SizableText>
-                            </XStack>
-                          )}
-                        </YStack>
-                      )}
-                    </>
-                  ) : null}
-                </YStack>
-              </MainWrapper>
-              <Footer />
-            </BlockHighLighter>
-          </DragProvider>
-        </MouseProvider>
-      </ErrorBoundary>
-    )
-  }
-
-  return <DraftShell />
+                            <SizableText tag="code" size="$1">
+                              {JSON.stringify(draftState?.children, null, 3)}
+                            </SizableText>
+                          </XStack>
+                        )}
+                      </YStack>
+                    )}
+                  </>
+                ) : null}
+              </YStack>
+            </MainWrapper>
+            <Footer />
+          </BlockHighLighter>
+        </DragProvider>
+      </MouseProvider>
+    </ErrorBoundary>
+  ) : (
+    <DraftShell />
+  )
 }
 
 function useInitialFocus(editor: SlateEditor) {

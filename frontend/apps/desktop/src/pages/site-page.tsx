@@ -1,10 +1,17 @@
 import {Dropdown} from '@app/editor/dropdown'
-import {usePublication, prefetchPublication} from '@app/models/documents'
 import {useAccount} from '@app/models/accounts'
+import {prefetchPublication, usePublication} from '@app/models/documents'
 import {useSitePublications} from '@app/models/sites'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
+import {useOpenDraft} from '@app/utils/open-draft'
 import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
+import {useUnpublishDialog} from '@components/unpublish-dialog'
+import {
+  formattedDate,
+  MINTTER_LINK_PREFIX,
+  WebPublicationRecord,
+} from '@mintter/shared'
 import {
   Button,
   ButtonText,
@@ -19,20 +26,11 @@ import {
   XStack,
   YStack,
 } from '@mintter/ui'
-import {useUnpublishDialog} from '@components/unpublish-dialog'
-import {
-  WebPublicationRecord,
-  formattedDate,
-  MINTTER_LINK_PREFIX,
-} from '@mintter/shared'
 import copyTextToClipboard from 'copy-text-to-clipboard'
 import {useMemo} from 'react'
 import {toast} from 'react-hot-toast'
-import {PageProps} from './base'
-import {useQueryClient} from '@tanstack/react-query'
-import {useOpenDraft} from '@app/utils/open-draft'
 
-export default function SitePage(props: PageProps) {
+export default function SitePage() {
   const route = useNavRoute()
 
   const host = route.key === 'site' ? route.hostname : undefined
@@ -103,7 +101,10 @@ function WebPublicationListItem({
     hostname,
     webPub,
   )
-  const {data: publication} = usePublication(webPub.documentId, webPub.version)
+  const {data: publication} = usePublication({
+    documentId: webPub.documentId,
+    versionId: webPub.version,
+  })
   const {data: author} = useAccount(publication?.document?.author)
   return (
     <Button
@@ -116,11 +117,11 @@ function WebPublicationListItem({
           : null
       }
     >
-      {webPub.path === '' ? (
+      {webPub.path == '' ? (
         <ButtonText onPress={goToItem} theme="gray" fontWeight="700" flex={1}>
           {publication?.document?.title}
         </ButtonText>
-      ) : webPub.path === '/' ? (
+      ) : webPub.path == '/' ? (
         <ButtonText onPress={goToItem} fontWeight="700" flex={1}>
           {publication?.document?.title}
         </ButtonText>

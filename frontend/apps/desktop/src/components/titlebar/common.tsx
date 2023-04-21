@@ -1,12 +1,12 @@
+import {draftsClient} from '@app/api-clients'
 import {Dropdown} from '@app/editor/dropdown'
 import appError from '@app/errors'
 import {useMyAccount} from '@app/models/accounts'
 import {useDraftList} from '@app/models/documents'
-import {MainActor} from '@app/models/main-actor'
 import {useSiteList} from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
-import {PublicationActor} from '@app/publication-machine'
 import {
+  PublicationRoute,
   useNavigate,
   useNavigationDispatch,
   useNavigationState,
@@ -34,8 +34,8 @@ import {
   XStack,
 } from '@mintter/ui'
 import {emit as tauriEmit} from '@tauri-apps/api/event'
-import {useActor, useSelector} from '@xstate/react'
 import copyTextToClipboard from 'copy-text-to-clipboard'
+import {useState} from 'react'
 import toast from 'react-hot-toast'
 import {TitleBarProps} from '.'
 import {PublishShareButton} from './publish-share'
@@ -66,14 +66,9 @@ export function ActionButtons(props: TitleBarProps) {
         </Tooltip>
       )}
 
-      {route.key === 'publication' &&
-      props.mainActor?.type === 'publication' ? (
-        <WriteActions publicationActor={props.mainActor.actor} />
-      ) : null}
+      {route.key === 'publication' ? <WriteActions route={route} /> : null}
 
-      {props.mainActor ? (
-        <PublishShareButton mainActor={props.mainActor} />
-      ) : null}
+      <PublishShareButton />
 
       {route.key === 'draft' ? null : (
         <div className="button-group">
@@ -184,7 +179,7 @@ function AccountDropdownItem() {
   )
 }
 
-export function NavMenu({mainActor}: {mainActor?: MainActor}) {
+export function NavMenu() {
   const route = useNavRoute()
   const navigate = useNavigate()
   const spawn = useNavigate('spawn')
@@ -245,34 +240,34 @@ export function NavMenu({mainActor}: {mainActor?: MainActor}) {
   )
 }
 
-function WriteActions({
-  publicationActor,
-}: {
-  publicationActor: PublicationActor
-}) {
-  // let canUpdate = useSelector(
-  //   publicationActor,
-  //   (state) => state.context.canUpdate,
-  // )
+function WriteActions({route}: {route: PublicationRoute}) {
   const draftList = useDraftList()
-  const [pubState] = useActor(publicationActor)
+  const navigate = useNavigate('push')
+  let [errorMessage, setError] = useState('')
+
   const hasExistingDraft = draftList.data?.documents.some(
-    (draft) => draft.id === pubState.context.documentId,
+    (draft) => draft.id === route.documentId,
   )
-  let errorMessage = useSelector(
-    publicationActor,
-    (state) => state.context.errorMessage,
-  )
+
+  async function handleEdit() {
+    try {
+      let draft = await draftsClient.createDraft({
+        existingDocumentId: route.documentId,
+      })
+      navigate({key: 'draft', documentId: draft.id})
+    } catch (error) {
+      setError(JSON.stringify(error))
+    }
+  }
+
   return (
     <>
-      {publicationActor && (
+      {route.key == 'publication' && (
         <Button
           chromeless
           size="$2"
           theme={hasExistingDraft ? 'yellow' : undefined}
-          onPress={() => {
-            publicationActor.send({type: 'PUBLICATION.EDIT'})
-          }}
+          onPress={() => handleEdit()}
         >
           {hasExistingDraft ? 'Resume Editing' : 'Edit'}
           {errorMessage ? ' (failed)' : null}

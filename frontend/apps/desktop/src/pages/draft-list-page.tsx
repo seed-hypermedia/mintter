@@ -7,7 +7,6 @@ import {EmptyList} from '@components/empty-list'
 import Footer from '@components/footer'
 import {Document, formattedDate} from '@mintter/shared'
 import {
-  Text,
   Button,
   ButtonText,
   Container,
@@ -17,14 +16,13 @@ import {
   MainWrapper,
   MoreHorizontal,
   Separator,
+  Text,
   XStack,
   YStack,
 } from '@mintter/ui'
 import {useQueryClient} from '@tanstack/react-query'
-import Highlighter from 'react-highlight-words'
-import {PageProps} from './base'
 
-export default function DraftList(props: PageProps) {
+export default function DraftList() {
   let {data, isInitialLoading} = useDraftList()
   // TODO: add a `isFetching` indicator
   const openDraft = useOpenDraft()

@@ -126,6 +126,8 @@ export const MintterEditor: MintterEditor = {
     const result: Array<DocumentChange> = []
     let orderedChanges = orderChanges(editor)
 
+    if (orderChanges.length == 0) return []
+
     orderedChanges.forEach((change) => {
       let [type, value] = change
       if (type == 'deleteBlock') {

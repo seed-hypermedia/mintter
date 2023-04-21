@@ -335,8 +335,11 @@ Link.displayName = 'Link'
 function MintterDocumentLink({element, attributes}: LinkProps) {
   let editor = useSlateStatic()
   let at = findPath(element)
-  let [docId, version] = getIdsfromUrl(element.url)
-  let {data} = usePublication(docId, version)
+  let [docId, versionId] = getIdsfromUrl(element.url)
+  let {data} = usePublication({
+    documentId: docId,
+    versionId,
+  })
   useEffect(() => {
     if (data) {
       Editor.withoutNormalizing(editor, () => {

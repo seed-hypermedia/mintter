@@ -1,6 +1,5 @@
 import {accountsClient, publicationsClient} from '@app/api-clients'
 import {queryKeys} from '@app/models/query-keys'
-import {ClientPublication} from '@app/publication-machine'
 import {Account, blockNodeToSlate, MttLink, Publication} from '@mintter/shared'
 import {QueryClient} from '@tanstack/react-query'
 import {assign, createMachine} from 'xstate'
@@ -13,7 +12,7 @@ type CreateConversationMachineProps = {
 
 type DiscussionMachineContext = {
   link: MttLink
-  source: ClientPublication | null
+  source: Publication | null
   publication: Publication | null
   errorMessage: string
   author: Account | null
@@ -94,7 +93,7 @@ export function createDiscussionMachine({
           )
         },
         fetchAuthor: async (context) => {
-          let documentAuthor = context.source?.document.author || ''
+          let documentAuthor = context.source?.document?.author || ''
           let userAccount = await client.fetchQuery({
             queryKey: [queryKeys.GET_ACCOUNT, ''],
             queryFn: () => accountsClient.getAccount({id: ''}),
@@ -119,7 +118,7 @@ export function createDiscussionMachine({
             let pub = event.data
             if (pub.document?.children.length) {
               let content = blockNodeToSlate(pub.document.children, 'group')
-              let publication: ClientPublication = Object.assign(pub, {
+              let publication = Object.assign(pub, {
                 document: {
                   ...pub.document,
                   content: [content],

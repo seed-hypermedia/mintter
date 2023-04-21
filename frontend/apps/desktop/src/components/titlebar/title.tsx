@@ -1,4 +1,4 @@
-import {useDraft, usePublication} from '@app/models/documents'
+import {useDraft, useDraftTitle, usePublication} from '@app/models/documents'
 import {useAccount} from '@app/models/accounts'
 import {
   DraftRoute,
@@ -82,7 +82,10 @@ function PublicationTitle({
   route: PublicationRoute
   size?: SizeTokens
 }) {
-  let {data: pub} = usePublication(route.documentId, route.versionId)
+  let {data: pub} = usePublication({
+    documentId: route.documentId,
+    versionId: route.versionId,
+  })
   let {data: author} = useAccount(pub?.document?.author)
   const navigate = useNavigate()
 
@@ -120,8 +123,10 @@ function DraftTitle({
   route: DraftRoute
   size?: SizeTokens
 }) {
-  const {data: draft} = useDraft(route.documentId)
-  const displayTitle = draft?.title === '' ? 'Untitled Draft' : draft?.title
+  const title = useDraftTitle({
+    documentId: route.documentId,
+  })
+  const displayTitle = title ?? 'Untitled Draft'
   return (
     <>
       <Pencil size={12} />

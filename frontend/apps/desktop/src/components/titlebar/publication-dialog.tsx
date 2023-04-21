@@ -1,7 +1,7 @@
-import {MainActor} from '@app/models/main-actor'
+import {usePublication} from '@app/models/documents'
 import {useSitePublish} from '@app/models/sites'
-import {PublicationActor} from '@app/publication-machine'
 import {styled} from '@app/stitches.config'
+import {PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
 import {TextField} from '@components/text-field'
@@ -27,28 +27,35 @@ const Heading = styled('h2', {
   margin: 0,
   fontSize: '$4',
 })
+
 function PublishDialogForm({
   siteId,
   onDone,
-  publicationActor,
+  publicationRoute,
 }: {
   siteId: string
   onDone?: () => void
-  publicationActor: PublicationActor
+  publicationRoute: PublicationRoute
 }) {
+  console.log('=== PublishDialogForm')
   const publish = useSitePublish()
 
+  const {data: pub} = usePublication({
+    documentId: publicationRoute.documentId,
+    versionId: publicationRoute.versionId,
+  })
+
   const init = useMemo(() => {
-    const docState = publicationActor.getSnapshot()
-    const title = docState.context.title
+    const title = pub?.document?.title
     const path = title ? writePathState(title) : 'untitled'
 
     return {
       path,
-      docId: docState.context.documentId,
-      version: docState.context.version,
+      docId: publicationRoute.documentId,
+      version: publicationRoute.versionId || '',
     }
-  }, [])
+  }, [pub])
+
   const [path, setPath] = useState<string>(init.path)
   const pubUrl = `${siteId}/${
     path === '/' ? '' : path === '' ? `p/${init.docId}` : readPathState(path)
@@ -92,11 +99,22 @@ function PublishDialogForm({
     </>
   )
 }
-export function usePublicationDialog(mainActor?: MainActor) {
+export function usePublicationDialog() {
+  console.log(
+    '🚀 ~ file: publication-dialog.tsx:103 ~ usePublicationDialog ~ usePublicationDialog:',
+  )
+  const route = useNavRoute()
   const [openSiteHostname, setOpenSiteHostname] = useState<null | string>(null)
   function open(hostname: string) {
+    console.log('OPEN OPEN', hostname)
     setOpenSiteHostname(hostname)
   }
+
+  console.log(
+    'openSiteHostname && route.key == publication',
+    openSiteHostname && route.key == 'publication',
+  )
+
   return {
     content: (
       <DialogPrimitive.Root
@@ -108,10 +126,10 @@ export function usePublicationDialog(mainActor?: MainActor) {
         <DialogPrimitive.Portal>
           <StyledOverlay />
           <StyledContent>
-            {openSiteHostname && mainActor?.type === 'publication' && (
+            {openSiteHostname && route.key == 'publication' && (
               <PublishDialogForm
                 siteId={openSiteHostname}
-                publicationActor={mainActor.actor}
+                publicationRoute={route}
                 onDone={() => {
                   setOpenSiteHostname(null)
                 }}

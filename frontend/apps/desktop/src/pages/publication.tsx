@@ -64,18 +64,21 @@ export default function PublicationPage() {
     throw new Error('Publication page expects publication actor')
 
   const [debugValue, setDebugValue] = useState(false)
-  const pubRoute = route.key === 'publication' ? route : undefined
-  const docId = pubRoute?.documentId
-  const versionId = pubRoute?.versionId
-  const blockId = pubRoute?.blockId
-  const accessory = pubRoute?.accessory
+
+  const docId = route?.documentId
+  const versionId = route?.versionId
+  const blockId = route?.blockId
+  const accessory = route?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
   if (!docId)
     throw new Error(
-      `Publication route does not contain docId: ${JSON.stringify(pubRoute)}`,
+      `Publication route does not contain docId: ${JSON.stringify(route)}`,
     )
-  const {data, status, error, refetch} = usePublication(docId, versionId)
+  const {data, status, error, refetch} = usePublication({
+    documentId: docId,
+    versionId,
+  })
 
   let editorValue = useMemo(() => {
     if (status == 'success' && data.document?.children.length) {
@@ -121,7 +124,7 @@ export default function PublicationPage() {
     let unlisten: () => void | undefined
 
     listen<{conversations: Array<string>}>('selector_click', (event) => {
-      pubRoute && replace({...pubRoute, accessory: {key: 'comments'}})
+      replace({...route, accessory: {key: 'comments'}})
     }).then((f) => (unlisten = f))
 
     return () => unlisten?.()
@@ -156,7 +159,7 @@ export default function PublicationPage() {
           isOpen={accessoryKey === 'comments'}
           onConversationsOpen={() => {
             // todo, pass clicked on conversation into route
-            replace({...pubRoute, accessory: {key: 'comments'}})
+            replace({...route, accessory: {key: 'comments'}})
           }}
           publication={data}
         >
@@ -164,7 +167,7 @@ export default function PublicationPage() {
             documentId={docId}
             onCitationsOpen={(citations: Array<MttLink>) => {
               // todo, pass active citations into route
-              replace({...pubRoute, accessory: {key: 'citations'}})
+              replace({...route, accessory: {key: 'citations'}})
             }}
           >
             <MouseProvider value={mouseService}>
@@ -255,9 +258,9 @@ export default function PublicationPage() {
                   )}`}
                   icon={Pencil}
                   onPress={() => {
-                    if (pubRoute.accessory)
-                      return replace({...pubRoute, accessory: null})
-                    replace({...pubRoute, accessory: {key: 'versions'}})
+                    if (route.accessory)
+                      return replace({...route, accessory: null})
+                    replace({...route, accessory: {key: 'versions'}})
                   }}
                 />
                 <FooterButton
@@ -267,9 +270,9 @@ export default function PublicationPage() {
                   )}`}
                   icon={Link}
                   onPress={() => {
-                    if (pubRoute.accessory)
-                      return replace({...pubRoute, accessory: null})
-                    replace({...pubRoute, accessory: {key: 'citations'}})
+                    if (route.accessory)
+                      return replace({...route, accessory: null})
+                    replace({...route, accessory: {key: 'citations'}})
                   }}
                 />
                 {features.comments ? (
@@ -278,9 +281,9 @@ export default function PublicationPage() {
                     label={`Conversations`}
                     icon={Comment}
                     onPress={() => {
-                      if (pubRoute.accessory?.key === 'versions')
-                        return replace({...pubRoute, accessory: null})
-                      replace({...pubRoute, accessory: {key: 'comments'}})
+                      if (route.accessory?.key === 'versions')
+                        return replace({...route, accessory: null})
+                      replace({...route, accessory: {key: 'comments'}})
                     }}
                   />
                 ) : null}
@@ -392,7 +395,9 @@ function useScrollToBlock(editor: SlateEditor, ref: any, blockId?: string) {
 }
 
 function OutOfDateBanner({docId, version}: {docId: string; version: string}) {
-  const {data: pub, isLoading} = usePublication(docId)
+  const {data: pub, isLoading} = usePublication({
+    documentId: docId,
+  })
   const navigate = useNavigate()
   const route = useNavRoute()
   const pubAccessory = route.key === 'publication' ? route.accessory : undefined

@@ -36,6 +36,7 @@ import {
   TextArea,
   Image as UImage,
 } from '@mintter/ui'
+import {GestureReponderEvent} from '@tamagui/web'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -108,7 +109,7 @@ type InnerImageProps = {
 
 function ImageComponent({service, element}: InnerImageProps) {
   let [state, send] = useActor(service)
-  const [replace, setReplace] = useState(false);
+  const [replace, setReplace] = useState(false)
   const editor = useSlateStatic()
   const selected = useSelected()
   const focused = useFocused()
@@ -117,19 +118,19 @@ function ImageComponent({service, element}: InnerImageProps) {
   return (
     <YStack
       onHoverIn={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        setReplace(true);
+        setReplace(true)
       }}
       onHoverOut={(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        setReplace(false);
+        setReplace(false)
       }}
     >
       {editor.mode == EditorMode.Draft && replace ? (
         <Button
-          theme='gray'
-          position='absolute'
-          top='$1.5'
-          right='$1.5'
-          zIndex='$4'
+          theme="gray"
+          position="absolute"
+          top="$1.5"
+          right="$1.5"
+          zIndex="$4"
           size="$1"
           width={60}
           color="muted"
@@ -147,20 +148,22 @@ function ImageComponent({service, element}: InnerImageProps) {
       {state.context.captionVisibility ? (
         <XStack>
           <TextArea
-            size='$3'
+            size="$3"
             multiline={true}
-            width='100%'
+            width="100%"
             placeholder="Media Caption"
-            wordWrap='break-word'
-            placeholderTextColor='grey'
+            wordWrap="break-word"
+            placeholderTextColor="grey"
             borderWidth="$0"
             focusStyle={{
-              outlineWidth:"$0",
+              outlineWidth: '$0',
             }}
             backgroundColor="var(--base-background-normal)"
             value={element.alt}
-            onChangeText={(val) => send({type: 'CAPTION.UPDATE', value: val})}
-            onKeyPress={(event) => {
+            onChange={(val: string) =>
+              send({type: 'CAPTION.UPDATE', value: val})
+            }
+            onKeyPress={(event: any) => {
               if (event.nativeEvent.key == 'Enter') {
                 // This will create a new block below the image and focus on it
 
