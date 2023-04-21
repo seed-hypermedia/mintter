@@ -7,10 +7,10 @@ import {flow} from '@app/stitches.config'
 import {classnames} from '@app/utils/classnames'
 import {error} from '@app/utils/logger'
 import {
-  ChildrenOf,
-  FlowContent,
   blockquote,
+  ChildrenOf,
   code,
+  FlowContent,
   group,
   heading,
   isFlowContent,
@@ -32,11 +32,11 @@ import {Descendant, Editor as EditorType, Transforms} from 'slate'
 import {Editable, ReactEditor, Slate} from 'slate-react'
 import DragContext, {DragContextValues, HoveredNode} from './drag-context'
 import {
-  EditorMode,
   buildDecorateHook,
   buildEventHandlerHooks,
   buildRenderElementHook,
   buildRenderLeafHook,
+  EditorMode,
 } from './plugin-utils'
 import {plugins as defaultPlugins} from './plugins'
 import './styles/editor.scss'
@@ -70,32 +70,39 @@ export function Editor({
 
   const dragService = useDrag()
   const [draggedNode, setDraggedNode] = useState<HoveredNode>(null)
-  let contextValues: DragContextValues = {
-    drag: draggedNode,
-    setDrag: debounce(
-      (e: DragEvent, node: FlowContent) => {
-        if (draggedNode) return
-        setDraggedNode(node)
-        e.preventDefault()
-        const path = ReactEditor.findPath(editor, node)
 
-        const domNode = ReactEditor.toDOMNode(editor, node)
+  useSelectAll(editor, mode)
+  useTauriListeners(editor)
 
-        dragService?.send({
-          type: 'DRAG.OVER',
-          toPath: path,
-          element: domNode as HTMLLIElement,
-          currentPosX: e.clientX,
-          currentPosY: e.clientY,
-        })
+  let contextValues: DragContextValues = useMemo(
+    () => ({
+      drag: draggedNode,
+      setDrag: debounce(
+        (e: DragEvent, node: FlowContent) => {
+          if (draggedNode) return
+          setDraggedNode(node)
+          e.preventDefault()
+          const path = ReactEditor.findPath(editor, node)
+
+          const domNode = ReactEditor.toDOMNode(editor, node)
+
+          dragService?.send({
+            type: 'DRAG.OVER',
+            toPath: path,
+            element: domNode as HTMLLIElement,
+            currentPosX: e.clientX,
+            currentPosY: e.clientY,
+          })
+        },
+        100,
+        {leading: true, trailing: false},
+      ),
+      clearDrag: () => {
+        setDraggedNode(null)
       },
-      100,
-      {leading: true, trailing: false},
-    ),
-    clearDrag: () => {
-      setDraggedNode(null)
-    },
-  }
+    }),
+    [draggedNode],
+  )
 
   const renderElement = useMemo(
     () => buildRenderElementHook(plugins, editor),
@@ -114,65 +121,61 @@ export function Editor({
     [plugins, editor],
   )
 
-  const [mouseDown, setMouseDown] = useState(false)
+  if (mode == EditorMode.Draft) {
+    return (
+      <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
+        <DragContext.Provider value={contextValues}>
+          <Slate
+            editor={editor}
+            value={value as Array<Descendant>}
+            onChange={onChange}
+          >
+            <EditorHoveringToolbar />
+            <Editable
+              id="editor"
+              data-testid="editor"
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              decorate={decorate}
+              placeholder="Start typing here..."
+              {...eventHandlers}
+            />
+            {children}
+          </Slate>
+        </DragContext.Provider>
+      </div>
+    )
+  }
 
+  return (
+    <span className={`${classnames('editor', mode)} ${flow()}`}>
+      <Slate
+        editor={editor}
+        value={value as Array<Descendant>}
+        onChange={onChange}
+      >
+        {mode == EditorMode.Publication ? <PublicationToolbar /> : null}
+        <Editable
+          id="editor"
+          //@ts-ignore
+          as={as}
+          autoCorrect="false"
+          autoCapitalize="false"
+          spellCheck="false"
+          data-testid="editor"
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          decorate={decorate}
+          readOnly={readOnly}
+          {...eventHandlers}
+        />
+      </Slate>
+    </span>
+  )
+}
+
+function useSelectAll(editor: EditorType, mode: EditorMode) {
   useEffect(() => {
-    function handleMouseDown() {
-      setMouseDown(true)
-    }
-
-    function handleMouseUp() {
-      setMouseDown(false)
-    }
-
-    document.addEventListener('mousedown', handleMouseDown)
-    document.addEventListener('mouseup', handleMouseUp)
-
-    return () => {
-      document.removeEventListener('mousedown', handleMouseDown)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [])
-
-  // async function createDummyComment(event: any) {
-  //   event.preventDefault()
-  //   // revision: bafy2bzacea243a2yqianaubbxtcy2zf7onupotwarh5jlmbsbs2dhb6q3km4m
-  //   let selector: Selector = {
-  //     blockId: 'fOShPYr6',
-  //     blockRevision:
-  //       'bafy2bzacea243a2yqianaubbxtcy2zf7onupotwarh5jlmbsbs2dhb6q3km4m',
-  //     start: 0,
-  //     end: 8,
-  //   }
-
-  //   let request = CreateConversationRequest.fromPartial({
-  //     documentId:
-  //       'bafy2bzacebcf32766lmlgrj7in6cbvjskk3prv6amyrtqmtgxw3ric22f4ghk',
-  //     selectors: [selector],
-  //     initialComment: {
-  //       id: 'foobar',
-  //       type: 'comment',
-  //       text: "Hello I'm a comment",
-  //     },
-  //   })
-
-  //   let res = await new CommentsClientImpl(client).createConversation(request)
-  //   console.log('🚀 ~ file: editor.tsx:102 ~ createDummyComment ~ res', res)
-  // }
-
-  useEffect(() => {
-    const applySelectAll: KeyboardEventHandler = (event) => {
-      if (editor && event.metaKey && event.key == 'a') {
-        event.preventDefault()
-        ReactEditor.focus(editor!)
-        setTimeout(() => {
-          Transforms.select(editor, [])
-        }, 10)
-
-        return
-      }
-    }
-
     if (editor && mode == EditorMode.Publication) {
       //@ts-ignore
       document.addEventListener('keydown', applySelectAll)
@@ -186,6 +189,20 @@ export function Editor({
     }
   }, [])
 
+  const applySelectAll: KeyboardEventHandler = (event) => {
+    if (editor && event.metaKey && event.key == 'a') {
+      event.preventDefault()
+      ReactEditor.focus(editor!)
+      setTimeout(() => {
+        Transforms.select(editor, [])
+      }, 10)
+
+      return
+    }
+  }
+}
+
+function useTauriListeners(editor: EditorType) {
   useEffect(() => {
     let isSubscribed = true
     let unlisten: () => void
@@ -282,69 +299,4 @@ export function Editor({
       isSubscribed = false
     }
   })
-
-  useEffect(() => {
-    contextValues.drag = draggedNode
-  }, [draggedNode])
-
-  if (mode == EditorMode.Draft) {
-    return (
-      <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
-        <DragContext.Provider value={contextValues}>
-          <Slate
-            editor={editor}
-            value={value as Array<Descendant>}
-            onChange={onChange}
-          >
-            <EditorHoveringToolbar mouseDown={mouseDown} />
-            <Editable
-              id="editor"
-              data-testid="editor"
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              decorate={decorate}
-              placeholder="Start typing here..."
-              {...eventHandlers}
-            />
-            {children}
-          </Slate>
-        </DragContext.Provider>
-      </div>
-    )
-  }
-
-  return (
-    <span
-      className={`${classnames('editor', mode)} ${flow()}`}
-      // onMouseLeave={() => hoverService.send('MOUSE_LEAVE')}
-    >
-      <Slate
-        editor={editor}
-        value={value as Array<Descendant>}
-        onChange={onChange}
-      >
-        {mode == EditorMode.Publication ? (
-          <>
-            <PublicationToolbar />
-            {/* <button onClick={createDummyComment}>add dummy comment</button> */}
-          </>
-        ) : null}
-        <Editable
-          id="editor"
-          //@ts-ignore
-          as={as}
-          autoCorrect="false"
-          autoCapitalize="false"
-          spellCheck="false"
-          data-testid="editor"
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          decorate={decorate}
-          readOnly={readOnly}
-          {...eventHandlers}
-        />
-      </Slate>
-      {/* <pre>{JSON.stringify(value, null, 2)}</pre> */}
-    </span>
-  )
 }
