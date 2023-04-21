@@ -1,6 +1,5 @@
 import {AppBanner, BannerText} from '@app/app-banner'
 import {features} from '@app/constants'
-import {BlockHighLighter} from '@app/editor/block-highlighter'
 import {CitationsProvider} from '@app/editor/comments/citations-context'
 import {ConversationsProvider} from '@app/editor/comments/conversations-context'
 import {Editor} from '@app/editor/editor'
@@ -12,7 +11,6 @@ import {useDocCitations} from '@app/models/content-graph'
 import {usePublication} from '@app/models/documents'
 import {MouseProvider} from '@app/mouse-context'
 import {mouseMachine} from '@app/mouse-machine'
-import {classnames} from '@app/utils/classnames'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {ChangesList} from '@components/changes-list'
@@ -20,7 +18,14 @@ import {Citations} from '@components/citations'
 import {Conversations} from '@components/conversations'
 import Footer, {FooterButton} from '@components/footer'
 import {Placeholder} from '@components/placeholder-box'
-import {MttLink} from '@mintter/shared'
+import {
+  blockNodeToSlate,
+  group,
+  MttLink,
+  paragraph,
+  statement,
+  text,
+} from '@mintter/shared'
 import {
   Button,
   Comment,
@@ -35,7 +40,7 @@ import {
 } from '@mintter/ui'
 import {useQueryClient} from '@tanstack/react-query'
 import {listen} from '@tauri-apps/api/event'
-import {useActor, useInterpret} from '@xstate/react'
+import {useInterpret} from '@xstate/react'
 import {Allotment} from 'allotment'
 import 'allotment/dist/style.css'
 import {useEffect, useMemo, useRef, useState} from 'react'
@@ -44,24 +49,41 @@ import {Editor as SlateEditor} from 'slate'
 import {ReactEditor} from 'slate-react'
 
 import {AppError} from '@app/root'
-import {PageProps} from './base'
 
 function pluralS(length = 0) {
   return length === 1 ? '' : 's'
 }
 
-export default function PublicationPage({mainActor}: PageProps) {
-  if (mainActor?.type !== 'publication')
-    throw new Error('Publication page expects publication actor')
-  const publicationActor = mainActor.actor
+let emptyEditor = group({data: {parent: ''}}, [
+  statement({id: ''}, [paragraph([text('')])]),
+])
+
+export default function PublicationPage() {
   const route = useNavRoute()
+  if (route.key !== 'publication')
+    throw new Error('Publication page expects publication actor')
+
   const [debugValue, setDebugValue] = useState(false)
   const pubRoute = route.key === 'publication' ? route : undefined
   const docId = pubRoute?.documentId
+  const versionId = pubRoute?.versionId
   const blockId = pubRoute?.blockId
   const accessory = pubRoute?.accessory
   const accessoryKey = accessory?.key
   const replace = useNavigate('replace')
+  if (!docId)
+    throw new Error(
+      `Publication route does not contain docId: ${JSON.stringify(pubRoute)}`,
+    )
+  const {data, status, error, refetch} = usePublication(docId, versionId)
+
+  let editorValue = useMemo(() => {
+    if (status == 'success' && data.document?.children.length) {
+      return [blockNodeToSlate(data.document?.children, 'group')]
+    }
+
+    return [emptyEditor]
+  }, [docId, data, status])
 
   let editor = useMemo(
     () => buildEditorHook(plugins, EditorMode.Publication),
@@ -105,9 +127,7 @@ export default function PublicationPage({mainActor}: PageProps) {
     return () => unlisten?.()
   }, [])
 
-  let [state, send] = useActor(publicationActor)
-
-  if (state.matches('errored')) {
+  if (status == 'error') {
     return (
       <YStack>
         <YStack gap="$3" alignItems="flex-start" maxWidth={500} padding="$8">
@@ -115,9 +135,9 @@ export default function PublicationPage({mainActor}: PageProps) {
             Publication ERROR
           </Text>
           <Text fontFamily="$body" fontSize="$4">
-            {state.context.errorMessage}
+            {JSON.stringify(error)}
           </Text>
-          <Button theme="yellow" onPress={() => send('PUBLICATION.FETCH.DATA')}>
+          <Button theme="yellow" onPress={() => refetch()}>
             try again
           </Button>
         </YStack>
@@ -125,7 +145,7 @@ export default function PublicationPage({mainActor}: PageProps) {
     )
   }
 
-  if (docId) {
+  if (status == 'success') {
     return (
       <ErrorBoundary
         FallbackComponent={AppError}
@@ -138,7 +158,7 @@ export default function PublicationPage({mainActor}: PageProps) {
             // todo, pass clicked on conversation into route
             replace({...pubRoute, accessory: {key: 'comments'}})
           }}
-          publication={state.context.publication}
+          publication={data}
         >
           <CitationsProvider
             documentId={docId}
@@ -148,140 +168,123 @@ export default function PublicationPage({mainActor}: PageProps) {
             }}
           >
             <MouseProvider value={mouseService}>
-              <BlockHighLighter>
-                <MainWrapper noScroll>
-                  <Allotment defaultSizes={[100]} onChange={(values) => {}}>
-                    <Allotment.Pane>
-                      <YStack
-                        height="100%"
-                        // @ts-ignore
-                        onMouseMove={(event) =>
-                          mouseService.send({
-                            type: 'MOUSE.MOVE',
-                            position: event.clientY,
-                          })
-                        }
-                        onMouseLeave={() => {
-                          mouseService.send('DISABLE.CHANGE')
-                        }}
+              <MainWrapper noScroll>
+                <Allotment defaultSizes={[100]} onChange={(values) => {}}>
+                  <Allotment.Pane>
+                    <YStack
+                      height="100%"
+                      // @ts-ignore
+                      onMouseMove={(event) =>
+                        mouseService.send({
+                          type: 'MOUSE.MOVE',
+                          position: event.clientY,
+                        })
+                      }
+                      onMouseLeave={() => {
+                        mouseService.send('DISABLE.CHANGE')
+                      }}
+                    >
+                      <ScrollView
+                        onScroll={() => mouseService.send('DISABLE.SCROLL')}
                       >
-                        <ScrollView
-                          onScroll={() => mouseService.send('DISABLE.SCROLL')}
-                        >
-                          <OutOfDateBanner
-                            docId={state.context.documentId}
-                            version={state.context.version}
-                          />
-                          {state.context.publication?.document?.content && (
-                            <>
-                              <Editor
-                                editor={editor}
-                                mode={EditorMode.Publication}
-                                value={
-                                  state.context.publication?.document.content
-                                }
-                                onChange={() => {
-                                  mouseService.send('DISABLE.CHANGE')
-                                  // noop
-                                }}
-                              />
-                              {import.meta.env.DEV && (
-                                <YStack
-                                  maxWidth="500px"
-                                  marginHorizontal="auto"
+                        {versionId && (
+                          <OutOfDateBanner docId={docId} version={versionId} />
+                        )}
+                        {editorValue && (
+                          <>
+                            <Editor
+                              editor={editor}
+                              mode={EditorMode.Publication}
+                              value={editorValue}
+                              onChange={() => {
+                                mouseService.send('DISABLE.CHANGE')
+                                // noop
+                              }}
+                            />
+                            {import.meta.env.DEV && (
+                              <YStack maxWidth="500px" marginHorizontal="auto">
+                                <Button
+                                  size="$1"
+                                  theme="gray"
+                                  width="100%"
+                                  onPress={() => setDebugValue((v) => !v)}
                                 >
-                                  <Button
-                                    size="$1"
-                                    theme="gray"
-                                    width="100%"
-                                    onPress={() => setDebugValue((v) => !v)}
+                                  toggle value
+                                </Button>
+                                {debugValue && (
+                                  <XStack
+                                    tag="pre"
+                                    {...{
+                                      whiteSpace: 'wrap',
+                                    }}
                                   >
-                                    toggle value
-                                  </Button>
-                                  {debugValue && (
-                                    <XStack
-                                      tag="pre"
-                                      {...{
-                                        whiteSpace: 'wrap',
-                                      }}
-                                    >
-                                      <SizableText tag="code" size="$1">
-                                        {JSON.stringify(
-                                          state.context.publication?.document
-                                            .content,
-                                          null,
-                                          3,
-                                        )}
-                                      </SizableText>
-                                    </XStack>
-                                  )}
-                                </YStack>
-                              )}
-                            </>
+                                    <SizableText tag="code" size="$1">
+                                      {JSON.stringify(editorValue, null, 3)}
+                                    </SizableText>
+                                  </XStack>
+                                )}
+                              </YStack>
+                            )}
+                          </>
+                        )}
+                      </ScrollView>
+                    </YStack>
+                  </Allotment.Pane>
+                  {accessoryKey && (
+                    <Allotment.Pane preferredSize="35%">
+                      <YStack height="100%">
+                        <ScrollView>
+                          {accessoryKey == 'comments' ? (
+                            <Conversations />
+                          ) : accessoryKey == 'versions' ? (
+                            <ChangesList />
+                          ) : (
+                            <Citations docId={docId} version={versionId} />
                           )}
                         </ScrollView>
                       </YStack>
                     </Allotment.Pane>
-                    {accessoryKey && (
-                      <Allotment.Pane preferredSize="35%">
-                        <YStack height="100%">
-                          <ScrollView>
-                            {accessoryKey == 'comments' ? (
-                              <Conversations />
-                            ) : accessoryKey == 'versions' ? (
-                              <ChangesList />
-                            ) : (
-                              <Citations
-                                docId={docId}
-                                version={state.context.version}
-                              />
-                            )}
-                          </ScrollView>
-                        </YStack>
-                      </Allotment.Pane>
-                    )}
-                  </Allotment>
-                </MainWrapper>
-                <Footer>
+                  )}
+                </Allotment>
+              </MainWrapper>
+              <Footer>
+                <FooterButton
+                  active={accessoryKey === 'versions'}
+                  label={`${changes?.changes?.length} Version${pluralS(
+                    changes?.changes?.length,
+                  )}`}
+                  icon={Pencil}
+                  onPress={() => {
+                    if (pubRoute.accessory)
+                      return replace({...pubRoute, accessory: null})
+                    replace({...pubRoute, accessory: {key: 'versions'}})
+                  }}
+                />
+                <FooterButton
+                  active={accessoryKey === 'citations'}
+                  label={`${citations?.links?.length} Citation${pluralS(
+                    citations?.links?.length,
+                  )}`}
+                  icon={Link}
+                  onPress={() => {
+                    if (pubRoute.accessory)
+                      return replace({...pubRoute, accessory: null})
+                    replace({...pubRoute, accessory: {key: 'citations'}})
+                  }}
+                />
+                {features.comments ? (
                   <FooterButton
-                    active={accessoryKey === 'versions'}
-                    label={`${changes?.changes?.length} Version${pluralS(
-                      changes?.changes?.length,
-                    )}`}
-                    icon={Pencil}
+                    active={accessoryKey === 'comments'}
+                    label={`Conversations`}
+                    icon={Comment}
                     onPress={() => {
                       if (pubRoute.accessory?.key === 'versions')
                         return replace({...pubRoute, accessory: null})
-                      replace({...pubRoute, accessory: {key: 'versions'}})
+                      replace({...pubRoute, accessory: {key: 'comments'}})
                     }}
                   />
-                  <FooterButton
-                    active={accessoryKey === 'citations'}
-                    label={`${citations?.links?.length} Citation${pluralS(
-                      citations?.links?.length,
-                    )}`}
-                    icon={Link}
-                    onPress={() => {
-                      if (pubRoute.accessory?.key === 'citations')
-                        return replace({...pubRoute, accessory: null})
-                      replace({...pubRoute, accessory: {key: 'citations'}})
-                    }}
-                  />
-                  {features.comments ? (
-                    <FooterButton
-                      active={accessoryKey === 'comments'}
-                      label={`Conversations`}
-                      icon={Comment}
-                      onPress={() => {
-                        if (pubRoute.accessory?.key === 'comments')
-                          return replace({...pubRoute, accessory: null})
-                        replace({...pubRoute, accessory: {key: 'comments'}})
-                      }}
-                    />
-                  ) : null}
-                </Footer>
-                {/* </div> */}
-              </BlockHighLighter>
+                ) : null}
+              </Footer>
             </MouseProvider>
           </CitationsProvider>
         </ConversationsProvider>
@@ -293,13 +296,13 @@ export default function PublicationPage({mainActor}: PageProps) {
     <>
       <PublicationShell />
 
-      <p
+      {/* <p
         className={classnames('publication-fetching-message', {
           visible: state.matches('fetching.extended'),
         })}
       >
         Searching the network...
-      </p>
+      </p> */}
     </>
   )
 }

@@ -9,6 +9,7 @@ import {
   BlockNode,
   blockToSlate,
   FlowContent,
+  Publication,
 } from '@mintter/shared'
 import {ListConversationsResponse} from '@mintter/shared/client/.generated/documents/v1alpha/comments_pb'
 import {useQuery, UseQueryResult} from '@tanstack/react-query'
@@ -65,7 +66,7 @@ export function RealConversationsProvider({
 }: PropsWithChildren<{
   documentId?: string
   onConversationsOpen: (conversationIds: string[]) => void
-  publication: ClientPublication | null
+  publication: Publication | null
   isOpen: boolean
 }>) {
   let queryResult = useDocConversations(documentId)
@@ -79,7 +80,7 @@ export function RealConversationsProvider({
   let blocksD = useMemo<Record<string, Block>>(() => {
     let res: Record<string, Block> = {}
 
-    if (publication?.document.children) {
+    if (publication?.document?.children) {
       groupLoop(publication.document.children)
     }
 
