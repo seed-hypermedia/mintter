@@ -19,10 +19,11 @@ import {
   statement,
   ul,
 } from '@mintter/shared'
+import {Paragraph, YStack} from '@mintter/ui'
 import {Event, listen} from '@tauri-apps/api/event'
 import debounce from 'lodash.debounce'
 import {
-  KeyboardEventHandler,
+  ElementType,
   PropsWithChildren,
   useEffect,
   useMemo,
@@ -49,7 +50,7 @@ interface EditorProps {
   onChange?: (value: Descendant[]) => void
   editor?: EditorType
   plugins?: Array<EditorPlugin>
-  as?: unknown
+  as?: ElementType
   className?: string
   readOnly?: boolean
 }
@@ -122,6 +123,24 @@ export function Editor({
   )
 
   if (mode == EditorMode.Draft) {
+    // return (
+    //   <YStack alignSelf="center" backgroundColor="red" width="100%" maxWidth={}>
+    //     <YStack tag="ul">
+    //       <YStack tag="li">
+    //         <Paragraph>
+    //           Collaborative editors like Google Docs allow people to work on a
+    //           rich-text document in real-time, which is convenient when users
+    //           want to immediately see each others’ changes. However, sometimes
+    //           people prefer a more asynchronous collaboration style, where they
+    //           can work on a private copy of a document for a while and share
+    //           their updates later. The algorithms underpinning services like
+    //           Google Docs are not designed to support this use case.
+    //         </Paragraph>
+    //       </YStack>
+    //     </YStack>
+    //   </YStack>
+    // )
+
     return (
       <div className={`${classnames('editor', mode)} ${flow()}`} id="editor">
         <DragContext.Provider value={contextValues}>
@@ -175,21 +194,7 @@ export function Editor({
 }
 
 function useSelectAll(editor: EditorType, mode: EditorMode) {
-  useEffect(() => {
-    if (editor && mode == EditorMode.Publication) {
-      //@ts-ignore
-      document.addEventListener('keydown', applySelectAll)
-    }
-
-    return () => {
-      if (editor && mode == EditorMode.Publication) {
-        //@ts-ignore
-        document.removeEventListener('keydown', applySelectAll)
-      }
-    }
-  }, [])
-
-  const applySelectAll: KeyboardEventHandler = (event) => {
+  const applySelectAll = (event: KeyboardEvent) => {
     if (editor && event.metaKey && event.key == 'a') {
       event.preventDefault()
       ReactEditor.focus(editor!)
@@ -200,6 +205,18 @@ function useSelectAll(editor: EditorType, mode: EditorMode) {
       return
     }
   }
+
+  useEffect(() => {
+    if (editor && mode == EditorMode.Publication) {
+      document.addEventListener('keydown', applySelectAll)
+    }
+
+    return () => {
+      if (editor && mode == EditorMode.Publication) {
+        document.removeEventListener('keydown', applySelectAll)
+      }
+    }
+  }, [])
 }
 
 function useTauriListeners(editor: EditorType) {
@@ -281,15 +298,16 @@ function useTauriListeners(editor: EditorType) {
         }[event.payload]!,
       )
 
-      const [, path] =
+      const [element, path] =
         EditorType.above(editor, {
           at: editor.selection,
           match: isFlowContent,
         }) || []
 
+      if (!element || !path) throw new Error('whut')
+
       if (path) {
-        //@ts-ignore
-        set(editor, {at: path})
+        set(editor, {element, at: path})
       } else {
         error('whut')
       }

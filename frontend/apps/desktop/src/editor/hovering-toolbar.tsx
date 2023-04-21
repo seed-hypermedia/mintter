@@ -45,7 +45,7 @@ import {MARK_STRONG} from './strong'
 import {MARK_UNDERLINE} from './underline'
 import {isMarkActive, toggleFormat} from './utils'
 
-export function EditorHoveringToolbar({mouseDown}: {mouseDown: boolean}) {
+export function EditorHoveringToolbar() {
   const editor = useSlate()
   const [selectionColor, setSelectionColor] = useState<string>('')
 

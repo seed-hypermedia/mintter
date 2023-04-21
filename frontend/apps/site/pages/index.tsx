@@ -11,16 +11,18 @@ import PublicationPage from '../ssr-publication-page'
 
 let pubId =
   process.env.MINTTER_HOME_PUBID ||
-  'bafy2bzacea346azbi4r5fxebdvz6wpkak7ati3cf5vywtruw4aabjeoi2332w'
+  'bafy2bzacebyidttuhua6jpk56mes7mnkas5fmdyjy5qxsddipd3nc7ptav3l6'
 let version =
   process.env.MINTTER_HOME_VERSION ||
-  'baeaxdiheaiqdibxfrclwutlnc73bey7yrgqqbggbsdoz5b2d2rlsk7euvqompey'
-// mintter://bafy2bzacebrswg7wbkxvhdzwcpfmhdzy2u5qehdy7pwpf7dx75jitx2p5lwtq/baeaxdiheaiqaq2xozmaoimhcylcenzowojmr6a7g2xpwljnzzs4ekkm6gnftnnq
+  'baeaxdiheaiqhsenpk45aytlz2lhsm6vkwn64lcgydqwgm6xleguk7ny5k6ocuzy'
 
-// let pubId = "bafy2bzacebrswg7wbkxvhdzwcpfmhdzy2u5qehdy7pwpf7dx75jitx2p5lwtq"
-// let version = "baeaxdiheaiqaq2xozmaoimhcylcenzowojmr6a7g2xpwljnzzs4ekkm6gnftnnq"
+//mintter://bafy2bzacebyidttuhua6jpk56mes7mnkas5fmdyjy5qxsddipd3nc7ptav3l6?v=baeaxdiheaiqhsenpk45aytlz2lhsm6vkwn64lcgydqwgm6xleguk7ny5k6ocuzy
 
-function DefaultHomePage({siteInfo}: {siteInfo: SiteInfo | null}) {
+export default function DefaultHomePage({
+  siteInfo,
+}: {
+  siteInfo: SiteInfo | null
+}) {
   let {data} = useQuery({
     queryKey: ['home publication', pubId, version],
     queryFn: () =>
@@ -51,7 +53,7 @@ function DefaultHomePage({siteInfo}: {siteInfo: SiteInfo | null}) {
   )
 }
 
-export default function HomePage({
+export function HomePage({
   publication,
   author,
   siteInfo = null,
@@ -75,6 +77,7 @@ export default function HomePage({
 async function getHomePublication(): Promise<Publication | null> {
   if (!process.env.GW_NEXT_HOST) {
     // Temp Mintter home screen document:
+    console.log('=== RETURN THE HOMEPAGE')
     return await publicationsClient.getPublication({documentId: pubId, version})
   }
 
@@ -89,35 +92,46 @@ async function getHomePublication(): Promise<Publication | null> {
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const {res} = context
-  const publication = await getHomePublication()
-  const siteInfo = await getSiteInfo()
-  if (!publication?.document) {
+  try {
+    const publication = await getHomePublication()
+    const siteInfo = await getSiteInfo()
+    if (!publication?.document) {
+      return {
+        props: {
+          publication: null,
+          author: null,
+          siteInfo: siteInfo ? siteInfo.toJson() : null,
+        },
+      }
+    }
+
+    setAllowAnyHostGetCORS(res)
+
+    res.setHeader('x-mintter-document-id', publication.document.id)
+    res.setHeader('x-mintter-version', publication.version)
+    const definedPublisher = publication.document?.publisher
+    if (definedPublisher)
+      res.setHeader('x-mintter-publisher-id', definedPublisher)
+
+    const author = publication.document?.author
+      ? await accountsClient.getAccount({id: publication.document?.author})
+      : null
     return {
       props: {
-        publication: null,
-        author: null,
+        publication: publication?.toJson(),
+        author: author ? author.toJson() : null,
         siteInfo: siteInfo ? siteInfo.toJson() : null,
       },
     }
-  }
-
-  setAllowAnyHostGetCORS(res)
-
-  res.setHeader('x-mintter-document-id', publication.document.id)
-  res.setHeader('x-mintter-version', publication.version)
-  const definedPublisher = publication.document?.publisher
-  if (definedPublisher)
-    res.setHeader('x-mintter-publisher-id', definedPublisher)
-
-  const author = publication.document?.author
-    ? await accountsClient.getAccount({id: publication.document?.author})
-    : null
-  return {
-    props: {
-      publication: publication?.toJson(),
-      author: author ? author.toJson() : null,
-      siteInfo: siteInfo ? siteInfo.toJson() : null,
-    },
+  } catch (error) {
+    const homePub = await getHomePublication()
+    const siteInfo = await getSiteInfo()
+    return {
+      props: {
+        publication: homePub?.toJson(),
+        siteInfo: siteInfo ? siteInfo.toJson() : null,
+      },
+    }
   }
 }
 
