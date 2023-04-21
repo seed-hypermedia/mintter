@@ -250,7 +250,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                     )}`}
                     icon={Pencil}
                     onPress={() => {
-                      if (pubRoute.accessory)
+                      if (pubRoute.accessory?.key === 'versions')
                         return replace({...pubRoute, accessory: null})
                       replace({...pubRoute, accessory: {key: 'versions'}})
                     }}
@@ -262,7 +262,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                     )}`}
                     icon={Link}
                     onPress={() => {
-                      if (pubRoute.accessory)
+                      if (pubRoute.accessory?.key === 'citations')
                         return replace({...pubRoute, accessory: null})
                       replace({...pubRoute, accessory: {key: 'citations'}})
                     }}
@@ -273,7 +273,7 @@ export default function PublicationPage({mainActor}: PageProps) {
                       label={`Conversations`}
                       icon={Comment}
                       onPress={() => {
-                        if (pubRoute.accessory)
+                        if (pubRoute.accessory?.key === 'comments')
                           return replace({...pubRoute, accessory: null})
                         replace({...pubRoute, accessory: {key: 'comments'}})
                       }}
