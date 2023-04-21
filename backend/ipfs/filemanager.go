@@ -40,7 +40,7 @@ const (
 	// MaxFileMB is the maximum file size (in MB) to be uploaded.
 	MaxFileMB = 64
 	// SearchTimeout is the maximum time we are searching for a file.
-	SearchTimeout = 2 * time.Minute
+	SearchTimeout = 30 * time.Second
 )
 
 // AddParams contains all of the configurable parameters needed to specify the
