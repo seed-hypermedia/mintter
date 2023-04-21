@@ -208,7 +208,7 @@ func (fm *FileManager) UploadFile(w http.ResponseWriter, r *http.Request) {
 	// Parse our multipart form, 10 << 20 specifies a maximum
 	// upload of 10 MB files.
 	if err := r.ParseMultipartForm(MaxFileMB << 20); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusRequestEntityTooLarge)
 		fmt.Fprintf(w, "Parse body error: %s", err.Error())
 		return
 	}

@@ -476,7 +476,7 @@ func initHTTP(
 		router.PathPrefix("/debug/vars").Handler(http.DefaultServeMux)
 		router.Handle("/graphql", corsMiddleware(graphql.Handler(wallet)))
 		router.Handle("/playground", playground.Handler("GraphQL Playground", "/graphql"))
-		router.PathPrefix("/" + mttnet.WellKnownPath).Handler(wellKnownHandler)
+		router.Handle("/"+mttnet.WellKnownPath, wellKnownHandler)
 		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.UploadRoute, ipfsHandler.UploadFile)
 		router.HandleFunc(ipfs.IPFSRootRoute+ipfs.GetRoute, ipfsHandler.GetFile)
 		nav := newNavigationHandler(router)
