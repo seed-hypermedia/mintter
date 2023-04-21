@@ -261,7 +261,7 @@ export function useSitePublish() {
       // 1. get the account ID of the publisher
 
       const wellKnownResponse = await fetch(
-        `${hostname}/.well-known/mintter-site`,
+        `${hostname}/api/mintter-well-known`,
       )
       if (!wellKnownResponse.ok)
         throw new Error(

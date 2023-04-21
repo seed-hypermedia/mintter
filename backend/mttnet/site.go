@@ -38,7 +38,7 @@ const (
 	// In initial site add, the account is not in the database and it needs to proxy to call redeemtoken.
 	SiteAccountIDCtxKey headerKey = "x-mintter-site-account-id"
 	// WellKnownPath is the path (to be completed with http(s)+domain) to call to get data from site.
-	WellKnownPath = ".well-known/mintter-site"
+	WellKnownPath = "api/mintter-well-known"
 )
 
 // CreateInviteToken creates a new invite token for registering a new member.
