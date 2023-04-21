@@ -11,18 +11,14 @@ import PublicationPage from '../ssr-publication-page'
 
 let pubId =
   process.env.MINTTER_HOME_PUBID ||
-  'bafy2bzacebyidttuhua6jpk56mes7mnkas5fmdyjy5qxsddipd3nc7ptav3l6'
+  'bafy2bzaceajij5bzr4yakyaxmjgffu7jq4y3sdie2tozl65igufxgrcu464gi'
 let version =
   process.env.MINTTER_HOME_VERSION ||
-  'baeaxdiheaiqhsenpk45aytlz2lhsm6vkwn64lcgydqwgm6xleguk7ny5k6ocuzy'
+  'baeaxdiheaiqizbsrt7joblgzp2nj6r7kptdzyv2nvsuzstxlhs5ujrhk7a4n6pi'
 
-//mintter://bafy2bzacebyidttuhua6jpk56mes7mnkas5fmdyjy5qxsddipd3nc7ptav3l6?v=baeaxdiheaiqhsenpk45aytlz2lhsm6vkwn64lcgydqwgm6xleguk7ny5k6ocuzy
+//https://mintter.com/p/bafy2bzaceajij5bzr4yakyaxmjgffu7jq4y3sdie2tozl65igufxgrcu464gi?v=baeaxdiheaiqizbsrt7joblgzp2nj6r7kptdzyv2nvsuzstxlhs5ujrhk7a4n6pi
 
-export default function DefaultHomePage({
-  siteInfo,
-}: {
-  siteInfo: SiteInfo | null
-}) {
+function DefaultHomePage({siteInfo}: {siteInfo: SiteInfo | null}) {
   let {data} = useQuery({
     queryKey: ['home publication', pubId, version],
     queryFn: () =>
@@ -53,7 +49,7 @@ export default function DefaultHomePage({
   )
 }
 
-export function HomePage({
+export default function HomePage({
   publication,
   author,
   siteInfo = null,
