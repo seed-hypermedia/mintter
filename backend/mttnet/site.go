@@ -731,6 +731,9 @@ func (srv *Server) updateSiteBio(ctx context.Context, title, description string)
 
 // ServeHTTP serves the content for the well-known path.
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+	w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
 	if srv.hostname == "" { // if i'm not a site, then don't expose addresses
 		w.WriteHeader(500)
 		return
