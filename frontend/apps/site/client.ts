@@ -28,8 +28,12 @@ const loggingInterceptor: Interceptor = (next) => async (req) => {
     console.log(`🔃 to ${req.method.name} `, req.message, result?.message)
     return result
   } catch (e) {
-    console.error(`🚨 to ${req.method.name} `, req.message, e)
-    throw e
+    let error = e
+    if (e.message.match('stream.getReader is not a function')) {
+      error = new Error('RPC broken, try running yarn and ./dev gen')
+    }
+    console.error(`🚨 to ${req.method.name} `, req.message, error)
+    throw error
   }
 }
 
