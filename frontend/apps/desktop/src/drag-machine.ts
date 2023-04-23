@@ -12,7 +12,7 @@ import {ContextFrom, actions, assign, createMachine} from 'xstate'
 
 let {send} = actions
 type DragContext = {
-  editor: Editor
+  editor?: Editor
   dragOverRef: Element | null
   dragRef: HTMLLIElement | null
   fromPath: Path | null
@@ -34,7 +34,7 @@ type DragEvent =
   | {type: 'DRAGGING.OFF'}
   | {type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null}
 
-export const createDragMachine = (editor: Editor) => {
+export const createDragMachine = (editor?: Editor) => {
   return createMachine(
     {
       predictableActionArguments: true,
@@ -91,14 +91,14 @@ export const createDragMachine = (editor: Editor) => {
     {
       actions: {
         deselectEditor: (context) => {
-          ReactEditor.deselect(context.editor)
+          if (context.editor) ReactEditor.deselect(context.editor)
         },
         startDrag: (context) => {
-          context.editor.dragging = true
+          if (context.editor) context.editor.dragging = true
         },
         stopDrag: send({type: 'DRAGGING.OFF'}, {delay: 500}),
         setDraggingOff: (context) => {
-          context.editor.dragging = false
+          if (context.editor) context.editor.dragging = false
         },
         setDragOverRef: assign((context, event) => {
           const {dragOverRef} = context

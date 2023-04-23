@@ -14,16 +14,18 @@ import {
 } from '@mintter/shared'
 import {
   FetchQueryOptions,
+  MutationCache,
   MutationOptions,
   QueryClient,
   QueryOptions,
   useMutation,
   useQueries,
   useQuery,
+  useQueryClient,
   UseQueryOptions,
 } from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
-import {useMemo, useRef} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {MintterEditor} from '@app/editor/mintter-changes/plugin'
 import {Editor, Node} from 'slate'
 import {NavRoute} from '@app/utils/navigation'
@@ -199,21 +201,34 @@ type EditorDraft = {
 }
 
 export function useEditorDraft({
+  editor,
   documentId,
   ...options
-}: UseQueryOptions<EditorDraft> & {documentId: string}) {
+}: UseQueryOptions<EditorDraft> & {documentId: string; editor?: Editor}) {
   return useQuery({
     queryKey: [queryKeys.GET_EDITOR_DRAFT, documentId],
     enabled: !!documentId,
     queryFn: async () => {
       const backendDraft = await draftsClient.getDraft({documentId: documentId})
+      let children
+
+      if (backendDraft.children.length) {
+        children = [blockNodeToSlate(backendDraft.children)]
+      } else {
+        children = [emptyEditorValue]
+        if (editor) {
+          console.log('=== WITH editor', backendDraft)
+          MintterEditor.addChange(editor, [
+            'moveBlock',
+            emptyEditorValue.children[0].id,
+          ])
+        }
+      }
 
       return {
         // backendDraft,
         id: backendDraft.id,
-        children: backendDraft.children.length
-          ? [blockNodeToSlate(backendDraft.children)]
-          : [emptyEditorValue],
+        children,
       }
     },
     ...options,
@@ -223,9 +238,11 @@ export function useEditorDraft({
 export function useDraftTitle(
   input: UseQueryOptions<EditorDraft> & {documentId: string},
 ) {
-  const draft = useEditorDraft(input)
-
-  return useMemo(() => getDocumentTitle(draft.data), [draft.data?.children])
+  let data = useCacheListener<EditorDraft>([
+    queryKeys.GET_EDITOR_DRAFT,
+    input.documentId,
+  ])
+  return useMemo(() => getDocumentTitle(data), [data])
 }
 
 export function getTitleFromContent(children: Array<GroupingContent>): string {
@@ -285,10 +302,6 @@ export function useSaveDraft(documentId: string) {
         documentId,
         changes,
       })
-
-      // const updatedDraft = await draftsClient.getDraft({
-      //   documentId,
-      // })
       return null
     },
   })
@@ -315,4 +328,35 @@ export function useSaveDraft(documentId: string) {
       }, 500)
     },
   }
+}
+
+function useCacheListener<T = unknown>(queryKey: string[]) {
+  const [data, setData] = useState<T | undefined>(undefined)
+
+  useEffect(() => {
+    let unsubscribe = appQueryClient.getQueryCache().subscribe((event) => {
+      if (
+        event.type == 'updated' &&
+        event.action.type == 'success' &&
+        compareArrays(queryKey, event.query.queryKey)
+      ) {
+        console.log('=== CACHE VALID', event.action)
+        setData(event.action.data)
+      }
+    })
+
+    return () => {
+      unsubscribe?.()
+    }
+  }, [queryKey])
+
+  return data
+}
+
+function compareArrays(arr1: any[], arr2: any[]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false
+  }
+
+  return arr1.every((value, index) => value === arr2[index])
 }

@@ -48,27 +48,28 @@ export default function DraftPage() {
     error,
     refetch,
   } = useEditorDraft({
+    editor,
     documentId: docId,
   })
-  console.log('🚀 ~ file: draft.tsx:53 ~ DraftPage ~ draftState:', draftState)
 
   let mouseService = useInterpret(() => mouseMachine)
   let dragService = useInterpret(() => createDragMachine(editor))
   let isDaemonReady = useDaemonReady()
-
-  /**
-   * autosave
-   * - when the user stops typing (after 500ms)
-   * - transform all the changes from editor.__mtt-changes to DocumentChanges
-   * -
-   */
 
   useInitialFocus(editor)
 
   // TODO: safe when loading the first time a new draft: this is to load the epty block generated when start inside the `editorValue` useMemo
   const saveDraft = useSaveDraft(docId)
 
-  return status == 'success' ? (
+  if (status == 'loading') {
+    return <DraftShell />
+  }
+
+  if (status == 'error') {
+    return <AppError error={error} resetErrorBoundary={() => refetch()} />
+  }
+
+  return (
     <ErrorBoundary
       FallbackComponent={AppError}
       onReset={() => window.location.reload()}
@@ -109,6 +110,7 @@ export default function DraftPage() {
                       //@ts-ignore
                       onChange={(content: GroupingContent[]) => {
                         // TODO: need to check when content can be a string
+                        console.log('=== content:', content)
                         if (
                           (!content && typeof content == 'string') ||
                           !isDaemonReady
@@ -152,8 +154,6 @@ export default function DraftPage() {
         </DragProvider>
       </MouseProvider>
     </ErrorBoundary>
-  ) : (
-    <DraftShell />
   )
 }
 
