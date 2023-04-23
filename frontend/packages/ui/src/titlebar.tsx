@@ -48,5 +48,9 @@ export const TitleTextH1 = styled(H1, {
   fontWeight: '700',
 })
 export function TitleText(props) {
-  return <TitleTextH1 {...props} data-tauri-drag-region />
+  return (
+    <span data-tauri-drag-region>
+      <TitleTextH1 {...props} data-tauri-drag-region />
+    </span>
+  )
 }

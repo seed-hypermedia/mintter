@@ -24,7 +24,9 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
     return (
       <>
         <File size={12} />
-        <TitleText size={size}>All Publications</TitleText>
+        <TitleText data-tauri-drag-region size={size}>
+          All Publications
+        </TitleText>
       </>
     )
   }
@@ -32,7 +34,9 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
     return (
       <>
         <User size={12} />
-        <TitleText size={size}>Connections</TitleText>
+        <TitleText data-tauri-drag-region size={size}>
+          Connections
+        </TitleText>
       </>
     )
   }
@@ -40,7 +44,9 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
     return (
       <>
         <Pencil size={12} />
-        <TitleText size={size}>Drafts</TitleText>
+        <TitleText data-tauri-drag-region size={size}>
+          Drafts
+        </TitleText>
       </>
     )
   }
@@ -49,7 +55,9 @@ export function TitleContent({size = '$4'}: {size?: SizeTokens}) {
   }
   if (route.key === 'site') {
     return (
-      <TitleText size={size}>{hostnameStripProtocol(route.hostname)}</TitleText>
+      <TitleText data-tauri-drag-region size={size}>
+        {hostnameStripProtocol(route.hostname)}
+      </TitleText>
     )
   }
   if (route.key === 'publication') {

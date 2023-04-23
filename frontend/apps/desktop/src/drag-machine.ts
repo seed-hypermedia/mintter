@@ -8,11 +8,11 @@ import {
 } from '@mintter/shared'
 import {Editor, Node, NodeEntry, Path, Transforms} from 'slate'
 import {ReactEditor} from 'slate-react'
-import {ContextFrom, actions, assign, createMachine} from 'xstate'
+import {actions, assign, createMachine} from 'xstate'
 
 let {send} = actions
 type DragContext = {
-  editor?: Editor
+  editor: Editor
   dragOverRef: Element | null
   dragRef: HTMLLIElement | null
   fromPath: Path | null
@@ -34,7 +34,7 @@ type DragEvent =
   | {type: 'DRAGGING.OFF'}
   | {type: 'SET.NESTED.GROUP'; nestedGroup: HTMLElement[] | null}
 
-export const createDragMachine = (editor?: Editor) => {
+export const createDragMachine = (editor: Editor) => {
   return createMachine(
     {
       predictableActionArguments: true,

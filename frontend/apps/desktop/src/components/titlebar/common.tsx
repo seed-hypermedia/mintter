@@ -107,9 +107,8 @@ export function NavigationButtons() {
           chromeless
           disabled={state.routeIndex <= 0}
           opacity={state.routeIndex <= 0 ? 0.5 : 1}
-        >
-          <Back size={16} />
-        </Button>
+          icon={Back}
+        />
       </XGroup.Item>
       <XGroup.Item>
         <Button
@@ -118,9 +117,8 @@ export function NavigationButtons() {
           chromeless
           disabled={state.routeIndex >= state.routes.length - 1}
           opacity={state.routeIndex >= state.routes.length - 1 ? 0.5 : 1}
-        >
-          <Forward size={16} />
-        </Button>
+          icon={Forward}
+        />
       </XGroup.Item>
     </XGroup>
   )
