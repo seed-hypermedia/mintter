@@ -35,8 +35,8 @@ import {
   useState,
 } from 'react'
 import {toast} from 'react-hot-toast'
-import {Descendant, Editor, Range, Text, Transforms} from 'slate'
-import {ReactEditor, useFocused, useSlate, useSlateSelection} from 'slate-react'
+import {BaseRange, Descendant, Editor, Range, select, Text, Transforms} from 'slate'
+import {ReactEditor, useFocused, useSlate, useSlateSelection, useSlateSelector} from 'slate-react'
 import {assign} from 'xstate'
 import {MARK_EMPHASIS} from './emphasis'
 import {MARK_CODE} from './inline-code'
@@ -70,7 +70,7 @@ export function EditorHoveringToolbar() {
   )
 
   return (
-    <HoveringToolbar mouseDown={false}>
+    <HoveringToolbar>
       <Box
         css={{
           zIndex: '$max',
@@ -210,18 +210,21 @@ const defaultVirtualEl = {
   },
 }
 
-function HoveringToolbar({
-  children,
-  mouseDown,
-}: {
-  children: ReactNode
-  mouseDown: boolean
-}) {
+function HoveringToolbar({children}: {children: ReactNode}) {
   const editor = useSlate()
   const inFocus = useFocused()
   const selection = useSlateSelection()
+  const [mouseDown, setMouseDown] = useState(false)
 
-  const {x, y, reference, floating, strategy} = useFloating({
+  function handleMouseDown() {
+    setMouseDown(true)
+  }
+
+  function handleMouseUp() {
+    setMouseDown(false)
+  }
+  
+  const {x, y, reference, floating, strategy, refs} = useFloating({
     placement: 'top',
     middleware: [inline(), offset(8), shift(), flip()],
   })
@@ -234,8 +237,13 @@ function HoveringToolbar({
       Range.isCollapsed(selection) ||
       Editor.string(editor, selection) === ''
     ) {
+      document.onmousedown = handleMouseDown
+      document.onmouseup = handleMouseUp
       return reference(defaultVirtualEl)
     }
+    document.onmousedown = null
+    document.onmouseup = null
+    setMouseDown(false)
     const domRange = ReactEditor.toDOMRange(editor, selection)
     reference(domRange)
   }, [reference, inFocus, selection, mouseDown])
