@@ -8,12 +8,16 @@ services:
     image: caddy:2.6.4
     depends_on:
       - minttersite
-    network_mode: 'host'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    networks:
+      - internal_network
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/data:/data
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/config:/config
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/CaddyFile:/etc/caddy/Caddyfile
-    command: caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://nextjs} --to :${MTT_SITE_LOCAL_PORT:-3000}
 
   nextjs:
     container_name: nextjs

@@ -188,8 +188,12 @@ do
     cat <<- BLOCK > ${workspace}/proxy/CaddyFile
 ${hostname}
 
+reverse_proxy :3000
+
 route /ipfs/* {
-    reverse_proxy minttersite:\${MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+	reverse_proxy minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001} {
+		method GET
+	}
 }
 BLOCK
 

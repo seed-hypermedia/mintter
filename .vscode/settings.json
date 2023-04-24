@@ -26,12 +26,10 @@
     ".git/**": true
   },
   "editor.formatOnPaste": false,
-
   // Please, don't set global editor tab size!
   // Keep the default and use per-language settings otherwise.
   // Don't set tab size for Go here. Go uses TAB for tabs, not spaces, so everyone
   // is willing to chose their preffered width in their local settings without disrupting the file contents.
-
   "[typescript]": {
     "editor.tabSize": 2,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -43,11 +41,13 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "xstate.showVisualEditorWarnings": false,
-
   "[terraform]": {
     "editor.defaultFormatter": "hashicorp.terraform"
   },
-
+  "[shellscript]": {
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": false,
+  },
   "gopls": {
     "build.directoryFilters": [
       "-",
@@ -59,7 +59,6 @@
     ]
   },
   "go.lintTool": "golangci-lint",
-
   "python.formatting.provider": "black",
   "prettier.bracketSpacing": false,
   "editor.formatOnSave": true
