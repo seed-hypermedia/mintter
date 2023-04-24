@@ -12,9 +12,8 @@ services:
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/data:/data
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/config:/config
-    command:
-      caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://nextjs} --to
-      :${MTT_SITE_LOCAL_PORT:-3000}
+      - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/CaddyFile:/etc/caddy/Caddyfile
+    command: caddy reverse-proxy --from ${MTT_SITE_HOSTNAME:-http://nextjs} --to :${MTT_SITE_LOCAL_PORT:-3000}
 
   nextjs:
     container_name: nextjs
