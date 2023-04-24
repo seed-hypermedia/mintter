@@ -220,18 +220,17 @@ export function PublishShareButton() {
   let navReplace = useNavigate('replace')
   const publish = usePublishDraft({
     onSuccess: (publishedDoc, doc) => {
-      if (publishedDoc?.document?.id) return
-      toast.success('Draft published Successfully!')
+      if (!publishedDoc?.document?.id) return
       appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
-      appInvalidateQueries([queryKeys.GET_PUBLICATION, documentId])
-      appInvalidateQueries([queryKeys.PUBLICATION_CHANGES, documentId])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
+      appInvalidateQueries([doc])
       republishDoc.mutateAsync(publishedDoc)
       navReplace({
         key: 'publication',
         documentId: doc,
         versionId: publishedDoc.version,
       })
+      toast.success('Draft published Successfully!')
     },
   })
 

@@ -185,7 +185,6 @@ export function usePublishDraft(
     ...opts,
     mutationFn: (documentId) => draftsClient.publishDraft({documentId}),
     onSuccess: (...args) => {
-      appInvalidateQueries([])
       opts?.onSuccess?.(...args)
     },
   })
@@ -301,6 +300,9 @@ export function useSaveDraft(documentId: string) {
         documentId,
         changes,
       })
+
+      appInvalidateQueries([documentId])
+      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
       return null
     },
   })
