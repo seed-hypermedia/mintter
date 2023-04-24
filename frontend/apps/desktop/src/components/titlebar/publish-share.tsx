@@ -148,14 +148,8 @@ function PublishButton({
         onPress={onPress}
         theme="green"
       >
-        {isDraft ? (
-          draftActionLabel
-        ) : (
-          <>
-            <Globe size={16} />
-            {hostnameStripProtocol(webUrl)}
-          </>
-        )}
+        {isDraft ? null : <Globe size={16} />}
+        {isDraft ? draftActionLabel : hostnameStripProtocol(webUrl) || null}
       </Button>
     </PopoverPrimitive.Trigger>
   )
