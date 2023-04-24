@@ -25,7 +25,6 @@ function queryDaemonInfo():
       }
       return null
     },
-    retry: false,
     useErrorBoundary: false,
   }
 }

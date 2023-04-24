@@ -1,6 +1,8 @@
 import {networkingClient} from '@app/api-clients'
+import {useDaemonReady} from '@app/node-status-context'
 import {appQueryClient} from '@app/query-client'
 import {PeerInfo} from '@mintter/shared'
+import {ListPeersResponse} from '@mintter/shared/client/.generated/networking/v1alpha/networking_pb'
 import {
   FetchQueryOptions,
   useQuery,
@@ -8,12 +10,15 @@ import {
 } from '@tanstack/react-query'
 import {queryKeys} from './query-keys'
 
-export function useAllPeers() {
+export function useAllPeers(options: UseQueryOptions<ListPeersResponse> = {}) {
+  let isDaemonReady = useDaemonReady()
   return useQuery({
     queryKey: [queryKeys.GET_PEERS],
     queryFn: async () => {
       return await networkingClient.listPeers({})
     },
+    enabled: isDaemonReady,
+    ...options,
   })
 }
 

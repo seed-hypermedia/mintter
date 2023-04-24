@@ -217,7 +217,6 @@ export function useEditorDraft({
       } else {
         children = [emptyEditorValue]
         if (editor) {
-          console.log('=== WITH editor', backendDraft)
           MintterEditor.addChange(editor, [
             'moveBlock',
             emptyEditorValue.children[0].id,

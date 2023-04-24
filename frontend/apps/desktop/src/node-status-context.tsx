@@ -32,7 +32,6 @@ let Provider = daemonContext.Provider
 export function DaemonStatusProvider({children}: {children: ReactNode}) {
   let [netStatus, setNetStatus] = useState<'online' | 'offline'>('online')
   let infoQuery = useDaemonInfo()
-
   let peerInfoQuery = usePeerInfo(infoQuery.data?.deviceId)
 
   useEffect(() => {
@@ -52,6 +51,16 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
     }
   }, [])
 
+  let value = useMemo(
+    () => ({
+      ...defaultValue,
+      ...peerInfoQuery.data,
+      netStatus,
+      isReady: !!peerInfoQuery.data?.addrs.length,
+    }),
+    [peerInfoQuery.data, netStatus],
+  )
+
   // return <Onboarding />
 
   if (infoQuery.data === null) {
@@ -59,18 +68,7 @@ export function DaemonStatusProvider({children}: {children: ReactNode}) {
   }
 
   if (infoQuery.status == 'success') {
-    return (
-      <Provider
-        value={{
-          ...defaultValue,
-          ...peerInfoQuery.data,
-          netStatus,
-          isReady: !!peerInfoQuery.data?.addrs.length,
-        }}
-      >
-        {children}
-      </Provider>
-    )
+    return <Provider value={value}>{children}</Provider>
   }
 
   return null

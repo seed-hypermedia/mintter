@@ -4,13 +4,13 @@ import {emit as tauriEmit, listen as tauriListen} from '@tauri-apps/api/event'
 export const appQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      networkMode: 'always',
+      networkMode: 'offlineFirst',
       useErrorBoundary: true,
       retryOnMount: false,
       staleTime: Infinity,
       refetchOnReconnect: false,
       onError: (err) => {
-        console.log(`Query error: ${err}`)
+        console.log(`Query error: ${JSON.stringify(err)}`)
       },
       retry: 4,
       retryDelay: (attempt) =>

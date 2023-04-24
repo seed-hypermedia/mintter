@@ -10,7 +10,7 @@ import {appInvalidateQueries} from '@app/query-client'
 export function useAccount(accountId?: string) {
   let isDaemonReady = useDaemonReady()
   return useQuery({
-    enabled: !!isDaemonReady && !!accountId,
+    enabled: isDaemonReady && !!accountId,
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
     queryFn: () => accountsClient.getAccount({id: accountId}),
     onError: (err) => {

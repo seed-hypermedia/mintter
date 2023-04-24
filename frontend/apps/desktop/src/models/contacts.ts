@@ -1,9 +1,9 @@
 import {accountsClient} from '@app/api-clients'
+import {queryKeys} from '@app/models/query-keys'
 import {Account, Device} from '@mintter/shared'
 import {useQuery} from '@tanstack/react-query'
-import {queryKeys} from '@app/models/query-keys'
-import {useAllPeers} from './networking'
 import {useAccount} from './accounts'
+import {useAllPeers} from './networking'
 
 export function useContactsList() {
   const contacts = useQuery({

@@ -100,8 +100,10 @@ export default function PublicationPage() {
   let [focusBlock, setFocusBlock] = useState(() => blockId)
   useScrollToBlock(editor, scrollWrapperRef, focusBlock)
 
-  const {data: changes} = useDocChanges(docId)
-  const {data: citations} = useDocCitations(docId)
+  const {data: changes} = useDocChanges(status == 'success' ? docId : undefined)
+  const {data: citations} = useDocCitations(
+    status == 'success' ? docId : undefined,
+  )
 
   useEffect(() => {
     let isSubscribed = true
