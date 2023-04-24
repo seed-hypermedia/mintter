@@ -94,32 +94,18 @@ function PublicationTitle({
     documentId: route.documentId,
     versionId: route.versionId,
   })
-  let {data: author} = useAccount(pub?.document?.author)
-  const navigate = useNavigate()
-
   return (
     <>
       <TitleText size={size}>{pub?.document?.title || '...'}</TitleText>
       <XStack gap={0}>
         {pub?.document?.editors.length === 0 ? (
-          <AccountLinkAvatar accountId={author?.id} />
+          <AccountLinkAvatar accountId={pub?.document?.author} />
         ) : (
           pub?.document?.editors.map((editor) => (
             <AccountLinkAvatar accountId={editor} key={editor} />
           ))
         )}
       </XStack>
-      {/* <ButtonText
-        size="$1"
-        onPress={(e) => {
-          e.preventDefault()
-          const accountId = author?.id
-          if (!accountId) return
-          navigate({key: 'account', accountId})
-        }}
-      >
-        {author?.profile?.alias || ''}
-      </ButtonText> */}
     </>
   )
 }

@@ -2,11 +2,43 @@ import appError from '@app/errors'
 import {useAccount} from '@app/models/accounts'
 import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
-import {Button, Tooltip, Theme, SizableText} from '@mintter/ui'
+import {Button, Tooltip, Theme, SizableText, Container} from '@mintter/ui'
+import {AlertCircle} from '@tamagui/lucide-icons'
+
+export function ErrorDot() {
+  return (
+    <Container
+      backgroundColor={'#ff3333'}
+      display="flex"
+      position="absolute"
+      top={-8}
+      left={-8}
+      padding={0}
+      paddingLeft={-4}
+      width={16}
+      height={16}
+      borderRadius={8}
+    >
+      <AlertCircle size={16} />
+    </Container>
+  )
+}
 
 export function AccountLinkAvatar({accountId}: {accountId?: string}) {
   const navigate = useNavigate()
   const account = useAccount(accountId)
+  let content = account.data?.profile ? (
+    <Avatar
+      size="$1"
+      alias={account.data.profile.alias}
+      accountId={account.data.id}
+    />
+  ) : (
+    <>
+      <Avatar size="$1" alias={'?'} accountId={accountId} />
+      {account.error ? <ErrorDot /> : null}
+    </>
+  )
   return (
     <Tooltip>
       <Tooltip.Trigger>
@@ -14,23 +46,18 @@ export function AccountLinkAvatar({accountId}: {accountId?: string}) {
           size="$1"
           backgroundColor="transparent"
           hoverStyle={{backgroundColor: 'transparent'}}
+          minWidth={20}
+          minHeight={20}
           onPress={(e) => {
             e.preventDefault()
             e.stopPropagation()
             if (!accountId) return appError('No account ready to load')
             navigate({key: 'account', accountId})
           }}
+          position="relative"
           data-testid="list-item-author"
         >
-          {account?.data?.profile?.alias ? (
-            <Avatar
-              size="$1"
-              alias={account.data.profile.alias}
-              accountId={account.data.id}
-            />
-          ) : (
-            account?.data?.profile?.alias
-          )}
+          {content}
         </Button>
       </Tooltip.Trigger>
 

@@ -6,6 +6,7 @@ import {useAllPeers} from './networking'
 import {useDaemonReady} from '@app/node-status-context'
 import {fetchDaemonInfo, useDaemonInfo} from '@app/models/daemon'
 import {appInvalidateQueries} from '@app/query-client'
+import appError from '@app/errors'
 
 export function useAccount(accountId?: string) {
   let isDaemonReady = useDaemonReady()
@@ -14,8 +15,9 @@ export function useAccount(accountId?: string) {
     queryKey: [queryKeys.GET_ACCOUNT, accountId],
     queryFn: () => accountsClient.getAccount({id: accountId}),
     onError: (err) => {
-      console.log(`useAccount error: ${err}`)
+      appError('Failed to load account. ' + err)
     },
+    useErrorBoundary: () => false,
   })
 }
 
