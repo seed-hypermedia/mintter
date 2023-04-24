@@ -23,7 +23,7 @@ export const toastInterceptor: Interceptor = (next) => async (req) => {
   try {
     const result = await next(req)
     // @ts-ignore
-    console.log(`🔃 to ${req.method.name} `, req.message, result)
+    // console.log(`🔃 to ${req.method.name} `, req.message, result)
     return result
   } catch (e) {
     console.error('📣 🚨', e)
