@@ -216,10 +216,10 @@ export function useEditorDraft({
       } else {
         children = [emptyEditorValue]
         if (editor) {
-          MintterEditor.addChange(editor, [
-            'moveBlock',
-            emptyEditorValue.children[0].id,
-          ])
+          let block = emptyEditorValue.children[0]
+
+          MintterEditor.addChange(editor, ['moveBlock', block.id])
+          MintterEditor.addChange(editor, ['replaceBlock', block.id])
         }
       }
 
@@ -240,6 +240,7 @@ export function useDraftTitle(
     queryKeys.GET_EDITOR_DRAFT,
     input.documentId,
   ])
+  // let {data} = useEditorDraft({documentId: input.documentId})
   return useMemo(() => getDocumentTitle(data), [data])
 }
 
