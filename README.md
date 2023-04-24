@@ -55,7 +55,7 @@ control over the deployment, there is a simple docker-compose file that should
 bundle the necessary modules:
 
 ```shell
-curl -s -o docker-compose.yml https://minttersite.s3.amazonaws.com/docker-compose.yml && docker compose up -d
+curl -s -o docker-compose.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml && docker compose up -d
 ```
 
 This command will spin up the new site on http://127.0.0.1:3000. If you want to
@@ -107,7 +107,7 @@ If you want to update the site to the latest version, the easiest way is to
 rerun the installation command to start a new site (ON)
 
 ```shell
-sh <(curl -s https://minttersite.s3.amazonaws.com/site_deployment.sh)
+sh <(curl -s https://raw.githubusercontent.com/mintterteam/mintter/master/site_deployment.sh)
 ```
 
 Then set the same workspace path as the previous installation. The script should
