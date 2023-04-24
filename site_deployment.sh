@@ -184,6 +184,15 @@ do
     mkdir -p ${workspace}
     echo "MTT_SITE_HOSTNAME=${hostname}" > ${workspace}/.env
     echo "MTT_SITE_WORKSPACE=${workspace}" >> ${workspace}/.env
+    mkdir -p ${workspace}/proxy
+    cat <<- BLOCK > ${workspace}/proxy/CaddyFile
+${hostname}
+
+route /ipfs/* {
+    reverse_proxy minttersite:\${MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+}
+BLOCK
+
     if [ ! -z "$owner" ]; then
       echo "MTT_SITE_OWNER_ACCOUNT_ID=${owner}" >> ${workspace}/.env
     else
