@@ -109,7 +109,7 @@ do
     read -p "Do you want to continue(c) with those params or overide(r) them (c/r)?" response
     if [ "$response" = "c" ]; then
         if [ ! -d "${workspace}/proxy" ] || [ ! -f "${workspace}/proxy/Caddifile" ];then
-			cat <<- BLOCK > ${workspace}/proxy/CaddyFile
+			cat << BLOCK > ${workspace}/proxy/CaddyFile
 ${hostname}
 
 @ipfsget {
@@ -198,7 +198,7 @@ BLOCK
     echo "MTT_SITE_HOSTNAME=${hostname}" > ${workspace}/.env
     echo "MTT_SITE_WORKSPACE=${workspace}" >> ${workspace}/.env
     mkdir -p ${workspace}/proxy
-    cat <<- BLOCK > ${workspace}/proxy/CaddyFile
+    cat << BLOCK > ${workspace}/proxy/CaddyFile
 ${hostname}
 
 @ipfsget {
