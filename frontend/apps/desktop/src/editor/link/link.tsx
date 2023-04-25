@@ -8,7 +8,6 @@ import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon} from '@components/icon'
-import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
 import {
   Embed,
@@ -20,6 +19,7 @@ import {
   MINTTER_LINK_PREFIX,
   text,
 } from '@mintter/shared'
+import {Fieldset, Input, Label} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {Text} from '@tamagui/web'
 import {open} from '@tauri-apps/api/shell'
@@ -609,17 +609,16 @@ export function InsertLinkButton() {
                 gap: '$5',
               }}
             >
-              <TextField
-                type="url"
-                id="address"
-                name="address"
-                label="Link Address"
-                data-testid="modal-link-input"
-                autoCorrect="off"
-                size={1}
-                value={link}
-                onChange={(e) => setLink(e.currentTarget.value)}
-              />
+              <Fieldset>
+                <Label htmlFor="address">Link Address</Label>
+                <Input
+                  keyboardType="url"
+                  id="address"
+                  data-testid="modal-link-input"
+                  value={link}
+                  onChangeText={setLink}
+                />
+              </Fieldset>
               <Box
                 css={{
                   display: 'flex',

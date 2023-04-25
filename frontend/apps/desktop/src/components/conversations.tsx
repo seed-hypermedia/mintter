@@ -6,7 +6,6 @@ import {useNavigate} from '@app/utils/navigation'
 import {Avatar} from '@components/avatar'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
-import {TextField} from '@components/text-field'
 import {
   Block,
   blockToApi,
@@ -18,7 +17,7 @@ import {
   statement,
   text,
 } from '@mintter/shared'
-import {SizableText, Text} from '@mintter/ui'
+import {SizableText, Text, TextArea} from '@mintter/ui'
 import {useQuery} from '@tanstack/react-query'
 import {appWindow} from '@tauri-apps/api/window'
 import {FormEvent, useEffect, useMemo, useRef, useState} from 'react'
@@ -222,11 +221,10 @@ function MintterReplyForm({
             flexDirection: 'column',
           }}
         >
-          <TextField
+          <TextArea
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            name="replyContent"
-            textarea
+            onChangeText={(val: string) => setDraft(val)}
+            id="replyContent"
           />
           <Box
             css={{

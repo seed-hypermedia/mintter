@@ -9,7 +9,6 @@ import {useNavRoute} from '@app/utils/navigation'
 import {Box} from '@components/box'
 import {Button} from '@components/button'
 import {Icon, icons} from '@components/icon'
-import {TextField} from '@components/text-field'
 import {Tooltip} from '@components/tooltip'
 import {flip, inline, offset, shift, useFloating} from '@floating-ui/react-dom'
 import {
@@ -23,20 +22,20 @@ import {
   statement,
   text,
 } from '@mintter/shared'
+import {TextArea} from '@mintter/ui'
 import {css} from '@stitches/react'
 import {useInterpret, useSelector} from '@xstate/react'
 import {
   ComponentProps,
   FormEvent,
-  PropsWithChildren,
   ReactNode,
   useEffect,
   useMemo,
   useState,
 } from 'react'
 import {toast} from 'react-hot-toast'
-import {BaseRange, Descendant, Editor, Range, select, Text, Transforms} from 'slate'
-import {ReactEditor, useFocused, useSlate, useSlateSelection, useSlateSelector} from 'slate-react'
+import {Descendant, Editor, Range, Text, Transforms} from 'slate'
+import {ReactEditor, useFocused, useSlate, useSlateSelection} from 'slate-react'
 import {assign} from 'xstate'
 import {MARK_EMPHASIS} from './emphasis'
 import {MARK_CODE} from './inline-code'
@@ -223,7 +222,7 @@ function HoveringToolbar({children}: {children: ReactNode}) {
   function handleMouseUp() {
     setMouseDown(false)
   }
-  
+
   const {x, y, reference, floating, strategy, refs} = useFloating({
     placement: 'top',
     middleware: [inline(), offset(8), shift(), flip()],
@@ -623,12 +622,12 @@ export function CommentForm({
         boxShadow: '$menu',
       }}
     >
-      <TextField
-        name="comment"
-        textarea
+      <TextArea
+        id="comment"
+        cols={3}
         placeholder="initial comment here"
         value={comment}
-        onChange={(e) => onChange(e.target.value)}
+        onChangeText={(val) => onChange(val)}
       />
       <Button variant="solid" color="muted" size="2">
         submit

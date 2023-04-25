@@ -4,7 +4,7 @@ import {styled} from '@app/stitches.config'
 import {PublicationRoute, useNavRoute} from '@app/utils/navigation'
 import {Button} from '@components/button'
 import {dialogContentStyles, overlayStyles} from '@components/dialog-styles'
-import {TextField} from '@components/text-field'
+import {Fieldset, Input, Label} from '@mintter/ui'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useMemo, useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -63,16 +63,18 @@ function PublishDialogForm({
   return (
     <>
       <Heading>Publish to {siteId}</Heading>
-      <TextField
-        placeholder={'Unlisted Document'}
-        id="pretty-path"
-        name="pretty-path"
-        label="Public URL (/Path)"
-        value={path}
-        onChange={(e) => {
-          setPath(writePathState(e.target.value))
-        }}
-      />
+      <Fieldset>
+        <Label htmlFor="pretty-path">Public URL (/Path)</Label>
+        <Input
+          placeholder={'Unlisted Document'}
+          id="pretty-path"
+          value={path}
+          onChangeText={(val: string) => {
+            setPath(writePathState(val))
+          }}
+        />
+      </Fieldset>
+
       <URLPreview>{pubUrl}</URLPreview>
       <Button
         disabled={publish.isLoading}

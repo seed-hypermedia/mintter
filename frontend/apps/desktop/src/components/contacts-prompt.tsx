@@ -1,11 +1,9 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {networkingClient} from '@app/api-clients'
-import {CSS} from '@stitches/react'
+import {Button, TextArea} from '@mintter/ui'
+import * as DialogPrimitive from '@radix-ui/react-dialog'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
-import {Button} from '@mintter/ui'
 import {Prompt} from './prompt'
-import {TextField} from './text-field'
 
 export function ContactsPrompt({
   refetch,
@@ -45,10 +43,9 @@ export function ContactsPrompt({
           <Prompt.Description>
             Enter a contact address to connect
           </Prompt.Description>
-          <TextField
+          <TextArea
             value={peer}
-            onChange={(event) => setPeer(event.currentTarget.value)}
-            textarea
+            onChangeText={setPeer}
             rows={3}
             data-testid="add-contact-input"
           />

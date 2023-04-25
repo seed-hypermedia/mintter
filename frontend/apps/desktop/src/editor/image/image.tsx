@@ -1,6 +1,6 @@
 import {imageMachine} from '@app/editor/image/image-machine'
 import {EditorMode} from '@app/editor/plugin-utils'
-import {findPath, isValidUrl} from '@app/editor/utils'
+import {findPath} from '@app/editor/utils'
 import {
   Image as ImageType,
   isFlowContent,
@@ -9,6 +9,17 @@ import {
   statement,
   text,
 } from '@mintter/shared'
+import {
+  Button,
+  ImageIcon,
+  Label,
+  Popover,
+  SizableText,
+  Tabs,
+  TextArea,
+  XStack,
+  YStack,
+} from '@mintter/ui'
 import {useActor, useInterpret} from '@xstate/react'
 import {ChangeEvent, FormEvent, useMemo, useState} from 'react'
 import {Editor, Path, Transforms} from 'slate'
@@ -21,22 +32,6 @@ import {
 } from 'slate-react'
 import {ActorRefFrom} from 'xstate'
 import type {EditorPlugin} from '../types'
-import {
-  Tabs,
-  SizableText,
-  Button,
-  YStack,
-  Popover,
-  Text,
-  XStack,
-  Input,
-  Form,
-  ImageIcon,
-  Label,
-  TextArea,
-  Image as UImage,
-} from '@mintter/ui'
-import {GestureReponderEvent} from '@tamagui/web'
 
 export const ELEMENT_IMAGE = 'image'
 
@@ -199,7 +194,10 @@ function ImageForm({service}: InnerImageProps) {
   const [state, send] = useActor(service)
   const [tabState, setTabState] = useState('upload')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [fileName, setFileName] = useState<{name: string, color: string}>({name: 'Upload File', color: 'black'})
+  const [fileName, setFileName] = useState<{name: string; color: string}>({
+    name: 'Upload File',
+    color: 'black',
+  })
   const selected = useSelected()
   const focused = useFocused()
 
@@ -217,8 +215,7 @@ function ImageForm({service}: InnerImageProps) {
       if (fileList[0].size <= 62914560) {
         setSelectedFile(fileList[0])
         setFileName({name: fileList[0].name, color: 'black'})
-      } else 
-        setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
+      } else setFileName({name: 'The file size exceeds 60 MB', color: 'red'})
     }
   }
 
@@ -246,7 +243,7 @@ function ImageForm({service}: InnerImageProps) {
   return (
     //@ts-ignore
     <YStack contentEditable={false}>
-      <Popover size='$5'>
+      <Popover size="$5">
         <Popover.Trigger asChild>
           <Button
             icon={ImageIcon}
@@ -261,9 +258,9 @@ function ImageForm({service}: InnerImageProps) {
         <Popover.Content
           padding={0}
           elevation="$4"
-          size='$5'
-          enterStyle={{ x: 0, y: -1, opacity: 0 }}
-          exitStyle={{ x: 0, y: -1, opacity: 0 }}
+          size="$5"
+          enterStyle={{x: 0, y: -1, opacity: 0}}
+          exitStyle={{x: 0, y: -1, opacity: 0}}
           animation={[
             'quick',
             {
@@ -272,13 +269,13 @@ function ImageForm({service}: InnerImageProps) {
               },
             },
           ]}
-          >
+        >
           <Tabs
             value={tabState}
             onValueChange={setTabState}
             orientation="horizontal"
             flexDirection="column"
-            borderWidth='$1'
+            borderWidth="$1"
             borderColor="white"
             borderRadius="$5"
             width={500}
@@ -286,8 +283,8 @@ function ImageForm({service}: InnerImageProps) {
             <Tabs.List
               marginBottom="$-0.5"
               backgroundColor="white"
-              borderBottomColor='lightgrey'
-              borderBottomWidth='$1'
+              borderBottomColor="lightgrey"
+              borderBottomWidth="$1"
               borderBottomLeftRadius={0}
               borderBottomRightRadius={0}
               borderRadius={0}
@@ -307,7 +304,9 @@ function ImageForm({service}: InnerImageProps) {
                   cursor: 'pointer',
                 }}
               >
-                <SizableText size="$2" color='black'>Upload</SizableText>
+                <SizableText size="$2" color="black">
+                  Upload
+                </SizableText>
               </Tabs.Tab>
               {/* <Tabs.Tab
                 unstyled
@@ -329,51 +328,48 @@ function ImageForm({service}: InnerImageProps) {
             </Tabs.List>
 
             <Tabs.Content value="upload">
-              <XStack padding="$4" alignItems="center" backgroundColor='white'>
-                <XStack
-                  flex={1}
-                  backgroundColor='white'
-                >
-                    <Label
-                      htmlFor="file-upload"
-                      borderColor='lightgrey'
-                      borderWidth='$0.5'
-                      size='$3'
-                      width={400}
-                      justifyContent='center'
-                      hoverStyle={{
-                        backgroundColor: 'lightgrey',
-                        cursor: 'pointer',
-                      }}
+              <XStack padding="$4" alignItems="center" backgroundColor="white">
+                <XStack flex={1} backgroundColor="white">
+                  <Label
+                    htmlFor="file-upload"
+                    borderColor="lightgrey"
+                    borderWidth="$0.5"
+                    size="$3"
+                    width={400}
+                    justifyContent="center"
+                    hoverStyle={{
+                      backgroundColor: 'lightgrey',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <SizableText
+                      padding="$2"
+                      overflow="hidden"
+                      whiteSpace="nowrap"
+                      textOverflow="ellipsis"
+                      color={fileName.color}
                     >
-                      <SizableText
-                        padding='$2'
-                        overflow='hidden'
-                        whiteSpace='nowrap'
-                        textOverflow='ellipsis'
-                        color={fileName.color}
-                      >
-                        {fileName.name}
-                      </SizableText>
-                    </Label>
-                    <input
-                      id="file-upload"
-                      type="file"
-                      style={{
-                        background: 'white',
-                        padding: '0 2px',
-                        display: 'none',
-                      }}
-                      onChange={handleFileChange}
-                      accept="image/png, image/jpg, image/gif, image/jpeg"
-                    />
+                      {fileName.name}
+                    </SizableText>
+                  </Label>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    style={{
+                      background: 'white',
+                      padding: '0 2px',
+                      display: 'none',
+                    }}
+                    onChange={handleFileChange}
+                    accept="image/png, image/jpg, image/gif, image/jpeg"
+                  />
                 </XStack>
                 <Popover.Close asChild>
                   <Button
                     size="$2"
                     flex={0}
                     flexShrink={0}
-                    theme={fileName.color === 'red' ? 'gray' : "green"}
+                    theme={fileName.color === 'red' ? 'gray' : 'green'}
                     disabled={fileName.color === 'red' ? true : false}
                     onPress={handleUpload}
                   >
@@ -396,7 +392,7 @@ function ImageForm({service}: InnerImageProps) {
                 }}
                 onSubmit={submitImage}
               >
-                <TextField type="url" placeholder="Add an Image URL" name="url" />
+                <Input placeholder="Add an Image URL" name="url" />
                 <Button type="submit">Save</Button>
                 <Button
                   type="button"

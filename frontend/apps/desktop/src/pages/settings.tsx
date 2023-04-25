@@ -34,6 +34,7 @@ import {
   Close,
   Copy,
   Dialog,
+  Fieldset,
   Form,
   Forward,
   Heading,
@@ -719,14 +720,16 @@ function NewSite({onDone}: {onDone: (activeSite: string | null) => void}) {
           gap: '1em',
         }}
       >
-        <TextField
-          ref={hostRef}
-          id="host"
-          name="host"
-          label="site domain or invite url"
-          onChange={(e) => setSiteUrl(e.target.value)}
-          value={siteUrl ?? undefined}
-        />
+        <Fieldset>
+          <Label htmlFor="host">site domain or invite url</Label>
+          <Input
+            ref={hostRef}
+            id="host"
+            onChangeText={setSiteUrl}
+            value={siteUrl ?? undefined}
+          />
+        </Fieldset>
+
         <Button disabled={!siteUrl} size="$2" color="green">
           Connect + Add Site
         </Button>
