@@ -7,7 +7,7 @@ import {
   useSiteList,
 } from '@app/models/sites'
 import {useDaemonReady} from '@app/node-status-context'
-import {appInvalidateQueries} from '@app/query-client'
+import {appInvalidateQueries, appQueryClient} from '@app/query-client'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
 import {hostnameStripProtocol} from '@app/utils/site-hostname'
 import {Box} from '@components/box'
@@ -16,7 +16,7 @@ import {Publication, WebPublicationRecord} from '@mintter/shared'
 import {Button, ExternalLink, Globe, SizableText, Spinner} from '@mintter/ui'
 import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {GestureReponderEvent} from '@tamagui/web'
-import {UseQueryResult} from '@tanstack/react-query'
+import {QueryClient, UseQueryResult} from '@tanstack/react-query'
 import {useMemo, useRef, useState} from 'react'
 import toast from 'react-hot-toast'
 import {usePublicationDialog} from './publication-dialog'
@@ -215,6 +215,11 @@ export function PublishShareButton() {
   const publish = usePublishDraft({
     onSuccess: (publishedDoc, doc) => {
       if (!publishedDoc?.document?.id) return
+      appQueryClient.removeQueries([
+        queryKeys.GET_DRAFT,
+        publishedDoc?.document?.id,
+      ])
+      appInvalidateQueries([queryKeys.GET_DRAFT_LIST])
       appInvalidateQueries([queryKeys.GET_PUBLICATION_LIST])
       appInvalidateQueries([queryKeys.PUBLICATION_CITATIONS])
       appInvalidateQueries([doc])
