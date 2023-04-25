@@ -121,9 +121,8 @@ reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
 BLOCK
-        fi
         curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
-        MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+        MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
         rm mttsite.yml
         exit 0
     fi
@@ -223,9 +222,9 @@ BLOCK
     curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
     if [ -z "$owner" ]; then
       if [ "$listing" != "y" ]; then
-        MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+        MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       else
-        docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+        docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       fi
       rm mttsite.yml
       payload="["
@@ -259,7 +258,7 @@ BLOCK
         exit 1
       fi
     else
-      MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
+      MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
       rm mttsite.yml
     fi
     exit 0
