@@ -109,6 +109,7 @@ do
     read -p "Do you want to continue(c) with those params or overide(r) them (c/r)?" response
     if [ "$response" = "c" ]; then
         mkdir -p ${workspace}/proxy
+        curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
         docker compose -f mttsite.yml down || true
         cat << BLOCK > ${workspace}/proxy/CaddyFile
 ${hostname}
@@ -121,7 +122,6 @@ reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
 BLOCK
-        curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
         MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
         rm mttsite.yml
         exit 0
@@ -220,6 +220,7 @@ BLOCK
       echo "MTT_SITE_ADDITIONAL_FLAGS=-p2p.disable-listing" >> ${workspace}/.env
     fi
     curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
+	docker compose -f mttsite.yml down || true
     if [ -z "$owner" ]; then
       if [ "$listing" != "y" ]; then
         MTT_SITE_NOWAIT_FLAG=-p2p.disable-listing docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull || true
