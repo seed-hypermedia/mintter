@@ -108,6 +108,19 @@ do
     done < "${workspace}/.env"
     read -p "Do you want to continue(c) with those params or overide(r) them (c/r)?" response
     if [ "$response" = "c" ]; then
+        if [ ! -d "${workspace}/proxy" ] || [ ! -f "${workspace}/proxy/Caddifile" ];then
+			cat <<- BLOCK > ${workspace}/proxy/CaddyFile
+${hostname}
+
+\@ipfsget {
+	method GET HEAD OPTIONS
+	path /ipfs/*
+}
+reverse_proxy \@ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+
+reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
+BLOCK
+        fi
         curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
         MTT_SITE_NOWAIT_FLAG=-identity.no-account-wait docker compose -f mttsite.yml --env-file ${workspace}/.env up -d --pull always --quiet-pull
         rm mttsite.yml
