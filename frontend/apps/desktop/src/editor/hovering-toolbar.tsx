@@ -627,7 +627,7 @@ export function CommentForm({
         cols={3}
         placeholder="initial comment here"
         value={comment}
-        onChangeText={(val) => onChange(val)}
+        onChangeText={onChange}
       />
       <Button variant="solid" color="muted" size="2">
         submit

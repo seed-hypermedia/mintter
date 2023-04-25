@@ -9,12 +9,11 @@ import {
 import {videoMachine} from '@app/editor/video/video-machine'
 import {Box} from '@components/box'
 import {Icon} from '@components/icon'
-import {TextField} from '@components/text-field'
 import {isVideo, text, video, Video as VideoType} from '@mintter/shared'
-import {SizableText, Button, Input} from '@mintter/ui'
+import {Button, Input, SizableText} from '@mintter/ui'
 import {useActor, useInterpret, useSelector} from '@xstate/react'
 import isUrl from 'is-url'
-import {FormEvent, useState} from 'react'
+import {useState} from 'react'
 import {Editor, Transforms} from 'slate'
 import {
   ReactEditor,
@@ -23,7 +22,7 @@ import {
   useSelected,
   useSlateStatic,
 } from 'slate-react'
-import {ActorRefFrom, assign} from 'xstate'
+import {ActorRefFrom} from 'xstate'
 import type {EditorPlugin} from '../types'
 
 export const ELEMENT_VIDEO = 'video'

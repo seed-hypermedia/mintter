@@ -1,11 +1,7 @@
-import {networkingClient} from '@app/api-clients'
-import {AccountWithRef} from '@app/contact-list-machine'
 import {useConnectionSummary} from '@app/models/contacts'
 import {useDaemonOnline, useDaemonReady} from '@app/node-status-context'
 import {useNavigate, useNavRoute} from '@app/utils/navigation'
-import {TextField} from '@components/text-field'
 import {
-  Add,
   Button,
   ButtonProps,
   Clock,
@@ -15,11 +11,8 @@ import {
   User,
   XStack,
 } from '@mintter/ui'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-import {ReactNode, useState} from 'react'
-import toast from 'react-hot-toast'
+import {ReactNode} from 'react'
 import {OnlineIndicator} from './indicator'
-import {Prompt} from './prompt'
 
 export function FooterButton({
   active,

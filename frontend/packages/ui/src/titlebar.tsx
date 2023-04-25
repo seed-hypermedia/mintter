@@ -24,7 +24,7 @@ export const TitlebarWrapper = styled(YStack, {
   },
 })
 
-export const TitlebarRow = styled(XStack, {TitleTextH1
+export const TitlebarRow = styled(XStack, {
   paddingHorizontal: '$2',
 })
 

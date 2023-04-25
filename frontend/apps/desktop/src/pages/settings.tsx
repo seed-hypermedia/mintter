@@ -1,6 +1,5 @@
 import {daemonClient} from '@app/api-clients'
 import {Box} from '@app/components/box'
-import {TextField} from '@app/components/text-field'
 import {useAccount, useMyAccount, useSetProfile} from '@app/models/accounts'
 import {useDaemonInfo} from '@app/models/daemon'
 import {usePeerInfo} from '@app/models/networking'
