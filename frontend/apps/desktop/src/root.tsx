@@ -146,7 +146,7 @@ export function StyleProvider({
     <TamaguiProvider
       config={tamaguiConfig}
       defaultTheme="light"
-      // disableRootThemeClass
+      disableRootThemeClass
       {...rest}
     >
       <Theme name="blue">{children}</Theme>

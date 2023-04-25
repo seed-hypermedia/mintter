@@ -2,13 +2,17 @@ import {SizableText, Tooltip as BaseTooltip} from '@mintter/ui'
 export function Tooltip({
   children,
   content,
+  inline = false,
 }: {
   children: React.ReactNode
   content: React.ReactNode | string
+  inline?: boolean
 }) {
   return (
-    <BaseTooltip placement="top-end">
-      <BaseTooltip.Trigger>{children}</BaseTooltip.Trigger>
+    <BaseTooltip>
+      <BaseTooltip.Trigger display={inline ? 'inline' : 'flex'}>
+        {children}
+      </BaseTooltip.Trigger>
       <BaseTooltip.Content
         margin={0}
         padding={0}

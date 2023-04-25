@@ -190,6 +190,7 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
       Transforms.removeNodes(editor, {at: Path.next(at)})
     })
   }, [linkQuery.data, url, props.mode])
+
   if (isMintterLink(url)) {
     const [docId, version, blockId] = getIdsfromUrl(url)
     return (
@@ -219,11 +220,20 @@ function renderLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
       />
     )
   }
-  return <WebLink ref={ref} hintPureWebLink {...props} />
+  return <WebLink hintPureWebLink ref={ref} {...props} />
 }
 
 const MintterLink = forwardRef(RenderMintterLink)
 const WebLink = forwardRef(RenderWebLink)
+
+// Put this at the start and end of an inline component to work around this Chromium bug:
+// https://bugs.chromium.org/p/chromium/issues/detail?id=1249405
+const InlineChromiumBugfix = () => null
+// (
+//   <Text tag="span" contentEditable={false} fontSize={0} display="inline">
+//     {String.fromCodePoint(160) /* Non-breaking space */}
+//   </Text>
+// )
 
 function RenderMintterLink(
   props: LinkProps,
@@ -236,7 +246,7 @@ function RenderMintterLink(
   let mouseService = useMouse()
   const route = useNavRoute()
 
-  const {mintterLink, ...linkProps} = props
+  const {mintterLink, attributes, ...linkProps} = props
 
   if (!mintterLink) return null
 
@@ -278,19 +288,28 @@ function RenderMintterLink(
   }
 
   return (
-    <Text
-      tag="a"
-      href={props.element.url}
-      color={'#0E868E'}
-      // @ts-ignore not sure what the Text ref is..
-      ref={ref}
-      {...linkProps}
-      onClick={onClick}
-      onMouseEnter={mouseEnter}
-      onMouseLeave={mouseLeave}
-      data-highlight={blockRef ? `${documentId}/${blockRef}` : documentId}
-      data-reference={props.element.url}
-    />
+    <>
+      <InlineChromiumBugfix />
+      <Text
+        {...attributes}
+        tag="a"
+        fontFamily="inherit"
+        letterSpacing="inherit"
+        href={props.element.url}
+        // color={'#0E868E'}
+        // color="$blue"
+        // @ts-ignore not sure what the Text ref is..
+        ref={ref}
+        {...linkProps}
+        onClick={onClick}
+        display="inline"
+        onMouseEnter={mouseEnter}
+        onMouseLeave={mouseLeave}
+        data-highlight={blockRef ? `${documentId}/${blockRef}` : documentId}
+        data-reference={props.element.url}
+      />
+      <InlineChromiumBugfix />
+    </>
   )
 }
 
@@ -308,6 +327,7 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
 
   return (
     <Tooltip
+      inline
       content={
         <span>
           {props.element.url}
@@ -315,15 +335,25 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
         </span>
       }
     >
-      <Text
-        tag="a"
-        href={props.element.url}
-        color={props.hintPureWebLink ? '#0E518E' : '#444444'}
-        // @ts-ignore not sure what the Text ref is..
-        ref={ref}
-        onClick={onClick}
-        {...props}
-      />
+      <>
+        <InlineChromiumBugfix />
+        <Text
+          tag="a"
+          fontFamily="inherit"
+          letterSpacing="inherit"
+          // @ts-ignore add the href prop to this element
+          href={props.element.url}
+          color={props.hintPureWebLink ? '$blue' : '$color'}
+          display="inline"
+          // @ts-ignore not sure what the Text ref is..
+          ref={ref}
+          onClick={onClick}
+          {...props.attributes}
+        >
+          {props.children}
+        </Text>
+        <InlineChromiumBugfix />
+      </>
     </Tooltip>
   )
 }
@@ -510,6 +540,8 @@ export function InsertLinkButton() {
     event.preventDefault()
     if (!editor) return
     if (link && (isUrl(link) || isMintterLink(link))) {
+      console.log('ADD LINK', event, editor)
+
       ReactEditor.focus(editor)
       insertLink(editor, {url: link, selection: editor.selection, wrap: true})
       Transforms.move(editor, {
@@ -517,15 +549,12 @@ export function InsertLinkButton() {
         unit: 'offset',
       })
     }
-
-    close()
   }
 
   function handleRemove() {
     if (isLinkActive(editor, editor.selection)) {
       unwrapLink(editor, editor.selection)
     }
-    close()
   }
 
   useEffect(() => {

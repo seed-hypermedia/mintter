@@ -47,7 +47,7 @@ export function getIdsfromUrlMaybe(
   try {
     return getIdsfromUrl(entry)
   } catch (e) {
-    // nnot thhe best way to handle this
+    // not thhe best way to handle this
   }
   return [undefined, undefined, undefined]
 }
