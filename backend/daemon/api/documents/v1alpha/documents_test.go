@@ -25,7 +25,6 @@ import (
 var _ = litter.Dump
 
 func TestBug_MoveBockWithoutReplacement(t *testing.T) {
-	t.Skip("Backend panics")
 	t.Parallel()
 
 	api := newTestDocsAPI(t, "alice")
@@ -38,6 +37,7 @@ func TestBug_MoveBockWithoutReplacement(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotNil(t, updated)
+
 	dlist, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
 	require.NoError(t, err, "must list drafts correctly with existing publications")
 	require.Len(t, dlist.Documents, 1)

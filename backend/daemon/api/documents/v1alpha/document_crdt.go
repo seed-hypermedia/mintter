@@ -154,6 +154,9 @@ func (ds *docState) hydrate() *documents.Document {
 
 	for n := it.NextItem(); !n.IsZero(); n = it.NextItem() {
 		blk := ds.getBlock(n.NodeID)
+		if blk == nil {
+			continue
+		}
 		child := &documents.BlockNode{Block: blk}
 		appendChild(n.Parent, child)
 		blockMap[n.NodeID] = child
@@ -181,7 +184,7 @@ func (ds *docState) getWebURL() string {
 func (ds *docState) getBlock(id string) *documents.Block {
 	revs, ok := ds.blocks[id]
 	if !ok {
-		panic("BUG: can't find block " + id)
+		return nil
 	}
 
 	var lww crdt.LWW[*documents.Block]
