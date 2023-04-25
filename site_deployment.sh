@@ -112,11 +112,11 @@ do
 			cat <<- BLOCK > ${workspace}/proxy/CaddyFile
 ${hostname}
 
-\@ipfsget {
+@ipfsget {
 	method GET HEAD OPTIONS
 	path /ipfs/*
 }
-reverse_proxy \@ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
 BLOCK
@@ -201,11 +201,11 @@ BLOCK
     cat <<- BLOCK > ${workspace}/proxy/CaddyFile
 ${hostname}
 
-\@ipfsget {
+@ipfsget {
 	method GET HEAD OPTIONS
 	path /ipfs/*
 }
-reverse_proxy \@ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
+reverse_proxy @ipfsget minttersite:{\$MTT_SITE_BACKEND_GRPCWEB_PORT:56001}
 
 reverse_proxy * nextjs:{\$MTT_SITE_LOCAL_PORT:3000}
 BLOCK
