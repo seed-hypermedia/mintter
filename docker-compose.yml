@@ -14,6 +14,10 @@ services:
       - '443:443/udp'
     networks:
       - internal_network
+    environment:
+      - 'MTT_SITE_HOSTNAME=${MTT_SITE_HOSTNAME:-http://nextjs}'
+      - 'MTT_SITE_BACKEND_GRPCWEB_PORT=${MTT_SITE_BACKEND_GRPCWEB_PORT:-56001}'
+      - 'MTT_SITE_LOCAL_PORT=${MTT_SITE_LOCAL_PORT:-3000}'
     volumes:
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/data:/data
       - ${MTT_SITE_WORKSPACE:-~/.mtt-site}/proxy/config:/config

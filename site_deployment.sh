@@ -112,7 +112,7 @@ do
         curl -s -o mttsite.yml https://raw.githubusercontent.com/mintterteam/mintter/master/docker-compose.yml
         docker compose -f mttsite.yml down || true
         cat << BLOCK > ${workspace}/proxy/CaddyFile
-${hostname}
+{\$MTT_SITE_HOSTNAME}
 
 @ipfsget {
 	method GET HEAD OPTIONS
@@ -200,7 +200,7 @@ BLOCK
     mkdir -p ${workspace}/proxy
     docker compose -f mttsite.yml down || true
     cat << BLOCK > ${workspace}/proxy/CaddyFile
-${hostname}
+{\$MTT_SITE_HOSTNAME}
 
 @ipfsget {
 	method GET HEAD OPTIONS
