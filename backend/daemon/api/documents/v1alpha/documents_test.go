@@ -24,6 +24,25 @@ import (
 
 var _ = litter.Dump
 
+func TestBug_MoveBockWithoutReplacement(t *testing.T) {
+	t.Skip("Backend panics")
+	t.Parallel()
+
+	api := newTestDocsAPI(t, "alice")
+	ctx := context.Background()
+
+	draft, err := api.CreateDraft(ctx, &documents.CreateDraftRequest{})
+	require.NoError(t, err)
+	updated := updateDraft(ctx, t, api, draft.Id, []*documents.DocumentChange{
+		{Op: &documents.DocumentChange_MoveBlock_{MoveBlock: &documents.DocumentChange_MoveBlock{BlockId: "b1"}}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, updated)
+	dlist, err := api.ListDrafts(ctx, &documents.ListDraftsRequest{})
+	require.NoError(t, err, "must list drafts correctly with existing publications")
+	require.Len(t, dlist.Documents, 1)
+}
+
 func TestBug_BrokenPublicationList(t *testing.T) {
 	// See: https://www.notion.so/mintter/Fix-List-of-Publications-Breaks-c5f37e237cca4618bd3296d926958cd6.
 	t.Parallel()
