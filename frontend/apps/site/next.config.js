@@ -31,7 +31,7 @@ const plugins = [
     disableFontSupport: false,
 
     // experiment - reduced bundle size react-native-web
-    useReactNativeWebLite: false,
+    useReactNativeWebLite: true,
     excludeReactNativeWebExports: [
       'Switch',
       'ProgressBar',

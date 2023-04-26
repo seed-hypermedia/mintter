@@ -17,6 +17,7 @@ import {
   YStack,
   Paragraph as UIParagrah,
   TooltipGroup,
+  config,
 } from '@mintter/ui'
 import {ElementLink} from './link'
 import {Paragraph} from './paragraph'
@@ -25,6 +26,7 @@ import {Transclusion} from './transclusion'
 import {Video} from './video'
 import toast from 'react-hot-toast'
 import {useHighlightContext} from './highlight'
+import {useHoverContext} from 'slate-react-presentation/hover'
 
 export function useRenderElement() {
   return useCallback(({children, element, attributes}: RenderElementProps) => {
@@ -166,9 +168,10 @@ function Block({
 }: {
   children: ReactNode
 } & ComponentProps<typeof YStack>) {
-  const [isHovering, setIsHovering] = useState(false)
+  const {hoveredId, setHoverId} = useHoverContext()
   const {highlightedId} = useHighlightContext()
-  const isHighlighted = id === highlightedId
+  const isHighlighted = id == highlightedId
+  const isHovered = id == hoveredId
   return (
     <YStack
       marginVertical="$2"
@@ -183,15 +186,14 @@ function Block({
       // animation={{
       //   backgroundColor: 'lazy',
       // }}
-      hoverStyle={{
-        backgroundColor: '#DCFFF9', // needs fix: broken in dark mode
-      }}
-      backgroundColor={isHighlighted ? 'yellow' : 'transparent'}
-      onHoverIn={() => setIsHovering(true)}
-      onHoverOut={() => setIsHovering(false)}
+      backgroundColor={
+        isHighlighted ? '$yellow5' : isHovered ? '$color5' : 'transparent'
+      }
+      onHoverIn={() => (id ? setHoverId(id) : undefined)}
+      onHoverOut={() => setHoverId(null)}
     >
       {children}
-      {isHovering && id ? <CopyBlockLinkButton id={id} /> : null}
+      {isHovered && id ? <CopyBlockLinkButton id={id} /> : null}
     </YStack>
   )
 }
