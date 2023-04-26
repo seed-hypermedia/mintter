@@ -5,7 +5,6 @@ import {useWebLink} from '@app/models/web-links'
 import {useMouse} from '@app/mouse-context'
 import {isMintterLink} from '@app/utils/is-mintter-link'
 import {PublicationRoute, useNavigate, useNavRoute} from '@app/utils/navigation'
-import {Box} from '@components/box'
 import {Icon} from '@components/icon'
 import {Tooltip} from '@components/tooltip'
 import {useFloating} from '@floating-ui/react-dom'
@@ -20,15 +19,16 @@ import {
   text,
 } from '@mintter/shared'
 import {
+  Adapt,
   Button,
   Fieldset,
   Input,
   Label,
   Link as LinkIcon,
+  Popover,
   XStack,
-  YStack,
+  YGroup,
 } from '@mintter/ui'
-import * as PopoverPrimitive from '@radix-ui/react-popover'
 import {Text} from '@tamagui/web'
 import {open} from '@tauri-apps/api/shell'
 import {isKeyHotkey} from 'is-hotkey'
@@ -563,14 +563,14 @@ export function InsertLinkButton() {
     }
     if (!editor) return
     if (link && (isUrl(link) || isMintterLink(link))) {
-      console.log('ADD LINK', event, editor)
-
       ReactEditor.focus(editor)
       insertLink(editor, {url: link, selection: editor.selection, wrap: true})
       Transforms.move(editor, {
         distance: 1,
         unit: 'offset',
       })
+
+      setLink('')
     }
   }
 
@@ -679,26 +679,46 @@ export function InsertLinkButton() {
   }, [editor])
 
   return (
-    // <Tooltip content={<span>Add Link</span>}>
-    <PopoverPrimitive.Root onOpenChange={handleChange}>
-      <PopoverPrimitive.Trigger asChild>
+    <Popover size="$5" stayInFrame allowFlip onOpenChange={handleChange}>
+      <Popover.Trigger asChild>
         <Button
           data-testid="toolbar-link-button"
           chromeless
           size="$1"
           icon={LinkIcon}
         />
-      </PopoverPrimitive.Trigger>
-
-      <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content sideOffset={35}>
-          <YStack
-            elevation={6}
-            borderRadius="$3"
-            width={300}
-            backgroundColor="$backgroundStrong"
-            padding="$2"
-          >
+      </Popover.Trigger>
+      <Adapt when="sm" platform="web">
+        <Popover.Sheet modal dismissOnSnapToBottom>
+          <Popover.Sheet.Frame padding="$4">
+            <Adapt.Contents />
+          </Popover.Sheet.Frame>
+          <Popover.Sheet.Overlay />
+        </Popover.Sheet>
+      </Adapt>
+      <Popover.Content
+        padding={0}
+        borderWidth={1}
+        borderColor="$borderColor"
+        enterStyle={{x: 0, y: -10, opacity: 0}}
+        exitStyle={{x: 0, y: -10, opacity: 0}}
+        elevation={5}
+        x={0}
+        y={0}
+        opacity={1}
+        animation={[
+          'quick',
+          {
+            opacity: {
+              overshootClamping: true,
+            },
+          },
+        ]}
+        elevate
+      >
+        {/* <Popover.Arrow borderWidth={1} borderColor="$borderColor" /> */}
+        <YGroup space="$3" padding="$3">
+          <YGroup.Item>
             <Fieldset
               paddingHorizontal="$2"
               margin={0}
@@ -718,25 +738,30 @@ export function InsertLinkButton() {
                 placeholder="https://.. or mintter://..."
               />
             </Fieldset>
+          </YGroup.Item>
+          <YGroup.Item>
             <XStack space justifyContent="space-between" alignItems="center">
-              <Button size="$2" onPress={handleSubmit}>
-                save
-              </Button>
-              <Button
-                onPress={handleRemove}
-                data-testid="modal-link-remove-button"
-                disabled={!isLink}
-                theme="red"
-                size="$1"
-                paddingHorizontal="$2"
-              >
-                remove link
-              </Button>
+              <Popover.Close asChild>
+                <Button size="$2" onPress={handleSubmit}>
+                  save
+                </Button>
+              </Popover.Close>
+              <Popover.Close asChild>
+                <Button
+                  onPress={handleRemove}
+                  data-testid="modal-link-remove-button"
+                  disabled={!isLink}
+                  theme="red"
+                  size="$1"
+                  paddingHorizontal="$2"
+                >
+                  remove link
+                </Button>
+              </Popover.Close>
             </XStack>
-          </YStack>
-        </PopoverPrimitive.Content>
-      </PopoverPrimitive.Portal>
-    </PopoverPrimitive.Root>
-    // </Tooltip>
+          </YGroup.Item>
+        </YGroup>
+      </Popover.Content>
+    </Popover>
   )
 }

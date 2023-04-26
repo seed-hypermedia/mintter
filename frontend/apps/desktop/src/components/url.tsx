@@ -1,5 +1,13 @@
 import {copyTextToClipboard} from '@app/utils/copy-to-clipboard'
-import {Button, Copy, Globe, Separator, SizableText, XGroup} from '@mintter/ui'
+import {
+  Button,
+  Copy,
+  Globe,
+  Separator,
+  SizableText,
+  Stack,
+  XGroup,
+} from '@mintter/ui'
 import {open} from '@tauri-apps/api/shell'
 import {useState} from 'react'
 import {toast} from 'react-hot-toast'
@@ -30,7 +38,9 @@ export function AccessURLRow({
           alignItems="center"
           justifyContent="flex-start"
         >
-          <Globe size={16} flex={0} />
+          <Stack flex={0} flexShrink={0} flexGrow={0}>
+            <Globe size={12} />
+          </Stack>
           <SizableText
             size="$2"
             opacity={0.8}
