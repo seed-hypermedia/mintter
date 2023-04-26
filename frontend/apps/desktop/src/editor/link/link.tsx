@@ -341,13 +341,15 @@ function RenderWebLink(props: LinkProps, ref: ForwardedRef<HTMLAnchorElement>) {
     >
       <>
         <InlineChromiumBugfix />
+
         <Text
           tag="a"
+          // color="$color8"
           fontFamily="inherit"
           letterSpacing="inherit"
           // @ts-ignore add the href prop to this element
           href={props.element.url}
-          color={props.hintPureWebLink ? '$blue' : '$color'}
+          color={props.hintPureWebLink ? '$color10' : '$color'}
           display="inline"
           // @ts-ignore not sure what the Text ref is..
           ref={ref}

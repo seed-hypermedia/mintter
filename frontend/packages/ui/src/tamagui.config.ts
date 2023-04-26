@@ -2,7 +2,7 @@ import {Variable} from '@tamagui/web'
 import {createTamagui, createTokens} from 'tamagui'
 import {createInterFont} from '@tamagui/font-inter'
 import {shorthands} from '@tamagui/shorthands'
-import {themes, radius, space, zIndex, size} from '@tamagui/themes'
+import * as tamaguiDefaults from '@tamagui/themes'
 
 import {createMedia} from '@tamagui/react-native-media-driver'
 import * as colors from '@tamagui/colors'
@@ -111,12 +111,22 @@ function postfixObjKeys<
   ) as any
 }
 
+// this values will generate all the theme tokes we need in the app
 export var tokens = createTokens({
   color,
-  radius,
-  zIndex,
-  size,
-  space,
+  radius: {
+    ...tamaguiDefaults.radius,
+  },
+  zIndex: {
+    ...tamaguiDefaults.zIndex,
+    max: 99999,
+  },
+  size: {
+    ...tamaguiDefaults.size,
+  },
+  space: {
+    ...tamaguiDefaults.space,
+  },
 })
 
 export var config = createTamagui({
@@ -128,7 +138,7 @@ export var config = createTamagui({
     heading: headingFont,
     body: bodyFont,
   },
-  themes,
+  themes: tamaguiDefaults.themes,
   tokens,
   media: createMedia({
     xs: {maxWidth: 660},

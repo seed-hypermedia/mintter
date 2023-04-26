@@ -94,7 +94,6 @@ export function PublicationListItem({
   return (
     <Button
       chromeless
-      theme="gray"
       tag="li"
       onMouseEnter={() => {
         if (publication.document)
@@ -109,6 +108,7 @@ export function PublicationListItem({
       {hasDraft && (
         <Button
           theme="yellow"
+          zIndex="$max"
           onPress={(e) => {
             e.preventDefault()
             e.stopPropagation()

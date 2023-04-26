@@ -8,18 +8,9 @@ export function AppBanner({
   children: ReactNode
   onMouseEnter?: MouseEventHandler<HTMLDivElement>
 }) {
-  const theme = useTheme()
-
-  const color = getVariable(
-    ('yellow3' in theme ? theme['yellow3'] : undefined) ||
-      'yellow3' ||
-      null ||
-      '#f00',
-  )
-  console.log('🚀 ~ file: app-banner.tsx:15 ~ color:', color)
   return (
     <XStack
-      backgroundColor={color.val}
+      backgroundColor="$backgroundStrong"
       width="100%"
       position="absolute"
       top={0}

@@ -355,7 +355,7 @@ function CommentItem({
         >
           {author?.data?.profile?.alias}
         </Button>
-        <SizableText size="$2" theme="gray">
+        <SizableText size="$2">
           {changeData.data?.createTime
             ? formattedDate(changeData.data?.createTime)
             : null}
@@ -425,9 +425,7 @@ function ConversationSelectors({
           left: 0,
         }}
       />
-      <SizableText size="$2" theme="gray">
-        {selectorText}
-      </SizableText>
+      <SizableText size="$2">{selectorText}</SizableText>
     </Box>
   )
 }
